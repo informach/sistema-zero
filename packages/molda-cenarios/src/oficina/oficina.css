@@ -1,0 +1,10 @@
+/*
+ * Estilos da oficina de cenários. Importe DENTRO do pipeline Tailwind do app, depois do
+ * `@import "tailwindcss"`, do tema do Kids e do `tool-chrome.css`.
+ *
+ * A oficina é um modo do Molda: usa os tokens (`--color-mld-*`) e as receitas dele
+ * (`.mld-workshop*`, `.mld-tile`, `.mld-float`, `.mld-seg`) e as do chrome das ferramentas
+ * (`.sz-tool-*`). Aqui fica só o que é próprio dos cenários, com o prefixo `mcn-`.
+ */
+@import "@sistemazero/molda/styles.css";
+@import "./oficina-regras.css";

@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-21T02:28:57.952Z",
+  "source": "598824bd1403fbb4723b77d5662d996a584aa0ea",
+  "parents": [
+    "4db9390c2ec732bbce034b4ffd7bee3be849489b",
+    "39fc593c306e9d32ef985104560ddf1eb835f3ee"
+  ],
+  "profile": "da629a58eb2369b6e1363c6ca26b75b156f9e519b7097f843b7b770e1174e4f6",
+  "categories": 29,
+  "initialFailedMembersTypes": true,
+  "followupPassed": 16,
+  "typescriptAndBunJavaScriptExactlyEqual": true,
+  "pythonAllFilesByteIdentical": true,
+  "proof": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/integracao-39fc-2026-11-20",
+  "linuxQualified": false,
+  "stagingActivated": false
+}

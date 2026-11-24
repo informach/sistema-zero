@@ -1,0 +1,23 @@
+{
+  "evidencias": [
+    {
+      "nome": "caminhada-por-clique",
+      "duracao": 2.438,
+      "dados": {
+        "inicio": {
+          "x": 0,
+          "y": 4.54,
+          "z": 150,
+          "giro": 0
+        },
+        "fim": {
+          "x": 0.93,
+          "y": 4.54,
+          "z": 149.93,
+          "giro": 0
+        }
+      }
+    }
+  ],
+  "erros": []
+}

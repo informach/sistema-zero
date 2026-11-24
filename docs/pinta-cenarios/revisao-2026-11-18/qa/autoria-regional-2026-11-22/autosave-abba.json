@@ -1,0 +1,81 @@
+{
+  "ranAt": "2026-11-22T20:59:19.117Z",
+  "fixture": "4096 chunks across two signed regional maps; one cell changed per sample",
+  "host": "Windows, AMD Ryzen 5 5600G (6 cores, 12 logical processors)",
+  "desktop": [
+    {
+      "path": "incremental",
+      "chunks": 1,
+      "bytes": 2048,
+      "records": 8,
+      "inventories": 1,
+      "ms": 65.19999998807907,
+      "chunkPuts": 1
+    },
+    {
+      "path": "complete",
+      "chunks": 4096,
+      "bytes": 8388608,
+      "records": 4102,
+      "inventories": 1,
+      "ms": 942.7999999821186,
+      "chunkPuts": 1
+    },
+    {
+      "path": "complete",
+      "chunks": 4096,
+      "bytes": 8388608,
+      "records": 4102,
+      "inventories": 1,
+      "ms": 963.8000000119209,
+      "chunkPuts": 1
+    },
+    {
+      "path": "incremental",
+      "chunks": 1,
+      "bytes": 2048,
+      "records": 8,
+      "inventories": 1,
+      "ms": 62.80000001192093,
+      "chunkPuts": 1
+    }
+  ],
+  "cpu-4x": [
+    {
+      "path": "incremental",
+      "chunks": 1,
+      "bytes": 2048,
+      "records": 8,
+      "inventories": 1,
+      "ms": 220.90000000596046,
+      "chunkPuts": 1
+    },
+    {
+      "path": "complete",
+      "chunks": 4096,
+      "bytes": 8388608,
+      "records": 4102,
+      "inventories": 1,
+      "ms": 2838.7999999821186,
+      "chunkPuts": 1
+    },
+    {
+      "path": "complete",
+      "chunks": 4096,
+      "bytes": 8388608,
+      "records": 4102,
+      "inventories": 1,
+      "ms": 3081.699999988079,
+      "chunkPuts": 1
+    },
+    {
+      "path": "incremental",
+      "chunks": 1,
+      "bytes": 2048,
+      "records": 8,
+      "inventories": 1,
+      "ms": 152,
+      "chunkPuts": 1
+    }
+  ]
+}

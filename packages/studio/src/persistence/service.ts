@@ -449,6 +449,49 @@ export function createPersistenceService(
       })
   }
 
+  /**
+   * A ordem das edições: cada referência de projeto ganha um número na primeira vez que o serviço a
+   * vê (o agendamento acompanha cada edição, então a mais nova tem o número maior).
+   */
+  const editSequence = new WeakMap<Project, number>()
+  let lastEditSequence = 0
+  function sequenceOf(project: Project): number {
+    let sequence = editSequence.get(project)
+    if (sequence === undefined) {
+      lastEditSequence += 1
+      sequence = lastEditSequence
+      editSequence.set(project, sequence)
+    }
+    return sequence
+  }
+  /** A edição mais nova que já foi para uma cópia de saída pedida por ESTE serviço, por projeto. */
+  const stagedExitCopies = new Map<string, number>()
+
+  /**
+   * Pede a cópia de saída de `project` e anota a edição dela. ⚠️ A cópia interrompe as gravações em
+   * voo do escopo inteiro (`stageProjectExit`), e elas voltam com `AbortError`: é a anotação que
+   * diz se a edição de cada uma já está numa cópia (full review final, 22/11/2026).
+   */
+  function stageExitCopy(
+    project: Project,
+    options: { incompleteBlocks: boolean; pageAlive?: true },
+  ): Promise<void> {
+    const flushOnExit = adapter?.flushOnExit
+    if (!flushOnExit) return Promise.resolve()
+    const sequence = sequenceOf(project)
+    if ((stagedExitCopies.get(project.id) ?? 0) < sequence)
+      stagedExitCopies.set(project.id, sequence)
+    return flushOnExit(snapshotForSave(project), options).catch((error: unknown) => {
+      if (stagedExitCopies.get(project.id) === sequence) stagedExitCopies.delete(project.id)
+      throw error
+    })
+  }
+
+  /** Esta edição (ou uma mais nova do mesmo projeto) já está numa cópia de saída deste serviço? */
+  function exitCopyCovers(project: Project): boolean {
+    return (stagedExitCopies.get(project.id) ?? 0) >= sequenceOf(project)
+  }
+
   function persistAndMark(project: Project): Promise<void> {
     if (suspended) return Promise.resolve()
     // Já excluído antes de começar: não persiste de volta o que foi apagado.
@@ -479,6 +522,26 @@ export function createPersistenceService(
           store.getState().markSaveFailed(message)
         } else {
           console.warn(message)
+          // O projeto já saiu do editor (navegação dentro do app, troca de projeto) e ninguém mais
+          // vai tentar gravá-lo: a recusa (outra aba gravou antes, cota) apagaria a edição calada.
+          // A página segue viva, então a cópia de saída nativa basta; na próxima leitura ela vira
+          // "(edição recuperada)" quando não puder entrar no projeto.
+          // ⚠️ Pelo id, não pela referência (revisão de 22/11/2026): a referência também muda a cada
+          // edição nova do MESMO projeto, que o salvamento seguinte grava. E nunca quando esta
+          // edição (ou uma mais nova) já está numa cópia de saída deste serviço: a antiga, gravada
+          // depois na mesma chave, a cobriria. ⚠️ O `AbortError` sozinho não diz isso (full review
+          // final): a cópia de saída de uma edição MAIS ANTIGA também interrompe esta gravação.
+          const leftEditor = store.getState().project?.id !== project.id
+          if (
+            leftEditor &&
+            !exitCopyCovers(project) &&
+            adapter?.flushOnExit &&
+            !isFenced(serviceScopeIdentity, project.id)
+          )
+            void stageExitCopy(project, {
+              incompleteBlocks: shouldStripBlocks(project.id),
+              pageAlive: true,
+            }).catch((error) => emitError(formatPersistenceError(error)))
         }
         emitError(message)
       }
@@ -497,6 +560,7 @@ export function createPersistenceService(
 
   function schedule(project: Project): void {
     if (suspended) return
+    sequenceOf(project)
     stageLocally(project)
     // NÃO se limpa a cerca aqui: create/import/duplicate sempre usam um ULID
     // NOVO, então o agendamento de uma edição NUNCA precisa reabrir a cerca de um
@@ -526,7 +590,7 @@ export function createPersistenceService(
     pending.set(project.id, { timer, project, since })
   }
 
-  function flushPending(exiting = false): void {
+  function flushPending(exiting = false, pageAlive = false): void {
     if (suspended) return
     // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
     // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
@@ -553,15 +617,14 @@ export function createPersistenceService(
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
       emitChange(snapshotForSave(project), 'flush')
       if (exiting && adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id)) {
-        void adapter
-          .flushOnExit(snapshotForSave(project), {
-            incompleteBlocks: shouldStripBlocks(project.id),
-          })
-          .catch((error) => {
-            const message = formatPersistenceError(error)
-            if (store.getState().project === project) store.getState().markSaveFailed(message)
-            emitError(message)
-          })
+        void stageExitCopy(project, {
+          incompleteBlocks: shouldStripBlocks(project.id),
+          ...(pageAlive ? { pageAlive: true as const } : {}),
+        }).catch((error) => {
+          const message = formatPersistenceError(error)
+          if (store.getState().project === project) store.getState().markSaveFailed(message)
+          emitError(message)
+        })
       } else void persistAndMark(project)
     }
   }
@@ -581,14 +644,46 @@ export function createPersistenceService(
       schedule(state.project)
     })
     const flushOnPageExit = () => flushPending(true)
+    const flushBeforeUnload = (event: BeforeUnloadEvent) => {
+      flushPending(true)
+      const current = store.getState()
+      if (!adapter?.localScope || !current.project || !current.isDirty) return
+      const status = adapter.exitRecoveryStatus?.(current.project)
+      if (status?.recoverable) return
+      const message = status?.error ?? 'Salve ou exporte as alterações antes de fechar esta aba.'
+      current.markSaveFailed(message)
+      // Native confirmation protects edits when quota/permissions prevent the
+      // synchronous journal. Browsers require a real prior user activation.
+      event.preventDefault()
+      event.returnValue = ''
+    }
     // Aba ESCONDIDA (trocar de app ou bloquear a tela no iPad, trocar de aba): o
     // navegador pode descartar uma página em segundo plano sem `pagehide` nenhum (o
     // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
     // com que dá para contar. Grava o que estiver pendente, como na saída. Voltar para
     // a aba não faz nada: o dedupe do `flushed` só re-arma com uma edição nova.
+    // A página segue viva (só escondida): a cópia nativa confirmada basta, mesmo quando a cópia
+    // síncrona não cabe (projeto grande; achado na conferência do staging de 21/11/2026).
     const flushWhenHidden = () => {
-      if (document.visibilityState === 'hidden') flushPending(true)
-      else {
+      if (document.visibilityState === 'hidden') {
+        flushPending(true, true)
+        // As escritas que ainda não entraram no projeto (o terminal do Pro: a sincronia do sistema
+        // de arquivos lê a escrita depois do evento do observador e de uma espera curta) não
+        // estavam nesta cópia. A página segue viva, então dá para esperar essas operações; se o
+        // projeto mudou com elas, a cópia de saída é gravada de novo (lacuna "o terminal do Pro na
+        // saída", 22/11/2026). Na saída de verdade (`pagehide`) não dá para esperar a leitura.
+        const before = store.getState().project
+        if (before)
+          void flushProjectOperations(store, before.id)
+            .then(() => {
+              const current = store.getState()
+              if (current.project === before || current.project?.id !== before.id) return
+              if (document.visibilityState !== 'hidden') return
+              flushed = false
+              flushPending(true, true)
+            })
+            .catch((error) => emitError(formatPersistenceError(error)))
+      } else {
         const current = store.getState()
         if (adapter?.flushOnExit && flushed && current.project && current.isDirty) {
           flushed = false
@@ -603,7 +698,7 @@ export function createPersistenceService(
     const hasDocument = typeof document !== 'undefined'
     if (hasWindow) {
       window.addEventListener('pagehide', flushOnPageExit)
-      window.addEventListener('beforeunload', flushOnPageExit)
+      window.addEventListener('beforeunload', flushBeforeUnload)
     }
     if (hasDocument) document.addEventListener('visibilitychange', flushWhenHidden)
     liveServices.add(internals)
@@ -616,7 +711,7 @@ export function createPersistenceService(
       unsub()
       if (hasWindow) {
         window.removeEventListener('pagehide', flushOnPageExit)
-        window.removeEventListener('beforeunload', flushOnPageExit)
+        window.removeEventListener('beforeunload', flushBeforeUnload)
       }
       if (hasDocument) document.removeEventListener('visibilitychange', flushWhenHidden)
       liveServices.delete(internals)

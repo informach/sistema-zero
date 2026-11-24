@@ -1,0 +1,356 @@
+{
+  "baseline": "52ca47bbd345fb0968bd882aec904da59b735270",
+  "sources": [
+    {
+      "file": "packages/pinta/src/core/assetMemory.ts",
+      "sha256": "64c7371df4ffdab192aedadfec9cea9a9b941402ea4cf2dd988e70b95d3183c1",
+      "previousSha256": "968329cdb6ccd345d1dda43bdfb51e04a8725ab75c4a9fcd51d71a322e3b4356"
+    },
+    {
+      "file": "packages/pinta/src/core/mapResourceVersions.ts",
+      "sha256": "167e3f8ef48692223d59453af0880f66c6201c0215baa51c89b541f0d0c3f3f8",
+      "previousSha256": "227ded497c64ef79331e3884e507479bd9bc715940d54d2ce0b45725105ff2a0"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "b342615611d535d190c75550b6f7e46d144c114fc41ea363f461d66232ab83ac",
+      "previousSha256": "4002153e5efb3c0b46f8c7891b75e2c291ada9af4d69a961d77873c3eeae2c54"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "sha256": "285d6fd6f63b55537212b662cf16b30809ae9589855d4343e432ebd9f414b8fa",
+      "previousSha256": "bfaec510045a26c52d630ba0cdcac97a7c222b24d52a282cf7c8582022006275"
+    },
+    {
+      "file": "packages/pinta/src/tiles/resourceVersions.ts",
+      "sha256": "743ac319a637efdcb9c56a622da62a674a3863bd45131b4fce41711f56bc6e02",
+      "previousSha256": "a7a180e21239c6fe829b7dccd1f2f70121464dc2ed75526b0af341a7ad49219c"
+    },
+    {
+      "file": "packages/pinta/src/core/assetMemoryRegions.test.ts",
+      "sha256": "5eac980ad80a7562b887020289b138646515c49625f1942ef42983260cf6706a"
+    },
+    {
+      "file": "packages/pinta/src/core/assetMetadataBudget.test.ts",
+      "sha256": "eb24ba043cad37daed46330f74d1d8d6248933ddd735fe5467a7659527497696"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/memoryRegions.ts",
+      "sha256": "f86fc37901842d8f5be0d0770e5f46c3681e11a6d923f95856c70ac098e7c2ae"
+    },
+    {
+      "file": "packages/pinta/scripts/memory-regions-probe.ts",
+      "sha256": "e7366337645d2cd6d852f184bbe60e855469a83125b18eeb4f0d0ef2743da2f1"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "sha256": "b54db7d85cd600013300ebdf35dc480ae470e0ad449d51d8ead030bcad585960"
+    },
+    {
+      "file": "packages/pinta/tsconfig.json",
+      "sha256": "3d4dc588e068fbf80520d4df19dae0e1ef6e9747b5902bb2a9670bd7754d4cc3"
+    },
+    {
+      "file": "packages/studio/tsconfig.json",
+      "sha256": "ad45503a41e4e4ae42730b632687482766e1138ad2ff19d77eac92cb8d48ecbc"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-memory-regions.flow.ts",
+      "sha256": "32a5de7bee104a67623907b0c7c0f9eb868e44fd392e4b98b7de9e5b65a931e8"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-memory-regions.config.ts",
+      "sha256": "e0d2ab95d072fb5b04e1a16c7bc5903aa450c68eae11bf8d7195d3778805afc2"
+    }
+  ],
+  "records": [
+    {
+      "file": "memory-region-red.log.gz",
+      "bytes": 3773,
+      "sha256": "e4fdb4616557d1dcd9364647fa43ab612d3e9856fc9b472626c9a0d778d5e5c6",
+      "rawBytes": 243417,
+      "rawSha256": "2699ad0eb500ab2a372c1783d5123906333ef62e42138b5a035f72a014d862e0"
+    },
+    {
+      "file": "memory-metadata-red.log.gz",
+      "bytes": 579,
+      "sha256": "74cb2166fe298ddb6925372c48b1ad5ad92f3447a3bbf9759cb889994cfaf0e8",
+      "rawBytes": 999,
+      "rawSha256": "9e2bf3b38c29a2bdf8ace3f78d5aec139e31054afae6dfca6bfa96185367c42c"
+    },
+    {
+      "file": "memory-region-first.log.gz",
+      "bytes": 338,
+      "sha256": "222d3de929b37c57414f17a1f41a6b863df9b1deb8810c8e94f3ccdd08da0050",
+      "rawBytes": 517,
+      "rawSha256": "4be0651a3040f8ec7305a204c1ee75ea16f091fd1b9ee0526fc80f8c63f4cf48"
+    },
+    {
+      "file": "memory-region-focused.log.gz",
+      "bytes": 2696,
+      "sha256": "575b1539884a4c712bd0cc76437ea7e934c53ff4c4e00cc6ac36e57d437aecb5",
+      "rawBytes": 7337,
+      "rawSha256": "161062cabf07cf7faca84d7104a11a91ae50483083e20de005be4e170543797c"
+    },
+    {
+      "file": "memory-region-suite.log.gz",
+      "bytes": 77549,
+      "sha256": "b21c597303b60f062901da071e73ac9f9047749dbbd7edda914e042307976482",
+      "rawBytes": 289468,
+      "rawSha256": "ae60e0350432c63b9cd9a77a0e2cef20c02e1a0a054482e8bf7e823fbbe44412"
+    },
+    {
+      "file": "memory-region-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "memory-region-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "memory-region-browser.log.gz",
+      "bytes": 352,
+      "sha256": "c7c7099943b133254654ffdb0f0fbac0e7bf97f960fb9fd202c7479415593339",
+      "rawBytes": 1043,
+      "rawSha256": "1bee02b654e3d8fb6058a431220add09474f07b1778bc1bc8b3bcc1d9c9e0926"
+    },
+    {
+      "file": "memory-region-controls-browser.log.gz",
+      "bytes": 560,
+      "sha256": "4c4b5b3dfacfc56cb5fa4d8f6be0f524aeb677d3c8a1f80c1ec058b0481e2941",
+      "rawBytes": 1331,
+      "rawSha256": "80800cec35944d548e1f06b520619e89e7942ce42f161739a0a4d0834db4aa98"
+    },
+    {
+      "file": "memory-region-resources-browser.log.gz",
+      "bytes": 778,
+      "sha256": "9d1ee49ef2803c7ccd924443286418dc6fca1af0b7b27967652e0db595853ee5",
+      "rawBytes": 1660,
+      "rawSha256": "36f94c89c2a6a3cdfe37427280c19ffaaca1ef1a8db4c2e5bee3dc773b4f1eb3"
+    },
+    {
+      "file": "memory-region-biome.log.gz",
+      "bytes": 65,
+      "sha256": "0f47c64dcb31d4f6df99c4ab2bbf78ee4731cfc7baf689388aa4a49129dfa425",
+      "rawBytes": 45,
+      "rawSha256": "39dd7ab660eb3d93ff051ce6f9b284321270044589b710d776e4dd20373c0fb6"
+    },
+    {
+      "file": "memory-region-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 2337,
+      "sha256": "6a2b00332e35b5ae4496a807559fdbcf2201157b2969ff38ac5ef51b3d707a08",
+      "rawBytes": 13689,
+      "rawSha256": "d3ba9a4d13f88e84510cf10c0cc75c89fbdc14f430210c37376b28e16319a79b"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 87697,
+      "sha256": "ec7b711af5c78e6312759fd6f6993768d3d7acc8a8792b70f8da2ff072b8f87c",
+      "rawBytes": 125461,
+      "rawSha256": "941175d8ec38885cc46540d43885a09cd6d3c7d618c4e5b844c49f3f5df76657"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 242537,
+      "sha256": "a57bd83c630afba7bec399129951f3a760e912739841495fd0a1e3d6187addb2",
+      "rawBytes": 344813,
+      "rawSha256": "353a0d2746720e04688e09a84e5ab6749cbcb133ff5096bbcd73a185882726d9"
+    },
+    {
+      "file": "archive-memory-regions.cjs.gz",
+      "bytes": 1654,
+      "sha256": "06a5041eed1a4a85699a0e195f51564acb91ac264ef654e94ff067aab695d048",
+      "rawBytes": 4276,
+      "rawSha256": "a6cb319f190a3c9e41c1cf1dc5942a9e7480c8fde98d0c20dc604f43dbde6201"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "desktop",
+      "cpu": 1,
+      "before": {
+        "sparse": {
+          "finite": false,
+          "parts": 1,
+          "payloadBytes": null,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 10,
+            "redone": 10,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": false,
+          "parts": 32,
+          "payloadBytes": null,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "after": {
+        "sparse": {
+          "finite": true,
+          "parts": 2,
+          "payloadBytes": 4096,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 5,
+            "redone": 5,
+            "returnedToBase": false,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": true,
+          "parts": 2048,
+          "payloadBytes": 4194304,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "native8Public": false
+    },
+    {
+      "profile": "touch",
+      "cpu": 1,
+      "before": {
+        "sparse": {
+          "finite": false,
+          "parts": 1,
+          "payloadBytes": null,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 10,
+            "redone": 10,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": false,
+          "parts": 32,
+          "payloadBytes": null,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "after": {
+        "sparse": {
+          "finite": true,
+          "parts": 2,
+          "payloadBytes": 4096,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 5,
+            "redone": 5,
+            "returnedToBase": false,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": true,
+          "parts": 2048,
+          "payloadBytes": 4194304,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "native8Public": false
+    },
+    {
+      "profile": "cpu-4x",
+      "cpu": 4,
+      "before": {
+        "sparse": {
+          "finite": false,
+          "parts": 1,
+          "payloadBytes": null,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 10,
+            "redone": 10,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": false,
+          "parts": 32,
+          "payloadBytes": null,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "after": {
+        "sparse": {
+          "finite": true,
+          "parts": 2,
+          "payloadBytes": 4096,
+          "logicalCells": 100000000,
+          "roundTrip": true,
+          "history": {
+            "undone": 5,
+            "redone": 5,
+            "returnedToBase": false,
+            "returnedToNewest": true
+          }
+        },
+        "full": {
+          "finite": true,
+          "parts": 2048,
+          "payloadBytes": 4194304,
+          "history": {
+            "undone": 50,
+            "redone": 50,
+            "returnedToBase": true,
+            "returnedToNewest": true
+          }
+        }
+      },
+      "native8Public": false
+    }
+  ],
+  "native8Public": false,
+  "physicalIO3": false,
+  "heapMeasurement": false
+}

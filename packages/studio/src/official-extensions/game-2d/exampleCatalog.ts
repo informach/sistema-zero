@@ -1,4 +1,5 @@
 import type { ExtensionExample, ExtensionExampleDifficulty } from '#extensions'
+import { pintaSceneExample } from '../map-2d/examples'
 import {
   animatedHeroExample,
   asteroidsClassicExample,
@@ -39,6 +40,8 @@ import {
 import { snowDescentExample } from './examples/snowDescent'
 import { gameTwoDRecipes } from './recipes.generated'
 
+const vilaPintaExample = pintaSceneExample('g2d')
+
 interface GameTwoDExampleMetadata {
   difficulty: ExtensionExampleDifficulty
   concepts: readonly string[]
@@ -58,6 +61,7 @@ function withMetadata(
 }
 
 const gameTwoDExamplesWithMetadata = [
+  vilaPintaExample,
   snowDescentExample,
   withMetadata(numberRainExample, {
     difficulty: 'intermediate',
@@ -267,6 +271,7 @@ export const GAME_TWO_D_EXAMPLE_SECTIONS = {
     dueloDeHeroisExample,
   ],
   maiores: [
+    vilaPintaExample,
     cameraAdventureExample,
     dinoCorredorExample,
     batalhaMonstrinhosExample,

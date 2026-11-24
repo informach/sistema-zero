@@ -4,7 +4,11 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
-import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_PINTA_REGIONS_FEATURE,
+  PYTHON_PINTA_SCENE_MODULE_PATHS,
+  type StudioPythonRuntimeFeature,
+} from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
@@ -79,6 +83,10 @@ async function fixture(
     'LICENSE-raylib-python-cffi.txt',
     ...PYGAME_MODULE_FILES.map((path) => `pygame/${path}`),
     PYGAME_CE_WHEEL.file,
+    // A distribution with the Pinta regions carries the scene module of each 2D extension.
+    ...(features.includes(PYTHON_PINTA_REGIONS_FEATURE)
+      ? Object.values(PYTHON_PINTA_SCENE_MODULE_PATHS)
+      : []),
   ])
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
@@ -246,16 +254,81 @@ test('promotion selects APIs from an explicit current-format implementation feat
   }
 })
 
+test('the Pinta regions feature approves exactly the 27 scene blocks and keeps every approved block', async () => {
+  // The implementation features of the active staging release (2026-11-22-areas-1).
+  const active: StudioPythonRuntimeFeature[] = [
+    'turtle-compound-shapes',
+    'project-missions-v1',
+    'pinta-map-world-v1',
+    'pinta-scene-physics-v1',
+    'molda-scene-assets-v1',
+    'python-background-focus-v1',
+    'molda-scene-regions-v1',
+  ]
+  const policy = async (features: readonly StudioPythonRuntimeFeature[]) =>
+    (await preparePythonPromotion((await fixture('staging', features)).input)).configuration.members
+      .releases[0]!
+  const before = await policy(active)
+  const after = await policy([...active, PYTHON_PINTA_REGIONS_FEATURE])
+  const scenes = ['sz_py_pygame_', 'sz_py_pgzero_', 'sz_py_rl2d_']
+    .flatMap((prefix) =>
+      [
+        'load',
+        'draw',
+        'start',
+        'objects',
+        'property',
+        'open_door',
+        'blocked',
+        'landing',
+        'dispose',
+      ].map((key) => `${prefix}pinta_scene_${key}`),
+    )
+    .sort()
+  expect(after.blockIds.filter((id) => !before.blockIds.includes(id))).toEqual(scenes)
+  expect(before.blockIds.filter((id) => !after.blockIds.includes(id))).toEqual([])
+  expect(before.blockIds.some((id) => id.includes('pinta_scene_'))).toBe(false)
+  expect(after.categoryIds.filter((id) => !before.categoryIds.includes(id))).toEqual([
+    'Cenários do Pinta',
+  ])
+  // The sixteen earlier Pinta blocks of Pygame-ce stay approved, with or without the regions.
+  const pygamePinta = [
+    'animation',
+    'body_blocked',
+    'body_landing',
+    'draw',
+    'font',
+    'fps',
+    'frame',
+    'image',
+    'layer',
+    'layer_tiles',
+    'map',
+    'objects',
+    'platforms',
+    'solids',
+    'sprite',
+    'tiles',
+  ].map((key) => `sz_py_pygame_pinta_${key}`)
+  for (const approved of [before.blockIds, after.blockIds])
+    expect(
+      approved
+        .filter((id) => id.startsWith('sz_py_pygame_pinta_') && !id.includes('pinta_scene_'))
+        .sort(),
+    ).toEqual(pygamePinta)
+})
+
 test('repeating the current deployment preserves its exact approved policy and plan identity', async () => {
   const f = await fixture()
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
-  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
+  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it),
+  // plus "repetir a cada" (the Turtle game loop, project areas of 2026-11-22).
   expect(
     policy.blockIds.filter(
       (id) => id.startsWith('sz_py_turtle_') && id !== 'sz_py_turtle_pinta_shape',
     ),
-  ).toHaveLength(84)
+  ).toHaveLength(85)
   expect(policy.blockIds.filter((id) => id === 'sz_py_turtle_pinta_shape')).toHaveLength(1)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })

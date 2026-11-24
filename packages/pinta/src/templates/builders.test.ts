@@ -120,7 +120,7 @@ describe('buildTilemap', () => {
         },
       ]),
     ).toThrow(/nome inválido/)
-    expect(make(Array.from({ length: 9 }, (_, i) => ({ name: `c${i}`, rows: ['0'] })))).toThrow(
+    expect(make(Array.from({ length: 33 }, (_, i) => ({ name: `c${i}`, rows: ['0'] })))).toThrow(
       /máximo/,
     )
   })

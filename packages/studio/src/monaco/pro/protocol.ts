@@ -25,6 +25,10 @@ export interface ProLanguageQueries {
     result: ReturnType<ProLanguageService['definitions']>
   }
   format: { args: [path: string]; result: ReturnType<ProLanguageService['format']> }
+  organizeImports: {
+    args: [path: string]
+    result: ReturnType<ProLanguageService['organizeImports']>
+  }
 }
 export type ProLanguageRequest =
   | {

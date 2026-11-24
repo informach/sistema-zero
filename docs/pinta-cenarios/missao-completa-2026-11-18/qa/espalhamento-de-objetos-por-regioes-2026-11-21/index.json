@@ -1,0 +1,338 @@
+{
+  "at": "2026-11-21T15:21:03.052Z",
+  "sourceBase": "06b442e57",
+  "native8Public": false,
+  "physical3Public": false,
+  "review": {
+    "atomicGestures": true,
+    "deterministicResourceIds": true,
+    "liveSetsRetained": true,
+    "previewUsesItsOwnResources": true,
+    "legacyComparisons": 48,
+    "stylesChanged": false,
+    "previousCpuProfileGapCorrected": true
+  },
+  "verified": {
+    "focused": {
+      "passed": 30,
+      "failed": 0,
+      "assertions": 2747
+    },
+    "pinta": {
+      "passed": 2384,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 28792
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0,
+      "assertions": 4372
+    },
+    "browser": {
+      "passed": 27,
+      "failed": 0,
+      "retries": 0,
+      "projects": ["desktop", "touch-emulated", "cpu-4x"],
+      "scope": "Dense workshop and real clipboard module page; sparse scatter is internal"
+    },
+    "cpu": [
+      {
+        "project": "desktop",
+        "title": "espalhar arte privada religa cada cópia e conserva recursos no cancelamento, histórico e reabertura",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "touch",
+        "title": "espalhar arte privada religa cada cópia e conserva recursos no cancelamento, histórico e reabertura",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "title": "espalhar arte privada religa cada cópia e conserva recursos no cancelamento, histórico e reabertura",
+        "rate": 4,
+        "emulated": true
+      },
+      {
+        "project": "desktop",
+        "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "touch",
+        "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+        "rate": 4,
+        "emulated": true
+      },
+      {
+        "project": "desktop",
+        "title": "mapa autocontido de 48 px abre sem originais e cola objetos na grade correta",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "touch",
+        "title": "mapa autocontido de 48 px abre sem originais e cola objetos na grade correta",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "title": "mapa autocontido de 48 px abre sem originais e cola objetos na grade correta",
+        "rate": 4,
+        "emulated": true
+      },
+      {
+        "project": "desktop",
+        "title": "copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "touch",
+        "title": "copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "title": "copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos",
+        "rate": 4,
+        "emulated": true
+      },
+      {
+        "project": "desktop",
+        "title": "colar entre mapas religa propriedades de objetos e a cadeia de versões privadas com um histórico",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "touch",
+        "title": "colar entre mapas religa propriedades de objetos e a cadeia de versões privadas com um histórico",
+        "rate": 1,
+        "emulated": true
+      },
+      {
+        "project": "cpu-4x",
+        "title": "colar entre mapas religa propriedades de objetos e a cadeia de versões privadas com um histórico",
+        "rate": 4,
+        "emulated": true
+      }
+    ],
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/CLAUDE.md",
+      "sha256": "77a2367e98f771224beada8feac8e20e75b5ab641f0384ecf272d533935e10db"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapObjectArtwork.tsx",
+      "sha256": "a09e5ffe6ceaab3dd642d86a852f21c2028d62f80bf6bb1dd5c9db6a6cff5d08"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapObjectsOverlay.tsx",
+      "sha256": "c316b279b0ecaea34cc61ff4d1e82b126f7a7284b8c509265ad17dee1b6e44f5"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.test.tsx",
+      "sha256": "f22ab9a6a3c5659ce0a70af4c1268c2141c0f1209df34330d82625487564a717"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "sha256": "5cde6a56f2ddb58f6e58fc10384a451b1e462f91804f71286102678b9572fb24"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "sha256": "e13a3dd227f6e287b35122d99e2487dc0ca74768a25e33cef82c92a3a308c0fe"
+    },
+    {
+      "file": "packages/pinta/src/core/mapClone.ts",
+      "sha256": "ccacec3b352ad39e9a08493c9bfb4018df52444e8ba0f7b667392c667fb2edc4"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatter.ts",
+      "sha256": "202db7ed134c527126b5bfbda752a2701bd6726e6a77f98aae891d72d8fcd22a"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-resources-scenes.flow.ts",
+      "sha256": "98c0edf8bd9dabd1b05fd03d4097e1ccf793431422ceb30ce24720e9fb810967"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterRegions.test.ts",
+      "sha256": "39791fefdd910b45c87717a729e5a774d43cc3507ef26e95f69e9ba792f12e29"
+    }
+  ],
+  "records": [
+    {
+      "file": "pinta-object-scatter-regions-red.log.gz",
+      "bytes": 2012,
+      "sha256": "fbe413f882a64962ac5176de7ecdf393c83e859f74ef036c1cabc612493cf729",
+      "rawBytes": 6880,
+      "rawSha256": "b21577761dd36514803888e86011e691e06c22f836f881e2bff0753083fa692d"
+    },
+    {
+      "file": "pinta-object-scatter-regions-first.log.gz",
+      "bytes": 1283,
+      "sha256": "38c52beda7057233d2f01c02446c75947a3a5f57fb63f426727b397013c2337b",
+      "rawBytes": 2636,
+      "rawSha256": "247888c665d8378f1998846bed74f2d6239488d17b783539d41f27e2f5f4d79b"
+    },
+    {
+      "file": "pinta-object-scatter-diagnostic.json.gz",
+      "bytes": 172,
+      "sha256": "d375ad8848fda7860876cdc6275b6e696a1b273657c4fbbac5857044412cee8c",
+      "rawBytes": 320,
+      "rawSha256": "4eaf462cedd2fd09dbf52d736ddea36be387be904177a6ecc9a6f0f33dfcaab1"
+    },
+    {
+      "file": "prove-object-scatter.ts.gz",
+      "bytes": 934,
+      "sha256": "40feae30bd0a59740bdfbecc3bee360612c8be7c2ebd7df453047a5af3df81af",
+      "rawBytes": 2155,
+      "rawSha256": "ed5b8189d4f14e560d822b13b6c0e961fcd0086f60b758dc04b4f97d6ff7d2ab"
+    },
+    {
+      "file": "pinta-object-scatter-regions-focused-final.log.gz",
+      "bytes": 1422,
+      "sha256": "5a004a367f0206a89ac90f1b07dd2ac20ffbacb54f72dbd8af0ee710ffe8a738",
+      "rawBytes": 3177,
+      "rawSha256": "39bcbf285301d9f80222903b080bf5d2dfed5f90e5172f1875655b2632e66172"
+    },
+    {
+      "file": "pinta-object-scatter-regions-types.log.gz",
+      "bytes": 658,
+      "sha256": "16b069ea5f4d1544b010e02765339390ac74829f2acc28942b586d9dc9124832",
+      "rawBytes": 5046,
+      "rawSha256": "f07836afc9ae8f226f4a6cd972e11b4f4632b116510d0e5ba32a46674341b15b"
+    },
+    {
+      "file": "pinta-object-scatter-regions-types-r4.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-object-scatter-regions-studio-types-r2.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-object-scatter-regions-full.log.gz",
+      "bytes": 73512,
+      "sha256": "6819e4aea0d87e257c38e975dab772567e8e2e5beabb27bff8616a72f0a22bb6",
+      "rawBytes": 270151,
+      "rawSha256": "9ac59e073d55969e9d79376039c969ae179dc2104fd1716c06dbaa5e9bbda4bd"
+    },
+    {
+      "file": "pinta-object-scatter-regions-full-r2.log.gz",
+      "bytes": 73223,
+      "sha256": "2f4d876d4d6696a1e10499ee60a5bc420a53ff7647d9ed419157af63a07e762f",
+      "rawBytes": 269587,
+      "rawSha256": "8ba05b114c2a6a94ac031271fcc9f03d4dbe2ba750463331a47f1b1febeb31db"
+    },
+    {
+      "file": "pinta-object-scatter-regions-native.log.gz",
+      "bytes": 330,
+      "sha256": "9a3ea4e8646afe12f5fb0706120d019cbdd461a4cfe4cfc76bf4207fe7feb4d3",
+      "rawBytes": 507,
+      "rawSha256": "e6badf1a5f4046b7edc0ad7098429518b1c933fcc4fb205365e4b7b69ca417f7"
+    },
+    {
+      "file": "pinta-object-scatter-regions-browser.log.gz",
+      "bytes": 1258,
+      "sha256": "167df4cb5cd626bc1079dc86e9a99d6cb11f357a56543f3da0d7abc3a896eb7c",
+      "rawBytes": 5764,
+      "rawSha256": "cd6dd7e660495ab1b91a8aa88ee20f8f77443677a6af7e1372c13ffba7cd2eb8"
+    },
+    {
+      "file": "pinta-object-scatter-regions-browser-r2.log.gz",
+      "bytes": 1257,
+      "sha256": "142eee1cfba8b04016cf20e23c36e5e2e336256a26af5a07f075d90a31d2f1f5",
+      "rawBytes": 5763,
+      "rawSha256": "02a3004904e6ee04e0942369da8c152ea8014b4f9f044ac36836e088838e945d"
+    },
+    {
+      "file": "pinta-object-scatter-preview-red.log.gz",
+      "bytes": 1094,
+      "sha256": "f425eab96b5717162a8c2337b39c96e20afd6de73e16a276750a6867900ec7a8",
+      "rawBytes": 3573,
+      "rawSha256": "aac7d01c4ac452ba56eaee6e16e34bac3a0d7f718473ed68608b2b6060389d61"
+    },
+    {
+      "file": "pinta-object-scatter-regions-browser-r3.log.gz",
+      "bytes": 1260,
+      "sha256": "1889136b515aca1e56ea167edc6ad72891fc39de650ad1e92418d140d2ac6b8b",
+      "rawBytes": 5763,
+      "rawSha256": "397851e66c5e6273535821695b68454248be0d8c08122b076a8467ed243644b2"
+    },
+    {
+      "file": "pinta-object-scatter-regions-final-biome.log.gz",
+      "bytes": 64,
+      "sha256": "ca56327a51272731bf132322bbfb341259054939ce9493c6adb42c96e20c8c9e",
+      "rawBytes": 44,
+      "rawSha256": "48da81f3578a71e38cc62a5c59eccf1b14795753c0a58e3fd8973ddc02b1b700"
+    },
+    {
+      "file": "prove-legacy-object-scatter.ts.gz",
+      "bytes": 1227,
+      "sha256": "4981278ded4c6da402ccb7676f67de7ef828d5b6fbb859dfad8841b81fd48c8d",
+      "rawBytes": 2599,
+      "rawSha256": "65b2351e02b4fd0727d5013eb5fe1c9b40c7f663d6a29ac5f9fcddb1137e19c1"
+    },
+    {
+      "file": "legacy-object-scatter-06b.ts.gz",
+      "bytes": 1996,
+      "sha256": "b1d0034a8230aba7b462b561e59a479e12f38c12935513d3176554e9aa423173",
+      "rawBytes": 5862,
+      "rawSha256": "05b94cc0524d9c82d1fc1e18340df57002fcd6e387e5a299a86785ff64825a50"
+    },
+    {
+      "file": "pinta-object-scatter-legacy-comparison.json.gz",
+      "bytes": 2462,
+      "sha256": "e5b90aa28d811caa4d17e28e591ee41b67e89b333d603a9a2ea3c9f35246c395",
+      "rawBytes": 12535,
+      "rawSha256": "86721a3ec3ad0f489dc26e0738137cf2aedfcd11aa6705434db27de2b565c073"
+    },
+    {
+      "file": "playwright-preview-red-report.json.gz",
+      "bytes": 2524,
+      "sha256": "9753d9dd5b006b25d3be0e16497451f365ae6bc09914046b2bb8f1a8efe4b3d2",
+      "rawBytes": 13335,
+      "rawSha256": "c8dd65959a728f559b4c829ea22107b436ca1f4ac2fa197f31f420e158726cca"
+    },
+    {
+      "file": "playwright-report.json.gz",
+      "bytes": 1332196,
+      "sha256": "980e15d6028f0d759627e754147060e3c3e6172df8a3b4f28957cafe07cec385",
+      "rawBytes": 1858824,
+      "rawSha256": "9840c19bd9ce3c8ca87684899ff73feb53f36d35e8238a669f994e18c573706d"
+    },
+    {
+      "file": "browser.config.mts.gz",
+      "bytes": 466,
+      "sha256": "e68d74c5d3ab709d09bce57bc871a343c937c0d2cd8752099cae68bd8bb656f2",
+      "rawBytes": 795,
+      "rawSha256": "a4f9448a353ac3d245ad921c85e374eb1a89c3564b202031fe07075944a0f9cd"
+    }
+  ]
+}

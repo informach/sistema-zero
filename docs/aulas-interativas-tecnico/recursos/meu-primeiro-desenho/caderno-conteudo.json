@@ -1,0 +1,446 @@
+{
+  "curso": "Meu primeiro desenho no Pinta",
+  "capa": {
+    "linha1": "Meu primeiro",
+    "linha2": "desenho no Pinta",
+    "frase": "Todos os passos para desenhar a sua chave e colocar o desenho no seu jogo.",
+    "fraseBaixo": "Do primeiro círculo à chave que ninguém mais tem."
+  },
+  "cenas": {
+    "2d": "A praia do Farol no jogo 2D, com a chave dourada",
+    "2d-minha": "A praia do Farol no jogo 2D, com a chave rosa desenhada no Pinta",
+    "2d-aceso": "A praia do Farol no jogo 2D, com o farol aceso e o personagem na porta",
+    "pinta": "O quadro do Pinta com a chave rosa desenhada"
+  },
+  "paginas": [
+    {
+      "id": "p1",
+      "kicker": "Passo a passo do projeto",
+      "title": "Meu primeiro desenho no Pinta",
+      "subtitle": "Uma chave desenhada por você, dentro do seu jogo da Chave do Farol.",
+      "items": [
+        {
+          "kind": "views",
+          "images": [
+            {
+              "scene": "2d",
+              "caption": "Antes: a chave do jogo, chave-dourada"
+            },
+            {
+              "scene": "2d-minha",
+              "caption": "Depois: a sua chave, minha-chave"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "Lembra do seu jogo da Chave do Farol? Hoje ele ganha uma coisa que ninguém mais tem. Nesta aula, você desenha a sua chave no Pinta, o programa de desenhar da plataforma, e envia o desenho. Depois, troca a imagem da chave no jogo. O resto continua igualzinho: o personagem pega a chave, vai até o farol, e o farol acende."
+        },
+        {
+          "kind": "box",
+          "title": "Use quando precisar",
+          "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para desenhar a sua chave e colocar o desenho no jogo, com as ferramentas que você vai usar e o lugar de cada uma. Se esquecer algum passo, é só voltar aqui. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
+          "tone": "note"
+        },
+        {
+          "kind": "index",
+          "title": "O que você vai fazer",
+          "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+          "days": [
+            {
+              "kicker": "Aula 1 · Jogo 2D",
+              "title": "A minha chave no Farol",
+              "text": "Desenhe a sua chave no Pinta e envie o desenho. Depois, troque a imagem da chave no jogo, teste e envie o projeto.",
+              "pages": "Páginas {{pagina:ferramentas}} a {{pagina:envio}}"
+            }
+          ],
+          "extras": [
+            {
+              "icon": "tela",
+              "title": "As ferramentas do Pinta",
+              "text": "Página {{pagina:ferramentas}}"
+            },
+            {
+              "icon": "brilho",
+              "title": "Enviar meu desenho",
+              "text": "Página {{pagina:arrume}}"
+            },
+            {
+              "icon": "setas",
+              "title": "Trocar a imagem",
+              "text": "Página {{pagina:troque}}"
+            },
+            {
+              "icon": "certo",
+              "title": "Verificar e enviar",
+              "text": "Página {{pagina:envio}}"
+            }
+          ]
+        },
+        {
+          "kind": "box",
+          "title": "Antes de começar",
+          "text": "Na Parte 1, jogue a versão pronta: a chave dela já é um desenho. Use as setas no canto de baixo do jogo; no computador, você também pode clicar dentro do jogo e usar as setas do teclado. Pegue a chave desenhada e leve o personagem até o farol. Quando terminar, clique em <b>Próxima parte</b>.",
+          "tone": "experience"
+        }
+      ]
+    },
+    {
+      "id": "ferramentas",
+      "secao": "desenhar",
+      "scene": "pinta",
+      "kicker": "Aula 1 · Parte 3 · Ferramentas",
+      "title": "As ferramentas do Pinta",
+      "subtitle": "Este é o Pinta, aqui dentro da aula. O quadrado no meio é o seu quadro: o que você desenhar nele vira a chave do jogo.",
+      "items": [
+        {
+          "kind": "screens",
+          "title": "Veja como é na tela",
+          "layout": "lado",
+          "screens": [
+            {
+              "image": "pinta.jpg",
+              "caption": "O Pinta ocupando a tela toda, com a chave rosa desenhada.",
+              "marks": [
+                {
+                  "n": "1",
+                  "alvo": "expandir",
+                  "text": "<b>Expandir</b> e <b>Reduzir</b>"
+                },
+                {
+                  "n": "2",
+                  "alvo": "ferramentas",
+                  "text": "A caixa de ferramentas"
+                },
+                {
+                  "n": "3",
+                  "alvo": "cor",
+                  "text": "<b>Preenchimento</b> e <b>Contorno</b>"
+                },
+                {
+                  "n": "4",
+                  "alvo": "cores",
+                  "text": "As cores"
+                },
+                {
+                  "n": "5",
+                  "alvo": "enviar",
+                  "text": "<b>Enviar meu desenho</b>"
+                },
+                {
+                  "n": "6",
+                  "alvo": "desfazer",
+                  "text": "<b>Desfazer</b>"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "tools",
+          "title": "O que cada uma faz",
+          "tools": [
+            {
+              "image": "botao-circulo.png",
+              "title": "Círculo",
+              "text": "Faz formas redondas. Arraste na diagonal: é a argola da chave."
+            },
+            {
+              "image": "botao-retangulo.png",
+              "title": "Retângulo",
+              "text": "Faz retângulos compridos, baixinhos ou pequenos: a haste e os dentes."
+            },
+            {
+              "image": "botao-selecionar.png",
+              "title": "Selecionar",
+              "text": "Clique numa forma e arraste para mudar o lugar. Os quadradinhos da borda mudam o tamanho."
+            },
+            {
+              "image": "botao-pincel.png",
+              "title": "Pincel",
+              "text": "Desenha à mão livre, como uma caneta. Serve para fazer um brilho."
+            },
+            {
+              "image": "botao-preenchimento-contorno.png",
+              "title": "Preenchimento e Contorno",
+              "text": "O quadradinho cheio é a cor de dentro da forma. O vazado é a cor da borda."
+            },
+            {
+              "image": "botao-cores.png",
+              "title": "Cores",
+              "text": "Ficam no painel da direita. Clique numa cor para pintar o quadradinho escolhido."
+            },
+            {
+              "image": "botao-expandir.png",
+              "title": "Expandir",
+              "text": "O Pinta ocupa a tela toda, e você tem mais espaço para desenhar."
+            },
+            {
+              "image": "botao-reduzir.png",
+              "title": "Reduzir",
+              "text": "O Pinta volta para o tamanho da aula. É o mesmo botão do Expandir."
+            },
+            {
+              "image": "botao-enviar-meu-desenho.png",
+              "title": "Enviar meu desenho",
+              "text": "Leva o seu desenho para o jogo, com o nome minha-chave."
+            }
+          ]
+        },
+        {
+          "kind": "note",
+          "text": "Errou? Clique em <b>Desfazer</b>, a setinha curva ao lado do nome do desenho, para voltar um passo. Você pode desfazer quantas vezes quiser."
+        }
+      ]
+    },
+    {
+      "id": "desenhe",
+      "secao": "desenhar",
+      "scene": "pinta",
+      "kicker": "Aula 1 · Parte 3 · Desenho",
+      "title": "Desenhe a sua chave",
+      "subtitle": "No jogo, a chave fica pequena. Por isso, desenhe bem grande, usando o quadro inteiro.",
+      "items": [
+        {
+          "kind": "figure",
+          "name": "chave",
+          "title": "Um jeito de desenhar a chave",
+          "parts": [
+            {
+              "title": "A argola",
+              "text": "um Círculo, a parte redonda"
+            },
+            {
+              "title": "A haste",
+              "text": "um Retângulo comprido e baixinho"
+            },
+            {
+              "title": "Os dentes",
+              "text": "dois Retângulos pequenos, embaixo da ponta da haste"
+            }
+          ],
+          "text": "A sua pode ser do seu jeito, com a cor que você quiser."
+        },
+        {
+          "kind": "step",
+          "title": "1. Abra o Pinta grande",
+          "text": "Se aparecer a janela <b>Dicas rápidas</b>, leia as dicas e clique em <b>Entendi!</b>.<br/>Depois clique em <b>Expandir</b>, em cima do Pinta, para ele ocupar a tela toda."
+        },
+        {
+          "kind": "step",
+          "title": "2. Escolha a cor da chave",
+          "text": "Embaixo da caixa de ferramentas tem dois quadradinhos. Clique no quadradinho cheio, o <b>Preenchimento</b>. Depois clique numa cor no painel da direita. No vídeo, a chave é rosa.<br/>O <b>Contorno</b>, o quadradinho vazado, já vem preto e pode ficar assim."
+        },
+        {
+          "kind": "step",
+          "title": "3. Desenhe a argola",
+          "text": "Clique na ferramenta <b>Círculo</b>. No lado esquerdo do quadro, clique e segure o botão do mouse. Sem soltar, arraste na diagonal, até a bolinha ficar grande e redonda. Depois solte."
+        },
+        {
+          "kind": "step",
+          "title": "4. Desenhe a haste",
+          "text": "Clique na ferramenta <b>Retângulo</b>. Clique e segure no meio da argola. Sem soltar, arraste para a direita, até perto da borda do quadro, num retângulo baixinho. Depois solte."
+        },
+        {
+          "kind": "step",
+          "title": "5. Desenhe os dentes",
+          "text": "Ainda com o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro."
+        }
+      ]
+    },
+    {
+      "id": "arrume",
+      "secao": "desenhar",
+      "scene": "pinta",
+      "kicker": "Aula 1 · Parte 3 · Desenho e envio",
+      "title": "Arrume e envie o desenho",
+      "subtitle": "A chave ficou torta? Dá para arrumar. Depois, o envio leva o desenho para o seu jogo.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "6. Arrume as formas",
+          "text": "Clique na ferramenta <b>Selecionar</b>. Depois clique na forma e arraste para o lugar certo.<br/>Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção."
+        },
+        {
+          "kind": "step",
+          "title": "7. Faça um brilho",
+          "text": "Se quiser, clique no <b>Pincel</b> e faça um brilho na argola."
+        },
+        {
+          "kind": "step",
+          "title": "8. Volte para a aula",
+          "text": "Quando gostar da sua chave, clique em <b>Reduzir</b>, para voltar à aula."
+        },
+        {
+          "kind": "box",
+          "title": "Confira o desenho",
+          "text": "A sua chave ocupa quase todo o quadro? A argola, a haste e os dois dentes aparecem? Então ela está pronta para ir para o jogo.",
+          "tone": "test"
+        },
+        {
+          "kind": "step",
+          "title": "Se algo não funcionou",
+          "text": "Se uma forma sumiu ou ficou errada, clique em <b>Desfazer</b>, no alto do Pinta.<br/>Se o envio não foi, clique em <b>Enviar meu desenho</b> de novo."
+        },
+        {
+          "kind": "delivery",
+          "title": "Enviar o desenho",
+          "text": "Clique em <b>Enviar meu desenho</b>, aqui em cima do Pinta, e confirme em <b>Enviar</b>.<br/>Quando aparecer <b>Desenho enviado!</b>, clique em <b>Próxima parte</b>. É o envio que leva o desenho para o seu jogo, com o nome <b>minha-chave</b>."
+        }
+      ]
+    },
+    {
+      "id": "sua-chave",
+      "secao": "trocar",
+      "scene": "2d-minha",
+      "kicker": "Aula 1 · Parte 4 · Montagem",
+      "title": "A sua chave no jogo",
+      "subtitle": "Este é o jogo da Chave do Farol, pronto, e o seu desenho já chegou aqui.",
+      "items": [
+        {
+          "kind": "box",
+          "title": "E as regras continuam funcionando?",
+          "text": "Continuam, sim. Trocar a imagem é como vestir uma fantasia: você continua sendo você, e só a roupa muda.<br/>Com a chave é igual. O sprite continua se chamando <b>chave</b>, e só a aparência dele muda. Por isso, as regras do jogo continuam funcionando com o seu desenho."
+        },
+        {
+          "kind": "screens",
+          "title": "Veja como é na tela",
+          "layout": "menu",
+          "screens": [
+            {
+              "image": "estudio-menu.jpg",
+              "caption": "O menu de três pontinhos, no alto do Estúdio.",
+              "marks": [
+                {
+                  "n": "1",
+                  "alvo": "mais",
+                  "text": "O menu de três pontinhos"
+                },
+                {
+                  "n": "2",
+                  "alvo": "imagens",
+                  "text": "<b>Imagens</b>"
+                },
+                {
+                  "n": "3",
+                  "alvo": "mostrar",
+                  "text": "<b>Mostrar o jogo</b>"
+                }
+              ]
+            },
+            {
+              "image": "estudio-imagens.jpg",
+              "caption": "No fim da lista de Imagens, o seu desenho.",
+              "marks": [
+                {
+                  "n": "4",
+                  "alvo": "selo",
+                  "text": "<b>minha-chave</b>, com o selo <b>Seu desenho da aula</b>"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "step",
+          "title": "1. Veja o seu desenho",
+          "text": "Se quiser, clique no menu de três pontinhos, lá em cima, e depois em <b>Imagens</b>. Role a lista até o fim: a sua chave está lá, com o nome <b>minha-chave</b> e o selo <b>Seu desenho da aula</b>. Clique em <b>Fechar</b>."
+        },
+        {
+          "kind": "step",
+          "title": "2. Encontre Ao iniciar",
+          "text": "Clique em <b>Expandir</b>, para o Estúdio ocupar a tela toda.<br/>A chave aparece no jogo por causa de um bloco da área <b>Ao iniciar</b>. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+        }
+      ]
+    },
+    {
+      "id": "troque",
+      "secao": "trocar",
+      "scene": "2d-minha",
+      "kicker": "Aula 1 · Parte 4 · Montagem",
+      "title": "Troque a imagem da chave",
+      "subtitle": "No bloco Criar sprite chave, a imagem chave-dourada vira minha-chave.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "3. Procure o bloco",
+          "text": "Procure o bloco <b>Criar sprite chave</b>. Repare: no fim dele está escrito com imagem <b>chave-dourada</b>. É essa imagem que você vai trocar.<br/>Se o jogo cobrir o fim do bloco, clique no menu de três pontinhos e em <b>Mostrar o jogo</b>, o item do olho, para esconder o jogo. Depois, faça o mesmo para ele voltar."
+        },
+        {
+          "kind": "step",
+          "title": "4. Escolha minha-chave",
+          "text": "Clique em <b>chave-dourada</b>. Na lista de imagens, role até o fim e clique em <b>minha-chave</b>."
+        },
+        {
+          "kind": "screens",
+          "title": "Veja como é na tela",
+          "layout": "lado",
+          "screens": [
+            {
+              "image": "estudio-lista.jpg",
+              "caption": "O bloco Criar sprite chave, com a lista de imagens aberta.",
+              "marks": [
+                {
+                  "n": "1",
+                  "alvo": "campo",
+                  "text": "<b>chave-dourada</b>, no fim do bloco"
+                },
+                {
+                  "n": "2",
+                  "alvo": "minha",
+                  "text": "<b>minha-chave</b>, na lista"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "drawing",
+          "name": "troca",
+          "title": "Confira se ficou assim: a chave com a imagem minha-chave"
+        }
+      ]
+    },
+    {
+      "id": "envio",
+      "secao": "trocar",
+      "scene": "2d-aceso",
+      "kicker": "Aula 1 · Parte 4 · Teste e envio",
+      "title": "Teste e envie o jogo",
+      "subtitle": "A sua chave no jogo: o personagem pega a chave, vai até o farol, e o farol acende.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "Teste no seu jogo",
+          "text": "Se você escondeu o jogo, clique no menu de três pontinhos e em <b>Mostrar o jogo</b>. Depois clique em <b>Rodar</b> ou em <b>Rodar de novo</b>, no alto do Estúdio, para o jogo começar com a sua chave.<br/>Segure as setas e leve o personagem até a sua chave: ela some e o aviso muda. Depois leve o personagem até o farol: ele acende!"
+        },
+        {
+          "kind": "step",
+          "title": "Se algo não funcionou",
+          "text": "Volte aos blocos e confira se ficou assim: em <b>Ao iniciar</b>, o bloco <b>Criar sprite chave</b> usa a imagem <b>minha-chave</b>. Depois de corrigir, teste de novo.<br/>Se a chave dourada continuar aparecendo, confira se a troca foi no bloco Criar sprite chave. Se minha-chave não estiver na lista, volte à parte anterior, clique em <b>Enviar meu desenho</b> e abra a aula de novo."
+        },
+        {
+          "kind": "delivery",
+          "title": "Verificar e enviar",
+          "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Reduzir</b> e depois em <b>Concluir aula</b>."
+        },
+        {
+          "kind": "box",
+          "title": "Quer outra chave?",
+          "text": "Volte à parte do desenho, mude o que quiser e clique em <b>Enviar de novo</b>. Na próxima vez que você abrir esta aula, o jogo já vem com a chave nova."
+        },
+        {
+          "kind": "box",
+          "title": "Comemore o seu desenho",
+          "text": "Agora a chave do seu jogo é um desenho seu! Jogue de novo e mostre para a sua família a chave que ninguém mais tem.",
+          "tone": "test"
+        },
+        {
+          "kind": "box",
+          "title": "Preciso de ajuda",
+          "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Troquei a imagem no bloco Criar sprite chave, mas a chave dourada continua no jogo.</b>"
+        }
+      ]
+    }
+  ]
+}

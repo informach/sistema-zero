@@ -6,6 +6,7 @@ import { paletteCookieName } from './lib/palette-cookie'
 import { createShellRoutes } from './routes'
 import { createArquipelagoRoutes } from './routes/arquipelago'
 import { createArquipelagoClubeRoutes } from './routes/arquipelago-clube'
+import { createCenariosRoutes } from './routes/cenarios'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
@@ -13,6 +14,9 @@ import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
 import { createLiveRoutes } from './routes/live'
 import { createPensaRoutes } from './routes/pensa'
+import { createPintaCausalRoutes } from './routes/pinta-causal'
+import { createPintaPaletteWrites } from './routes/pinta-palette-writes'
+import { createPintaRecoveryHelpRoutes } from './routes/pinta-recovery-help'
 import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
@@ -106,7 +110,14 @@ export function createShell(cfg: ShellConfig) {
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session, audience: cfg.audience }),
     ...createPrivateNarrationRoutes({ members, session, audience: cfg.audience }),
-    ...createCreationsRoutes({ members, session }),
+    ...createCreationsRoutes({
+      members,
+      session,
+      palette: createPintaPaletteWrites({ gateway, session }),
+    }),
+    ...createPintaCausalRoutes({ gateway, session }),
+    ...createPintaRecoveryHelpRoutes({ gateway, session }),
+    ...createCenariosRoutes({ gateway, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
     ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),
   }

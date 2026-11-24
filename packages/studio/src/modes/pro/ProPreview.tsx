@@ -1,3 +1,4 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { studioProDigest } from '@sistemazero/core/studio/pro-revision'
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
 import type { WebContainerProcess } from '@webcontainer/api'
@@ -6,6 +7,7 @@ import { Button } from '#ui'
 import { ProStageState } from '../../components/preview/ProStageState'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
 import { javaScriptProject } from '../../core/editableProject'
+import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
 import { updateLegacyProToolchainManifest } from '../../core/proToolchain'
 import { useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
@@ -15,11 +17,15 @@ import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { updateProToolchainBeforeExecution } from '../../state/proToolchainUpdate'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioExecution } from '../../studio/observation'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
 import { useStudioProDependencies, useStudioProRuntime } from '../../studio/pro-runtime'
+import { withLightProBuild } from './lightProRuntime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { useProWebContainer } from './ProWebContainerProvider'
-import { isProConsoleMessage } from './proConsoleBridge'
+import { createPintaRegionalProRuntime } from './pintaRegionalProRuntime'
+import { isProConsoleMessage, proPageLoadedAt } from './proConsoleBridge'
+import { useProPreviewDevtools } from './proPreviewDevtools'
 import { RemoteProPreview } from './RemoteProPreview'
 import { useProGameStorage } from './useProGameStorage'
 
@@ -54,7 +60,18 @@ function capLogString(value: string): string {
  * Exceções do app cross-origin chegam via `preview-message` e vão ao Console.
  */
 export function ProPreview(): JSX.Element {
-  const remoteRuntime = useStudioProRuntime()
+  const hostRuntime = useStudioProRuntime()
+  const privateScope = useStudioExecution()[PRIVATE_REGIONAL_PROJECT]
+  // O projeto que o navegador monta igual ao Vite nem vai ao servidor (execução leve).
+  const remoteRuntime = useMemo(
+    () =>
+      privateScope
+        ? createPintaRegionalProRuntime(privateScope, hostRuntime?.limits)
+        : hostRuntime
+          ? withLightProBuild(hostRuntime)
+          : null,
+    [hostRuntime, privateScope],
+  )
   const { candidate: selection, mode, select, close, report } = useProCandidatePreview()
   const candidate = selection?.kind === 'python' ? null : selection
   const candidateActive = candidate !== null && mode === 'candidate'
@@ -271,6 +288,14 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
   // Origem do dev-server CORRENTE (setada no server-ready): o listener de
   // console só aceita mensagens vindas exatamente dela.
   const previewOriginRef = useRef<string | null>(null)
+  // A aba Desempenho mede o jogo pela ponte da página (o erro já chega pelo `preview-message`).
+  useProPreviewDevtools({
+    frame: () => iframeRef.current,
+    origin: () => previewOriginRef.current,
+    errors: false,
+    active: Boolean(active && url && phase === 'ready' && started),
+    documentKey: storageName,
+  })
 
   // `attempt` é dep PROPOSITAL: "Tentar de novo" (fase de erro) e "⏻ Reiniciar"
   // (barra do ready) o incrementam para re-disparar o boot/install/dev — a
@@ -488,6 +513,8 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
       const allowed = previewOriginRef.current
       if (!allowed || event.origin !== allowed) return
       if (event.source !== iframeRef.current?.contentWindow) return
+      const loadedAt = proPageLoadedAt(event.data, Date.now())
+      if (loadedAt !== null) return proRun.getState().markPageLoaded(loadedAt)
       if (!isProConsoleMessage(event.data)) return
       pushLog({
         source: 'sz-preview',
@@ -498,7 +525,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog, active])
+  }, [pushLog, active, proRun])
 
   // As ações que a Topbar chama (Rodar / Parar / Atualizar). Estáveis: só leem refs e setters.
   const actions = useMemo<ProRunActions>(
@@ -567,6 +594,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
             ref={iframeRef}
             name={storageName}
             src={url}
+            allow={GAME_FRAME_FOCUS_ALLOW}
             title="Pré-visualização (dev-server)"
             className="h-full w-full border-0"
           />

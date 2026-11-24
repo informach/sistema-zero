@@ -1,12 +1,77 @@
 import { expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { mkdtemp, readFile, rmdir, unlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { nativeProcessIsRetired } from './fixtures/native-process-state'
 import { runOwnedNodeProcess } from './fixtures/owned-node-process'
 
 const node = process.env.STUDIO_PYTHON_BUILD_NODE ?? Bun.which('node')
 if (!node) throw new Error('Node is required for native child ownership tests')
 const fixture = resolve(import.meta.dirname, 'fixtures/noncooperative-node-process.mjs')
+
+function hasCode(error: unknown, code: string): boolean {
+  return Boolean(error && typeof error === 'object' && 'code' in error && error.code === code)
+}
+
+/** Linux process state letter, or undefined once the process entry is gone. */
+function linuxProcessState(pid: number): string | undefined {
+  let stat: string
+  try {
+    stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+  } catch (error) {
+    if (hasCode(error, 'ENOENT')) return undefined
+    throw error
+  }
+  // "pid (comm) S ...": the command may contain spaces or parentheses; the state follows the last ")".
+  const end = stat.lastIndexOf(')')
+  return stat.slice(end + 2, end + 3)
+}
+
+/**
+ * Whether the process still runs. `kill(pid, 0)` alone is not proof: a killed orphan (the
+ * grandchild here) stays a zombie until its new parent reaps it, and the signal probe succeeds
+ * on a zombie. A zombie has already exited and closed every file, so it counts as retired.
+ */
+function processIsRunning(pid: number): boolean {
+  try {
+    process.kill(pid, 0)
+  } catch (error) {
+    if (hasCode(error, 'ESRCH')) return false
+    throw error
+  }
+  if (process.platform !== 'linux') return true
+  const state = linuxProcessState(pid)
+  return state !== undefined && state !== 'Z' && state !== 'X'
+}
+
+test.skipIf(process.platform !== 'linux')(
+  'a zombie answers the signal probe but no longer runs',
+  async () => {
+    // `sleep 0` exits at once; its parent becomes `sleep 2` through exec and never reaps it.
+    // Both sleeps leave stdout, so reading it ends right after the pid instead of in 2 s.
+    const shell = Bun.spawn(['sh', '-c', 'sleep 0 >/dev/null & echo $!; exec sleep 2 >/dev/null'], {
+      stdout: 'pipe',
+    })
+    const zombie = Number((await new Response(shell.stdout).text()).trim())
+    try {
+      for (
+        let state = linuxProcessState(zombie);
+        state !== 'Z';
+        state = linuxProcessState(zombie)
+      ) {
+        if (state === undefined) throw new Error('The zombie was reaped before the probe')
+        await Bun.sleep(5)
+      }
+      expect(() => process.kill(zombie, 0)).not.toThrow()
+      expect(processIsRunning(zombie)).toBe(false)
+      expect(processIsRunning(shell.pid)).toBe(true)
+    } finally {
+      shell.kill('SIGKILL')
+      await shell.exited
+    }
+  },
+)
 
 test('owned native process collects output and exit acknowledgement', async () => {
   const result = await runOwnedNodeProcess({ command: [node, fixture, 'normal'], timeoutMs: 5000 })
@@ -40,9 +105,12 @@ test('parent deadline retires a noncooperative native child and its grandchild b
     expect(performance.now() - started).toBeLessThan(9500)
     const evidence = JSON.parse(await readFile(marker, 'utf8'))
     expect(evidence.retainedInput).toBe(await readFile(input, 'utf8'))
+    retired = false
     for (const pid of [evidence.parent, evidence.grandchild]) {
-      expect(() => process.kill(pid, 0)).toThrow()
+      expect(processIsRunning(pid)).toBe(false)
+      expect(await nativeProcessIsRetired(pid)).toBe(true)
     }
+    retired = true
   } catch (error) {
     errors.push(error)
   } finally {

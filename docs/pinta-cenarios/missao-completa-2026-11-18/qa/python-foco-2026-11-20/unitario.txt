@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\python\controller.test.ts:
+(pass) host audio preference follows pending prepare without restarting and retired capabilities cannot unmute [31.00ms]
+(pass) context disposal stops an existing run and prevents starting another in the revoked environment
+(pass) revocation and Stop during ready prevent dispatch of the old run [16.00ms]
+(pass) a restart during ready runs only the replacement generation
+(pass) late preparation after Stop or a source change cannot start a stale program
+(pass) writer epochs and fresh grants protect commands after a successful start [15.00ms]
+(pass) automatic and explicit cover requests share one capture, and Stop revokes both
+(pass) REPL checks its own grant and current project independently of execute permission [16.00ms]
+(pass) context authorization receives the real snapshot revision before a frame or run exists [16.00ms]
+(pass) late authorization after Stop or editing cannot start the captured project
+
+src\runtime\python\session.test.ts:
+(pass) mission reads use the authenticated generation and are rejected after disposal [15.00ms]
+(pass) routes audio over the authenticated session channel and correlates its response [16.00ms]
+(pass) prepares pinned public metadata in parallel but transfers nothing before a valid frame hello [250.00ms]
+(pass) a hello without the current boot protocol is refused before any channel transfer
+(pass) metadata failure only fails a session after its valid hello negotiates boot resources [31.00ms]
+(pass) completed metadata never authorizes a forged origin, challenge or source [219.00ms]
+(pass) withdrawal before the hello retires late metadata without a channel or cache [47.00ms]
+(pass) withdrawal during the hello retires late metadata without a channel or cache [219.00ms]
+(pass) an occupied iframe rejects another owner before starting another metadata request [15.00ms]
+
+ 19 pass
+ 0 fail
+ 119 expect() calls
+Ran 19 tests across 2 files. [1.58s]

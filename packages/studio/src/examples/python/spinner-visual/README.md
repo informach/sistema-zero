@@ -26,6 +26,13 @@ arquivos e o módulo `sz_audio` exportado, execute `python main.py`.
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `IMPULSO`, `ATRITO` e
 `VELOCIDADE_MAXIMA` mudam a física; `COMPRIMENTO_BRACO` e `TAMANHO_BOLA` mudam o
 desenho; `COR_DESTAQUE`, `COR_BOLA`, `COR_BRACO` e `COR_CENTRO` mudam as cores.
@@ -35,19 +42,21 @@ spinner de quatro braços.
 O estado é um ângulo e uma velocidade em graus por segundo. Comece por
 `impulsionar`, que soma velocidade e respeita o limite, e por `frear`, que tira
 velocidade sem passar do zero. Em `atualizar`, o giro acumulado desde o último
-impulso vira voltas completas. As setas usam funções rápidas
-(`lambda: impulsionar(-1)`) para passar o sentido a uma única função.
+impulso vira voltas completas. Cada seta chama uma função com nome
+(`girar_para_direita` chama `impulsionar(-1)`), e todas moram em
+⚡ Quando acontecer.
 
 O spinner é redesenhado a cada quadro por uma tartaruga só, com linhas e pontos
-(`dot`). Uma única cadeia de `ontimer(..., 16)` mede o tempo com
-`time.monotonic()`; a pausa congela o giro, reiniciar não adiciona outra cadeia
-e um quadro atrasado avança no máximo dois quadros.
+(`dot`). O laço do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o
+tempo com `time.monotonic()`; a pausa congela o giro, reiniciar não começa outro
+laço e um quadro atrasado avança no máximo dois quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam timers e chamadas. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam timers e chamadas.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

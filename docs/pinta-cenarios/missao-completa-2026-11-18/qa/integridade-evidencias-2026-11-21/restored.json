@@ -1,0 +1,166 @@
+{
+  "at": "2026-11-21T05:45:27.897Z",
+  "scope": "original local non-authenticated QA logs already indexed in their original manifests",
+  "source": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+  "readerAudit": {
+    "at": "2026-11-21T05:43:36.319Z",
+    "manifests": 13,
+    "entries": 323,
+    "externalReferences": 0,
+    "missingFromGit": 25,
+    "missingFromDisk": 0,
+    "hashMismatches": 0
+  },
+  "restored": [
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/ci-failed-excerpt.log",
+      "bytes": 3529,
+      "sha256": "4f16c02f0928fc28371d8cc36e1f0f1c8265015524f18d1609b011fd45cc98ed",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-biome.log",
+      "bytes": 46,
+      "sha256": "e40dbfa2d7c4daf7bf53e412ceb632c29a0bc0e0edc61c0e09f87a3530cb8701",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-members-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-molda-regression.log",
+      "bytes": 169420,
+      "sha256": "709bf163e2f9af38bd20cdfe0b0905e690a87c51ef54251f05ecc4be06ef910e",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-molda-sdk.log",
+      "bytes": 183,
+      "sha256": "797c0cf997f7157204941356312da47db54e0db990341082024c1a69885a3653",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-policy.log",
+      "bytes": 1854,
+      "sha256": "8aad5abb1439eede9adaeee70831c065168fd77878103d6d34b61a6a000a1cf7",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-pro-light-browser.log",
+      "bytes": 109609,
+      "sha256": "8b1b76f42ab94a6ea4d88ff6c61c06394cfba2d21444032e1c04bc41ec0f408c",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-pro-light.log",
+      "bytes": 2904,
+      "sha256": "76e8f2272cff982de95811bc0544dc906dbe32f0ef2a0d6d4f52868e5a429985",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-profile.log",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-python-closure.log",
+      "bytes": 970,
+      "sha256": "591070e1816015013eeaf5b072b6939285be41ffeda5ee983aceb00188fc86c6",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-runtime-closure.log",
+      "bytes": 358,
+      "sha256": "9ebcd72d0ddcc46322ce799fbf4ee13ac43480674e8b90be9f37dda66dab9e3a",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-studio-sdk.log",
+      "bytes": 338,
+      "sha256": "782675114f04ad5f5857906d9708308f401a4de6897968ad99bcb279d027db48",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-studio-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-48a8-symbols.log",
+      "bytes": 4370,
+      "sha256": "1959e5d8befd6500d226119dccc37307ecba2ac2caadc74cf128bd20abc527d7",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-molda-revocation-bun144-red.log",
+      "bytes": 298,
+      "sha256": "2b5c644c06012b774c20149bdb0065a1bc18e00f044e4c805f02a76eeb33aa44",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-molda-revocation-full-red.log",
+      "bytes": 171237,
+      "sha256": "1b5081a87565f3bfaa5a99468ac462921d719f1d0bbf73e0098b78a2921d3cef",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-molda-revocation-green.log",
+      "bytes": 870,
+      "sha256": "c55dc9fd78771875b45e5dab722a44bbe606aa5492b35eaaa7c82562c4d2a685",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-molda-revocation-red.log",
+      "bytes": 299,
+      "sha256": "96dc597aa2329878a1871c2b734bcd7c0ac200c3cff2577836c71f8aec74fc50",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/pinta-molda-timeline-mechanism-r2.log",
+      "bytes": 258,
+      "sha256": "d8d1c6ee655bd00166b70d1b9f0c3f3a42bc1482221cdfb36a2249c288d3659d",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-48a8-2026-11-21/hashes.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-39fc-large-original-isolated.log",
+      "bytes": 263,
+      "sha256": "5ba773c82e94221d64f77f7b098f1c4f70a6d243b8dddf6c0629db001a7cdad6",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-39fc-python-publication-file-alone.log",
+      "bytes": 7681,
+      "sha256": "a12ecea45da4ebfc2a998418a0abe000ded2f464e08c8be8713cfbcdc7fc7d42",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-39fc-python-publication-bun143.log",
+      "bytes": 8788,
+      "sha256": "e1a150757c758bea7e08fe2f73d617eea16a22523d6d510acc75e6535629f984",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-39fc-python-publication-real-io.log",
+      "bytes": 8343,
+      "sha256": "2c186ef6fbfdfbc541c2a9d9070db3dd4d061ee9447b2b567c7ef824ec5eb0d5",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-39fc-publication-host-real-io.log",
+      "bytes": 10518,
+      "sha256": "4052821083133c73266987427f2620d296760a97c550c123e6c601aab85a351e",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    },
+    {
+      "file": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/pinta-reader-a1-ci-failed.log",
+      "bytes": 14967,
+      "sha256": "2be56bb8706ccc9aaf02ba5bddb4ff1aa69080f40bc5ca0e535685b24921ac18",
+      "manifest": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/publicacao-timeout-2026-11-20/index.json"
+    }
+  ]
+}

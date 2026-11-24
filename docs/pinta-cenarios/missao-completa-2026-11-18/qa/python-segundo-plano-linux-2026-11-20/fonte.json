@@ -1,0 +1,11 @@
+{
+  "source": "fb973c50fbf61fbca2cb955321e8aafca46c459c",
+  "parents": [
+    "df2d715af83e66ed72cbb8afa8a3c1f1c5df47fd",
+    "994aacd3abc2032bc44dd8d8f437a420d3107d8e"
+  ],
+  "profile": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a",
+  "gates": 22,
+  "proof": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/python-segundo-plano-994-2026-11-20",
+  "at": "2026-11-21T00:15:50.144Z"
+}

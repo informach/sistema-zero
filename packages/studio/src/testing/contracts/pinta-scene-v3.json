@@ -1,0 +1,49 @@
+{
+  "version": 3,
+  "id": "7fad1278-2c6a-48d0-b5cd-127d912770cc",
+  "name": "mapa",
+  "tileSize": 16,
+  "cols": 4,
+  "rows": 4,
+  "tilesets": [
+    {
+      "id": "094ac0c5-82f5-495c-a3a2-b0d8ab7b17ff",
+      "name": "pecas",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=",
+      "columns": 1,
+      "count": 1,
+      "solid": [],
+      "platform": []
+    }
+  ],
+  "layers": [
+    {
+      "id": "f44c0385-d07e-4190-875c-5190ef240398",
+      "name": "Chão",
+      "visible": true,
+      "kind": "tiles",
+      "tilesetId": "094ac0c5-82f5-495c-a3a2-b0d8ab7b17ff",
+      "cells": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+    },
+    {
+      "id": "objects",
+      "name": "Paredes",
+      "visible": true,
+      "kind": "objects",
+      "objects": [
+        {
+          "id": "wall",
+          "name": "",
+          "type": "",
+          "x": 16,
+          "y": 16,
+          "width": 16,
+          "height": 8,
+          "properties": {},
+          "shape": "ellipse",
+          "collision": true
+        }
+      ]
+    }
+  ]
+}

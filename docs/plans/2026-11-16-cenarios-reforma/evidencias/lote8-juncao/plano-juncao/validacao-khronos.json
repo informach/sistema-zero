@@ -1,0 +1,72 @@
+[
+  {
+    "arquivo": "aguas/agua-3.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "colisoes/chao-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "colisoes/objeto-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "lotes/lote-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "lotes/lote-1.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "lotes/lote-2.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-20T13:50:56.354Z",
+  "source": "3b40f44024415ba3d56cbdc69380d467e137ece7",
+  "previousVersion": "54b5bfe7-e47c-4a26-99a8-1f34edb760ee",
+  "previousModules": [
+    {
+      "name": "worker.js",
+      "sha256": "7941046fb9bef33bc36fd7ea18af6064340cb29bfaf835ce0f92543614a93529",
+      "bytes": 1961731
+    }
+  ],
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-f64ece189@sha256:cfef5ed509b091119efe3722f13427c265a945d2c4e508db804cc0fcced11e8f",
+  "profile": "761eb04c8007c582145ec615257b06159429955fbc6f52f3af8b38c719353149",
+  "configSha256": "0adf31c5a861d5e56cab6dd12eaf78ef8325137c294b4863a862454cca0c6c7e",
+  "bundleSha256": "09a9e72e01e58b426112edcfb7c9b51ec7f7a5602da53a1735d6fb148671c6fb",
+  "bundleBytes": 1961731,
+  "pythonSelectorChanged": false,
+  "actualDeploy": false
+}

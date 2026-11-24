@@ -1,4 +1,4 @@
-# Passo a passo do projeto — Moedas no caminho
+# Passo a passo do projeto: Moedas no caminho
 
 Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
 
@@ -68,6 +68,7 @@ Antes e depois de cada teste, observe o número de moedas, as moedas do caminho 
 4. Dentro do então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha bau; no segundo, escolha bau-aberto.
 5. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva O baú abriu! Você juntou moedas suficientes.
 6. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva O baú pede pelo menos 5 moedas.
+7. Esta é a última montagem da aula, e ela termina com o envio: clique em Verificar projeto e, quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte, responda o quiz e, no fim dele, clique em Concluir aula.
 
 **Teste:** Toque na tecla R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Toque na tecla R: o baú volta fechado e o número volta para 0.
 
@@ -122,6 +123,7 @@ Antes e depois de cada teste, observe o número de moedas, as moedas do caminho 
 4. Dentro do então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha abrir. Clique em heroi e escolha bau. No modo, escolha uma vez.
 5. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva O baú abriu! Você juntou moedas suficientes.
 6. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva O baú pede pelo menos 5 moedas.
+7. Esta é a última montagem da aula, e ela termina com o envio: clique em Verificar projeto e, quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte, responda o quiz e, no fim dele, clique em Concluir aula.
 
 **Teste:** Toque na tecla R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Toque na tecla R: o baú volta fechado e o número volta para 0.
 
@@ -129,4 +131,4 @@ Antes e depois de cada teste, observe o número de moedas, as moedas do caminho 
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Em cada aula, o envio fecha a última montagem, a do baú. Antes de enviar, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte. Depois vem o quiz da aula: escolha uma resposta, observe a explicação e, quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-21T05:38:02.173Z",
+  "files": [
+    {
+      "file": "pinta-reader-asset-diagnostics-green-report.json",
+      "bytes": 8188,
+      "sha256": "3c7eeee9865b75fb4018b735e643d10126db424617c6bbb99c2c82a864ea13d9"
+    },
+    {
+      "file": "pinta-reader-asset-diagnostics-green.json",
+      "bytes": 205,
+      "sha256": "0a8fa352f4f3d23b60791af21131d8a55afa13a94905681796f377ad1f125894"
+    },
+    {
+      "file": "pinta-reader-asset-diagnostics-green.log",
+      "bytes": 107445,
+      "sha256": "953410c23f3aeda6d250cfabbdff75dc51cf8bbf6d0645316b0e17e4cdcd3c3b"
+    },
+    {
+      "file": "pinta-reader-qa-biome.log",
+      "bytes": 46,
+      "sha256": "1e12412fd1d8d0fc2d2eb344605c5c72aeb1e35f82f5cb26fbe24f70a3a4dd34"
+    },
+    {
+      "file": "pinta-reader-qa-browser.log",
+      "bytes": 180,
+      "sha256": "ccc3bdf31e8aa03766e0d0d5f435a089d802bdaab4832718bb27126aa0e3e620"
+    },
+    {
+      "file": "pinta-reader-qa-gates.json",
+      "bytes": 723,
+      "sha256": "148bf51dcc23bb180315229c0eb4cb1c16b29a0e0b242410aa796ecc6f964f72"
+    },
+    {
+      "file": "pinta-reader-qa-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-reader-qa-world3d.log",
+      "bytes": 51910,
+      "sha256": "910c259230198c8a51ded5ea7b4d4a60c6d9cc2edd3b066d90d22022f0b8e2d2"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1069,
+      "sha256": "88a006e0855a8d4c92f709c19be78742707aac2297df68ae8d475b70f65600c1"
+    },
+    {
+      "file": "source.json",
+      "bytes": 2039,
+      "sha256": "5f4bf657e2669ddcd91d986e18ac5b255d061f590540f8a265600d6d0c180bd4"
+    }
+  ]
+}

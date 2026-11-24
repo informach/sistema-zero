@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PintaAsset } from '../../core/project'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
+import { dependentTilemaps } from '../../core/dependentTilemaps'
 import type { PintaHostAdapter, PintaStudioResyncResult } from '../../core/types'
-import { buildStudioPayload, validateStudioPayloadSize } from '../../export/studioBridge'
+import { buildStudioMapBundle } from '../../export/studioMapBundle'
 import type { PintaGalleryStore } from '../../state/galleryStore'
 import { createLatestTaskQueue, type LatestTaskQueue } from '../../state/latestTaskQueue'
 
@@ -10,7 +11,7 @@ const RESYNC_IDLE_MS = 1500
 type ResyncToStudio = NonNullable<PintaHostAdapter['resyncToStudio']>
 
 interface ResyncJob {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore
@@ -18,30 +19,51 @@ interface ResyncJob {
 }
 
 async function sendResync(job: ResyncJob): Promise<PintaStudioResyncResult> {
-  const payload = await buildStudioPayload(
-    job.asset,
-    (id) => job.gallery.getState().assets.find((asset) => asset.id === id) ?? null,
-    { animationId: job.animationId, frameIndex: job.frameIndex },
-  )
-  // Tetos do Estúdio (o mesmo funil do envio manual: o reenvio silencioso
-  // também não pode atravessar um payload que o Estúdio recusaria). Sem
-  // `reason`: o que não cabe (ou não rasterizou) fica em SILÊNCIO, o teto já é
-  // avisado no "Usar no Estúdio".
-  if (!payload || validateStudioPayloadSize(payload) !== 'ok') return { updated: false }
-  return job.send({
-    id: job.asset.id,
-    name: job.asset.name,
-    dataUrl: payload.dataUrl,
-    width: payload.width,
-    height: payload.height,
-    ...(payload.sprite ? { sprite: payload.sprite } : {}),
-    ...(payload.tileset ? { tileset: payload.tileset } : {}),
-    ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-  })
+  // Capture one immutable gallery view before yielding; the current editor may not yet
+  // have reached its autosave. A dependency edit must also refresh maps already linked
+  // by the host, including consumers through set definitions and typed properties.
+  return resyncStudioCopies({ ...job, catalog: job.gallery.getState().assets })
+}
+
+/**
+ * Atualiza no Estúdio o desenho e os mapas que dependem dele, a partir de um catálogo já
+ * capturado. A janela focal de um cenário grande usa a mesma ponte ao fechar: o catálogo dela é o
+ * inventário completo lido do armazenamento, porque a galeria focal não carrega os mapas grandes.
+ */
+export async function resyncStudioCopies(job: {
+  asset: PintaMemoryAsset
+  catalog: readonly PintaMemoryAsset[]
+  animationId: string | null
+  frameIndex: number
+  send: ResyncToStudio
+}): Promise<PintaStudioResyncResult> {
+  const assets = new Map(job.catalog.map((a) => [a.id, a]))
+  assets.set(job.asset.id, job.asset)
+  const targets = [job.asset, ...dependentTilemaps(job.asset.id, [...assets.values()])]
+  let result: PintaStudioResyncResult = { updated: false }
+  let failure: PintaStudioResyncResult | null = null
+  let updated = false
+  const errors: unknown[] = []
+  for (const asset of targets) {
+    try {
+      const payload = await buildStudioMapBundle(asset, [...assets.values()], {
+        animationId: asset.id === job.asset.id ? job.animationId : null,
+        frameIndex: asset.id === job.asset.id ? job.frameIndex : 0,
+      })
+      if (!payload) continue
+      result = await job.send(payload)
+      if (result.updated) updated = true
+      else if (result.reason === 'failed' && !failure) failure = result
+    } catch (error) {
+      errors.push(error)
+    }
+  }
+  if (errors.length) throw errors[0]
+  return failure ?? (updated ? { updated: true } : result)
 }
 
 export function useStudioResync(options: {
-  asset: PintaAsset
+  asset: PintaMemoryAsset
   animationId: string | null
   frameIndex: number
   gallery: PintaGalleryStore

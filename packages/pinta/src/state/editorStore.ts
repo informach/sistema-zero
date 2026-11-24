@@ -6,41 +6,52 @@
  * confirmado sem reler o disco.
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
-import { bitmapBytes, createHistory } from '../core/history'
-import { isTileLayer, type PintaAsset, type PintaBitmap } from '../core/project'
-import type { VectorShape } from '../vector/model'
+import {
+  type PintaMemoryAsset,
+  retainedAssetBytes,
+  rulebookSharedPart,
+  sharedAssetParts,
+} from '../core/assetMemory'
+import { createHistory, type SharedPart } from '../core/history'
+import type { PintaResourceObservation } from '../core/localAssetOrigin'
+import { RegionMetadataBudgetCache, regionDocumentMetadata } from '../core/mapDocumentBoundary'
+import { isTilesetKind, type PintaAsset } from '../core/project'
+import { RegionBackupSizeCache } from '../export/regionBackupSize'
+import type { AutomapRegionEditorDocument } from '../tiles/automapping/model'
+import type { TileIndexChange } from '../tiles/tilesetOps'
 
-/**
- * Bytes aproximados de um shape: a base cobre os campos fixos; path/texto/
- * polígono carregam payload variável (um `d` de pincel chega a 20k chars) —
- * sem isso o orçamento do undo reteria MUITO mais memória do que estima.
- */
-function shapeBytes(shape: VectorShape): number {
-  let bytes = 128
-  if (shape.type === 'path') bytes += shape.d.length * 2
-  else if (shape.type === 'text') bytes += shape.text.length * 2
-  else if (shape.type === 'polygon') bytes += shape.points.length * 16
-  // A FIGURA carrega o PNG inteiro em base64: sem contá-lo, o orçamento de
-  // 16 MB do undo erraria por ordens de grandeza (uma figura vale ~128 bytes
-  // aqui e centenas de KB na memória) e a sessão comeria RAM em silêncio.
-  else if (shape.type === 'image') bytes += shape.src.length * 2
-  return bytes
+export { assetBytes } from '../core/assetMemory'
+
+type EditorAsset = PintaMemoryAsset | AutomapRegionEditorDocument
+function content(asset: EditorAsset): PintaMemoryAsset {
+  return asset.kind === 'automap-document' ? asset.map : asset
 }
-
-function shapesBytes(shapes: VectorShape[]): number {
-  return shapes.reduce((sum, shape) => sum + shapeBytes(shape), 0)
-}
-
 export type PintaSaveState = 'saved' | 'pending' | 'saving' | 'error'
 
 export type PintaSaveResult = { ok: true } | { ok: false; error: string }
 
-export interface PintaEditorState {
-  asset: PintaAsset
+export interface PintaEditorLayoutChange {
+  oldToNew: readonly number[]
+  count: number
+}
+
+export interface PintaEditorWriteContext {
+  layout?: PintaEditorLayoutChange
+  resources: readonly PintaResourceObservation[]
+  slotLineage?: PintaEditorSlotLineage
+}
+
+export interface PintaEditorSlotLineage {
+  before: readonly symbol[]
+  after: readonly symbol[]
+}
+
+export interface PintaEditorState<Asset extends EditorAsset = PintaAsset> {
+  asset: Asset
   /** Último snapshot efetivamente confirmado pela persistência. */
-  savedAsset: PintaAsset
+  savedAsset: Asset
   /** Assets ligados ao estado vivo do editor; `null` até o primeiro remapeamento. */
-  linkedAssets: readonly PintaAsset[] | null
+  linkedAssets: readonly Asset[] | null
   /** Há uma revisão local que ainda não foi confirmada pela persistência. */
   dirty: boolean
   saveState: PintaSaveState
@@ -48,8 +59,8 @@ export interface PintaEditorState {
   canUndo: boolean
   canRedo: boolean
 
-  /** Aplica uma edição commitada: grava história + agenda autosave. */
-  commit(next: PintaAsset): void
+  /** Aplica a edição, grava história e agenda autosave. False se o host/linhagem recusar. */
+  commit(next: Asset): boolean
   /**
    * Como `commit`, mas a edição TAMBÉM remapeia ASSETS LIGADOS (ex.: editar uma
    * peça do tileset remapeia as células dos mapas dependentes). Os mapas entram
@@ -57,22 +68,30 @@ export interface PintaEditorState {
    * juntos. `before` = mapas antes; `after` = mapas remapeados (já com
    * updatedAt). A galeria só recebe o conjunto depois da persistência confirmar.
    */
-  commitLinked(next: PintaAsset, linked: { before: PintaAsset[]; after: PintaAsset[] }): void
+  commitLinked(
+    next: Asset,
+    linked: { before: Asset[]; after: Asset[] },
+    indices?: TileIndexChange,
+  ): boolean
   /** Substitui SEM entrada de undo (ex.: rename vindo da galeria). */
-  replace(next: PintaAsset): void
+  replace(next: Asset): void
+  /** Conditional gesture write; returns its surviving snapshot, or null if superseded/refused. */
+  replaceIfCurrent(expected: Asset, next: Asset): Asset | null
   /**
    * Fecha um gesto de VÁRIOS passos aplicados via `replace` (ex.: arrastar
    * pintando células do tilemap): grava o snapshot INICIAL do gesto no undo —
    * desfazer volta ao antes do arrasto inteiro, não célula a célula.
    */
-  commitGesture(base: PintaAsset): void
+  commitGesture(base: Asset): void
   undo(): void
   redo(): void
   /** Salva imediatamente tudo que estiver pendente e informa se confirmou. */
   flush(): Promise<PintaSaveResult>
 }
 
-export type PintaEditorStore = StoreApi<PintaEditorState>
+export type PintaEditorStore<Asset extends EditorAsset = PintaAsset> = StoreApi<
+  PintaEditorState<Asset>
+>
 
 /**
  * Snapshot de undo. Além do asset editado, carrega os ASSETS LIGADOS remapeados
@@ -80,93 +99,138 @@ export type PintaEditorStore = StoreApi<PintaEditorState>
  * juntos. `linkedMaps` só é não-nulo depois de um `commitLinked`; edições comuns
  * (pincel etc.) carregam o `linkedMaps` corrente adiante (mapas não mudaram).
  */
-interface EditorSnapshot {
-  asset: PintaAsset
-  linkedMaps: PintaAsset[] | null
+interface EditorSnapshot<Asset extends EditorAsset> {
+  asset: Asset
+  linkedMaps: Asset[] | null
+  slots: readonly symbol[] | null
+  resources: readonly PintaResourceObservation[] | undefined
 }
 
 /** Mescla revisões ligadas por id, preservando assets tocados em commits anteriores. */
-function mergeLinkedAssets(
-  current: readonly PintaAsset[] | null,
-  changed: readonly PintaAsset[],
-): PintaAsset[] {
+function mergeLinkedAssets<Asset extends EditorAsset>(
+  current: readonly Asset[] | null,
+  changed: readonly Asset[],
+): Asset[] {
   const merged = new Map((current ?? []).map((asset) => [asset.id, asset]))
   for (const asset of changed) merged.set(asset.id, asset)
   return [...merged.values()]
 }
 
-/** Bytes aproximados de um asset (payload dominante = bitmaps). */
-export function assetBytes(asset: PintaAsset): number {
-  const bitmaps: PintaBitmap[] = []
-  switch (asset.kind) {
-    case 'pixel-sprite':
-      // Cada quadro é uma PILHA de cels (um por camada) — contar só o primeiro
-      // subestimaria o snapshot em N× e furaria o orçamento do undo.
-      for (const animation of asset.animations)
-        for (const cels of animation.frames) bitmaps.push(...cels)
-      break
-    case 'pixel-background':
-      bitmaps.push(...asset.cels)
-      break
-    case 'tileset':
-      bitmaps.push(...asset.tiles)
-      break
-    case 'tilemap':
-      // Camada de objetos: ~96 bytes por objeto + o texto das propriedades (estimativa do
-      // orçamento de undo, como o `shapeBytes` do vetor).
-      return asset.layers.reduce(
-        (sum, layer) =>
-          sum +
-          64 +
-          (isTileLayer(layer)
-            ? layer.cells.byteLength
-            : layer.objects.reduce(
-                (s, object) => s + 96 + JSON.stringify(object.properties).length * 2,
-                0,
-              )),
-        128,
-      )
-    case 'vector-background':
-      return 256 + shapesBytes(asset.shapes)
-    case 'vector-sprite':
-      return (
-        256 +
-        asset.animations.reduce(
-          (sum, animation) =>
-            sum + animation.frames.reduce((s, frame) => s + shapesBytes(frame), 64),
-          0,
-        )
-      )
-    case 'vector-tileset':
-      return 256 + asset.tiles.reduce((sum, tile) => sum + shapesBytes(tile), 64)
-  }
-  return bitmaps.reduce((sum, bitmap) => sum + bitmapBytes(bitmap), 128)
-}
-
 /** Bytes do snapshot de undo = o asset + os mapas ligados (se houver). */
-function snapshotBytes(snapshot: EditorSnapshot): number {
-  let bytes = assetBytes(snapshot.asset)
-  if (snapshot.linkedMaps) for (const map of snapshot.linkedMaps) bytes += assetBytes(map)
+function snapshotBytes(snapshot: EditorSnapshot<EditorAsset>): number {
+  let bytes = retainedAssetBytes(content(snapshot.asset), false)
+  if (snapshot.linkedMaps)
+    for (const map of snapshot.linkedMaps) bytes += retainedAssetBytes(content(map), false)
   return bytes
 }
 
-export function createEditorStore(options: {
-  asset: PintaAsset
-  persist: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => Promise<void>
-  onSaved?: (asset: PintaAsset, linkedAssets: readonly PintaAsset[]) => void
+/**
+ * As células das camadas de peças, pelo próprio buffer. As operações do mapa copiam só a camada
+ * que o gesto tocou, então os passos do histórico dividem todas as outras: contar cada buffer uma
+ * vez é o que a memória gasta de verdade.
+ */
+export function* snapshotShared(snapshot: {
+  asset: EditorAsset
+  linkedMaps: readonly EditorAsset[] | null
+  slots?: readonly symbol[] | null
+  resources?: readonly PintaResourceObservation[]
+}): Iterable<SharedPart> {
+  const maps = [snapshot.asset, ...(snapshot.linkedMaps ?? [])]
+  for (const asset of maps) {
+    if (asset.kind === 'automap-document') yield rulebookSharedPart(asset.book)
+    yield* sharedAssetParts(content(asset))
+  }
+  if (snapshot.slots) yield { key: snapshot.slots, bytes: snapshot.slots.length * 8 }
+  if (snapshot.resources)
+    yield {
+      key: snapshot.resources,
+      bytes: snapshot.resources.reduce(
+        (sum, item) => sum + (item.id.length + (item.localRevision?.length ?? 0)) * 2,
+        0,
+      ),
+    }
+}
+
+export interface PintaEditorStoreOptions<Asset extends EditorAsset = PintaAsset> {
+  asset: Asset
+  persist: (
+    asset: Asset,
+    linkedAssets: readonly Asset[],
+    layout?: PintaEditorLayoutChange,
+    resources?: readonly PintaResourceObservation[],
+    slotLineage?: PintaEditorSlotLineage,
+  ) => Promise<void>
+  /** The regional local port can reuse the confirmed immutable base of this autosave. */
+  persistRevision?: (
+    previous: Asset,
+    asset: Asset,
+    resources: readonly PintaResourceObservation[],
+  ) => Promise<void>
+  observeResources?: (asset: Asset) => readonly PintaResourceObservation[]
+  onSaved?: (asset: Asset, linkedAssets: readonly Asset[]) => void
   /** Delay por instância; produção usa 1s, testes podem injetar um valor curto. */
   autosaveDelayMs?: number
   /** Traduz erros de persistência para o badge sem acoplar o store à UI. */
   persistErrorMessage?: (error: unknown) => string
-}): PintaEditorStore {
-  const history = createHistory<EditorSnapshot>({ sizeOf: snapshotBytes })
+  /** Orçamento do host (ex.: entrega de aula). Recusa antes do histórico e do autosave. */
+  acceptEdit?: (asset: Asset) => boolean
+  /** A persistência confirmou a edição num fork; adota esse documento, sem alterar o original. */
+  recoverPersisted?: (error: unknown, sourceId: string) => { asset: Asset; linked: Asset[] } | null
+}
+
+export function createEditorStore<Asset extends EditorAsset = PintaAsset>(
+  options: NoInfer<PintaEditorStoreOptions<Asset>>,
+): PintaEditorStore<Asset> {
+  const metadataBudget = new RegionMetadataBudgetCache()
+  let backupSizes: RegionBackupSizeCache | null = null
+  function admitsMetadata(asset: PintaMemoryAsset): boolean {
+    if ((asset.kind !== 'tilemap' && asset.kind !== 'map-set') || asset.schema !== 8) return true
+    const metadata = regionDocumentMetadata(asset)
+    return metadata !== null && metadataBudget.accepts(metadata)
+  }
+  function admitsSnapshot(asset: Asset, linked: readonly Asset[] = []): boolean {
+    const assets = [asset, ...linked].map(content)
+    if (!assets.every(admitsMetadata)) return false
+    if (
+      !assets.some(
+        (item) => (item.kind === 'tilemap' || item.kind === 'map-set') && item.schema === 8,
+      )
+    )
+      return true
+    if (!backupSizes) backupSizes = new RegionBackupSizeCache()
+    return Number.isFinite(backupSizes.byteLength(assets))
+  }
+  if (!admitsSnapshot(options.asset)) throw new RangeError('O cenário excede o orçamento de dados.')
+  const history = createHistory<EditorSnapshot<Asset>>({
+    sizeOf: snapshotBytes,
+    sharedOf: snapshotShared,
+  })
   let timer: ReturnType<typeof setTimeout> | null = null
   let saving: Promise<PintaSaveResult> | null = null
   let dirty = false
   // Mapas ligados ao ESTADO CORRENTE do asset (null até o 1º commitLinked).
-  let currentLinked: PintaAsset[] | null = null
+  let currentLinked: Asset[] | null = null
+  // The same logical slots follow the snapshots already kept for undo, even when pixel data changes.
+  let currentSlots: readonly symbol[] | null =
+    options.asset.kind !== 'automap-document' && isTilesetKind(options.asset)
+      ? options.asset.tiles.map(() => Symbol())
+      : null
+  let savedSlots = currentSlots
+  let currentResources = options.observeResources?.(options.asset)
+  function observeNewBindings(asset: Asset): void {
+    const observed = options.observeResources?.(asset)
+    if (!observed) return
+    const previous = new Map(currentResources?.map((resource) => [resource.id, resource]))
+    const next = observed.map((resource) => previous.get(resource.id) ?? resource)
+    if (
+      !currentResources ||
+      next.length !== currentResources.length ||
+      next.some((resource, index) => resource !== currentResources?.[index])
+    )
+      currentResources = next
+  }
 
-  const store = createStore<PintaEditorState>((set, get) => {
+  const store = createStore<PintaEditorState<Asset>>((set, get) => {
     async function saveNow(): Promise<PintaSaveResult> {
       // Drena revisões criadas durante uma gravação antes de confirmar o flush.
       // Em erro, para imediatamente e conserva `dirty=true` para o retry.
@@ -180,12 +244,26 @@ export function createEditorStore(options: {
 
         dirty = false
         const snapshot = get().asset
+        const previous = get().savedAsset
         const linkedSnapshot = currentLinked ? [...currentLinked] : []
+        const slots = currentSlots
+        const resources = currentResources
+        const layout =
+          slots && savedSlots && slots !== savedSlots
+            ? { oldToNew: savedSlots.map((slot) => slots.indexOf(slot)), count: slots.length }
+            : undefined
+        const slotLineage = slots && savedSlots ? { before: savedSlots, after: slots } : undefined
         set({ dirty: false, saveState: 'saving', saveError: null })
 
         const request = (async (): Promise<PintaSaveResult> => {
           try {
-            await options.persist(snapshot, linkedSnapshot)
+            if (options.persistRevision && !linkedSnapshot.length && !layout && !slotLineage)
+              await options.persistRevision(previous, snapshot, resources ?? [])
+            else if (resources)
+              await options.persist(snapshot, linkedSnapshot, layout, resources, slotLineage)
+            else if (layout) await options.persist(snapshot, linkedSnapshot, layout)
+            else await options.persist(snapshot, linkedSnapshot)
+            savedSlots = slots
             options.onSaved?.(snapshot, linkedSnapshot)
             set(
               dirty
@@ -199,6 +277,25 @@ export function createEditorStore(options: {
             )
             return { ok: true }
           } catch (error) {
+            const recovered = !dirty ? options.recoverPersisted?.(error, snapshot.id) : null
+            if (recovered && admitsSnapshot(recovered.asset, recovered.linked)) {
+              history.clear()
+              currentLinked = recovered.linked
+              savedSlots = slots
+              currentResources = options.observeResources?.(recovered.asset)
+              options.onSaved?.(recovered.asset, recovered.linked)
+              set({
+                asset: recovered.asset,
+                savedAsset: recovered.asset,
+                linkedAssets: recovered.linked,
+                dirty: false,
+                saveState: 'saved',
+                saveError: null,
+                canUndo: false,
+                canRedo: false,
+              })
+              return { ok: true }
+            }
             dirty = true
             const message =
               options.persistErrorMessage?.(error) ??
@@ -225,27 +322,70 @@ export function createEditorStore(options: {
     }
 
     function apply(
-      next: PintaAsset,
+      next: Asset,
       recordHistory: boolean,
-      linked?: { before: PintaAsset[]; after: PintaAsset[] },
-    ): void {
+      linked?: { before: Asset[]; after: Asset[] },
+      indices?: TileIndexChange,
+    ): Asset | null {
       const current = get().asset
+      // A controller from a gesture that began before conflict recovery may still finish.
+      // It must never put the old document back into the adopted copy or its history.
+      if (next.id !== current.id) return null
+      // Size exactly the timestamped snapshot that would survive this operation.
+      const applied = { ...next, updatedAt: Date.now() }
       const previousLinked = linked
         ? mergeLinkedAssets(currentLinked, linked.before)
         : currentLinked
+      const proposedLinked = linked
+        ? mergeLinkedAssets(previousLinked, linked.after)
+        : currentLinked
+      if (
+        !admitsSnapshot(applied, proposedLinked ?? []) ||
+        (linked && !admitsSnapshot(current, previousLinked ?? []))
+      )
+        return null
+      const acceptEdit = options.acceptEdit
+      if (acceptEdit && (!acceptEdit(next) || linked?.after.some((asset) => !acceptEdit(asset))))
+        return null
+      if (get().asset !== current) return null
+      let slots = currentSlots
+      if (indices) {
+        if (!slots || applied.kind === 'automap-document' || !isTilesetKind(applied)) return null
+        const inserted = 'insertedAt' in indices
+        const at = inserted ? indices.insertedAt : indices.removedAt
+        if (
+          !Number.isInteger(at) ||
+          at < 0 ||
+          at >= (inserted ? applied.tiles.length : slots.length) ||
+          applied.tiles.length !== slots.length + (inserted ? 1 : -1)
+        )
+          return null
+        const changed = [...slots]
+        if (inserted) changed.splice(at, 0, Symbol())
+        else changed.splice(at, 1)
+        slots = changed
+      }
       if (recordHistory) {
         // O snapshot restaurado por undo carrega o ESTADO ANTERIOR: para uma
         // edição com remap, os mapas ANTES; senão, o `currentLinked` corrente.
-        history.record({ asset: current, linkedMaps: previousLinked })
+        history.record({
+          asset: current,
+          linkedMaps: previousLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
+        observeNewBindings(applied)
       }
-      if (linked) currentLinked = mergeLinkedAssets(previousLinked, linked.after)
+      currentSlots = slots
+      if (linked) currentLinked = proposedLinked
       set({
-        asset: { ...next, updatedAt: Date.now() } as PintaAsset,
+        asset: applied,
         linkedAssets: currentLinked,
         canUndo: history.canUndo(),
         canRedo: history.canRedo(),
       })
       scheduleAutosave()
+      return get().asset === applied ? applied : null
     }
 
     return {
@@ -259,28 +399,49 @@ export function createEditorStore(options: {
       canRedo: false,
 
       commit(next) {
-        apply(next, true)
+        return apply(next, true) !== null
       },
 
-      commitLinked(next, linked) {
-        apply(next, true, linked)
+      commitLinked(next, linked, indices) {
+        return apply(next, true, linked, indices) !== null
       },
 
       replace(next) {
         apply(next, false)
       },
 
+      replaceIfCurrent(expected, next) {
+        return get().asset === expected ? apply(next, false) : null
+      },
+
       commitGesture(base) {
-        if (base === get().asset) return
-        history.record({ asset: base, linkedMaps: currentLinked })
+        if (
+          base.id !== get().asset.id ||
+          base === get().asset ||
+          !admitsSnapshot(base, currentLinked ?? [])
+        )
+          return
+        history.record({
+          asset: base,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
         set({ canUndo: history.canUndo(), canRedo: history.canRedo() })
         scheduleAutosave()
       },
 
       undo() {
-        const prev = history.undo({ asset: get().asset, linkedMaps: currentLinked })
+        const prev = history.undo({
+          asset: get().asset,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
         if (!prev) return
         currentLinked = prev.linkedMaps
+        currentSlots = prev.slots
+        currentResources = prev.resources
         set({
           asset: prev.asset,
           linkedAssets: currentLinked,
@@ -291,9 +452,16 @@ export function createEditorStore(options: {
       },
 
       redo() {
-        const next = history.redo({ asset: get().asset, linkedMaps: currentLinked })
+        const next = history.redo({
+          asset: get().asset,
+          linkedMaps: currentLinked,
+          slots: currentSlots,
+          resources: currentResources,
+        })
         if (!next) return
         currentLinked = next.linkedMaps
+        currentSlots = next.slots
+        currentResources = next.resources
         set({
           asset: next.asset,
           linkedAssets: currentLinked,

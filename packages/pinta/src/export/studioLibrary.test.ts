@@ -285,7 +285,7 @@ describe('exportAssetForStudio', () => {
       if (databases.length === 1) setPintaStorageNamespace('profile-b')
     })
     await exportAssetForStudio(map.id)
-    expect(databases).toEqual(['sistema-zero-pinta-profile-a', 'sistema-zero-pinta-profile-a'])
+    expect(databases).toEqual(Array<string>(4).fill('sistema-zero-pinta-profile-a'))
   })
 
   it('uses an explicit namespace for listing/export without changing the active profile', async () => {
@@ -322,7 +322,7 @@ describe('exportAssetForStudio', () => {
     controller.abort()
     release.resolve()
     expect(await pending).toBeInstanceOf(DOMException)
-    expect(reads).toEqual([`pinta:asset:${map.id}`])
+    expect(reads).toEqual([`pinta:asset:${map.id}`, `pinta:local:document:${map.id}`])
   })
 
   it('desenho apagado → not-found', async () => {
@@ -339,10 +339,13 @@ describe('exportAssetForStudio', () => {
     if (exported.ok) expect(exported.asset.dataUrl).toStartWith('data:image/svg+xml')
   })
 
-  it('tilemap órfão (tileset apagado) → raster-failed', async () => {
+  it('tilemap órfão (tileset apagado) explica qual dependência falta', async () => {
     const mapa = createTilemapAsset({ name: 'fase', tilesetId: 'sumiu', cols: 2, rows: 2 })
     await persistAsset(mapa)
-    expect(await exportAssetForStudio(mapa.id)).toEqual({ ok: false, reason: 'raster-failed' })
+    expect(await exportAssetForStudio(mapa.id)).toMatchObject({
+      ok: false,
+      reason: 'needs-tileset',
+    })
   })
 })
 
@@ -370,6 +373,8 @@ describe('exportLoadedAssetForStudio', () => {
       setMany: 0,
       keys: 0,
       del: 0,
+      atomic: 0,
+      atomicKeys: 0,
     })
   })
 

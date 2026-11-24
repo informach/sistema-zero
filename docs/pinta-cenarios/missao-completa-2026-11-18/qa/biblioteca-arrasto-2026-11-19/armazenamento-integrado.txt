@@ -1,0 +1,32 @@
+bun test v1.3.11 (af24e281)
+
+src\project-migrations\localBackups.test.ts:
+(pass) o backup da migração v3→v4 devolve o documento de antes, sem gravar nada [188.00ms]
+(pass) restaurar cria uma cópia NOVA pelo import; o projeto atual e o backup ficam
+(pass) o backup de um layout v1/v2 também reconstrói o projeto
+(pass) o backup antigo (v3, registros em lista) é lido pela mesma porta
+(pass) backup de outro projeto com o mesmo prefixo (id com dois-pontos) não é listado [15.00ms]
+(pass) um ancestral de recuperação arquivado reconstrói a revisão daquela gravação
+(pass) sem partições completas não há documento (não inventa projeto)
+(pass) a exportação de emergência leva só os registros deste projeto e o journal de saída
+
+src\project-migrations\realCorpusMigration.test.ts:
+(pass) acervo real pela migração v4 > o acervo tem os exemplos da galeria e os projetos dos cursos
+(pass) acervo real pela migração v4 > v3 → v4: cada projeto abre igual ao que o v3 abriria, e o backup devolve o original [18563.00ms]
+(pass) acervo real pela migração v4 > v2 plano → v4: o documento salvo inteiro abre igual [14109.00ms]
+
+src\components\projects\ProjectCard.test.tsx:
+(pass) ProjectCard menu (a11y #8) > move o foco para o primeiro item ao abrir o menu [78.00ms]
+(pass) ProjectCard menu (a11y #8) > Escape fecha o menu e devolve o foco ao gatilho [31.00ms]
+(pass) ProjectCard menu (a11y #8) > setas movem o foco entre itens (roving), com Home/End nas pontas [16.00ms]
+(pass) ProjectCard menu (a11y #8) > Excluir: ao fechar o diálogo de confirmação o foco volta ao gatilho [31.00ms]
+(pass) ProjectCard: a capa do jogo > mostra a miniatura quando o resumo traz uma
+(pass) ProjectCard: a capa do jogo > sem capa, reserva o espaço e explica — em vez de o bloco sumir
+(pass) ProjectCard: data de atualização > o formatador de módulo escreve a MESMA data que o `toLocaleString` por render escrevia (timestamp fixo) [15.00ms]
+(pass) ProjectCard: data de atualização > o botão "Abrir projeto" (que cobre o card) tem anel de foco POR DENTRO (o card recorta o que escapa)
+(pass) ProjectCard preservado (migração pendente) > o ⋯ continua aberto e oferece só restaurar e baixar, sem renomear nem apagar [16.00ms]
+
+ 20 pass
+ 0 fail
+ 60 expect() calls
+Ran 20 tests across 3 files. [37.89s]

@@ -5,6 +5,7 @@ import vm from 'node:vm'
 import { gameTwoDInspectionRuntime } from '../../studio/src/official-extensions/game-2d/runtime/inspection.ts'
 import { gameTwoDLifecycleRuntime } from '../../studio/src/official-extensions/game-2d/runtime/lifecycle.ts'
 import { gameTwoDSpritesRuntime } from '../../studio/src/official-extensions/game-2d/runtime/sprites.ts'
+import { gameTwoDTextSpritesRuntime } from '../../studio/src/official-extensions/game-2d/runtime/textSprites.ts'
 import {
   createClickTargetHandle,
   createClickTargetReaderInPage,
@@ -35,12 +36,14 @@ function motor(name = 'directional-fixture') {
     function _isFiniteNumber(value){return typeof value==='number'&&Number.isFinite(value)};
     function _finiteNumber(value,fallback){return _isFiniteNumber(value)?value:fallback};
     var _paused=false,_warnedOnce={},particles=[];
+    var _paintedLastFrame=0;
     function _runOverlapHandlers(){};function warnOnce(){};function _registerRuntimeDomain(){};
     function stepFixtureFrame(time){const fn=nextFrame;nextFrame=null;if(fn)fn(time)};
     function fixtureSprite(x,y){return createSprite({x,y,w:20,h:20})};`,
     context,
   )
   vm.runInContext(gameTwoDSpritesRuntime, context)
+  vm.runInContext(gameTwoDTextSpritesRuntime, context)
   vm.runInContext(gameTwoDLifecycleRuntime, context)
   vm.runInContext(gameTwoDInspectionRuntime, context)
   return context

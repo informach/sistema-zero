@@ -169,7 +169,12 @@ export type {
   StudioShareGenerateInput,
   StudioSharePublishInput,
   StudioShareResult,
+  StudioShareStatus,
 } from './studio/share'
+export type {
+  StudioStudentTestsServer,
+  StudioStudentTestsServerResult,
+} from './studio/student-tests-server'
 export type {
   StudioTeamArtKind,
   StudioTeamArtSummary,

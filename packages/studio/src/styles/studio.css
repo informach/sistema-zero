@@ -1105,6 +1105,15 @@
     background: var(--color-sz-panel-soft);
     color: var(--color-sz-fg-soft);
   }
+  /* As barras da aba Desempenho: cada uma é meio segundo; a lenta pinta no tom de aviso. */
+  .sz-devtools-bar {
+    background: var(--color-sz-accent);
+    opacity: 0.55;
+  }
+  .sz-devtools-bar--slow {
+    background: var(--color-sz-warn);
+    opacity: 1;
+  }
   .sz-pro-tag {
     display: inline-flex;
     align-items: center;
@@ -1736,6 +1745,50 @@
     .sz-sheet {
       animation: none;
     }
+  }
+
+  /* A aba Meus testes da gaveta (prancha aprovada em 20/11/2026): cada teste é um cartão com o
+     sinal, o texto e os botões; o que não passou ganha a borda vermelha. */
+  .sz-student-test {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+    gap: 0.625rem;
+    align-items: start;
+    padding: 0.5625rem 0.75rem;
+  }
+  .sz-student-test > :first-child {
+    margin-top: 0.125rem;
+  }
+  .sz-student-test--failed {
+    border-color: color-mix(in oklab, var(--color-sz-error) 45%, var(--color-sz-panel));
+  }
+  .sz-student-test__ending {
+    display: block;
+    width: 20rem;
+    max-width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-sz-border);
+  }
+  .sz-student-test-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  .sz-student-test-form__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1rem;
+  }
+  .sz-student-test-form__remove {
+    min-height: 1.75rem;
+    min-width: 1.75rem;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+  }
+  .sz-student-test-form__delete {
+    color: var(--color-sz-error);
   }
 }
 
@@ -2402,6 +2455,17 @@
   /* biome-ignore lint/complexity/noImportantStyles: o Blockly anima a opacidade da lixeira inline (0,4 parada). */
   opacity: 0.85 !important;
 }
+/* Até a lixeira e o zoom irem para o lugar deles (mais altos, a lixeira por cima dos blocos, o
+   desenho em vetor: `blockly/workspaceControls.ts`, baixado logo depois da injeção), eles ficam
+   escondidos, para não pularem de lugar. Só nos editores do Estúdio, que marcam `pending`. */
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyTrash,
+[data-sz-theme] .injectionDiv[data-sz-controls="pending"] .blocklyZoom {
+  visibility: hidden;
+}
+/* Scroll shadow is decorative: text underneath must remain clickable. */
+[data-sz-theme] .monaco-editor .scroll-decoration {
+  pointer-events: none;
+}
 /* O Monaco no escuro com o fundo do Estúdio (era o cinza #1e1e1e do vs-dark): as variáveis que
    o tema do Monaco publica, trocadas pelas cores do host (cada comunidade com as suas). */
 [data-sz-theme="dark"] .monaco-editor {
@@ -2421,7 +2485,8 @@
 }
 /* A área amarela ("Quando acontecer", #eab308) com letra escura: branco sobre amarelo dava ~2:1.
    O tipo do bloco é classe do SVG dele; o `>` pega só o cabeçalho, não os blocos de dentro. */
-.sz_frame_events > .blocklyLabelField > .blocklyText {
+.sz_frame_events > .blocklyLabelField > .blocklyText,
+.sz_py_area_events > .blocklyLabelField > .blocklyText {
   fill: #3a2a00;
 }
 /* A grade segue o tema também quando ele muda com o editor aberto (a cor da injeção fica). */
@@ -2518,4 +2583,10 @@
     min-width: 44px;
     min-height: 44px;
   }
+}
+
+/* Montagem sob demanda do Clássico (`blockly/offscreenBodies.ts`): o bloco de fora que está longe
+   da vista não é pintado. Só o bloco seguinte da pilha, que mora dentro do SVG dele, fica. */
+.blocklyBlockCanvas .sz-block-far > :not([data-sz-block-next]) {
+  display: none;
 }

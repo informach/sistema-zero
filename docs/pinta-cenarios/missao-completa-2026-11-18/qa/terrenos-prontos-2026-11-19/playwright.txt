@@ -1,0 +1,26 @@
+
+Running 6 tests using 1 worker
+
+(node:37660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (15.5s)
+  ✓  2 [desktop] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (4.7s)
+(node:35452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35452) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (10.6s)
+  ✓  4 [touch] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (4.3s)
+(node:29012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  5 [cpu-4x] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (32.7s)
+  ✓  6 [cpu-4x] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (12.6s)
+
+  6 passed (1.4m)

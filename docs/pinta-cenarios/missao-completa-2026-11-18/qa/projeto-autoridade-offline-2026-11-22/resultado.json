@@ -1,0 +1,50 @@
+{
+  "browser": "157.0.8103.80",
+  "bundles": {
+    "old": "6e54e7f26feb3924ea26a785ea375b20286be92216290dedfa5078f7a1c3f4e6",
+    "modern": "50b3a361f0dc71d920b6c74a35b42194f923d9cfda1e026319a0e8985badb0cb",
+    "fixture": "cd944bcd979d6248ee675647d75205de04bdee30aafdedee26d22f3b96487e22"
+  },
+  "controls": {
+    "autosaveRejected": true,
+    "oldRestoreObserved": true,
+    "cleanupGone": true
+  },
+  "outcome": [
+    {
+      "id": "autosave",
+      "exists": true,
+      "bytes": "png5",
+      "script": "console.log(\"antes da troca\")",
+      "block": "bloco-original"
+    },
+    {
+      "id": "restore",
+      "exists": true,
+      "bytes": "png4",
+      "script": "console.log(\"restauro pelo leitor antigo\")",
+      "block": "bloco-do-restauro"
+    },
+    {
+      "id": "cleanup",
+      "exists": false,
+      "bytes": null,
+      "script": null,
+      "block": null
+    },
+    {
+      "id": "delete",
+      "exists": false,
+      "bytes": null,
+      "script": null,
+      "block": null
+    },
+    {
+      "id": "explicit",
+      "exists": false,
+      "bytes": null,
+      "script": null,
+      "block": null
+    }
+  ]
+}

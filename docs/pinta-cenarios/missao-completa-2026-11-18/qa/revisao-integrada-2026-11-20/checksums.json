@@ -1,0 +1,90 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "ce9f85d1dff258658952c9ed73e694292646aea1542f075c5ee00efd0c022ca8"
+  },
+  {
+    "file": "aba-legada-publica.json",
+    "sha256": "f40ceb46d76809dc7dc92b9d943d22120c4c1a322046581e290e447d3c1bd184"
+  },
+  {
+    "file": "base-publicada-staging.json",
+    "sha256": "34334eb141069da3322159ccb7d04e46d1ff1cab5dadfa1636a296ece44fd5fb"
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "f7e2678a50d9f3d3b93ff276ed763bcf9a9511900c4351a7a7908ea518b2a035"
+  },
+  {
+    "file": "core-3d.txt",
+    "sha256": "c38772cdad7e984fafac1a500956cf8b2bf0816cd382f139a63f1b446a968c3b"
+  },
+  {
+    "file": "delta-blocos-orcamento.txt",
+    "sha256": "000a43f572e21507223e95700f33135ce6b81334d96dde2e40ed49306d02a35e"
+  },
+  {
+    "file": "delta-dbf.txt",
+    "sha256": "c67818799e1cad5578693b0942c904efa2a37e96601f6dccc8bda4bfcce601e7"
+  },
+  {
+    "file": "delta-monaco.txt",
+    "sha256": "3053f11782aa2ab5868dea9f3e5a37efbb967fedaf118c98e70735fa78dceead"
+  },
+  {
+    "file": "executor-chrome.txt",
+    "sha256": "8ff5b1322862d855db9f45d4d3ea51b885cd47d564d39c3bfcc2fa954cfce387"
+  },
+  {
+    "file": "gerado-portatil.txt",
+    "sha256": "1b7da37261385482fe8ea5623ee740501fa15e7dce92cf704c0e03c02b6b45f8"
+  },
+  {
+    "file": "gerados-iframe.txt",
+    "sha256": "432930b3f1b34ffd14cf54c83de3a2debb13bd8b4d27a6cbdb64695e36bc8131"
+  },
+  {
+    "file": "instancia-members.json",
+    "sha256": "72d14dd99b3b4f4a7d192ec5970008fe8c83c4ddfc58698bcd7b1d2dddbe2f7a"
+  },
+  {
+    "file": "leitor-controlado-preparado.json",
+    "sha256": "353069624ecf9172f4dac7ea7b882564d561e55b03504f649c6dc5bd5beaa8ae"
+  },
+  {
+    "file": "mapa-de-teste-base.json",
+    "sha256": "5ed9b38ecd54f99073a1d99d581f40a0b2d5cef88ef880f825e0536524ab75be"
+  },
+  {
+    "file": "motor-3d.txt",
+    "sha256": "ccc8f663e0455388c0b015eb170e39c9e00e86d6056a8c8f9a9fc2aecea5b8a9"
+  },
+  {
+    "file": "origem.json",
+    "sha256": "338e9baf3f9f0f0b2205cb81c76b4a3cbb47ca2bc942e36166b59626fcb0b7f1"
+  },
+  {
+    "file": "perfil-runtime.txt",
+    "sha256": "e8964b1d12ee9d93ea90f276885aeff64fbbffc2a1bd7efc18e450e269c2650a"
+  },
+  {
+    "file": "preflight-staging.json",
+    "sha256": "11c6de843258a29f706b0873397488987e8a0f9247d2ef6f807a9f41229cc9fc"
+  },
+  {
+    "file": "studio-completo.json",
+    "sha256": "751ef53ab82b31d29d2f29f09b444fdfe2a6fd5fee4728cdfa05b09bb8b4b36c"
+  },
+  {
+    "file": "studio-completo.txt",
+    "sha256": "666076f985934cbeddb006cd1e40f80a6565ca888caed6d3bdc006538a6cf3b5"
+  },
+  {
+    "file": "tipos-dbf.txt",
+    "sha256": "d8c7ff03c12f4026e52705ab9df4e54801946bac7eea6edcfd0859a24ef07afc"
+  },
+  {
+    "file": "tipos-integrados.txt",
+    "sha256": "d8c7ff03c12f4026e52705ab9df4e54801946bac7eea6edcfd0859a24ef07afc"
+  }
+]

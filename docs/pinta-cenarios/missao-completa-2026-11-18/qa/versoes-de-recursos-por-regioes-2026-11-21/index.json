@@ -1,0 +1,169 @@
+{
+  "baseline": "549b930b9a46d2cb2cd73dcf16863007f9ff2fe5",
+  "records": [
+    {
+      "file": "resource-region-red.log.gz",
+      "bytes": 8112,
+      "sha256": "39fbab1f64169e647753d88decc33291f288b34006bdf50911b1c0c700234970",
+      "rawBytes": 247755,
+      "rawSha256": "e8656805994b5e184fc2448a916e1a4cb64a6cfdfb91a24586a183806b855059"
+    },
+    {
+      "file": "resource-region-migration-red.log.gz",
+      "bytes": 1399,
+      "sha256": "53494c6543a73f22fd1ee3f70b04c52d3aab2ec3bc1b413beb19f397f25ecc57",
+      "rawBytes": 7593,
+      "rawSha256": "91f206338b9aed7446171c1f6947a5e0587f67d9752d6316abeefb875b95f553"
+    },
+    {
+      "file": "resource-region-source-id-red.log.gz",
+      "bytes": 1318,
+      "sha256": "910917b27c46fee7f85c1e845c33abbaba09e101838d32cb76b334d95d7f6615",
+      "rawBytes": 17387,
+      "rawSha256": "dece733e9453f69376192083a0b28450c60e6a5fa97acd12d0505884273f5974"
+    },
+    {
+      "file": "resource-region-focused.log.gz",
+      "bytes": 1650,
+      "sha256": "5d1a8fa336d82f4ecbaf208d55169dcb6770d19493ca05b6e4b9dd6c835cb14a",
+      "rawBytes": 3849,
+      "rawSha256": "e58f8df6f3b49531d1ed9327039815534e7640572bdc040d4fedab27d994c941"
+    },
+    {
+      "file": "resource-region-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "resource-region-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "resource-region-suite.log.gz",
+      "bytes": 77524,
+      "sha256": "eed1777aa24d253782086d706ec8fcd44c9108f994aa532b42df076cc540e248",
+      "rawBytes": 289749,
+      "rawSha256": "5a678d141500b9392a864aac17967bd9358199f5e808a6ee8711510cc690b10d"
+    },
+    {
+      "file": "resource-region-browser.log.gz",
+      "bytes": 776,
+      "sha256": "1cd265fbaf01d28fea878ee0198bfb8a9f4d04965b2f4918b7f7acdfa4964842",
+      "rawBytes": 1660,
+      "rawSha256": "4990fe4e95fcffec6b897fbec63f28176d2b20eb852ddd51e4b54c512b023a5f"
+    },
+    {
+      "file": "resource-region-controls-browser.log.gz",
+      "bytes": 560,
+      "sha256": "54134658cc9888ab1a7cd5a2bdd7f08de81104eec63bf4cc7e771068ab5a4fbe",
+      "rawBytes": 1331,
+      "rawSha256": "fa9e1c141bb53881b00f245a36e0d34c9c8376f245ee74b2ec42caade55355f4"
+    },
+    {
+      "file": "resource-region-biome.log.gz",
+      "bytes": 64,
+      "sha256": "9a8570b697941a050bf86c06c8ebe047b7a2b08c2dd74d985c3e8b600ee9e92d",
+      "rawBytes": 44,
+      "rawSha256": "09048a3125bf113546bb835e319bed49929f2f16494e9756421f1566b79eca1a"
+    },
+    {
+      "file": "resource-region-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 87699,
+      "sha256": "74a9d267e8e92cd6d50464a083b7ae3b7f3cfe3205738b922baa9b88f5e3e21a",
+      "rawBytes": 125461,
+      "rawSha256": "62b2913b3ff25da1f661b5a07035fadf0c7c001586fca745d18d1c5242a625be"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 242543,
+      "sha256": "8150c50c4f34cfb3289d4986d5fe4bbc4c02d15f2aaf3b574c2891c9794c6efe",
+      "rawBytes": 344823,
+      "rawSha256": "7adaf0132be26691245298bf61a6f3ae07a66844672aafc4b97fb3b3061e71ca"
+    },
+    {
+      "file": "controle-desktop.png",
+      "bytes": 85387,
+      "sha256": "d65efedbd0dd861bc56dcc124597f3a772fc6beb4b2ad41fa1daeddc30f37fc1"
+    },
+    {
+      "file": "controle-touch.png",
+      "bytes": 166854,
+      "sha256": "dc3c724088491115142a98b42614479f98195c8f0c29cd364c05a8986cb11b5f"
+    },
+    {
+      "file": "prove-resource-regions.cjs.gz",
+      "bytes": 675,
+      "sha256": "f5c6349c991e485e4b31ed87b23236ba6b770290a851fd837fbfc40aa83d7c5f",
+      "rawBytes": 1462,
+      "rawSha256": "36aab619351a5a63ce7453bcd9254ed51e5f7a90c33f13598bb2e99236580401"
+    },
+    {
+      "file": "archive-resource-regions.cjs.gz",
+      "bytes": 1503,
+      "sha256": "416d07677cf0312c7d52946830bb35ab5bf4b4de8a32f7437e982f90fbab7f90",
+      "rawBytes": 3915,
+      "rawSha256": "d389d72aab8288ca62eebed6947d5c88df3471da4b33a274067280be82f1a53d"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/tiles/resourceVersions.ts",
+      "sha256": "a7a180e21239c6fe829b7dccd1f2f70121464dc2ed75526b0af341a7ad49219c"
+    },
+    {
+      "file": "packages/pinta/src/tiles/resourceVersionsRegions.test.ts",
+      "sha256": "15ab9b3214f7e7859d7edced9ca63779276a52ab96251b06be486051a4bf63e4"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "4002153e5efb3c0b46f8c7891b75e2c291ada9af4d69a961d77873c3eeae2c54"
+    },
+    {
+      "file": "packages/pinta/src/core/mapResourceVersions.ts",
+      "sha256": "227ded497c64ef79331e3884e507479bd9bc715940d54d2ce0b45725105ff2a0"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "sha256": "1b6e8a0b9da3b134b0929a95a111434da6a21a9b38cfadf54ca9f059fb3b23c7"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/resourceVersionMessages.ts",
+      "sha256": "d08fd64643cbc44e0b34920de780ce3661679ad07bf7907c564e852d1ae6449e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "adc7b805ddc2a6333cc76df5a54010a9fc01eeb7dfe1fc1fc3657e82c333e2d5"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-resources-scenes.flow.ts",
+      "sha256": "98c0edf8bd9dabd1b05fd03d4097e1ccf793431422ceb30ce24720e9fb810967"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-resources.config.ts",
+      "sha256": "b652991a7ef9ea44750d86e7972eb3ad8e7bd59bf5649d96c000066b7c3faf81"
+    },
+    {
+      "file": "packages/studio/playwright.pinta.config.ts",
+      "sha256": "830569182a5f6bdb1b5a8db978019738e97b3bf9953a4fa49ca0602b450a5cf6"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/resources.ts",
+      "sha256": "fa593ddd9ba1451424c5760392d846d47a93892c25f04bf54781caf06bc79e82"
+    }
+  ],
+  "browserTests": 7,
+  "native8Public": false,
+  "externalEngineQualification": false
+}

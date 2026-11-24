@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Escudos contra Invasores'
@@ -20,18 +22,8 @@ FORMA = [
     '###........###',
 ]
 
-escudos = []
-invasores = []
-bombas = []
-explosoes = []
-canhao = Actor('canhao')
-tiro = Actor('tiro')
-marcha = 1
-vidas = 3
-pontos = 0
-venceu = False
 
-
+# 🧩 Meus moldes
 def montar_escudos():
     escudos.clear()
     for numero in range(len(ESCUDO_X)):
@@ -125,7 +117,35 @@ def marchar():
         for invasor in invasores:
             invasor.y = invasor.y + 16
 
+# ⚙️ Ao iniciar
+escudos = []
+invasores = []
+bombas = []
+explosoes = []
+canhao = Actor('canhao')
+tiro = Actor('tiro')
+marcha = 1
+vidas = 3
+pontos = 0
+venceu = False
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if venceu or vidas == 0:
+        novo_jogo()
+    elif tiro.y <= -20:
+        # Um tiro de cada vez, como nos fliperamas antigos.
+        tiro.midbottom = canhao.midtop
+        sounds.tiro.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for numero in range(len(escudos)):
@@ -189,19 +209,5 @@ def update():
     if not invasores:
         venceu = True
         sounds.vitoria.play()
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if venceu or vidas == 0:
-        novo_jogo()
-    elif tiro.y <= -20:
-        # Um tiro de cada vez, como nos fliperamas antigos.
-        tiro.midbottom = canhao.midtop
-        sounds.tiro.play()
-
-
-novo_jogo()
 clock.schedule_interval(soltar_bomba, 0.7)
 pgzrun.go()

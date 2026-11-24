@@ -12,6 +12,8 @@ export interface HistoryApi<T> {
   record(snapshot: T): void
   undo(current: T): T | null
   redo(current: T): T | null
+  peekUndo(): T | null
+  peekRedo(): T | null
   canUndo(): boolean
   canRedo(): boolean
   clear(): void
@@ -19,31 +21,72 @@ export interface HistoryApi<T> {
 
 const DEFAULT_BYTE_BUDGET = 16_000_000
 
+/** Um pedaço grande do snapshot que vários passos podem dividir (o MESMO objeto na memória). */
+export interface SharedPart {
+  key: object
+  bytes: number
+}
+
 export function createHistory<T>(options: {
+  /** Bytes do snapshot que são só dele. Com `sharedOf`, NÃO inclua as partes divididas. */
   sizeOf: (snapshot: T) => number
+  /**
+   * Partes que os snapshots dividem por referência (as células de uma camada do mapa que o
+   * gesto não tocou). Cada uma conta UMA vez no orçamento enquanto algum passo a segura: é o
+   * que a memória gasta de verdade. Sem isto, um mapa de 16 camadas custava 16 camadas por
+   * pincelada e o desfazer encolhia para dois ou três passos.
+   */
+  sharedOf?: (snapshot: T) => Iterable<SharedPart>
   byteBudget?: number
 }): HistoryApi<T> {
   const budget = options.byteBudget ?? DEFAULT_BYTE_BUDGET
   // Cada passo guarda os bytes medidos UMA vez: o orçamento é um total corrente, não um
   // `reduce` sobre a pilha inteira a cada pincelada (com sprites pequenos a pilha chega a
   // centenas de passos, e `sizeOf` de um vetor percorre até 500 formas por snapshot).
-  const past: Array<{ snapshot: T; bytes: number }> = []
+  const past: Array<{ snapshot: T; bytes: number; shared: SharedPart[] }> = []
   const future: T[] = []
   let total = 0
+  const held = new Map<object, number>()
+
+  function hold(parts: SharedPart[]): void {
+    for (const part of parts) {
+      const count = held.get(part.key) ?? 0
+      if (count === 0) total += part.bytes
+      held.set(part.key, count + 1)
+    }
+  }
+
+  function release(parts: SharedPart[]): void {
+    for (const part of parts) {
+      const count = held.get(part.key) ?? 0
+      if (count <= 1) {
+        held.delete(part.key)
+        if (count === 1) total -= part.bytes
+      } else held.set(part.key, count - 1)
+    }
+  }
 
   function trimToBudget(): void {
     // Mantém pelo menos 1 passo mesmo que um snapshot sozinho estoure o
     // orçamento — desfazer uma vez sempre funciona.
     while (total > budget && past.length > 1) {
       const dropped = past.shift()
-      if (dropped !== undefined) total -= dropped.bytes
+      if (dropped !== undefined) {
+        total -= dropped.bytes
+        release(dropped.shared)
+      }
     }
   }
 
   function push(snapshot: T): void {
     const bytes = options.sizeOf(snapshot)
-    past.push({ snapshot, bytes })
+    // Uma parte repetida DENTRO do mesmo snapshot conta uma vez só.
+    const shared = options.sharedOf
+      ? [...new Map([...options.sharedOf(snapshot)].map((part) => [part.key, part])).values()]
+      : []
+    past.push({ snapshot, bytes, shared })
     total += bytes
+    hold(shared)
   }
 
   return {
@@ -57,6 +100,7 @@ export function createHistory<T>(options: {
       const prev = past.pop()
       if (prev === undefined) return null
       total -= prev.bytes
+      release(prev.shared)
       future.push(current)
       return prev.snapshot
     },
@@ -68,10 +112,13 @@ export function createHistory<T>(options: {
     },
     canUndo: () => past.length > 0,
     canRedo: () => future.length > 0,
+    peekUndo: () => past.at(-1)?.snapshot ?? null,
+    peekRedo: () => future.at(-1) ?? null,
     clear() {
       past.length = 0
       future.length = 0
       total = 0
+      held.clear()
     },
   }
 }

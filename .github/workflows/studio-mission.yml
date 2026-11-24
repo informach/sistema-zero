@@ -1,0 +1,453 @@
+name: Studio mission verification
+
+on:
+  push:
+    branches: ['estudio-missao-*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-mission-${{ github.ref }}
+  # Preserve a running qualification and its evidence; the latest pending commit runs next.
+  cancel-in-progress: false
+
+jobs:
+  contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: bun install --frozen-lockfile
+      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+      - name: Protected courses and shared scene contracts
+        run: |
+          bun --no-env-file test ./scripts/ci/configure-ubuntu-apt.test.ts
+          bun --no-env-file test ./scripts/local-studio-stack/gateway-contract.test.ts ./scripts/local-studio-stack/isolation.test.ts ./scripts/local-studio-stack/python-input.test.ts
+          bun test docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.test.ts
+          (cd packages/member-shell && bun test ./tests/studio-creation-libraries.test.ts)
+          cd packages/core
+          bun test ./src/studio/pinta-image.test.ts ./src/studio/pinta-limits.test.ts ./src/studio/pinta-source-ref.test.ts ./src/studio/pinta-scene-geometry.test.ts ./src/studio/project-json-graph.test.ts ./src/creations/pinta-format.test.ts
+          cd ../molda-cenarios-core
+          bun test tests/compilar-contratos.test.ts tests/compilar-fonte.test.ts tests/propriedades-entrada.test.ts tests/compilar-studio.test.ts tests/compilar-preparo-exportacao.test.ts tests/compilar-orcamento.test.ts
+          cd ../molda-cenarios-motor
+          bun test tests/compilar-metadados.test.ts tests/compilar-objeto-estatico.test.ts
+      - if: runner.os == 'Linux'
+        name: Prepare signed Ubuntu sources for the browser storage test
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - name: Install browser required by the real IndexedDB lifecycle test
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium webkit
+      - name: Capture Linux WebKit exit lifecycle before the full suite
+        if: runner.os == 'Linux'
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: webkit
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-targeted.txt
+      - name: Recovery with an aborted native exit transaction
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: all
+          STUDIO_STORAGE_EXIT_FAULT: abort
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-aborted.txt
+      # Homologação v4 (lote 1.4, 19/11/2026): o modo profundo (10 mil blocos, migrações v1/v2/v3,
+      # replay de journal v3) só rodava em máquina local; Firefox não tinha prova de armazenamento.
+      - name: Deep v4 storage qualification (10k blocks, v1/v2/v3 migration)
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: all
+          STUDIO_STORAGE_DEEP: '1'
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-deep.txt
+      - name: Install Firefox for the storage lifecycle
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps firefox
+      - name: Firefox storage lifecycle, deep mode and profile switch
+        working-directory: packages/studio
+        env:
+          STUDIO_STORAGE_BROWSER: firefox
+          STUDIO_STORAGE_DEEP: '1'
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun test src/state/projectStorageBrowser.test.ts 2>&1 | tee .cache/mission/storage-firefox.txt
+      - name: Frozen v3 client after the v4 migration (downgrade proof)
+        if: runner.os == 'Linux'
+        run: |
+          set -o pipefail
+          reader="$RUNNER_TEMP/reader-v3"
+          git fetch --no-tags --depth=1 origin f9ddd5e164daed9ac9c7ce2b6fcf76daf07e97a0
+          git worktree add --detach "$reader" f9ddd5e164daed9ac9c7ce2b6fcf76daf07e97a0
+          (cd "$reader" && bun install --frozen-lockfile)
+          mkdir -p packages/studio/.cache/mission
+          (cd packages/studio && STORAGE_DOWNGRADE_BASELINE="$reader" STORAGE_DOWNGRADE_BROWSER=all bunx playwright test --config playwright.storage-downgrade.config.ts --trace off) 2>&1 | tee packages/studio/.cache/mission/storage-downgrade.txt
+      - name: Verify integrated Pinta scene and native Python contracts
+        if: runner.os == 'Linux'
+        working-directory: packages/studio
+        run: |
+          set -o pipefail
+          bun scripts/gen-pinta-scene-python.ts --check
+          bun ../core/scripts/gen-pinta-scene-transform.ts --check
+          python --version
+          python -m venv .cache/pinta-python
+          .cache/pinta-python/bin/python -m pip install --only-binary=:all: --disable-pip-version-check pygame-ce==2.5.7
+          .cache/pinta-python/bin/python -I scripts/python/test-pinta-module.py 2>&1 | tee .cache/mission/pinta-python.txt
+          .cache/pinta-python/bin/python -I scripts/python/test-pinta-module.py --sem-pygame
+      - name: Complete isolated Studio suite
+        working-directory: packages/studio
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          bun scripts/generate-scene3d-runtime.ts --check
+          node scripts/test-isolated.mjs 2>&1 | tee .cache/mission/unit.txt
+      - name: Typecheck
+        working-directory: packages/studio
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: |
+          set -o pipefail
+          bunx tsc --noEmit 2>&1 | tee .cache/mission/types.txt
+      - name: Reference diagnostics and scoped-name measurement
+        working-directory: packages/studio
+        run: |
+          bun scripts/reference-diagnostics-golden.ts --check > .cache/mission/reference-diagnostics.json
+          bun scripts/profile-reference-scopes.ts > .cache/mission/reference-scopes.json
+      - name: Modular Pro language-service baseline
+        working-directory: packages/studio
+        run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language.json
+      - name: Thousand-file Pro language-service baseline
+        working-directory: packages/studio
+        env:
+          STUDIO_PRO_LANGUAGE_FILES: '1000'
+        run: bun --no-env-file scripts/measure-pro-modular.ts --output=.cache/mission/pro-modular-language-1000.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-contracts-${{ matrix.os }}
+          path: packages/studio/.cache/mission
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  browsers:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            project: chromium
+            shard: 1/3
+            id: linux-chromium-1
+          - os: ubuntu-24.04
+            project: chromium
+            shard: 2/3
+            id: linux-chromium-2
+          - os: ubuntu-24.04
+            project: chromium
+            shard: 3/3
+            id: linux-chromium-3
+          - os: ubuntu-24.04
+            project: firefox
+            shard: 1/1
+            id: linux-firefox
+          - os: ubuntu-24.04
+            project: webkit
+            shard: 1/1
+            id: linux-webkit
+          - os: windows-2025
+            project: chromium
+            shard: 1/1
+            id: windows-chromium
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - if: runner.os == 'Linux'
+        name: Prepare signed Ubuntu sources
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps ${{ matrix.project }}
+      - name: Select full Chromium for process isolation
+        if: matrix.project == 'chromium'
+        working-directory: packages/studio
+        run: node -e "const p=require('playwright-core').chromium.executablePath();require('node:fs').appendFileSync(process.env.GITHUB_ENV,'PW_CHROMIUM='+p+'\nSZ_CHECK_CHROMIUM='+p+'\n')"
+      - name: Blockly demand-rendering lifecycle in the real browser
+        working-directory: packages/studio
+        run: bunx playwright test --config e2e/offscreen-lifecycle.config.ts --project=${{ matrix.project }}
+      - name: Browser verification
+        working-directory: packages/studio
+        env:
+          CI: '1'
+          # A medição do Pro vai para a pasta do artefato desta rodada (com SHA e data dentro).
+          STUDIO_BROWSER_BENCH_OUTPUT: .cache/mission/pro-browser-current.json
+        run: |
+          set -o pipefail
+          mkdir -p .cache/mission
+          if [ '${{ runner.os }}' = 'Windows' ]; then
+            DEBUG=pw:browser bunx playwright test e2e/protected-lessons.spec.ts e2e/preview-hostile-programs.spec.ts e2e/classic-offscreen.spec.ts e2e/reload-flush.spec.ts e2e/blockly-media.spec.ts e2e/run-save-revision.spec.ts e2e/pro-workspace-performance.spec.ts e2e/preview-resource-transition.spec.ts e2e/preview-shell.spec.ts e2e/preview-shell-performance.spec.ts e2e/preview-shell-hostile.spec.ts --project=chromium --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+          else
+            bunx playwright test --project=${{ matrix.project }} --shard=${{ matrix.shard }} --retries=0 --trace=retain-on-failure 2>&1 | tee .cache/mission/browser.txt
+          fi
+      - name: Complete Pro file map and first-start interruption on Windows
+        if: runner.os == 'Windows'
+        working-directory: packages/studio
+        run: bunx playwright test --config e2e/pro-workspace.config.ts --grep 'complete file map|symbols|continuous edits|all references|first startup|mixed line breaks' --retries=0
+      - name: Integrated Pinta and Phaser scenes on desktop and touch
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bun run test:e2e:pinta-scenes
+      - name: Pinta local authority and chunks preserve actual historical readers
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        run: |
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d 7ddb3b7d7df7a8a8aaa3b031956978e4763f2497
+          cd packages/studio
+          bunx playwright test --config playwright.pinta-chunks.config.ts
+          bunx playwright test --config playwright.pinta-render.config.ts
+          bunx playwright test --config playwright.pinta-minimap.config.ts
+      - name: Public 3D scene uses the actual preview and exported site
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.scene3d-document.config.ts
+      - name: Real 2D Pinta scene runs as data in the preview and the exported site
+        if: ${{ !cancelled() && contains(fromJSON('["linux-chromium-1","linux-firefox","linux-webkit"]'), matrix.id) }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.scene2d-export.config.ts --project=${{ matrix.project }}
+      - name: Actual Studio consumes Pinta scenes and versioned art updates
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.pinta-integration.config.ts
+      - name: Linked Pinta worlds preserve both frozen historical readers
+        if: ${{ !cancelled() && matrix.id == 'linux-chromium-1' }}
+        run: |
+          set -o pipefail
+          for pinta_revision in 0218a11a330e8da93e70786afb3b0fe48370a562 f44648d9b2c63509f882ef8cb1ce8c66ee554c7d; do
+            pinta_baseline="$RUNNER_TEMP/pinta-reader-${pinta_revision:0:12}"
+            git fetch --no-tags --depth=1 origin "$pinta_revision"
+            git worktree add --detach "$pinta_baseline" "$pinta_revision"
+            (cd "$pinta_baseline" && bun install --frozen-lockfile)
+            mkdir -p "packages/studio/.cache/mission/pinta-world-$pinta_revision"
+            set +e
+            (cd packages/studio && PINTA_STUDIO_BASELINE="$pinta_baseline" PINTA_STUDIO_BASELINE_REVISION="$pinta_revision" bunx playwright test --config playwright.pinta-world.config.ts --global-timeout=180000) 2>&1 | tee "packages/studio/.cache/mission/pinta-world-$pinta_revision/browser.txt"
+            pinta_result=$?
+            set -e
+            if [ -d packages/studio/.cache/pinta-world-proof-results ]; then
+              cp -R packages/studio/.cache/pinta-world-proof-results/. "packages/studio/.cache/mission/pinta-world-$pinta_revision/"
+            fi
+            if [ "$pinta_result" -ne 0 ]; then exit "$pinta_result"; fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-browser-${{ matrix.id }}
+          include-hidden-files: true
+          if-no-files-found: error
+          path: |
+            packages/studio/.cache/mission
+            packages/studio/.cache/playwright-results
+            packages/studio/.cache/offscreen-lifecycle
+            packages/studio/.cache/pro-workspace-browser
+            packages/studio/.cache/protected-lessons
+            packages/studio/.cache/pinta-scenes-results
+            packages/studio/.cache/pinta-local-chunks-results
+            packages/studio/.cache/pinta-render-pressure-results
+            packages/studio/.cache/pinta-minimap-results
+            packages/studio/.cache/pinta-integration-results
+            packages/studio/.cache/pinta-world-proof-results
+          retention-days: 14
+
+  isolation-measurement:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium firefox webkit
+      - name: Measure isolation (records limitations, not universal pass)
+        working-directory: packages/studio
+        env:
+          SZ_MEASURE_BROWSERS: chromium,firefox,webkit
+        run: |
+          mkdir -p .cache/mission
+          node scripts/measure-preview-isolation.mjs --json > .cache/mission/isolation.json
+      # O Firefox do Playwright desliga os iframes em outro processo; o de mesa isola por site. Com a
+      # preferência do navegador de verdade, a casca precisa isolar com qualquer cabeçalho do host
+      # (a aula fica sem COEP por causa dos vídeos): docs/qa/2026-11-20-studio-firefox-site-isolation.md.
+      - name: Firefox with desktop site isolation (the shell must isolate under every host policy)
+        working-directory: packages/studio
+        env:
+          SZ_MEASURE_BROWSERS: firefox
+          SZ_MEASURE_FIREFOX_SITE_ISOLATION: '1'
+          SZ_MEASURE_HOST_POLICY_SPLIT: '1'
+          SZ_MEASURE_ARRANGEMENTS: srcdoc,outro-site
+        run: |
+          node scripts/measure-preview-isolation.mjs --json > .cache/mission/isolation-firefox-site.json
+          node scripts/check-shell-isolation.mjs .cache/mission/isolation-firefox-site.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-isolation-measurement
+          path: packages/studio/.cache/mission
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  python-browser-isolation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - name: Install full Chromium for the actual Python Worker
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+      - name: Build and verify the immutable Python distribution
+        run: bun packages/studio/scripts/build-python-runtime.ts
+      - name: Prepare the pinned external game corpus in ignored cache
+        run: bun experiments/studio-python-runtime/prepare-game-corpus.ts
+      - name: Product Python supervisor, provider, host policy, Classic, games and linked worlds
+        working-directory: packages/studio
+        env:
+          PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-python-runtime/mission-browser
+        run: bunx playwright test --config playwright.mission-python.config.ts
+      # As áreas do projeto no editor de blocos do Python (organizar o código que veio de fora, as
+      # notas, o "Ir para") e o arranjo das áreas: o servidor de provas exige Bun 1.4 no Windows,
+      # então estes e2e só rodam aqui (22/11/2026).
+      # As regiões no Raylib 3D do Python (lote 7b da conclusão, 22/11/2026): a rota pelas três
+      # regiões, dez voltas, com os objetos de GPU vivos do quadro.
+      - name: Python Raylib 3D regions route
+        if: success() || failure()
+        working-directory: packages/studio
+        env:
+          PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-python-runtime/mission-browser/regioes
+        run: bunx playwright test --config playwright.python-regions.config.ts
+      - name: Python editor areas and workspace layout
+        if: success() || failure()
+        working-directory: packages/studio
+        run: bunx playwright test --config playwright.python-bridge.config.ts e2e-python-editor/program-areas.spec.ts e2e-python-editor/workspace-layout.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-python-browser-isolation
+          path: .cache/studio-python-runtime/mission-browser
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: studio-python-editor-areas
+          path: .cache/studio-python-bridge-results
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
+
+  runtime-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Audit trusted runtime dependencies
+        working-directory: packages/studio-runtime
+        run: bun run audit:image
+
+  hosted-runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: bun install --frozen-lockfile
+      - name: Build disposable execution image
+        working-directory: packages/studio-runtime
+        run: bun run build:image
+      - name: Real build and validation in the sandbox without network
+        working-directory: packages/studio-runtime
+        run: |
+          bun tests/image-smoke.ts
+          bun tests/validation-smoke.ts
+          bun tests/templates-smoke.ts
+      - name: Prepare pinned Python runtime
+        env:
+          STUDIO_PYTHON_BUILD_TEST_VENDOR_DIRECTORY: .cache/studio-python-runtime/vendor
+        run: bun packages/studio/scripts/build-python-runtime.ts
+      - name: Execute Python and Three objectives in isolated containers
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: |
+          bun packages/studio-runtime/tests/python-mission-smoke.ts
+          bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+          bun packages/studio-runtime/tests/three-objectives-smoke.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-hosted-runtime
+          include-hidden-files: true
+          path: |
+            .cache/studio-python-runtime/playtest-docker/**/native-output.json
+            .cache/studio-python-runtime/playtest-docker/**/python-playtest-result.json
+            .cache/studio-python-runtime/playtest-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/process.json
+            .cache/studio-python-runtime/mission-docker/**/judge.json
+            .cache/studio-python-runtime/mission-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-result.json
+            .cache/studio-python-runtime/three-objectives/**/summary.json
+          retention-days: 14

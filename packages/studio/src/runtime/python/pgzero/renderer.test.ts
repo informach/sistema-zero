@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { createRaylibRenderer } from '../raylib/renderer'
 import { PGZERO_KEY_CODES, PGZERO_KEY_MODS } from './keyCodes.generated'
 import { PGZERO_LIMITS, PGZERO_LIST_ATTACHMENT, PGZERO_OP } from './protocol'
 import { createPgzeroRenderer } from './renderer'
@@ -96,6 +97,125 @@ const list = (...ops: number[]) => ({
 })
 
 describe('Pygame Zero renderer exchange', () => {
+  test('canvases without the regional compositor use their original frame parser', async () => {
+    const host = document.createElement('div')
+    const ce = createPgzeroRenderer(host, { pintaRegional: false })
+    const raylib3d = createRaylibRenderer(host, { pintaRegional: false })
+    try {
+      for (const [renderer, message] of [
+        [ce, 'Quadro do Pygame Zero inválido ou acima do limite.'],
+        [raylib3d, 'O quadro do Raylib chegou com um formato inválido.'],
+      ] as const) {
+        const reply = await renderer.exchange('{"pintaRelease":1}', [])
+        expect(JSON.parse(reply as string).error).toBe(message)
+      }
+    } finally {
+      ce.dispose()
+      raylib3d.dispose()
+    }
+  })
+
+  test('ordinary images reuse slots released by the preceding paint', async () => {
+    const renderer = createPgzeroRenderer(document.createElement('div'), { pintaRegional: true })
+    const decoder = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
+    // happy-dom lacks an image decoder. The registry, limits, paint queue and exchanges are real.
+    const png = Uint8Array.from(
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a/1sAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    )
+    const count = PGZERO_LIMITS.images
+    const bytes = new Uint8Array(png.length * count)
+    for (let i = 0; i < count; i++) bytes.set(png, i * png.length)
+    let closed = 0
+    Object.defineProperty(globalThis, 'createImageBitmap', {
+      configurable: true,
+      value: async () => ({
+        width: 1,
+        height: 1,
+        close() {
+          closed++
+        },
+      }),
+    })
+    try {
+      const request = JSON.stringify({
+        pintaLoad: Array.from({ length: count }, () => [1, 1, png.length]),
+      })
+      const loaded = await renderer.exchange(request, [{ id: 0, bytes }])
+      const owner = JSON.parse(loaded as string).pintaOwner
+      expect(owner).toBe(1)
+      const composed = list(
+        PGZERO_OP.PINTA_AFFINE,
+        owner,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        PGZERO_OP.PINTA_RELEASE,
+        owner,
+      )
+      await renderer.exchange(header(), [composed])
+      expect(renderer.paintedFrames()).toBe(0)
+      const result = await renderer.exchange(
+        header({ images: [[1, '/p/images/ordinary.png', 1, 1]], read: [0, 0] }),
+        [list(PGZERO_OP.BLIT, 1, 0, 0), { id: 1, bytes: png }],
+      )
+      expect(JSON.parse(result as string)).toHaveProperty('pixel')
+      expect(closed).toBe(count)
+      expect(renderer.paintedFrames()).toBe(2)
+    } finally {
+      renderer.dispose()
+      if (decoder) Object.defineProperty(globalThis, 'createImageBitmap', decoder)
+      else Reflect.deleteProperty(globalThis, 'createImageBitmap')
+    }
+  })
+  for (const focus of [true, false])
+    test(`presentation focus=${focus} preserves painting and applies to startup and pointer input`, async () => {
+      const host = document.createElement('div')
+      const editor = document.createElement('input')
+      document.body.append(editor, host)
+      editor.focus()
+      const renderer = createPgzeroRenderer(host, { focus })
+      const before = screenFills
+      try {
+        await renderer.exchange(header(), [list(PGZERO_OP.FILL, 1, 2, 3, 255)])
+        const canvas = host.querySelector('canvas')
+        expect(canvas).not.toBeNull()
+        if (!canvas) throw new Error('Missing real renderer canvas')
+        expect(screenFills).toBeGreaterThan(before)
+        expect([canvas.width, canvas.height]).toEqual([64, 48])
+        expect(document.activeElement).toBe(focus ? canvas : editor)
+        Object.defineProperty(canvas, 'getBoundingClientRect', {
+          value: () => new DOMRect(0, 0, 64, 48),
+        })
+        editor.focus()
+        canvas.dispatchEvent(
+          new MouseEvent('pointerdown', {
+            clientX: 8,
+            clientY: 8,
+            button: 0,
+            buttons: 1,
+            bubbles: true,
+          }),
+        )
+        expect(document.activeElement).toBe(focus ? canvas : editor)
+      } finally {
+        renderer.dispose()
+        host.remove()
+        editor.remove()
+      }
+    })
+
   test('mission actor poses appear only with a presented frame and disappear when no longer drawn', async () => {
     const renderer = createPgzeroRenderer(document.createElement('div'), { mission: true })
     try {

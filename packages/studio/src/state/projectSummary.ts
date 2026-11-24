@@ -5,6 +5,7 @@ import { IDE_MODES, type IDEMode } from '../core/modes'
 export interface ProjectSummary {
   migrationPending?: boolean
   hasPreservedEdit?: boolean
+  hasRetainedLegacySource?: true
   id: string
   name: string
   createdAt: number
@@ -15,6 +16,20 @@ export interface ProjectSummary {
   /** Identity only. A list item never authorizes runtime loading or execution. */
   runtime?: StudioRuntimeSelection
   thumbDataUrl?: string
+  /**
+   * O Pro que veio de "Virar profissional": o id da cópia em blocos guardada na conversão
+   * (`proMeta.origin.projectId`). O cartão diz de onde ele veio (proposta aprovada em 21/11/2026).
+   */
+  originProjectId?: string
+}
+
+/** O id da cópia em blocos de um Pro convertido, lido do meta (só a forma do id). */
+function originProjectIdOf(raw: Record<string, unknown>): string | undefined {
+  if (raw.kind !== 'pro' || !raw.proMeta || typeof raw.proMeta !== 'object') return undefined
+  const origin = (raw.proMeta as { origin?: unknown }).origin
+  if (!origin || typeof origin !== 'object') return undefined
+  const id = (origin as { projectId?: unknown }).projectId
+  return typeof id === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(id) ? id : undefined
 }
 
 export function projectEnvironmentSummary(
@@ -50,5 +65,14 @@ export function toProjectSummary(id: string, value: unknown): ProjectSummary | n
   const updatedAt =
     typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt) ? raw.updatedAt : createdAt
   const mode = IDE_MODES.includes(raw.mode as IDEMode) ? (raw.mode as IDEMode) : 'blocks'
-  return { id, name, createdAt, updatedAt, mode, ...projectEnvironmentSummary(raw) }
+  const originProjectId = originProjectIdOf(raw)
+  return {
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    mode,
+    ...projectEnvironmentSummary(raw),
+    ...(originProjectId ? { originProjectId } : {}),
+  }
 }

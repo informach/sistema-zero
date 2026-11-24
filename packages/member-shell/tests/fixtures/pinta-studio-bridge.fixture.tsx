@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import type { PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
 import type { PintaExportedAsset, PintaHostAdapter } from '@sistemazero/pinta'
 import type { ReactNode } from 'react'
+import { PintaAccountScope } from '../../src/components/creator/pinta-account-scope'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -20,12 +22,20 @@ const canonical: PintaExportedAsset = {
   },
 }
 let current: PintaHostAdapter | undefined
+let storageOwner: string | undefined
 let lookupGate = Promise.withResolvers<void>()
 let lookupEntered = Promise.withResolvers<void>()
 let linked = false
 let saveOk = true
+const connections: {
+  viewerId: string
+  pintaPaletteWriteEnabled: boolean
+  pintaCausalEnabled: boolean
+}[] = []
+const mirrors: Array<{ namespace: string; causal: boolean }> = []
 const lookups: Array<{ id: string; namespace: string }> = []
 const saves: Array<{ asset: PintaExportedAsset; namespace: string }> = []
+const retired: Array<{ viewerId: string; abort?: boolean }> = []
 const cleanups: Array<() => void> = []
 const router = { push: () => {}, replace: () => {} }
 const search = new URLSearchParams()
@@ -38,20 +48,57 @@ mock.module('next/navigation', () => ({
 }))
 mock.module('@sistemazero/pinta', () => ({
   setPintaStorageNamespace: () => {},
-  createPintaPersistence: () => ({}),
+  createPintaPersistence: ({ namespace }: { namespace: string }) => ({ namespace }),
   isPintaAssetOpen: () => false,
   subscribePintaAssetOpenState: () => () => {},
   PintaHostChromeProvider: ({ children }: { children: ReactNode }) => children,
-  PintaApp: ({ adapter }: { adapter: PintaHostAdapter }) => {
+  PintaApp: ({
+    adapter,
+    persistence,
+  }: {
+    adapter: PintaHostAdapter
+    persistence?: { namespace: string }
+  }) => {
     current = adapter
+    storageOwner = persistence?.namespace
     return null
   },
 }))
+// Sem conta, o host monta a oficina regional (etapa 1 das regiões); com a conta (o padrão de todo
+// aluno desde 23/11/2026, sem flag), a mesma oficina vai para a fila causal. O dono do
+// armazenamento é o mesmo nos dois casos.
+mock.module('@sistemazero/pinta/workshop-reader', () => ({
+  createWorkshopPintaPersistence: ({ namespace }: { namespace: string }) => ({
+    namespace,
+    causal: {},
+  }),
+}))
 mock.module('../../src/lib/creations-cloud', () => ({
-  createCreationsCloud: () => ({ flush: async () => {}, dispose: () => {} }),
+  createCreationsCloud: (options: {
+    viewerId: string
+    pintaPaletteWriteEnabled: boolean
+    pintaCausalEnabled: boolean
+  }) => {
+    const { viewerId } = options
+    connections.push(options)
+    return {
+      ...(options.pintaCausalEnabled ? { pintaCausal: {} } : {}),
+      flush: async () => {},
+      dispose: (opts?: { abort?: boolean }) => retired.push({ viewerId, ...opts }),
+    }
+  },
 }))
 mock.module('../../src/lib/pinta-cloud-persistence', () => ({
-  createCloudMirroredPintaPersistence: () => ({ dispose: () => {} }),
+  createCloudMirroredPintaPersistence: ({
+    local,
+    causal,
+  }: {
+    local: { namespace: string }
+    causal?: unknown
+  }) => {
+    mirrors.push({ namespace: local.namespace, causal: !!causal })
+    return { namespace: local.namespace, dispose: () => {} }
+  },
 }))
 mock.module('../../src/components/creator/focus-mode', () => ({
   useFocusMode: () => ({ setWorkspaceActive: () => {} }),
@@ -79,9 +126,12 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
     await lookupGate.promise
     return linked ? { ...canonical, kind: 'image', updatedAt: 1 } : null
   },
-  savePersonalAsset: async (asset: PintaExportedAsset, options: { namespace: string }) => {
-    saves.push({ asset: structuredClone(asset), namespace: options.namespace })
-    return saveOk ? { ok: true, name: asset.name } : { ok: false, error: 'quota' }
+  savePersonalAssetBundle: async (assets: PintaExportedAsset[], options: { namespace: string }) => {
+    for (const asset of assets)
+      saves.push({ asset: structuredClone(asset), namespace: options.namespace })
+    return saveOk
+      ? { ok: true, assets: assets.map((asset) => ({ ...asset, updatedAt: 1 })) }
+      : { ok: false, error: 'quota' }
   },
 }))
 const { PintaClient } = await import('../../src/components/creator/pinta-client')
@@ -93,9 +143,13 @@ function mountedAdapter(): PintaHostAdapter {
 
 beforeEach(() => {
   current = undefined
+  storageOwner = undefined
   linked = false
   saveOk = true
   lookups.length = saves.length = 0
+  connections.length = 0
+  mirrors.length = 0
+  retired.length = 0
   lookupGate = Promise.withResolvers<void>()
   lookupEntered = Promise.withResolvers<void>()
 })
@@ -117,15 +171,37 @@ async function harness(audience: 'kids' | 'adult', owned = true) {
     element.remove()
   }
   cleanups.push(unmount)
-  const render = async (viewerId: string) => {
+  // Todo aluno logado tem o escopo da sua conta (o servidor o entrega sem flag): é o padrão aqui.
+  const render = async (
+    viewerId: string | null,
+    scope: PintaCausalViewer | null = viewerId
+      ? { userId: viewerId, accountId: `conta-${viewerId}`, audience }
+      : null,
+  ) => {
     current = undefined
     await act(async () => {
-      root.render(<PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />)
+      root.render(
+        <PintaAccountScope viewer={scope}>
+          <PintaClient viewerId={viewerId} audience={audience} studioAvailable={owned} />
+        </PintaAccountScope>,
+      )
     })
     return mountedAdapter()
   }
   return { render, unmount: async () => act(unmount) }
 }
+
+test('switching to the local workshop retires the prior queue and changes the storage owner', async () => {
+  const view = await harness('adult')
+  await view.render('a')
+  expect(storageOwner).toBe('adult:a')
+  expect(mirrors.at(-1)).toEqual({ namespace: 'adult:a', causal: true })
+  await view.render(null)
+  expect(storageOwner).toBe('')
+  expect(retired).toEqual([{ viewerId: 'a', abort: true }])
+  await view.render('b')
+  expect(storageOwner).toBe('adult:b')
+})
 
 test('unlinked resync does not create a canonical record or expose an unowned send button', async () => {
   const view = await harness('kids', false)
@@ -143,6 +219,9 @@ test('unlinked resync does not create a canonical record or expose an unowned se
 test('explicit PUSH and linked resync pass the unchanged canonical sheet; failures keep their reason', async () => {
   const view = await harness('kids')
   const adapter = await view.render('a')
+  // O envio ao Estúdio parte da oficina na fila causal: o padrão de todo perfil.
+  expect(connections.at(-1)).toMatchObject({ viewerId: 'a', pintaCausalEnabled: true })
+  expect(mirrors.at(-1)).toEqual({ namespace: 'a', causal: true })
   expect(await adapter.sendToStudio?.(canonical)).toMatchObject({ ok: true })
   linked = true
   lookupGate.resolve()
@@ -186,3 +265,34 @@ for (const audience of ['kids', 'adult'] as const) {
     expect(saves).toEqual([{ asset: canonical, namespace: audience === 'adult' ? 'adult:a' : 'a' }])
   })
 }
+
+test('a sessão do Pinta confere a audiência e o perfil e aposenta a fila ao mudar a conta', async () => {
+  const viewer = { userId: 'A', accountId: 'P', audience: 'kids' } as const
+  const view = await harness('kids')
+  // Sem escopo (suporte em modo leitura, servidor sem storage): o armazenamento de sempre.
+  await view.render('A', null)
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
+  expect(mirrors.at(-1)).toEqual({ namespace: 'A', causal: false })
+  await view.render('A', viewer)
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: true,
+    pintaCausalEnabled: true,
+  })
+  const count = retired.length
+  await view.render('A', { ...viewer, accountId: 'P2' })
+  expect(retired).toHaveLength(count + 1)
+  await view.render('A', { ...viewer, audience: 'adult' })
+  expect(connections.at(-1)).toMatchObject({
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
+  await view.render('B', viewer)
+  expect(connections.at(-1)).toMatchObject({
+    viewerId: 'B',
+    pintaPaletteWriteEnabled: false,
+    pintaCausalEnabled: false,
+  })
+})

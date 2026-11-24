@@ -1,12 +1,13 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import ts from 'typescript'
 
 /**
  * A regra que mantém o jogo separado da plataforma (decisão da dona, 27/10/2026):
  * - o jogo só importa three, React Three Fiber, Rapier, React, zustand, o contrato e o
- *   avatar-quarto (avatar e quarto são os únicos pedaços divididos de propósito);
+ *   avatar-quarto, o núcleo puro de documentos/comandos e as entradas restritas do
+ *   runtime compilado de cenários (lote 8.5); nunca o Palco/editor da ferramenta;
  * - nenhum pacote da plataforma importa o jogo nem o serviço do jogo (a página carrega o jogo
  *   publicado por URL, nunca por import);
  * - o avatar-quarto, dividido com a plataforma, não importa nada da plataforma; e o contrato não
@@ -23,7 +24,14 @@ const PERMITIDOS_NO_JOGO = [
   '@react-three/rapier',
   '@sistemazero/arquipelago-contracts',
   '@sistemazero/avatar-quarto',
+  '@sistemazero/molda-cenarios-core',
 ]
+// Entradas exatas do consumidor compilado, não uma permissão para importar o motor/editor inteiro.
+const RUNTIMES_DE_CENARIO = new Set([
+  '@sistemazero/molda-cenarios-motor/leitura',
+  '@sistemazero/molda-cenarios-motor/runtime',
+  '@sistemazero/molda-cenarios-motor/instalar',
+])
 
 function arquivos(dir: string): string[] {
   let lista: string[] = []
@@ -49,6 +57,38 @@ export function importsDe(texto: string): string[] {
     (m) => m[1] ?? '',
   )
   return [...new Set([...lidos, ...crase])]
+}
+
+/**
+ * O que o arquivo carrega ao RODAR: `import type` e `export type … from` somem na compilação;
+ * `import()` e `require()` contam. Um `import { type A } from` continua contando (sob
+ * `verbatimModuleSyntax` ele sobra como `import {} from`, que carrega o módulo).
+ */
+export function importsQueRodam(texto: string): string[] {
+  const fonte = ts.createSourceFile('modulo.ts', texto, ts.ScriptTarget.Latest, true)
+  const rodam = new Set<string>()
+  const visitar = (no: ts.Node) => {
+    if (
+      (ts.isImportDeclaration(no) || ts.isExportDeclaration(no)) &&
+      no.moduleSpecifier &&
+      ts.isStringLiteral(no.moduleSpecifier)
+    ) {
+      const soTipo = ts.isImportDeclaration(no) ? !!no.importClause?.isTypeOnly : no.isTypeOnly
+      if (!soTipo) rodam.add(no.moduleSpecifier.text)
+    }
+    if (
+      ts.isCallExpression(no) &&
+      (no.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(no.expression) && no.expression.text === 'require'))
+    ) {
+      const alvo = no.arguments[0]
+      if (alvo && (ts.isStringLiteral(alvo) || ts.isNoSubstitutionTemplateLiteral(alvo)))
+        rodam.add(alvo.text)
+    }
+    ts.forEachChild(no, visitar)
+  }
+  visitar(fonte)
+  return [...rodam]
 }
 
 const externo = (alvo: string) => !alvo.startsWith('.') && !alvo.startsWith('node:')
@@ -78,9 +118,58 @@ describe('fronteira do jogo', () => {
     const fora: string[] = []
     for (const f of arquivos(join(import.meta.dir, '..', 'src')))
       for (const alvo of importsDe(readFileSync(f, 'utf8')))
-        if (externo(alvo) && !casa(alvo, PERMITIDOS_NO_JOGO))
+        if (externo(alvo) && !casa(alvo, PERMITIDOS_NO_JOGO) && !RUNTIMES_DE_CENARIO.has(alvo))
           fora.push(`${relative(PACOTES, f)} → ${alvo}`)
     expect(fora).toEqual([])
+  })
+
+  test('o núcleo de cenários só depende de módulos puros, zod e do contrato de criações', () => {
+    const fora: string[] = []
+    for (const f of arquivos(join(PACOTES, 'molda-cenarios-core', 'src')))
+      for (const alvo of importsDe(readFileSync(f, 'utf8')))
+        if (!alvo.startsWith('.') && alvo !== 'zod' && alvo !== '@sistemazero/core/creations')
+          fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+    // The shared canonical hash is already a declared core dependency. Its barrel
+    // must remain pure too; this does not admit the platform or arbitrary core paths.
+    // O que vale é o que o BARRIL carrega ao rodar, seguindo os imports relativos: os
+    // subcaminhos próprios da pasta (`./creations/pinta-causal` e outros, com zod) não entram
+    // no jogo, e um `export type` do barril some na compilação.
+    const pendentes = [join(PACOTES, 'core', 'src', 'creations', 'index.ts')]
+    const vistos = new Set<string>()
+    while (pendentes.length) {
+      const f = pendentes.pop()!
+      if (vistos.has(f)) continue
+      vistos.add(f)
+      for (const alvo of importsQueRodam(readFileSync(f, 'utf8'))) {
+        if (!alvo.startsWith('.')) {
+          fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+          continue
+        }
+        const base = join(dirname(f), alvo)
+        const achado = [base, `${base}.ts`, `${base}.tsx`, join(base, 'index.ts')].find(
+          (c) => existsSync(c) && statSync(c).isFile(),
+        )
+        if (achado) pendentes.push(achado)
+        else fora.push(`${relative(PACOTES, f)} → ${alvo} (arquivo não achado)`)
+      }
+    }
+    expect(vistos.size).toBeGreaterThan(5)
+    expect(fora).toEqual([])
+  })
+
+  test('o leitor do que roda ignora só o import de tipo', () => {
+    const texto = [
+      "import type { A } from 'tipo-a'",
+      "export type { B } from 'tipo-b'",
+      "import { type C, d } from 'misto'",
+      "import { type E } from 'so-tipo-inline'",
+      "export { f } from 'reexporta'",
+      "const g = await import('dinamico')",
+      'const h = require(`crase`)',
+    ].join('\n')
+    expect(importsQueRodam(texto).sort()).toEqual(
+      ['misto', 'so-tipo-inline', 'reexporta', 'dinamico', 'crase'].sort(),
+    )
   })
 
   test('o avatar-quarto, dividido com a plataforma, não importa nada da plataforma', () => {

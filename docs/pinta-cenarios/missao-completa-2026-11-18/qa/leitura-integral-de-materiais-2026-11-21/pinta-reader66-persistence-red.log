@@ -1,0 +1,118 @@
+bun test v1.3.11 (af24e281)
+
+src\state\persistence.test.ts:
+38 |       readOutput(child.stdout),
+39 |       readOutput(child.stderr),
+40 |     ])
+41 |     const output = Bun.stripANSI(`${stdout}\n${stderr}`)
+42 |     if (exit !== 0)
+43 |       throw new Error(`Isolated persistence cases exited ${exit}:\n${output.slice(-12_000)}`)
+                     ^
+error: Isolated persistence cases exited 1:
+bun test v1.3.11 (af24e281)
+
+
+src\state\__tests__\persistence.cases.ts:
+(pass) setStorageNamespace — isolamento por perfil > a substituição com escopo da aula ignora o namespace global do Estúdio Completo [93.00ms]
+(pass) setStorageNamespace — isolamento por perfil > namespace → DB próprio por perfil; vazio → DB histórico compartilhado [32.00ms]
+(pass) setStorageNamespace — isolamento por perfil > adapter capturado para A continua lendo A depois de o namespace global mudar para B [15.00ms]
+(pass) PersistenceService > persiste o projeto quando o debounce de autosave completa [219.00ms]
+(pass) PersistenceService > cada gravação do projeto é UMA transação: os put, o commit() explícito por último e nada depois [219.00ms]
+(pass) PersistenceService > mantém o snapshot pendente quando o projeto é descarregado antes do debounce [219.00ms]
+(pass) PersistenceService > cancela autosave pendente ao excluir o projeto carregado [328.00ms]
+(pass) PersistenceService > excluir num namespace não cancela o mesmo id aberto em outro namespace [218.00ms]
+(pass) PersistenceService > força gravação pendente quando a página está saindo [219.00ms]
+(pass) PersistenceService > materializa o buffer do editor antes do snapshot de pagehide [110.00ms]
+(pass) PersistenceService > flusha o autosave pendente no detach (unmount não perde a última edição) [234.00ms]
+(pass) PersistenceService > emite onChange no debounce com o snapshot completo, mesmo com persistence none [234.00ms]
+(pass) PersistenceService > onSave rejeitado marca erro no badge, notifica onError e propaga [125.00ms]
+(pass) PersistenceService > não marca como salvo se uma edição nova acontece enquanto a persistência anterior está em voo [297.00ms]
+Falha ao salvar projeto: A transação foi interrompida.
+(pass) PersistenceService > com o autosave EM VOO, o pagehide já PEDE a gravação do flush, que chega ao disco por último [219.00ms]
+(pass) PersistenceService > mantém o projeto sujo e registra erro quando o autosave falha [219.00ms]
+(pass) PersistenceService > um put que LANÇA (valor que não clona) falha o save sem gravar nada pela metade [234.00ms]
+(pass) PersistenceService > salvar manualmente cancela o autosave pendente [219.00ms]
+(pass) PersistenceService > salvar manualmente não marca salvo se outro snapshot entra enquanto persiste [125.00ms]
+(pass) PersistenceService > não re-persiste o projeto excluído quando o delete chega com o save em voo [219.00ms]
+(pass) PersistenceService > não agenda gravação ao hidratar/carregar um projeto (isDirty:false não escreve) [328.00ms]
+(pass) importProjectFromJSON > persiste o formato e as ferramentas usadas mesmo depois de apagar todos os blocos [47.00ms]
+(pass) importProjectFromJSON > rejeita IR importada com complexidade excessiva [531.00ms]
+(pass) importProjectFromJSON > preserva blocksState importado quando a estrutura usa blocos conhecidos [62.00ms]
+(pass) importProjectFromJSON > recusa importação com tipo desconhecido sem gravar uma cópia incompleta
+(pass) importProjectFromJSON > recusa imagens excedentes sem gravar; importa integralmente quando tudo cabe [47.00ms]
+(pass) importProjectFromJSON > preserva kind/tree/proMeta de um projeto profissional no export→import [47.00ms]
+(pass) importProjectFromJSON > recusa projeto pro com árvore inválida sem rebaixar ou gravar
+(pass) importProjectFromJSON > rejeita blocksState importado com blocos demais antes de persistir [31.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > o rename lê o meta DEPOIS de um persistProject em voo do mesmo id, e grava por cima dele [16.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > renames concorrentes do mesmo id serializam: o 2º lê o que o 1º GRAVOU (último vence) [31.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > a gravação seguinte do mesmo projeto é PEDIDA sem esperar a anterior terminar, e o disco recebe na ordem [16.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > rename atômico invalida um autosave sem a revisão durável; o nome novo é preservado [31.00ms]
+(pass) live project mutation limits > bloqueia edicao canonica maior que o limite por arquivo
+(pass) live project mutation limits > bloqueia edicao de arquivo extra que ultrapassa o limite total do projeto [16.00ms]
+(pass) live project mutation limits > normaliza renomeacao feita pela UI
+(pass) loadProject > rejeita projeto atual sem arquivos canônicos válidos [78.00ms]
+(pass) loadProject > recusa projeto persistido corrompido antes de entrar no store [78.00ms]
+(pass) loadProject > preserva kind/tree/proMeta de projeto profissional no roundtrip persist→load [141.00ms]
+(pass) loadProject > persiste blocksState fora do registro leve de state [62.00ms]
+(pass) loadProject > substitui um rascunho local inteiro ao recomeçar uma aula [125.00ms]
+(pass) loadProject > quando o código da Ponte está à frente, persiste a autoridade e apaga blocos antigos NA MESMA transação [47.00ms]
+(pass) loadProject > falha de quota com blocos a apagar NÃO apaga a partição de blocos (a transação aborta inteira) [47.00ms]
+(pass) loadProject > load rápido local não lê state/blocks pesados e preserva o modo salvo [78.00ms]
+(pass) loadProject > load rápido recusa um marcador v2 dentro da partição atual sem ler state [78.00ms]
+(pass) loadProject > restore atual não busca blocos antigos dentro da partição de IR [94.00ms]
+(pass) loadProject > adapter local restaura blocksState pela partição separada [94.00ms]
+(pass) loadProject > loads sobrepostos: o mais NOVO vence mesmo resolvendo por último (guard de geração) [93.00ms]
+(pass) loadProject > carrega projeto salvo em registros particionados antes do formato legado [78.00ms]
+(pass) listAllProjects > lista summaries indexados sem carregar projetos inteiros [47.00ms]
+(pass) listAllProjects > backups históricos não reaparecem na lista de projetos ativos [16.00ms]
+(pass) listAllProjects > a lista LEVE (`listProjectSummariesLight`) não lê as capas; `loadProjectSummaryById` relê meta + capa de UM projeto [125.00ms]
+(pass) listAllProjects > toda escrita/apagamento local avisa a página (`PROJECT_CHANGED_EVENT` com o id), inclusive o restauro silencioso [156.00ms]
+(pass) persistProject — assets só reescritos quando a referência muda > 1ª gravação SEMPRE materializa a partição de assets [47.00ms]
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve meta/files/state mas NÃO assets quando a referência de assets não mudou [63.00ms]
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve a partição de assets quando a referência muda (edição de imagem) [46.00ms]
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve a partição de assets na 1ª gravação após uma falha de write (ref não registrada) [47.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem), numa transação só com os assets
+(pass) espelho da nuvem ("guardado na sua conta") > espelho `null` (aula, playground) não chama nada e não quebra [125.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets NÃO recria a partição de um projeto que já foi apagado (meta ausente): nada gravado, espelho não acordado
+(pass) espelho da nuvem ("guardado na sua conta") > loadProjectSnapshotForCloud recusa recursos duplicados ou desconhecidos sem subir uma versão incompleta [63.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > loadProjectSummariesByIds lê os resumos de vários projetos num `getMany` só (meta + capa de cada) e devolve null para quem não existe [78.00ms]
+161 |       if (isDocumentRecord(before) && isDocumentRecord(after)) {
+162 |         for (const [key, value] of Object.entries(before))
+163 |           pending.push({ before: value, after: after[key], path: `${path}.${key}` })
+164 |         continue
+165 |       }
+166 |       throw new ProjectDocumentError(
+                  ^
+ProjectDocumentError: Este projeto não pode ser aberto integralmente nesta versão ($.assets). Nenhuma cópia foi gravada.
+ path: "$.assets",
+ code: "invalid-document"
+
+      at compare (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\core\projectDocumentGuards.ts:166:13)
+      at assertProjectContentPreserved (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\core\projectDocumentGuards.ts:173:43)
+      at readProjectAssetsSnapshot (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\projectStorageRead.ts:180:3)
+      at async loadProjectAssetsSnapshotById (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\persistence.ts:380:62)
+      at async loadProjectAssetsById (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\persistence.ts:367:17)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\__tests__\persistence.cases.ts:1734:26)
+(fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud lê materiais e metadados leves do perfil, sem arquivos ou blocos [16.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro SUBSTITUI: apaga a partição de blocos quando o snapshot não traz blocos, e a capa antiga [78.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro é ESTRITO: bloco que esta versão não reconhece RECUSA (nada gravado, partição de blocos intacta); canvas VAZIO da origem passa sem aviso e apaga a partição [78.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa projeto aberto em QUALQUER store (as por instância do editor, não só a default) [78.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa id inesperado ou inválido ANTES de gravar, e recusa projeto ABERTO
+(pass) espelho da nuvem ("guardado na sua conta") > persistProject/renameProjectMeta/deleteProject avisam o espelho; `silent` e o restauro não [219.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > um espelho que lança não derruba a gravação local [125.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o import de .szproject.json continua mintando id NOVO e avisa o espelho [62.00ms]
+
+1 tests failed:
+(fail) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud lê materiais e metadados leves do perfil, sem arquivos ou blocos [16.00ms]
+
+ 69 pass
+ 1 fail
+ 239 expect() calls
+Ran 70 tests across 1 file. [8.37s]
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\src\state\persistence.test.ts:43:17)
+(fail) transaction fault cases run without replacing IndexedDB in other test files [8437.00ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [8.92s]

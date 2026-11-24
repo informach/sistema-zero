@@ -27,6 +27,13 @@ Turtle. Com CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `TEMPO_DESVIRAR` diz quantos
 milissegundos as cartas erradas ficam à mostra, `CELULA` muda o tamanho das
 cartas e `PISCAR` o ritmo do cursor. `FIGURAS` é a lista dos oito pares: troque
@@ -44,17 +51,17 @@ As figuras não são imagens: `registrar_formas` cria a estrela, o losango, o
 hexágono e a cruz com listas de pontos, e `poligono` calcula pontos em volta do
 centro com seno e cosseno. Quatro tartarugas persistentes desenham a cena:
 `pincel` carimba as cartas, `simbolo` carimba as figuras, `cursor` é a moldura
-que anda e `painel` escreve o placar. Uma única cadeia de `ontimer(..., 16)`
-mede o tempo com `time.monotonic()`, conta a espera e faz o cursor pulsar; a
-pausa congela a partida e reiniciar não adiciona outra cadeia. Um quadro
-atrasado conta no máximo 100 ms.
+que anda e `painel` escreve o placar. O laço do jogo, `a_cada_quadro` (em
+🔁 Enquanto estiver rodando), mede o tempo com `time.monotonic()`, conta a espera
+e faz o cursor pulsar; a pausa congela a partida e reiniciar não começa outro
+laço. Um quadro atrasado conta no máximo 100 ms.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho. As cartas viram
-de uma vez, sem animação de giro.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho. As cartas viram de uma vez, sem animação de giro.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

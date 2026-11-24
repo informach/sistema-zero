@@ -3,7 +3,7 @@ import type { Dirent } from 'node:fs'
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { readDependencyDeclarations } from './dependencyDeclarations'
+import { dependencyIndexIssue, readDependencyDeclarations } from './dependencyDeclarations'
 
 const roots: string[] = []
 afterEach(async () => {
@@ -47,5 +47,61 @@ describe('índice das dependências instaladas', () => {
     const fs = await fixture({ 'node_modules/oversized/index.d.ts': ' '.repeat(8_000_001) })
     await expect(readDependencyDeclarations(fs, () => true)).rejects.toThrow('limite de memória')
     await expect(readDependencyDeclarations(fs, () => false)).rejects.toThrow('cancelada')
+  })
+})
+
+// Lote 6 da missão (21/11/2026): o "ENOENT … scandir node_modules" aparecia cru no alto do editor
+// Pro enquanto a oficina preparava (visto no staging em 20/11).
+describe('dependências ainda não instaladas', () => {
+  it('sem a pasta node_modules, o índice sai vazio, sem erro', async () => {
+    const fs = await fixture({ 'src/main.ts': 'export {}' })
+    await expect(readDependencyDeclarations(fs, () => true)).resolves.toEqual({
+      files: {},
+      availableFiles: [],
+    })
+  })
+
+  it('um pacote que some no meio da leitura (instalação em andamento) é pulado', async () => {
+    const fs = await fixture({
+      'node_modules/fica/package.json': '{"name":"fica"}',
+      'node_modules/some/package.json': '{"name":"some"}',
+    })
+    const gone = Object.assign(new Error("ENOENT: no such file or directory, scandir 'x'"), {
+      code: 'ENOENT',
+    })
+    const flaky = {
+      ...fs,
+      readdir: ((path: string, options?: { withFileTypes: true }) =>
+        path === 'node_modules/some'
+          ? Promise.reject(gone)
+          : options
+            ? fs.readdir(path, options)
+            : fs.readdir(path)) as typeof fs.readdir,
+    }
+    const { files } = await readDependencyDeclarations(flaky, () => true)
+    expect(Object.keys(files)).toEqual(['node_modules/fica/package.json'])
+  })
+
+  it('outro erro do sistema de arquivos vira frase; os limites seguem com a frase deles', () => {
+    const denied = Object.assign(new Error("EACCES: permission denied, scandir 'node_modules'"), {
+      code: 'EACCES',
+    })
+    const original = console.warn
+    console.warn = () => {}
+    try {
+      expect(dependencyIndexIssue(denied)).toBe(
+        'Não consegui ler as bibliotecas instaladas agora: o editor pode não reconhecer alguma delas.',
+      )
+      // Um `code` que não é do sistema de arquivos segue com a própria mensagem.
+      const aborted = Object.assign(new Error('A leitura foi cancelada.'), { code: 'ABORT_ERR' })
+      expect(dependencyIndexIssue(aborted)).toBe('A leitura foi cancelada.')
+    } finally {
+      console.warn = original
+    }
+    expect(
+      dependencyIndexIssue(
+        new Error('As dependências ultrapassaram o limite de indexação do editor.'),
+      ),
+    ).toBe('As dependências ultrapassaram o limite de indexação do editor.')
   })
 })

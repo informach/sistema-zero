@@ -1,0 +1,191 @@
+{
+  "format": "pinta-local-verification-receipts",
+  "version": 1,
+  "baseline": "083d354a9",
+  "recoverySources": [
+    {
+      "file": "packages/pinta/src/state/localCausalArchive.ts",
+      "sha256": "3da0408dd8575fc9da3ba0e2055d8a5a28bb3ff656954efaf61e207245332eb2"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalOutbox.ts",
+      "sha256": "0e9ac6efc034ab76b39bc82c5567117b132ea17295480e9bfe85dc6b7e7b910c"
+    },
+    {
+      "file": "packages/pinta/src/state/localCausalRecovery.ts",
+      "sha256": "ab2a30ef11b6aea8f023d8527d3bcccbb4bc6a15051fc5b03f77d37a995133c6"
+    },
+    {
+      "file": "packages/pinta/src/state/persistence.ts",
+      "sha256": "3aaa59a9126ef88ab4282c8cbe61a837f5e251fe94ff5b52977abcd2c999625c"
+    },
+    {
+      "file": "packages/member-shell/src/lib/pinta-cloud-persistence.ts",
+      "sha256": "1e73de0a70ff4c66700e81f514f59e722bec9d5eb1895fdbe73eb98a2efb092f"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "4947251871b37c1c752c1b10b9549bef2a387543aeca811a508afc8dd10f8453"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-causal-local.flow.ts",
+      "sha256": "4ffba9a8963ab1ef4cab6b068c87db1b7d16a6c20b5a89de7216c614aa764882"
+    }
+  ],
+  "entries": [
+    {
+      "name": "pinta-coordenada-full-pinta.log",
+      "bytes": 1052,
+      "sha256": "79dd67d7a3e57cb5838122df3f4151996696def0dbe212f3c5802aeec73cf75d",
+      "gzipBytes": 499,
+      "gzipSha256": "838bc16e9c8107bbc246a3ab0fd8fa7c83c397b2b9a8136d549339e28e44a414"
+    },
+    {
+      "name": "pinta-coordenada-core-full.log",
+      "bytes": 327,
+      "sha256": "a2893d1becb1844b30b6cc2623e25473c6f969e9f4f4d2080488aae9f73e72e4",
+      "gzipBytes": 254,
+      "gzipSha256": "07a7cdfe88aadae9cc63c761b038b242c42c943d7a072c5ca153565be7b0916c"
+    },
+    {
+      "name": "pinta-coordenada-core-full-serial.log",
+      "bytes": 119,
+      "sha256": "5fa58f92b467e25285f5f9d6588c1a770f7c662a612ee0ef53fff3772595368c",
+      "gzipBytes": 123,
+      "gzipSha256": "0eccd2e991547d711edd05acefd3d064307a940e3f5884bb4b93a444ad6ffdb2"
+    },
+    {
+      "name": "pinta-coordenada-durable20.log",
+      "bytes": 457,
+      "sha256": "51e99964433d77c1c477c3948d4560073939268a9c7f28b68f32a19e594e6994",
+      "gzipBytes": 183,
+      "gzipSha256": "83a754b567ec84061e7ba09c0005a6dd606127b1f04557f83730a9b047cd5c08"
+    },
+    {
+      "name": "pinta-coordenada-python-focused.log",
+      "bytes": 111,
+      "sha256": "260cab75049ae7600fdb8857e1a142cec1367a292012771a33b49b6b93f865ea",
+      "gzipBytes": 118,
+      "gzipSha256": "e836ea6427fefc2182af98ff6b4f5b8ea890e9c4d149738da3c20a052f5980fd"
+    },
+    {
+      "name": "pinta-coordenada-readers-focused.log",
+      "bytes": 110,
+      "sha256": "dd1efc0d887baf5af35f97dfa797ee5459fdf7c4cf5a51452d91044663721905",
+      "gzipBytes": 117,
+      "gzipSha256": "ec0af369bf806a0397158c1364695b3bc69cb1099f0c5e575636e28c01a6436c"
+    },
+    {
+      "name": "pinta-coordenada-regional-alias-red.log",
+      "bytes": 30123,
+      "sha256": "051dab8929e8207f4307e775a64db8501d30feaa0b71c1f27e8abb0f2af2a904",
+      "gzipBytes": 6069,
+      "gzipSha256": "fe228d04f327e6cb777ebeb123a0774578385aaa947f5402d02c248aec983e19"
+    },
+    {
+      "name": "pinta-coordenada-regional-alias-green.log",
+      "bytes": 108,
+      "sha256": "4b7c58c2141c6119e0ca1a5a48368fa719f4dcbea73035943e53261a6a62c072",
+      "gzipBytes": 117,
+      "gzipSha256": "5c83cde286a5b25e761940ecd7d1ca90b1a9ef2cc54ba25ead3974d3f2b968aa"
+    },
+    {
+      "name": "pinta-coordenada-types-review-focus.log",
+      "bytes": 271,
+      "sha256": "8dd36ac6d9da76744c0d4e3a28ca9fd5a95dd504fea766c6f8346c9d408499e9",
+      "gzipBytes": 201,
+      "gzipSha256": "53839e3d2253f03fb1ff705b4360c3bcb96aeae5b66ea57bcaa92b3f4c4122ef"
+    },
+    {
+      "name": "pinta-coordenada-studio-types-integrated.log",
+      "bytes": 14754,
+      "sha256": "0b5e7d8fdc9249571bf8a8a7d6a0aabce25a5a1e3dff0d3a5479d669c450d4c6",
+      "gzipBytes": 1017,
+      "gzipSha256": "0bd1a80406fe871d6187adf55d915b75c3b181473b4a472843b53def11ff9ae6"
+    },
+    {
+      "name": "pinta-coordenada-studio-types-review.log",
+      "bytes": 757,
+      "sha256": "0917549fc42456057bc9086de22381feeafd172dd4af05e44edcf2960cffdea6",
+      "gzipBytes": 212,
+      "gzipSha256": "db66a1c2f730a62e4e971d567247fd0da53adeb85b758fff88283f143a4c4823"
+    },
+    {
+      "name": "pinta-coordenada-canvas-3d-focus.log",
+      "bytes": 109,
+      "sha256": "72ba35417870ba3e0552c5e7f1ae855461bed726ccc5f5356acbb53663c4a3fd",
+      "gzipBytes": 118,
+      "gzipSha256": "a277af7e537e52edb063d0eda44d9a2e806a15db768b5bf477f76124f7cee714"
+    },
+    {
+      "name": "pinta-coordenada-v4-durable20.log",
+      "bytes": 10701,
+      "sha256": "615e4b20444a1b650f8a0914ef7661a17db42d475262954a4734707b7df18976",
+      "gzipBytes": 1456,
+      "gzipSha256": "67590625f1dce09f0048f6477ca44ace8e1606840258f7500caa726ce1c65e94"
+    },
+    {
+      "name": "pinta-coordenada-v4-durable-final.log",
+      "bytes": 462,
+      "sha256": "24c5f7a0bfc4019288ea657753d7cd93a872d8d7b1cd8e0b35a535bb0de92b1d",
+      "gzipBytes": 184,
+      "gzipSha256": "424bfcfc8fe6ba8be33413e02dd6bd1e3b0e63d4beeb5c2f56d29bc49a91ed63"
+    },
+    {
+      "name": "pinta-coordenada-v4-resources-final.log",
+      "bytes": 3082,
+      "sha256": "01763360cc3eebc693458fcc39dc569612fa53b52f1ebe99a07f126c0146edfb",
+      "gzipBytes": 1010,
+      "gzipSha256": "16e4c8e19c8c3813dc58272a02ecaef9d8ac852d32aa51c1839c71d919fe1be9"
+    },
+    {
+      "name": "pinta-coordenada-v4-resources-manifest.log",
+      "bytes": 1734,
+      "sha256": "2b6f81bc57b629f2a1a37e7460dcf98f0e5d06474f199982cbb32f4ba6a2c8a7",
+      "gzipBytes": 273,
+      "gzipSha256": "4bc95a605144243ee102f3554ae9636257f2c45c03e54ed48e07a0b3fbbb2ba3"
+    },
+    {
+      "name": "pinta-coordenada-v4-host-review.log",
+      "bytes": 4933,
+      "sha256": "5df3f255c3a6cad978eb646ef063b7d33dcc0c740dd87c2f843fcb7dc017e23e",
+      "gzipBytes": 1328,
+      "gzipSha256": "6d00799ba352b758935293d96952ab8b9962dd3aa0e6a184595ba16f71677903"
+    },
+    {
+      "name": "pinta-coordenada-v4-local32-final.log",
+      "bytes": 1689,
+      "sha256": "4814c80e7b1b2dc7c975848ab94fe9573de03ae682daa6b4c8a01fdd872d7238",
+      "gzipBytes": 553,
+      "gzipSha256": "fbaa1913f347cd990820f27d37614f09183db04eea752c0e54d05df18e5262da"
+    },
+    {
+      "name": "pinta-coordenada-v4-storage-current.log",
+      "bytes": 368,
+      "sha256": "2f2c38c61f807c5c004d6b89d2c5b5d39cfe27961b3f17634202c94b3eaf455e",
+      "gzipBytes": 247,
+      "gzipSha256": "9720f1de7d1952fd5eb6b735d05db0806f8fda1a2260f800c244fbf668723fc5"
+    },
+    {
+      "name": "pinta-coordenada-v4-native-browser.log",
+      "bytes": 4884,
+      "sha256": "49bac72140192641c313b1f4fb847dfd584e8fba17e6a4c80269fe70e17f21a8",
+      "gzipBytes": 1398,
+      "gzipSha256": "fc0f072d1b3fc50c362040f04d061fd9fec94b745aa1e0476d9f6ed89f8b8015"
+    },
+    {
+      "name": "pinta-coordenada-v4-native-current.log",
+      "bytes": 4663,
+      "sha256": "595551bb18ba18158ac0cf951db9fdbb37cae15fb214b521ce30ede4f4470de2",
+      "gzipBytes": 1357,
+      "gzipSha256": "13da19bd60fcf645398771dcf00f575e1e76f8c09b3d3ad9c7e11f64a3e91e7a"
+    },
+    {
+      "name": "pinta-coordenada-v4-native-manifests.log",
+      "bytes": 2093,
+      "sha256": "8be23b23a1b55e732fc3f4d38ffd5f30ef2c5c88186cd174fb620c1d01432d0e",
+      "gzipBytes": 908,
+      "gzipSha256": "84ce66936296befb08237319a188e1cc53d1d0facfd33c93442199896f89d9ff"
+    }
+  ]
+}

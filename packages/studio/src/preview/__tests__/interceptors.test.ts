@@ -19,6 +19,9 @@ function runInterceptor(): {
   console: Console
   captured: CapturedMessage[]
   win: Window & typeof globalThis
+  flushNotices: () => void
+  nativeCalls: () => number
+  advanceClock: (milliseconds: number) => void
 } {
   const captured: CapturedMessage[] = []
   const parent = {
@@ -26,7 +29,18 @@ function runInterceptor(): {
       if (msg.kind !== 'heartbeat') captured.push(msg)
     },
   }
-  const fakeConsole = { log() {}, warn() {}, error() {}, info() {} } as unknown as Console
+  let nativeCalls = 0
+  const native = () => {
+    nativeCalls++
+  }
+  const fakeConsole = {
+    log: native,
+    warn: native,
+    error: native,
+    info: native,
+  } as unknown as Console
+  const notices: Array<() => void> = []
+  let clock = 0
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
   const run = new Function(
     'parent',
@@ -35,11 +49,59 @@ function runInterceptor(): {
     'Node',
     'console',
     'setInterval',
+    'setTimeout',
+    'Date',
     buildInterceptorScript('*'),
   )
-  run(parent, window, document, Node, fakeConsole, () => 0)
-  return { console: fakeConsole, captured, win: window as Window & typeof globalThis }
+  run(
+    parent,
+    window,
+    document,
+    Node,
+    fakeConsole,
+    () => 0,
+    (callback: () => void) => {
+      notices.push(callback)
+      return notices.length
+    },
+    { now: () => clock },
+  )
+  return {
+    console: fakeConsole,
+    captured,
+    win: window as Window & typeof globalThis,
+    flushNotices: () => {
+      for (const callback of notices.splice(0)) callback()
+    },
+    nativeCalls: () => nativeCalls,
+    advanceClock: (milliseconds) => {
+      clock += milliseconds
+    },
+  }
 }
+
+it('bounds console traffic before IPC and native DevTools, reports omissions and keeps runtime errors', () => {
+  const f = runInterceptor()
+  for (let i = 0; i < 10_000; i++) f.console.log('message', i)
+  expect(f.captured.length).toBeLessThanOrEqual(180)
+  expect(f.nativeCalls()).toBeLessThanOrEqual(180)
+  f.flushNotices()
+  expect(f.captured.at(-1)?.kind).toBe('warn')
+  expect(f.captured.at(-1)?.parts.join(' ')).toContain('9821')
+  f.win.onerror?.(
+    'real failure after flood',
+    undefined,
+    7,
+    2,
+    new Error('real failure after flood'),
+  )
+  expect(f.captured.at(-1)?.kind).toBe('runtimeError')
+  expect(f.captured.at(-1)?.parts.join(' ')).toContain('real failure')
+  f.advanceClock(1000)
+  f.console.log('next interval')
+  expect(f.captured.at(-1)?.kind).toBe('log')
+  expect(f.captured.at(-1)?.parts).toEqual(['next interval'])
+})
 
 describe('interceptor console.log — serialização de valores', () => {
   it('mostra a tag de abertura ao logar um elemento do DOM (não "{}")', () => {

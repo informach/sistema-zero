@@ -1,0 +1,30 @@
+[
+  {
+    "nome": "completo",
+    "revision": "ef4e5e1d4d844354a9c7f02ca37f7c572d2e323a1e279d120ef674b6c0a00abf",
+    "arquivosDerivados": [
+      "studio-generated/molda-cenarios.mjs",
+      "studio-generated/molda-cenarios-runtime.mjs",
+      "studio-generated/molda-cenarios.d.mts"
+    ],
+    "fontesPreservadas": true,
+    "semConversao": true,
+    "assets": 28,
+    "envelopeRemotoBytes": 12436829,
+    "remoto": "recusado: os materiais originais já excedem 2 MB; execução local e export continuam válidos"
+  },
+  {
+    "nome": "buraco",
+    "revision": "81bd101fe05f641ca78f86d8cde06fed36cd4e4596e6d01fafff769a80360b5c",
+    "arquivosDerivados": [
+      "studio-generated/molda-cenarios.mjs",
+      "studio-generated/molda-cenarios-runtime.mjs",
+      "studio-generated/molda-cenarios.d.mts"
+    ],
+    "fontesPreservadas": true,
+    "semConversao": true,
+    "assets": 8,
+    "envelopeRemotoBytes": 1311110,
+    "remoto": "aceito"
+  }
+]

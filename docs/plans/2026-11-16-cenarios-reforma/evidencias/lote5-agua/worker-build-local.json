@@ -1,0 +1,11 @@
+{
+  "terreno": true,
+  "png16": true,
+  "agua": true,
+  "workers": [
+    "/assets/terreno.worker-DIBvAiFP.js",
+    "/assets/terreno.worker-DIBvAiFP.js",
+    "/assets/agua.worker-BNl7tzX0.js"
+  ],
+  "erros": []
+}

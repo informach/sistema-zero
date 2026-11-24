@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-21T09:56:04.507Z",
+  "sourceHash": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73",
+  "nativeVersion": "1.12.2",
+  "maps": 2,
+  "conversions": [
+    {
+      "index": 0,
+      "format": "json",
+      "input": "mapa.tmx",
+      "output": "native-tiled.json",
+      "bytes": 73702,
+      "sha256": "e61f7becc436ed8a403a71c304cc9e9a2e9030735ba09795485dbf064c7066a0"
+    },
+    {
+      "index": 0,
+      "format": "tmx",
+      "input": "mapa.json",
+      "output": "native-tiled.tmx",
+      "bytes": 42899,
+      "sha256": "14cb6ac7606500430e7d894f712b0d5a5a0626a421851861e3a9df13a70138d6"
+    },
+    {
+      "index": 1,
+      "format": "json",
+      "input": "mapa.tmx",
+      "output": "native-tiled.json",
+      "bytes": 3523,
+      "sha256": "cc79d55574f08d8d60fb2909de782366b9d1de6f25bba155758e7309613c1840"
+    },
+    {
+      "index": 1,
+      "format": "tmx",
+      "input": "mapa.json",
+      "output": "native-tiled.tmx",
+      "bytes": 3992,
+      "sha256": "8f18654f8b32b7aff93fb6182908316e8425264a01f79e839b66412eef980eab"
+    }
+  ],
+  "problems": [],
+  "fullSceneRoundTrip": true
+}

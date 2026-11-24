@@ -1,0 +1,133 @@
+
+Running 28 tests using 1 worker
+
+(node:11160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e\student-tests.spec.ts:69:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto (8.5s)
+  ✓   2 [chromium] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo (4.2s)
+(node:21592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 [firefox] › e2e\blockly-media.spec.ts:29:1 › zoom e lixeira usam o desenho em vetor do SDK, servido pelo host (6.1s)
+  ✓   4 [firefox] › e2e\blockly-media.spec.ts:56:1 › a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco (6.3s)
+  ✓   5 [firefox] › e2e\preview-executes-user-code.spec.ts:27:3 › preview executa o código do aluno › o script canônico roda e pinta a tela (7.0s)
+  ✓   6 [firefox] › e2e\preview-executes-user-code.spec.ts:42:3 › preview executa o código do aluno › um `<script>` inline no index.html também executa (7.3s)
+  ✓   7 [firefox] › e2e\preview-security.spec.ts:41:3 › segurança do preview › handlers HTML exatos funcionam, preservam return false e têm guarda de loop (12.7s)
+  ✓   8 [firefox] › e2e\preview-security.spec.ts:69:3 › segurança do preview › script inline criado em execução é bloqueado e a IDE continua responsiva (7.7s)
+  ✓   9 [firefox] › e2e\preview-security.spec.ts:94:3 › segurança do preview › script externo criado em execução é recusado e a IDE continua responsiva (6.0s)
+  ✓  10 [firefox] › e2e\student-tests.spec.ts:69:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto (12.9s)
+  ✓  11 [firefox] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo (4.9s)
+(node:18984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [firefox] › e2e\preview-shell-hostile.spec.ts:53:3 › programas hostis na prévia dentro da casca › trabalho síncrono longo que não é laço não trava o editor (26.0s)
+(node:30392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  13 [firefox] › e2e\preview-shell-hostile.spec.ts:67:3 › programas hostis na prévia dentro da casca › recursão sem fim vira erro do jogo, não do editor (12.7s)
+  ✓  14 [firefox] › e2e\preview-shell-hostile.spec.ts:73:3 › programas hostis na prévia dentro da casca › enxurrada de mensagens não trava o editor (12.0s)
+  ✓  15 [firefox] › e2e\preview-shell-hostile.spec.ts:82:3 › programas hostis na prévia dentro da casca › memória crescendo sem parar não derruba o editor (12.0s)
+(node:32408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 [firefox] › e2e\preview-shell-performance.spec.ts:23:3 › prévia isolada: resposta durante CPU ocupada › trabalho síncrono longo do jogo não trava o editor (11.4s)
+(node:31920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  17 [firefox] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (8.0s)
+  ✘  18 [firefox] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (9.4s)
+(node:32716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  19 [webkit] › e2e\blockly-media.spec.ts:29:1 › zoom e lixeira usam o desenho em vetor do SDK, servido pelo host (6.0s)
+  ✓  20 [webkit] › e2e\blockly-media.spec.ts:56:1 › a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco (7.3s)
+  ✓  21 [webkit] › e2e\reload-flush.spec.ts:231:1 › enviar um céu de 1,5 MB e recarregar NA HORA: o arquivo sobrevive (10.3s)
+  ✓  22 [webkit] › e2e\reload-flush.spec.ts:250:1 › trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta: os três sobrevivem (11.1s)
+  ✓  23 [webkit] › e2e\reload-flush.spec.ts:280:1 › esconder a aba grava NA HORA, sem esperar o autosave (10.0s)
+  ✓  24 [webkit] › e2e\student-tests.spec.ts:69:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto (13.4s)
+  ✓  25 [webkit] › e2e\student-tests.spec.ts:113:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo (9.1s)
+(node:31040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  26 [webkit] › e2e\preview-shell-performance.spec.ts:23:3 › prévia isolada: resposta durante CPU ocupada › trabalho síncrono longo do jogo não trava o editor
+(node:28324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  27 [webkit] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (9.5s)
+  ✓  28 [webkit] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (8.3s)
+
+
+  1) [firefox] › e2e\preview-shell-hostile.spec.ts:53:3 › programas hostis na prévia dentro da casca › trabalho síncrono longo que não é laço não trava o editor
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "document.body.dataset.voltou = \"sim\"; document.body.style.background = \"rgb(0, 128, 0)\"; document.body.style.minHeight = \"100vh\";"
+    Received: "cument.body.dataset.voltou = \"s"
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+       at helpers\previewShell.ts:119
+
+      117 |         (await page.evaluate(() => navigator.clipboard.readText())).replace(/\r\n/g, '\n'),
+      118 |       )
+    > 119 |       .toBe(code.replace(/\r\n/g, '\n'))
+          |        ^
+      120 |     await page.keyboard.press('ArrowRight')
+      121 |   } else {
+      122 |     await expect(input).toHaveValue(code)
+        at replaceBridgeScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\helpers\previewShell.ts:119:8)
+        at editorSobrevive (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\preview-shell-hostile.spec.ts:41:3)
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\preview-shell-hostile.spec.ts:64:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-hostile-prog-392f6-o-é-laço-não-trava-o-editor-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-hostile-prog-392f6-o-é-laço-não-trava-o-editor-firefox\attachments\diagnostico-da-casca-f6f337a957c923ba365704ccdcd2c5e4b26e6f85.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-e8f5-student-trusted-results\preview-shell-hostile-prog-392f6-o-é-laço-não-trava-o-editor-firefox\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-hostile-prog-392f6-o-é-laço-não-trava-o-editor-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-e8f5-student-trusted-results\preview-shell-hostile-prog-392f6-o-é-laço-não-trava-o-editor-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco
+
+    TypeError: Cannot read properties of null (reading 'ready')
+
+       at helpers\firefoxNativeKeys.ts:247
+
+      245 |       'document.body.dataset.voltou="sim";document.body.style.background="rgb(0, 128, 0)";document.body.style.minHeight="100vh";document.addEventListener("keydown",e=>{console.log("tecla "+e.key);if(e.isTrusted)console.log("tecla nativa "+e.key)});'
+      246 |     await wd(`/element/${input[elementId]}/value`, { text: code })
+    > 247 |     await until(async () => (await game())?.inner.ready === 'sim', 'program running')
+          |                                                   ^
+      248 |     await wd('/frame', { id: null })
+      249 |     const rounds = []
+      250 |     for (let iteration = 0; iteration < 3; iteration++) {
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\helpers\firefoxNativeKeys.ts:247:51
+        at until (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\helpers\firefoxNativeKeys.ts:153:22)
+        at verifyFirefoxNativeKeys (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\helpers\firefoxNativeKeys.ts:247:5)
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\preview-shell.spec.ts:66:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-prévia-dentr-4ad3a-ao-jogo-sem-clicar-no-palco-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-prévia-dentr-4ad3a-ao-jogo-sem-clicar-no-palco-firefox\attachments\diagnostico-da-casca-405b86637be3ec4f7a0e845e4e93338fa9bafb1a.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-e8f5-student-trusted-results\preview-shell-prévia-dentr-4ad3a-ao-jogo-sem-clicar-no-palco-firefox\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-trusted-results\preview-shell-prévia-dentr-4ad3a-ao-jogo-sem-clicar-no-palco-firefox\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-e8f5-student-trusted-results\preview-shell-prévia-dentr-4ad3a-ao-jogo-sem-clicar-no-palco-firefox\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [firefox] › e2e\preview-shell-hostile.spec.ts:53:3 › programas hostis na prévia dentro da casca › trabalho síncrono longo que não é laço não trava o editor
+    [firefox] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco
+  1 skipped
+  25 passed (4.6m)

@@ -52,6 +52,17 @@ const gameKit3DBlockDefinitions = [
       'Quantos metros tem o lado do chão (o do "Criar o mundo 3D"). Bom para contas de posição.',
   },
   {
+    type: 'sz_g3k_load_scene',
+    placement: 'start-only-command',
+    message0: 'Usar o cenário %1',
+    args0: [{ type: 'field_asset_picker', name: 'ASSET', text: '', kind: 'scene3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Usa o cenário completo trazido do Molda, com terreno, água e colisões. Mantém seus moldes, objetos, câmera e controles. Use em Ao iniciar.',
+  },
+  {
     type: 'sz_g3k_scatter_decor',
     placement: 'command',
     message0: 'Espalhar %1 enfeites pelo chão (pedras e cristais)',
@@ -740,6 +751,17 @@ const gameKit3DBlockDefinitions = [
   },
 
   // ---- 🏃 Movimento › Posição e direção ----
+  {
+    type: 'sz_g3k_scene_start',
+    placement: 'command',
+    message0: 'Colocar %1 no início do cenário',
+    args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Coloca o objeto no início salvo no Molda, apoiado na superfície real. Espera o cenário ficar pronto. Uma posição escolhida depois tem prioridade.',
+  },
   {
     type: 'sz_g3k_place',
     placement: 'command',
@@ -2074,6 +2096,7 @@ const GAME_KIT_THREE_D_RULES = gameRulesBlocks('g3k', {
   objectPicker: 'entity3d',
   groupPicker: 'mold3d',
   keys: THREE_KEY_OPTIONS,
+  regionByMold: true,
   only: [
     'hud_text',
     'add_score',
@@ -2087,6 +2110,7 @@ const GAME_KIT_THREE_D_RULES = gameRulesBlocks('g3k', {
     'random_between',
     'random_chance',
     'camera_shake',
+    'on_enter_region',
   ],
 })
 

@@ -10,6 +10,7 @@ import type { PythonBlockCodec, PythonBlockInput, PythonBlockShape } from '../..
 import { attribute, call, integer, isNode, name, node, nodes, pass, text } from '../../blocks/nodes'
 import type { PythonProvidedBuiltin, PythonResolverOptions } from '../../blocks/scope'
 import type { PythonNode } from '../../language/types'
+import { pintaSceneCodecs } from '../pintaScenes'
 
 const OWNER = 'python-pgzero' as const
 const PROVIDER = 'pgzero'
@@ -1407,3 +1408,5 @@ function firstGame(codecs: PythonBlockCodec[]): readonly PythonBlockCodec[] {
     PGZERO_FIRST_GAME_BLOCK_IDS.has(codec.id) ? { ...codec, starter: true } : codec,
   )
 }
+
+export const PYTHON_PGZERO_PINTA_SCENE_CODECS = pintaSceneCodecs('python-pgzero')

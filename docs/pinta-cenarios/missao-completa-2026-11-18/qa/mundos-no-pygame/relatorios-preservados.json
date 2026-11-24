@@ -1,0 +1,24 @@
+{
+  "files": 18,
+  "semanticValuesPreserved": true,
+  "canonicalSha256": {
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/integracao/browser.json": "748fa3e3a1cea27cee798188c180297210485cc637e2eebed01d6d8f716bbd77",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/integracao/studio-typecheck.json": "9ed183bf384357aafaefdc2c0ce8fdb25f6373b44e025ec37e4d4e78c2609641",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/navegador-autoridade.json": "12f717d034be589fe0ea4624660eda7a89d078bcf6caf4b26431f5f52e7e35de",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/navegador-pinta-phaser.json": "918e44e1afb84067c65d5401d7b0db14805093f05f840b579ff782dfdf09ceaa",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/orcamento-cpu-4x.json": "a150a37c216198e281c9373a84363ec4210fffb1dab30209ca82a0a5635ae38a",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/orcamento-desktop.json": "20d290e2e775e5d62b3fd9a8073eab1e4c352cbc9435488fe2a2c3ab5517b6c1",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/orcamento-touch.json": "d30d5a3ad78757e3653edbc5e4ce7a5525e140b82f47bb343b192e7279b1dc3e",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/recursos/authority.json": "32fecf6fa8392cac0f280474d1ce389eec266560adfe5b9ce41319dc9741398a",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/recursos/browser.json": "bacba4d1fb7fbe8bc08865001ca364de0ab2ab674c33d5a428a17d8573e767f6",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/recursos/closed-browser.json": "1d4520c743e1a5c2b9032e6b92e990070ef8b5e5c952a3bba1cdbc4b9089ff42",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/recursos/cpu4x.json": "300781198c7412544f59f95259a4dbf6f2ba412cbc243df3d27e789bc38f5829",
+    "docs/pinta-cenarios/missao-completa-2026-11-18/qa/referencias/browser.json": "c85f6d2a927e9a3a7f5a8ecbf2c5713b04a15a8e7099c029c16460dba3fb4dba",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/formato-legado.json": "a05476a5c0ab3105b176c91ef97c40fdd5b604a8d395b69ae37932a56a022f38",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/gates.json": "650f15f98c41d95e4489e0a05e5463671f9fe04d9ab6860fa97b4fb9bb28df30",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/local-only-026.json": "918221abc1e65c65c5888c8d542eba35ec64c6c3e1096325a12b016bc32d3a85",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/tiled-locked.json": "72c7666f3d03a3b478e8b24f9f232dade3ff766e338a6fde91f3c5229dba8da1",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/tiled/mapa-0.json": "80178717ca3684a014a0f869d7d6ad273447a585839873c348771abee6c45d1b",
+    "docs/pinta-cenarios/revisao-2026-11-18/qa/tiled/mapa-1.json": "3e3f797d3bc556bfd20bd2273e1d8067a41029b580ac1c597b240e5b7a8fbf2a"
+  }
+}

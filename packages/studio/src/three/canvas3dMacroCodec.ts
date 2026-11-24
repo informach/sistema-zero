@@ -16,14 +16,26 @@ const MACRO_VERSION = 'v2'
  * desatualizado.
  */
 export function wrapCanvas3DMacro(statement: JSStatement, code: string): string {
-  // IDs de instância do Blockly são efêmeros. Não entram no artefato de código:
-  // isso mantém a geração determinística depois de block→IR→block e evita que um
-  // simples reload altere todos os marcadores.
-  const payload = encodeURIComponent(
-    JSON.stringify(statement, (key, value: unknown) => (key === '__id' ? undefined : value)),
-  )
+  // IDs de instância do Blockly são efêmeros e a ORDEM das chaves depende de quem montou a IR
+  // (o exemplo, os blocos): nenhum dos dois entra no artefato. Isso mantém a geração
+  // determinística depois de block→IR→block e evita que um simples reload altere os
+  // marcadores. Marcadores antigos continuam valendo: cada um traz o próprio payload.
+  const payload = encodeURIComponent(JSON.stringify(canonicalPayload(statement)))
   const integrity = checksum(`${payload}\n${code}`)
   return `${MACRO_PREFIX}${MACRO_VERSION}:${code.length}:${integrity}:${payload}${MACRO_SUFFIX}\n${code}\n${MACRO_END}`
+}
+
+/** Cópia com as chaves em ordem e sem `__id`, para o payload não depender de quem montou a IR. */
+function canonicalPayload(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalPayload)
+  if (!value || typeof value !== 'object') return value
+  const record = value as Record<string, unknown>
+  return Object.fromEntries(
+    Object.keys(record)
+      .filter((key) => key !== '__id')
+      .sort()
+      .map((key) => [key, canonicalPayload(record[key])]),
+  )
 }
 
 /** Kernel gerado é infraestrutura, não centenas de blocos do projeto. */

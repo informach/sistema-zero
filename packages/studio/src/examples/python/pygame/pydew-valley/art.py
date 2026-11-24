@@ -1,9 +1,8 @@
+# 📦 Bibliotecas
 import pinta
 
-# Each Pinta drawing is read from its file only once, then reused.
-drawings = {}
 
-
+# 🧩 Meus moldes
 def drawing(name):
     if name not in drawings:
         drawings[name] = pinta.carregar_sprite(name)
@@ -22,3 +21,7 @@ def image(path):
     name, animation = path.split('/')
     picture = drawing(name).quadro(animation)
     return picture.subsurface(picture.get_bounding_rect())
+
+# ⚙️ Ao iniciar
+# Each Pinta drawing is read from its file only once, then reused.
+drawings = {}

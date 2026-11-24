@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import *
 from random import uniform
 from support import draw_bar
 from timer import Timer
 
+# 🧩 Meus moldes
 # overworld sprites
 class Sprite(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z = WORLD_LAYERS['main']):

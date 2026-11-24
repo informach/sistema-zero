@@ -1,0 +1,835 @@
+{
+  "at": "2026-11-21T19:56:32.255Z",
+  "sourceBase": "d4eda0d13366e2ae8c5f746fd2752e9564ab9dba",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 24,
+      "failed": 0,
+      "assertions": 2591
+    },
+    "pinta": {
+      "passed": 2570,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 29603
+    },
+    "browser": {
+      "passed": 96,
+      "failed": 0,
+      "retries": 0,
+      "previews": 63,
+      "publicWorkshop": 33,
+      "regionalReadOnly": 3,
+      "exactSetNativeComparisons": 12,
+      "profiles": [
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "a405833df17aa52b9383c138dfb76dcd2a142e2301c76642631a612020b09bfd"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "d3ac13c42cfebca716def909822fd92817f1615e534edb0b8d559c8e0c8fe84e"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 4,
+          "nativeSha256": "a0db217d4c5629d204f7d7416584509022945140ac94c310eafee7907195403f"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "51339fe72bdea5bb4d3c0b1685f4bb6c4119087dc279df7803d5a78b05699156"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "4b360a26c0a08b200ebf091fdaa27949a626f9f4f9c07b0556f227561758df57"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 4,
+          "nativeSha256": "cc98ed32e437070d46265d563b601edfcdd4005ba37ceac9f09e5a36b90d59ef"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "a32856e28cc9d6428f11dc081e890d67e7fe4291ecdd3fb08a7b9db725d20145"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "ce44e0a60aa9d97159f5738b824c444553109789468ae64c394a245f7e0c5242"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 4,
+          "nativeSha256": "e2b774e648eaabe254ff42d3a883daa54e309593fc5ec2e304a9176e839bfe1c"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "a3810fbcff22e5ae78c38fd912391aa6854c7bf74b3f1e729d3ee9209ffb4a5e"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "5a5d50b313f225244bdb807391a20a69d98c524ae1ef9ea182e3d67b8970e9bc"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 4,
+          "nativeSha256": "85686187fabe8f115a0b18a69f429e56c468b1e2c035a21929a242e4af462e8d"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "e83de50d7576136cf79220645efe0963a6443a5ff6228e731c9d716bab048a8f"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "74cbc0b79f0ea63c983fb7467769f08f770b3287ca25dad3ecd78697b033c71a"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 4,
+          "nativeSha256": "f7b6258d78c190ba4dfe79232dabce3d1b8e02ce03b1b18f785be00b2c2eaa34"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "a18e1d1b805bb215e3d20eac9d8b39b87fd14d81bfca7cdee8c9cbd411a46da2"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "9409226136919fe4c9099083b19d66711dd4706a43345940b2883b5e999602af"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 4,
+          "nativeSha256": "5487d4338c0a05431212ec273cc60e97c4f345655fd4b654cd49fea17052e1b7"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "bfab1f1562045d06a50d0a1da962e4bfa8bf8f3070ddcb5764918c390439d581"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "b38918ec6d6263a60ea903f2f30c925707fd8beb38e779de7f0deab0caafd143"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 4,
+          "nativeSha256": "c8a2bba34ee29c2016e8ae497ce46c43f102f8b41035375a82f721f74a2dd545"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "71d12b693e442cb7e0232696b0d80d792b3f4cf2dde3bdcd8d4f40c98fa91078"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "e0bca7d48ca3f179d57a9c49dd5e525d3d8ae3e44b7e01984950a0ff829f3c98"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 4,
+          "nativeSha256": "ac291077c9672afd48f86d8d60665be008e39bc7bd52df78080a76f8c075aa87"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "6752ba736a4bd23b793978f5ec0cd4f111e9fac3e101760f6cbfb626dfd04942"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "c89bf476b07717de239b62a62901fe7a6f561eed44ad37b99203652b9c2439f5"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 4,
+          "nativeSha256": "d95084711e7cd03fcc4fd7351e22cbaab867780ae172cb455125ead42f4a20f0"
+        },
+        {
+          "profile": "desktop",
+          "operation": "library",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "3c41458d4d078ebca6c4088f299853a9f320f34874dccc40a3876a93cfe06bf9"
+        },
+        {
+          "profile": "touch",
+          "operation": "library",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "bcad1bce1b32a5088ddfac30621259f4e88bdbbb0190383eadcc7279a0536e47"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "library",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 4,
+          "nativeSha256": "ade899bb6a4aae5b57a51feb4acf23dec8f2483f0988cf36d67603ff41d4198c"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "75f5d3acced4f93e7f5ce837fa66fb1306ea941862597c9d4c984291796a16ca"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "f32ddf4a7e8af5b183bcf671ec9bd1792a1dd14f544df8ede37a306381c7e624"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": false,
+          "ending": "undo",
+          "cpuSlowdown": 4,
+          "nativeSha256": "cd0226490b2a14f08d5ddad15586cb021ec3e934c3483ef5f2da8f34cc2239ba"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "467de8834fc1c2b9332ca2c56d9bc74decd951f6f9832de15e2e043d34c96b5c"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "27c317a73e95197f06d30911a565663deb7565765edf27a5a03b897ec60de784"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": false,
+          "ending": "host",
+          "cpuSlowdown": 4,
+          "nativeSha256": "016e5cc3c11612a53ae046b829aadedd75513f83b573e8f7b831a7c9fea1c657"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "997ab8d02707561018778fb04ae4a708b5ef068dceab9cf73c070167fa15bed9"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "3f167cd2e6a3169abce5d486f77bfd076210999a353c5fab6d2b080872f59df5"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": false,
+          "ending": "subscriber",
+          "cpuSlowdown": 4,
+          "nativeSha256": "e9c0e3ef7f3c5ec2733744e6cba82f4743b2b83775bb9fb3f1ae85544dcabc6f"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "b60c27f6adf1a0cd52b3819056a8749e8a13ddfaf4217d5c9229fed8b3f0ee09"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "421e40af9828c78071f350776c5f72599f4460561a075e52d75bed1fd7e26826"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": false,
+          "ending": "cancel",
+          "cpuSlowdown": 4,
+          "nativeSha256": "1cbcc77bb3e66034939ac9b4f801cbf1fa132b9976466a042873f70a2366c7a2"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "53ce310e88e8f23fbcf01166bf844db8103f0a617c2f7a0487efd301b7763806"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "05aa51119dfde75412ef9001ea35d502c2b9a959c0be765bbdd48accd9a8b790"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": false,
+          "ending": "zoom",
+          "cpuSlowdown": 4,
+          "nativeSha256": "819bcaf4d99ee80f645931f2ee262b0d217607c422d3cd851e6414197300c875"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "0a09c234895d43fe028e3e4c377c2df0b0df002cdb0b5985d96b454c31fbb908"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 1,
+          "nativeSha256": "6db5dc3f70aeb7a1327f8827d76beed3413d4dec645957732f4e58f70eba9108"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": true,
+          "ending": "undo",
+          "cpuSlowdown": 4,
+          "nativeSha256": "5b9353f2ea3beb418eaef4b03f1095eacc99090391c5609c13b25e29d1cc56e1"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "533a2d97d89cd6781b8a94b96752afb543460beb45fba8870429c6093e802dfd"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 1,
+          "nativeSha256": "80f5fa99ecb0eec13c50cb3bf36cdc271330c69d54b48631120f43f21634a2da"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": true,
+          "ending": "host",
+          "cpuSlowdown": 4,
+          "nativeSha256": "cf93c7bf34c89833d6d5d924080de074346b0c4a32fa4e36384ea5550a36e5dd"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "b97d68fcf34e100c337190bd372a8299c7f9038177a0c97232a789eadcfb4e76"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 1,
+          "nativeSha256": "389d55502dcbe3fd0a5bc0977d68801ef1281978410018fd287d41b61f7f0e80"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": true,
+          "ending": "subscriber",
+          "cpuSlowdown": 4,
+          "nativeSha256": "a3d6a6570c7208c197ef2091fa421e2bf40883c21ced56d9b8f0aae177df6e9c"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "798a326744e90fb0584f89041c978b19be6a193d5dfcac12cfa96a4adc35ae7f"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 1,
+          "nativeSha256": "872516db90ee5ec58b3bac1faba551a96e08f175d4876b86fbce32c949c8f542"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": true,
+          "ending": "cancel",
+          "cpuSlowdown": 4,
+          "nativeSha256": "e589e6ab79c55f1dd27b8a9426853b53ef827434d3bb48ba78404b0482aee6eb"
+        },
+        {
+          "profile": "desktop",
+          "operation": "scatter",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "a15ef9ef534633a1304c39d8d4034ac2f2b79d18be7d7d1636b9b7998365aa36"
+        },
+        {
+          "profile": "touch",
+          "operation": "scatter",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 1,
+          "nativeSha256": "747e558d41bb27211ba7a6a21812e3b5ac96774cec7e745ae0b9810a768d65b4"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "scatter",
+          "set": true,
+          "ending": "zoom",
+          "cpuSlowdown": 4,
+          "nativeSha256": "59e48051d3cc9b9f9597f9d15378b50b2c4e076a491f7a69c0d0f78a8a81f5ef"
+        },
+        {
+          "profile": "desktop",
+          "operation": "region-readonly",
+          "cpuSlowdown": 1,
+          "nativeSha256": "0209c51e6cf2a3644ba010c6e8e27de7d79500f9fefdc969725e3ddbd825e0c2"
+        },
+        {
+          "profile": "touch",
+          "operation": "region-readonly",
+          "cpuSlowdown": 1,
+          "nativeSha256": "310a6cc712c5eface99ae9e598b7a27a6e55f9f3b60e6c509de349d47d113849"
+        },
+        {
+          "profile": "cpu-4x",
+          "operation": "region-readonly",
+          "cpuSlowdown": 4,
+          "nativeSha256": "316f94b29a35dabc9cce2ad08ff81ffa53c209cc5b701a2e8e200b5f2a5e5ee4"
+        }
+      ]
+    },
+    "historicalProducer": {
+      "positiveControl": 12,
+      "expectedFailures": 12,
+      "wholeDistribution": false
+    },
+    "pintaAndChangedQaTypecheck": {
+      "exitCode": 0
+    },
+    "fullStudioTypesRepeated": false,
+    "physicalDevices": 1,
+    "children": false,
+    "latencyQualified": false,
+    "heapMeasured": false,
+    "nativeControlsRepeated": false
+  },
+  "review": {
+    "boundedSignedSamples": true,
+    "legacySampleOrderPreserved": true,
+    "previewHistoryOwned": true,
+    "subscriberAdoptionPreserved": true,
+    "geometryCheckedAtEvents": true,
+    "stylesChanged": false,
+    "regionalStoreEditingPending": true
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/homologacao/previewGestures.tsx",
+      "sha256": "45122d09a3c14eeddd7f2a8f0a5d2fb594670caa3628704e3dbeaa30084a36b5"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-brush-e2e.ts",
+      "sha256": "879ee75cddcc22ac133432ca8425863eebe5e3c40e52add3a71ea43fa80630b7"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapLibraryPreview.tsx",
+      "sha256": "850f17d47aeca5ce5e526fbbe6de4c519fc7d47e1576ee983793fb86bc59b6a4"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/MapStage.tsx",
+      "sha256": "e39ba5f3511fe7f0f1a5f0f35d2bf55b3a13f500b4ec71a5be9ad901d5980f95"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useLibraryPlacement.ts",
+      "sha256": "c16fd7b45c64803398bdae67e7d5dec1e1e8b1cfb1eeeb9a4bab4a765de58e24"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.test.tsx",
+      "sha256": "9b3e6dd2794cc03cfcc338661589c98bf82034264aaeabadf8dca8ef6d0923d8"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "sha256": "b0628fa74c81a52a7aec7552de50e45869bf1e4c8842bb162c8413283b2537a9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "ed40169e4e1f06ffb2d5cbe0ff71d06a5603390dfa0cbf4aa7c9524ddeca4d57"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterStroke.test.ts",
+      "sha256": "6dc315e8bb1d79b2adb0a74bb1dcff01c92d05cb33d9df8ac1c724937bbc742f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/objectScatterStroke.ts",
+      "sha256": "c65bcb7063f8dddd1f8a2b497e2cb932091d29fb3f4fd83d61c3cb04da867e10"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-preview-gestures.flow.ts",
+      "sha256": "f514cf1a2950cec3bac8271d62192911e04cdf0bfe566bae7a91ebfbe714fc6f"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-preview-gestures.config.ts",
+      "sha256": "ec757268ede6382046061dba344fe747c1df91c943222d25643f47b822c3d408"
+    }
+  ],
+  "historicalSources": [
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useLibraryPlacement.ts",
+      "commit": "d4eda0d13366e2ae8c5f746fd2752e9564ab9dba",
+      "sha256": "c1ae53682c5421fcf5db84f0429b4e4081554ab061a017c057aa29c195a98542"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "commit": "d4eda0d13366e2ae8c5f746fd2752e9564ab9dba",
+      "sha256": "bfbcc0f62228f1f3988811dc71ee8f6c8f80d68a471404cbf21dfb7b08ea67eb"
+    }
+  ],
+  "records": [
+    {
+      "file": "adocao-desktop.png",
+      "bytes": 12467,
+      "sha256": "4c318abb5ec3809f7db14cebb4762ac7778a178b965c7cc6a5a42619f680cf59"
+    },
+    {
+      "file": "adocao-touch.png",
+      "bytes": 42604,
+      "sha256": "f6a5335ae194a877901a1103c238beb2eaf8661ea9413a81271944c2fc10220f"
+    },
+    {
+      "file": "adocao-cpu-4x.png",
+      "bytes": 12407,
+      "sha256": "4ecd97a0c6a7695c90c123f36e7a3f910ad191c54670261538fdd07f148f0362"
+    },
+    {
+      "file": "svg-desktop.png",
+      "bytes": 1156,
+      "sha256": "e3ae677a5683ab1be05eedc073883e425fa2fad7d39ff918300456e5a7fc4b55"
+    },
+    {
+      "file": "svg-touch.png",
+      "bytes": 4554,
+      "sha256": "d83f3e47c328d5954e25b8a16a652bd62c331a8e2b5f4580fbd1d1e829ccfef3"
+    },
+    {
+      "file": "svg-cpu-4x.png",
+      "bytes": 1156,
+      "sha256": "e3ae677a5683ab1be05eedc073883e425fa2fad7d39ff918300456e5a7fc4b55"
+    },
+    {
+      "file": "workshop-desktop.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "workshop-touch.png",
+      "bytes": 85304,
+      "sha256": "62cad61f88a030e81f8c15730267a00197ec581623c841da5ab02cdca1bb0c0f"
+    },
+    {
+      "file": "workshop-cpu-4x.png",
+      "bytes": 60117,
+      "sha256": "7923f03ef4e7b0aa0ec25ff8672a982cb75f2b4b480d2deade3a178a2c3ea09b"
+    },
+    {
+      "file": "playwright-previews-report.json.gz",
+      "bytes": 984464,
+      "sha256": "74dd134714eff7146438763679ca8ce5b0f28b92521fcc3f072cd045ce329487",
+      "rawBytes": 1920797,
+      "rawSha256": "c02f948a248f02a0bb8151ad3e5b5c758e3e6d6f0dc95b770e8c6dbbb6137f63"
+    },
+    {
+      "file": "playwright-workshop-report.json.gz",
+      "bytes": 2985342,
+      "sha256": "60838287c9cd7c8198224622675424901023b82ad98ad7e84e42fc2cf408cdc9",
+      "rawBytes": 4413661,
+      "rawSha256": "28cfd048333bab152d254331cc0c652fd14fb80423bc138d74d8fc47bc03282e"
+    },
+    {
+      "file": "playwright-historical-report.json.gz",
+      "bytes": 196449,
+      "sha256": "4600defc2da3a9662ac04de8e9127186605dfffb669f381b57a08c88ae1e993b",
+      "rawBytes": 452131,
+      "rawSha256": "7327079aba4c10b03b86f373cb20550d8cfd73d656c04109559799aaca097f4d"
+    },
+    {
+      "file": "pinta-preview-adoption-red.log.gz",
+      "bytes": 818,
+      "sha256": "aa15a64e3ba638006f215b6e5bd90fcecbbd12b5d44b755e55c8f3686f468ce2",
+      "rawBytes": 4281,
+      "rawSha256": "4bfc914dce775c5a6694ba4569841a9664364fa2848097eacb4c0d4e415b5972"
+    },
+    {
+      "file": "pinta-preview-focused-final.log.gz",
+      "bytes": 989,
+      "sha256": "46557430254b28e8103384bd0d59bae53483f2a48216447d082f48d49e2b2f9a",
+      "rawBytes": 2674,
+      "rawSha256": "157b8460753addc9c0d26b4fb042c7ba270e02a9c62e5bcb45703cfe4c5c7d4b"
+    },
+    {
+      "file": "pinta-preview-suite.log.gz",
+      "bytes": 80036,
+      "sha256": "98f07ca83556a47cd5192cc60d2822370f36e5d4cbf5b6e47f90433e0975a94f",
+      "rawBytes": 302382,
+      "rawSha256": "d500feb4fb904ec2f591c34800f5d732fb3b3544acd7b6821d327a75d667d918"
+    },
+    {
+      "file": "pinta-preview-suite-final.log.gz",
+      "bytes": 76969,
+      "sha256": "a6a50953398cc15aecdfcab3e2c8bd824f349cd09bc08f69a02ffd1d1ab3a66e",
+      "rawBytes": 287870,
+      "rawSha256": "1836fe941442da3a32bff68a843911e9a5fd43a44908355d2d7d59fec51c6261"
+    },
+    {
+      "file": "pinta-preview-workshop-unit.log.gz",
+      "bytes": 248,
+      "sha256": "835a103a274b2ac01040acab8250faeaaf3a1205c0ced4fc49f9eae9ed4c99fe",
+      "rawBytes": 309,
+      "rawSha256": "8aa2b9c9e66a25889ab5d44ed541ae24780c19baee78c1faf130e85a5219cf5c"
+    },
+    {
+      "file": "pinta-preview-types-first.log.gz",
+      "bytes": 107,
+      "sha256": "f5746c4b0b12196e0192ac4f894245b1dc0b176878de8f7eaa6d3a3965176fc9",
+      "rawBytes": 97,
+      "rawSha256": "c0dc0269cbe21ec59916ad7686feb3d497e8dadaa2609e7c074bf65f3c125ef9"
+    },
+    {
+      "file": "pinta-preview-types-second.log.gz",
+      "bytes": 825,
+      "sha256": "b574a1f85af6f2688729eb6b2a42a3279cce2275db3ff9df84e07eb9727dfe9f",
+      "rawBytes": 2961,
+      "rawSha256": "d2d09a74db47960d65aa4b6f5da6bea2fc8cf9281d813bae0c9431687e4043e3"
+    },
+    {
+      "file": "pinta-preview-types-third.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-preview-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-preview-types-verified.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-preview-qa-tsconfig.json.gz",
+      "bytes": 201,
+      "sha256": "4ca6c0ba4cca607a1d70d7fca52ebb94d9526fac2c59061090fd536532dc333b",
+      "rawBytes": 422,
+      "rawSha256": "5d2f7e87ae8facbd36ddac37e81616e55de649a17738dd64b6bd958886989715"
+    },
+    {
+      "file": "pinta-preview-browser-first.log.gz",
+      "bytes": 507,
+      "sha256": "85f072a83543c8d16596fbbc6605b7a33488d2d0ae1c7eea3d4b48901f1491fa",
+      "rawBytes": 1098,
+      "rawSha256": "3706bc37a158cce24cc8ba07f8414729dac899097b513a50a480f86311da9717"
+    },
+    {
+      "file": "pinta-preview-browser-second.log.gz",
+      "bytes": 890,
+      "sha256": "1c07ecec9c25c9e776f11743fc31c7562c94c6035a19d35c2435fbc0695aa20d",
+      "rawBytes": 5110,
+      "rawSha256": "bd5921026fe104118634a0699f4992c74f403fd25b70251eee8f7ba3209b8b17"
+    },
+    {
+      "file": "pinta-preview-browser-final.log.gz",
+      "bytes": 1184,
+      "sha256": "b13a40fc35d3c358544a0fd5116386091676ccd9c54f5d244476a54b6f1a5626",
+      "rawBytes": 8459,
+      "rawSha256": "d2b9df246a7a4953445305868294dd971957bbe2cee44e8fdec242b093e36e37"
+    },
+    {
+      "file": "pinta-preview-baseline-browser.log.gz",
+      "bytes": 552,
+      "sha256": "a192f7e84bb6e6fe540950f7b673f2553dc7185fcfdbc4c9c00f0afa7d65e27a",
+      "rawBytes": 1611,
+      "rawSha256": "6be94a2a6363b6719553d76401217fb178edd7a635ded121655944f5c952e1a4"
+    },
+    {
+      "file": "pinta-preview-baseline-browser-final.log.gz",
+      "bytes": 2045,
+      "sha256": "26c12b1e85601b9316a058cabb6b9bfa0901d98aaac8d8d2f6a16a68267ae2eb",
+      "rawBytes": 37644,
+      "rawSha256": "54da9d1dee23901e80e2b39493d7791c0542ddf4e211d0495da21f3074536d04"
+    },
+    {
+      "file": "pinta-preview-workshop.log.gz",
+      "bytes": 1348,
+      "sha256": "76a3bed017e5b17ab3120feaac4156ddf06d91ec047a855d3952c94eb9697d21",
+      "rawBytes": 6321,
+      "rawSha256": "b5a4870c4fd0f826a22b92e8b31c6444d8611b0da52f6782bbdcdbe75e74b818"
+    },
+    {
+      "file": "pinta-preview-biome-first.log.gz",
+      "bytes": 673,
+      "sha256": "ef09c4df8c70214fc502a31bcb4c5ceae341cbda2aa493af01342e24daa4befb",
+      "rawBytes": 2646,
+      "rawSha256": "3afe4cc541cc1c4f2200c171ff8b77772f0291310a184b1784556503ebce373b"
+    },
+    {
+      "file": "pinta-preview-biome-final.log.gz",
+      "bytes": 58,
+      "sha256": "33745c54144c1bf1ad7e390bbdfcd12be683f028ebd8f65e8091986ba196a796",
+      "rawBytes": 42,
+      "rawSha256": "df530da16a41188066ad57e0aa6eee09fc3a5cbd434261d64a82658248863279"
+    },
+    {
+      "file": "pinta-preview-qa-format.log.gz",
+      "bytes": 52,
+      "sha256": "27018d25b7cdcf423b8d20966cac38ea0ae0fae86d056ddaf69e3942fc8b9252",
+      "rawBytes": 39,
+      "rawSha256": "3b6c2ed077eb2b43f8a639d6edfb0dc8ad4ae96ba7e8111866aca43947367851"
+    },
+    {
+      "file": "pinta-preview-lint.log.gz",
+      "bytes": 379,
+      "sha256": "f01b02227045532d6cc90261f550405bfa5b68620c461ad4e22ba47948fb17e4",
+      "rawBytes": 1083,
+      "rawSha256": "7d2c1b9264daa68407336222cbac098f79cd6406191462eeebb36a20b0238fde"
+    },
+    {
+      "file": "pinta-preview-lint-final.log.gz",
+      "bytes": 65,
+      "sha256": "3951812ced5c997794f3dab02f89176b5a8f3ff465e21fb42e20d80e9e2afc06",
+      "rawBytes": 45,
+      "rawSha256": "991ac4d7cfda5eee98714cb965c3daa8f7b00e679488944b4fa31bbbe0ec9bcf"
+    }
+  ]
+}

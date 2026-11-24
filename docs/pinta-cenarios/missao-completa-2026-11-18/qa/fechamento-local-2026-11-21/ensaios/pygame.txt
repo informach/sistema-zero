@@ -1,0 +1,58 @@
+import os
+os.environ['SDL_VIDEODRIVER'] = 'dummy'
+os.environ['SDL_AUDIODRIVER'] = 'dummy'
+import json, sys, hashlib
+from pathlib import Path
+root = Path(__file__).parent / 'pinta-owned-vila-external-linked-edit' / 'pygame'
+sys.path.insert(0, str(root))
+import pygame
+from pinta_cenario import Mundo
+assert pygame.version.ver == '2.5.8', pygame.version.ver
+pygame.init()
+pygame.display.set_mode((640, 480))
+vila, cabana = 'qa-vila-floresta-20261120', 'qa-cabana-20261120'
+world = Mundo(root, vila)
+assert len(world.dados['layers']) == 18
+assert len(world.dados['tilesets']) == 2
+assert len(world.dados['sets']) == 1
+ground = next(l for l in world.dados['layers'] if l['name'] == 'Chão')
+assert ground['cells'][:4] == [-1,-1,-1,15]
+assert world.propriedade_peca(world.dados['tilesets'][0]['id'],0,'atrito') == 0.8
+door = next(o for o in world.objetos if o.get('role') == 'door')
+assert world.propriedade(door, 'chave') == 1
+enemy = next(o for o in world.objetos if o['name'] == 'Morador')
+assert world.objeto_por_id(world.propriedade(enemy,'porta'))['id'] == door['id']
+world.mover(0, 12)
+assert world.jogador.y > 40
+world.jogador.topleft = (64, 68)
+world.mover(200, 0)
+assert 64 <= world.jogador.x <= 70, tuple(world.jogador)
+wall = list(world.jogador)
+world.jogador.center = (104,104)
+world.mover(0,0)
+assert world.nome == cabana
+world.jogador.center = (84,36)
+world.mover(0,0)
+assert world.nome == vila
+original_clock=pygame.time.get_ticks
+images=[]
+try:
+    for elapsed in [0,200]:
+        pygame.time.get_ticks=lambda: world.inicio_animacao+elapsed
+        image=pygame.Surface((640,480),pygame.SRCALPHA)
+        image.fill('#e8edf4')
+        world.desenhar(image,camera=(0,0),personagem=False)
+        before=pygame.image.tobytes(image,'RGBA')
+        world.desenhar(image,frente=True,camera=(0,0),personagem=False)
+        after=pygame.image.tobytes(image,'RGBA')
+        assert before != after, 'No foreground rendered'
+        images.append(after)
+        pygame.image.save(image,str(root.parent / ('pygame-owned-'+str(elapsed)+'.png')))
+finally:
+    pygame.time.get_ticks=original_clock
+assert images[0] != images[1], 'Water animation stayed still'
+proof={'engine':'pygame-ce','version':pygame.version.ver,'python':sys.version.split()[0],'sourceMapHash':'7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73','maps':2,'layers':18,'tilesets':2,'linkedSet':True,'movement':True,'wallStop':wall,'doorCycle':[vila,cabana,vila],'foreground':True,'animation':True,'imageHashes':[hashlib.sha256(b).hexdigest() for b in images]}
+out=Path(__file__).parent / 'pinta-owned-vila-linked-pygame-native.json'
+with out.open('x',encoding='utf8') as f: json.dump(proof,f,ensure_ascii=False,indent=2)
+print(json.dumps(proof,ensure_ascii=False))
+pygame.quit()

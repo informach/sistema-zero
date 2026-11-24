@@ -143,6 +143,12 @@ export async function prepareProWorkspaceOperation(
     const index = project.assets?.findIndex((asset) => asset.id === intent.id) ?? -1
     const asset = project.assets?.[index]
     if (!asset) throw new Error('Material não encontrado.')
+    const { cenasQueUsamAsset } = await import('../core/scene3d/referencias')
+    const usadas = cenasQueUsamAsset(project.assets ?? [], asset.id)
+    if (usadas.length)
+      throw new Error(
+        `Este material é usado pelos cenários: ${usadas.join(', ')}. Remova primeiro os cenários que dependem dele.`,
+      )
     const manifest = await materialReferences(project)
     const url = manifest.find((entry) => entry.id === asset.id)?.url
     const references = Object.entries(tree).flatMap(([path, node]) =>
@@ -170,7 +176,7 @@ export async function prepareProWorkspaceOperation(
         references.length
           ? `Referências ao ID ou caminho em: ${references.slice(0, 20).join(', ')}${references.length > 20 ? '…' : ''}.`
           : 'Nenhuma referência literal ao ID ou caminho foi encontrada nos arquivos do projeto.',
-        'Caminhos montados pelo código não entram nesta busca. A recuperação fica em Ferramentas → Recuperar arquivos e materiais; ela exige que o projeto ainda corresponda à revisão escolhida.',
+        'Caminhos montados pelo código não entram nesta busca. A recuperação fica no Histórico do projeto (menu Mais do editor); ela exige que o projeto ainda corresponda à revisão escolhida.',
       ],
       context: { project, scope, adapter },
     }

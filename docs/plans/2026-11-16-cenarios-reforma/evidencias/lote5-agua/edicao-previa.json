@@ -1,0 +1,14 @@
+{
+  "capturados": 1,
+  "bloqueouCaptura": true,
+  "bloqueouPrevia": true,
+  "bloqueouTeste": true,
+  "alturaPrevia": 8,
+  "alturaRestaurada": 10,
+  "alturaNova": 10,
+  "recusouAntiga": true,
+  "autoriaIntacta": true,
+  "selecoes": ["mar"],
+  "cacheDeOutraFerramentaPreservada": true,
+  "erros": []
+}

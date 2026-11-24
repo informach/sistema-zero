@@ -1,0 +1,172 @@
+{
+  "at": "2026-11-21T11:57:56.303Z",
+  "sourcePublished": "61ef65f2d1a3dbe74fdef83a701a0c1eeb08f98b",
+  "stagingOnly": true,
+  "physicalDevices": 1,
+  "records": [
+    {
+      "file": "005-cloud-checkpoint.json.gz",
+      "bytes": 334,
+      "sha256": "4281c9c043231b3f3444b8c9d39a1f81199309bdf67157116927c783487bfd0b",
+      "rawBytes": 922,
+      "rawSha256": "a160b80413c825c3017a5e7ba53dff4f022d5a682664cf55b04d1a8dfba23561"
+    },
+    {
+      "file": "014-load-b6.json.gz",
+      "bytes": 143,
+      "sha256": "98fc42ea60ae498a7f56bf8e5eec95746484b3eb580d1c432a239d85b98d670a",
+      "rawBytes": 196,
+      "rawSha256": "1f790e67ad72a8a075ff8b01f9a9f4e06c0cf6cd7cf4e9489c46467e70b39fab"
+    },
+    {
+      "file": "015-b6-status.json.gz",
+      "bytes": 333,
+      "sha256": "9a62f7492fa2517502907be0642c271cd2d920a77939202df71fbcfd00f4390d",
+      "rawBytes": 1203,
+      "rawSha256": "f7466f0e7084bc325cf60417c83d04a068f9fa4d0a776ecf53c4936c35200b30"
+    },
+    {
+      "file": "016-cloud-after-b.json.gz",
+      "bytes": 402,
+      "sha256": "1df3482a4e5b877fa949ea9158773e58b6f9985480524bf6014b991663bae0dc",
+      "rawBytes": 1323,
+      "rawSha256": "3137a544770a2b9c0501af37353190970bef5d114093c9fb44a650bbdf6cfa4b"
+    },
+    {
+      "file": "017-independent-b6.json.gz",
+      "bytes": 746,
+      "sha256": "75374f2cdcb28a821a0706eb9c2623fbd2dfd543d3305bda1c3db925a691491c",
+      "rawBytes": 1774,
+      "rawSha256": "2a65a4d0963f2130022d4580c9ffc3388f0d8592a3b48f633986ecffb4ae71dc"
+    },
+    {
+      "file": "018-cloud-refusals.json.gz",
+      "bytes": 351,
+      "sha256": "d789fc5856a7a281eac400a35d2fb7e95ea1cff21cfbc25180788743ae4c9fcf",
+      "rawBytes": 1396,
+      "rawSha256": "0575eee5c01b8f53eddf176ccae7ceb1c88df478b5ca5899766d81989f8aba77"
+    },
+    {
+      "file": "019-program-checkpoint.json.gz",
+      "bytes": 449,
+      "sha256": "7cd76c47a8976b1207b38ca017d3e38a5e4156d3e6ca43b4a3e16ce3b75229b3",
+      "rawBytes": 739,
+      "rawSha256": "a4ae056ad188c9354faf8d8d8c193f7373f3dff71fc7c3a23220c95ccf5469f2"
+    },
+    {
+      "file": "020-edit-b6.json.gz",
+      "bytes": 752,
+      "sha256": "a01cfbfc54724e49610542c094aabadf8177ba203356dd034d51a121256f3276",
+      "rawBytes": 1979,
+      "rawSha256": "8b4492a0a8c13643e1d156e40507465eda541fe222f5902eae9bef37bb4ef937"
+    },
+    {
+      "file": "021-b6-status.json.gz",
+      "bytes": 346,
+      "sha256": "ed465e25f039d33a8959e470611290900935648cd510eef6f1699dad58be7ba4",
+      "rawBytes": 1728,
+      "rawSha256": "92c5bbe195165527a080d4da8cea18418cf4a80c60906134c6b4f178dd322f21"
+    },
+    {
+      "file": "022-cloud-after-gesture.json.gz",
+      "bytes": 401,
+      "sha256": "f4e2cb68068d0d2885e99553008dc68aa8151199b551778e71f8159cb467e3ad",
+      "rawBytes": 1323,
+      "rawSha256": "76d964d40a2e6bf4d38e8105f7251934e199dc2a37093fa75fb8b89a7dc98d41"
+    },
+    {
+      "file": "023-offline-stale-a.json.gz",
+      "bytes": 245,
+      "sha256": "a85eb65c6b8e3af120b5d448dc0a7a67099e99e23f67c0e9d7943f778423ab12",
+      "rawBytes": 334,
+      "rawSha256": "59f6d774c4453a991b8a8a6cca5bdd1516c5584afc6e74a6cbcb8c4a2cb597d7"
+    },
+    {
+      "file": "024-offline-recovery.json.gz",
+      "bytes": 365,
+      "sha256": "eb8a84dc6278c55cee9ea6c07e07e207e4f706006d131f399c787cb398b0af6d",
+      "rawBytes": 666,
+      "rawSha256": "21fc872897ecca4b5b96c66bf8c44776dfb0de900ee4b8bb2ee57f70b4086358"
+    },
+    {
+      "file": "025-offline-reopen.json.gz",
+      "bytes": 365,
+      "sha256": "eb8a84dc6278c55cee9ea6c07e07e207e4f706006d131f399c787cb398b0af6d",
+      "rawBytes": 666,
+      "rawSha256": "21fc872897ecca4b5b96c66bf8c44776dfb0de900ee4b8bb2ee57f70b4086358"
+    },
+    {
+      "file": "026-resume-b6.json.gz",
+      "bytes": 245,
+      "sha256": "a6d03cfff8895504eba83429ad0e13e26c3066f2b4e414fb64184d3596b7d422",
+      "rawBytes": 361,
+      "rawSha256": "21befdbf25e0acf8762a5be1ecfbad870236b1a5c130f3c4348e5204e4436a41"
+    },
+    {
+      "file": "028-copy-cloud-checkpoint.json.gz",
+      "bytes": 431,
+      "sha256": "45119f939221e073da5da11a43a572a35c0d7ff70a8be52c2cacb23d5770f27e",
+      "rawBytes": 1524,
+      "rawSha256": "5b47b82315fbea040e25c14f50a8e75c4a661f42016a1c0434336c2409feee60"
+    },
+    {
+      "file": "029-program-after-recovery.json.gz",
+      "bytes": 449,
+      "sha256": "7cd76c47a8976b1207b38ca017d3e38a5e4156d3e6ca43b4a3e16ce3b75229b3",
+      "rawBytes": 739,
+      "rawSha256": "a4ae056ad188c9354faf8d8d8c193f7373f3dff71fc7c3a23220c95ccf5469f2"
+    },
+    {
+      "file": "030-native-downloads.json.gz",
+      "bytes": 482,
+      "sha256": "9e25a71dc2b30f46a522b582c0d540a4c426c06938f266c49ca0c3d42e9a04ee",
+      "rawBytes": 1189,
+      "rawSha256": "fd2175c05cc00f3c6b289e40e49990e58f0ffe78ad1b336fecfb494204eda6fb"
+    },
+    {
+      "file": "retomada-cloud-refusals.cjs.txt",
+      "bytes": 2231,
+      "sha256": "60bb4d5b2270e5068c1c65c718a52895529792b06acc3fcaa693b76fab5c1a15"
+    },
+    {
+      "file": "retomada-edit-b6.cjs.txt",
+      "bytes": 1746,
+      "sha256": "309b493881e50b5f0775e10dfe706c8f35d6da2a7e941f19d6c6efd76032d305"
+    },
+    {
+      "file": "retomada-offline-stale-a.cjs.txt",
+      "bytes": 1632,
+      "sha256": "da4427f7c98917eac5e6f78cf19ea5cef864eb575136ca367c0c9623095d3960"
+    },
+    {
+      "file": "retomada-check-offline-recovery.cjs.txt",
+      "bytes": 2120,
+      "sha256": "ced03c7a444dd8adbaa1363a91e7f462d5cffa3a36c3351a606fa5b1f00787f8"
+    },
+    {
+      "file": "retomada-download-own-native.cjs.txt",
+      "bytes": 1922,
+      "sha256": "183dfce035a7b883e634aa852be23cf506597ff08f975e83bcc5534a737cb344"
+    },
+    {
+      "file": "native-download-comparison.json",
+      "bytes": 738,
+      "sha256": "1f477cd5f50366df668e0e05401968afe4c482e7b78cc85c82edbf3a192e7083"
+    },
+    {
+      "file": "033-recovery-graph.json.gz",
+      "bytes": 282,
+      "sha256": "42f70d68df05bc06b5feae8295d4d9c29ba37918c1c5b64137001b1f1c217920"
+    },
+    {
+      "file": "recovery-graph.json",
+      "bytes": 376,
+      "sha256": "ce7da399ce77adeabf037297b99d7497056263e595ce70f5735cdbca187766af"
+    },
+    {
+      "file": "compare-recovery-content.cjs.txt",
+      "bytes": 3019,
+      "sha256": "1a35957f83c2b9e9d30d73bbd706ff9a2aa86f6efc2484da527b0b5032756323"
+    }
+  ]
+}

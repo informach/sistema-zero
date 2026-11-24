@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from settings import * 
 
+# 🧩 Meus moldes
 class AttackAnimationSprite(pygame.sprite.Sprite):
     def __init__(self, target, frames, groups):
         super().__init__(groups)

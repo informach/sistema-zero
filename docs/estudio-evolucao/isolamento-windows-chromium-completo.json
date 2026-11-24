@@ -1,0 +1,56 @@
+[
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5015,
+    "cliqueAtendidoEmMs": 4523,
+    "isolado": false
+  },
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 64,
+    "cliqueAtendidoEmMs": 24,
+    "isolado": true
+  },
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": false,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 64,
+    "cliqueAtendidoEmMs": 39,
+    "isolado": true
+  },
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "mesma-origem",
+    "maiorAtrasoDoRelogioMs": 5013,
+    "cliqueAtendidoEmMs": 4528,
+    "isolado": false
+  },
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "srcdoc",
+    "maiorAtrasoDoRelogioMs": 62,
+    "cliqueAtendidoEmMs": 28,
+    "isolado": true
+  },
+  {
+    "navegador": "chromium 148.0.7778.96",
+    "chromiumMode": "chromium",
+    "cabecalhosDoHost": true,
+    "arranjo": "outro-site",
+    "maiorAtrasoDoRelogioMs": 63,
+    "cliqueAtendidoEmMs": 20,
+    "isolado": true
+  }
+]

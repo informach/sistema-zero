@@ -1,0 +1,19 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict');assert(!qa.retowCloudRefusals);assert(qa.oldNetworkSuspended&&!qa.old.isClosed());
+ const baseline=await require('./retomada-cloud-checkpoint.cjs')(qa),item=baseline.items.find(a=>a.itemId===qa.ownedVila.mapId);assert.equal(item?.formatVersion,6);assert.equal(item.revision,1);
+ const namespace=qa.ownedStorageNamespace,viewer=namespace.startsWith('adult:')?namespace.slice(6):namespace;assert(/^[a-f0-9-]{36}$/i.test(viewer));
+ const base=new URL('/api/creations/pinta/'+item.itemId,qa.origin);assert.equal(base.origin,qa.origin);assert.equal(item.itemId,'fa6cd481-d157-4849-8ea1-f871aedce0e1');
+ const records=[];qa.retowCloudRefusals={phase:'started',records,baseline};
+ async function reject(method,body,code,suffix=''){
+  qa.retowCloudRefusals.phase=method+':'+suffix+':'+(body.formatVersion??body.maxFormatVersion);
+  const r=await qa.old.request.fetch(base.href+suffix,{method,headers:{'x-sz-viewer':viewer},data:body,timeout:15000}),response=await r.json();
+  const record={method,operation:suffix||'delete',declaredFormat:body.formatVersion,maxReadFormat:body.maxFormatVersion,baseRevision:body.baseRevision,status:r.status(),code:response.error?.code,uploadUrlIssued:!!response.uploadUrl};records.push(record);
+  assert.equal(r.status(),409);assert.equal(response.error?.code,code);assert.equal(record.uploadUrlIssued,false);
+ }
+ const meta={name:'qa-vila-floresta-20261120',kind:'tilemap',itemUpdatedAt:new Date().toISOString(),bytes:item.bytes,baseRevision:item.revision};
+ for(const formatVersion of [4,5])await reject('POST',{...meta,formatVersion},'CREATION_CLIENT_OUTDATED','/upload');
+ for(const maxFormatVersion of [4,5])await reject('DELETE',{baseRevision:item.revision,maxFormatVersion},'CREATION_CLIENT_OUTDATED');
+ await reject('POST',{...meta,baseRevision:0,formatVersion:6},'CREATION_STALE_BASE','/upload');
+ const after=await require('./retomada-cloud-checkpoint.cjs')(qa);assert.deepEqual(after.items,baseline.items);qa.retowCloudRefusals.phase='verified';
+ return{simulatedLegacyTransport:true,authenticatedStaging:true,records,allSixCloudSummariesUnchanged:true,oldTabPreserved:true,realR2UploadPreviouslyObserved:true};
+};

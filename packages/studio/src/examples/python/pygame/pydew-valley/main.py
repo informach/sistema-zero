@@ -1,15 +1,18 @@
+# 📦 Bibliotecas
 import sys
 
 import pygame
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT
 from farm import Farm
 
+# ⚙️ Ao iniciar
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('PyDew Valley')
 clock = pygame.time.Clock()
 farm = Farm()
 
+# 🔁 Enquanto estiver rodando
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

@@ -1,0 +1,53 @@
+{
+  "ci": {
+    "run": 43980464489,
+    "commit": "cc227425c",
+    "pacote": "@sistemazero/admin",
+    "saida": 134,
+    "causa": "JavaScript heap out of memory",
+    "deployStaging": "skipped"
+  },
+  "local": [
+    {
+      "incremental": true,
+      "limiteMiB": 4096,
+      "saida": 0,
+      "arquivos": 8655,
+      "instanciacoes": 1180760,
+      "memoriaKiB": 3792443,
+      "segundos": 34.94
+    },
+    {
+      "incremental": false,
+      "limiteMiB": 4096,
+      "saida": 134,
+      "causa": "JavaScript heap out of memory"
+    },
+    {
+      "incremental": false,
+      "limiteMiB": 5120,
+      "saida": 0,
+      "arquivos": 8655,
+      "instanciacoes": 3695554,
+      "memoriaKiB": 5183811,
+      "segundos": 164.78
+    },
+    {
+      "incremental": false,
+      "limiteMiB": 6144,
+      "saida": 0,
+      "arquivos": 8655,
+      "instanciacoes": 3695554,
+      "memoriaKiB": 5546169,
+      "segundos": 160.33
+    }
+  ],
+  "regressao": {
+    "comandoAntigoRecusado": true,
+    "serialSemSobreposicao": true,
+    "todosOsPacotesConferidosMesmoComErro": true,
+    "erroContinuaFalhando": true,
+    "testesCiRelease": 364,
+    "assercoes": 1334
+  }
+}

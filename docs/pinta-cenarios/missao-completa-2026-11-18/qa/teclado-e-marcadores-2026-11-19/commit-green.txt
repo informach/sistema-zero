@@ -1,0 +1,62 @@
+bun test v1.3.11 (af24e281)
+
+src\state\editorStore.test.ts:
+(pass) editorStore — commit/undo/redo > o orçamento da aula recusa a transação inteira antes de histórico e autosave [125.00ms]
+(pass) editorStore — commit/undo/redo > commit grava história e bumpa updatedAt
+(pass) editorStore — commit/undo/redo > replace NÃO gasta undo
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > undo restaura os mapas ANTES; redo reaplica os mapas DEPOIS
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > undo ATRAVÉS de uma edição comum (pincel) ainda restaura os mapas do remap anterior
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > editor sem assets ligados (sprite/mapa) segue igual — undo comum
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > persiste asset principal e mapas ligados na mesma operação observável
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > só publica asset principal e mapas ligados depois da persistência confirmar [15.00ms]
+(pass) editorStore — commitLinked (transação cross-asset: tileset + mapas) > falha ao persistir mapas ligados mantém o editor sujo e mostra erro
+(pass) editorStore — autosave debounced + flush > salva sozinho após o debounce e avisa a galeria (onSaved) [63.00ms]
+(pass) editorStore — autosave debounced + flush > flush salva imediatamente (sem esperar o debounce)
+(pass) editorStore — autosave debounced + flush > falha de persistência vira badge de erro e continua sujo (retry no próximo flush)
+(pass) editorStore — autosave debounced + flush > sem edição não persiste nada [62.00ms]
+(pass) recuperação de uma gravação já confirmada como cópia > adota a cópia, cancela histórico/gestos antigos e continua salvando no ID novo
+(pass) recuperação de uma gravação já confirmada como cópia > edição feita enquanto o save estava em voo permanece suja para retry [63.00ms]
+(pass) assetBytes > mede os bitmaps dominantes
+(pass) assetBytes > kinds vetoriais crescem com o número de shapes (orçamento do undo)
+(pass) assetBytes > conta o PNG da figura (senão o orçamento do undo mente)
+(pass) conjunto (map-set) no orçamento do desfazer > pesa o que o mapa de dentro pesa, e as células entram uma vez por buffer
+
+src\components\editor\mapTools\mapTools.test.ts:
+(pass) balde > enche com a peça do carimbo, com os bits de virar
+(pass) balde > sem carimbo, enche com a peça escolhida
+(pass) balde > área que já está igual e camada trancada devolvem o MESMO mapa (nada a gravar)
+(pass) balde > com "espalhar" ligado, o balde espalha na região inteira
+(pass) pincel > lápis, borracha e carimbo
+(pass) pincel > terreno sem as peças de borda avisa e não muda o mapa
+(pass) guarda dos commits > não anuncia gravação quando o host recusa a edição
+(pass) guarda dos commits > não anuncia gravação de uma linhagem anterior à recuperação
+(pass) guarda dos commits > apagar objeto recusado conserva a seleção e o objeto
+(pass) guarda dos commits > mesmo conteúdo em outro objeto não é gravado; conteúdo diferente é
+(pass) seleção de um pedaço do mapa > pedaço só de grade vazia não vira seleção
+(pass) seleção de um pedaço do mapa > marca, levanta, leva para outro lugar e carimba com UM desfazer
+(pass) seleção de um pedaço do mapa > levantar e soltar no MESMO lugar não cria desfazer
+(pass) seleção de um pedaço do mapa > camada trancada: o pedaço não é levantado e apagar não grava nada
+(pass) seleção de um pedaço do mapa > apagar o pedaço marcado limpa as casas com um desfazer; de novo, nada
+(pass) níveis das ferramentas > cada nível mostra mais ferramentas que o anterior
+(pass) níveis das ferramentas > soma com a curadoria da aula e nunca a alarga
+(pass) níveis das ferramentas > a letra do atalho só liga o que está na caixa
+(pass) níveis das ferramentas > os painéis de cada nível
+(pass) níveis das ferramentas > colisão de camada aparece em Criar mais e continua acessível quando o mapa a usa
+(pass) níveis das ferramentas > o que o mapa já usa aparece em qualquer nível
+(pass) níveis das ferramentas > o nível fica guardado por perfil; sem nada guardado é "Começar"
+(pass) minimapa > as cores de um conjunto de peças são calculadas uma vez e reusadas
+(pass) minimapa > o retângulo do que aparece na tela, em frações do mapa
+(pass) relógio das peças animadas > a chave só muda quando algum quadro troca
+
+src\components\editor\mapTools\useLibraryPlacement.test.tsx:
+(pass) uma cópia recuperada durante a prévia sobrevive à soltura e ao cancelamento tardios [110.00ms]
+
+src\components\editor\mapTools\useObjectScatter.test.tsx:
+(pass) cópia recuperada durante a prévia não é substituída por eventos atrasados do pincel [31.00ms]
+(pass) recusa do orçamento do host não cria histórico nem anuncia espalhamento confirmado [16.00ms]
+(pass) biblioteca também respeita a recusa do host sem selecionar um objeto inexistente
+
+ 48 pass
+ 0 fail
+ 208 expect() calls
+Ran 48 tests across 4 files. [1036.00ms]

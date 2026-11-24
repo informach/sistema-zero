@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-pending-review.test.ts:
+160 |   if(change==='delete'){
+161 |    expect(remaining?.sealed.intentHash).toBe(sealed.sealed.intentHash)
+162 |    expect(await remaining.blobs.get(localDoc.id).arrayBuffer()).toEqual(original)
+163 |    expect(state.epoch).toBe('1');expect(statuses.at(-1).phase).toBe('error')
+164 |   }else if(change==='overwrite'){
+165 |    if(!remaining) expect(photos).toEqual(expect.arrayContaining([4,5,7])); else expect(remaining.sealed.intentHash).toBe(sealed.sealed.intentHash)
+                                       ^
+error: expect(received).toEqual(expected)
+
+- ExpectArrayContaining {}
++ [
++   5,
++   7,
++ ]
+
+- Expected  - 1
++ Received  + 4
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-pending-review.test.ts:165:34)
+(fail) último PUT, escritor anterior overwrite e situação unknown [188.00ms]
+
+ 0 pass
+ 1 fail
+ 8 expect() calls
+Ran 1 test across 1 file. [586.00ms]

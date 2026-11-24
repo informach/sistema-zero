@@ -1,0 +1,20 @@
+{
+  "sharedPlayer": 13813,
+  "additionalChars": {
+    "g2d": 15365,
+    "gk": 15364
+  },
+  "additionalLimit": 15500,
+  "full": {
+    "g2d": 435799,
+    "gk": 424097
+  },
+  "legacy": {
+    "g2d": 420434,
+    "gk": 408733
+  },
+  "fullLimits": {
+    "g2d": 437900,
+    "gk": 426000
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "parents": [
+    "cbc16602046db80807fafb34909642a6b47a22e2",
+    "f923972b45afe8a9b05d9090cb5bbf55d4d76130"
+  ],
+  "files": [
+    {
+      "file": "packages/core/src/studio/classic-shell.ts",
+      "sha256": "5fa20137390b15e9dc4150df7029270eb6c6f1a9bec557bd002831824b473e22"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/importacao/converter.worker.ts",
+      "sha256": "2dbbc777d5d67dcb15473c241d50a5ddc1d8af522ae7eca8294dc7a72df556c4"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/importacao/janela-do-worker.ts",
+      "sha256": "bb5a1c92c8f6c11aedcc32cd2a84ec919c40601a725e732c700dca5a7bd7022b"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/indice-de-caixas.ts",
+      "sha256": "fab88306c64bc3910c7cf93b352cdae9676dbb1d2ea21e7ae5e67b584f9dab58"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/src/teste/colisoes.ts",
+      "sha256": "6b9b6c63dd119780b7272d2c0f45a06ce2164aa2f8a0ba5845ec0d33137184b7"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/tests/converter-worker-next.test.ts",
+      "sha256": "8e53a1d999a0ddc35b222ab9abbb0cfb2a0a686f41156aaecba8eb729927d216"
+    },
+    {
+      "file": "packages/molda-cenarios-motor/tests/indice-de-caixas.test.ts",
+      "sha256": "b180074bb7fbbc6fce307d187806fe0df20d64e5190e782f76492d1bb1822a80"
+    },
+    {
+      "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "sha256": "b23c3243e9976ce673a7523ec8f38cc82f09e1724b8ebb6577b218e2019f733a"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/telas/Oficina.tsx",
+      "sha256": "e99a1e3aee843eacd9042d556155c23fad3de67b22dba0e597a43b6b662752de"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/telas/Testar.tsx",
+      "sha256": "8a7edb2a7741cf06e5dccd1cdb3c787fb840f0591c533ad3fabd20ed7c381cf1"
+    },
+    {
+      "file": "packages/molda-cenarios/tests/teste-loja.test.tsx",
+      "sha256": "f7c7af7ae1893742b7b2bf3998e461bb9d4a54cac609f25853c8bcf2891b41be"
+    },
+    {
+      "file": "packages/palco-gravacao/README.md",
+      "sha256": "b76faa4ab1d6c5701ae96431ba76e260b03a4495f5124a2f6e9c967b6da9f206"
+    },
+    {
+      "file": "packages/palco-gravacao/qa/verificar-organizacao-browser.mjs",
+      "sha256": "2db05d49852a75bc22a8b6dec9b6bde1f5bf4577b9878efa2106bd75ec293403"
+    },
+    {
+      "file": "packages/palco-gravacao/src/lib/pagina.ts",
+      "sha256": "8ebfe1f567bec76b59144306609f026ddf28626294cf7729743024569559beaf"
+    },
+    {
+      "file": "packages/palco-gravacao/src/lib/verbos.ts",
+      "sha256": "8c7f92160387875d90c8684b077784870fc71e58ff8116e7a93b4b8f18a8dfbf"
+    },
+    {
+      "file": "packages/palco-gravacao/tests/palco.test.ts",
+      "sha256": "b39dee5ed3433e7c17f8b54b26577089df582f2ba2c76c2ee9b1f488419ae226"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "d48d4b60b1188fab34e00e747db68e9ecc1515d34366734eb413e256c3c37a25"
+    },
+    {
+      "file": "packages/studio/e2e/reino-zero-performance.spec.ts",
+      "sha256": "0499793954649c53203b2a542f3d0fda1edaafb2fda3e410dd5c63b741cfce29"
+    },
+    {
+      "file": "packages/studio/src/components/console/ConsolePanel.tsx",
+      "sha256": "bcb79d65345a9ba11914c490acca17be365b814b3485ce441d2bf1d884b97913"
+    },
+    {
+      "file": "packages/studio/src/components/devtools/investigateBlocks.ts",
+      "sha256": "0bfed51be20e1ac5a5b1a641790abb2f2b084997b43348b38c585771d5851596"
+    },
+    {
+      "file": "packages/studio/src/components/preview/JavaScriptProjectPlayer.tsx",
+      "sha256": "87cae890510bb42912be8643a96a455a11957f971b3b5f48c80a75d9b1f1de88"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PreviewIframe.tsx",
+      "sha256": "b213f0cdbd6ba80d4dbd1b06449b7949fd603dfa2a8ee9a149c47643ce5d5408"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProArtifactPreview.tsx",
+      "sha256": "55381a1a8fffadac542915f09ad10dcf4565e40d30e152193b117bb254ef66e9"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/ProPreview.tsx",
+      "sha256": "47c7d5a11d50a67911e4b2c1cf509061cdb57135da0672942b4b0b98a2a40c69"
+    },
+    {
+      "file": "packages/studio/src/modes/pro/RemoteProPreview.tsx",
+      "sha256": "771a414a74dd8ceb25eca31302aa4fa66a8ec95008ba18203efad6089319ef91"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "sha256": "2b4c29777772053ae2af1548de102286faa1c7ee0063f8a3d6b36610530a5a43"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "sha256": "cae1261c95d42b3fb33379c411d05382e868ea3864172ee5bccb8cf3a257c7e4"
+    },
+    {
+      "file": "packages/core/src/studio/frame-permissions.ts",
+      "sha256": "17054cd35933b376ffd1c2f933bc02f4abd354bf108ea4abdbec9221b59800b2"
+    },
+    {
+      "file": "packages/studio/e2e/preview-focus-policy.spec.ts",
+      "sha256": "fcea9d8ace961332d5c04a5d326790c2598e6791b02e44047dbffc533422ea36"
+    },
+    {
+      "file": "packages/studio/src/components/console/ConsolePanelPython.test.tsx",
+      "sha256": "55c7cbf6d52a39d129d3dcd6d2be74f1215d094e4e8a74287db5bc6ea001c6f7"
+    },
+    {
+      "file": "packages/studio/e2e/examples-gallery.spec.ts",
+      "sha256": "8313407098baa28c88cae2484954079cbcd0b6ebc1ce08fb40a925fabae836ad"
+    },
+    {
+      "file": "packages/studio/e2e/snow-descent.spec.ts",
+      "sha256": "e65376dbb97bbe813c3656485a6e1eadd4ac17e0590e871495abd4e168eee85a"
+    },
+    {
+      "file": "packages/studio/e2e/paste-into-area.spec.ts",
+      "sha256": "be6903ecc7add825a77a5250e0b5d382d58a5ad559428cd6da4d87b7dbad4568"
+    }
+  ]
+}

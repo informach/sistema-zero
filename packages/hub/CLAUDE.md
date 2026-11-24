@@ -37,34 +37,6 @@ usam o `accessConfig` persistido e exigem o pleno. Visita Kids não abre a Mostr
 vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois públicos). Teste:
 `tests/integration/adult-mural-visitor.test.ts`.
 
-
-> **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
-> (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod,
-> Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
-> use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
-
-Guia operacional para trabalhar neste package. Leia antes de editar.
-
-**Mural visitante (09/2026):** o entitlement `mural-dos-criadores-visitante` concede
-somente leitura do space `mural-dos-criadores` (canais, jogos, comentários e anexos
-visíveis). `AccessResolutionService` expõe `canInteract` no detalhe/listagem do
-space. Publicar, editar, comentar e reagir exigem a chave completa
-`mural-dos-criadores`; a checagem é feita nas rotas de escrita, não só na UI.
-As três rotas de publicação de vitrine (automática, kid-driven e Estúdio livre)
-também recusam a conta que tenha somente a chave visitante, mesmo que conclua um
-curso elegível ou possua o Estúdio separadamente.
-Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
-voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
-isso ampliaria a autorização de escrita por acidente.
-
-**Mural adulto visitante (20/10/2026, presente adulto):** mesma regra do Kids na Mostra
-`mural-dos-criadores-adulto` (space `adult`, `community_gated` com `adult-mural-dos-criadores`):
-`readConfig` acrescenta só na LEITURA a chave `adult-mural-dos-criadores-visitante`. A visita lê
-canais, jogos e comentários; publicar (o `canInteractChannel` do destino adulto), comentar e reagir
-usam o `accessConfig` persistido e exigem o pleno. Visita Kids não abre a Mostra adulta e
-vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois públicos). Teste:
-`tests/integration/adult-mural-visitor.test.ts`.
-
 ## O que é
 
 L05 do Arquipélago: `GET /hub/my-playable-showcase`, autenticado pelo gateway e token interno,
@@ -173,8 +145,9 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    parede `staff_only` + allowlist, autor do header `x-auth-profile-name`) — NÃO afrouxar. Duas divergências
    DELIBERADAS: o `body` é a descrição da criança (não o `summary` do admin), mas o **TÍTULO continua
    AUTORITATIVO do members** (defesa em profundidade — a parede é curada); e a idempotência inclui o
-   `clientIdempotencyKey` (duplo-clique/retry dedup-a; **republicar depois = post NOVO**, pois o snapshot
-   publicado é IMUTÁVEL e INDEPENDENTE do projeto que a criança continua editando no editor). Rota NOVA em
+   `clientIdempotencyKey` (duplo-clique/retry dedup-a). ⚠️ Desde 20/11/2026 republicar o MESMO projeto
+   ATUALIZA o post (ver "Republicar atualiza o post do projeto" logo abaixo); a chave de idempotência
+   segue valendo só para a 1ª publicação. Rota NOVA em
    `showcase.routes.ts` (mesma guarda de `x-internal-token`, mesmo `showcaseService`); gateway
    `hub-showcase-create-studio`.
    **Variação STANDALONE — Estúdio Completo (produto vendável, SEM aula, 06/2026):** rota
@@ -190,8 +163,27 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    produto, espelhando o passe-livre da elegibilidade por aula e da rota `/members/access`. Demais
    guardas IDÊNTICAS (destino kids + parede `staff_only` + allowlist,
    autor do header de perfil, capa https-only). Idempotência = `autor:studio-standalone:clientKey`
-   (sem curso/cadeia; republicar = post novo). Gateway `hub-showcase-create-studio-standalone` (segmento
+   (sem curso/cadeia). Com `sourceProjectId` o projeto ganha identidade e republicar ATUALIZA o post. Gateway `hub-showcase-create-studio-standalone` (segmento
    literal distinto de `showcase-thread-studio` — sem colisão de prefixo).
+   **Republicar atualiza o post do projeto (20/11/2026, migration `0024`):** cada post de vitrine guarda
+   a identidade do PROJETO em `threads.showcase_source_key` (hash derivado no `ShowcaseService`, índice
+   único parcial): aula = autor + curso + cadeia (ou bloco); oficina = autor + workspace; Estúdio livre =
+   autor + audiência + `sourceProjectId` (o id do projeto, vindo do BFF; sem ele, cliente antigo, cada
+   publicação segue criando um post). O `prepare` devolve **`{state:'existing', playId, thread}`** quando o
+   projeto já tem post (sem reserva) e o BFF chama `POST /hub/internal/showcase-thread-studio[-standalone]/update`
+   (`updateFromStudio`/`updateStandaloneShowcase`): MESMAS guardas da criação; troca `body`, capa (só
+   quando vem), `title` (no livre; na aula o do members) e `studio_meta`, e carimba **`game_updated_at`**
+   (selo "Atualizado", `ThreadView.gameUpdatedAt`). Mantém id, `play_id`, `created_at`,
+   `last_activity_at` (a ordem do Mural não muda), `challenge_key` (o desafio fica no mês da 1ª
+   publicação), jogadas, comentários e reações, e NÃO dispara `notify*` (sem XP/marco/desafio repetido).
+   Devolve `previousCoverUrl` para o BFF apagar a capa trocada. `asNewPost` ("Publicar como jogo novo")
+   cria outro post e a chave passa a ele (o `createShowcaseInTransaction` tira a chave de quem a tinha).
+   `deleted`/`rejected` zeram a chave (a próxima publicação cria um post); `hidden` mantém e a
+   atualização vale, oculta. **Adoção** de posts antigos: na aula pela reserva finalizada do mesmo
+   `{lessonId, blockId}`; no livre pelo `adoptPlayId` (o link local Pro/Python), sempre do próprio autor.
+   `POST /hub/internal/showcase-source` (status do botão) e `POST /hub/internal/showcase-thread-studio/touch`
+   (restaurar versão carimba `game_updated_at`). Testes: `tests/integration/showcase-update.test.ts` e
+   `tests/db/showcase-source-repository.test.ts`.
 12. **Plays + jornada + Desafio do mês (Fase 5, 07/2026):**
    - **Contador de jogadas:** `threads.plays_count` (vaidade, best-effort). O incremento é
      FUNDIDO no resolve do link público: `GET /hub/internal/studio-play/:playId?count=1` vira

@@ -1,0 +1,1 @@
+ALTER TABLE "members"."creations" ADD COLUMN "studio_seal_receipt" jsonb;

@@ -1,0 +1,148 @@
+{
+  "sourceHead": "efc2cf6bfcf4c99554b21cb76245cd80bce48cce",
+  "sourceNotes": "Full Pinta began over 8643 plus the mutation fix later committed as efc2. No Pinta source changed during the run. Product sources match efc2. Documentation pending only.",
+  "remoteActivated": false,
+  "productionDeployed": false,
+  "evidence": [
+    {
+      "file": "pinta-integrated-full-f5ac.log.gz",
+      "sha256": "81f60a81fdcbd170648bf68aa4441e54c2b951069679a70d9e91422b4bb86fb8",
+      "bytes": 322189,
+      "exitCode": 0,
+      "scope": "Pinta: 2894/38681; native Python backends enabled"
+    },
+    {
+      "file": "pinta-integrated-players-e3cb-focused.log.gz",
+      "sha256": "4deff01932b5f4a743b36432c0cf889e82e527df5272b0526772825dcefd007d",
+      "bytes": 7688,
+      "exitCode": 0,
+      "scope": "Studio: 73/313"
+    },
+    {
+      "file": "pinta-integrated-core-region-e3cb-focused.log.gz",
+      "sha256": "b56b0ce2484b7bc8246fff503aed4000a77509dc997c771badd37c8491a670da",
+      "bytes": 3245,
+      "exitCode": 0,
+      "scope": "Core regions: 30/184"
+    },
+    {
+      "file": "pinta-integrated-preview-f5ac-focused.log.gz",
+      "sha256": "822fba25e293f4ae627abef245f2f9d8ce7870dce9cad533fc30d53317c73346",
+      "bytes": 149039,
+      "exitCode": 0,
+      "scope": "Preview: 65/455; HappyDOM blocks iframe scripts"
+    },
+    {
+      "file": "pinta-integrated-shell-gate-fix.log.gz",
+      "sha256": "65d5509132b47e318cc5b36ee179b2046c13f22be218331d8919ef0d4d983769",
+      "bytes": 1000,
+      "exitCode": 0,
+      "scope": "Member Shell: 9/53"
+    },
+    {
+      "file": "pinta-integrated-member-shell-e3cb-types.log.gz",
+      "sha256": "fbc492989ccb00d3268d6e34a58d59cf94fe95d48526649541ddfc0100d79a0d",
+      "bytes": 869,
+      "exitCode": 2,
+      "scope": "Initial type failures, fixed in 8643e277a"
+    },
+    {
+      "file": "pinta-integrated-member-shell-gate-fix-types.log.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exitCode": 0,
+      "scope": "Member Shell full typecheck"
+    },
+    {
+      "file": "pinta-integrated-pinta-f5ac-types.log.gz",
+      "sha256": "f8e52d72bdd6117557014007fba05555dc351bf901e9bba0444035d8dc5f63c7",
+      "bytes": 142,
+      "exitCode": 2,
+      "scope": "Readonly mutation fixture, fixed in efc2cf6bf"
+    },
+    {
+      "file": "pinta-integrated-pinta-gate-fix-types.log.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "exitCode": 0,
+      "scope": "Pinta full typecheck"
+    },
+    {
+      "file": "pinta-integrated-palette-browser-f5ac.log.gz",
+      "sha256": "bf10aec06ec112c32ae63f0cf75d1a49d8703b1e9a632e296569ef573a780b24",
+      "bytes": 736,
+      "exitCode": 0,
+      "scope": "Chrome 157: disk3, disk2 and historical writer"
+    },
+    {
+      "file": "pinta-integrated-palette-tabs-f5ac.log.gz",
+      "sha256": "f2bf01fb1be119c562855f872c9eaa291366ad621523b79dc9f319add395012f",
+      "bytes": 332,
+      "exitCode": 0,
+      "scope": "Independent tabs: 1/4"
+    },
+    {
+      "file": "pinta-integrated-five-players-stored-f5ac-ce.log.gz",
+      "sha256": "68d48e234af60c56297f30ea09aee7f29c69df0f2a7e0e0c2e97095dd49fe2bf",
+      "bytes": 683,
+      "exitCode": 0,
+      "scope": "Stored projects: Chrome CE 3/3"
+    },
+    {
+      "file": "pinta-integrated-five-players-stored-f5ac-2d.log.gz",
+      "sha256": "40002407f8bf9210d81de486e4a384b13cba8ab1f1072794615fb7c13c51fb7f",
+      "bytes": 1432,
+      "exitCode": 0,
+      "scope": "Stored projects: Chrome JS/PGZero/Raylib 8/8"
+    },
+    {
+      "file": "pinta-integrated-palette-minio-f5ac.log.gz",
+      "sha256": "81c4b69464815ce29823f3644c7ba44393fc0ec09fb39e4d0d5bfb80265277c4",
+      "bytes": 13021,
+      "exitCode": 0,
+      "scope": "Full HTTP/PG/MinIO palette: 1/40"
+    },
+    {
+      "file": "pinta-causal-root-causal-pg.log.gz",
+      "sha256": "27be8410c1f4304914cfd0bc442212f6f11857a53785c1b560a05bd3f294a5bb",
+      "bytes": 4198,
+      "exitCode": 0,
+      "scope": "Causal PostgreSQL: 21/133"
+    },
+    {
+      "file": "pinta-causal-root-http-pg.log.gz",
+      "sha256": "e1eb79f7005da264c07f65461ee2161a98e1f897f90cd4812ef0017670e16e13",
+      "bytes": 2140,
+      "exitCode": 0,
+      "scope": "Full Members HTTP: 1/54"
+    },
+    {
+      "file": "pinta-causal-root-legacy-pg.log.gz",
+      "sha256": "ec2dfa0b88d691648fa5fd906e86801013dbb15e2c882fbce1c96c7f2d471fff",
+      "bytes": 5091,
+      "exitCode": 0,
+      "scope": "Legacy PostgreSQL repository: 23/209"
+    },
+    {
+      "file": "pinta-causal-root-purge-pg.log.gz",
+      "sha256": "9b0f089517a95045da6ec6ba2b14aba741a71c1efeea0266b7ced40b084fc388",
+      "bytes": 1183,
+      "exitCode": 0,
+      "scope": "Account purge PostgreSQL: 4/42"
+    },
+    {
+      "file": "pinta-integrated-python-f5ac-build.log.gz",
+      "sha256": "9cd43e6e6844637a976453df6e5053f768010bf78993b7ede21fecd26908197b",
+      "bytes": 1177,
+      "exitCode": 0,
+      "scope": "Build candidate 205eb48c, Bun 1.3.11"
+    },
+    {
+      "file": "pinta-integrated-python-8643-bun143-build.log.gz",
+      "sha256": "085aba5712a1297acd469899ce2820670914e963ac747945ca7dfce923456377",
+      "bytes": 1176,
+      "exitCode": 0,
+      "scope": "Build control 3fc4c3a6, Bun 1.4.3"
+    }
+  ]
+}

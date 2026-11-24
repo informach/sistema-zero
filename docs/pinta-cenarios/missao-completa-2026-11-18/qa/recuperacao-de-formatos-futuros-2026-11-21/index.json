@@ -1,0 +1,165 @@
+{
+  "baseline": "505c0a21a0912368f8d280a3d0238cbb6e7ece96",
+  "records": [
+    {
+      "file": "future-recovery-red.log.gz",
+      "bytes": 1106,
+      "sha256": "b4e3e5705894a9f05c98212265f129af21bb627fa1c1fd4e0a422044b158a857",
+      "rawBytes": 2660,
+      "rawSha256": "dd4add89b4928cddfb01544c23a24b33b90a257e59f75ce7fcc32643e1a5dedf"
+    },
+    {
+      "file": "future-recovery-focused-first.log.gz",
+      "bytes": 1159,
+      "sha256": "b697733ea09759a9ee57cb3f8a53bdd467bb693a51289762916dc62554668078",
+      "rawBytes": 2547,
+      "rawSha256": "76b486012e565a5dda76a43b6d46168e3c13801d43fa3101f6da086d9828d3f0"
+    },
+    {
+      "file": "future-recovery-focused.log.gz",
+      "bytes": 2072,
+      "sha256": "a2c832005337bfeb8c796a82a0f355663377d020eaa5d8c8d73442c6f4990e74",
+      "rawBytes": 6230,
+      "rawSha256": "bf6739d5055f29f5d9153949f6eb3c6cb9b472d1ca249c423bf0983a25b34428"
+    },
+    {
+      "file": "future-recovery-full.log.gz",
+      "bytes": 80510,
+      "sha256": "88d9bfa5ba24403ee6f0bdd6f4d08854db37ef2811f3b4bbc6fee53cee3c6343",
+      "rawBytes": 298043,
+      "rawSha256": "4686a6fc1a9a04b9f1cd19360df4e31028272f078284bdc5562fa862f687b051"
+    },
+    {
+      "file": "future-recovery-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "future-recovery-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "future-recovery-browser.log.gz",
+      "bytes": 799,
+      "sha256": "f853958ef164f28d344d32f1b7d3e1791b8875a20b528c03985eb5e4410d0706",
+      "rawBytes": 1748,
+      "rawSha256": "8c3f034bfb1aded9832ad2c92d90f132d3b0beca282087b66e2bb244ff426143"
+    },
+    {
+      "file": "future-recovery-authority-browser.log.gz",
+      "bytes": 1000,
+      "sha256": "1c41c918392ebceeea96397b5ec6f29c502888e6655e38d5b122cd0a93c0db12",
+      "rawBytes": 2254,
+      "rawSha256": "d881d784b754c9f5c548f02613fa5a3b085298804cd0369bb02ec452ce588c1e"
+    },
+    {
+      "file": "future-recovery-chunks-browser.log.gz",
+      "bytes": 1101,
+      "sha256": "7807307ee415db80d0924bcbc43ecb47e9b6d80bce9019370b6d5bf15c3f7c01",
+      "rawBytes": 3536,
+      "rawSha256": "8679be854dc7f0d123268a50faf3c4db67bd1b32cfa64e7f632764cebf9eab16"
+    },
+    {
+      "file": "future-recovery-biome.log.gz",
+      "bytes": 64,
+      "sha256": "78f06c81cd67e32397eb7fdb41ebc0270938d29abfd7332f7c93b07d541803a4",
+      "rawBytes": 44,
+      "rawSha256": "6a9c043e9cd2c35ffa5d8e24fcc36a08b3b941701bcd31434fa8f938af8c5ba3"
+    },
+    {
+      "file": "future-recovery-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 1720,
+      "sha256": "2309fb0e778482b25e26373c843c897a1abd82ebae0359b8949a81d76103856f",
+      "rawBytes": 7235,
+      "rawSha256": "cb1ba22d3cfa94426ab6db323d544e766fdd0e59d450dc74924f963f2e575e52"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 2394,
+      "sha256": "6dd101c2c7405d2ef64c17d153429598723726059cf2b003d14b749c4d4d57f7",
+      "rawBytes": 12159,
+      "rawSha256": "f70b8ba1f8a6149a6a673082538230f8e39b1377c6694f8377cab2ef6719a120"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 226685,
+      "sha256": "a035a9eb6475af7cb58751f505ab20760303cbabf09d4d91db27adc745061df9",
+      "rawBytes": 337372,
+      "rawSha256": "2a22c40a48333e7a084c549fc72e5abc8ad66bee668416878cd829d94dcab4ef"
+    },
+    {
+      "file": "archive-future-recovery.cjs.gz",
+      "bytes": 1508,
+      "sha256": "0c8f7cb4dce4b6a1bc37988d48bc7d7928c468a3f14589fa172f3dea729f6936",
+      "rawBytes": 3452,
+      "rawSha256": "d00e4d77b8d81955323ebabba141f65697f9110610f037873352fa58fbc51537"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/state/localAssetAuthority.ts",
+      "sha256": "3e101ac5cb5a477d48d54b5ea1712ba33be6f2f8803ff67a5ed31771af9dda00",
+      "previousSha256": "40f6f4ee4d1aed25a59ceec056543901da849dc21cb640e836a9b77bf01ba762"
+    },
+    {
+      "file": "packages/pinta/src/state/localAuthority.test.ts",
+      "sha256": "99f5b2bdd6679daadebfa8b17a933f773002cdadec2085d89b1f92c539dc0bbe",
+      "previousSha256": "a12cd3ec265ed408f95bde804a727a259c2ac1aaab100d14a520cf5da312f18f"
+    },
+    {
+      "file": "packages/pinta/src/state/localChunkStorage.ts",
+      "sha256": "5889b7e9272859371528494a7ada890d3f5769a999b073766331f67bda6b89c7",
+      "previousSha256": "b4f0fd965b1108a10e689b6d4ea2aa7ecaead0545c326a362c58547c4e8ed3ee"
+    },
+    {
+      "file": "packages/pinta/src/state/localCompatibilityIsolation.test.ts",
+      "sha256": "c2e284196e57e936fa9f75f3d4baa5a88725047a88bc5d3479c794a5eb8a1ae5"
+    },
+    {
+      "file": "packages/pinta/src/state/localCompatibilityIsolation.ts",
+      "sha256": "86ea73046fdb6826284d6571fc6cea128e51237392a8f0dd5ee82b1950cf0cfc"
+    },
+    {
+      "file": "packages/pinta/src/state/localFutureRecovery.test.ts",
+      "sha256": "55554498aa3004a5103ceac64cca10caa85d7808bd8fb2b609433da3b2b53503"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-future-recovery.flow.ts",
+      "sha256": "d4da5004d7bc992fce4605e0c77f2d0e4e5831cabf6cf932a163dd48729facc9"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-future-recovery.config.ts",
+      "sha256": "09dd3ab8b4b5ddc1497b921192f4a0c99f7e34f451838f3028ad394a2eef160e"
+    }
+  ],
+  "suite": {
+    "passed": 2688,
+    "failed": 0,
+    "skipped": 0,
+    "assertions": 35164,
+    "files": 247
+  },
+  "browser": {
+    "passed": 24,
+    "retries": 0,
+    "profiles": ["desktop", "cpu-4x (chunks only)"],
+    "realIndexedDB": true
+  },
+  "scope": "patched local readers with a complete transaction inventory; opaque future envelopes simulated",
+  "publicNative8": false,
+  "physicalIO3": false,
+  "cloudPartialInventory": false,
+  "stagingRollout": false
+}

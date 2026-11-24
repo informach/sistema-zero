@@ -53,7 +53,7 @@ interface Window {
   __SZGAME_SOUNDS?: Record<string, string>
   __SZGAME_ASSET_META?: Record<
     string,
-    { tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata; sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] } }
+    { scene?: object; hasScene?: true; tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata; sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] } }
   >
   __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown>
   webkitAudioContext?: typeof AudioContext
@@ -250,7 +250,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // A inspeção expõe nome/custo/cura para validar as ações disponíveis do RPG.
   // +21: desenho nativo, assinaturas fortes verificadas abaixo: retângulo 5,
   // círculo 4, triângulo 7 e texto 5. Nenhum parâmetro novo de API sem contrato.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1399)
+  // +1 (19/11): pageHide(event) compartilhado distingue BFCache do fechamento.
+  // O contador é sintático; as guardas semânticas e de assinatura continuam ativas.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1400)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {

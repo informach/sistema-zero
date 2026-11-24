@@ -11,11 +11,19 @@ export interface ProjetoGravado {
  * depois não muda o que uma posterior já usou.
  */
 export function projetoAntes(gravados: readonly ProjetoGravado[], numero: number): unknown | null {
+  return tomadaAntes(gravados, numero)?.project ?? null
+}
+
+/** A tomada que `projetoAntes` usa, com a parte dela (para comparar com o projeto da aula). */
+export function tomadaAntes(
+  gravados: readonly ProjetoGravado[],
+  numero: number,
+): ProjetoGravado | null {
   let melhor: ProjetoGravado | null = null
   for (const g of gravados) {
     if (g.parte >= numero) continue
     if (!melhor || g.parte > melhor.parte || (g.parte === melhor.parte && g.at > melhor.at))
       melhor = g
   }
-  return melhor?.project ?? null
+  return melhor
 }

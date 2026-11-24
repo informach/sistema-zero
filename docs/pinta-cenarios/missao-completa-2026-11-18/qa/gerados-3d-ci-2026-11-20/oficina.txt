@@ -1,0 +1,133 @@
+(pass) aplicação da água encerra sua prévia uma vez e conserva o histórico da escultura [47.00ms]
+(pass) água inalterada não cria revisão e cancela a prévia
+(pass) resposta de água atrasada restaura prévia sem substituir a cabeça atual
+(pass) intenção de água sem alterar alturas não é descartada como terreno sem mudança
+(pass) escavar rio grava água e peças no mesmo passo, com undo/redo durável após reabrir [16.00ms]
+(pass) sem alteração e sem comandos não cria revisão nem ocupa espaço
+(pass) falha de envio e resposta perdida conservam o lote inteiro e repetem a mesma operação sem duplicar recursos
+(pass) cabeça nova durante o preparo impede água e relevo atrasados de substituir a edição atual [15.00ms]
+(pass) formulários geram as cinco intenções com pontos e unidades documentais
+(pass) editar aparência/correnteza conserva amostras e não reescava nem grava relevo
+(pass) lago importado conserva modelo, encaixe e anéis ao mudar nível/material [16.00ms]
+(pass) protocolo de água devolve descritor sem malha e transfere apenas as cópias de escavação
+(pass) preparo recusa medidas inválidas e buffers compartilhados antes da transferência
+(pass) remover água preserva objetos apoiados e undo restaura o vínculo completo
+(pass) remoção é recusada antes de mudar objetos trancados ou água ausente
+(pass) guardar céu inclui só a referência escolhida e um lote reversível de iluminação
+(pass) cor e horário não fixam texturas abandonadas nem perdem ajustes de luz e névoa
+(pass) estrada e relevo entram em uma revisão e undo/redo duram depois de reabrir
+(pass) sem mudança não cria revisão e editar acabamento não repete a moldagem
+(pass) referência do catálogo e caminho são guardados e desfeitos juntos sem colocar objetos [16.00ms]
+(pass) falha de upload e resposta perdida retomam estrada e campo sem duplicar revisão
+(pass) cancelamento e cabeça nova durante preparo não substituem o documento atual
+(pass) colocar conjunto assenta o corpo inteiro na superfície e fixa o nome histórico da versão [15.00ms]
+(pass) host local publica cópias e reabre fonte/histórico sem deformar a composição ou alterar revisões antigas [31.00ms]
+(pass) host local recusa publicação inteira quando uma cópia está bloqueada e sincroniza fonte limpa sem repetir [16.00ms]
+(pass) miniaturas locais compartilham recurso por conteúdo, respeitam a revisão e liberam a cota com a biblioteca
+(pass) host local recusa snapshot divergente de uma revisão ainda existente no catálogo
+(pass) controlador mantém a raiz selecionada, grava o gesto e duplica como montagem no mesmo histórico [16.00ms]
+(pass) host HTTP converte contexto/miniaturas e envia a fotografia da revisão pelo protocolo existente
+(pass) mesmos comandos alimentam autoria, desfazer e refazer sem retroceder a revisão
+(pass) falha da rede preserva a composição proposta na recuperação local
+(pass) gesto manual impede comandos concorrentes e teste preserva a autoria
+(pass) atualização de outra sessão limpa histórico local e não substitui um teste ativo
+(pass) host de ensaio prepara só a revisão salva, licencia modelos visíveis e conserva autoria [16.00ms]
+(pass) bytes dos modelos no ensaio pertencem ao espaço, mesmo com digest igual
+(pass) apagar o cenário durante o preparo não entrega a cópia já removida do ensaio
+(pass) host HTTP manda somente revisão e prova de perfil, valida resposta e respeita cancelamento
+(pass) download não usa caminhos, controles, extensão fornecida ou nome reservado do cenário
+(pass) Raylib distribui a fonte oficial e dados separados, sem transformar nome autoral em código [78.00ms]
+(pass) Raylib baixa ZIP íntegro, mede saída e cancela sem alterar a revisão de origem [157.00ms]
+(pass) distribuição usa JSON para nomes autorais e inclui runtime autocontido, exemplo e licenças [110.00ms]
+(pass) ZIP reabre pelo leitor existente, conserva bytes e cancela sem entregar resultado parcial [265.00ms]
+(pass) a oficina falando com o app > criação única envia a condição; 412 só continua quando o servidor pediu criação única
+(pass) a oficina falando com o app > histórico devolve a cabeça diretamente e preserva a leitura dos modelos fixados [16.00ms]
+(pass) a oficina falando com o app > reabrir preserva o espaço dos modelos de uma biblioteca apagada
+(pass) a oficina falando com o app > cancelamento durante upload não registra modelos nem inicia o próximo lote
+(pass) a oficina falando com o app > organização consulta o índice da biblioteca inteira
+(pass) a oficina falando com o app > espaços ganham nome e as capas viram endereços do próprio app
+(pass) a oficina falando com o app > trazer modelos: reserva, sobe só o que falta, direto ao armazenamento, e registra
+(pass) a oficina falando com o app > mais de 50 modelos vão em lotes, e o envio que falha interrompe com uma frase
+(pass) a oficina falando com o app > editar: revisão vencida vira CenarioDesatualizado; outra recusa leva a frase do servidor
+(pass) a oficina falando com o app > abrir o cenário, guardar a capa e apagar modelos pela biblioteca
+(pass) a oficina falando com o app > retratos HTTP reusam imagem confirmada e convertem o histórico sem reenviar binários
+(pass) a oficina falando com o app > retratos HTTP recusam confirmação que pertence a outra revisão
+(pass) a oficina falando com o app > cancelar a leitura do avatar interrompe o pedido de bytes e conserva o erro de cancelamento
+(pass) a oficina falando com o app > o arquivo do modelo: o app diz onde está e a busca vai direto ao armazenamento
+(pass) arquivo ainda saindo do armazenamento: espera e repete o mesmo pedido, sem erro na tela [812.00ms]
+(pass) todas as ferramentas criam descritores reais, com altura nativa e sem inferência por nome [16.00ms]
+(pass) trocar início principal usa um lote reversível e não destranca o início anterior
+(pass) trocar apoio conserva a altura mundial e os controles locais
+(pass) colocar por clique conserva o desnível e considera a superfície escolhida
+(pass) propriedades preservam tipos e recusam duplicação, números vazios e valores inválidos
+(pass) editar propriedades usa comandos normais, não perde pose e respeita trava de entidade
+(pass) ações da aba Objetos > o controlador conserva a pasta escolhida, inclusive vazia, e limpa contexto removido sem gravar seleção [16.00ms]
+(pass) ações da aba Objetos > somar escolhas funciona sem teclado e não grava nem altera o histórico autoral
+(pass) ações da aba Objetos > tonalidade altera só a cópia escolhida, persiste e pode ser desfeita; cor inválida é recusada
+(pass) ações da aba Objetos > criar uma forma gera definição e instância no mesmo histórico, sem modelo de biblioteca
+(pass) ações da aba Objetos > encaixe em suporte legado confere as medidas no mesmo lote, inclusive quando espelhado [15.00ms]
+(pass) ações da aba Objetos > mover a pilha inteira não aplica a translação duas vezes; duplicar o dependente mantém o deslocamento
+(pass) ações da aba Objetos > trocar usa o histórico durável e pôr uma revisão nova não altera modelos anteriores
+(pass) ações da aba Objetos > pôr um modelo registra o modelo uma vez e põe o objeto de pé no chão
+(pass) ações da aba Objetos > duplicar copia ao lado, com nome novo e destrancado
+(pass) ações da aba Objetos > o gesto do palco vira a distância até o chão para quem pisa nele [16.00ms]
+(pass) ações da aba Objetos > apagar ignora o que não existe mais
+(pass) ações da aba Objetos > gizmo misto grava objeto e zona no mesmo histórico e respeita o bloqueio do marcador
+(pass) controlador da oficina > falha ao reabrir mantém o erro e tentar de novo busca a cabeça real
+(pass) controlador da oficina > desfazer e refazer continuam disponíveis depois de criar outro controlador
+(pass) controlador da oficina > resposta perdida de desfazer repete a mesma operação, sem desfazer duas vezes
+(pass) controlador da oficina > restaurar uma versão também vira um passo que pode ser desfeito
+(pass) controlador da oficina > recusa definitiva do servidor não prende o editor: diz o motivo e abre o guardado
+(pass) controlador da oficina > outra versão escolhida depois de uma restauração que falhou é a que volta [16.00ms]
+(pass) controlador da oficina > a edição aparece na hora e é guardada no host, na ordem
+(pass) controlador da oficina > desfazer e refazer andam pelos passos e também são guardados
+(pass) controlador da oficina > uma edição nova apaga o refazer
+(pass) controlador da oficina > ação recusada não muda nada e diz o motivo
+(pass) controlador da oficina > a escolha segue os toques e esquece o que foi apagado
+(pass) controlador da oficina > falha de rede segura a fila; tentar de novo guarda tudo na ordem
+(pass) controlador da oficina > cenário que mudou em outro lugar para a edição até recarregar
+(pass) editar e duplicar apoio de água usa a pose visível e a conserva ao reabrir e desfazer [15.00ms]
+(pass) host em memória > a mesma operação mandada duas vezes vale uma só
+(pass) host em memória > espaço da equipe só existe quando pedido, e bibliotecas ficam em cada espaço
+(pass) host em memória > apagar uma biblioteca a tira dos mundos que a usavam
+(pass) biblioteca entra no pincel em proporção nativa, sem gravar modelo nem objeto
+(pass) seleção conserva aparência e proporção, deduplica giro plano e congela a fonte ao apagar a peça
+(pass) aliases das três tabelas não sobrescrevem definições existentes e são reutilizados
+(pass) medida ausente exige fonte real; seleção vazia ou mais de oito variações não vira pincel parcial [16.00ms]
+(pass) um gesto grava definições e amostras numa revisão; retomada preserva undo/redo e recusa cabeça alterada
+(pass) host HTTP publica pelo BFF, reutiliza PUT imutável e mantém a identidade só nos pedidos da oficina
+(pass) cancelamento anterior à publicação não faz pedido nem envio
+(pass) host de ensaio publica no espaço da equipe, conserva revisão e recusa fonte pessoal
+(pass) duas publicações de ensaio concorrentes não sobrescrevem a versão e a repetição resiste à exclusão da fonte
+(pass) Raylib consolida somente peles com juntas e matrizes idênticas, preservando BIN, clipes e origem [16.00ms]
+(pass) Raylib recusa esqueletos diferentes em vez de descartar o segundo silenciosamente
+(pass) bind pose omitida equivale a uma matriz identidade para cada junta
+(pass) retratos locais são fixados por revisão; imagem atrasada e repetida não mudam a capa atual
+(pass) fotos compartilham o mesmo recurso por espaço e a última referência libera sua cota [15.00ms]
+(pass) cancelamento e revisão inválida não alocam imagens nem alteram a autoria [94.00ms]
+(pass) miniatura de conjunto e retrato do cenário compartilham a imagem sem duplicar a cota
+(pass) fila envia recursos antes de confirmar a base e conserva uma revisão de undo após reabrir [16.00ms]
+(pass) falha de upload e resposta perdida retomam o mesmo gesto, sem duplicar cota ou revisão
+(pass) pintura e buracos compartilham upload, isolamento, histórico e coleta existentes
+(pass) host HTTP reserva em lotes, sobe condicionalmente e pede confirmação junto com a edição [15.00ms]
+(pass) host local reabre as alturas e as conserva no histórico; outro espaço não reaproveita os bytes [16.00ms]
+(pass) retirar o chão pintado redistribui pesos; trocar todas as oito camadas continua válido [16.00ms]
+(pass) reamostrar limpa referências antigas e conserva relevo e máscaras em coordenadas do mundo [15.00ms]
+(pass) redimensionar o terreno importado sem camadas não tenta gravar pintura inexistente
+(pass) PNG mapeia preto e branco sem apagar pintura e buracos
+(pass) iniciar a partir do plano respeita os limites de células e não converte um perfil silenciosamente
+(pass) host local protege imagem no histórico, isola espaços e libera só ao apagar a última cópia
+(pass) host HTTP reabre a textura de biblioteca apagada e baixa sem credenciais da sessão
+(pass) leitura HTTP limita o corpo e cancela o stream; abortar antes não inicia pedido
+(pass) recorte de ponte conserva dependente externo e undo devolve o apoio na parte [15.00ms]
+(pass) recortar pasta com ponte e seiscentos dependentes usa um comando de remoção [94.00ms]
+(pass) caminho escolhido pela árvore usa o clipboard, recorte e undo existentes após reabrir
+(pass) recortar água mantém o objeto apoiado fora da escolha; undo restaura água e vínculo
+(pass) recortar pasta grande com água não gasta comandos liberando objetos que também serão removidos [172.00ms]
+(pass) fila de autoria grava colagem em um passo e conserva undo/redo após reabrir
+(pass) recortar recusa vínculo de apoio externo ou bloqueado sem apagar parcialmente
+(pass) referência copiada abre binários pelo espaço autorizado sem depender de biblioteca ainda existente no catálogo
+ 129 pass
+ 0 fail
+ 850 expect() calls
+Ran 129 tests across 24 files. [2.62s]

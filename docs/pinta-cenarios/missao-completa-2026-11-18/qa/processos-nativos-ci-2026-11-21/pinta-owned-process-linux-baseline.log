@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+tests/owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [50.33ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4007.84ms]
+(pass) output overflow is bounded and retires the owned native process [38.28ms]
+
+ 3 pass
+ 0 fail
+ 11 expect() calls
+Ran 3 tests across 1 file. [4.13s]

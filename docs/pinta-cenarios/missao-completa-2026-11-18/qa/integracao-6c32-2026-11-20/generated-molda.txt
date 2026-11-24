@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+tests\exportar-three.test.ts:
+(pass) distribuição usa JSON para nomes autorais e inclui runtime autocontido, exemplo e licenças [63.00ms]
+(pass) ZIP reabre pelo leitor existente, conserva bytes e cancela sem entregar resultado parcial [250.00ms]
+
+ 2 pass
+ 0 fail
+ 22 expect() calls
+Ran 2 tests across 1 file. [547.00ms]

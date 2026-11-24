@@ -1,0 +1,20 @@
+ok             pacotes gerados em pasta temporária: tiled, phaser, pygame, godot
+ok             Tiled: JSON e TMX de cada mapa voltam iguais pelo importador do Pinta
+ok             Tiled real: 4 conversões, cena inteira igual e nenhum aviso
+ok             Phaser 3.90.0: hash e licença do arquivo embutido
+ok             Pygame: py_compile de pinta_cenario.py, main.py
+ok             Pygame de verdade: pygame-ce 2.5.8 (SDL 2.32.10, Python 3.13.17)
+Pinta cena: PNG v2 e pacote iguais; 18 camadas, 2 folhas, arte, conjunto e portas nos dois sentidos.
+ok             Godot real: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Pinta: vila-e-floresta / 18 camadas
+Pinta: vila-e-floresta / 18 camadas
+Pinta: cabana / 2 camadas
+Pinta: vila-e-floresta / 18 camadas
+Godot QA: máscara do chão=1; física=true
+Godot QA: sólidos=[17, 18, 20, 21]; contém18=true; polígonos=1; célula=(2, 2); máscara personagem=1
+Godot QA: posição contra parede=(74.79642, 68.0)
+Pinta: cabana / 2 camadas
+Pinta: vila-e-floresta / 18 camadas
+Godot QA: 18 camadas, objetos, IDs únicos, referências, origem afim, animação, movimento, colisão e portas; falhas=false
+não realizado  navegador: este script não o executa

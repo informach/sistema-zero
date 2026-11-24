@@ -10,19 +10,63 @@
  * versão antiga do Pinta continua lendo. O import aceita as duas; uma versão
  * antiga recusa a v2 com o recado de versão, em vez de perder os objetos calada.
  */
+
+import { tileLayerToWire } from '../assets/wire'
 import { decodeBitmap, type EncodedBitmap, encodeBitmap } from '../core/bitmapCodec'
-import { isTileLayer, type PintaAsset, sanitizePintaAsset, tilemapNeedsV2 } from '../core/project'
+import { JsonByteSizeCache } from '../core/jsonBytes'
+import { REGION_METADATA_BUDGET } from '../core/mapDocumentBoundary'
+import {
+  isTileLayer,
+  type PintaAsset,
+  sanitizePintaAsset,
+  tilemapNeedsV2,
+  tilemapNeedsV3,
+  tilemapNeedsV4,
+  tilemapNeedsV5,
+  tilemapNeedsV6,
+  tilemapNeedsV7,
+  tilesetNeedsV4,
+  withPintaSchemaStamp,
+} from '../core/project'
+import { PINTA_MAX_SCHEMA, PINTA_RESOURCE_LIMITS } from '../core/projectConfig'
 
 const FORMAT = 'pinta-gallery'
 /** A versão que um arquivo SEM nada novo leva (e a única que versões antigas leem). */
 const BASE_VERSION = 1
 /** Mapas com objetos / peças por camada. */
 const OBJECTS_VERSION = 2
-const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([BASE_VERSION, OBJECTS_VERSION])
+/** Mapas com grupos, camadas além de 8, peças viradas, mapas grandes (`tilemapNeedsV3`). */
+const SCENE_VERSION = 3
+/**
+ * A cena completa (`assetNeedsV4`): objetos com forma, giro, papel ou propriedade tipada, arte e
+ * instância de conjunto, animações, terrenos e propriedades de peça, e o desenho conjunto.
+ *
+ * É outro número porque já existe Pinta publicado que lê o envelope 3 conhecendo só as camadas:
+ * ele importaria o arquivo e descartaria o resto calado. Com 4 ele recusa o arquivo inteiro com
+ * o recado de versão.
+ */
+const COMPLETE_SCENE_VERSION = 4
+/** O leitor completo de 4 arredondava offsets; o envelope 5 recusa o arquivo inteiro nele. */
+const PRECISE_SCENE_VERSION = 5
+const RESOURCE_SCENE_VERSION = 6
+const COLLISION_SCENE_VERSION = 7
+const READABLE_VERSIONS: ReadonlySet<unknown> = new Set([
+  BASE_VERSION,
+  OBJECTS_VERSION,
+  SCENE_VERSION,
+  COMPLETE_SCENE_VERSION,
+  PRECISE_SCENE_VERSION,
+  RESOURCE_SCENE_VERSION,
+  COLLISION_SCENE_VERSION,
+])
+export function canReadPintaBackupEnvelope(version: unknown): version is number {
+  return READABLE_VERSIONS.has(version)
+}
+
 const UTF8 = new TextEncoder()
 
 /**
- * ⚠️ As duas versões têm UM dígito: o cabeçalho mede os mesmos bytes nas duas (o
+ * ⚠️ Todas as versões têm UM dígito: o cabeçalho mede os mesmos bytes nas duas (o
  * medidor incremental do backup conta com isso).
  */
 function jsonHeader(version: number): string {
@@ -51,8 +95,14 @@ interface EncodedAssetBase {
 /** Um asset com os bitmaps CODIFICADOS (estrutura espelha o modelo). */
 type EncodedAsset = EncodedAssetBase & Record<string, unknown>
 
-function encodeAsset(asset: PintaAsset): EncodedAsset {
+function encodeAsset(input: PintaAsset): EncodedAsset {
+  if ('schema' in input && typeof input.schema === 'number' && input.schema > PINTA_MAX_SCHEMA)
+    throw new RangeError('Esta versão do desenho exige um gravador compatível.')
+  // O carimbo `schema` do arquivo acompanha o conteúdo, mesmo que a chave em memória esteja velha.
+  const asset = withPintaSchemaStamp(input)
   switch (asset.kind) {
+    case 'map-set':
+      return { ...asset, map: encodeAsset(asset.map) }
     // Backup PRESERVA as camadas (não achata): um quadro é a lista de cels.
     case 'pixel-sprite':
       return {
@@ -69,10 +119,16 @@ function encodeAsset(asset: PintaAsset): EncodedAsset {
     case 'tilemap':
       return {
         ...asset,
+        ...(asset.resources
+          ? {
+              resources: asset.resources.map((version) => ({
+                ...version,
+                asset: encodeAsset(version.asset),
+              })),
+            }
+          : {}),
         // Camada de objetos já é JSON puro; só as células viram array.
-        layers: asset.layers.map((l) =>
-          isTileLayer(l) ? { ...l, cells: Array.from(l.cells) } : { ...l },
-        ),
+        layers: asset.layers.map((l) => (isTileLayer(l) ? tileLayerToWire(l, asset) : { ...l })),
       }
     // Shapes vetoriais já são JSON puro — passam direto, sem codec.
     case 'vector-sprite':
@@ -88,7 +144,11 @@ function utf8ByteLength(value: string): number {
 
 /** Um asset com a indentação exata que ocupa dentro de `assets: [...]`. */
 function assetJsonFragment(asset: PintaAsset): string {
-  return JSON.stringify(encodeAsset(asset), null, 2)
+  return encodedAssetJsonFragment(encodeAsset(asset))
+}
+
+function encodedAssetJsonFragment(asset: unknown): string {
+  return JSON.stringify(asset, null, 2)
     .split('\n')
     .map((line) => `    ${line}`)
     .join('\n')
@@ -101,6 +161,9 @@ const ASSET_SEPARATOR_BYTES = utf8ByteLength(ASSET_SEPARATOR)
 interface CachedAssetBytes {
   updatedAt: number
   bytes: number
+}
+interface ProjectedAssetBytes extends CachedAssetBytes {
+  id: string
 }
 
 /** Um asset do inventário: bytes medidos, ou PENDENTES (o asset fica guardado até medir). */
@@ -126,6 +189,9 @@ interface InventoryEntry {
 export class GalleryBackupSizeCache {
   readonly #assets = new Map<string, CachedAssetBytes>()
   readonly #inventory = new Map<string, InventoryEntry>()
+  // Candidate summaries hold numbers/IDs only; no pending art roots enter confirmed warmup.
+  readonly #projections = new WeakMap<PintaAsset, ProjectedAssetBytes>()
+  readonly #pending = new Map<string, ProjectedAssetBytes>()
   #seeded = false
 
   byteLength(assets: readonly PintaAsset[], refreshIds: ReadonlySet<string> = new Set()): number {
@@ -136,12 +202,20 @@ export class GalleryBackupSizeCache {
   }
 
   invalidate(ids: Iterable<string>): void {
-    for (const id of ids) this.#assets.delete(id)
+    for (const id of ids) {
+      this.#assets.delete(id)
+      this.#pending.delete(id)
+    }
   }
 
   /** O inventário já representa a galeria? (`seed` já rodou.) */
   get seeded(): boolean {
     return this.#seeded
+  }
+
+  /** Membership only: unknown IDs require an authoritative read before a mutation. */
+  has(id: string): boolean {
+    return this.#inventory.has(id)
   }
 
   /** Quantos itens do inventário ainda não foram medidos. */
@@ -200,7 +274,15 @@ export class GalleryBackupSizeCache {
     }
     for (const asset of changed) {
       count += 1
-      bytes += this.#measure(asset, true)
+      // A speculative size must never be reused by idle warmup as confirmed data.
+      const projection = {
+        id: asset.id,
+        updatedAt: asset.updatedAt,
+        bytes: utf8ByteLength(assetJsonFragment(asset)),
+      }
+      this.#projections.set(asset, projection)
+      this.#pending.set(asset.id, projection)
+      bytes += projection.bytes
     }
     if (count === 0) return EMPTY_JSON_BYTES
     return NON_EMPTY_FIXED_BYTES + ASSET_SEPARATOR_BYTES * (count - 1) + bytes
@@ -209,7 +291,16 @@ export class GalleryBackupSizeCache {
   /** A gravação de `changed` deu certo: entram no inventário com os bytes já medidos. */
   commit(changed: readonly PintaAsset[]): void {
     for (const asset of changed) {
-      const bytes = this.#measure(asset, false)
+      const projection = this.#projections.get(asset)
+      const bytes =
+        projection?.id === asset.id &&
+        projection.updatedAt === asset.updatedAt &&
+        this.#pending.get(asset.id) === projection
+          ? projection.bytes
+          : this.#measure(asset, true)
+      this.#projections.delete(asset)
+      this.#pending.delete(asset.id)
+      this.#assets.set(asset.id, { updatedAt: asset.updatedAt, bytes })
       this.#inventory.set(asset.id, { updatedAt: asset.updatedAt, bytes, asset: null })
     }
   }
@@ -217,6 +308,7 @@ export class GalleryBackupSizeCache {
   remove(id: string): void {
     this.#inventory.delete(id)
     this.#assets.delete(id)
+    this.#pending.delete(id)
   }
 
   /**
@@ -266,16 +358,39 @@ export class GalleryBackupSizeCache {
  * bitmap solto, antes das camadas): o sanitize também tolera, mas normalizar
  * aqui deixa o decode previsível.
  */
-function decodeFrame(raw: unknown): unknown[] {
+function decodeBackupBitmap(raw: unknown, strict: boolean): unknown {
+  if (
+    strict &&
+    (!raw ||
+      typeof raw !== 'object' ||
+      Array.isArray(raw) ||
+      Object.keys(raw).length !== 3 ||
+      !['width', 'height', 'rle'].every((key) => Object.hasOwn(raw, key)))
+  )
+    throw new Error('Bitmap de backup com campos não reconhecidos.')
+  const bitmap = decodeBitmap(raw as EncodedBitmap)
+  if (strict && !bitmap) throw new Error('Bitmap de backup inválido.')
+  return bitmap
+}
+
+function decodeFrame(raw: unknown, strict = false): unknown[] {
   const list = Array.isArray(raw) ? raw : [raw]
-  return list.map((cel) => decodeBitmap(cel as EncodedBitmap))
+  return list.map((cel) => decodeBackupBitmap(cel, strict))
 }
 
 /** Reverte a codificação p/ o shape que o `sanitizePintaAsset` valida. */
-function decodeAsset(raw: unknown): unknown {
+function decodeAsset(raw: unknown, strictBitmap = false): unknown {
   if (!raw || typeof raw !== 'object') return raw
   const a = raw as Record<string, unknown>
   switch (a.kind) {
+    case 'map-set':
+      return {
+        ...a,
+        map:
+          a.map && typeof a.map === 'object' && 'kind' in a.map && a.map.kind === 'tilemap'
+            ? decodeAsset(a.map, strictBitmap)
+            : a.map,
+      }
     case 'pixel-sprite': {
       if (!Array.isArray(a.animations)) return a
       return {
@@ -285,21 +400,43 @@ function decodeAsset(raw: unknown): unknown {
           const anim = animation as Record<string, unknown>
           if (!Array.isArray(anim.frames)) return anim
           // Backup ANTIGO: o quadro era um bitmap só (o sanitize também aceita).
-          return { ...anim, frames: anim.frames.map((f) => decodeFrame(f)) }
+          return { ...anim, frames: anim.frames.map((f) => decodeFrame(f, strictBitmap)) }
         }),
       }
     }
     case 'pixel-background':
-      return { ...a, cels: decodeFrame(a.cels ?? a.bitmap) }
+      return { ...a, cels: decodeFrame(a.cels ?? a.bitmap, strictBitmap) }
     case 'tileset':
       return {
         ...a,
-        tiles: Array.isArray(a.tiles) ? a.tiles.map((t) => decodeBitmap(t)) : [],
+        tiles: Array.isArray(a.tiles)
+          ? a.tiles.map((t) => decodeBackupBitmap(t, strictBitmap))
+          : [],
       }
     case 'tilemap': {
       if (!Array.isArray(a.layers)) return a
       return {
         ...a,
+        ...(Array.isArray(a.resources) && a.resources.length <= PINTA_RESOURCE_LIMITS.maxVersions
+          ? {
+              resources: a.resources.map((entry) => {
+                if (!entry || typeof entry !== 'object') return entry
+                const version = entry as Record<string, unknown>
+                const resource = version.asset
+                return {
+                  ...version,
+                  asset:
+                    resource &&
+                    typeof resource === 'object' &&
+                    'kind' in resource &&
+                    resource.kind !== 'tilemap' &&
+                    resource.kind !== 'map-set'
+                      ? decodeAsset(resource, strictBitmap)
+                      : resource,
+                }
+              }),
+            }
+          : {}),
         layers: a.layers.map((layer) => {
           if (!layer || typeof layer !== 'object') return layer
           const l = layer as Record<string, unknown>
@@ -316,10 +453,85 @@ function decodeAsset(raw: unknown): unknown {
 export const MAX_BACKUP_FILE_BYTES = 32 * 1024 * 1024
 
 /** A galeria inteira → texto do `.pinta.json`. */
-export function galleryToPintaJson(assets: PintaAsset[]): string {
-  if (assets.length === 0) return EMPTY_JSON
-  const prefix = assets.some(assetNeedsV2) ? `${jsonHeader(OBJECTS_VERSION)}\n` : NON_EMPTY_PREFIX
-  return `${prefix}${assets.map(assetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+export function galleryToPintaJson(assets: readonly PintaAsset[]): string {
+  return pintaBackupFromEncoded(assets.map(encodeAsset), envelopeVersionFor(assets))
+}
+
+/** Shared container layout; callers own version admission and asset codecs. */
+export function pintaBackupFromEncoded(assets: readonly unknown[], version: number): string {
+  if (assets.length === 0) return `${jsonHeader(version)}]\n}`
+  const prefix = version === BASE_VERSION ? NON_EMPTY_PREFIX : `${jsonHeader(version)}\n`
+  return `${prefix}${assets.map(encodedAssetJsonFragment).join(ASSET_SEPARATOR)}${NON_EMPTY_SUFFIX}`
+}
+
+/** Measure each encoded asset before assembling a potentially oversized gallery string. */
+export function pintaEncodedBackupByteLength(assets: readonly unknown[], version: number): number {
+  return new JsonByteSizeCache(REGION_METADATA_BUDGET.maxDepth + 2).byteLength(
+    pintaBackupContainer(assets, version),
+    MAX_BACKUP_FILE_BYTES,
+  )
+}
+
+/** Shared logical envelope for the formatter and its incremental boundary-size adapters. */
+export function pintaBackupContainer(assets: readonly unknown[], version: number) {
+  return { format: FORMAT, version, assets }
+}
+
+// Internal building blocks for new containers; the public writer/reader still admits 0–7.
+export { decodeAsset as decodePintaBackupAsset, encodeAsset as encodePintaBackupAsset }
+
+/** O desenho usa algo que o envelope v2 não descreve (pede o v3 ou o v4)? */
+export function assetNeedsV3(asset: PintaAsset): boolean {
+  return (
+    assetNeedsV4(asset) ||
+    (asset.kind === 'tilemap' && tilemapNeedsV3(asset)) ||
+    ((asset.kind === 'tileset' || asset.kind === 'vector-tileset') &&
+      (asset.schema !== undefined || asset.tiles.length > 64))
+  )
+}
+
+/** O desenho usa algo que só o envelope v4 (cena completa) descreve? Decide pelo conteúdo. */
+export function assetNeedsV4(asset: PintaAsset): boolean {
+  return (
+    asset.kind === 'map-set' ||
+    (asset.kind === 'tilemap' && tilemapNeedsV4(asset)) ||
+    ((asset.kind === 'tileset' || asset.kind === 'vector-tileset') && tilesetNeedsV4(asset))
+  )
+}
+
+/** Frações em qualquer camada do mapa ou da definição reutilizável precisam do envelope 5. */
+export function assetNeedsV5(asset: PintaAsset): boolean {
+  return asset.kind === 'tilemap'
+    ? tilemapNeedsV5(asset)
+    : asset.kind === 'map-set' && tilemapNeedsV5(asset.map)
+}
+
+/**
+ * A versão do envelope: a MENOR que descreve tudo o que está no arquivo. Um arquivo sem nada
+ * novo continua saindo na versão 1, que todo Pinta lê; um Pinta que não conhece a versão recusa
+ * o arquivo inteiro com recado, em vez de importar os mapas cortados.
+ */
+export function envelopeVersionFor(assets: readonly PintaAsset[]): number {
+  if (
+    assets.some((asset) =>
+      asset.kind === 'tilemap'
+        ? tilemapNeedsV7(asset)
+        : asset.kind === 'map-set' && tilemapNeedsV7(asset.map),
+    )
+  )
+    return COLLISION_SCENE_VERSION
+  if (
+    assets.some((asset) =>
+      asset.kind === 'tilemap'
+        ? tilemapNeedsV6(asset)
+        : asset.kind === 'map-set' && tilemapNeedsV6(asset.map),
+    )
+  )
+    return RESOURCE_SCENE_VERSION
+  if (assets.some(assetNeedsV5)) return PRECISE_SCENE_VERSION
+  if (assets.some(assetNeedsV4)) return COMPLETE_SCENE_VERSION
+  if (assets.some(assetNeedsV3)) return SCENE_VERSION
+  return assets.some(assetNeedsV2) ? OBJECTS_VERSION : BASE_VERSION
 }
 
 /** O desenho usa algo que só o envelope v2 descreve (objetos, peças por camada)? */
@@ -328,7 +540,7 @@ export function assetNeedsV2(asset: PintaAsset): boolean {
 }
 
 /** Tamanho EXATO do backup que a galeria produziria, medido em bytes UTF-8. */
-export function galleryBackupByteLength(assets: PintaAsset[]): number {
+export function galleryBackupByteLength(assets: readonly PintaAsset[]): number {
   return new GalleryBackupSizeCache().byteLength(assets)
 }
 
@@ -354,7 +566,7 @@ export function importPintaJson(text: string): PintaImportResult {
   if (doc.format !== FORMAT || !Array.isArray(doc.assets)) {
     return { assets: [], warnings: ['O arquivo não parece um backup do Pinta.'] }
   }
-  if (!READABLE_VERSIONS.has(doc.version)) {
+  if (!canReadPintaBackupEnvelope(doc.version)) {
     return {
       assets: [],
       warnings: ['A versão deste backup não é compatível com esta versão do Pinta.'],

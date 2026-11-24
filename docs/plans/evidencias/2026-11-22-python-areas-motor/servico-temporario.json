@@ -1,0 +1,27 @@
+{
+  "nativeQualificationMode": "actual temporary staging Worker and R2; completion verified separately",
+  "promoterSourceUnchangedSince": "c9d70dfc8 (2026-10-25), the source used by the Pinta promotions of 20-21/11",
+  "currentFrameBytes": 26005469,
+  "previousQualifiedFrameBytes": 26007007,
+  "versionId": "bc5f55bb-69e2-457f-829a-ba6f9611fd69",
+  "workerName": "sistemazero-python-promoter-staging-41e4a42a0235",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-41e4a42a0235.helena-bcc.workers.dev",
+  "bindings": [
+    {
+      "name": "CF_VERSION_METADATA",
+      "type": "version_metadata"
+    },
+    {
+      "name": "OPERATOR_HMAC_KEY",
+      "type": "secret_text"
+    },
+    {
+      "bucket_name": "sistemazero-studio-artifacts-staging",
+      "name": "PYTHON_RUNTIME",
+      "type": "r2_bucket"
+    }
+  ],
+  "unauthorizedStatus": 401,
+  "expiresAt": 1795425573168,
+  "activationPerformed": false
+}

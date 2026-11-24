@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-20T12:06:57.550Z",
+  "base": "66d946ec6dbbb793df216c93bd7f292c35378151",
+  "integration": "dbf1c56e427b488c984cd5a0a9d13d9341b04fa2",
+  "sha256": "cd8d53bba1c541be1db341eb8b870f5a5687d7e4a5a31bf0c6a8f67535f39895",
+  "bytes": 254831,
+  "files": [
+    {
+      "file": "packages/pinta/src/state/persistence.ts",
+      "sha256": "05b700dc13bbfa1c7f7c6e80e85a30d61ba1b634edd2bddd36ecd93a3f9dd119"
+    },
+    {
+      "file": "packages/pinta/src/state/localAssetAuthority.ts",
+      "sha256": "40f6f4ee4d1aed25a59ceec056543901da849dc21cb640e836a9b77bf01ba762"
+    },
+    {
+      "file": "packages/pinta/src/state/assetAuthorityDb.ts",
+      "sha256": "40bdb5ffa02322b440a587e2fed7af8add3b20eafb7c1daae4d30ac314f12466"
+    },
+    {
+      "file": "packages/pinta/src/state/localChunkStorage.ts",
+      "sha256": "b4f0fd965b1108a10e689b6d4ea2aa7ecaead0545c326a362c58547c4e8ed3ee"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "050caf2513f652fcaa0effdc3820a784454dd744f6a9e998672f1e8c8e7f5910"
+    },
+    {
+      "file": "packages/pinta/src/core/projectConfig.ts",
+      "sha256": "05d7877b8e5d432637b3d43cb69a37c63427dd77e284780afc189a49722bf3ed"
+    }
+  ],
+  "containsAuthState": false,
+  "purpose": "Controlled code-only reader route; not offline HTTP bootstrap of the deployed app"
+}

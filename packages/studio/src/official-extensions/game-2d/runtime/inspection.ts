@@ -131,7 +131,8 @@ export const gameTwoDInspectionRuntime = `
       return { destroyed:false,x:box.x,y:box.y,w:box.w,h:box.h,rawX:raw.x,rawY:raw.y,rawW:raw.w,rawH:raw.h };
     }
     function _inspectLifecycle() {
-      return { frame: _frameStamp, generation: _driverGeneration, errors: _observationErrors, paused: _paused };
+      return { frame: _frameStamp, generation: _driverGeneration, errors: _observationErrors, paused: _paused,
+        drawn: _paintedLastFrame > 0 ? _paintedLastFrame : 0 };
     }
     var _inspection = _inspectFreeze({ ownData: _inspectOwnData, groupItems: _inspectGroupItems, spriteBounds: _inspectSpriteBounds, stage: _inspectStage,
       contactBounds: _inspectContactBounds, spritePosition: _inspectSpritePosition, lifecycle: _inspectLifecycle });

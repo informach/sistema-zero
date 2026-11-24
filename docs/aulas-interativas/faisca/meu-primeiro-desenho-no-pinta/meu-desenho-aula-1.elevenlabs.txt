@@ -1,22 +1,28 @@
-[upbeat, welcoming voice] Lembra do seu jogo da Chave do Farol? Hoje ele vai ganhar uma coisa que ninguém mais tem: uma chave desenhada por você!
+[upbeat, welcoming voice] Oi! Lembra do seu jogo da Chave do Farol? Hoje ele vai ganhar uma coisa que ninguém mais tem.
 
 [interested, animated voice] Olha este jogo aqui: a chave não é mais a dourada de antes. Ela foi desenhada no Pinta, o programa de desenhar da plataforma.
 
 [engaging, energetic, conversational voice] O resto do jogo continua igualzinho ao seu: o personagem pega a chave, vai até o farol, e o farol acende.
 
-[engaging, energetic, conversational voice] Nesta aula, você vai desenhar a sua chave no Pinta, aqui mesmo na página, e depois colocar o seu desenho no jogo.
+[interested, animated voice] Olha aqui: quando eu seguro a seta da direita, o personagem anda para a direita.
 
-[upbeat, encouraging voice] Agora é a sua vez de jogar. Clique no jogo e use as setas do teclado. Pegue a chave e leve o personagem até o farol. Depois clique em Próxima parte.
+[curious] E eu também vou poder desenhar a minha chave?
 
-[long pause]
+[engaging, energetic, conversational voice] Vai, sim! Nesta aula, você vai desenhar a sua chave no Pinta, aqui mesmo na página, e depois colocar o seu desenho no jogo.
 
-[engaging, energetic, conversational voice] Olha aqui: este é o seu Passo a passo do projeto! Ele mostra cada ferramenta do Pinta que você vai usar, o jeito de desenhar a chave e como colocar o desenho no jogo.
-
-[reassuring, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser. Depois clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: jogue até o farol acender. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Este é o Pinta, aqui dentro da aula. Olha aqui: o quadrado branco no meio é o seu quadro, e tudo o que você desenhar nele vai virar a chave do jogo.
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para desenhar a sua chave e colocar o desenho no jogo, com as ferramentas que você vai usar e o lugar de cada uma. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o material.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+
+[confident, clear, unhurried voice] Agora clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Este é o Pinta, aqui dentro da aula. Olha aqui: o quadrado no meio é o seu quadro, e tudo o que você desenhar nele vai virar a chave do jogo.
 
 [engaging, energetic, conversational voice] No jogo, a chave fica pequena. Por isso, desenhe bem grande, usando o quadro inteiro.
 
@@ -28,7 +34,7 @@
 
 [engaging, energetic, conversational voice] Repare: embaixo da caixa tem dois quadradinhos. O cheio é o Preenchimento, a cor de dentro da forma. O vazado é o Contorno, a cor da borda.
 
-[confident, clear, unhurried voice] Clique no Preenchimento e depois escolha uma cor no painel Cores, à direita. Eu vou escolher um rosa. O Contorno já vem preto, e pode ficar assim.
+[confident, clear, unhurried voice] Clique no Preenchimento e depois escolha uma cor no painel de cores, à direita. Eu vou escolher um rosa. O Contorno já vem preto, e pode ficar assim.
 
 [confident, clear, unhurried voice] Agora a argola, a parte redonda da chave. Clique na ferramenta Círculo, na caixa.
 
@@ -40,7 +46,9 @@
 
 [confident, clear, unhurried voice] Por último, os dentes. Ainda com o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro.
 
-[interested, animated voice] Ficou torto? Sem problema. Clique na ferramenta Selecionar, depois clique na forma e arraste para o lugar certo.
+[curious] E se a minha chave ficar torta?
+
+[reassuring, encouraging voice] Dá para arrumar. Clique na ferramenta Selecionar, depois clique na forma e arraste para o lugar certo.
 
 [confident, clear, unhurried voice] Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção.
 
@@ -64,26 +72,30 @@
 
 [confident, clear, unhurried voice] Procure o bloco Criar sprite chave. Repare: no fim dele está escrito com imagem chave-dourada. É essa imagem que você vai trocar.
 
-[engaging, energetic, conversational voice] Trocar a imagem é como vestir uma fantasia: você continua sendo você, e só a roupa muda.
+[curious] E as regras do jogo continuam funcionando com o meu desenho?
+
+[engaging, energetic, conversational voice] Continuam, sim. Trocar a imagem é como vestir uma fantasia: você continua sendo você, e só a roupa muda.
 
 [engaging, energetic, conversational voice] Com a chave é igual. O sprite continua se chamando chave, e só a aparência dele muda. Por isso, as regras do jogo continuam funcionando com o seu desenho.
 
-[confident, clear, unhurried voice] Se a pré-visualização cobrir o fim do bloco, clique no botão do olho, lá em cima, para esconder a pré-visualização.
+[confident, clear, unhurried voice] Se o jogo cobrir o fim do bloco, clique no menu de três pontinhos e em Mostrar o jogo, para esconder o jogo. Depois, faça o mesmo para ele voltar.
 
 [confident, clear, unhurried voice] Agora clique em chave-dourada e, na lista, escolha minha-chave.
 
-[confident, clear, unhurried voice] Se você escondeu a pré-visualização, clique no olho de novo para ela voltar.
+[upbeat, encouraging voice] Agora teste: clique em Rodar de novo, no alto do Estúdio. Depois segure as setas e leve o personagem até a sua chave. Olha só: ela some e o aviso muda.
 
-[upbeat, encouraging voice] Agora teste: clique no jogo e leve o personagem até a sua chave. Olha só: ela some e o aviso muda. Depois leve o personagem até o farol: ele acende!
-
-[reassuring, encouraging voice] Se a chave dourada continuar aparecendo, confira se você trocou a imagem no bloco Criar sprite chave, e não em outro.
-
-[confident, clear, unhurried voice] Funcionou? Clique em Reduzir, para voltar à aula, e depois em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija e clique novamente.
-
-[confident, clear, unhurried voice] Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar.
-
-[pleased, lively voice] Pronto, a chave do seu jogo agora é um desenho seu!
+[upbeat, encouraging voice] Depois leve o personagem até o farol. Olha só: ele acende!
 
 [reassuring, encouraging voice] Se um dia quiser outra chave, volte à parte anterior, mude o desenho e clique em Enviar de novo. Na próxima vez que você abrir esta aula, o jogo já vem com a chave nova.
 
-[confident, clear, unhurried voice] Quando aparecer Projeto enviado!, clique em Concluir aula.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco Criar sprite chave usa a imagem minha-chave.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, a chave do seu jogo agora é um desenho seu!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

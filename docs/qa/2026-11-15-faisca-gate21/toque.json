@@ -1,0 +1,13 @@
+{
+  "antes": "Altura do avatar\n1,16 m · escala 1\nAndar / correr\n1,5 / 3,4 m/s\nPonte do Bosque\n232,23 × 5 m\nPosição\n0, 4,54, 150 m\nQuadros\n2 / s\nDistância da câmera\n11.00 m\nGiro da câmera\n0.000 rad\nNadando\nnão\nSetores com física\n24\nChamadas de desenho\n93\nTriângulos\n158.301\nGeometrias\n121\nTexturas\n26",
+  "depois": "Altura do avatar\n1,16 m · escala 1\nAndar / correr\n1,5 / 3,4 m/s\nPonte do Bosque\n232,23 × 5 m\nPosição\n0,01, 5,28, 141,71 m\nQuadros\n58 / s\nDistância da câmera\n10.88 m\nGiro da câmera\n0.000 rad\nNadando\nnão\nSetores com física\n24\nChamadas de desenho\n86\nTriângulos\n151.685\nGeometrias\n120\nTexturas\n26",
+  "mapa": {
+    "x": 20,
+    "y": 120,
+    "width": 362,
+    "height": 633
+  },
+  "erro": "Não foi possível carregar Coelho (503). Tentar carregar a arte",
+  "recuperouArte": true,
+  "erros": []
+}

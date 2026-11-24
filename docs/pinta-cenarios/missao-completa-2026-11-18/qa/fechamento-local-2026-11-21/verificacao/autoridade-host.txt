@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-format-memory.test.ts:
+(pass) a memória de formato continua protegendo o registro quando a escrita estoura a cota
+(pass) um valor antigo legível não substitui a atualização que só coube em memória
+(pass) falha ao remover não ressuscita uma marca apagada na mesma instância
+(pass) storage saudável continua propagando alterações entre instâncias
+(pass) revisão, capacidade e autoria da assinatura sobrevivem à reabertura sem apagar entradas antigas
+(pass) assinatura sem capacidade/autoria ou revisão inválida exige nova conferência
+
+tests\pinta-local-authority.test.ts:
+(pass) a ponte de nuvem preserva a autoridade local em realm isolado [219.00ms]
+
+ 7 pass
+ 0 fail
+ 15 expect() calls
+Ran 7 tests across 2 files. [308.00ms]

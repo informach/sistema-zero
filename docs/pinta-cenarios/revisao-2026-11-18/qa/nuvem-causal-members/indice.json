@@ -1,0 +1,147 @@
+{
+  "versao": 1,
+  "backend": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+  "recolhidoUTC": "2026-11-22T18:20:07.783148+00:00",
+  "bun": "1.3.11 (af24e281)",
+  "postgres": "16.13",
+  "alvosLocais": {
+    "porta": 55553,
+    "migracoesAplicadas": 171,
+    "gatilhosPinta": 3,
+    "PINTA_CAUSAL_TEST_DATABASE_URL": "kids_journey_pinta_causal_release",
+    "PINTA_CAUSAL_HTTP_TEST_DATABASE_URL": "kids_journey_pinta_causal_http",
+    "KIDS_JOURNEY_PURGE_TEST_DATABASE_URL": "kids_journey_pinta_causal_purge_release",
+    "TEST_DATABASE_URL": "pinta_causal_sparse_test"
+  },
+  "ultimasMigracoesDesc": [
+    "1795367916453|5ffd334905cb8fe4cb2bd5b340d4d1cb7340133e487927d51841724bb16a0a3c",
+    "1795367464373|790edce8e1f272b6b28e88b5a4a7d1a60e8c92932d6c9d132582ed76afdd7f38",
+    "1795366983980|807fed01b4971f8d9c74b1802351b1266268d1c0d6e46065bb0c956168d1b05f"
+  ],
+  "gates": [
+    {
+      "arquivo": "01-postgres.txt",
+      "fonte": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+      "comando": "bun --no-env-file test tests/db/pinta-causal.test.ts",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 0,
+      "sha256": "4435d76a1845786dde8a5fe59c39535b8b49cdc7b0ebe4fb86cac9e0ee9c9ca0",
+      "sha256LogLocalOriginal": "10dd516d92faa778fc6195262d8bdc75c86e14255e9da3f74de61e9cc01b39f9"
+    },
+    {
+      "arquivo": "02-http.txt",
+      "fonte": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+      "comando": "bun --no-env-file test tests/db/pinta-causal-http.test.ts",
+      "alvo": "PINTA_CAUSAL_HTTP_TEST_DATABASE_URL",
+      "saida": 0,
+      "sha256": "845ff9ba7c935e47e6f6c6d50a4b186003f1730afe42b624c943b0a6d54fe9cd",
+      "sha256LogLocalOriginal": "43887cf56c411909ab88a8deaebcfdc54e4eb5ab8e6eed5ad8dddbd5eaa17a77"
+    },
+    {
+      "arquivo": "03-core.txt",
+      "fonte": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+      "comando": "bun --no-env-file test packages/core/src/creations/pinta-causal.test.ts",
+      "alvo": "raiz do monorepo",
+      "saida": 0,
+      "sha256": "b6f8bdd4c20dd62e4927c87717ac8737f53bf01849b0afb409a859766b699e07",
+      "sha256LogLocalOriginal": "db98d82e7138664a9c0fae003be73006e7af0d6717130fc24127db2d515c1b01"
+    },
+    {
+      "arquivo": "04-typescript.txt",
+      "fonte": "fdb196192efaad0ed303c7c2ba2d0104232c9355",
+      "comando": "bunx --no-install tsc --noEmit -p tsconfig.json",
+      "alvo": "packages/members; NODE_OPTIONS=--max-old-space-size=6144",
+      "saida": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256LogLocalOriginal": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "observacao": "TypeScript não escreveu diagnósticos."
+    },
+    {
+      "arquivo": "05-postgres-legado.txt",
+      "fonte": "3073f2f76f3eb8669c1736c6f91c6a5bce967712",
+      "comando": "bun --no-env-file test tests/db/creations.repository.test.ts tests/db/creation-cleanup.repository.test.ts",
+      "alvo": "TEST_DATABASE_URL",
+      "saida": 0,
+      "sha256": "e8c1c2c8f6396b4a66376f33619147f97926c2f3f5e50778cf4de7caf364ce87",
+      "sha256LogLocalOriginal": "db231b49f68d536fda0b960d2e84aba9e8be1c835bd51c60b97c78cbb08f5db5"
+    },
+    {
+      "arquivo": "06-purga.txt",
+      "fonte": "3073f2f76f3eb8669c1736c6f91c6a5bce967712",
+      "comando": "bun --no-env-file test tests/db/user-data-purge.test.ts",
+      "alvo": "KIDS_JOURNEY_PURGE_TEST_DATABASE_URL",
+      "saida": 0,
+      "sha256": "bb80bfeb929b2086b744df1e08cfd6be2b00583af65a6155df1ab9476cf7aea3",
+      "sha256LogLocalOriginal": "3bb13473f0c546a816a0676bf0ba9d72b8937cab4c16d69c0a6a36ad74821674"
+    },
+    {
+      "arquivo": "07-http-legado.txt",
+      "fonte": "3073f2f76f3eb8669c1736c6f91c6a5bce967712",
+      "comando": "bun --no-env-file test tests/integration/creations.test.ts tests/integration/creation-cleanup-routes.test.ts tests/unit/creation-cleanup.service.test.ts",
+      "alvo": "packages/members",
+      "saida": 0,
+      "sha256": "5496b677c2ea04b800ebf4a4836f75e3319f3fc057061127b7aaefce4f3c34f7",
+      "sha256LogLocalOriginal": "d86c9a984e3e2da631c83eafc2a48b74cea2ba9cb8833bf8ef6d0962f92e9c16"
+    },
+    {
+      "arquivo": "08-antes-identidade-e-layout.txt",
+      "fonte": "3073f2f76f3eb8669c1736c6f91c6a5bce967712",
+      "comando": "bun --no-env-file test tests/db/pinta-causal.test.ts -t inverse",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 1,
+      "sha256": "5d53683ff84464b2fbc64a7699c4d6725731f2cff5979dd006efff7eda86d499",
+      "sha256LogLocalOriginal": "31b5523a308ca5a806a332fa531053b76584e6bcf6fc10e219000687d8e9f2d8",
+      "observacao": "Fixture adversarial adicionada antes da correção 7909aa466096919f4397e14f20889bb59ad67ae1."
+    },
+    {
+      "arquivo": "09-antes-limite-http.txt",
+      "fonte": "7909aa466096919f4397e14f20889bb59ad67ae1",
+      "comando": "bun --no-env-file test tests/db/pinta-causal-http.test.ts",
+      "alvo": "PINTA_CAUSAL_HTTP_TEST_DATABASE_URL",
+      "saida": 1,
+      "sha256": "48e3a50eee64e390e6329eb57d21b93cff569ef3d1a0a0cb062e2fb833440aef",
+      "sha256LogLocalOriginal": "b4a80fa3defe817c62153f8377d693e0cd4392c29d72b2bcb7ee6251230e9885",
+      "observacao": "Composição completa com o fixture novo, antes de configurar o limite HTTP."
+    },
+    {
+      "arquivo": "10-antes-contador-pendente.txt",
+      "fonte": "7909aa466096919f4397e14f20889bb59ad67ae1",
+      "comando": "bun --no-env-file test tests/db/pinta-causal.test.ts -t \"whose reservation counter\"",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 1,
+      "sha256": "0694b5795fe6cb17f2947bb1a747fdca1ca600dbf7cda652fba265e88105435b",
+      "sha256LogLocalOriginal": "e331bb21ebb35a63695b0b23896d85d3ca9a73f1b61f87b65de8a11efb4a1420",
+      "observacao": "Estado intermediário de fdb196192. O cálculo já considerava revisão vigente e último contador reservado. O teste introduziu pendência de número maior."
+    },
+    {
+      "arquivo": "11-timeouts-sob-carga.txt",
+      "fonte": "7909aa466096919f4397e14f20889bb59ad67ae1",
+      "comando": "bun --no-env-file test tests/db/pinta-causal.test.ts",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 1,
+      "sha256": "93b3cbfe8216770ccc9420a4fe0a116ecf1ca5e64aa8d9bdab638e26e22bec43",
+      "sha256LogLocalOriginal": "58872cda5a0ebbd3c58f9f01b70254fae358b9ff7929e374c18f61a5e014f3fd",
+      "observacao": "Estado intermediário de fdb196192. A execução concorreu com o ensaio HTTP completo e o typecheck de outra frente. Três casos esgotaram 5 s. A execução sequencial final, com o mesmo timeout, está em 01-postgres.txt."
+    },
+    {
+      "arquivo": "12-antes-autoporta.txt",
+      "fonte": "7b5ceced489eff96e227c969834da8114267f320",
+      "comando": "bun --no-env-file test packages/members/tests/db/pinta-causal.test.ts -t \"self doors\"",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 1,
+      "sha256": "def5624305cf5b4a2b7556b35b58f9d0b5e35b4efd4617a04ed1f67da9eeb796",
+      "sha256LogLocalOriginal": "34a8555c35c00dbff5b3bfb3b55ea384b49d086adea8148b5dd80a864169aa54",
+      "observacao": "A criação do mapa com autoporta por ID/nome era recusada em sua própria revisão. O teste novo solicitou uma auto-observação desnecessária."
+    },
+    {
+      "arquivo": "13-autoporta-e-ordem-de-gestos.txt",
+      "fonte": "b88d228776104ceedc59f802700362703ef9d999",
+      "comando": "bun --no-env-file test packages/members/tests/db/pinta-causal.test.ts",
+      "alvo": "PINTA_CAUSAL_TEST_DATABASE_URL",
+      "saida": 0,
+      "sha256": "613d938e3d4422642e174cfedd3f957085f2c85ce337133078ea6d3972e7577e",
+      "sha256LogLocalOriginal": "d162e452d90bbca6a8c0fcd66c00226c973b7d5ec5c4b3ab9668935d3ace6a51",
+      "observacao": "A criação com autoporta e as duas ordens de congelar a grade A+B e renumerar A preservam as referências. O objeto que usa A ainda exige prova de remapeamento quando a grade está congelada."
+    }
+  ]
+}

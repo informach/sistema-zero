@@ -65,7 +65,13 @@ function derived(
     height: 1,
     proPath: `assets/${id}.png`,
     pintaImage: {
-      recipe: { version: 1, algorithm: 'pinta-image-1', drawingId: 'drawing', selection, scale: 2 },
+      recipe: {
+        version: kind === 'map-world' ? 2 : 1,
+        algorithm: 'pinta-image-1',
+        drawingId: 'drawing',
+        selection,
+        scale: 2,
+      },
       provenance: {
         sourceSha256: 'a'.repeat(64),
         dependencies: dependencies.map((drawingId) => ({ drawingId, sha256: 'c'.repeat(64) })),
@@ -84,62 +90,81 @@ function derived(
 const mapData = { format: 'pinta', version: 1, kind: 'map', name: 'fase', layers: [] }
 
 describe('pygame data kinds: the PNG keeps the Pinta chunk', () => {
-  test('a sheet or map without its data chunk is refused; with it, accepted', () => {
+  test('editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material', async () => {
+    const world = derived('map-world', pngWithData(mapData), ['cabana'])
+    const fake = adapter(() => ({
+      sourceSha256: 'a'.repeat(64),
+      dependencies: [{ drawingId: 'cabana', sha256: 'd'.repeat(64) }],
+    }))
+    const sync = createPintaImageSync(fake.value, new AbortController().signal)
+    const next = await sync.reconcile(world, [world])
+    expect(fake.inspections).toEqual(['map-world'])
+    expect(next?.id).toBe(world.id)
+    expect(next?.name).toBe(world.name)
+    expect(next?.proPath).toBe(world.proPath)
+    expect(next?.pintaImage?.recipe).toEqual(world.pintaImage!.recipe)
+    expect(next?.pintaImage?.provenance.sourceSha256).toBe(
+      world.pintaImage!.provenance.sourceSha256,
+    )
+    expect(next?.pintaImage?.provenance.dependencies[0]?.sha256).toBe('d'.repeat(64))
+    expect(next?.dataUrl).not.toBe(world.dataUrl)
+  })
+  test('a sheet or map without its data chunk is refused; with it, accepted', async () => {
     const withData = pngWithData(mapData)
     const ok = derived('map', withData, ['t1'])
-    expect(() =>
+    await expect(
       assertPintaImageAssetBytes(ok, withData, createHash('sha256').update(withData).digest('hex')),
-    ).not.toThrow()
+    ).resolves.toBeUndefined()
     for (const bytes of [
       plain,
       pngWithData(mapData, 'other'),
       pngWithData(mapData, 'pinta', [0, 0, 0, 0, 0]),
     ]) {
       const asset = derived('spritesheet', bytes)
-      expect(() =>
+      await expect(
         assertPintaImageAssetBytes(asset, bytes, createHash('sha256').update(bytes).digest('hex')),
-      ).toThrow('perdeu os dados')
+      ).rejects.toThrow('perdeu os dados')
     }
     // The single-image kinds stay plain PNGs.
     const frame = derived('frame', plain)
-    expect(() =>
+    await expect(
       assertPintaImageAssetBytes(frame, plain, createHash('sha256').update(plain).digest('hex')),
-    ).not.toThrow()
+    ).resolves.toBeUndefined()
   })
 })
 
-describe('sync re-derives the data kinds, a map on ANY tileset change', () => {
-  function adapter(
-    current: (selection?: PintaImageSelectionKind) => PintaImageDerivation['provenance'],
-  ) {
-    const inspections: Array<PintaImageSelectionKind | undefined> = []
-    const previews: PintaImageRecipe[] = []
-    const value: StudioPintaLibraryAdapter = {
-      list: async () => [],
-      import: async () => {
-        throw new Error('Synchronization never imports')
-      },
-      inspectImage: async (_drawingId, options) => {
-        inspections.push(options?.selection)
-        return current(options?.selection)
-      },
-      previewImage: async (recipe, _limits, options) => {
-        previews.push(structuredClone(recipe))
-        const bytes = pngWithData({ ...mapData, updated: true })
-        const base = derived(recipe.selection.kind, bytes).pintaImage!
-        return {
-          dataUrl: `data:image/png;base64,${bytes.toString('base64')}`,
-          derivation: {
-            ...base,
-            recipe,
-            provenance: structuredClone(options!.expectedProvenance!),
-          },
-        }
-      },
-    }
-    return { value, inspections, previews }
+function adapter(
+  current: (selection?: PintaImageSelectionKind) => PintaImageDerivation['provenance'],
+) {
+  const inspections: Array<PintaImageSelectionKind | undefined> = []
+  const previews: PintaImageRecipe[] = []
+  const value: StudioPintaLibraryAdapter = {
+    list: async () => [],
+    import: async () => {
+      throw new Error('Synchronization never imports')
+    },
+    inspectImage: async (_drawingId, options) => {
+      inspections.push(options?.selection)
+      return current(options?.selection)
+    },
+    previewImage: async (recipe, _limits, options) => {
+      previews.push(structuredClone(recipe))
+      const bytes = pngWithData({ ...mapData, updated: true })
+      const base = derived(recipe.selection.kind, bytes).pintaImage!
+      return {
+        dataUrl: `data:image/png;base64,${bytes.toString('base64')}`,
+        derivation: {
+          ...base,
+          recipe,
+          provenance: structuredClone(options!.expectedProvenance!),
+        },
+      }
+    },
   }
+  return { value, inspections, previews }
+}
 
+describe('sync re-derives the data kinds, a map on ANY tileset change', () => {
   test('a changed layer tileset re-derives the map (inspected with selection "map")', async () => {
     const map = derived('map', pngWithData(mapData), ['t1', 't2'])
     const fake = adapter(() => ({
@@ -212,7 +237,11 @@ describe('one shared tileset copy: painting a piece updates every use', () => {
       },
       previewImage: async (recipe, _limits, options) => {
         previews.push(structuredClone(recipe))
-        const bytes = pngWithData({ ...mapData, painted: true })
+        const bytes = pngWithData({
+          ...mapData,
+          kind: recipe.selection.kind === 'tileset' ? 'tileset' : 'map',
+          painted: true,
+        })
         const base = derived(recipe.selection.kind, bytes).pintaImage!
         return {
           dataUrl: `data:image/png;base64,${bytes.toString('base64')}`,

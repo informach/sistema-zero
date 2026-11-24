@@ -1,17 +1,66 @@
 import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
+import { PYTHON_PINTA_PHYSICS_FEATURE, PYTHON_PINTA_WORLD_FEATURE } from './python-runtime-features'
 
-const id = z
-  .string()
-  .min(1)
-  .max(200)
-  .regex(/^[^\p{Cc}]+$/u)
+export const PINTA_IMAGE_ID_PATTERN = /^[^\p{Cc}]+$/u
+export const PINTA_IMAGE_WORLD_PNG_PATTERN = /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/
+const id = z.string().min(1).max(200).regex(PINTA_IMAGE_ID_PATTERN)
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/)
 const positiveInteger = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
 
 /** A map has at most this many layers, so it can use at most this many tilesets (Pinta's
  * `PINTA_LIMITS.maxMapLayers`). Bounds the dependencies of a `map` derivation. */
-export const PINTA_IMAGE_MAX_MAP_TILESETS = 8
+export const PINTA_IMAGE_MAX_MAP_TILESETS = 32
+/** Até 32 folhas, 64 conjuntos e 128 desenhos usados pelos objetos. */
+export const PINTA_IMAGE_MAX_MAP_DEPENDENCIES = 224
+
+/** A bounded, self-contained runtime world. Project image quotas still apply independently. */
+export const PINTA_IMAGE_WORLD_LIMITS = {
+  maps: 16,
+  cells: 2_097_152,
+  encodedChars: 4 * 1024 * 1024,
+  metadataBytes: 16 * 1024 * 1024,
+  dimension: 4096,
+  imagePixels: 4_194_304,
+  totalImagePixels: 16_777_216,
+} as const
+
+export const PintaImageWorldSchema = z
+  .strictObject({
+    version: z.literal(1),
+    rootId: id,
+    maps: z
+      .array(
+        z.strictObject({
+          id,
+          name: z.string().min(1).max(48),
+          png: z
+            .string()
+            .max(PINTA_IMAGE_WORLD_LIMITS.encodedChars)
+            .regex(PINTA_IMAGE_WORLD_PNG_PATTERN),
+        }),
+      )
+      .max(PINTA_IMAGE_WORLD_LIMITS.maps - 1),
+  })
+  .superRefine((world, context) => {
+    const ids = world.maps.map((map) => map.id)
+    if (new Set([world.rootId, ...ids]).size !== ids.length + 1)
+      context.addIssue({
+        code: 'custom',
+        path: ['maps'],
+        message: 'Each map appears once; the root is not nested.',
+      })
+    if (
+      world.maps.reduce((sum, map) => sum + map.png.length, 0) >
+      PINTA_IMAGE_WORLD_LIMITS.encodedChars
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['maps'],
+        message: 'The linked map images exceed the world budget.',
+      })
+  })
+export type PintaImageWorld = z.infer<typeof PintaImageWorldSchema>
 
 /**
  * Selections whose PNG carries the drawing's own data (animations, tiles, map layers and
@@ -19,14 +68,14 @@ export const PINTA_IMAGE_MAX_MAP_TILESETS = 8
  * compression flag 1 (zlib), empty language and translated keyword, UTF-8 JSON text.
  * Always PNG, never SVG.
  */
-export const PINTA_IMAGE_DATA_KINDS = ['spritesheet', 'tileset', 'map'] as const
+export const PINTA_IMAGE_DATA_KINDS = ['spritesheet', 'tileset', 'map', 'map-world'] as const
 export type PintaImageDataKind = (typeof PINTA_IMAGE_DATA_KINDS)[number]
 export const PINTA_IMAGE_DATA_KEYWORD = 'pinta'
 
 /** Selection is positional. A removed animation/frame is an error, never frame zero. */
 export const PintaImageRecipeSchema = z
   .strictObject({
-    version: z.literal(1),
+    version: z.union([z.literal(1), z.literal(2)]),
     algorithm: z.literal('pinta-image-1'),
     drawingId: id,
     selection: z.discriminatedUnion('kind', [
@@ -44,6 +93,8 @@ export const PintaImageRecipeSchema = z
       z.strictObject({ kind: z.literal('tileset') }),
       // An atlas of every tileset the map uses, with its layers and objects embedded.
       z.strictObject({ kind: z.literal('map') }),
+      // A complete scene with its linked destinations, kept inside one derived PNG.
+      z.strictObject({ kind: z.literal('map-world') }),
     ]),
     // Explicit user choice. Output dimensions round to the nearest pixel; zero is rejected.
     scale: z.number().positive(),
@@ -52,6 +103,12 @@ export const PintaImageRecipeSchema = z
     output: z.literal('svg').optional(),
   })
   .superRefine((value, context) => {
+    if ((value.selection.kind === 'map-world') !== (value.version === 2))
+      context.addIssue({
+        code: 'custom',
+        path: ['version'],
+        message: 'Linked worlds require recipe version 2; existing selections keep version 1.',
+      })
     if (value.output === 'svg' && isPintaImageDataKind(value.selection.kind))
       context.addIssue({
         code: 'custom',
@@ -71,9 +128,15 @@ export function isPintaImageDataKind(kind: string): kind is PintaImageDataKind {
  * image draws only its layers) or EVERY tileset the map uses (`map`). The source fingerprint
  * of a drawing depends on this, so inspecting a drawing names the selection kind.
  */
-export type PintaImageDependencyRule = 'none' | 'default-tileset' | 'all-tilesets'
+export type PintaImageDependencyRule = 'none' | 'default-tileset' | 'all-tilesets' | 'linked-maps'
 export function pintaImageDependencyRule(kind: PintaImageSelectionKind): PintaImageDependencyRule {
-  return kind === 'tilemap' ? 'default-tileset' : kind === 'map' ? 'all-tilesets' : 'none'
+  return kind === 'tilemap'
+    ? 'default-tileset'
+    : kind === 'map'
+      ? 'all-tilesets'
+      : kind === 'map-world'
+        ? 'linked-maps'
+        : 'none'
 }
 
 export type PintaImageOutputMime = 'image/png' | 'image/svg+xml'
@@ -147,10 +210,12 @@ export const PintaImageDerivationSchema = z
       // Map tilesets in Pinta's order (the map's default first). Only `map` lists more than one.
       dependencies: z
         .array(z.strictObject({ drawingId: id, sha256 }))
-        .max(PINTA_IMAGE_MAX_MAP_TILESETS),
+        .max(PINTA_IMAGE_MAX_MAP_DEPENDENCIES),
     }),
     output: z.strictObject({
       mime: z.enum(['image/png', 'image/svg+xml']),
+      // Legacy outputs keep their exact shape. New structured maps declare their reader.
+      dataVersion: z.union([z.literal(2), z.literal(3), z.literal(4)]).optional(),
       width: positiveInteger,
       height: positiveInteger,
       bytes: positiveInteger,
@@ -158,6 +223,21 @@ export const PintaImageDerivationSchema = z
     }),
   })
   .superRefine((value, context) => {
+    if (
+      value.output.dataVersion !== undefined &&
+      !(
+        (value.recipe.selection.kind === 'map' &&
+          (value.output.dataVersion === 2 || value.output.dataVersion === 4)) ||
+        (value.recipe.selection.kind === 'map-world' &&
+          (value.output.dataVersion === 3 || value.output.dataVersion === 4))
+      )
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['output', 'dataVersion'],
+        message: 'The structured data version must match the map selection.',
+      })
+    }
     if (value.output.mime !== pintaImageOutputMime(value.recipe)) {
       context.addIssue({
         code: 'custom',
@@ -171,8 +251,10 @@ export const PintaImageDerivationSchema = z
       rule === 'default-tileset'
         ? count !== 1
         : rule === 'all-tilesets'
-          ? count < 1 || count > PINTA_IMAGE_MAX_MAP_TILESETS
-          : count !== 0
+          ? count < 1 || count > PINTA_IMAGE_MAX_MAP_DEPENDENCIES
+          : rule === 'linked-maps'
+            ? false // Private resources are already fingerprinted with their containing map.
+            : count !== 0
     ) {
       context.addIssue({
         code: 'custom',
@@ -204,6 +286,16 @@ export const PintaImageDerivationSchema = z
     }
   })
 export type PintaImageDerivation = z.infer<typeof PintaImageDerivationSchema>
+
+/** A derivative's declared reader requirement; no permission is granted by this metadata. */
+export function pintaImageRequiredRuntimeFeature(
+  image: PintaImageDerivation,
+): typeof PYTHON_PINTA_WORLD_FEATURE | typeof PYTHON_PINTA_PHYSICS_FEATURE | undefined {
+  if (image.output.dataVersion === 4) return PYTHON_PINTA_PHYSICS_FEATURE
+  return image.output.dataVersion !== undefined || image.recipe.selection.kind === 'map-world'
+    ? PYTHON_PINTA_WORLD_FEATURE
+    : undefined
+}
 
 /** Identity excludes source revision/fingerprint and all output properties. */
 export function pintaImageRecipeKey(input: PintaImageRecipe): string {

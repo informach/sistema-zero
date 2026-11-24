@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, test as bunTest, describe, expect } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { criarDocumentoVazio } from '@sistemazero/molda-cenarios-core/v2'
 import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
+import { DrizzleCenariosRepository } from '../../src/infrastructure/persistence/drizzle/cenarios.repository'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzlePensaProjectRepository } from '../../src/infrastructure/persistence/drizzle/pensa-project.repository'
@@ -98,6 +100,11 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       authCursor = owner.userId
     }
     await addEntitlement(accountId, entitlementId)
+    await conn.sql`insert into members.pinta_causal_units(user_id,account_id,audience,op_id,intent_hash,state,expires_at)
+      values(${profileId},${accountId},'kids',${randomUUID()},repeat('1',64),'reserved',now())`
+    await conn.sql`insert into members.pinta_causal_objects(id,user_id,account_id,audience,item_id,object_key,requires_fence,not_before)
+      values(${randomUUID()},${profileId},${accountId},'kids','example','owned-object',false,now())`
+    await conn.sql`insert into members.creation_inventory_floors(user_id,account_id,audience,tool,required_version) values (${profileId},${accountId},'kids','pinta',7)`
     await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
       values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
     await conn.sql`
@@ -147,6 +154,9 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
       'lesson_section_progress',
       'creations',
       'teacher_threads',
+      'creation_inventory_floors',
+      'pinta_causal_units',
+      'pinta_causal_objects',
       'pensa_projects',
       'ai_usage_daily',
       'parent_reports_sent',
@@ -252,5 +262,113 @@ describe.skipIf(!target)('Purga de dados do usuário no Postgres real', () => {
     await service.finalize({ userId: accountId, profileIds: [profileId] })
     expect(await count('xp_events', 'user_id', profileId)).toBe(0)
     expect(await count('entitlements', 'user_id', accountId)).toBe(0)
+  })
+
+  test('Molda Cenários: leva o espaço da conta inteiro e agenda os arquivos; o da equipe fica', async () => {
+    const accountId = randomUUID()
+    const profileId = randomUUID()
+    const agora = new Date()
+    const cenarios = new DrizzleCenariosRepository(conn.db)
+    const montar = async (espacoId: string) => {
+      const biblioteca = await cenarios.criarBiblioteca(
+        { id: randomUUID(), espacoId, nome: 'Aventura', licenca: 'propria', criadoPor: profileId },
+        10,
+        agora,
+      )
+      const digest = randomUUID().replaceAll('-', '').repeat(2)
+      await cenarios.reservarBlobs(
+        espacoId,
+        [{ digest, bytes: 10, tipo: 'modelo' }],
+        agora,
+        new Date(agora.getTime() + 3_600_000),
+      )
+      await cenarios.confirmarBlobs(
+        espacoId,
+        [{ digest, bytes: 10, tipoDoConteudo: 'model/gltf-binary' }],
+        agora,
+      )
+      await cenarios.criarModelos(
+        biblioteca!.id,
+        [
+          {
+            id: randomUUID(),
+            nome: 'Árvore',
+            pasta: '',
+            etiquetas: [],
+            digest,
+            bytes: 10,
+            triangulos: 1,
+            min: [0, 0, 0],
+            max: [1, 1, 1],
+            miniatura: null,
+          },
+        ],
+        10,
+        profileId,
+        agora,
+      )
+      const mundo = await cenarios.criarMundo(
+        { id: randomUUID(), espacoId, nome: 'Ilha', criadoPor: profileId },
+        10,
+        agora,
+      )
+      await cenarios.editarMundo(mundo!.id, { bibliotecas: [biblioteca!.id] }, agora)
+      const id = randomUUID()
+      await cenarios.criarCenario(
+        {
+          id,
+          mundoId: mundo!.id,
+          nome: 'Praia',
+          documento: criarDocumentoVazio(id, 'Praia'),
+          criadoPor: profileId,
+        },
+        10,
+        agora,
+      )
+      await cenarios.gravarLote(
+        {
+          cenarioId: id,
+          revisaoEsperada: 0,
+          documento: criarDocumentoVazio(id, 'Praia nova'),
+          comandos: [{ tipo: 'cenario.renomear', nome: 'Praia nova' }],
+          operacaoId: randomUUID(),
+          autorId: profileId,
+        },
+        agora,
+      )
+    }
+    const daConta = await cenarios.espacoDaConta(accountId, 1000, agora)
+    const daEquipe = await cenarios.espacoDaEquipe(1000, agora)
+    // O espaço da conta tem o id dela: é o que deixa a purga saber o caminho dos arquivos.
+    expect(daConta.id).toBe(accountId)
+    await montar(daConta.id)
+    await montar(daEquipe.id)
+
+    await new PurgeUserDataService(new DrizzleUserDataPurgeRepository(conn.db)).execute({
+      userId: accountId,
+      profileIds: [profileId],
+    })
+
+    expect(await cenarios.espaco(accountId)).toBeNull()
+    const sobrou = async (tabela: string) =>
+      (
+        await conn.sql.unsafe<{ n: number }[]>(`select count(*)::int as n from members.${tabela}`)
+      )[0]?.n
+    // Só o que é da equipe continua de pé, uma linha em cada tabela.
+    for (const tabela of [
+      'cenario_espacos',
+      'cenario_blobs',
+      'cenario_bibliotecas',
+      'cenario_modelos',
+      'cenario_mundos',
+      'cenario_mundo_bibliotecas',
+      'cenario_cenarios',
+      'cenario_lotes',
+    ])
+      expect(`${tabela}: ${await sobrou(tabela)}`).toBe(`${tabela}: 1`)
+    const [job] = await conn.sql<{ prefixes: string[] }[]>`
+      select prefixes from members.creation_cleanup_jobs where account_id = ${accountId}`
+    expect(job?.prefixes).toContain(`cenarios/${accountId}/`)
+    expect(job?.prefixes).not.toContain(`cenarios/${daEquipe.id}/`)
   })
 })

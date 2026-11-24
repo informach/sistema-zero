@@ -1,0 +1,11 @@
+/* Same host tokens/classes as the adult /jogar page; no copied theme values. */
+@import "../../../community/src/app/globals.css";
+
+/* Next/font supplies these names in the actual host. This local Vite proof uses
+   its declared system fallbacks when the fonts are not installed. */
+:root {
+  --font-atkinson: "Atkinson Hyperlegible Next";
+  --font-bricolage: "Bricolage Grotesque";
+  --font-geist-mono: "Geist Mono";
+  --font-silkscreen: "Silkscreen";
+}

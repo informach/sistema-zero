@@ -6,6 +6,7 @@ import {
   CREATION_LIMITS,
   creationPartStorageKey,
   creationStorageKey,
+  hasStudioSealedStorage,
 } from '../../../domain/creations/creation'
 import { pensaError } from '../../../domain/pensa/project.errors'
 import {
@@ -204,6 +205,8 @@ export class DrizzlePensaCheckpointsRepository {
           ),
         )
         .for('update')
+      if (creation && hasStudioSealedStorage(creation))
+        pensaError('REVISION_CONFLICT', 'O Pensa ainda não pode copiar esta revisão do Estúdio.')
       if (!creation?.storageRef || creation.pendingRevision)
         pensaError('CREATION_NOT_SAVED', 'Guarde o jogo na conta antes de continuar.')
       if (

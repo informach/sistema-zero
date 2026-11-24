@@ -1,0 +1,68 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugin `vite:css`. See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugin `vite:css`. See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugin `vite:css`. See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugin `vite:resolve-builtin:get-environment`. See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/learning/python-project-execution.ts, ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/projectAssets.ts is dynamically imported by src/state/persistence.ts but also statically imported by src/asset-library/personal.ts, src/core/assetNames.ts, src/core/glbSummary.ts, src/core/pgzeroMediaPaths.ts, src/core/project.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/proProject.ts is dynamically imported by src/components/code/pro-templates/index.ts but also statically imported by src/core/index.ts, src/core/projectFactory.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/pythonAssets.ts is dynamically imported by src/components/assets/editorAssetEntries.ts, src/projects/createPythonExampleProject.ts, src/state/persistence.ts, src/state/proRevision.ts, src/state/proWorkspaceOperations.ts but also statically imported by src/core/scene3d/importar.ts, src/core/scene3d/python.ts, src/export/pythonSource.ts, src/export/pythonWeb.ts, src/runtime/python/snapshot.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/pythonProjectValidation.ts is dynamically imported by src/projects/createPythonExampleProject.ts, src/state/editableProjectValidation.ts, src/state/projectStore.ts but also statically imported by playground/pinta-integration/main.tsx, src/export/pythonSource.ts, src/export/pythonWeb.ts, src/runtime/python/snapshot.ts, src/state/pythonProProjectValidation.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/runtime/python/snapshot.ts is dynamically imported by src/runtime/capture.ts, src/runtime/contextEnvironmentCore.ts but also statically imported by src/export/pythonWeb.ts, src/runtime/python/controller.ts, src/runtime/python/provider.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, src/index.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/asset-library/personal.ts is dynamically imported by ../member-shell/src/components/creator/pinta-client.tsx, ../member-shell/src/components/creator/save-pinta-studio-bundle.ts, ../member-shell/src/components/creator/use-studio-creation-libraries.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/AssetsPanel.tsx, src/components/assets/DrawingSyncWatcher.tsx, src/index.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectStorageCoordinator.ts, src/state/projectValidation.ts but also statically imported by src/state/editableCloudProject.ts, src/state/projectStore.ts, src/studio/StudioCore.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/projectStore.ts is dynamically imported by src/components/projects/ImportButton.tsx, src/components/projects/ProjectCard.tsx, src/projects/ProjectList.tsx but also statically imported by src/components/assets/AssetsPanel.tsx, src/components/assets/DrawingSyncWatcher.tsx, src/components/assets/MoldaImportDialog.tsx, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/PintaImageSelection.tsx, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/index.ts is dynamically imported by ../member-shell/src/components/creator/pinta-client.tsx but also statically imported by playground/pinta-integration/main.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+
+Running 12 tests using 1 worker
+
+(node:40292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   1 [desktop] › e2e\pinta-studio.flow.ts:56:1 › Jogar meu mapa cria e executa a plataforma de um conjunto com a física precisa (12.0s)
+  ✓   2 [desktop] › e2e\pinta-studio.flow.ts:152:3 › javascript: contornos do Pinta atualizam no Estúdio sem apagar o programa e reabrem inteiros (15.4s)
+  ✓   3 [desktop] › e2e\pinta-studio.flow.ts:152:3 › python: contornos do Pinta atualizam no Estúdio sem apagar o programa e reabrem inteiros (11.9s)
+  ✓   4 [desktop] › e2e\pinta-studio.flow.ts:258:1 › o leitor de mundos anterior também recusa o PNG de contornos (3.5s)
+  ✓   5 [desktop] › e2e\pinta-studio.flow.ts:283:1 › o catálogo com leitor anterior recusa os dados avançados e permite escolher a imagem simples (5.0s)
+  ✓   6 [desktop] › e2e\pinta-studio.flow.ts:329:1 › Python traz o mundo pela interface e atualiza só o destino conservando o programa (11.8s)
+  ✓   7 [desktop] › e2e\pinta-studio.flow.ts:401:1 › uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa (12.9s)
+  ✓   8 [desktop] › e2e\pinta-studio.flow.ts:468:1 › Pinta real cria jogo estruturado; atualização do cenário conserva a programação (14.3s)
+  ✓   9 [desktop] › e2e\pinta-studio.flow.ts:574:1 › editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa (10.2s)
+  ✓  10 [desktop] › e2e\pinta-studio.flow.ts:619:1 › Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa (8.9s)
+  ✓  11 [desktop] › e2e\pinta-studio.flow.ts:671:1 › Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais (4.6s)
+  ✓  12 [desktop] › e2e\pinta-studio.flow.ts:700:1 › falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto (2.9s)
+
+  12 passed (2.5m)

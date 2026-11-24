@@ -1,5 +1,5 @@
 /* Gerado por packages/ui/scripts/lesson-theme.mjs. Não editar.
- * Fontes SHA-256: 673ec9cdec6fc1a1caa18ccb87967c6930bd7f5d990115f35a6d2508fcd3e167
+ * Fontes SHA-256: e23769ad09f1706a6c822dde605ced367ed4301303fdb6b295ad9eeb4640b8a0
  */
 @import "tailwindcss";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind (registra as cores sz para o
@@ -14,6 +14,9 @@
    regra é inválido (o CSS o descarta em silêncio e o editor sai sem cor). */
 @import "../../../pinta/src/styles/pinta.css";
 @import "../../../molda/src/styles/molda.css";
+/* Molda Cenários (a oficina de cenários 3D): só as regras próprias dela (`mcn-`); os tokens e as
+   receitas são os do Molda, importados logo acima. O arquivo registra as próprias fontes. */
+@import "../../../molda-cenarios/src/oficina/oficina-regras.css";
 @import "@sistemazero/ui/tool-chrome.css";
 @import "../../../member-shell/src/styles/help.css";
 @import "../../../pensa/src/styles/pensa.css";

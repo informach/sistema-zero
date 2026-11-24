@@ -6,17 +6,20 @@
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { isPintaMemoryAsset, type PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import {
   createGuidedBackgroundAsset,
   findInitialCanvasAsset,
   isValidInitialCanvas,
 } from '../core/guidedCanvas'
-import type { PintaAsset } from '../core/project'
+import { pintaLocalRevisionOf } from '../core/localAssetOrigin'
+import { isTilesetKind } from '../core/project'
 import type { PintaHostAdapter, PintaInitialCanvas } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
+import type { LocalRegionAuthorSession } from '../state/localRegionAuthorSession'
 import { createPaletteLibraryStore } from '../state/paletteLibraryStore'
 import {
   createPintaPersistence,
@@ -30,6 +33,8 @@ import {
   usePintaGallery,
 } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
+import { FocalEditorScreen } from './editor/FocalEditorScreen'
+import { resyncStudioCopies } from './editor/useStudioResync'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { TaskBriefPanel } from './TaskBriefPanel'
 import { erroParaCrianca, withSaveBeforeTaskActions } from './taskSessionSave'
@@ -38,9 +43,17 @@ import { ToastProvider, useToast } from './ui/Toast'
 type PintaView =
   | { screen: 'gallery' }
   /** `fit`: a tela com molde abre com o zoom em que cabe inteira (`fitZoomFor`). */
-  | { screen: 'editor'; assetId: string; fit?: boolean }
+  | { screen: 'editor'; assetId: string; fit?: boolean; focal?: LocalRegionAuthorSession }
 
 const EMPTY_ADAPTER: PintaHostAdapter = {}
+
+function OpenFailureToast({ failure }: { failure: { message: string } | null }) {
+  const { showToast } = useToast()
+  useEffect(() => {
+    if (failure) showToast(failure.message)
+  }, [failure, showToast])
+  return null
+}
 
 /**
  * Abre o desenho pedido pelo host (botão "Editar" do Estúdio → `/pinta?desenho=`).
@@ -64,7 +77,8 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
     if (!loaded) return
     const id = pendingRef.current ?? takeInitialAssetId()
     if (!id) return
-    if (gallery.getState().assets.some((a) => a.id === id)) {
+    const { assets, regionCards } = gallery.getState()
+    if (assets.some((a) => a.id === id) || regionCards.some((a) => a.id === id)) {
       pendingRef.current = null
       openAsset(id)
       return
@@ -123,7 +137,7 @@ function InitialCanvasOpener({
 
 export interface PintaCompletionControl {
   /** Salva o desenho aberto; `null` indica que a galeria está aberta. */
-  flush(): Promise<PintaAsset | null>
+  flush(): Promise<import('../core/assetMemory').PintaMemoryAsset | null>
 }
 
 export function PintaApp({
@@ -135,7 +149,7 @@ export function PintaApp({
   adapter?: PintaHostAdapter
   onCompletionControlChange?: (control: PintaCompletionControl | null) => void
   /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
-  persistence?: PintaPersistence
+  persistence?: PintaPersistence<import('../core/assetMemory').PintaWorkshopAsset>
   /** Informa ao host quando o editor ocupa toda a área, sem acoplar o Pinta ao menu externo. */
   onWorkspaceChange?: (active: boolean) => void
 }): JSX.Element {
@@ -145,7 +159,19 @@ export function PintaApp({
     const resolved = persistence ?? createPintaPersistence()
     return {
       persistence: resolved,
-      gallery: createGalleryStore(resolved),
+      // A trava de conta (`holdOpen`) não fecha a janela focal: a sessão a segura até fechar, e o
+      // armazenamento da conta só oferece a sessão ligada à fila causal. As pontes do Estúdio
+      // ficam no editor inteiro ("Avançado"); ao sair da janela, um mapa já levado ao Estúdio é
+      // atualizado pela mesma ponte (`resyncAfterFocal`). Missão e aula pedem o documento inteiro.
+      gallery: createGalleryStore(resolved, {
+        focalGallery: Boolean(
+          resolved.openRegionSession &&
+            !adapter?.taskSession &&
+            !adapter?.onChange &&
+            !adapter?.allowTools?.length &&
+            !onCompletionControlChange,
+        ),
+      }),
       // Copiar num desenho e colar em outro: a área de transferência é do app (com
       // espelho em localStorage, para atravessar abas e sobreviver a fechar).
       clipboard: createClipboardStore({ namespace: getPintaStorageNamespace() }),
@@ -169,6 +195,11 @@ export function PintaApp({
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
   const resolvedAdapter = adapter ?? EMPTY_ADAPTER
   const theme = resolvedAdapter.theme ?? 'light'
+  // A ponte do Estúdio vista pelos callbacks de navegação, que precisam de identidade estável.
+  const resyncToStudio = useRef(resolvedAdapter.resyncToStudio)
+  useLayoutEffect(() => {
+    resyncToStudio.current = resolvedAdapter.resyncToStudio
+  }, [resolvedAdapter.resyncToStudio])
 
   useEffect(() => {
     void gallery.getState().load()
@@ -186,10 +217,21 @@ export function PintaApp({
   // ⚠️ A identidade tem que ser estável: o `EditorScreen` tem `onEditorReady` nas
   // deps do efeito que se anuncia, e uma função nova por render o faria
   // desanunciar e reanunciar a cada volta do `useMemo` do contexto.
-  const editorRef = useRef<PintaEditorStore | null>(null)
-  const handleEditorReady = useCallback((editor: PintaEditorStore | null) => {
-    editorRef.current = editor
-  }, [])
+  const editorRef = useRef<Pick<
+    PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+    'getState'
+  > | null>(null)
+  const handleEditorReady = useCallback(
+    (
+      editor: Pick<
+        PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset>,
+        'getState'
+      > | null,
+    ) => {
+      editorRef.current = editor
+    },
+    [],
+  )
 
   useEffect(() => {
     if (!onCompletionControlChange) return
@@ -217,12 +259,172 @@ export function PintaApp({
   // TODOS os cartões a cada clique, contra o invariante escrito no próprio `AssetCard`
   // ("callbacks POR ID, estáveis na galeria"). Com o `useCallback`, só quem lê o adapter
   // re-renderiza. Vale para todo host que troque o adapter por qualquer motivo.
-  const openAsset = useCallback((id: string) => setView({ screen: 'editor', assetId: id }), [])
-  const closeEditor = useCallback(() => setView({ screen: 'gallery' }), [])
-  const openFitted = useCallback(
-    (id: string) => setView({ screen: 'editor', assetId: id, fit: true }),
-    [],
+  const openGeneration = useRef(0)
+  const releaseEditor = useRef<(() => void) | null>(null)
+  const focused = useRef<LocalRegionAuthorSession | null>(null)
+  // A revisão com que a janela focal abriu: só uma janela que gravou atualiza o Estúdio.
+  const focalStart = useRef<string | null>(null)
+  const opening = useRef<AbortController | null>(null)
+  const restoreGalleryIndex = useRef(false)
+  const releaseGalleryIndex = useRef<(() => void) | null>(null)
+  const [openFailure, setOpenFailure] = useState<{ message: string } | null>(null)
+  const retireOpen = useCallback(() => {
+    openGeneration.current++
+    opening.current?.abort()
+    opening.current = null
+    focused.current?.close()
+    focused.current = null
+    releaseGalleryIndex.current?.()
+    releaseGalleryIndex.current = null
+    releaseEditor.current?.()
+    releaseEditor.current = null
+  }, [])
+  useEffect(() => retireOpen, [retireOpen])
+  const open = useCallback(
+    (id: string, fit?: boolean) => {
+      const generation = ++openGeneration.current
+      opening.current?.abort()
+      opening.current = null
+      setOpenFailure(null)
+      const nextView = { screen: 'editor' as const, assetId: id, ...(fit ? { fit } : {}) }
+      const { regionCards, assets } = gallery.getState()
+      const card = regionCards.find((item) => item.id === id)
+      const known = assets.find((item) => item.id === id)
+      // The integral map/tileset tools can remap or follow relationships throughout the gallery.
+      const fullCatalog = Boolean(
+        regionCards.length &&
+          known &&
+          (known.kind === 'tilemap' || known.kind === 'map-set' || isTilesetKind(known)),
+      )
+      if (!store.persistence.holdOpen && !card && !fullCatalog) {
+        setView(nextView)
+        return
+      }
+      const controller = new AbortController()
+      opening.current = controller
+      void (async () => {
+        const release = await store.persistence.holdOpen?.(id)
+        try {
+          if (generation !== openGeneration.current) return
+          if (card && !fit && store.persistence.openRegionSession) {
+            const focal = await store.persistence.openRegionSession(id, controller.signal)
+            if (generation !== openGeneration.current) {
+              focal?.close()
+              return
+            }
+            if (focal) {
+              releaseEditor.current?.()
+              focused.current?.close()
+              focused.current = focal
+              focalStart.current = focal.store.getState().revision
+              // A trava da conta acompanha a janela: a descida não grava sob o cenário aberto.
+              releaseEditor.current = release ?? null
+              setView({ ...nextView, focal })
+              return
+            }
+          }
+          const listed = fullCatalog || card ? await store.persistence.listAllAssets() : null
+          const catalog = listed?.filter(isPintaMemoryAsset) ?? null
+          const found = listed
+            ? listed.find((item) => item.id === id)
+            : await store.persistence.loadAssetById(id)
+          if (generation !== openGeneration.current) return
+          if (!found) {
+            setOpenFailure({ message: COPY.gallery.drawingGone })
+            return
+          }
+          // A projected map stays stored as it is; no editor here opens it yet.
+          if (!isPintaMemoryAsset(found)) {
+            setOpenFailure({ message: COPY.gallery.projectedUnavailable([found.name]) })
+            return
+          }
+          const asset = found
+          if (catalog) {
+            releaseGalleryIndex.current?.()
+            releaseGalleryIndex.current = gallery.getState().holdFullInventory()
+            gallery.getState().absorbMany(catalog)
+            restoreGalleryIndex.current = true
+          } else gallery.getState().absorb(asset)
+          releaseEditor.current?.()
+          focused.current?.close()
+          focused.current = null
+          releaseEditor.current = release ?? null
+          setView(nextView)
+        } finally {
+          if (releaseEditor.current !== release) release?.()
+        }
+      })().catch(() => {
+        if (generation === openGeneration.current)
+          setOpenFailure({ message: COPY.gallery.drawingOpenError })
+      })
+    },
+    [gallery, store.persistence],
   )
+  const openAsset = useCallback((id: string) => open(id), [open])
+  const openFitted = useCallback((id: string) => open(id, true), [open])
+  /**
+   * A janela focal grava sem a ponte do editor inteiro. Ao sair dela, um mapa já levado ao Estúdio
+   * recebe a versão gravada pelo mesmo caminho do editor (`resyncStudioCopies`); um mapa que nunca
+   * foi levado fica em silêncio, como lá.
+   */
+  const resyncAfterFocal = useCallback(
+    async (id: string, listed?: readonly PintaMemoryAsset[]) => {
+      const send = resyncToStudio.current
+      if (!send) return
+      try {
+        const catalog =
+          listed ?? (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
+        const asset = catalog.find((item) => item.id === id)
+        if (!asset) return
+        const result = await resyncStudioCopies({
+          asset,
+          catalog,
+          animationId: null,
+          frameIndex: 0,
+          send,
+        })
+        if (!result.updated && result.reason === 'failed')
+          setOpenFailure({ message: result.error ?? COPY.editor.studioSyncFailed })
+      } catch {
+        setOpenFailure({ message: COPY.editor.studioSyncFailed })
+      }
+    },
+    [store.persistence],
+  )
+  const closeEditor = useCallback(() => {
+    const focal = focused.current
+    const wrote = focal !== null && focal.store.getState().revision !== focalStart.current
+    const refresh = focal !== null || restoreGalleryIndex.current
+    restoreGalleryIndex.current = false
+    retireOpen()
+    setView({ screen: 'gallery' })
+    if (refresh) void gallery.getState().load()
+    if (focal && wrote) void resyncAfterFocal(focal.id)
+  }, [retireOpen, gallery, resyncAfterFocal])
+  const openComplete = async (focal: LocalRegionAuthorSession) => {
+    const generation = openGeneration.current
+    const revision = focal.store.getState().revision
+    const catalog = (await store.persistence.listAllAssets()).filter(isPintaMemoryAsset)
+    const asset = catalog.find((item) => item.id === focal.id)
+    if (generation !== openGeneration.current || focused.current !== focal) return
+    if (
+      !asset ||
+      pintaLocalRevisionOf(asset) !== revision ||
+      focal.store.getState().revision !== revision
+    )
+      throw Error(COPY.scene.gestureChanged)
+    // O editor inteiro só reenvia o que mudar depois de abrir: o que a janela gravou vai agora.
+    if (revision !== focalStart.current) void resyncAfterFocal(focal.id, catalog)
+    gallery.getState().absorbMany(catalog)
+    restoreGalleryIndex.current = true
+    // O mesmo cenário segue aberto no editor inteiro: a trava da conta passa para ele.
+    const hold = releaseEditor.current
+    releaseEditor.current = null
+    retireOpen()
+    releaseEditor.current = hold
+    releaseGalleryIndex.current = gallery.getState().holdFullInventory()
+    setView({ screen: 'editor', assetId: asset.id })
+  }
   const context = useMemo<PintaAppContextValue>(
     () => ({
       adapter: resolvedAdapter,
@@ -240,7 +442,7 @@ export function PintaApp({
       initialIntentVersion,
       requestInitialIntent: (intent) => {
         initialIntentRef.current = intent
-        setView({ screen: 'gallery' })
+        closeEditor()
         setInitialIntentVersion((version) => version + 1)
       },
       takeInitialAssetId: () => {
@@ -249,6 +451,7 @@ export function PintaApp({
         return id
       },
       onEditorReady: handleEditorReady,
+      onWorkshopEditorReady: handleEditorReady,
     }),
     [
       resolvedAdapter,
@@ -325,6 +528,7 @@ export function PintaApp({
     >
       <PintaAppProvider value={context}>
         <ToastProvider>
+          <OpenFailureToast failure={openFailure} />
           <InitialCanvasOpener canvas={initialCanvas} onOpen={openFitted} />
           <InitialAssetOpener
             onMissing={(id) => {
@@ -343,7 +547,7 @@ export function PintaApp({
                   outputMissing={taskOutputMissing}
                   currentCreationId={view.screen === 'editor' ? view.assetId : null}
                   onRecreate={recreateTaskAsset}
-                  onRelink={() => setView({ screen: 'gallery' })}
+                  onRelink={closeEditor}
                   onReturn={returnToPlan}
                 />
               ) : null
@@ -351,6 +555,12 @@ export function PintaApp({
           >
             {view.screen === 'gallery' ? (
               <GalleryScreen />
+            ) : view.focal ? (
+              <FocalEditorScreen
+                key={view.assetId}
+                focal={view.focal}
+                openComplete={() => openComplete(view.focal!)}
+              />
             ) : (
               // key por asset: trocar de desenho recria o editor (stores novas).
               <EditorScreen key={view.assetId} assetId={view.assetId} fit={view.fit === true} />

@@ -1,0 +1,82 @@
+[
+  {
+    "name": "generated-studio",
+    "exit": 0,
+    "log": ".cache/pinta-f923-generated-studio.log"
+  },
+  {
+    "name": "generated-molda",
+    "exit": 0,
+    "log": ".cache/pinta-f923-generated-molda.log"
+  },
+  {
+    "name": "motor",
+    "exit": 0,
+    "log": ".cache/pinta-f923-motor.log"
+  },
+  {
+    "name": "molda",
+    "exit": 0,
+    "log": ".cache/pinta-f923-molda.log"
+  },
+  {
+    "name": "diagnostics",
+    "exit": 0,
+    "log": ".cache/pinta-f923-diagnostics.log"
+  },
+  {
+    "name": "sdk-documents",
+    "exit": 0,
+    "log": ".cache/pinta-f923-sdk-documents.log"
+  },
+  {
+    "name": "palco",
+    "exit": 0,
+    "log": ".cache/pinta-f923-palco.log"
+  },
+  {
+    "name": "ilha",
+    "exit": 0,
+    "log": ".cache/pinta-f923-ilha.log"
+  },
+  {
+    "name": "reino",
+    "exit": 0,
+    "log": ".cache/pinta-f923-reino.log"
+  },
+  {
+    "name": "firefox",
+    "exit": 0,
+    "log": ".cache/pinta-f923-firefox.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "log": ".cache/pinta-f923-integration.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "log": ".cache/pinta-f923-components.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-f923-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-f923-members-types.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-f923-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "log": ".cache/pinta-f923-biome.log"
+  }
+]

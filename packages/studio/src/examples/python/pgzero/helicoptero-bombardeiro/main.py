@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 800
 TITLE = 'Helicóptero Bombardeiro'
@@ -10,21 +12,8 @@ PEDACOS = 12
 TEMPO_DA_BOMBA = 30
 TEMPO_DA_EXPLOSAO = 10
 
-heli = Actor('heli0')
-heli.pos = (300, 680)
-chao_y = 0
-quadros = 0
-# A bomba se abre em pedaços que voam em roda; depois de TEMPO_DA_BOMBA quadros, explodem.
-pedacos = []
-idade_da_bomba = -1
-tanques = []
-explodindo = []
-balas = []
-direcoes_das_balas = []
-vidas = 3
-pontos = 0
 
-
+# 🧩 Meus moldes
 def lugar_novo(tanque):
     tanque.pos = (random.randint(60, WIDTH - 60), random.randint(-400, -40))
     tanque.image = 'tanque'
@@ -108,7 +97,36 @@ def atirar(tanque):
     balas.append(bala)
     direcoes_das_balas.append((4 * math.cos(angulo), 4 * math.sin(angulo)))
 
+# ⚙️ Ao iniciar
+heli = Actor('heli0')
+heli.pos = (300, 680)
+chao_y = 0
+quadros = 0
+# A bomba se abre em pedaços que voam em roda; depois de TEMPO_DA_BOMBA quadros, explodem.
+pedacos = []
+idade_da_bomba = -1
+tanques = []
+explodindo = []
+balas = []
+direcoes_das_balas = []
+vidas = 3
+pontos = 0
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if vidas == 0:
+        novo_jogo()
+    elif idade_da_bomba == -1:
+        soltar_bomba()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('chao', (0, chao_y))
     screen.blit('chao', (0, chao_y - HEIGHT))
@@ -156,16 +174,4 @@ def update():
         elif bala.top > HEIGHT or bala.bottom < 0 or bala.right < 0 or bala.left > WIDTH:
             balas.pop(numero)
             direcoes_das_balas.pop(numero)
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if vidas == 0:
-        novo_jogo()
-    elif idade_da_bomba == -1:
-        soltar_bomba()
-
-
-novo_jogo()
 pgzrun.go()

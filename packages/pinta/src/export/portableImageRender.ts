@@ -2,13 +2,28 @@ import {
   assertPintaImageDimensions,
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { pngBytes, readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
 import type { AnyTilesetAsset, PintaBitmap, TilemapAsset } from '../core/project'
-import { isTileLayer, resolveAssetPalette, tileLayerTilesetId } from '../core/project'
+import {
+  effectiveLayer,
+  isLayerShown,
+  isTileLayer,
+  resolveAssetPalette,
+  tileLayerTilesetId,
+} from '../core/project'
 import { bitmapToRGBA } from '../pixel/render'
+import { cellTile } from '../tiles/cell'
+import { cellMatrix } from '../tiles/chunks'
 import type { VectorShape } from '../vector/model'
 import { embedVectorFonts, vectorToPortableSvg } from '../vector/portableSvg'
-import { sceneDefsMarkup, shapesToMarkup, type VectorDoc } from '../vector/svg'
-import { pngCrc32 } from './pngText'
+import {
+  sceneDefsMarkup,
+  shapesToMarkup,
+  type VectorDoc,
+  withSvgRootSize as withRootSize,
+} from '../vector/svg'
+
+export { pngBytes, readPngDimensions } from '@sistemazero/core/studio/pinta-png-binary'
 
 export type PintaImageScene =
   | { kind: 'pixel'; bitmap: PintaBitmap; colors: readonly string[] }
@@ -111,83 +126,24 @@ export const browserPintaImageRaster: PintaImageRaster = {
   },
 }
 
-/** Only PNG raster references are allowed by Pinta's vector model. No URL/other MIME fallback. */
-export function pngBytes(dataUrl: string, limits: PintaImageTargetLimits): Uint8Array<ArrayBuffer> {
-  const prefix = 'data:image/png;base64,'
-  if (!dataUrl.startsWith(prefix) || dataUrl.length > limits.dataUrlChars)
-    throw new Error('A imagem PNG é inválida ou ultrapassa o limite do projeto.')
-  const encoded = dataUrl.slice(prefix.length)
-  if (
-    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded) ||
-    (encoded.length / 4) * 3 - (encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0) >
-      limits.imageBytes
-  )
-    throw new Error('Os bytes da imagem PNG ultrapassam o limite ou são inválidos.')
-  const binary = atob(encoded)
-  if (btoa(binary) !== encoded) throw new Error('Codificação PNG inválida.')
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
-  readPngDimensions(bytes, limits)
-  return bytes
-}
-
-export function readPngDimensions(
-  bytes: Uint8Array,
-  limits: PintaImageTargetLimits,
-): { width: number; height: number } {
-  if (
-    bytes.length < 45 ||
-    bytes.length > limits.imageBytes ||
-    ![137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)
-  )
-    throw new Error('Arquivo PNG inválido.')
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  if (view.getUint32(8) !== 13 || view.getUint32(12) !== 0x49484452)
-    throw new Error('Cabeçalho PNG inválido.')
-  const width = view.getUint32(16),
-    height = view.getUint32(20)
-  assertPintaImageDimensions(width, height, limits)
-  let cursor = 8,
-    imageData = false,
-    ended = false
-  while (cursor + 12 <= bytes.length) {
-    const length = view.getUint32(cursor)
-    if (length > bytes.length - cursor - 12) throw new Error('Arquivo PNG truncado.')
-    const type = String.fromCharCode(...bytes.subarray(cursor + 4, cursor + 8))
-    if (
-      !/^[A-Za-z]{4}$/.test(type) ||
-      type === 'acTL' ||
-      type === 'fcTL' ||
-      type === 'fdAT' ||
-      (cursor !== 8 && type === 'IHDR') ||
-      (type[0] === type[0]?.toUpperCase() && !['IHDR', 'PLTE', 'IDAT', 'IEND'].includes(type))
-    )
-      throw new Error('Use um PNG estático válido.')
-    if (pngCrc32(bytes, cursor + 4, cursor + 8 + length) !== view.getUint32(cursor + 8 + length))
-      throw new Error('Integridade PNG inválida.')
-    if (type === 'IDAT') imageData = true
-    cursor += length + 12
-    if (type === 'IEND') {
-      if (length !== 0 || !imageData || cursor !== bytes.length)
-        throw new Error('Fim PNG inválido.')
-      ended = true
-      break
-    }
-  }
-  if (!ended) throw new Error('Arquivo PNG incompleto.')
-  return { width, height }
-}
-
 function* mapCells(map: TilemapAsset) {
   // Includes visible front layers, in their original z-order. Transparent top tiles keep the floor.
   // Only the layers drawn with the map's DEFAULT tileset: the scene (and the derivation's single
   // dependency) carries that one tileset; layers using another one are left out, never drawn with
   // the wrong pieces. Object layers have no tiles.
   for (const layer of map.layers) {
-    if (!isTileLayer(layer) || !layer.visible) continue
+    if (!isTileLayer(layer) || layer.collision || !isLayerShown(map, layer)) continue
     if (tileLayerTilesetId(map, layer) !== map.tilesetId) continue
     for (let index = 0; index < layer.cells.length; index++) {
-      const tile = layer.cells[index]!
-      if (tile >= 0) yield { tile, col: index % map.cols, row: Math.floor(index / map.cols) }
+      const tile = cellTile(layer.cells[index]!)
+      if (tile >= 0)
+        yield {
+          tile,
+          value: layer.cells[index]!,
+          e: effectiveLayer(map, layer),
+          col: index % map.cols,
+          row: Math.floor(index / map.cols),
+        }
     }
   }
 }
@@ -246,9 +202,10 @@ async function sceneSvg(scene: VectorScene): Promise<string> {
     return `<g id="tile-${index}" clip-path="url(#pinta-tile-viewport)">${sceneDefsMarkup(shapes, `tile-${index}-`)}${shapesToMarkup(shapes, '', `tile-${index}-`)}</g>`
   })
   // Local fragment only. SVG2 href and SVG1.1 xlink are identical; no external resource lookup.
-  const uses = cells.map(
-    ({ tile, col, row }) =>
-      `<use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${col * size}" y="${row * size}"/>`,
+  const uses = cells.map(({ tile, col, row, value, e }) =>
+    value < 4096 && e.opacity === 1 && !e.offsetX && !e.offsetY
+      ? `<use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${col * size}" y="${row * size}"/>`
+      : `<g opacity="${e.opacity}" transform="translate(${col * size + e.offsetX + size / 2} ${row * size + e.offsetY + size / 2}) matrix(${[...cellMatrix(value), 0, 0].join(' ')})"><use href="#tile-${tile}" xlink:href="#tile-${tile}" x="${-size / 2}" y="${-size / 2}"/></g>`,
   )
   return embedVectorFonts(
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${map.cols * size}" height="${map.rows * size}" viewBox="0 0 ${map.cols * size} ${map.rows * size}"><defs><clipPath id="pinta-tile-viewport"><rect width="${size}" height="${size}"/></clipPath>${symbols.join('')}</defs>${uses.join('')}</svg>`,
@@ -292,19 +249,6 @@ export async function renderPintaImageSvg(
   const svg = await sceneSvg(vector)
   signal?.throwIfAborted()
   return withRootSize(svg, width, height)
-}
-
-function withRootSize(svg: string, width: number, height: number): string {
-  const rootEnd = svg.indexOf('>')
-  if (!svg.startsWith('<svg') || rootEnd < 0) throw new Error('O desenho vetorial é inválido.')
-  const root = svg.slice(0, rootEnd)
-  if (!/\swidth="[^"]*"/.test(root) || !/\sheight="[^"]*"/.test(root) || !/\sviewBox="/.test(root))
-    throw new Error('O desenho vetorial não diz o próprio tamanho.')
-  return (
-    root
-      .replace(/(\s)width="[^"]*"/, `$1width="${width}"`)
-      .replace(/(\s)height="[^"]*"/, `$1height="${height}"`) + svg.slice(rootEnd)
-  )
 }
 
 export async function renderPintaImage(
@@ -397,13 +341,15 @@ export async function renderPintaImage(
             tile = bitmapCanvas(bitmap, colors)
             tiles.set(cell.tile, tile)
           }
-          context.drawImage(
-            tile,
-            cell.col * cellWidth,
-            cell.row * cellHeight,
-            cellWidth,
-            cellHeight,
+          context.save()
+          context.globalAlpha = cell.e.opacity
+          context.translate(
+            (cell.col + 0.5 + cell.e.offsetX / scene.tileset.tileSize) * cellWidth,
+            (cell.row + 0.5 + cell.e.offsetY / scene.tileset.tileSize) * cellHeight,
           )
+          context.transform(...cellMatrix(cell.value), 0, 0)
+          context.drawImage(tile, -cellWidth / 2, -cellHeight / 2, cellWidth, cellHeight)
+          context.restore()
         }
       }
     }

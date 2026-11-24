@@ -1,0 +1,37 @@
+{
+  "parents": [
+    "cbc16602046db80807fafb34909642a6b47a22e2",
+    "f923972b45afe8a9b05d9090cb5bbf55d4d76130"
+  ],
+  "decisions": {
+    "diagnostics": "canonical Blockly serialization State and unchanged id/type runtime validation from published remote",
+    "performance": "published combined rendered+deferred count, preserving own deferred count metric and all budgets",
+    "generated": "exactly three authorized outputs, official generators against merged published sources"
+  },
+  "generated": [
+    {
+      "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "remoteBytes": 1165793,
+      "remoteSha256": "b23c3243e9976ce673a7523ec8f38cc82f09e1724b8ebb6577b218e2019f733a",
+      "generatedBytes": 1165793,
+      "generatedSha256": "b23c3243e9976ce673a7523ec8f38cc82f09e1724b8ebb6577b218e2019f733a",
+      "identicalToPublishedRemote": true
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "remoteBytes": 548063,
+      "remoteSha256": "cae1261c95d42b3fb33379c411d05382e868ea3864172ee5bccb8cf3a257c7e4",
+      "generatedBytes": 548063,
+      "generatedSha256": "cae1261c95d42b3fb33379c411d05382e868ea3864172ee5bccb8cf3a257c7e4",
+      "identicalToPublishedRemote": true
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "remoteBytes": 548305,
+      "remoteSha256": "2b4c29777772053ae2af1548de102286faa1c7ee0063f8a3d6b36610530a5a43",
+      "generatedBytes": 548305,
+      "generatedSha256": "2b4c29777772053ae2af1548de102286faa1c7ee0063f8a3d6b36610530a5a43",
+      "identicalToPublishedRemote": true
+    }
+  ]
+}

@@ -598,9 +598,9 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 38 jogos canônicos e as dez receitas na vitrine', () => {
+  it('manifest mantém os 38 jogos canônicos, o cenário do Pinta e as dez receitas', () => {
     expect(EXAMPLES).toHaveLength(38)
-    expect(gameKitExamples).toHaveLength(48)
+    expect(gameKitExamples).toHaveLength(49)
     expect(gameKitExtension.examples.count).toBe(gameKitExamples.length)
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })

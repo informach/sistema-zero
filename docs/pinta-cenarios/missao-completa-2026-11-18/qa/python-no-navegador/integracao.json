@@ -1,0 +1,7 @@
+{
+  "upstream": "1ba3f0193c58e3dcc7cb832cfbaa53fab325ec7d",
+  "merge": "ec6bc2900f1b8d6c8eaae69abd2e1c9cbcd070ab",
+  "studioTypecheckExitCode": 0,
+  "verifiedSourceHashesUnchanged": 7,
+  "moldaMatchesUpstream": true
+}

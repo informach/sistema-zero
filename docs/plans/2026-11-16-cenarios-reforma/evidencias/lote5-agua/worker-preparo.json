@@ -1,0 +1,29 @@
+{
+  "transferiu": true,
+  "rio": {
+    "tipo": "rio",
+    "estacoes": 97,
+    "regiao": {
+      "x0": 2,
+      "z0": 26,
+      "x1": 62,
+      "z1": 38
+    },
+    "alterouLeito": true
+  },
+  "mar": "mar",
+  "png": {
+    "largura": 65,
+    "altura": 65
+  },
+  "erro": "Error",
+  "cancelamento": "AbortError",
+  "pesada": {
+    "quadros": 2,
+    "pendenteAntesDeCancelar": true,
+    "cancelamento": "AbortError",
+    "milisegundos": 13.600000023841858
+  },
+  "origemIntacta": true,
+  "erros": []
+}

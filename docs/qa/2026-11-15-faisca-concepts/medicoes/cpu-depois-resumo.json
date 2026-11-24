@@ -1,0 +1,420 @@
+{
+  "pronto": 6552,
+  "horta": 8970.5,
+  "gaps": [
+    {
+      "t": 321.4,
+      "ms": 133.39999999999998
+    },
+    {
+      "t": 538.1,
+      "ms": 116.60000000000002
+    },
+    {
+      "t": 654.9,
+      "ms": 116.79999999999995
+    },
+    {
+      "t": 1688.7,
+      "ms": 617
+    },
+    {
+      "t": 1755.3,
+      "ms": 66.59999999999991
+    },
+    {
+      "t": 1822,
+      "ms": 50.09999999999991
+    },
+    {
+      "t": 1888.7,
+      "ms": 66.70000000000005
+    },
+    {
+      "t": 2155.4,
+      "ms": 249.9000000000001
+    },
+    {
+      "t": 6290.3,
+      "ms": 3101
+    },
+    {
+      "t": 6357,
+      "ms": 66.69999999999982
+    },
+    {
+      "t": 6507.1,
+      "ms": 150.10000000000036
+    },
+    {
+      "t": 6557.2,
+      "ms": 50.099999999999454
+    },
+    {
+      "t": 6973.9,
+      "ms": 66.59999999999945
+    },
+    {
+      "t": 9441.6,
+      "ms": 50.100000000000364
+    }
+  ],
+  "longs": [
+    {
+      "t": 418.2000000178814,
+      "ms": 132
+    },
+    {
+      "t": 552.4000000059605,
+      "ms": 100
+    },
+    {
+      "t": 1078.6000000238419,
+      "ms": 618
+    },
+    {
+      "t": 1910.2000000178814,
+      "ms": 257
+    },
+    {
+      "t": 3183.4000000059605,
+      "ms": 1980
+    },
+    {
+      "t": 5163.9000000059605,
+      "ms": 1138
+    },
+    {
+      "t": 6413.9000000059605,
+      "ms": 97
+    },
+    {
+      "t": 6910.800000011921,
+      "ms": 60
+    }
+  ],
+  "topSelf": [
+    {
+      "ms": 6313.765999999997,
+      "functionName": "(idle)",
+      "scriptId": "0",
+      "url": "",
+      "lineNumber": -1,
+      "columnNumber": -1
+    },
+    {
+      "ms": 1322.444999999999,
+      "functionName": "onFirstUse",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 53473,
+      "columnNumber": 21
+    },
+    {
+      "ms": 564.6219999999998,
+      "functionName": "onFirstUse",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 53473,
+      "columnNumber": 21
+    },
+    {
+      "ms": 503.67000000000024,
+      "functionName": "",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 121483,
+      "columnNumber": 56
+    },
+    {
+      "ms": 388.33300000000014,
+      "functionName": "(program)",
+      "scriptId": "0",
+      "url": "",
+      "lineNumber": -1,
+      "columnNumber": -1
+    },
+    {
+      "ms": 306.9710000000001,
+      "functionName": "recortarMalha",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 121478,
+      "columnNumber": 22
+    },
+    {
+      "ms": 158.015,
+      "functionName": "(garbage collector)",
+      "scriptId": "0",
+      "url": "",
+      "lineNumber": -1,
+      "columnNumber": -1
+    },
+    {
+      "ms": 133.008,
+      "functionName": "onFirstUse",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 53473,
+      "columnNumber": 21
+    },
+    {
+      "ms": 121.705,
+      "functionName": "lh",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 67450,
+      "columnNumber": 17
+    },
+    {
+      "ms": 95.41500000000006,
+      "functionName": "exports.createElement",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 698,
+      "columnNumber": 36
+    },
+    {
+      "ms": 95.236,
+      "functionName": "vertice",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 121483,
+      "columnNumber": 18
+    },
+    {
+      "ms": 92.84400000000001,
+      "functionName": "raioDoContorno",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 117106,
+      "columnNumber": 23
+    },
+    {
+      "ms": 82.574,
+      "functionName": "exports.createElement",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 698,
+      "columnNumber": 36
+    },
+    {
+      "ms": 81.878,
+      "functionName": "",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 121567,
+      "columnNumber": 53
+    },
+    {
+      "ms": 80.83300000000001,
+      "functionName": "relevoNaturalDaFaisca",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 116990,
+      "columnNumber": 30
+    },
+    {
+      "ms": 76.57599999999998,
+      "functionName": "",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 75062,
+      "columnNumber": 28
+    },
+    {
+      "ms": 69.22999999999999,
+      "functionName": "setProgram",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 60035,
+      "columnNumber": 23
+    },
+    {
+      "ms": 63.82299999999999,
+      "functionName": "setValueV3f",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 52343,
+      "columnNumber": 20
+    },
+    {
+      "ms": 63.235,
+      "functionName": "WebGLRenderer.renderBufferDirect",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59436,
+      "columnNumber": 38
+    },
+    {
+      "ms": 58.343,
+      "functionName": "exports.createElement",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 698,
+      "columnNumber": 36
+    }
+  ],
+  "topInclusive": [
+    {
+      "ms": 15992.884000000071,
+      "functionName": "(root)",
+      "scriptId": "0",
+      "url": "",
+      "lineNumber": -1,
+      "columnNumber": -1
+    },
+    {
+      "ms": 6313.765999999997,
+      "functionName": "(idle)",
+      "scriptId": "0",
+      "url": "",
+      "lineNumber": -1,
+      "columnNumber": -1
+    },
+    {
+      "ms": 4692.017000000001,
+      "functionName": "loop",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 70859,
+      "columnNumber": 13
+    },
+    {
+      "ms": 4685.633,
+      "functionName": "update",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 70837,
+      "columnNumber": 15
+    },
+    {
+      "ms": 4088.875999999991,
+      "functionName": "performWorkUntilDeadline",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 1005,
+      "columnNumber": 37
+    },
+    {
+      "ms": 3742.071999999999,
+      "functionName": "WebGLRenderer.render",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59630,
+      "columnNumber": 26
+    },
+    {
+      "ms": 3066.357999999995,
+      "functionName": "Lf",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 67823,
+      "columnNumber": 17
+    },
+    {
+      "ms": 3066.357999999995,
+      "functionName": "Tu",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 63785,
+      "columnNumber": 17
+    },
+    {
+      "ms": 2465.700999999998,
+      "functionName": "wh",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 68104,
+      "columnNumber": 17
+    },
+    {
+      "ms": 2465.700999999998,
+      "functionName": "Ff",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 68060,
+      "columnNumber": 17
+    },
+    {
+      "ms": 2465.258999999998,
+      "functionName": "Ph",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 68194,
+      "columnNumber": 17
+    },
+    {
+      "ms": 2430.3079999999995,
+      "functionName": "B",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 63362,
+      "columnNumber": 16
+    },
+    {
+      "ms": 2412.9339999999993,
+      "functionName": "tt",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 66075,
+      "columnNumber": 17
+    },
+    {
+      "ms": 2237.117999999997,
+      "functionName": "renderScene",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59810,
+      "columnNumber": 24
+    },
+    {
+      "ms": 2235.5579999999973,
+      "functionName": "renderObjects",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59897,
+      "columnNumber": 26
+    },
+    {
+      "ms": 2222.8179999999975,
+      "functionName": "renderObject",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59911,
+      "columnNumber": 25
+    },
+    {
+      "ms": 2214.7119999999973,
+      "functionName": "WebGLRenderer.renderBufferDirect",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 59436,
+      "columnNumber": 38
+    },
+    {
+      "ms": 2026.5029999999958,
+      "functionName": "setProgram",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 60035,
+      "columnNumber": 23
+    },
+    {
+      "ms": 1958.904,
+      "functionName": "ks",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 65745,
+      "columnNumber": 17
+    },
+    {
+      "ms": 1949.0860000000002,
+      "functionName": "react_stack_bottom_frame",
+      "scriptId": "6",
+      "url": "http://127.0.0.1:4530/macro.js",
+      "lineNumber": 69001,
+      "columnNumber": 42
+    }
+  ]
+}

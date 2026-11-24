@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+tests\check-javascript-modules.test.mjs:
+ 6 | import { THREE_VERSION } from '../../studio/src/three/threeRuntimeContract'
+ 7 |
+ 8 | test('the offline classic renderer matches the editor without replacing the Pro dependency', async () => {
+ 9 |   const image = JSON.parse(await readFile(new URL('../runtime/package.json', import.meta.url)))
+10 |   const lock = JSON.parse(await readFile(new URL('../runtime/package-lock.json', import.meta.url)))
+11 |   expect(image.dependencies['three-classic']).toBe(`npm:three@${THREE_VERSION}`)
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "npm:three@0.184.0"
+Received: undefined
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio-runtime\tests\check-javascript-modules.test.mjs:11:47)
+(fail) the offline classic renderer matches the editor without replacing the Pro dependency [16.00ms]
+(pass) the pinned package and its relative JS dependencies are available without external network
+(pass) the resolver cannot expose another version, package, origin, non-JS file or escaped path [15.00ms]
+(pass) a substituted trusted package fails before serving any module
+(pass) a linked module directory cannot escape the immutable package [16.00ms]
+(pass) an oversized official module fails closed
+
+ 5 pass
+ 1 fail
+ 18 expect() calls
+Ran 6 tests across 1 file. [89.00ms]

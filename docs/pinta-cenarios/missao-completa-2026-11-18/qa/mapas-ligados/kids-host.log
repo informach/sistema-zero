@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-client.test.tsx:
+(pass) o Pinta comunica a abertura do desenho ao menu do shell [125.00ms]
+(pass) a volta da ponte diz POR QUE não atualizou (nunca levado ao Estúdio, biblioteca recusou) e regrava o desenho que já está lá [15.00ms]
+(pass) com ?missao= o retorno usa o projeto do handoff canônico [47.00ms]
+(pass) sem missão o Pinta abre livre, sem painel do plano [31.00ms]
+(pass) missão de outra pessoa mostra a disponibilidade do servidor e volta ao plano [47.00ms]
+(pass) a missão de arte vinculada ao Pro abre o mesmo jogo e não exige importação para concluir [16.00ms]
+(pass) adulto isola a biblioteca local e a ponte, mantendo o ID real no servidor [78.00ms]
+
+ 7 pass
+ 0 fail
+ 36 expect() calls
+Ran 7 tests across 1 file. [1101.00ms]

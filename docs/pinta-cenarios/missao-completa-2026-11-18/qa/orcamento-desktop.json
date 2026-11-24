@@ -1,0 +1,18 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+  "cells": 2097152,
+  "maxCells": 2097152,
+  "wireChars": 11188227,
+  "wireMs": 266.5,
+  "saveMs": 286,
+  "readMs": 350.09999999962747,
+  "editSaveMs": 387.29999999981374,
+  "frames": [469.1000000005588, 456.79999999981374, 503.79999999981374],
+  "cacheBytes": 28311552,
+  "workingSetBytes": 603979776,
+  "chunkBytes": 9437184,
+  "allocations": 3,
+  "reopenedLayers": 32,
+  "cpuSlowdown": 1,
+  "simulated": false
+}

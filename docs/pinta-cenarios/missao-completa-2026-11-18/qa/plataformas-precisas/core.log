@@ -1,0 +1,71 @@
+bun test v1.3.11 (af24e281)
+
+src\creations\pinta-format.test.ts:
+(pass) o rollout só do leitor nunca envia documento 6 declarando nuvem 4
+(pass) a versão declarada depende só do tipo do desenho
+(pass) nunca se declara uma versão que este código não lê
+(pass) a capacidade 4 protege documentos nativos 5 do cliente completo que declara 3
+(pass) o gravador completo supera o cliente intermediário que só entende camadas
+(pass) item sem versão conta como 1; acima do teto não é lido
+(pass) os números de hoje estão travados: mudar é seguir o procedimento do pinta-format.ts
+
+src\studio\pinta-image.test.ts:
+(pass) dados físicos 4 exigem o leitor físico para mapa e mundo sem mudar as receitas antigas [15.00ms]
+(pass) a versão dos dados novos pertence à saída, sem mudar a identidade da receita antiga
+(pass) um mundo é uma seleção explícita, com identidade própria e PNG com dados
+(pass) o envelope do mundo recusa versões, ciclos binários, IDs duplicados e excesso acumulado
+(pass) Pinta derived image identity > revision and output changes keep identity; distinct positions/scale do not
+(pass) Pinta derived image identity > rejects unknown metadata, missing selections and invented frame identities
+(pass) Pinta derived image identity > an SVG recipe is explicit: legacy recipes keep their key, svg gets its own
+(pass) Pinta derived image identity > checks the destination quotas independently before allocation
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > the new kinds parse, keep their own identity and never request SVG
+(pass) Pinta images with embedded data (spritesheet, tileset, map) > dependency rule per kind: none, the default tileset, or every tileset (1..8) [16.00ms]
+
+src\studio\pinta-scene-geometry.test.ts:
+(pass) geometria física contínua da cena > retângulo: interior, contorno e contato sem penetração
+(pass) geometria física contínua da cena > uma barreira estreita dentro do corpo não desaparece entre amostras
+(pass) geometria física contínua da cena > o quadrado girado não usa sua caixa envolvente como parede
+(pass) geometria física contínua da cena > elipse: canto livre e cruzamento sem nenhum vértice do corpo dentro [16.00ms]
+(pass) geometria física contínua da cena > elipse girada: consulta analítica, sem aproximação por segmentos
+(pass) geometria física contínua da cena > polígono côncavo conserva o vão
+(pass) geometria física contínua da cena > polilinha é aberta: não fecha o último segmento
+(pass) geometria física contínua da cena > ponto só bloqueia o corpo que contém sua posição
+(pass) geometria física contínua da cena > espelhar arte não muda o contorno autoral
+(pass) geometria física contínua da cena > conjunto com escala não uniforme e giro do filho conserva a base afim
+(pass) geometria física contínua da cena > elipse sob base afim: a elipse principal derivada conserva o centro
+(pass) geometria física contínua da cena > formas degeneradas e entradas não finitas não produzem colisões inventadas
+(pass) geometria física contínua da cena > pontos repetidos no começo não apagam um polígono válido
+(pass) consulta do corpo na cena canônica > varredura contínua barra linhas finas, desliza por eixo e limita velocidades extremas [15.00ms]
+(pass) consulta do corpo na cena canônica > colisão de objeto exige contrato 3, nunca é aceita silenciosamente em cena 1/2
+(pass) consulta do corpo na cena canônica > objeto elíptico autoral: centro sólido e cantos livres
+(pass) consulta do corpo na cena canônica > polilinha de colisão não cria uma diagonal de fechamento
+(pass) consulta do corpo na cena canônica > parede de objeto em conjunto conserva o offset do filho fora do retângulo nominal
+(pass) consulta do corpo na cena canônica > conjunto girado: interior, canto livre e contato sem penetração
+(pass) consulta do corpo na cena canônica > espelhos nos dois eixos, giros livres e deslocamento de grupo
+(pass) consulta do corpo na cena canônica > offset do filho pode sair do retângulo nominal do conjunto
+(pass) consulta do corpo na cena canônica > visibilidade herdada desliga colisão; opacidade zero conserva barreira
+(pass) consulta do corpo na cena canônica > células fracionárias não são arredondadas e limites do mundo continuam sólidos
+(pass) consulta do corpo na cena canônica > camada marcada como colisão usa qualquer peça; plataforma não vira sólido por acidente
+
+src\studio\pinta-scene-platform.test.ts:
+(pass) peça menor que uma célula, offset fracionário e corpo mais largo que a peça
+(pass) apoio parado, queda veloz, salto por baixo e corpo que já estava abaixo
+(pass) gravidade invertida apoia no contorno inferior real
+(pass) giro livre usa o contorno sobre a largura do corpo, não o bounding box inteiro
+(pass) espelho horizontal desloca a peça, sem inventar apoio na célula vazia
+(pass) espelho vertical desloca o piso mantendo a direção da gravidade do jogo
+(pass) offsets e visibilidade herdados; opacidade zero conserva a plataforma
+(pass) camada sólida e peça sólida prevalecem sobre a marca de plataforma
+(pass) cada camada consulta sua própria folha, e a primeira superfície vence
+(pass) não agarra contato só na borda, fora do caminho ou com entrada inválida
+(pass) subir a rampa sob um teto baixo bloqueia o deslocamento sem atravessar o piso
+(pass) geração portátil usa a mesma consulta para giros, espelhos e gravidades
+
+src\studio\python-runtime-features.test.ts:
+(pass) cenários por assets têm capacidade explícita; listas de releases anteriores continuam válidas
+(pass) capacidades repetidas e nomes desconhecidos são recusados
+
+ 55 pass
+ 0 fail
+ 1142 expect() calls
+Ran 55 tests across 5 files. [160.00ms]

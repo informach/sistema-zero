@@ -6,15 +6,17 @@ Promessa do posto: **Eu faço o jogo lembrar e decidir.** Gênero: aventura de c
 | --- | --- | --- |
 | Curso da trilha 2D | [A Chave do Farol](desafio-primeiro-jogo/README.md) | Aulas e materiais |
 | Curso da trilha 3D | [A Ilha do Farol](a-ilha-do-farol/README.md) | Aulas e materiais |
-| Missão 2D e 3D | [O Jardim Secreto](o-jardim-secreto/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
+| Missão 2D e 3D | [O Jardim Secreto](o-jardim-secreto/README.md) | Aulas e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
 | Extra | [Cadê Todo Mundo?](cade-todo-mundo/README.md) | Aulas e materiais |
-| Extra | [Meu primeiro desenho no Pinta](meu-primeiro-desenho-no-pinta/README.md) | Uma aula, jogo e materiais; mídia/publicação pendentes |
-| Poder (2D e 3D) | [Moedas no caminho](poder-moedas-no-caminho/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
-| Poder (2D e 3D) | [O segredo da cabana](poder-o-segredo-da-cabana/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
-| Poder (2D e 3D) | [A ponte apressada](poder-a-ponte-apressada/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
-| Poder (2D e 3D) | [O baú dos símbolos](poder-o-bau-dos-simbolos/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
+| Extra | [Meu primeiro desenho no Pinta](meu-primeiro-desenho-no-pinta/README.md) | Aula e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
+| Poder (2D e 3D) | [Moedas no caminho](poder-moedas-no-caminho/README.md) | Aulas e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
+| Poder (2D e 3D) | [O segredo da cabana](poder-o-segredo-da-cabana/README.md) | Aulas e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
+| Poder (2D e 3D) | [A ponte apressada](poder-a-ponte-apressada/README.md) | Aulas e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
+| Poder (2D e 3D) | [O baú dos símbolos](poder-o-bau-dos-simbolos/README.md) | Aulas e materiais; revisado no padrão da trilha em 23/11/2026; mídia/publicação pendentes |
 
 Depois dos dois cursos da trilha, missão, Poderes e extras abrem juntos. Promoção exige os dois cursos, a missão nas duas dimensões e um Poder distinto aplicado. O Jardim não exige um Poder nem o Cadê como pré-requisito. Existência de arquivos locais não comprova publicação.
+
+**Revisão de 23/11/2026:** a missão, o extra do Pinta e os quatro Poderes seguem o padrão do Cadê, da Chave do Farol e da Ilha (falas, estrutura com o envio na última construção, Na tela com os verbos do palco, recados, Debinha e Dedé). O gerador comum dos Poderes e do Jardim é `qa/poder-gerador.ts`; as peças comuns dos roteiros estão em `qa/faisca-comum.ts`; o teste `qa/faisca-padrao.test.ts` confere todos.
 
 **Blocos (regra da dona, 29/10/2026):** antes de pedir um bloco novo, conferir o catálogo INTEIRO
 da extensão (todos os `blockCatalog*.ts`, a paleta e os degraus em `blockly/blockLevels.ts`). Se o

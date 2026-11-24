@@ -1,0 +1,36 @@
+{
+  "commands": {
+    "build": [],
+    "install": [
+      "npm install"
+    ],
+    "lint": [
+      "npm run lint"
+    ],
+    "start": [],
+    "test": [],
+    "verify": [
+      "npm run check",
+      "npm run ci"
+    ]
+  },
+  "e2e": {
+    "commands": [],
+    "detected": false,
+    "frameworks": [],
+    "reason": [],
+    "signals": []
+  },
+  "notes": [
+    "Prefer repository-defined umbrella commands over ecosystem defaults.",
+    "Treat every discovered command as a candidate until repository instructions or CI confirm ownership."
+  ],
+  "root": "C:\\Users\\tocha\\projects\\sistema-zero",
+  "signals": [
+    "package.json",
+    ".github/workflows"
+  ],
+  "web_ui": {
+    "detected": false
+  }
+}

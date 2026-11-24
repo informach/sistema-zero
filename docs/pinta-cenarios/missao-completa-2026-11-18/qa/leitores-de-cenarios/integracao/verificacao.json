@@ -1,0 +1,183 @@
+{
+  "sourceHead": "f367afc68f01bae43ec1d966088db126c3ed7f04",
+  "upstream": "b2d77d8d35900a7194995d4376ba3578807e578a",
+  "readerCommit": "2331219cf",
+  "distributionSha256": "3d5d7d4ec2df4d03f374c9a5a70c264ff7bfc662ac9ee39823cff45d2cf6fdd2",
+  "runtimeFiles": 126,
+  "validation": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "e049128566613ce447fd7580dae5873701aa3a6d70b0eb95f40729230c543493"
+  },
+  "gates": {
+    "studioTypes": 0,
+    "studio": {
+      "tests": 35,
+      "assertions": 223,
+      "files": 7,
+      "exitCode": 0
+    },
+    "publication": {
+      "tests": 61,
+      "assertions": 448,
+      "exitCode": 0
+    },
+    "interface": {
+      "tests": 2,
+      "exitCode": 0
+    },
+    "generators": {
+      "python": 0,
+      "validationProfile": 0
+    },
+    "pythonBrowser": {
+      "initial": {
+        "passed": 12,
+        "failed": 1,
+        "steadyFps": 44.66
+      },
+      "final": {
+        "passed": 13,
+        "failed": 0,
+        "steadyFps": 45.9
+      }
+    }
+  },
+  "limits": "Uma máquina; benchmark variável e próximo do limite. Sem qualificação em outro aparelho ou ativação remota.",
+  "files": [
+    {
+      "path": "packages/core/src/studio/pinta-image.test.ts",
+      "sha256": "8b120a9a010b8a8c9d7b7c62807025d178b6d7bab47889904b9d2fdf1cec33a8",
+      "previousSha256": "8b120a9a010b8a8c9d7b7c62807025d178b6d7bab47889904b9d2fdf1cec33a8"
+    },
+    {
+      "path": "packages/core/src/studio/pinta-image.ts",
+      "sha256": "cce531bfb82150717ac222a89ab1e797ff219e80e0aca62553ec44d07f354280",
+      "previousSha256": "cce531bfb82150717ac222a89ab1e797ff219e80e0aca62553ec44d07f354280"
+    },
+    {
+      "path": "packages/member-shell/src/routes/studio.ts",
+      "sha256": "67011d782de0a1a6096af7fc387fcc872c1166ed1b130a0d294b432124592436",
+      "previousSha256": "67011d782de0a1a6096af7fc387fcc872c1166ed1b130a0d294b432124592436"
+    },
+    {
+      "path": "packages/member-shell/src/server/studio-publication.ts",
+      "sha256": "35c03564ba0c5454e5bd7fb3c903ca6a9155da3b224bec3ed3bc7b72333ca891",
+      "previousSha256": "35c03564ba0c5454e5bd7fb3c903ca6a9155da3b224bec3ed3bc7b72333ca891"
+    },
+    {
+      "path": "packages/member-shell/tests/studio-python-publish.test.ts",
+      "sha256": "05592a419216589e93d5ed6071608fbe5183451a07a982da7cb474fde25502be",
+      "previousSha256": "05592a419216589e93d5ed6071608fbe5183451a07a982da7cb474fde25502be"
+    },
+    {
+      "path": "packages/pinta/scripts/homologacao/pythonWorld.ts",
+      "sha256": "9d94d65b6fb740d9ba1c6da517bb0cbee4ad18cc1c1d2e1c49fbe3df27e44d57",
+      "previousSha256": "9d94d65b6fb740d9ba1c6da517bb0cbee4ad18cc1c1d2e1c49fbe3df27e44d57"
+    },
+    {
+      "path": "packages/pinta/src/export/portableImage.ts",
+      "sha256": "dd14e33e861c6fcca2764adcb7fd5af52390667c0d03dc7565a4a639e3378d7e",
+      "previousSha256": "dd14e33e861c6fcca2764adcb7fd5af52390667c0d03dc7565a4a639e3378d7e"
+    },
+    {
+      "path": "packages/pinta/src/export/portableImageData.test.ts",
+      "sha256": "30ab2e37762208997b2f206514067c7d2a2a8ef5f87b720491ab4e3a547010d1",
+      "previousSha256": "30ab2e37762208997b2f206514067c7d2a2a8ef5f87b720491ab4e3a547010d1"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "13815870862b085ec2ee01560959f4c29896ef264c6cae6d14bdeb3a7ed43211",
+      "previousSha256": "9a1b49ec395d8449296a2f165a61e6fe8466c01005417a6d78514589977d6f9c"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-studio.flow.ts",
+      "sha256": "0cb74c83be32cb6ac79c15d0bc626bae59d233f710cca9d079b9b3ce1d9ebb49",
+      "previousSha256": "0cb74c83be32cb6ac79c15d0bc626bae59d233f710cca9d079b9b3ce1d9ebb49"
+    },
+    {
+      "path": "packages/studio/e2e/pinta-world-compatibility.flow.ts",
+      "sha256": "da0b284f931e6eba0010c2d5465ae20af78aa99086c76253776e4975ef2b78df",
+      "previousSha256": "da0b284f931e6eba0010c2d5465ae20af78aa99086c76253776e4975ef2b78df"
+    },
+    {
+      "path": "packages/studio/playground/pinta-integration/main.tsx",
+      "sha256": "f175e6817c1aa47e22ba63f8a0a6b66f05f1cc9c586225d54a7b78e1182da2f3",
+      "previousSha256": "f175e6817c1aa47e22ba63f8a0a6b66f05f1cc9c586225d54a7b78e1182da2f3"
+    },
+    {
+      "path": "packages/studio/src/asset-library/__tests__/personalSync.cases.ts",
+      "sha256": "b5919341a1648412e58c16f0608de9ce468226774dea31120e5ffa8238099c2c",
+      "previousSha256": "b5919341a1648412e58c16f0608de9ce468226774dea31120e5ffa8238099c2c"
+    },
+    {
+      "path": "packages/studio/src/asset-library/personalSync.ts",
+      "sha256": "99b6b8df75148dc7839b077f168a69028b6bcbe6628d197fb9628a79e0eb0cdb",
+      "previousSha256": "99b6b8df75148dc7839b077f168a69028b6bcbe6628d197fb9628a79e0eb0cdb"
+    },
+    {
+      "path": "packages/studio/src/components/assets/AssetsPanel.tsx",
+      "sha256": "01d6a52c232bc4e50dd5962d1595a34b2db60dc8dd12d00a13bda40f7a936af0",
+      "previousSha256": "01d6a52c232bc4e50dd5962d1595a34b2db60dc8dd12d00a13bda40f7a936af0"
+    },
+    {
+      "path": "packages/studio/src/components/assets/DrawingSyncWatcher.tsx",
+      "sha256": "04598e16190eadc65fb4cf449746ccb0337741b7542ebf90679640fe18c6323e",
+      "previousSha256": "04598e16190eadc65fb4cf449746ccb0337741b7542ebf90679640fe18c6323e"
+    },
+    {
+      "path": "packages/studio/src/components/assets/PintaImageSelection.tsx",
+      "sha256": "0e30847669dfb32aee30a18a3631e6c21b3b7b9695cfd2324c234ad59b3fefe5",
+      "previousSha256": "0e30847669dfb32aee30a18a3631e6c21b3b7b9695cfd2324c234ad59b3fefe5"
+    },
+    {
+      "path": "packages/studio/src/components/assets/PintaImportDialog.tsx",
+      "sha256": "84c02f3d7cba24ea272879f09f484c940736603129e6631771ac53f61d80f84c",
+      "previousSha256": "84c02f3d7cba24ea272879f09f484c940736603129e6631771ac53f61d80f84c"
+    },
+    {
+      "path": "packages/studio/src/components/assets/__tests__/PintaImportDialog.cases.tsx",
+      "sha256": "c9fa527f05b5e3a69ce1271fe9cb3ddbba74ecdba137b5a138a4a01638a01144",
+      "previousSha256": "c9fa527f05b5e3a69ce1271fe9cb3ddbba74ecdba137b5a138a4a01638a01144"
+    },
+    {
+      "path": "packages/studio/src/core/i18n/shared/en.ts",
+      "sha256": "e2293c4590f9cf5e5f59c2dd99be36e2cc4e0eb5e5463803b193731691fb4b5a",
+      "previousSha256": "e2293c4590f9cf5e5f59c2dd99be36e2cc4e0eb5e5463803b193731691fb4b5a"
+    },
+    {
+      "path": "packages/studio/src/core/i18n/shared/pt-BR.ts",
+      "sha256": "fd7f0dcada22fa3110e35f2778b94748f97e850361109d23669e38cdf9c93830",
+      "previousSha256": "fd7f0dcada22fa3110e35f2778b94748f97e850361109d23669e38cdf9c93830"
+    },
+    {
+      "path": "packages/studio/src/export/__tests__/pythonWeb.test.ts",
+      "sha256": "28e8fb4af6962540ff79840f54243a1acd1d9a829d6d8e284b82597e9bdd45d6",
+      "previousSha256": "28e8fb4af6962540ff79840f54243a1acd1d9a829d6d8e284b82597e9bdd45d6"
+    },
+    {
+      "path": "packages/studio/src/export/pythonWeb.ts",
+      "sha256": "2d9d6c5a808e68f3f0fd668f0c901f3414be02ffee4d0571d795637401b5b9c4",
+      "previousSha256": "2d9d6c5a808e68f3f0fd668f0c901f3414be02ffee4d0571d795637401b5b9c4"
+    },
+    {
+      "path": "packages/studio/src/runtime/registry.test.ts",
+      "sha256": "488082da7dd0e9c58f610c177b7a82e4656adbf8a95c5a2a3ccd20f95a2c0223",
+      "previousSha256": "488082da7dd0e9c58f610c177b7a82e4656adbf8a95c5a2a3ccd20f95a2c0223"
+    },
+    {
+      "path": "packages/studio/src/runtime/registry.ts",
+      "sha256": "490531b8491a09c4fa24f8359c088d02c4b43eec2f2495ceed615ee0d5e903ff",
+      "previousSha256": "490531b8491a09c4fa24f8359c088d02c4b43eec2f2495ceed615ee0d5e903ff"
+    },
+    {
+      "path": "packages/studio/src/state/persistence.ts",
+      "sha256": "aed263485e618dea0ba27a1c18f76f60f15c1e89ef84793f97e9625a05a712fb",
+      "previousSha256": "aed263485e618dea0ba27a1c18f76f60f15c1e89ef84793f97e9625a05a712fb"
+    },
+    {
+      "path": "packages/studio/src/runtime/pintaImageCompatibility.ts",
+      "sha256": "b7e0f59686d27a7f2202c14f353c7a48834e7a9a3a16b46d2cb7eef6a29c5f7f",
+      "previousSha256": "b7e0f59686d27a7f2202c14f353c7a48834e7a9a3a16b46d2cb7eef6a29c5f7f"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+bun test v1.3.11 (af24e281)
+
+src\export\homologacao.test.ts:
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 1, criar: a referência é a descrita e todo desenho passa no portão do documento [32.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 2, camadas: o grupo passa visibilidade, opacidade, deslocamento e parallax aos filhos
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 3, peças viradas: a cena guarda espelho e giro dentro da célula
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 4, terreno e animação: o terreno e a peça animada chegam inteiros à cena
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 5, objetos e conjunto: formas, papéis, propriedades tipadas e a instância do conjunto
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 6, guardar e restaurar em arquivo: o .pinta.json devolve os mesmos desenhos e a mesma cena [15.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 7, testar: o início é livre, existe parede, e as portas ligam a Vila e a Cabana nos dois sentidos [16.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 8, Estúdio: a cena do envio passa no esquema, cabe no orçamento e é a do exemplo publicado [15.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 10, levar para fora: Tiled em JSON e em TMX volta igual, e o pacote leva os dois mapas [94.00ms]
+
+src\export\portableImageData.test.ts:
+(pass) o PNG jogável leva o atlas inteiro da animação fixada, além da folha do terreno [31.00ms]
+(pass) spritesheet — the whole sheet with its animations embedded > one row per animation, columns = most frames, frames left-aligned, scaled crisp
+(pass) spritesheet — the whole sheet with its animations embedded > raw bytes: iTXt right after IHDR, keyword "pinta", compression 1, method 0
+(pass) spritesheet — the whole sheet with its animations embedded > the hitbox comes from the drawing, in output pixels relative to the frame [16.00ms]
+(pass) spritesheet — the whole sheet with its animations embedded > a vector sprite sheet is rasterized whole, still PNG with data
+(pass) tileset — the whole tile sheet with solid/platform marks > columns = min(count, 8), row-major, empty tiles keep their slot
+(pass) tileset — the whole tile sheet with solid/platform marks > a vector tileset sheet
+(pass) map — an atlas of every tileset, layers and objects embedded > stacks the sheets (default first), keeps layer order, scales objects [16.00ms]
+(pass) map — an atlas of every tileset, layers and objects embedded > the flat tilemap image keeps exactly one dependency on the same map
+(pass) map — an atlas of every tileset, layers and objects embedded > a change in ANY tileset changes the map provenance (the sync re-derives) [15.00ms]
+(pass) map — an atlas of every tileset, layers and objects embedded > without its default tileset the map is refused
+(pass) determinism, limits and refusals > the same input gives the same bytes and SHA [16.00ms]
+(pass) determinism, limits and refusals > respects the destination limits with a friendly message
+(pass) determinism, limits and refusals > a scale that would split a frame in a fraction of a pixel is refused
+(pass) determinism, limits and refusals > the kind must match the drawing, and SVG is never accepted
+(pass) pngText — the chunk writer/reader > CRC-32 matches the PNG reference values
+
+src\export\scenePackage.test.ts:
+(pass) Pygame and Godot retain affine art and explicitly report omitted incompatible Tiled supplements [15.00ms]
+(pass) the portable Pygame package actually renders the sheared child footprint [328.00ms]
+(pass) pacote Tiled > traz mapas, folhas, imagens, o backup editável e mais nada [63.00ms]
+(pass) pacote Phaser > o ZIP tem a página, o jogo, o Phaser fixado e a licença [203.00ms]
+(pass) pacote Phaser > a página e o jogo não pedem nada da internet [141.00ms]
+(pass) pacote Phaser > as cenas embutidas no main.js são as do maps.json e apontam para imagens do pacote [109.00ms]
+(pass) projeto Pygame portátil > o ZIP tem o módulo, o exemplo e os requisitos [47.00ms]
+(pass) projeto Pygame portátil > todo .py do projeto compila no Python (py_compile) [125.00ms]
+(pass) projeto Pygame portátil > o Python só lê arquivos que estão no pacote [47.00ms]
+(pass) projeto Godot > o ZIP tem o projeto, a cena e o script; os textos passam na conferência [31.00ms]
+(pass) projeto Godot > toda peça que o script pede ao atlas existe na folha e cabe na imagem [47.00ms]
+(pass) projeto Godot > a conferência dos textos pega recurso não declarado, arquivo ausente e seção malformada
+
+src\export\sceneResources.test.ts:
+(pass) a cena guarda versões, recursos lógicos e todas as animações, sem promover cenas antigas
+(pass) o compositor desenha pixels de quadros diferentes e prende o último quando não repete
+(pass) JSON e TMX Tiled conservam animações específicas e versões no round-trip editável [15.00ms]
+(pass) Tiled não anima a cópia estática de um sprite usado também por uma instância animada
+
+src\export\setAdapters.test.ts:
+(pass) a zero-area legacy set remains readable as a degenerate footprint
+(pass) an affinely transformed ellipse retains its exact boundary under nonuniform scaling
+(pass) the embedded JS transformation is exactly the same helper, without external dependencies
+(pass) uniform set reflection and rotation preserve every authored rectangle corner
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [297.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [125.00ms]
+
+ 47 pass
+ 0 fail
+ 5452 expect() calls
+Ran 47 tests across 5 files. [2.86s]

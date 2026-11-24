@@ -16,7 +16,7 @@ import type {
   TilemapObjectLayer,
   TilemapObjectPropertyValue,
 } from '../../core/project'
-import { PINTA_LIMITS } from '../../core/project'
+import { MAP_OBJECT_ROLES, MAP_OBJECT_SHAPES, PINTA_LIMITS } from '../../core/project'
 import {
   convertPropertyValue,
   isObjectPropertyKind,
@@ -28,11 +28,15 @@ import {
 import { Button, IconButton } from '../ui/Button'
 import { MapPin, Plus, Square, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
+import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 
 interface MapObjectPanelProps {
   layer: TilemapObjectLayer
   selectedObjectId: string | null
-  onSelectObject: (id: string | null) => void
+  onAddMarker?: () => void
+  /** Mostra tipo, forma, giro e propriedades (o nível "Começar" esconde; o que já existe fica). */
+  detailed?: boolean
+  onSelectObject: (id: string | null, additive?: boolean) => void
   onUpdateObject: (id: string, patch: MapObjectPatch) => void
   onRemoveObject: (id: string) => void
   /** Troca/renomeia UMA propriedade (`previousKey` = renomear mantendo a ordem). */
@@ -52,6 +56,8 @@ const FIELD =
 export function MapObjectPanel({
   layer,
   selectedObjectId,
+  onAddMarker,
+  detailed = true,
   onSelectObject,
   onUpdateObject,
   onRemoveObject,
@@ -63,6 +69,11 @@ export function MapObjectPanel({
   return (
     <>
       <Panel title={COPY.tiles.objectsPanel}>
+        {onAddMarker ? (
+          <Button variant="barOutline" className="mb-2 w-full" onClick={onAddMarker}>
+            {COPY.tiles.addMarker}
+          </Button>
+        ) : null}
         {layer.objects.length === 0 ? (
           <p className="text-sm text-pin-muted">{COPY.tiles.objectsEmpty}</p>
         ) : (
@@ -77,7 +88,12 @@ export function MapObjectPanel({
                     type="button"
                     aria-pressed={active}
                     aria-label={COPY.tiles.pickObject(name)}
-                    onClick={() => onSelectObject(active ? null : object.id)}
+                    onClick={(event) =>
+                      onSelectObject(
+                        active && !event.shiftKey ? null : object.id,
+                        event.shiftKey || event.ctrlKey || event.metaKey,
+                      )
+                    }
                     className={`flex min-h-11 w-full items-center gap-2 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
                       active ? 'border-pin-accent' : 'border-transparent hover:bg-pin-bg'
                     }`}
@@ -100,6 +116,7 @@ export function MapObjectPanel({
         <ObjectDetails
           key={selected.id}
           object={selected}
+          detailed={detailed}
           onUpdate={(patch) => onUpdateObject(selected.id, patch)}
           onRemove={() => onRemoveObject(selected.id)}
           onSetProperty={(key, value, previousKey) =>
@@ -115,6 +132,7 @@ export function MapObjectPanel({
 
 function ObjectDetails({
   object,
+  detailed,
   onUpdate,
   onRemove,
   onSetProperty,
@@ -122,6 +140,7 @@ function ObjectDetails({
   onAddProperty,
 }: {
   object: TilemapObject
+  detailed: boolean
   onUpdate: (patch: MapObjectPatch) => void
   onRemove: () => void
   onSetProperty: (key: string, value: TilemapObjectPropertyValue, previousKey?: string) => void
@@ -142,16 +161,151 @@ function ObjectDetails({
             />
           )}
         </LabeledField>
-        <LabeledField label={COPY.tiles.objectType}>
-          {(id) => (
-            <CommitInput
-              id={id}
-              value={object.type}
-              maxLength={PINTA_LIMITS.maxObjectNameChars}
-              onCommit={(type) => onUpdate({ type })}
+        {detailed || object.collision ? (
+          <label className="flex min-h-11 items-center gap-2 text-sm text-pin-text">
+            <input
+              type="checkbox"
+              className="size-5 accent-pin-accent"
+              checked={object.collision === true}
+              onChange={(event) => onUpdate({ collision: event.target.checked ? true : undefined })}
             />
+            {COPY.tiles.objectCollision}
+          </label>
+        ) : null}
+        {detailed ? (
+          <>
+            <LabeledField label={COPY.tiles.objectType}>
+              {(id) => (
+                <CommitInput
+                  id={id}
+                  value={object.type}
+                  maxLength={PINTA_LIMITS.maxObjectNameChars}
+                  onCommit={(type) => onUpdate({ type })}
+                />
+              )}
+            </LabeledField>
+            <div className="grid grid-cols-2 gap-2">
+              <LabeledField label={COPY.tiles.objectShape}>
+                {(id) => (
+                  <select
+                    id={id}
+                    className={FIELD}
+                    value={object.shape ?? (isPointObject(object) ? 'point' : 'rect')}
+                    onChange={(event) => {
+                      const shape = MAP_OBJECT_SHAPES.find((s) => s === event.target.value)
+                      if (shape)
+                        onUpdate({
+                          shape,
+                          ...(shape === 'point'
+                            ? { width: 0, height: 0 }
+                            : { width: object.width || 16, height: object.height || 16 }),
+                          ...((shape === 'polygon' || shape === 'polyline') &&
+                          !object.points?.length
+                            ? {
+                                points: [
+                                  { x: 0, y: 0 },
+                                  { x: object.width || 16, y: 0 },
+                                  { x: object.width || 16, y: object.height || 16 },
+                                ],
+                              }
+                            : {}),
+                        })
+                    }}
+                  >
+                    {MAP_OBJECT_SHAPES.map((shape) => (
+                      <option key={shape} value={shape}>
+                        {COPY.tiles.objectShapes[shape]}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </LabeledField>
+              <LabeledField label={COPY.tiles.objectRotation}>
+                {(id) => (
+                  <CommitInput
+                    id={id}
+                    numeric
+                    value={String(object.rotation ?? 0)}
+                    onCommit={(text) => onUpdate({ rotation: Number(text) })}
+                  />
+                )}
+              </LabeledField>
+            </div>
+          </>
+        ) : null}
+        <LabeledField label={COPY.tiles.objectRole}>
+          {(id) => (
+            <select
+              id={id}
+              className={FIELD}
+              value={object.role ?? ''}
+              onChange={(event) =>
+                onUpdate({ role: MAP_OBJECT_ROLES.find((role) => role === event.target.value) })
+              }
+            >
+              <option value="">{COPY.tiles.noRole}</option>
+              {MAP_OBJECT_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {COPY.tiles.objectRoles[role]}
+                </option>
+              ))}
+            </select>
           )}
         </LabeledField>
+        {object.shape === 'polygon' || object.shape === 'polyline' ? (
+          <LabeledField label={COPY.scene.pontosXY}>
+            {(id) => (
+              <CommitInput
+                id={id}
+                value={(object.points ?? []).map((p) => `${p.x},${p.y}`).join(' ')}
+                onCommit={(text) => {
+                  const points = text
+                    .trim()
+                    .split(/\s+/)
+                    .map((pair) => {
+                      const [x = NaN, y = NaN] = pair.split(',').map(Number)
+                      return { x, y }
+                    })
+                  if (
+                    points.length >= 2 &&
+                    points.length <= MAP_EDITOR_LIMITS.maxObjectPoints &&
+                    points.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+                  )
+                    onUpdate({ points })
+                }}
+              />
+            )}
+          </LabeledField>
+        ) : null}
+        {object.art || object.setId ? (
+          <div className="flex gap-2">
+            {(['flipX', 'flipY'] as const).map((key, i) => (
+              <label key={key} className="flex min-h-11 items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  className="size-5"
+                  checked={object[key] === true}
+                  onChange={(e) => onUpdate({ [key]: e.target.checked ? true : undefined })}
+                />
+                {i ? COPY.scene.virarParaCima : COPY.scene.virarDeLado}
+              </label>
+            ))}
+          </div>
+        ) : null}
+        {object.art?.tile !== undefined ? (
+          <LabeledField label={COPY.scene.pecaDoDesenho}>
+            {(id) => (
+              <CommitInput
+                id={id}
+                numeric
+                value={String(object.art?.tile ?? 0)}
+                onCommit={(value) => {
+                  if (object.art) onUpdate({ art: { ...object.art, tile: Number(value) } })
+                }}
+              />
+            )}
+          </LabeledField>
+        ) : null}
         <div className="grid grid-cols-2 gap-2">
           {(
             [
@@ -180,21 +334,25 @@ function ObjectDetails({
           <p className="text-xs text-pin-muted">{COPY.tiles.objectPointHint}</p>
         ) : null}
 
-        <p className="mt-1 text-sm font-bold text-pin-text">{COPY.tiles.objectProperties}</p>
-        {properties.map(([key, value]) => (
-          <PropertyRow
-            key={key}
-            propertyKey={key}
-            value={value}
-            onRename={(next) => onSetProperty(next, value, key)}
-            onChange={(next) => onSetProperty(key, next, key)}
-            onRemove={() => onRemoveProperty(key)}
-          />
-        ))}
-        <Button variant="barOutline" className="w-full" onClick={onAddProperty}>
-          <Plus aria-hidden="true" />
-          {COPY.tiles.addProperty}
-        </Button>
+        {detailed ? (
+          <>
+            <p className="mt-1 text-sm font-bold text-pin-text">{COPY.tiles.objectProperties}</p>
+            {properties.map(([key, value]) => (
+              <PropertyRow
+                key={key}
+                propertyKey={key}
+                value={value}
+                onRename={(next) => onSetProperty(next, value, key)}
+                onChange={(next) => onSetProperty(key, next, key)}
+                onRemove={() => onRemoveProperty(key)}
+              />
+            ))}
+            <Button variant="barOutline" className="w-full" onClick={onAddProperty}>
+              <Plus aria-hidden="true" />
+              {COPY.tiles.addProperty}
+            </Button>
+          </>
+        ) : null}
         <Button variant="barOutline" className="w-full" onClick={onRemove}>
           <Trash2 aria-hidden="true" />
           {COPY.tiles.removeObject}
@@ -204,7 +362,7 @@ function ObjectDetails({
   )
 }
 
-function PropertyRow({
+export function PropertyRow({
   propertyKey,
   value,
   onRename,
@@ -268,8 +426,8 @@ function PropertyRow({
         ) : (
           <CommitInput
             aria-label={`${COPY.tiles.propertyValue}: ${propertyKey}`}
-            numeric={kind === 'number'}
-            value={String(value)}
+            numeric={kind === 'number' || kind === 'int' || kind === 'float'}
+            value={String(typeof value === 'object' ? value.value : value)}
             maxLength={kind === 'text' ? PINTA_LIMITS.maxObjectPropertyStringChars : undefined}
             onCommit={(text) => onChange(convertPropertyValue(text, kind))}
           />
@@ -307,7 +465,7 @@ function LabeledField({
  * mapa troca a seleção antes do blur; criar ponto/área; tocar no vazio) grava ao
  * desmontar — sem gravar nada quando o texto é o mesmo.
  */
-function CommitInput({
+export function CommitInput({
   value,
   onCommit,
   numeric = false,
@@ -318,6 +476,7 @@ function CommitInput({
   numeric?: boolean
   id?: string
   maxLength?: number
+  placeholder?: string
   'aria-label'?: string
 }): JSX.Element {
   const [draft, setDraft] = useState(value)

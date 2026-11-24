@@ -16,6 +16,8 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { mapTwoDBootstrap } from '../../map-2d/bootstrap'
+import { MAP_TWO_D_API_KEYS } from '../../map-2d/contract'
 import { compactOfficialRuntimeSource } from '../../runtimeSource'
 import { isSceneNameBlock } from '../../scene-2d/catalog'
 import { gameTwoDBlocks } from '../blocks'
@@ -91,14 +93,14 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
-function loadRuntimeKeys(): Set<string> {
+function loadRuntimeKeys(source = gameTwoDRuntime): Set<string> {
   const win = {
     addEventListener() {},
     SZGame2D: undefined,
     performance: { now: () => 0 },
     devicePixelRatio: 1,
   } as unknown as Record<string, unknown>
-  new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+  new Function('window', 'requestAnimationFrame', source)(win, () => 0)
   const api = win.SZGame2D as Record<string, unknown> | undefined
   if (!api) throw new Error('runtime não montou window.SZGame2D')
   return new Set(Object.keys(api))
@@ -171,21 +173,26 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
 
 let runtimeKeys: Set<string>
 
-beforeAll(() => {
+beforeAll(async () => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
-  runtimeKeys = loadRuntimeKeys()
+  runtimeKeys = loadRuntimeKeys(await mapTwoDBootstrap('g2d'))
 })
 
 describe('Auditoria Jogo 2D — inventário', () => {
   it('monta o objeto público a partir do mesmo inventário do contrato', () => {
     expect(gameTwoDRuntime).toContain(
-      compactOfficialRuntimeSource(buildGameTwoDRuntimeApiSource(), { trimIndent: true }),
+      // O mesmo compactar do runtime (`game-2d/runtime.ts`), sem os comentários de bloco desde 21/11.
+      compactOfficialRuntimeSource(buildGameTwoDRuntimeApiSource(), {
+        trimIndent: true,
+        stripBlockComments: true,
+      }),
     )
   })
 
   it('o contrato compilável descreve exatamente a API montada pelo runtime', () => {
-    expect([...runtimeKeys].sort()).toEqual([...GAME_TWO_D_API_KEYS].sort())
+    expect([...loadRuntimeKeys()].sort()).toEqual([...GAME_TWO_D_API_KEYS].sort())
+    expect([...runtimeKeys].sort()).toEqual([...GAME_TWO_D_API_KEYS, ...MAP_TWO_D_API_KEYS].sort())
   })
 
   it('todo def é statement (previousStatement) ou reporter (output)', () => {

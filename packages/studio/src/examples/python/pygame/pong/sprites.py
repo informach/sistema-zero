@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from settings import * 
 from random import choice, uniform
 
+# 🧩 Meus moldes
 class Paddle(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)

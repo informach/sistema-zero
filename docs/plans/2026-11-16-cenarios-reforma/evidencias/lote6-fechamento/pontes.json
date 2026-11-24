@@ -1,0 +1,331 @@
+{
+  "resultados": [
+    {
+      "id": "aventura",
+      "volume": {
+        "min": [-2.1762253046035767, 0, -6.17686653137207],
+        "max": [2.1762253046035767, 1.1060285568237305, 6.17686653137207]
+      },
+      "encaixe": {
+        "eixo": "z",
+        "pisoLocal": 0.5408732298448079,
+        "inicioLocal": -6.053329200744629,
+        "fimLocal": 6.0533292007446295,
+        "centroTransversalLocal": 0
+      },
+      "comprimento": 7.232089383687691,
+      "semPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": []
+      },
+      "comPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "percursos": [
+        {
+          "direcao": 1,
+          "chegou": true,
+          "posicao": [-14.698540847798814, 3.109369062007949, -0.004826608824132897],
+          "noChao": true
+        },
+        {
+          "direcao": -1,
+          "chegou": true,
+          "posicao": [-21.33108561471044, 3.1005590363669437, -0.0087879352318868],
+          "noChao": true
+        }
+      ],
+      "pilares": {
+        "espacamento": 2.41069646122923,
+        "largura": 0.25,
+        "afastamentoLateral": 0.3
+      },
+      "estadoElevado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "contatosConferidos": 16,
+      "erroDoContato": 2.134305234768874e-7,
+      "largura": 2.6,
+      "amostrasDeContato": 1076,
+      "erroMaximoDaTampa": 1.739220287788612e-7
+    },
+    {
+      "id": "reino",
+      "volume": {
+        "min": [-3.523571252822876, 0, -1.1299999952316284],
+        "max": [3.523571252822876, 1.5966342687606812, 1.1299999952316284]
+      },
+      "encaixe": {
+        "eixo": "x",
+        "pisoLocal": 0.31247824483944653,
+        "inicioLocal": -3.382628402709961,
+        "fimLocal": 3.382628402709961,
+        "centroTransversalLocal": 0
+      },
+      "comprimento": 7.783038835538336,
+      "semPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "comPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "percursos": [
+        {
+          "direcao": 1,
+          "chegou": true,
+          "posicao": [3.59647923063899, 3.0944109066975365, 7.439509441709001e-6],
+          "noChao": true
+        },
+        {
+          "direcao": -1,
+          "chegou": true,
+          "posicao": [-3.64663347963263, 3.0797740614799944, -9.397925456628165e-7],
+          "noChao": true
+        }
+      ],
+      "pilares": {
+        "espacamento": 2.5943462785127784,
+        "largura": 0.25
+      },
+      "estadoElevado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "contatosConferidos": 16,
+      "erroDoContato": 1.9073486345888568e-7,
+      "largura": 2.6,
+      "amostrasDeContato": 384,
+      "erroMaximoDaTampa": 1.583008364391958e-7
+    },
+    {
+      "id": "templo",
+      "volume": {
+        "min": [-6.53000020980835, 0, -1.4909175634384155],
+        "max": [6.53000020980835, 2.892253875732422, 1.4909175634384155]
+      },
+      "encaixe": {
+        "eixo": "x",
+        "pisoLocal": 0.3199999928474426,
+        "inicioLocal": -6.399400205612182,
+        "fimLocal": 6.399400205612183,
+        "centroTransversalLocal": 0
+      },
+      "comprimento": 8.1552868440438,
+      "semPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "comPilares": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "templo",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "percursos": [
+        {
+          "direcao": 1,
+          "chegou": true,
+          "posicao": [21.788406734465582, 3.1898014996016926, -0.000290310873758026],
+          "noChao": true
+        },
+        {
+          "direcao": -1,
+          "chegou": true,
+          "posicao": [14.149514883332738, 3.1504725827777715, -0.00015657183628334709],
+          "noChao": true
+        }
+      ],
+      "pilares": {
+        "espacamento": 2.7184289480146,
+        "largura": 0.25
+      },
+      "estadoElevado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "templo",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "contatosConferidos": 16,
+      "erroDoContato": 1.9073486345888568e-7,
+      "largura": 1.9,
+      "amostrasDeContato": 1732,
+      "erroMaximoDaTampa": 1.783058194426701e-7
+    }
+  ],
+  "estado": {
+    "carregando": 0,
+    "falhas": [],
+    "avisos": [
+      {
+        "id": "aventura",
+        "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+      },
+      {
+        "id": "reino",
+        "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+      },
+      {
+        "id": "templo",
+        "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+      }
+    ]
+  },
+  "ciclos": [
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "templo",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "geometries": 10,
+      "textures": 11,
+      "desenhos": 10,
+      "triangulos": 11023
+    },
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "templo",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "geometries": 10,
+      "textures": 11,
+      "desenhos": 10,
+      "triangulos": 11023
+    },
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": [
+          {
+            "id": "aventura",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "reino",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          },
+          {
+            "id": "templo",
+            "mensagem": "Há aberturas entre as tábuas sobre parte dos pilares. Confira as linhas de apoio."
+          }
+        ]
+      },
+      "geometries": 10,
+      "textures": 11,
+      "desenhos": 10,
+      "triangulos": 11023
+    }
+  ],
+  "medidas": {
+    "desenhos": 10,
+    "triangulos": 11023,
+    "geometries": 10,
+    "textures": 11
+  },
+  "erros": []
+}

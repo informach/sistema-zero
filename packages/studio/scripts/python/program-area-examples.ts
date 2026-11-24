@@ -2,7 +2,8 @@
  * Qualify every Classic gallery example with the real CPython/WASM analyzer:
  * bun scripts/python/program-area-examples.ts --node <node24> --distribution <dir>
  *   --distribution-sha256 <sha256> --runtime-release <release.json>
- * Checks all Python files, Program ownership, AST equality and saved-state reopening.
+ * Checks all Python files in the six project areas (each line in the area it is shown in, at most
+ * one area of each kind, nothing left in Rascunhos), AST equality and saved-state reopening.
  * Source and media payloads are never rewritten.
  */
 import assert from 'node:assert/strict'
@@ -13,14 +14,16 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import * as Blockly from 'blockly/core'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../../src/examples/pythonCatalog'
+import {
+  executablePythonAreaFrames,
+  orderedPythonAreaFrames,
+  pythonAreaKindOf,
+  pythonScratchRoots,
+} from '../../src/python/blocks/areaFrames'
+import { analyzePythonModuleAreas, pythonDisplayAreas } from '../../src/python/blocks/areas'
 import { loadPythonAuthoring } from '../../src/python/blocks/authoring'
 import { pythonVisualToWorkspace, pythonWorkspaceToVisual } from '../../src/python/blocks/blockly'
 import { pythonSemanticTree } from '../../src/python/blocks/nodes'
-import {
-  ensurePythonProgramArea,
-  pythonProgramArea,
-  pythonScratchRoots,
-} from '../../src/python/blocks/programArea'
 import { pythonASTToVisual, pythonVisualToAST } from '../../src/python/blocks/projection'
 import { readPythonWorkspaceState } from '../../src/python/blocks/readWorkspaceState'
 import { savePythonWorkspace } from '../../src/python/blocks/workspaceState'
@@ -92,13 +95,24 @@ try {
       const reopened = new Blockly.Workspace()
       try {
         const projection = pythonASTToVisual(parsed.tree, { codecs, officialModules })
-        const roots = pythonVisualToWorkspace(projection, workspace, codecs)
-        const areaIds = ensurePythonProgramArea(workspace, roots, path)
-        assert.equal(workspace.getTopBlocks(false).length, 1, `${entry.key}/${path}: roots`)
+        const areas = pythonDisplayAreas(
+          analyzePythonModuleAreas(
+            parsed.tree,
+            projection.body.map((value) => (value.kind === 'block' ? value.codecId : undefined)),
+          ).statements,
+        )
+        const areaIds = pythonVisualToWorkspace(projection, workspace, codecs, { areas })
+        assert.deepEqual(
+          areaIds,
+          executablePythonAreaFrames(workspace).map((frame) => frame.id),
+          `${entry.key}/${path}: areas`,
+        )
         assert.equal(pythonScratchRoots(workspace).length, 0, `${entry.key}/${path}: scratch`)
-        const area = pythonProgramArea(workspace)
-        assert.equal(area?.getFieldValue('FILE'), path)
-        assert.equal(area?.isDeletable(), false)
+        assert.deepEqual(
+          orderedPythonAreaFrames(workspace).map((frame) => pythonAreaKindOf(frame)),
+          [...new Set(areas)],
+          `${entry.key}/${path}: one area of each kind, in file order`,
+        )
         const expected = pythonSemanticTree(parsed.tree)
         const tree = (ws: Blockly.Workspace) =>
           pythonSemanticTree(
@@ -112,7 +126,11 @@ try {
           readPythonWorkspaceState(savePythonWorkspace(workspace, new Map()), codecs),
           reopened,
         )
-        assert.equal(pythonProgramArea(reopened)?.id, area?.id)
+        assert.deepEqual(
+          executablePythonAreaFrames(reopened).map((frame) => frame.id),
+          areaIds,
+          `${entry.key}/${path}: reopened areas`,
+        )
         assert.equal(pythonScratchRoots(reopened).length, 0)
         assert.deepEqual(tree(reopened), expected, `${entry.key}/${path}: reopening`)
         blocks += workspace.getAllBlocks(false).length

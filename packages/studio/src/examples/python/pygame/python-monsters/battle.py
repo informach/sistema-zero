@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from sprites import MonsterSprite, MonsterNameSprite, MonsterLevelSprite, MonsterStatsSprite, MonsterOutlineSprite, AttackSprite, TimedSprite
 from groups import BattleSprites
@@ -6,6 +7,7 @@ from support import draw_bar
 from timer import Timer
 from random import choice
 
+# 🧩 Meus moldes
 def flip_frames(frames):
     flipped = {}
     for state, state_frames in frames.items():

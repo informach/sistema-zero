@@ -1,0 +1,58 @@
+{
+  "source": "playwright.pinta-terrain.config.ts",
+  "stats": {
+    "startTime": "2026-11-19T16:49:32.181Z",
+    "duration": 85101.74200000001,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura",
+      "profile": "desktop",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 15490
+    },
+    {
+      "title": "Começar: criar o bosque pronto e pintar materiais sem preparar regras",
+      "profile": "desktop",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 4714
+    },
+    {
+      "title": "terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura",
+      "profile": "touch",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 10632
+    },
+    {
+      "title": "Começar: criar o bosque pronto e pintar materiais sem preparar regras",
+      "profile": "touch",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 4255
+    },
+    {
+      "title": "terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura",
+      "profile": "cpu-4x",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 32722
+    },
+    {
+      "title": "Começar: criar o bosque pronto e pintar materiais sem preparar regras",
+      "profile": "cpu-4x",
+      "status": "passed",
+      "retry": 0,
+      "durationMs": 12632
+    }
+  ],
+  "physicalDevices": 1,
+  "physicalPhones": false,
+  "childrenParticipants": false
+}

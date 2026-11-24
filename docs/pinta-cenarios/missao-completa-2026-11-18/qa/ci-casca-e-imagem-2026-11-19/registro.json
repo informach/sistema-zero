@@ -1,0 +1,13 @@
+{
+  "sourceSha": "cc1a416ae8d3b1a1c44afd9200e70966efe53c38",
+  "qualificationRun": 44592954163,
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-cc1a416ae:qualified-20261119",
+  "manifestDigest": "sha256:1411706838fd121e2897ac12c30f9438fbb3d0e9d517539ff84ee60ce387cf0e",
+  "imageId": "sha256:d370659ec561760fde97238ca4ba1e2d7371d041f950ba1e5d5f4ad43e063b55",
+  "profile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "8151d121eb0ef36103c2aa16717a30ba1d4f316da6f2e7369a6e70f529596d2c"
+  },
+  "workerDeployed": false,
+  "selectorChanged": false
+}

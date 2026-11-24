@@ -1,22 +1,15 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Tiro ao Prato'
 PRATOS_POR_RODADA = 20
 
-atirador = Actor('atirador', (400, 480))
-mira_esquerda = Actor('mira', (320, 350))
-mira_direita = Actor('mira', (480, 350))
-pratos = []
-lancados = 0
-acertos = 0
-pontos = 0
-espera_do_tiro = 0
-fim = False
 
-
+# 🧩 Meus moldes
 def nova_rodada():
     global lancados, acertos, pontos, espera_do_tiro, fim
     pratos.clear()
@@ -79,7 +72,36 @@ def atirar(lado):
             pontos = pontos + 1000
             sounds.quebrou.play()
 
+# ⚙️ Ao iniciar
+atirador = Actor('atirador', (400, 480))
+mira_esquerda = Actor('mira', (320, 350))
+mira_direita = Actor('mira', (480, 350))
+pratos = []
+lancados = 0
+acertos = 0
+pontos = 0
+espera_do_tiro = 0
+fim = False
 
+
+nova_rodada()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if fim:
+        if key == keys.SPACE:
+            nova_rodada()
+        return
+    if espera_do_tiro > 0:
+        return
+    if key == keys.LEFT:
+        atirar('esquerda')
+    elif key == keys.RIGHT:
+        atirar('direita')
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global espera_do_tiro, fim
     if fim:
@@ -133,20 +155,4 @@ def draw():
     if fim:
         screen.draw.text('Acertou ' + str(acertos) + ' de ' + str(PRATOS_POR_RODADA) + '!', center=(400, 250), fontsize=64, color='yellow', owidth=1, ocolor='black')
         screen.draw.text('Espaço joga de novo', center=(400, 310), fontsize=36, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if fim:
-        if key == keys.SPACE:
-            nova_rodada()
-        return
-    if espera_do_tiro > 0:
-        return
-    if key == keys.LEFT:
-        atirar('esquerda')
-    elif key == keys.RIGHT:
-        atirar('direita')
-
-
-nova_rodada()
 pgzrun.go()

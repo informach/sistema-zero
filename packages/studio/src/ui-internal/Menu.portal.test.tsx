@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it, spyOn } from 'bun:test'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { StudioPortalContainerProvider } from '../studio/portal-container'
 import { StudioSheetProvider } from '../studio/sheet-context'
@@ -9,6 +9,59 @@ afterEach(cleanup)
 const secoes = [{ id: 's', items: [{ id: 'salvar', label: 'Salvar', onSelect: () => {} }] }]
 
 describe('Menu: onde o painel abre', () => {
+  it('mantém o painel dentro da janela quando o editor está perto da borda inferior', () => {
+    const original = HTMLElement.prototype.getBoundingClientRect
+    const layout = spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(
+      function (this: HTMLElement) {
+        if (this.getAttribute('aria-label') === 'Mais' && this.tagName === 'BUTTON')
+          return new DOMRect(500, window.innerHeight - 120, 40, 40)
+        if (this.getAttribute('role') === 'menu')
+          return new DOMRect(0, Number.parseFloat(this.style.top || '0'), 280, 400)
+        return original.call(this)
+      },
+    )
+    try {
+      render(<Menu trigger="⋯" label="Mais" sections={secoes} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+      const bounds = screen.getByRole('menu', { name: 'Mais' }).getBoundingClientRect()
+      expect(bounds.top).toBeGreaterThanOrEqual(8)
+      expect(bounds.bottom).toBeLessThanOrEqual(window.innerHeight - 8)
+    } finally {
+      layout.mockRestore()
+    }
+  })
+
+  it('reposicionar por rolagem ou resize conserva o item que a criança está usando', () => {
+    render(
+      <Menu
+        trigger="⋯"
+        label="Mais"
+        sections={[
+          {
+            id: 's',
+            items: [
+              { id: 'primeiro', label: 'Primeiro', onSelect: () => {} },
+              { id: 'ultimo', label: 'Último', onSelect: () => {} },
+            ],
+          },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+    const first = screen.getByRole('menuitem', { name: 'Primeiro' })
+    const last = screen.getByRole('menuitem', { name: 'Último' })
+    expect(document.activeElement === first).toBe(true)
+    fireEvent.keyDown(first, { key: 'End' })
+    expect(document.activeElement === last).toBe(true)
+    fireEvent.scroll(screen.getByRole('menu', { name: 'Mais' }))
+    expect(document.activeElement === last).toBe(true)
+    fireEvent(window, new Event('resize'))
+    expect(document.activeElement === last).toBe(true)
+    fireEvent.keyDown(last, { key: 'Escape' })
+    fireEvent.click(screen.getByRole('button', { name: 'Mais' }))
+    expect(document.activeElement === screen.getByRole('menuitem', { name: 'Primeiro' })).toBe(true)
+  })
+
   it('abre no document.body quando o host não escolheu outro contêiner', () => {
     render(<Menu trigger="⋯" label="Mais" sections={secoes} />)
     fireEvent.click(screen.getByRole('button', { name: 'Mais' }))

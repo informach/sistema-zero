@@ -4,9 +4,21 @@ import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import { showcaseErrorMessage } from '@sistemazero/member-shell/lib/showcase-failure'
 import { studioDescriptionInput } from '@sistemazero/member-shell/lib/studio-description-input'
-import { createStudioPublicationAdapter } from '@sistemazero/member-shell/lib/studio-publication-adapter'
-import type { StudioShareAdapter } from '@sistemazero/studio'
+import {
+  createStudioPublicationAdapter,
+  createStudioShareStatus,
+} from '@sistemazero/member-shell/lib/studio-publication-adapter'
+import type { EditableStudioProject, StudioShareAdapter } from '@sistemazero/studio'
+import { projectPublicationId } from '@sistemazero/studio/project-publication'
 import { useMemo } from 'react'
+
+/** Formato de id que o hub aceita como identidade do projeto. */
+const PROJECT_ID = /^[A-Za-z0-9_-]{1,128}$/
+/** O link local de uma publicação antiga (Pro/Python) para o hub adotar o post de antes. */
+function adoptPlayId(project: EditableStudioProject): { adoptPlayId?: string } {
+  const playId = projectPublicationId(project)
+  return playId ? { adoptPlayId: playId } : {}
+}
 
 /** The same publication contract for the classic and Pro Kids hosts. */
 export function useStudioShare(
@@ -17,6 +29,17 @@ export function useStudioShare(
     () => ({
       proVerifiedCover: true,
       publication: createStudioPublicationAdapter(),
+      // Republicar o mesmo projeto ATUALIZA o post; "Publicar como jogo novo" fica escondido.
+      status: createStudioShareStatus((project) =>
+        PROJECT_ID.test(project.id)
+          ? {
+              kind: 'free',
+              projectId: project.id,
+              ...adoptPlayId(project as EditableStudioProject),
+            }
+          : null,
+      ),
+      allowNewPost: true,
       // Desafio do mês: liga o checkbox no ShareDialog (posse checada na página).
       ...(challenge ? { challenge } : {}),
       async generateDescription({ project, title }) {
@@ -49,8 +72,19 @@ export function useStudioShare(
           return '' // fail-soft: a criança escreve do zero
         }
       },
-      async publish({ project, coverDataUrl, title, description, challengeKey, requestId }) {
+      async publish({
+        project,
+        coverDataUrl,
+        title,
+        description,
+        challengeKey,
+        requestId,
+        asNewPost,
+      }) {
         const form = new FormData()
+        if (asNewPost) form.set('asNewPost', '1')
+        const adopt = adoptPlayId(project).adoptPlayId
+        if (adopt) form.set('adoptPlayId', adopt)
         form.set('title', title)
         form.set('description', description)
         form.set('clientIdempotencyKey', requestId ?? crypto.randomUUID())
@@ -70,12 +104,14 @@ export function useStudioShare(
           muralUrl?: string
           playUrl?: string
           publicationId?: string
+          updated?: boolean
         } | null
         if (!res.ok) throw new Error(showcaseErrorMessage(body))
         return {
           muralUrl: body?.muralUrl,
           playUrl: body?.playUrl,
           publicationId: body?.publicationId,
+          ...(body?.updated ? { updated: true } : {}),
         }
       },
     }),

@@ -1,0 +1,792 @@
+[
+  {
+    "id": "capa",
+    "capa": true,
+    "linha1": "O Jardim",
+    "linha2": "Secreto",
+    "frase": "Todos os passos para fazer a flor do seu jardim abrir, em 2D e em 3D.",
+    "fraseBaixo": "Do primeiro passinho à flor aberta."
+  },
+  {
+    "id": "p1",
+    "kicker": "Passo a passo do projeto",
+    "title": "O Jardim Secreto",
+    "subtitle": "No jardim tem uma flor fechada. Você vai programar o personagem, o regador e a flor, primeiro no jogo 2D e depois no jardim em 3D.",
+    "items": [
+      {
+        "kind": "faixa",
+        "images": [
+          {
+            "image": "jogo-2d",
+            "caption": "Aula 1 · Jogo 2D"
+          },
+          {
+            "image": "jogo-3d",
+            "caption": "Aula 2 · Jogo 3D"
+          }
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "Para a flor abrir, o personagem precisa pegar o regador e depois chegar até a flor. O seu jogo vai guardar que o regador foi pego e decidir o que a flor responde."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "livro",
+        "title": "Use quando precisar",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser."
+      },
+      {
+        "kind": "index",
+        "title": "O que você vai fazer",
+        "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+        "days": [
+          {
+            "kicker": "Aula 1 · Jogo 2D",
+            "title": "Faça o jardim florescer em 2D",
+            "text": "Você faz o personagem andar, ensina o jogo a guardar o regador, monta a pergunta da flor e muda o lugar do regador.",
+            "pages": "Páginas {{pagina:movimento}} a {{pagina:posicao-envio}}"
+          },
+          {
+            "kicker": "Aula 2 · Jogo 3D",
+            "title": "Leve sua missão para o 3D",
+            "text": "As mesmas regras no jardim em três dimensões. A flor abre com uma animação, e uma vez só.",
+            "pages": "Páginas {{pagina:movimento-3d}} a {{pagina:revisao}}"
+          }
+        ],
+        "extras": [
+          {
+            "icon": "brilho",
+            "title": "A pergunta da flor",
+            "text": "Aula 1, página {{pagina:decisao}}; Aula 2, página {{pagina:decisao-3d}}"
+          },
+          {
+            "icon": "lista",
+            "title": "Enviar o projeto",
+            "text": "Aula 1, página {{pagina:posicao-envio}}; Aula 2, página {{pagina:posicao-3d-envio}}"
+          },
+          {
+            "icon": "medalha",
+            "title": "Pense nos seus testes",
+            "text": "Página {{pagina:revisao}}"
+          },
+          {
+            "icon": "ajuda",
+            "title": "Se precisar de ajuda",
+            "text": "Página {{pagina:revisao}}"
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "setas",
+        "title": "Antes de montar",
+        "text": "No começo de cada aula, jogue a versão pronta. Na Aula 1, segure uma das setas do canto de baixo do jogo; no computador, você também pode clicar dentro do jogo e usar as setas do teclado. Na Aula 2, clique dentro do jogo e segure uma seta do teclado; as letras W, A, S e D também funcionam. A tecla R começa outra partida. Quando terminar, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "movimento",
+    "kicker": "Aula 1 · Parte 3 · Construção",
+    "title": "As setas na tela",
+    "subtitle": "Clique em Rodar de novo e segure uma seta: o personagem não sai do lugar, e não aparece nenhuma seta no canto de baixo do jogo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Lembra da Chave do Farol? Em cada quadro, o jogo olhava a seta e, com ela apertada, o personagem dava um passinho. Faltam duas coisas no seu jogo: as setas na tela e o passinho do personagem. Uma de cada vez!"
+      },
+      {
+        "kind": "step",
+        "title": "1. Ponha as setas",
+        "text": "As setas só precisam aparecer uma vez, quando o jogo começa. Por isso, o bloco delas vai na área <b>Ao iniciar</b>, que tem o que o jogo prepara quando a partida começa. Encontre o fim dela, logo abaixo do bloco que cria a variável aviso. Se esse lugar não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.<br/><b>Jogo 2D &gt; Controles &gt; Teclado, ações e toque.</b> Pegue <b>Ativar controles clássicos</b> e solte logo abaixo do bloco que cria a variável aviso."
+      },
+      {
+        "kind": "step",
+        "title": "2. Só as quatro direções",
+        "text": "O bloco chega com <b>automáticos no celular</b>. Clique em automáticos no celular e escolha <b>só as quatro direções</b>. É este bloco que faz as setas aparecerem no canto de baixo do jogo, no computador, no celular e no tablet."
+      },
+      {
+        "kind": "drawing",
+        "name": "setas-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "movimento-passinho",
+    "kicker": "Aula 1 · Parte 3 · Construção",
+    "title": "O passinho do personagem",
+    "subtitle": "Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. Ponha o passinho",
+        "text": "Tudo o que fica dentro de <b>A cada quadro do jogo</b> acontece de novo, em todo quadro. Esse bloco fica na área <b>Enquanto estiver rodando</b>. Dentro dele, deixe à vista o bloco <b>Desenhar o cenário</b>: o passinho vai logo abaixo dele.<br/><b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b> Pegue <b>Mover sprite em 4 direções com setas</b> e solte logo abaixo de Desenhar o cenário. Ele chega com o nome <b>heroi</b>: clique em heroi e escolha <b>personagem</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. Velocidade 5",
+        "text": "O número no fim do bloco é a velocidade: quanto maior, mais rápido o personagem anda. O jardim é grande, por isso a velocidade vai ser 5. Clique no <b>3</b> e troque por <b>5</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "passinho-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e segure a seta da direita da tela: o personagem anda enquanto você segura a seta e para quando você solta. Faça o mesmo com as outras setas, da tela ou do teclado.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "limite",
+    "kicker": "Aula 1 · Parte 4 · Construção",
+    "title": "Fique dentro do jardim",
+    "subtitle": "Clique em Rodar de novo e segure a seta da direita: o personagem passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Lembra da Chave do Farol? Em cada quadro, primeiro o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o <b>limite da tela</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Ponha o limite",
+        "text": "O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda dentro de <b>A cada quadro do jogo</b>. Deixe esse lugar à vista.<br/><b>Jogo 2D &gt; Movimento &gt; Bordas e rebatidas.</b> Pegue <b>Manter o sprite dentro da tela</b> e solte logo abaixo do bloco de movimento. Esse bloco também chega com <b>heroi</b>: clique em heroi e escolha <b>personagem</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "limite-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e segure cada seta até o personagem chegar à beirada daquele lado: ele para em cada beirada, continua inteiro na tela e consegue voltar.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "coleta",
+    "kicker": "Aula 1 · Parte 5 · Construção",
+    "title": "Crie temRegador",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até o regador: ele passa por cima, e o regador continua no chão, porque o encontro ainda não tem nenhuma reação.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Lembra da Chave do Farol? No encontro com a chave, a chave saía do chão, e a variável temChave guardava que ela foi pega. <b>Sumir e lembrar são coisas diferentes</b>: o regador sai da tela, mas o jogo também precisa guardar que ele foi pego, para a flor saber disso depois."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie temRegador",
+        "text": "A variável precisa existir desde o começo da partida. Por isso, ela vai na área <b>Ao iniciar</b>. Encontre o fim dela, logo abaixo de Ativar controles clássicos.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo de Ativar controles clássicos. Ele chega com o nome <b>contador</b>: clique em contador e escreva <b>temRegador</b>, tudo junto e com o R maiúsculo."
+      },
+      {
+        "kind": "step",
+        "title": "2. Comece com falso",
+        "text": "O valor chega com o número 0, mas temRegador guarda sim ou não: verdadeiro ou falso.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>verdadeiro</b> e solte em cima do 0. Depois clique em verdadeiro e escolha <b>falso</b>, porque, quando a partida começa, o personagem ainda não pegou o regador."
+      },
+      {
+        "kind": "drawing",
+        "name": "variavel-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "coleta-encontro",
+    "kicker": "Aula 1 · Parte 5 · Construção",
+    "title": "O encontro com o regador",
+    "subtitle": "Os encontros ficam na área Quando acontecer. A primeira reação é o regador sair do chão.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. Crie o encontro com o regador",
+        "text": "Em <b>Quando acontecer</b>, o último é o evento da tecla R, que começa outra partida. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro. Ele chega com <b>jogador</b> e <b>inimigo</b>: clique em jogador e escolha <b>personagem</b>; clique em inimigo e escolha <b>regador</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. O regador sai do chão",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>, dentro do encontro novo.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Destruir o sprite</b> e solte ao lado de fazer. Ele chega com o nome <b>resposta</b>: clique em resposta e escolha <b>regador</b>. É este bloco que tira o regador do chão."
+      },
+      {
+        "kind": "drawing",
+        "name": "encontro-2d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "coleta-guardar",
+    "kicker": "Aula 1 · Parte 5 · Construção",
+    "title": "Guarde e avise",
+    "subtitle": "O jogo guarda que o regador foi pego, e o aviso conta o que aconteceu. Depois, teste e verifique.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "5. temRegador vira verdadeiro",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte logo abaixo de Destruir o sprite regador. Ele chega com <b>contador</b>: clique em contador e escolha <b>temRegador</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue outro <b>verdadeiro</b>, solte em cima do 1 e deixe <b>verdadeiro</b>, porque o personagem acabou de pegar o regador."
+      },
+      {
+        "kind": "step",
+        "title": "6. Mude o aviso",
+        "text": "Logo abaixo, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. O valor vem com um número, mas o aviso é uma mensagem.<br/><b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do número. Clique em Olá, apague e escreva <b>Você pegou o regador! Agora vá até a flor.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "coleta-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até o regador: o regador sai do chão, e o aviso muda para a sua mensagem. A flor ainda não abre: ela aprende a usar temRegador na próxima parte.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "decisao",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "A flor faz uma pergunta",
+    "subtitle": "Clique em Rodar de novo, pegue o regador e vá até a flor: nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega à flor.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Lembra da porta do farol, na Chave do Farol? Ela perguntava se o personagem estava com a chave. A flor vai perguntar: <b>temRegador</b> é verdadeiro? Quem faz essa pergunta no seu jogo é o bloco <b>Se</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o encontro com a flor",
+        "text": "Em <b>Quando acontecer</b>, o último é o encontro com o regador. O encontro novo vai logo abaixo dele, fora do fazer dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte ali. Não coloque um encontro dentro do outro. Clique em jogador e escolha <b>personagem</b>; clique em inimigo e escolha <b>flor</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, dentro do encontro com a flor.<br/>O Se chega com uma pergunta pronta, <b>x maior que 0</b>. Não é isso que a flor precisa perguntar: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+      },
+      {
+        "kind": "step",
+        "title": "3. Pergunte por temRegador",
+        "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se. Ele chega com <b>x</b>: clique no x e escolha <b>temRegador</b>. Agora o Se pergunta: o personagem pegou o regador?"
+      },
+      {
+        "kind": "drawing",
+        "name": "pergunta-2d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "as respostas vêm nas próximas páginas"
+      }
+    ]
+  },
+  {
+    "id": "decisao-sim",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "A resposta do sim",
+    "subtitle": "A resposta do sim fica no espaço do então: a flor abre, e o aviso conta.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Abra o senão",
+        "text": "A resposta do não vai ficar no espaço do <b>senão</b>, mas o Se chega sem ele. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha. Clique no <b>segundo</b> sinal de mais. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "5. A flor abre",
+        "text": "Dentro do <b>então</b>: <b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do então. Ele chega com <b>heroi</b> duas vezes: no primeiro, escolha <b>flor</b>; no outro, a imagem <b>flor-aberta</b>. É este bloco que troca a flor fechada pela flor aberta."
+      },
+      {
+        "kind": "step",
+        "title": "6. Avise que a flor abriu",
+        "text": "Logo abaixo, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>A flor abriu! Você fez o jardim florescer.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "sim-2d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "a resposta do não vem na próxima página"
+      }
+    ]
+  },
+  {
+    "id": "decisao-nao",
+    "kicker": "Aula 1 · Parte 6 · Construção",
+    "title": "A resposta do não",
+    "subtitle": "Sem o regador, a flor continua fechada, e o aviso pede o regador. Depois, teste os dois casos e verifique.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "7. O aviso que pede o regador",
+        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>Busque o regador primeiro. A flor espera por você.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "decisao-2d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto à flor, sem pegar o regador: a flor continua fechada, e o aviso pede o regador. É que temRegador ainda é falso, e por isso o jogo fez o que está no senão. Agora toque na tecla R, pegue o regador e vá até a flor: a flor abre, e o aviso conta que deu certo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "posicao",
+    "kicker": "Aula 1 · Parte 7 · Construção",
+    "title": "Um lugar novo para o regador",
+    "subtitle": "Lembra da Chave do Farol? Na tela do 2D, o x leva um objeto de um lado para o outro, e o y leva para cima e para baixo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O lugar do regador fica na área <b>Ao iniciar</b>, no bloco que cria o sprite regador. É este bloco que coloca o regador no jardim. Repare nos dois primeiros números dele: <b>x 300</b> e <b>y 190</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Mude só o x",
+        "text": "Encontre o bloco <b>Criar sprite regador</b>. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. Para levar o regador um pouco para a direita, mude só o x: clique no <b>300</b> e troque por <b>390</b>.<br/>Clique em <b>Rodar de novo</b> e observe o regador: ele foi um pouco para a direita e continuou na mesma altura, porque você não mexeu no y."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ou escolha o seu lugar",
+        "text": "No seu jogo, você pode escolher outro número. Deixe o regador longe do personagem no começo e fora do caminho reto até a flor, para conseguir testar a flor sem ele."
+      },
+      {
+        "kind": "drawing",
+        "name": "posicao-2d",
+        "title": "Confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "posicao-envio",
+    "kicker": "Aula 1 · Parte 7 · Teste e envio",
+    "title": "Teste dois casos e envie",
+    "subtitle": "A flor só abre depois que o personagem pega o regador.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste dois casos",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto à flor, sem pegar o regador. Depois toque na tecla R, pegue o regador no lugar novo e vá até a flor."
+      },
+      {
+        "kind": "casos",
+        "cards": [
+          {
+            "title": "Direto à flor",
+            "caso": "sem-regador",
+            "text": "A flor continua fechada, e o aviso pede o regador."
+          },
+          {
+            "title": "Com o regador",
+            "caso": "com-regador",
+            "text": "A flor abre, e o aviso conta que deu certo."
+          }
+        ]
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco que cria o sprite regador está com x 390, ou com o número que você escolheu, e y 190. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Pronto, você programou o seu jardim em duas dimensões: agora a flor só abre depois que o personagem pega o regador! Na próxima aula, o jardim ganha profundidade, em três dimensões."
+      }
+    ]
+  },
+  {
+    "id": "movimento-3d",
+    "kicker": "Aula 2 · Parte 2 · Construção",
+    "title": "Caminhe pelo jardim 3D",
+    "subtitle": "Clique em Rodar de novo e segure uma seta do teclado: o personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, o personagem do jardim 2D aprendeu a andar. É a mesma ideia no 3D: em cada quadro, o jogo olha as setas e leva o personagem para o lado da seta apertada. Por isso, o bloco novo vai dentro de <b>A cada quadro da cena</b>, na área <b>Enquanto estiver rodando</b>."
+      },
+      {
+        "kind": "step",
+        "title": "1. Ponha o movimento",
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro de A cada quadro da cena já tem o bloco <b>Escrever na tela</b>. O bloco novo vai no começo, no espaço ao lado da palavra <b>fazer</b>.<br/><b>Jogo 3D &gt; Movimento &gt; Andar com o teclado.</b> Pegue <b>Fazer personagem andar com as setas</b> e solte ao lado de fazer. O Escrever na tela desce e fica logo abaixo do bloco novo."
+      },
+      {
+        "kind": "step",
+        "title": "2. Velocidade 4",
+        "text": "O nome no bloco já é <b>personagem</b>, o objeto que vai andar. O número é a velocidade: quanto maior, mais rápido o personagem anda. Clique no <b>3</b> e troque por <b>4</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "movimento-3d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b>, segure a seta da direita por um tempo e solte: o personagem anda enquanto você segura a seta e para quando você solta. Andando, ele mexe as pernas e os braços. Faça o mesmo com as outras três setas.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "coleta-3d",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "Crie temRegador no jardim 3D",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até o regador: ele passa pelo regador, e o regador continua ali, porque o encontro ainda não tem nenhuma reação.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, o seu jogo 2D aprendeu a guardar o regador. Agora o jardim 3D vai aprender a mesma coisa. Como no jogo 2D, a variável <b>temRegador</b> precisa existir desde o começo da partida."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie temRegador",
+        "text": "Encontre a área <b>Ao iniciar</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Lá dentro, deixe à vista o bloco que cria a variável aviso. O bloco novo vai logo abaixo dele.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo do bloco que cria a variável aviso. Clique em contador e escreva <b>temRegador</b>, tudo junto e com o R maiúsculo."
+      },
+      {
+        "kind": "step",
+        "title": "2. Comece com falso",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>verdadeiro</b> e solte em cima do 0. Depois clique em verdadeiro e escolha <b>falso</b>, porque a partida começa sem o regador."
+      },
+      {
+        "kind": "drawing",
+        "name": "variavel-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "coleta-3d-encontro",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "O regador some",
+    "subtitle": "No 3D, o encontro confere o lugar no chão e também a altura.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. Crie o encontro com o regador",
+        "text": "Em <b>Quando acontecer</b> já tem o evento da tecla R. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro. Tem chave no jardim? Não tem: o bloco é que chega com <b>chave</b> no segundo nome. Clique em chave e escolha <b>regador</b>."
+      },
+      {
+        "kind": "step",
+        "title": "4. Esconda o regador",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Aparência.</b> Pegue <b>Mostrar o objeto</b> e solte ao lado de fazer. Ele chega com <b>Mostrar</b>: clique em Mostrar e escolha <b>Esconder</b>. Depois clique em <b>objeto</b> e escolha <b>regador</b>. É este bloco que tira o regador do jardim."
+      },
+      {
+        "kind": "drawing",
+        "name": "encontro-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "coleta-3d-guardar",
+    "kicker": "Aula 2 · Parte 3 · Construção",
+    "title": "Guarde e avise no jardim 3D",
+    "subtitle": "Os mesmos blocos da Aula 1: temRegador vira verdadeiro, e o aviso muda. Depois, teste e verifique.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "5. temRegador vira verdadeiro",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte logo abaixo de Esconder o objeto regador. Clique em contador e escolha <b>temRegador</b>. Em cima do 1, solte <b>verdadeiro</b>, de <b>Programação &gt; Lógica &amp; Se</b>, e deixe verdadeiro."
+      },
+      {
+        "kind": "step",
+        "title": "6. Mude o aviso",
+        "text": "Logo abaixo, outro <b>Alterar variável para</b> com <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>Você pegou o regador! Agora vá até a flor.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "coleta-3d",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até o regador: o regador some, e o aviso lá em cima muda para a sua mensagem.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "A pergunta da flor no 3D",
+    "subtitle": "Clique em Rodar de novo, pegue o regador e vá até a flor: nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega à flor.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na Aula 1, você montou a pergunta da flor no jogo 2D: o personagem pegou o regador? Agora você monta essa mesma pergunta no jardim 3D."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o encontro com a flor",
+        "text": "Em <b>Quando acontecer</b>, o último é o encontro com o regador. O encontro novo vai logo abaixo dele, fora do fazer dele.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte ali. Não coloque um encontro dentro do outro. Clique em chave e escolha <b>flor</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ponha o Se",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte ao lado de <b>fazer</b>, dentro do encontro com a flor. Segure a pergunta pronta, <b>x maior que 0</b>, pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+      },
+      {
+        "kind": "step",
+        "title": "3. Pergunte por temRegador",
+        "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se. Clique no <b>x</b> e escolha <b>temRegador</b>. Pronto: o Se pergunta o mesmo que no jogo 2D."
+      },
+      {
+        "kind": "drawing",
+        "name": "pergunta-3d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "as respostas vêm nas próximas páginas"
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-sim",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "A flor floresce",
+    "subtitle": "No 3D, a flor abre com uma animação que já vem no modelo dela, chamada florescer.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Abra o senão",
+        "text": "A resposta do sim fica no espaço do <b>então</b>, e a resposta do não fica no espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o que fica antes da palavra senão, no fim da linha. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "5. Toque a animação florescer",
+        "text": "Dentro do <b>então</b>: <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do então. Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>. Primeiro diga quem vai tocar a animação: clique em heroi e escolha <b>flor</b>. Depois clique em Andar e escolha <b>florescer</b>. Por último, clique em repetindo e escolha <b>uma vez</b>: as pétalas abrem e ficam abertas no fim."
+      },
+      {
+        "kind": "step",
+        "title": "6. Avise que a flor abriu",
+        "text": "Logo abaixo, ainda dentro do então, um <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>: <b>A flor abriu! Você fez o jardim florescer.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "sim-3d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "a resposta do não vem na próxima página"
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-nao",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "A resposta do não",
+    "subtitle": "Sem o regador, a flor continua fechada, e o aviso pede o regador.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "7. O aviso que pede o regador",
+        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>Busque o regador primeiro. A flor espera por você.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "decisao-3d",
+        "title": "Até aqui, confira se ficou assim"
+      },
+      {
+        "kind": "step",
+        "title": "Teste e volte até a flor",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto à flor, sem pegar o regador: a flor continua fechada, e o aviso pede o regador. Toque na tecla R, pegue o regador e vá até a flor: a flor abre as pétalas, e o aviso conta que deu certo.<br/>Agora ande um pouco para a esquerda e volte até a flor. Tá vendo? A flor fechou e abriu tudo de novo, porque cada vez que o personagem encosta na flor, o encontro acontece de novo e manda florescer outra vez."
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-ganhou",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "A flor abre uma vez só",
+    "subtitle": "Lembra do farol da Ilha? Ele acendia de novo a cada volta, até você ensinar o farol a acender uma vez só.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "A flor é o fim deste jogo, como o farol era o fim daquele: depois que ela abre, a partida já foi ganha. Para o jogo lembrar disso, você vai usar a variável <b>ganhou</b>. Ela começa em falso e vira verdadeiro quando a flor abre."
+      },
+      {
+        "kind": "step",
+        "title": "8. Crie ganhou",
+        "text": "Em <b>Ao iniciar</b>, deixe à vista o bloco que cria temRegador. <b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo dele. Clique em contador e escreva <b>ganhou</b>. Em cima do 0, solte <b>verdadeiro</b>, de <b>Programação &gt; Lógica &amp; Se</b>. Clique nele e escolha <b>falso</b>, porque a partida começa sem ser ganha."
+      },
+      {
+        "kind": "drawing",
+        "name": "ganhou-3d",
+        "title": "Até aqui, confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-se-novo",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "Uma pergunta antes de tudo",
+    "subtitle": "Quando a flor abre, ganhou vira verdadeiro. E o encontro vai perguntar primeiro: a partida ainda não foi ganha?",
+    "items": [
+      {
+        "kind": "step",
+        "title": "9. ganhou vira verdadeiro",
+        "text": "Volte ao encontro com a flor e deixe à vista o lugar logo abaixo de Tocar a animação. Solte ali outro <b>Alterar variável para</b> e escolha <b>ganhou</b>. Em cima do número, solte outro <b>verdadeiro</b> e deixe verdadeiro, porque a flor acabou de abrir."
+      },
+      {
+        "kind": "step",
+        "title": "10. Ponha o Se novo",
+        "text": "Deixe à vista o encontro com a flor. <b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, em cima do Se que já está lá. O Se novo entra no lugar, e o Se do regador desce e fica logo abaixo dele. O Se novo chega com a pergunta <b>x maior que 0</b>: segure pelo sinal de maior e arraste até a lixeira."
+      },
+      {
+        "kind": "step",
+        "title": "11. Pergunte não ganhou",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco <b>não</b> e solte no lugar vazio ao lado do Se novo. O <b>não</b> também chega com uma pergunta pronta: segure essa pergunta pelo sinal de maior e arraste até a lixeira. <b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b>, solte no espaço do não, clique no x e escolha <b>ganhou</b>. Agora o Se novo pergunta: a partida ainda não foi ganha?"
+      },
+      {
+        "kind": "drawing",
+        "name": "se-novo-3d",
+        "title": "Até aqui, confira se ficou assim",
+        "blank": "o Se do regador entra aqui no próximo passo"
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-uma-vez",
+    "kicker": "Aula 2 · Parte 4 · Construção",
+    "title": "Um Se dentro do outro",
+    "subtitle": "O encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere o regador.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "12. O Se do regador vai para dentro",
+        "text": "Segure o Se do regador pela palavra <b>Se</b> e arraste até o espaço do <b>então</b> do Se novo. Tudo o que está dentro dele vai junto."
+      },
+      {
+        "kind": "drawing",
+        "name": "uma-vez-3d",
+        "title": "Confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "decisao-3d-teste",
+    "kicker": "Aula 2 · Parte 4 · Teste",
+    "title": "Teste a flor de novo",
+    "subtitle": "Com o regador, a flor abre uma vez só e continua aberta.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste três casos",
+        "text": "Clique em <b>Rodar de novo</b>, pegue o regador e vá até a flor: ela abre. Depois ande um pouco para a esquerda e volte: a flor continua aberta, sem florescer de novo. Toque na tecla R e vá até a flor sem o regador: ela continua pedindo o regador."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Volte aos blocos e confira se ficou assim: dentro do encontro com a flor está o Se com não ganhou, e dentro do então dele está o Se do regador. No então do Se do regador estão a animação florescer, ganhou verdadeiro e o aviso de que a flor abriu, e no senão está o aviso que pede o regador. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "title": "Teste e verifique",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "posicao-3d",
+    "kicker": "Aula 2 · Parte 5 · Construção",
+    "title": "Um novo lugar no chão",
+    "subtitle": "Lembra da Ilha do Farol? No 3D, o x e o z levam um objeto pelo chão, e o y muda a altura dele.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O lugar do regador fica na área <b>Ao iniciar</b>, no bloco <b>Colocar o objeto regador</b>. Repare nos três números dele: o x é <b>−4</b>, o y é a altura, e o z é <b>−2</b>. A altura já vem certa para o personagem alcançar o regador. Por isso, deixe o y como está."
+      },
+      {
+        "kind": "step",
+        "title": "1. Mude só o x",
+        "text": "Encontre o bloco Colocar o objeto regador. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer. Para levar o regador um pouco para a direita, clique no <b>−4</b> e troque por <b>−2</b>, começando pelo sinal de menos.<br/>Clique em <b>Rodar de novo</b> e observe o regador: ele foi um pouco para a direita e continuou na mesma altura, porque você não mexeu no y."
+      },
+      {
+        "kind": "step",
+        "title": "2. Ou escolha o seu lugar",
+        "text": "No seu jogo, você pode escolher outro lugar no chão. Deixe o regador longe do personagem no começo e fora do caminho reto até a flor, para conseguir testar a flor sem ele."
+      },
+      {
+        "kind": "drawing",
+        "name": "posicao-3d",
+        "title": "Confira se ficou assim"
+      }
+    ]
+  },
+  {
+    "id": "posicao-3d-envio",
+    "kicker": "Aula 2 · Parte 5 · Teste e envio",
+    "title": "Teste dois casos e envie",
+    "subtitle": "No jardim 3D, a flor também só abre depois que o personagem pega o regador.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste dois casos",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto à flor, sem pegar o regador: a flor continua fechada e pede o regador. Agora toque na tecla R, pegue o regador no lugar novo e vá até a flor: a flor abre, e o aviso conta que deu certo."
+      },
+      {
+        "kind": "cena",
+        "image": "jogo-3d",
+        "caption": "O regador no lugar novo, em x −2, e a flor aberta depois do teste com o regador."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco Colocar o objeto regador está com x −2, ou com o lugar que você escolheu, e o y continua o mesmo. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "title": "Verificar e enviar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Pronto, você levou O Jardim Secreto para as três dimensões: a flor só abre com o regador, e uma vez só! Depois do envio vem a revisão da aula."
+      }
+    ]
+  },
+  {
+    "id": "revisao",
+    "kicker": "Aula 2 · Parte 6 · Revisão",
+    "title": "Pense nos seus testes",
+    "subtitle": "Depois do envio, quatro perguntas sobre o seu jardim fecham a aula e a missão.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, depois do envio",
+        "text": "Aqui não tem vídeo. Três perguntas mostram uma cena do jardim, e uma é para pensar nos seus testes."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha e veja acontecendo",
+        "text": "Em cada pergunta, escolha uma resposta e clique em <b>Ver o que acontece</b> ou, na pergunta sem cena, em <b>Responder</b>. Observe a cena e leia a explicação. Se errar, clique em <b>Tentar de novo</b>. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "icon": "medalha",
+        "title": "Comemore sua criação",
+        "text": "Parabéns! Você programou O Jardim Secreto no jogo 2D e no jardim em 3D: o personagem anda, pega o regador, e a flor só abre depois disso. Jogue de novo e mostre para a sua família."
+      },
+      {
+        "kind": "step",
+        "title": "Se travar em alguma parte",
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página daquela parte neste Passo a passo do projeto: no alto de cada página estão a aula e a parte."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "icon": "ajuda",
+        "title": "Preciso de ajuda",
+        "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou na Aula 2. Peguei o regador, mas a flor não abre. Conferi o Se com temRegador.</b> Isso ajuda a equipe a entender em que ponto você está."
+      },
+      {
+        "kind": "step",
+        "title": "Para guardar e para enviar",
+        "text": "O Estúdio guarda o projeto sozinho enquanto você monta. <b>Verificar projeto</b> confere os blocos pedidos, e <b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe. Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+      }
+    ]
+  }
+]

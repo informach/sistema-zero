@@ -12,8 +12,8 @@
     },
     "codecId": "sz_py_integer",
     "field": "NUMBER",
-    "before": "320",
-    "after": "330"
+    "before": "384",
+    "after": "394"
   },
   {
     "label": "escala",

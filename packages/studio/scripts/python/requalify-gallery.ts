@@ -8,8 +8,14 @@ import { RAYLIB_GAMES } from '../../src/examples/python/raylibGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from '../../src/examples/python/visualReferenceGames.manifest'
 import { orderPythonAuthoringCodecs } from '../../src/python/blocks/authoring'
 import type { PythonBlockCodec } from '../../src/python/blocks/contract'
-import { PYTHON_PGZERO_CODECS } from '../../src/python/extensions/pgzero/catalog'
-import { PYTHON_RAYLIB_2D_CODECS } from '../../src/python/extensions/raylib2d/catalog'
+import {
+  PYTHON_PGZERO_CODECS,
+  PYTHON_PGZERO_PINTA_SCENE_CODECS,
+} from '../../src/python/extensions/pgzero/catalog'
+import {
+  PYTHON_RAYLIB_2D_CODECS,
+  PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS,
+} from '../../src/python/extensions/raylib2d/catalog'
 import { PYTHON_RAYLIB_3D_CODECS } from '../../src/python/extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from '../../src/python/extensions/turtle/catalog'
 import { writeGeneratedSource } from '../writeGeneratedSource'
@@ -36,6 +42,9 @@ const distribution = option('distribution')
 const distributionSha256 = option('distribution-sha256')
 const nodeExecutable = option('node')
 const selected = args.includes('--game') ? option('game') : undefined
+const extensions = args.includes('--extensions')
+  ? new Set(option('extensions').split(','))
+  : undefined
 interface GalleryGame {
   key: string
   receipt: string
@@ -44,6 +53,8 @@ interface GalleryGame {
 interface GalleryFamily {
   games: readonly GalleryGame[]
   directory: string
+  /** As edições de qualificação: `scripts/python/fixtures/<fixtures>/<jogo>.edits.json`. */
+  fixtures: string
   evidence: string
   manifest: string
   extension(game: GalleryGame): string
@@ -53,6 +64,7 @@ const families: GalleryFamily[] = [
   {
     games: VISUAL_REFERENCE_GAMES,
     directory: '',
+    fixtures: 'visual-reference-games',
     evidence: '2026-10-22-python-reference-games-visual-evidence',
     manifest: 'visualReferenceGames.manifest.ts',
     extension: () => 'python-turtle',
@@ -61,20 +73,28 @@ const families: GalleryFamily[] = [
   {
     games: PGZERO_GAMES,
     directory: 'pgzero',
+    fixtures: 'pgzero-games',
     evidence: '2026-10-24-python-pgzero-games-evidence',
     manifest: 'pgzeroGames.manifest.ts',
     extension: () => 'python-pgzero',
-    codecs: () => PYTHON_PGZERO_CODECS,
+    // A mesma lista do editor (loadPythonAuthoring): os blocos de cenário do Pinta vêm na frente
+    // e só ficam numa release com pinta-scene-regions-v1 (orderPythonAuthoringCodecs os filtra).
+    codecs: () => [...PYTHON_PGZERO_PINTA_SCENE_CODECS, ...PYTHON_PGZERO_CODECS],
   },
   {
     games: RAYLIB_GAMES,
     directory: 'raylib',
+    fixtures: 'raylib-games',
     evidence: '2026-10-24-python-raylib-games-evidence',
     manifest: 'raylibGames.manifest.ts',
     extension: (game) => (game.extension === '3d' ? 'python-raylib-3d' : 'python-raylib-2d'),
-    codecs: (game) => (game.extension === '3d' ? PYTHON_RAYLIB_3D_CODECS : PYTHON_RAYLIB_2D_CODECS),
+    codecs: (game) =>
+      game.extension === '3d'
+        ? PYTHON_RAYLIB_3D_CODECS
+        : [...PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS, ...PYTHON_RAYLIB_2D_CODECS],
   },
 ]
+const check = args.includes('--check')
 let analysis: Awaited<ReturnType<typeof startVisualExampleAnalysis>> | undefined
 let count = 0
 const updates: {
@@ -88,6 +108,7 @@ try {
   for (const family of families)
     for (const game of family.games) {
       if (selected && game.key !== selected) continue
+      if (extensions && !extensions.has(family.extension(game))) continue
       // Keep batches below the analysis child's existing 120-second lifetime.
       if (count % 3 === 0) {
         await analysis?.close()
@@ -98,9 +119,14 @@ try {
         })
       }
       const evidence = resolve(root, 'docs/continuity', family.evidence)
-      const previous = JSON.parse(await readFile(resolve(evidence, game.receipt), 'utf8')) as {
-        edits: VisualExampleEdit[]
-      }
+      // As edições vêm da fixture versionada (`example-edit-fixtures.ts`), não do recibo anterior:
+      // organizar o exemplo muda a posição das linhas, e a fixture é onde os caminhos são remapeados.
+      const edits = JSON.parse(
+        await readFile(
+          resolve(studio, 'scripts/python/fixtures', family.fixtures, `${game.key}.edits.json`),
+          'utf8',
+        ),
+      ) as VisualExampleEdit[]
       const codecs = orderPythonAuthoringCodecs(
         family.codecs(game),
         release.manifest.python?.features ?? [],
@@ -117,8 +143,26 @@ try {
         path,
         analysis: analysis!,
         authoring,
-        edits: previous.edits,
+        edits,
       })
+      if (check) {
+        const current = JSON.parse(await readFile(resolve(evidence, game.receipt), 'utf8'))
+        for (const key of [
+          'sourceSha256',
+          'codecOrderSha256',
+          'approvedBlockIdsSha256',
+          'analyzer',
+          'authoringRuntime',
+          'authoringRuntimeFeatures',
+          'blockCount',
+          'referencedBlocks',
+          'edits',
+        ] as const)
+          assert.deepEqual(receipt[key], current[key], game.key + ': ' + key)
+        count++
+        console.log(game.key + ': recibo conferido')
+        continue
+      }
       const match = /^(.*)-r(\d+)\.json\.snapshot$/.exec(game.receipt)
       assert(match, `Unrecognized receipt path: ${game.receipt}`)
       let number = Number(match[2]) + 1
@@ -149,7 +193,7 @@ try {
 } finally {
   await analysis?.close()
 }
-assert(updates.length > 0, 'No matching games')
+assert(count > 0, 'No matching games')
 // Publish the new evidence only after the complete requested batch has qualified.
 for (const update of updates)
   await writeFile(update.path, `${JSON.stringify(update.receipt, null, 2)}\n`, { flag: 'wx' })
@@ -165,4 +209,8 @@ for (const manifest of new Set(updates.map(({ manifest }) => manifest))) {
   }
   writeGeneratedSource(manifest, source)
 }
-console.log(`Qualified ${updates.length} games. Regenerate the gallery block metadata next.`)
+console.log(
+  check
+    ? `Checked ${count} games.`
+    : `Qualified ${updates.length} games. Regenerate the gallery block metadata next.`,
+)

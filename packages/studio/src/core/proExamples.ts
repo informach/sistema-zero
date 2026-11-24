@@ -1,4 +1,6 @@
+import { STUDIO_PRO_SCENE3D_MODULE } from '@sistemazero/core/studio/pro-scene3d'
 import type { ProAssetManifestEntry } from './proAssets'
+import { normalizeProPath } from './proPaths'
 import type { ProjectTree } from './proProject'
 
 export interface ProExample {
@@ -48,6 +50,24 @@ export function proAssetExample(
       code: `// Uso: const som = criarSom()\n// Dentro de um clique/tecla: som.play().catch(console.error)\nfunction criarSom() {\n  const som = new Audio(${url})\n  som.volume = 0.5\n  return som\n}`,
     }
   if (!usesThree(tree)) return null
+  if (asset.kind === 'scene3d') {
+    if (normalizeProPath(path, { expectFile: true }) !== path || path.startsWith('public/'))
+      return null
+    const depth = path.split('/').length - 1
+    const modulePath = JSON.stringify(
+      (depth ? '../'.repeat(depth) : './') + STUDIO_PRO_SCENE3D_MODULE,
+    )
+    const typed = /\.[cm]?tsx?$/.test(path)
+    return {
+      id: 'scene3d',
+      name: 'carregarCenario',
+      label: `carregar o cenário ${asset.name}`,
+      asset: { id: asset.id, url: asset.url, sha256: asset.sha256 },
+      explanation:
+        'Usa o cenário completo com Three 0.184 já declarado no projeto, sem alterar dependências ou criar câmera e controles. No seu loop, chame atualizar(dt) e quadro(camera, foco); ao trocar a base, use descartar(). O sinal permite cancelar o preparo.',
+      code: `// Uso numa função async: const base = await carregarCenario(suaCena, seuControle.signal)\n// No seu loop: base.atualizar(dt); base.quadro(suaCamera, seuFoco)\n// Ao sair: base.descartar()\n${typed ? '' : '/** @param {import("three").Scene} cena @param {AbortSignal} sinal */\n'}async function carregarCenario(cena${typed ? ': import("three").Scene' : ''}, sinal${typed ? ': AbortSignal' : ''}) {\n  const { instalar } = await import(${modulePath})\n  return instalar(${JSON.stringify(asset.id)}, cena, sinal)\n}`,
+    }
+  }
   if (asset.kind === 'model3d')
     return {
       id: 'model',

@@ -1,3 +1,5 @@
+import { PYTHON_MOLDA_REGIONS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import { optional, pythonApiCallCodec } from '../../blocks/apiCallCodec'
 import type { PythonBlockCodec } from '../../blocks/contract'
 import { attribute, call, integer, isNode, name, nodes, text } from '../../blocks/nodes'
 import {
@@ -26,6 +28,7 @@ const HITS = 'Colisões 3D'
 const VECTORS = 'Vetores 3D'
 const MOUSE = 'Mouse travado'
 const SHADERS = 'Shaders'
+const SCENE = 'Cenário do Molda'
 
 /** A number shadow: an int when it is whole, a float otherwise (0.5 is not an int literal). */
 const num = (value: number) => (Number.isInteger(value) ? n(value) : d(value))
@@ -71,8 +74,124 @@ const FFI_TYPES: readonly (readonly [string, string])[] = [
 export const PYTHON_RAYLIB_3D_CODECS: readonly PythonBlockCodec[] = [
   ...raylibCommonCodecs(OWNER),
   ...raylib3DCodecs(),
+  ...sceneCodecs(),
 ]
 export { RAYLIB_RESOLVER_OPTIONS }
+
+/**
+ * 🏞️ O cenário do Molda (lote 7b da conclusão do plano do Estúdio, 22/11/2026): a projeção das
+ * chamadas do módulo oficial `cenario`. "Carregar o cenário" escreve `cenario.carregar(cenario_vila)`
+ * (o módulo que a importação do Molda gera), e é essa atribuição que prova que a variável é um
+ * cenário: "Desenhar o cenário", "Atualizar as regiões" e "Entrou na região" só valem para ela,
+ * nunca para um `x.desenhar()` de um objeto da criança. Exigem a versão do runtime com o
+ * `cenario.py` das regiões (`molda-scene-regions-v1`): antes dela, nem entram no catálogo.
+ */
+function sceneCodecs(): PythonBlockCodec[] {
+  const { blockId } = raylibCodecKit(OWNER)
+  const requiredRuntimeFeatures = [PYTHON_MOLDA_REGIONS_FEATURE] as const
+  /** O objeto que `cenario.carregar(...)` devolve, provado pela atribuição. */
+  const scene = { module: 'cenario', name: 'carregar' }
+  const receiver = { label: 'cenário', default: () => name('lugar'), instance: scene }
+  const load = pythonApiCallCodec({
+    id: blockId('scene_load'),
+    owner: OWNER,
+    title: 'carregar o cenário',
+    category: SCENE,
+    level: 1,
+    role: 'value',
+    help: 'Abre o cenário que você trouxe do Molda: ponha aqui o módulo dele, o arquivo cenario_… que o Estúdio criou ao trazer o cenário (o nome está na lista de arquivos do projeto; importe com import cenario_…). Guarde numa variável em ⚙️ Ao iniciar, como lugar = cenario.carregar(cenario_ab12), depois de abrir a janela.',
+    api: 'cenario.carregar(cenario_do_molda)',
+    callee: { kind: 'module', module: 'cenario', names: ['carregar'] },
+    params: [p('caminho', 'do módulo', id('cenario_do_molda'))],
+    requiredRuntimeFeatures,
+  })
+  const draw = pythonApiCallCodec({
+    id: blockId('scene_draw'),
+    owner: OWNER,
+    title: 'desenhar o cenário',
+    category: SCENE,
+    level: 1,
+    role: 'statement',
+    help: 'Desenha o cenário (só as regiões carregadas). Fica dentro do 🔁 laço do jogo, entre "começar o modo 3D" e "terminar o modo 3D".',
+    api: 'lugar.desenhar()',
+    callee: { kind: 'method', names: ['desenhar'], receiver },
+    params: [],
+    requiredRuntimeFeatures,
+  })
+  const update = pythonApiCallCodec({
+    id: blockId('scene_update'),
+    owner: OWNER,
+    title: 'atualizar as regiões perto de',
+    category: SCENE,
+    level: 2,
+    role: 'statement',
+    help: 'A cada volta do 🔁 laço do jogo, com o x e o z do personagem: o cenário carrega a região onde ele está, as vizinhas e as que estão perto, e solta as que ficaram longe. Num cenário sem regiões, não faz nada.',
+    api: 'lugar.atualizar(x, z)',
+    callee: { kind: 'method', names: ['atualizar'], receiver },
+    params: [
+      p('x', 'x', n(0)),
+      p('z', 'z', n(0)),
+      optional('camera', 'com a câmera', id('camera'), 'kw'),
+    ],
+    requiredRuntimeFeatures,
+  })
+  /** "Entrou na região ⟨Vila⟩": o nome com o seletor das regiões do projeto, sempre um texto. */
+  const entered: PythonBlockCodec = {
+    id: blockId('scene_entered'),
+    owner: OWNER,
+    title: 'entrou na região',
+    category: SCENE,
+    level: 2,
+    role: 'value',
+    api: "lugar.entrou_na_regiao('Vila')",
+    help: 'Verdadeiro uma vez por entrada do personagem na região (inclusive quando ele já começa dentro), contada pelo último "atualizar as regiões". Use como condição de um "se" dentro do 🔁 laço do jogo.',
+    requiredRuntimeFeatures,
+    match: { kinds: ['Call'], names: ['entrou_na_regiao'] },
+    bindingFor(value) {
+      const func = value.fields.func
+      if (!isNode(func) || func.kind !== 'Attribute' || !isLoadName(func.fields.value)) return
+      return {
+        root: func.fields.value.fields.id as string,
+        module: scene.module,
+        instance: scene.name,
+      }
+    },
+    defaultNode: () => call(attribute(name('lugar'), 'entrou_na_regiao'), [text('Vila')]),
+    decode(value) {
+      const { func, args, keywords } = value.fields
+      if (
+        value.kind !== 'Call' ||
+        !exact(value, ['func', 'args', 'keywords']) ||
+        !isNode(func) ||
+        func.kind !== 'Attribute' ||
+        func.fields.attr !== 'entrou_na_regiao' ||
+        !isLoadName(func.fields.value) ||
+        !nodes(args) ||
+        args.length !== 1 ||
+        !nodes(keywords) ||
+        keywords.length
+      )
+        return
+      const nome = args[0]!
+      if (
+        nome.kind !== 'Constant' ||
+        nome.fields.kind !== null ||
+        typeof nome.fields.value !== 'string'
+      )
+        return
+      return {
+        fields: [{ name: 'REGIAO', label: '', value: nome.fields.value, picker: 'scene-region' }],
+        inputs: [{ name: 'receiver', label: 'cenário', role: 'value', nodes: [func.fields.value] }],
+      }
+    },
+    encode(shape) {
+      return call(attribute(one(shape, 'receiver'), 'entrou_na_regiao'), [
+        text(field(shape, 'REGIAO')),
+      ])
+    },
+  }
+  return [load, draw, update, entered]
+}
 
 function raylib3DCodecs(): PythonBlockCodec[] {
   const { blockId, api, choice } = raylibCodecKit(OWNER)

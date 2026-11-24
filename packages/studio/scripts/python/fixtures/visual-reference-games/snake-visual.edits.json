@@ -2,7 +2,7 @@
   {
     "label": "coordinate",
     "path": {
-      "body": 38,
+      "body": 33,
       "inputs": [
         {
           "name": "body",
@@ -26,7 +26,7 @@
   {
     "label": "speed",
     "path": {
-      "body": 9,
+      "body": 8,
       "inputs": [
         {
           "name": "VALUE",
@@ -42,7 +42,7 @@
   {
     "label": "color",
     "path": {
-      "body": 13,
+      "body": 12,
       "inputs": [
         {
           "name": "VALUE",

@@ -1,6 +1,6 @@
 # A ponte da ilha
 
-Poder do Faísca · A ponte apressada · 3D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · A ponte apressada · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. A ponte chegou à ilha
 
@@ -31,10 +31,10 @@ A alavanca e a ponte que sobe sozinha.
 
 Atravesse até o sino.
 
-- Intenção: application.
-- Blocos: video-atravessar, ponte-atravessar.
+- Intenção: delivery.
+- Blocos: video-atravessar, ponte-atravessar, projeto.
 - Estúdio: projeto.
-- Conclusão: video-atravessar.
+- Conclusão: video-atravessar, projeto; envio atualizado.
 
 - O "depois de segundos" fica dentro do encontro com a alavanca.
 - Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
@@ -46,26 +46,13 @@ Atravesse até o sino.
 
 Pense na ponte da ilha.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 5. Envie a sua ilha com a ponte
-
-Envie a sua ilha com a ponte.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- O "depois de segundos" fica dentro do encontro com a alavanca.
-- Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
-- Chegando depois que a ponte subiu, o personagem não atravessa.
-- Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.
-- Uma nova partida (tecla R) começa com a ponte levantada.
+Na edição kids, Dedé diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](ponte-aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

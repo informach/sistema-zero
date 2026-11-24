@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { isPintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   EMPTY_GALLERY_FILTERS,
@@ -31,15 +32,17 @@ import {
 } from '../../core/gallerySearch'
 import { expandSelection } from '../../core/gallerySelection'
 import { perfMeasure } from '../../core/perf'
-import { isTilesetKind, type PintaAsset, tilemapUsesTileset } from '../../core/project'
+import { isTilesetKind, tilemapUsesTileset } from '../../core/project'
 import type { PintaHostChromeStatus, PintaInitialIntent } from '../../core/types'
 import { isTilemapBundle } from '../../export/assetJson'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
-import { zipGallery } from '../../export/zip'
+import { zipGallery, zipRetainedRecoveryFiles } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
+import { retainedRecoveryHelpReport } from '../../state/recoveryHelpReport'
+import { isRegionalGalleryCard, type PintaGalleryEntry } from '../../state/regionGalleryIndex'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { HostBackLink, HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button } from '../ui/Button'
@@ -50,6 +53,7 @@ import {
   Image as ImageIcon,
   type LucideIcon,
   Map as MapIcon,
+  MessageCircle,
   Palette,
   PersonStanding,
   Plus,
@@ -62,6 +66,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
+import { TiledImportButton } from './TiledImportButton'
 import { useGallerySelection } from './useGallerySelection'
 
 /**
@@ -156,12 +161,29 @@ function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
 }
 
 export function GalleryScreen(): JSX.Element {
-  const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
+  const { gallery, persistence, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
   const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
-  const assets = usePintaGallery((state) => state.assets)
+  const recoveryNotice = usePintaGallery((state) => state.recoveryNotice)
+  useEffect(() => {
+    if (!recoveryNotice) return
+    showToast(recoveryNotice)
+    gallery.getState().acknowledgeRecovery()
+  }, [gallery, recoveryNotice, showToast])
+  const completeAssets = usePintaGallery((state) => state.assets)
+  const regionCards = usePintaGallery((state) => state.regionCards)
+  const assets = useMemo(
+    () =>
+      regionCards.length
+        ? [...completeAssets, ...regionCards].sort((a, b) => b.updatedAt - a.updatedAt)
+        : completeAssets,
+    [completeAssets, regionCards],
+  )
   const loaded = usePintaGallery((state) => state.loaded)
   const syncing = usePintaGallery((state) => state.syncing)
+  const readIssues = usePintaGallery((state) => state.readIssues)
+  const projected = usePintaGallery((state) => state.projected)
+  const needsRetainedRecovery = usePintaGallery((state) => state.needsRetainedRecovery)
   // Medição: do início da leitura da galeria até a primeira renderização com os cards.
   useEffect(() => {
     if (loaded) perfMeasure('pinta:gallery:rendered', 'pinta:gallery:load:start')
@@ -189,6 +211,9 @@ export function GalleryScreen(): JSX.Element {
   const [removeId, setRemoveId] = useState<string | null>(null)
   const [justCreatedId, setJustCreatedId] = useState<string | null>(null)
   const [zipping, setZipping] = useState(false)
+  const [recoveryHelp, setRecoveryHelp] = useState<
+    'sending' | { label: string; href: string } | null
+  >(null)
   const [restoring, setRestoring] = useState(false)
   const photoRef = useRef<HTMLInputElement>(null)
   const [importImage, setImportImage] = useState<RGBAImage | null>(null)
@@ -228,17 +253,27 @@ export function GalleryScreen(): JSX.Element {
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
   const dependentMaps =
-    removeTarget && isTilesetKind(removeTarget)
+    removeTarget && !isRegionalGalleryCard(removeTarget) && isTilesetKind(removeTarget)
       ? assets.filter(
-          (asset) => asset.kind === 'tilemap' && tilemapUsesTileset(asset, removeTarget.id),
+          (asset) =>
+            asset.kind === 'tilemap' &&
+            (isRegionalGalleryCard(asset)
+              ? asset.dependencies.includes(removeTarget.id)
+              : tilemapUsesTileset(asset, removeTarget.id)),
         )
       : []
-  const tilesets = useMemo(() => assets.filter(isTilesetKind), [assets])
+  const tilesets = useMemo(() => completeAssets.filter(isTilesetKind), [completeAssets])
   const lastStyle = usePintaGallery((state) => state.lastStyle)
   // Índice por id (o mapa de tiles procura as peças dele por card) e nomes já usados — uma vez
   // por lista, não uma busca linear por card nem um `Set` novo a cada render.
   const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
-  const findAsset = useCallback((id: string) => assetsById.get(id) ?? null, [assetsById])
+  const findAsset = useCallback(
+    (id: string) => {
+      const asset = assetsById.get(id)
+      return asset && !isRegionalGalleryCard(asset) ? asset : null
+    },
+    [assetsById],
+  )
   const takenNames = useMemo(() => new Set(assets.map((a) => a.name)), [assets])
 
   // Agrupamento por jogo do Pensa: chave = projectRef.id (não o nome — dois
@@ -246,8 +281,8 @@ export function GalleryScreen(): JSX.Element {
   // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
   // A busca filtra ANTES do agrupamento: uma seção some quando nada nela casa.
   const { projectSections, looseAssets } = useMemo(() => {
-    const byProject = new Map<string, { name: string; assets: PintaAsset[] }>()
-    const loose: PintaAsset[] = []
+    const byProject = new Map<string, { name: string; assets: PintaGalleryEntry[] }>()
+    const loose: PintaGalleryEntry[] = []
     for (const asset of visibleAssets) {
       const ref = asset.projectRef
       if (!ref) {
@@ -288,7 +323,7 @@ export function GalleryScreen(): JSX.Element {
   )
   const onRemoveCard = useCallback((id: string) => setRemoveId(id), [])
 
-  const renderCard = (asset: PintaAsset): JSX.Element => (
+  const renderCard = (asset: PintaGalleryEntry): JSX.Element => (
     <AssetCard
       key={asset.id}
       asset={asset}
@@ -304,11 +339,51 @@ export function GalleryScreen(): JSX.Element {
     />
   )
 
+  async function handleDownloadRecovery(): Promise<void> {
+    if (zipping || !persistence.loadRetainedRecoveryFiles) return
+    setZipping(true)
+    try {
+      const files = await persistence.loadRetainedRecoveryFiles()
+      if (!files.size) {
+        showToast(COPY.gallery.retainedRecoveryUnavailable)
+        return
+      }
+      triggerDownload(await zipRetainedRecoveryFiles(files), 'edicoes-guardadas-pinta.zip')
+      showToast(COPY.toast.downloadReady)
+    } catch {
+      showToast(COPY.gallery.zipError)
+    } finally {
+      setZipping(false)
+    }
+  }
+
+  /** O pedido vai pelos recados do host e já leva o que identifica a recuperação. */
+  async function handleRecoveryHelp(): Promise<void> {
+    const help = hostChrome?.help
+    if (!help || recoveryHelp !== null) return
+    setRecoveryHelp('sending')
+    try {
+      const names = new Map(assets.map(({ id, name }) => [id, name]))
+      setRecoveryHelp(await help.send(await retainedRecoveryHelpReport(persistence, names)))
+      showToast(COPY.gallery.recoveryHelpSent)
+    } catch {
+      // A frase do erro vem no toast; o botão volta para a criança tentar de novo.
+      setRecoveryHelp(null)
+      showToast(COPY.gallery.recoveryHelpError)
+    }
+  }
+
   async function handleDownloadAll(): Promise<void> {
     if (zipping) return
     setZipping(true)
     try {
-      const bytes = await zipGallery(gallery.getState().assets)
+      const snapshot = gallery.getState()
+      // The complete backup also carries the projected maps this version keeps but cannot open.
+      const bytes = await zipGallery(
+        snapshot.regionCards.length
+          ? await persistence.listAllAssets()
+          : [...snapshot.assets, ...snapshot.projected],
+      )
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
         'meus-desenhos-pinta.zip',
@@ -331,15 +406,19 @@ export function GalleryScreen(): JSX.Element {
     // NÃO pode engolir a sessão nova — todo toggle cria um Set novo, então
     // identidade igual = ninguém tocou.
     const markedAtClick = captureSelection()
-    const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
-    if (expanded.assets.length === 0) {
-      // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
-      // avisa em vez de um clique-morto silencioso.
-      showToast(COPY.gallery.drawingGone)
-      return
-    }
     setZipping(true)
     try {
+      const snapshot = gallery.getState()
+      const expanded = expandSelection(
+        snapshot.regionCards.length
+          ? (await persistence.listAllAssets()).filter(isPintaMemoryAsset)
+          : snapshot.assets,
+        markedAtClick.ids,
+      )
+      if (expanded.assets.length === 0) {
+        showToast(COPY.gallery.drawingGone)
+        return
+      }
       const bytes = await zipGallery(expanded.assets, 'pack')
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
@@ -391,7 +470,9 @@ export function GalleryScreen(): JSX.Element {
         showToast(messages[read.reason])
         return
       }
-      const { assets: restored, warnings } = importPintaJson(read.text)
+      const { assets: restored, warnings } = persistence.workshopReader
+        ? await (await import('../../export/workshopDocument')).readPintaWorkshopBackup(read.text)
+        : importPintaJson(read.text)
       if (restored.length === 0) {
         showToast(warnings[0] ?? COPY.gallery.restoreError)
         return
@@ -622,6 +703,70 @@ export function GalleryScreen(): JSX.Element {
                 // Com o selo do host no cabeçalho ("Buscando…"), a linha some: seria dito 2×.
                 <p className="mb-5 font-semibold text-pin-muted text-sm">{COPY.gallery.syncing}</p>
               ) : null}
+              {projected.length > 0 ? (
+                // Guardado inteiro e no backup; nenhum editor desta versão o abre ainda.
+                <div
+                  role="alert"
+                  className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
+                >
+                  <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
+                    {COPY.gallery.projectedUnavailable(projected.map(({ name }) => name))}
+                  </p>
+                </div>
+              ) : null}
+              {readIssues.length > 0 ? (
+                // O desenho segue inteiro na conta: este código não o abre para não o cortar.
+                <div
+                  role="alert"
+                  className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
+                >
+                  <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
+                    {COPY.gallery.newerFormat(readIssues.length)}
+                  </p>
+                  <Button variant="primary" onClick={() => window.location.reload()}>
+                    {COPY.gallery.newerFormatReload}
+                  </Button>
+                </div>
+              ) : null}
+              {needsRetainedRecovery ? (
+                <div
+                  role="alert"
+                  className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border-2 border-pin-accent bg-pin-surface px-4 py-3"
+                >
+                  <p className="min-w-0 flex-1 font-semibold text-pin-text text-sm">
+                    {hostChrome?.help
+                      ? COPY.gallery.retainedRecoveryHelp
+                      : COPY.gallery.retainedRecovery}
+                  </p>
+                  {hostChrome?.help ? (
+                    <Button
+                      variant="pillPrimary"
+                      // Depois do envio o pedido já está com a equipe: o botão não manda de novo.
+                      disabled={recoveryHelp !== null}
+                      onClick={() => void handleRecoveryHelp()}
+                    >
+                      <MessageCircle aria-hidden="true" />
+                      {COPY.gallery.recoveryHelp}
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="pillSoft"
+                    disabled={zipping}
+                    onClick={() => void handleDownloadRecovery()}
+                  >
+                    <Download aria-hidden="true" />
+                    {COPY.gallery.downloadRetainedRecovery}
+                  </Button>
+                  {recoveryHelp && recoveryHelp !== 'sending' ? (
+                    <p className="w-full text-pin-text text-sm">
+                      {COPY.gallery.recoveryHelpAnswer(recoveryHelp.label)}{' '}
+                      <a className="font-semibold underline" href={recoveryHelp.href}>
+                        {COPY.gallery.recoveryHelpSeeConversation}
+                      </a>
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               {loading && !loaded ? (
                 <p className="py-12 text-center font-semibold text-base text-pin-muted">
                   {COPY.gallery.loading}
@@ -645,6 +790,7 @@ export function GalleryScreen(): JSX.Element {
                       <Upload aria-hidden="true" />
                       {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
                     </Button>
+                    {!selectionMode ? <TiledImportButton /> : null}
                   </div>
                 </div>
               ) : null}
@@ -750,6 +896,7 @@ export function GalleryScreen(): JSX.Element {
                       <Upload aria-hidden="true" />
                       {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
                     </Button>
+                    {!selectionMode ? <TiledImportButton /> : null}
                   </div>
                 </div>
               </div>
@@ -855,6 +1002,26 @@ export function GalleryScreen(): JSX.Element {
               }
             })
         }}
+        // O cenário grande só existe no armazenamento da oficina, e fica fora do pedido de arte
+        // de uma missão (que entrega o desenho pelo caminho de sempre).
+        {...(persistence.workshopReader && !intent
+          ? {
+              onCreateRegionMap: (input: { name: string; tilesetId: string }) => {
+                setCreating(true)
+                void gallery
+                  .getState()
+                  .createRegionMap(input)
+                  .then((asset) => {
+                    setCreating(false)
+                    if (asset) {
+                      setCreateOpen(false)
+                      setJustCreatedId(asset.id)
+                      openAsset(asset.id)
+                    } else showToast(gallery.getState().mutateError ?? COPY.editor.saveError)
+                  })
+              },
+            }
+          : {})}
       />
 
       {importImage !== null ? (

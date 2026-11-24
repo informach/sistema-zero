@@ -1,0 +1,35 @@
+# Lote 5 — Água visível e física do palco
+
+18/11/2026. Continuação de `263f5fbe7`. **Subetapa 5.2; o lote 5 continua aberto.** Este recorte integra desenho e física. Os gestos, a transação combinada de relevo/água e a aba Água ainda pertencem a 5.3–5.4. Os ensaios usam as APIs do palco e o navegador local; não publicam progresso de jogadores nem aprovam a arte final da Faísca.
+
+## Implementação e revisão
+
+`AguasDoPalco` desenha mar compartilhado, lago/represa com ilhas, rio com perfil descendente e cachoeira vertical. A faixa do rio conserva a linha central e usa as mesmas faces da consulta do núcleo. As geometrias são próprias; não deformam os buffers usados na física. Os contornos de lago são triangulados com ilhas e faces superiores. Água nativa não adiciona piso nem inventa uma bacia. As margens e o leito continuam pertencendo ao terreno ou às malhas sólidas explícitas do modelo.
+
+O material pronto responde a cor/opacidade por profundidade, ondas na normal e espuma rasa. O nível físico permanece o do documento; não há deslocamento artificial de piso. O padrão do rio percorre sua UV longitudinal, seguindo a curva; a queda tem fluxo vertical. O material recebe iluminação normal da cena, sem emissão de luz. A animação usa o laço sob demanda existente e só o mantém ativo com água animada no frustum; movimento reduzido conserva o material estático. Não foi criado outro laço de render.
+
+Para o terreno, quatro alturas Float32 são empacotadas por pixel RGBA, em mapas compartilhados pelas águas nativas. A grade máxima de 4.097² amostras cabe em duas páginas quando o dispositivo é limitado a 2.048 px. O shader usa índices inteiros: os índices ímpares acima de 2²⁴ não desaparecem por arredondamento de float. A interpolação usa a mesma diagonal triangular do chão. Uma máscara de peças distingue alturas próprias do fundo omitido, evitando emprestar a altura da borda vizinha. A prévia atualiza regiões RGBA alinhadas aos pixels; o primeiro envio permanece integral mesmo se houver alteração antes do primeiro quadro. Cancelamento restaura o campo. O comportamento foi conferido contra o código do Three instalado e na GPU do Chrome.
+
+O lago real `lago_nadavel`, hash `87f49a705905…`, foi inspecionado. A referência de fabricação e a malha de água registram nível local de 1,4 m. O adaptador da Faísca fixa o encaixe por hash: `agua` é lâmina; `cor`/`cor_2` são sólidos; espuma, caústica e brilho permanecem decoração original. O motor genérico não importa a geografia ou o catálogo do jogo e não adivinha papéis pelo nome do arquivo. A nova conversão grava o encaixe no documento. Fotografias anteriores da conversão ficam imutáveis; o ensaio de regressão fornece explicitamente esses metadados à cópia de teste. Outros modelos sem encaixe precisam ser configurados; o palco informa o problema e impede Testar enquanto a água estiver incompleta.
+
+Somente a lâmina recebe o material ajustável. Geometrias, texturas e materiais originais de margens/decoração pertencem ao cache. A lâmina tem uma cópia para o atributo de profundidade. Seu fundo é consultado nas malhas sólidas com o mesmo BVH já usado pelo teste; essa fonte define a cor rasa/profunda e a profundidade do nado, independentemente do terreno recortado. O Testar recebe as mesmas consultas compiladas do conjunto visível. Há descarte explícito das cópias, material, mapas e BVH; remover a água não descarta o GLB compartilhado. Renomear ou alternar nado não recria a geometria.
+
+A revisão reproduziu um limite indevido da coluna de nado pela estimativa guardada no documento: aprofundar o leito ou ampliar um modelo podia deixar uma faixa submersa sem nado. Com fundo conhecido, a profundidade agora vem inteiramente dele, tanto no material quanto na consulta. A estimativa guardada é referência somente quando falta essa fonte física. O teste do caso ficou vermelho antes da correção.
+
+A correnteza atua somente durante o nado, com aceleração, direção contrária do controle e colisão do controlador existente. A velocidade de caminhada/corrida permanece 1,5/3,4 m/s. Corrente inválida não entra na velocidade e a magnitude tem o limite de 10 m/s do contrato. Um teste primeiro reproduziu a ausência de deslocamento pela corrente e depois conferiu deslocamento, controle contrário, parede fina e água rasa sem arrasto.
+
+## Evidências e verificações locais
+
+- [Lago nativo de dia](evidencias/lote5-agua/lago-nativo-dia.png) e [de noite](evidencias/lote5-agua/lago-nativo-noite.png): campo de teste com baixada e ilha seca. Bancada técnica, sem composição ambiental proposta.
+- [Modelo real de dia](evidencias/lote5-agua/lago-modelo-dia.png) e [de noite](evidencias/lote5-agua/lago-modelo-noite.png): GLB preservado, implantação por referência local e material de lâmina ajustável.
+- [GPU e mapa máximo](evidencias/lote5-agua/material-gpu.json): três programas iniciais compilados; alturas de pontos inteiros e interpolados após alteração parcial; última linha da grade máxima com duas páginas. Leitura RGBA8 aceita diferença de até um nível de cinza. Sem erros de shader. Recursos antes/depois da bancada: 2 geometrias/3 texturas.
+- [Modelo, profundidade e recursos](evidencias/lote5-agua/modelo-fisica.json): 162 pontos coincidem com a altura do fundo físico; duas fontes sólidas; cápsula de 1,16 m flutua em Y≈0,646 m sem tocar piso. Três ciclos mantiveram 7 geometrias/5 texturas quando o modelo estava na cena.
+- [Regressão da Faísca](evidencias/lote5-agua/regressao-faisca.json) e [vídeo com avatar real](evidencias/lote5-agua/regressao-faisca.mp4): altura 1,1700 m; porta–praça ≈12,70 m, praça–horta ≈19,79 m, rota horta–ponte ≈46,64 m, chegada ao Farol em Y≈9,55 m. Caminhada, corrida de retorno, câmera e autoria preservadas, sem erros no navegador. São medidas de percursos dessa execução, não revisão das distâncias de projeto.
+
+Também passou o ensaio de física anterior de rampa, espelho, conjunto e entrada/saída da água, agora com a superfície visível. Núcleo: 197 testes/8.453 verificações; motor: 93 testes; oficina: 76/502; conversor da Faísca: 2/3.130. Tipagem de núcleo, motor, oficina, Arquipélago, Members e member-shell aprovada. A compilação da oficina passou; o pacote do motor ficou em aproximadamente 853 kB, 229 kB gzip. O aviso anterior de pacote acima de 500 kB permanece visível.
+
+Estas provas não homologam aparelhos físicos, FPS de um mundo decorado ou qualidade perceptiva de animações. A primeira execução isolada do modelo foi interrompida pela recarga do servidor de desenvolvimento; com as fontes estáveis e o carregamento completo, os ensaios terminaram sem erros. Não foi acrescentada repetição automática para esconder falhas.
+
+## Próximo recorte do mesmo lote
+
+Integrar intenções e prévia em worker cancelável, capturar pontos pelo palco, preparar recursos antes da fila e guardar água+terreno como um passo de histórico. Depois: aba Água com parâmetros e edição de águas existentes, incluindo configuração dos modelos, interação por mouse/toque/teclado e revisão dos quatro layouts. Fechamento do lote somente após essa integração e suas regressões. Lotes 6–10 e implantação/validação remota continuam pendentes.

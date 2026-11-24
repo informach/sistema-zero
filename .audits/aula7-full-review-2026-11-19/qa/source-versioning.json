@@ -1,0 +1,29 @@
+{
+  "HEAD": {
+    "sha": "9614f31afefde0f46078d81f0f5188ba9c7c0d95",
+    "contains": {
+      "packages/auth/src/infrastructure/persistence/drizzle/migrations/0027_profile_public_identity.sql": false,
+      "packages/core/src/commerce/index.ts": false,
+      "packages/hub/src/application/public-author-identities.ts": false,
+      "packages/member-shell/src/routes/commerce.ts": false
+    }
+  },
+  "origin/staging": {
+    "sha": "9614f31afefde0f46078d81f0f5188ba9c7c0d95",
+    "contains": {
+      "packages/auth/src/infrastructure/persistence/drizzle/migrations/0027_profile_public_identity.sql": false,
+      "packages/core/src/commerce/index.ts": false,
+      "packages/hub/src/application/public-author-identities.ts": false,
+      "packages/member-shell/src/routes/commerce.ts": false
+    }
+  },
+  "origin/main": {
+    "sha": "49c744cb9150c87f25b1782fb2ebf41bd55402cc",
+    "contains": {
+      "packages/auth/src/infrastructure/persistence/drizzle/migrations/0027_profile_public_identity.sql": false,
+      "packages/core/src/commerce/index.ts": false,
+      "packages/hub/src/application/public-author-identities.ts": false,
+      "packages/member-shell/src/routes/commerce.ts": false
+    }
+  }
+}

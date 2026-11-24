@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-21T04:59:24.997Z",
+  "base": "4ea837778dd998eadb54824adebf3e5f01e1681b",
+  "file": "packages/studio-runtime/wrangler.jsonc",
+  "previousSelector": "f69814b9412125e9bb8f8f33aea2b682cf1e7dfdeb59f593c2067466ce140553",
+  "preparedSelector": "fa8847d2433f1288cdb2adc2a33181b6a1d8fb0e7f872095da4d2d85662c288f",
+  "preparedPolicy": "12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37",
+  "release": "2026-11-20-pinta-cenarios-6",
+  "productionConfigurationUnchanged": true,
+  "workerAndCoreSourcesUnchanged": true,
+  "profileCheckPassed": true,
+  "preparedOnly": true,
+  "actualDeployment": false,
+  "requiresReaderRolloutAndActivationBeforeWriter": true,
+  "rollbackScope": "B6 to Reader13 changes application writing only; retain the common qualified Worker/image, active selector and Members policy"
+}

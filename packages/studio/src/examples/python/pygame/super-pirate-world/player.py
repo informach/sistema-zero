@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import * 
 from timer import Timer
 from os.path import join
 from math import sin
 
+# 🧩 Meus moldes
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, groups, collision_sprites, semi_collision_sprites, frames, data, attack_sound, jump_sound):
 		# general setup

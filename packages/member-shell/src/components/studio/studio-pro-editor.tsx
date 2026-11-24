@@ -3,6 +3,7 @@
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch } from '../../lib/session-fetch'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
+import { createStudentTestsServer } from '../../lib/studio-student-tests'
 import '@sistemazero/studio/styles.css'
 import type {
   EditableStudioProject as Project,
@@ -43,6 +44,8 @@ interface Props {
   theme: StudioTheme
   /** Volta para o destino definido pelo host (lista ou plano do Pensa). */
   onExit: () => void
+  /** Abre outro projeto (a versão em blocos de um Pro convertido). Ausente = sem o item. */
+  onOpenProject?: (projectId: string) => void
   /** Tutor opcional do host. Ausente em aulas e hosts que não contrataram o recurso. */
   tutor?: StudioTutorConfig
   share?: StudioEditorProps['share']
@@ -113,6 +116,7 @@ function StudioProEditorSession({
   projectId,
   theme,
   onExit,
+  onOpenProject,
   tutor,
   share,
   onChange,
@@ -129,6 +133,9 @@ function StudioProEditorSession({
   freeRuntime = false,
   onCompletionControlChange,
 }: Props) {
+  // "Meus testes" no Pro do Estúdio Completo: os testes rodam no executor do servidor (o do
+  // "Verificar projeto"). Um adaptador por editor; o editor o lê uma vez, ao montar.
+  const studentTestsServer = useMemo(() => createStudentTestsServer(), [])
   const prepareDependencies = useMemo(
     () =>
       freeRuntime
@@ -308,6 +315,7 @@ function StudioProEditorSession({
   }
 
   const StudioEditor = mod.StudioEditor
+  const javascriptPro = state.project.programmingLanguage !== 'python'
   const pythonUnavailable =
     state.project.programmingLanguage === 'python' && (free.loading || Boolean(free.error))
   return (
@@ -343,11 +351,13 @@ function StudioProEditorSession({
           editingAccess={pythonUnavailable ? 'observer' : undefined}
           prepareProDependencies={prepareDependencies}
           proRuntime={state.project.programmingLanguage === 'python' ? undefined : proRuntime}
+          studentTestsServer={freeRuntime && javascriptPro ? studentTestsServer : undefined}
           pythonLevel={
             state.project.programmingLanguage === 'python' && freeRuntime ? 3 : undefined
           }
           allowedModes={state.project.programmingLanguage === 'python' ? ['code'] : undefined}
           onExit={onExit}
+          onOpenProject={onOpenProject}
         />
       </div>
     </div>

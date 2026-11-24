@@ -1,0 +1,56 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\mapCellBudget.test.ts:
+(pass) cell reference limits are independent of the shared flag representation
+(pass) dense editing cannot create a tile reference the native map reader refuses
+(pass) region editing refuses out-of-format tile references atomically before changing history
+(pass) the last supported tile keeps every transform and survives a native region round trip [15.00ms]
+(pass) explicit region conversion refuses an unsavable source instead of preserving an invalid reference
+
+packages\pinta\src\tiles\regionCells.test.ts:
+(pass) a grade genérica conserva o índice 4095 e seus flags sem adotar o teto do editor Pinta
+(pass) lê células negativas e lacunas sem alocar a extensão vazia
+(pass) um lote conserva flags e copia apenas os chunks alterados para o histórico
+(pass) última escrita vence e gesto que volta ao valor original não cria histórico
+(pass) apagar o último conteúdo remove o chunk, sem manter regiões vazias
+(pass) admissão usa o custo final do gesto, independentemente da ordem de apagar e pintar
+(pass) recusa atômica não conserva nem a primeira mudança de um lote inválido
+(pass) limite de trabalho é conferido antes de acessar os pontos do gesto
+(pass) conversão densa respeita origem parcial e conserva todos os valores e flags
+(pass) conversão vazia não materializa chunks e recusa dimensões ou dados inconsistentes
+(pass) gesto espalhado sobre muitas regiões vazias é recusado pelo orçamento ocupado
+(pass) sequência determinística de gestos mantém o resultado das operações densas existentes [16.00ms]
+
+packages\pinta\src\tiles\terrain.test.ts:
+(pass) terreno inteligente não estraga peças de fora > modo corner: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > modo edge: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > modo mixed: as vizinhas com peça de fora ficam como estavam
+(pass) terreno inteligente não estraga peças de fora > a casa pintada troca a peça de fora por uma do terreno
+(pass) terreno inteligente não estraga peças de fora > a vizinha vazia ganha a borda e a vizinha do terreno se ajusta
+(pass) terreno inteligente não estraga peças de fora > vizinha sem encaixe novo não é sorteada de novo [16.00ms]
+(pass) terreno inteligente não estraga peças de fora > camada trancada não é pintada
+(pass) terrainRegion > junta as casas vizinhas com a mesma peça e para na peça diferente
+(pass) terrainRegion > com terreno, compara o encaixe e não o número da peça
+(pass) terrainRegion > fora do mapa ou camada que não existe devolve vazio
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 0
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 4096
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 8192
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 12288
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 16384
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 20480
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 24576
+(pass) regressões da revisão de terrenos > bordas também seguem os oito espelhos e giros: 28672
+(pass) regressões da revisão de terrenos > balde no vazio não atravessa árvores ou casas alheias ao terreno
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 0
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 4096
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 8192
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 12288
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 16384
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 20480
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 24576
+(pass) regressões da revisão de terrenos > vizinhos e balde respeitam os encaixes visuais com flags 28672
+
+ 44 pass
+ 0 fail
+ 249 expect() calls
+Ran 44 tests across 3 files. [330.00ms]

@@ -1,4 +1,4 @@
-import { type JSX, useId, useState } from 'react'
+import { type JSX, lazy, Suspense, useId, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { ErrorBoundary, IconChevronDown, IconChevronUp, IconRefresh } from '#ui'
 import { isPythonProject } from '../../core/editableProject'
@@ -15,6 +15,11 @@ import { ConsolePanel } from '../console/ConsolePanel'
 import { SectionErrorFallback } from './ErrorViews'
 
 type OpenTab = Exclude<ClassicDockTab, 'closed'>
+
+// As abas Investigar, Desempenho e Meus testes só baixam os painéis quando a criança abre uma delas (o pacote
+// de abertura do modo Blocos tem teto). Os painéis cuidam de si: a moldura de erro e o "fechar a
+// gaveta desliga".
+const DevtoolsTabs = lazy(() => import('../devtools/DevtoolsTabs'))
 
 /**
  * A gaveta de baixo do Estúdio clássico (blocos e Ponte, JavaScript e Python; redesenho de
@@ -74,7 +79,15 @@ export function ClassicDock({
     })),
   )
   const subject = python ? 'program' : 'game'
-  const tabs: OpenTab[] = [...(config.console ? (['console'] as const) : []), 'problems']
+  // Investigar, Desempenho e Meus testes (proposta aprovada em 20/11/2026), no JavaScript e no
+  // Python clássicos.
+  const tabs: OpenTab[] = [
+    ...(config.console ? (['console'] as const) : []),
+    'problems',
+    'investigate',
+    'performance',
+    'tests',
+  ]
   const tabMode = variant === 'tab'
   // No estreito a aba "Mensagens" está sempre aberta: a escolhida, ou a primeira.
   const active: ClassicDockTab = tabs.includes(selected as OpenTab)
@@ -95,8 +108,19 @@ export function ClassicDock({
     highlight.getState().revealBlock(target)
     onRevealBlock?.()
   }
+  // `pro.dock.problems`, `pro.dock.investigate`, `pro.dock.performance` e `pro.dock.tests`: o
+  // rótulo segue a aba.
   const label = (tab: OpenTab) =>
-    tab === 'console' ? t(`pro.dock.messages.${subject}`) : t('pro.dock.problems')
+    t(tab === 'console' ? `pro.dock.messages.${subject}` : `pro.dock.${tab}`)
+  // Os painéis ficam montados enquanto medem ou investigam, para desligar quando a gaveta fecha.
+  const devtoolsMounted = useUIStore(
+    (s) =>
+      active === 'investigate' ||
+      active === 'performance' ||
+      active === 'tests' ||
+      s.measuring ||
+      s.investigating,
+  )
 
   return (
     <section
@@ -273,6 +297,11 @@ export function ClassicDock({
             </article>
           ) : null}
         </div>
+        {devtoolsMounted ? (
+          <Suspense fallback={null}>
+            <DevtoolsTabs id={id} active={active} open={open} />
+          </Suspense>
+        ) : null}
         {config.console ? (
           <div
             id={`${id}-console`}

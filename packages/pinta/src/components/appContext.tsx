@@ -33,7 +33,7 @@ export interface PintaAppContextValue {
    * tileset + mapas ligados numa transação) e antes ele chamava o `persistAssets` de MÓDULO —
    * que vai direto ao IndexedDB do perfil e ignoraria qualquer armazenamento injetado.
    */
-  persistence: PintaPersistence
+  persistence: PintaPersistence<import('../core/assetMemory').PintaWorkshopAsset>
   /**
    * Área de transferência do APLICATIVO (copiar num desenho, colar em outro). Vive
    * aqui, e não na sessão do editor, porque a sessão morre ao voltar à galeria.
@@ -70,6 +70,9 @@ export interface PintaAppContextValue {
    * `PintaHandle` — ler o desenho vivo, forçar o salvamento, trocar o desenho — sem que o
    * `EditorScreen` precise receber ref por prop em todo o caminho.
    */
+  onWorkshopEditorReady?(
+    editor: PintaEditorStore<import('../core/assetMemory').PintaMemoryAsset> | null,
+  ): void
   onEditorReady?(editor: PintaEditorStore | null): void
 }
 

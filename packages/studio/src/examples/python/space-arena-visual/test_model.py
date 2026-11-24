@@ -4,7 +4,6 @@ import ast
 import math
 from pathlib import Path
 import random
-import runpy
 import sys
 import types
 import unittest
@@ -136,13 +135,21 @@ class Pen:
         self.writes.append((self.position, text, align, font))
 
 
+def definitions():
+    """main.py sem o que ele faz ao iniciar (a janela, as teclas e o laço): só moldes e estado."""
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    tree.body = [node for node in tree.body
+                 if not isinstance(node, (ast.Expr, ast.For))
+                 and not (isinstance(node, ast.Assign) and "turtle." in ast.unparse(node.value))]
+    return compile(tree, str(SOURCE), "exec")
+
+
 class Rules(unittest.TestCase):
     def setUp(self):
         self.audio = Audio()
+        self.game = {"__name__": "space_arena_model_test"}
         with patch.dict(sys.modules, {"turtle": types.ModuleType("turtle"), "sz_audio": self.audio}):
-            self.game = runpy.run_path(str(SOURCE), run_name="space_arena_model_test")
-        # run_path devolve uma cópia: os callbacks usam o dicionário das funções.
-        self.game = self.game["reiniciar_modelo"].__globals__
+            exec(definitions(), self.game)
         random.seed(2026)
         self.call("reiniciar_modelo")
         self.state = self.game["jogo"]
@@ -316,10 +323,9 @@ class Rules(unittest.TestCase):
 
     def test_timer_stays_single_across_pause_restart_and_stop(self):
         screen = Screen()
-        self.game["interface"]["tela"] = screen
+        self.game["tela"] = screen
         self.game["desenhar"] = lambda: None
-        self.call("agendar", 17)
-        self.call("agendar", 17)
+        self.call("a_cada_quadro")
         self.assertEqual(len(screen.queue), 1)
         for _ in range(20):
             self.call("reiniciar")
@@ -332,9 +338,10 @@ class Rules(unittest.TestCase):
         self.assertTrue(screen.closed)
         self.assertEqual(self.audio.voices, {})
 
-    def test_actual_entrypoint_binds_named_controls_draws_pools_and_closes(self):
+    def test_actual_program_binds_named_controls_draws_pools_and_closes(self):
         screen = Screen()
         pens = []
+        program = {"__name__": "__main__"}
 
         def make_pen():
             pen = Pen()
@@ -351,35 +358,36 @@ class Rules(unittest.TestCase):
             screen.bindings["press", "space"]()
             screen.deliver()
             self.assertTrue(any(stamp[1] == "nave" for stamp in pens[0].stamps))
-            self.assertEqual(len(self.game["inimigos"]), 25)
-            self.assertEqual(len(self.game["tiros"]), 30)
+            self.assertEqual(len(program["inimigos"]), 25)
+            self.assertEqual(len(program["tiros"]), 30)
             self.assertEqual(len(screen.queue), 1)
             hud_clears = pens[1].clears
-            self.call("desenhar")
+            program["desenhar"]()
             self.assertEqual(pens[1].clears, hud_clears)
             screen.bindings["release", "Up"]()
             screen.bindings["release", "space"]()
             screen.bindings["release", "p"]()
-            frame = self.state["quadro"]
+            frame = program["jogo"]["quadro"]
             screen.deliver()
-            self.assertEqual(self.state["quadro"], frame)
+            self.assertEqual(program["jogo"]["quadro"], frame)
             screen.bindings["release", "Escape"]()
 
         screen.on_loop = inspect_loop
-        self.game["turtle"] = types.SimpleNamespace(Screen=lambda: screen, Turtle=make_pen)
-        self.call("executar")
+        fake = types.SimpleNamespace(Screen=lambda: screen, Turtle=make_pen)
+        with patch.dict(sys.modules, {"turtle": fake, "sz_audio": self.audio}):
+            exec(compile(SOURCE.read_text(encoding="utf-8"), str(SOURCE), "exec"), program)
         self.assertTrue(screen.closed)
-        self.assertFalse(self.state["aberto"])
+        self.assertFalse(program["jogo"]["aberto"])
         self.assertEqual(self.audio.voices, {})
         screen.deliver()
         self.assertEqual(screen.queue, [])
 
     def test_pause_delivered_during_screen_update_keeps_the_redraw_request(self):
         screen = Screen()
-        self.game["interface"]["tela"] = screen
+        self.game["tela"] = screen
         self.game["desenhar"] = self.game["pausar"]
         self.call("iniciar")
-        self.call("quadro")
+        self.call("a_cada_quadro")
         self.assertEqual(self.state["fase"], "pausa")
         self.assertTrue(self.state["sujo"])
         self.assertEqual(len(screen.queue), 1)

@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+src\export\homologacao.test.ts:
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 1, criar: a referência é a descrita e todo desenho passa no portão do documento [15.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 2, camadas: o grupo passa visibilidade, opacidade, deslocamento e parallax aos filhos
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 3, peças viradas: a cena guarda espelho e giro dentro da célula
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 4, terreno e animação: o terreno e a peça animada chegam inteiros à cena
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 5, objetos e conjunto: formas, papéis, propriedades tipadas e a instância do conjunto
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 6, guardar e restaurar em arquivo: o .pinta.json devolve os mesmos desenhos e a mesma cena [32.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 7, testar: o início é livre, existe parede, e as portas ligam a Vila e a Cabana nos dois sentidos
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 8, Estúdio: a cena do envio passa no esquema, cabe no orçamento e é a do exemplo publicado [15.00ms]
+(pass) ciclo da Vila e a Floresta, sem navegador > passo 10, levar para fora: Tiled em JSON e em TMX volta igual, e o pacote leva os dois mapas [78.00ms]
+
+src\export\setAdapters.test.ts:
+(pass) a zero-area legacy set remains readable as a degenerate footprint
+(pass) an affinely transformed ellipse retains its exact boundary under nonuniform scaling
+(pass) the embedded JS transformation is exactly the same helper, without external dependencies [15.00ms]
+(pass) uniform set reflection and rotation preserve every authored rectangle corner
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [344.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [156.00ms]
+
+src\export\tiled\roundtrip.test.ts:
+(pass) Tiled usa objetos separados para imagem e contorno elíptico, sem perder a arte ao voltar [16.00ms]
+(pass) cena 3 conserva contornos, conjuntos e opção física em JSON e TMX/TSX reais [46.00ms]
+(pass) o pacote inclui o destino de uma porta que pertence a um conjunto vinculado [16.00ms]
+(pass) os oito espelhos e giros sobrevivem aos gids sem perder a peça
+(pass) A Vila e a Floresta atravessa JSON, TMX/TSX, desenhos e novo cenário [78.00ms]
+(pass) a cena inteira volta igual com as camadas em csv, em JSON e em TMX [63.00ms]
+(pass) a cena inteira volta igual com as camadas em base64, em JSON e em TMX [47.00ms]
+(pass) a cena inteira volta igual com as camadas em zlib, em JSON e em TMX [93.00ms]
+(pass) a cena inteira volta igual com as camadas em gzip, em JSON e em TMX [47.00ms]
+(pass) grupos dentro de grupos voltam com pais, opacidade, deslocamento e parallax [31.00ms]
+(pass) uma propriedade de várias linhas e com sinais do XML atravessa o TMX sem mudar [16.00ms]
+
+ 26 pass
+ 0 fail
+ 5297 expect() calls
+Ran 26 tests across 3 files. [1.91s]

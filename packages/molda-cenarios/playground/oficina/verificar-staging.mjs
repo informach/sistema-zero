@@ -1,0 +1,373 @@
+import assert from 'node:assert/strict'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { chromium } from 'playwright-core'
+
+// Credenciais ficam no arquivo externo indicado; não entram no código nem nas evidências.
+const [endereco, credenciais, pasta] = process.argv.slice(2)
+const base = new URL(endereco ?? '')
+assert.ok(
+  base.protocol === 'https:' &&
+    ['community-staging-66f2.up.railway.app', 'community-kids-staging.up.railway.app'].includes(
+      base.hostname,
+    ),
+  'Use o endereço conferido do staging',
+)
+assert.ok(credenciais && pasta, 'Informe arquivo externo de credenciais e pasta de evidências')
+const linhas = readFileSync(credenciais, 'utf8')
+  .replace(/^\uFEFF/, '')
+  .split(/\r?\n/)
+  .filter((l) => l.length)
+const email = linhas[0]?.trim(),
+  senha = linhas[1]
+assert.ok(
+  email?.includes('@') && senha && linhas.length === 2,
+  'O arquivo precisa ter email e senha em duas linhas',
+)
+const saida = resolve(pasta)
+mkdirSync(saida, { recursive: true })
+const sanear = (s) => String(s).replaceAll(senha, '[segredo]').replaceAll(email, '[conta de teste]')
+const browser = await chromium.launch({ channel: 'chrome', headless: true })
+const contexto = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+const pagina = await contexto.newPage()
+const identificador = `QA Cenários ${Date.now()}`
+let etapa = 'entrar'
+const kids = base.hostname === 'community-kids-staging.up.railway.app'
+const criados = { mundo: null, biblioteca: null, perfil: null, permissao: null }
+const pedidos = [],
+  erros = []
+pagina.on('pageerror', (e) => erros.push(sanear(e.message)))
+pagina.on('response', (r) => {
+  const u = new URL(r.url())
+  if (u.pathname.startsWith('/api/cenarios') || r.request().method() === 'PUT')
+    pedidos.push({
+      origem: u.origin,
+      caminho: u.pathname,
+      metodo: r.request().method(),
+      status: r.status(),
+      ...(r.request().method() === 'PUT'
+        ? { criacaoUnica: r.request().headers()['if-none-match'] === '*' }
+        : {}),
+    })
+})
+async function entrarComoResponsavel() {
+  await pagina.goto(new URL('/login/responsavel', base).href)
+  await pagina.getByRole('button', { name: 'Entrar com senha', exact: true }).click()
+  await pagina.locator('input[type=email]').fill(email)
+  await pagina.locator('input[type=password]').fill(senha)
+  await pagina.getByRole('button', { name: 'Entrar', exact: true }).click()
+  await pagina.waitForURL((u) => u.pathname === '/pais', { timeout: 30_000 })
+  const r = await contexto.request.get(new URL('/api/study/session', base).href)
+  assert.equal(r.status(), 200)
+  const { sessionId } = await r.json()
+  assert.ok(sessionId)
+  return { 'x-sz-session': sessionId }
+}
+try {
+  if (kids) {
+    // Usa o fluxo oficial da própria conta da equipe. Não altera perfis existentes,
+    // papéis, consentimentos ou progresso. Perfil e acesso de ensaio são arquivados no fim.
+    etapa = 'entrar como responsável da equipe'
+    const headers = await entrarComoResponsavel()
+    const criado = await contexto.request.post(new URL('/api/profiles', base).href, {
+      headers,
+      data: {
+        requestId: crypto.randomUUID(),
+        name: identificador,
+        birthDate: '2015-01-01',
+        publicProfileEnabled: false,
+        voiceInputEnabled: false,
+      },
+    })
+    assert.equal(criado.status(), 201)
+    const perfil = await criado.json()
+    criados.perfil = perfil.profile?.id ?? perfil.id
+    assert.ok(criados.perfil)
+    const preparar = await contexto.request.post(new URL('/api/study/prepare', base).href, {
+      headers,
+    })
+    assert.equal(preparar.status(), 200)
+    const permissao = await contexto.request.post(new URL('/api/study/grants', base).href, {
+      headers,
+      data: { profileId: criados.perfil, label: identificador, durationDays: 0, mode: 'current' },
+    })
+    assert.equal(permissao.status(), 200)
+    const concedido = await permissao.json()
+    criados.permissao = concedido.grant?.id
+    assert.ok(criados.permissao)
+    const entrar = await contexto.request.post(new URL('/api/study/enter', base).href, {
+      headers,
+      data: { profileId: criados.perfil },
+    })
+    assert.equal(entrar.status(), 200)
+  } else {
+    await pagina.goto(new URL('/molda/cenarios', base).href)
+    if (new URL(pagina.url()).pathname === '/login') {
+      await pagina.locator('input[type=email]').fill(email)
+      await pagina.locator('input[type=password]').fill(senha)
+      await pagina.getByRole('button', { name: 'Entrar', exact: true }).click()
+      await pagina.waitForURL((u) => u.pathname !== '/login', { timeout: 30_000 })
+    }
+  }
+  await pagina.goto(new URL('/molda/cenarios', base).href)
+  etapa = 'conferir acesso'
+  const acesso = await contexto.request.get(new URL('/api/cenarios/acesso', base).href)
+  assert.equal(acesso.status(), 200)
+  assert.deepEqual(await acesso.json(), { aberto: true })
+  await pagina.getByRole('heading', { name: 'Cenários', exact: true }).waitFor({ timeout: 30_000 })
+  await pagina
+    .getByRole('combobox', { name: 'De quem são', exact: true })
+    .selectOption({ label: 'Equipe Sistema Zero' })
+  const espacos = await (
+    await contexto.request.get(new URL('/api/cenarios/espacos', base).href)
+  ).json()
+  const equipe = espacos.find((e) => e.tipo === 'equipe')
+  assert.ok(equipe)
+  await pagina.screenshot({ path: resolve(saida, 'inicio-equipe.png') })
+  if (process.env.CENARIOS_QA_SOMENTE_ACESSO === '1') {
+    writeFileSync(
+      resolve(saida, 'acesso.json'),
+      JSON.stringify({ acesso: true, equipe: true, pedidos, erros }, null, 2),
+    )
+    console.log('Staging: conta da equipe autenticada e oficina acessível')
+  } else {
+    etapa = 'criar biblioteca'
+    await pagina.getByRole('button', { name: 'Bibliotecas', exact: true }).click()
+    await pagina.getByRole('button', { name: 'Criar biblioteca', exact: true }).first().click()
+    await pagina
+      .getByRole('dialog')
+      .getByLabel('Nome', { exact: true })
+      .fill(`${identificador} biblioteca`)
+    await pagina.getByRole('dialog').getByRole('button', { name: 'Criar', exact: true }).click()
+    await pagina
+      .getByRole('heading', { name: `${identificador} biblioteca`, exact: true })
+      .waitFor()
+    criados.biblioteca = new URL(pagina.url()).searchParams.get('biblioteca')
+    assert.match(criados.biblioteca, /^[a-f0-9-]{36}$/)
+    writeFileSync(
+      resolve(saida, 'estado-teste.json'),
+      JSON.stringify({ identificador, criados }, null, 2),
+    )
+    etapa = 'trazer GLB'
+    const posicoes = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0])
+    const gltf = {
+      asset: { version: '2.0', extras: { ensaio: identificador } },
+      scene: 0,
+      scenes: [{ nodes: [0] }],
+      nodes: [{ mesh: 0 }],
+      meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+      materials: [
+        {
+          pbrMetallicRoughness: {
+            baseColorFactor: [0.15, 0.7, 0.3, 1],
+            metallicFactor: 0,
+            roughnessFactor: 1,
+          },
+          doubleSided: true,
+        },
+      ],
+      buffers: [{ byteLength: posicoes.byteLength }],
+      bufferViews: [{ buffer: 0, byteLength: posicoes.byteLength }],
+      accessors: [
+        {
+          bufferView: 0,
+          componentType: 5126,
+          count: 3,
+          type: 'VEC3',
+          min: [0, 0, 0],
+          max: [2, 2, 0],
+        },
+      ],
+    }
+    const json = Buffer.from(JSON.stringify(gltf)),
+      n = Math.ceil(json.length / 4) * 4
+    const glb = Buffer.alloc(28 + n + posicoes.byteLength)
+    glb.writeUInt32LE(0x46546c67, 0)
+    glb.writeUInt32LE(2, 4)
+    glb.writeUInt32LE(glb.length, 8)
+    glb.writeUInt32LE(n, 12)
+    glb.writeUInt32LE(0x4e4f534a, 16)
+    glb.fill(32, 20, 20 + n)
+    glb.set(json, 20)
+    glb.writeUInt32LE(posicoes.byteLength, 20 + n)
+    glb.writeUInt32LE(0x004e4942, 24 + n)
+    glb.set(new Uint8Array(posicoes.buffer), 28 + n)
+    const reservaDoUpload = pagina.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname.endsWith('/modelos/reservar') && r.request().method() === 'POST',
+    )
+    const escolher = pagina.waitForEvent('filechooser')
+    await pagina.getByRole('button', { name: 'Trazer modelos', exact: true }).click()
+    const opcao = pagina
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Arquivos ou pacote ZIP', exact: true })
+    if (await opcao.isVisible()) await opcao.click()
+    await (await escolher).setFiles({
+      name: 'modelo_qa.glb',
+      mimeType: 'model/gltf-binary',
+      buffer: glb,
+    })
+    await pagina
+      .getByRole('status')
+      .filter({ hasText: '1 modelo novo na biblioteca' })
+      .waitFor({ timeout: 60_000 })
+    const modelos = await (
+      await contexto.request.get(
+        new URL(`/api/cenarios/bibliotecas/${criados.biblioteca}/modelos`, base).href,
+      )
+    ).json()
+    assert.equal(modelos.total, 1)
+    assert.ok(pedidos.some((r) => r.metodo === 'PUT' && r.status >= 200 && r.status < 300))
+    const reservaRecebida = await (await reservaDoUpload).json()
+    const integridadeExigida = process.env.CENARIOS_QA_EXIGIR_INTEGRIDADE === '1'
+    if (integridadeExigida) {
+      assert.ok(reservaRecebida.enviar.length > 0)
+      assert.ok(
+        reservaRecebida.enviar.every((a) => a.criarUmaVez === true),
+        'O BFF novo ainda não foi implantado',
+      )
+      assert.ok(
+        pedidos.filter((r) => r.metodo === 'PUT').every((r) => r.criacaoUnica),
+        'O cliente precisa enviar a condição assinada',
+      )
+    }
+    await pagina.screenshot({ path: resolve(saida, 'modelo-guardado.png') })
+    etapa = 'montar cenário'
+    await pagina.getByRole('button', { name: 'Voltar às bibliotecas', exact: true }).click()
+    await pagina.getByRole('button', { name: 'Meus mundos', exact: true }).click()
+    await pagina.getByRole('button', { name: 'Criar mundo', exact: true }).first().click()
+    await pagina.getByRole('dialog').getByLabel('Nome', { exact: true }).fill(identificador)
+    await pagina.getByRole('dialog').getByRole('button', { name: 'Criar', exact: true }).click()
+    await pagina.getByRole('heading', { name: identificador, exact: true }).waitFor()
+    criados.mundo = new URL(pagina.url()).searchParams.get('mundo')
+    assert.match(criados.mundo, /^[a-f0-9-]{36}$/)
+    writeFileSync(
+      resolve(saida, 'estado-teste.json'),
+      JSON.stringify({ identificador, criados }, null, 2),
+    )
+    await pagina.getByRole('button', { name: 'Escolher bibliotecas', exact: true }).click()
+    await pagina
+      .getByRole('dialog')
+      .getByLabel(`${identificador} biblioteca`, { exact: false })
+      .check()
+    await pagina.getByRole('dialog').getByRole('button', { name: 'Guardar', exact: true }).click()
+    await pagina.getByRole('button', { name: 'Criar cenário', exact: true }).first().click()
+    await pagina
+      .getByRole('dialog')
+      .getByLabel('Nome', { exact: true })
+      .fill(`${identificador} cenário`)
+    await pagina.getByRole('dialog').getByRole('button', { name: 'Criar', exact: true }).click()
+    await pagina.getByRole('heading', { name: `${identificador} cenário`, exact: true }).waitFor()
+    const cenarioId = new URL(pagina.url()).searchParams.get('cenario')
+    const gravacao = pagina.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname.endsWith(`/cenarios/${cenarioId}/lotes`) &&
+        r.request().method() === 'POST',
+    )
+    await pagina.getByRole('button', { name: 'Pôr Modelo qa no cenário', exact: true }).click()
+    assert.equal((await gravacao).status(), 200)
+    await pagina.getByText('Guardado', { exact: true }).waitFor()
+    etapa = 'mover, girar e mudar tamanho'
+    for (const [rotulo, valor] of [
+      [/^X/, '2.5'],
+      [/^Giro/, '45'],
+      [/^Tamanho/, '1.3'],
+    ]) {
+      const campo = pagina.locator('aside.mcn-painel').getByLabel(rotulo).first()
+      await campo.fill(valor)
+      await campo.press('Tab')
+      await pagina.getByText('Guardado', { exact: true }).waitFor()
+    }
+    const grade = pagina.getByRole('button', { name: 'Encaixar', exact: true })
+    assert.equal(await grade.getAttribute('aria-pressed'), 'true')
+    await grade.click()
+    assert.equal(await grade.getAttribute('aria-pressed'), 'false')
+    await grade.click()
+    assert.equal(await grade.getAttribute('aria-pressed'), 'true')
+    await pagina.reload()
+    await pagina.getByRole('heading', { name: `${identificador} cenário`, exact: true }).waitFor()
+    const salvo = await (
+      await contexto.request.get(new URL(`/api/cenarios/cenarios/${cenarioId}`, base).href)
+    ).json()
+    assert.equal(salvo.documento.instancias.length, 1)
+    assert.equal(salvo.documento.modelos[0].digest, modelos.itens[0].digest)
+    const transformacao = salvo.documento.instancias[0].transformacao
+    assert.equal(transformacao.posicao.x, 2.5)
+    assert.ok(Math.abs(transformacao.rotacao.y - Math.PI / 4) < 0.001)
+    assert.ok(['x', 'y', 'z'].every((eixo) => Math.abs(transformacao.escala[eixo] - 1.3) < 0.001))
+    await pagina.screenshot({ path: resolve(saida, 'cenario-reaberto.png') })
+    assert.deepEqual(erros, [])
+    writeFileSync(
+      resolve(saida, 'resultado.json'),
+      JSON.stringify(
+        {
+          upload: true,
+          retomada: true,
+          espacoEquipe: true,
+          moverGirarTamanho: true,
+          gradeAlternavel: true,
+          integridadeExigida,
+          revisao: salvo.revisao,
+          pedidos,
+          erros,
+        },
+        null,
+        2,
+      ),
+    )
+    console.log('Staging: upload direto, edição e reabertura aprovados no espaço da equipe')
+  }
+} catch (e) {
+  writeFileSync(
+    resolve(saida, 'falha.json'),
+    JSON.stringify({ etapa, erro: sanear(e.message), pedidos, erros, criados }, null, 2),
+  )
+  console.error(
+    `Ensaio de staging falhou na etapa: ${etapa}. Evidência sanitizada na pasta indicada.`,
+  )
+  process.exitCode = 1
+} finally {
+  const sessao = kids
+    ? await contexto.request
+        .get(new URL('/api/study/session', base).href)
+        .then((r) => r.json())
+        .catch(() => null)
+    : null
+  const headers = sessao?.sessionId ? { 'x-sz-session': sessao.sessionId } : {}
+  for (const [tipo, id] of [
+    ['mundos', criados.mundo],
+    ['bibliotecas', criados.biblioteca],
+  ]) {
+    if (id && /^[a-f0-9-]{36}$/.test(id)) {
+      const r = await contexto.request
+        .delete(new URL(`/api/cenarios/${tipo}/${id}`, base).href, { headers })
+        .catch(() => null)
+      if (!r?.ok()) {
+        console.error(`A limpeza da entidade de teste ${tipo} precisa ser conferida.`)
+        process.exitCode = 1
+      }
+    }
+  }
+  if (kids && criados.perfil) {
+    try {
+      const headers = await entrarComoResponsavel()
+      if (criados.permissao) {
+        const r = await contexto.request.patch(
+          new URL(`/api/study/grants/${criados.permissao}`, base).href,
+          { headers, data: { action: 'revoke' } },
+        )
+        assert.ok(r.ok(), 'Não consegui revogar o acesso temporário do ensaio')
+      }
+      const r = await contexto.request.delete(
+        new URL(`/api/profiles/${criados.perfil}`, base).href,
+        { headers },
+      )
+      assert.ok(r.ok(), 'Não consegui arquivar o perfil temporário do ensaio')
+      console.log('Kids: perfil temporário arquivado e acesso de ensaio revogado')
+    } catch (e) {
+      console.error(sanear(e.message))
+      process.exitCode = 1
+    }
+  }
+  await browser.close()
+}

@@ -13,7 +13,7 @@ describe('Jogo 2D — progressão e independência de página', () => {
   it('a vitrine apresenta demonstrações, jogos simples, maiores e kits sem repetir cartões', () => {
     const { demos, simples, maiores, kits, receitas } = GAME_TWO_D_EXAMPLE_SECTIONS
     expect(gameTwoDExamples).toEqual([...demos, ...simples, ...maiores, ...kits, ...receitas])
-    expect(new Set(gameTwoDExamples.map((example) => example.name)).size).toBe(45)
+    expect(new Set(gameTwoDExamples.map((example) => example.name)).size).toBe(46)
     expect(demos.every((example) => example.experience === 'demo')).toBe(true)
     expect(simples[0]?.name).toBe('Pegue a moeda')
   })

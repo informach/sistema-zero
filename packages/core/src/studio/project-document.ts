@@ -16,6 +16,7 @@ import { StudioProjectIdSchema } from './project-identity'
 import { copyStudioProjectJson } from './project-json'
 import { parseStudioProAssistanceMeta, type StudioProAssistanceMeta } from './project-pro-metadata'
 import type { StudioRuntimeRelease } from './runtime-catalog'
+import { StudioStudentTestsSchema } from './student-tests'
 
 /** Prepared schema version. Activating the product writer is a separate migration step. */
 export const STUDIO_PROJECT_DOCUMENT_V3 = STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
@@ -168,6 +169,8 @@ const javascriptClassicSchema = z.strictObject({
   extraFiles: extrasSchema.optional(),
   ir: requiredPayload,
   blocksState: requiredPayload,
+  /** "Meus testes" (`student-tests.ts`): só no projeto que tem testes. */
+  studentTests: StudioStudentTestsSchema.optional(),
 })
 const javascriptProSchema = z.strictObject({
   ...common,
@@ -180,6 +183,8 @@ const javascriptProSchema = z.strictObject({
   proMeta: StudioJavaScriptProMetadataSchema,
   ir: requiredPayload,
   blocksState: requiredPayload,
+  /** "Meus testes" no Pro (`student-tests.ts`), que rodam no executor do servidor. */
+  studentTests: StudioStudentTestsSchema.optional(),
 })
 const pythonClassicSchema = z
   .strictObject({
@@ -192,6 +197,8 @@ const pythonClassicSchema = z
     python: StudioPythonProjectConfigSchema,
     ir: requiredPayload,
     blocksState: requiredPayload,
+    /** "Meus testes" (`student-tests.ts`): só no projeto que tem testes. */
+    studentTests: StudioStudentTestsSchema.optional(),
   })
   .superRefine((project, context) => {
     if (project.python.entrypoint !== 'main.py')

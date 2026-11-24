@@ -509,12 +509,16 @@ const extra: Record<string, Record<string, string[]>> = {
     'marketing-app': [],
     helpdesk: [],
     'evolution-api': [],
-    community: [],
+    // Casca isolada da prévia do Clássico (etapa 4 da missão do Estúdio, 20/11/2026): só staging.
+    // O endereço dos exemplos grandes da galeria do Estúdio (o R2 público do ambiente, lote 9 de
+    // 22/11/2026): só staging, até ela decidir a produção.
+    community: ['STUDIO_CLASSIC_SHELL_ENABLED', 'STUDIO_EXAMPLES_ORIGIN'],
     funnel: [],
-    members: ['CENARIOS_MODO', 'COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
+    // As regiões dos cenários 3D (lote 9 do Estúdio, 22/11/2026): ligadas só no staging.
+    members: ['CENARIOS_MODO', 'CENARIOS_REGIOES', 'COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
     'helpdesk-app': [],
     admin: ['COURSE_PUBLICATION_SOURCE_TOKEN'],
-    'community-kids': [],
+    'community-kids': ['STUDIO_CLASSIC_SHELL_ENABLED', 'STUDIO_EXAMPLES_ORIGIN'],
     'palco-gravacao': [],
   },
   production: {

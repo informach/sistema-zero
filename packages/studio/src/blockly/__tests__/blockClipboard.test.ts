@@ -68,6 +68,19 @@ describe('requiredExtensionsForBlockState', () => {
   test('bloco de Mundo 3D → world-3d', () => {
     expect(requiredExtensionsForBlockState({ type: 'sz_w3d_setup' })).toEqual(['world-3d'])
   })
+
+  test('uma cauda next muito longa é lida sem recursão (copiar o primeiro evento leva todos)', () => {
+    type Node = { type: string; next?: { block: Node } }
+    const root: Node = { type: 'sz_js_log' }
+    let tail = root
+    for (let index = 0; index < 100_000; index++) {
+      const block: Node = { type: 'sz_js_log' }
+      tail.next = { block }
+      tail = block
+    }
+    tail.type = 'sz_g2d_create_sprite'
+    expect(requiredExtensionsForBlockState(root)).toEqual(['game-2d'])
+  })
 })
 
 describe('área de transferência (localStorage)', () => {

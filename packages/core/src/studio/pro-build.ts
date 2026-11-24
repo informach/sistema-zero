@@ -14,6 +14,18 @@ export interface StudioProBuildLimits {
   maxRequestBytes: number
 }
 
+/**
+ * Arquivos que a plataforma conhece byte a byte: caminho → sha256 aceitos naquele caminho (hoje, as
+ * cópias publicadas do motor 2D, `pro-engine-copies`).
+ */
+export type StudioProPlatformFiles = Readonly<Record<string, readonly string[]>>
+/**
+ * Os arquivos da plataforma conferidos num conjunto de arquivos: caminho → o texto exato cujo
+ * sha256 bateu com um dos aceitos naquele caminho (`verifyStudioProPlatformFiles`). O orçamento só
+ * deixa de fora o arquivo cujo texto é ESTE: qualquer outro texto no caminho é do autor.
+ */
+export type StudioProVerifiedPlatformFiles = ReadonlyMap<string, string>
+
 export type StudioProBuildFileLimitError =
   | 'EMPTY'
   | 'TOO_MANY_FILES'
@@ -37,13 +49,18 @@ export function studioProBuildRequestByteLength(files: Readonly<Record<string, s
   ).byteLength
 }
 
-/** Valida os tetos do snapshot que pode seguir para o compilador remoto. */
+/**
+ * Valida os tetos do snapshot que pode seguir para o compilador remoto. Quantidade, teto por
+ * arquivo e total são o orçamento do AUTOR: um arquivo da plataforma conferido (`platform`, o
+ * mesmo texto) fica fora dele. O envelope é físico e conta todo arquivo, inclusive os da plataforma.
+ */
 export function studioProBuildFileLimitError(
   files: Readonly<Record<string, string>>,
   limits: Partial<StudioProBuildLimits> = STUDIO_PRO_BUILD_LIMITS,
+  platform?: StudioProVerifiedPlatformFiles,
 ): StudioProBuildFileLimitError | null {
   const resolved = { ...STUDIO_PRO_BUILD_LIMITS, ...limits }
-  const entries = Object.entries(files)
+  const entries = Object.entries(files).filter(([path, content]) => platform?.get(path) !== content)
   if (entries.length === 0) return 'EMPTY'
   if (entries.length > resolved.maxFiles) return 'TOO_MANY_FILES'
 

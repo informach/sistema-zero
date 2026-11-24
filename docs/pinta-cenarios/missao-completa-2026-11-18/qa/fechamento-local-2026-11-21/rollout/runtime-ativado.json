@@ -1,0 +1,93 @@
+{
+  "at": "2026-11-21T09:03:20.371Z",
+  "source": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "version": "eb779fcd-ba5c-4614-93f7-69aba37cf21f",
+  "nextSelector": "fa8847d2433f1288cdb2adc2a33181b6a1d8fb0e7f872095da4d2d85662c288f",
+  "profile": "da629a58eb2369b6e1363c6ca26b75b156f9e519b7097f843b7b770e1174e4f6",
+  "modules": [
+    {
+      "name": "worker.js",
+      "bytes": 1979073,
+      "sha256": "670c8c32d33cf541dc16b6ff81e3c5acf0978626ef6844f7fefaf316f668cf6a"
+    }
+  ],
+  "containers": [
+    {
+      "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-598824bd1@sha256:96ba9718a3e357e65f6361490aee1cad2907e145161b7f1fa96b1b4ce0e6bcb7",
+      "health": {
+        "errors": [],
+        "instances": {
+          "active": 0,
+          "assigned": 0,
+          "healthy": 5,
+          "stopped": 0,
+          "failed": 0,
+          "scheduling": 0,
+          "starting": 0
+        }
+      }
+    },
+    {
+      "id": "a03599fe-80d3-4b3d-ba17-fdf5131aeb18",
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-598824bd1@sha256:96ba9718a3e357e65f6361490aee1cad2907e145161b7f1fa96b1b4ce0e6bcb7",
+      "health": {
+        "errors": [],
+        "instances": {
+          "active": 0,
+          "assigned": 0,
+          "healthy": 5,
+          "stopped": 0,
+          "failed": 0,
+          "scheduling": 0,
+          "starting": 0
+        }
+      }
+    }
+  ],
+  "served": [
+    {
+      "release": "2026-10-22-visual-games-3",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "status": 200
+    },
+    {
+      "release": "2026-10-25-project-objectives-1",
+      "manifestSha256": "9e5441dc67a8d0a435c2ea1e9dfaf66eb7d9b8fa5a0d78c64c2e97da101d3e1e",
+      "status": 200
+    },
+    {
+      "release": "2026-10-25-raylib-1",
+      "manifestSha256": "ebf22fb7962d057fd29757c4b7d5e4c5fc69d9b3c11b92c0cb116c7386fba078",
+      "status": 200
+    },
+    {
+      "release": "2026-10-25-integrated-games-2",
+      "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+      "status": 200
+    },
+    {
+      "release": "2026-11-20-pinta-cenarios-6",
+      "manifestSha256": "cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0",
+      "status": 200
+    }
+  ],
+  "files": [
+    {
+      "path": "playtest.mjs",
+      "bytes": 749924,
+      "sha256": "f33cbc09f5e74508d32817f2df4c50ddf4178ccd4450fd2029309dbd81d725d1",
+      "status": 200
+    },
+    {
+      "path": "standalone.mjs",
+      "bytes": 747731,
+      "sha256": "3b2b81bad6a52bb6069f6a684e8f11a7216fc10a37bde14a232e91f9d4512c9b",
+      "status": 200
+    }
+  ],
+  "previousPublicReleasesPreserved": 4,
+  "policyActivated": false,
+  "writerActivated": false,
+  "stagingOnly": true
+}

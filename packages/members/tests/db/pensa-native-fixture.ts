@@ -19,6 +19,7 @@ import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/d
 import { DrizzleAvatarRepository } from '../../src/infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from '../../src/infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
@@ -45,8 +46,9 @@ export async function nativePensa(
   blocks = false,
   privileged = false,
   audience: 'kids' | 'adult' = 'kids',
+  open: (name: string) => Promise<DbConnection> = openPensaTestDatabase,
 ) {
-  const conn = await openPensaTestDatabase(name)
+  const conn = await open(name)
   let now = new Date('2026-10-16T12:00:00.000Z')
   const learnerId = randomUUID()
   const actor: P.PensaActor = {

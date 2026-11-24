@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A cabana do faroleiro\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A cabana do faroleiro\n\nMaster integral da professora. Roteiro: cabana-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E onde fica esse emblema novo?\",\"falaPersonagem\":\"E onde fica esse emblema novo?\",\"ancoraAntes\":\"seguro a seta de baixo, o personagem desce até a cabana. E repare no aviso aqui em cima: ele diz o que a cabana pede.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Tente a cabana sem nada, só com uma peça e com as duas. A tecla R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: use as setas para andar, procure as duas peças e abra a cabana. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2177,19 +2177,19 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: cabana-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto, com o que investigar na experiência e cada montagem. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A porta com duas peças\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A porta com duas peças\n\nMaster integral da professora. Roteiro: cabana-aula-1.roteiro.md, clipe video-experiencia. Substituições kids: [{\"id\":\"video-experiencia-K1\",\"clipe\":\"video-experiencia\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E a ordem em que o personagem pega as peças importa?\",\"falaPersonagem\":\"E a ordem em que o personagem pega as peças importa?\",\"ancoraAntes\":\"uma vale verdadeiro ou falso. E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando a cabana abre e quando continua\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2242,26 +2242,26 @@
     },
     {
       "key": "video-emblema",
-      "plannedVideo": "Título: Guarde o emblema\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-emblema. Gravação pendente."
+      "plannedVideo": "Título: Guarde o emblema\n\nMaster integral da professora. Roteiro: cabana-aula-1.roteiro.md, clipe video-emblema. Substituições kids: [{\"id\":\"video-emblema-K1\",\"clipe\":\"video-emblema\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E por que temEmblema começa em falso?\",\"falaPersonagem\":\"E por que temEmblema começa em falso?\",\"ancoraAntes\":\"e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do 0. Depois clique em verdadeiro e escolha falso.\",\"ancoraDepois\":\"Porque, quando a partida começa, o personagem ainda não pegou o emblema. Confira se ficou assim: no fim de Ao iniciar\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-emblema",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora ensine o seu jogo a guardar o emblema: crie temEmblema começando em falso e, no encontro, faça o emblema sumir, guardar verdadeiro e mudar o aviso. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Agora ensine o seu jogo a guardar o emblema! Crie temEmblema começando em falso e, no encontro com o emblema, faça o emblema sair do chão, guardar verdadeiro e mudar o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-porta",
-      "plannedVideo": "Título: A cabana pede as duas\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-porta. Gravação pendente."
+      "plannedVideo": "Título: A cabana pede as duas\n\nMaster integral da professora. Roteiro: cabana-aula-1.roteiro.md, clipe video-porta. Substituições kids: [{\"id\":\"video-porta-K1\",\"clipe\":\"video-porta\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Ué, por que a cabana não abriu só com a chave?\",\"falaPersonagem\":\"Ué, por que a cabana não abriu só com a chave?\",\"ancoraAntes\":\"diz que ela pede a chave e o emblema. Agora toque na tecla R, pegue só a chave e vá até a cabana. Ela continua fechada.\",\"ancoraDepois\":\"Porque, com a palavra e, a cabana pede as duas peças: temChave é verdadeiro, mas temEmblema ainda é falso, e por isso a\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-porta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de ensinar a cabana a perguntar! Se temChave e temEmblema, ela abre; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto e em Próxima parte."
+        "text": "Hora de ensinar a cabana a perguntar! Monte o encontro com a cabana e o Se com temChave e temEmblema: no então, a cabana abre e avisa; no senão, ela avisa o que pede. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2269,7 +2269,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na cabana! As perguntas retomam uma peça só, o \"ou\", o que pode estar errado e os testes. Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2361,18 +2361,6 @@
             "explanation": "A regra tem que abrir com as duas e ficar fechada com uma só, qualquer que seja. Testando só com as duas, uma regra com \"ou\" passaria sem você perceber."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com a cabana\n\nMaster integral da professora: cabana-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -3871,7 +3859,7 @@
                     }
                   },
                   "x": 32,
-                  "y": 392
+                  "y": 32
                 },
                 {
                   "type": "sz_frame_events",
@@ -4039,8 +4027,8 @@
                       }
                     }
                   },
-                  "x": 452,
-                  "y": 392
+                  "x": 957,
+                  "y": 32
                 },
                 {
                   "type": "sz_frame_loops",
@@ -4296,8 +4284,8 @@
                       }
                     }
                   },
-                  "x": 872,
-                  "y": 392
+                  "x": 1810,
+                  "y": 32
                 }
               ]
             }
@@ -10356,10 +10344,6 @@
             "porta": {
               "entryExampleId": "fa15ca02-0000-4000-8000-000000000002",
               "solutionExampleId": "fa15ca02-0000-4000-8000-000000000003"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca02-0000-4000-8000-000000000003",
-              "solutionExampleId": "fa15ca02-0000-4000-8000-000000000003"
             }
           }
         }
@@ -10373,9 +10357,9 @@
         "bookPreview": true,
         "items": [
           {
-            "id": "passos",
+            "id": "texto-ajuda",
             "kind": "text",
-            "markdown": "# Passo a passo do projeto — O segredo da cabana\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## A experiência: a porta com duas peças\n\n**A ideia:** O jogo anota num caderninho se o personagem já pegou cada peça (na montagem, as variáveis temChave e temEmblema), e a cabana faz uma pergunta quando ele chega nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.\n\n**O que investigar:**\n\n- Vá até a cabana sem nenhuma peça e observe.\n- Vá até a cabana com uma peça só e observe.\n- Vá até a cabana com as duas peças e observe.\n- Compare começando pela chave e começando pelo emblema.\n- Troque o \"e\" pelo \"ou\" na pergunta da cabana e teste com uma peça só.\n\nAntes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.\n\n## Aula 1 · Jogo 2D: Duas peças para abrir\n\n### Guarde o emblema\n\n**Relembre:** A variável temEmblema guarda se o personagem já pegou o emblema. Toda partida começa com falso; o encontro com o emblema faz ele sumir e muda para verdadeiro, como a chave.\n\n1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.\n2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva temEmblema.\n3. O valor chega com 0. Abra Programação → Lógica e Se, pegue verdadeiro e solte em cima do 0. No menu, escolha falso.\n4. Em Quando acontecer, deixe à vista um espaço vazio depois do último evento, fora do fazer dos outros. Abra Jogo 2D → Colisões → Encostar e bloquear e pegue Quando o sprite começar a encostar no sprite. Clique em jogador e escolha personagem; clique em inimigo e escolha emblema.\n5. Dentro do fazer, encaixe Destruir o sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique em resposta e escolha emblema.\n6. Logo abaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha temEmblema e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.\n7. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Você pegou o emblema!\n\n**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Toque na tecla R: o emblema volta.\n\n**Se não funcionar:** Se o emblema não sumir, confira se o encontro usa personagem e emblema. Não crie temEmblema dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.\n\n### A cabana pede as duas\n\n**Relembre:** O encontro com a cabana pergunta temChave e temEmblema. O bloco e só responde sim quando as duas são verdadeiras: sim escolhe o então, que abre a cabana; não escolhe o senão, que avisa.\n\n1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com o emblema, fora do fazer dele. Abra Jogo 2D → Colisões → Encostar e bloquear, pegue Quando o sprite começar a encostar no sprite e encaixe ali. Clique em jogador e escolha personagem; clique em inimigo e escolha cabana.\n2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.\n3. Abra Programação → Lógica e Se e pegue o bloco que tem a palavra e no meio (ele chega como 0 e 0). Solte no lugar vazio ao lado de Se.\n4. Abra Programação → Valores e solte valor da variável em cima do primeiro 0; escolha temChave. Solte outro valor da variável em cima do segundo 0; escolha temEmblema.\n5. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.\n6. Dentro do então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha cabana; no segundo, escolha cabana-aberta.\n7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.\n8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.\n\n**Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.\n\n**Se não funcionar:** Se a cabana abrir com uma peça só, a pergunta usa ou no lugar de e, ou falta uma das variáveis. Se ela não abrir com as duas, confira se temEmblema muda para verdadeiro no encontro com o emblema e se a abertura está dentro do então.\n\n## Aula 2 · Ilha 3D: Duas peças na ilha\n\n### Guarde o emblema\n\n**Relembre:** A variável temEmblema guarda se o personagem já pegou o emblema. Toda partida começa com falso; o encontro com o emblema faz ele sumir e muda para verdadeiro, como a chave.\n\n1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.\n2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva temEmblema.\n3. O valor chega com 0. Abra Programação → Lógica e Se, pegue verdadeiro e solte em cima do 0. No menu, escolha falso.\n4. Em Quando acontecer, deixe à vista um espaço vazio depois do último evento, fora do fazer dos outros. Abra Jogo 3D → Encostar → Encostar e pegue Quando personagem encostar em. O primeiro nome já vem personagem; deixe assim. No segundo, escolha emblema.\n5. Dentro do fazer, encaixe Esconder o objeto, de Jogo 3D → Objetos → Aparência, e escolha emblema.\n6. Logo abaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha temEmblema e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.\n7. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Você pegou o emblema!\n\n**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Toque na tecla R: o emblema volta.\n\n**Se não funcionar:** Se o emblema não sumir, confira se o encontro usa personagem e emblema. Não crie temEmblema dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.\n\n### A cabana pede as duas\n\n**Relembre:** O encontro com a cabana pergunta temChave e temEmblema. O bloco e só responde sim quando as duas são verdadeiras: sim escolhe o então, que abre a cabana; não escolhe o senão, que avisa.\n\n1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com o emblema, fora do fazer dele. Abra Jogo 3D → Encostar → Encostar, pegue Quando personagem encostar em e encaixe ali. O primeiro nome já vem personagem; no segundo, escolha cabana.\n2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.\n3. Abra Programação → Lógica e Se e pegue o bloco que tem a palavra e no meio (ele chega como 0 e 0). Solte no lugar vazio ao lado de Se.\n4. Abra Programação → Valores e solte valor da variável em cima do primeiro 0; escolha temChave. Solte outro valor da variável em cima do segundo 0; escolha temEmblema.\n5. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.\n6. Dentro do então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha abrir. Clique em heroi e escolha cabana. No modo, escolha uma vez.\n7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.\n8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.\n\n**Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.\n\n**Se não funcionar:** Se a cabana abrir com uma peça só, a pergunta usa ou no lugar de e, ou falta uma das variáveis. Se ela não abrir com as duas, confira se temEmblema muda para verdadeiro no encontro com o emblema e se a abertura está dentro do então.\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n"
+            "markdown": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer."
           },
           {
             "id": "como-estudio",
@@ -10384,7 +10368,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
@@ -10509,357 +10511,15 @@
     {
       "key": "porta",
       "title": "A cabana pede as duas",
-      "intent": "application",
-      "objective": "A cabana pede as duas.",
-      "blockKeys": ["video-porta", "ponte-porta"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-porta"],
-        "projectChecks": [
-          {
-            "id": "recolher",
-            "label": "Retire o emblema dentro do encontro entre personagem e emblema.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_overlap",
-              "area": "events",
-              "fieldAlternatives": [
-                {
-                  "A": "personagem",
-                  "B": "emblema"
-                },
-                {
-                  "A": "emblema",
-                  "B": "personagem"
-                }
-              ],
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_destroy_sprite",
-                  "fields": {
-                    "SPRITE": "emblema"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "sem-pecas",
-            "label": "Sem nenhuma peça, a cabana fica fechada e o aviso diz o que ela pede.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["chave", "emblema"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.image.url"
-                },
-                "compare": "notContains",
-                "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "so-chave",
-            "label": "Só com a chave, a cabana continua fechada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["cabana", "emblema"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["emblema"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.image.url"
-                },
-                "compare": "notContains",
-                "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 1,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": true
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "so-emblema",
-            "label": "Só com o emblema, a cabana continua fechada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "emblema",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["cabana", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.image.url"
-                },
-                "compare": "notContains",
-                "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "duas",
-            "label": "Com a chave e o emblema, a cabana abre.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["cabana", "emblema"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "emblema",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["cabana"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 3000
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.image.url"
-                },
-                "compare": "contains",
-                "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-              }
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Pegando o emblema antes da chave a cabana também abre, e uma nova partida (tecla R) a fecha.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "emblema",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["cabana", "chave"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["cabana"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "cabana",
-                  "timeoutMs": 3000
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "cabana.image.url"
-                },
-                "compare": "notContains",
-                "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 4,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "cabana.image.url"
-                    },
-                    "compare": "contains",
-                    "value": "IDQ5LjIgWiIgZmlsbD0iIzNiNWRjOSIgc3Ryb2tlPSIjZjNiMTIzIiBzdHJva2Utd2lkdGg9IjEiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ3LDU0IDQ5LDU0IDQ4LjYsNDkuNiA0Ny40LDQ5LjYiIGZpbGw9IiNmM2Y2ZmIiLz4KPC9zdmc+"
-                  }
-                },
-                {
-                  "afterStep": 6,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "temChave"
-                    },
-                    "compare": "equals",
-                    "value": false
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "farol",
-            "label": "O farol continua: com a chave, ele acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["emblema", "cabana"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "farol.image.url"
-                },
-                "compare": "contains",
-                "value": "IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjggNzguNjM2MyAxMzguMjEzKSIvPgogICAgCiAgPGVsbGlwc2UgY3g9Ijc1LjA5NzUiIGN5PSIyLjUxNzUiIHJ4PSIyLjQxMDYyIiByeT0iMi40NDYyNSIgZmlsbD0iI2NmM2YzNiIvPgo8L3N2Zz4="
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na cabana",
-      "intent": "explanation",
-      "objective": "Pense na cabana.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie o seu jogo com a cabana",
       "intent": "delivery",
-      "objective": "Envie o seu jogo com a cabana.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "A cabana pede as duas.",
+      "blockKeys": ["video-porta", "ponte-porta", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-porta", "projeto"],
         "projectChecks": [
           {
             "id": "recolher",
@@ -11175,6 +10835,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na cabana",
+      "intent": "closing",
+      "objective": "Pense na cabana.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

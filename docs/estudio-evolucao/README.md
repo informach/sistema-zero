@@ -1,0 +1,212 @@
+# Evolução do Estúdio (Clássico e Pro)
+
+**Régua principal desde 21/11/2026:** o texto original da missão, com as 21 seções, em
+[`missao-original.md`](missao-original.md), com as decisões posteriores da dona anotadas no topo.
+O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md`. O estado de cada
+seção, com a evidência e o que falta, fica versionado em [`mapa-da-missao.md`](mapa-da-missao.md),
+atualizado a cada lote. **Fecho do plano de 21/11 (lotes 1 a 8 e full review final):**
+[`entrega-final.md`](entrega-final.md), com os 17 entregáveis da seção 20, o que ficou concluído, o
+que ficou pendente e como retomar.
+
+**Retomada de 20/11/2026** (Claude Code, a pedido da dona: revisão completa e conclusão da missão).
+O plano vigente está em `~/.claude/plans/foi-feito-um-plano-transient-rabin.md` (etapas 1 a 11) e a
+régua é este `plano-execucao.md` mais o relatório de 20/11 que ela trouxe. A revisão completa do que
+o Claude na nuvem (17/11) e o Codex (18 a 20/11) fizeram, com a situação de cada achado e o
+andamento do dia, está em [`revisao-2026-11-20.md`](revisao-2026-11-20.md). Os parágrafos abaixo
+são o registro das retomadas anteriores.
+
+Retomada de 19/11/2026: o trabalho agora ocorre na `staging` da pasta
+principal, conforme orientação da dona, preservando alterações das frentes
+paralelas e sem novas worktrees. A revisão atual e a correção do ciclo de
+vida da montagem sob demanda estão em
+[`studio-retomada-staging.md`](../qa/2026-11-19-studio-retomada-staging.md).
+O histórico abaixo não representa homologação integral da revisão atual.
+O [inventário dos runtimes](capacidades-dos-runtimes.md) registra a
+arquitetura existente e distingue as capacidades disponíveis das pendentes.
+A [correção da troca de documentos da prévia](../qa/2026-11-19-studio-preview-resource-commit.md)
+registra a regressão reproduzida, os testes novos e a falha de entrada ainda aberta.
+O [mapa completo do Pro](../qa/2026-11-19-studio-pro-file-map.md) corrige o
+descarte de símbolos e registra o ensaio de mil arquivos; a etapa Pro segue parcial.
+
+Registro vivo da missão. Branch `estudio-evolucao`, criada da `staging` em `bf6e895f` (17/11/2026).
+Os incrementos até `37f4d4e3a` foram integrados à `staging`. Isso não concluiu a missão.
+Esta frente não implantou em produção. A revisão e a continuação estão registradas em
+[`continuidade-2026-11-18.md`](continuidade-2026-11-18.md).
+
+Continuação em worktree isolada, a partir de `d9ebd3fef`:
+[`plano-execucao.md`](plano-execucao.md) cobre toda a missão fornecida pela dona,
+preservando a identidade visual. [`diagnostico-windows.md`](diagnostico-windows.md)
+registra inspeção, ambiente, medições novas e limites da evidência. Etapas pendentes
+continuam pendentes; esta continuação não é a conclusão global da missão.
+
+## Regra que bloqueia qualquer entrega
+
+Os cursos **Cadê Todo Mundo?** e **Desafio do Primeiro Jogo — A Chave do Farol** foram gravados por
+inteiro (confirmado pela dona em 17/11/2026). O que eles ensinam no Estúdio clássico não pode mudar:
+blocos, textos, cores, campos, opções, padrões, caminho na paleta, áreas, prévia e projetos salvos.
+
+> Divergência anotada: documentos antigos do repositório dizem "gravação não confirmada" para o
+> Farol. Vale a palavra dela; a proteção é integral nos dois.
+
+## Diagnóstico de partida (código de 17/11/2026)
+
+1. A prévia do Clássico roda na mesma thread do editor (`PreviewIframe`, iframe `srcdoc`). Trabalho
+   síncrono que não é laço congela a IDE; o vigia detecta, mas o Parar fica preso.
+2. Nada é incremental no Clássico JS: cada edição serializa o espaço inteiro, refaz a IR, os
+   diagnósticos e os três arquivos; cada salvamento regrava a partição de blocos inteira.
+3. Os cursos protegidos não tinham teste que reproduzisse o gesto da criança.
+4. Pro: o editor aceita 5.000 arquivos e o compilador remoto 80; o WebContainer chega a 2,4 a 2,7 GiB.
+5. Não existem depurador, medidor de desempenho, testes do usuário nem carregamento por regiões.
+
+O documento da prévia tem 57 bytes de folga no teto de 790.000 (Reino Zero): nenhuma solução de
+isolamento pode acrescentar bytes a ele.
+
+## Pacotes e estado
+
+| Pacote | O que é | Estado |
+|---|---|---|
+| A1 | Matriz de compatibilidade e travas estáticas dos dois cursos | **feito** |
+| A2 | Aula montada no playground (`/aula?aula=`) | **feito** |
+| A3 | Reprodução dos gestos das aulas no navegador (Playwright) | **feito** |
+| A4 | Objetivos que rodam o jogo, no executor do servidor | **feito**: o executor de verdade aprova os 17; Verificar, Enviar e Concluir conferidos em 20/11 na página real de staging, uma aula de cada curso (Cadê adulto e Desafio no Kids, [`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md)) |
+| A5 | Âncora morta "Atualizar o preview" na documentação | **feito** |
+| B0 | Medição do isolamento da prévia | **feito** nas três engines (18/11); no Firefox, refeita em 20/11 com o isolamento por site do Firefox de mesa ([`../qa/2026-11-20-studio-firefox-site-isolation.md`](../qa/2026-11-20-studio-firefox-site-isolation.md)) |
+| B3 | Programas hostis no Estúdio + o jogo preso deixa de segurar a prévia | **parcial**: o reinício após trabalho nativo falha no Chromium 148/Windows, inclusive com os arquivos originais da branch |
+| B1 | Marca de execução e salvar antes do comando explícito de Rodar | Marca já existente; salvamento explícito implementado nesta continuação, com testes de falha/cancelamento/autoridade; atualizações automáticas ainda seguem o autosave |
+| B2 | Prévia em outra origem | **casca ligada em staging** (20/11/2026, decisão dela; produção de fora): o layout raiz dos dois apps entrega a URL ao Estúdio, a lista de origens é secret do Worker de staging, sem COEP na página (o Firefox de mesa isola com ela sem COEP). Sem resposta em 4 s, a prévia volta ao documento direto. Conferida no app logado em 20/11 ([`../qa/2026-11-20-studio-casca-staging.md`](../qa/2026-11-20-studio-casca-staging.md)): isolamento, Parar e conserto aprovados; achou as setas sem chegar ao jogo depois de Rodar (consertado em `590c6ff48`). Desligada até o Worker sair com o conserto; **religada em 21/11** (apps em `61ef65f2d`) e conferida logada no app adulto, numa aula com vídeo e no Kids: as teclas chegam sem clicar no palco ([`../qa/2026-11-21-studio-casca-staging.md`](../qa/2026-11-21-studio-casca-staging.md)) |
+| B4 | Estudo do Jogo 2D em Worker | pendente; decisão registrada para o WebKit (nenhum arranjo de iframe isola; Worker exige proxy de DOM) |
+| C0 | Perfil do Clássico por etapa, sem tela ([`classico-em-escala.md`](classico-em-escala.md)) | **feito**; falta o perfil no navegador |
+| C1 | Perfil de CPU e três desperdícios tirados: a edição com 10 mil blocos foi de 444 ms para 199 ms | **feito** |
+| C5 | Perfil no navegador: o que sobra é a quantidade de nós desenhados (abrir 5 mil blocos leva 18 s; arrastar prende a página) | **feito** (sem placa de vídeo) |
+| C3, montagem sob demanda | Diagnósticos mais fundos; desenhar só o que está perto da tela, fora das aulas | **parcial**: abertura sem trabalho repetido (19/11/2026, 5 mil blocos de 16,7–17,8 s para 13,9–14,0 s, duas amostras por braço, sem artefato bruto versionado); a abertura sem desenhar a cauda distante está em andamento (etapa 3 do plano de 20/11) |
+| C6, botões do canto dos blocos | Pedido dela em 20/11: centralizar, aproximar, afastar e a lixeira sumiam e no lugar vinha uma imagem esquisita; o conserto pôs ícones locais mais feios, a lixeira ficou por baixo dos blocos e não abre mais a tampa | **feito** (20/11): a causa do sumiço é o servidor de demonstração, que passou ao Blockly 13 e tirou o `sprites.png` (404); o Estúdio segue no Blockly 12.5.1. A lixeira foi para cima dos blocos (o Blockly 12 a punha antes da camada dos blocos) e os cinco desenhos usam o `sprites.svg` do mesmo SDK (o PNG de 96x124 ampliado serrilhava). O código saiu do pacote de abertura do modo Blocos (`blockly/workspaceControls.ts`, baixado logo depois da injeção), que ficou com 267 bytes de folga; o CSS esconde os dois até irem para o lugar, só nos editores do Estúdio. Provado em `e2e/blockly-media.spec.ts` no Chromium, no Firefox e no WebKit, com sabotagem; as cinco aulas protegidas passam |
+| D a K | Pro em escala, depuração, desempenho, motores, testes do usuário, Pinta e Molda, persistência, homologação | o estado por seção está em [`mapa-da-missao.md`](mapa-da-missao.md). Persistência v4: a rodada de homologação de 19/11 (`docs/qa/2026-11-19-studio-v4-homologacao.md`) terminou em falha; P1, P2 e P4 foram corrigidos e o P3 saiu pela opção 1, escolhida pela dona em 21/11 (`88eab2a15`) |
+
+## A1: o que existe e como rodar
+
+- `docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.ts`: gera a matriz a partir dos
+  manifestos, dos gestos entre colchetes dos roteiros e do catálogo de blocos.
+- `matriz-compatibilidade.md` (para ler) e `.json` (retrato completo): arquivos gerados. Regravar com
+  `bun docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.ts --gravar`. **Regravar é admitir
+  uma mudança no que foi ensinado**: só com decisão dela.
+- `matriz-compatibilidade.test.ts` (43 testes): o retrato inteiro; cada gesto de paleta dos roteiros
+  achado na paleta real da aula; e uma tabela escrita à mão, que não se regrava, com 19 blocos
+  (texto, caminho, padrões, opções).
+- `packages/studio/src/blockly/__tests__/protectedCourses.test.ts` (15 testes): os sete projetos
+  das aulas (o inicial de cada aula e os dois jogos finais) carregados num Blockly sem tela. Os
+  blocos gravam de volta iguais e o código gerado é o guardado no projeto.
+
+```bash
+bun test docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.test.ts
+```
+
+```bash
+cd packages/studio && bun test src/blockly/__tests__/protectedCourses.test.ts
+```
+
+### Achados de A1
+
+- 35 tipos de bloco ensinados (23 no Cadê, 28 no Farol). A paleta de toda aula tem as mesmas
+  quatro categorias, nesta ordem: Áreas do projeto, Blocos deste jogo, Programação, Jogo 2D.
+- Nenhuma divergência hoje entre os roteiros e a paleta real.
+- Os sete projetos declaram `game-2d@1.2.0`; o manifesto da extensão está em 2.1.0. Fica registrado,
+  sem conserto: os projetos abrem e geram o mesmo código.
+- O `script.js` guardado nos projetos difere do gerado pelos blocos só na chave interna de cada
+  evento (nome escrito à mão no arquivo, id do bloco na geração). O programa é o mesmo; o teste
+  compara ignorando essa chave e também confere que a IR guardada gera o arquivo guardado, byte a byte.
+
+## A2 e A3: as aulas refeitas no navegador
+
+- **A aula no playground** (`packages/studio/playground/lessonHarness.tsx`):
+  `/aula?aula=<curso>/<aula>&bloco=<chave>` monta o `StudioLesson` com o projeto inicial, o nível,
+  os blocos liberados e os modos do manifesto, com os mesmos cortes da página da aula, sem gravar.
+- **O robô de gravação dirigido pelo Playwright** (`packages/studio/e2e/helpers/palco.ts`): a
+  biblioteca que gravou as aulas (`packages/palco-gravacao/src/lib/{verbos,pagina}.ts`) entra na
+  página e o Playwright faz a mão. Nada foi reescrito: é o mesmo código que achou cada bloco na
+  gravação.
+- **O teste** (`packages/studio/e2e/protected-lessons.spec.ts`), uma aula por caso, cinco casos:
+  refaz na ordem todos os gestos de Estúdio do roteiro e, ao fim de cada parte, confere
+  1. os objetivos da parte (`scripts/check-lesson-objectives.ts`): os de **estrutura** com a
+     régua do servidor e, com um Chromium apontado (`SZ_CHECK_CHROMIUM` ou `PW_CHROMIUM`), os de
+     **execução** no executor do servidor (`studio-runtime/runtime/check-objectives.mjs`, com o
+     documento que o Members monta). É o caminho inteiro menos o Worker e o contêiner;
+  2. o `script.js` que a parte deixa pronto contra a referência guardada em
+     `e2e/fixtures/protected-lessons/<aula>/<parte>.script.txt` (13 arquivos, código gerado exato, sem formatação);
+  3. nas partes de chegada (Cadê aula 2 "contar-achados" e Farol dia 3 "decisao"), que o jogo
+     montado é o **projeto final do curso**, linha por linha.
+
+```bash
+cd packages/studio && bunx playwright test e2e/protected-lessons.spec.ts --project=chromium --trace off
+```
+
+Neste ambiente o Chromium instalado é de outra revisão que a do pacote: acrescente
+`PW_CHROMIUM=/opt/pw-browsers/chromium` (a variável é nova e opcional; sem ela nada muda).
+Regravar as referências: `PROTECTED_LESSONS_UPDATE=1`, só com decisão dela.
+
+### Resultado em 17/11/2026 (staging `bf6e895f`, antes de qualquer mudança funcional)
+
+| Aula | Partes de Estúdio | Gestos refeitos | Objetivos de estrutura | Objetivos de execução | Tempo |
+|---|---|---|---|---|---|
+| Cadê, aula 1 | 1 | 22 | 0 | 2 de 2 | 23 s |
+| Cadê, aula 2 | 2 | 35 | 0 | 4 de 4 | 48 s |
+| Farol, dia 1 | 2 | 55 | 5 de 5 | 4 de 4 | 1,2 min |
+| Farol, dia 2 | 3 | 99 | 19 de 19 | 2 de 2 | 1,9 min |
+| Farol, dia 3 | 5 | 188 | 25 de 25 | 5 de 5 | 3,6 min |
+
+Total: 399 gestos, **66 de 66 objetivos** (49 de estrutura, 17 de execução). Sem o Chromium
+apontado, os 17 de execução saem sem nota e o teste não os cobra.
+
+- **Prova de que o teste morde:** com o texto de "Deixar o sprite … com … % de visibilidade"
+  trocado para "Tornar o sprite…", a aula 1 do Cadê reprova no gesto 14 com a frase do robô
+  ("Não achei o bloco "Deixar o sprite" na paleta"). A mudança foi desfeita.
+- **O jogo montado pelos gestos é o projeto final**, nos dois cursos. As partes seguintes
+  (personalização) mudam só as imagens e as frases que o roteiro manda mudar.
+- Capturas de tela de cada parte: `docs/estudio-evolucao/evidencias/a3-antes/`. São o "antes" de
+  toda mudança funcional daqui em diante.
+
+### O que A3 não cobre
+
+- Gestos da **página da aula**: expandir e reduzir o Estúdio, Verificar projeto, Enviar meu
+  projeto, Próxima parte, Concluir aula e o Compartilhar (ficam para A4, com o app de verdade).
+- A verificação **pela página da aula**: o executor roda aqui fora do Worker e do contêiner, e
+  ninguém clica em Verificar projeto nem em Enviar no app de verdade.
+- As partes sem Estúdio (jogo pronto, caderno, experiências).
+- Só Chromium, tela de 1440 por 900, o Estúdio no tamanho "expandido" da gravação.
+
+## Pacote B: isolamento da prévia
+
+Detalhes, tabelas e o que falta: [`isolamento-da-previa.md`](isolamento-da-previa.md). Em resumo:
+
+- No Chromium de mesa a prévia de hoje **já roda em outro processo**: um travamento de 5 s nela
+  atrasa o relógio do editor 51 ms.
+- O teste de programas hostis achou um defeito de verdade: com o jogo preso, o código consertado
+  só rodava quando o travamento antigo terminava. Agora o Parar (e o Rodar de novo com a prévia
+  muda, e um documento novo que não carrega em 3 s) põe um iframe novo no lugar, que roda na hora.
+- **Primeira mudança funcional desta frente.** Portão depois dela (17/11/2026): as cinco aulas
+  protegidas passam, com as mesmas 13 referências de código e a igualdade com o projeto final;
+  mais `preview-security`, `preview-executes-user-code`, `behavior-lifecycle`, `reopen-blocks` e o
+  smoke: 41 de 43. As duas que reprovam estão abaixo e não passam pelo código que mudou.
+
+### Falhas que já existiam antes desta frente
+
+`e2e/public-player-security.spec.ts` (o perfil criativo deveria deixar passar um GET de imagem, e o
+teste conta zero pedidos) reprova neste ambiente. Ele monta um iframe próprio com
+`src/preview/renderProject`, pasta que esta branch não tocou (`git diff bf6e895f -- src/preview`
+vazio); a suspeita é a interceptação de rede do Playwright com o Chromium de outra revisão. Não
+foi conferido na `staging` intocada.
+
+
+`e2e/smoke.spec.ts` › "Pensa: recolher e abrir preserva editor e histórico" reprova na `staging`
+intocada (`bf6e895f`) neste ambiente, sempre no mesmo ponto: o botão Desfazer da barra não tira o
+texto digitado no código da Ponte. Conferido com os arquivos da `staging` no lugar dos desta
+branch. Não foi investigado ainda (pode ser a revisão do Chromium daqui, 1243, diferente da que o
+pacote pede, ou um defeito real); fica na lista do pacote J. Os outros 16 casos do smoke passam.
+
+### Materiais e limites da conferência
+
+A matriz afirma o que está nos roteiros e nos manifestos. A continuação inspecionou os dois PDFs
+versionados: índice de texto das 13 e 35 páginas, leitura dirigida e cinco páginas visuais
+completas das instruções protegidas.
+Hashes e páginas inspecionadas estão em `evidencias/pdf-inventario.json`. Os vídeos gravados
+não foram acessados; não se presume o conteúdo deles. A proteção integral continua sendo a
+confirmada pela dona para os dois cursos.

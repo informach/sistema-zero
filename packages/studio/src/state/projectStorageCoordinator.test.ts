@@ -418,9 +418,7 @@ describe('local revision transactions on IndexedDB', () => {
     })
     const keys = await readAllKeys(scope.store)
     expect(keys.some((key) => String(key).includes('project-recovery:arena:'))).toBe(false)
-    const recoveredKey = keys.find((key) =>
-      String(key).startsWith('sz:v3:project-files:recuperado-'),
-    )
+    const recoveredKey = keys.find((key) => String(key).startsWith(projectFilesKey('recuperado-')))
     expect(recoveredKey).toBeDefined()
     expect(await readValue(scope.store, recoveredKey!)).toMatchObject({
       tree: { 'main.ts': { kind: 'file', content: 'export const exit = true' } },
@@ -475,7 +473,7 @@ describe('local revision transactions on IndexedDB', () => {
   it('migrates v2 with backup and isolates a later v2 writer as a recovered copy', async () => {
     const scope = database()
     const project = createEmptyProject('old-v2', 'Antigo')
-    const legacy = projectStorageEntries(project).map(
+    const legacy = projectStorageEntries(project, 3).map(
       ([key, value]) => [key.replace('sz:v3:', 'sz:v2:'), value] as const,
     )
     await writeInOneTransaction(scope.store, { puts: legacy })
@@ -485,7 +483,7 @@ describe('local revision transactions on IndexedDB', () => {
     })
     const changed = { ...project, files: { ...project.files, 'script.js': 'console.log("late")' } }
     await writeInOneTransaction(scope.store, {
-      puts: projectStorageEntries(changed).map(
+      puts: projectStorageEntries(changed, 3).map(
         ([key, value]) => [key.replace('sz:v3:', 'sz:v2:'), value] as const,
       ),
     })
@@ -496,12 +494,12 @@ describe('local revision transactions on IndexedDB', () => {
     })
     expect(
       (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith('sz:project-backup:'),
+        String(key).startsWith(`sz:v4:project-backup:`),
       ),
     ).toHaveLength(2)
     await deleteProject(recovered!, scope)
     await writeInOneTransaction(scope.store, {
-      puts: projectStorageEntries(changed).map(
+      puts: projectStorageEntries(changed, 3).map(
         ([key, value]) => [key.replace('sz:v3:', 'sz:v2:'), value] as const,
       ),
     })

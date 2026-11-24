@@ -9,11 +9,13 @@ import {
   loadExtensionExampleCatalogs,
 } from '#extensions'
 import { generateProjectFiles } from '#generators'
-import type { SZIRV2 } from '#ir'
-import { OFFICIAL_CATALOG } from '#official-extensions'
+import { assignStableIdsToIR, type SZIRV2 } from '#ir'
+import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
+import { registerBlockContracts } from '../blockly/blockContracts'
 import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { normalizeSearchText } from '../core/searchText'
+import { BIG_EXAMPLES, type BigExample } from '../examples/bigExamples'
 import {
   CORE_EXAMPLE_SUMMARIES,
   type CoreExampleSummary,
@@ -58,6 +60,8 @@ export interface KitEntry {
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
   assets?: readonly ProjectAsset[]
   workspaceOptions?: BuildWorkspaceStateOptions
+  /** A imagem do card, tirada do próprio jogo (os exemplos grandes, `examples/bigExamples.ts`). */
+  cover?: string
 }
 
 type GalleryEntry = KitEntry | PythonExampleEntry
@@ -294,6 +298,22 @@ function toEntry(
   }
 }
 
+/** Um exemplo grande: entra no grupo do motor dele e só carrega o jogo no clique. */
+function toBigEntry(example: BigExample, exampleFilesBaseUrl?: string): KitEntry {
+  return {
+    key: `${example.extensionId}:${example.name}`,
+    name: example.name,
+    description: example.description,
+    experience: example.experience,
+    emoji: KIT_EMOJI[example.name] ?? '🎮',
+    difficulty: example.difficulty,
+    concepts: example.concepts,
+    genre: example.genre,
+    cover: example.cover,
+    load: () => example.load(exampleFilesBaseUrl),
+  }
+}
+
 function toCoreEntry(summary: CoreExampleSummary): KitEntry {
   return {
     key: `core:${summary.name}`,
@@ -317,7 +337,18 @@ export interface KitGroupsResult {
   failedExtensionIds: string[]
 }
 
-export async function buildKitGroupsResult(t: Translator = defaultT): Promise<KitGroupsResult> {
+export interface KitGroupsOptions {
+  /**
+   * Onde buscar os arquivos dos exemplos GRANDES que moram fora do pacote (o jogo E): uma rota do
+   * próprio host. Sem ela, esses cards não aparecem.
+   */
+  exampleFilesBaseUrl?: string
+}
+
+export async function buildKitGroupsResult(
+  t: Translator = defaultT,
+  options: KitGroupsOptions = {},
+): Promise<KitGroupsResult> {
   const catalogs = await loadExtensionExampleCatalogs(OFFICIAL_CATALOG)
   const groups = catalogs.loaded.flatMap(([extensionId, examples]) => {
     const ext = OFFICIAL_CATALOG.find((candidate) => candidate.manifest.id === extensionId)
@@ -346,6 +377,11 @@ export async function buildKitGroupsResult(t: Translator = defaultT): Promise<Ki
       },
     ]
   })
+  for (const example of BIG_EXAMPLES)
+    if (!example.arquivo || options.exampleFilesBaseUrl)
+      groups
+        .find((group) => group.extensionId === example.extensionId)
+        ?.entries.push(toBigEntry(example, options.exampleFilesBaseUrl))
   if (CORE_EXAMPLE_SUMMARIES.length > 0) {
     groups.push({
       extensionId: 'core',
@@ -366,8 +402,20 @@ export async function buildKitGroups(t: Translator = defaultT): Promise<KitGroup
  * apenas deste módulo para a auditoria interna; não integra a API pública.
  */
 export function buildProjectFromKitEntry(entry: KitEntry): Project {
-  const { name, ir, assets } = entry
-  if (!ir) throw new Error(`O exemplo ${name} ainda não foi carregado.`)
+  const { name, ir: templateIR, assets } = entry
+  if (!templateIR) throw new Error(`O exemplo ${name} ainda não foi carregado.`)
+  // The initial executable and saved blocks must use the same identities.
+  // Otherwise first hydration replaces fallback event/cooldown keys and
+  // navigates the running game during input. Keep template metadata and IDs.
+  const ir = { ...templateIR, ...assignStableIdsToIR(templateIR, 'example') }
+  // O construtor troca por código o bloco que não cabe no lugar dele, mas só conhece o lugar de
+  // um bloco de extensão pelas regras registradas, e a galeria monta os blocos antes de o editor
+  // registrar as extensões do projeto. Sem isto, um bloco fora do lugar (o "Dar corpo físico"
+  // dentro de um "para cada" no jogo E) ia para o estado e a carga inteira falhava.
+  for (const extension of ir.extensions) {
+    const definition = findExtension(extension.extensionId)
+    if (definition) registerBlockContracts(definition.blockly.blocks)
+  }
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,
@@ -420,6 +468,17 @@ function KitCard({
       onClick={() => onPick(entry)}
       className="flex h-full min-h-28 w-full flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
     >
+      {'cover' in entry && entry.cover ? (
+        // Decorativa: o nome do jogo vem logo abaixo, no texto do botão.
+        <img
+          src={entry.cover}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          data-sz-kit-cover=""
+          className="mb-1 aspect-video w-full rounded-md object-cover [image-rendering:pixelated]"
+        />
+      ) : null}
       <span className="flex w-full items-start justify-between gap-2">
         <span className="flex items-center gap-2">
           {step !== undefined ? (
@@ -491,6 +550,7 @@ export function KitGallery({
   professional = false,
   javascriptAvailable = true,
   authorizeJavaScript,
+  exampleFilesBaseUrl,
 }: {
   onOpenProject: (projectId: string) => void
   pythonCreation?: PythonExampleCreationPort
@@ -498,6 +558,8 @@ export function KitGallery({
   professional?: boolean
   javascriptAvailable?: boolean
   authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
+  /** Onde moram os arquivos dos exemplos grandes fora do pacote (`KitGroupsOptions`). */
+  exampleFilesBaseUrl?: string
 }): JSX.Element {
   const t = useT()
   const [creating, setCreating] = useState<string | null>(null)
@@ -575,7 +637,7 @@ export function KitGallery({
               failedExtensionIds: [],
             }),
           )
-        : buildKitGroupsResult(t)
+        : buildKitGroupsResult(t, { exampleFilesBaseUrl })
     void pending
       .then(({ groups: nextGroups, failedExtensionIds }) => {
         if (!active) return
@@ -591,7 +653,7 @@ export function KitGallery({
     return () => {
       active = false
     }
-  }, [loadAttempt, t, programmingLanguage])
+  }, [loadAttempt, t, programmingLanguage, exampleFilesBaseUrl])
 
   const hasActiveFilters = query.trim() !== '' || difficulty !== 'all' || experience !== 'all'
   const featuredEntries = useMemo(

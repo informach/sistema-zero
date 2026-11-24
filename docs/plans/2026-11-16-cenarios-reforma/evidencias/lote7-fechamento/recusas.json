@@ -1,0 +1,10 @@
+{
+  "nomeInvalido": true,
+  "rotaInvalida": true,
+  "falhaDeTransporteSemPerda": true,
+  "semRevisaoDuplicada": true,
+  "conflitoDePropriedadesSemSobrescrita": true,
+  "solSemDirecaoRecusado": true,
+  "panoramaQuadradoRecusadoAntesDoUpload": true,
+  "erros": []
+}

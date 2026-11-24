@@ -4,6 +4,7 @@ import path from 'node:path'
 
 /** Only immutable official package bytes enter this virtual, network-free route. */
 export async function createPinnedThreeModuleResolver(packageRoot, version) {
+  const budget = { files: 0, bytes: 0 }
   if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid pinned Three version')
   const root = await fs.realpath(packageRoot)
   const metadata = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'))
@@ -11,7 +12,6 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
     throw new Error('The installed Three version differs from the trusted image')
   const prefix = `/three@${version}/`
   const cache = new Map()
-  let retainedBytes = 0
   return async (url) => {
     if (
       url.origin !== 'https://esm.sh' ||
@@ -34,7 +34,8 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
     )
       return
     if (cache.has(file)) return cache.get(file)
-    if (cache.size >= 256) throw new Error('The official module count exceeded its budget')
+    if (budget.files >= 256) throw new Error('The official module count exceeded its budget')
+    budget.files++
     const loading = (async () => {
       const location = path.join(root, ...file.split('/'))
       const real = await fs.realpath(location)
@@ -45,10 +46,10 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
         !info.isFile() ||
         info.isSymbolicLink() ||
         info.size > 4 * 1024 * 1024 ||
-        retainedBytes + info.size > 32 * 1024 * 1024
+        budget.bytes + info.size > 32 * 1024 * 1024
       )
         throw new Error('The official module exceeded its resource budget')
-      retainedBytes += info.size
+      budget.bytes += info.size
       const bytes = await fs.readFile(location)
       if (bytes.byteLength !== info.size) throw new Error('The official module size changed')
       return { bytes, type: 'text/javascript' }
@@ -61,8 +62,18 @@ export async function createPinnedThreeModuleResolver(packageRoot, version) {
 /** Lazy: ordinary 2D checks never resolve or read the Three package. */
 export async function createImageThreeModuleResolver() {
   const require = createRequire(import.meta.url)
-  const entry = require.resolve('three')
-  const root = path.dirname(path.dirname(entry))
   const image = JSON.parse(await fs.readFile(new URL('./package.json', import.meta.url), 'utf8'))
-  return createPinnedThreeModuleResolver(root, image.dependencies.three)
+  const version = image.dependencies.three
+  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid trusted Three image pin')
+  let resolver
+  return async (url) => {
+    if (url.origin !== 'https://esm.sh' || url.username || url.password || url.hash) return
+    if (url.pathname !== `/three@${version}` && !url.pathname.startsWith(`/three@${version}/`))
+      return
+    if (!resolver) {
+      const entry = require.resolve('three')
+      resolver = createPinnedThreeModuleResolver(path.dirname(path.dirname(entry)), version)
+    }
+    return (await resolver)(url)
+  }
 }

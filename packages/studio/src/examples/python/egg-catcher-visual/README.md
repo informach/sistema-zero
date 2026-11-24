@@ -27,6 +27,13 @@ Turtle. Com CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `VELOCIDADE_CESTA` e
 `LARGURA_CESTA` mudam a cesta; `QUEDA_INICIAL` é quanto tempo (em
 milissegundos) um ovo leva do poleiro ao chão e `ESPERA_INICIAL` é o tempo
@@ -42,16 +49,17 @@ outro som em `som`. Veja `soltar_ovo`, que sorteia qual dos dois nasce, e
 
 Quatro tartarugas persistentes desenham a cena: `cenario` pinta o céu, a grama e
 o poleiro uma vez, `pincel` carimba os ovos e a cesta a cada quadro, `manchas`
-carimba os ovos quebrados na grama e `painel` escreve o placar. Uma única cadeia
-de `ontimer(..., 16)` mede o tempo com `time.monotonic()`; a pausa congela a
-partida e reiniciar não adiciona outra cadeia. Um quadro atrasado avança no
-máximo três quadros.
+carimba os ovos quebrados na grama e `painel` escreve o placar. O laço do jogo,
+`a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`; a pausa congela a partida e reiniciar não começa outro laço.
+Um quadro atrasado avança no máximo três quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam carimbos e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam carimbos e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

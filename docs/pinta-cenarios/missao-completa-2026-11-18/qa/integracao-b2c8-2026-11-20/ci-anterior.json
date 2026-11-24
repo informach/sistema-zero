@@ -1,0 +1,23 @@
+{
+  "run": 44781842284,
+  "source": "cf5233178019faad63bd096de55a1ba897091b88",
+  "conclusion": "failure",
+  "failures": [
+    {
+      "job": "ci",
+      "jobId": 136446287552,
+      "reason": "Motion fixture missing actual textSprites fragment; five cases fail with _paintedLastFrame undefined"
+    },
+    {
+      "job": "studio-e2e-firefox",
+      "jobId": 136446287334,
+      "reason": "Native focus/keyboard across remote documents is not covered correctly by Juggler main-frame key dispatch"
+    },
+    {
+      "job": "studio-e2e-chromium-3",
+      "jobId": 136446287456,
+      "reason": "Reino Zero assertion counts only rendered nodes, omitting existing deferred block tails"
+    }
+  ],
+  "notReclassified": true
+}

@@ -56,11 +56,11 @@ class AudioRecorder:
 
 
 def load(game):
-    """Executa main.py sem imports, sem o entrypoint e sem criar tartarugas reais."""
+    """Executa main.py sem imports, sem o que ele faz ao iniciar e sem criar tartarugas reais."""
     tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
     kept = []
     for node in tree.body:
-        if isinstance(node, (ast.Import, ast.If)):
+        if isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For)):
             continue
         if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)
@@ -74,6 +74,16 @@ def load(game):
     return game
 
 
+def register_keys(game):
+    """Faz os registros de tecla do programa (⚡ Quando acontecer), sem abrir janela."""
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    tree.body = [node for node in tree.body
+                 if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+                 and isinstance(node.value.func, ast.Attribute)
+                 and node.value.func.attr.startswith("on")]
+    exec(compile(tree, str(SOURCE), "exec"), game)
+
+
 class Rules(unittest.TestCase):
     def setUp(self):
         self.clock = [0.0]
@@ -85,10 +95,8 @@ class Rules(unittest.TestCase):
         self.state = self.game["estado"]
         self.state["aberto"] = True
         self.game["reiniciar"]()
-        # Liga as teclas como iniciar() faz, sem abrir janela nem mainloop.
-        for tecla, lado, sentido in [("w", "esquerda", 1), ("s", "esquerda", -1),
-                                     ("Up", "direita", 1), ("Down", "direita", -1)]:
-            self.game["ligar_tecla"](tecla, lado, sentido)
+        # Liga as teclas como o programa faz ao iniciar, sem abrir janela nem mainloop.
+        register_keys(self.game)
 
     def key(self, kind, name):
         for call, args in self.game["tela"].calls:
@@ -238,8 +246,7 @@ class Rules(unittest.TestCase):
 
     def test_pause_freezes_and_restart_or_close_never_adds_timers(self):
         screen = self.game["tela"]
-        self.game["agendar"]()
-        self.game["agendar"]()
+        self.game["a_cada_quadro"]()
         self.assertEqual(len(screen.timers), 1)
         self.state["saque"] = 0
         ball = self.state["bola"]

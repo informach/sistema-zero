@@ -72,6 +72,63 @@ print('pronto', heroi.pos)
 pgzrun.go()
 `,
   // Two saves close together, then an error: the run ends, and both still reach the host.
+  // Os casos da aba Meus testes (lote 3 da conclusão, 22/11/2026): o herói anda para a direita
+  // com a seta, pega a chave em x 100, abre a porta em x 220, Espaço marca ponto e, parado no
+  // começo, perde uma vida por segundo até o fim.
+  pgzeroCasos: `import pgzrun
+WIDTH = 320
+HEIGHT = 240
+x = 0
+tem_chave = False
+porta_aberta = False
+vidas = 3
+pontos = 0
+fim = False
+perigo = 0.0
+
+def draw():
+    screen.fill((30, 60, 120))
+    screen.draw.filled_rect(Rect((x, 100), (20, 20)), 'yellow')
+
+def update(dt):
+    global x, tem_chave, porta_aberta, vidas, fim, perigo
+    if fim:
+        return
+    if keyboard.right:
+        x += 240 * dt
+    if x > 100:
+        tem_chave = True
+    if tem_chave and x > 220:
+        porta_aberta = True
+    if x == 0:
+        perigo += dt
+        if perigo >= 1:
+            perigo = 0.0
+            vidas -= 1
+            fim = vidas == 0
+
+def on_key_down(key):
+    global pontos
+    if key == keys.SPACE and not fim:
+        pontos += 1
+
+pgzrun.go()
+`,
+  // O programa que nem compila (a criança quebrou o código depois de escrever o teste).
+  pgzeroErroDeEscrita: `import pgzrun
+pontos =
+pgzrun.go()
+`,
+  // O jogo que trava no primeiro quadro: o teste não pode ficar esperando para sempre.
+  pgzeroTrava: `import pgzrun
+pontos = 0
+
+def update():
+    while True:
+        pass
+
+pgzrun.go()
+`,
   pgzeroSavesThenFails: `with open('primeiro.txt', 'w') as arquivo:
     arquivo.write('1')
 with open('segundo.txt', 'w') as arquivo:

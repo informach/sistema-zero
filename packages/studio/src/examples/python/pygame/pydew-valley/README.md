@@ -62,13 +62,12 @@ painel Materiais para editar qualquer um deles:
 | `icones` | `enxada`, `machado`, `regador`, `milho` e `tomate` | a ferramenta e a semente escolhidas |
 | `solo` | 16 peças | a terra preparada, uma peça para cada jeito de encostar nas vizinhas (`SOIL_PIECES` em `settings.py`) |
 | `solo-molhado` | 3 peças | a terra molhada |
-| `fazenda` | mapa 50 × 40 com as camadas `Água`, `Chão`, `Grama`, `Enfeites`, `Morros`, `Cerca`, `Colisão` e `Cultivável` (peças `terreno`, `caminhos-e-cerca` e `marcas`) | o chão, os morros, a cerca e as marcas invisíveis |
-| `casa-e-objetos` | mapa 50 × 40 com `Piso da casa`, `Móveis de baixo`, `Paredes`, `Móveis de cima` (peças `casa`) e as camadas de objetos `Árvores`, `Enfeites`, `Jogador` e `Objetos` | a casa, as árvores, as plantas, onde o jogo começa, a cama e o comerciante |
+| `fazenda` | um mapa 50 × 40 com 16 camadas: as oito do terreno, quatro da casa e quatro de objetos (`Árvores`, `Enfeites da casa`, `Jogador` e `Objetos`) | o chão, a casa, as árvores, as marcas de colisão e os lugares do jogo |
 
 Os conjuntos de peças dos mapas (`terreno`, `caminhos-e-cerca`, `marcas` e `casa`) não
 têm arquivo próprio em `assets/`: eles moram em `desenhos.pinta.json`, junto com os
 outros desenhos, e as peças de cada mapa vão dentro da imagem do próprio mapa
-(`fazenda.png` e `casa-e-objetos.png`). Para mudar uma peça, edite o mapa no Pinta: as
+(`fazenda.png`, com dados versão 2). Para mudar uma peça, edite o mapa no Pinta: as
 peças dele vêm junto.
 
 O jogo lê os desenhos com o módulo `pinta`: `pinta.carregar_mapa('fazenda')` traz o

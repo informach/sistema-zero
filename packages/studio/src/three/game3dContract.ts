@@ -160,6 +160,8 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:createModel': [world()],
   'g3d:createModelFile': [world()],
   'g3d:skyPhoto': [world()],
+  'g3d:loadScene': [world()],
+  'g3d:sceneStart': [gameObject()],
   'g3d:setColor': [object()],
   'g3d:setOpacity': [object()],
   'g3d:setMaterial': [object()],
@@ -471,6 +473,7 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   onKey: 2,
   onClickObject: 2,
   onTouchGroup: 3,
+  onEnterRegion: 3,
   gridPosition: 3,
   gridStep: 1,
   gridMove: 2,
@@ -566,6 +569,8 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   createModel: 1,
   createModelFile: 3,
   skyPhoto: 2,
+  loadScene: 2,
+  sceneStart: 1,
   addToModel: 2,
   setColor: 2,
   setOpacity: 2,
@@ -608,6 +613,7 @@ export function game3dCallArityIsValid(method: string, count: number): boolean {
  * compartilhada pelo placement dos blocos e pela validação de IR importada.
  */
 export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
+  'g3d:loadScene',
   'g3d:walkArea',
   'g3d:walkAnimations',
   'g3d:createScene',

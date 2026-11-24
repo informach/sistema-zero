@@ -1,0 +1,145 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\mapCellBudget.test.ts:
+13 | }
+14 | 
+15 | test('dense editing cannot create a tile reference the native map reader refuses', () => {
+16 |   const { dense, id } = fixture()
+17 |   for (const cell of [256, makeCell(256, CELL_FLIP_H), 4095]) {
+18 |     expect(setCell(dense, id, 0, 0, cell)).toBe(dense)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "12854033-eb15-40a8-8719-0399f1cd92b9",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795247815402,
+  updatedAt: 1795247815402,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "b3b9cde3-22e4-4add-96af-35cf3643c7ae",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ -1, -1, -1, -1, -1, -1 ],
+    }
+  ],
+}
+Received: {
+  id: "12854033-eb15-40a8-8719-0399f1cd92b9",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795247815402,
+  updatedAt: 1795247815402,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "b3b9cde3-22e4-4add-96af-35cf3643c7ae",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 256, -1, -1, -1, -1, -1 ],
+    }
+  ],
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapCellBudget.test.ts:18:44)
+(fail) dense editing cannot create a tile reference the native map reader refuses
+22 | })
+23 | 
+24 | test('region editing refuses out-of-format tile references atomically before changing history', () => {
+25 |   const { region, id } = fixture()
+26 |   for (const cell of [256, makeCell(256, CELL_FLIP_H), 4095]) {
+27 |     expect(setCell(region, id, 0, 0, cell)).toBe(region)
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "29f4f2ea-8dfd-4c54-bc33-e7516d612363",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795247815408,
+  updatedAt: 1795247815408,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "1f253dec-ec0c-44d3-8ca8-83b17d803ec1",
+      name: "Chão",
+      visible: true,
+      cells: {
+        kind: "regions",
+        version: 1,
+        side: 32,
+        chunks: [],
+      },
+    }
+  ],
+  schema: 8,
+  origin: {
+    col: 0,
+    row: 0,
+  },
+}
+Received: {
+  id: "29f4f2ea-8dfd-4c54-bc33-e7516d612363",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795247815408,
+  updatedAt: 1795247815408,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "1f253dec-ec0c-44d3-8ca8-83b17d803ec1",
+      name: "Chão",
+      visible: true,
+      cells: {
+        kind: "regions",
+        version: 1,
+        side: 32,
+        chunks: [
+          {
+            col: 0,
+            row: 0,
+            cells: Int16Array(1024) [ 256, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, ... 511 more ],
+          }
+        ],
+      },
+    }
+  ],
+  schema: 8,
+  origin: {
+    col: 0,
+    row: 0,
+  },
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapCellBudget.test.ts:27:45)
+(fail) region editing refuses out-of-format tile references atomically before changing history
+(pass) the last supported tile keeps every transform and survives a native region round trip
+46 | 
+47 | test('explicit region conversion refuses an unsavable source instead of preserving an invalid reference', () => {
+48 |   const { dense } = fixture()
+49 |   dense.layers[0]!.cells![1] = 256
+50 |   const before = structuredClone(dense)
+51 |   expect(prepareMapRegions(dense).ok).toBe(false)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapCellBudget.test.ts:51:39)
+(fail) explicit region conversion refuses an unsavable source instead of preserving an invalid reference
+
+ 1 pass
+ 3 fail
+ 7 expect() calls
+Ran 4 tests across 1 file. [295.00ms]

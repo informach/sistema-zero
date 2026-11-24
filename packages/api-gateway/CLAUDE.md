@@ -1,5 +1,44 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Versões das ilhas do Molda Cenários (21/11/2026)
+
+`members-cenarios-publicacao-versoes` (`GET /members/cenarios/publicacoes/perfis/:ilha/versoes`,
+leitura da oficina; quem responde só à equipe na própria conta é o members) e
+`members-cenarios-interno-publicacao-voltar` (`POST /members/internal/cenarios/publicacoes/voltar`,
+HMAC do `member-shell`, corpo de 16 KB). Voltar uma versão troca o que o jogo mostra: não existe pela
+borda pública, e o Kids nunca alcança a interna. Testes: `cenarios-config.test.ts` e
+`kids-access-policy.test.ts`.
+
+## Atualizar a publicação do Mural (20/11/2026)
+
+Quatro rotas exatas do hub na régua das de publicação (JWT de aluno ativo + HMAC
+`allowedConsumers: ['member-shell']`, `hubInternalTransforms`, 30/min por principal, corpo pequeno):
+`hub-showcase-update-studio` (`POST /hub/internal/showcase-thread-studio/update`),
+`hub-showcase-update-studio-standalone` (`…-standalone/update`), `hub-showcase-touch-studio`
+(`…/showcase-thread-studio/touch`) e `hub-showcase-source` (`POST /hub/internal/showcase-source`).
+Liberadas ao aluno no `kidsMayAccess` (lista exata). Testes: `kids-access-policy.test.ts` e
+`studio-publication-provenance.test.ts`.
+
+## Meus testes no Pro (20/11/2026)
+
+`members-studio-student-tests` (`POST /members/studio/student-tests`): JWT de conta ativa,
+`membersInternalTransforms`, corpo de 2 MB, 20 por minuto por principal e o `timeoutMs` do
+"Verificar projeto" (160 s). O members confere o acesso ao Pro e roda os testes no executor; um
+lote por pedido. Teste em `tests/unit/config.test.ts`.
+
+## Molda Cenários (16/11/2026)
+
+`src/infrastructure/config/cenarios-routes.ts` (`cenariosRoutes(membersInternalTransforms)`),
+espalhado no `gateway.config.ts`. Uma rota explícita por caminho de `/members/cenarios/*`
+(`members-cenarios-*`): JWT, conta ativa, sem papel (quem pode usar a ferramenta é o members que
+decide, por `CENARIOS_MODO`), limite por principal (leitura 600/min, escrita 120/min, o lote do
+editor 600/min com corpo de 1 MB). Os caminhos não têm `admin` nem `internal`, então no Kids a
+criança passa e o responsável não. As duas rotas `members-cenarios-interno-*`
+(`POST /members/internal/cenarios/{modelos,capa}`) são HMAC com `allowedConsumers:
+['member-shell']` e limite por `ator.contaId`: só o BFF afirma que um arquivo chegou ao
+armazenamento. Arquivo nenhum passa pela borda. Teste: `tests/unit/cenarios-config.test.ts`
+(inclui a lista de tudo o que a oficina chama; rota nova no members entra nela).
+
 ## Cores conquistadas do Arquipélago (A02, 30/10/2026)
 
 Rota explícita `arquipelago-cores-conquistadas`: GET `/arquipelago/desafios/cores`, jogador
@@ -80,6 +119,10 @@ Rotas explícitas novas das oficinas (o resto continua nos curingas `members-liv
   compara o caminho canônico (`normalizePolicyPath` do core: junta `//`, decodifica, NEGA `..`, barra
   codificada e controle). O papel não entra: aluno da equipe (admin) segue sem admin/interno/financeiro/
   pais.
+- O responsável (21/11/2026) lê, só em GET, `/catalog/member-promotions` e `/members/commerce/access`:
+  são as ofertas do Início da área dos pais e a conferência do que a conta já comprou. Antes o
+  gateway recusava com `KIDS_CONTEXT_FORBIDDEN`, e o Início mostrava "Não foi possível conferir as
+  ofertas agora". `GET /catalog/offers/:slug` é público e não passa por aqui.
 - Aluno resolve sem `email`/nome (token mínimo); os headers `x-auth-user-email`/`-name` somem em vez
   de irem vazios. Headers de identidade novos: `x-auth-kids-context` (`parent`|`student`) e
   `x-auth-kids-auth-time` (só responsável) — stripados da entrada como os demais.

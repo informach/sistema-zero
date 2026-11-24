@@ -1,0 +1,19 @@
+{
+  "workerVersionBefore": "d1d4f234-08c5-4059-b45d-f4772126000b",
+  "workerVersionReaderA": "7232eba7-0e8e-4006-8a30-a0d3a900aaa7",
+  "stagingContainersBefore": [
+    {
+      "id": "a03599fe-80d3-4b3d-ba17-fdf5131aeb18",
+      "name": "sistemazero-studio-runtime-staging-threedchecksandbox-staging",
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-staging-threedchecksandbox-staging@sha256:475df535a85411726ba49bb533b4281606e919a6fc534ebdb796d35f5addebaf",
+      "version": 6
+    },
+    {
+      "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+      "name": "sistemazero-studio-runtime-staging-probuildsandbox-staging",
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-staging-probuildsandbox-staging@sha256:475df535a85411726ba49bb533b4281606e919a6fc534ebdb796d35f5addebaf",
+      "version": 30
+    }
+  ],
+  "executed": false
+}

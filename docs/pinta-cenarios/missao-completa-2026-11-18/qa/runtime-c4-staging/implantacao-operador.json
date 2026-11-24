@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-19T12:31:22.924Z",
+  "workerName": "sistemazero-python-promoter-staging-19e14f0b6a57",
+  "operatorOrigin": "https://sistemazero-python-promoter-staging-19e14f0b6a57.helena-bcc.workers.dev",
+  "versionId": "134ca7cf-da95-460d-bf26-1d11ace82d42",
+  "artifactSha256": "6702b4a8bdad91d9f60543c887d6c9b8e29bb298c2f9d30a4a980f341d5a65a3",
+  "operationalSha256": "fa1f81be1c8d0cc5d8c184350396974eed3f8e6106741eb8223229b202b5cc26",
+  "expiresAt": 1795092772790,
+  "activationPerformed": false
+}

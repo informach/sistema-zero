@@ -53,6 +53,18 @@ O seletor não altera direitos por conta, conquistas, privilégios de admin ou c
 
 ## Catálogos empacotados
 
+- **Áreas do projeto no Python + regiões do Raylib 3D (22/11/2026; ATIVO no staging desde
+  23/11/2026, produção não):**
+  `01c079c1b34563d23b93c57d4ad88eb3b932fd5de75ef699675d254ec6729eee`, 191.810 bytes. Release
+  nova `2026-11-22-areas-1` (manifesto `c74c1500…`, distribuição Linux `f3b6ef00…`), ativa; a
+  `2026-11-20-pinta-cenarios-6` vira `retired`. Cinco blocos novos (`sz_py_turtle_every` e os
+  quatro de cenário do Raylib 3D). Baseline: o catálogo `12220f13…` e o seletor de staging
+  `fa8847d2…` da release do Pinta. Seletor novo do Worker de staging: `1dd32fdc…`. Plano,
+  entrada e roteiro: `docs/plans/evidencias/2026-11-22-python-areas-motor/`.
+- Gere o arquivo como os anteriores: `canonicalJson` de `configuration.members`, depois
+  `JSON.stringify(…, null, 2)` e o biome. Do JSON compacto o biome deixa objetos curtos numa
+  linha só, e os bytes (o hash) mudam.
+
 - Catálogo após conciliação das extensões JavaScript e Python: `3cbc366dcb213c5f26d996aef7898e0a1d47bce340fe501539982fcd33f3231d`.
 - Tamanho: 79.822 bytes formatados.
 - Conteúdo igual a `configuration.members` dos planos integrados R1 de staging e produção.

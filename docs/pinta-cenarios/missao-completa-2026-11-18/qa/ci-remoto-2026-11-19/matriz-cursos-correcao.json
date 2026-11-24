@@ -1,0 +1,42 @@
+{
+  "before": {
+    "source": "a391e9235",
+    "bytes": 262368,
+    "sha256": "9709043968f59b9c860020d98738b58dba8d97ca79bb3d09d6e4ce280b8b30ed"
+  },
+  "after": {
+    "bytes": 266344,
+    "sha256": "74d2ec4b2f86d6700eef8238bec55f0c6cf2474f184d8be9c4f387a63fda5895"
+  },
+  "allJsonValuesUnchanged": true,
+  "canonicalSha256": "069847b786f6bdb296ceef91939e931ce3bef13c9dcf10f20c5b01eb32ac3b35",
+  "protectedSources": [
+    {
+      "path": "docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.ts",
+      "sha256": "81a0a22d6605a3394e05c4bdc8d02123f85e4e9a6861804b4047a69ee7e97328",
+      "unchanged": true
+    },
+    {
+      "path": "docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.test.ts",
+      "sha256": "7d389e15e7f612bd611628c58bf5d64af30b8e52f951bb1c7cc8abd3b7c7a565",
+      "unchanged": true
+    },
+    {
+      "path": "docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.md",
+      "sha256": "083025f73c7f631dbca517580083d3ef27caae1cff44869acac82543285a4c84",
+      "unchanged": true
+    }
+  ],
+  "formatter": {
+    "path": "docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.json",
+    "enabled": true,
+    "expand": "always"
+  },
+  "tests": {
+    "files": 37,
+    "passed": 782,
+    "failed": 0,
+    "assertions": 115000
+  },
+  "scope": "QA/CI only; no course authoring or taught behavior changes"
+}

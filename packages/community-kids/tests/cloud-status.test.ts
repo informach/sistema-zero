@@ -38,6 +38,23 @@ describe('cloudStatusView', () => {
     expect(view?.text).toBe('Guardado na sua conta')
   })
 
+  it('cópias só neste aparelho não recebem confirmação de nuvem', () => {
+    for (const status of ['idle', 'saved'] as const) {
+      expect(cloudStatusView(state({ status, deviceOnly: true }))).toMatchObject({
+        tone: 'muted',
+        label: 'Neste aparelho',
+        text: 'Há desenhos guardados só neste aparelho.',
+        announce: false,
+      })
+    }
+    expect(cloudStatusView(state({ status: 'saved', deviceOnly: true }), true)?.icon).toBe(
+      'download',
+    )
+    expect(cloudStatusView(state({ status: 'saving', deviceOnly: true }))?.icon).toBe('upload')
+    expect(cloudStatusView(state({ status: 'offline', deviceOnly: true }))?.icon).toBe('offline')
+    expect(cloudStatusView(state({ status: 'error', deviceOnly: true }))?.tone).toBe('danger')
+  })
+
   it('sem internet → warn/offline e ANUNCIA', () => {
     expect(cloudStatusView(state({ status: 'offline' }))).toEqual({
       tone: 'warn',

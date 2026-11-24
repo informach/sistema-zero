@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "result": {
+    "editedThroughRealPintaUi": true,
+    "linkedCabanaUpdated": true,
+    "rootVilaUnchanged": true,
+    "otherNativeResourcesUnchanged": 5,
+    "pythonFilesExactlyPreserved": true,
+    "jsWholeProgramPreserved": true,
+    "targetAssetIdPreserved": true,
+    "targetPathPreserved": true,
+    "worldRecipePreserved": true,
+    "pythonPngBefore": "9abdd867d65fd68bf30571684d71cc1a16e8b03596e966fae95bae3cd4af58c8",
+    "pythonPngAfter": "70919156591cc98d5c0702fd396fd460e2a380b9f820d3f30999087e6975bdcf",
+    "nativeHashes": [
+      {
+        "id": "209771ff-621e-41a8-a05d-e454853b5071",
+        "name": "qa-morador-20261120",
+        "kind": "pixel-sprite",
+        "sha256": "70c4ddba0ee2ae8ec829e3947f8547d690445e9363f37e69b08f928f24eb671f"
+      },
+      {
+        "id": "3d36c552-4ecd-418c-9a1d-72032dcd6e3c",
+        "name": "qa-agua-20261120",
+        "kind": "tileset",
+        "sha256": "4da663f7aabf86770c129906929e18a355e049a051953c15a213e72789e9fcef"
+      },
+      {
+        "id": "6c7c2b91-0023-42c4-8252-59d27b202f46",
+        "name": "qa-terra-20261120",
+        "kind": "tileset",
+        "sha256": "05175ab61e254f2ecb56bae56ea50ae0eb25434f6c66402b6677e6690803cbc3"
+      },
+      {
+        "id": "9ab472dd-a61c-4f2b-8092-b413ac1ed6e6",
+        "name": "qa-conjunto-20261120",
+        "kind": "map-set",
+        "sha256": "bca5ff876c11f17a8c43f42bee071578285ea14fc349bcb8419fdd5a9a56d88c"
+      },
+      {
+        "id": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+        "name": "qa-vila-floresta-20261120",
+        "kind": "tilemap",
+        "sha256": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73"
+      },
+      {
+        "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+        "name": "qa-cabana-20261120",
+        "kind": "tilemap",
+        "sha256": "241e873cb86cf56461d2d69bcabfc7c2e4bfb65d4c1159e451b0aaeffa770014"
+      }
+    ],
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "historicalTabPreserved": true
+  }
+}

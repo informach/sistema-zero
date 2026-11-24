@@ -13,16 +13,91 @@
  */
 export function compactOfficialRuntimeSource(
   source: string,
-  options: { trimIndent?: boolean } = {},
+  options: { trimIndent?: boolean; stripBlockComments?: boolean } = {},
 ): string {
-  const lines = source.split('\n').filter((line) => {
-    const trimmed = line.trim()
-    return trimmed !== '' && !trimmed.startsWith('//')
-  })
+  const raw = source.split('\n')
+  const lines = (options.stripBlockComments ? stripLeadingBlockComments(raw) : raw).filter(
+    (line) => {
+      const trimmed = line.trim()
+      return trimmed !== '' && !trimmed.startsWith('//')
+    },
+  )
   if (!options.trimIndent) return lines.join('\n')
   const compacted = lines.map((line) => line.trimStart()).join('\n')
   if (compacted.includes('`')) {
     throw new Error('compactOfficialRuntimeSource: trimIndent exige um runtime sem crase')
   }
   return compacted
+}
+
+/**
+ * `stripBlockComments` (lote 4 da missão, 21/11/2026): o Jogo 2D mandava 54,5 KB de comentários
+ * de bloco (`/** … *\/`) a cada criança, a cada execução. Só sai o comentário que COMEÇA uma
+ * linha: ali ele não pode estar dentro de uma string (os runtimes não têm string de várias linhas:
+ * sem crase e sem barra de continuação, conferido abaixo) nem de uma expressão regular (nenhuma
+ * começa com `*`). O comentário termina no primeiro `*\/`, como na linguagem; o código que vem
+ * depois dele na mesma linha fica. A linha que termina com um `/*` aberto no meio do código (que
+ * pode ser só um texto como `'image/*'`) põe a função em modo cauteloso: nada sai até aparecer um
+ * `*\/`. As quebras de linha entre os códigos que ficam não mudam (a inserção de ponto e vírgula
+ * continua igual).
+ */
+/**
+ * A linha termina DENTRO de um comentário de bloco? Começa no estado dado (aberto ou não) e anda
+ * a linha como a linguagem: `/*` abre só fora de comentário, `*\/` fecha só dentro. Não conhece
+ * strings: um `/*` dentro de um texto conta como aberto, o que só deixa a função mais cautelosa.
+ * Revisão do lote 4: comparar a última abertura com o último fechamento errava com `/*\/` (o
+ * fechamento se sobrepunha à abertura) e quando o modo cauteloso terminava numa linha que abria
+ * outro comentário.
+ */
+function endsInsideComment(text: string, open: boolean): boolean {
+  let inside = open
+  for (let index = 0; index < text.length; ) {
+    if (!inside && text.startsWith('/*', index)) {
+      inside = true
+      index += 2
+    } else if (inside && text.startsWith('*/', index)) {
+      inside = false
+      index += 2
+    } else index++
+  }
+  return inside
+}
+
+function stripLeadingBlockComments(lines: readonly string[]): string[] {
+  const kept: string[] = []
+  let inComment = false
+  let cautious = false
+  for (const line of lines) {
+    if (line.endsWith(String.fromCharCode(92))) {
+      throw new Error('stripBlockComments: o runtime tem uma linha com barra de continuação')
+    }
+    let rest = line
+    if (inComment) {
+      const end = rest.indexOf('*/')
+      if (end < 0) continue
+      rest = ` ${rest.slice(end + 2)}`
+      inComment = false
+    }
+    if (cautious) {
+      // Cauteloso: a linha fica inteira, e só sai do modo quando ela terminar fora de comentário.
+      kept.push(rest)
+      cautious = endsInsideComment(rest, true)
+      continue
+    }
+    while (rest.trimStart().startsWith('/*')) {
+      const start = rest.indexOf('/*')
+      const end = rest.indexOf('*/', start + 2)
+      if (end < 0) {
+        inComment = true
+        rest = ''
+        break
+      }
+      rest = ` ${rest.slice(end + 2)}`
+    }
+    if (rest.trim() === '') continue
+    if (endsInsideComment(rest, false)) cautious = true
+    kept.push(rest)
+  }
+  if (inComment) throw new Error('stripBlockComments: comentário de bloco sem fim')
+  return kept
 }

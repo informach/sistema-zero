@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 500
 TITLE = 'Duelo por Turnos'
@@ -8,27 +10,8 @@ TITLE = 'Duelo por Turnos'
 ESPERA = 1.2
 POCOES = 2
 
-heroi = Actor('heroi', (220, 290))
-heroi.nome = 'Você'
-heroi.vida_maxima = 100
-dragao = Actor('dragao', (580, 270))
-dragao.nome = 'O dragão'
-dragao.vida_maxima = 120
-# Quem luta, na ordem das vezes.
-lutadores = [heroi, dragao]
-golpe = Actor('golpe')
-escudo = Actor('escudo')
-mostrar_golpe = 0
-mensagem = ''
-# A posição de quem joga agora na lista de lutadores.
-vez = 0
-# Enquanto uma vez está acontecendo, as teclas não escolhem nada.
-esperando = False
-pocoes = 0
-# 'lutando', 'venceu' ou 'perdeu'
-estado = 'lutando'
 
-
+# 🧩 Meus moldes
 def nova_luta():
     global vez, esperando, pocoes, mensagem, estado
     clock.unschedule(proxima_vez)
@@ -110,12 +93,6 @@ def vez_do_dragao():
     terminar_vez()
 
 
-def update():
-    global mostrar_golpe
-    if mostrar_golpe > 0:
-        mostrar_golpe = mostrar_golpe - 1
-
-
 def desenhar_vida(lutador, x, y):
     screen.draw.text(lutador.nome, topleft=(x, y - 28), fontsize=28, color='white')
     screen.draw.filled_rect(Rect((x, y), (200, 18)), (60, 20, 20))
@@ -123,26 +100,32 @@ def desenhar_vida(lutador, x, y):
     screen.draw.filled_rect(Rect((x, y), (largura, 18)), (76, 175, 80))
     screen.draw.text(str(lutador.vida) + ' / ' + str(lutador.vida_maxima), center=(x + 100, y + 9), fontsize=20, color='white')
 
+# ⚙️ Ao iniciar
+heroi = Actor('heroi', (220, 290))
+heroi.nome = 'Você'
+heroi.vida_maxima = 100
+dragao = Actor('dragao', (580, 270))
+dragao.nome = 'O dragão'
+dragao.vida_maxima = 120
+# Quem luta, na ordem das vezes.
+lutadores = [heroi, dragao]
+golpe = Actor('golpe')
+escudo = Actor('escudo')
+mostrar_golpe = 0
+mensagem = ''
+# A posição de quem joga agora na lista de lutadores.
+vez = 0
+# Enquanto uma vez está acontecendo, as teclas não escolhem nada.
+esperando = False
+pocoes = 0
+# 'lutando', 'venceu' ou 'perdeu'
+estado = 'lutando'
 
-def draw():
-    screen.blit('arena', (0, 0))
-    for lutador in lutadores:
-        lutador.draw()
-        if lutador.defendendo:
-            escudo.pos = (lutador.x, lutador.y - 90)
-            escudo.draw()
-    if mostrar_golpe > 0:
-        golpe.draw()
-    desenhar_vida(heroi, 40, 50)
-    desenhar_vida(dragao, 560, 50)
-    screen.draw.filled_rect(Rect((20, 400), (760, 84)), (20, 20, 40))
-    screen.draw.text(mensagem, topleft=(40, 410), fontsize=32, color='white')
-    if estado == 'lutando' and not esperando:
-        screen.draw.text('1  Atacar      2  Defender      3  Poção (' + str(pocoes) + ')', topleft=(40, 448), fontsize=28, color='yellow')
-    if estado != 'lutando':
-        screen.draw.text('Espaço começa outra luta', topleft=(40, 448), fontsize=28, color='yellow')
+
+nova_luta()
 
 
+# ⚡ Quando acontecer
 def on_key_down(key):
     global esperando
     if estado != 'lutando':
@@ -165,5 +148,28 @@ def on_key_down(key):
         terminar_vez()
 
 
-nova_luta()
+# 🔁 Enquanto estiver rodando
+def update():
+    global mostrar_golpe
+    if mostrar_golpe > 0:
+        mostrar_golpe = mostrar_golpe - 1
+
+
+def draw():
+    screen.blit('arena', (0, 0))
+    for lutador in lutadores:
+        lutador.draw()
+        if lutador.defendendo:
+            escudo.pos = (lutador.x, lutador.y - 90)
+            escudo.draw()
+    if mostrar_golpe > 0:
+        golpe.draw()
+    desenhar_vida(heroi, 40, 50)
+    desenhar_vida(dragao, 560, 50)
+    screen.draw.filled_rect(Rect((20, 400), (760, 84)), (20, 20, 40))
+    screen.draw.text(mensagem, topleft=(40, 410), fontsize=32, color='white')
+    if estado == 'lutando' and not esperando:
+        screen.draw.text('1  Atacar      2  Defender      3  Poção (' + str(pocoes) + ')', topleft=(40, 448), fontsize=28, color='yellow')
+    if estado != 'lutando':
+        screen.draw.text('Espaço começa outra luta', topleft=(40, 448), fontsize=28, color='yellow')
 pgzrun.go()

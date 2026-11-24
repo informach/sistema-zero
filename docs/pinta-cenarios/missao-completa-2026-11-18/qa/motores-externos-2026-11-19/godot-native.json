@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-19T23:26:11.902Z",
+  "results": [
+    {
+      "name": "vila-gpu",
+      "gpu": true,
+      "exitCode": 0,
+      "elapsedMs": 2453,
+      "passed": true
+    },
+    {
+      "name": "resources-gpu",
+      "gpu": true,
+      "exitCode": 0,
+      "elapsedMs": 1644,
+      "passed": true
+    },
+    {
+      "name": "physics",
+      "gpu": false,
+      "exitCode": 0,
+      "elapsedMs": 394,
+      "passed": true
+    },
+    {
+      "name": "platforms",
+      "gpu": false,
+      "exitCode": 0,
+      "elapsedMs": 638,
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+▲ [WARNING] The CommonJS "module" variable is treated as a global variable in an ECMAScript module and may not work as expected [commonjs-variable-in-esm]
+
+    .cache/pinta-writer-24226-python-closure/.boot-loader-zkT3G9/pyodide.asm.mjs:1:61853:
+      1 │ ...(typeof module!="undefined"){module.exports=MiniLZ4}return MiniL...
+        ╵                                 ~~~~~~
+
+  This file is considered to be an ECMAScript module because of the "export" keyword here:
+
+    .cache/pinta-writer-24226-python-closure/.boot-loader-zkT3G9/pyodide.asm.mjs:2:19976:
+      2 │ ...urn compiled};return moduleRtn}export default _createPyodideModule;
+        ╵                                   ~~~~~~
+
+{"at":"2026-11-21T03:29:16.572Z","reader":"24226bb3f0ab10e96174d80dcbbcafe1f37653ff","builder":"1.3.11","platform":"win32","hash":"5667348a2784bba2fd46d6ac146d2ef8db7629cd853d394212c032a0227f30ab","files":126,"allFilesByteIdenticalToReader":true,"linuxQualificationPending":false,"readerWholeCiPending":true,"newGuestRequiredFromWriterChange":false,"deployed":false}

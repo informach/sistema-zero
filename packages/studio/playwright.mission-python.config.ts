@@ -1,0 +1,19 @@
+import { defineConfig } from '@playwright/test'
+import runtime from './playwright.python-runtime.config'
+
+/** Product Worker/CSP probes on full Chromium; no simulation of CPython or stop. */
+export default defineConfig(runtime, {
+  testMatch: [
+    'python-supervisor.spec.ts',
+    'python-provider.spec.ts',
+    // O custo das abas Desempenho e Investigar (lote 3 da conclusão, 22/11/2026).
+    'python-devtools-cost.spec.ts',
+    'python-host-isolation.spec.ts',
+    'python-classic.spec.ts',
+    'python-games.spec.ts',
+    'python-pinta-world.spec.ts',
+    'python-pinta-physics.spec.ts',
+  ],
+  retries: 0,
+  projects: [{ name: 'chromium', use: { channel: 'chromium' } }],
+})

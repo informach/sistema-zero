@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "espacos": 2,
+    "bibliotecas": 18,
+    "acessoEquipe": true
+  },
+  "mcp": {
+    "ferramentas": [
+      "listar_espacos",
+      "listar_bibliotecas",
+      "buscar_modelos",
+      "listar_mundos",
+      "criar_mundo",
+      "ligar_bibliotecas",
+      "listar_cenarios",
+      "criar_cenario",
+      "ler_cenario",
+      "duplicar_cenario",
+      "editar_cenario"
+    ],
+    "bibliotecas": 18,
+    "mesmasBibliotecas": true
+  },
+  "somenteLeitura": true,
+  "aprovado": true
+}

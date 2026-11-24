@@ -1,0 +1,380 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "bytes": 118,
+      "sha256": "344a10280ff8c6f1589abafa52634766d46089186621d79ca28d77f92ba975ae"
+    },
+    {
+      "file": "README.md",
+      "bytes": 7192,
+      "sha256": "e50eb071042deea1637f25e4ea9347608359cc095e99db043a84588f5e79c804"
+    },
+    {
+      "file": "autenticado/170.json",
+      "bytes": 358,
+      "sha256": "af2008a795a75c5a318d4fe1bdb24c45798b2743fbbcd9c8616dc5a91f8e2e03"
+    },
+    {
+      "file": "autenticado/171.json",
+      "bytes": 3474,
+      "sha256": "367018167f59fde9a1171a39d447ff216b9ff14285b5f1e48ea675d2634deb23"
+    },
+    {
+      "file": "autenticado/172.json",
+      "bytes": 423,
+      "sha256": "a1d5d0d143c919183fa41d290b0f3dfdd7d217fcfab65f134d38fcdeb5b6b4fb"
+    },
+    {
+      "file": "autenticado/173.json",
+      "bytes": 4311,
+      "sha256": "fff073cf589395c76f89c5778615f912a4bb110f3df9f57b2e75a9e157048508"
+    },
+    {
+      "file": "autenticado/176.json",
+      "bytes": 743,
+      "sha256": "dc63e9f5d8a6777625b8d99c34b0a0c781c09e7f106d23953d6fe9c4ac02e183"
+    },
+    {
+      "file": "autenticado/181.json",
+      "bytes": 942,
+      "sha256": "b5593fefe1820b4ed062b0f196ac0abfe0c10e773a05f135a51a9dff95ab2dd8"
+    },
+    {
+      "file": "autenticado/184.json",
+      "bytes": 1760,
+      "sha256": "db6201d7cdd42b92b011e27eec7f470af25e8391b299cfa3b34baacf025460d1"
+    },
+    {
+      "file": "autenticado/185.json",
+      "bytes": 625,
+      "sha256": "5383d0d1bf5fda5a94675fe353f23b520fb9ceb3a219ede9132701f8ea5ef2c5"
+    },
+    {
+      "file": "autenticado/187.json",
+      "bytes": 2481,
+      "sha256": "96bd44453bfa378e299776af8fbc38e5b0fdde13d3eee349cf05067e420de53e"
+    },
+    {
+      "file": "autenticado/188.json",
+      "bytes": 310,
+      "sha256": "b806fd7c19f520e223ccbbe68d67ccbe5f586a6ef4f28ed0297b65b42b542a4d"
+    },
+    {
+      "file": "autenticado/pinta-107-reader-a-storage-update.json",
+      "bytes": 57,
+      "sha256": "be994bbc67fe97428a8ec5a595816eea15c415a59554dda582cc6adcbd49d966"
+    },
+    {
+      "file": "autenticado/pinta-114-reader-a-instrumented-update.json",
+      "bytes": 4876,
+      "sha256": "05340c14f99112d87e81ac23f626eba69f46022791c6a5953c2b74a5a0fa6dec"
+    },
+    {
+      "file": "autenticado/pinta-116-vila-final-reopen-reader-a.json",
+      "bytes": 1742,
+      "sha256": "125a5514c77eb252e3a895be327e9db42cbcd9ce6b1a7bb1f9d31a00c4bd0902"
+    },
+    {
+      "file": "autenticado/pinta-155-update-linked-cabana.json",
+      "bytes": 1988,
+      "sha256": "fc1640f136224c4a601d2616e01c0b7ff792841f46b4dca05251185578771ecc"
+    },
+    {
+      "file": "autenticado/pinta-169-finish-updated-python-world.json",
+      "bytes": 811,
+      "sha256": "7709dcad197b13049c994634b0d19a3cfcf8779613760984b209d263a3bb9b44"
+    },
+    {
+      "file": "capturas/godot.png",
+      "bytes": 13272,
+      "sha256": "14b70040e231f79c318ef7ad9fd70f43a13ee0dd4af4ca173ca34dbdce48bcf3"
+    },
+    {
+      "file": "capturas/javascript-publicado.png",
+      "bytes": 8082,
+      "sha256": "ac3e79ce250a8104d8ad680d2a1403cfa1b78c0e47e347b7695574b8c435ed37"
+    },
+    {
+      "file": "capturas/phaser-toque-emulado.png",
+      "bytes": 199779,
+      "sha256": "f984a71447209687745ad5cc97962c5866950b76d54496c028edb1e3dde26fcc"
+    },
+    {
+      "file": "capturas/phaser.png",
+      "bytes": 17234,
+      "sha256": "c88581c9e72683edf3fe9671f98c0adf91a589638c2a3531cce9aaaf2ce6d2ef"
+    },
+    {
+      "file": "capturas/pygame.png",
+      "bytes": 13472,
+      "sha256": "50db91df3e8a2f1452e41ab619668d29e34389bf6540f32b5deff928c1c39742"
+    },
+    {
+      "file": "capturas/python-publicado.png",
+      "bytes": 24114,
+      "sha256": "7bacd629ac59bd76ce239ef077ca90a810a204b541d9b3fe9c6d14d87cb96242"
+    },
+    {
+      "file": "cenario-nativo-transporte-qa.json",
+      "bytes": 167638,
+      "sha256": "81dfca982a617369f1b8c2769a13d1937bdd4b2146a462a09eed3fd4a8dd1d87"
+    },
+    {
+      "file": "download-nativo-ui.json",
+      "bytes": 1215,
+      "sha256": "7448d2f3588fd8c568775a0185d416b2dd73daf6951fce59088fdaf3c317fb94"
+    },
+    {
+      "file": "ensaios/check-owned-vila-published-animation.cjs.txt",
+      "bytes": 2045,
+      "sha256": "0e81048b4becc17c872ffc77ef057c0d6f1795543538142a0be35bc7ebaf6fe2"
+    },
+    {
+      "file": "ensaios/godot.txt",
+      "bytes": 3019,
+      "sha256": "7c7a4a02bcc1156ae7427539323e6461646ebc0d22ad40fd97152ccc06bf1d6e"
+    },
+    {
+      "file": "ensaios/phaser.txt",
+      "bytes": 4788,
+      "sha256": "95f1f105cef7b22dce309d4383aed58796da8591a9d2da10f62221ac6381509c"
+    },
+    {
+      "file": "ensaios/pygame.txt",
+      "bytes": 2761,
+      "sha256": "ecb10896e4b6a665914fd832e6d6ee01ae737358e7c08bcb649130a50504732b"
+    },
+    {
+      "file": "ensaios/reopen-owned-python-linked-final.cjs.txt",
+      "bytes": 1537,
+      "sha256": "45743f57f5c57c9835c311eedc042a625528e090afba71bcb2e61e60e1423b30"
+    },
+    {
+      "file": "ensaios/tiled.txt",
+      "bytes": 2517,
+      "sha256": "6c36ffa4651da77cda30d88f6c09c74762913ab4f884e5dd37984e816fa74a45"
+    },
+    {
+      "file": "ensaios/update-owned-python-linked-cabana.cjs.txt",
+      "bytes": 4369,
+      "sha256": "9568960af18f4c2ec546b5dbb016f5aa97e42cc70d627ca8ab1d2d38b29137d9"
+    },
+    {
+      "file": "ensaios/walk-owned-python-published.cjs.txt",
+      "bytes": 3167,
+      "sha256": "1619e4c4efe6448eece4236d80d2e07b102333e1f488ba633c694175017b53ff"
+    },
+    {
+      "file": "ensaios/walk-owned-vila-published.cjs.txt",
+      "bytes": 2765,
+      "sha256": "40f994baa46aa96c03e97b0ae4fd36ba99d7608e72d9ecaecc48d623efa14c26"
+    },
+    {
+      "file": "exportacao.json",
+      "bytes": 14937,
+      "sha256": "966ccb2a5a3ed20d0005682e1c42d9192b5bca3a6031cf620894013f66a18a4b"
+    },
+    {
+      "file": "linguagem/api-anterior.json",
+      "bytes": 3965,
+      "sha256": "47b00eabcef1c21a4ab4ce8bb856084296ffff29c7256fabdd8e35c0f76bead4"
+    },
+    {
+      "file": "linguagem/api-antes-da-correcao.json",
+      "bytes": 1853,
+      "sha256": "0a171af92668499b055d4eb2862d1990b2d2322f3049ecd19502e0bc7cfc32e1"
+    },
+    {
+      "file": "linguagem/api-atual.json",
+      "bytes": 3963,
+      "sha256": "572190b9d4021ae12171e9212de47ec518980375bce09dada03e8c4135a60641"
+    },
+    {
+      "file": "linguagem/imagem-conferida.json",
+      "bytes": 760,
+      "sha256": "99b981934061b629f2dc44bdfdf64c43b6d135eaf6d6588976344abeee521025"
+    },
+    {
+      "file": "linguagem/observacao-containers.json",
+      "bytes": 1132,
+      "sha256": "2603883ad734f582354ef9f30456eaffc3df7752fd992cddd79717d79877f37f"
+    },
+    {
+      "file": "linguagem/primeira-tentativa-parcial.json",
+      "bytes": 416,
+      "sha256": "30651a03f8276c69fbcd5c445122732edd651edfcf4cb8f0f3db0e172432ad0b"
+    },
+    {
+      "file": "linguagem/primeira-tentativa.txt",
+      "bytes": 2470,
+      "sha256": "3a88bd2309c4fc27909d9536e758a826f9d86aa890d4a448954932c7c5106aa4"
+    },
+    {
+      "file": "linguagem/qualificacao-linux-ci.json",
+      "bytes": 10857,
+      "sha256": "2ed984ac9c6fe41ee56a2b44b5f2375c5f2ea91d7fca56c870d6e1c556779823"
+    },
+    {
+      "file": "linguagem/tentativa-final.txt",
+      "bytes": 2272,
+      "sha256": "3a5aa2f31cec02b332a94b4f24824caf5f3c4f77c9138e37139c40654020eb1b"
+    },
+    {
+      "file": "linguagem/worker-conferido.json",
+      "bytes": 1594,
+      "sha256": "299f20956f2fef4e8251c330c4d3a45acac96c16060925e5d398a4ed05418c8d"
+    },
+    {
+      "file": "linguagem/worker-implantado.json",
+      "bytes": 469,
+      "sha256": "6119e61f9e743332bbb4b671d6e462079026f888737b13a82013d7a2519e1738"
+    },
+    {
+      "file": "motores/execucoes.json",
+      "bytes": 340,
+      "sha256": "4dee5b8a7eb22fdbdefa99394397e19f5ab631f88347e063fa83702ef4914190"
+    },
+    {
+      "file": "motores/godot-execucao.txt",
+      "bytes": 493,
+      "sha256": "2bbf0b2aa38b18408f6fb94ac3a184f6189031d18681e17310760e9f942c197d"
+    },
+    {
+      "file": "motores/godot-importacao.txt",
+      "bytes": 2599,
+      "sha256": "cdb0382f738f1f595d0bb959abf25e259398de51ec183641339ef67bd31e7dfd"
+    },
+    {
+      "file": "motores/phaser.json",
+      "bytes": 848,
+      "sha256": "d13eedc54b97941786af9238db64f109f8248cf4e7fc07f607933367ae42826a"
+    },
+    {
+      "file": "motores/pygame-exemplo.txt",
+      "bytes": 107,
+      "sha256": "13ae62a4f407f961b66393b30bcf39f2efdd55dd1833e01d72d21dc0aa59609b"
+    },
+    {
+      "file": "motores/pygame.json",
+      "bytes": 635,
+      "sha256": "6425084c782469c1638088637046f10481305946b78c5a6b3ec4dd08d2e7d99f"
+    },
+    {
+      "file": "motores/tiled.json",
+      "bytes": 1128,
+      "sha256": "2ba7dcddbdbf6965c644bc34e1df09083adfdd03bfb1c146820e4c15a2b91d52"
+    },
+    {
+      "file": "pacotes/godot.zip",
+      "bytes": 34305,
+      "sha256": "0bed3167efd4b32212ced58459a331187e642d8d49a9286aec2f30005ab0fc75"
+    },
+    {
+      "file": "pacotes/phaser.zip",
+      "bytes": 369375,
+      "sha256": "d72c6936be629691fe9025264aa2c58a15d70123fad9036f93db6d816089b89c"
+    },
+    {
+      "file": "pacotes/pygame.zip",
+      "bytes": 36157,
+      "sha256": "d62c611d7c0f1c86f408c02689612b237fd0e73d574bccea4a2027c99d070fa7"
+    },
+    {
+      "file": "pacotes/tiled.zip",
+      "bytes": 27032,
+      "sha256": "71833377590cf98ff1501ee286d9ba0571589a3a2d0e8ed82325e6093d13458b"
+    },
+    {
+      "file": "rollout/hosts-ausentes-antes.json",
+      "bytes": 1934,
+      "sha256": "4465276a2eeb4a3ec7480758dfb227c212f35eb60f17319b7b7008e71b642700"
+    },
+    {
+      "file": "rollout/hosts.json",
+      "bytes": 468,
+      "sha256": "c277bbd7280b9353edb74bbfab11122f34da16a05de4a99d9390c92c85bdb337"
+    },
+    {
+      "file": "rollout/politica.json",
+      "bytes": 468,
+      "sha256": "246773994a58a4c395441eecf4d27c1f9ac3212a50b975c5928d32e6fa69764e"
+    },
+    {
+      "file": "rollout/runtime-ativado.json",
+      "bytes": 2850,
+      "sha256": "7ac5d866cb61728a561b830a232564fb6e8c82b9bd4f907e12f23d5dea96e6ae"
+    },
+    {
+      "file": "verificacao/autoridade-host.txt",
+      "bytes": 801,
+      "sha256": "bd675e9ee8216408f20f6d4fa459a35fbe8689111a75a2e563aa09d4221fdbea"
+    },
+    {
+      "file": "verificacao/biome.txt",
+      "bytes": 22834,
+      "sha256": "c7f43ba4f4f9d054b3c43afb11fa3d461dcbbf34be116b62245124c8735f9b9f"
+    },
+    {
+      "file": "verificacao/contratos-congelados.txt",
+      "bytes": 852,
+      "sha256": "373cd0999a3c4ec789c4b79cedcf4530a3f057d3e702610712c6820a582bc5b1"
+    },
+    {
+      "file": "verificacao/core.txt",
+      "bytes": 331155,
+      "sha256": "75f880ae4ac68aee3385ee716cd169f54b6ec45dd36ec008f82e24f2c7843c48"
+    },
+    {
+      "file": "verificacao/kids-nuvem.txt",
+      "bytes": 16039,
+      "sha256": "a0252cc172810eb1006126087d974c57adfdb04bb86d905ac7f244c534c3f869"
+    },
+    {
+      "file": "verificacao/lint-das-alteracoes.txt",
+      "bytes": 103,
+      "sha256": "865cbd34aabde89ac6ae62cd8cc631efaed451f5950701c4797bf67e09f6c774"
+    },
+    {
+      "file": "verificacao/pinta-types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "verificacao/pinta.txt",
+      "bytes": 261805,
+      "sha256": "c0101f443a4322c50c0a4f52b3bbfbb85baf9203eac724953628114cf8e69588"
+    },
+    {
+      "file": "verificacao/profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "verificacao/pygames-nativos.txt",
+      "bytes": 507,
+      "sha256": "03d6be006c294c33b2c949969f5d5eb4c0214b68a447b833240db716ae654645"
+    },
+    {
+      "file": "verificacao/resultado.json",
+      "bytes": 8703,
+      "sha256": "59b2c36bb20428e77dc4c9a83d4a5e6b670a7db1bca88d7cde588d1d51828c82"
+    },
+    {
+      "file": "verificacao/runtime-test-types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "verificacao/runtime-types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "verificacao/studio-types.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

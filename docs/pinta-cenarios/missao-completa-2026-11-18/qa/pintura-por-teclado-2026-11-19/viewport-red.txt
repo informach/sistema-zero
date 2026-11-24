@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\mapCanvas.test.ts:
+2 | import { mapCanvasViewport } from './mapCanvas'
+3 |
+4 | it('at the end of scrolling the canvas covers the last pixel of paper without exceeding the viewport', () => {
+5 |   const stage = { clientWidth: 1000, clientHeight: 600, scrollLeft: 2048 + 16 - 1000, scrollTop: 1536 + 16 - 600 }
+6 |   const view = mapCanvasViewport(2048, 1536, stage)
+7 |   expect(view.x + view.width).toBe(2048)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 2048
+Received: 2040
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapTools\mapCanvas.test.ts:7:31)
+(fail) at the end of scrolling the canvas covers the last pixel of paper without exceeding the viewport
+(pass) small paper remains whole and at its original position
+
+ 1 pass
+ 1 fail
+ 2 expect() calls
+Ran 2 tests across 1 file. [762.00ms]

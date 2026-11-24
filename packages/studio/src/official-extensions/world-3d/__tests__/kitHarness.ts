@@ -90,6 +90,7 @@ export function makeFakeThree(overrides: Record<string, unknown> = {}, wrapThree
 
 /** Só o que os testes chamam — o inventário completo é auditado no blockAudit. */
 export interface WorldApi {
+  loadScene(id: string): Promise<boolean>
   setup(options: { style: string; world: number }): void
   terrain(h: number, s: number): void
   flatten(x: number, z: number, r: number): void
@@ -116,6 +117,7 @@ export interface WorldApi {
   quality(mode: string): void
   boat(color: string): void
   person(color: string, hat: string): void
+  personPlace(x: number, z: number, deg: number): void
   explosive(x: number, z: number): void
   onExplosion(fn: () => void): void
   disposeAll(): void
@@ -193,6 +195,8 @@ export async function loadStartedWorld(
 export async function loadExampleWorld(
   exampleJs: string,
   wrapThree?: ThreeWrapper,
+  /** Outro corpo do runtime (uma variante, como a sem cenário); sem ele, o completo. */
+  body: string = runtimeBody,
 ): Promise<{
   api: WorldApi
   renderers: FakeRenderer[]
@@ -201,7 +205,7 @@ export async function loadExampleWorld(
 }> {
   const { THREE, renderers } = makeFakeThree({}, wrapThree)
   const win = globalThis.window as unknown as Record<string, unknown>
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  new Function('THREE', 'window', body)(THREE, win)
   const api = win.SZWorld3D as WorldApi
   new Function('SZWorld3D', 'window', exampleJs)(api, win)
   api.start()

@@ -1,0 +1,30 @@
+{
+  "stats": {
+    "startTime": "2026-11-20T11:02:01.535Z",
+    "duration": 39355.525,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "minimapa existente navega por teclado e ponteiro sem alterar as células",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "minimapa existente navega por teclado e ponteiro sem alterar as células",
+      "project": "touch",
+      "status": "passed",
+      "retry": 0
+    },
+    {
+      "title": "minimapa existente navega por teclado e ponteiro sem alterar as células",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0
+    }
+  ]
+}

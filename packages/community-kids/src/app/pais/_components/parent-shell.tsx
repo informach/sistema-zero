@@ -43,10 +43,15 @@ const ITEM =
  * Os filhos no menu, debaixo de Família. Cada página monta a sua moldura: ela mostra na hora a
  * última lista lida nesta aba e relê em seguida, para um filho criado ou arquivado aparecer (ou
  * sair) já na página seguinte. Falha na leitura mantém a lista que havia.
+ *
+ * A foto do avatar de cada um vem à parte (`/api/parents/avatares`, desde 21/11/2026), com a
+ * mesma regra: a lista não espera por ela, e sem foto fica a inicial.
  */
 let lastFamily: ProfileView[] | null = null
-function useFamily(): ProfileView[] {
+let lastPhotos: Record<string, string | null> = {}
+function useFamily(): { profiles: ProfileView[]; photos: Record<string, string | null> } {
   const [profiles, setProfiles] = useState<ProfileView[]>(() => lastFamily ?? [])
+  const [photos, setPhotos] = useState<Record<string, string | null>>(() => lastPhotos)
   useEffect(() => {
     let alive = true
     apiGet<{ profiles?: ProfileView[] }>('/api/profiles')
@@ -55,11 +60,17 @@ function useFamily(): ProfileView[] {
         if (alive) setProfiles(lastFamily)
       })
       .catch(() => {})
+    apiGet<{ avatars?: Record<string, string | null> }>('/api/parents/avatares')
+      .then((body) => {
+        lastPhotos = body?.avatars ?? {}
+        if (alive) setPhotos(lastPhotos)
+      })
+      .catch(() => {})
     return () => {
       alive = false
     }
   }, [])
-  return profiles
+  return { profiles, photos }
 }
 
 function SectionLink({
@@ -98,11 +109,13 @@ function MenuSections({
   active,
   activeChildId,
   family,
+  photos,
   onNavigate,
 }: {
   active: ParentSectionId | null
   activeChildId?: string
   family: ProfileView[]
+  photos: Record<string, string | null>
   onNavigate?: () => void
 }) {
   return PARENT_SECTIONS.map((section) => (
@@ -130,7 +143,14 @@ function MenuSections({
                     : 'hover:bg-(--menu-vidro) hover:text-white',
                 )}
               >
-                <UserAvatar firstName={child.name} avatarUrl={null} size="sm" />
+                {/* O nome já vem escrito ao lado: a foto não repete no leitor de tela. */}
+                <span aria-hidden="true" className="shrink-0">
+                  <UserAvatar
+                    firstName={child.name}
+                    avatarUrl={photos[child.id] ?? null}
+                    size="sm"
+                  />
+                </span>
                 <span className="truncate">{child.name}</span>
               </Link>
             </li>
@@ -182,7 +202,7 @@ export function ParentShell({
   const [password, setPassword] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
-  const family = useFamily()
+  const { profiles: family, photos } = useFamily()
   async function leave() {
     setLeaving(true)
     try {
@@ -238,7 +258,12 @@ export function ParentShell({
           aria-label="Área dos pais"
           className="mt-5 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain"
         >
-          <MenuSections active={active} activeChildId={activeChildId} family={family} />
+          <MenuSections
+            active={active}
+            activeChildId={activeChildId}
+            family={family}
+            photos={photos}
+          />
         </nav>
         <div className="flex shrink-0 flex-col gap-3 pt-4 pb-7">
           {semAreaDaCrianca ? null : (
@@ -364,6 +389,7 @@ export function ParentShell({
               active={active}
               activeChildId={activeChildId}
               family={family}
+              photos={photos}
               onNavigate={() => setMoreOpen(false)}
             />
           </nav>

@@ -65,6 +65,13 @@ export interface StudioCommonProps {
   /** Required in a live room: a failed origin adapter never falls back to srcdoc. */
   previewOriginAdapter?: StudioPlayerOriginAdapter
   requireIsolatedPreview?: boolean
+  /**
+   * Casca da prévia do Clássico em outro site (`/v1/classic-shell/1.html` do studio-runtime).
+   * Opcional e desligada por padrão: com ela, o jogo roda num `srcdoc` DENTRO da casca, o que
+   * isola o editor no Firefox (medido). Precisa de COOP/COEP na página do host e da origem do
+   * host na lista da casca. Ignorada quando há `previewOriginAdapter` ou `requireIsolatedPreview`.
+   */
+  previewShellUrl?: string
   /** Project audio only; independent of the classroom microphone. */
   projectMuted?: boolean
   /**
@@ -152,6 +159,11 @@ export interface StudioCommonProps {
    * modo Pro usa o WebContainer local do Estúdio Completo.
    */
   proRuntime?: StudioProRuntimeAdapter
+  /**
+   * "Meus testes" no Pro: o executor dos testes no servidor (o do "Verificar projeto"). Sem ele,
+   * a aba não aparece no Pro. Estático por instância.
+   */
+  studentTestsServer?: import('./student-tests-server').StudioStudentTestsServer
   /** Canonical lock preparation for authenticated local WebContainer hosts. */
   prepareProDependencies?: PrepareProDependencies
   /** Approved language catalog and providers, shared by editor and public player. */
@@ -185,6 +197,13 @@ export interface StudioCommonProps {
    * Estável por instância (latchado, igual à `share`).
    */
   onCloudSync?: () => void
+  /**
+   * Callback OPCIONAL de abrir outro projeto (proposta aprovada em 21/11/2026): no Pro que veio
+   * de "Virar profissional", o menu ⋯ ganha "Abrir a versão em blocos", que chama este callback
+   * com o id da cópia em blocos guardada na conversão. O HOST navega. Ausente → sem item. O
+   * Studio sempre chama a versão mais recente do callback.
+   */
+  onOpenProject?: (projectId: string) => void
   /**
    * Callback OPCIONAL "editar este desenho no Pinta": quando presente, os
    * desenhos vindos do Pinta ganham um botão de editar na aba "Imagens" (na

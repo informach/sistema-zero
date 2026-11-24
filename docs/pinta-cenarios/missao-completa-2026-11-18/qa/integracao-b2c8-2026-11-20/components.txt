@@ -1,0 +1,17 @@
+(pass) shared input aggregate edges and rearming > typing in a contenteditable surface does not move the game
+(pass) shared progress acknowledgement > loads before writing, shows pending, and confirms only after storage ACK
+(pass) shared progress acknowledgement > malformed saves are not silently reset or overwritten
+(pass) shared progress acknowledgement > a rejected write preserves the last confirmed record and never claims the new one
+(pass) shared progress acknowledgement > disposing progress ignores a late read acknowledgement [15.00ms]
+(pass) one frame owner clamps elapsed time, reports discarded time and stops when inactive
+(pass) inspection stays read-only and disposing an old observer preserves the newer session
+
+src\components\code\pro-templates\games\sound.test.ts:
+(pass) sound bank waits for a gesture, switches tracks, mixes channels and caps voices
+(pass) pause cancels old play rejections without releasing the resumed track; current errors remain visible [16.00ms]
+(pass) remote, traversal, invalid channels/volumes and unbounded definitions are rejected
+
+ 640 pass
+ 0 fail
+ 3523 expect() calls
+Ran 640 tests across 76 files. [73.78s]

@@ -1,0 +1,33 @@
+[WebServer] (node:49328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 12 tests using 1 worker
+
+(node:24000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   1 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (3.2s)
+  ✓   2 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:131:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (1.4s)
+  ✓   3 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:187:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (6.7s)
+  ✓   4 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:281:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (3.0s)
+(node:40236) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   5 [touch] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (3.1s)
+  ✓   6 [touch] › e2e\pinta-keyboard-scenes.flow.ts:131:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (1.5s)
+  ✓   7 [touch] › e2e\pinta-keyboard-scenes.flow.ts:187:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (6.6s)
+  ✓   8 [touch] › e2e\pinta-keyboard-scenes.flow.ts:281:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (3.1s)
+(node:48788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   9 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (10.8s)
+  ✓  10 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:131:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (3.9s)
+  ✓  11 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:187:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (26.0s)
+  ✓  12 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:281:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (21.7s)
+
+  12 passed (1.6m)

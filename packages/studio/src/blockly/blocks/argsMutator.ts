@@ -24,6 +24,16 @@ import { getParamNames } from './paramsMutator'
  * Os rótulos são PURAMENTE cosméticos: a geração de código e o IR usam só os
  * valores posicionais (`ARG0..ARG{n-1}`), então um rótulo desatualizado nunca
  * quebra o código nem o round-trip. A contagem vai no `extraState` (Blockly 11).
+ *
+ * ⚠️ A QUANTIDADE de espaços é conteúdo do programa (cada espaço vira um argumento,
+ * o vazio vira `0`). Ela só muda quando a criança mexe: escolhe a função, a classe
+ * ou o método, muda os parâmetros dela, ou aperta + e −. Um bloco que veio de um
+ * estado guardado (abrir o projeto, a Ponte refazendo os blocos do código, colar,
+ * desfazer) ADOTA a contagem dele e só ganha os rótulos (`adoptCount_`). Até
+ * 20/11/2026 o ajuste pós-carga completava a chamada com a assinatura, e abrir o
+ * projeto reescrevia o programa: `loadStage(stage.id)` virava
+ * `loadStage(stage.id, 0)` e a prévia recarregava no meio da partida do Reino Zero
+ * Ultra. No automático, um parâmetro sem espaço ganha o + para a criança completar.
  */
 
 const icon = (inner: string): string =>
@@ -43,11 +53,13 @@ const MAX_ITEMS = 32
 
 interface ArgsMutatorBlock extends Blockly.Block {
   itemCount_: number
+  /** Veio de um estado guardado: o próximo ajuste fica com a contagem e só põe os rótulos. */
+  adoptCount_?: boolean
   lastKey_?: string
   prevPreKey_?: string
   syncShape_(event?: Blockly.Events.Abstract | null): void
   preKey_(): string
-  rebuild_(sig: string[] | null, opts?: { shadows?: boolean }): void
+  rebuild_(sig: string[] | null, opts?: { shadows?: boolean; count?: number }): void
   resolveSignature_(event?: Blockly.Events.Abstract | null): string[] | null
   plus(): void
   minus(): void
@@ -90,6 +102,22 @@ function makeScanner(ws: Blockly.Workspace, event?: Blockly.Events.Abstract | nu
   }
 }
 
+/**
+ * O rótulo do espaço `ARG{k}` (o nome do parâmetro, no automático; nenhum, no manual). O campo
+ * tem nome próprio para ser trocado no lugar: refazer o espaço desencaixaria o que está nele. O
+ * rótulo não vai ao estado salvo (rótulo não é serializado).
+ */
+function setArgLabel(input: Blockly.Input, k: number, text: string | null): void {
+  const name = `ARG_LABEL${k}`
+  const current = input.fieldRow.find((field) => field.name === name)
+  if (text === null) {
+    if (current) input.removeField(name, true)
+    return
+  }
+  if (!current) input.insertFieldAt(0, text, name)
+  else if (current.getValue() !== text) current.setValue(text)
+}
+
 /** Cria a sombra padrão (número editável) e conecta no input de valor. */
 function attachNumberShadow(block: Blockly.Block, input: Blockly.Input): void {
   const ws = block.workspace
@@ -103,12 +131,30 @@ function attachNumberShadow(block: Blockly.Block, input: Blockly.Input): void {
   if (shadow.outputConnection) input.connection.connect(shadow.outputConnection)
 }
 
+/** Quantos espaços `ARG{k}` o bloco tem agora. */
+function argSlotCount(block: Blockly.Block): number {
+  let count = 0
+  while (block.getInput(`ARG${count}`)) count += 1
+  return count
+}
+
+/** A chave do que decide a forma: a assinatura resolvida (automático) ou a contagem (manual). */
+function shapeKey(sig: string[] | null, itemCount: number): string {
+  return sig ? `auto:${sig.join('\u0001')}` : `manual:${itemCount}`
+}
+
+function plusControl(block: ArgsMutatorBlock): Blockly.FieldImage {
+  return new Blockly.FieldImage(PLUS_ICON, 15, 15, '+', () => {
+    block.plus()
+  })
+}
+
 const ARGS_MUTATOR_MIXIN = {
   itemCount_: 0,
+  adoptCount_: false,
 
   saveExtraState(this: ArgsMutatorBlock): { items: number } | null {
-    let count = 0
-    while (this.getInput(`ARG${count}`)) count += 1
+    const count = argSlotCount(this)
     return count > 0 ? { items: count } : null
   },
 
@@ -119,6 +165,9 @@ const ARGS_MUTATOR_MIXIN = {
     // rótulos, sombras e controles quando a classe já está no workspace.
     this.rebuild_(null, { shadows: false })
     this.lastKey_ = undefined
+    // A contagem guardada é a do programa (abrir, colar, desfazer, a Ponte): o ajuste que vem
+    // depois a adota e só põe os rótulos.
+    this.adoptCount_ = true
   },
 
   /**
@@ -164,61 +213,64 @@ const ARGS_MUTATOR_MIXIN = {
     return null
   },
 
-  /** Reconstrói os espaços ARG conforme `sig` (auto, com rótulos) ou contagem manual. */
-  rebuild_(this: ArgsMutatorBlock, sig: string[] | null, opts?: { shadows?: boolean }): void {
+  /**
+   * Ajusta os espaços ARG conforme `sig` (auto, com rótulos) ou a contagem manual (ou a contagem
+   * pedida em `opts.count`: a adotada de um estado guardado, ou a do + no automático), SEM refazer
+   * os que já existem: o espaço fica com o que está encaixado nele (o valor de verdade e a sombra com
+   * o número que a criança digitou), muda só o rótulo, e os espaços a mais ou a menos entram ou
+   * saem no fim. Até 20/11/2026 todos os espaços eram removidos e recriados a cada ajuste, com os
+   * valores de verdade desencaixados e encaixados de volta: a sombra voltava a 0 em toda abertura
+   * do projeto (o ajuste roda no `FINISHED_LOADING`), e desencaixar um bloco ainda não desenhado
+   * obrigava a cauda adiada de um projeto grande a se desenhar inteira (`deferredTail.ts`).
+   */
+  rebuild_(
+    this: ArgsMutatorBlock,
+    sig: string[] | null,
+    opts?: { shadows?: boolean; count?: number },
+  ): void {
     const auto = sig !== null
     const withShadows = opts?.shadows !== false
-
-    // Captura os filhos reais (não-sombra) por índice, para preservá-los.
-    const saved: Array<Blockly.Block | null> = []
-    for (let i = 0; this.getInput(`ARG${i}`); i += 1) {
-      const target = this.getInput(`ARG${i}`)?.connection?.targetBlock() ?? null
-      saved.push(target && !target.isShadow() ? target : null)
-    }
 
     // Quantos slots o aluno já preencheu com uma expressão de verdade. Se a
     // assinatura encolheu (ex.: o construtor de Pessoa passou de 3 p/ 1 param),
     // NÃO podemos cair em `sig.length` — isso desconectaria os argumentos a mais
     // e o aluno os perderia silenciosamente (buildIR ignora filhos órfãos). Por
     // isso mantemos pelo menos `savedMax` espaços, preservando todos os valores.
+    let existing = 0
     let savedMax = 0
-    for (let i = 0; i < saved.length; i += 1) {
-      if (saved[i]) savedMax = i + 1
+    for (; this.getInput(`ARG${existing}`); existing += 1) {
+      const target = this.getInput(`ARG${existing}`)?.connection?.targetBlock()
+      if (target && !target.isShadow()) savedMax = existing + 1
     }
     const autoCount = auto ? Math.min(sig.length, MAX_ITEMS) : this.itemCount_
-    const count = auto ? Math.min(Math.max(autoCount, savedMax), MAX_ITEMS) : this.itemCount_
+    const count =
+      opts?.count !== undefined
+        ? clampItemCount(opts.count)
+        : auto
+          ? Math.min(Math.max(autoCount, savedMax), MAX_ITEMS)
+          : this.itemCount_
 
     if (this.getInput(CONTROLS_INPUT)) this.removeInput(CONTROLS_INPUT)
-    for (let i = 0; this.getInput(`ARG${i}`); i += 1) {
-      const conn = this.getInput(`ARG${i}`)?.connection
-      const child = conn?.targetBlock()
-      if (child && !child.isShadow()) conn?.disconnect()
-      this.removeInput(`ARG${i}`)
-    }
+    // Os espaços que sobram saem do fim. No automático nenhum deles tem valor de verdade
+    // (`count` ≥ `savedMax`); no manual, o "−" tira o último, e o valor dele fica solto no
+    // espaço de trabalho (o Blockly desencaixa ao remover o espaço), como sempre foi.
+    for (let i = existing - 1; i >= count; i -= 1) this.removeInput(`ARG${i}`)
 
     for (let k = 0; k < count; k += 1) {
-      const input = this.appendValueInput(`ARG${k}`).setCheck('JSValue')
-      if (auto) {
-        // Slots dentro da assinatura ganham o rótulo do parâmetro; os
-        // excedentes (preservados de uma assinatura que encolheu) caem num
-        // rótulo neutro `argN:` — NUNCA renderizamos `undefined:`.
-        input.appendField(k < sig.length ? `${sig[k]}:` : `arg${k + 1}:`)
-      }
-      const child = saved[k]
-      if (child && !child.disposed && child.outputConnection) {
-        input.connection?.connect(child.outputConnection)
-      } else if (withShadows) {
+      const input = this.getInput(`ARG${k}`) ?? this.appendValueInput(`ARG${k}`).setCheck('JSValue')
+      // Slots dentro da assinatura ganham o rótulo do parâmetro; os excedentes (preservados de
+      // uma assinatura que encolheu) caem num rótulo neutro `argN:` — NUNCA `undefined:`.
+      setArgLabel(input, k, auto ? (k < sig.length ? `${sig[k]}:` : `arg${k + 1}:`) : null)
+      if (withShadows && input.connection && !input.connection.targetBlock())
         attachNumberShadow(this, input)
-      }
     }
 
-    if (!auto) {
+    if (auto) {
+      // Uma chamada guardada com menos argumentos que a função: o + completa o próximo.
+      if (count < autoCount) this.appendDummyInput(CONTROLS_INPUT).appendField(plusControl(this))
+    } else {
       const controls = this.appendDummyInput(CONTROLS_INPUT)
-      controls.appendField(
-        new Blockly.FieldImage(PLUS_ICON, 15, 15, '+', () => {
-          this.plus()
-        }),
-      )
+      controls.appendField(plusControl(this))
       if (this.itemCount_ > 0) {
         controls.appendField(
           new Blockly.FieldImage(MINUS_ICON, 15, 15, '−', () => {
@@ -230,15 +282,20 @@ const ARGS_MUTATOR_MIXIN = {
     this.itemCount_ = count
   },
 
-  /** Recalcula a forma se a assinatura resolvida (ou a contagem manual) mudou. */
+  /**
+   * Recalcula a forma se a assinatura resolvida (ou a contagem manual) mudou. O bloco que veio de
+   * um estado guardado fica com a contagem dele (só os rótulos mudam).
+   */
   syncShape_(this: ArgsMutatorBlock, event?: Blockly.Events.Abstract | null): void {
     const sig = this.resolveSignature_(event)
-    const key = sig ? `auto:${sig.join('\u0001')}` : `manual:${this.itemCount_}`
-    if (key === this.lastKey_) return
+    const key = shapeKey(sig, this.itemCount_)
+    const adopt = this.adoptCount_ === true
+    if (key === this.lastKey_ && !adopt) return
     this.lastKey_ = key
+    this.adoptCount_ = false
     Blockly.Events.disable()
     try {
-      this.rebuild_(sig)
+      this.rebuild_(sig, adopt ? { count: argSlotCount(this) } : undefined)
     } finally {
       Blockly.Events.enable()
     }
@@ -281,9 +338,11 @@ const ARGS_MUTATOR_MIXIN = {
   plus(this: ArgsMutatorBlock): void {
     if (this.itemCount_ >= MAX_ITEMS) return
     withMutation(this, () => {
+      // No automático (o + de um parâmetro que ficou sem espaço) o rótulo vem da assinatura.
+      const sig = this.resolveSignature_()
       this.itemCount_ += 1
-      this.lastKey_ = `manual:${this.itemCount_}`
-      this.rebuild_(null)
+      this.lastKey_ = shapeKey(sig, this.itemCount_)
+      this.rebuild_(sig, { count: this.itemCount_ })
     })
   },
 
@@ -303,6 +362,13 @@ function clampItemCount(value: number): number {
 }
 
 function argsMutatorHelper(this: ArgsMutatorBlock): void {
+  // Criado por uma carga (abrir o projeto, a Ponte): o bloco é de um estado guardado, e o
+  // `FINISHED_LOADING` o ajusta uma vez, adotando a contagem (a chamada sem argumentos não passa
+  // pelo `loadExtraState`). Fora da carga (a paleta, colar), ajusta já.
+  if (isWorkspaceLoading()) {
+    this.adoptCount_ = true
+    return
+  }
   this.syncShape_()
 }
 

@@ -1,51 +1,17 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import choice
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 ESCALA = 6
 TEMPO_DO_TURNO = 1.2
-
-init_window(LARGURA, ALTURA, 'Batalha de Monstrinhos')
-init_audio_device()
-set_target_fps(60)
-# O ESC volta no menu, então ele não pode fechar o jogo.
-set_exit_key(KEY_NULL)
-
-# Os dados da batalha: mude os números para deixar um monstrinho mais forte. A imagem é o
-# arquivo do desenho em images/ (o nome que o Pinta dá, sem acentos).
-MONSTROS = {
-    'Faísca': {'elemento': 'raio', 'vida': 90, 'golpes': ['Choque', 'Arranhão', 'Cura'],
-              'imagem': 'faisca.png'},
-    'Bolha': {'elemento': 'água', 'vida': 110, 'golpes': ['Jato', 'Arranhão', 'Cura'],
-             'imagem': 'bolha.png'},
-    'Brasa': {'elemento': 'fogo', 'vida': 100, 'golpes': ['Chama', 'Arranhão', 'Cura'],
-             'imagem': 'brasa.png'},
-    'Folhinha': {'elemento': 'planta', 'vida': 120, 'golpes': ['Folhada', 'Arranhão', 'Cura'],
-                 'imagem': 'folhinha.png'},
-}
-GOLPES = {
-    'Choque': {'dano': 24, 'elemento': 'raio', 'cor': YELLOW, 'som': 'choque'},
-    'Jato': {'dano': 22, 'elemento': 'água', 'cor': SKYBLUE, 'som': 'jato'},
-    'Chama': {'dano': 24, 'elemento': 'fogo', 'cor': ORANGE, 'som': 'chama'},
-    'Folhada': {'dano': 22, 'elemento': 'planta', 'cor': GREEN, 'som': 'folha'},
-    'Arranhão': {'dano': 14, 'elemento': 'normal', 'cor': WHITE, 'som': 'arranhao'},
-    'Cura': {'dano': -30, 'elemento': 'normal', 'cor': PINK, 'som': 'cura'},
-}
 # Quem leva vantagem: o primeiro machuca o segundo em dobro (e o segundo devolve só a metade).
 VANTAGENS = [('água', 'fogo'), ('fogo', 'planta'), ('planta', 'água'), ('raio', 'água')]
 
-texturas = {}
-for nome in MONSTROS:
-    texturas[nome] = load_texture(f"images/{MONSTROS[nome]['imagem']}")
-sons = {}
-for nome in ['choque', 'jato', 'chama', 'folha', 'arranhao', 'cura']:
-    sons[nome] = load_sound(f'sounds/{nome}.wav')
-fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
-musica = load_music_stream('music/batalha.ogg')
-play_music_stream(musica)
 
-
+# 🧩 Meus moldes
 def multiplicador(elemento_do_golpe, elemento_do_alvo):
     if (elemento_do_golpe, elemento_do_alvo) in VANTAGENS:
         return 2
@@ -185,11 +151,50 @@ def comecar():
     vitorias = 0
     estado = 'batalha'
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Batalha de Monstrinhos')
+init_audio_device()
+set_target_fps(60)
+# O ESC volta no menu, então ele não pode fechar o jogo.
+set_exit_key(KEY_NULL)
+
+# Os dados da batalha: mude os números para deixar um monstrinho mais forte. A imagem é o
+# arquivo do desenho em images/ (o nome que o Pinta dá, sem acentos).
+MONSTROS = {
+    'Faísca': {'elemento': 'raio', 'vida': 90, 'golpes': ['Choque', 'Arranhão', 'Cura'],
+              'imagem': 'faisca.png'},
+    'Bolha': {'elemento': 'água', 'vida': 110, 'golpes': ['Jato', 'Arranhão', 'Cura'],
+             'imagem': 'bolha.png'},
+    'Brasa': {'elemento': 'fogo', 'vida': 100, 'golpes': ['Chama', 'Arranhão', 'Cura'],
+             'imagem': 'brasa.png'},
+    'Folhinha': {'elemento': 'planta', 'vida': 120, 'golpes': ['Folhada', 'Arranhão', 'Cura'],
+                 'imagem': 'folhinha.png'},
+}
+GOLPES = {
+    'Choque': {'dano': 24, 'elemento': 'raio', 'cor': YELLOW, 'som': 'choque'},
+    'Jato': {'dano': 22, 'elemento': 'água', 'cor': SKYBLUE, 'som': 'jato'},
+    'Chama': {'dano': 24, 'elemento': 'fogo', 'cor': ORANGE, 'som': 'chama'},
+    'Folhada': {'dano': 22, 'elemento': 'planta', 'cor': GREEN, 'som': 'folha'},
+    'Arranhão': {'dano': 14, 'elemento': 'normal', 'cor': WHITE, 'som': 'arranhao'},
+    'Cura': {'dano': -30, 'elemento': 'normal', 'cor': PINK, 'som': 'cura'},
+}
+
+texturas = {}
+for nome in MONSTROS:
+    texturas[nome] = load_texture(f"images/{MONSTROS[nome]['imagem']}")
+sons = {}
+for nome in ['choque', 'jato', 'chama', 'folha', 'arranhao', 'cura']:
+    sons[nome] = load_sound(f'sounds/{nome}.wav')
+fonte = load_font_ex('fonts/pressstart2p.ttf', 16, None, 224)
+musica = load_music_stream('music/batalha.ogg')
+play_music_stream(musica)
+
 
 ataque_do_inimigo = Cronometro(TEMPO_DO_TURNO, vez_do_inimigo)
 fim_do_turno = Cronometro(TEMPO_DO_TURNO * 2, volta_o_menu)
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     update_music_stream(musica)

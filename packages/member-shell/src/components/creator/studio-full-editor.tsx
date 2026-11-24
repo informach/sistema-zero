@@ -52,6 +52,7 @@ export function StudioFullEditor({
   teamLibrary,
   onCompletionControlChange,
   onOpenEmbeddedPro,
+  onOpenProject,
 }: {
   mod: StudioModule
   projectId: string
@@ -76,6 +77,8 @@ export function StudioFullEditor({
     control: { flush(): Promise<{ id: string; snapshot: unknown }> } | null,
   ) => void
   onOpenEmbeddedPro?: (project: Project) => void
+  /** Abre outro projeto da lista (a versão em blocos de um Pro convertido, proposta de 21/11). */
+  onOpenProject?: (projectId: string) => void
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -267,6 +270,7 @@ export function StudioFullEditor({
             persistence={adapter}
             onProjectOpeningSettled={state.releaseOpening}
             onExit={onExit}
+            onOpenProject={onOpenProject}
             onChange={handleActivity}
             // Erro que o editor CONTEVE sozinho (ex.: o painel do Zappy caindo na sua
             // própria boundary). Sem este fio ele morria num console.error e a

@@ -3,14 +3,23 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { strToU8, zipSync } from 'fflate'
 import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 import { COPY } from '../core/copy'
-import { createPixelBackgroundAsset } from '../core/project'
+import {
+  createPixelBackgroundAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isTileLayer,
+} from '../core/project'
 import type { PintaTaskSession } from '../core/types'
 import { galleryToPintaJson } from '../export/projectJson'
-import { clearIdbMock } from '../testing/idbMock'
+import { clearIdbMock, setIdbMockCodec } from '../testing/idbMock'
+import { prepareMapRegions } from '../tiles/regionMap'
+import { setCell } from '../tiles/tilemapOps'
+import { addTile } from '../tiles/tilesetOps'
 
 const { PintaApp } = await import('./PintaApp')
-const { setPintaStorageNamespace } = await import('../state/persistence')
+const { createPintaPersistence, setPintaStorageNamespace } = await import('../state/persistence')
 const { createGalleryStore } = await import('../state/galleryStore')
+const { createWorkshopPintaPersistence } = await import('../state/workshopPersistence')
 
 beforeEach(() => {
   clearIdbMock()
@@ -18,6 +27,96 @@ beforeEach(() => {
 })
 
 describe('PintaApp — galeria', () => {
+  it('avisa quando a abertura não obtém a reserva e conserva a galeria', async () => {
+    const persistence = createPintaPersistence()
+    await persistence.persistAsset(
+      createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 16 }),
+    )
+    render(
+      <PintaApp
+        persistence={{
+          ...persistence,
+          holdOpen: async () => {
+            throw Error('reserva indisponível')
+          },
+        }}
+      />,
+    )
+    const card = await screen.findByRole('button', { name: /Abrir ceu/ })
+    fireEvent.click(card)
+    expect(await screen.findByText(COPY.gallery.drawingOpenError)).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
+  })
+
+  it('a abertura anterior libera só sua reserva quando outra tela já abriu e fechou', async () => {
+    const persistence = createPintaPersistence()
+    const a = createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 16 })
+    const b = createPixelBackgroundAsset({ name: 'terra', width: 16, height: 16 })
+    await persistence.persistAssets([a, b])
+    const first = Promise.withResolvers<() => void>()
+    const second = Promise.withResolvers<() => void>()
+    const closed: string[] = []
+    render(
+      <PintaApp
+        persistence={{
+          ...persistence,
+          holdOpen: (id) => (id === a.id ? first.promise : second.promise),
+        }}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: /Abrir ceu/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Abrir terra/ }))
+    await act(async () => second.resolve(() => closed.push('terra')))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
+    expect(await screen.findByRole('button', { name: /Abrir terra/ })).toBeTruthy()
+    await act(async () => first.resolve(() => closed.push('ceu')))
+    expect(closed).toEqual(['terra', 'ceu'])
+    expect(screen.getByRole('button', { name: /Abrir terra/ })).toBeTruthy()
+  })
+
+  it('a janela focal segura a reserva da conta até a criança voltar, inclusive no Avançado', async () => {
+    const namespace = 'focal-reserva'
+    setPintaStorageNamespace(namespace)
+    setIdbMockCodec(true)
+    const workshop = createWorkshopPintaPersistence({ namespace })
+    const sheet = addTile(createTilesetAsset({ name: 'folha', tileSize: 16 }), 0)
+    const converted = prepareMapRegions(
+      createTilemapAsset({ name: 'vila', tilesetId: sheet.id, cols: 2, rows: 2 }),
+    )
+    if (!converted.ok) throw Error(converted.reason)
+    const layer = converted.map.layers.find(isTileLayer)
+    if (!layer) throw Error('Camada de peças ausente')
+    const map = setCell(converted.map, layer.id, 1, 1, 1)
+    await workshop.persistAssets([sheet, map])
+    const events: string[] = []
+    render(
+      <PintaApp
+        persistence={{
+          ...workshop,
+          holdOpen: async (id) => {
+            events.push(`reserva:${id}`)
+            return () => events.push(`solta:${id}`)
+          },
+        }}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: /Abrir vila/ }))
+    const advanced = await screen.findByRole('button', { name: COPY.scene.avancado })
+    expect(events).toEqual([`reserva:${map.id}`])
+    // O mesmo cenário segue aberto no editor inteiro: a reserva passa para ele, sem soltar.
+    fireEvent.click(advanced)
+    // ⚠️ `expect(elemento).toBeNull()` dentro do `waitFor` NÃO: na 1ª checagem o botão ainda está
+    // na tela, e para escrever a falha o Bun formata o elemento do happy-dom inteiro (com o
+    // documento junto). Uma falha dessas levava 10 s e passava de 2,5 GB, e o CI matou a suíte do
+    // Pinta por memória (23/11/2026). Comparar com `null` dá a mesma prova sem formatar nada.
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: COPY.scene.avancado }) === null).toBe(true),
+    )
+    expect(events).toEqual([`reserva:${map.id}`])
+    fireEvent.click(await screen.findByRole('button', { name: COPY.editor.back }))
+    await waitFor(() => expect(events).toEqual([`reserva:${map.id}`, `solta:${map.id}`]))
+  })
+
   it('aplica o tema no root (default light; host pode fixar dark)', async () => {
     const { container, unmount } = render(<PintaApp />)
     expect(container.querySelector('[data-pinta-theme="light"]')).toBeTruthy()
@@ -527,7 +626,7 @@ describe('PintaApp: tela com molde (Arquipélago)', () => {
     const salvos = await persistence.listAllAssets()
     expect(salvos.map((a) => a.name)).toEqual(['molde-geladeira'])
     const criado = salvos[0]
-    if (!criado || criado.kind !== 'pixel-background') throw new Error('cenário esperado')
+    if (criado?.kind !== 'pixel-background') throw new Error('cenário esperado')
     expect(criado.layers.map((l) => l.name)).toEqual(['Molde', 'Pintura'])
     expect(criado.cels[0]?.width).toBe(12)
     first.unmount()

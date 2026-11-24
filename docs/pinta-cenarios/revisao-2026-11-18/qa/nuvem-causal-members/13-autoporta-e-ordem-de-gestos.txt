@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+packages\members\tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) Pinta causal over the real migration and existing quota lock > paged intent never publishes prefixes, and a changed index invalidates a later page [297.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > net quota, compacted tombstone, account deletion fence and expired nonce [250.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > takes the next revision above a legacy pending ticket whose reservation counter fell behind [110.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > legacy numerical ACK after compaction identifies neither the original bytes nor a causal base [171.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > retirement releases only expired exact keys and preserves the confirmed seal [125.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > internal routes require both gateway credentials and reject browser-supplied facts and mixed adult identities [47.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > unknown legacy resource allows proven paint/append but blocks structural changes [297.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > name door cannot silently retarget; a set cannot drop a live external art resource [344.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > an inverse binds every before/after digest across a disappeared slot and rejects a new consumer [953.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > undo of append drops only the former suffix and preserves later users of the prefix [359.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > inverse of a compacted creation cannot delete a recreated identical revision and digest [282.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > a frozen two-sheet grid and a live artwork follow separate authoring units in either order [672.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > self doors by ID and name use the proven map PUT; external and shadowed selectors still require their target [312.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > opaque future bytes have an explicit owner archive and cannot be admitted or mutated by reader 7 [63.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > an old SQL commit already waiting on the quota lock observes adoption before its write [203.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > restoring a deleted sheet may recompress only an authoring document proven by the original receipt [453.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > compacting and recreating an ID never revives its previous revision-one object [219.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > account purge fences a first collecting page before any creation row exists [15.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > A,B,C: omitted remote consumer, failed second upload, idempotent promotion and sealed snapshot [344.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > new consumer racing structural change has exactly one visible winner; other actor/audience isolated [234.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > legacy before adoption gets sealed by revision and epoch; pending old writer cannot cross adoption [203.00ms]
+
+ 21 pass
+ 0 fail
+ 132 expect() calls
+Ran 21 tests across 1 file. [6.63s]

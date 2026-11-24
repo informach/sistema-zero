@@ -1,0 +1,10 @@
+module.exports=async function(qa){
+const page=qa.modern;if(new URL(page.url()).pathname!=='/pinta')throw Error('Not in owned map');
+await page.getByRole('img',{name:'Grade do mapa',exact:true}).waitFor({state:'visible'});
+await page.getByRole('button',{name:'Jogar meu mapa',exact:true}).click();
+await page.waitForURL(u=>u.pathname==='/estudio',{timeout:40000});
+const owned=page.getByText('homologacao-aba-nklptd',{exact:true});await owned.first().waitFor({state:'visible',timeout:30000});
+const matches=await owned.evaluateAll(es=>es.map(e=>{const action=e.closest('button,a,[role=button]');return {tag:e.tagName,action:action?.tagName,role:action?.getAttribute('role'),label:action?.getAttribute('aria-label'),href:action?.getAttribute('href')}}));
+qa.ownedGeneratedGameName='homologacao-aba-nklptd';
+return {path:'/estudio',ownedProjectVisible:true,matches,oldPagePreserved:!qa.old.isClosed(),oldNetworkSuspended:qa.oldNetworkSuspended};
+};

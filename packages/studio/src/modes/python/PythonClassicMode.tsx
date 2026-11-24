@@ -1,3 +1,4 @@
+import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { useEffect, useMemo, useState } from 'react'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { isPythonProject } from '../../core/editableProject'
@@ -59,7 +60,11 @@ function PythonClassicProjectMode({ mode }: { mode: 'blocks' | 'bridge' }) {
   }, [request, environment])
   const owner =
     loaded?.request === request && loaded?.environment === environment ? loaded : undefined
-  const officialNames = python ? [...pythonOfficialModules(python)].join('|') : ''
+  const runtimeFeatures =
+    environment && runtime
+      ? selectStudioRuntimeRelease(environment.catalog, runtime)?.manifest.python?.features
+      : undefined
+  const officialNames = python ? [...pythonOfficialModules(python, runtimeFeatures)].join('|') : ''
   const officialModules = useMemo(
     () => new Set(officialNames.split('|').filter(Boolean)),
     [officialNames],

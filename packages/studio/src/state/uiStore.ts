@@ -7,9 +7,16 @@ import { StudioStoresContext } from './storesContext'
 export type BottomTab = 'console' | 'terminal' | 'ai'
 /**
  * A gaveta do clássico (blocos e Ponte, redesenho de 11/2026): sempre à vista embaixo, fechada
- * só com as abas e os contadores, ou aberta numa das duas abas.
+ * só com as abas e os contadores, ou aberta numa das abas. `performance` é a aba Desempenho
+ * (proposta aprovada em 20/11/2026, `docs/estudio-evolucao/paineis-proposta.md`).
  */
-export type ClassicDockTab = 'closed' | 'console' | 'problems'
+export type ClassicDockTab =
+  | 'closed'
+  | 'console'
+  | 'problems'
+  | 'investigate'
+  | 'performance'
+  | 'tests'
 /** As três abas da janela "Materiais do jogo" — e as três portas dela no menu ⋯. */
 /** `fonts` só aparece nos projetos Raylib (TTF/OTF), e não tem porta no menu ⋯. */
 export type AssetsTab = 'images' | 'sounds' | 'models3d' | 'fonts'
@@ -65,6 +72,17 @@ interface UIStore {
   /** A gaveta do clássico: começa fechada (D4 da proposta); a criança abre pela aba. */
   classicDock: ClassicDockTab
   setClassicDock: (tab: ClassicDockTab) => void
+  /**
+   * A aba Desempenho ligou a medida: a prévia monta o jogo com a ponte de medida
+   * (`preview/devtoolsBridge.ts`). As fatias medidas moram com a ponte, fora do pacote de abertura.
+   */
+  measuring: boolean
+  /**
+   * A aba Investigar ligou: a prévia monta o jogo com o leitor das variáveis e a ponte. As duas
+   * chaves são escritas com `setState` pelos painéis (baixados sob demanda), sem setter próprio:
+   * cada byte aqui entra no pacote de abertura do modo Blocos, que tem teto.
+   */
+  investigating: boolean
   // O Console deriva do modo enquanto `null` (Blocos/Ponte oculto, Código
   // visível). A primeira ação manual grava um boolean que prevalece em qualquer
   // modo/projeto nesta instância. Terminal/IA continuam booleanos porque só
@@ -104,6 +122,8 @@ export function createUIStore(): StoreApi<UIStore> {
     setStageLarge: (stageLarge) => set({ stageLarge }),
     classicDock: 'closed',
     setClassicDock: (classicDock) => set({ classicDock }),
+    measuring: false,
+    investigating: false,
     consoleVisibilityOverride: null,
     setConsoleVisibilityOverride: (consoleVisibilityOverride) => set({ consoleVisibilityOverride }),
     showTerminal: true,

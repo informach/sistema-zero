@@ -1,0 +1,225 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 2592,
+      "sha256": "81bb4a6bd0c95b194205013e8e8f9f10370cf21edbf27183dd34fea8bc2b912c"
+    },
+    {
+      "file": "atlas.txt",
+      "bytes": 945,
+      "sha256": "52002365c9373118faa2eedd96f0fb5f1254aaa53a46ac0bf505d4fe4c1c82e8"
+    },
+    {
+      "file": "baseline-observado.json",
+      "bytes": 363,
+      "sha256": "99a5de3a5274690e7bbf2b95f675f2034a1077aa6ceaaf1cbe1668c41c99f7a2"
+    },
+    {
+      "file": "baseline-reproducao.json",
+      "bytes": 10228,
+      "sha256": "4ea831c95164fad8ea082ff96e5497d1f3533f38114ae11b4c28daf855e27225"
+    },
+    {
+      "file": "baseline-reproducao.txt",
+      "bytes": 2303,
+      "sha256": "7cbd4f571a2fdacead98b8250441539a373c0a5b8cd5704f871357b4b7be1565"
+    },
+    {
+      "file": "biome-final.txt",
+      "bytes": 46,
+      "sha256": "84f2fab949ab94a04be381b865730fbd3be521fa9453af0ea9622db84142fdf4"
+    },
+    {
+      "file": "biome-initial.txt",
+      "bytes": 46,
+      "sha256": "1f98851ff6eb2f2938d55e298a2472658903b4a5ae556bd85a2fcf5e9bdd1efb"
+    },
+    {
+      "file": "browser.json",
+      "bytes": 48641,
+      "sha256": "4ab3fae5b1b40d7b0effe02dcc34ea71e71f9aed6261f96e7cdf6ad68f6446e8"
+    },
+    {
+      "file": "browser.txt",
+      "bytes": 104967,
+      "sha256": "b28b931ec4df86a33e9f639be112fa085c903c02b864a87b7d17b6f43e6ec241"
+    },
+    {
+      "file": "controlador-cwd-correto.txt",
+      "bytes": 1417,
+      "sha256": "20d35becc2de97f8f9fb37a4d0fcf94d42fee382e75d4761be6d07c0f91f551c"
+    },
+    {
+      "file": "controlador-cwd-incorreto.txt",
+      "bytes": 9566,
+      "sha256": "18ae2112fa7f7d630bdb08b1f8b6ceca26182e5b0f8d37c911ff56bd7d24db1a"
+    },
+    {
+      "file": "core-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "core.txt",
+      "bytes": 373765,
+      "sha256": "08e2a33c575e215c0026925f7dd24ecd02880c9afbd56aa285983f3e64fcfc4c"
+    },
+    {
+      "file": "distribuicao-windows.json",
+      "bytes": 887,
+      "sha256": "ef1046b3c8771ee840ebdea87add10ae82a4438db75145660cc69ca11aeac277"
+    },
+    {
+      "file": "execucao-real-corrigida.json",
+      "bytes": 295807,
+      "sha256": "ed44cbf8c9392f89216910c95301f858e8c566e82ee356efd3d3dc293144983c"
+    },
+    {
+      "file": "execucao-real-corrigida.txt",
+      "bytes": 976,
+      "sha256": "af5eed643c8891a1768878b599f570e590e5d7772798fa9285d836d3290bc27f"
+    },
+    {
+      "file": "execucao-real-primeira-tentativa.json",
+      "bytes": 301360,
+      "sha256": "53f5529d5dd85ccf3d03ae28c838d45bf9bb902965afaa8c7d9b802acd384151"
+    },
+    {
+      "file": "execucao-real-primeira-tentativa.txt",
+      "bytes": 3365,
+      "sha256": "79fb9f33b650e6da1de2edb9a497b408c5d7c6b9054467e313f76447472d3089"
+    },
+    {
+      "file": "fontes.json",
+      "bytes": 19031,
+      "sha256": "60293707a7ede9071e409b4a69b85c6f5dba693af3c9b34f8f1985d25063be85"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 4063,
+      "sha256": "f7582cff55072178040f4ff78bba0e5f0980130608f78f157a72afeeb496b79e"
+    },
+    {
+      "file": "gateway-unit.txt",
+      "bytes": 6811,
+      "sha256": "ff59dd659ce85217b08bfb5ac0f02dc18a18e46ecf3762e48c46c4ad22d2fd2f"
+    },
+    {
+      "file": "integracao.json",
+      "bytes": 1287926,
+      "sha256": "970d398dad50bdadc5dc46257adb0fe5cb1bead89a9623a3bc41211c508dc388"
+    },
+    {
+      "file": "integration.txt",
+      "bytes": 7385,
+      "sha256": "94ef67d5655df4bb69af2dd4a96efd4b2683dda6d84e31a9ad6adc565720a56c"
+    },
+    {
+      "file": "members-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "members-unit.txt",
+      "bytes": 1864,
+      "sha256": "d427994736bf0d945e2b92aa45c56f1c8227138526a6d5ae9ab36ccb0f11c883"
+    },
+    {
+      "file": "molda-sdk.txt",
+      "bytes": 183,
+      "sha256": "797c0cf997f7157204941356312da47db54e0db990341082024c1a69885a3653"
+    },
+    {
+      "file": "native-controls.txt",
+      "bytes": 648,
+      "sha256": "af8503056de608c273ea7be6697e82abf125b2b841318c6dddf1c77c69cdbe46"
+    },
+    {
+      "file": "native-observer.txt",
+      "bytes": 8885,
+      "sha256": "3880e4489b80337cf111a4134c428d606657d692a368bb22f62ea4d734e20bc0"
+    },
+    {
+      "file": "preview-merge.txt",
+      "bytes": 95026,
+      "sha256": "30cc5fb692a29187eb166761189ec885a09f9617a122f3d344759c9971405a5a"
+    },
+    {
+      "file": "profile.txt",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "pygame.json",
+      "bytes": 1209817,
+      "sha256": "1bc372d4a2b6ae45cf62b8641eaf318cdadc190f011be7ebf14fc06bc5054f98"
+    },
+    {
+      "file": "pygame.txt",
+      "bytes": 3210,
+      "sha256": "845d6d3fa800951d90744b843d0de82dd1de71f41a3f0edd83ecb1145a98e9be"
+    },
+    {
+      "file": "python-compartilhado.json",
+      "bytes": 3111760,
+      "sha256": "0352cc49a56ec6ec2462055f7f30a6f51d5fac65dd99e8f8a9d53c9fd46f5df1"
+    },
+    {
+      "file": "renderizadores-controlador.txt",
+      "bytes": 4359,
+      "sha256": "80caa1bfe3e4c7e3eb316d943c2390963537b246ef15cb5c02e32c407eab1724"
+    },
+    {
+      "file": "resumo.json",
+      "bytes": 1072,
+      "sha256": "9e516c11bae5b14026e1ed917cad280df7e83389cb84ba9cf535c29118210f07"
+    },
+    {
+      "file": "runtime-types.txt",
+      "bytes": 60,
+      "sha256": "57abcdb89ee6ec288ff0c7c6a13f657e7da934050645ca9d9c843c2ac53c515d"
+    },
+    {
+      "file": "runtime.txt",
+      "bytes": 5952,
+      "sha256": "22342cbbc123e94806fe7a9b9b0d9d2e7730bbf7f80b8198f01c8b2fd7035bfd"
+    },
+    {
+      "file": "sdk-autorizado.json",
+      "bytes": 7015,
+      "sha256": "cb95d2f1cd4480e7deae04d5482f83dddab2ae0bd2b0629eab6d39be6f47d12a"
+    },
+    {
+      "file": "sessao-boot.txt",
+      "bytes": 3909,
+      "sha256": "9510ca512d32e2c64e67cd39bc7d78935a8b45a7a1986e634599b0d51f2cc997"
+    },
+    {
+      "file": "shared.txt",
+      "bytes": 11817,
+      "sha256": "942401ed8fddf78eb83ba0c0659a7db1c51e0a59563bfb066db6ee23ffe246da"
+    },
+    {
+      "file": "shell-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "studio-sdk.txt",
+      "bytes": 338,
+      "sha256": "782675114f04ad5f5857906d9708308f401a4de6897968ad99bcb279d027db48"
+    },
+    {
+      "file": "studio-types.txt",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "studio.txt",
+      "bytes": 1805676,
+      "sha256": "7cdb5e6c33d1f5e933e7afde3e99b3100ca08c7f95a5e157aa6115df277b9974"
+    }
+  ]
+}

@@ -1,0 +1,593 @@
+{
+  "registradoEm": "2026-11-15T22:32:29.022984+00:00",
+  "baseAntesDoCommit": "87017757b0120f23483a53ad09624895b8cad199",
+  "checks": {
+    "testes": {
+      "comando": "bun test",
+      "saida": 0,
+      "aprovados": 2131,
+      "pulados": 1,
+      "falhas": 0,
+      "verificacoes": 267369,
+      "total": 2132,
+      "arquivos": 250,
+      "segundos": 166.86
+    },
+    "tipagem": {
+      "comando": "bun run typecheck",
+      "saida": 0
+    },
+    "biome": {
+      "comando": "bun run check",
+      "saida": 0,
+      "avisosForaDoEscopo": 4
+    },
+    "build": {
+      "comando": "bun run build",
+      "saida": 0,
+      "manifesto": {
+        "versao": "20261115223046",
+        "entrada": "entrada-3nyjr553.js",
+        "versaoContrato": 2,
+        "geradoEm": "2026-11-15T22:30:46.923Z"
+      }
+    },
+    "macro": {
+      "comando": "bun build playground/arquipelago-macro.tsx --target=browser --minify --outdir ../../output/faisca-gate21/compilado",
+      "saida": 0,
+      "bytes": 8196912
+    }
+  },
+  "fontesTestadasSha256": {
+    "packages/arquipelago/playground/arquipelago-macro.tsx": "60b32299cc892429d65e3ff767451d6411e9047e91937fdba6c9e42b987f097c",
+    "packages/arquipelago/playground/comparar-faisca-referencia.ts": "f8fa8592fbe2fbd5a2890bebdba3fee41109bd3bbd135a1a2017d23db618d874",
+    "packages/arquipelago/playground/macro-interface.tsx": "a756c149cab6d7978d8d9c0a0c59330d42e3ac583990c578d2d84b49bafb7870",
+    "packages/arquipelago/playground/verificar-faisca-gate2-browser.mjs": "5e5843f082663eb877122d7dcaa07ff1bd6c46e9343f1a32f4b4893808fee11a",
+    "packages/arquipelago/playground/verificar-faisca-gate21-browser.mjs": "e69515c5d2e3b10f296a327d85e2035dd99d5bbe0d9b835b9501e935faae99ba",
+    "packages/arquipelago/scripts/exportar-arte-faisca.ts": "7c2e7a72eeb88fb21565a8546ff946663a15c73ac076a02ed153640ca580aae9",
+    "packages/arquipelago/scripts/pecas-morada-faisca.ts": "0a63f8b479d52c1a2631cb9f5ff8a9b9b6cc3b7afc4d457715d2bb43f6d37543",
+    "packages/arquipelago/scripts/registrar-composicao-faisca.ts": "c99ee269f180a3c091568bd0b3242cc76a3ac97af45f5938d0aeba57972fc179",
+    "packages/arquipelago/src/mundo/faisca/ambiente.tsx": "a7b29ed410a272242ebb700160aa571336d6952c4d94113b39b2317490c69bee",
+    "packages/arquipelago/src/mundo/faisca/arte.generated.ts": "44a14454c068c04c19650a0abd27494a62d29c7b1106cd7c510ba5251dbaa8f2",
+    "packages/arquipelago/src/mundo/faisca/caminhos.tsx": "032628f57557a24c3878e42f66faa8a48b8b63a24fb69012ced6622da5f130f5",
+    "packages/arquipelago/src/mundo/faisca/carregar-piloto.ts": "29841d657402522279d24fe6fcd2f6fcac9f026214a153299a959dcfe6a8ebb0",
+    "packages/arquipelago/src/mundo/faisca/piloto.tsx": "fbbefa32347e0713dc8f99c50fb048dcb6e0c0dda68bdab132afeeadbfc1566f",
+    "packages/arquipelago/src/mundo/faisca/pisos-de-catalogo.tsx": "1490fd9327531e9749eb9e18c58d274e7fabb87940a41bdde35ebb561ec255ab",
+    "packages/arquipelago/src/mundo/faisca/recortar-malha.ts": "95c641fa699f5d10e76164ecfaad5b7a3e0852430dce950d0ef8d0eabb4c740e",
+    "packages/arquipelago/src/personagem/camera.tsx": "292de8e950278be034d04882d47cb0ac8a016802b73908e2cc2db8411a14954b",
+    "packages/arquipelago/src/sistemas/agua.ts": "84d25cc8e203b46f921dfce6635fcb258219679aea4c7db98a12b865016cd0d8",
+    "packages/arquipelago/src/sistemas/assentamento-da-faisca.ts": "0bf6d379131638550a598d33997fbf60e331ed80116cec0f1e9e24dde4558f1c",
+    "packages/arquipelago/src/sistemas/composicao-faisca.ts": "60d4111f4e3a4ad4e8d30ce3f98de55e4af389165e4778f9d3496492125e7535",
+    "packages/arquipelago/src/sistemas/implantacao-da-faisca.ts": "c50dcfabeea00f20bf50f2e5ff75478cf86804f1d69fe622ff752e64b19e6b31",
+    "packages/arquipelago/src/sistemas/modos/chao.ts": "acef8b5bace6e22dd4fb564fd7e2dbb80ac1bdec2bdd4d0448d9b1762e887c58",
+    "packages/arquipelago/src/sistemas/passeios-da-faisca.ts": "0ecc690be12049258195a891b27c1678acf70b92708cfee9c9194eddf1b0275a",
+    "packages/arquipelago/src/sistemas/refino-da-faisca.ts": "37faa89392ed2eaf2a37dc35185e0b18b6b50bda3eeef52b2352901f67b873f3",
+    "packages/arquipelago/src/sistemas/solo-da-praca.ts": "daca9f0abd36ac0481da62d7804e285000743144b4053f4c274cbb79f443fc07",
+    "packages/arquipelago/src/sistemas/vila-catalogo-faisca.ts": "41b5256e251a2830104bb1d563fbf8470e905cb166d9ec2b5cf63856a2d32090",
+    "packages/arquipelago/tests/faisca.test.ts": "86227e91a9701080e27ea4c14dfe4029277e4399103d190cf8c559ee19e1c2c7",
+    "packages/arquipelago/tests/lago-faisca.test.ts": "c483e878f48f9319f415b7daa6cb8d9ce2fb1828fb715f56a3ee7697c29bdaaf",
+    "packages/arquipelago/tests/macro-estado.test.ts": "51947b12911324a7af6a6d2eadaad722188b7517d3c630d7642884319b902013",
+    "packages/arquipelago/tests/passeios-catalogo.test.ts": "6ad91f361c23e4176ec4ab277d4ba9bd351af61e633adb37da771b3a7ced1b06"
+  },
+  "evidencias": [
+    {
+      "arquivo": "antes/capturas.json",
+      "bytes": 4473,
+      "sha256": "c1ce52bef5f530aa5e121d9de5bdca396ed2518ccfee48808ec2e26860987153"
+    },
+    {
+      "arquivo": "antes/costa.png",
+      "bytes": 122402,
+      "sha256": "9264ac747cae49e90fff1b3216169eefe1bbdf50b8209f884a7c3c5cc977fc58"
+    },
+    {
+      "arquivo": "antes/farol-noite.png",
+      "bytes": 322157,
+      "sha256": "1f9c601c6e04b9f8d733c931b70f596b3157f2fafddd3497d52bc55e7e781e32"
+    },
+    {
+      "arquivo": "antes/farol.png",
+      "bytes": 365813,
+      "sha256": "ec569e0fd00cb25c889bb0ec06586faafdaddcb53eab28a50dced390a45ef665"
+    },
+    {
+      "arquivo": "antes/oficina.png",
+      "bytes": 367133,
+      "sha256": "d653f217301bfd964c6c254b4e4816a753a9bbc8cce0fb33ba4d2d2d07e13062"
+    },
+    {
+      "arquivo": "antes/ponte-norte.png",
+      "bytes": 317260,
+      "sha256": "6225ef0ce19f67e8155b4e47b550b793c2acc8a9e53277cfeb260c3c75d04266"
+    },
+    {
+      "arquivo": "antes/ponte-sul.png",
+      "bytes": 384927,
+      "sha256": "c001be62e81a2f4cb479e16201b2fdf5c27d02b8884223d60214509c130496aa"
+    },
+    {
+      "arquivo": "antes/porta.png",
+      "bytes": 360774,
+      "sha256": "17f000b8ba0758388f266a1d9a3d09bc73059e94e98737de6117014353952cee"
+    },
+    {
+      "arquivo": "antes/praca.png",
+      "bytes": 537463,
+      "sha256": "4c86b0e198c53eab19123d393b6ec1c60ceb4e285c50c5bc467428f0ea560af8"
+    },
+    {
+      "arquivo": "antes/subida.png",
+      "bytes": 410843,
+      "sha256": "3fb44abba40366e1dcbc7568890a81f7fef2995f69f6d67987388d93fecf1d44"
+    },
+    {
+      "arquivo": "arte-instancias.json",
+      "bytes": 412729,
+      "sha256": "b42efe04f83f7c442e70565ef8d39c5eb3fbdaa205d92cf861b7d71366d097fe"
+    },
+    {
+      "arquivo": "arte.md",
+      "bytes": 6214,
+      "sha256": "cdee19d2f91c92bb57136d6a3fc205940200a65e11cae27ea4402cae753f074f"
+    },
+    {
+      "arquivo": "camera-lago-antes.png",
+      "bytes": 145347,
+      "sha256": "3c818e6ed7a215758603696c00a270e2f7c43f0482b5286204449383ff8975a5"
+    },
+    {
+      "arquivo": "camera-lago-depois.png",
+      "bytes": 248271,
+      "sha256": "21876ca19d7244823bae95e4cbe213f9140b3646983c2af3b61c3f99be5c6056"
+    },
+    {
+      "arquivo": "comparativos/agua-l1-lago-lateral.png",
+      "bytes": 376138,
+      "sha256": "8cb81728d41783bfc4380a1c59aaf4444479252ec73c156576a8518cc0dda772"
+    },
+    {
+      "arquivo": "comparativos/agua-l1-ponte-norte.png",
+      "bytes": 324145,
+      "sha256": "6717ecc1f204e7ef0c38f9301c04aee7d3497a75e30997b4d628c61c8bac6294"
+    },
+    {
+      "arquivo": "comparativos/agua-l1-ponte-sul.png",
+      "bytes": 380863,
+      "sha256": "ca7ce12b4c3eb1af0ab4e18f61bfb171ba6faaaaead9037ef715d7e9584df125"
+    },
+    {
+      "arquivo": "comparativos/agua-l2-lago-lateral.png",
+      "bytes": 317264,
+      "sha256": "9deeb077a7fcd37f0682ee1bce401298cfc8e6c88eb208433a967cb792130cea"
+    },
+    {
+      "arquivo": "comparativos/agua-l2-ponte-norte.png",
+      "bytes": 313198,
+      "sha256": "19b34c727291e6e3015e62ff30d06cc3c1618664fbee1a8cf9b8b725db03120c"
+    },
+    {
+      "arquivo": "comparativos/agua-l2-ponte-sul.png",
+      "bytes": 385586,
+      "sha256": "169e446ae534d317bd3c908c04ac0714e678bb99215ec9a03bc75b8ba9f9fe1b"
+    },
+    {
+      "arquivo": "comparativos/base-horta.png",
+      "bytes": 320393,
+      "sha256": "2eef19d32b7c27cc36f88f3a9a5f72f56d039921a3e6d1bacc9e8bf4e28c45e7"
+    },
+    {
+      "arquivo": "comparativos/base-piso-baixo.png",
+      "bytes": 209620,
+      "sha256": "77cc59cf5d15b9433b544cae1647717003d350de88fb6d7c775daed8012e564b"
+    },
+    {
+      "arquivo": "comparativos/base-piso-noite.png",
+      "bytes": 267972,
+      "sha256": "781416368ddc351346a6f7efebeb1763f1bfccfb307dec8250a70fd05b641792"
+    },
+    {
+      "arquivo": "comparativos/base-piso.png",
+      "bytes": 289128,
+      "sha256": "65e5d6bb577a2c6abbaebaea5c37666a30e34a54dbea9a0d2d3e55e20a20a8c1"
+    },
+    {
+      "arquivo": "comparativos/faroeste-horta.png",
+      "bytes": 317777,
+      "sha256": "94f96285cf2b204db8497eada93b25c9172c549c5ad23533afa58b6e3e77c48c"
+    },
+    {
+      "arquivo": "comparativos/faroeste-piso-baixo.png",
+      "bytes": 209513,
+      "sha256": "06076eb28ffb16c08254b1a6d9019f479cf2558b48d2f628065ce9fd113d2861"
+    },
+    {
+      "arquivo": "comparativos/faroeste-piso-noite.png",
+      "bytes": 265953,
+      "sha256": "19cbe5e4ce442f5f9ca8308c26af4a2ea56fe287477baabcb6dcfef21f18386b"
+    },
+    {
+      "arquivo": "comparativos/faroeste-piso.png",
+      "bytes": 286493,
+      "sha256": "e2672316fcfd7ed21a302179cd87dfb0489ab1eb18f70cc86e17f39c1a2eb750"
+    },
+    {
+      "arquivo": "comparativos/reino-horta.png",
+      "bytes": 311161,
+      "sha256": "f06a5460a55b67737d67112923170b9b9b8fe31fa7ef346efe8167c4c1791a4f"
+    },
+    {
+      "arquivo": "comparativos/reino-piso-baixo.png",
+      "bytes": 205317,
+      "sha256": "7ec3f8adb7b42bad4b5cf4ce8021648efd2c8218fd9a4d646d7e695f00aebd00"
+    },
+    {
+      "arquivo": "comparativos/reino-piso-noite.png",
+      "bytes": 267229,
+      "sha256": "24e5850abb692fe29d028e4508c32061d65a4814d3067d307dbe634c67aca1cc"
+    },
+    {
+      "arquivo": "comparativos/reino-piso.png",
+      "bytes": 284312,
+      "sha256": "380db270d3aab3d8b09abd4e758aadbdae8ba0af42c3d8a5a08dea7a40addf64"
+    },
+    {
+      "arquivo": "comparativos/templo-horta.png",
+      "bytes": 341489,
+      "sha256": "ab489abbe8ab66ef137a1f93febec0ba146152b600d598944083303a67281708"
+    },
+    {
+      "arquivo": "comparativos/templo-piso-baixo.png",
+      "bytes": 224246,
+      "sha256": "f55a78d2a87b336896727333dd2a4c170fbc8f745740b1cc5d9d27cde884caaf"
+    },
+    {
+      "arquivo": "comparativos/templo-piso-noite.png",
+      "bytes": 299395,
+      "sha256": "d496ec81addc530f06d966199da440fa06b7176fb8da8e15896cf90c913a8b3b"
+    },
+    {
+      "arquivo": "comparativos/templo-piso.png",
+      "bytes": 314706,
+      "sha256": "9b9a4232a88b300dfe88cbfcee98c953c753077f180dd0c9b0933d632baf947e"
+    },
+    {
+      "arquivo": "depois/capturas.json",
+      "bytes": 8209,
+      "sha256": "e29350a864e6125e6d5aac40ac6b9e1bde063426feebe317a898edc25a0e4580"
+    },
+    {
+      "arquivo": "depois/costa.png",
+      "bytes": 141323,
+      "sha256": "98728f8586850df7ed33492a2088ee1f597d480f87055ab01b53ae01fe351f3b"
+    },
+    {
+      "arquivo": "depois/farol-noite.png",
+      "bytes": 305217,
+      "sha256": "807b8e0ece519e6d420b2e77da64c3ed86d6f27d6b002918aee517ac661e89f7"
+    },
+    {
+      "arquivo": "depois/farol.png",
+      "bytes": 336273,
+      "sha256": "ae4cfa30652a87ed27f377f5ee8db4c25a6e0f84ec0e58bfb1f67409b0c1c6e6"
+    },
+    {
+      "arquivo": "depois/horta.png",
+      "bytes": 340988,
+      "sha256": "9a50a1095c2cbfcaf5630add734d4055548cbf451011cfd872d3d63955d463a1"
+    },
+    {
+      "arquivo": "depois/lago-lateral.png",
+      "bytes": 316579,
+      "sha256": "61a86a86072830f2cbab9d470c701270b4ed7f461ef3256ab7da86f33bc219ee"
+    },
+    {
+      "arquivo": "depois/oficina.png",
+      "bytes": 317053,
+      "sha256": "80e7de82574246e75ea30b5abc2729d23f0e7eb5454c4fc8e14c3c3aed40dfcb"
+    },
+    {
+      "arquivo": "depois/piso-baixo.png",
+      "bytes": 224323,
+      "sha256": "6cbb987e9688d5e5e7d9a0c36ed403f59e9eedfa5c73a7bf109a184fc07a99ee"
+    },
+    {
+      "arquivo": "depois/piso-noite.png",
+      "bytes": 299537,
+      "sha256": "29efbdd4ebd559b7a190fb08be46db400318952006b5b6c12f1ccd1b2da11af8"
+    },
+    {
+      "arquivo": "depois/piso.png",
+      "bytes": 314524,
+      "sha256": "013dec06a58653e617cec60fba2034a570c03a8043108a69eff9719df8129107"
+    },
+    {
+      "arquivo": "depois/ponte-norte.png",
+      "bytes": 313084,
+      "sha256": "68c798e75582a2a50fc94ddb8f0c43599cece069f3db8460c65ca3bbdfc37019"
+    },
+    {
+      "arquivo": "depois/ponte-sul.png",
+      "bytes": 385734,
+      "sha256": "e780bb3ae3dd8b3cbf142e21854ee55c406a2de13a5595a1a833a001ef5f586a"
+    },
+    {
+      "arquivo": "depois/porta.png",
+      "bytes": 387112,
+      "sha256": "f020d3a14059dd5fde2fb51712c3b1387ec803bc5c5fea5780f907fc3a32354e"
+    },
+    {
+      "arquivo": "depois/praca.png",
+      "bytes": 529020,
+      "sha256": "514e3b4b2d458ddcbceb79afc8943dde50b47e4953218261233dcf9105c48ed5"
+    },
+    {
+      "arquivo": "depois/subida.png",
+      "bytes": 417363,
+      "sha256": "d8caed50c82a8f9af1d3523ca19064c06f83f98abc1e27c89ce52e55a0e8b7d1"
+    },
+    {
+      "arquivo": "gate21-fotos.json",
+      "bytes": 37,
+      "sha256": "bac4f697ffbcc2ae280c8e490237eacf59d851b9f50047502424cffb221aa723"
+    },
+    {
+      "arquivo": "gate21-movimento.json",
+      "bytes": 3728,
+      "sha256": "9929b94f4b725c7cf864f495d66a7864500936310ca7bacaadf39f37e0360106"
+    },
+    {
+      "arquivo": "gate21-nado.json",
+      "bytes": 1611,
+      "sha256": "8f06ce4d3a2138d55e543e1eb4e0e15be2cb29d47e506d1ce6c7a81e468d344b"
+    },
+    {
+      "arquivo": "placas/antes/capturas.json",
+      "bytes": 39,
+      "sha256": "fd52aa3fbf04721cadb495aa8085eb2f969cf666354c61e66cc438ce3b1efaf2"
+    },
+    {
+      "arquivo": "placas/antes/costa.png",
+      "bytes": 329338,
+      "sha256": "a617cb106b1176982e8dd0ef671f941eb3a31d47c13276bee20899024a6f227f"
+    },
+    {
+      "arquivo": "placas/antes/horta.png",
+      "bytes": 533796,
+      "sha256": "52a11709e5bbe540b5b84a6b278e1e4453c8248dda7882aa9b4b7d62cfec557b"
+    },
+    {
+      "arquivo": "placas/antes/patio.png",
+      "bytes": 412323,
+      "sha256": "06e7b28df04c75765d0313759bb674b8de30b776c2ff4e21ef3b0c0dd76b463b"
+    },
+    {
+      "arquivo": "placas/depois/capturas.json",
+      "bytes": 40,
+      "sha256": "8a45f5f533fb30d7313e35f3940adc5a40db1bb9b43f422d07acb494af435a23"
+    },
+    {
+      "arquivo": "placas/depois/costa-noite.png",
+      "bytes": 329758,
+      "sha256": "7a1ae4f1f238b03c523154b0195289bd5f761b0dc7998c374fad10a660da2783"
+    },
+    {
+      "arquivo": "placas/depois/costa.png",
+      "bytes": 343652,
+      "sha256": "c9b4c30fb4ac59c3f1fa50f72ba496feacf2352f082e1f6bb163d00cdba23dbf"
+    },
+    {
+      "arquivo": "placas/depois/horta-noite.png",
+      "bytes": 473423,
+      "sha256": "a508a3f8f46755c7455246108bf8dca92a3b8a35aa58697f23cc8cd150ddaa95"
+    },
+    {
+      "arquivo": "placas/depois/horta-verso-noite.png",
+      "bytes": 352191,
+      "sha256": "44f64e95959c66cea47945fc1f9fcf4dd9b1d34e5001837f76f370ca416d232d"
+    },
+    {
+      "arquivo": "placas/depois/horta-verso.png",
+      "bytes": 322596,
+      "sha256": "0a3e0bcf51bf0d31d88c34e169399332d0c9e4e0cfecff0558544a73bec7c832"
+    },
+    {
+      "arquivo": "placas/depois/horta.png",
+      "bytes": 514369,
+      "sha256": "84ec6af36569a60377da63c37b5b1fbf143293b4eebc3e5eea2c1ac1f5979275"
+    },
+    {
+      "arquivo": "placas/depois/patio-noite.png",
+      "bytes": 347387,
+      "sha256": "7b9b025d4c04df7d7c819bf3249261e646e0ee483746a5855971c020f09fdc3e"
+    },
+    {
+      "arquivo": "placas/depois/patio.png",
+      "bytes": 393967,
+      "sha256": "c14da2991640e2595d4556b3d3a377366176fbf69bf7eaa329bfb87a9afb7174"
+    },
+    {
+      "arquivo": "recursos-comparativos.json",
+      "bytes": 15240,
+      "sha256": "619db47bd19312ade8ed33085af49719545d88f1ecd1cb398920492a681bf6c3"
+    },
+    {
+      "arquivo": "recursos.json",
+      "bytes": 3565,
+      "sha256": "9d8bac255dac1a0b8f7e36d4b7ed85a43055ac17c35192a8fee13a4a133d0477"
+    },
+    {
+      "arquivo": "referencia-a300/capturas.json",
+      "bytes": 7497,
+      "sha256": "9ec4ba7048823b47151043046c8613516ed1ec2d0f9c3d0fa6d41f3e7a8a835d"
+    },
+    {
+      "arquivo": "referencia-a300/costa.png",
+      "bytes": 122293,
+      "sha256": "1368de2918ba2b0be2007f9c2f57475424bdcaeadd125ccf8f4f573cfd8456ee"
+    },
+    {
+      "arquivo": "referencia-a300/farol-noite.png",
+      "bytes": 322228,
+      "sha256": "f0b18622cf99d5805bf8baa33a18ce6d2e8ca5e686c2bbe82e016b7516b4a6cf"
+    },
+    {
+      "arquivo": "referencia-a300/farol.png",
+      "bytes": 365869,
+      "sha256": "49442d95e1e1a935536d2019cc8b740d9666092b6042e17c159ea81dc4d28c4b"
+    },
+    {
+      "arquivo": "referencia-a300/horta.png",
+      "bytes": 308261,
+      "sha256": "347a4dba7b22ad05ecb08b970d039905895c78bda8435b93ee2e002e2782ef52"
+    },
+    {
+      "arquivo": "referencia-a300/lago-lateral.png",
+      "bytes": 365503,
+      "sha256": "d40bc630d87135491c30e0078f9c5b86123d23f38bb22ab1ef5a601a3677664b"
+    },
+    {
+      "arquivo": "referencia-a300/oficina.png",
+      "bytes": 367036,
+      "sha256": "7852d872fbfdc985c6b0e18a6febeb112db5b9960845d4d148be22704a0c07eb"
+    },
+    {
+      "arquivo": "referencia-a300/piso-baixo.png",
+      "bytes": 250768,
+      "sha256": "c8c7cc98ca9467d0370f793a4b38d5ea0ee08a1cd566ac500a65d283ef47ada1"
+    },
+    {
+      "arquivo": "referencia-a300/piso-noite.png",
+      "bytes": 221811,
+      "sha256": "5b094c870970ad083779b30ffa0dc5aae8cc6aea1b9600e9e3244fed85b2e2fd"
+    },
+    {
+      "arquivo": "referencia-a300/piso.png",
+      "bytes": 250528,
+      "sha256": "d1dbdced18496831b20a9ddecb924d189e37c83a68b924298a0627bacb4ac194"
+    },
+    {
+      "arquivo": "referencia-a300/ponte-norte.png",
+      "bytes": 316732,
+      "sha256": "033fce2ddfa03298da6be3377b7fc9cf66ca724176964c3e71caa4100709086b"
+    },
+    {
+      "arquivo": "referencia-a300/ponte-sul.png",
+      "bytes": 384721,
+      "sha256": "e26688d5b259f086f8559b4941628ecb2a06579f334afdb55fe827b11cfc18e9"
+    },
+    {
+      "arquivo": "referencia-a300/porta.png",
+      "bytes": 360903,
+      "sha256": "84458eaba197f09a51de920c05ca7c04c7fac5c17b2453d1f7091a32fda0afc7"
+    },
+    {
+      "arquivo": "referencia-a300/praca.png",
+      "bytes": 537412,
+      "sha256": "8539e9f194c61991a94a588dfc05c146961490409872110837bcaed87e134f71"
+    },
+    {
+      "arquivo": "referencia-a300/subida.png",
+      "bytes": 410963,
+      "sha256": "886275064a6538594907d198842d3f6993c65371f6d4cd19a85f87439f3bcd2b"
+    },
+    {
+      "arquivo": "toque.json",
+      "bytes": 878,
+      "sha256": "16cc0fd7f9183cb03fb8046216ac1ce5ebfdbad9862b651854a4d42741fee047"
+    },
+    {
+      "arquivo": "videos/evidencias-ponte.json",
+      "bytes": 516,
+      "sha256": "5fb7137719beb687cd4ee5541c2ce83a8506585314af8073ed603532aa2d7ff9"
+    },
+    {
+      "arquivo": "videos/lago-nado-l1.mp4",
+      "bytes": 1877099,
+      "sha256": "8acf5a45037fcbcd45787284e05930c30c3de1dee4fdf3fc8e929c67afd8b9bc"
+    },
+    {
+      "arquivo": "videos/lago-nado-l2.mp4",
+      "bytes": 2219528,
+      "sha256": "0ca4e01e00c81e92879d54b805f46d7e5eedf8e800a7143b3cbea67ac4a0b0be"
+    },
+    {
+      "arquivo": "videos/piso-faroeste.mp4",
+      "bytes": 2499372,
+      "sha256": "781fdb88887e0f97e08a1f4ec9f5f2543256a13a0e1629c5479421fa62779944"
+    },
+    {
+      "arquivo": "videos/piso-reino.mp4",
+      "bytes": 2561245,
+      "sha256": "e4d543b6cdb5cce7804159ed83c8e8fcb0a1c434eaba7553c5fa7d9cf488ddf9"
+    },
+    {
+      "arquivo": "videos/piso-templo.mp4",
+      "bytes": 2937736,
+      "sha256": "2979f26ef53a9d0b7a556b3212f198479788c95c0e9cfd8df597b31b4cb2851a"
+    },
+    {
+      "arquivo": "videos/placa-costa.mp4",
+      "bytes": 1217783,
+      "sha256": "b4e8fc89f980b011e42c0e6f3dc6546bb60c7da73fa50f49dc911469e4e48c8e"
+    },
+    {
+      "arquivo": "videos/ponte-ida-volta.json",
+      "bytes": 363,
+      "sha256": "a2e2664f96112c4cc2538673247d7be30785263073cccf78cdb3a4f17acfd6fd"
+    },
+    {
+      "arquivo": "videos/ponte-ida-volta.mp4",
+      "bytes": 3150735,
+      "sha256": "7dd9e372c952d885b82f933cc3d2150cc2934dc0201c03a9afbde5bdb5cf76fe"
+    },
+    {
+      "arquivo": "videos/porta-praca-horta.mp4",
+      "bytes": 4340389,
+      "sha256": "fea638fd60cf53695cfa15444b405fcf7887ba979bbdd06182096c6dbfa35c40"
+    }
+  ],
+  "videos": [
+    {
+      "arquivo": "videos/lago-nado-l1.mp4",
+      "duration": "40.000000",
+      "size": "1877099"
+    },
+    {
+      "arquivo": "videos/lago-nado-l2.mp4",
+      "duration": "39.960000",
+      "size": "2219528"
+    },
+    {
+      "arquivo": "videos/piso-faroeste.mp4",
+      "duration": "23.960000",
+      "size": "2499372"
+    },
+    {
+      "arquivo": "videos/piso-reino.mp4",
+      "duration": "23.960000",
+      "size": "2561245"
+    },
+    {
+      "arquivo": "videos/piso-templo.mp4",
+      "duration": "24.000000",
+      "size": "2937736"
+    },
+    {
+      "arquivo": "videos/placa-costa.mp4",
+      "duration": "20.000000",
+      "size": "1217783"
+    },
+    {
+      "arquivo": "videos/ponte-ida-volta.mp4",
+      "duration": "27.000000",
+      "size": "3150735"
+    },
+    {
+      "arquivo": "videos/porta-praca-horta.mp4",
+      "duration": "44.960000",
+      "size": "4340389"
+    }
+  ],
+  "aceiteArtistico": false,
+  "dispositivosFisicosTestados": false
+}

@@ -35,6 +35,7 @@ export const en: Record<string, string> = {
   'run.endInput': 'End input',
   'run.endInputHint': 'Ends text input (EOF) without stopping the program',
   'run.fullscreen': 'Full screen',
+  'run.exitFullscreen': 'Exit full screen',
   'run.fullscreenUnavailable': 'Full screen is not available in this browser.',
   'run.stale': 'Your code changed. Press Run again to see the new version.',
   'run.noEnvironment': 'The Python environment is not available on this page yet.',
@@ -74,6 +75,7 @@ export const en: Record<string, string> = {
   'topbar.exportStudio': 'Download the project',
   'topbar.cloudSync': 'Bring back what I submitted',
   'topbar.convertPro': 'Go professional',
+  'topbar.blocksVersion': 'Open the blocks version',
   'topbar.ai': 'Zappy',
   'topbar.rename': 'Rename project',
   'topbar.projects': 'My projects',
@@ -86,6 +88,11 @@ export const en: Record<string, string> = {
   'stage.bigger': 'Bigger game',
   'stage.smaller': 'Smaller game',
   'stage.errorMark': 'The game stopped at this block.',
+  'blocks.restoreFailed.title': "These blocks couldn't be opened",
+  'blocks.restoreFailed.body':
+    'Nothing was lost: the project is as it was. The block editor could not show this program, which happens, for example, with a block sequence that is too long. Keep going in the code, in Bridge mode.',
+  'blocks.restoreFailed.bodyNoBridge':
+    'Nothing was lost: the project is as it was. The block editor could not show this program, which happens, for example, with a block sequence that is too long. Ask an adult for help to keep going.',
   'blocks.dropToDelete': 'Drop here to delete',
   'blocks.moreBlocks': 'More blocks',
   'tour.title': 'First steps',
@@ -119,12 +126,12 @@ export const en: Record<string, string> = {
   'pyblocks.file': 'Python file',
   'pyblocks.goTo': 'Go to',
   'pyblocks.wholeProgram': 'Whole program',
-  'pyblocks.findFunction': 'Find a function or class',
-  'pyblocks.noFunction': 'None with that name',
+  'pyblocks.findFunction': 'Find an area, function or class',
+  'pyblocks.noFunction': 'Nothing with that name',
   'pyblocks.closeFunctions': 'Close the functions',
   'pyblocks.drafts': 'Drafts',
   'pyblocks.drafts.hint':
-    'Pieces outside the Program are drafts and do not run. Click to see the first one.',
+    'Pieces outside the project areas are drafts and do not run. Click to see the first one.',
   'stage.errorMark.program': 'The program stopped at this block.',
   'stage.error.stopped.game': 'Oops, the game stopped',
   'stage.error.stopped.page': 'Oops, the page stopped',
@@ -152,6 +159,7 @@ export const en: Record<string, string> = {
   'topbar.hint.download': 'a .zip with the code, to open on your computer',
   'topbar.hint.export': 'a .zip ready to put online',
   'topbar.hint.convertPro': 'swaps the blocks for a code project, with no way back',
+  'topbar.hint.blocksVersionGone': 'The blocks version was deleted',
   'topbar.hint.cloudSync': 'replaces what is here with the version you handed in',
   'topbar.modes': 'Editing mode',
   'topbar.undo': 'Undo',
@@ -217,6 +225,14 @@ export const en: Record<string, string> = {
   'projects.new': 'New project',
   'projects.import': 'Import',
   'projects.export': 'Export',
+  'projects.preserved.restore': 'Restore a copy',
+  'projects.preserved.partial':
+    'The download is partial. Some project parts are missing or require another version.',
+  'projects.preserved.download': 'Download what was preserved',
+  'projects.preserved.restored': 'Restored copy added to the list',
+  'projects.preserved.restoredPartial': 'Copy restored, but some parts were left out',
+  'projects.preserved.noBackup': 'Could not build a copy; download what was preserved',
+  'projects.preserved.failed': 'That did not work; nothing was deleted',
   'projects.duplicate': 'Duplicate',
   'projects.rename': 'Rename',
   'projects.delete': 'Delete',
@@ -243,6 +259,7 @@ export const en: Record<string, string> = {
   'projects.filterAll': 'All',
   'projects.filterBlocks': 'Blocks',
   'projects.filterCode': 'Code',
+  'projects.card.madeFrom': 'Made from {name}',
   'projects.confirmDelete': "Delete project '{name}'? This action cannot be undone.",
   'projects.newModal.title': 'New project',
   'projects.newModal.nameLabel': 'Project name',
@@ -363,6 +380,7 @@ export const en: Record<string, string> = {
   'pintaImport.image.mode.tileset': 'Every tile',
   'pintaImport.image.mode.tile': 'One tile',
   'pintaImport.image.mode.map': 'Map with layers and objects',
+  'pintaImport.image.mode.map-world': 'Scene with other places',
   'pintaImport.image.mode.tilemap': 'Map image',
   'pintaImport.image.spritesheetData':
     'The sheet carries its animations and collision box. In code, use pinta.carregar_sprite with the image name.',
@@ -371,12 +389,16 @@ export const en: Record<string, string> = {
   'pintaImport.image.mapData':
     'The image carries every tile of the map, its layers and objects. In code, use pinta.carregar_mapa with the image name.',
   'pintaImport.image.preparing': 'Preparing the image…',
+  'pintaImport.image.map-worldData':
+    'Doors bring the other places along. Use pinta.carregar_mapa to open the scene and mapa.abrir_destino to open the place linked to a door.',
   'pintaImport.image.preview': 'Selected image preview',
   'pintaImport.image.add': 'Add image',
   'pintaImport.image.update': 'Update this image',
   'pintaImport.image.review': 'Review selected image',
   'pintaImport.image.back': 'Back',
   'pintaImport.image.unavailable': 'Pinta images cannot be prepared in this environment right now.',
+  'pintaImport.image.sceneRuntimeUnavailable':
+    'Update this project’s environment to bring this scene. You can also choose the plain image.',
   'pintaImport.image.needsTileset': 'This map needs its tile set. Recover the set in Pinta.',
   'pintaImport.image.selectionMissing':
     'This animation, frame or tile is unavailable. Choose again.',
@@ -500,7 +522,7 @@ export const en: Record<string, string> = {
   'share.step.confirm.concluded': 'My project is ready and working.',
   'share.step.confirm.kidsLanguage': 'The text in my project is appropriate for everyone.',
   'share.step.confirm.irreversible':
-    'The published version stays on the Wall exactly as it is now. Later changes here do not change it because they are separate copies.',
+    'After publishing, you can update the game on the Wall whenever you want: just share again. The link and comments stay the same.',
   'share.step.describe.heading': 'Tell us what your project does',
   'share.step.describe.help':
     'We prepared a draft for you. Read it, change anything you like, and make it yours (one paragraph at most).',
@@ -556,5 +578,26 @@ export const en: Record<string, string> = {
   'share.next': 'Next',
   'share.publish': 'Publish',
   'share.retry': 'Try again',
+  'share.updateAction': 'Update on the Wall',
+  'share.update.title': 'Update on the Creators Wall',
+  'share.update.intro':
+    'This project is already on the Wall. Updating replaces the game behind the same link with the current version, and the post keeps its comments and plays.',
+  'share.update.action': 'Update',
+  'share.update.publishing': 'Updating…',
+  'share.update.keeps':
+    'The post stays in the same place on the Wall and gets the "Updated" label. Older versions are kept.',
+  'share.update.hidden':
+    'The team has hidden this post for now. The update is saved, but it does not appear on the Wall.',
+  'share.unchanged':
+    'Your game on the Wall is already the same as this one. Change something to update it.',
+  'share.status.loading': 'Checking whether this project is already on the Wall…',
+  'share.cover.keepCurrent': 'Keep the current cover',
+  'share.cover.usingCurrent': 'Using the cover the post already has.',
+  'share.success.updatedHeading': 'Your game was updated! 🎉',
+  'share.success.updatedBody': 'The play link stays the same and already shows the new version.',
+  'share.newPost.more': 'Other ways to publish',
+  'share.newPost.label': 'Publish as a new game',
+  'share.newPost.hint':
+    'Creates another post on the Wall, with another link. The previous post stays as it is.',
   'share.close': 'Close',
 }

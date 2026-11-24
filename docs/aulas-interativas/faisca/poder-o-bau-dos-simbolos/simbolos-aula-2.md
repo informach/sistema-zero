@@ -1,6 +1,6 @@
 # Os símbolos da ilha
 
-Poder do Faísca · O baú dos símbolos · 3D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · O baú dos símbolos · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. Os símbolos chegaram à ilha
 
@@ -13,9 +13,21 @@ Os símbolos chegaram à ilha.
 
 
 
-## Parte 2. O sol e a lua
+## Parte 2. O sol da ilha começa
 
-O sol e a lua.
+O sol da ilha começa.
+
+- Intenção: application.
+- Blocos: video-sol, ponte-sol.
+- Estúdio: projeto.
+- Conclusão: video-sol.
+
+- Sem tocar em nada, o sol continua apagado.
+- Ao encostar no sol, ele acende e o aviso muda.
+
+## Parte 3. A lua da ilha pergunta a vez
+
+A lua da ilha pergunta a vez.
 
 - Intenção: application.
 - Blocos: video-lua, ponte-lua.
@@ -26,14 +38,14 @@ O sol e a lua.
 - Começando pela lua, ela não acende e o aviso diz para começar pelo sol.
 - O encontro com a lua pergunta se é a vez dela (Se, com senão).
 
-## Parte 3. A estrela abre o baú da ilha
+## Parte 4. A estrela abre o baú da ilha
 
 A estrela abre o baú da ilha.
 
-- Intenção: application.
-- Blocos: video-estrela, ponte-estrela.
+- Intenção: delivery.
+- Blocos: video-estrela, ponte-estrela, projeto.
 - Estúdio: projeto.
-- Conclusão: video-estrela.
+- Conclusão: video-estrela, projeto; envio atualizado.
 
 - O encontro com a estrela pergunta se é a vez dela (Se, com senão).
 - Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
@@ -41,30 +53,17 @@ A estrela abre o baú da ilha.
 - Depois de errar, começar de novo pelo sol abre o baú.
 - Uma nova partida (tecla R) começa com os símbolos apagados.
 
-## Parte 4. Pense nos símbolos da ilha
+## Parte 5. Pense nos símbolos da ilha
 
 Pense nos símbolos da ilha.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 5. Envie a sua ilha com o baú
-
-Envie a sua ilha com o baú.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- O encontro com a estrela pergunta se é a vez dela (Se, com senão).
-- Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
-- Um símbolo fora da vez recomeça: depois do sol e da estrela, o baú não abre e a lua não acende.
-- Depois de errar, começar de novo pelo sol abre o baú.
-- Uma nova partida (tecla R) começa com os símbolos apagados.
+Na edição kids, Dedé diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](simbolos-aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

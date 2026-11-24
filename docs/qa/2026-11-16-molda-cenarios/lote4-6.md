@@ -1,0 +1,15 @@
+# Lotes 4–6 — paisagem, runtime e controle por agentes
+
+A edição de relevo usa pincel contínuo, prévia e cancelamento por Esc; cada passada é um lote atômico com desfazer. A grade de 4 m e os limites de amostragem são explícitos. Caminhos e praças usam os módulos reais já aprovados; pontos, largura e acabamento são editáveis. Água, recorte do terreno, área de nado e margens compartilham o documento. A ponte dos Campos tem apoio relativo à água e acompanha translação, giro e escala do conjunto.
+
+O viewport usa o controlador, avatar, câmera, toque e Rapier existentes. A câmera de autoria é preservada ao retornar do teste. O `/macro` lê a revisão explicitamente aplicada; `/macro?referencia=1` mantém o protótipo anterior. O token do serviço local fica no servidor loopback, fora do navegador. Nenhum progresso de conta é concedido. A reconstrução da primeira ponte no teste é uma opção de ensaio, separada do documento e da campanha.
+
+CLI e MCP operam por comandos semânticos e revisão exata. Não há eval nem escrita direta no renderer. A sessão aparece no rodapé e no contrato de inspeção do host, permitindo escolher uma aba específica. A fila tem consumidor único, proteção de gesto manual, confirmação idempotente e retenção limitada para capturas/filas expiradas.
+
+Revisão própria: corrigidas redução de escala pelo manipulador, referências de água ausentes, ocultação herdada, bases inclinadas e identificação da aba em testes com dois clientes. Miniaturas só são preparadas ao se aproximarem da área visível; a GPU auxiliar é liberada ao encerrar o módulo. O catálogo completo foi preparado a partir do acervo privado: 3.218 modelos, 18 origens, zero dependências externas pendentes; binários ficam fora do Git.
+
+Verificações registradas: dez testes geométricos/importação aprovados; dez testes do serviço e Postgres real aprovados, incluindo duas escritas concorrentes, retry, aplicação, propriedade de sessão e ausência de trabalho como JSON explícito. Suíte nativa ampliada: 2.144 aprovados, um pulado, zero falhas. O teste de integração real confirmou edição pelo mesmo controller, captura da revisão, pedido antigo recusado, sincronização entre dois clientes e três ciclos editar/testar/retornar: 249 geometrias e 47 texturas nas três amostras; 60 FPS no Chrome dedicado utilizado. Estes números não comprovam desempenho em aparelhos físicos.
+
+Publicação remota do acervo: tentativa retornou HTTP 403 no R2. A operação local usa a cópia privada preparada e permanece funcional. Não se declara publicação da plataforma nem aprovação artística final.
+
+A regressão pelo mouse reproduziu um erro `currentProgram.isReady` no preparo assíncrono de shaders enquanto materiais da prévia do pincel eram substituídos. O runtime de autoria passou a compilar e realizar o primeiro render na mesma tarefa, antes de liberar a revisão; o jogo estático conserva seu preparo paralelo. A repetição do teste de `/macro`, edição pelo mouse, cancelamento, abertura/fechamento e toque terminou sem erros de página.

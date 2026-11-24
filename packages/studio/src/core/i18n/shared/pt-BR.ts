@@ -35,6 +35,7 @@ export const ptBR: Record<string, string> = {
   'run.endInput': 'Encerrar entrada',
   'run.endInputHint': 'Encerra a entrada de texto (EOF), sem parar o programa',
   'run.fullscreen': 'Tela cheia',
+  'run.exitFullscreen': 'Sair da tela cheia',
   'run.fullscreenUnavailable': 'A tela cheia não está disponível neste navegador.',
   'run.stale': 'Seu código mudou. Aperte Rodar de novo para ver a nova versão.',
   'run.noEnvironment': 'O ambiente Python ainda não está disponível nesta página.',
@@ -79,6 +80,7 @@ export const ptBR: Record<string, string> = {
   'topbar.exportStudio': 'Baixar o projeto',
   'topbar.cloudSync': 'Trazer o que eu enviei',
   'topbar.convertPro': 'Virar profissional',
+  'topbar.blocksVersion': 'Abrir a versão em blocos',
   'topbar.ai': 'Zappy',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
@@ -91,6 +93,11 @@ export const ptBR: Record<string, string> = {
   'stage.bigger': 'Jogo maior',
   'stage.smaller': 'Jogo menor',
   'stage.errorMark': 'O jogo parou neste bloco.',
+  'blocks.restoreFailed.title': 'Não deu para abrir estes blocos',
+  'blocks.restoreFailed.body':
+    'Nada foi perdido: o projeto continua como estava. O editor de blocos não conseguiu mostrar este programa, o que acontece, por exemplo, com uma sequência de blocos longa demais. Continue pelo código, no modo Ponte.',
+  'blocks.restoreFailed.bodyNoBridge':
+    'Nada foi perdido: o projeto continua como estava. O editor de blocos não conseguiu mostrar este programa, o que acontece, por exemplo, com uma sequência de blocos longa demais. Peça ajuda a um adulto para continuar.',
   'blocks.dropToDelete': 'Solte aqui para apagar',
   'blocks.moreBlocks': 'Mais blocos',
   'tour.title': 'Primeiros passos',
@@ -126,12 +133,12 @@ export const ptBR: Record<string, string> = {
   'pyblocks.file': 'Arquivo Python',
   'pyblocks.goTo': 'Ir para',
   'pyblocks.wholeProgram': 'Programa inteiro',
-  'pyblocks.findFunction': 'Procurar uma função ou classe',
-  'pyblocks.noFunction': 'Nenhuma com esse nome',
+  'pyblocks.findFunction': 'Procurar uma área, função ou classe',
+  'pyblocks.noFunction': 'Nada com esse nome',
   'pyblocks.closeFunctions': 'Fechar as funções',
   'pyblocks.drafts': 'Rascunhos',
   'pyblocks.drafts.hint':
-    'Peças fora do Programa são rascunhos e não rodam. Clique para ver a primeira.',
+    'Peças fora das áreas do projeto são rascunhos e não rodam. Clique para ver a primeira.',
   'stage.errorMark.program': 'O programa parou neste bloco.',
   'stage.error.stopped.game': 'Opa, o jogo parou',
   'stage.error.stopped.page': 'Opa, a página parou',
@@ -165,6 +172,7 @@ export const ptBR: Record<string, string> = {
   'topbar.hint.download': 'um .zip com o código, para abrir no computador',
   'topbar.hint.export': 'um .zip pronto para pôr no ar',
   'topbar.hint.convertPro': 'troca os blocos por um projeto de código, sem volta',
+  'topbar.hint.blocksVersionGone': 'A versão em blocos foi apagada',
   'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você enviou',
   'topbar.modes': 'Modo de edição',
   'topbar.undo': 'Desfazer',
@@ -256,6 +264,14 @@ export const ptBR: Record<string, string> = {
   'projects.new': 'Novo projeto',
   'projects.import': 'Importar',
   'projects.export': 'Exportar',
+  'projects.preserved.restore': 'Restaurar uma cópia',
+  'projects.preserved.partial':
+    'A cópia é parcial. Algumas partes do projeto estão ausentes ou exigem outra versão.',
+  'projects.preserved.download': 'Baixar o que foi preservado',
+  'projects.preserved.restored': 'Cópia restaurada na lista',
+  'projects.preserved.restoredPartial': 'Cópia restaurada, mas com partes de fora',
+  'projects.preserved.noBackup': 'Não deu para montar uma cópia; baixe o que foi preservado',
+  'projects.preserved.failed': 'Não deu certo; nada foi apagado',
   'projects.duplicate': 'Duplicar',
   'projects.rename': 'Renomear',
   'projects.delete': 'Excluir',
@@ -285,6 +301,7 @@ export const ptBR: Record<string, string> = {
   'projects.filterAll': 'Todos',
   'projects.filterBlocks': 'Blocos',
   'projects.filterCode': 'Código',
+  'projects.card.madeFrom': 'Feito a partir de {name}',
   'projects.confirmDelete': "Excluir o projeto '{name}'? Esta ação não pode ser desfeita.",
   'projects.newModal.title': 'Novo projeto',
   'projects.newModal.nameLabel': 'Nome do projeto',
@@ -397,6 +414,7 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.mode.tileset': 'Todas as peças',
   'pintaImport.image.mode.tile': 'Uma peça',
   'pintaImport.image.mode.map': 'Mapa com camadas e objetos',
+  'pintaImport.image.mode.map-world': 'Cenário com outros lugares',
   'pintaImport.image.mode.tilemap': 'Imagem do mapa',
   'pintaImport.image.spritesheetData':
     'A folha leva junto as animações e a caixa de colisão. No código, use pinta.carregar_sprite com o nome da imagem.',
@@ -405,12 +423,16 @@ export const ptBR: Record<string, string> = {
   'pintaImport.image.mapData':
     'A imagem leva todas as peças do mapa, as camadas e os objetos. No código, use pinta.carregar_mapa com o nome da imagem.',
   'pintaImport.image.preparing': 'Preparando a imagem…',
+  'pintaImport.image.map-worldData':
+    'As portas levam os outros lugares junto. Use pinta.carregar_mapa para abrir o cenário e mapa.abrir_destino para abrir o lugar de uma porta.',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',
   'pintaImport.image.update': 'Atualizar esta imagem',
   'pintaImport.image.review': 'Rever imagem escolhida',
   'pintaImport.image.back': 'Voltar',
   'pintaImport.image.unavailable': 'Não é possível preparar imagens do Pinta neste ambiente agora.',
+  'pintaImport.image.sceneRuntimeUnavailable':
+    'Atualize o ambiente deste projeto para receber este cenário. Você também pode escolher a imagem simples.',
   'pintaImport.image.needsTileset':
     'Este mapa precisa do conjunto de peças dele. Recupere o conjunto no Pinta.',
   'pintaImport.image.selectionMissing':
@@ -546,7 +568,7 @@ export const ptBR: Record<string, string> = {
   'share.step.confirm.kidsLanguage':
     'Os textos do meu projeto estão em português e são adequados para todo mundo.',
   'share.step.confirm.irreversible':
-    'A versão publicada fica salva no Mural do jeito que está agora. Se você mudar o projeto aqui depois, a do Mural não muda, porque são cópias separadas.',
+    'Depois de publicar, você pode atualizar o jogo no Mural quando quiser: é só compartilhar de novo. O link e os comentários continuam os mesmos.',
   'share.step.describe.heading': 'Conte o que o seu projeto faz',
   'share.step.describe.help':
     'A gente preparou um rascunho para você. Leia, mude o que quiser e deixe do seu jeito (no máximo um parágrafo).',
@@ -607,5 +629,25 @@ export const ptBR: Record<string, string> = {
   'share.next': 'Avançar',
   'share.publish': 'Publicar',
   'share.retry': 'Tentar de novo',
+  'share.updateAction': 'Atualizar no Mural',
+  'share.update.title': 'Atualizar no Mural dos Criadores',
+  'share.update.intro':
+    'Este projeto já está no Mural. Atualizar troca o jogo do mesmo link pela versão de agora, e o post continua com os comentários e as jogadas.',
+  'share.update.action': 'Atualizar',
+  'share.update.publishing': 'Atualizando…',
+  'share.update.keeps':
+    'O post continua no mesmo lugar do Mural e ganha o selo "Atualizado". As versões antigas ficam guardadas.',
+  'share.update.hidden':
+    'A equipe deixou este post escondido por enquanto. A atualização fica guardada, mas ele não aparece no Mural.',
+  'share.unchanged':
+    'Seu jogo no Mural já está igual a este. Mude alguma coisa no projeto para atualizar.',
+  'share.status.loading': 'Conferindo se este projeto já está no Mural…',
+  'share.cover.keepCurrent': 'Manter a capa de agora',
+  'share.cover.usingCurrent': 'Usando a capa que o post já tem.',
+  'share.success.updatedHeading': 'Seu jogo foi atualizado! 🎉',
+  'share.success.updatedBody': 'O link de jogar continua o mesmo e já mostra a versão nova.',
+  'share.newPost.more': 'Outras formas de publicar',
+  'share.newPost.label': 'Publicar como jogo novo',
+  'share.newPost.hint': 'Cria outro post no Mural, com outro link. O post de antes fica como está.',
   'share.close': 'Fechar',
 }

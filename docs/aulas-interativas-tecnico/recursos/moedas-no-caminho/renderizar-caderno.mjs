@@ -6,6 +6,7 @@ const root = fileURLToPath(new URL('../../../../', import.meta.url))
 const { chromium } = createRequire(resolve(root, 'packages/studio/package.json'))(
   '@playwright/test',
 )
+// A mesma folga do rodapé que o `desafio-farol/gerar-materiais.py` confere nos cadernos da receita.
 const out = resolve(root, 'tmp/pdfs/moedas-no-caminho')
 const browser = await chromium.launch({
   headless: true,
@@ -27,7 +28,7 @@ try {
       if (
         content &&
         footer &&
-        content.getBoundingClientRect().bottom > footer.getBoundingClientRect().top - 10
+        content.getBoundingClientRect().bottom > footer.getBoundingClientRect().top - 18
       )
         return [p.dataset.id]
       if (p.scrollHeight > p.clientHeight + 2 || p.scrollWidth > p.clientWidth + 2)

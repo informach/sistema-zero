@@ -13,13 +13,18 @@
  * está travado em teste.
  */
 
+import { PINTA_REGION_LIMITS } from '@sistemazero/core/creations'
+import { resizeRegionMap } from '../tiles/regionMap'
 import { translateShape } from '../vector/geometry'
 import type { VectorShape } from '../vector/model'
 import {
   isObjectLayer,
+  isTileLayer,
   type PintaAsset,
   type PintaBitmap,
   type PintaPixelFrame,
+  type RegionMapSetAsset,
+  type RegionTilemapAsset,
   type TilemapLayer,
   type TilemapObjectLayer,
 } from './project'
@@ -27,6 +32,7 @@ import { createBitmap, PINTA_LIMITS } from './projectConfig'
 
 /** Onde a arte antiga cai dentro do tamanho novo. */
 export type ResizeAnchor = 'center' | 'top-left'
+type ResizableAsset = PintaAsset | RegionTilemapAsset | RegionMapSetAsset
 
 /** O que dá para redimensionar, e em que unidade. */
 export type ResizeUnit = 'pixels' | 'cells'
@@ -44,7 +50,7 @@ export interface ResizeTarget {
  * tamanho. PEÇAS ficam de fora de propósito: o tamanho do tile é whitelist dura
  * do motor (16/32/48) e mexer nele quebraria os mapas que apontam para elas.
  */
-export function resizeTargetOf(asset: PintaAsset): ResizeTarget | null {
+export function resizeTargetOf(asset: ResizableAsset): ResizeTarget | null {
   const pixels = (width: number, height: number): ResizeTarget => ({
     width,
     height,
@@ -74,9 +80,10 @@ export function resizeTargetOf(asset: PintaAsset): ResizeTarget | null {
         height: asset.rows,
         unit: 'cells',
         min: 1,
-        max: PINTA_LIMITS.maxTilemapCols,
+        max: 'origin' in asset ? PINTA_REGION_LIMITS.maxAxis : PINTA_LIMITS.maxTilemapCols,
       }
     case 'tileset':
+    case 'map-set':
     case 'vector-tileset':
       return null
   }
@@ -179,10 +186,49 @@ export function resizeAsset(
   asset: PintaAsset,
   width: number,
   height: number,
+  anchor?: ResizeAnchor,
+  options?: { tileSize?: number },
+): PintaAsset | null
+export function resizeAsset(
+  asset: RegionTilemapAsset,
+  width: number,
+  height: number,
+  anchor?: ResizeAnchor,
+  options?: { tileSize?: number },
+): RegionTilemapAsset | null
+export function resizeAsset(
+  asset: ResizableAsset,
+  width: number,
+  height: number,
+  anchor?: ResizeAnchor,
+  options?: { tileSize?: number },
+): ResizableAsset | null
+export function resizeAsset(
+  asset: ResizableAsset,
+  width: number,
+  height: number,
   anchor: ResizeAnchor = 'center',
-  /** Só mapa: o tamanho da peça, para os OBJETOS andarem junto com as células. */
+  /** Só mapa denso: os objetos andam com as células; regiões conservam posições globais. */
   options: { tileSize?: number } = {},
-): PintaAsset | null {
+): ResizableAsset | null {
+  if (asset.kind === 'tilemap' && 'origin' in asset) {
+    if (
+      !Number.isSafeInteger(width) ||
+      !Number.isSafeInteger(height) ||
+      width < 1 ||
+      height < 1 ||
+      width > PINTA_REGION_LIMITS.maxAxis ||
+      height > PINTA_REGION_LIMITS.maxAxis
+    )
+      return null
+    const result = resizeRegionMap(asset, {
+      col: asset.origin.col - offsetFor(anchor, asset.cols, width),
+      row: asset.origin.row - offsetFor(anchor, asset.rows, height),
+      cols: width,
+      rows: height,
+    })
+    return result.ok ? result.map : null
+  }
   const alvo = resizeTargetOf(asset)
   if (!alvo) return null
   const w = clamp(width, alvo.min, alvo.max)
@@ -237,6 +283,8 @@ export function resizeAsset(
           // DENTRO do mapa novo: encolher não pode deixar um objeto onde ninguém
           // alcança. Sem `tileSize` (o tamanho da peça é do tileset), ficam onde estão.
           if (isObjectLayer(layer)) return resizeObjectLayer(layer, dx, dy, w, h, options.tileSize)
+          // Grupo não tem conteúdo próprio: as camadas dele são redimensionadas uma a uma.
+          if (!isTileLayer(layer)) return layer
           const cells = new Int16Array(w * h).fill(-1)
           for (let r = 0; r < asset.rows; r += 1) {
             const destinoR = r + dy
@@ -251,13 +299,14 @@ export function resizeAsset(
         }),
       }
     case 'tileset':
+    case 'map-set':
     case 'vector-tileset':
       return null
   }
 }
 
 /** Encolher CORTA: a UI avisa antes de commitar. */
-export function resizeCuts(asset: PintaAsset, width: number, height: number): boolean {
+export function resizeCuts(asset: ResizableAsset, width: number, height: number): boolean {
   const alvo = resizeTargetOf(asset)
   if (!alvo) return false
   return width < alvo.width || height < alvo.height

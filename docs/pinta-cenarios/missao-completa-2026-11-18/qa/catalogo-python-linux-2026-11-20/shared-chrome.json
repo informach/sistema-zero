@@ -1,0 +1,3844 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      ".cache/pinta-52ec-shared-chrome.config.ts"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-52ec-shared-chrome.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e-runtime",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/.cache/pinta-52ec-shared-chrome/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome",
+        "name": "chrome",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e-runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "python-runtime.spec.ts",
+          "python-provider.spec.ts",
+          "python-turtle.spec.ts",
+          "python-audio.spec.ts",
+          "python-inspection.spec.ts",
+          "python-raylib.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chrome",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "python-runtime.spec.ts",
+          "python-provider.spec.ts",
+          "python-turtle.spec.ts",
+          "python-audio.spec.ts",
+          "python-inspection.spec.ts",
+          "python-raylib.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5595",
+          "headless": true,
+          "trace": "retain-on-failure",
+          "channel": "chrome"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chrome"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "python-audio.spec.ts",
+      "file": "python-audio.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Python audio without a user gesture reports the browser autoplay denial",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1136,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:44.898Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "autoplay-denial",
+                      "contentType": "application/json",
+                      "body": "eyJldmVudHMiOlt7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoicnVubmluZyIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiJmYmQwNzFkYi04M2Q1LTQ4NTMtYmU5My1iZjZkYTYyNjdjNjAiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoyfSx7InR5cGUiOiJjb25zb2xlIiwic3RyZWFtIjoic3Rkb3V0IiwidGV4dCI6ImF1ZGlvIGltcG9ydGVkXG4iLCJvbWl0dGVkTGluZXMiOjAsIm9taXR0ZWRDaGFycyI6MCwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6ImZiZDA3MWRiLTgzZDUtNDg1My1iZTkzLWJmNmRhNjI2N2M2MCIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjN9LHsidHlwZSI6ImRpYWdub3N0aWMiLCJwYXRoIjoic3JjL21haW4ucHkiLCJsaW5lIjozLCJjb2x1bW4iOjAsIm1lc3NhZ2UiOiJSdW50aW1lRXJyb3I6IENsaXF1ZSBlbSBKb2dhciBvdSBSb2RhciBwYXJhIHBlcm1pdGlyIG8gc29tIGUgdGVudGUgbm92YW1lbnRlLiIsInRyYWNlYmFjayI6IlRyYWNlYmFjayAobW9zdCByZWNlbnQgY2FsbCBsYXN0KTpcbiAgRmlsZSBcIjxleGVjPlwiLCBsaW5lIDYwMiwgaW4gZXhlY3V0ZVxuICBGaWxlIFwiL3N0dWRpby9wcm9qZWN0L3NyYy9tYWluLnB5XCIsIGxpbmUgMywgaW4gPG1vZHVsZT5cbiAgICBvbmUgPSBzel9hdWRpby5wbGF5KCdhc3NldHMvdG9uZS53YXYnLCBsb29wPVRydWUsIHZvbHVtZT0wLjIpXG4gIEZpbGUgXCIvc3R1ZGlvL21lZGlhL3B5dGhvbi1hdWRpby0xLjAuMC9zel9hdWRpby9fX2luaXRfXy5weVwiLCBsaW5lIDU5LCBpbiBwbGF5XG4gICAgX2V4Y2hhbmdlKHtcInZlcnNpb25cIjogMSwgXCJvcFwiOiBcInBsYXlcIiwgXCJpZFwiOiBfc2VxdWVuY2UsXG4gICAgfn5+fn5+fn5+Xl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXlxuICAgICAgICAgICAgICAgXCJwYXRoXCI6IHJlbGF0aXZlLCBcImxvb3BcIjogbG9vcCwgXCJ2b2x1bWVcIjogdm9sdW1lfSlcbiAgICAgICAgICAgICAgIF5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXl5eXG4gIEZpbGUgXCIvc3R1ZGlvL21lZGlhL3B5dGhvbi1hdWRpby0xLjAuMC9zel9hdWRpby9fX2luaXRfXy5weVwiLCBsaW5lIDMxLCBpbiBfZXhjaGFuZ2VcbiAgICByYWlzZSBSdW50aW1lRXJyb3IobWVzc2FnZSlcblJ1bnRpbWVFcnJvcjogQ2xpcXVlIGVtIEpvZ2FyIG91IFJvZGFyIHBhcmEgcGVybWl0aXIgbyBzb20gZSB0ZW50ZSBub3ZhbWVudGUuXG4iLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiZmJkMDcxZGItODNkNS00ODUzLWJlOTMtYmY2ZGE2MjY3YzYwIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH0seyJ0eXBlIjoiZmFpbGVkIiwiY29kZSI6InByb2dyYW0tZXJyb3IiLCJtZXNzYWdlIjoiQ2xpcXVlIGVtIEpvZ2FyIG91IFJvZGFyIHBhcmEgcGVybWl0aXIgbyBzb20gZSB0ZW50ZSBub3ZhbWVudGUuIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6ImZiZDA3MWRiLTgzZDUtNDg1My1iZTkzLWJmNmRhNjI2N2M2MCIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjV9XSwic3RhdHVzIjoiZmFpbGVkIiwiZXJyb3IiOiJDbGlxdWUgZW0gSm9nYXIgb3UgUm9kYXIgcGFyYSBwZXJtaXRpciBvIHNvbSBlIHRlbnRlIG5vdmFtZW50ZS4iLCJmcmFtZVVSTCI6ImFib3V0OmJsYW5rIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-162218a70bcae897f887",
+          "file": "python-audio.spec.ts",
+          "line": 101,
+          "column": 1
+        },
+        {
+          "title": "pro-Python plays overlapping audio without Turtle and stops individual voices",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1417,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:46.234Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "actual-python-audio",
+                      "contentType": "application/json",
+                      "body": "eyJwbGF5aW5nIjp7ImV2ZW50cyI6W3sidHlwZSI6InN0YXRlIiwic3RhdGUiOiJydW5uaW5nIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjA1NjFlOGY0LWFiMDctNDE5OC05NDlhLWM4ZDhhOTM5ZWI3NSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjJ9LHsidHlwZSI6ImNvbnNvbGUiLCJzdHJlYW0iOiJzdGRvdXQiLCJ0ZXh0IjoiYXVkaW8gaW1wb3J0ZWRcbiIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMDU2MWU4ZjQtYWIwNy00MTk4LTk0OWEtYzhkOGE5MzllYjc1Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6M30seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJhdWRpbyBoYW5kbGVzIDEgMlxuUGFyYXIgcHJpbWVpcm86ICIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMDU2MWU4ZjQtYWIwNy00MTk4LTk0OWEtYzhkOGE5MzllYjc1Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6IndhaXRpbmctaW5wdXQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMDU2MWU4ZjQtYWIwNy00MTk4LTk0OWEtYzhkOGE5MzllYjc1Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NX0seyJ0eXBlIjoiaW5wdXQtcmVxdWVzdCIsInJlcXVlc3RJZCI6ImlucHV0LTEiLCJwcm9tcHQiOiIiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMDU2MWU4ZjQtYWIwNy00MTk4LTk0OWEtYzhkOGE5MzllYjc1Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6Nn1dLCJzdGF0dXMiOiJ3YWl0aW5nLWlucHV0IiwiZnJhbWVVUkwiOiJodHRwOi8vMTI3LjAuMC4xOjYzNTMzL3YxL3J1bnRpbWVzLzZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIvZnJhbWUuaHRtbCNlOWU1OTVjZjAyNDgyYWVmYjI5MzQzM2QyNDU5ODJkMTEwZjliZTlmMmZhYmM3NjYxMGY3NzAyODQ3MTI3ODhiIn0sInBsYXlpbmdNZWRpYSI6W3sicGF1c2VkIjpmYWxzZSwic3JjIjoiYmxvYjpodHRwOi8vMTI3LjAuMC4xOjU1OTUvMjQzYTVkYzItZTkwZi00YjhlLWFhZjctNmNmNTg2ZjZjZGU5IiwiY3VycmVudFRpbWUiOjAuMTMwMTgzLCJyZWFkeVN0YXRlIjo0fSx7InBhdXNlZCI6ZmFsc2UsInNyYyI6ImJsb2I6aHR0cDovLzEyNy4wLjAuMTo1NTk1LzI0M2E1ZGMyLWU5MGYtNGI4ZS1hYWY3LTZjZjU4NmY2Y2RlOSIsImN1cnJlbnRUaW1lIjowLjExMDE4MSwicmVhZHlTdGF0ZSI6NH1dLCJmaXJzdFN0b3BwZWQiOlt7InBhdXNlZCI6dHJ1ZSwic3JjIjpudWxsLCJjdXJyZW50VGltZSI6MCwicmVhZHlTdGF0ZSI6MH0seyJwYXVzZWQiOmZhbHNlLCJzcmMiOiJibG9iOmh0dHA6Ly8xMjcuMC4wLjE6NTU5NS8yNDNhNWRjMi1lOTBmLTRiOGUtYWFmNy02Y2Y1ODZmNmNkZTkiLCJjdXJyZW50VGltZSI6MC4xMzY0NCwicmVhZHlTdGF0ZSI6NH1dLCJjb21wbGV0ZWQiOnsiZXZlbnRzIjpbeyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6InJ1bm5pbmciLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiIyMzYxMTA0OTllYjE1NGI2ZjUyZTNiOTAwZDRhMGFkODU1YzRlOTNlMDFjN2RiNTA4ZDlhZjIyYWRkYTI1YmMwIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMDU2MWU4ZjQtYWIwNy00MTk4LTk0OWEtYzhkOGE5MzllYjc1Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6Mn0seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJhdWRpbyBpbXBvcnRlZFxuIiwib21pdHRlZExpbmVzIjowLCJvbWl0dGVkQ2hhcnMiOjAsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjozfSx7InR5cGUiOiJjb25zb2xlIiwic3RyZWFtIjoic3Rkb3V0IiwidGV4dCI6ImF1ZGlvIGhhbmRsZXMgMSAyXG5QYXJhciBwcmltZWlybzogIiwib21pdHRlZExpbmVzIjowLCJvbWl0dGVkQ2hhcnMiOjAsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo0fSx7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoid2FpdGluZy1pbnB1dCIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo1fSx7InR5cGUiOiJpbnB1dC1yZXF1ZXN0IiwicmVxdWVzdElkIjoiaW5wdXQtMSIsInByb21wdCI6IiIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo2fSx7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoicnVubmluZyIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo3fSx7InR5cGUiOiJjb25zb2xlIiwic3RyZWFtIjoic3Rkb3V0IiwidGV4dCI6ImZpcnN0IHN0b3BwZWRcblBhcmFyIHRvZG9zOiAiLCJvbWl0dGVkTGluZXMiOjAsIm9taXR0ZWRDaGFycyI6MCwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjA1NjFlOGY0LWFiMDctNDE5OC05NDlhLWM4ZDhhOTM5ZWI3NSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjh9LHsidHlwZSI6InN0YXRlIiwic3RhdGUiOiJ3YWl0aW5nLWlucHV0IiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjA1NjFlOGY0LWFiMDctNDE5OC05NDlhLWM4ZDhhOTM5ZWI3NSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjl9LHsidHlwZSI6ImlucHV0LXJlcXVlc3QiLCJyZXF1ZXN0SWQiOiJpbnB1dC0yIiwicHJvbXB0IjoiIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiMjM2MTEwNDk5ZWIxNTRiNmY1MmUzYjkwMGQ0YTBhZDg1NWM0ZTkzZTAxYzdkYjUwOGQ5YWYyMmFkZGEyNWJjMCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjA1NjFlOGY0LWFiMDctNDE5OC05NDlhLWM4ZDhhOTM5ZWI3NSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjEwfSx7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoicnVubmluZyIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoxMX0seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJhbGwgc3RvcHBlZFxuIiwib21pdHRlZExpbmVzIjowLCJvbWl0dGVkQ2hhcnMiOjAsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoxMn0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6ImNvbXBsZXRlZCIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjIzNjExMDQ5OWViMTU0YjZmNTJlM2I5MDBkNGEwYWQ4NTVjNGU5M2UwMWM3ZGI1MDhkOWFmMjJhZGRhMjViYzAiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIwNTYxZThmNC1hYjA3LTQxOTgtOTQ5YS1jOGQ4YTkzOWViNzUiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoxM31dLCJzdGF0dXMiOiJjb21wbGV0ZWQiLCJmcmFtZVVSTCI6Imh0dHA6Ly8xMjcuMC4wLjE6NjM1MzMvdjEvcnVudGltZXMvNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMi9mcmFtZS5odG1sI2U5ZTU5NWNmMDI0ODJhZWZiMjkzNDMzZDI0NTk4MmQxMTBmOWJlOWYyZmFiYzc2NjEwZjc3MDI4NDcxMjc4OGIifX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-653413b4bad6e2d9d4f0",
+          "file": "python-audio.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "pro-Stop revokes audio while Python waits for input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1149,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:47.667Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-61b0e2b72c2c8b61ba82",
+          "file": "python-audio.spec.ts",
+          "line": 174,
+          "column": 3
+        },
+        {
+          "title": "pro-authored sz_audio module keeps Python import precedence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:48.830Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-50cb468287e0434a8ee7",
+          "file": "python-audio.spec.ts",
+          "line": 192,
+          "column": 3
+        },
+        {
+          "title": "classic-Python plays overlapping audio without Turtle and stops individual voices",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1377,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:49.951Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "actual-python-audio",
+                      "contentType": "application/json",
+                      "body": "eyJwbGF5aW5nIjp7ImV2ZW50cyI6W3sidHlwZSI6InN0YXRlIiwic3RhdGUiOiJydW5uaW5nIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiNjM5YTAyZGI3YmFkYzVjYjAyYmNjMjM5OTgzOWIwNGYxMTRjNWU1YjAyY2Q4N2QyOGViNzIxYjY5ZGI5OGNkMiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjFmMmU1NjYxLWI3MTgtNGJiMS04MzJkLWExYzI1ZjlhNGU0MiIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjJ9LHsidHlwZSI6ImNvbnNvbGUiLCJzdHJlYW0iOiJzdGRvdXQiLCJ0ZXh0IjoiYXVkaW8gaW1wb3J0ZWRcbiIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6M30seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJhdWRpbyBoYW5kbGVzIDEgMlxuUGFyYXIgcHJpbWVpcm86ICIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6IndhaXRpbmctaW5wdXQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NX0seyJ0eXBlIjoiaW5wdXQtcmVxdWVzdCIsInJlcXVlc3RJZCI6ImlucHV0LTEiLCJwcm9tcHQiOiIiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6Nn1dLCJzdGF0dXMiOiJ3YWl0aW5nLWlucHV0IiwiZnJhbWVVUkwiOiJodHRwOi8vMTI3LjAuMC4xOjYzNTMzL3YxL3J1bnRpbWVzLzZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIvZnJhbWUuaHRtbCMwYWYyZWRjMjVhNTZhNWRkMmU5NWIyMjhhMzJhMGM1NWJmNmFlZmY1NzAzOWU0MTVlOGZlOTNjNDcwMTQ3NzMxIn0sInBsYXlpbmdNZWRpYSI6W3sicGF1c2VkIjpmYWxzZSwic3JjIjoiYmxvYjpodHRwOi8vMTI3LjAuMC4xOjU1OTUvNmUyZWY2Y2ItOWUxYi00NWNhLWE5ZTctYTcxNGE2ZTY1MmU1IiwiY3VycmVudFRpbWUiOjAuMTM3NTY5LCJyZWFkeVN0YXRlIjo0fSx7InBhdXNlZCI6ZmFsc2UsInNyYyI6ImJsb2I6aHR0cDovLzEyNy4wLjAuMTo1NTk1LzZlMmVmNmNiLTllMWItNDVjYS1hOWU3LWE3MTRhNmU2NTJlNSIsImN1cnJlbnRUaW1lIjowLjExNzU2OCwicmVhZHlTdGF0ZSI6NH1dLCJmaXJzdFN0b3BwZWQiOlt7InBhdXNlZCI6dHJ1ZSwic3JjIjpudWxsLCJjdXJyZW50VGltZSI6MCwicmVhZHlTdGF0ZSI6MH0seyJwYXVzZWQiOmZhbHNlLCJzcmMiOiJibG9iOmh0dHA6Ly8xMjcuMC4wLjE6NTU5NS82ZTJlZjZjYi05ZTFiLTQ1Y2EtYTllNy1hNzE0YTZlNjUyZTUiLCJjdXJyZW50VGltZSI6MC4xNDM4NzksInJlYWR5U3RhdGUiOjR9XSwiY29tcGxldGVkIjp7ImV2ZW50cyI6W3sidHlwZSI6InN0YXRlIiwic3RhdGUiOiJydW5uaW5nIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiNjM5YTAyZGI3YmFkYzVjYjAyYmNjMjM5OTgzOWIwNGYxMTRjNWU1YjAyY2Q4N2QyOGViNzIxYjY5ZGI5OGNkMiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiYXVkaW8iLCJydW5JZCI6IjFmMmU1NjYxLWI3MTgtNGJiMS04MzJkLWExYzI1ZjlhNGU0MiIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjJ9LHsidHlwZSI6ImNvbnNvbGUiLCJzdHJlYW0iOiJzdGRvdXQiLCJ0ZXh0IjoiYXVkaW8gaW1wb3J0ZWRcbiIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6M30seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJhdWRpbyBoYW5kbGVzIDEgMlxuUGFyYXIgcHJpbWVpcm86ICIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6IndhaXRpbmctaW5wdXQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NX0seyJ0eXBlIjoiaW5wdXQtcmVxdWVzdCIsInJlcXVlc3RJZCI6ImlucHV0LTEiLCJwcm9tcHQiOiIiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6Nn0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6InJ1bm5pbmciLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6N30seyJ0eXBlIjoiY29uc29sZSIsInN0cmVhbSI6InN0ZG91dCIsInRleHQiOiJmaXJzdCBzdG9wcGVkXG5QYXJhciB0b2RvczogIiwib21pdHRlZExpbmVzIjowLCJvbWl0dGVkQ2hhcnMiOjAsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjYzOWEwMmRiN2JhZGM1Y2IwMmJjYzIzOTk4MzliMDRmMTE0YzVlNWIwMmNkODdkMjhlYjcyMWI2OWRiOThjZDIiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIxZjJlNTY2MS1iNzE4LTRiYjEtODMyZC1hMWMyNWY5YTRlNDIiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo4fSx7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoid2FpdGluZy1pbnB1dCIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjYzOWEwMmRiN2JhZGM1Y2IwMmJjYzIzOTk4MzliMDRmMTE0YzVlNWIwMmNkODdkMjhlYjcyMWI2OWRiOThjZDIiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIxZjJlNTY2MS1iNzE4LTRiYjEtODMyZC1hMWMyNWY5YTRlNDIiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjo5fSx7InR5cGUiOiJpbnB1dC1yZXF1ZXN0IiwicmVxdWVzdElkIjoiaW5wdXQtMiIsInByb21wdCI6IiIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjYzOWEwMmRiN2JhZGM1Y2IwMmJjYzIzOTk4MzliMDRmMTE0YzVlNWIwMmNkODdkMjhlYjcyMWI2OWRiOThjZDIiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImF1ZGlvIiwicnVuSWQiOiIxZjJlNTY2MS1iNzE4LTRiYjEtODMyZC1hMWMyNWY5YTRlNDIiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoxMH0seyJ0eXBlIjoic3RhdGUiLCJzdGF0ZSI6InJ1bm5pbmciLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6MTF9LHsidHlwZSI6ImNvbnNvbGUiLCJzdHJlYW0iOiJzdGRvdXQiLCJ0ZXh0IjoiYWxsIHN0b3BwZWRcbiIsIm9taXR0ZWRMaW5lcyI6MCwib21pdHRlZENoYXJzIjowLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6MTJ9LHsidHlwZSI6InN0YXRlIiwic3RhdGUiOiJjb21wbGV0ZWQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2MzlhMDJkYjdiYWRjNWNiMDJiY2MyMzk5ODM5YjA0ZjExNGM1ZTViMDJjZDg3ZDI4ZWI3MjFiNjlkYjk4Y2QyIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJhdWRpbyIsInJ1bklkIjoiMWYyZTU2NjEtYjcxOC00YmIxLTgzMmQtYTFjMjVmOWE0ZTQyIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6MTN9XSwic3RhdHVzIjoiY29tcGxldGVkIiwiZnJhbWVVUkwiOiJodHRwOi8vMTI3LjAuMC4xOjYzNTMzL3YxL3J1bnRpbWVzLzZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIvZnJhbWUuaHRtbCMwYWYyZWRjMjVhNTZhNWRkMmU5NWIyMjhhMzJhMGM1NWJmNmFlZmY1NzAzOWU0MTVlOGZlOTNjNDcwMTQ3NzMxIn19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-e71548232c54e470c84e",
+          "file": "python-audio.spec.ts",
+          "line": 125,
+          "column": 3
+        },
+        {
+          "title": "classic-Stop revokes audio while Python waits for input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1145,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:51.344Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-db22ab6e5c540f041eea",
+          "file": "python-audio.spec.ts",
+          "line": 174,
+          "column": 3
+        },
+        {
+          "title": "classic-authored sz_audio module keeps Python import precedence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1044,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:52.503Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "audio-runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4414089d50385fc5b12f-d68e77b86e8fa123e7d8",
+          "file": "python-audio.spec.ts",
+          "line": 192,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "python-inspection.spec.ts",
+      "file": "python-inspection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "isolated CPython inspects exact revision bytes: valid",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1017,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:54.196Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiZjlhZjIzOWI5OTJlZWRhNzFkMGJjOWE0ZWQ5NjNkODRhMjhiZjkxNTYwZWY0M2Y4ZWZlZmViODQ2OGZiMjEzOCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoicGFzc2VkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiIyOTQwNmU4ZmEzNDE3ZGZhODQ4ZjI1ZDk2ZjQ4NGUzZDk3NjZhNDkxODQ4Yzc5MjQyNzNhYmNlMzdlNGRjMmQ5Iiwic3RhdHVzIjoicGFzc2VkIiwiZGlhZ25vc3RpY3MiOltdfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-c3c2bdcd6eb62bf80c71",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: structure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 981,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:55.416Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiYzdlNGFlMGYzOTNlZjMzZGQ3MThkOTY5MTc5NDgwODlhMWJkMzliNjY5ZjgzMGI3NmFkZjQ4MmYzZjBjOTNkZiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoicGFzc2VkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJzdHJ1Y3R1cmUiOnsidmVyc2lvbiI6MSwibm9kZXNWaXNpdGVkIjoxLCJ1c2VzTG9vcCI6ZmFsc2UsInVzZXNDb25kaXRpb25hbCI6ZmFsc2UsImFzc2lnbmVkTmFtZXMiOltdLCJkZWZpbmVkRnVuY3Rpb25zIjpbXSwiY2FsbFRhcmdldHMiOltdfSwiZGlhZ25vc3RpY3MiOltdfSx7InBhdGgiOiJtYWluLnB5Iiwic2hhMjU2IjoiOGUxYWUxN2QzMTg0ODMwMjAwYWNiYzQxZTQ2NTNjZGRlNjk3NjE1ZmEyYTEwYTZlNjU0ZTVkY2QwZDgwZDJjZSIsInN0YXR1cyI6InBhc3NlZCIsInN0cnVjdHVyZSI6eyJ2ZXJzaW9uIjoxLCJub2Rlc1Zpc2l0ZWQiOjUzLCJ1c2VzTG9vcCI6dHJ1ZSwidXNlc0NvbmRpdGlvbmFsIjp0cnVlLCJhc3NpZ25lZE5hbWVzIjpbIkFsaWFzIiwiVCIsIlUiLCJhYnNlbnRfc3R1ZGVudF9wYWNrYWdlIiwiam9nYXIiLCJwIiwidCIsInZhbG9yIl0sImRlZmluZWRGdW5jdGlvbnMiOlsiam9nYXIiXSwiY2FsbFRhcmdldHMiOlsiUnVudGltZUVycm9yIiwiZmFjdG9yeSIsInJhbmdlIiwidC5mb3J3YXJkIl19LCJkaWFnbm9zdGljcyI6W119XX19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-a43ebfb05ad66967d999",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: validbom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 932,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:56.410Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiMjY3NjE3NGE4OWY1NzUxNDEwZWU1NTE2YmE3YTQ5NWViMGZhMjFmNzc2Yjg3ZTY1N2EzMjdjYTQ5NGQzZDY1ZSIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoicGFzc2VkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiIzNDg1NmI4NDNiZWVlYzNjNzQ1NTQ2NDkyZjZmOTBkNGIwNzI0MDBkY2I4MTlhOThiMWVjYTljNWY2OWZmNjlkIiwic3RhdHVzIjoicGFzc2VkIiwiZGlhZ25vc3RpY3MiOltdfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-240674398702f9ef53a0",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: syntax",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 889,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:57.354Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiY2ExNzYyMjEyZWRiYmYyNzg1ZDFiNjY4NjAwZWVhOTVhOWYxZmY5MzgzOTFkNDhhODU3MTIwOTI4ZjUyNzhmNSIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiIxNDQzYTdkNjJlYmE3ZWU5NWI0Y2M0YjQ3NDZmZmI1ZDM0YTNiOWE3Y2Y1NWY2NDQyNjAwN2NkODI5MmM5MWVkIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiJpbnZhbGlkIHN5bnRheCAobWFpbi5weSwgbGluZSAxKSJ9XX1dfX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-6bb30651586cc9e41e16",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: return",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 903,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:58.256Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiYmZlOTc2MjA1MWMxYzZmYWQ3MWE4ZDQzNGJiYmI2NTA3MzdlZGY2ZGFlNDc2YmY5OTQ4MzI1ZmJjOWJhMzc2NSIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiIwODA1YmZkYzAyZTg3MmVkMzIyYTRhNGU0NDBhZTk4NWYzYTQzMzVmNGRkNTlmM2QzNzNkZmFmMmE2OGE0YTNjIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiIncmV0dXJuJyBvdXRzaWRlIGZ1bmN0aW9uIChtYWluLnB5LCBsaW5lIDEpIn1dfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-770be6ff0a5fbc90d603",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: yield",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 881,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:59.172Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiYmY0ZjNkYjM4OTFjOGY5MWZkNTc3YmQxZmI2MWU5NjJiNjZiZDY5ZjZkZTBiNGRlNzE1YjgzODkwYmEyMTk5OCIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiJjMWVkMDRlMzExOGI5MzI0ODgwMGJmN2I2ZWI3MjE0NjAzMzgzZGI1NTI3ZTI1NzU0MGI3YTc3YTNjMjgzNzFlIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiIneWllbGQnIG91dHNpZGUgZnVuY3Rpb24gKG1haW4ucHksIGxpbmUgMSkifV19XX19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-1c7eb90e95cc4a30af3d",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: ascii",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 895,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:00.064Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiNGI3NzdkM2E1Y2UzOTZmOTI1MzNhMTQ2MDVjZTI1Yzc2ZjdiM2M1MThjZDQyNTMwZDhmMGMxYzQzYTJlM2JkZSIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiJmY2FkOTJjMWI2ZWY1MWJiZTk4YzBkMDVjYzFhM2IxZmZjMWZlMGUyNDBlMGQzNjUwNmYyODk2OTMzOGE5ZDhjIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiInYXNjaWknIGNvZGVjIGNhbid0IGRlY29kZSBieXRlIDB4YzMgaW4gcG9zaXRpb24gMjQ6IG9yZGluYWwgbm90IGluIHJhbmdlKDEyOCkgKG1haW4ucHksIGxpbmUgMCkifV19XX19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-eb7fa48566dab0db9025",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: unknown",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 907,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:00.970Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiNmE4MGE0YjdlZjRlN2JiN2ExNzMzNzY4NjUyODg5YzFiMDEzMDJiYjFiNjUwNmE2ZGU4ZTdkZDg3ZjdjZmEyMiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiI5ZWY0MmFhNTZlZWVjODUyOWJmYmNlOGY5NjZhZTI0NmM1MzRmNTcyZmQ3MzVjMjRlZWYxOGI1ZjAwMjY2ZWEyIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiJ1bmtub3duIGVuY29kaW5nOiBub19zdWNoX2VuY29kaW5nIChtYWluLnB5LCBsaW5lIDApIn1dfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-d962b8e02dd2110e5601",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: bom",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 916,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:01.890Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiYTNkOTc5MzAyODBjNDlkNGQyNDBmNjkxMzcyNDRiNTczYjBhZjYwZGU3NTEyMmJmYjBjNjEyOTE4MTFiOGQ1MiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiIwZTQxYTlhZTQ4NTE2MmIyMTYyZDBkOGE4ZDViODVkZTE1MmFmZTlkMDg0NWY2OGNmZmQ1ZTNjMDBlZmFjNzdiIiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiJlbmNvZGluZyBwcm9ibGVtOiBpc28tODg1OS0xIHdpdGggQk9NIChtYWluLnB5LCBsaW5lIDEpIn1dfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-31cf0e9f84e3c4bc3d1c",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: identifier",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 892,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:02.817Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6dHJ1ZSwicmVwb3J0Ijp7InZlcnNpb24iOjEsInJldmlzaW9uIjoiNTA5NTUyYmFmY2Q1MGEzMzg1ZjA1NTBkYjU5NjA4ODhiNTQxZjE5ZTFjMjkyNDlmNjYzN2MxY2M2MWJmYTE2MyIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJweXRob25WZXJzaW9uIjoiMy4xNC4yIiwic3RhdHVzIjoiZmFpbGVkIiwiZmlsZXMiOlt7InBhdGgiOiJlbXB0eS5weSIsInNoYTI1NiI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJzdGF0dXMiOiJwYXNzZWQiLCJkaWFnbm9zdGljcyI6W119LHsicGF0aCI6Im1haW4ucHkiLCJzaGEyNTYiOiJkZTEwODY0NDA3NDdlYjdkNjdkMjI2Y2Y1ZTQyMmY4ZmE1MmY1NDI2ZTlkM2FmM2IyYzhlYzRkY2M0YmU5NzU4Iiwic3RhdHVzIjoiZmFpbGVkIiwiZGlhZ25vc3RpY3MiOlt7Im1lc3NhZ2UiOiJpbnZhbGlkIGNoYXJhY3RlciAnwqknIChVKzAwQTkpIChtYWluLnB5LCBsaW5lIDIpIn1dfV19fQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-175afdad65a83d4434bc",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        },
+        {
+          "title": "isolated CPython inspects exact revision bytes: corrupt",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 233,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:03.720Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "inspection",
+                      "contentType": "application/json",
+                      "body": "eyJvayI6ZmFsc2UsIm1lc3NhZ2UiOiJPIGFycXVpdm8gbWFpbi5weSBuw6NvIGNvcnJlc3BvbmRlIGFvIHBhY290ZSBQeXRob24uIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0322c80c4630b77c07dc-ae75fc57c897c7fffc66",
+          "file": "python-inspection.spec.ts",
+          "line": 28,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "python-provider.spec.ts",
+      "file": "python-provider.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "portable: prepares and executes under strict CSP without validation eval probes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1114,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:03.980Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "strict-csp-validation",
+                      "contentType": "application/json",
+                      "body": "eyJmaXh0dXJlIjoicG9ydGFibGUiLCJlcnJvcnMiOltdLCJzdGF0ZSI6eyJldmVudHMiOlt7InR5cGUiOiJzdGF0ZSIsInN0YXRlIjoicnVubmluZyIsImlkZW50aXR5Ijp7InByb2plY3RJZCI6InB5dGhvbi1wcm8iLCJyZXZpc2lvbiI6IjRlNmJhYTAyZGZhMzdjMTVkM2I0MzU0MDllNjVmZTEyNzE3NmQ3Y2E0MTQzZTY0MmRlZGFkMTIyZDk3YTk0NGUiLCJydW50aW1lTWFuaWZlc3RTaGEyNTYiOiI2YjRlMWU4Y2U0NTdmYWM2NmQ3YjNmZjc5YTMzY2NlNjlkYjMzMGUwZTA0MTcxM2FjNTg0YWRjOTExZDkyNmYyIiwiaW5zdGFuY2VJZCI6ImNzcC12YWxpZGF0aW9uIiwicnVuSWQiOiIxNWFiZDE4Yi02ZTE1LTQ1ODctYjI5ZS0zOGJkNjRmMGVmOTAiLCJ3cml0ZXJFcG9jaCI6bnVsbH0sInNlcXVlbmNlIjoyfSx7InR5cGUiOiJjb25zb2xlIiwic3RyZWFtIjoic3Rkb3V0IiwidGV4dCI6ImHDp8OjbyDwn5CiIDQyXG4iLCJvbWl0dGVkTGluZXMiOjAsIm9taXR0ZWRDaGFycyI6MCwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiNGU2YmFhMDJkZmEzN2MxNWQzYjQzNTQwOWU2NWZlMTI3MTc2ZDdjYTQxNDNlNjQyZGVkYWQxMjJkOTdhOTQ0ZSIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiY3NwLXZhbGlkYXRpb24iLCJydW5JZCI6IjE1YWJkMThiLTZlMTUtNDU4Ny1iMjllLTM4YmQ2NGYwZWY5MCIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjN9LHsidHlwZSI6InN0YXRlIiwic3RhdGUiOiJjb21wbGV0ZWQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI0ZTZiYWEwMmRmYTM3YzE1ZDNiNDM1NDA5ZTY1ZmUxMjcxNzZkN2NhNDE0M2U2NDJkZWRhZDEyMmQ5N2E5NDRlIiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJjc3AtdmFsaWRhdGlvbiIsInJ1bklkIjoiMTVhYmQxOGItNmUxNS00NTg3LWIyOWUtMzhiZDY0ZjBlZjkwIiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH1dLCJzdGF0dXMiOiJjb21wbGV0ZWQiLCJmcmFtZVVSTCI6Imh0dHA6Ly8xMjcuMC4wLjE6NjM1MzMvdjEvcnVudGltZXMvNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMi9mcmFtZS5odG1sIzViMmE3YzE4ZDJmOGU1OWE2MGVlZGY2MzAwNWVmYzJkMzQwNjQxZDY0YmE4ZWNhZjM4ZDdkMmUzNTBmZTFiOTcifX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-e5bc63ebf35e54764454",
+          "file": "python-provider.spec.ts",
+          "line": 32,
+          "column": 3
+        },
+        {
+          "title": "turtleDrawing: prepares and executes under strict CSP without validation eval probes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1296,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:05.107Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "strict-csp-validation",
+                      "contentType": "application/json",
+                      "body": "eyJmaXh0dXJlIjoidHVydGxlRHJhd2luZyIsImVycm9ycyI6W10sInN0YXRlIjp7ImV2ZW50cyI6W3sidHlwZSI6InN0YXRlIiwic3RhdGUiOiJydW5uaW5nIiwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiNjVkY2M0YmQ1MDliMjJiN2Y2Njc3ZTMzNTE1N2NiNDc3OTUyNjlmNjVkODcyMzAxZWRmNWIzZTRjNjgzMWQ1NiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiY3NwLXZhbGlkYXRpb24iLCJydW5JZCI6IjViNzQ1MjRjLTEwZTctNGFkYy1hMThmLTk1MTAzYTRkYzIxOSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjJ9LHsidHlwZSI6ImNvbnNvbGUiLCJzdHJlYW0iOiJzdGRvdXQiLCJ0ZXh0IjoiZHJhd2luZy1yZWFkeSAoMTAwLjAwLDgwLjAwKSA5MC4wXG4iLCJvbWl0dGVkTGluZXMiOjAsIm9taXR0ZWRDaGFycyI6MCwiaWRlbnRpdHkiOnsicHJvamVjdElkIjoicHl0aG9uLXBybyIsInJldmlzaW9uIjoiNjVkY2M0YmQ1MDliMjJiN2Y2Njc3ZTMzNTE1N2NiNDc3OTUyNjlmNjVkODcyMzAxZWRmNWIzZTRjNjgzMWQ1NiIsInJ1bnRpbWVNYW5pZmVzdFNoYTI1NiI6IjZiNGUxZThjZTQ1N2ZhYzY2ZDdiM2ZmNzlhMzNjY2U2OWRiMzMwZTBlMDQxNzEzYWM1ODRhZGM5MTFkOTI2ZjIiLCJpbnN0YW5jZUlkIjoiY3NwLXZhbGlkYXRpb24iLCJydW5JZCI6IjViNzQ1MjRjLTEwZTctNGFkYy1hMThmLTk1MTAzYTRkYzIxOSIsIndyaXRlckVwb2NoIjpudWxsfSwic2VxdWVuY2UiOjN9LHsidHlwZSI6InN0YXRlIiwic3RhdGUiOiJjb21wbGV0ZWQiLCJpZGVudGl0eSI6eyJwcm9qZWN0SWQiOiJweXRob24tcHJvIiwicmV2aXNpb24iOiI2NWRjYzRiZDUwOWIyMmI3ZjY2NzdlMzM1MTU3Y2I0Nzc5NTI2OWY2NWQ4NzIzMDFlZGY1YjNlNGM2ODMxZDU2IiwicnVudGltZU1hbmlmZXN0U2hhMjU2IjoiNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMiIsImluc3RhbmNlSWQiOiJjc3AtdmFsaWRhdGlvbiIsInJ1bklkIjoiNWI3NDUyNGMtMTBlNy00YWRjLWExOGYtOTUxMDNhNGRjMjE5Iiwid3JpdGVyRXBvY2giOm51bGx9LCJzZXF1ZW5jZSI6NH1dLCJzdGF0dXMiOiJjb21wbGV0ZWQiLCJmcmFtZVVSTCI6Imh0dHA6Ly8xMjcuMC4wLjE6NjM1MzMvdjEvcnVudGltZXMvNmI0ZTFlOGNlNDU3ZmFjNjZkN2IzZmY3OWEzM2NjZTY5ZGIzMzBlMGUwNDE3MTNhYzU4NGFkYzkxMWQ5MjZmMi9mcmFtZS5odG1sIzAyMTEwNDhkMzUzYzk0NTZjMjQ3Y2UyMzU3YzI0MDFkNzcwMTBjYTE1NWNmNjU3MGFmMTNjOGY0M2FjNDg0ZTMifX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-ce7026d06a845948d7aa",
+          "file": "python-provider.spec.ts",
+          "line": 32,
+          "column": 3
+        },
+        {
+          "title": "turtleDrawing: captures presented pixels with the current revision and refuses capture after Stop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2048,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:06.417Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "captured-turtle",
+                      "contentType": "image/png",
+                      "body": "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"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-32893e624370193c285c",
+          "file": "python-provider.spec.ts",
+          "line": 76,
+          "column": 3
+        },
+        {
+          "title": "classic-turtleDrawing: captures presented pixels with the current revision and refuses capture after Stop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2431,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:08.478Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "captured-turtle",
+                      "contentType": "image/png",
+                      "body": "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"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-deeb2df5fce385a4aaca",
+          "file": "python-provider.spec.ts",
+          "line": 76,
+          "column": 3
+        },
+        {
+          "title": "Stop cancels a capture while the browser is still encoding it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2190,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:10.924Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-025117f5b55129252830",
+          "file": "python-provider.spec.ts",
+          "line": 127,
+          "column": 1
+        },
+        {
+          "title": "the provider binds snapshots and runs independent sessions with separate REPL state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1713,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:13.131Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-ac6ea22f6cbbda36ab8e",
+          "file": "python-provider.spec.ts",
+          "line": 170,
+          "column": 1
+        },
+        {
+          "title": "stop revokes host events and restart creates a fresh generation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2016,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:14.857Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-04c3e0a7e96344284964",
+          "file": "python-provider.spec.ts",
+          "line": 208,
+          "column": 1
+        },
+        {
+          "title": "abort during prepare never returns a usable session",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 408,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:16.887Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-86bba46fd41dbaa8f096",
+          "file": "python-provider.spec.ts",
+          "line": 234,
+          "column": 1
+        },
+        {
+          "title": "provider rejects mismatched content before starting a frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 363,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:17.306Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-8016ab11d6e4fb129d3e",
+          "file": "python-provider.spec.ts",
+          "line": 249,
+          "column": 1
+        },
+        {
+          "title": "overlapping reuse of a frame is rejected without disturbing its owner",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1115,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:17.680Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-8e85293d29c51fdcc945",
+          "file": "python-provider.spec.ts",
+          "line": 257,
+          "column": 1
+        },
+        {
+          "title": "abort while waiting for input revokes the session immediately",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1140,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:18.807Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-99a323560721337ec135",
+          "file": "python-provider.spec.ts",
+          "line": 264,
+          "column": 1
+        },
+        {
+          "title": "provider delivers lines and EOF without evaluating input as code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1106,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:19.959Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9fd74047cf527abb752d-924cffd1d654f7bdd5cf",
+          "file": "python-provider.spec.ts",
+          "line": 285,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "python-raylib.spec.ts",
+      "file": "python-raylib.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Raylib 2D: own loop, shapes, textures, text, camera, keyboard, mouse and sound",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2423,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:21.099Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "pixels",
+                      "contentType": "application/json",
+                      "body": "eyJmaWxsIjpbMzAsNjAsMTIwLDI1NV0sInJlY3QiOlsyNTMsMjQ5LDAsMjU1XSwiY2lyY2xlIjpbMjU1LDI1NSwyNTUsMjU1XSwiaGVybyI6WzI1NSwxNDAsMCwyNTVdLCJwdXJwbGUiOlsyNTUsMCwyNTUsMjU1XX0="
+                    },
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": "cHJvbnRvIDMyIDMyIDcwCnF1YWRyb3MtMzAgVHJ1ZSBUcnVlCmNsaXF1ZSAxNjAgMTIwCmVzcGFjbyAxCg=="
+                    },
+                    {
+                      "name": "screen",
+                      "contentType": "image/png",
+                      "body": "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"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-3db37f1032b533d90d44",
+          "file": "python-raylib.spec.ts",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "Raylib: cena-gabarito models3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2222,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:23.534Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "models3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-models3d-chrome\\attachments\\models3d-e238c2c01755b7d162b2f595940602911f8ec18e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-6b4da167cea619525766",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito rendertexture2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:25.766Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "rendertexture2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-rendertexture2d-chrome\\attachments\\rendertexture2d-6190946225ff0e5c0f1cd640fcd28379fb6208c6.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-8a147542f6f07f6484b6",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shaders3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1606,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:27.893Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shaders3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-shaders3d-chrome\\attachments\\shaders3d-5939c7ab906aa8c32e33b1cff4d6a6b8681dd248.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-78a9dcb78e956d3773cf",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shapes2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1578,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:29.509Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shapes2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-shapes2d-chrome\\attachments\\shapes2d-31f63859ce8b11cbdc0501894b2c8aecab58f6bc.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-c56b89ecfaa0d2a6fbe5",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shapes3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1593,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:31.097Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shapes3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-shapes3d-chrome\\attachments\\shapes3d-5c37af7f207268082071f7ecb8883bb4e764e8d9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-2afc890b604e731bf139",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito text2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1595,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:32.701Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "text2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-text2d-chrome\\attachments\\text2d-694263f498686763abe7d3286d52f2c483c7d64f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-9bf7a2d965bd50cfefa8",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito textures2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1612,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:34.307Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "textures2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-cena-gabarito-textures2d-chrome\\attachments\\textures2d-ffa75065032c892eb7b3ab2e7a5a9725dbfed6c4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-39b367eb937d35cbc51b",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria ola-raylib roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4117,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:35.930Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "ola-raylib",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-bab47-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\ola-raylib-4d952a7bb3ed815b1c96f7f779276e243003ef53.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-93ed5855b8e8b8a32711",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria nave-que-desliza roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3935,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:40.058Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "nave-que-desliza",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-4d2a5-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\nave-que-desliza-e3c00fa146e6a253ab826a23234b533dc681cf44.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-f877694a9bba6c44beaf",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria encostou roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3986,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:44.002Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "encostou",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-48a78-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\encostou-28c6b62189db811e1681274a82c2acae07884108.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-193350a5f36b5f717fc6",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria camera-que-segue roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4232,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:48.000Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "camera-que-segue",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-28a6a-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\camera-que-segue-52c3695bef6d88b999b7fe432b59fe69db046ea7.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-471dbc39b6924fc8cf29",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria sprites-timer-animacao roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3968,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:52.242Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "sprites-timer-animacao",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-bb94c-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\sprites-timer-animacao-3f5775f245345d58e7fecb369d424890061bbcef.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-4bcdc197c389ef72e987",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria dino-corredor roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:56:56.222Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "dino-corredor",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-d690d-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\dino-corredor-c7af96ea698ec1c707d2fa3b44b939c552e04b03.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-2ddb959d4b9f0194b9bd",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria chuva-de-meteoros roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3981,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:00.409Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "chuva-de-meteoros",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-71f14-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\chuva-de-meteoros-fa6cf86745e3322e22858a464652f0105e9ee979.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-030b1aa1f9a720f72e88",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria batalha-de-monstrinhos roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3997,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:04.400Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "batalha-de-monstrinhos",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-572c6-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\batalha-de-monstrinhos-ed496a471acc7221b9e7fcd4460f871fc118f6ef.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-5bfa0c2a96e83a4498c4",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria aventura-do-heroi roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4030,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:08.408Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "aventura-do-heroi",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-8a8e3-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\aventura-do-heroi-908984cb300b9f4340bff0d2369bee09045f6506.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-68bf17e16af53419a22f",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria primeira-cena-3d roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4060,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:12.449Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "primeira-cena-3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-a7a1c-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\primeira-cena-3d-792d77848689f14d019b6dad8d3964247935448e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-36efff997e9402e5e0d4",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria modelos-do-molda roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4083,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:16.519Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "modelos-do-molda",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-d98cf-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\modelos-do-molda-165f2c6aa9b85d5036aae6464185724d9576062d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-21750cd5f4a68b4c7d41",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria caixas-que-se-encostam roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4098,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:20.613Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "caixas-que-se-encostam",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-12b63-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\caixas-que-se-encostam-ffd5bb5ca5237161d9b4b021f640b10e595e293e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-eae8cdea679e2b066b98",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria clarao-com-shader roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4173,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:24.722Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "clarao-com-shader",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-bd2eb-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\clarao-com-shader-5b29da0a78b6d9553b627d88fde2f937a1b7fb9d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-9270bf6ca5c174dd6586",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria corrida-infinita roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4596,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:28.907Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "corrida-infinita",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-deb8b-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\corrida-infinita-1ec8b4ad69c350b16fbb67feee0ad33315a25808.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-1b892944887bd0d081ee",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria patrulha-espacial roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:33.516Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "patrulha-espacial",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-c7e8b-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\patrulha-espacial-67602aa7f01f61f0e5964b14f991308354e85ecb.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-4e3f8a1e842c8ce7726f",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria labirinto-dos-robos roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4642,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:37.748Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "labirinto-dos-robos",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-6e503-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\labirinto-dos-robos-98539b3323b4c07137afd69d2f4d70e4f2f5d4a4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-572dd87c5b2e6dae3154",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        },
+        {
+          "title": "Raylib: exemplo da galeria mundo-de-blocos roda, desenha e recebe teclado e mouse",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4220,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:42.403Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "stdout",
+                      "contentType": "text/plain",
+                      "body": ""
+                    },
+                    {
+                      "name": "mundo-de-blocos",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-shared-chrome\\artifacts\\python-raylib-Raylib-exemp-5694b-ha-e-recebe-teclado-e-mouse-chrome\\attachments\\mundo-de-blocos-9b9a44044de216a0ce38a778be28e15b0cc6a19d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-4c9690ccacb30039231b",
+          "file": "python-raylib.spec.ts",
+          "line": 144,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "python-runtime.spec.ts",
+      "file": "python-runtime.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "unchanged source, imports, binary files and REPL share the script namespace",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1030,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:46.642Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-9f8704332565d0c8e79f",
+          "file": "python-runtime.spec.ts",
+          "line": 81,
+          "column": 1
+        },
+        {
+          "title": "standard library source inspection, tracebacks, classes, exact fractions and seeded RNG remain available",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 977,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:47.686Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "stdlib-golden",
+                      "contentType": "application/json",
+                      "body": "eyJleGVjdXRpb24iOnsidHlwZSI6InJlc3VsdCIsInJlcXVlc3RJZCI6InJ1biIsIm9rIjp0cnVlLCJ0ZXh0IjoiIn0sIm91dHB1dCI6W3sic3RyZWFtIjoic3Rkb3V0IiwidGV4dCI6InN0ZGxpYiBwcmVzZXJ2ZWQgYzY2YzU5NzM1ZTlmNTAyYWIwMmQ3YmVkMTkwZTA0YjhlOTg0MmI4ZDExN2FmZDg3NTAyMDljNTExZDRjYzYzMiA4NTNjNzNkZDBmNzAyMTE0YzdiNDk1MzU0NTY5ZTVkMmE4ZmRlYzI3MDZhYzYyN2FlZmY2MjdjNjU2OGFlNzRjXG4iLCJvbWl0dGVkTGluZXMiOjAsIm9taXR0ZWRDaGFycyI6MH1dfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-944985799e8ee2fac4c3",
+          "file": "python-runtime.spec.ts",
+          "line": 97,
+          "column": 1
+        },
+        {
+          "title": "input suspends, accepts an empty line, and EOF stays distinct",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1088,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:48.674Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-4f27e0648bb51f953e0f",
+          "file": "python-runtime.spec.ts",
+          "line": 113,
+          "column": 1
+        },
+        {
+          "title": "partial byte writes preserve text and stderr without inventing newlines",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1018,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:49.775Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-345f66044632e8d40af9",
+          "file": "python-runtime.spec.ts",
+          "line": 144,
+          "column": 1
+        },
+        {
+          "title": "a two MiB line stays bounded before any timer can flush",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 940,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:50.807Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-2cdab079eda4cbe7f0c0",
+          "file": "python-runtime.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "flushes Python text streams before noNewline result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 964,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:51.758Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-6c6d7f026860c5c4b086",
+          "file": "python-runtime.spec.ts",
+          "line": 178,
+          "column": 3
+        },
+        {
+          "title": "flushes Python text streams before noNewlineError result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 944,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:52.734Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-a712faa060018e62bbbd",
+          "file": "python-runtime.spec.ts",
+          "line": 178,
+          "column": 3
+        },
+        {
+          "title": "flushes Python text streams before customStream result",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 939,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:53.691Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-6f967bec70866bdbc35f",
+          "file": "python-runtime.spec.ts",
+          "line": 178,
+          "column": 3
+        },
+        {
+          "title": "a failure to flush is a structured program error",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1052,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:54.641Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-7c814ba09dd4351a8632",
+          "file": "python-runtime.spec.ts",
+          "line": 183,
+          "column": 1
+        },
+        {
+          "title": "structured syntax with source traceback",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 993,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:55.706Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-97c0e86d656b3a8e47d5",
+          "file": "python-runtime.spec.ts",
+          "line": 188,
+          "column": 3
+        },
+        {
+          "title": "structured error with source traceback",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1133,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:56.713Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-f34b89f8ebc9f22e4fcc",
+          "file": "python-runtime.spec.ts",
+          "line": 188,
+          "column": 3
+        },
+        {
+          "title": "structured unicodeError with source traceback",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1042,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:57.858Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-0329f8537a78a9ae97c9",
+          "file": "python-runtime.spec.ts",
+          "line": 188,
+          "column": 3
+        },
+        {
+          "title": "SystemExit zero completes without a program error",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1063,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:58.913Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-99d974cb45df7782a6b8",
+          "file": "python-runtime.spec.ts",
+          "line": 195,
+          "column": 1
+        },
+        {
+          "title": "SystemExit float zero writes stderr and completes without an unhandled traceback",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 942,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:57:59.990Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-7a733c717ca2e0b72cdc",
+          "file": "python-runtime.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "concurrent execution is rejected while input is suspended",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 914,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:00.944Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "50e55cc7d83f9193399a-31dc4a3e899015b8fb89",
+          "file": "python-runtime.spec.ts",
+          "line": 217,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "python-turtle.spec.ts",
+      "file": "python-turtle.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "optional Turtle draws actual Python geometry and Tk colors in the protected frame",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1386,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:01.879Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "turtle-canvas",
+                      "contentType": "image/png",
+                      "body": "iVBORw0KGgoAAAANSUhEUgAAAZAAAAEsCAIAAABi1XKVAAAEiklEQVR4nOzYsU2bQRiA4SOhDhI1cigyg+uUXoA6jGAmwEwQj0BPBvAIEVMEiRrRUTqW6FKAhX6CXul5qk9XnnSvdN/hbL0dAAWfBkCEYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYcD+CDLzdXZ7fVuuJmf/5r/uD8+HbxIsOBj7Gp1sVk9z8/DenE5eNHBbL0dwH93tzz45+Srx/gaOywgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIEOwgAzBAjIEC8gQLCBDsIAMwQIyBAvIECwgQ7CADMECMgQLyBAsIONwwKSWm6uz2+uThz8DpiZYTGlXq4vNasD7ECympFa8KzsspnR/fDp4E1e3D8FiSjfz88GbuLp9fD5arAZM5Pe37ycPd0dPj1+eHgd7+7lYrReXg9cczNbbAVDgSwhkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQIVhAhmABGYIFZAgWkCFYQIZgARmCBWQIFpAhWECGYAEZggVkCBaQ8RcAAP//1e2+6gAAAAZJREFUAwAMOzE/pLH0KAAAAABJRU5ErkJggg=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-52c89e51b633cfc46f1a",
+          "file": "python-turtle.spec.ts",
+          "line": 39,
+          "column": 1
+        },
+        {
+          "title": "turtle.dot paints a filled disc, like Tk, although canvas prunes zero-length strokes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1313,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:03.276Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-e554f1696f9aca060425",
+          "file": "python-turtle.spec.ts",
+          "line": 70,
+          "column": 1
+        },
+        {
+          "title": "keyboard and turtle/screen clicks dispatch inside Python; Stop revokes the scene",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1585,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:04.600Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "pointer-evidence",
+                      "contentType": "application/json",
+                      "body": "eyJjbGllbnRYIjozMzAsImNsaWVudFkiOjI0MCwiY2FudmFzIjp7IngiOjEyMCwieSI6OTAsIndpZHRoIjo0MDAsImhlaWdodCI6MzAwLCJ0b3AiOjkwLCJyaWdodCI6NTIwLCJib3R0b20iOjM5MCwibGVmdCI6MTIwfSwid2lkdGgiOjQwMCwiaGVpZ2h0IjozMDB9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-62367a5bfb0cadfc51c9",
+          "file": "python-turtle.spec.ts",
+          "line": 100,
+          "column": 1
+        },
+        {
+          "title": "GIF shape uses unchanged virtual asset and keeps official heading semantics",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1397,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:06.196Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-5de1b0e023a8178cfebb",
+          "file": "python-turtle.spec.ts",
+          "line": 141,
+          "column": 1
+        },
+        {
+          "title": "author turtle.py shadows the extension and private module names do not execute author code during prepare",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1217,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:07.604Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-64b6c4daa02a44c76001",
+          "file": "python-turtle.spec.ts",
+          "line": 152,
+          "column": 1
+        },
+        {
+          "title": "plain Python never loads the optional Turtle renderer or module",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1123,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:08.835Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-df5f9ff51b449e96acf6",
+          "file": "python-turtle.spec.ts",
+          "line": 163,
+          "column": 1
+        },
+        {
+          "title": "Turtle hit testing respects occlusion and outline-only shapes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2022,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:09.970Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-ad497bc4b16656de40d4",
+          "file": "python-turtle.spec.ts",
+          "line": 174,
+          "column": 1
+        },
+        {
+          "title": "multiline Turtle text occupies two lines and preserves the right anchor for move",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1466,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:12.005Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    },
+                    {
+                      "name": "multiline",
+                      "contentType": "image/png",
+                      "body": "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"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-778fa4a34b8ae4aef78a",
+          "file": "python-turtle.spec.ts",
+          "line": 190,
+          "column": 1
+        },
+        {
+          "title": "an idle mainloop requests no animation frames and wakes for input and timers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2160,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:13.484Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-2a552519859a97999e9d",
+          "file": "python-turtle.spec.ts",
+          "line": 226,
+          "column": 1
+        },
+        {
+          "title": "Screen can reopen after bye in the same Python execution",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1392,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:15.655Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-ae743bb631030dfc4e21",
+          "file": "python-turtle.spec.ts",
+          "line": 250,
+          "column": 1
+        },
+        {
+          "title": "a corrupt image raises a catchable Python error and a later valid image still loads",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1316,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:17.060Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-699d9c5240765ceae4d2",
+          "file": "python-turtle.spec.ts",
+          "line": 266,
+          "column": 1
+        },
+        {
+          "title": "input queued during Python sleep survives a catchable image error",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2272,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:18.391Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-6cf851a3bca92e42e306",
+          "file": "python-turtle.spec.ts",
+          "line": 277,
+          "column": 1
+        },
+        {
+          "title": "a Pinta drawing becomes a turtle shape that turns with the turtle",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1751,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:58:20.674Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "runtime-distribution",
+                      "contentType": "application/json",
+                      "path": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+                      "bodySha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b",
+                      "bodyBytes": 42211,
+                      "deduplicatedWithoutChangingBytes": true
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "378f6bbce09cbe4c9dcb-6ea87e029192bb26e0f8",
+          "file": "python-turtle.spec.ts",
+          "line": 287,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T20:55:44.240Z",
+    "duration": 158553.045,
+    "expected": 83,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

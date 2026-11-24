@@ -1,3 +1,4 @@
+import { PYTHON_PINTA_REGIONS_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
 import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
@@ -72,18 +73,30 @@ export async function loadPythonAuthoring(
       options: { starExports: new Map([['turtle', TURTLE_STAR_EXPORTS]]) },
     }
   } else if (has(PGZERO_EXTENSION)) {
-    const { PYTHON_PGZERO_CODECS, PGZERO_RESOLVER_OPTIONS } = await import(
-      '../extensions/pgzero/catalog'
-    )
-    extension = { codecs: PYTHON_PGZERO_CODECS, options: PGZERO_RESOLVER_OPTIONS }
+    const { PYTHON_PGZERO_CODECS, PYTHON_PGZERO_PINTA_SCENE_CODECS, PGZERO_RESOLVER_OPTIONS } =
+      await import('../extensions/pgzero/catalog')
+    extension = {
+      codecs: [...PYTHON_PGZERO_PINTA_SCENE_CODECS, ...PYTHON_PGZERO_CODECS],
+      options: PGZERO_RESOLVER_OPTIONS,
+    }
   } else if (has(PYGAME_EXTENSION)) {
-    const { PYTHON_PYGAME_CODECS } = await import('../extensions/pygame/catalog')
-    extension = { codecs: PYTHON_PYGAME_CODECS, options: {} }
-  } else if (has(RAYLIB_2D_EXTENSION)) {
-    const { PYTHON_RAYLIB_2D_CODECS, RAYLIB_RESOLVER_OPTIONS } = await import(
-      '../extensions/raylib2d/catalog'
+    const { PYTHON_PYGAME_CODECS, PYTHON_PYGAME_PINTA_SCENE_CODECS } = await import(
+      '../extensions/pygame/catalog'
     )
-    extension = { codecs: PYTHON_RAYLIB_2D_CODECS, options: RAYLIB_RESOLVER_OPTIONS }
+    extension = {
+      codecs: [...PYTHON_PYGAME_PINTA_SCENE_CODECS, ...PYTHON_PYGAME_CODECS],
+      options: {},
+    }
+  } else if (has(RAYLIB_2D_EXTENSION)) {
+    const {
+      PYTHON_RAYLIB_2D_CODECS,
+      PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS,
+      RAYLIB_RESOLVER_OPTIONS,
+    } = await import('../extensions/raylib2d/catalog')
+    extension = {
+      codecs: [...PYTHON_RAYLIB_2D_PINTA_SCENE_CODECS, ...PYTHON_RAYLIB_2D_CODECS],
+      options: RAYLIB_RESOLVER_OPTIONS,
+    }
   } else if (has(RAYLIB_3D_EXTENSION)) {
     const { PYTHON_RAYLIB_3D_CODECS, RAYLIB_RESOLVER_OPTIONS } = await import(
       '../extensions/raylib3d/catalog'
@@ -95,7 +108,15 @@ export async function loadPythonAuthoring(
     const ordered = orderPythonAuthoringCodecs(extension.codecs, python.features)
     const key = ordered.map((codec) => codec.id).join('|')
     const cached = extensionCatalogs.get(key)
-    codecs = cached?.codecs ?? attachPythonResolverOptions(ordered, extension.options)
+    const pintaDoorResults = ordered.some(({ requiredRuntimeFeatures }) =>
+      requiredRuntimeFeatures?.includes(PYTHON_PINTA_REGIONS_FEATURE),
+    )
+    codecs =
+      cached?.codecs ??
+      attachPythonResolverOptions(ordered, {
+        ...extension.options,
+        ...(pintaDoorResults ? { pintaDoorResults: true } : {}),
+      })
     catalog = cached?.catalog ?? describePythonCatalog(codecs)
     extensionCatalogs.set(key, { codecs, catalog })
   }

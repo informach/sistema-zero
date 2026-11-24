@@ -1,0 +1,948 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "tema": "light",
+    "medidas": {
+      "largura": 560,
+      "janela": 1440,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 749.171875,
+        "y": 826,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 838.484375,
+        "y": 826,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(255, 255, 255)"
+    },
+    "oficinaLimites": {
+      "conteudo": 1440,
+      "janela": 1440
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "glb": {
+      "bytes": 7414896,
+      "animacoes": 4,
+      "erros": 0,
+      "avisos": 0,
+      "reaberto": {
+        "animacoes": 4,
+        "peles": 6,
+        "fonte": {
+          "cenario": "cen-000b",
+          "revisao": 1,
+          "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+        }
+      }
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 2.831,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "repeticaoAposErroDeRecurso": true,
+      "cancelamentoComRespostaTardia": true,
+      "fecharReabrirSemEncodersParalelos": true,
+      "cartaoDesatualizadoRecusado": true,
+      "guardaDeSalvamentoEAtalhos": true,
+      "revisaoAposEdicoesIntencionaisDoEnsaio": 4
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "tema": "dark",
+    "medidas": {
+      "largura": 560,
+      "janela": 1440,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 749.171875,
+        "y": 826,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 838.484375,
+        "y": 826,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(18, 26, 48)"
+    },
+    "oficinaLimites": {
+      "conteudo": 1440,
+      "janela": 1440
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.475,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "tema": "light",
+    "medidas": {
+      "largura": 560,
+      "janela": 1024,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 541.171875,
+        "y": 694,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 630.484375,
+        "y": 694,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(255, 255, 255)"
+    },
+    "oficinaLimites": {
+      "conteudo": 1024,
+      "janela": 1024
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.339,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "tema": "dark",
+    "medidas": {
+      "largura": 560,
+      "janela": 1024,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 541.171875,
+        "y": 694,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 630.484375,
+        "y": 694,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(18, 26, 48)"
+    },
+    "oficinaLimites": {
+      "conteudo": 1024,
+      "janela": 1024
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.416,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "tema": "light",
+    "medidas": {
+      "largura": 560,
+      "janela": 768,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 413.171875,
+        "y": 919.9375,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 502.484375,
+        "y": 919.9375,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(255, 255, 255)"
+    },
+    "oficinaLimites": {
+      "conteudo": 768,
+      "janela": 768
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.456,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "tema": "dark",
+    "medidas": {
+      "largura": 560,
+      "janela": 768,
+      "conteudo": 560,
+      "cliente": 560
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 413.171875,
+        "y": 919.9375,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 502.484375,
+        "y": 919.9375,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 560,
+      "cliente": 560,
+      "fundo": "rgb(18, 26, 48)"
+    },
+    "oficinaLimites": {
+      "conteudo": 768,
+      "janela": 768
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.442,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tema": "light",
+    "medidas": {
+      "largura": 352,
+      "janela": 390,
+      "conteudo": 352,
+      "cliente": 352
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 120.171875,
+        "y": 770,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 209.484375,
+        "y": 770,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 352,
+      "cliente": 352,
+      "fundo": "rgb(255, 255, 255)"
+    },
+    "oficinaLimites": {
+      "conteudo": 390,
+      "janela": 390
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.488,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tema": "dark",
+    "medidas": {
+      "largura": 352,
+      "janela": 390,
+      "conteudo": 352,
+      "cliente": 352
+    },
+    "controlesProntos": {
+      "fechar": {
+        "x": 120.171875,
+        "y": 770,
+        "largura": 81.3125,
+        "altura": 44
+      },
+      "baixar": {
+        "x": 209.484375,
+        "y": 770,
+        "largura": 135.515625,
+        "altura": 44
+      },
+      "largura": 352,
+      "cliente": 352,
+      "fundo": "rgb(18, 26, 48)"
+    },
+    "oficinaLimites": {
+      "conteudo": 390,
+      "janela": 390
+    },
+    "zip": {
+      "bytes": 6152064,
+      "arquivos": 35,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "atores": 5,
+      "terreno": true,
+      "aguas": 2,
+      "caminhos": 3,
+      "urls": 1
+    },
+    "raylib": {
+      "bytes": 5848985,
+      "arquivos": 34,
+      "fonte": {
+        "cenario": "cen-000b",
+        "revisao": 1,
+        "digest": "966626fcd1ec51db7e26a24ea759a8f6bbd8da3f4e3dd8578ba5b782307acb60"
+      },
+      "nos": 20,
+      "aguas": 2,
+      "caminhos": 3,
+      "terreno": true,
+      "licencas": [
+        {
+          "id": "bib-0001",
+          "nome": "Reino",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0002",
+          "nome": "Cute Characters",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0003",
+          "nome": "Adventure Land",
+          "licenca": "restrita"
+        },
+        {
+          "id": "bib-0004",
+          "nome": "Texturas próprias",
+          "licenca": "propria"
+        }
+      ],
+      "urls": 1
+    },
+    "console": [
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.",
+      "THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one."
+    ],
+    "videoInicio": 1.426,
+    "autoriaIntacta": true,
+    "interacoes": {
+      "aberturaNaOficina": true
+    }
+  }
+]

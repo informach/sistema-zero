@@ -46,6 +46,8 @@ MAX_POLY_POINTS = 4096
 MAX_READS_PER_FRAME = 512
 # Pygame-ce: the whole screen, sent as RGBA bytes beside the list (width, height).
 OP_PIXELS = 13
+OP_PINTA_AFFINE = 14
+OP_PINTA_RELEASE = 15
 
 MAX_RECORDS = 50_000
 MAX_STRINGS = 4096
@@ -544,6 +546,7 @@ class _Frame:
         self.new_styles = []
         self.audio = []
         self.actors = {}
+        self.pinta_owners = set()
 
     def begin(self):
         """Start the next batch, right after one was sent.
@@ -553,6 +556,7 @@ class _Frame:
         top of what is already there.
         """
         self.actors.clear()
+        self.pinta_owners.clear()
         del self.ops[:]
         self.records = 0
         # Long-running games keep inventing texts (scores, timers): renew the tables between
@@ -927,6 +931,23 @@ def _tick_saved_files():
         saved.tick()
 
 
+#: O pedido curto de quem espera com o programa pausado pela aba Investigar do Estúdio. O quadro
+#: do navegador responde quando chega uma leitura dos valores, quando a criança continua ou quando
+#: ela avança um quadro (framePause.ts). O mesmo texto que o quadro confere.
+HOLD_REQUEST = {'hold': True}
+
+
+def _hold(reply):
+    """O Estúdio pausou o programa neste quadro: ele espera aqui, sem andar.
+
+    A cada resposta com hold, o ponto de checagem roda (é ele que responde a leitura dos valores)
+    e o pedido curto vai de novo; a resposta sem hold continua o programa."""
+    while reply.get('hold') is True:
+        if _mission_checkpoint is not None:
+            _mission_checkpoint()
+        reply, _ = _exchange(HOLD_REQUEST, b'')
+
+
 def _exchange(header, payload):
     _tick_saved_files()
     text, pixels = _transport(json.dumps(header, separators=(',', ':')), payload)
@@ -934,6 +955,25 @@ def _exchange(header, payload):
     if 'error' in reply:
         raise PgzeroRendererError(str(reply['error']))
     return reply, pixels
+
+
+def _pinta_carregar(images, payload):
+    reply, _ = _exchange({'pintaLoad': images}, payload)
+    return reply.get('pintaOwner')
+
+
+def _pinta_desenhar(owner, index, crop, matrix, opacity):
+    frame.record(OP_PINTA_AFFINE, owner, index, *crop, *matrix, opacity)
+    frame.pinta_owners.add(owner)
+
+
+def _pinta_descartar(owner):
+    if owner in frame.pinta_owners:
+        # Keep textures until this frame paints. Releases are bounded by live owner count.
+        frame.ops.extend((OP_PINTA_RELEASE, owner))
+        frame.pinta_owners.discard(owner)
+    else:
+        _exchange({'pintaRelease': owner}, b'')
 
 
 def _vector_pixels(identifier, width, height):
@@ -1050,4 +1090,5 @@ def _send(width, height, title, extra=None, *, actors=None, cursor=None):
     audio_ended(reply.get('ended', ()))
     if _mission_checkpoint is not None:
         _mission_checkpoint()
+    _hold(reply)
     return reply

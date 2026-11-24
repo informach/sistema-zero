@@ -1,0 +1,242 @@
+{
+  "runtimeBaseCheck": {
+    "service": "community-kids",
+    "environment": "production",
+    "STUDIO_PRO_RUNTIME_URL": "set; value redacted"
+  },
+  "at": "2026-11-23 17:57:43 UTC",
+  "flags": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "production",
+        "service": "members",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "production",
+        "service": "community-kids",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "production",
+        "service": "community",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "production",
+        "service": "palco-gravacao",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "absent",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "staging",
+        "service": "members",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "set; value redacted",
+          "CENARIOS_REGIOES": "set; value redacted",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "staging",
+        "service": "community-kids",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "set; value redacted",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "set; value redacted",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "staging",
+        "service": "community",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "set; value redacted",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "set; value redacted",
+          "STUDIO_PYTHON_RUNTIME_URL": "set; value redacted",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "env": "staging",
+        "service": "palco-gravacao",
+        "redacted": true,
+        "values": {
+          "CENARIOS_MODO": "absent",
+          "CENARIOS_REGIOES": "absent",
+          "STUDIO_CLASSIC_SHELL_ENABLED": "absent",
+          "CENARIOS_LISTA": "absent",
+          "STUDIO_EXAMPLES_ORIGIN": "absent",
+          "STUDIO_PYTHON_RUNTIME_URL": "absent",
+          "STUDIO_RUNTIME_URL": "absent",
+          "STUDIO_CLASSIC_SHELL_URL": "absent"
+        }
+      }
+    }
+  ],
+  "deployments": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "service": "members",
+        "deployments": [
+          {
+            "id": "12c91907-5bc1-410d-9fae-e2b51b44fd43",
+            "createdAt": "2026-11-22T16:40:49.449Z",
+            "status": "SUCCESS",
+            "commit": "3d7c532535a5474ce358709d00b78d6a7f23ce1a",
+            "message": "Merge pull request #282 from informach/release/parents-progress-20261122\n\nCorrige retomada do progresso e identifica pais como alunos",
+            "branch": "main"
+          }
+        ]
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "service": "community-kids",
+        "deployments": [
+          {
+            "id": "47b84d0c-89e0-49fc-b3de-52e9573fa6ce",
+            "createdAt": "2026-11-22T16:45:32.545Z",
+            "status": "SUCCESS",
+            "commit": "3d7c532535a5474ce358709d00b78d6a7f23ce1a",
+            "message": "Merge pull request #282 from informach/release/parents-progress-20261122\n\nCorrige retomada do progresso e identifica pais como alunos",
+            "branch": "main"
+          }
+        ]
+      }
+    }
+  ],
+  "hub": [
+    {
+      "service": "hub",
+      "id": "1cd4a9ed-6d45-4f0a-840c-113e5a1196c7",
+      "createdAt": "2026-11-20T09:42:17.328Z",
+      "commit": "5440aa0ddf9180476eb59a006b375e9b394879fc",
+      "branch": "main"
+    }
+  ],
+  "liveStatus": {
+    "environment": {
+      "id": "19c212a5-85c0-493c-9630-a7a0569e8412",
+      "name": "production"
+    },
+    "services": [
+      {
+        "service": "community-kids",
+        "state": "online",
+        "activeDeployments": [
+          {
+            "createdAt": "2026-11-22T16:45:32.545Z",
+            "id": "47b84d0c-89e0-49fc-b3de-52e9573fa6ce",
+            "status": "SUCCESS",
+            "statusUpdatedAt": "2026-11-22T16:55:18.125Z"
+          }
+        ]
+      },
+      {
+        "service": "members",
+        "state": "online",
+        "activeDeployments": [
+          {
+            "createdAt": "2026-11-22T16:40:49.449Z",
+            "id": "12c91907-5bc1-410d-9fae-e2b51b44fd43",
+            "status": "SUCCESS",
+            "statusUpdatedAt": "2026-11-22T16:42:37.396Z"
+          }
+        ]
+      },
+      {
+        "service": "hub",
+        "state": "online",
+        "activeDeployments": [
+          {
+            "createdAt": "2026-11-20T09:42:17.328Z",
+            "id": "1cd4a9ed-6d45-4f0a-840c-113e5a1196c7",
+            "status": "SUCCESS",
+            "statusUpdatedAt": "2026-11-20T09:48:21.369Z"
+          }
+        ]
+      }
+    ],
+    "pending": []
+  }
+}

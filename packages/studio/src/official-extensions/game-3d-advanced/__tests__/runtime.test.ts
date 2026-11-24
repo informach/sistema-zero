@@ -2162,3 +2162,44 @@ describe('SZGameKit3D — regras de jogo comuns (as mesmas do Jogo 3D e do Mundo
     expect(camera.position.distanceTo(antes)).toBeLessThan(1e-9)
   })
 })
+
+describe('SZGameKit3D — os tetos avisam (lote 4 da missão, seção 8.4, 21/11/2026)', () => {
+  it('faíscas acima de 120 por explosão, acima de 300 ao mesmo tempo e enfeites acima de 64', async () => {
+    const { api } = await loadStartedKit()
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    const receita = {
+      count: 500,
+      colorFrom: '#fff',
+      colorTo: '#000',
+      sizeFrom: 1,
+      sizeTo: 0,
+      life: 9,
+      spread: 2,
+    }
+    const quantos = (trecho: string) => warnings.filter((w) => w.includes(trecho)).length
+    try {
+      api.defineEffect('grande', receita)
+      api.defineEffect('outra', receita)
+      expect(quantos('no máximo 120 faíscas')).toBe(1)
+      api.burstAt('grande', 0, 1, 0)
+      api.burstAt('grande', 0, 1, 0)
+      expect(quantos('chegou a 300 faíscas')).toBe(0)
+      api.burstAt('grande', 0, 1, 0)
+      api.burstAt('grande', 0, 1, 0)
+      expect(quantos('chegou a 300 faíscas')).toBe(1)
+      api.scatterDecor(40)
+      expect(quantos('no máximo 64')).toBe(0)
+      api.scatterDecor(100)
+      expect(quantos('no máximo 64')).toBe(1)
+      // Revisão do lote 4: uma vez por PARTIDA. A partida nova volta a avisar.
+      api.setState('menu')
+      api.setState('jogando')
+      api.scatterDecor(100)
+      expect(quantos('no máximo 64')).toBe(2)
+    } finally {
+      console.warn = originalWarn
+    }
+  })
+})

@@ -1,0 +1,82 @@
+{
+  "at": "2026-11-20T12:31:57.807Z",
+  "base": "e9e87db6a9eea81e759755593268040ff4ab3593",
+  "logs": [
+    {
+      "file": "pinta-post-821-studio-isolated.log",
+      "sha256": "224744f726f7ddf85aae15acee26f5111cccb2167b97eec1fd4a36712b2ac373",
+      "summary": "studio-completo.txt"
+    },
+    {
+      "file": "pinta-post-dbf-studio-tests.log",
+      "sha256": "e322a8d7241cf3aa7b19eb3d42f1484bf25d344ac43d159f891427fc274a60e3",
+      "summary": "delta-dbf.txt"
+    },
+    {
+      "file": "pinta-post-e9e-monaco-tests.log",
+      "sha256": "3581e435bd0c966f9f0526052ff5d11056f7c33e2e1ee297f5b0fb73305b07d4",
+      "summary": "delta-monaco.txt"
+    },
+    {
+      "file": "pinta-post-e9e-blockly-budget-tests.log",
+      "sha256": "b445a8ba596a80ffcfd766dddbdcecd324f479c7d13c4fa4541d6fbb75cf4dfe",
+      "summary": "delta-blocos-orcamento.txt"
+    },
+    {
+      "file": "pinta-post-dbf-studio-types.log",
+      "sha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9",
+      "summary": "tipos-dbf.txt"
+    },
+    {
+      "file": "pinta-post-e9e-studio-types.log",
+      "sha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9",
+      "summary": "tipos-integrados.txt"
+    },
+    {
+      "file": "pinta-post-e9e-biome.log",
+      "sha256": "732bb8ccf23477c1c099c82e1e4d05f15051f0fd2472844460c2dfbe02d9645a",
+      "summary": "biome.txt"
+    },
+    {
+      "file": "pinta-check-runner-native-chrome.log",
+      "sha256": "ed78847d4619b6c54b05d582acb597eb3d374f057eb44149f170ffdc6bf45bed",
+      "summary": "executor-chrome.txt"
+    },
+    {
+      "file": "pinta-post-821-core-tests.log",
+      "sha256": "a3fae88037d4cf25373543b7f7841a8383658c084052639b6ac7282525b5ce75",
+      "summary": "core-3d.txt"
+    },
+    {
+      "file": "pinta-post-821-motor-tests.log",
+      "sha256": "14af48683b902fb4b508c8b4f7e70626ccb13e4865827366fa667e965e928bed",
+      "summary": "motor-3d.txt"
+    },
+    {
+      "file": "pinta-post-821-portable-check.log",
+      "sha256": "48831ee542c06ccc02ef11399ddf624997c9761b1ed2b73d52ec92e985235cc0",
+      "summary": "gerado-portatil.txt"
+    },
+    {
+      "file": "pinta-post-821-loaders-check.log",
+      "sha256": "a2534e15a10c63d28349720854cc6692e874b4f2ed8372bc4bd3de1d5b8cbb0b",
+      "summary": "gerados-iframe.txt"
+    },
+    {
+      "file": "pinta-reader-profile-post-dbf-check.log",
+      "sha256": "9ec744488bc4ca2cf4fe2c09dab9566ab397eb0e5f8e090998c70d71284553f6",
+      "summary": "perfil-runtime.txt"
+    }
+  ],
+  "pintaSourcesUnchangedSince": "4c4a819fd",
+  "qualification": {
+    "run": 44734103403,
+    "source": "e8c77ab8d14e908d942748014b3b23ea2e28c09f",
+    "status": "in_progress"
+  },
+  "productionChanged": false,
+  "appReaderDeployed": false,
+  "pythonSelectorActivated": false,
+  "cloudWriterActivated": false,
+  "physicalDevices": 1
+}

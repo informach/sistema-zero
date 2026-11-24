@@ -1,4 +1,8 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises'
+import {
+  STUDIO_THREE_TYPES_VERSION,
+  STUDIO_THREE_VERSION,
+} from '@sistemazero/core/studio/three-version'
 import { prepareRuntimeDependencyLock } from '../../studio-runtime/src/dependency-lock'
 
 const root = new URL('../pro-kits/grid-games/src/', import.meta.url)
@@ -17,11 +21,15 @@ for (const [id, engine] of [
     JSON.stringify({
       name: id,
       dependencies:
-        engine === 'phaser' ? { phaser: '3.90.0' } : engine === 'three' ? { three: '0.180.0' } : {},
+        engine === 'phaser'
+          ? { phaser: '3.90.0' }
+          : engine === 'three'
+            ? { three: STUDIO_THREE_VERSION }
+            : {},
       devDependencies: {
         vite: '8.1.6',
         typescript: '5.9.3',
-        ...(engine === 'three' ? { '@types/three': '0.180.0' } : {}),
+        ...(engine === 'three' ? { '@types/three': STUDIO_THREE_TYPES_VERSION } : {}),
       },
     }),
   )

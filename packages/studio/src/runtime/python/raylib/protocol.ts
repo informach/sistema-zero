@@ -9,6 +9,7 @@
  *            sounds that ended and the pointer-lock state, or `{ error }`.
  */
 import type { PgzeroAudioCommand } from '../pgzero/protocol'
+import { PINTA_AFFINE_ARITY, PINTA_RELEASE_ARITY } from '../pintaRegionProtocol'
 
 export const RAYLIB_LIMITS = Object.freeze({
   headerChars: 512_000,
@@ -79,6 +80,8 @@ export const RAYLIB_OP = Object.freeze({
   SCALE: 38,
   LINE_BEZIER: 39,
   TEXTURE_NPATCH: 41,
+  PINTA_AFFINE: 42,
+  PINTA_RELEASE: 43,
   BEGIN_3D: 60,
   END_3D: 61,
   LINE_3D: 62,
@@ -165,6 +168,8 @@ export const RAYLIB_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   38: 3,
   39: 6,
   41: 21,
+  42: PINTA_AFFINE_ARITY,
+  43: PINTA_RELEASE_ARITY,
   60: 11,
   61: 0,
   62: 7,

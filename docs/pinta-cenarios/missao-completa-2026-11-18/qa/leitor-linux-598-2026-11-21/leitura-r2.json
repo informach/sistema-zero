@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-21T03:01:26.498Z",
+  "scope": "independent remote R2 CLI readback",
+  "results": [
+    {
+      "name": "complete",
+      "key": "runtimes/cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0/complete.json",
+      "bytes": 192,
+      "sha256": "01e80e0112e2246c0c634e89e18fa8d71c27c408ed7bedfc4b5112671adb316f"
+    },
+    {
+      "name": "catalog",
+      "key": "runtime-configs/fa8847d2433f1288cdb2adc2a33181b6a1d8fb0e7f872095da4d2d85662c288f.json",
+      "bytes": 169362,
+      "sha256": "fa8847d2433f1288cdb2adc2a33181b6a1d8fb0e7f872095da4d2d85662c288f"
+    },
+    {
+      "name": "playtest.mjs",
+      "key": "runtimes/cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0/files/playtest.mjs",
+      "bytes": 749924,
+      "sha256": "f33cbc09f5e74508d32817f2df4c50ddf4178ccd4450fd2029309dbd81d725d1"
+    },
+    {
+      "name": "standalone.mjs",
+      "key": "runtimes/cf021c32b386662fac7477b06e917bb88c0ff33cbb7c88bb1f6058f8b670e4a0/files/standalone.mjs",
+      "bytes": 747731,
+      "sha256": "3b2b81bad6a52bb6069f6a684e8f11a7216fc10a37bde14a232e91f9d4512c9b"
+    }
+  ],
+  "activationPerformed": false
+}

@@ -15,6 +15,7 @@ import {
   serializeStudioProBuildEnvelope,
   studioProBuildEnvelopeIssue,
   studioProBuildFileLimitError,
+  verifyStudioProPlatformFiles,
 } from '@sistemazero/core/studio'
 import type { Project } from '@sistemazero/studio'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
@@ -200,7 +201,13 @@ export async function buildStudioProProject(options: {
       })
       .map(([path, node]) => [path, node.content]),
   )
-  const limitError = studioProBuildFileLimitError(files)
+  // A cópia publicada do motor 2D de um jogo convertido (perto de 400 mil caracteres) é da
+  // plataforma: fica fora do orçamento do autor, como no compilador remoto. Editada, é dele.
+  const limitError = studioProBuildFileLimitError(
+    files,
+    undefined,
+    await verifyStudioProPlatformFiles(files),
+  )
   if (limitError === 'EMPTY') {
     throw new StudioProRuntimeInputError(400, 'O projeto Pro não tem arquivos para compilar.')
   }

@@ -7,11 +7,15 @@ import { assertInternalCaller, resolveActor } from '../auth'
 import {
   PlayIdParams,
   PlayResolveQuery,
+  ShowcaseSourceBody,
   ShowcaseThreadBody,
   ShowcaseThreadStudioBody,
   ShowcaseThreadStudioPrepareBody,
   ShowcaseThreadStudioStandaloneBody,
   ShowcaseThreadStudioStandalonePrepareBody,
+  ShowcaseThreadStudioStandaloneUpdateBody,
+  ShowcaseThreadStudioUpdateBody,
+  ShowcaseTouchBody,
 } from '../dtos'
 
 export interface ShowcaseRoutesDeps {
@@ -70,6 +74,39 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
       { body: ShowcaseThreadStudioStandalonePrepareBody },
     )
     .post(
+      '/hub/internal/showcase-thread-studio/update',
+      async ({ headers, body }) =>
+        deps.showcase.updateFromStudio(resolveActor(headers), {
+          ...body,
+          coverImageUrl: body.coverImageUrl ?? null,
+          studioMeta: body.studioMeta ?? null,
+        }),
+      { body: ShowcaseThreadStudioUpdateBody },
+    )
+    .post(
+      '/hub/internal/showcase-thread-studio-standalone/update',
+      async ({ headers, body }) =>
+        deps.showcase.updateStandaloneShowcase(resolveActor(headers), {
+          ...body,
+          coverImageUrl: body.coverImageUrl ?? null,
+          studioMeta: body.studioMeta ?? null,
+        }),
+      { body: ShowcaseThreadStudioStandaloneUpdateBody },
+    )
+    .post(
+      '/hub/internal/showcase-source',
+      async ({ headers, body, set }) => {
+        set.headers['cache-control'] = 'private, no-store'
+        return deps.showcase.showcaseSource(resolveActor(headers), body)
+      },
+      { body: ShowcaseSourceBody },
+    )
+    .post(
+      '/hub/internal/showcase-thread-studio/touch',
+      async ({ headers, body }) => deps.showcase.touchShowcase(resolveActor(headers), body.playId),
+      { body: ShowcaseTouchBody },
+    )
+    .post(
       '/hub/internal/showcase-thread-studio',
       async ({ headers, body }) => {
         // Kid-driven (botão Compartilhar do Estúdio): descrição da criança + link
@@ -111,6 +148,8 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
             challengeKey: body.challengeKey ?? null,
             studioMeta: body.studioMeta ?? null,
             liveWorkspace: body.liveWorkspace,
+            sourceProjectId: body.sourceProjectId ?? null,
+            asNewPost: body.asNewPost === true,
           },
         )
         return { thread, deduped }

@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+src\studentTests\pythonRunner.test.ts:
+(pass) Meus testes no Python: testar uma função > chama a função com os casos da criança, no fim do programa sem desenho [16.00ms]
+(pass) Meus testes no Python: testar uma função > a resposta errada não passa, e diz o caso [16.00ms]
+(pass) Meus testes no Python: testar uma função > a função que não existe não passa [15.00ms]
+(pass) Meus testes no Python: testar uma função > o programa que dá erro antes não passa [16.00ms]
+(pass) Meus testes no Python: testar uma função > o programa que não termina estoura o prazo, e a execução escondida sai [109.00ms]
+(pass) Meus testes no Python: testar o programa > aperta a tecla pelo quadro e lê a variável antes e depois [375.00ms]
+(pass) Meus testes no Python: testar o programa > o quadro do Python que não aperta teclas: o teste não roda aqui [281.00ms]
+(pass) Meus testes no Python: testar o programa > confere as mensagens do programa (o print) [297.00ms]
+(pass) Meus testes no Python: testar o programa > a variável que não mudou não passa, com a foto do fim [360.00ms]
+(pass) Meus testes no Python: testar o programa > sem biblioteca de jogo, a aba só testa função
+(pass) Meus testes no Python: o que não roda > teste fora do contrato do Python, sem prévia, cancelado
+
+src\runtime\python\controller.test.ts:
+(pass) host audio preference follows pending prepare without restarting and retired capabilities cannot unmute [16.00ms]
+(pass) context disposal stops an existing run and prevents starting another in the revoked environment
+(pass) revocation and Stop during ready prevent dispatch of the old run [15.00ms]
+(pass) a restart during ready runs only the replacement generation
+(pass) late preparation after Stop or a source change cannot start a stale program
+(pass) writer epochs and fresh grants protect commands after a successful start [16.00ms]
+(pass) automatic and explicit cover requests share one capture, and Stop revokes both
+(pass) REPL checks its own grant and current project independently of execute permission
+(pass) context authorization receives the real snapshot revision before a frame or run exists [15.00ms]
+(pass) late authorization after Stop or editing cannot start the captured project
+
+src\runtime\python\pgzero\renderer.test.ts:
+(pass) Pygame Zero renderer exchange > presentation focus=true preserves painting and applies to startup and pointer input
+(pass) Pygame Zero renderer exchange > presentation focus=false preserves painting and applies to startup and pointer input
+(pass) Pygame Zero renderer exchange > mission actor poses appear only with a presented frame and disappear when no longer drawn [47.00ms]
+(pass) Pygame Zero renderer exchange > the screen keeps what was drawn: a batch paints on top, only a new size wipes it [31.00ms]
+(pass) Pygame Zero renderer exchange > a screen read paints what was drawn at once and answers the colour there [16.00ms]
+(pass) Pygame Zero renderer exchange > pygame.draw shapes reach the screen as whole pixels, never as smoothed curves [15.00ms]
+(pass) Pygame Zero renderer exchange > a frame the browser cannot show comes back as an error reply for Python
+(pass) Pygame Zero renderer exchange > the pixels of a vector image come back as bytes, with the image they need
+(pass) Pygame Zero renderer exchange > Ctrl reaches the game, and losing focus releases it with a key-up [16.00ms]
+(pass) Pygame Zero renderer exchange > the right Shift has its own bit, like pygame (RSHIFT, not LSHIFT)
+(pass) Pygame Zero renderer exchange > two mouse buttons pressed together never stay held, and a cancelled pointer releases [47.00ms]
+(pass) Pygame Zero renderer exchange > Ctrl+arrow belongs to the game; Ctrl+R and the system key + S still reach the browser
+(pass) Pygame Zero renderer exchange > a line longer than a canvas can be is drawn around its anchor, at its true place [31.00ms]
+(pass) Pygame Zero renderer exchange > a textbox with outline and shadow draws at the size it picks
+(pass) Pygame Zero renderer exchange > ended sounds reach Python with the frame, and the host is asked to watch [16.00ms]
+
+src\runtime\python\turtle\renderer.test.ts:
+(pass) a Turtle screen initialized before host layout uses its logical viewport, then measures the host
+
+ 37 pass
+ 0 fail
+ 872 expect() calls
+Ran 37 tests across 4 files. [2.42s]

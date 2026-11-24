@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Atirador Espacial'
@@ -19,25 +21,8 @@ PONTOS = {'pedra_pequena': 30, 'pedra_media': 20, 'pedra_grande': 10}
 # A letra dos textos: o arquivo fonts/pressstart2p.ttf do projeto.
 FONTE = 'pressstart2p'
 
-nave = Actor('nave')
-tiros = []
-pedras = []
-explosoes = []
-# As pedras da onda, lidas do arquivo: cada uma é um dicionário.
-roteiro = []
-fim_da_onda = 10
-aviso = ''
-estado = 'inicio'
-pontos = 0
-vidas = VIDAS
-onda = 1
-relogio = 0
-recarga = 0
-protegida = 0
-espera = 0
-rolagem = 0
 
-
+# 🧩 Meus moldes
 def ler_ondas():
     global fim_da_onda, aviso
     roteiro.clear()
@@ -179,7 +164,37 @@ def mover_pedras():
                 estado = 'fim'
                 espera = 1.0
 
+# ⚙️ Ao iniciar
+nave = Actor('nave')
+tiros = []
+pedras = []
+explosoes = []
+# As pedras da onda, lidas do arquivo: cada uma é um dicionário.
+roteiro = []
+fim_da_onda = 10
+aviso = ''
+estado = 'inicio'
+pontos = 0
+vidas = VIDAS
+onda = 1
+relogio = 0
+recarga = 0
+protegida = 0
+espera = 0
+rolagem = 0
 
+
+ler_ondas()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key == keys.SPACE:
+        if estado == 'inicio' or (estado == 'fim' and espera <= 0):
+            novo_jogo()
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global rolagem, protegida, espera
     rolagem = (rolagem + 1) % HEIGHT
@@ -197,12 +212,6 @@ def update(dt):
     soltar_pedras(dt)
     acertar_pedras()
     mover_pedras()
-
-
-def on_key_down(key):
-    if key == keys.SPACE:
-        if estado == 'inicio' or (estado == 'fim' and espera <= 0):
-            novo_jogo()
 
 
 def draw():
@@ -233,7 +242,4 @@ def draw():
         screen.draw.text('Você chegou à onda ' + str(onda) + ' com ' + str(pontos) + ' pontos', center=(400, 320), fontname=FONTE, fontsize=16, color='white')
         if espera <= 0:
             screen.draw.text('Espaço: jogar de novo', center=(400, 370), fontname=FONTE, fontsize=18, color='yellow')
-
-
-ler_ondas()
 pgzrun.go()

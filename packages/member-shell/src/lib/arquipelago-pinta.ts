@@ -1,5 +1,5 @@
 import type { PintaCompletionControl } from '@sistemazero/pinta'
-import { assetToJson } from '@sistemazero/pinta/assets'
+import { assetToJson, isLegacyWorkshopAsset } from '@sistemazero/pinta/assets'
 import type { CreationsCloud } from './creations-cloud'
 
 /** Devolve o desenho somente depois de confirmar que a MESMA versão está na conta. */
@@ -11,7 +11,10 @@ export async function concluirPinta(
   if (!desenho) return null
   await nuvem.confirm(desenho.id, { timeoutMs: 15_000 })
   const guardado = await nuvem.download(desenho.id)
-  if (!guardado || guardado.json !== assetToJson(desenho))
+  const expected = isLegacyWorkshopAsset(desenho)
+    ? assetToJson(desenho)
+    : (await import('@sistemazero/pinta/workshop-reader')).pintaWorkshopAssetToJson(desenho)
+  if (!expected || !guardado || guardado.json !== expected)
     throw new Error('A versão do desenho ainda não foi confirmada na conta')
   return desenho.id
 }

@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+src\runtime\python\raylib\cenario-distribuicao.test.ts:
+(pass) cenário é módulo oficial somente com Raylib; módulo autoral mantém precedência
+(pass) desktop inclui o mesmo auxiliar junto ao entrypoint e registra sua origem gerada
+(pass) auxiliar desktop não sobrescreve módulos/pacotes autorais nem colide em outro case
+
+src\runtime\python\raylib\cenario.test.ts:
+(pass) cenário compilado no módulo Raylib real: desenho, matriz, alturas, limites e descarte [469.00ms]
+
+ 4 pass
+ 0 fail
+ 16 expect() calls
+Ran 4 tests across 2 files. [1058.00ms]

@@ -1,0 +1,145 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 3610,
+      "sha256": "23901787828a17be338455c18cde9ff2573bf1fc6a9374bd19dbcc4ff54c7f27"
+    },
+    {
+      "file": "aprovacao-operacional.json",
+      "bytes": 577,
+      "sha256": "abbde7ca046b2804be751c44042c475917434b5df0b61985928c69531968b755"
+    },
+    {
+      "file": "distribuicao.json",
+      "bytes": 28640,
+      "sha256": "1071fb6e29f7fd18e3a6ae4a7f4278d2aaa9e3623826b7215d0050f3f6514701"
+    },
+    {
+      "file": "fonte.json",
+      "bytes": 406,
+      "sha256": "a6d1c657bebbaac5671aaea719887eba6286c221556e76a95ac7b4e451fb0998"
+    },
+    {
+      "file": "gates.json",
+      "bytes": 809,
+      "sha256": "a26a20322280ec632be841ee8ff824066c41797501a83aa3c5d68b856f30bc9c"
+    },
+    {
+      "file": "imagem-ci.txt",
+      "bytes": 239079,
+      "sha256": "e1b0b5fc94b3a6450b2b6bbaf34cc10785996b8a1d8646e70ddd858fd2731ea5"
+    },
+    {
+      "file": "imagem-local.json",
+      "bytes": 425,
+      "sha256": "cf626171f7324647ceab330fc67533cea589b85e466d40aeb8c35f486d8efb7b"
+    },
+    {
+      "file": "imagem-registry.json",
+      "bytes": 595,
+      "sha256": "a52c64c932604d9e3bc4445ac15b79355734ed8c99bce0952b3792a90cc7bbf4"
+    },
+    {
+      "file": "leitura-r2.json",
+      "bytes": 1151,
+      "sha256": "af78e441af9034ffea3fed07635749a566bbdbd9fb24a000329d01b1133b1a4a"
+    },
+    {
+      "file": "limpeza.json",
+      "bytes": 301,
+      "sha256": "65f2a7788b0492665e4cec6ee84a3d5c079ab02a658fd2d4024093fd85ac5d9a"
+    },
+    {
+      "file": "linux-verificacao.json",
+      "bytes": 1226,
+      "sha256": "c7ed2223b03b1142a215a9a35cdec5671c416d6ba2e89ff49e500d04dca10604"
+    },
+    {
+      "file": "plano-promocao.json",
+      "bytes": 819285,
+      "sha256": "b3b648b68585bd32b56db6c8193a61d907d2ceed6b1f1eadb560dc4fe2cb78af"
+    },
+    {
+      "file": "politica-preparada.json",
+      "bytes": 852,
+      "sha256": "9bd446358f4be3d471719a4a05148d39ac7a0d0b63afb57789af66ac1f09a0cb"
+    },
+    {
+      "file": "politica-testes.txt",
+      "bytes": 1201,
+      "sha256": "74f06e0fd3a9c1846a5d22edd89855d6f37e109b5749fdbc0dd0d8f3d9147155"
+    },
+    {
+      "file": "promocao-preparada.txt",
+      "bytes": 303,
+      "sha256": "446806d88a6af5bbbd3c27d4e9547cf67b27ce11ac4a8d99cb593f99f6c4fbf8"
+    },
+    {
+      "file": "protocolo-corrigido.txt",
+      "bytes": 936,
+      "sha256": "fbe4f0194acbbda3a2e5ba015b4cfc8cf38e5e0883d0020d6c296af8298a8aed"
+    },
+    {
+      "file": "protocolo-diagnostico.txt",
+      "bytes": 791,
+      "sha256": "009cd70df3a47f1971cb23f085a5afc0fefdf8f4e997edb26536a014c01f802a"
+    },
+    {
+      "file": "protocolo-primeira-tentativa.txt",
+      "bytes": 43,
+      "sha256": "27c82d47ea1658bae05d29d5000a0ed8daf1591012c92f6454448658b69c3051"
+    },
+    {
+      "file": "pygame.json",
+      "bytes": 1200589,
+      "sha256": "b39c86d20932b1dc8db3b619c9704331a7f835b199134c8760e0b1c78c03bc6d"
+    },
+    {
+      "file": "pygame.txt",
+      "bytes": 3209,
+      "sha256": "204b2c45ca56f67c938192f80c05e11baf25779ad216fe17470269f69540ae71"
+    },
+    {
+      "file": "python-compartilhado.json",
+      "bytes": 3110784,
+      "sha256": "3a38c542b50be2dcac4f27d2c63253d840fb5658e59072331e66ee3a0081bb89"
+    },
+    {
+      "file": "python-compartilhado.txt",
+      "bytes": 11813,
+      "sha256": "b2b106847da7bc73c59f91d14bd695f2b29e3b354d03f43876f6c52eb6828b51"
+    },
+    {
+      "file": "qualificacao.json",
+      "bytes": 808,
+      "sha256": "ddc9177d629af7f75025807e48c1cceea7d49baba4b60540fc1cd76ca646efe4"
+    },
+    {
+      "file": "servico-temporario.json",
+      "bytes": 1159,
+      "sha256": "3d9f7eecf581d7cc5906e4575d4e96de175e0e82127174c79cc5531489be15a9"
+    },
+    {
+      "file": "servidor-fixado.txt",
+      "bytes": 114,
+      "sha256": "cf1f5ff134e0aa25b653c2ecee3a3df41a3a88a9c63580952b47972031193030"
+    },
+    {
+      "file": "upload-corrigido.txt",
+      "bytes": 773,
+      "sha256": "09e0f8151f9faec9e30f40c0391e35287d69b9b8b911b643f03d7e7063376d5f"
+    },
+    {
+      "file": "upload-r2.json",
+      "bytes": 817,
+      "sha256": "96a6872a23cd3b219299fb84073ed9355174b31ea18da9c09bf8ed1b5e0a023f"
+    },
+    {
+      "file": "workflow.json",
+      "bytes": 469,
+      "sha256": "d5d1c69c52e32ba568e2e011b137285e7826a5c955d43a9a95b72339af431f71"
+    }
+  ]
+}

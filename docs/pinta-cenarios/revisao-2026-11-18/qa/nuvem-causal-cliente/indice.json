@@ -1,0 +1,409 @@
+{
+  "cliente": "e28bb5dbbc9cfa27e0b4d60b89678f3d4eb78b44",
+  "members": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+  "bun": "1.3.11",
+  "postgresql": "16.13",
+  "ensaios": [
+    {
+      "alvo": "host",
+      "nome": "real-editor-redo-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-editor-redo-review.inc"],
+      "sha256": "51e0e9de23a93157e694d9934b3b1093a6d17d748ae5c131ad6878badd325ea7",
+      "lfAdicional": 3
+    },
+    {
+      "alvo": "host",
+      "nome": "real-editor-undo-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-editor-undo-review.inc"],
+      "sha256": "93459d4918f4469faec4bf716a9dfe0f1b95b7f28e2a140596498df3c1719e98",
+      "lfAdicional": 2
+    },
+    {
+      "alvo": "host",
+      "nome": "reincarnation-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/reincarnation-review.inc"],
+      "sha256": "ad7c0276c8ab72282d3a3bb4624471d010b979e8ed6ab413bf15b84741694dbc",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "host",
+      "nome": "repair-then-adopt-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/repair-then-adopt-review.inc"],
+      "sha256": "cdbe74dee9d0fdb38fb1e784589a668ab48f3535f8f9df6a2663e56220c55dc4"
+    },
+    {
+      "alvo": "host",
+      "nome": "stable-slot-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/stable-slot-review.inc"],
+      "sha256": "bce176fe4344d89115f90d6e0f26a1d806d8313373cf458dd8234c39a89c976e"
+    },
+    {
+      "alvo": "host",
+      "nome": "undo-expiry-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/undo-expiry-review.inc"],
+      "sha256": "54404f1d12ef52f05b539fb77b71372a77dbf3e98b74916710f1da34b32b2eb3",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "pinta",
+      "nome": "recovery-review.test.ts",
+      "fontes": ["ensaios/adocao.inc"],
+      "sha256": "22b860f37465aaaedc9766561ad46084cbdafdcbf0f4cd37053230fe0ad6e792"
+    },
+    {
+      "alvo": "members",
+      "nome": "stable-slot.test.ts",
+      "fontes": ["ensaios/indice-estavel-pg.inc"],
+      "sha256": "c5d690fd831f39fee7d59446708ad9215895c3c56be5d3dba4d545dd94fcbaa3",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-http-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-http-review.inc"],
+      "sha256": "4d425fecf29130298a54e9189ab53af6c4dcebee838abead0e8301597dd1f634",
+      "originalSha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500"
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-legacy-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-legacy-review.inc"],
+      "sha256": "0fe7baa0bc656dfe9cc6ccbbe10d918d2a3f45bb0571ac2a7af3bb054ab1e967",
+      "originalSha256": "7c50939254cad92366da63411827022cba4c61b926a985947d75f468ef5bf298"
+    },
+    {
+      "alvo": "terminal",
+      "nome": "terminal-pending-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-pending-review.inc"],
+      "sha256": "3f895f4a52f1499b6e873106d7f7b3d1459fa92842efe06b369929a60b57f672",
+      "originalSha256": "340e19ecc24c133d483121da5c76a8633acea4335770be32060c967912296c9c"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "ponta-duravel.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/ponta-duravel.inc"],
+      "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "versoes-do-mundo.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/versoes-do-mundo.inc"],
+      "sha256": "b75c1655d4e75bac409b4cb46687052e4fb68d3a0b128d89d7062401ccb3cde2"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "transacao-da-ponta.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transacao-da-ponta.inc"],
+      "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
+    },
+    {
+      "alvo": "duravel",
+      "nome": "leitores-do-registro.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/leitores-do-registro.inc"],
+      "sha256": "cc87a1a5e22caadd6581d90a5a0d94881c5053902c247eb2be681152fbb09e39"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "real-shadow-quota-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/real-shadow-quota-review.inc"],
+      "sha256": "380e1b4fcdc70bc4d53eb3c8afdbe2742756b1fb019dfa7ac0d02063faaeef7d"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "shadow-rollback-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/shadow-rollback-review.inc"],
+      "sha256": "9a4b0ff97a4fe25fc40807debfcc1c348ccdf4999abf98274d0380a0dfe9ca92",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-doors-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-doors-review.inc"],
+      "sha256": "38f3c5772e4c26afcd6dd9cf7a642014fdfdbc65387bfdbbd485e365c22d66be",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-fixed-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-fixed-review.inc"],
+      "sha256": "bb70617ae0351dbd0d6df81fe99d3194981ef6ec82227b4c922d8bb780c8088d",
+      "lfAdicional": 3
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-graph-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-graph-review.inc"],
+      "sha256": "b95343ea6961cc8c43f3e686f21a088a606ece18da3112bbe0d74ebf9ba51250"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-http-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-http-review.inc"],
+      "sha256": "adcd2c18258ee5efb0f343350c1395cbe6bc5c76302ac914348820b63a540500",
+      "lfAdicional": 1
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-mutable-encode-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-mutable-encode-review.inc"],
+      "sha256": "0d4d3e89a1230d5383a8c011e4137b36c780eaab05b7941b54075ef939d45687"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-pending-fixed-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-pending-fixed-review.inc"],
+      "sha256": "6a5e772869d9c1ed62d20fc31c6f0d7802f855032659c171b6be8e2fcc19b9c1",
+      "lfAdicional": 5
+    },
+    {
+      "alvo": "retencao",
+      "nome": "terminal-unbased-region-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/terminal-unbased-region-review.inc"],
+      "sha256": "24113af36eb311bb11dcae1f3e1b2eadcfb248f77a1d249186cf251e4b17578a"
+    },
+    {
+      "alvo": "retencao",
+      "nome": "archive-flow-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/archive-flow-review.inc"],
+      "sha256": "0d2c4aaef1c65f064bde6b679bf2c05828976a29541673bcca23897ca4a03c45"
+    },
+    {
+      "alvo": "leitorV3",
+      "nome": "offline-cross-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/offline-cross-review.inc"],
+      "sha256": "a1f8fc123360f27e6fc684d60ec662fe4aecad2ddd34cc8d95275af815428175"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "physical-pins-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/physical-pins-review.inc"],
+      "sha256": "b8ee4f1676d936a7481f3aeee3ff3870513fe77d986dca674deee007a0a01702"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "pins-cas-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/pins-cas-review.inc"],
+      "sha256": "52f04125e9cccd4b5b2a9fe89da789d5a89ce007dc829a18cf79d40af4153b73"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "pins-quota-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/pins-quota-review.inc"],
+      "sha256": "e4e6392dc8938662dd7e746042523ad31be83eba3edf2ed131469976ed94db3c"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "transitive-pins-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transitive-pins-review.inc"],
+      "sha256": "4763c17fc497afc463fe71988058d8f329ea3d5bb77007551dcb8cfc274d3a16"
+    },
+    {
+      "alvo": "recursosV4",
+      "nome": "fence-v4-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/fence-v4-review.inc"],
+      "sha256": "6c4713f5fd18727683577e38aa6f2d1049a250ed53a9438cbe8f1ac975bafcc4"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "ponta-duravel-v4.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/ponta-duravel.inc"],
+      "sha256": "562bbc72f7976df0a33e9c706d79395e34662b2f32fe05402b3e8a7aea25dfcb"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "versoes-do-mundo-v4.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/versoes-do-mundo-v4.inc"],
+      "sha256": "10f74139e54436748bead361770f2f8908e61e76e9a6df2445e0de9fe5f4a57f"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "transacao-da-ponta-v4.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/transacao-da-ponta.inc"],
+      "sha256": "32db8e0f5a6ae80d8a35832a8016b541b1f20858885428e8ec33c9c98bd9c2b9"
+    },
+    {
+      "alvo": "duravelV4",
+      "nome": "leitores-do-registro-v4.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/leitores-do-registro-v4.inc"],
+      "sha256": "bdb81dda8614b18e5006fd548d247b51fa13bf5f8d182d58e5b85e976705f8ad"
+    },
+    {
+      "alvo": "leitorV3Manifest",
+      "nome": "offline-cross-manifest-review.test.ts",
+      "fontes": ["ensaios/contexto-host.inc", "ensaios/offline-cross-manifest-review.inc"],
+      "sha256": "196dffd524ee31670298fc3b91dd02971bc4919908190db3c4da837e05daf99c"
+    }
+  ],
+  "recibos": [
+    {
+      "arquivo": "recibos/recovery-0646834.txt",
+      "originalSha256": "14445d7fa72459890b5c4b0d2150ee33b88ccfdb66ac288302888ffdbddd8cca",
+      "sha256": "cbefc9163ad2ad88892e0fdb14fcf5a9075fe9b61acee022ae7290e4d7017a9a",
+      "commit": "0646834df2e6c4dba9716e4ab2156c4798cb4123",
+      "resultado": "7 casos/47 asserções de caracterização"
+    },
+    {
+      "arquivo": "recibos/prepared-09aa-review.txt",
+      "originalSha256": "2b39504eba78bacb91e637380b54d21a5f923b48a93ae11d0f64e743f0e550c9",
+      "sha256": "fe0a260b996d906403f64df7a50481850fa6309b644b14cd24a3f57e38d818b5",
+      "commit": "09aa01d52244591380d7ac314ecdbe46b217c58e",
+      "resultado": "2 passam/3 falham antes das correções"
+    },
+    {
+      "arquivo": "recibos/prepared-b145-review.txt",
+      "originalSha256": "33a6d7a7acc0bc08c8b5fb7d5c6eaabbe954f1dd0cbfdfed03edb033d0d93490",
+      "sha256": "167de5f876f82c47f44c178f8b79e806716ac4c2ee016e96e5438eb54e5415aa",
+      "commit": "b145c08c87aad0c5e2142e7edb8d4c4b45d19fa4",
+      "resultado": "5 passam/22 asserções"
+    },
+    {
+      "arquivo": "recibos/combined-e28.txt",
+      "originalSha256": "606f2c668c0c020596fd82928b825c54886d9fb351719c411e4f520c3f458808",
+      "sha256": "86ca922f4c0a2488f09ef7a3ea0ee75ace18c962f0b0d3ffc9530457e21f2f8b",
+      "commit": "e28bb5dbbc9cfa27e0b4d60b89678f3d4eb78b44",
+      "resultado": "19 passam/127 asserções"
+    },
+    {
+      "arquivo": "recibos/pg-stable-slot.txt",
+      "originalSha256": "a2c422d9ff96f26f0a546b40c3ecf859fda82de46ecc16f9a8adce33999fb301",
+      "sha256": "404490cbf0bcbf835cc7c0e5b6974da719eecb1474bfcee363529e27aac9482f",
+      "commit": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+      "resultado": "1 passa/3 asserções"
+    },
+    {
+      "arquivo": "recibos/pg-omitted-replay.txt",
+      "originalSha256": "e2989c297e4aec6c6a81f6031bd465de6128aa3f85f46728d9b22f75bdce3479",
+      "sha256": "2f837e5808f89dcea03dc20250d967a4f032be11c3efc9def7ea8466d41e5e2f",
+      "commit": "d75bb7f7949f42b4865ba8816bb9b6673ae2693b",
+      "resultado": "2 passam/19 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-http-5ef.txt",
+      "originalSha256": "cd118a2e4670e903859ba30d6012678725e1f0dd6256f531ec72a3f919d02b67",
+      "sha256": "e6aab68c1b068c5dbc27c2ab59ecf117bea3b09a84e4027aa439f57528d552f9",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "1 passa/25 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-legacy-5ef.txt",
+      "originalSha256": "1b4fa205285e313e7e3b879e3c51cde9e7ea9e94baed1cf88b5a7035cd830a4c",
+      "sha256": "80731bdbe14c4255e0b3df1e002efbc92cdc5accfd5eb56e33b319c6a08a4fa0",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "6 passam/3 falham/45 asserções"
+    },
+    {
+      "arquivo": "recibos/terminal-pending-5ef.txt",
+      "originalSha256": "a7ac128deb729627d866333ef9da6cfa1a326a318499db72bf869b8cb3861721",
+      "sha256": "c6f5ae1143d9c45b410deae22d1afd4a3d4af8e14639e0fde88bbd691af7f95a",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "1 falha/8 asserções"
+    },
+    {
+      "arquivo": "recibos/duravel-5ef.txt",
+      "originalSha256": "084cd39444bac664961febb6354b290871fffb49ef77afe933f738cd158b4e87",
+      "sha256": "3024dd4de75a44e1c7ec5c853d605efbb6515242853a19d9b6f46476be6a4ba6",
+      "commit": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+      "resultado": "20 falham/124 asserções no candidato anterior à sombra durável"
+    },
+    {
+      "arquivo": "recibos/duravel-436976c.txt",
+      "sha256": "0ce6b0d9ff5041559c486c0f22e53adf44d719a702fd1b61e73f6cc9cca3694a",
+      "commit": "436976c4f83a75a5c2cf8920eb227d4770b53eb1",
+      "resultado": "20 passam/251 asserções com dependências isoladas"
+    },
+    {
+      "arquivo": "recibos/replay-85e.txt",
+      "originalSha256": "4cc4c66d382e77d5366720d98462c6782d9525f3461814b6d98d7ad0280e8528",
+      "sha256": "4e352b3edd3741317e4b2d7bf2d2f90c0a5612873b00b25e7970b03ba9fef603",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "16 passam/3 falham/161 asserções"
+    },
+    {
+      "arquivo": "recibos/quota-85e.txt",
+      "originalSha256": "5e9a4df1407f6d10bff8ef79f228d8b76c74f8b0c7c4e7c38f6631d30efca7b5",
+      "sha256": "2f08ae7950b977717e48a690196a854d91ba79d734c48139cf9aaa142166658a",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "1 passa/10 asserções"
+    },
+    {
+      "arquivo": "recibos/missing-observed-85e.txt",
+      "originalSha256": "d57106b9af106b9adfffcb189f0dd68e412f999ee31351b9b03bb69efa255a8e",
+      "sha256": "3a2b48f89828d8d7cb225e2f2bf152e2fa4284f42b0f87711832b57fc47a1368",
+      "commit": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+      "resultado": "2 falham/8 asserções"
+    },
+    {
+      "arquivo": "recibos/repetir-4cf.txt",
+      "originalSha256": "fbbc2c00bd85b69689b3e7615c699e6b03133d3018f4e556e3f2f570eabac885",
+      "sha256": "bae56432fcd8805d6c5913ae0549887cf1874e81cb4129ba3e70e18257e22e16",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "20 passam/2 falham/181 asserções"
+    },
+    {
+      "arquivo": "recibos/cross-4cf.txt",
+      "originalSha256": "53b05cdbf2cf80428ab98db6576514f9f53825049df5850e5944849b4a1d8b87",
+      "sha256": "a24fc4cb2b5322f6d968351ec495d0a99cc29e51eb7469e35d2017a5f2cf7046",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "1 falha/9 asserções"
+    },
+    {
+      "arquivo": "recibos/v4-4cfb1d323.txt",
+      "originalSha256": "b7fe9aeef73ed990a8e3e8ad7826daa374f2b4527155c31dfa6440fa5c555539",
+      "sha256": "ecfabfee4e35b0706190f561721bd2bf0f85a981fbded32f0bc5a6b4e22bd260",
+      "commit": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+      "resultado": "5 falham/14 asserções"
+    },
+    {
+      "arquivo": "recibos/todos-f166.txt",
+      "originalSha256": "98fda086443412a02e7a62b523a7c7e0d89209c719edf78b3b0929104ff0fdb3",
+      "sha256": "dfeefdcd9207020c22aaa5c779c8c124c4a860ae52ea74b06b492c4c834f5043",
+      "commit": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87",
+      "resultado": "23 passam/203 asserções"
+    },
+    {
+      "arquivo": "recibos/v4-f1667cfaf.txt",
+      "originalSha256": "1b290a28036ba56802663766d98427efc60919a1af22da23caff29997ecdcd66",
+      "sha256": "1b290a28036ba56802663766d98427efc60919a1af22da23caff29997ecdcd66",
+      "commit": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87",
+      "resultado": "6 passam/61 asserções"
+    }
+  ],
+  "arvoresGit": {
+    "cliente": {
+      "packages/pinta/src": "83a4a3c5e1bddf037b32aa8a519de638893d0baa",
+      "packages/member-shell/src/lib": "10e463b77764a4a9d17af3fb03de165f31383180",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "members": {
+      "packages/members/src": "d8f565037f48ec43e1458e77870d86bfa610621b",
+      "packages/members/tests/db": "16819e3d6d7de93523fe3fbd05d67c3809d34d16"
+    },
+    "terminal": {
+      "packages/pinta/src": "28d25b7cb8b7f889ec7b48b7140a1cbaa2de6d41",
+      "packages/member-shell/src/lib": "7ace6c9ed16c90df08d521a24a416b45f97a59b0"
+    },
+    "legado": {
+      "packages/pinta/src": "af6608a9570ceec9d95a67fe01ce045b2fb4e4e4"
+    },
+    "retencao": {
+      "packages/pinta/src": "f0376341bbf05da953cd30274101dbc61d2fea79",
+      "packages/member-shell/src/lib": "586777bc885c17b5b3979d6d26e69af331be7686",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "escritorDiscoV3": {
+      "packages/pinta/src": "4571abd9d78a98fa589620364de6b8f411eae8b5",
+      "packages/member-shell/src/lib": "f62f92aa48e5dab792d59d930cba4321a9f0b46d",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    },
+    "recursosV4": {
+      "packages/pinta/src": "5b2a07b6fd2cb4880e698d60379ad6a006252b53",
+      "packages/member-shell/src/lib": "3be6b587960b7ef888e9b54c6d34a6064e4b003c",
+      "packages/core/src/creations": "d8194a9bf000900057970cef45b5209ead9fdefd"
+    }
+  },
+  "terminal": "5ef94cc8593c847d9c4a25c395f7a8a6f5797b94",
+  "legado": "64c197d5332a36b73af54de6ae5bf045a4a7699e",
+  "retencao": "85e506f85f1e2d23bceb69bcea2407c3076f734d",
+  "escritorDiscoV3": "4cfb1d323f78c7f96256fe9ffc84156df09aeb02",
+  "recursosV4": "f1667cfaf7fee6f0cee49dd07f99a5f32f9cae87"
+}

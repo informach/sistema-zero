@@ -1,0 +1,34 @@
+[
+  {
+    "label": "tamanho",
+    "path": {
+      "body": 3,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "3",
+    "after": "4"
+  },
+  {
+    "label": "velocidade do giro",
+    "path": {
+      "body": 5,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "30",
+    "after": "45"
+  }
+]

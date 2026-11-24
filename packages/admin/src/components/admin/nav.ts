@@ -122,6 +122,12 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
       { label: 'Jogo', href: '/admin/jogo', icon: Gamepad2 },
+      {
+        label: 'Cenários 3D',
+        href: '/molda/cenarios',
+        icon: Route,
+        roles: ['admin', 'superadmin'],
+      },
       { label: 'Como fazer', href: '/admin/como-fazer', icon: LifeBuoy },
       {
         label: 'Clube e Comunidade',

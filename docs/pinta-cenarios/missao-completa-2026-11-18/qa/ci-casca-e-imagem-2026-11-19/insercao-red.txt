@@ -1,0 +1,70 @@
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/export/download.ts is dynamically imported by src/components/projects/ProjectCard.tsx but also statically imported by src/blockly/screenshot.ts, src/components/layout/ExportDialog.tsx, src/components/layout/Topbar.tsx, src/components/projects/ProjectCard.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ../core/src/studio/python-activity.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+[WebServer]   - rolldown:vite-resolve (19%)
+[WebServer]   - vite:css-post (18%)
+[WebServer]   - vite:asset (17%)
+[WebServer]   - vite:css (16%)
+[WebServer]   - vite:build-import-analysis (13%)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] ✓ built in 34.86s
+[WebServer] [E2E] Build concluído em 35274 ms; iniciando preview
+[WebServer]   ➜  Local:   http://127.0.0.1:5386/
+
+Running 1 test using 1 worker
+
+(node:49580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [firefox] › e2e\preview-shell.spec.ts:70:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (18.8s)
+
+
+  1) [firefox] › e2e\preview-shell.spec.ts:70:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator: locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+    Timeout: 5000ms
+    - Expected  - 0
+    + Received  + 1
+
+    + document.body.dataset.voltou = "sim";
+      document.body.dataset.voltou = "sim";
+      console.log("oi da casca");
+
+    Call log:
+      - Expect "toHaveValue" locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' }) with timeout 5000ms
+      - waiting for locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+        12 × locator resolved to <textarea wrap="on" tabindex="0" data-mprt="7" role="textbox" autocorrect="off" autocomplete="off" spellcheck="false" autocapitalize="off" aria-required="false" aria-multiline="true" aria-autocomplete="both" aria-label="Editor content" aria-roledescription="editor" class="inputarea monaco-mouse-cursor-text"></textarea>
+           - unexpected value "document.body.dataset.voltou = "sim";
+    document.body.dataset.voltou = "sim";
+    console.log("oi da casca");"
+
+
+      31 |   await expect(input).toHaveValue('')
+      32 |   await page.keyboard.insertText(code)
+    > 33 |   await expect(input).toHaveValue(code)
+         |                       ^
+      34 | }
+      35 |
+      36 | async function maiorAtrasoDaPagina(page: Page, ms: number): Promise<number> {
+        at replaceBridgeScript (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:33:23)
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:78:5
+
+    Error Context: .cache\pinta-shell-firefox-red-r2\preview-shell-prévia-dentr-e33b7-lta-a-rodar-depois-do-Parar-firefox\error-context.md
+
+  1 failed
+    [firefox] › e2e\preview-shell.spec.ts:70:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar

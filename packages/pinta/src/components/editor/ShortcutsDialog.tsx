@@ -102,6 +102,9 @@ export function ShortcutsDialog({
   return (
     <Dialog open onClose={onClose} title={COPY.shortcuts.title} wide>
       <p className="mb-3 text-pin-muted text-sm">{COPY.shortcuts.intro}</p>
+      {editor === 'tilemap' ? (
+        <p className="mb-3 text-pin-text text-sm">{COPY.scene.keyboardMapHelp}</p>
+      ) : null}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Section
           title={COPY.shortcuts.toolsSection}

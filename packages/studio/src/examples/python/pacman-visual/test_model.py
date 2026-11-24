@@ -102,9 +102,10 @@ class SchedulerRecorder:
 class Rules(unittest.TestCase):
     def setUp(self):
         tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
-        # Nenhum import de Turtle/áudio nem entrypoint é executado.
+        # Nenhum import de Turtle/áudio nem o que o programa faz ao iniciar é executado.
         tree.body = [node for node in tree.body
-                     if not isinstance(node, (ast.Import, ast.If))]
+                     if not isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For))
+                     and not (isinstance(node, ast.Assign) and "turtle." in ast.unparse(node.value))]
         self.clock = [0.0]
         self.audio = AudioRecorder()
         self.pen = StampRecorder()
@@ -115,7 +116,8 @@ class Rules(unittest.TestCase):
         exec(compile(tree, str(SOURCE), "exec"), self.game)
         self.state = self.game["estado"]
         self.state["aberto"] = True
-        self.game["objetos"].update(lapis=self.pen, painel=StampRecorder(), tela=self.screen,
+        self.game["tela"] = self.screen
+        self.game["objetos"].update(lapis=self.pen, painel=StampRecorder(),
                                      heroi=StampRecorder(), atores=[StampRecorder() for _ in range(7)])
         self.call("reiniciar")
 
@@ -254,8 +256,7 @@ class Rules(unittest.TestCase):
         self.assertEqual(self.audio.stops, 2)
 
     def test_pause_restart_and_pending_callback_keep_one_chain(self):
-        self.call("agendar")
-        self.call("agendar")
+        self.call("a_cada_quadro")
         self.assertEqual(len(self.screen.pending), 1)
         self.call("direita")
         self.assertEqual(self.state["direcao"], (0, 0))

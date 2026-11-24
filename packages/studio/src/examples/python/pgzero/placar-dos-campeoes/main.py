@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Placar dos Campeões'
@@ -9,18 +11,8 @@ ARQUIVO = 'placar.txt'
 TAMANHO_DO_PLACAR = 10
 LETRAS_NO_NOME = 10
 
-estrela = Actor('estrela')
-# O placar é uma lista de pares (pontos, nome), do maior para o menor.
-placar = []
-pontos = 0
-quadros_restantes = 0
-nome = ''
-# Se já houve uma rodada (para mostrar os pontos dela no placar).
-jogou = False
-# 'placar', 'jogando' ou 'nome'
-estado = 'placar'
 
-
+# 🧩 Meus moldes
 def placar_vazio():
     placar.clear()
     for numero in range(TAMANHO_DO_PLACAR):
@@ -79,21 +71,28 @@ def comecar():
     estado = 'jogando'
 
 
-def update():
-    global quadros_restantes, estado, nome, jogou
-    if estado != 'jogando':
-        return
-    quadros_restantes = quadros_restantes - 1
-    if quadros_restantes <= 0:
-        sounds.fim.play()
-        jogou = True
-        if entra_no_placar(pontos):
-            nome = ''
-            estado = 'nome'
-        else:
-            estado = 'placar'
+def pontos_por_extenso():
+    if pontos == 1:
+        return '1 ponto'
+    return str(pontos) + ' pontos'
+
+# ⚙️ Ao iniciar
+estrela = Actor('estrela')
+# O placar é uma lista de pares (pontos, nome), do maior para o menor.
+placar = []
+pontos = 0
+quadros_restantes = 0
+nome = ''
+# Se já houve uma rodada (para mostrar os pontos dela no placar).
+jogou = False
+# 'placar', 'jogando' ou 'nome'
+estado = 'placar'
 
 
+carregar_placar()
+
+
+# ⚡ Quando acontecer
 def on_mouse_down(pos):
     global pontos
     if estado == 'jogando' and estrela.collidepoint(pos):
@@ -118,10 +117,20 @@ def on_key_down(key, unicode):
             nome = nome + unicode
 
 
-def pontos_por_extenso():
-    if pontos == 1:
-        return '1 ponto'
-    return str(pontos) + ' pontos'
+# 🔁 Enquanto estiver rodando
+def update():
+    global quadros_restantes, estado, nome, jogou
+    if estado != 'jogando':
+        return
+    quadros_restantes = quadros_restantes - 1
+    if quadros_restantes <= 0:
+        sounds.fim.play()
+        jogou = True
+        if entra_no_placar(pontos):
+            nome = ''
+            estado = 'nome'
+        else:
+            estado = 'placar'
 
 
 def draw():
@@ -145,7 +154,4 @@ def draw():
     if jogou:
         screen.draw.text('Sua última rodada: ' + pontos_por_extenso(), center=(WIDTH / 2, 490), fontsize=30, color='yellow')
     screen.draw.text('Espaço começa: clique em quantas estrelas puder em ' + str(TEMPO) + ' segundos', center=(WIDTH / 2, 530), fontsize=28, color='white', owidth=1, ocolor='black')
-
-
-carregar_placar()
 pgzrun.go()

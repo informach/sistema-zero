@@ -1,0 +1,65 @@
+{
+  "at": "2026-11-20T12:02:14.196Z",
+  "base": "f1fdc02e9bbb9002a77ce3463961b1974aa11a00",
+  "logs": [
+    {
+      "file": "pinta-region-accessors-red.log",
+      "sha256": "561878d75dbdc0b21199fe87c06998cf2bcb131b88c0d546fd7753d93dd35b3e",
+      "summary": "vermelho.txt"
+    },
+    {
+      "file": "pinta-region-accessors-green-r2.log",
+      "sha256": "8526f84486594607a7043a7b49f54b9e9b16b90e6c1ad311b540ff23c9ed7043",
+      "summary": "focado.txt"
+    },
+    {
+      "file": "pinta-region-accessors-regression.log",
+      "sha256": "78d2c4e15d9daf91ab2c44e84e9c255dd702d1f956f32bddbd13a6b5a78c1f58",
+      "summary": "regressao.txt"
+    },
+    {
+      "file": "pinta-region-accessors-core-full.log",
+      "sha256": "e07f58440818d977c1aa704ba237281c18bc7262b8be47d1c9fd7018ce9dc2ae",
+      "summary": "core-completo.txt"
+    },
+    {
+      "file": "pinta-region-accessors-pinta-types.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "tipos-pinta.txt"
+    },
+    {
+      "file": "pinta-region-accessors-core-types.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9",
+      "summary": "tipos-core.txt"
+    },
+    {
+      "file": "pinta-region-accessors-biome-r2.log",
+      "sha256": "5e33dcfe9b71f5ff8b23e50fd4b9e822d0227a5a7598124b178517c2c22f664b",
+      "summary": "biome.txt"
+    }
+  ],
+  "files": [
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "8528820c101ff7c6c0547cf0e640268e3220daeb15ed7507a7cab6cf461a163e"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.test.ts",
+      "sha256": "ab9b5db09927665717822acaae23c9963c7c7e34cdbcd6b53bcb3348c83953a1"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "81790cc63e4180b132ae729ad0b06690f894550b7134a5b0df2ed424d24a69a2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.test.ts",
+      "sha256": "13e5ee5a3493979685161c7d56a8f8fb8128010699367572081f8de57496e50e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "63086e37918131fb641904ad90b0b5d3881a6e5a2b1371a9c4d14042c9d4e615"
+    }
+  ],
+  "documentFormatChanged": false,
+  "writerActivated": false
+}

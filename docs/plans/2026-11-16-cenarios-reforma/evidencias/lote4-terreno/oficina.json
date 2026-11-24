@@ -1,0 +1,46 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "camadas": 2,
+    "pintou": true,
+    "abriuFechouBuraco": true,
+    "png16": true,
+    "historico": true,
+    "reamostrou": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1366,
+    "camadas": 2,
+    "pintou": true,
+    "abriuFechouBuraco": true,
+    "png16": true,
+    "historico": true,
+    "reamostrou": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "camadas": 2,
+    "pintou": true,
+    "abriuFechouBuraco": true,
+    "png16": true,
+    "historico": true,
+    "reamostrou": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "camadas": 2,
+    "pintou": true,
+    "abriuFechouBuraco": true,
+    "png16": true,
+    "historico": true,
+    "reamostrou": true,
+    "erros": []
+  }
+]

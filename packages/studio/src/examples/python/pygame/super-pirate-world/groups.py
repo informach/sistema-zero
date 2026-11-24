@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 from settings import * 
 from sprites import Sprite, Cloud
 from random import choice, randint
 from timer import Timer
 
+# 🧩 Meus moldes
 class WorldSprites(pygame.sprite.Group):
 	def __init__(self, data):
 		super().__init__()

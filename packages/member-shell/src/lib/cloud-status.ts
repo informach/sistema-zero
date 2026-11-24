@@ -25,6 +25,7 @@ export const CLOUD_STATUS_COPY = {
   saving: { label: 'Guardando…', text: 'Guardando na sua conta…' },
   syncing: { label: 'Buscando…', text: 'Buscando o que você guardou na sua conta…' },
   saved: { label: 'Guardado na sua conta', text: 'Guardado na sua conta' },
+  deviceOnly: { label: 'Neste aparelho', text: 'Há desenhos guardados só neste aparelho.' },
   offline: {
     label: 'Sem internet agora',
     text: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
@@ -50,6 +51,9 @@ export function cloudStatusView(
   }
   if (syncing && (state.status === 'idle' || state.status === 'saved')) {
     return { tone: 'muted', icon: 'download', ...CLOUD_STATUS_COPY.syncing, announce: false }
+  }
+  if (state.deviceOnly && (state.status === 'idle' || state.status === 'saved')) {
+    return { tone: 'muted', icon: 'cloud', ...CLOUD_STATUS_COPY.deviceOnly, announce: false }
   }
   if (state.status === 'saved') {
     return { tone: 'ok', icon: 'cloud', ...CLOUD_STATUS_COPY.saved, announce: false }

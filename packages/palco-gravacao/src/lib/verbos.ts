@@ -93,6 +93,12 @@ export const VERBOS: Verbo[] = [
     exemplo: 'apontar jogo 75 26',
     descricao: 'Aponta um ponto do jogo pronto, em pixels do palco (sem números: o meio).',
   },
+  {
+    verbo: 'tocar jogo',
+    exemplo: 'tocar jogo 480 300',
+    descricao:
+      'Toca num ponto do jogo pronto, em pixels do palco (sem números: o meio). Num jogo de teclado (o 3D), é o clique que dá o foco ao jogo antes de segurar uma tecla.',
+  },
   { verbo: 'jogar de novo', exemplo: 'jogar de novo', descricao: 'Recomeça o jogo pronto.' },
   {
     verbo: 'livro',
@@ -148,7 +154,7 @@ export const VERBOS: Verbo[] = [
     verbo: 'abrir categoria',
     exemplo: 'abrir categoria Jogo 2D > Movimento > Movimentos prontos',
     descricao:
-      'Abre as categorias da paleta, uma depois da outra, sem fechar nenhuma: a que já está aberta só é apontada. Para abrir de novo uma categoria que ficou aberta de um encaixe anterior.',
+      'Abre as categorias da paleta, uma depois da outra, sem fechar nenhuma: a que já está aberta só é apontada. Para abrir de novo uma categoria que ficou aberta de um encaixe anterior. Com um nome repetido no caminho (Jogo 3D > Encostar > Encostar), cada categoria é achada dentro da anterior.',
   },
   {
     verbo: 'segurar seta',
@@ -180,13 +186,20 @@ export const VERBOS: Verbo[] = [
   {
     verbo: 'apontar bloco',
     exemplo: 'apontar bloco "Quando clicar ou tocar"',
-    descricao: 'Aponta um bloco da área de trabalho pelo texto dele.',
+    descricao:
+      'Aponta um bloco da área de trabalho pelo texto dele. Em qualquer verbo de bloco, "A dentro de B" é o A que está dentro de B, "A abaixo de B" é o A logo abaixo de B na pilha, e o texto pode seguir pelos blocos encaixados ("Se valor da variável temChave").',
   },
   {
     verbo: 'tocar prévia',
     exemplo: 'tocar prévia arbusto',
     descricao:
       'Toca no jogo da pré-visualização do Estúdio: num alvo do jogo pronto da aula ou num ponto (tocar prévia 137 209), em pixels do jogo.',
+  },
+  {
+    verbo: 'girar a cena',
+    exemplo: 'girar a cena para o outro lado 6 vezes',
+    descricao:
+      'Gira a câmera do jogo 3D pelos botões da vista no canto da prévia, um pouco a cada vez, num gesto só (sem "para o outro lado", o botão de girar para um lado).',
   },
   {
     verbo: 'apontar prévia',
@@ -204,6 +217,13 @@ export const VERBOS: Verbo[] = [
     exemplo: 'encaixar "Deixar o sprite" em "Quando clicar ou tocar"',
     descricao:
       'Leva um bloco da paleta para o espaço ao lado de "fazer" de outro bloco, o único lugar onde ele encaixa.',
+  },
+  {
+    verbo: 'mover',
+    exemplo:
+      'mover "Se valor da variável temChave" para "Se não valor da variável ganhou" no "então"',
+    descricao:
+      'Leva um bloco que já está na área de código, com tudo o que tem dentro, para o espaço de outro bloco (sem "no", o espaço ao lado de fazer). A mão pega o bloco pela primeira palavra dele.',
   },
   {
     verbo: 'encaixar dentro',
@@ -327,9 +347,9 @@ export const novoJogoNoEstudio = (): JogoNoEstudio => ({ modo: 'auto', zoom: 0 }
 export const ZOOM_SEM_JOGO = 1
 
 const MONTAGEM =
-  /^(categoria |abrir categoria |encaixar |soltar |trocar |abrir campo |arrastar at[eé] |apontar (bloco|encaixe|abaixo de|mais de) |apontar lugar sem blocos|apontar paleta$|abrir ["“]|jogar na lixeira |mostrar blocos |organizar blocos$|clicar fora dos blocos$)/i
+  /^(categoria |abrir categoria |encaixar |mover |soltar |trocar |abrir campo |arrastar at[eé] |apontar (bloco|encaixe|abaixo de|mais de) |apontar lugar sem blocos|apontar paleta$|abrir ["“]|jogar na lixeira |mostrar blocos |organizar blocos$|clicar fora dos blocos$)/i
 const NO_JOGO =
-  /^((tocar|apontar) pr[eé]via\b|segurar seta .* na pr[eé]via|apontar (as )?setas na pr[eé]via|reduzir est[uú]dio$|rodar( de novo)?$)/i
+  /^((tocar|apontar) pr[eé]via\b|girar a cena\b|segurar seta .* na pr[eé]via|apontar (as )?setas na pr[eé]via|reduzir est[uú]dio$|rodar( de novo)?$)/i
 
 /**
  * O que a ação pede do jogo ao lado dos blocos: escondido (montar), à vista (testar no jogo, ou
@@ -364,6 +384,22 @@ const botao = (nome: string): Alvo => ({ texto: nome })
 const trocarEstudio = (de: string, para: string): Passo[] => [
   { fazer: 'clicar', alvo: botao(de) },
   { fazer: 'esperar', alvo: botao(para), estado: 'aparecer', maximo: 10 },
+]
+
+/**
+ * Antes de expandir, o Estúdio da aula termina de abrir o projeto. Expandido no meio da carga (Ilha,
+ * Aula 2, Parte 4, 22/11/2026: o Expandir clicado com a área de blocos ainda no esqueleto), a área
+ * de trabalho ficava sem nenhum bloco e o jogo fechava; os gestos de bloco esperavam 30 s em vão.
+ * Vale também para um projeto sem blocos: espera a área, não os blocos.
+ */
+const estudioAberto: Passo[] = [
+  { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 30 },
+  {
+    fazer: 'esperar',
+    alvo: { seletor: '[data-sz-blocks-loading]' },
+    estado: 'sumir',
+    maximo: 30,
+  },
 ]
 
 /** Depois de agir num bloco, a mão vai para o fundo da área ao lado dele (o ponto é visto na hora). */
@@ -513,7 +549,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'esperar', alvo: { seletor: 'body' }, estado: 'aparecer', maximo: 1 }]
   // O Estúdio troca de lugar e de tamanho logo depois do clique: o gesto só termina com o botão
   // do outro estado na tela, e o seguinte mede a prévia e as setas já no lugar novo.
-  if (f === 'expandir estudio') return trocarEstudio('Expandir', 'Reduzir')
+  if (f === 'expandir estudio') return [...estudioAberto, ...trocarEstudio('Expandir', 'Reduzir')]
   if (f === 'reduzir estudio') return trocarEstudio('Reduzir', 'Expandir')
   const ampliar = /^ampliar (.+)$/i.exec(texto)
   if (ampliar?.[1]) return [{ fazer: 'clicar', alvo: botao(`Ampliar ${ampliar[1]}`) }]
@@ -522,7 +558,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé] |mostrar blocos |jogar na lixeira |abrir ["“]|apontar mais de |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
+    /^(arrastar at[eé] |mostrar blocos |jogar na lixeira |abrir ["“]|apontar mais de |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |mover |soltar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -560,18 +596,22 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       },
     ]
   }
-  const apontarJogo = /^apontar jogo(?: (-?\d+(?:[.,]\d+)?) (-?\d+(?:[.,]\d+)?))?$/i.exec(texto)
-  if (apontarJogo) {
+  // Apontar ou tocar um ponto do jogo pronto. Tocar dá o foco ao jogo: num jogo de teclado (o 3D,
+  // sem setas na tela), é o que vem antes de segurar uma tecla.
+  const pontoDoJogo = /^(apontar|tocar) jogo(?: (-?\d+(?:[.,]\d+)?) (-?\d+(?:[.,]\d+)?))?$/i.exec(
+    texto,
+  )
+  if (pontoDoJogo) {
     const jogo = jogos[0]
     if (!jogo) throw new Error('Esta aula não tem jogo pronto.')
     const n = (v: string | undefined, d: number) => (v ? Number(v.replace(',', '.')) : d)
     return [
       {
-        fazer: 'apontar',
+        fazer: pontoDoJogo[1]?.toLowerCase() === 'tocar' ? 'clicar' : 'apontar',
         alvo: noJogo(
           jogo,
-          n(apontarJogo[1], jogo.stage.width / 2),
-          n(apontarJogo[2], jogo.stage.height / 2),
+          n(pontoDoJogo[2], jogo.stage.width / 2),
+          n(pontoDoJogo[3], jogo.stage.height / 2),
         ),
       },
     ]
@@ -605,6 +645,27 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       .map((c) => unquote(c))
       .filter(Boolean)
     if (!primeira) throw new Error('Diga qual categoria abrir.')
+    // Um nome repetido no caminho (Jogo 3D > Encostar > Encostar, na paleta 3D): o caminho
+    // inteiro é lido na página de uma vez. As categorias já abertas ficam como estão, a primeira
+    // fechada é clicada pela própria linha, e o caminho é perguntado de novo depois do clique.
+    const caminho = [primeira, ...resto]
+    const niveis = pagina?.categoriaNoCaminho(caminho) ?? []
+    if (niveis.some((n) => n.repetida)) {
+      const fechada = niveis.findIndex((n) => n.estado === 'fechada')
+      if (fechada >= 0)
+        return [
+          { fazer: 'clicar', alvo: niveis[fechada]!.alvo },
+          ...(fechada < caminho.length - 1
+            ? [{ fazer: 'continuar' as const, acao: `abrir categoria ${caminho.join(' > ')}` }]
+            : []),
+        ]
+      const ultima = niveis.at(-1)
+      if (niveis.length < caminho.length || !ultima)
+        throw new Error(
+          `Não achei a categoria "${caminho[niveis.length]}" dentro de "${caminho[niveis.length - 1]}".`,
+        )
+      return [{ fazer: 'apontar', alvo: ultima.alvo, exato: true }]
+    }
     const alvo: Alvo = { bloco: { texto: primeira, area: 'toolbox' } }
     // Cada categoria é vista depois que a de antes abriu: a de dentro só aparece então.
     const depois = resto.length
@@ -748,6 +809,27 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const alvo = naPrevia(pagina, jogos, (previa[2] ?? '').trim())
     return [{ fazer: fold(previa[1]) === 'tocar' ? 'clicar' : 'apontar', alvo }]
   }
+  // Os botões da vista do jogo 3D (framedButtons em game-3d/runtime.ts): uma coluna no canto de
+  // baixo à direita da prévia, 40 px cada e 6 px entre eles, a 12 px da direita e 56 px de baixo;
+  // de baixo para cima, Voltar à vista do começo, Girar para o outro lado, Girar para um lado. Cada
+  // toque gira um pouco (0,4 rad): os toques vão seguidos, num gesto só, para a chave aparecer
+  // enquanto a fala ainda fala dela (Ilha, Aula 2, Parte 2, pedido da Helena, 22/11/2026).
+  const girar = /^girar a cena( para o outro lado| para um lado)?(?: (\d+) vez(?:es)?)?$/i.exec(
+    texto,
+  )
+  if (girar) {
+    const tela = precisaDaPagina(pagina).previa()
+    if (!tela)
+      throw new Error('A pré-visualização do Estúdio não está na tela. Expanda o Estúdio antes.')
+    const acima = fold(girar[1] ?? '') === 'para o outro lado' ? 1 : 2
+    const vezes = Math.min(12, Math.max(1, Number(girar[2] ?? 1)))
+    const alvo: Alvo = {
+      seletor: 'iframe[title="Pré-visualização"]',
+      u: (tela.width - 32) / tela.width,
+      v: (tela.height - 76 - 46 * acima) / tela.height,
+    }
+    return Array.from({ length: vezes }, (): Passo => ({ fazer: 'clicar', alvo }))
+  }
   // "rolar até" é o do EdiAula (rola a página): a área do Estúdio se arrasta.
   const rolar = /^arrastar at[eé] ["“]([^"”]+)["”]$/i.exec(texto)
   if (rolar?.[1]) {
@@ -803,6 +885,20 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const destino = precisaDaPagina(pagina).sobre(valor, bloco, valorNovo)
     if (!destino) throw new Error(`Não achei o valor "${valor}" no bloco "${bloco}".`)
     return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(bloco)]
+  }
+  // "Segure o Se temChave pela palavra Se e arraste até o então do Se novo" (A Ilha do Farol, o
+  // farol que acende uma vez só): um bloco que já está na área vai, com tudo o que tem dentro, para
+  // o espaço de outro bloco. A mão pega o bloco pela primeira palavra dele.
+  const mover = /^mover ["“]([^"”]+)["”] para ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
+    texto,
+  )
+  if (mover?.[1] && mover[2]) {
+    const rotulo = mover[3] ?? 'fazer'
+    const origem = precisaDaPagina(pagina).bloco(mover[1], 'area')
+    if (!origem) throw new Error(`Não achei o bloco "${mover[1]}" à vista na área de código.`)
+    const destino = precisaDaPagina(pagina).encaixe(mover[2], rotulo)
+    if (!destino) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${mover[2]}".`)
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(mover[1])]
   }
   const encaixar = /^encaixar ["“]([^"”]+)["”] em ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
     texto,
@@ -1000,7 +1096,13 @@ export async function agirNaPagina(
   // abaixo de Ao iniciar). Antes de medir se uma área ficou por cima da outra, a página assenta:
   // passa do empurrão e espera as pilhas pararem. No ritmo sem pausa do Verificar plano, medir
   // antes disso fazia a mão pegar o bloco recém-encaixado em vez da área.
-  if (f.startsWith('afastar de ')) await assentar(pagina)
+  if (f.startsWith('afastar de ')) {
+    await assentar(pagina)
+    // Uma área que cresceu para o lado e cobriu a vizinha (o bloco encaixado alargou Quando
+    // acontecer por cima de Enquanto estiver rodando): a página organiza os blocos, como o botão
+    // direito e Organizar blocos (pedido da Helena, 22/11/2026). A de baixo o desembolar desce.
+    if (pagina.cobreDoLado() && (await pagina.organizar())) await assentar(pagina)
+  }
   // A roda que rolou a galeria aberta anima a lista por um instante, e às vezes só começa um
   // pouco depois do gesto. Medir no meio disso pedia outra rolagem, e as duas juntas passavam da
   // imagem, que sumia acima da lista. A escolha espera a lista parar.

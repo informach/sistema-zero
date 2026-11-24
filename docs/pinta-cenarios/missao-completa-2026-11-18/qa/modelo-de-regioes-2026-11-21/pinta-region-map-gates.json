@@ -1,0 +1,9 @@
+[
+  {
+    "name": "runtime-proof",
+    "exit": 0,
+    "started": "2026-11-21T04:33:47.223Z",
+    "finished": "2026-11-21T04:33:47.759Z",
+    "log": ".cache/pinta-region-map-runtime-proof.log"
+  }
+]

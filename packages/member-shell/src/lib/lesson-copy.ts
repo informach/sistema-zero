@@ -104,6 +104,8 @@ export interface LessonCopy {
     paraConcluir: string
     continueConstruindo: string
     compartilharDepois: string
+    /** Na aula o Mural mostra o ENVIO: com o jogo igual, pede para enviar a versão nova. */
+    compartilharIgual: string
     semEnvio: string
     trazerExplica: string
     recomecarExplica: string
@@ -159,6 +161,8 @@ export interface LessonCopy {
     enviar: (quantos: number) => string
     recado: string
     erro: string
+    /** Desenho que o Pinta ainda não conferiu (perfil causal): aparece, mas não vai até ser aberto. */
+    abrirNoPinta: string
   }
   material: {
     tituloDoLivro: string
@@ -253,6 +257,11 @@ function itemPendente(item: SectionPendingItem): string {
 export const PALAVRAS_DA_ESCOLA =
   /Concluir fase|(?:^|clique (?:em|na) )Próxima (?:fase|seção|etapa)|Mapa da Aventura|Enviar para o professor/i
 
+const GALERIA_SEM_DESENHOS_CAUSAIS =
+  'Os desenhos deste perfil não podem ser enviados pela galeria. Fale com a equipe.'
+const GALERIA_DESENHO_MUDOU = 'Este desenho mudou. Escolha de novo para enviar a versão nova.'
+const GALERIA_ABRA_NO_PINTA = 'Abra este desenho no Pinta uma vez para poder enviar.'
+
 const ERRO_DO_SERVIDOR: Record<string, string> = {
   // O rascunho de uma parte com "envio em dia" não chegou à conta (`LessonDraftSaveError`).
   LESSON_DRAFT_NOT_SAVED:
@@ -274,6 +283,13 @@ const ERRO_DO_SERVIDOR: Record<string, string> = {
   LEARNING_CONFLICT: 'Esta aula foi atualizada. Abra a aula de novo para continuar.',
   GALLERY_DELIVERY_FAILED:
     'Não foi possível enviar. Suas criações continuam na galeria. Tente de novo.',
+  // Perfil com o Pinta causal (23/11/2026): a galeria lista e copia pela cabeça confirmada de cada
+  // desenho. A frase "não podem ser enviados" fica só para o que de fato não tem como ir: a leitura
+  // causal desligada para este perfil ou uma recusa causal inesperada no envio.
+  PINTA_CAUSAL_CONFLICT: GALERIA_SEM_DESENHOS_CAUSAIS,
+  GALLERY_PINTA_CAUSAL_UNSUPPORTED: GALERIA_SEM_DESENHOS_CAUSAIS,
+  GALLERY_PINTA_DRAWING_CHANGED: GALERIA_DESENHO_MUDOU,
+  GALLERY_PINTA_DRAWING_UNCERTIFIED: GALERIA_ABRA_NO_PINTA,
   // Serve para guardar E para conferir: o 400 da validação chega dos dois caminhos.
   VALIDATION_ERROR: 'Não deu certo agora. Confira e tente de novo.',
   PAYLOAD_TOO_LARGE: 'Ficou grande demais para guardar.',
@@ -362,6 +378,8 @@ export const COMMON_LESSON_COPY: LessonCopy = {
     paraConcluir: 'Envie o seu projeto para concluir a aula.',
     continueConstruindo: 'Continue construindo. Você envia o projeto no fim da aula.',
     compartilharDepois: 'Envie o seu projeto primeiro para poder compartilhar.',
+    compartilharIgual:
+      'O jogo que você enviou à equipe é o mesmo que está no Mural. Envie a sua versão nova para atualizar.',
     semEnvio: 'Você ainda não enviou nenhum projeto.',
     trazerExplica:
       'Isto substitui o que você está editando aqui pelo último projeto que você enviou. Use se você terminou em outro computador.',
@@ -414,6 +432,7 @@ export const COMMON_LESSON_COPY: LessonCopy = {
     enviar: (quantos) => `Enviar${quantos ? ` (${quantos})` : ''}`,
     recado: 'Recado (opcional)',
     erro: 'Não foi possível carregar suas criações. Tente novamente.',
+    abrirNoPinta: GALERIA_ABRA_NO_PINTA,
   },
   material: {
     tituloDoLivro: 'Material do curso',

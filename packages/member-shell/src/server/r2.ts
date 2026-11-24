@@ -1,4 +1,5 @@
 import 'server-only'
+import { createHash } from 'node:crypto'
 import { Agent as HttpAgent } from 'node:http'
 import { gunzipSync } from 'node:zlib'
 import {
@@ -340,12 +341,12 @@ export async function r2HeadObjectPrivate(key: string): Promise<R2PrivateHead | 
 
 /** Sobe um objeto no bucket PRIVADO (cache de PDFs com marca d'água por aluno). */
 export async function r2PutObjectPrivate(input: R2PutObjectInput): Promise<void> {
-  await putPrivateObject(input, false)
+  await putRestrictedObject(requirePrivateR2Config(), input, false)
 }
 
 /** Atomic creation: a concurrent writer or a retained tombstone wins over this PUT. */
 export async function r2CreateObjectPrivate(input: R2PutObjectInput): Promise<boolean> {
-  return putPrivateObject(input, true)
+  return putRestrictedObject(requirePrivateR2Config(), input, true)
 }
 
 /** Replace only the exact object whose ownership/content was checked by the caller. */
@@ -355,15 +356,16 @@ export async function r2ReplaceObjectPrivate(
 ): Promise<boolean> {
   const normalized = etag.replace(/^"|"$/g, '')
   if (!normalized || /["\r\n]/.test(normalized)) throw new Error('Versão do objeto inválida.')
-  return putPrivateObject(input, false, `"${normalized}"`)
+  return putRestrictedObject(requirePrivateR2Config(), input, false, `"${normalized}"`)
 }
 
-async function putPrivateObject(
+async function putRestrictedObject(
+  cfg: R2PrivateConfig,
   input: R2PutObjectInput,
   onlyIfAbsent: boolean,
   etag?: string,
+  signal?: AbortSignal,
 ): Promise<boolean> {
-  const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)
   try {
     await getClient(cfg).send(
@@ -378,6 +380,7 @@ async function putPrivateObject(
         ...(onlyIfAbsent ? { IfNoneMatch: '*' } : {}),
         ...(etag ? { IfMatch: etag } : {}),
       }),
+      { abortSignal: signal },
     )
     return true
   } catch (error) {
@@ -392,7 +395,7 @@ async function putPrivateObject(
       error.$metadata.httpStatusCode === 412
     )
       return false
-    console.error('[r2] putObjectPrivate falhou', { key, error })
+    console.error('[r2] putRestrictedObject falhou', { key, error })
     throw new Error('Falha ao gravar o arquivo no armazenamento.', { cause: error })
   }
 }
@@ -487,6 +490,9 @@ export async function r2PresignPutUgc(input: {
   contentType: string
   contentLength: number
   expiresInSeconds?: number
+  signingDate?: Date
+  /** Arquivos por hash: uma URL de envio não pode substituir conteúdo já confirmado. */
+  criarUmaVez?: boolean
 }): Promise<string> {
   const cfg = requireUgcR2Config()
   return getSignedUrl(
@@ -496,12 +502,42 @@ export async function r2PresignPutUgc(input: {
       Key: normalizeKey(input.key),
       ContentType: input.contentType,
       ContentLength: input.contentLength,
+      ...(input.criarUmaVez ? { IfNoneMatch: '*' } : {}),
     }),
     {
       expiresIn: input.expiresInSeconds ?? 300,
-      signableHeaders: new Set(['content-type', 'content-length']),
+      ...(input.signingDate ? { signingDate: input.signingDate } : {}),
+      signableHeaders: new Set([
+        'content-type',
+        'content-length',
+        ...(input.criarUmaVez ? ['if-none-match'] : []),
+      ]),
     },
   )
+}
+
+/** Leitura autenticada pelo servidor para conferir um upload UGC sem materializar seu corpo. */
+export async function r2GetObjectUgc(
+  key: string,
+  signal?: AbortSignal,
+): Promise<R2PrivateObject | null> {
+  const cfg = requireUgcR2Config()
+  try {
+    const r = await getClient(cfg).send(
+      new GetObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }),
+      { abortSignal: signal },
+    )
+    if (!r.Body) throw new Error('Objeto sem corpo')
+    return {
+      body: r.Body.transformToWebStream() as ReadableStream<Uint8Array>,
+      contentType: r.ContentType ?? null,
+      contentLength: r.ContentLength ?? null,
+    }
+  } catch (error) {
+    const name = error && typeof error === 'object' && 'name' in error ? error.name : null
+    if (name === 'NotFound' || name === 'NoSuchKey' || name === '404') return null
+    throw new Error('Não consegui ler o arquivo no armazenamento.', { cause: error })
+  }
 }
 
 /** URL pré-assinada de GET no bucket UGC (TTL curto) — entrega direta browser←R2. */
@@ -511,6 +547,10 @@ export async function r2PresignGetUgc(
     expiresInSeconds?: number
     responseContentDisposition?: string
     responseContentType?: string
+    /** O `Cache-Control` que o R2 devolve com o arquivo (para o que é guardado por conteúdo). */
+    responseCacheControl?: string
+    /** A hora da assinatura (padrão: agora). A mesma hora dá o MESMO link, que o navegador reaproveita. */
+    signingDate?: Date
   } = {},
 ): Promise<string> {
   const cfg = requireUgcR2Config()
@@ -521,8 +561,12 @@ export async function r2PresignGetUgc(
       Key: normalizeKey(key),
       ResponseContentDisposition: opts.responseContentDisposition,
       ResponseContentType: opts.responseContentType,
+      ResponseCacheControl: opts.responseCacheControl,
     }),
-    { expiresIn: opts.expiresInSeconds ?? 300 },
+    {
+      expiresIn: opts.expiresInSeconds ?? 300,
+      ...(opts.signingDate ? { signingDate: opts.signingDate } : {}),
+    },
   )
 }
 
@@ -538,15 +582,32 @@ export async function r2CopyObjectUgc(source: string, destination: string): Prom
   )
 }
 
-export async function r2ReadCreationJson(key: string): Promise<unknown> {
+/**
+ * Lê uma criação guardada (gzip de JSON). `expectedSha256`: o hash do arquivo comprimido que a
+ * leitura TEM de encontrar (a cópia de um desenho causal); bytes diferentes nunca são abertos.
+ */
+export async function r2ReadCreationJson(key: string, expectedSha256?: string): Promise<unknown> {
   const cfg = requireUgcR2Config()
   const object = await getClient(cfg).send(
     new GetObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }),
   )
   if (!object.Body) throw new Error('O trabalho não está disponível. Atualize a galeria.')
   const compressed = await bufferFromStream(object.Body.transformToWebStream(), 40 * 1024 * 1024)
+  if (
+    expectedSha256 !== undefined &&
+    createHash('sha256').update(compressed).digest('hex') !== expectedSha256
+  )
+    throw new Error('A cópia não confere com o desenho escolhido. Atualize a galeria.')
   const json = gunzipSync(compressed, { maxOutputLength: 128 * 1024 * 1024 }).toString('utf8')
   return JSON.parse(json)
+}
+
+/** The sealed Pinta prefix has no browser PUT. A concurrent seal cannot replace an object. */
+export async function r2CreateObjectUgc(
+  input: R2PutObjectInput,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  return putRestrictedObject(requireUgcR2Config(), input, true, undefined, signal)
 }
 
 export async function r2PutObjectUgc(input: R2PutObjectInput): Promise<void> {

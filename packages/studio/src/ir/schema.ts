@@ -74,6 +74,11 @@ import {
   gameKit3DModelStatementSchemas,
 } from '../official-extensions/game-3d-advanced/modelIR'
 import {
+  G3K_SCENE_STATEMENT_TYPES,
+  type SceneGameKit3DStatement,
+  sceneGameKit3DStatementSchemas,
+} from '../official-extensions/game-3d-advanced/sceneIR'
+import {
   type GameRulesExpression,
   type GameRulesStatement,
   gameRulesExpressionSchemas,
@@ -97,6 +102,7 @@ import {
   isCanvas3DResourceCreatorExpression,
   isCanvas3DResourceCreatorStatement,
 } from '../three/canvas3dContract'
+import { type Canvas3DSceneStatement, canvas3DSceneSchemas } from '../three/canvas3dSceneIR'
 import { FULLSCREEN_GAME3D_KITS, type FullscreenGame3DKit } from '../three/fullscreenKits'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
@@ -120,7 +126,9 @@ import {
   type Canvas3DStatementContextIndex,
   validateProgrammingReferences as collectProgrammingReferenceIssues,
   createCanvas3DStatementContextIndex,
+  programImportsThreeClasses,
 } from './programmingReferences'
+import type { ReadonlyNames } from './symbolNames'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -1522,8 +1530,10 @@ export function cssDeclarationsRecord(declarations: CSSDeclarations): Record<str
 export function hasDuplicateCSSDeclarations(declarations: CSSDeclarations): boolean {
   const seen = new Set<string>()
   for (const declaration of cssDeclarationEntries(declarations)) {
-    if (seen.has(declaration.property)) return true
-    seen.add(declaration.property)
+    const property = declaration.property.trim()
+    const identity = property.startsWith('--') ? property : property.toLowerCase()
+    if (seen.has(identity)) return true
+    seen.add(identity)
   }
   return false
 }
@@ -1841,6 +1851,7 @@ interface JSStatementCommon {
 }
 
 export type JSStatement =
+  | Canvas3DSceneStatement
   | (JSStatementCommon & { type: 'var'; name: string; value: JSExpr; kind?: 'let' | 'const' })
   // Declaração sem valor inicial (`let x;`).
   | (JSStatementCommon & { type: 'declareVar'; name: string })
@@ -3334,6 +3345,7 @@ export type JSStatement =
   | World3DNewStatement
   // ---- Jogo 3D Avançado, animação do modelo (lote 11): `game-3d-advanced/modelIR.ts` ----
   | GameKit3DModelStatement
+  | SceneGameKit3DStatement
   // ---- Jogo 3D Avançado, lote 12 (patrulha, mochila, progresso, fases): `gameplayIR.ts` ----
   | GameKit3DGameplayStatement
   // ---- Game 3D — câmera: olhar e FOV (o MODO mora em platformIR.ts) ----
@@ -5493,7 +5505,7 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'physicsLiteSetup'
       world: string
-      heightFunction: string
+      heightFunction?: string
       gravity: JSExpr
       maxSubSteps: JSExpr
     })
@@ -7740,7 +7752,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     ...platformGameThreeDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameRulesStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...world3DNewStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...canvas3DSceneSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...gameKit3DModelStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...sceneGameKit3DStatementSchemas(irText, idField),
     ...gameKit3DGameplayStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
       type: z.literal('g3d:cameraLookAt'),
@@ -10758,7 +10772,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('physicsLiteSetup'),
       world: irText(),
-      heightFunction: irText(),
+      heightFunction: irText().optional(),
       gravity: JSExprSchema,
       maxSubSteps: JSExprSchema,
       ...idField,
@@ -11299,7 +11313,7 @@ const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
 
 function containsCanvas3DResourceCreatorExpression(
   value: unknown,
-  importedClassNames: ReadonlySet<string> | undefined,
+  importedClassNames: ReadonlyNames<string> | undefined,
 ): boolean {
   if (Array.isArray(value)) {
     return value.some((child) =>
@@ -11606,7 +11620,15 @@ export const SZIRSchema = z
   })
 
   .superRefine((ir, ctx) => {
-    validateLegacyLifecycle(ir.js, ctx, ['js'], createCanvas3DStatementContextIndex(ir.js))
+    validateLegacyLifecycle(
+      ir.js,
+      ctx,
+      ['js'],
+      // Sem import de classes do three, o índice sairia vazio em todo statement: nem monta.
+      programImportsThreeClasses(ir.js)
+        ? createCanvas3DStatementContextIndex(ir.js)
+        : new WeakMap(),
+    )
     for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'], {
       canvasIds: collectCanvasIds(ir.html),
       // Pincel entregue por runtime instalado (`ctx` do Jogo 2D) conta como
@@ -12127,6 +12149,8 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:createTorus',
   'g3d:createModel',
   'g3d:createModelFile',
+  'g3d:loadScene',
+  'g3d:sceneStart',
   'g3d:skyPhoto',
   'g3d:modelAnimation',
   'g3d:setColor',
@@ -12523,6 +12547,7 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:playTone',
   ...gameRulesStatementTypesFor('g3k'),
   ...G3K_MODEL_STATEMENT_TYPES,
+  ...G3K_SCENE_STATEMENT_TYPES,
   ...G3K_GAMEPLAY_STATEMENT_TYPES,
 ])
 

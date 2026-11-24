@@ -1,5 +1,289 @@
 # @sistemazero/studio
 
+## Miniaturas dos modelos 3D (23/11/2026)
+
+Pedido dela: no seletor de modelo do bloco só aparecia o 📦, e a criança escolhia pelo nome.
+`three/modelThumbnails.ts` desenha cada modelo uma vez, na hora em que a grade do bloco
+(`FieldAssetPicker`) ou a aba "Modelos 3D" (`ModelThumbnail` em `Models3DTab.tsx`) pede, e guarda a
+imagem na memória da página (as últimas 64, chave = id + conteúdo). Nada muda no projeto.
+
+- Um desenho por vez num único quadro WebGL 2 de 96 px; sem WebGL 2 o three.js nem é baixado e fica
+  o 📦 (também quando o arquivo não abre). O modelo dos cursos (referência compacta) é resolvido antes.
+- ⚠️ O enquadramento sai dos PIXELS do primeiro desenho (`recorteDoDesenho` + `setViewOffset`), não
+  da caixa calculada: num boneco espelhado com ossos (o espelho do Molda) a caixa e o desenho não
+  batem, e a miniatura saía minúscula num canto. Vazio ou encostado na beirada: afasta e tenta de
+  novo (até 4 vezes).
+- O three.js entra por `import()`: o seletor não o põe na carga dos modos
+  (`initialBundleBudget.test.ts` conta só os imports estáticos).
+- Provas: `three/__tests__/modelThumbnails.test.ts` (fila, memória, cursos, recorte) e
+  `components/assets/tabs/Models3DTab.thumbnail.test.tsx` (a aba e a grade, com quem desenha trocado
+  por `trocarDesenhoDasMiniaturasParaTestes`). O desenho com WebGL é conferido num Chromium de
+  verdade (o happy-dom não tem WebGL).
+
+## Regiões 3D e os exemplos grandes da galeria (22/11/2026)
+
+Lotes 5 a 7b e 9 da conclusão do plano (especificação em
+`docs/estudio-evolucao/regioes-3d-especificacao.md`; o jogo E em
+`docs/estudio-evolucao/evidencias/jogo-e-regioes-2026-11-22/`). O que não pode regredir:
+
+- **Pertença conferida na leitura.** A cena compilada traz `regioes` com as listas `nos`,
+  `colisoes` e `aguas` de cada região; o compilador e o leitor usam a MESMA função pura
+  (`calcularPertencaDasRegioes`/`conferirPertencaDasRegioes`, `molda-cenarios-core/src/compilar/schema-regioes.ts`):
+  lista velha ou incompleta é recusada antes de desenhar. Fixture congelada nova
+  `testing/contracts/molda-scene3d-regioes-v1.json`; a v1 sem regiões continua abrindo.
+- **A carga por regiões mora no motor dos cenários e no SDK, nunca nos motores.** `carga: 'tudo' |
+  'regioes'` (padrão `'tudo'`: o Arquipélago, o GLB único e a exportação portátil não mudam); o
+  SDK do Estúdio (`three/scene3d.ts`) pede `'regioes'`. Cada regra mora num lugar:
+  `REGRAS_DA_CARGA` (`molda-cenarios-core/src/compilar/carga-das-regioes.ts`) guarda só os números
+  (0,5 m de tolerância, pré-carga até `max(40 m, câmera)`, descarte além de +20 m depois de 2 s), e
+  as funções do mesmo arquivo decidem a região segura e as vizinhas sempre carregadas; o teto de 48
+  malhas e 128 MiB por janela é o `LIMITES_DA_EXPORTACAO.janela`
+  (`molda-cenarios-core/src/compilar/limites.ts`), contado por janela em `compilar/janelas.ts`; as
+  novas tentativas em 1, 4 e 15 s são o `NOVAS_TENTATIVAS` de
+  `molda-cenarios-motor/src/compilar/runtime-three.ts`, que também expõe o `estadoDasRegioes()`.
+  O estado do jogo (moedas, placar) nunca descarrega; onde a região não carregou, vale o relevo
+  global (ninguém cai). ⚠️ O céu do cenário (esfera de 3000 m na oficina) ajusta o raio a 90% do
+  alcance da câmera no `quadro` do ambiente: a câmera dos motores 3D do Estúdio enxerga 1000 m, e
+  com o raio fixo o céu saía preto (conferência no staging, 22/11/2026).
+- **O bloco** "Quando … entrar na região" é o valor `event: 'regiao'` da regra `onGame` (não um
+  membro novo da união, pelo TS2590) e o `onEnterRegion` nos três motores 3D (`SZGame3D.onEnterRegion` no Jogo 3D; no Mundo 3D e no 3D Avançado pelo objeto do próprio motor, a partir das regras comuns de `game3dRules`), pago com o
+  `fisica.apoio` do SDK (`three/scene3dPhysics.ts`) no lugar do laço de apoio de cada motor. O campo
+  `FieldSceneRegionPicker` lê as regiões da cena trazida e guarda o NOME.
+- **Python:** o `cenario.py` carrega por regiões com as mesmas regras (casos compartilhados com o
+  TypeScript em `runtime/python/raylib/__tests__/regioes-casos.json`, gerados por
+  `scripts/gen-raylib-region-cases.ts`); os blocos de cenário do Raylib 3D só ligam com o recurso
+  `molda-scene-regions-v1` da distribuição (`core/src/studio/python-runtime-features.ts`). O relevo de
+  mundo grande (plano "Mundos de 2 km", lote 6): o `cenario.py` lê o campo (alturas e pesos em PNG
+  com `zlib`) e monta pedaços com a cor no vértice (o Raylib do Estúdio não tem neblina nem o
+  material do editor): completos até 1,5 pedaço do foco, grossos longe, um completo por quadro, nada
+  atrás da câmera nem além de 1000 m. A conta é a de `molda-cenarios-core/src/compilar/relevo-pedacos.ts`,
+  conferida byte a byte pelos casos `__tests__/relevo-casos.json` (`scripts/gen-raylib-relevo-cases.ts`).
+  O Estúdio só pede o campo num projeto Python com o recurso `molda-scene-relevo-v1`
+  (`scene3DRuntimeReadsRelevo`). No jogo exportado para o computador (raylib do pip) a malha de cada
+  pedaço é memória do C (`_memoria`, solta no `unload_model`); prova local com o raylib instalado:
+  `__tests__/cenario_nativo_test.py` (pulado sem ele).
+- **Ordem segura:** leitores em todo lugar antes do escritor; o interruptor `CENARIOS_REGIOES` do
+  Members (desligado por padrão) mostra a ferramenta Regiões e deixa o servidor aceitar `regioes`.
+- **Exemplos grandes na galeria** (`examples/bigExamples.ts`): entram no grupo do motor com nome,
+  descrição e capa, e o jogo só carrega no clique. O jogo D vem num pedaço do pacote; o jogo E
+  (20 MB) mora no R2 do ambiente (`estudio-exemplos/jogo-e/<sha256>.json`, gerado por
+  `scripts/gen-jogo-e-galeria.ts`) e chega pela rota do host (`exampleFilesBaseUrl`, no Kids e no
+  adulto `/api/studio/example-files`, ligada por `STUDIO_EXAMPLES_ORIGIN`); sem o endereço o card
+  não aparece, e o arquivo só abre com o tamanho e o hash certos (e com programa: arquivo de IR
+  vazia é recusado). ⚠️ A galeria continua só para a equipe nos dois apps (decisão dela).
+- ⚠️⚠️ **A galeria monta os blocos ANTES de o editor registrar as extensões do projeto**: o
+  `buildProjectFromKitEntry` registra as regras (contratos) dos blocos das extensões do exemplo
+  antes do `buildWorkspaceStateFromIR`. Sem elas o construtor não sabe que um bloco está fora do
+  lugar (não o troca por código) e a carga inteira do editor falha com "Não deu para abrir estes
+  blocos" (o jogo E no staging, 22/11/2026; `projects/KitGallery.placement.test.ts`). Teste de
+  blocos sem navegador precisa das regras registradas, senão passa por sorte. O gerador do jogo E
+  recusa qualquer linha que vire código cru.
+- Provas: `e2e/engine-regions.spec.ts` (no `studio-engines.yml`), `moldaFullScenario.contract.test.ts`,
+  os testes do bloco nos três motores, `__tests__/cenario_test.py`, `e2e-runtime/python-raylib.spec.ts`
+  e `examples/bigExamples.test.ts`. O mundo do jogo E tem 384 m: 1 km passa dos tetos de hoje pela
+  GEOMETRIA do relevo (um vértice por metro, nos lotes e na colisão do chão), não pelo chão pintado
+  (2 px/m). Os mundos de 2 km: `docs/plans/2026-11-23-mundos-de-2km.md`. A medida numa placa de
+  vídeo de verdade é local e com janela: `e2e/grande-gpu.spec.ts` (`playwright.gpu.config.ts`,
+  recusa a placa emulada; a rota e os números saem de `src/medida/mundoGrande.ts`). No aparelho de
+  verdade (o notebook simples do aceite) a medida é a página `/estudio/medida-mundos` do staging, só da
+  equipe (CLAUDE.md do member-shell); o projeto dela sai de `scripts/gen-medida-mundos.ts`, e o mundo de
+  2 km entra na galeria por `scripts/gen-jogo-e-galeria.ts --mundo mundo-2km`.
+
+## O jogo D: o 2D de grande porte (22/11/2026)
+
+O exemplo "Mundo das Portas" (lote 8 da conclusão do plano; detalhe e números em
+`docs/estudio-evolucao/evidencias/jogo-d-2026-11-22/`): mundo do Pinta de 96 × 72 peças, seis
+regiões, três cavernas, quatro casas, 14 portas, 603 entidades, só com blocos que já existem.
+
+- **Tudo é gerado por código** (`scripts/jogo-d/` arte, cenas e sons; `scripts/gen-jogo-d.ts`):
+  mudou a arte, uma cena ou `src/examples/jogoDSource.ts`? `bun run gen:jogo-d`. O
+  `check:jogo-d` roda no `studio-engines.yml`, e o `jogoD.test.ts` compara os bytes também.
+  ⚠️ `jogoD.generated.ts` (1,75 milhão de caracteres) fica fora do biome; não o importe de código
+  do app sem pensar no pacote. O jogo D já está na galeria, só para a equipe, num pedaço do pacote
+  carregado no clique (`examples/bigExamples.ts`, com `import('./jogoDExample')`).
+- **Contratos das cenas que o programa usa**: porta com `destino` (nome do desenho) e `chegada` (id
+  do objeto no destino, no MEIO de uma peça e nunca dentro de uma porta, senão o herói volta na
+  hora: no mundo, a peça abaixo da porta; nas cavernas e casas, duas peças acima da saída); região
+  `role: 'region'` com `vizinhas` em par e 1 px a menos na largura e na altura (o tocador confere
+  as bordas incluídas; assim a borda comum fica numa região só); entidade com `chave`
+  (`lugar/objeto`), porque o bloco "dado do objeto" não lê o id. Nenhum inimigo nasce a menos de
+  `RAIO_SEM_INIMIGO` (6 peças) de uma chegada, do início ou do centro de uma região: ele persegue a
+  140 px. ⚠️ Camada de tiles com `collision` é só de colisão: o tocador NÃO a desenha (a peça
+  visível segura pelo `solid` do tileset).
+- **A porta**: o programa sabe que trocou de lugar quando a porta usada não está mais entre as
+  portas da cena (`!SZGame2D.mapObjects("mapa", "door").includes(porta)`): pela PORTA, não pelo
+  nome, que num remix se repete ("Saída", "Objeto 3"; full review final). Destino quebrado: o `useMapDoor` avisa uma vez e nada muda. Chegada que falta: o herói fica no
+  início do outro lugar e o resto muda.
+- **Guardar**: uma chave só para o que foi pego (`jogo-d-pegos`, a lista unida por vírgula) e o
+  `jogo-d-salvo` por último. ⚠️ O armazenamento da prévia aceita no máximo 500 chaves
+  (`PRO_STORAGE_LIMITS.maxKeys`): uma chave por item quebrava a cama na prévia.
+- Provas: `src/examples/jogoD.test.ts` (rodadas no motor de verdade, sem navegador) e
+  `e2e/jogo-d.flow.ts` (`playwright.jogo-d.config.ts`, dois servidores: a prova e o Estúdio do
+  playground). A sessão longa usa `JOGO_D_SESSAO_MS` (10 minutos no CI, pelo menos 3 voltas) e
+  PÕE o herói em cada região e porta (não anda; quem anda é a prova de desempenho). O programa das
+  provas de navegador ganha a sonda `window.__jogoD` (e o contador `__comecos`), só de leitura.
+
+## Áreas do projeto no Python (22/11/2026)
+
+O editor de blocos do Python tem as seis áreas do JavaScript (📦 🎛️ 🧩 ⚙️ ⚡ 🔁), que no Python
+são TRECHOS do arquivo na ordem em que ele roda. Proposta aprovada e desenho técnico em
+[`docs/plans/2026-11-22-python-areas-do-projeto.md`](../../docs/plans/2026-11-22-python-areas-do-projeto.md)
+(substitui a área única "Programa", `sz_py_program`, que saiu). O que não pode regredir:
+
+- **O código manda.** A área de cada linha vem do tipo da linha (`python/blocks/areas.ts`); o
+  comentário `# 📦 Bibliotecas` etc. só acompanha, e quem o escreve e apaga é a fase 2 da
+  transação visual (`python/language/areaMarkers.ts`). Comentário de área = linha inteira, coluna
+  0, texto exato (espaço no fim não conta), nunca acima de shebang ou da codificação
+  (`pythonModuleHeaderEnd`, PEP 263, linha 1 ou 2). As proteções de comentário só aceitam soltar
+  um comentário de área (`droppedComments`).
+- ⚠️⚠️ **Organizar nunca muda o programa.** Duas linhas com efeito nunca trocam de lugar; só
+  troca quem só cria nomes e não pode dar erro, e o registro de tecla/relógio. Mexeu no modelo de
+  efeitos de `areas.ts`? Rode `areas.differential.test.ts` com Python 3.13+ no PATH (sem ele a
+  prova é PULADA com aviso, e verde não diz nada; o `analyzer.py` recusa tudo num 3.12). O 1º
+  modelo mudava programas reais (revisão de 22/11, M1 a M12) e passou em todos os testes de tabela.
+- **🎛️ são as constantes, ⚙️ as variáveis** (decisão dela, 22/11/2026): lista, dicionário e
+  conjunto em MAIÚSCULAS com valores fixos vão para Configurações só se nada no arquivo os muda
+  (`fixedValue` + `changedInPlace` em `areas.ts`; o `reach` diz a quantos `[…]` há algo que muda).
+  Na dúvida (entregue a uma função qualquer, guardado noutro nome) fica no Ao iniciar. A troca de
+  lugar é segura de qualquer jeito: a conferência só decide a área.
+- **Todo programa cabe**: o ⚙️ Ao iniciar aceita qualquer bloco; a linha que não pode ir para a
+  área dela fica onde está, com a nota `python-area` e "Levar para <área>". O bloco que liga ou
+  desliga o jogo fica no fim, e tudo depois do laço do jogo é terminal.
+- **Guardas** (`areaGuards.ts`): ignoram eventos com `recordUndo` desligado e as cargas; o
+  conserto entra no MESMO grupo de eventos do gesto (um Ctrl+Z desfaz os dois). ⚠️ No workspace
+  headless não há `isDragging` nem `moveTo` (são do `WorkspaceSvg`/`BlockSvg`): o `next build`
+  do Kids reprovou por isso. ⚠️ Os eventos do Blockly headless chegam na tarefa seguinte; o
+  teste espera um tique. O fim do jogo é o bloco que liga o jogo MAIS a cauda dele (o que vinha
+  depois sem mexer no gesto): ele vai para o fim só quando o gesto mexeu nele ou pôs uma LINHA
+  depois dele (nunca por uma edição dentro de uma linha que já estava lá), e os grupos do
+  organizar (`PYTHON_ORGANIZE_GROUPS`) ficam de fora. ⚠️ O Blockly religa embaixo da pilha solta
+  o que estava ali, e esse resto também recebe evento de movimento: é ele que separa a pilha nova
+  da cauda antiga. MAIÚSCULAS só se o nome não existe em outro bloco nem já em MAIÚSCULAS.
+- **Rascunho que não reabre fica guardado**: `preparePythonScratchRestoreKeeping` reabre bloco a
+  bloco e devolve os que não reabrem crus (`kept`); o editor os passa a TODA gravação
+  (`capturePythonWorkspace(…, kept)` e `commitPythonWorkspaceGesture({ keptScratch })`). Gravar
+  só o que está na tela apagava o rascunho da criança.
+- **Linha com `;`**: os comandos de uma linha são uma peça só no `statementMoves.ts` (andam
+  juntos); o `;` sozinho no fim não prende a linha. A edição de vários comandos da mesma peça vai
+  numa cópia só (`visualTransaction.ts` junta os filhos por cópia: o `composePythonCopiedEdit`
+  recusa dois filhos na mesma cópia).
+- **Layout fora do desfazer**: `pushOverlappingPythonAreas` (a área que cresce empurra a
+  vizinha) roda com `Events.setRecordUndo(false)` e só fora do arraste.
+- **Organizar sozinho só depois de carga vinda do código** (abrir, Ponte, modo Código), no
+  primeiro `pointerup`/`focusin` nos blocos e só para quem edita; nunca enquanto a criança digita
+  nem com um campo do Blockly aberto, e o pedido só é gasto quando organizou (`incomplete`).
+  O `sz_organize` do JavaScript some quando o workspace tem `__szOrganizePython`.
+- **Rascunhos**: áreas vazias e blocos soltos são rascunho e sobrevivem à Ponte; rascunho com a
+  área antiga `sz_py_program` é descartado (não há alunos de Python).
+- ⚠️ **Os exemplos do repositório só mudam junto com os recibos novos**: o catálogo entra no
+  `codecOrderSha256` e o `check:python-visual-examples` do CI reprova. Por isso o bloco novo do
+  Turtle (`sz_py_turtle_every`, lote 5) espera a requalificação. Pipeline: fixtures de edição
+  (`scripts/python/example-edit-fixtures.ts --check`) → `organize-examples.ts --out <pasta>` →
+  `requalify-gallery.ts` → `gen:*` → `check:*`.
+- e2e (`e2e-python-editor/program-areas.spec.ts`, `workspace-layout.spec.ts`, job
+  `python-browser-isolation`): clicar nos blocos procura um ponto LIVRE do
+  `blocklyMainBackground` (num ponto fixo a paleta intercepta) e esperar a gravação pede 6 s sem
+  mudança; as fixtures contam rascunho sem os `sz_py_area_*`. No Windows o servidor de provas
+  exige Bun 1.4.3. As fixtures do `e2e-runtime` montam o programa NAS ÁREAS
+  (`pythonVisualToWorkspace(…, { areas })`): no modo antigo de pilhas soltas o programa é gravado
+  como rascunho. As configs `python-pgzero`/`-raylib`/`-pygame` não sobem o servidor de provas
+  (suba `experiments/studio-python-runtime/server.ts` antes, porta 5297).
+
+## "Mostrar o bloco" em projeto grande: corpos escondidos e abertura só para mostrar (22/11/2026)
+
+Detalhe e números em `docs/estudio-evolucao/classico-em-escala.md` (seção do lote 2 da conclusão).
+O que não pode regredir:
+
+- **Cauda adiada (`blockly/deferredTail.ts`)**: o corpo escondido de um bloco recolhido continua
+  adiado até ele abrir (`revealBody`, gancho em `setCollapsed`); `RenderedConnection.startTrackingAll`
+  não liga conexão de bloco adiado; a medição do lote de desenho (`measuringOnce`) roda com
+  `Blockly.Events.disable()` (desenhar um bloco recolhido refaz o rótulo dele, e isso saía como
+  mudança de campo, no desfazer e na regeneração), mas o `triggerQueuedRenders` do `settle` roda
+  com os eventos ligados (é ele que afasta pilhas soltas, e afastar sem evento escondia a mudança);
+  o corpo comprido em volta do alvo é cortado depois do alvo + 1,5 tela
+  (`renderAround`) e completado antes da unidade seguinte (`completeBodyAbove`); centralizar num
+  bloco escondido para na unidade que o contém. ⚠️ A fronteira deixada dentro da função fica
+  escondida quando a função (ou a área) é recolhida: `hiddenByCollapsed` olha TODOS os blocos
+  acima, e o `revealBody` completa o corpo se algo embaixo já foi desenhado (revisão do lote 2).
+- **Abrir só para mostrar (`blockly/transientExpansion.ts`)**: `revealBlockInWorkspace(…, {transient:
+  true})`, só do `BlocklyPanel` (a busca, o cartão do palco, os Problemas e o Investigar; o cursor
+  do código só seleciona, e o Python abre como antes). A abertura não emite evento; o
+  `saveWorkspaceState` grava o bloco recolhido (`keepShownBlocksCollapsed`, na ordem de chaves do
+  Blockly) até a criança mexer nele. ⭐ O gesto inteiro (abrir, centralizar, selecionar) roda no
+  `withShowingScope`: um grupo de eventos PRÓPRIO, com o desfazer desligado, e a fila de desenho
+  esvaziada antes de sair. O Blockly lê o grupo e o "vai para o desfazer" quando o evento NASCE, e o
+  `bump` que o desenho faz nasce ali dentro: ele é reconhecido pelo grupo (`isBumpWhileShowing`,
+  não grava layout), não entra no desfazer (apagava o refazer) e não tira a marca. ⚠️ Nada de
+  relógio: a janela de 2 s de antes começava antes do desenho caro, e numa máquina lenta o evento
+  chegava depois dela e o projeto salvo mudava (full review final). A gravação de saída e o Rodar
+  ignoram a diferença só de posição (`differsOnlyInStackPositions` no
+  `flushScheduledRegeneration`). ⚠️ Todo estado que
+  sai do Blockly do Clássico JS precisa passar pelo
+  `saveWorkspaceState`, senão a abertura vira mudança do projeto.
+- Provas: `e2e/collapsed-reveal.spec.ts` (na config `offscreen-lifecycle`, três motores),
+  `e2e/classic-reveal-scale.spec.ts` (o gesto no Reino Zero Ultra com a CPU 4× mais lenta: projeto
+  salvo igual, "Desfazer" como estava e trabalho limitado), `transientExpansion.test.ts` (o grupo
+  do gesto, o desfazer e o refazer) e as guardas do Blockly 12.5.1 no `deferredTail.test.ts`.
+
+## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
+
+O adapter do Compartilhar ganhou `status?({project, compare}, signal)` (`StudioShareStatus`,
+exportado), `allowNewPost?` e `unchangedMessage?`; `StudioSharePublishInput` ganhou `keepCover?` e
+`asNewPost?`; `StudioShareResult` ganhou `updated?`. O `publication.update` SAIU (o histórico só
+restaura e desativa; pôr a versão de agora no link é o botão principal).
+- **Topbar**: com `status` dizendo `published`, o botão vira "Atualizar no Mural"
+  (`share.updateAction`; consulta leve `compare: false`, refeita ao trocar de projeto e ao fechar o
+  diálogo).
+- **ShareDialog**: abre pedindo `status({compare: true})`; já publicado vira "Atualizar no Mural dos
+  Criadores" com a descrição, o título e a capa do post (`Cover` `current`, "Manter a capa de
+  agora"), sem rascunho da IA, sem o desafio do mês (fica no mês da 1ª publicação) e com o aviso
+  `share.unchanged` (ou o `unchangedMessage` do host) quando o jogo não mudou, que desliga o
+  "Atualizar". "Publicar como jogo novo" mora num `<details>` "Outras formas de publicar", só com
+  `allowNewPost`. ⚠️ Não use "Mais opções" ali: é o nome do menu ⋯ da barra. Uma atualização
+  mostra sempre a própria tela de sucesso, mesmo com `onPublished`.
+- **ProPublicationHistory**: "Versões do jogo", só restaurar e desativar; aparece também para o
+  jogo clássico (o `playId` vem do `status.history`).
+- Testes: `ShareDialog.test.tsx` (bloco "republicar atualiza"), `Topbar.test.tsx` e
+  `ProPublicationHistory.test.tsx`.
+
+## Cenários do Pinta nos jogos 2D: correções da revisão (18/11/2026)
+
+O fragmento `map-2d` (blocos "Criar cenário do meu desenho", "Desenhar cenário", "Colidir com
+cenário"...) serve ao Jogo 2D e ao Jogo 2D Avançado. O que vale desde esta data:
+
+- **Variante do motor**: `''` (sem contexto) é o motor COMPLETO, com cenário; o motor sem
+  cenário tem a chave `sem-cenario-pinta` (`map-2d/bootstrap.ts`), na convenção do
+  `game-3d/platformKitVariant.ts`. A chave reduzida nunca pode ser `''`: para `''` o host troca
+  o contexto por `undefined` (`extensions/runtime.ts`) e o completo volta. Era o defeito: todo
+  jogo 2D levava os ~11 mil caracteres do cenário. O teste que vale é o do caminho do host
+  (`map-2d/__tests__/hostVariant.test.ts`), não o do fragmento chamado na mão.
+- **Tetos**: motor sem cenário nos tetos de sempre (422.500 e 415.000); com cenário, teto
+  absoluto em `MAP_TWO_D_FULL_BOOTSTRAP_MAX_CHARS` (medido 431.468 e 419.766). Desde 21/11/2026 o Jogo 2D sai
+  sem os comentários de bloco (`stripBlockComments`): tetos 369.500 bytes sem cenário e 393.500 (desde 22/11)
+  caracteres com cenário (`docs/estudio-evolucao/motores-inventario.md`).
+- **A pergunta "usa cenário?" é uma só** (`codeUsesPintaScenePlayer`, em
+  `@sistemazero/core/studio/pinta-limits`, sem dependências porque entra no pedaço inicial):
+  decide o motor E se a cena vai nos metadados do documento. `assetMetaManifest(assets,
+  contexto)` recebe o mesmo `extensionBootstrapContext` do motor; sem contexto a cena vai (lado
+  seguro). Jogo que não usa cenário leva só `hasScene: true`, e é por ele que o bloco antigo de
+  mapa diz "é um cenário. Use o bloco Criar cenário do meu desenho". `tilemapFront` não vai ao
+  documento: nenhum motor o lê.
+- **Colisão no Avançado**: o motor lê `m.solid[idx]`, então o host passa objeto de índices
+  (`{0:true}`), nunca `Set`. `map-2d/__tests__/engines.test.ts` executa o texto dos dois motores
+  e confere o personagem parando no chão. Sem `@napi-rs/canvas`, `map-2d/runtime.test.ts` pula
+  só os casos de pixel, com aviso no console.
+- **Áreas** ("Quando entrar em área"): conferidas a cada quadro pelo relógio do host
+  (`host.frame`), e também ao desenhar e ao colidir. Não dependem mais de desenhar a camada de
+  trás.
+- **Desenho com cena manda no mapa inteiro**: `tilemap`/`tilemapFront` que ele não traz SAEM
+  do material (store e `mergeDrawingIntoAsset`), sem herança por geometria. `drawingNeedsSync`
+  compara só bytes, cena e mapas; `tileset`/`sprite` são do Estúdio e não entram.
+- **Orçamento**: a cena conta no total do projeto na escrita e na leitura
+  (`projectAssetBudgetChars`). Na leitura, cena que não cabe sai sozinha, com aviso
+  (`options.warnings` + console); a imagem fica.
+- **"Jogar meu mapa"**: o início e o tamanho do mundo são blocos que leem a cena
+  (`mapSpawn`, `mapSize`); nenhum número do mapa fica no programa.
+
 ## O redesenho do Estúdio clássico (08/11/2026)
 
 Blocos e Ponte, JavaScript e Python, com as peças do Pro (proposta "Estúdio Clássico —
@@ -9,10 +293,13 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
 - **Rodar/Parar na barra**: `PreviewIframe` e `PythonEditorPreview` publicam fase + ações no
   `proRun` (sem barra própria); `ProRunControls` no meio da Topbar (fora do celular). O olhinho
   virou "Mostrar o jogo" no ⋯. `ClassicStage` (`components/preview/`) é o palco: título
-  Jogo/Página/Programa, pílula, **Atualizar** (nome acessível "Atualizar o preview" — âncora das
-  aulas gravadas, não renomear), Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
-  parou". `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
-- **Âncoras das aulas gravadas** (robô `palco-gravacao`): "Atualizar o preview", selo "Salvo"
+  Jogo/Página/Programa, pílula, Jogo maior, tela cheia, cartões "Aperte Rodar" e "Opa, o jogo
+  parou". A tela cheia é o MESMO botão para entrar e sair (`hooks/useFullscreen.ts`, que segue o
+  `fullscreenchange`: sair pelo Esc também volta o botão), também na prévia do Python (23/11/2026). `useClassicStage` liga o `PanelGroup`, o `revealStage` e os pedidos do estreito.
+- **Âncoras das aulas gravadas** (robô `palco-gravacao`): o Rodar da barra
+  (`[data-live-target="studio-run"]`, que se chama "Rodar" ou "Rodar de novo" conforme a fase; o
+  antigo "Atualizar o preview" do palco não existe mais desde o redesenho, conferido em 17/11/2026),
+  selo "Salvo"
   (único; a frase da nuvem do host vai na dica, e a nuvem só aparece com aviso/erro), rótulos do
   Compartilhar, `iframe[title="Pré-visualização"]`, "Organizar blocos", o TEXTO dos rótulos das
   categorias (ícones vêm por classe/`::before`, nunca no texto), `.blocklyTrash`, um
@@ -26,8 +313,11 @@ hosts. Só CSS e API pública do Blockly 12 dentro dos blocos.
   "Mostrar o bloco" = `highlightStore.revealBlock` (centraliza só no bloco: `centerOnBlock(id,
   true)`). O Jogo 2D avisa o erro apanhado por `window.__szReportCaughtError` (o interceptor
   acha a linha do script do aluno no stack). Python: o `diagnostic` traz arquivo e linha.
-- **Blockly**: `blockly/cornerSpacer.ts` (lixeira e zoom mais altos por um componente
-  posicionável invisível); zoom 1,0 e blocos no alto na 1ª carga; `blockly/categoryNames.ts`
+- **Blockly**: `blockly/workspaceControls.ts` (lixeira e zoom mais altos por um componente
+  posicionável invisível; desde 20/11/2026 também a lixeira POR CIMA dos blocos, que o Blockly 12
+  punha antes da camada dos blocos, e os desenhos no `sprites.svg` do SDK, em vetor; baixado logo
+  depois da injeção por `cornerSpacer.ts`, fora do pacote de abertura; até chegar, o CSS esconde os
+  dois pelo `data-sz-controls="pending"`, que só os editores do Estúdio marcam); zoom 1,0 e blocos no alto na 1ª carga; `blockly/categoryNames.ts`
   (D3, nomes de exibição — a curadoria segue pela chave); `contextMenuWords.ts` (palavras de
   criança + "Perguntar ao Zappy", o "Arrumar blocos" nativo sai); `moreBlocksItem.ts` ("Mais
   blocos" no pé da paleta); a busca (`searchCategory.ts`) aceita um resolvedor por workspace

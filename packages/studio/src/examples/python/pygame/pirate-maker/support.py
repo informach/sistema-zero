@@ -1,13 +1,14 @@
+# 📦 Bibliotecas
 import pygame
 import pinta
 from settings import *
 
+# 🎛️ Configurações
 # The palm trees, the clouds and the cursors share one frame size per Pinta drawing (the biggest):
 # each animation is cut back to its painted area, the size each picture has in the game.
 TRIMMED = ('palmeira', 'palmeira-fundo', 'nuvem', 'cursor')
 
-drawings = {}
-
+# 🧩 Meus moldes
 def import_folder(name, animation, mirrored = False):
     if name not in drawings:
         drawings[name] = pinta.carregar_sprite(name)
@@ -44,3 +45,6 @@ def terrain_style(terrain_string):
         else:
             style += name
     return style if style else 'X'
+
+# ⚙️ Ao iniciar
+drawings = {}

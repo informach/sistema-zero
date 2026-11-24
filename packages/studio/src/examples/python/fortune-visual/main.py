@@ -1,5 +1,6 @@
-"""Vidente educacional: toda a lógica fica visível em blocos, Ponte e Python."""
+# Vidente educacional: toda a lógica fica visível em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 INTERVALO = 16
 PASSO_FISICA = 16
 VELOCIDADE_MINIMA = 600
@@ -21,14 +23,9 @@ RESPOSTAS = ["Com certeza!", "Nem pensar!", "Pergunte amanhã", "Sim, sim, sim!"
              "Talvez...", "Só se chover", "Os astros: sim", "Melhor não"]
 CORES_FATIAS = ["#ff6b6b", "#4dabf7", "#69db7c", "#b197fc", "#ffa94d", "#63e6be", "#f783ac", "#74c0fc"]
 COR_PONTEIRO = "#ffe14a"
-estado = {"aberto": False, "timer_pendente": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-ponteiro = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def largura_fatia():
     return 360 / len(RESPOSTAS)
 
@@ -135,26 +132,6 @@ def atualizar(tempo):
     mostrar_ponteiro()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def girar():
     if estado["girando"] or estado["pausado"]:
         return
@@ -171,6 +148,14 @@ def empurrar(sentido):
         return
     estado["angulo"] = (estado["angulo"] - sentido * PASSO_SETA) % 360
     mostrar_ponteiro()
+
+
+def empurrar_para_direita():
+    empurrar(1)
+
+
+def empurrar_para_esquerda():
+    empurrar(-1)
 
 
 def pausar():
@@ -195,7 +180,6 @@ def reiniciar():
     estado["ultimo_tempo"] = time.monotonic()
     sz_audio.play("abertura.wav", volume=0.5)
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -206,35 +190,58 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(800, 700)
-    tela.title("Vidente • Sistema Zero")
-    tela.bgcolor("#151226")
-    tela.tracer(0)
-    for desenho in [cenario, ponteiro, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    tela.register_shape("ponteiro", ((0, 150), (-14, 118), (-5, 118), (-5, -18), (5, -18), (5, 118), (14, 118)))
-    ponteiro.shape("ponteiro")
-    ponteiro.color(COR_PONTEIRO)
-    ponteiro.goto(0, CENTRO_Y)
-    ponteiro.showturtle()
-    desenhar_roda()
-    tela.onkey(girar, "space")
-    tela.onkeypress(lambda: empurrar(1), "Right")
-    tela.onkeypress(lambda: empurrar(-1), "Left")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+ponteiro = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(800, 700)
+tela.title("Vidente • Sistema Zero")
+tela.bgcolor("#151226")
+tela.tracer(0)
+for desenho in [cenario, ponteiro, painel]:
+    desenho.penup()
+    desenho.speed(0)
+tela.register_shape("ponteiro", ((0, 150), (-14, 118), (-5, 118), (-5, -18), (5, -18), (5, 118), (14, 118)))
+ponteiro.shape("ponteiro")
+ponteiro.color(COR_PONTEIRO)
+ponteiro.goto(0, CENTRO_Y)
+ponteiro.showturtle()
+desenhar_roda()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(girar, "space")
+tela.onkeypress(empurrar_para_direita, "Right")
+tela.onkeypress(empurrar_para_esquerda, "Left")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

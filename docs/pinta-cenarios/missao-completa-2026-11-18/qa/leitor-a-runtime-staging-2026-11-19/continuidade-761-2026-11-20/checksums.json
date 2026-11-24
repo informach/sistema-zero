@@ -1,0 +1,30 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "59fbe1a159496ca1a95a26fd5c8f2eee7effd9d230c01582b201646512320e3d"
+  },
+  {
+    "file": "artefato-linux.json",
+    "sha256": "c4d60a53f2410c317b0d092009dbaae46f1ef9d9cd39c46a66a82ef3f908d350"
+  },
+  {
+    "file": "execucao-container.json",
+    "sha256": "126c45baf35edb086ad100f91cd549666fe5d8ef83f1f69246d37654432e42b9"
+  },
+  {
+    "file": "imagem-qualificada.json",
+    "sha256": "21bc4ff94baf9f808e7e661c167563beb6b288af4d50f5012030d82900bfc94d"
+  },
+  {
+    "file": "implantacao.json",
+    "sha256": "90dba873044e1ba2f367e342b10d36b3aaf2d1ef2683061c8a49cd0e829371d0"
+  },
+  {
+    "file": "leitura-independente.json",
+    "sha256": "9007da80780892173bb3c19dd5f8bfc30f76aeb052a4faccdc0177c87b8267a8"
+  },
+  {
+    "file": "preflight.json",
+    "sha256": "0620f992435ac84e18c557667d35a82778dc455b8525e5d74994c2d8cd96525e"
+  }
+]

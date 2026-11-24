@@ -1,8 +1,10 @@
+# 📦 Bibliotecas
 import pygame
 import art
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, ICONS, HUD_POSITIONS
 
 
+# 🧩 Meus moldes
 class Hud:
     """The icons of the chosen tool and seed, in the bottom left corner."""
 

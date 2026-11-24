@@ -1,0 +1,28 @@
+import { spawnSync } from 'node:child_process'
+import { readFile, writeFile, stat } from 'node:fs/promises'
+import { resolve, join } from 'node:path'
+import { createHash } from 'node:crypto'
+import { verifyTiledPackage } from '../packages/pinta/scripts/homologacao/verify-tiled'
+const { GlobalRegistrator } = await import(Bun.resolveSync('@happy-dom/global-registrator',resolve('packages/pinta')))
+GlobalRegistrator.register()
+const binary='C:/Users/tocha/projects/sistema-zero/.tmp/pinta-tools/tiled-files/tiled.exe'
+const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex')
+if(sha(await readFile(binary))!=='f6da55b3f236b600a46f522eeffcac8281251c8eda21255e401d6b186461a97a')throw Error('Unrecognized Tiled binary')
+const root=resolve('.cache/pinta-owned-vila-external-linked-edit/tiled'),proof=JSON.parse(await readFile('.cache/pinta-owned-vila-external-linked-edit/export-proof.json','utf8'))
+for(const f of proof.targets.find((t:any)=>t.target==='tiled').hashes)if(sha(await readFile(join(root,f.file)))!==f.sha256)throw Error('Changed package '+f.file)
+const conversions=[]
+for(const index of [0,1])for(const[format,input,output]of[['json','mapa.tmx','native-tiled.json'],['tmx','mapa.json','native-tiled.tmx']]){
+ const target=join(root,'mapas','mapa-'+index,output)
+ try{await stat(target);throw Error('Refusing to replace evidence')}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}
+ const run=spawnSync(binary,['--export-map',format,join(root,'mapas','mapa-'+index,input),target],{encoding:'utf8',windowsHide:true,timeout:30000})
+ if(run.status!==0)throw Error('Native Tiled failure '+run.stderr)
+ let bytes:Buffer|undefined
+ for(let i=0;i<100;i++){try{bytes=await readFile(target);if(bytes.length)break}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e}await Bun.sleep(50)}
+ if(!bytes?.length)throw Error('No native output')
+ if(format==='json'&&JSON.parse(bytes.toString()).tiledversion!=='1.12.2')throw Error('Wrong native Tiled version')
+ conversions.push({index,format,input,output,bytes:bytes.length,sha256:sha(bytes)})
+}
+const problems=await verifyTiledPackage(root,['native-tiled.json','native-tiled.tmx'])
+const result={at:new Date().toISOString(),sourceHash:proof.sourceMapHash,nativeVersion:'1.12.2',maps:2,conversions,problems,fullSceneRoundTrip:problems.length===0}
+await writeFile('.cache/pinta-owned-vila-linked-tiled-native.json',JSON.stringify(result,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify(result));if(problems.length)process.exitCode=1

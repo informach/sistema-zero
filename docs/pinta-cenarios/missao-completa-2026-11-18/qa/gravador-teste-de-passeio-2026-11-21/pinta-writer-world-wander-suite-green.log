@@ -1,0 +1,492 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\world-3d\__tests__\activePlayer.test.ts:
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > a pé, o personagem EMPURRA um tijolo para fora do lugar [94.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > a pé, correr contra a pista de boliche derruba pinos [47.00ms]
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > a pé, encostar andando na caixa explosiva faz BUM (e te joga pro alto) [46.00ms]
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > a pé, parado do lado da caixa explosiva, nada explode (só o encostão) [16.00ms]
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > a pé, a corrida larga, conta o checkpoint e termina [47.00ms]
+(pass) Mundo 3D — o JOGADOR ATIVO a pé (lote 9) > dirigindo, o carrinho continua empurrando e derrubando como antes [31.00ms]
+(pass) Mundo 3D — teclas do dropdown comum (lote 8) > o runtime entende os códigos do dropdown (KeyE, Space, ShiftLeft, ArrowUp) [31.00ms]
+(pass) Mundo 3D — cantos da tela no gerenciador das regras de jogo (lote 9) > o texto da criança e os painéis automáticos dividem o MESMO canto, texto primeiro [47.00ms]
+(pass) Mundo 3D — cantos da tela no gerenciador das regras de jogo (lote 9) > aceita os nomes antigos dos cantos e o texto vazio apaga só o texto [32.00ms]
+(pass) Mundo 3D — cantos da tela no gerenciador das regras de jogo (lote 9) > o cronômetro da corrida ganha painel próprio e não apaga o texto da criança [46.00ms]
+(pass) Mundo 3D — coisas que nascem DURANTE o jogo (lote 9) > moedas criadas num "Quando entrar na área" aparecem e contam [47.00ms]
+(pass) Mundo 3D — coisas que nascem DURANTE o jogo (lote 9) > caixa explosiva e missão podem nascer no meio do jogo (com teto) [47.00ms]
+(pass) Mundo 3D — limpeza, chão e clima (lote 9) > disposeAll solta TODO listener que o mundo registrou [16.00ms]
+(pass) Mundo 3D — limpeza, chão e clima (lote 9) > chão mexido no laço: UMA reconstrução por quadro e teto de 64 pedidos [219.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — limpeza, chão e clima (lote 9) > o clima é determinístico: dois passeios iguais chovem igual [78.00ms]
+
+src\official-extensions\world-3d\__tests__\blockAudit.test.ts:
+(pass) Auditoria Mundo 3D — inventário > coleta identificadores para todos os comandos Mundo 3D que o compilador emite
+(pass) Auditoria Mundo 3D — inventário > todo def é statement (previousStatement) ou reporter (output)
+(pass) Auditoria Mundo 3D — inventário > mantém construções pesadas só no início e ações leves disponíveis em corpos
+(pass) Auditoria Mundo 3D — inventário > usa seletores filtrados para modelos e nomes declarados de som/item
+(pass) Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jogador está" > "Escrever na tela" é o das regras de jogo 3D (mesma lista de cantos, incluindo o meio) [63.00ms]
+(pass) Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jogador está" > a vida é do jogador: os blocos de vida não pedem objeto (a cara do resto é a do Jogo 3D)
+(pass) Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jogador está" > as teclas vêm do dropdown comum (códigos) e voltam iguais pela Ponte [31.00ms]
+(pass) Auditoria Mundo 3D — dropdowns comuns (cantos e teclas) e "onde o jogador está" > "onde o jogador está" faz o round-trip nos três eixos e chama playerPos [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_use_scene (statement) [78.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_setup (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_terrain (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_flatten (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_path (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_water (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_sky_photo (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_stats (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_boost (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_engine_sound (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_place (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_grass (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_scatter (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_scatter_model (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_place_thing (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_place_model (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_clear_area (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_horn (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_horn (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_lights (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_tire_marks (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_paint (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_crash (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_daynight (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_set_time (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_weather (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_season (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_tornado (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_clouds (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_achievement (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_achievement (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_minimap (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_podium (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_whisper_corner (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_flame_note (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_coins_scatter (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_coins_ring (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_coins_line (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_collect (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_quest (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_quest_done (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_quest_done (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_marker (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_guide_arrow (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_wander (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_talk (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_say (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_emote (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_islands (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_boat (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_bridge (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_lighthouse (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_ambience (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person_stats (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person_place (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person_accessory (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person_emote (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_vehicle (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_waterfall (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_lamp (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_fireflies (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_campfire (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_push_place (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_push_scatter (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_letters (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_explosive (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_explosion (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_confetti (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_fireworks (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_wind (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_daynight (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_point (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_point (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_zone (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_zone (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_totem_text (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_totem_image (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_gallery_create (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_gallery_add (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_create (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_checkpoint (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_on_start (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_on_checkpoint (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_on_finish (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_bowling_create (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_bowling_reset (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_bowling_on_strike (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_stack (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_camera_mode (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_effects (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_load_sound (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_play_sound (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_play_music (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_stop_music (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_say (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_update (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_city (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_crops (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_barn (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_windmill (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_fence (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_animals (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_crater (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_flag (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_rocket (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_door (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_ask (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_traffic (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_string_lights (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_district (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_road_grid (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_house_row (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_quality (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_inventory_give (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_inventory_remove (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_collect_item (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_collectible (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_remove_named (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_inventory_clear (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_person_model (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_npc_model (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_model_anim (statement) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_model (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_hud_text (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_add_score (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_life_over (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_set_life (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_hurt (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_heal (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_set_screen_text (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_end_game (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_restart (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_after_seconds (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_on_timer_end (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_start_timer (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_stop_timer (statement) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_camera_shake (statement)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_world_size (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_ground_height (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_car_speed (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_has_achievement (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_coin_count (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_player_pos (expr) [15.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_is_driving (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_time_of_day (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_time (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_race_best (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_pins_down (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_knocked_count (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_key_down (expr) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_key_pressed (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_inventory_count (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_inventory_has (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_score (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_life_of (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_time_left (expr)
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_random_between (expr) [16.00ms]
+(pass) Auditoria Mundo 3D — pipeline completo por bloco > sz_w3d_random_chance (expr)
+(pass) Auditoria Mundo 3D — a Ponte não muda o código em silêncio (achados de 24/10/2026) > coletável com nome vazio continua com nome vazio (não vira "estrela")
+(pass) Auditoria Mundo 3D — a Ponte não muda o código em silêncio (achados de 24/10/2026) > "Pôr o modelo" só vira bloco com 5 ou 6 argumentos (um a mais perdia o clipe)
+(pass) Auditoria Mundo 3D — a Ponte não muda o código em silêncio (achados de 24/10/2026) > "No personagem, quando estiver…" volta com o nome padrão do próprio bloco
+
+src\official-extensions\world-3d\__tests__\docDrift.test.ts:
+(pass) Mundo 3D — doc × blocos (docDrift) > cada sub-categoria (chip) da toolbox aparece nos docs do aluno pelo emoji
+(pass) Mundo 3D — doc × blocos (docDrift) > o manual tem uma seção por família, na MESMA ordem da árvore, e cada seção de verdade
+(pass) Mundo 3D — doc × blocos (docDrift) > marcas e estúdios de fora só aparecem em "Créditos e inspirações", nunca nos blocos
+(pass) Mundo 3D — doc × blocos (docDrift) > o som é carregado em ⚙️ Ao iniciar (não em 🧩 Meus moldes) no manual e na IA
+(pass) Mundo 3D — doc × blocos (docDrift) > todo bloco está na paleta em UM lugar só, sem fantasma e sem categoria "Mais"
+(pass) Mundo 3D — doc × blocos (docDrift) > cada método do runtime é citado no contexto da IA (ai.ts)
+(pass) Mundo 3D — doc × blocos (docDrift) > os textos existem e cabem nos tetos do Zod
+
+src\official-extensions\world-3d\__tests__\examples.test.ts:
+(pass) Mundo 3D — exemplos da vitrine > o provider registra os 14 exemplos
+(pass) Mundo 3D — exemplos da vitrine > a vitrine segue a ordem nova, com os nomes acentuados
+(pass) Mundo 3D — exemplos da vitrine > nenhum título ou descrição cita marca de outro estúdio (vão para "Créditos e inspirações")
+(pass) Mundo 3D — exemplos da vitrine > Meu Mundo > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Meu Mundo > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Meu Mundo > a IR completa valida no SZIRSchema [16.00ms]
+(pass) Mundo 3D — exemplos da vitrine > Meu Mundo > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Inverno Mágico > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Inverno Mágico > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Inverno Mágico > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Inverno Mágico > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Fazendinha > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Fazendinha > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Fazendinha > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Fazendinha > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Base da Lua > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Base da Lua > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Base da Lua > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Base da Lua > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Parque dos Brinquedos > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Parque dos Brinquedos > a IR embutida NÃO desviou do parser (drift guard) [16.00ms]
+(pass) Mundo 3D — exemplos da vitrine > Parque dos Brinquedos > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Parque dos Brinquedos > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Caça às Estrelas > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Caça às Estrelas > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Caça às Estrelas > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Caça às Estrelas > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Boliche na Praça > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Boliche na Praça > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Boliche na Praça > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Boliche na Praça > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Corrida do Pôr do Sol > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D) [15.00ms]
+(pass) Mundo 3D — exemplos da vitrine > Corrida do Pôr do Sol > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Corrida do Pôr do Sol > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Corrida do Pôr do Sol > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Ilha dos Criadores > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Ilha dos Criadores > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Ilha dos Criadores > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Ilha dos Criadores > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Vila das Vocações > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Vila das Vocações > a IR embutida NÃO desviou do parser (drift guard) [16.00ms]
+(pass) Mundo 3D — exemplos da vitrine > Vila das Vocações > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Vila das Vocações > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Pista Maluca > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Pista Maluca > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Pista Maluca > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Pista Maluca > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Passeio das Letras > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Passeio das Letras > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Passeio das Letras > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Passeio das Letras > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Costa das Ilhas > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Costa das Ilhas > a IR embutida NÃO desviou do parser (drift guard)
+(pass) Mundo 3D — exemplos da vitrine > Costa das Ilhas > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Costa das Ilhas > usa a extensão world-3d e deixa o boot automático fora do código da criança
+(pass) Mundo 3D — exemplos da vitrine > Cidade das Carreiras > o fonte parseia SEM rawJS/memberCall (100% blocos do Mundo 3D)
+(pass) Mundo 3D — exemplos da vitrine > Cidade das Carreiras > a IR embutida NÃO desviou do parser (drift guard) [16.00ms]
+(pass) Mundo 3D — exemplos da vitrine > Cidade das Carreiras > a IR completa valida no SZIRSchema
+(pass) Mundo 3D — exemplos da vitrine > Cidade das Carreiras > usa a extensão world-3d e deixa o boot automático fora do código da criança
+
+src\official-extensions\world-3d\__tests__\gameRules.test.ts:
+(pass) Mundo 3D — regras de jogo de ponta a ponta (lote 10) > coletável dá ponto, perigo tira vida, fim pausa e o recomeçar é leve [109.00ms]
+(pass) Mundo 3D — regras de jogo de ponta a ponta (lote 10) > o fim de jogo por vitória mostra a tela de vitória e o "Recomeçar" do bloco também é leve [94.00ms]
+(pass) Mundo 3D — regras de jogo de ponta a ponta (lote 10) > coletáveis nascidos DURANTE a partida saem no recomeçar; os do começo voltam [93.00ms]
+(pass) Mundo 3D — regras de jogo de ponta a ponta (lote 10) > "Tirar … do mundo" tira amigo, ponto, coletáveis e ícones; "Esvaziar a mochila" zera [32.00ms]
+(pass) Mundo 3D — regras de jogo de ponta a ponta (lote 10) > o exemplo "Caça às Estrelas" roda: tela de início segura o mundo até o botão [47.00ms]
+
+src\official-extensions\world-3d\__tests__\molda.test.ts:
+(pass) Mundo 3D — Molda (lote 10) > "Pôr o modelo": lado maior em metros, pé no chão do heightAt e o clipe tocando [47.00ms]
+(pass) Mundo 3D — Molda (lote 10) > teto de 24 modelos se mexendo e aviso ao espalhar um modelo animado [31.00ms]
+(pass) Mundo 3D — Molda (lote 10) > personagem com o modelo: troca o boneco, mantém a física e troca o clipe parado/andando [31.00ms]
+(pass) Mundo 3D — Molda (lote 10) > amigo e carro com o modelo (as rodas do carro continuam) [31.00ms]
+(pass) Mundo 3D — Molda (lote 10) > céu 360°: as luzes do mundo pegam as cores do céu [32.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:1f65aff1-2b57-4c64-8c01-a203cad5898c
+(pass) Mundo 3D — Molda (lote 10) > a pintura animada do Molda anda no laço e volta ao 1º quadro no recomeçar [93.00ms]
+(pass) Mundo 3D — Molda (lote 10) > descarta mixer e ossos no disposeAll e no recomeçar (modelo posto durante a partida) [94.00ms]
+
+src\official-extensions\world-3d\__tests__\performance.test.ts:
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — laço sem alocar (THREE contador) > Caça às Estrelas: a pé, com regras de jogo, coletáveis e espalhado [47.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — laço sem alocar (THREE contador) > Fazendinha: dirigindo, com bichos, moinho, amiga e folhas ao vento [78.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — laço sem alocar (THREE contador) > mundo cheio: moedas, postes à noite, cidade com trânsito, chuva, minimapa e missão [78.00ms]
+(pass) Mundo 3D — espalhado em pedaços de ~80 m (frustum culling) > mundo pequeno (< 160 m) continua num pedaço só: a câmera vê quase tudo, pedaço só somaria draw call [31.00ms]
+(pass) Mundo 3D — espalhado em pedaços de ~80 m (frustum culling) > vários InstancedMesh, cada um com a SUA esfera, o mesmo total e cada instância no seu pedaço [78.00ms]
+(pass) Mundo 3D — espalhado em pedaços de ~80 m (frustum culling) > o descarte libera os pedaços (o disposeAll passa por todos os InstancedMesh) [78.00ms]
+(pass) Mundo 3D — playerXZ reaproveitado, postes, moedas e HUD > o gancho que teletransporta o jogador não muda o resto do laço das moedas [32.00ms]
+(pass) Mundo 3D — playerXZ reaproveitado, postes, moedas e HUD > as luzes dos postes seguem o jogador (ordem refeita ao andar > 4 m, sem esperar) [31.00ms]
+(pass) Mundo 3D — playerXZ reaproveitado, postes, moedas e HUD > moedas longe da câmera ficam paradas; as perto giram; pegar continua igual [16.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playerXZ reaproveitado, postes, moedas e HUD > o balão do "Falar" não reescreve o estilo quando nada mudou na tela [31.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > pequena: menos draw calls em toda vista, as MESMAS instâncias e nada fora do culling [62.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > media: menos draw calls em toda vista, as MESMAS instâncias e nada fora do culling [63.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > grande: menos draw calls em toda vista, as MESMAS instâncias e nada fora do culling [47.00ms]
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > casas e cercas: um InstancedMesh por forma, a cor de cada peça por instância [47.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > o trânsito anda dentro da esfera dele (fixa no anel, não a do 1º quadro) [31.00ms]
+(pass) Mundo 3D — cidade agrupada por forma, com esfera própria (culling) > o descarte libera todas as peças e malhas da cidade [47.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — passeio dos bichos sem alocar > 16 bichos e 3 amigos trocando de alvo várias vezes, semáforos trocando de fase: 0 construções [78.00ms]
+(pass) Mundo 3D — passeio dos bichos sem alocar > guarda de fonte: passeio, animação do modelo, semáforos e explosivos não criam objeto no laço [15.00ms]
+
+src\official-extensions\world-3d\__tests__\playthrough.test.ts:
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > dirige com W: a posição anda e a velocidade sobe [32.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > buzina (H): dispara o "Quando buzinar" a cada apertada, não segurando [15.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > marcas de pneu: nascem no turbo e SOMEM (fade ~6 s) [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > konami (↑↑↓↓←→←→BA): o carrinho vira FOGUETE (nariz de cone aparece) [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > luzes: à noite os faróis ACENDEM (cor clara), de dia ficam apagados [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R12: fogos explodem (pool de festa ganha partículas vivas) e confete cai [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R12: tornado SUGA o carrinho que chega perto (determinístico: teleporta ao lado) [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R12: estação recolore as copas SEM rebuild (material compartilhado muda) [16.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R13: o carrinho EMPURRA um tijolo (ele sai do lugar) e a TNT detona em cadeia [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R14: poste acende à noite, vaga-lumes aparecem e a água ganha espuma [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R15: personagem ANDA a pé, entra no carrinho com E e desce com E (hooks disparam) [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R16: barco SÓ anda na água (encalha na praia) e a ponte segura o carro POR CIMA [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R17: conversa em FILA — E roda o gancho, cada E mostra a próxima fala [16.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R18: pega moedas dirigindo por cima e a missão completa dispara o gancho [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R19: conquista PERSISTE entre dois boots (shim) e só festeja na 1ª vez [63.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > playthrough do exemplo "Meu Mundo": roda, dirige e não quebra [47.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R21: A PÉ e LONGE do carro, E fala com a amiga (não teleporta pro carrinho) [46.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R21: na LUA o pulo flutua (~2,5× mais alto que na floresta) [63.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R22: a cidadezinha nasce PLANA, com casas instanciadas na cena [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R22: o varal de luzinhas ACENDE quando escurece [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R22: modo NEON cai a noite sozinho (quando a criança não pediu hora) [47.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R22/gate: a cidade média BOOTA rápido (eval+build < 2,5 s na bancada) [16.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R23: o trânsito ANDA no anel e PAUSA no semáforo (padrão para-e-anda) [62.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R23: o carrinho autônomo PARA atrás do jogador estacionado na pista [63.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R24: E na porta ABRE o cartaz local (e o 2º E fecha sem re-disparar) [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R24: pergunta com escolhas — tecla 2 roda o corpo da resposta B [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R21: a lua nasce com CRATERAS (fundo do buraco bem abaixo da borda) [47.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R25: moinho gira COM O VENTO (mais vento = mais giro) e a galinha fica no raio [32.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R25: a cerquinha tem postes SÓLIDOS (o carro esbarra) e a cratera manual afunda [15.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-A1 (review): say() posiciona o balão sobre o jogador a pé (mundo sem carrinho) [47.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-A2 (review): a neve nasce em volta do jogador a pé (não na origem do carro ausente) [31.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-A3 (review): o sol/sombra acompanha o jogador a pé (não fica no carro ausente) [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-A4 (review): dirigindo perto de um amigo, E fala e NÃO desce do carro [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-B1 (review): o barco pilotado na água anda (a câmera acompanha o barco) [15.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-B2 (review): a corrida corre fim-a-fim — larga, cruza o checkpoint e o gancho de fim dispara [16.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-B3 (review): dirigir o carro contra os pinos derruba pelo menos um [15.00ms]
+(pass) Mundo 3D — playthrough (o mundo joga na bancada) > R-B4 (review): ponto + E dispara onPoint; entrar numa zona dispara onZone [16.00ms]
+
+src\official-extensions\world-3d\__tests__\reviewFindings.test.ts:
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — boliche e veículos > "Quando derrubar todos os pinos" do Ao iniciar dispara (e de novo depois do recomeçar) [78.00ms]
+(pass) Mundo 3D — boliche e veículos > sobe no barco, desce e continua a pé [31.00ms]
+(pass) Mundo 3D — boliche e veículos > sobe no carro, desce e continua a pé [16.00ms]
+(pass) Mundo 3D — boliche e veículos > machucado no carro e descendo durante o piscar: o carro continua à vista [15.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > coletável tirado durante o jogo volta no recomeçar [78.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > moedas nascidas durante o jogo saem no recomeçar (não acumulam) [141.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Jogar de novo" devolve a corrida, as missões e as caixas explosivas do começo [78.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Jogar de novo": o do Ao iniciar volta (mesmo tirado no jogo) e o nascido no jogo sai [94.00ms]
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Levar o carrinho para…" no Ao iniciar põe o carro lá (o carro nasce no start) [78.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — o recomeçar leve devolve a partida do começo > "Pôr" no meio do jogo sai no recomeçar sem deixar parede invisível [94.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — amigos, mapa, céu e chão > amigo que nasce durante o jogo passeia (o "passear" veio no Ao iniciar) [15.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > tirar o amigo fecha a pergunta dele (e o próximo amigo consegue perguntar) [32.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > teleporte do mapa grande a bordo do barco leva o BARCO [31.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > lua e nuvens seguem o jogador a pé, não o carro estacionado [31.00ms]
+(pass) Mundo 3D — amigos, mapa, céu e chão > o teto de 64 do chão conta só os pedidos feitos durante o jogo [78.00ms]
+(pass) Mundo 3D — o que a criança lê no console > erro dentro de um "Quando…" vira frase em português; o erro cru fica no console.debug [16.00ms]
+(pass) Mundo 3D — listeners da partida > abrir e fechar o mapa grande e responder perguntas não acumula listeners [31.00ms]
+
+src\official-extensions\world-3d\__tests__\runtime.test.ts:
+(pass) SZWorld3D — API pura (sem DOM/three) > expõe 1 método por bloco [15.00ms]
+(pass) SZWorld3D — API pura (sem DOM/three) > setup: guarda o tamanho do mundo com clamp 40..600
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) SZWorld3D — API pura (sem DOM/three) > macros v4 anotam cidade sem Three e o inventário nunca fica negativo
+(pass) SZWorld3D — API pura (sem DOM/three) > groundHeight: determinístico, e o centro do mundo é PLANO (spawn em paz)
+(pass) SZWorld3D — API pura (sem DOM/three) > terrain: a altura dos morros escala a resposta analiticamente
+SZWorld3D: ajuste DEPOIS de "Criar o carrinho dirigível"
+SZWorld3D: leve o carrinho DEPOIS de "Criar o carrinho dirigível"
+SZWorld3D: "A cada quadro" precisa de um bloco de fazer dentro
+(pass) SZWorld3D — API pura (sem DOM/three) > guardas: chamar fora de ordem avisa e NUNCA lança
+SZWorld3D: não conheço o carrinho "trator" — usando passeio (tem: passeio, jipe, corrida)
+(pass) SZWorld3D — API pura (sem DOM/three) > estilo desconhecido cai para floresta sem quebrar
+SZWorld3D: não conheço "unicornio" — tem: arvores, pinheiros, pedras, flores, cogumelos, cactos, palmeiras
+SZWorld3D: "Quando o carrinho bater forte" precisa de blocos de fazer dentro
+SZWorld3D: o modelo "foguete" não está no projeto. Traga um do Molda (ou envie um .glb) em "Modelos 3D", no menu ⋯
+SZWorld3D: o modelo "foguete" não está no projeto. Traga um do Molda (ou envie um .glb) em "Modelos 3D", no menu ⋯
+(pass) SZWorld3D — API pura (sem DOM/three) > natureza: blocos só ANOTAM receitas antes do start (nada constrói sem three)
+SZWorld3D: não conheço a câmera "drone" — tem: seguir, topo, cinema
+(pass) SZWorld3D — API pura (sem DOM/three) > grama e efeitos: config pura antes do start, sem lançar
+SZWorld3D: o som "inexistente" não está no projeto. Envie em "Sons", no menu ⋯
+SZWorld3D: o som "buzina" não foi carregado — use "Carregar o som"
+SZWorld3D: a música "nada" não está no projeto
+(pass) SZWorld3D — API pura (sem DOM/three) > água/trilha/sons/hud: config pura antes do start, sem lançar [16.00ms]
+(pass) SZWorld3D — API pura (sem DOM/three) > mantém a mesma música tocando quando o comando é repetido
+SZWorld3D: "Quando apertar E no ponto" precisa de blocos de fazer dentro
+(pass) SZWorld3D — API pura (sem DOM/three) > pontos/áreas/totens/galeria: config pura antes do start, sem lançar
+SZWorld3D: crie a corrida antes com "Criar a corrida"
+(pass) SZWorld3D — API pura (sem DOM/three) > corrida: cria, checkpoints, ganchos e recorde — puros, sem lançar
+SZWorld3D: "Quando derrubar todos os pinos" precisa de blocos de fazer dentro
+(pass) SZWorld3D — API pura (sem DOM/three) > boliche/derrubar: cria, empilha, ganchos e contadores — puros, sem lançar
+(pass) SZWorld3D — API pura (sem DOM/three) > flatten muda a altura do terreno para o valor do centro
+SZWorld3D: não conheço a hora "madrugada" — tem: manha, meiodia, entardecer, noite
+SZWorld3D: não conheço o clima "meteoro" — tem: limpo, chuva, neve, folhas, tempestade
+SZWorld3D: "Quando virar noite" precisa de blocos de fazer dentro
+(pass) SZWorld3D — API pura (sem DOM/three) > céu & clima: hora do mundo, ganchos e guardas puras
+
+src\official-extensions\world-3d\__tests__\runtimeRobustness.test.ts:
+(pass) Mundo 3D — robustez do runtime > não reinicia o relógio do mesmo som ambiente quando o comando é repetido [15.00ms]
+(pass) Mundo 3D — robustez do runtime > não transforma keydown repetido pelo sistema em um novo keyPressed [32.00ms]
+(pass) Mundo 3D — robustez do runtime > oferece no toque todas as ações do teclado e solta a tecla ao cancelar o gesto [31.00ms]
+SZWorld3D: modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)
+(pass) Mundo 3D — robustez do runtime > restaura resolução e mapa de sombra ao sair do modo desempenho [31.00ms]
+(pass) Mundo 3D — robustez do runtime > limita a malha pesada e usa exatamente seus triângulos na física do chão [94.00ms]
+(pass) Mundo 3D — robustez do runtime > libera geometrias e materiais ao reconstruir personagem e barco [31.00ms]
+(pass) Mundo 3D — robustez do runtime > libera a árvore da TNT quando a explosão a remove da cena [47.00ms]
+(pass) Mundo 3D — robustez do runtime > carrega HDR local, aplica no céu/reflexos e libera a textura no teardown [31.00ms]
+(pass) Mundo 3D — robustez do runtime > encerra com segurança enquanto um GLB ainda está sendo interpretado [94.00ms]
+(pass) Mundo 3D — robustez do runtime > Pôr modelo com ossos não compartilha esqueleto (fixture real do Molda) [31.00ms]
+
+src\official-extensions\world-3d\__tests__\scene3d.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) Mundo 3D usa o chão e ambiente reais e descarta a base substituída sem trocar o controlador [547.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) recorte físico não vira chão invisível nem teleporta o personagem ao fundo [531.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o personagem respeita os triângulos de colisão do cenário, além da altura do terreno [375.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) preserva a origem do cenário, sem prender o personagem nas bordas do antigo mundo centralizado [360.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+SZWorld3D: não consegui usar o cenário; o mundo anterior foi preservado
+SZWorld3D: não consegui usar o cenário; o mundo anterior foi preservado 20 |     caracteres += a.dataUrl.length
+21 |     if (caracteres > PROJECT_ASSET_LIMITS.maxAssetsTotalChars)
+22 |       throw Error('Os materiais do cenário excedem o espaço do projeto.')
+23 |   }
+24 |   const asset = assets.find((a) => a.id === id)
+25 |   if (asset?.kind !== 'scene3d') throw Error('Escolha um cenário que esteja neste projeto.')
+                                            ^
+error: Escolha um cenário que esteja neste projeto.
+      at carregarCena3DDoProjeto (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\studio\src\three\scene3d.ts:25:40)
+      at carregar (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\studio\src\official-extensions\world-3d\__tests__\scene3d.test.ts:21:12)
+      at loadScene (file:///C:/Users/tocha/projects/sistema-zero-pinta-gravador-20261120/packages/studio/src/official-extensions/world-3d/__tests__/kitHarness.ts:209:30)
+      at <anonymous> (file:///C:/Users/tocha/projects/sistema-zero-pinta-gravador-20261120/packages/studio/src/official-extensions/world-3d/__tests__/kitHarness.ts:9741:16)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\studio\src\official-extensions\world-3d\__tests__\scene3d.test.ts:112:26)
+
+(pass) falha na próxima cena conserva a base vigente; encerrar durante preparo não instala recursos atrasados [406.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) a área de apoio dos pés atravessa uma junta estreita sem perder o piso real sobre o recorte [531.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) contato real da cápsula mantém o apoio quando uma pequena superfície fica entre os raios dos pés [485.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) a chegada sobre uma junta considera os pés inteiros, sem nascer no terreno sob a ponte [406.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) um cenário fora da origem oferece uma chegada válida mesmo sem um bloco de posicionamento [375.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) posicionar o carrinho durante o preparo conserva as coordenadas do cenário fora da origem [359.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) reposicionar após o início preserva o apoio da ponte, sem descer ao terreno sob ela [375.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o salto encontra o teto físico da cena antes de atravessá-lo [375.00ms]
+
+src\official-extensions\world-3d\__tests__\sceneVariant.test.ts:
+(pass) Cenário do Molda no Mundo 3D: o substituto cobre o fragmento > toda função e todo estado do fragmento têm substituto declarado
+(pass) Cenário do Molda no Mundo 3D: detecção e variantes > loadScene pede o cenário; sem contexto, o completo
+(pass) Cenário do Molda no Mundo 3D: detecção e variantes > loadBootstrapScript escolhe pela detecção; a variante não recompõe
+(pass) Cenário do Molda no Mundo 3D: detecção e variantes > a sem cenário compila, não tem crase e é bem menor [15.00ms]
+(pass) Cenário do Molda no Mundo 3D: o runtime sem cenário joga os exemplos igual > todo exemplo sem cenário joga igual nas duas variantes [1719.00ms]
+
+src\official-extensions\world-3d\__tests__\templateGuard.test.ts:
+(pass) Guarda dos template literals do Mundo 3D > runtime.ts: nenhuma crase crua no miolo do literal
+(pass) Guarda dos template literals do Mundo 3D > runtime.ts: nenhuma interpolação ${ crua (interpola em silêncio) [16.00ms]
+(pass) Guarda dos template literals do Mundo 3D > ai.ts: idem (o contexto da IA também é um literal só)
+(pass) Guarda dos template literals do Mundo 3D > manifest.ts: o docs escapa a crase (é markdown — a tentação é grande)
+(pass) Guarda dos template literals do Mundo 3D > os três módulos avaliam e entregam string não-vazia (a prova final)
+(pass) Guarda dos template literals do Mundo 3D > o runtime é avaliável como corpo de função (crase quebraria o parse)
+
+ 386 pass
+ 0 fail
+ 17570 expect() calls
+Ran 386 tests across 14 files. [14.63s]

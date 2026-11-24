@@ -1,5 +1,6 @@
-"""Pac-Man educacional: toda a lógica fica visível em blocos, Ponte e Python."""
+# Pac-Man educacional: toda a lógica fica visível em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import math
 import random
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 CELULA = 28
 COLUNAS = 31
 LINHAS = 25
@@ -42,10 +44,9 @@ MAPA = [
     "#o...........................o#",
     "###############################",
 ]
-estado = {"aberto": False, "timer_pendente": False}
-objetos = {}
 
 
+# 🧩 Meus moldes
 def posicao(coluna, linha):
     return ((coluna - 15) * CELULA, 330 - linha * CELULA)
 
@@ -306,29 +307,6 @@ def atualizar(tempo):
                 break
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        objetos["tela"].ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    if estado["aberto"]:
-        if not estado["pausado"]:
-            desenhar_atores()
-        desenhar_painel()
-        objetos["tela"].update()
-        agendar()
-
-
 def pedir_direcao(dx, dy):
     if estado["fase"] == "jogando" and not estado["pausado"]:
         estado["direcao"] = (dx, dy)
@@ -378,8 +356,7 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     sz_audio.play("opening.wav", volume=0.6)
-    objetos["tela"].update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
+    tela.update()
 
 
 def fechar():
@@ -387,11 +364,10 @@ def fechar():
         return
     estado["aberto"] = False
     sz_audio.stop()
-    objetos["tela"].bye()
+    tela.bye()
 
 
 def registrar_formas():
-    tela = objetos["tela"]
     contorno = [(0, 0)]
     for angulo in range(35, 326, 10):
         radianos = math.radians(angulo)
@@ -427,32 +403,56 @@ def criar_desenhistas():
         desenho.speed(0)
 
 
-def iniciar():
-    tela = turtle.Screen()
-    objetos["tela"] = tela
-    tela.setup(1010, 860)
-    tela.title("Pac-Man educacional • Sistema Zero")
-    tela.bgcolor("black")
-    tela.tracer(0)
-    registrar_formas()
-    criar_desenhistas()
-    tela.onkeypress(direita, "Right")
-    tela.onkeypress(esquerda, "Left")
-    tela.onkeypress(cima, "Up")
-    tela.onkeypress(baixo, "Down")
-    tela.onkey(pausar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True}
+objetos = {}
+
+tela = turtle.Screen()
+
+tela.setup(1010, 860)
+tela.title("Pac-Man educacional • Sistema Zero")
+tela.bgcolor("black")
+tela.tracer(0)
+registrar_formas()
+criar_desenhistas()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(direita, "Right")
+tela.onkeypress(esquerda, "Left")
+tela.onkeypress(cima, "Up")
+tela.onkeypress(baixo, "Down")
+tela.onkey(pausar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    # O fim da partida fecha a janela dentro do atualizar().
+    if not estado["aberto"]:
+        return
+    if not estado["pausado"]:
+        desenhar_atores()
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

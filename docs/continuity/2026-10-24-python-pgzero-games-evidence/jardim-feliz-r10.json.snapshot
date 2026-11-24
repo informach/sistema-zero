@@ -1,0 +1,295 @@
+{
+  "kind": "python-visual-authoring",
+  "analyzer": {
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "distributionSha256": "1b9e2813e174008c0572c2233cd8f68f0f45d72f99902d25bbd769c23892291b",
+    "analyzerSha256": "030eee7115db46c8c19831372a0948f71bbda0a8ad751235d4da889ed68bdf9b"
+  },
+  "authoringRuntime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "8e04b8116485b851bc2d280c4273d13e1524a3ecc1c2e7610e28de03fcb106c6"
+  },
+  "authoringRuntimeFeatures": [
+    "turtle-compound-shapes",
+    "project-missions-v1",
+    "pinta-map-world-v1",
+    "pinta-scene-physics-v1",
+    "molda-scene-assets-v1",
+    "python-background-focus-v1",
+    "molda-scene-regions-v1"
+  ],
+  "authoringLoader": "loadPythonAuthoring",
+  "extension": "python-pgzero",
+  "codecOrderSha256": "7dc0c6647e6c38a27d732f6c43dd50e7dccd2546f49c785edd557815eaa9cbf9",
+  "sourceSha256": "b676e99db5c1dd5fc195a6987e943acf359ee535dcd6635401c7b575127be1da",
+  "generatedSha256": "6165b5c1f0c21ce716f71c6ab1be8f3284f48551035ddb7b9874f84619fded7e",
+  "opaqueCount": 0,
+  "blockCount": 464,
+  "referencedBlocks": [
+    {
+      "id": "sz_py_and",
+      "count": 6
+    },
+    {
+      "id": "sz_py_arithmetic",
+      "count": 18
+    },
+    {
+      "id": "sz_py_assign",
+      "count": 41
+    },
+    {
+      "id": "sz_py_attribute",
+      "count": 11
+    },
+    {
+      "id": "sz_py_boolean",
+      "count": 7
+    },
+    {
+      "id": "sz_py_compare",
+      "count": 13
+    },
+    {
+      "id": "sz_py_def",
+      "count": 5
+    },
+    {
+      "id": "sz_py_float",
+      "count": 4
+    },
+    {
+      "id": "sz_py_for",
+      "count": 6
+    },
+    {
+      "id": "sz_py_global",
+      "count": 4
+    },
+    {
+      "id": "sz_py_if",
+      "count": 18
+    },
+    {
+      "id": "sz_py_import_one",
+      "count": 2
+    },
+    {
+      "id": "sz_py_int",
+      "count": 2
+    },
+    {
+      "id": "sz_py_integer",
+      "count": 44
+    },
+    {
+      "id": "sz_py_len",
+      "count": 3
+    },
+    {
+      "id": "sz_py_list",
+      "count": 8
+    },
+    {
+      "id": "sz_py_list_append",
+      "count": 5
+    },
+    {
+      "id": "sz_py_list_clear",
+      "count": 4
+    },
+    {
+      "id": "sz_py_negative",
+      "count": 4
+    },
+    {
+      "id": "sz_py_not",
+      "count": 3
+    },
+    {
+      "id": "sz_py_or",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_actor",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_actor_draw",
+      "count": 3
+    },
+    {
+      "id": "sz_py_pgzero_actor_property",
+      "count": 18
+    },
+    {
+      "id": "sz_py_pgzero_clock_schedule",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_clock_schedule_interval",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_colliderect",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_distance_to",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_draw_text",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_go",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_height",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_keyboard",
+      "count": 4
+    },
+    {
+      "id": "sz_py_pgzero_keys",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_on_key_down",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_screen_blit",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_sound_play",
+      "count": 2
+    },
+    {
+      "id": "sz_py_pgzero_title",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_update",
+      "count": 1
+    },
+    {
+      "id": "sz_py_pgzero_width",
+      "count": 1
+    },
+    {
+      "id": "sz_py_random_choice",
+      "count": 3
+    },
+    {
+      "id": "sz_py_random_randint",
+      "count": 2
+    },
+    {
+      "id": "sz_py_range",
+      "count": 3
+    },
+    {
+      "id": "sz_py_return",
+      "count": 4
+    },
+    {
+      "id": "sz_py_run",
+      "count": 4
+    },
+    {
+      "id": "sz_py_str",
+      "count": 2
+    },
+    {
+      "id": "sz_py_subscript",
+      "count": 14
+    },
+    {
+      "id": "sz_py_text",
+      "count": 19
+    },
+    {
+      "id": "sz_py_tuple",
+      "count": 8
+    },
+    {
+      "id": "sz_py_variable",
+      "count": 144
+    }
+  ],
+  "approvedBlockIdsSha256": "d447df688843ce29be5142e1aefe192a7099be67f72ce751ed1223af520ddae0",
+  "fullWorkspaceRoundtrip": true,
+  "initialWorkspaceSha256": "f21cdecf1646bc4a53abc436c38578299e81f21899eab31112cc7eaac783d038",
+  "editedWorkspaceSha256": "77fbb21ce03efe8a9a5d17051ef0eb6859dc22db6076fce2a69530269b4e7987",
+  "canonicalRenderReanalysis": true,
+  "runtimeCapabilitiesQualified": false,
+  "browserInteractionQualified": false,
+  "edits": [
+    {
+      "label": "width",
+      "path": {
+        "body": 2,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "800",
+      "after": "810",
+      "beforeSourceSha256": "384e4698d242bfefa9fe91be8a797d855b7bd60065f92b7a319a7a7809aaeb3c",
+      "afterSourceSha256": "ae689149f3ef91ba2c83fb48c73a99bc912e1ee982ac6f2799b2ca93c9dbafdd"
+    },
+    {
+      "label": "height",
+      "path": {
+        "body": 3,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_integer",
+      "field": "NUMBER",
+      "before": "600",
+      "after": "610",
+      "beforeSourceSha256": "ae689149f3ef91ba2c83fb48c73a99bc912e1ee982ac6f2799b2ca93c9dbafdd",
+      "afterSourceSha256": "578274ce74d56797ffb0eeae346f7194a72c9ec65d440bb517e93b0806af1817"
+    },
+    {
+      "label": "title",
+      "path": {
+        "body": 4,
+        "inputs": [
+          {
+            "name": "value",
+            "index": 0
+          }
+        ]
+      },
+      "codecId": "sz_py_text",
+      "field": "TEXT",
+      "before": "Jardim Feliz",
+      "after": "Jardim Feliz!",
+      "beforeSourceSha256": "578274ce74d56797ffb0eeae346f7194a72c9ec65d440bb517e93b0806af1817",
+      "afterSourceSha256": "6165b5c1f0c21ce716f71c6ab1be8f3284f48551035ddb7b9874f84619fded7e"
+    }
+  ]
+}

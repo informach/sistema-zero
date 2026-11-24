@@ -1,0 +1,124 @@
+name: Studio classic opening equivalence
+
+# Lote 3 da evolução do Estúdio (21/11/2026), seção 6 da missão: "o código de 10 mil igual ao do
+# caminho normal". O MESMO build abre o projeto grande pelos dois caminhos (`?montagem=inteira`
+# desliga a abertura adiada e a montagem sob demanda, `setOnDemandMountingForTests`) e o script
+# exige o mesmo estado salvo e o mesmo código gerado, depois de abrir, depois de uma edição no alto
+# e depois de outra dentro da cauda (revelada pela busca, o que liga a montagem sob demanda no braço
+# adiado), sem erro na página, e que os braços tenham mesmo seguido caminhos diferentes.
+# Chromium COMPLETO: o headless shell do Playwright cai com a cadeia aninhada inteira desenhada
+# (docs/estudio-evolucao/classico-em-escala.md).
+on:
+  # A troca de versão do Blockly (bun.lock) é o maior risco para os ganchos da abertura adiada:
+  # ela também dispara o job, e um PR para a staging ou para a main passa por ele antes do merge.
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-classic-equivalence.yml'
+      - 'bun.lock'
+      - 'packages/studio/package.json'
+      - 'packages/studio/scripts/measure-classic-opening.mjs'
+      - 'packages/studio/scripts/serve-e2e.ts'
+      - 'packages/studio/src/blockly/buildIR.ts'
+      - 'packages/studio/src/blockly/deferredTail.ts'
+      - 'packages/studio/src/blockly/jsonPlainCopy.ts'
+      - 'packages/studio/src/blockly/loadFence.ts'
+      - 'packages/studio/src/blockly/loadWorkspaceState.ts'
+      - 'packages/studio/src/blockly/offscreenBodies.ts'
+      - 'packages/studio/src/blockly/offscreenThreshold.ts'
+      - 'packages/studio/src/blockly/openingRender.ts'
+      - 'packages/studio/src/blockly/savedWorkspaceState.ts'
+      - 'packages/studio/src/blockly/workspaceSearch.ts'
+      - 'packages/studio/src/components/blocks/BlocklyPanel.tsx'
+      - 'packages/studio/src/components/blocks/WorkspaceSearch.tsx'
+      - 'packages/studio/playground/initialQuery.ts'
+      - 'packages/studio/playground/lessonHarness.tsx'
+      - 'packages/studio/playground/vite.config.ts'
+  pull_request:
+    branches: ['staging', 'main']
+    paths:
+      - '.github/workflows/studio-classic-equivalence.yml'
+      - 'bun.lock'
+      - 'packages/studio/package.json'
+      - 'packages/studio/scripts/measure-classic-opening.mjs'
+      - 'packages/studio/scripts/serve-e2e.ts'
+      - 'packages/studio/src/blockly/buildIR.ts'
+      - 'packages/studio/src/blockly/deferredTail.ts'
+      - 'packages/studio/src/blockly/jsonPlainCopy.ts'
+      - 'packages/studio/src/blockly/loadFence.ts'
+      - 'packages/studio/src/blockly/loadWorkspaceState.ts'
+      - 'packages/studio/src/blockly/offscreenBodies.ts'
+      - 'packages/studio/src/blockly/offscreenThreshold.ts'
+      - 'packages/studio/src/blockly/openingRender.ts'
+      - 'packages/studio/src/blockly/savedWorkspaceState.ts'
+      - 'packages/studio/src/blockly/workspaceSearch.ts'
+      - 'packages/studio/src/components/blocks/BlocklyPanel.tsx'
+      - 'packages/studio/src/components/blocks/WorkspaceSearch.tsx'
+      - 'packages/studio/playground/initialQuery.ts'
+      - 'packages/studio/playground/lessonHarness.tsx'
+      - 'packages/studio/playground/vite.config.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-classic-equivalence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ten-thousand-blocks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: bash
+        working-directory: packages/studio
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prepare signed Ubuntu sources
+        working-directory: .
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - working-directory: .
+        run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - name: Select full Chromium
+        run: node -e "require('node:fs').appendFileSync(process.env.GITHUB_ENV,'PW_CHROMIUM='+require('playwright-core').chromium.executablePath()+'\n')"
+      - name: Build and serve the playground
+        run: |
+          mkdir -p .cache/mission
+          E2E_PORT=5195 nohup node scripts/serve-e2e.ts > .cache/mission/serve.txt 2>&1 &
+          for attempt in $(seq 1 180); do
+            if curl -fsS http://127.0.0.1:5195/ > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat .cache/mission/serve.txt
+          exit 1
+      - name: Same state and code with and without on-demand mounting
+        # Com folga no prazo do job: morto pelo relógio, o passo ainda deixa o JSON parcial (o
+        # script grava a cada amostra) e o upload abaixo roda.
+        timeout-minutes: 40
+        env:
+          SZ_CLASSIC_OPEN_URLS: adiado=http://127.0.0.1:5195,inteiro=http://127.0.0.1:5195/?montagem=inteira
+          SZ_CLASSIC_OPEN_SIZES: '2000,10000'
+          SZ_CLASSIC_OPEN_REPEATS: '1'
+          SZ_CLASSIC_OPEN_EDIT: '1'
+          SZ_CLASSIC_OPEN_ASSERT: '1'
+          SZ_CLASSIC_OPEN_TIMEOUT_MS: '240000'
+          SZ_CLASSIC_OPEN_OUTPUT: .cache/mission/classic-opening-equivalence.json
+        run: node scripts/measure-classic-opening.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-classic-opening-equivalence
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            packages/studio/.cache/mission/classic-opening-equivalence.json
+            packages/studio/.cache/mission/serve.txt

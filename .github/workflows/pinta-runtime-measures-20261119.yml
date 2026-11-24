@@ -1,0 +1,87 @@
+name: Qualificar copia nativa Firefox Linux e medir runtimes
+
+on:
+  push:
+    branches: [pinta-runtime-image-20261119]
+    paths: [.github/workflows/pinta-runtime-measures-20261119.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  firefox-copy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: c3e9f483d87ecf112436779608ea136855db3f72
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - run: bun install --frozen-lockfile
+      - working-directory: packages/studio
+        run: bunx playwright install --with-deps firefox
+      - name: Conferir programa inteiro e casca sem retries
+        working-directory: packages/studio
+        env:
+          CI: 'true'
+          PLAYWRIGHT_OUTPUT_DIR: './.cache/pinta-firefox-linux'
+        run: |
+          mkdir -p ../../.cache
+          node node_modules/@playwright/test/cli.js test --project=firefox --retries=0 --reporter=list,json | tee ../../.cache/pinta-firefox-linux.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinta-firefox-linux-c3e9f483d
+          path: |
+            .cache/pinta-firefox-linux.log
+            packages/studio/.cache/pinta-firefox-linux
+          retention-days: 7
+          if-no-files-found: error
+  measure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [81dfb3d8d114ab9de60a9e9b8e9389c46b8dfba0, 2932075e49907e0fac07eb1ca2471f219b84dee5]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ matrix.source }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - name: Instalar os contratos do commit fixo
+        run: bun install --frozen-lockfile
+      - name: Medir sem alterar motores, limites ou arquivos de dados
+        env:
+          PINTA_SOURCE_SHA: ${{ matrix.source }}
+        run: |
+          mkdir -p .cache/pinta-payload
+          cat > .cache/pinta-payload-measure.ts <<'SOURCE'
+          import { createHash } from 'node:crypto'
+          import ts from '../packages/studio/node_modules/typescript'
+          import { gameThreeDExtension } from '../packages/studio/src/official-extensions/game-3d'
+          import { gameKit3DExtension } from '../packages/studio/src/official-extensions/game-3d-advanced'
+          import { worldThreeDExtension } from '../packages/studio/src/official-extensions/world-3d'
+          import { gameTwoDRuntime } from '../packages/studio/src/official-extensions/game-2d/runtime'
+          import { gameKitRuntime } from '../packages/studio/src/official-extensions/game-2d-advanced/runtime'
+          function count(source:string){const file=ts.createSourceFile('runtime.js',source,ts.ScriptTarget.ES2022,true,ts.ScriptKind.JS);let parameters=0;const visit=(node:ts.Node)=>{if(ts.isFunctionLike(node))parameters+=node.parameters.length;ts.forEachChild(node,visit)};visit(file);return parameters}
+          const variants=[]
+          for(const [name,extension,context]of[['complete',gameThreeDExtension,undefined],['without-platform',gameThreeDExtension,{code:'const cena = SZGame3D.createScene("tela");'}],['advanced-3d',gameKit3DExtension,undefined],['world-3d',worldThreeDExtension,undefined]]as const){const runtime=extension.runtime;if(!runtime||!('loadBootstrapScript' in runtime)||!runtime.loadBootstrapScript)throw new Error('Runtime esperado');const source=await runtime.loadBootstrapScript(context);variants.push({name,characters:source.length,bytes:Buffer.byteLength(source),gzipBytes:Bun.gzipSync(source).byteLength,sha256:createHash('sha256').update(source).digest('hex'),parameters:count(source)})}
+          console.log(JSON.stringify({sourceSha:process.env.PINTA_SOURCE_SHA,platform:process.platform,bun:Bun.version,variants,parameters:{basic:count(gameTwoDRuntime),advanced:count(gameKitRuntime)}},null,2))
+          SOURCE
+          bun .cache/pinta-payload-measure.ts | tee .cache/pinta-payload/medidas.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pinta-payload-${{ matrix.source }}
+          path: .cache/pinta-payload/medidas.json
+          retention-days: 7
+          if-no-files-found: error

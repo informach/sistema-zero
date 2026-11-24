@@ -24,6 +24,21 @@
     "noEmit": true,
     "types": ["bun"]
   },
-  "include": ["src", "playground", "test-setup.ts"],
+  "include": [
+    "src",
+    "playground",
+    "test-setup.ts",
+    "scripts/memory-regions-probe.ts",
+    "scripts/layers-regions-probe.ts",
+    "scripts/queries-regions-probe.ts",
+    "scripts/resize-regions-probe.ts",
+    "scripts/resize-entry.tsx",
+    "scripts/serve-resize-e2e.ts",
+    "scripts/remap-regions-probe.ts",
+    "scripts/tileset-remap-entry.tsx",
+    "scripts/serve-tileset-remap-e2e.ts",
+    "scripts/serve-memory-regions-e2e.ts",
+    "scripts/generate-format-fixtures.ts"
+  ],
   "exclude": ["node_modules"]
 }

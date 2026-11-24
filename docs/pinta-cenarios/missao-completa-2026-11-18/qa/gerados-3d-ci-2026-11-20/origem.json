@@ -1,0 +1,201 @@
+{
+  "at": "2026-11-20T10:52:04.391Z",
+  "base": "dfd1f798c75d86d0aba7cae063fb2dbf53d8aa20",
+  "approvedFiles": [
+    {
+      "file": "packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "sha256": "f25b6e6b57c70a57befb273f872d74883f89292c017dbcbee6895ad6c9b7bbbd"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+      "sha256": "6714d171c9e5b82fe2c1cea1642c1fb41b6c50d002aa0881e2b9b123da8886da"
+    },
+    {
+      "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+      "sha256": "900a4b0368e23720b337b84602e550a05974058fc3ec2ea204d1e4449f7638d2"
+    }
+  ],
+  "sourceHashes": {
+    "portable": "ce0a012c62b1df5472ae47d155d9f1b77d2ace3cf0e64fda9bdcf46e99e7262d",
+    "basic": "d0880ba74496748a9e6ae6ddf62d1a6573b8a6981ddbd57f4a7ac1e0f5c7a7d8",
+    "pro": "24666b4d7cc3991f1ac39165c29fb52493d3fb808526ab18b2aec3889b303d75"
+  },
+  "diagnostics": {
+    "portable": {
+      "at": "2026-11-20T10:27:58.967Z",
+      "current": {
+        "digest": "61f5d7bb001df442919bd16ae80e24bc1b58c93b970e05245d172b129b71ddb6",
+        "sourceHash": "61f5d7bb001df442919bd16ae80e24bc1b58c93b970e05245d172b129b71ddb6",
+        "chars": 1107111
+      },
+      "expected": {
+        "digest": "ce0a012c62b1df5472ae47d155d9f1b77d2ace3cf0e64fda9bdcf46e99e7262d",
+        "sourceHash": "ce0a012c62b1df5472ae47d155d9f1b77d2ace3cf0e64fda9bdcf46e99e7262d",
+        "chars": 1111180
+      },
+      "sourceEqual": false,
+      "licensesEqual": true,
+      "diagnosticOnly": true,
+      "productFilesChanged": false
+    },
+    "loaders": {
+      "diagnosticOnly": true,
+      "rows": [
+        {
+          "file": "packages/studio/src/three/scene3dRuntime.generated.ts",
+          "before": {
+            "caracteres": 504610,
+            "sha256": "cdd595011b9552a874ecad63a0ffef8d772338bf210b85c2f9840a99b5081a4d",
+            "imports": [
+              "three",
+              "three/addons/loaders/GLTFLoader.js",
+              "three/addons/utils/SkeletonUtils.js"
+            ],
+            "threeVersion": "0.184.0",
+            "dependencias": [
+              {
+                "nome": "three-mesh-bvh",
+                "versao": "0.9.2",
+                "licenca": "MIT"
+              },
+              {
+                "nome": "zod",
+                "versao": "4.3.6",
+                "licenca": "MIT"
+              }
+            ]
+          },
+          "after": {
+            "caracteres": 508743,
+            "sha256": "d0880ba74496748a9e6ae6ddf62d1a6573b8a6981ddbd57f4a7ac1e0f5c7a7d8",
+            "imports": [
+              "three",
+              "three/addons/loaders/GLTFLoader.js",
+              "three/addons/utils/SkeletonUtils.js"
+            ],
+            "threeVersion": "0.184.0",
+            "dependencias": [
+              {
+                "nome": "three-mesh-bvh",
+                "versao": "0.9.2",
+                "licenca": "MIT"
+              },
+              {
+                "nome": "zod",
+                "versao": "4.3.6",
+                "licenca": "MIT"
+              }
+            ]
+          },
+          "delta": 4133,
+          "sourceEqual": false,
+          "importsEqual": true,
+          "licensesEqual": true
+        },
+        {
+          "file": "packages/studio/src/three/scene3dProRuntime.generated.ts",
+          "before": {
+            "caracteres": 504847,
+            "sha256": "c09bf9ef01ba7f702cce87e87e0a3f877b67052bd4fc330f933b11c1ad67e8f9",
+            "imports": [
+              "three",
+              "three/addons/loaders/GLTFLoader.js",
+              "three/addons/utils/SkeletonUtils.js"
+            ],
+            "threeVersion": "0.184.0",
+            "dependencias": [
+              {
+                "nome": "three-mesh-bvh",
+                "versao": "0.9.2",
+                "licenca": "MIT"
+              },
+              {
+                "nome": "zod",
+                "versao": "4.3.6",
+                "licenca": "MIT"
+              }
+            ]
+          },
+          "after": {
+            "caracteres": 508980,
+            "sha256": "24666b4d7cc3991f1ac39165c29fb52493d3fb808526ab18b2aec3889b303d75",
+            "imports": [
+              "three",
+              "three/addons/loaders/GLTFLoader.js",
+              "three/addons/utils/SkeletonUtils.js"
+            ],
+            "threeVersion": "0.184.0",
+            "dependencias": [
+              {
+                "nome": "three-mesh-bvh",
+                "versao": "0.9.2",
+                "licenca": "MIT"
+              },
+              {
+                "nome": "zod",
+                "versao": "4.3.6",
+                "licenca": "MIT"
+              }
+            ]
+          },
+          "delta": 4133,
+          "sourceEqual": false,
+          "importsEqual": true,
+          "licensesEqual": true
+        }
+      ]
+    }
+  },
+  "logs": [
+    {
+      "file": "pinta-molda-runtime-check.log",
+      "rawSha256": "a16d334f700f2e85fb3b90856aa694412bc4aaf56f3390631b27f76b48586803",
+      "summary": "portatil.txt"
+    },
+    {
+      "file": "pinta-studio-loaders-check.log",
+      "rawSha256": "4f3e5e6edfce6ff00062ddea8c8e85610ec6ae1668776b3e24fc1c66e65aacbd",
+      "summary": "carregadores.txt"
+    },
+    {
+      "file": "pinta-generated-molda-cenarios-core-tests.log",
+      "rawSha256": "4a78a198adaeb0471886ad34845d4ad3353dd11c4036f636b3c5fa38d5c32e4f",
+      "summary": "core.txt"
+    },
+    {
+      "file": "pinta-generated-molda-cenarios-motor-tests.log",
+      "rawSha256": "3719d3836580c96f4fde22b94bb86600023f436ebe48352a32afe5a131c1469e",
+      "summary": "motor.txt"
+    },
+    {
+      "file": "pinta-generated-molda-cenarios-tests.log",
+      "rawSha256": "06406b1097b9c3587f47b87c4758f9a726d5a68f982172b0748a25e613dd42e3",
+      "summary": "oficina.txt"
+    },
+    {
+      "file": "pinta-generated-molda-cenarios-agente-tests.log",
+      "rawSha256": "1bff2b1a6ebb087941c9f1bdb276855c1b1dabde2181e6a63dce79772d35fd97",
+      "summary": "agente.txt"
+    },
+    {
+      "file": "pinta-generated-studio-tests-serial.log",
+      "rawSha256": "22c72fd78d355ebceba28aff53a3ad80ddb72113fcf5f44152cf3798e6e2a744",
+      "summary": "estudio.txt"
+    },
+    {
+      "file": "pinta-generated-native-scene3d.log",
+      "rawSha256": "b2f8a2bb14de33cf0e8138639eb1d82fd48227153021f35dcb4b48c3a61a3ba2",
+      "summary": "navegador.txt"
+    },
+    {
+      "file": "pinta-generated-studio-types.log",
+      "rawSha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9",
+      "summary": "tipos.txt"
+    },
+    {
+      "file": "pinta-generated-biome.log",
+      "rawSha256": "1b16324198404cd026dcb8b13a4a23fef291a740912443da2bdc2c831b75ab2e",
+      "summary": "biome.txt"
+    }
+  ]
+}

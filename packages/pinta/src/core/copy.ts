@@ -7,6 +7,325 @@ import type { PintaTemplateId } from '../templates/catalog'
 import type { PintaAssetKind } from './project'
 
 export const COPY = {
+  automap: {
+    areaError: 'Escolha uma área dentro do mapa.',
+    sheetError: 'Uma folha mudou. Copie o antes de novo com as peças atuais.',
+    loadingSheets: 'As peças ainda estão carregando. Tente de novo em um instante.',
+    missingLayer: 'Uma camada das regras não está neste mapa.',
+    locked: 'Destranque as camadas do depois antes de aplicar.',
+    tooMuchWork: 'A área é grande demais para estas regras. Escolha uma área menor.',
+    mapLimit: 'O resultado ultrapassa os limites do mapa.',
+    invalidRule: 'Confira as camadas, o nome e o tamanho da regra.',
+    saved: 'Regras guardadas no mapa.',
+    stale: 'O mapa mudou. Confira antes de guardar.',
+    captureArea: 'Escolha até oito camadas e um exemplo de até 16 por 16 casas.',
+    captured: 'O antes foi copiado. Agora escolha a área e as camadas do depois.',
+    equalSize: 'O antes e o depois precisam ter o mesmo tamanho.',
+    noChanges: 'As regras não mudaram nenhuma casa nessa área.',
+    applied: 'Regras aplicadas.',
+    cancelled: 'Prévia cancelada.',
+    invalidFile: 'Este arquivo de regras é inválido ou incompatível.',
+    unreadable: 'O arquivo de regras não pôde ser lido.',
+    column: 'Coluna',
+    row: 'Linha',
+    width: 'Largura',
+    height: 'Altura',
+    title: 'Regras por exemplo',
+    useSelection: 'Usar área selecionada',
+    layers: 'Camadas do exemplo',
+    ignoreEmpty: 'Ignorar casas vazias no exemplo',
+    name: 'Nome da regra',
+    input: 'Copiar o antes',
+    output: 'Guardar o depois',
+    order: 'Ordem das regras',
+    pick: 'Escolha uma regra',
+    up: 'Subir',
+    down: 'Descer',
+    remove: 'Remover regra',
+    variant: 'Guardar outro depois',
+    /** Sorteia outra semente: as regras com mais de um depois escolhem de novo. */
+    seed: '🎲 Sortear de novo',
+    onPaint: 'Prévia ao pintar',
+    show: 'Ver prévia na área',
+    apply: 'Aplicar prévia',
+    cancel: 'Cancelar prévia',
+    importLayers: 'Camadas que vão usar as regras do arquivo',
+    /** `layer`: the name of the matching layer in this map, or its number in the file. */
+    importLayer: (rule: string, layer: string) => `Regra ${rule}, camada ${layer}`,
+    pickLayer: 'Escolha a camada neste mapa',
+    acceptImport: 'Guardar as regras do arquivo',
+    cancelImport: 'Cancelar importação',
+    import: 'Importar regras',
+    export: 'Exportar regras',
+    strokePreview: (n: number) =>
+      `Prévia da pincelada e das regras. ${n} casas alteradas pelas regras.`,
+    preview: (n: number) => `${n} casas na prévia.`,
+    defaultName: (n: number) => `Regra ${n}`,
+  },
+  scene: {
+    linkedMapMissing:
+      'Uma porta aponta para um mapa que não está na galeria. Confira o destino dela.',
+    linkedMapAmbiguous: 'Há mapas com o mesmo nome. Escolha uma referência de mapa para a porta.',
+    linkedResourceMissing:
+      'Falta um desenho usado por este cenário. Traga os desenhos que ele usa antes de enviar.',
+    linkedResourceLimit: 'Este cenário usa muitos desenhos. Separe o mundo em pacotes menores.',
+    keepResourceVersion: 'Guardar esta versão',
+    keepTilesetVersions: 'Guardar as peças deste mapa',
+    savedResourceName: (name: string, position: number) => `${name} (cópia guardada ${position})`,
+    followTilesets: 'Acompanhar as peças da biblioteca',
+    resourceLayoutChanged:
+      'O tamanho ou o estilo das peças originais mudou. Escolha peças compatíveis antes de reconectar.',
+    updateResourceVersion: 'Guardar a versão mais recente',
+    followResource: 'Acompanhar o desenho da biblioteca',
+    resourceLinked: 'Este objeto acompanha as mudanças do desenho na biblioteca.',
+    resourceFrozen: 'Este objeto usa uma versão guardada. Mudar a biblioteca não muda esta versão.',
+    resourceVersionLimit:
+      'Este mapa já tem muitas versões guardadas. Tire as que não usa para guardar outra.',
+    resourceMemoryLimit:
+      'Estas versões ocupam muita memória. Use uma arte menor ou tire versões que não usa.',
+    resourceMissing: 'Não encontrei o desenho original na biblioteca.',
+    resourceAnimationMissing:
+      'O original não tem esta animação. Escolha "Sem animação" para voltar a acompanhar a biblioteca.',
+    resourceUnsupported: 'Você pode guardar versões de personagens, desenhos e peças.',
+    resourceInvalid:
+      'Não consegui guardar este desenho sem perder informações. O mapa continua como estava.',
+    resourcePasteFailed:
+      'Não consegui juntar as versões copiadas neste mapa. Tire versões sem uso e tente novamente.',
+    clearUnusedVersions: 'Tirar versões que não uso',
+    objectAnimation: 'Animação deste objeto',
+    noObjectAnimation: 'Sem animação',
+    missingObjectAnimation: 'Esta animação não foi encontrada',
+    localImagesOnly: 'O mapa deve usar imagens locais dentro do pacote.',
+    pathOutsideMap: 'O caminho saiu da pasta do mapa.',
+    unpackedTooLarge: 'O pacote aberto passou de 128 MiB.',
+    left: 'À esquerda',
+    right: 'À direita',
+    setCropAlignment:
+      'Para guardar este pedaço, alinhe o deslocamento das camadas de peças à grade.',
+    setCropBudget: (cols: number, rows: number) =>
+      `Escolha um pedaço de até ${cols} × ${rows} casas para guardar como conjunto.`,
+    setCaptureRefused: 'Não foi possível guardar esse pedaço sem mudar suas posições.',
+    objectPasteFormat: 'Este mapa não consegue guardar esse grupo sem mudar suas posições.',
+    scatterWorkLimit: 'Esta pincelada ficou muito grande. Espalhe em pedaços menores.',
+    brushWorkLimit: 'Esta pincelada ficou muito grande. Pinte em pedaços menores.',
+    brushStorageLimit: 'Não coube mais neste cenário. Apague um trecho ou crie outro mapa.',
+    brushRefused: 'Não consegui pintar este trecho. Escolha a ferramenta de novo.',
+    brushChanged: 'O cenário mudou. Comece a pincelada de novo.',
+    gestureChanged: 'O cenário mudou. Comece de novo.',
+    gestureRefused: 'Não consegui aplicar esta mudança. Tente de novo.',
+    /** Janela focal (cenário grande): a frase de cada tropeço, sem termo técnico. */
+    focal: {
+      exitWithoutChange: 'Sair sem esta mudança',
+      changeNotSaved: 'A última mudança não foi guardada. O cenário ficou como antes.',
+      saveError: 'Não consegui guardar esta mudança. O cenário ficou como antes.',
+      refused: 'Não consegui fazer esta mudança. O cenário ficou como antes.',
+      needsAdvanced: 'Esta mudança só dá para fazer no Avançado. Toque em Avançado.',
+      changedElsewhere: 'O cenário mudou em outro lugar. Volte e abra o cenário de novo.',
+      windowError: 'Não consegui mostrar esta parte do cenário.',
+    },
+    nestedSet: 'Solte os conjuntos deste pedaço antes de guardar outro conjunto.',
+    mapPanels: 'Peças, camadas e detalhes',
+    dimensions: (cols: number, rows: number, layers: number) =>
+      `${cols} × ${rows} · ${layers} camadas`,
+    budget: (cells: number, max: number) =>
+      `${cells.toLocaleString('pt-BR')} de ${max.toLocaleString('pt-BR')} células`,
+    removeFrame: (frame: number) => `Tirar o quadro ${frame}`,
+    dynamicPecasDe: (p0: string | number, p1: string | number, p2: string | number) =>
+      `Peças de ${String(p0)} × ${String(p1)}.\n${String(p2)}`,
+    dynamicPecasDe2: (p0: string | number, p1: string | number, p2: string | number) =>
+      `Peças de ${String(p0)} × ${String(p1)}.\n${String(p2)}`,
+    dynamicPecasDe3: (p0: string | number, p1: string | number) =>
+      `peças de ${String(p0)} × ${String(p1)}`,
+    dynamicPecas: (p0: string | number, p1: string | number) =>
+      `${String(p0)} × ${String(p1)} peças`,
+    dynamicPecasDe4: (p0: string | number, p1: string | number) =>
+      `peças de ${String(p0)} × ${String(p1)}`,
+    dynamicPorNoMapa: (p0: string | number) => `Pôr ${String(p0)} no mapa`,
+    dynamicObjetosEscolhidos: (p0: string | number) => `${String(p0)} objetos escolhidos`,
+    dynamicMover: (p0: string | number) => `Mover ${String(p0)}`,
+    dynamicPosicao: (p0: string | number, p1: string | number) =>
+      `Posição ${String(p0)}, ${String(p1)}`,
+    dynamicTerreno: (p0: string | number) => `Terreno ${String(p0)}`,
+    dynamicTerrenoNaPosicaoDaPeca: (p0: string | number, p1: string | number) =>
+      `Terreno na posição ${String(p0)} da peça ${String(p1)}`,
+    dynamicTerreno2: (p0: string | number, p1: string | number) =>
+      `Terreno ${String(p0)} (${String(p1)})`,
+    dynamicAnimacaoDaPeca: (p0: string | number) => `Animação da peça ${String(p0)}`,
+    dynamicPecaDoQuadro: (p0: string | number) => `Peça do quadro ${String(p0)}`,
+    dynamicDuracaoDoQuadroEmMilissegundos: (p0: string | number) =>
+      `Duração do quadro ${String(p0)} em milissegundos`,
+    dynamicFaltaOArquivoIncluaAsImagens: (p0: string | number) =>
+      `Falta o arquivo ${String(p0)}. Inclua as imagens e folhas de peças no pacote.`,
+    dynamicDesenhosForamTrazidosParaAGaleria: (p0: string | number) =>
+      `${String(p0)} desenhos foram trazidos para a galeria.`,
+    esteJogoPassouDe16MapasLigados: 'Este jogo passou de 16 mapas ligados por portas.',
+    pontosXY: 'Pontos (x,y)',
+    virarParaCima: 'Virar para cima',
+    virarDeLado: 'Virar de lado',
+    pecaDoDesenho: 'Peça do desenho',
+    enter: 'Enter',
+    escape: 'Escape',
+    delete: 'Delete',
+    backspace: 'Backspace',
+    ctrlD: 'Ctrl+D',
+    terrenosPropriedadesEAnimacao: 'Terrenos, propriedades e animação',
+    detalhesDaPeca: 'Detalhes da peça',
+    faltamPecasDeBordaOuCantoNeste:
+      'Faltam peças de borda ou canto neste terreno. Prepare os encaixes.',
+    guardarConjunto: 'Guardar conjunto',
+    criarDoMeuJeito: 'Criar do meu jeito',
+    nivelDasFerramentas: 'Nível das ferramentas',
+    comecar: 'Começar',
+    criarMais: 'Criar mais',
+    avancado: 'Avançado',
+    testarComPersonagem: 'Testar com personagem',
+    arrowleft: 'ArrowLeft',
+    arrowright: 'ArrowRight',
+    arrowup: 'ArrowUp',
+    arrowdown: 'ArrowDown',
+    texto: '×',
+    nenhumaPecaSolidaMarcada: 'Nenhuma peça sólida marcada.',
+    crieOConjuntoSelecionandoUmPedacoDo: 'Crie o conjunto selecionando um pedaço do mapa.',
+    deslocamentoEDistancia: 'Deslocamento e distância',
+    deslocarX: 'Deslocar X',
+    deslocarY: 'Deslocar Y',
+    distanciaX: 'Distância X',
+    distanciaY: 'Distância Y',
+    desenhosDaBiblioteca: 'Desenhos da biblioteca',
+    base: 'Base',
+    guardarModeloDoObjeto: 'Guardar modelo do objeto',
+    paraSoltarUseOTamanhoOriginalAlinhe:
+      'Para soltar, use o tamanho original, alinhe à grade e gire em quartos de volta. O mapa também precisa ter espaço para as camadas.',
+    soltarOConjunto: 'Soltar o conjunto',
+    buscarNaBiblioteca: 'Buscar na biblioteca',
+    buscarDesenho: 'Buscar desenho',
+    oMapaInteiro: 'O mapa inteiro',
+    navegarPeloMinimapa: 'Navegar pelo minimapa',
+    minimapKeyboardHelp: 'Use as setas para passear. Home e End levam ao começo e ao fim do mapa.',
+    camadas: 'camadas',
+    de: 'de',
+    celulas: 'células',
+    desenhoDoObjeto: 'Desenho do objeto',
+    emCima: 'Em cima',
+    embaixo: 'Embaixo',
+    centralizarNaHorizontal: 'Centralizar na horizontal',
+    centralizarNaVertical: 'Centralizar na vertical',
+    distribuirNaHorizontal: 'Distribuir na horizontal',
+    distribuirNaVertical: 'Distribuir na vertical',
+    copiar: 'Copiar',
+    recortar: 'Recortar',
+    colar: 'Colar',
+    shiftToqueEscolheMaisDeUmObjeto: 'Shift + toque escolhe mais de um objeto.',
+    organizarObjetos: 'Organizar objetos',
+    organizar: 'Organizar',
+    oTesteAceitaAte16MapasLigados: 'O teste aceita até 16 mapas ligados por portas.',
+    testarMeuMapa: 'Testar meu mapa',
+    useAsSetasOuOsBotoesAs: 'Use as setas ou os botões. As portas levam aos mapas da biblioteca.',
+    preparandoOMapa: 'Preparando o mapa…',
+    testeComOPersonagem: 'Teste com o personagem',
+    cenarioComPersonagemFundoEFrente: 'Cenário com personagem, fundo e frente',
+    recomecar: 'Recomeçar',
+    propriedades: 'Propriedades',
+    adicionarPropriedade: 'Adicionar propriedade',
+    conjuntoInvalido: 'Conjunto inválido',
+    terrenoInteligente: 'Terreno inteligente',
+    terreno: 'Terreno',
+    pintarPecaPorPeca: 'Pintar peça por peça',
+    choosePreparedTerrain: 'Escolha um terreno para pintar com as bordas prontas.',
+    paintTerrainColor: (name: string, index: number) => `Pintar ${name}, cor ${index}`,
+    terrainPaintColors: 'Cores do terreno',
+    libraryHelp: 'Toque para colocar ou arraste o desenho até o cenário.',
+    libraryDropHint: 'Solte dentro do cenário para colocar. Esc cancela.',
+    libraryCancelled: 'Arrasto cancelado. Seu cenário continua como estava.',
+    libraryUnavailable: 'Não foi possível colocar aqui. Confira a camada e o espaço para objetos.',
+    libraryPlaced: (name: string) => `${name} colocado no cenário.`,
+    libraryPreview: 'Prévia do desenho no cenário',
+    scatterObjects: 'Espalhar desenhos',
+    keyboardMapHelp:
+      'Use as setas para escolher uma casa e Enter para usar a ferramenta. Linha, retângulo e seleção usam dois pontos. Esc cancela. Ctrl+Home vai ao começo e Ctrl+End ao fim do mapa.',
+    keyboardMapAnchor: 'Primeiro ponto escolhido. Enter termina; Esc cancela.',
+    scatterWith: (name: string) => `Pinte com ${name}.`,
+    scatterChoose: 'Selecione um desenho ou conjunto no cenário para usar como pincel.',
+    scatterWidth: 'Tamanho do pincel (casas)',
+    scatterSpacing: (value: number) => `Distância entre centros: ${value} casas`,
+    scatterSeed: 'Número da variação',
+    scatterRotate: 'Variar o giro',
+    scatterMirror: 'Variar o lado',
+    scatterHelp: 'Arraste no palco para ver. Solte para colocar. Esc cancela.',
+    scatterCancelled: 'Espalhamento cancelado. O cenário continua como estava.',
+    scatterLimit: 'Este trecho passa do limite de objetos. Cancele e pinte um trecho menor.',
+    scatterRefused: 'Não coube na sua criação. Tente um trecho menor.',
+    scatterEmpty: 'Nenhum desenho neste trecho. Aumente a quantidade ou pinte uma área maior.',
+    scatterPreviewCount: (count: number) => `${count} desenhos na prévia. Solte para colocar.`,
+    scatterPlacedCount: (count: number) => `${count} desenhos colocados no cenário.`,
+    novoTerreno: 'Novo terreno',
+    prepararAsPecasDoTerreno: 'Preparar as peças do terreno',
+    nome: 'Nome',
+    encaixe: 'Encaixe',
+    pelosCantos: 'Pelos cantos',
+    pelasBordas: 'Pelas bordas',
+    cantosEBordas: 'Cantos e bordas',
+    marqueOndeOTerrenoTocaAPeca: 'Marque onde o terreno toca a peça',
+    prepareTambemAsPecasDeBordaE: '. Prepare também as peças de borda e canto.',
+    corDoTerreno: 'Cor do terreno',
+    maisUmTerrenoNesteEncaixe: 'Mais um terreno neste encaixe',
+    corParaPintarOTerreno: 'Cor para pintar o terreno',
+    espalharPecas: 'Espalhar peças',
+    espalharComOPincel: 'Espalhar com o pincel',
+    densidade: 'Densidade (',
+    densidadeDe: (percent: number) => `Densidade (${percent}%)`,
+    pecasSeparePorVirgula: 'Peças (separe por vírgula)',
+    variacao: 'Variação',
+    maisUmQuadro: 'Mais um quadro',
+    oPacoteDoCenarioEstaPronto: 'O pacote do cenário está pronto.',
+    naoFoiPossivelPrepararOPacote: 'Não foi possível preparar o pacote.',
+    levarOCenarioCompleto: 'Levar o cenário completo',
+    preparando: 'Preparando…',
+    tiledJSONTMXETSX: 'Tiled (JSON, TMX e TSX)',
+    jogoPhaser: 'Jogo Phaser',
+    projetoPygame: 'Projeto Pygame',
+    projetoGodot: 'Projeto Godot',
+    umArquivoPassouDe32MiB: 'Um arquivo passou de 32 MiB.',
+    naoEncontreiUmMapaTiledNoPacote:
+      'Não encontrei um mapa Tiled no pacote. Traga o JSON ou TMX e as imagens juntos, ou em um ZIP.',
+    naoFoiPossivelGuardarOMapa: 'Não foi possível guardar o mapa.',
+    naoConseguiAbrirOZip: 'Não consegui abrir o arquivo ZIP. Ele pode estar incompleto.',
+    oMapaNaoEUmJsonValido: 'O arquivo do mapa está incompleto ou não é um mapa do Tiled.',
+    naoConseguiTrazerEsteMapa:
+      'Não consegui trazer este mapa. Confira se ele foi salvo pelo Tiled e tente de novo.',
+    trazerMapa: 'Trazer mapa',
+    trazerMapaDoTiled: 'Trazer mapa do Tiled',
+    fechar: 'Fechar',
+    mapa: 'Mapa',
+    asImagensEFolhasDePecasPrecisam:
+      'As imagens e folhas de peças precisam estar no mesmo pacote. O resultado avisa o que não pôde ser convertido.',
+    trazendo: 'Trazendo…',
+    trazerParaAGaleria: 'Trazer para a galeria',
+    conjuntoGuardado: (name: string) => `Guardei ${name} na biblioteca.`,
+    conjuntoNaoGuardado: 'Não deu para guardar. Tente de novo.',
+    nomeDoConjunto: (name: string) => `conjunto-${name}`,
+    nomeDoModelo: (name: string) => `modelo-${name || 'objeto'}`,
+    nomeDaPropriedade: (n: number) => `propriedade${n}`,
+    personagemDoTeste: 'Personagem',
+    bonecoDoPinta: 'Boneco do Pinta',
+    vistaDoTeste: 'Jeito de ver',
+    vistaDeCima: 'Vista de cima',
+    vistaDeLado: 'Vista de lado',
+    pular: 'Pular',
+    andarParaAEsquerda: 'Andar para a esquerda',
+    andarParaADireita: 'Andar para a direita',
+    andarParaCima: 'Andar para cima',
+    andarParaBaixo: 'Andar para baixo',
+    comoAndarNoTeste:
+      'Segure as setas ou as teclas W, A, S e D para andar. Na vista de lado, o espaço pula. As portas levam aos mapas da biblioteca.',
+    lugarPerigoso: 'Cuidado! Esse lugar é perigoso. Você voltou para o começo.',
+    comoDesenharAForma:
+      'Toque para pôr cada ponto. Toque no primeiro ponto ou aperte Enter para terminar. Esc cancela.',
+    pontoDaForma: (n: number) => `Ponto ${n}`,
+    formaPrecisaDePontos: (n: number) => `Essa forma precisa de pelo menos ${n} pontos.`,
+    formaCheiaDePontos: (n: number) => `Essa forma já tem ${n} pontos. Não cabe mais.`,
+    areaVisivelNoMinimapa: 'Parte do mapa que aparece na tela',
+  },
   appName: 'Pinta',
   gallery: {
     title: 'Meus desenhos',
@@ -46,6 +365,7 @@ export const COPY = {
       'Esse desenho veio com algum problema. Use o botão Preciso de ajuda para avisar a equipe.',
     /** Veio pelo botão "Editar" do Estúdio, mas o desenho já tinha sido apagado. */
     drawingGone: 'Esse desenho não está mais aqui. Escolha outro na sua galeria.',
+    drawingOpenError: 'Não consegui abrir esse desenho. Tente de novo.',
     retry: 'Tentar de novo',
     rename: 'Renomear',
     duplicate: 'Duplicar',
@@ -57,7 +377,23 @@ export const COPY = {
     removeTilesetBody:
       'Antes de apagar este conjunto, apague os mapas abaixo ou crie versões deles com outras peças:',
     tilesetInUse: 'Estas peças ainda são usadas por um ou mais mapas.',
+    drawingInUse: 'Este desenho ainda é usado por um mapa ou conjunto.',
+    /** Mapa feito numa versão que já abre mapas em losango ou colmeia: guardado, sem cartão. */
+    projectedUnavailable: (names: readonly string[]) =>
+      names.length === 1
+        ? `O mapa "${names[0]}" ainda não abre nesta versão do Pinta. Ele continua guardado.`
+        : `${names.length} mapas ainda não abrem nesta versão do Pinta. Eles continuam guardados.`,
+    tilesetUsedByProjected:
+      'Esta folha é usada por um mapa que ainda não abre nesta versão do Pinta. Ela continua guardada.',
+    drawingUsedByProjected:
+      'Este desenho é usado por um mapa que ainda não abre nesta versão do Pinta. Ele continua guardado.',
     cancel: 'Cancelar',
+    recoveredLocal:
+      'Recuperei uma edição de outra janela numa cópia. Seus desenhos foram protegidos.',
+    accountRemovalReturned:
+      'Um desenho apagado aqui ainda estava na sua conta. Ele voltou para você conferir antes de apagar de novo.',
+    accountRecovered:
+      'A versão da conta está na galeria. Suas mudanças ficaram numa cópia neste aparelho.',
     storageBudget:
       'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',
@@ -85,6 +421,30 @@ export const COPY = {
     searchClear: 'Limpar busca',
     searchClearAll: 'Limpar busca e filtros',
     syncing: 'Buscando na sua conta os desenhos que ainda não chegaram…',
+    /** Desenhos da conta feitos num Pinta mais novo que o desta página (não são abertos aqui). */
+    newerFormat: (count: number) =>
+      count === 1
+        ? 'Um desenho da sua conta foi feito numa versão mais nova do Pinta. Atualize a página para ver.'
+        : `${count} desenhos da sua conta foram feitos numa versão mais nova do Pinta. Atualize a página para ver.`,
+    newerFormatReload: 'Atualizar a página',
+    /** Só com a nuvem causal. O ZIP guarda os arquivos originais para a equipe; ele não restaura
+     *  nada sozinho. Sem o canal de recados do host não há "Preciso de ajuda" na galeria, então
+     *  esta frase não cita o botão. */
+    retainedRecovery:
+      'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Avise a equipe e, se ela pedir, baixe os arquivos para enviar.',
+    /** A mesma situação quando o host liga os recados: o pedido já leva o que a equipe precisa. */
+    retainedRecoveryHelp:
+      'Algumas edições precisam das peças da versão anterior para abrir. Elas continuam guardadas neste aparelho. Toque em Preciso de ajuda e a equipe arruma para você.',
+    recoveryHelp: 'Preciso de ajuda',
+    /** O toast depois do envio: curto, sem jargão, e diz que alguém vai cuidar. */
+    recoveryHelpSent: 'Pronto! A equipe recebeu seu pedido e vai te ajudar.',
+    /** A linha que fica no aviso, com o caminho até a conversa. */
+    recoveryHelpAnswer: (where: string) => `A resposta aparece ${where}.`,
+    recoveryHelpSeeConversation: 'Ver conversa',
+    recoveryHelpError: 'Não consegui enviar o pedido. Tente de novo daqui a pouco.',
+    downloadRetainedRecovery: 'Baixar arquivos para a equipe',
+    retainedRecoveryUnavailable:
+      'Não encontrei arquivos de recuperação disponíveis neste aparelho.',
     searchEmpty: 'Nenhum desenho combina com essa busca.',
     /** Filtros da galeria (chips): estilo e tipo. */
     filterStyle: 'Estilo',
@@ -185,6 +545,8 @@ export const COPY = {
     needTileset: 'Antes de criar um mapa, crie as suas "Peças do cenário".',
     forProjectPrefix: 'Desenho para o jogo',
     willLookLike: 'Vai ficar assim:',
+    /** O cenário grande (mapa por regiões): só ocupa espaço onde a criança pinta. */
+    world: 'Mundo gigante',
     customSize: {
       card: 'Personalizado',
       cardDetail: 'Você escolhe os números',
@@ -215,6 +577,11 @@ export const COPY = {
     vector: 'Vetor',
   },
   kinds: {
+    'map-set': {
+      emoji: '🧩',
+      title: 'Conjunto',
+      description: 'Um pedaço do mapa para usar de novo.',
+    },
     'pixel-sprite': {
       emoji: '🧍',
       title: 'Personagem',
@@ -273,6 +640,10 @@ export const COPY = {
         title: 'Fase de plataforma',
         description: 'Um mapa pronto para explorar (já vem com as peças).',
       },
+      'bosque-terrenos': {
+        title: 'Bosque com terrenos',
+        description: 'Grama, terra, água, areia e pedra com bordas prontas.',
+      },
       fantasminha: { title: 'Fantasminha', description: 'Um fantasma de formas que flutua.' },
       'ceu-com-sol': { title: 'Céu com sol', description: 'Um cenário de dia, feito de formas.' },
     } satisfies Record<PintaTemplateId, { title: string; description: string }>,
@@ -292,6 +663,8 @@ export const COPY = {
     saved: 'Salvo',
     saving: 'Salvando…',
     saveError: 'Não consegui salvar',
+    lessonMapLimit:
+      'Este desenho chegou ao limite da aula. Você pode criar um cenário maior na sua galeria.',
     taskLinkError: 'Não consegui vincular o desenho à tarefa. Confira a internet e tente de novo.',
     taskStudioProgressError:
       'O desenho chegou ao Estúdio, mas não consegui atualizar a tarefa. Confira a internet e tente usar no Estúdio de novo.',
@@ -313,6 +686,7 @@ export const COPY = {
       apply: 'Mudar o tamanho',
       cancel: 'Agora não',
       done: 'Pronto, o tamanho mudou',
+      refused: 'Não consegui mudar o tamanho. Seus desenhos foram mantidos.',
     },
   },
   /** Painel do brief da tarefa do Pensa (galeria e editor). */
@@ -452,6 +826,7 @@ export const COPY = {
   },
   /** Copiar e colar entre desenhos (área de transferência do aplicativo). */
   clipboard: {
+    objectsIntoDrawing: 'Esses objetos podem ser colados em uma camada de objetos do mapa.',
     vectorIntoPixel:
       'Formas de vetor não entram na pixel art. Cole num desenho de vetor, ou desenhe por cima.',
     biggerThanDrawing:
@@ -594,6 +969,7 @@ export const COPY = {
     autoCollapsed: (names: string) => `Recolhi ${names} para tudo caber na tela.`,
   },
   tiles: {
+    turnTile: 'Virar a peça',
     tiles: 'Peças',
     addTile: 'Nova peça',
     duplicateTile: 'Duplicar peça',
@@ -605,6 +981,10 @@ export const COPY = {
     collisionSolid: 'Peça sólida (o personagem não atravessa)',
     collisionPlatform: 'Peça plataforma (pisa por cima, passa por baixo)',
     tileLimit: 'Você chegou ao limite de peças.',
+    remapRefused: (name: string) =>
+      `Não consegui atualizar as peças de "${name}". Nada foi alterado.`,
+    remapRefusedProjected:
+      'Esta folha é usada por um mapa que ainda não abre nesta versão do Pinta. Nada foi alterado.',
     blankTile:
       'Essa peça ainda está em branco! Desenhe nela em "Peças do cenário" que o mapa se pinta sozinho.',
     layers: 'Camadas',
@@ -645,6 +1025,7 @@ export const COPY = {
     objectRect: 'Desenhar uma área',
     objectSnap: 'Encaixar os objetos na grade',
     objectsPanel: 'Objetos',
+    addMarker: 'Pôr um marcador',
     objectsEmpty:
       'Nenhum objeto ainda. Use "Marcar um ponto" ou "Desenhar uma área" e toque no mapa.',
     objectNamePrefix: 'Objeto',
@@ -652,6 +1033,12 @@ export const COPY = {
     pickObject: (name: string) => `Escolher o objeto ${name}`,
     objectDetails: 'Objeto escolhido',
     objectName: 'Nome',
+    objectCollision: 'Impede o personagem de passar',
+    precisePhysics: 'Usar os contornos exatos do cenário',
+    precisePhysicsRequired:
+      'Os objetos ou conjuntos deste cenário já usam esses contornos. Para voltar à colisão antiga, retire suas marcas de barreira e desative esta opção.',
+    precisePhysicsHelp:
+      'Respeita curvas, caminhos e conjuntos girados. Desative para manter a colisão dos jogos antigos.',
     objectType: 'Tipo (o jogo lê este)',
     objectX: 'X',
     objectY: 'Y',
@@ -664,7 +1051,50 @@ export const COPY = {
     propertyKey: 'Nome da propriedade',
     propertyKind: 'Tipo do valor',
     propertyValue: 'Valor',
-    propertyKinds: { text: 'Texto', number: 'Número', boolean: 'Sim ou não' },
+    propertyKinds: {
+      text: 'Texto',
+      number: 'Número',
+      boolean: 'Sim ou não',
+      int: 'Inteiro',
+      float: 'Decimal',
+      color: 'Cor',
+      object: 'Objeto',
+      asset: 'Desenho',
+    },
+    group: 'Grupo',
+    addGroup: 'Novo grupo',
+    showOrHide: (name: string) => `Mostrar ou esconder: ${name}`,
+    layerName: 'Nome da camada',
+    layerOpacity: 'Opacidade',
+    layerParent: 'Dentro do grupo',
+    layerRoot: 'Fora de grupo',
+    layerLock: 'Trancar camada',
+    layerUnlock: 'Destrancar camada',
+    layerUp: 'Subir camada',
+    layerDown: 'Descer camada',
+    layerCollision: 'Camada de colisão',
+    objectShape: 'Forma',
+    objectRole: 'Papel no jogo',
+    objectRotation: 'Giro',
+    objectShapes: {
+      point: 'Ponto',
+      rect: 'Retângulo',
+      ellipse: 'Elipse',
+      polygon: 'Polígono',
+      polyline: 'Caminho',
+      art: 'Desenho',
+      set: 'Conjunto',
+    },
+    objectRoles: {
+      start: 'Onde o jogador começa',
+      danger: 'Lugar perigoso',
+      door: 'Porta para outro lugar',
+      path: 'Caminho do inimigo',
+      trigger: 'Área que ativa algo',
+      enemy: 'Inimigo',
+      region: 'Região',
+    },
+    noRole: 'Sem papel',
     propertyYes: 'Sim',
     removeProperty: (key: string) => `Apagar a propriedade ${key}`,
     objectPropertyDefaultKey: 'propriedade',
@@ -946,7 +1376,9 @@ export const COPY = {
     title: 'Baixar',
     editableFile: 'Desenho editável (.pinta.json)',
     editableMissingTileset:
-      'Não encontrei as peças usadas por este mapa. Sem elas, o arquivo não funcionaria.',
+      'Não consegui reunir os desenhos deste cenário. Confira as peças e os destinos das portas.',
+    editableFailed:
+      'Não consegui montar o arquivo editável deste cenário. Ele pode ter ficado grande demais para um arquivo só.',
     currentFrame: 'Quadro atual (PNG)',
     currentFrameSvg: 'Quadro atual (SVG)',
     image: 'Imagem (PNG)',

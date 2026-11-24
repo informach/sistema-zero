@@ -11,6 +11,7 @@ export const {
   checkPensaAccessReadonly,
   checkPintaAccessReadonly,
   checkMoldaAccessReadonly,
+  checkCenariosAccessReadonly,
   checkCreativeToolsAccessReadonly,
   getProfileAllowanceReadonly,
   getMyCourse,

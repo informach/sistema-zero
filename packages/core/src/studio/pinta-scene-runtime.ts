@@ -1,0 +1,432 @@
+import { createPintaProjectionGeometry } from '../creations/pinta-projection-geometry'
+import type { PintaProjectedScene } from './pinta-projected-scene'
+import type { PintaScene, PintaSceneLayer, PintaSceneObject } from './pinta-scene'
+import type { PintaSceneDocument, PintaSceneQuery } from './pinta-scene-query'
+
+export { sceneObjectTransformSource } from './pinta-scene-transform.generated'
+/** Source crop shared by the editor and JavaScript players. Self-contained for portable builds. */
+export function sceneArtFrame(
+  art: NonNullable<PintaScene['art']>[number],
+  animationId: string | undefined,
+  elapsedMs: number,
+): { x: number; y: number; width: number; height: number } {
+  const sprite = art.sprite
+  if (!sprite) return { x: 0, y: 0, width: art.width, height: art.height }
+  const animation = sprite.animations.find((a) => a.id === animationId)
+  let tile = sprite.animations[0]!.frames[0]!.tile
+  if (animation) {
+    const total = animation.frames.reduce((sum, f) => sum + f.duration, 0)
+    let at = animation.loop
+      ? Math.max(0, elapsedMs) % total
+      : Math.min(Math.max(0, elapsedMs), total)
+    tile = animation.frames.at(-1)!.tile
+    for (const frame of animation.frames) {
+      at -= frame.duration
+      if (at < 0) {
+        tile = frame.tile
+        break
+      }
+    }
+  }
+  return {
+    x: (tile % sprite.columns) * sprite.frameWidth,
+    y: Math.floor(tile / sprite.columns) * sprite.frameHeight,
+    width: sprite.frameWidth,
+    height: sprite.frameHeight,
+  }
+}
+type SceneLayerHeader = Pick<
+  PintaSceneLayer,
+  'id' | 'visible' | 'opacity' | 'offsetX' | 'offsetY' | 'parallaxX' | 'parallaxY' | 'parentId'
+>
+export function sceneLayerState(
+  layers: readonly SceneLayerHeader[],
+  layer: SceneLayerHeader,
+): {
+  visible: boolean
+  opacity: number
+  offsetX: number
+  offsetY: number
+  parallaxX: number
+  parallaxY: number
+} {
+  const result = {
+    visible: layer.visible,
+    opacity: layer.opacity ?? 1,
+    offsetX: layer.offsetX ?? 0,
+    offsetY: layer.offsetY ?? 0,
+    parallaxX: layer.parallaxX ?? 1,
+    parallaxY: layer.parallaxY ?? 1,
+  }
+  let parent = layer.parentId
+  for (let n = 0; parent && n < 32; n++) {
+    const p = layers.find((l) => l.id === parent)
+    if (!p) break
+    result.visible &&= p.visible
+    result.opacity *= p.opacity ?? 1
+    result.offsetX += p.offsetX ?? 0
+    result.offsetY += p.offsetY ?? 0
+    result.parallaxX *= p.parallaxX ?? 1
+    result.parallaxY *= p.parallaxY ?? 1
+    parent = p.parentId
+  }
+  return result
+}
+/** Expands one child in a set. Geometry never uses the child's internal art flips.
+ * A reflected basis becomes a proper rotation plus an origin shift and an art flip.
+ * This derived view may use polygon points for an affine footprint. The authored
+ * object is untouched. Keep this function self-contained: players embed its source.
+ */
+export function transformSceneSetObject(
+  parent: PintaSceneObject,
+  child: PintaSceneObject,
+  setWidth: number,
+  setHeight: number,
+  localIds: readonly string[],
+): PintaSceneObject {
+  const sx = parent.width / setWidth,
+    sy = parent.height / setHeight
+  const a = ((parent.rotation ?? 0) * Math.PI) / 180,
+    b = ((child.rotation ?? 0) * Math.PI) / 180,
+    mx = parent.flipX ? -sx : sx,
+    my = parent.flipY ? -sy : sy
+  const vector = (x: number, y: number) => ({
+    x: x * mx * Math.cos(a) - y * my * Math.sin(a),
+    y: x * mx * Math.sin(a) + y * my * Math.cos(a),
+  })
+  const u = vector(Math.cos(b), Math.sin(b)),
+    v = vector(-Math.sin(b), Math.cos(b)),
+    ux = Math.hypot(u.x, u.y),
+    vy = Math.hypot(v.x, v.y)
+  const shear = Math.abs(u.x * v.x + u.y * v.y) > 1e-8 * ux * vy
+  const reflected = u.x * v.y - u.y * v.x < 0,
+    p = vector(child.x, child.y),
+    origin = vector(parent.flipX ? -setWidth : 0, parent.flipY ? -setHeight : 0)
+  const result: PintaSceneObject = {
+    ...child,
+    id: localIds.includes(child.id) ? [parent.id, child.id].join('/') : child.id,
+    x: parent.x + p.x + origin.x + (reflected ? v.x * child.height : 0),
+    y: parent.y + p.y + origin.y + (reflected ? v.y * child.height : 0),
+    width: child.width * ux,
+    height: child.height * vy,
+    rotation: (Math.atan2(u.y, u.x) * 180) / Math.PI,
+    flipX: child.flipX,
+    flipY: !!child.flipY !== reflected ? true : undefined,
+    ...(child.points
+      ? {
+          points: child.points.map((p) => ({
+            x: p.x * ux,
+            y: (reflected ? child.height - p.y : p.y) * vy,
+          })),
+        }
+      : {}),
+    properties: Object.fromEntries(
+      Object.entries(child.properties).map(([key, value]) => [
+        key,
+        typeof value === 'object' && value.type === 'object'
+          ? {
+              ...value,
+              value: localIds.includes(String(value.value))
+                ? [parent.id, value.value].join('/')
+                : value.value,
+            }
+          : value,
+      ]),
+    ),
+  }
+  if (!shear) return result
+  const world = (x: number, y: number) => ({
+    x: parent.x + p.x + origin.x + u.x * x + v.x * y,
+    y: parent.y + p.y + origin.y + u.y * x + v.y * y,
+  })
+  if (child.shape === 'ellipse') {
+    const bx = (u.x * child.width) / 2,
+      by = (u.y * child.width) / 2,
+      cx = (v.x * child.height) / 2,
+      cy = (v.y * child.height) / 2,
+      xx = bx * bx + cx * cx,
+      yy = by * by + cy * cy,
+      xy = bx * by + cx * cy,
+      delta = Math.hypot(xx - yy, 2 * xy),
+      rx = Math.sqrt(Math.max(0, (xx + yy + delta) / 2)),
+      ry = Math.sqrt(Math.max(0, (xx + yy - delta) / 2)),
+      theta = Math.atan2(2 * xy, xx - yy) / 2,
+      center = world(child.width / 2, child.height / 2)
+    return {
+      ...result,
+      x: center.x - rx * Math.cos(theta) + ry * Math.sin(theta),
+      y: center.y - rx * Math.sin(theta) - ry * Math.cos(theta),
+      width: rx * 2,
+      height: ry * 2,
+      rotation: (theta * 180) / Math.PI,
+      flipX: undefined,
+      flipY: undefined,
+    }
+  }
+  const at = world(0, 0),
+    points = (
+      child.points ?? [
+        { x: 0, y: 0 },
+        { x: child.width, y: 0 },
+        { x: child.width, y: child.height },
+        { x: 0, y: child.height },
+      ]
+    ).map((p) => ({ x: u.x * p.x + v.x * p.y, y: u.y * p.x + v.y * p.y }))
+  return {
+    ...result,
+    x: at.x,
+    y: at.y,
+    rotation: 0,
+    points,
+    shape: child.shape === 'polyline' || child.shape === 'point' ? child.shape : 'polygon',
+    flipX: child.flipX,
+    flipY: child.flipY,
+  }
+}
+type ScenePoint = { x: number; y: number }
+type ObjectMatch = (object: PintaSceneObject) => boolean
+
+type ObjectScene = PintaSceneDocument | PintaProjectedScene
+
+function* directSceneObjects(layers: ObjectScene['layers']) {
+  for (const layer of layers) {
+    if (layer.kind !== 'objects') continue
+    const state = sceneLayerState(layers, layer)
+    if (!state.visible) continue
+    for (const object of layer.objects)
+      yield { ...object, x: object.x + state.offsetX, y: object.y + state.offsetY }
+  }
+}
+
+function objectReach(object: PintaSceneObject): number {
+  let radius = Math.hypot(object.width, object.height)
+  for (const point of object.points ?? []) radius = Math.max(radius, Math.hypot(point.x, point.y))
+  return radius
+}
+
+type SceneDefinition = {
+  children: { object: PintaSceneObject; radius: number }[]
+  ids: string[]
+  width: number
+  height: number
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+/** Traverse authored order without expanding a definition for every placement.
+ * A predicate sees the local, visible object and may match fields preserved by
+ * the placement (type, role, name). Match scoped IDs on emitted objects.
+ * A point optionally narrows area candidates, leaving containment to the player.
+ */
+export function createSceneObjectIterator(scene: ObjectScene) {
+  const definitions = new Map<string, SceneDefinition>()
+  const tile = scene.tileSize
+  function definition(id: string): SceneDefinition | undefined {
+    const cached = definitions.get(id)
+    if (cached) return cached
+    const set = scene.sets?.find((candidate) => candidate.id === id)
+    if (!set) return undefined
+    const origin = scene.version === 4 && 'origin' in set ? set.origin : undefined
+    const area =
+      'projection' in set
+        ? createPintaProjectionGeometry(set.projection).worldBounds({
+            ...set.origin,
+            cols: set.cols,
+            rows: set.rows,
+          })
+        : null
+    const x = area?.x ?? (origin?.col ?? 0) * tile,
+      y = area?.y ?? (origin?.row ?? 0) * tile
+    const value: SceneDefinition = {
+      width: area?.width ?? set.cols * tile,
+      height: area?.height ?? set.rows * tile,
+      ids: set.layers.flatMap((layer) =>
+        layer.kind === 'objects' ? layer.objects.map((object) => object.id) : [],
+      ),
+      children: [],
+      left: Infinity,
+      right: -Infinity,
+      top: Infinity,
+      bottom: -Infinity,
+    }
+    for (const child of directSceneObjects(set.layers)) {
+      const object = { ...child, x: child.x - x, y: child.y - y }
+      const radius = objectReach(object)
+      value.children.push({ object, radius })
+      value.left = Math.min(value.left, object.x - radius)
+      value.right = Math.max(value.right, object.x + radius)
+      value.top = Math.min(value.top, object.y - radius)
+      value.bottom = Math.max(value.bottom, object.y + radius)
+    }
+    definitions.set(id, value)
+    return value
+  }
+
+  return function* iterateObjects(
+    matches?: ObjectMatch,
+    near?: ScenePoint,
+  ): Generator<PintaSceneObject, void> {
+    const selections = new Map<SceneDefinition, SceneDefinition['children']>()
+    for (const object of directSceneObjects(scene.layers)) {
+      if (!matches || matches(object)) {
+        if (!near || Math.hypot(near.x - object.x, near.y - object.y) <= objectReach(object) + 1)
+          yield object
+      }
+      const set = object.setId ? definition(object.setId) : undefined
+      if (!set?.children.length) continue
+      const sx = object.width / set.width,
+        sy = object.height / set.height
+      // Use the player's one-pixel contact tolerance after placement.
+      let local: ScenePoint | undefined
+      if (near) {
+        const a = ((object.rotation ?? 0) * Math.PI) / 180,
+          c = Math.cos(a),
+          s = Math.sin(a),
+          dx = near.x - object.x,
+          dy = near.y - object.y,
+          x = dx * c + dy * s,
+          y = -dx * s + dy * c
+        local = { x: object.flipX ? object.width - x : x, y: object.flipY ? object.height - y : y }
+        if (
+          local.x < set.left * sx - 1 ||
+          local.x > set.right * sx + 1 ||
+          local.y < set.top * sy - 1 ||
+          local.y > set.bottom * sy + 1
+        )
+          continue
+      }
+      let children = selections.get(set)
+      if (!children) {
+        children = matches ? set.children.filter((child) => matches(child.object)) : set.children
+        selections.set(set, children)
+      }
+      for (const child of children) {
+        if (
+          local &&
+          (Math.abs(local.x - child.object.x * sx) > child.radius * sx + 1 ||
+            Math.abs(local.y - child.object.y * sy) > child.radius * sy + 1)
+        )
+          continue
+        yield transformSceneSetObject(object, child.object, set.width, set.height, set.ids)
+      }
+    }
+  }
+}
+
+export function sceneObjects(scene: ObjectScene): PintaSceneObject[] {
+  return [...createSceneObjectIterator(scene)()]
+}
+export function sceneSpawn(scene: ObjectScene): { x: number; y: number } {
+  const first = createSceneObjectIterator(scene)(
+    (o) => o.role === 'start' || o.type === 'inicio',
+  ).next()
+  if (!first.done) return { x: first.value.x, y: first.value.y }
+  if (scene.version === 5)
+    return createPintaProjectionGeometry(scene.projection).center(
+      Math.max(scene.origin.col, Math.min(0, scene.origin.col + scene.cols - 1)),
+      Math.max(scene.origin.row, Math.min(0, scene.origin.row + scene.rows - 1)),
+    )
+  if (scene.version === 4)
+    return {
+      x:
+        (Math.max(scene.origin.col, Math.min(0, scene.origin.col + scene.cols - 1)) + 0.5) *
+        scene.tileSize,
+      y:
+        (Math.max(scene.origin.row, Math.min(0, scene.origin.row + scene.rows - 1)) + 0.5) *
+        scene.tileSize,
+    }
+  return { x: scene.tileSize / 2, y: scene.tileSize / 2 }
+}
+export function sceneSolidAt(scene: PintaSceneQuery, x: number, y: number): boolean {
+  const origin = scene.version === 4 ? scene.origin : { col: 0, row: 0 }
+  if (
+    x < origin.col * scene.tileSize ||
+    y < origin.row * scene.tileSize ||
+    x >= (origin.col + scene.cols) * scene.tileSize ||
+    y >= (origin.row + scene.rows) * scene.tileSize
+  )
+    return true
+  return scene.layers.some((l) => {
+    if (l.kind === 'objects') {
+      const e = sceneLayerState(scene.layers, l)
+      return (
+        e.visible &&
+        l.objects.some((o) => {
+          const set = scene.sets?.find((s) => s.id === o.setId)
+          if (!set || !o.width || !o.height) return false
+          const a = (-(o.rotation ?? 0) * Math.PI) / 180,
+            dx = x - o.x - e.offsetX,
+            dy = y - o.y - e.offsetY
+          let px = dx * Math.cos(a) - dy * Math.sin(a),
+            py = dx * Math.sin(a) + dy * Math.cos(a)
+          if (o.flipX) px = o.width - px
+          if (o.flipY) py = o.height - py
+          if (px < 0 || py < 0 || px >= o.width || py >= o.height) return false
+          if (scene.version === 4) {
+            const regional = scene.sets?.find((s) => s.id === o.setId)
+            if (!regional) return false
+            return sceneSolidAt(
+              { ...scene, ...regional, sets: [] },
+              (px / o.width) * regional.cols * scene.tileSize +
+                regional.origin.col * scene.tileSize,
+              (py / o.height) * regional.rows * scene.tileSize +
+                regional.origin.row * scene.tileSize,
+            )
+          }
+          const dense = scene.sets?.find((s) => s.id === o.setId)
+          return (
+            !!dense &&
+            sceneSolidAt(
+              { ...scene, cols: dense.cols, rows: dense.rows, layers: dense.layers, sets: [] },
+              (px / o.width) * dense.cols * scene.tileSize,
+              (py / o.height) * dense.rows * scene.tileSize,
+            )
+          )
+        })
+      )
+    }
+    if (l.kind !== 'tiles') return false
+    const e = sceneLayerState(scene.layers, l)
+    if (!e.visible) return false
+    const col = Math.floor((x - e.offsetX) / scene.tileSize),
+      row = Math.floor((y - e.offsetY) / scene.tileSize)
+    if (
+      col < origin.col ||
+      row < origin.row ||
+      col >= origin.col + scene.cols ||
+      row >= origin.row + scene.rows
+    )
+      return false
+    const cell = Array.isArray(l.cells)
+      ? (l.cells[row * scene.cols + col] ?? -1)
+      : scene.version === 4
+        ? scene.regionCells(l.cells).at(col, row)
+        : -1
+    return (
+      cell >= 0 &&
+      (l.collision === true ||
+        scene.tilesets.find((t) => t.id === l.tilesetId)?.solid.includes(cell & 4095) === true)
+    )
+  })
+}
+export function moveSceneCharacter(
+  scene: PintaSceneQuery,
+  position: { x: number; y: number },
+  dx: number,
+  dy: number,
+  radius = scene.tileSize * 0.25,
+): { x: number; y: number } {
+  let { x, y } = position
+  const free = (cx: number, cy: number): boolean =>
+    [-radius, radius].every((ox) =>
+      [-radius, radius].every((oy) => !sceneSolidAt(scene, cx + ox, cy + oy)),
+    )
+  const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / Math.max(1, radius)))
+  for (let i = 0; i < steps; i++) {
+    if (free(x + dx / steps, y)) x += dx / steps
+    if (free(x, y + dy / steps)) y += dy / steps
+  }
+  return { x, y }
+}

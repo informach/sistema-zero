@@ -1,36 +1,15 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Dragões Dorminhocos'
 VELOCIDADE = 4
 OVOS_PARA_VENCER = 20
 
-heroi = Actor('heroi')
-heroi.pos = (400, 540)
 
-# Uma toca por dragão: quanto tempo ele dorme e quanto fica acordado (em quadros).
-dragoes = [Actor('dragao_dormindo'), Actor('dragao_dormindo'), Actor('dragao_dormindo')]
-ninhos = [Actor('ovos'), Actor('ovos'), Actor('ovos')]
-tempo_dormindo = [180, 130, 90]
-tempo_acordado = [70, 60, 50]
-acordado = [False, False, False]
-contadores = [0, 40, 80]
-ovos_por_ninho = [1, 2, 3]
-
-x = 160
-for numero in range(3):
-    dragoes[numero].pos = (x, 110)
-    ninhos[numero].pos = (x, 230)
-    x = x + 240
-
-ovos = 0
-vidas = 3
-fim_de_jogo = False
-venceu = False
-protegido = 0
-
-
+# 🧩 Meus moldes
 def voltar_ao_comeco():
     global protegido
     heroi.pos = (400, 540)
@@ -68,7 +47,48 @@ def pegar_ou_perder():
                 if ovos >= OVOS_PARA_VENCER:
                     venceu = True
 
+# ⚙️ Ao iniciar
+heroi = Actor('heroi')
+heroi.pos = (400, 540)
 
+# Uma toca por dragão: quanto tempo ele dorme e quanto fica acordado (em quadros).
+dragoes = [Actor('dragao_dormindo'), Actor('dragao_dormindo'), Actor('dragao_dormindo')]
+ninhos = [Actor('ovos'), Actor('ovos'), Actor('ovos')]
+tempo_dormindo = [180, 130, 90]
+tempo_acordado = [70, 60, 50]
+acordado = [False, False, False]
+contadores = [0, 40, 80]
+ovos_por_ninho = [1, 2, 3]
+
+x = 160
+for numero in range(3):
+    dragoes[numero].pos = (x, 110)
+    ninhos[numero].pos = (x, 230)
+    x = x + 240
+
+ovos = 0
+vidas = 3
+fim_de_jogo = False
+venceu = False
+protegido = 0
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global ovos, vidas, fim_de_jogo, venceu
+    if key == keys.SPACE and (fim_de_jogo or venceu):
+        ovos = 0
+        vidas = 3
+        fim_de_jogo = False
+        venceu = False
+        for numero in range(3):
+            acordado[numero] = False
+            dragoes[numero].image = 'dragao_dormindo'
+            contadores[numero] = numero * 40
+        voltar_ao_comeco()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('masmorra', (0, 0))
     for ninho in ninhos:
@@ -103,20 +123,6 @@ def update():
         protegido = protegido - 1
     else:
         pegar_ou_perder()
-
-
-def on_key_down(key):
-    global ovos, vidas, fim_de_jogo, venceu
-    if key == keys.SPACE and (fim_de_jogo or venceu):
-        ovos = 0
-        vidas = 3
-        fim_de_jogo = False
-        venceu = False
-        for numero in range(3):
-            acordado[numero] = False
-            dragoes[numero].image = 'dragao_dormindo'
-            contadores[numero] = numero * 40
-        voltar_ao_comeco()
 
 
 pgzrun.go()

@@ -1,0 +1,19 @@
+
+Running 12 tests using 1 worker
+
+(node:20496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e\examples-gallery.spec.ts:451:5 › KitGallery — os 185 cartões no Chromium › game-3d:Meu herói do Molda: cria, mostra primeiro frame e aceita controles (7.2s)
+  ✓   2 [chromium] › e2e\examples-gallery.spec.ts:451:5 › KitGallery — os 185 cartões no Chromium › game-3d-advanced:Herói do Molda: cria, mostra primeiro frame e aceita controles (5.5s)
+  ✓   3 [chromium] › e2e\examples-gallery.spec.ts:459:1 › game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram teardown (12.8s)
+  ✓   4 [chromium] › e2e\examples-gallery.spec.ts:743:1 › game-3d: o herói do Molda (GLB com ossos) anima e o céu HDR percorre o preview real (5.5s)
+  ✓   5 [chromium] › e2e\examples-gallery.spec.ts:800:1 › world-3d: personagem e "Pôr o modelo" do Molda com o céu HDR percorrem o preview real (10.6s)
+  ✓   6 [chromium] › e2e\paste-into-area.spec.ts:113:3 › colar blocos de outro projeto e arrastar para a Área › só o "preparar o jogo" no Ao iniciar já tem que pintar a cor (12.2s)
+  ✓   7 [chromium] › e2e\preview-focus-policy.spec.ts:5:3 › o jogo recebe foco sem ativação e devolve o teclado à Ponte (direto) (4.3s)
+  ✓   8 [chromium] › e2e\preview-focus-policy.spec.ts:5:3 › o jogo recebe foco sem ativação e devolve o teclado à Ponte (casca) (4.5s)
+  ✓   9 [chromium] › e2e\snow-descent.spec.ts:19:5 › game-2d: animated snow, touch and pause at 960px (2.5s)
+  ✓  10 [chromium] › e2e\snow-descent.spec.ts:19:5 › game-2d: animated snow, touch and pause at 390px (2.0s)
+  ✓  11 [chromium] › e2e\snow-descent.spec.ts:19:5 › game-2d-advanced: animated snow, touch and pause at 960px (2.5s)
+  ✓  12 [chromium] › e2e\snow-descent.spec.ts:19:5 › game-2d-advanced: animated snow, touch and pause at 390px (2.5s)
+
+  12 passed (1.3m)

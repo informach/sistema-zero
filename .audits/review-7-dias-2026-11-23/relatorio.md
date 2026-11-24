@@ -1,0 +1,101 @@
+# Revisão do repositório — últimos sete dias
+
+Data da coleta: 23/11/2026. Janela congelada: **16/11/2026 às 13:28:01 até 23/11/2026 às 13:28:01**, horário de São Paulo.
+
+- Branch na coleta: `staging`.
+- Base anterior à janela: `cb9f7471daa27e9fe2fadfcdf50a75f29f562bcd`.
+- HEAD da coleta: `8c76682010730ae95c48918920929cf1bcc4dc56`.
+- **1.454 commits; 8.940 arquivos no diff acumulado; 1.643.584 linhas acrescentadas e 64.729 removidas.** Esses números incluem merges, material didático, imagens, evidências e arquivos gerados; não representam 1.454 funcionalidades.
+- Classificação automática: 2.360 arquivos de implementação, 1.248 de testes, 1.961 binários, 183 gerados e 3.188 de documentação/dados.
+
+O inventário completo está em [inventory.json](inventory.json), com cada commit e cada arquivo. Há versões tabulares em [commits.tsv](commits.tsv) e [files.tsv](files.tsv). O [script da coleta](inventory.mjs) mantém os SHAs congelados para permitir reprodução.
+
+## Método e limite da conclusão
+
+O levantamento cobre todo o histórico do recorte e seu diff acumulado. A revisão combina classificação de todos os arquivos, análise estática das adições, leitura dirigida das implementações e contratos de maior risco, testes de regressão, suítes dos pacotes, navegador real, PostgreSQL real e a imagem Docker do executor. A análise automática identificou 247 arquivos com pontos de atenção, como execução, HTML, rede, concorrência e comentários de implementação pendente.
+
+Não houve leitura manual linha a linha de todos os 2.360 arquivos de implementação. A cobertura manual foi orientada por risco e pelas fronteiras entre aplicações: autorização, isolamento por perfil/conta, contratos de formato, migração, gravação, recuperação, execução de código, publicação e cobrança. Uma suíte verde não prova ausência de defeitos em todo o produto.
+
+Outras sessões continuaram trabalhando e produzindo commits durante esta revisão. O inventário permanece no HEAD congelado acima. Alterações concorrentes fora do recorte não foram revertidas nem contabilizadas como correções desta revisão. As verificações locais refletem o estado presente dos arquivos no momento de cada execução; isso é especialmente relevante para erros em arquivos novos de miniaturas 3D surgidos depois da coleta.
+
+## Levantamento por frente e efeito para a criança
+
+| Frente | O que entrou no período | O que a criança percebe | Condição de disponibilidade |
+| --- | --- | --- | --- |
+| Studio clássico | Trabalho extenso de desempenho, programas grandes, renderização de blocos, busca no programa e localização do bloco; execução em uma casca isolada | Encontrar e editar programas maiores com menos bloqueio do editor enquanto o jogo roda | A casca em outro site exige `STUDIO_CLASSIC_SHELL_ENABLED=1`, endereço permitido e runtime correspondente |
+| Ferramentas para entender o jogo | Abas **Investigar**, **Desempenho** e **Meus testes**; pausa, avanço por quadro, leitura de variáveis, medições e testes de comportamento/funções | Conseguir investigar por que o jogo falhou, conferir pontos/vidas/portas e criar seus próprios testes | A disponibilidade depende do tipo de projeto, linguagem e permissões da aula; não significa que toda ferramenta aparece em toda aula |
+| Zappy | Observação real do programa, medidas e resultados dos testes; integração com novos motores e materiais | Receber ajuda com mais contexto do que realmente aconteceu no jogo | Mantém as regras de acesso, créditos e capacidades do projeto |
+| Studio Pro | Execução local leve quando possível, ferramentas de código, contratos mais rigorosos de dependências, exportação reproduzível e atualização do motor publicado | Iterar mais depressa e trabalhar em projetos mais avançados; entender recusas por biblioteca não declarada | Projetos que precisam de compilação continuam usando o executor remoto; a atualização do motor é explícita |
+| Histórico do Pro | Fotografias locais do projeto, comparação e restauração de versões | Voltar a uma versão anterior dos arquivos quando uma mudança deu errado | Histórico deste aparelho/navegador; não é histórico em nuvem nem Git; materiais têm ciclo separado |
+| Python | Melhor organização dos projetos, integração de cenas e blocos de regiões/relevo no Raylib; construção e qualificação de uma versão única do motor | Construir programas e jogos com cenários mais ricos e mundos maiores | Os artefatos Python precisam acompanhar a versão qualificada e publicada; código no repositório não substitui promoção do runtime |
+| Salvamento do Studio | Persistência por partes, diário de recuperação, confirmação ao sair, compatibilidade de leitura e proteção nas trocas de perfil | Menor risco de perder o trabalho ou salvar o projeto no perfil errado | Exige sequência compatível de migrações, backend e clientes; o escritor selado possui adoção própria |
+| Pinta: nuvem e recuperação | Gravação causal, fila persistente, negociação de paletas, referências entre desenhos/folhas/mapas, recuperação e proteção contra abas antigas | Desenhos e mapas acompanham a conta com mais proteção contra conflitos, quedas e perda de vínculos | A composição atual habilita a nuvem causal do Pinta para todo perfil elegível, sem antiga flag/lista de homologação; exige backend e migrações correspondentes |
+| Pinta: criação de mapas | Evolução de camadas, folhas de peças, terrenos, objetos, portas, caminhos, conjuntos e integração com motores | Criar cenários 2D mais elaborados e reaproveitar seus materiais nos jogos | Há diferenças entre o editor de mapa fixo e a interface regional; não atribuir todas as ferramentas do primeiro ao segundo |
+| Pinta: mundo gigante | Mundo de 1.024 × 768 casas, edição focada por regiões e gravação dos trechos alterados | Desenhar um mapa muito maior sem carregar/regravar tudo a cada ação | A família regional atual usa formatos próprios; partes avançadas da interface regional e sua entrada pela biblioteca/exportação ainda estão limitadas |
+| Pinta: formatos e motores | Leitores/exportadores Tiled, Phaser, Pygame e Godot; infraestrutura de autorregras, projeções e codecs futuros | Mais possibilidades de aproveitar a arte em jogos e ferramentas externas onde a interface já permite | Codec nativo 9, nuvem 8 e conjuntos/projeções futuros têm barreiras de qualificação; não são uma liberação automática ao aluno |
+| Molda Cenários 3D | Nova oficina com mundos, bibliotecas, modelos, conjuntos, terreno, água, caminhos, iluminação e ferramentas por faixa | Montar um cenário 3D próprio, modelar relevo e água, distribuir objetos e aproveitar o cenário no jogo | `CENARIOS_MODO` governa a liberação; o código não equivale a acesso geral. `CENARIOS_REGIOES` tem controle separado |
+| História e publicação dos cenários | Desfazer/refazer persistentes, fotografias, publicação versionada e restauração de versões; exportação GLB/Blender/Studio | Experimentar e voltar atrás; publicar uma versão identificável do cenário | Exige acesso à oficina, serviços de publicação e migrações |
+| Mundos grandes no jogo | Cenas por região, materiais regionais, terreno grande e leitores JavaScript/Python; exemplos e provas de mundos de até 2 km | Base técnica para jogos maiores com carregamento progressivo | A galeria de exemplos grandes permanece restrita à equipe; parte exige `STUDIO_EXAMPLES_ORIGIN` e artefatos publicados |
+| Arquipélago Faísca | Reconstrução de cenário e preparação do mapa/motor novo; progresso nos contratos e na integração | Prepara a evolução visual e de escala do mundo | O protótipo/mundo V2 não substitui automaticamente o jogo V1 em uso; não anunciar a nova ilha como já entregue à criança |
+| Aulas e guias | Três aulas de **A Ilha do Farol**, revisões de minicursos Faísca, roteiros, manifestos, imagens e guias passo a passo | Novos projetos guiados e instruções visuais para desenhar, programar e criar jogos | Depende de publicação dos cursos, materiais e vídeos finais; arquivos e evidências de staging não provam publicação em produção |
+| Identidade e privacidade | Nome completo privado confirmado pelo responsável; apelido público; nomes sociais atualizados e regras de certificados | Ser identificada publicamente pelo apelido, preservando o nome usado no certificado | Perfis antigos dependem da confirmação do responsável; certificados já emitidos preservam seu registro |
+| Mural | Republicar o mesmo projeto atualiza a publicação existente e seus materiais, com selo **Atualizado** | Compartilhar uma versão melhor do jogo sem criar uma publicação duplicada; quem vê o Mural identifica a atualização | Exige backend Hub e telas compatíveis; vínculo do projeto, autorização e atualização foram exercitados com PostgreSQL real |
+| Retomada das aulas | Consulta ao progresso atual da conta antes de retomar o rascunho; preservação do final do vídeo e do estado confirmado | Voltar à aula no ponto correto, com menos risco de uma aba antiga sobrescrever o que já concluiu | Melhoria de continuidade das aulas existentes, sem exigir novo curso |
+| Experiência dos responsáveis | Ofertas/presentes em aulas, checkout no ambiente dos pais, Pix/cartão/assinatura, recuperação de cobrança e separação de benefícios adultos/infantis | Receber acesso a conteúdo adquirido/presenteado sem operar pagamento na conta infantil | Compra é do responsável; a autorização do servidor recusa perfil infantil ativo para a compra |
+| Operação e qualidade | Novos contratos entre serviços, preflight de deploy, testes reais, proteção de limpeza e webhooks de renovação resilientes | Mais continuidade de acesso e menos inconsistências entre telas/versões | Precisa de deploy coordenado, migrações e recursos de produção; não foi feito deploy nesta revisão |
+
+Os minicursos com trabalho relevante de material no período incluem **Meu primeiro desenho no Pinta**, **O baú dos símbolos**, **Moedas no caminho**, **O segredo da cabana**, **A ponte apressada** e **O Jardim Secreto**. As revisões também preservam as aulas gravadas **Cadê Todo Mundo** e **Desafio Chave do Farol**, para que otimizações do editor não invalidem a sequência ensinada.
+
+Para os pais, também há produção/revisão de **Transformando o vilão em aliado** e **Como ajudar seu filho autista nas frustrações**, com materiais próprios. Isso é melhoria de conteúdo e de apoio ao responsável; não deve ser descrito como uma nova ferramenta que aparecerá diretamente para a criança.
+
+O botão **Preciso de ajuda** no fluxo de recuperação do Pinta não prova, sozinho, um atendimento completo: a integração da conversa no host/serviço precisa estar concluída. Não contabilizei essa promessa como funcionalidade entregue.
+
+### Fontes de implementação úteis
+
+- Studio: [capacidades das aulas](../../packages/studio/src/studio/lessonFeatures.ts), [histórico local do Pro](../../packages/studio/src/state/proProjectHistory.ts), [Meus testes](../../packages/studio/src/components/devtools/StudentTestsPanel.tsx).
+- Casca do clássico: [contrato e habilitação](../../packages/core/src/studio/classic-shell.ts).
+- Pinta: [editor regional](../../packages/pinta/src/components/editor/FocalRegionMapStage.tsx), [fila da nuvem](../../packages/member-shell/src/lib/pinta-causal-queue.ts), [contrato HTTP](../../packages/members/src/interfaces/http/routes/pinta-causal.routes.ts).
+- Cenários 3D: [oficina](../../packages/molda-cenarios/src/oficina/telas/Oficina.tsx), [contrato do host](../../packages/molda-cenarios/src/oficina/portas.ts).
+- Identidade: [regras dos dados do perfil](../../packages/auth/src/domain/profile/profile-details.ts).
+- Conteúdo: [aulas interativas e QA](../../docs/aulas-interativas-tecnico).
+
+## Achados corrigidos nesta revisão
+
+| ID | Gravidade e efeito | Correção e regressão |
+| --- | --- | --- |
+| R1 | Alta, disponibilidade: a prévia do lápis de linhas/retângulos regionais alocava todas as casas antes de aplicar o limite de edição. Um retângulo de 1.024 × 768 produzia 786.432 posições em cada movimento | A prévia usa o mesmo coletor limitado da escrita. Registros acima do limite são recusados antes da alocação. Testes cobrem retângulo gigante, linha acima do limite e retângulo exatamente no limite |
+| R2 | Média, usabilidade: falha ao preparar a execução local de Meus testes podia escapar do handler e manter a rodada marcada como em andamento | Preparação e execução ficam sob `try/catch/finally`, com mensagem e liberação do estado; regressão usa uma fábrica real de documento que rejeita |
+| R3 | Média, concorrência: ao fechar e reabrir a aba, a conclusão atrasada da rodada antiga podia limpar o estado da nova rodada | A limpeza invalida o controlador anterior e a conclusão só altera o estado se ainda for dona da rodada; teste controla duas execuções pendentes em montagens sucessivas |
+| R4 | Alta, regressão funcional: `/v1/check` recusava o motor 2D publicado de um projeto convertido ao Pro, embora o build já aceitasse a cópia oficial | A verificação dos objetivos valida os hashes dos arquivos de plataforma antes de aplicar o orçamento de código do autor, usando o mesmo contrato do build. Motores alterados, caminhos errados e código autoral acima do teto continuam recusados |
+| R5 | Média, confiabilidade do gate: o teste do ranking administrativo aguardava qualquer fetch após a troca de público e podia verificar antes da requisição do ranking | Espera e seleção agora identificam `/api/admin/ranking` e o público adulto; conserva a exigência de primeira página com offset zero |
+| R6 | Média, confiabilidade do gate: o mock de IndexedDB de um teste de paletas substituía globalmente o `idb-keyval` usado depois pelo Studio, causando falhas de perfil e projetos | As 19 provas de paletas continuam intactas em uma fixture executada em processo próprio, conforme padrão já usado no repositório. A suíte do Studio continua usando seu armazenamento real de teste |
+| R7 | Média, integração de tipos, fora do HEAD congelado: o commit concorrente `f16940106` de miniaturas 3D introduziu uma conversão insegura de objeto para textura e uma definição do renderer incompatível com o retorno real de `getContext()` | A liberação usa `instanceof THREE.Texture` e o renderer guarda o tipo real `WebGLRenderer`, importado só como tipo. Os 15 testes relacionados passaram; a correção conserva o carregamento tardio do Three |
+| R8 | Baixa, confiabilidade do gate: a varredura de todos os arquivos do Studio fazia uma espera de I/O por arquivo e excedeu os cinco segundos do teste de tema | A leitura continua cobrindo o mesmo acervo, em lotes limitados de 32 arquivos. Os 12 testes de estilos passaram em 1,51 s, sem ampliar o timeout ou enfraquecer a regra |
+
+Arquivos de produção alterados: `FocalRegionMapStage.tsx`, `mapBrush.ts`, `StudentTestsPanel.tsx`, `studentTestsCopy.ts`, `studio-runtime/src/check.ts`, `studio-runtime/src/index.ts` e, na correção concorrente R7, `modelThumbnails.ts`. O perfil de validação do runtime foi regenerado porque o fingerprint inclui o código do Worker. Testes de regressão acompanham as correções funcionais.
+
+Evidências antes/depois: [prévia regional antes](focal-preview-red-compact.log), [Pinta depois](pinta-regression.log), [erro da rodada antes](student-tests-error-red.log), [concorrência antes](student-tests-lifetime-red.log), [Studio depois](student-tests-green.log), [Pro convertido antes](converted-pro-check-red.log), [runtime depois](converted-pro-check-green.log), [poluição de módulos antes](kids-idb-contamination-red.log), [isolamento depois](kids-idb-contamination-green.log).
+
+## Verificação
+
+As contagens finais e limitações são consolidadas em `verification-summary.json`. Os logs desta pasta preservam execuções que falharam e as verificações posteriores; uma falha inicial não foi apagada para produzir um resultado artificialmente verde.
+
+Foram executadas as suítes dos serviços, Studio, Molda, scripts de CI/release, contratos de aulas, provas selecionadas em Chromium/Chrome, banco real e imagem real do runtime. As verificações de navegador usam build de produção quando previsto pelo contrato do projeto.
+
+Houve correção do ambiente local antes da conclusão: o `node_modules` tinha `happy-dom` 20.10.2 enquanto o lock exigia 20.11.2; a reinstalação congelada resolveu a regressão de MutationObserver sem mudar o lockfile. Os tipos de rotas do Next também foram regenerados para retirar referências obsoletas. Molda foi executado com Bun 1.4.4, exatamente como determina o CI para os testes de workers reais.
+
+### Limitações que precisam permanecer visíveis
+
+- Os testes do agente nativo de desktop tiveram quatro falhas de lançamento do auxiliar Windows. Os eventos locais **Code Integrity 3033/3077** confirmam bloqueio do binário por exigência de assinatura empresarial. Não alterei a política de segurança nem declarei esses testes aprovados. O único arquivo desse pacote alterado na janela é o teste de contrato do Studio; os testes funcionais de código do período não introduziram esse auxiliar.
+- Duas provas de compatibilidade contra um **deployment predecessor real** de Members são opt-in e dependem de `PINTA_PALETTE_PREDECESSOR_ROOT` e `STUDIO_SEALED_PREDECESSOR_ROOT`. Sem um predecessor configurado, foram explicitamente puladas; a leitura/escrita do serviço atual foi exercitada.
+- Não foram feitos ensaios em hardware GPU físico nem todos os jobs de navegador/OS da matriz do CI. Um teste em Chromium teve encerramento do processo do navegador antes de começar o fluxo e passou em nova execução isolada; o resultado original permanece no log.
+- A composição de várias aplicações e seu reinício dentro do mesmo processo de teste apresentou `CONNECTION_ENDED` no Bun 1.3.11 local. O rastreamento confirma a conexão encerrada; os mesmos 25 casos passaram no Bun 1.4.4. A rodada conjunta de nove arquivos no 1.4.4 também encontrou timeouts de hooks de cinco segundos nos cenários; por isso a comprovação final de cada arquivo usa processo próprio e registra separadamente os resultados. Não considero a rodada conjunta aprovada nem atribuo, sem prova adicional, esse problema ao fluxo de produção, que reinicia processos inteiros.
+- Não houve leitura remota de configuração de produção, publicação de cursos, upload de materiais por esta revisão ou deploy. Condições de liberação acima descrevem o código do recorte, sem afirmar o estado atual de produção.
+
+## Quando isso poderá ser anunciado à criança
+
+Depois do deploy compatível e das liberações de produto/conteúdo, a mensagem concreta é: **“Você terá mais ferramentas para descobrir o que aconteceu no seu jogo, testar suas ideias, recuperar versões e criar mapas e cenários mais elaborados, com mais proteção para o que você já fez.”**
+
+Convém anunciar separadamente as aulas efetivamente publicadas, a abertura da oficina de cenários 3D e a eventual troca do mundo do Arquipélago. Essas três entregas têm decisões de publicação próprias. A existência do código no branch não significa que todas ocorrerão juntas.
+
+Nenhuma correção desta revisão foi commitada, enviada ou implantada por esta sessão.

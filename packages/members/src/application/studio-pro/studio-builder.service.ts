@@ -131,7 +131,10 @@ const revisionContent = {
   projectId,
   templateId: z.string().max(80),
   hash,
-  files: z.record(z.string().max(240), z.string().max(256000)),
+  // Sem teto por arquivo aqui: o corpo inteiro já passou por `maxPayloadBytes`, e o teto da criança
+  // fica com `createStudioProRevision`, que reconhece a cópia publicada do motor 2D pelo sha256 do
+  // inventário do core. Um teto de 256 mil aqui recusava todo 2D convertido antes dessa conferência.
+  files: z.record(z.string().max(240), z.string()),
   directories: z.array(z.string().max(240)).max(160),
   assets: z.string().max(80000),
   assetFiles: z.record(z.string().max(240), hash),

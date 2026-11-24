@@ -4,7 +4,7 @@ import type { RaylibGameKey } from './raylibGames.manifest'
 
 export const RAYLIB_GAME_BLOCKS = {
   'ola-raylib': {
-    sourceSha256: '51d84233a7f56ff42ae5d9138a71dc529e864edbd8fd01685fdebca9c9214562',
+    sourceSha256: '5a6fe04426aa464875bf8a06df250e86002abae6fbb6f8d50c26f8d9ff7cff2c',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -50,7 +50,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'nave-que-desliza': {
-    sourceSha256: '540c667c2f0f17ebd907134521ab53d6ffa9fcdc91ea8caca0bb09d47c944aa4',
+    sourceSha256: '95da9ee1255f273c2c30b556a36aaa1c3dd4d54d76dcf66d6cd28be3389a0844',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -92,7 +92,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   encostou: {
-    sourceSha256: 'b9e60597c846987562d9443c301bf035ce3d10500292dcac0357056dfadf5060',
+    sourceSha256: '503a1d7504ae7da30ca6a22625b198ddd850a458aa70fe3c927043014abeba77',
     blockIds: [
       'sz_py_and',
       'sz_py_arithmetic',
@@ -147,7 +147,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'camera-que-segue': {
-    sourceSha256: 'ec55c2da2520b3e9473e25c785b9fc7266b86d902f0146fc15542fde34effaec',
+    sourceSha256: 'a8a8b0da1484f368a72e0d9b54e469f3ddddb85224433044f28d2a3ce0906373',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -210,7 +210,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'sprites-timer-animacao': {
-    sourceSha256: '2e72c51484356fb99316ac1f0784ae172014a4abbec4ebb7f052b188886a4e11',
+    sourceSha256: '4588988b3a888d1b3a2e72dbad1cb1e8516f6a7aea780782b282f128c2ae6abe',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -279,7 +279,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'dino-corredor': {
-    sourceSha256: '6ee8c53008b48e6f42f05ffb6e2a1aa9bf1b223c110062be5adbe61b18095755',
+    sourceSha256: 'b831d2c1b30defa78df51bffd0b3b579c5433a616795497a4b61a2b922e5b0b1',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -353,7 +353,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'chuva-de-meteoros': {
-    sourceSha256: '0559feb93c30ab377c697c4ab4c1655435352ea8f9d8e454d1759db465b6a6b3',
+    sourceSha256: '6af2e02492d511d0a1c9a52c5a40eabc4bdc29d966cbd3ece78c85116342abf2',
     blockIds: [
       'sz_py_alias',
       'sz_py_arithmetic',
@@ -430,7 +430,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'batalha-de-monstrinhos': {
-    sourceSha256: '176f1626a349c3c62e4814e2a083d70074a22152ea2f969c04b243dcc1f923bb',
+    sourceSha256: '968fccc3da2f011f561d95da812d28958193d3cdf00b0e7e6d4e1cf5c9defc93',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -508,7 +508,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'aventura-do-heroi': {
-    sourceSha256: 'cd56c9b551f1ba7fe7b26207f556bb8c020a612d4c743009cbe24d5b6e78541a',
+    sourceSha256: '95f42ae9fe3e831d65200c6a0a1829947a7bd6d4a4146a093c68f05217f0686a',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -603,7 +603,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'primeira-cena-3d': {
-    sourceSha256: '194f42c5654db978b8ba39841202a87f83584982eea37b322fee272650f5471f',
+    sourceSha256: '3401809a3aa8c202e7bb8c3a3025713c93a9d060c6358be7078b9ff1fd32912c',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -652,7 +652,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'modelos-do-molda': {
-    sourceSha256: '39009912ec7b46a9529607ce0af8d9f5207a448ee043c0980d31b48d67417f7d',
+    sourceSha256: 'fea0505feb4cc0d04dc2a74d578c6a74808f4aee98add674558fbd57ae19f36a',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -695,7 +695,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'caixas-que-se-encostam': {
-    sourceSha256: 'affed7fe53b13f94db668597ece057c5c0d82be65b5c366bc1e4ce6d4039ddaa',
+    sourceSha256: 'bcd5fd957c58e1ac846a48f33c5b2dbfbf97113bdb35b4563e377b80dea77c94',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -758,7 +758,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'clarao-com-shader': {
-    sourceSha256: '56a3f3ed6e3b52b78b53f728b7f43a48ebd6c4e197eed767155f2943f0f793aa',
+    sourceSha256: '7d854bf590e4e705d2dffa9b4d4474bcac4ea7b0334011643db5db9c0e87ee5b',
     blockIds: [
       'sz_py_arithmetic',
       'sz_py_assign',
@@ -816,7 +816,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'corrida-infinita': {
-    sourceSha256: '92036bb951517a1b4adc0bc5d958f8fec867e7f86edc3636c2255d2a2f264f22',
+    sourceSha256: '6be100109a2cbc4e4dad88de6e35768d6c2d45dc109fd15a802e8752998035ac',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -904,7 +904,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'patrulha-espacial': {
-    sourceSha256: '5fe8fd1c331e89d4d4bf9a13af1d29c8758c1a9e1074dee07a2089e59f8df41b',
+    sourceSha256: '154ccd5c7a2cd273fb6bcbb4c9a6fc672118c8bd74cfccceef5ac285c8ae852d',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -994,7 +994,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'labirinto-dos-robos': {
-    sourceSha256: '663e8cc1daf8275c6b2a1114994062371855665c9ffab7c9769f91377ca1e169',
+    sourceSha256: 'ad943086f255b64cb16144b1e8ff0a5a12d8546efcbb5ef6e0b3d599163740a2',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',
@@ -1107,7 +1107,7 @@ export const RAYLIB_GAME_BLOCKS = {
     ],
   },
   'mundo-de-blocos': {
-    sourceSha256: 'd3c9454b6c2c3c81abc8df2958fe2376f3de64589e5bd27db18a9e59187eb65b',
+    sourceSha256: 'f988cb31c35ec85ae3d7930dae64030fcb3a0c6e108aace204ece3718908d4d8',
     blockIds: [
       'sz_py_alias',
       'sz_py_and',

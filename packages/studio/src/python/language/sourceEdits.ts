@@ -1,4 +1,5 @@
 import {
+  isDroppedAreaMarker,
   type PythonSourceCopy,
   pythonSourceRangeMapper,
   validatePythonSourceCopies,
@@ -63,6 +64,10 @@ export function applyPythonSourceEdits(
   document: PythonParsedDocument,
   current: { identity: PythonAnalysisIdentity; source: string },
   changes: readonly PythonSourceEdit[],
+  options: {
+    /** Comentários de área que podem sair (offset de início); nenhum outro comentário pode. */
+    droppedComments?: ReadonlySet<number>
+  } = {},
 ): string {
   if (
     !samePythonAnalysisIdentity(document.identity, current.identity) ||
@@ -74,7 +79,11 @@ export function applyPythonSourceEdits(
   const edits = validatePythonSourceEdits(current.source, changes)
   const map = pythonSourceRangeMapper(edits)
   for (const token of document.tokens)
-    if (token.kind === 'COMMENT' && !map(token.range))
+    if (
+      token.kind === 'COMMENT' &&
+      !map(token.range) &&
+      !isDroppedAreaMarker(token, options.droppedComments)
+    )
       throw new Error('Esta alteração precisa preservar os comentários do trecho.')
   let source = current.source
   for (const edit of edits.reverse())

@@ -1,0 +1,148 @@
+{
+  "botao-expandir.png": {
+    "largura": 98.546875,
+    "altura": 34,
+    "caixas": {}
+  },
+  "botao-enviar-meu-desenho.png": {
+    "largura": 174.53125,
+    "altura": 34,
+    "caixas": {}
+  },
+  "pinta.jpg": {
+    "largura": 1280,
+    "altura": 620,
+    "caixas": {
+      "expandir": {
+        "x": 81.9,
+        "y": 4.2,
+        "w": 6.7,
+        "h": 4.5
+      },
+      "ferramentas": {
+        "x": 6.5,
+        "y": 35.2,
+        "w": 8.3,
+        "h": 14.2
+      },
+      "cor": {
+        "x": 8.2,
+        "y": 60.6,
+        "w": 6.9,
+        "h": 10.3
+      },
+      "cores": {
+        "x": 88.4,
+        "y": 87.9,
+        "w": 21.3,
+        "h": 24.2
+      },
+      "enviar": {
+        "x": 92.5,
+        "y": 4.2,
+        "w": 13.2,
+        "h": 4.5
+      },
+      "desfazer": {
+        "x": 15.6,
+        "y": 12.7,
+        "w": 3.1,
+        "h": 6.5
+      }
+    }
+  },
+  "botao-selecionar.png": {
+    "largura": 44,
+    "altura": 44,
+    "caixas": {}
+  },
+  "botao-pincel.png": {
+    "largura": 44,
+    "altura": 44,
+    "caixas": {}
+  },
+  "botao-retangulo.png": {
+    "largura": 44,
+    "altura": 44,
+    "caixas": {}
+  },
+  "botao-circulo.png": {
+    "largura": 44,
+    "altura": 44,
+    "caixas": {}
+  },
+  "botao-preenchimento-contorno.png": {
+    "largura": 96,
+    "altura": 72,
+    "caixas": {}
+  },
+  "botao-cores.png": {
+    "largura": 256,
+    "altura": 50,
+    "caixas": {}
+  },
+  "botao-reduzir.png": {
+    "largura": 91.640625,
+    "altura": 34,
+    "caixas": {}
+  },
+  "estudio-imagens.jpg": {
+    "largura": 236,
+    "altura": 100,
+    "caixas": {
+      "selo": {
+        "x": 57.5,
+        "y": 39.1,
+        "w": 50.6,
+        "h": 34.3
+      }
+    }
+  },
+  "estudio-menu.jpg": {
+    "largura": 440,
+    "altura": 362,
+    "caixas": {
+      "mais": {
+        "x": 89.1,
+        "y": 9.8,
+        "w": 9.1,
+        "h": 11.1
+      },
+      "imagens": {
+        "x": 49.2,
+        "y": 63.9,
+        "w": 88.3,
+        "h": 10.0
+      },
+      "mostrar": {
+        "x": 49.2,
+        "y": 93.3,
+        "w": 88.3,
+        "h": 10.0
+      }
+    }
+  },
+  "estudio-lista.jpg": {
+    "largura": 930,
+    "altura": 476,
+    "caixas": {
+      "campo": {
+        "x": 84.9,
+        "y": 39,
+        "w": 14.5,
+        "h": 8
+      },
+      "minha": {
+        "x": 94.9,
+        "y": 78.1,
+        "w": 6.1,
+        "h": 17.1
+      }
+    }
+  },
+  "pinta-quadro.jpg": {
+    "largura": 382,
+    "altura": 218,
+    "caixas": {}
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "environment": "staging",
+  "provider": "Cloudflare R2",
+  "bucket": "testes-ugc",
+  "preflights": [
+    {
+      "origin": "https://community-staging-66f2.up.railway.app",
+      "status": 204,
+      "exactOrigin": true,
+      "put": true,
+      "conditionalHeader": true,
+      "typeHeader": true
+    },
+    {
+      "origin": "https://community-kids-staging.up.railway.app",
+      "status": 204,
+      "exactOrigin": true,
+      "put": true,
+      "conditionalHeader": true,
+      "typeHeader": true
+    }
+  ],
+  "checks": [
+    {
+      "origin": "https://community-staging-66f2.up.railway.app",
+      "signedPreflightStatus": 204,
+      "missingConditionStatus": 403,
+      "browserPutStatuses": [200, 412, 412],
+      "secondSealRejected": true,
+      "browserGet": {
+        "status": 200,
+        "bytes": 265,
+        "sha256": "bc777672aac92ef216937dda50176bc4e619848761810933eeef19c5ea20cea2"
+      }
+    },
+    {
+      "origin": "https://community-kids-staging.up.railway.app",
+      "signedPreflightStatus": 204,
+      "missingConditionStatus": 403,
+      "browserPutStatuses": [200, 412, 412],
+      "secondSealRejected": true,
+      "browserGet": {
+        "status": 200,
+        "bytes": 265,
+        "sha256": "bc777672aac92ef216937dda50176bc4e619848761810933eeef19c5ea20cea2"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "origin": "https://community-staging-66f2.up.railway.app",
+      "exactRules": 1,
+      "get": true,
+      "put": true
+    },
+    {
+      "origin": "https://community-kids-staging.up.railway.app",
+      "exactRules": 1,
+      "get": true,
+      "put": true
+    }
+  ],
+  "deniedOriginStatus": 403,
+  "disposableObjects": {
+    "attempted": 4,
+    "confirmedAbsent": 4
+  }
+}

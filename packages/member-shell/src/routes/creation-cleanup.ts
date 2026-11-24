@@ -3,16 +3,23 @@ import { timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { getEnv } from '../lib/env'
 import type { GatewayModule } from '../server/gateway'
-import { r2DeleteUgcPrefixes } from '../server/r2'
+import { r2DeleteObjectsUgc, r2DeleteUgcPrefixes } from '../server/r2'
 
 interface CleanupJob {
-  scope?: 'pensa' | 'gallery'
+  scope?: 'pensa' | 'gallery' | 'pinta' | 'studio-seal'
   id: string
   accountId: string
   userIds: string[]
   prefixes: string[]
+  objectKeys?: string[]
   attempts: number
 }
+
+const pintaObjectKey =
+  /^creations\/(?:adult\/)?[0-9a-f-]{36}\/pinta\/[A-Za-z0-9_-]{1,64}\/(?:[1-9]\d*\.json\.gz|units\/[0-9a-f-]{36}\/[1-9]\d*\.(?:upload|sealed)\.gz)$/
+
+const studioObjectKey =
+  /^creations\/(?:adult\/)?[0-9a-f-]{36}\/studio\/[A-Za-z0-9_-]{1,64}\/(?:[1-9]\d*\.json\.gz|parts\/[a-f0-9]{64}\.[1-9]\d*\.gz|seals\/[0-9a-f-]{36}\/(?:upload|sealed)\/(?:project|parts\/[a-f0-9]{64})\.gz)$/
 
 function authorized(request: Request, expected: string): boolean {
   const value = request.headers.get('authorization')
@@ -26,11 +33,13 @@ function authorized(request: Request, expected: string): boolean {
 export function createCreationCleanupWorkerRoutes(deps: {
   gateway: Pick<GatewayModule, 'gatewayFetchHmac'>
   deletePrefixes?: typeof r2DeleteUgcPrefixes
+  deleteObjects?: typeof r2DeleteObjectsUgc
 }) {
   return {
     creationCleanupWorker: {
       POST: async (request: Request) => {
-        const secret = getEnv().CREATION_CLEANUP_CRON_SECRET
+        const env = getEnv()
+        const secret = env.CREATION_CLEANUP_CRON_SECRET
         if (!secret) {
           return NextResponse.json(
             { error: { code: 'SERVICE_UNAVAILABLE', message: 'Worker não configurado.' } },
@@ -44,6 +53,9 @@ export function createCreationCleanupWorkerRoutes(deps: {
           )
         }
 
+        // A nuvem causal do Pinta vale para todo perfil (23/11/2026): o worker declara sempre que
+        // entende as chaves exatas de `pinta` e de `studio-seal`.
+        const scopes = ['pensa', 'gallery', 'pinta', 'studio-seal']
         let rewardsFailed = false
         try {
           const drained = await deps.gateway.gatewayFetchHmac(
@@ -62,7 +74,7 @@ export function createCreationCleanupWorkerRoutes(deps: {
           // finalizaria a conta da família inteira a partir do job de um plano.
           const claimed = await deps.gateway.gatewayFetchHmac<{ job?: CleanupJob }>(
             '/members/internal/creation-cleanups/claim',
-            { method: 'POST', body: { scopes: ['pensa', 'gallery'] } },
+            { method: 'POST', body: { scopes } },
           )
           if (claimed.status === 204) break
           const job = claimed.body?.job
@@ -73,7 +85,19 @@ export function createCreationCleanupWorkerRoutes(deps: {
             )
           }
           try {
-            await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)
+            if (job.scope === 'pinta' || job.scope === 'studio-seal') {
+              const keyShape = job.scope === 'pinta' ? pintaObjectKey : studioObjectKey
+              if (
+                job.prefixes.length !== 0 ||
+                job.userIds.length !== 0 ||
+                !Array.isArray(job.objectKeys) ||
+                job.objectKeys.some((key) => typeof key !== 'string' || !keyShape.test(key))
+              )
+                throw new Error('Job de limpeza de objetos inválido')
+              await (deps.deleteObjects ?? r2DeleteObjectsUgc)(job.objectKeys)
+            } else {
+              await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)
+            }
             const finalizeBody = { accountId: job.accountId, userIds: job.userIds }
             for (const path of job.scope
               ? []

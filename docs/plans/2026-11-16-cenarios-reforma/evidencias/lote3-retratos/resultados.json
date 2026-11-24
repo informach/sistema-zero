@@ -1,0 +1,46 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "fotografiaEstabilizada": true,
+    "gestosIntermediariosSemFoto": true,
+    "retratosDistintos": true,
+    "inspecao": true,
+    "restaurarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "fotografiaEstabilizada": true,
+    "gestosIntermediariosSemFoto": true,
+    "retratosDistintos": true,
+    "inspecao": true,
+    "restaurarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "fotografiaEstabilizada": true,
+    "gestosIntermediariosSemFoto": true,
+    "retratosDistintos": true,
+    "inspecao": true,
+    "restaurarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "fotografiaEstabilizada": true,
+    "gestosIntermediariosSemFoto": true,
+    "retratosDistintos": true,
+    "inspecao": true,
+    "restaurarUndo": true,
+    "reabrir": true,
+    "erros": []
+  }
+]

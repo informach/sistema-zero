@@ -6,11 +6,12 @@
  * força a gravação antes de enviar ao professor.
  */
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createRef } from 'react'
 import { COPY } from '../core/copy'
-import { createPixelSpriteAsset, type PintaAsset } from '../core/project'
+import { createPixelSpriteAsset, createTilesetAsset, type PintaAsset } from '../core/project'
 import { clearIdbMock } from '../testing/idbMock'
+import { addTile } from '../tiles/tilesetOps'
 
 const { PintaLesson } = await import('./PintaLesson')
 const { setPintaStorageNamespace } = await import('../state/persistence')
@@ -50,6 +51,23 @@ async function esperarHandlePronto(handle: PintaHandle, asset: PintaAsset): Prom
 }
 
 describe('modo asset único', () => {
+  it('a aula avisa antes de ultrapassar seu orçamento e mantém a peça selecionada', async () => {
+    let asset = createTilesetAsset({ name: 'pecas-aula', tileSize: 16 })
+    while (asset.tiles.length < 64) asset = addTile(asset, asset.tiles.length - 1)
+    const ref = createRef<PintaHandle>()
+    render(<PintaLesson initialAsset={asset} handleRef={ref} />)
+    await esperarEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addTile }))
+    await screen.findByText(COPY.editor.lessonMapLimit)
+    const after = ref.current?.getAsset()
+    expect(after?.kind === 'tileset' && after.tiles.length).toBe(64)
+    expect(
+      screen.getByRole('button', { name: COPY.tiles.tileLabel(0) }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    expect(screen.getByRole('button', { name: COPY.editor.undo }).hasAttribute('disabled')).toBe(
+      true,
+    )
+  })
   it('abre DIRETO no desenho, sem galeria e sem caminho de volta', async () => {
     const asset = nave()
     render(<PintaLesson initialAsset={asset} />)

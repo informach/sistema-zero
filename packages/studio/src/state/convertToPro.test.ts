@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { createEmptyProject, type Project } from '#core'
 import { javaScriptProject } from '../core/editableProject'
 import { buildProFileMap } from '../export/fileMap'
+import { THREE_VERSION } from '../three/threeRuntimeContract'
 import { convertClassicToProTree } from './convertToPro'
 import { sanitizeProjectForHost, useProjectStore } from './projectStore'
 import { sanitizeProTree } from './proTree'
@@ -28,6 +29,39 @@ describe('convertClassicToProTree', () => {
     )
     const index = (tree['index.html'] as { content: string }).content
     expect(index.indexOf('src="/sz-input.js"')).toBeLessThan(index.indexOf('src="/script.js"'))
+  })
+
+  // Full review final (21/11/2026, conferido no staging): um jogo em branco convertido abria com 42
+  // problemas do TypeScript nos arquivos de apoio que a própria conversão escreve.
+  it('os arquivos de apoio da plataforma não viram problemas; o código da criança segue conferido', async () => {
+    const { readdirSync, readFileSync } = await import('node:fs')
+    const { dirname, join } = await import('node:path')
+    const { fileURLToPath } = await import('node:url')
+    const { createProLanguageService } = await import('../monaco/pro/languageService')
+    const libDir = dirname(fileURLToPath(import.meta.resolve('typescript')))
+    const libraries = Object.fromEntries(
+      readdirSync(libDir)
+        .filter((name) => /^lib\..*\.d\.ts$/.test(name))
+        .map((name) => [name, readFileSync(join(libDir, name), 'utf8')]),
+    )
+    const base = classicProject()
+    const tree = await convertClassicToProTree(
+      classicProject({
+        files: { ...base.files, 'script.js': 'const vidas = 3;\nvidas.voar();\n' },
+      }),
+    )
+    const service = createProLanguageService(libraries)
+    service.update(
+      Object.fromEntries(
+        Object.entries(tree).flatMap(([path, node]) =>
+          node.kind === 'file' ? [[path, node.content]] : [],
+        ),
+      ),
+    )
+    expect(tree['public/sz-audio.js']?.kind).toBe('file')
+    expect(service.diagnostics('public/sz-input.js')).toEqual([])
+    expect(service.diagnostics('public/sz-audio.js')).toEqual([])
+    expect(service.diagnostics('public/script.js').length).toBeGreaterThan(0)
   })
 
   it('monta uma árvore Vite válida: index.html na raiz, assets em public/, refs absolutas', async () => {
@@ -64,7 +98,9 @@ describe('convertClassicToProTree', () => {
     expect(tree['src/converted/sz-ext']?.kind).toBe('dir')
     const index = (tree['index.html'] as { content: string }).content
     expect(index).not.toContain('importmap')
-    expect((tree['package.json'] as { content: string }).content).toContain('"three": "0.180.0"')
+    expect((tree['package.json'] as { content: string }).content).toContain(
+      `"three": "${THREE_VERSION}"`,
+    )
     expect(index).toContain('src="/src/converted/sz-ext/game-3d.js"')
     expect(index).toContain('src="/script.js" defer')
   })

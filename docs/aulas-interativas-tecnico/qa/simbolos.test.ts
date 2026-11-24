@@ -182,12 +182,15 @@ describe('manifestos dos símbolos', () => {
       expect(isLearningManifest(m)).toBe(true)
       expect(m.courseSlug).toBe('jornada-faisca-poder-4')
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
+      // O envio fecha a montagem da estrela, e o quiz vem depois dele (revisão de 23/11/2026).
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'sol', 'lua', 'estrela', 'revisao', 'entrega']
-          : ['abertura', 'lua', 'estrela', 'revisao', 'entrega'],
+          ? ['abertura', 'material', 'experiencia', 'sol', 'lua', 'estrela', 'revisao']
+          : ['abertura', 'sol', 'lua', 'estrela', 'revisao'],
       )
-      expect(m.sections.filter((s: any) => s.completion.submissionUpToDate)).toHaveLength(1)
+      const envio = m.sections.filter((s: any) => s.completion.submissionUpToDate)
+      expect(envio.map((s: any) => [s.key, s.intent])).toEqual([['estrela', 'delivery']])
+      expect(m.sections.at(-1).intent).toBe('closing')
       const studio = m.blocks.filter((b: any) => b.content?.kind === 'studio')
       expect(studio).toHaveLength(1)
       expect(studio[0].content.chain).toBe(`jornada-faisca-poder-4-${d}`)
@@ -206,9 +209,7 @@ describe('manifestos dos símbolos', () => {
       // O sol não cobra a lua ainda não pedida, e a lua não cobra o baú.
       const ids = (key: string) =>
         m.sections.find((s: any) => s.key === key)?.completion.projectChecks.map((c: any) => c.id)
-      if (d === '2d') {
-        expect(ids('sol')).not.toContain('lua-depois')
-        expect(ids('lua')).not.toContain('ordem-certa')
-      } else expect(ids('lua')).not.toContain('ordem-certa')
+      expect(ids('sol')).not.toContain('lua-depois')
+      expect(ids('lua')).not.toContain('ordem-certa')
     })
 })

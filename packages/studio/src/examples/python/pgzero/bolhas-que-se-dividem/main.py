@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 import math
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 600
 TITLE = 'Bolhas que se Dividem'
@@ -12,23 +14,8 @@ QUIQUES = [0, 6, 7.5, 9]
 PONTOS = [0, 300, 200, 100]
 VELOCIDADE_DO_ARPAO = 10
 
-jogador = Actor('jogador', (WIDTH / 2, CHAO), anchor=('center', 'bottom'))
-ponta = Actor('ponta', anchor=('center', 'top'))
-bolhas = []
-atirando = False
-arpao_x = 0
-arpao_topo = 0
-pontos = 0
-vidas = 3
-nivel = 1
-# Quadros de espera antes de as bolhas começarem a pular.
-pausa = 0
-# Quadros em que o jogador pisca protegido, logo depois de perder uma vida.
-protegido = 0
-# 'jogando', 'passou' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def nova_bolha(tamanho, x, y, vx, vy):
     bolha = Actor('bolha' + str(tamanho), (x, y))
     bolha.tamanho = tamanho
@@ -116,7 +103,46 @@ def perder_vida():
         # As bolhas continuam onde estão; o jogador pisca protegido por dois segundos.
         protegido = 120
 
+# ⚙️ Ao iniciar
+jogador = Actor('jogador', (WIDTH / 2, CHAO), anchor=('center', 'bottom'))
+ponta = Actor('ponta', anchor=('center', 'top'))
+bolhas = []
+atirando = False
+arpao_x = 0
+arpao_topo = 0
+pontos = 0
+vidas = 3
+nivel = 1
+# Quadros de espera antes de as bolhas começarem a pular.
+pausa = 0
+# Quadros em que o jogador pisca protegido, logo depois de perder uma vida.
+protegido = 0
+# 'jogando', 'passou' ou 'fim'
+estado = 'jogando'
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global atirando, arpao_x, arpao_topo, nivel
+    if key != keys.SPACE:
+        return
+    if estado == 'passou':
+        nivel = nivel + 1
+        comecar_nivel()
+    elif estado == 'fim':
+        novo_jogo()
+    elif not atirando and pausa == 0:
+        # Um arpão de cada vez: ele sobe de onde o jogador está.
+        atirando = True
+        arpao_x = jogador.x
+        arpao_topo = CHAO - 40
+        sounds.arpao.play()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global pausa, arpao_topo, atirando, estado, protegido
     if estado != 'jogando':
@@ -163,24 +189,4 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, 260), fontsize=60, color='orange', owidth=1, ocolor='black')
     if estado != 'jogando':
         screen.draw.text('Espaço continua', center=(WIDTH / 2, 320), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    global atirando, arpao_x, arpao_topo, nivel
-    if key != keys.SPACE:
-        return
-    if estado == 'passou':
-        nivel = nivel + 1
-        comecar_nivel()
-    elif estado == 'fim':
-        novo_jogo()
-    elif not atirando and pausa == 0:
-        # Um arpão de cada vez: ele sobe de onde o jogador está.
-        atirando = True
-        arpao_x = jogador.x
-        arpao_topo = CHAO - 40
-        sounds.arpao.play()
-
-
-novo_jogo()
 pgzrun.go()

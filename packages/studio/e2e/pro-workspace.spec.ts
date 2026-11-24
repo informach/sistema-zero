@@ -1,34 +1,17 @@
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { strFromU8, unzipSync } from 'fflate'
-import { build, type PreviewServer, preview } from 'vite'
+import type { PreviewServer } from 'vite'
+import { startWorkspaceFixture, stopWorkspaceFixture } from './helpers/workspaceFixture'
 import { inspectWorkspaceBuffers } from './proWorkspaceInspection'
 
 let server: PreviewServer
 test.beforeAll(async () => {
   test.setTimeout(180_000)
-  const configFile = fileURLToPath(new URL('../playground/vite.config.ts', import.meta.url))
-  const root = fileURLToPath(new URL('./fixtures/pro-workspace', import.meta.url))
-  const outDir = fileURLToPath(new URL('../.cache/e2e-pro-workspace', import.meta.url))
-  await build({
-    configFile,
-    root,
-    logLevel: 'warn',
-    build: { outDir, emptyOutDir: true, target: 'esnext' },
-  })
-  server = await preview({
-    configFile,
-    root,
-    build: { outDir },
-    preview: { host: '127.0.0.1', port: 0, strictPort: false },
-  })
+  server = await startWorkspaceFixture()
 })
 test.afterAll(async () => {
-  if (server)
-    await new Promise<void>((resolve, reject) =>
-      server.httpServer.close((error) => (error ? reject(error) : resolve())),
-    )
+  await stopWorkspaceFixture(server)
 })
 
 for (const tab of ['Arquivos', 'Saída']) {
@@ -104,6 +87,53 @@ test('keeps stage actions reachable at tablet width and after resizing the panel
   const session = await preview.locator('#session').textContent()
   await header.getByRole('button', { name: 'Atualizar', exact: true }).click()
   await expect(preview.locator('#session')).not.toHaveText(session!)
+})
+
+test('searches the complete file map without mounting every symbol at once', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?symbols=1`)
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
+  const map = page.getByRole('region', { name: 'Mapa do arquivo', exact: true })
+  await expect(map.locator('li')).toHaveCount(100)
+  await map.getByRole('button', { name: 'Mostrar mais símbolos' }).click()
+  await expect(map.locator('li')).toHaveCount(200)
+  await map.getByRole('searchbox', { name: 'Buscar no mapa do arquivo' }).fill('ZZUPDATE')
+  await expect(map.locator('li')).toHaveCount(1)
+  await map.getByRole('button', { name: /^zzUpdate\b/ }).click()
+  await expect(
+    page.locator('.monaco-editor .view-line').filter({ hasText: 'zzUpdate' }),
+  ).toBeVisible()
+  const screenshot = test.info().outputPath('mapa-completo.png')
+  await page.screenshot({ path: screenshot })
+  await test.info().attach('mapa-completo', { path: screenshot, contentType: 'image/png' })
+})
+
+test('keeps all references reachable after the first hundred results', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?references=1`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+Home')
+  for (const _ of 'export const s') await input.press('ArrowRight')
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Onde isto é usado' }).click()
+  const panel = page.getByRole('region', { name: 'Referências encontradas' })
+  await expect(panel).toContainText('100 de 252')
+  await expect(panel.getByRole('button', { name: /^src\/main.ts:/ })).toHaveCount(100)
+  await panel.getByRole('button', { name: 'Mostrar mais referências' }).click()
+  await expect(panel).toContainText('200 de 252')
+  await panel.getByRole('button', { name: 'Mostrar mais referências' }).click()
+  await expect(panel).toContainText('252 de 252')
+  await panel.getByRole('button', { name: 'src/main.ts:252', exact: true }).click()
+  await expect(input).toBeFocused()
+  await expect(page.locator('.monaco-editor .view-lines').first()).toContainText(
+    'console.log(score)',
+  )
+  await expect(panel.getByRole('button', { name: 'Mostrar mais referências' })).toHaveCount(0)
 })
 
 test('loads symbols opened before the language module arrives', async ({ page }) => {
@@ -327,17 +357,99 @@ test('updates language and removes obsolete markers when an open file changes ex
   })
   await page.getByRole('button', { name: 'Mais', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
-  await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
+  // Sem armazenamento local não há versões: a janela não as promete (full review final).
+  await expect(page.getByRole('dialog', { name: 'Histórico do projeto' })).toContainText(
+    'Aqui ficam as operações com arquivos',
+  )
+  await expect(page.getByRole('dialog', { name: 'Histórico do projeto' })).not.toContainText(
+    'As versões ficam guardadas',
+  )
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
   await page
-    .getByRole('dialog', { name: 'Recuperar arquivos e materiais' })
+    .getByRole('dialog', { name: 'Histórico do projeto' })
     .getByRole('button', { name: /Fechar/ })
     .click()
   expect(await inspect('src/closed.js')).toMatchObject({
     id: original.id,
     language: 'sz-pro-javascript',
   })
+  expect(errors).toEqual([])
+})
+
+// Proposta aprovada em 21/11/2026: o Histórico do projeto guarda a versão de antes de cada
+// operação com arquivos, compara com agora e volta para ela pelo caminho das operações.
+test('the project history keeps the version before an operation, compares and goes back', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?historico`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Opções de src/closed.ts' }).click()
+  await page.getByRole('menuitem', { name: 'Mudar o nome' }).click()
+  const field = page.getByLabel('Renomear closed.ts')
+  await field.fill('src/fechado.ts')
+  await field.press('Enter')
+  await page.getByRole('button', { name: 'Aplicar mudança', exact: true }).click()
+  await expect(page.getByRole('treeitem', { name: 'src/fechado.ts', exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Histórico do projeto' })
+  await expect(dialog).toContainText('As versões ficam guardadas neste computador.')
+  // A versão de antes da operação: a mais recente (se nada mudou desde o Rodar, é a do Rodar; o
+  // histórico não repete versão igual).
+  await dialog.getByRole('button', { name: 'Ver mudanças', exact: true }).first().click()
+  await expect(dialog).toContainText('À esquerda, esta versão; à direita, o projeto agora.')
+  await expect(dialog.getByRole('combobox', { name: 'Arquivo para comparar' })).toContainText(
+    'src/closed.ts',
+  )
+  await dialog.getByRole('button', { name: 'Voltar para esta versão', exact: true }).click()
+  await expect(page.getByRole('treeitem', { name: 'src/closed.ts', exact: true })).toBeVisible()
+  await expect(page.getByRole('treeitem', { name: 'src/fechado.ts', exact: true })).toHaveCount(0)
+  // A promessa da janela: voltar guarda antes a versão de agora (full review final).
+  await expect(dialog).toContainText('Antes de voltar para a versão de')
+  expect(errors).toEqual([])
+})
+
+// Lote 6 da missão (seção 7.2): organizar as importações pelo serviço do TypeScript, aplicado no
+// editor como UM passo de desfazer.
+test('organizes the imports of the open file in one undo step', async ({ page }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('treeitem', { name: 'src/main.ts', exact: true }).dblclick()
+  const original = 'import { speed } from "./config"\nexport const score = speed + 1\n'
+  const mainContent = async () => {
+    const models = JSON.parse((await inspectWorkspaceBuffers(page))!) as Array<{
+      path: string
+      content: string
+    }>
+    return models.find((model) => model.path.endsWith('/src/main.ts'))!.content
+  }
+  expect(await mainContent()).toBe(original)
+  const codeInput = page.locator('.monaco-editor textarea.inputarea').first()
+  await codeInput.focus()
+  await codeInput.press('Control+Home')
+  // `insertText` não passa pelo fechamento automático das chaves do editor.
+  await page.keyboard.insertText('import { wrong } from "./closed"\n')
+  expect(await mainContent()).toBe(`import { wrong } from "./closed"\n${original}`)
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
+  await page.getByRole('searchbox', { name: 'O que você quer fazer?' }).fill('importações')
+  await page.getByRole('button', { name: 'Organizar as importações', exact: true }).click()
+  await expect.poll(mainContent).toBe(original)
+  await codeInput.focus()
+  await codeInput.press('Control+z')
+  await expect.poll(mainContent).toBe(`import { wrong } from "./closed"\n${original}`)
   expect(errors).toEqual([])
 })
 
@@ -401,10 +513,10 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await expect(page.getByLabel('Buffers da sessão')).toContainText('./settings')
   await page.getByRole('button', { name: 'Mais', exact: true }).click()
   await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
-  await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Histórico do projeto', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await page
-    .getByRole('dialog', { name: 'Recuperar arquivos e materiais' })
+    .getByRole('dialog', { name: 'Histórico do projeto' })
     .getByRole('button', { name: /Fechar/ })
     .click()
   await expect(page.getByRole('treeitem', { name: 'src/config.ts' })).toBeVisible()
@@ -501,8 +613,8 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   const declaration = 'export const continuousEdit = 1'
   await input.press('Enter')
   await page.keyboard.type(comment)
-  // Enter should insert a line, not accept a word completion from the long comment.
-  await page.keyboard.press('Escape')
+  // Enter inside a comment must insert a line without needing to dismiss
+  // an asynchronous word suggestion first.
   await page.keyboard.press('Enter')
   await page.keyboard.type(declaration)
   const text = `\n${comment}\n${declaration}`
@@ -513,4 +625,57 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   expect(models.some((model) => model.content.endsWith(text))).toBe(true)
   await expect(page.getByRole('button', { name: /^continuousEdit\b/ })).toBeVisible()
   expect(errors).toEqual([])
+})
+
+test('Enter breaks the line in a comment instead of accepting a document word', async ({
+  page,
+}) => {
+  // Homologação 44729611073: uma sessão de sugestão aberta antes de a linha virar comentário
+  // seguia oferecendo palavras do documento, e o Enter aceitava uma delas, engolindo a quebra de
+  // linha. Aqui a mesma oferta é montada de propósito: `sc` é o começo de `score`, que existe
+  // no arquivo, e a sugestão é aberta à mão dentro de um comentário.
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+End')
+  await input.press('Enter')
+  await page.keyboard.type('// sc')
+  await input.press('Control+Space')
+  // A lista assentou: uma oferta em foco (o defeito) ou "nenhuma sugestão".
+  await page.waitForFunction(() => {
+    const widget = document.querySelector('.monaco-editor .suggest-widget.visible')
+    if (!widget) return false
+    const message = widget.querySelector('.message')?.textContent ?? ''
+    return (
+      Boolean(widget.querySelector('.monaco-list-row.focused')) || /No suggestions/.test(message)
+    )
+  })
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('x')
+  await inspectWorkspaceBuffers(page)
+  const models = JSON.parse((await page.getByLabel('Buffers da sessão').textContent())!) as Array<{
+    content: string
+  }>
+  expect(models.some((model) => model.content.endsWith('// sc\nx'))).toBe(true)
+})
+
+test('a file with mixed line breaks opens the map and keeps its problems', async ({ page }) => {
+  // R4 da revisão de 20/11/2026: o Monaco normaliza as quebras e o projeto guarda o original. O
+  // mapa ficava em "Lendo o mapa…" e o problema do arquivo sumia até a primeira edição.
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?lineBreaks=1`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
+  const map = page.getByRole('region', { name: 'Mapa do arquivo', exact: true })
+  await expect(map.getByRole('button', { name: /^score\b/ })).toBeVisible({ timeout: 30_000 })
+  await expect(map.getByText('Lendo o mapa…')).toBeHidden()
+  await page.getByRole('tab', { name: /Problemas/ }).click()
+  await expect(page.getByRole('button', { name: 'Ir para src/main.ts:3' })).toBeVisible({
+    timeout: 30_000,
+  })
 })

@@ -308,6 +308,7 @@ export interface StudioBlock {
  * resolveria aqui), então o union é copiado e travado por teste de conformidade.
  */
 export type PintaAssetKindName =
+  | 'map-set'
   | 'pixel-sprite'
   | 'pixel-background'
   | 'tileset'
@@ -342,6 +343,67 @@ export type PintaAssetKindName =
  * não é um álbum de fotos —, e a recusa é explícita.
  */
 export const MAX_PINTA_ASSET_CHARS = 1_800_000
+
+/**
+ * Tetos de MAPA e de CONJUNTO DE PEÇAS do desenho de aula (autoria e entrega): 128 × 128 células,
+ * 8 camadas, 64 peças. São os tetos da ENTREGA HTTP do curso, independentes da autoria pessoal
+ * do Pinta (256 × 256, 32 camadas, 256 peças). A galeria pessoal continua lendo o formato completo.
+ *
+ * O bloco de aula fica com os tetos antigos de propósito: o `MAX_PINTA_ASSET_CHARS` acima foi
+ * medido com um mapa de 128 × 128, e a entrega vira material do jogo do curso, que foi desenhado
+ * para esse tamanho.
+ */
+export const PINTA_LESSON_MAP_LIMITS = {
+  maxCols: 128,
+  maxRows: 128,
+  maxLayers: 8,
+  maxTiles: 64,
+} as const
+
+export type PintaLessonLimitIssue = 'cols' | 'rows' | 'layers' | 'tiles'
+
+/**
+ * O que o desenho passa dos tetos da aula, ou `null` quando cabe. Lê só as chaves de tamanho do
+ * JSON (o members não conhece o formato): quem valida o conteúdo é o sanitizador do Pinta, antes.
+ * Um conjunto (`map-set`) é conferido pelo mapa que ele guarda. Desenho que não é mapa nem
+ * conjunto de peças nunca tem problema aqui.
+ */
+export function pintaLessonLimitIssue(asset: unknown): PintaLessonLimitIssue | null {
+  if (!asset || typeof asset !== 'object') return null
+  const record = asset as Record<string, unknown>
+  const count = (value: unknown): number => (Array.isArray(value) ? value.length : 0)
+  const size = (value: unknown): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : 0
+  switch (record.kind) {
+    case 'map-set':
+      return pintaLessonLimitIssue(record.map)
+    case 'tilemap':
+      if (size(record.cols) > PINTA_LESSON_MAP_LIMITS.maxCols) return 'cols'
+      if (size(record.rows) > PINTA_LESSON_MAP_LIMITS.maxRows) return 'rows'
+      if (count(record.layers) > PINTA_LESSON_MAP_LIMITS.maxLayers) return 'layers'
+      if (
+        Array.isArray(record.resources) &&
+        record.resources.some(
+          (version) =>
+            version &&
+            typeof version === 'object' &&
+            'asset' in version &&
+            version.asset &&
+            typeof version.asset === 'object' &&
+            'kind' in version.asset &&
+            (version.asset.kind === 'tileset' || version.asset.kind === 'vector-tileset') &&
+            pintaLessonLimitIssue(version.asset) === 'tiles',
+        )
+      )
+        return 'tiles'
+      return null
+    case 'tileset':
+    case 'vector-tileset':
+      return count(record.tiles) > PINTA_LESSON_MAP_LIMITS.maxTiles ? 'tiles' : null
+    default:
+      return null
+  }
+}
 
 /**
  * Bloco PINTA: o ateliê de desenho embarcado na aula, com o desenho JÁ CRIADO pelo professor
@@ -394,6 +456,7 @@ export function pintaAssetKindOf(block: PintaBlock): PintaAssetKindName | null {
 }
 
 export const PINTA_ASSET_KINDS = [
+  'map-set',
   'pixel-sprite',
   'pixel-background',
   'tileset',
@@ -409,6 +472,7 @@ export const PINTA_ASSET_KINDS = [
  * dela (o admin monta o select); estes não são contrato.
  */
 export const PINTA_ASSET_KIND_LABELS: Record<PintaAssetKindName, string> = {
+  'map-set': 'Conjunto reutilizável',
   'pixel-sprite': 'Personagem (pixel art)',
   'pixel-background': 'Cenário (pixel art)',
   tileset: 'Peças de mapa (pixel art)',

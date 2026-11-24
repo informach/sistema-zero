@@ -1,3 +1,4 @@
+# 🎛️ Configurações
 # general setup
 TILE_SIZE = 64
 WINDOW_WIDTH = 1280
@@ -58,13 +59,6 @@ NEIGHBOR_DIRECTIONS = {
 # auto-tile: a corner neighbor only changes the tile when both sides next to it have terrain
 CORNER_SIDES = {'B': 'AC', 'D': 'CE', 'F': 'EG', 'H': 'GA'}
 
-# the 47 terrain tiles, in the order of the Pinta tileset 'terreno' ('X' has no neighbors)
-TERRAIN_TILES = '''
-    X A C AC ABC E AE CE ACE ABCE CDE ACDE ABCDE G AG CG ACG ABCG EG AEG CEG ACEG ABCEG CDEG
-    ACDEG ABCDEG EFG AEFG CEFG ACEFG ABCEFG CDEFG ACDEFG ABCDEFG AGH ACGH ABCGH AEGH ACEGH
-    ABCEGH ACDEGH ABCDEGH AEFGH ACEFGH ABCEFGH ACDEFGH ABCDEFGH
-'''.split()
-
 # play mode: hearts, what each coin is worth and how long the end message stays
 HEARTS = 3
 COIN_VALUES = {'silver': 1, 'gold': 5, 'diamond': 20}
@@ -86,3 +80,11 @@ HORIZON_TOP_COLOR = '#d1aa9d'
 LINE_COLOR = 'black'
 BUTTON_BG_COLOR = '#33323d'
 BUTTON_LINE_COLOR = '#f5f1de'
+
+# ⚙️ Ao iniciar
+# the 47 terrain tiles, in the order of the Pinta tileset 'terreno' ('X' has no neighbors)
+TERRAIN_TILES = '''
+    X A C AC ABC E AE CE ACE ABCE CDE ACDE ABCDE G AG CG ACG ABCG EG AEG CEG ACEG ABCEG CDEG
+    ACDEG ABCDEG EFG AEFG CEFG ACEFG ABCEFG CDEFG ACDEFG ABCDEFG AGH ACGH ABCGH AEGH ACEGH
+    ABCEGH ACDEGH ABCDEGH AEFGH ACEFGH ABCEFGH ACDEFGH ABCDEFGH
+'''.split()

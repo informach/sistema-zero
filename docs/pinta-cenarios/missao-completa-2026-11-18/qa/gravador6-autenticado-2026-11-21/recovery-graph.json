@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "result": {
+    "allUnrelatedAuthoringFieldsEqual": true,
+    "ignoredIdentityFields": ["id", "name", "createdAt", "updatedAt"],
+    "bijectiveInternalIds": 25,
+    "normalizedOnlyEditedCells": [3, 4],
+    "normalizedDocumentSha256": "82e9aff61887083fc66f711749cd9ff2c2bc51ebea4d068b58eddd62cec501db",
+    "snapshotsNotWritten": true,
+    "layers": 18
+  }
+}

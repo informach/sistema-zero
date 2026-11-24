@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-21T09:56:13.876Z",
+  "sourceMapHash": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73",
+  "rows": [
+    {
+      "mode": "desktop",
+      "browser": "159.0.8154.6",
+      "version": "3.90.0",
+      "width": 512,
+      "height": 384,
+      "objects": 6,
+      "tiledLayers": 16,
+      "pixel": 4,
+      "wall": 68.0000000009968,
+      "doorCycle": true,
+      "keyboard": true,
+      "foreground": 23184,
+      "animation": 3978,
+      "errors": []
+    },
+    {
+      "mode": "touch",
+      "browser": "159.0.8154.6",
+      "version": "3.90.0",
+      "width": 512,
+      "height": 384,
+      "objects": 6,
+      "tiledLayers": 16,
+      "pixel": 4,
+      "wall": 68.0000000009968,
+      "doorCycle": true,
+      "keyboard": true,
+      "foreground": 23184,
+      "animation": 3978,
+      "errors": []
+    }
+  ]
+}

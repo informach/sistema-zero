@@ -14,6 +14,7 @@ const CONTEXT_ICON: Record<TeacherThreadContext, { icon: LucideIcon; tile: strin
   studio_submission: { icon: Check, tile: 'bg-(--sucesso-tint) text-(--pen-ok-texto)' },
   mural_publication: { icon: Sparkles, tile: 'bg-(--aviso-tint) text-(--aviso-texto)' },
   general: { icon: Mail, tile: 'bg-muted text-foreground' },
+  pinta_recovery: { icon: CircleHelp, tile: 'bg-(--aviso-tint) text-(--aviso-texto)' },
 }
 
 export const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
@@ -21,6 +22,7 @@ export const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
   studio_submission: 'Entrega',
   mural_publication: 'Comunidade',
   general: 'Recado',
+  pinta_recovery: 'Ajuda do Pinta',
 }
 
 const DAY = new Intl.DateTimeFormat('en-CA', {

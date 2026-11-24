@@ -1,0 +1,64 @@
+bun test v1.3.11 (af24e281)
+
+tests\classic-publications.test.ts:
+(pass) classic revisions keep every version on the same link and the active one is served [15.00ms]
+(pass) a replayed request returns the same history and a conflicting replay is refused
+(pass) the classic boundary refuses other languages, other projects and compiled promotions
+(pass) a disabled classic link resolves to nothing and a first-version reservation can be retired
+(pass) the status tells a missing record from a disabled link
+
+tests\publications.test.ts:
+(pass) promotion survives preview expiry/deletion, preserves exact source/art and never invokes a compiler on read
+(pass) verified cover checks the retained manifest and file before returning bytes
+(pass) moderation leaves a tombstone that prevents stale or new requests from resurrecting the link
+(pass) reservation retirement fences an absent pointer and rejects a late promotion
+(pass) a new published revision winning the CAS cannot be erased by retirement of an older reservation
+(pass) a malformed terminal runtime record does not authorize deleting retained artifacts
+(pass) a terminal timestamp cannot conceal retained runtime data
+(pass) reservation retirement checks owner, initial source and single-revision state before deleting [15.00ms]
+(pass) bounded collection retains all history, fresh orphan copies and ambiguous successful commits
+(pass) only validated, intact, current previews can be promoted, with no pointer on failure
+(pass) idempotency, owner checks, concurrent CAS, rollback and disable preserve the previous valid revision
+(pass) moderation gates HTML, materials and conditional reads; authorization failure closes access [16.00ms]
+(pass) published artifacts authorize a visible adult or Kids post, never an absent post
+(pass) adult visibility does not wait for a slow Kids authorization endpoint
+(pass) publication visibility never follows a redirect or trusts its apparent successful body
+
+tests\python-distributions.test.ts:
+(pass) current distribution metadata cannot repin an existing immutable runtime marker [15.00ms]
+(pass) deployment metadata exposes only an approved complete distribution and rechecks revocation
+(pass) distribution closure and hash match the approved release, including defensive capture
+(pass) incomplete uploads cannot execute; retry and concurrent uploads preserve immutable files [16.00ms]
+(pass) mismatched bytes and preexisting corrupt storage fail closed without replacing existing objects
+(pass) anonymous editor/player requests share immutable artifacts with isolated policy and correct caching
+(pass) unknown files, forged completion, absent checksums, malformed requests and revoked versions never stream
+(pass) server configuration captures the approved descriptors and rejects unsafe parent origins
+(pass) approval array, later descriptors and status callback are captured before verification awaits [16.00ms]
+(pass) policy exceptions after a storage read cancel every unreturned body
+
+tests\python-publications.test.ts:
+(pass) classic Python retains exact source and recipe without JS compiler or public artifact URL [15.00ms]
+(pass) pro Python retains exact source and recipe without JS compiler or public artifact URL
+(pass) Python promotion rejects malformed, wrong-language, wrong-project, runtime and dependency source before writing [16.00ms]
+(pass) all shared valid project ID prefixes remain readable, retryable and updatable after publication
+(pass) Python idempotency binds the recipe; language, kind, runtime, owner and project cannot migrate implicitly [15.00ms]
+(pass) Python CAS, restore, disable, moderation and garbage collection preserve only retained immutable revisions
+(pass) Python source resolution rejects missing/tampered source, manifest and approval binding
+
+tests\python-sdk-contract.test.ts:
+(pass) SDK mission envelope preserves probes, structure and immutable identity without a playtest recipe
+(pass) SDK compilation/inspection sends the current envelope with structure=false
+(pass) SDK compilation/inspection sends the current envelope with structure=true
+(pass) SDK validation preserves recipe and preview=false in its current envelope
+(pass) SDK validation preserves recipe and preview=true in its current envelope
+(pass) manual playtest recipes use the current V1 recipe contract, independently of publication V2
+(pass) SDK request construction does not invent the current structure field for an old seed [15.00ms]
+
+tests\scene3d-pro-canonical.test.ts:
+(pass) os cenários do Pro no servidor do build > o Worker aceita o módulo do Estúdio e recusa o que traz código além do modelo
+(pass) os cenários do Pro no servidor do build > o contêiner troca o runtime e os tipos pelos da imagem e reescreve o módulo [172.00ms]
+
+ 46 pass
+ 0 fail
+ 309 expect() calls
+Ran 46 tests across 6 files. [675.00ms]

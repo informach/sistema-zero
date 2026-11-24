@@ -1,0 +1,83 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "objetos": 3,
+    "cancelamento": true,
+    "paginacao": 27,
+    "busca": true,
+    "glbReal": true,
+    "formas": true,
+    "espelho": true,
+    "tonalidade": true,
+    "repeticao": true,
+    "escalaNaoUniforme": true,
+    "recursos": [
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU"
+    ],
+    "troca": true,
+    "restaurar": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentradaSemBiblioteca": true,
+    "erroVisivelERetentativa": true,
+    "retentativaDaLista": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "objetos": 3,
+    "cancelamento": true,
+    "paginacao": 27,
+    "busca": true,
+    "glbReal": true,
+    "formas": true,
+    "espelho": true,
+    "tonalidade": true,
+    "repeticao": true,
+    "escalaNaoUniforme": true,
+    "recursos": [
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU"
+    ],
+    "troca": true,
+    "restaurar": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentradaSemBiblioteca": true,
+    "erroVisivelERetentativa": true,
+    "retentativaDaLista": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "objetos": 3,
+    "cancelamento": true,
+    "paginacao": 27,
+    "busca": true,
+    "glbReal": true,
+    "formas": true,
+    "espelho": true,
+    "tonalidade": true,
+    "repeticao": true,
+    "escalaNaoUniforme": true,
+    "recursos": [
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU",
+      "23 chamadas de desenho · 30 geometrias · 7 texturas na GPU"
+    ],
+    "troca": true,
+    "restaurar": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentradaSemBiblioteca": true,
+    "erroVisivelERetentativa": true,
+    "retentativaDaLista": true,
+    "erros": []
+  }
+]

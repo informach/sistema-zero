@@ -1,0 +1,79 @@
+{
+  "verifiedAt": "2026-11-23T18:18:15.365Z",
+  "head": "f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e",
+  "testSelections": [
+    {
+      "log": "expanded-runtime.log",
+      "pass": 39,
+      "fail": 0
+    },
+    {
+      "log": "expanded-members.log",
+      "pass": 40,
+      "fail": 0
+    },
+    {
+      "log": "expanded-shell.log",
+      "pass": 17,
+      "fail": 0
+    },
+    {
+      "log": "expanded-edges-exact.log",
+      "pass": 125,
+      "fail": 0
+    },
+    {
+      "log": "expanded-help-db.log",
+      "pass": 2,
+      "fail": 0
+    },
+    {
+      "log": "thumbnail-content-green.log",
+      "pass": 16,
+      "fail": 0
+    },
+    {
+      "log": "expanded-fullscreen.log",
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "log": "expanded-pinta-waits.log",
+      "pass": 231,
+      "fail": 0
+    }
+  ],
+  "testExecutionsPassed": 473,
+  "repeatedInterfaceRegression": {
+    "log": "expanded-shell-fixture-green.log",
+    "exitCode": 0
+  },
+  "typePackagesPassed": [
+    "@sistemazero/member-shell",
+    "@sistemazero/members",
+    "@sistemazero/studio",
+    "@sistemazero/studio-runtime"
+  ],
+  "missingTypes": [],
+  "typeCoverageHead": "0a89ef2e325bd32445d2df5c7f4dad8bc876ced5; plus R9/R10/R11 corrections",
+  "laterReviewedCommits": [
+    "e9ce20df3",
+    "3b2e87919",
+    "f8910ee05 (R9 already verified in working tree)"
+  ],
+  "dockerWarm": {
+    "rebuiltImage": "sistemazero-studio-runtime:verify",
+    "user": 1000,
+    "network": "none",
+    "exitCode": 0
+  },
+  "production": {
+    "flagsAndDeployments": "release-access-evidence.json",
+    "readOnlyCourseQuery": "production-course-status.json"
+  },
+  "fixedFindings": [
+    "R10: full thumbnail content identity",
+    "R11: nullable viewer fixture"
+  ],
+  "missingLinks": []
+}

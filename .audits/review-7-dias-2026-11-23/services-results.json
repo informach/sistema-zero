@@ -1,0 +1,155 @@
+{
+  "priorPasses": [
+    "@sistemazero/agent-core",
+    "@sistemazero/admin",
+    "@sistemazero/agent-integrations",
+    "@sistemazero/api-gateway",
+    "@sistemazero/arquipelago-admin",
+    "@sistemazero/arquipelago",
+    "@sistemazero/arquipelago-contracts",
+    "@sistemazero/arquipelago-api",
+    "@sistemazero/avatar-quarto",
+    "@sistemazero/auth",
+    "@sistemazero/catalog",
+    "@sistemazero/community",
+    "@sistemazero/core"
+  ],
+  "results": [
+    {
+      "name": "@sistemazero/community-kids",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/creation-cleanup-cron",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/edisvg",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/fiscal",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/funnel",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/helpdesk",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/helpdesk-app",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/helpdesk-contracts",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/hub",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/live-recorder",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/live-supervisor",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing-app",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing-contracts",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing-import",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing-production",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/marketing-workbench",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/member-shell",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/members",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/messaging",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/molda-cenarios",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/molda-cenarios-agente",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/molda-cenarios-core",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/molda-cenarios-motor",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/palco-gravacao",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/payments",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/pensa",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/pinta",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/referrals",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/studio-ai-reconcile-cron",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/studio-language-service",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/studio-runtime",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/tui",
+      "exitCode": 0
+    },
+    {
+      "name": "@sistemazero/ui",
+      "exitCode": 0
+    }
+  ]
+}

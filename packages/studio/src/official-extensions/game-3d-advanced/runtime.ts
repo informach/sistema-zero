@@ -1,6 +1,11 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameRules3DRuntime } from '../game3dRules/runtime'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
+import {
+  THREE_INVESTIGATION_VARIANT,
+  type ThreeInvestigationEngine,
+  withThreeInvestigation,
+} from '../three3dInvestigation'
 import { withThreeModelsRuntime } from '../three3dModelsRuntime'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { withThreeRenderBudgetRuntime } from '../threeRenderBudgetRuntime'
@@ -9,6 +14,8 @@ import { gameKit3DGameplayRuntimeSource } from './runtimeGameplay'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
 import { gameKit3DProjectRuntimeSource } from './runtimeProject'
+import { gameKit3DSceneAbsentRuntimeSource, gameKit3DSceneRuntimeSource } from './runtimeScene'
+import { GAME_KIT_3D_WITHOUT_SCENE_VARIANT } from './sceneVariant'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -63,12 +70,16 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   };
 
   // ---- Tetos (higiene de GPU/CPU) ----
-  var MAX_ENTITIES = 200;   // cada entidade é um Group multi-peça com sombra
-  var MAX_PARTS = 20;       // peças por molde
-  var MAX_MOLDS = 64;       // cada molde mantém template/material próprios
-  var MAX_EFFECTS = 32;     // cada efeito pré-aloca buffers para 300 partículas
-  var MAX_DECOR = 64;       // enfeites do cenário
-  var MAX_EXTRA_LIGHTS = 8; // luz pontual multiplica o custo de cada material
+  // Cada entidade é um Group multi-peça com sombra; um molde tem até 20 peças e mantém
+  // template/material próprios; cada efeito pré-aloca buffers para 300 partículas; enfeites do
+  // cenário; a luz pontual multiplica o custo de cada material. Os comentários ficam em linha
+  // própria: no fim da linha eles iam para o jogo (o compactar só tira a linha inteira).
+  var MAX_ENTITIES = 200;
+  var MAX_PARTS = 20;
+  var MAX_MOLDS = 64;
+  var MAX_EFFECTS = 32;
+  var MAX_DECOR = 64;
+  var MAX_EXTRA_LIGHTS = 8;
   var MAX_ATTRACTORS_PER_EFFECT = 16;
   var MAX_RENDER_PIXELS = 1920 * 1080;
   // O teto POR MODELO (MAX_MODEL_*) é do carregador compartilhado; aqui, o do quadro.
@@ -85,6 +96,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
 
   // ---- Estado interno ----
   var state = 'menu';
+  /*__SZ_3D_INVESTIGAR__*/
   var stateQueue = [];
   var changingState = false;
   var started = false;
@@ -93,34 +105,54 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var worldReady = false;
   var keys = {};
   var justPressed = {};
-  var pending = [];                      // promessas de carregamento (sons)
+  // promessas de carregamento (sons)
+  var pending = [];
   var updateHooks = [];
-  var enterStateHooks = Object.create(null); // estado do JOGO -> [fn]
-  var listeners = Object.create(null);   // aviso -> [fn]  (event bus)
+  // estado do JOGO -> [fn]
+  var enterStateHooks = Object.create(null);
+  // aviso -> [fn]  (event bus)
+  var listeners = Object.create(null);
   var projectFactory = null;
   var runningProjectFactory = false;
-  var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
-  var projectButtons = [];               // botões extras criados pela fábrica do aluno
-  var sounds = Object.create(null);      // nome -> HTMLAudioElement
-  var soundSources = Object.create(null); // nome -> data URL usada pelo Audio
-  var soundLoadCleanups = Object.create(null); // nome -> encerra timer/listeners pendentes
-  var molds = Object.create(null);       // nome -> { health, speed, template, radius }
+  // nome -> { el, title, text, mainBtn }
+  var screens = Object.create(null);
+  // botões extras criados pela fábrica do aluno
+  var projectButtons = [];
+  // nome -> HTMLAudioElement
+  var sounds = Object.create(null);
+  // nome -> data URL usada pelo Audio
+  var soundSources = Object.create(null);
+  // nome -> encerra timer/listeners pendentes
+  var soundLoadCleanups = Object.create(null);
+  // nome -> { health, speed, template, radius }
+  var molds = Object.create(null);
   var moldCount = 0;
-  var pools = Object.create(null);       // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
-  var spawners = [];                     // { mold, interval, timer, where }
-  var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
-  var stateTimers = [];                  // { mold, state, sec, next }
-  var deathHooks = Object.create(null);  // mold -> [fn]
-  var hurtHooks = Object.create(null);   // mold -> [fn] (roda a cada dano levado)
-  var animEndHooks = Object.create(null); // mold -> clipe -> [fn(quem terminou)]
-  var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
-  var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
+  // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
+  var pools = Object.create(null);
+  // { mold, interval, timer, where }
+  var spawners = [];
+  // mold -> estado -> { enter:[], step:[], exit:[] }
+  var fsmHooks = Object.create(null);
+  // { mold, state, sec, next }
+  var stateTimers = [];
+  // mold -> [fn]
+  var deathHooks = Object.create(null);
+  // mold -> [fn] (roda a cada dano levado)
+  var hurtHooks = Object.create(null);
+  // mold -> clipe -> [fn(quem terminou)]
+  var animEndHooks = Object.create(null);
+  // mold da ZONA -> [fn(zona, quem)]
+  var overlapHooks = Object.create(null);
+  // nome -> receita + Points + buffers (faíscas)
+  var effects = Object.create(null);
   var effectCount = 0;
   // Jorros contínuos VIVOS (lista, não mapa por efeito: várias tochas da mesma
   // receita convivem — o mapa antigo fazia o 2º jorro apagar o 1º em silêncio).
   var jets = [];
-  var composer = null;                   // mini-composer próprio (bloom + vinheta + ACES)
-  var composerFailed = false;            // WebGL/targets falharam -> render direto p/ sempre
+  // mini-composer próprio (bloom + vinheta + ACES)
+  var composer = null;
+  // WebGL/targets falharam -> render direto p/ sempre
+  var composerFailed = false;
   // Orçamento de desenho COMPARTILHADO: resolução pelo canvas real, sombra, efeitos e MSAA
   // por nível ('alta' | 'leve', este medido pela sonda de FPS). config.w/h seguem a régua.
   var renderBudget = null;
@@ -138,7 +170,8 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       if (sunLight) try { renderBudget.applyShadow(sunLight); } catch (e) {}
     }
   });
-  var spriteTex = null;                  // círculo suave compartilhado (CanvasTexture)
+  // círculo suave compartilhado (CanvasTexture)
+  var spriteTex = null;
   var stageEl = null;
   var canvasEl = null;
   var styleEl = null;
@@ -153,21 +186,28 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var scene = null;
   var camera = null;
   var groundMesh = null;
-  var ambientLight = null;                // luz do ambiente (setAmbient muda a força)
-  var sunLight = null;                    // o sol (o orçamento ajusta o mapa de sombra)
-  var extraLights = [];                 // luzes pontuais adicionadas (addLight)
-  var pendingLights = [];                 // luzes declaradas antes de o mundo nascer
+  // luz do ambiente (setAmbient muda a força)
+  var ambientLight = null;
+  // o sol (o orçamento ajusta o mapa de sombra)
+  var sunLight = null;
+  // luzes pontuais adicionadas (addLight)
+  var extraLights = [];
+  // luzes declaradas antes de o mundo nascer
+  var pendingLights = [];
   var decor = [];
   var currentDt = 0;
   var playTime = 0;
-  var totalAlive = 0;                    // entidades vivas (todos os moldes)
+  // entidades vivas (todos os moldes)
+  var totalAlive = 0;
   var activeModelCost = { triangles: 0, meshes: 0, bones: 0, materials: 0, drawCalls: 0 };
   var entityLimitWarned = false;
-  var _currentMold = null;               // contexto de montagem do defineMold
+  // contexto de montagem do defineMold
+  var _currentMold = null;
   // Câmera viva: um MODO por vez (órbita arrastável / seguir / topo).
   var camMode = { kind: 'orbit', target: null, dist: 25, height: 4, pivot: null, pivotGen: 0, targetGen: 0 };
   var orbit = null;
-  var camSmooth = 3;   // suavidade do seguir (era literal); maior = mais colada
+  // suavidade do seguir (era literal); maior = mais colada
+  var camSmooth = 3;
   // Vetores/quaternions temporários (alocados no initWorld — nunca no top-level).
   var _tv1 = null;
   var _tv2 = null;
@@ -221,13 +261,20 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var _texCache = null;
   // Raycast (mira/clique no mundo) e câmera 1ª pessoa — tudo LAZY (o Raycaster
   // só nasce ao usar; ambientes de teste sem ele seguem sem quebrar).
-  var _ray = null;                       // THREE.Raycaster (mira pelo mouse)
-  var _mouse = null;                     // { x, y } em coords normalizadas (-1..1)
-  var mouseHeld = false;                 // botão/dedo apertado agora
-  var mouseJust = false;                 // apertou NESTE quadro (limpa com justPressed)
-  var _pickWired = false;                // rastreio do ponteiro já ligado?
-  var _fpsWired = false;                 // pointer-lock/olhar do FPS já ligado?
-  var _fpsTouchId = null;                // gesto de arrasto que controla o olhar no toque
+  // THREE.Raycaster (mira pelo mouse)
+  var _ray = null;
+  // { x, y } em coords normalizadas (-1..1)
+  var _mouse = null;
+  // botão/dedo apertado agora
+  var mouseHeld = false;
+  // apertou NESTE quadro (limpa com justPressed)
+  var mouseJust = false;
+  // rastreio do ponteiro já ligado?
+  var _pickWired = false;
+  // pointer-lock/olhar do FPS já ligado?
+  var _fpsWired = false;
+  // gesto de arrasto que controla o olhar no toque
+  var _fpsTouchId = null;
   var _fpsTouchX = 0;
   var _fpsTouchY = 0;
   var _stepSystemsWarned = false;
@@ -762,6 +809,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       updateCamera(0);
 
       worldReady = true;
+      prepareImportedScene();
       return true;
     } catch (e) {
       warn('não consegui montar o mundo 3D: ' + e);
@@ -868,7 +916,9 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   // Enfeites procedurais (pedras cinzas + cristais na cor de destaque).
   function scatterDecor(count) {
     if (!worldReady && !initWorldLater('Espalhar enfeites')) return;
-    var n = Math.max(0, Math.min(MAX_DECOR, Math.floor(num(count, 16))));
+    var asked = Math.floor(num(count, 16));
+    if (asked > MAX_DECOR) warnOnce('enfeites-64', 'espalhar enfeites usa no máximo 64: espalhei 64.');
+    var n = Math.max(0, Math.min(MAX_DECOR, asked));
     clearDecor();
     var radius = config.world * 0.45;
     // Geometrias-unidade COMPARTILHADAS pelos enfeites (antes cada um alocava a
@@ -1077,10 +1127,14 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       -0.5, 1, 0.5,    0.5, 1, 0.5
     ];
     var idx = [
-      0, 2, 1,  0, 3, 2,          // base
-      3, 4, 2,  2, 4, 5,          // topo (a rampa em si)
-      0, 1, 5,  0, 5, 4,          // ré (parede alta, z=+0.5)...
-      1, 2, 5,                    // lateral direita
+      // base
+      0, 2, 1,  0, 3, 2,
+      // topo (a rampa em si)
+      3, 4, 2,  2, 4, 5,
+      // ré (parede alta, z=+0.5)...
+      0, 1, 5,  0, 5, 4,
+      // lateral direita
+      1, 2, 5,
       0, 4, 3                     // lateral esquerda
     ];
     g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
@@ -1168,11 +1222,13 @@ const gameKit3DRuntimeAfterModelSource = `
       // w=1 vira 4.5..5.5, e não ±5.5 para cada lado) e peça ABAIXO de y=0 entra
       // na caixa (antes o fundo era grampeado em 0 e a peça ficava sem colisão).
       col: {
-        kind: 0,                          // 0 caixa · 1 bola · 2 cápsula · 3 rampa
+        // 0 caixa · 1 bola · 2 cápsula · 3 rampa
+        kind: 0,
         minX: 0, maxX: 0,
         minY: 0, maxY: 0,
         minZ: 0, maxZ: 0,
-        r: 0.5,                           // bola/cápsula: raio
+        // bola/cápsula: raio
+        r: 0.5,
         rampAxis: 2, rampY0: 0, rampY1: 0 // rampa: sobe ao longo de Z (2) ou X (0)
       },
       // DERIVADOS da caixa (finishMoldBox) — mantidos porque a grade e o resto do
@@ -1242,7 +1298,8 @@ const gameKit3DRuntimeAfterModelSource = `
     cone:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     pyramid:  { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     rampa:    { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
-    torus:    { x: 0.5, y: 0.5, z: 0.15, rot: 0 },  // raio 0.35 + tubo 0.15
+    // raio 0.35 + tubo 0.15
+    torus:    { x: 0.5, y: 0.5, z: 0.15, rot: 0 },
     plane:    { x: 0.5, y: 0.5, z: 0,    rot: 1 },
     modelo:   { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
     rock:     { x: 0.5, y: 0.5, z: 0.5,  rot: 0 },
@@ -1259,8 +1316,10 @@ const gameKit3DRuntimeAfterModelSource = `
     var u = UNIT_HALF[shape] || UNIT_HALF.box;
     if (u.rot) {
       out.x = u.x * w;
-      out.y = u.z * d;   // espessura da folha (≈0) vira o eixo vertical
-      out.z = u.y * h;   // a altura da folha vira PROFUNDIDADE
+      // espessura da folha (≈0) vira o eixo vertical
+      out.y = u.z * d;
+      // a altura da folha vira PROFUNDIDADE
+      out.z = u.y * h;
     } else {
       out.x = u.x * w;
       out.y = u.y * h;
@@ -1705,7 +1764,8 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!isEntity(from)) return;
     var n = Math.floor(num(count, 8));
     if (n < 1) n = 1;
-    if (n > 60) n = 60; // teto de bom senso por anel (o pool ainda tem o teto global)
+    // teto de bom senso por anel (o pool ainda tem o teto global)
+    if (n > 60) n = 60;
     var sp = num(speed, 6);
     var cx = posAxis(from, 'x');
     var cy = posAxis(from, 'y');
@@ -1713,7 +1773,8 @@ const gameKit3DRuntimeAfterModelSource = `
     for (var i = 0; i < n; i++) {
       var ang = (i / n) * Math.PI * 2;
       var e = spawn(mold, cx, cy, cz);
-      if (!e) break; // bateu o teto global de entidades
+      // bateu o teto global de entidades
+      if (!e) break;
       // +Z é a frente do curso; o vetor unitário girado por ang dá (sin, 0, cos).
       e.vx = Math.sin(ang) * sp;
       e.vz = Math.cos(ang) * sp;
@@ -1741,6 +1802,7 @@ const gameKit3DRuntimeAfterModelSource = `
   function recycle(e) {
     if (!e || typeof e !== 'object' || !e._mold) return;
     if (!e._alive) return;
+    importedArrivals.delete(e);
     // Para a animação ANTES de baixar o _alive: o stopAnim passa pelo isEntity, que
     // exige entidade viva — invertido, ele saía calado e a ação seguia mexendo nos
     // ossos de um boneco invisível até o slot ser reusado.
@@ -2283,7 +2345,8 @@ const gameKit3DRuntimeAfterModelSource = `
     if (!isEntity(e)) return;
     var next = num(e.health, 0) + Math.max(0, num(amount, 10));
     var max = num(e.maxHealth, 0);
-    e.health = max > 0 ? Math.min(max, next) : next; // não passa do máximo de nascença
+    // não passa do máximo de nascença
+    e.health = max > 0 ? Math.min(max, next) : next;
   }
 
   // ---- 💥 Faíscas 3D (partículas data-driven do curso, simplificadas) ----
@@ -2295,6 +2358,12 @@ const gameKit3DRuntimeAfterModelSource = `
   // string não precisa de barra-n nem de diretivas.
   var MAX_PARTICLES_PER_EFFECT = 300;
   var MAX_BURST = 120;
+  // Os tetos das faíscas avisam (lote 4 da missão, seção 8.4), uma vez por partida.
+  function burstCount(value) {
+    var asked = Math.floor(num(value, 24));
+    if (asked > MAX_BURST) warnOnce('faiscas-120', 'um efeito 3D solta no máximo 120 faíscas de cada vez: usei 120.');
+    return asked;
+  }
 
   // particleData = (fração da vida 0→1, id aleatório do grão). O id + o tempo +
   // spinSpeed giram o sprite (o "Data-Driven Particles" do curso). O ramo aditivo
@@ -2418,13 +2487,15 @@ const gameKit3DRuntimeAfterModelSource = `
         var tint = Math.max(0, Math.min(1, sampleKeys(c.tint, t)));
         var shape = Math.max(0, Math.min(1, sampleKeys(c.shape, t)));
         var fade = Math.max(0, Math.min(1, sampleKeys(c.fade, t)));
-        var row0 = x * 4;                  // linha 0: COR
+        // linha 0: COR
+        var row0 = x * 4;
         data[row0] = Math.round(tint * 255);
         data[row0 + 1] = Math.round(tint * 255);
         data[row0 + 2] = Math.round(tint * 255);
         data[row0 + 3] = 255;
         var add = Math.max(0, Math.min(1, sampleKeys(c.add, t)));
-        var row1 = (CURVE_W + x) * 4;      // linha 1: TAMANHO (R) + OPACIDADE (G) + LUZ-PURA (B)
+        // linha 1: TAMANHO (R) + OPACIDADE (G) + LUZ-PURA (B)
+        var row1 = (CURVE_W + x) * 4;
         data[row1] = Math.round(shape * 255);
         data[row1 + 1] = Math.round(fade * 255);
         data[row1 + 2] = Math.round(add * 255);
@@ -2526,8 +2597,10 @@ const gameKit3DRuntimeAfterModelSource = `
       lifeVar: cfg.lifeVar,
       speed: cfg.speed,
       speedVar: cfg.speedVar,
-      cone: cfg.cone,               // meia-abertura do cone em radianos (π = esfera)
-      volume: cfg.volume,           // raio de nascimento (positionRadiusVariance)
+      // meia-abertura do cone em radianos (π = esfera)
+      cone: cfg.cone,
+      // raio de nascimento (positionRadiusVariance)
+      volume: cfg.volume,
       gravity: cfg.gravity,
       gravityStrength: cfg.gravityStrength,
       drag: cfg.drag,
@@ -2562,7 +2635,7 @@ const gameKit3DRuntimeAfterModelSource = `
     try {
       // Explosão: esfera cheia, aditivo (glow), sem emissão contínua, sem giro.
       effects[k] = buildEffect({
-        count: Math.max(1, Math.min(MAX_BURST, Math.floor(num(o.count, 24)))),
+        count: Math.max(1, Math.min(MAX_BURST, burstCount(o.count))),
         emissionRate: 0,
         colorFrom: text(o.colorFrom, '#fb923c'),
         colorTo: text(o.colorTo, '#451a03'),
@@ -2668,7 +2741,10 @@ const gameKit3DRuntimeAfterModelSource = `
   // π = esfera cheia do burst), com variâncias de vida/velocidade e volume de
   // nascimento. É o emitParticle do curso — compartilhado por burst e emissor.
   function emitOne(fx, ox, oy, oz) {
-    if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) return;
+    if (fx.particles.length >= MAX_PARTICLES_PER_EFFECT) {
+      warnOnce('faiscas-300', 'um efeito chegou a 300 faíscas ao mesmo tempo e as novas não apareceram. Diminua a quantidade ou a vida delas.');
+      return;
+    }
     var p = fx.free.pop() || { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, id: 0 };
     // Posição no volume (positionRadiusVariance) — grãos não saem de um ponto só.
     var pphi = rand() * Math.PI * 2;
@@ -2974,7 +3050,9 @@ const gameKit3DRuntimeAfterModelSource = `
     currentDt = dt;
     // Sonda de FPS do orçamento (entre 1,5 s e 4 s; abaixo de 45 passa ao nível leve).
     renderBudget.sample(dt);
-    if (state === 'jogando') {
+    var waitingForScene = sceneRequest && sceneRequest.waitForRun;
+    /*__SZ_3D_INVESTIGAR_QUADRO__*/
+    if (state === 'jogando' && !waitingForScene) {
       // "Ir para a próxima fase" pedido no quadro anterior: troca aqui, fora dos laços.
       if (levelPending) startPendingLevel();
       // stepSystems também dentro de try/catch (como o renderFrame): um erro
@@ -2989,9 +3067,16 @@ const gameKit3DRuntimeAfterModelSource = `
       }
       // Um gancho pode ter terminado o jogo NESTE quadro — não rodar o update
       // da criança num jogo que acabou de acabar.
-      if (state === 'jogando') runHooks(updateHooks, dt, 'A cada quadro');
+      if (state === 'jogando' && !(sceneRequest && sceneRequest.waitForRun)) runHooks(updateHooks, dt, 'A cada quadro');
     }
-    updateCamera(state === 'jogando' ? dt : 0);
+    waitingForScene = sceneRequest && sceneRequest.waitForRun;
+    // A freshly rebuilt actor is not at its arrival yet. Keep the previous view
+    // and sector focus until preparation commits; dt=0 alone still lerps follow.
+    if (!waitingForScene) {
+      updateCamera(state === 'jogando' ? dt : 0);
+      occludeImportedCamera();
+      updateImportedScene(state === 'jogando' ? dt : 0);
+    }
     // Depois da câmera (a projeção precisa dela já posicionada). Só a PAUSA
     // congela o balão (fica na tela sem gastar o tempo); no 'fim'/'menu' ele
     // segue contando e some — senão uma fala em andamento na hora da morte
@@ -3073,7 +3158,8 @@ const gameKit3DRuntimeAfterModelSource = `
   var says = [];
   function say(e, textValue, seconds) {
     if (!isEntity(e) || !ensureShell()) return;
-    hideSay(e); // uma fala por entidade: a nova troca a antiga
+    // uma fala por entidade: a nova troca a antiga
+    hideSay(e);
     var el = document.createElement('div');
     el.className = 'szg3k-say';
     el.textContent = text(textValue, '');
@@ -3294,7 +3380,8 @@ const gameKit3DRuntimeAfterModelSource = `
     var k = text(name, '');
     var src = sounds[k];
     if (!src) { warnOnce('mus:' + k, 'a música "' + k + '" não está no projeto. Importe em "Sons", no menu ⋯'); return; }
-    if (_musicName === k && _music) return; // já é esta: não recomeça do zero
+    // já é esta: não recomeça do zero
+    if (_musicName === k && _music) return;
     stopMusic();
     // ⭐ Audio PRÓPRIO, não o do sounds[]. O mapa sounds[] é dividido com o
     // playSound (efeito): reusar o MESMO elemento fazia o efeito de moeda que
@@ -3448,11 +3535,12 @@ const gameKit3DRuntimeAfterModelSource = `
     renderBudget.observe();
     setState('carregando');
     var generation = lifecycleGeneration;
-    Promise.all(pending.slice()).then(function () {
+    Promise.all(pending.slice()).then(function completeStart() {
       // pagehide/beforeunload pode acontecer enquanto áudio/GLB ainda carrega.
       // A geração torna aquela continuação obsoleta antes de renderer/scene serem
       // anulados; ela não pode ressuscitar o loop de um iframe encerrado.
       if (disposed || generation !== lifecycleGeneration || !renderer) return;
+      if (sceneRequest) return sceneRequest.promise.then(completeStart);
       setState('menu');
       _lastT = 0;
       renderer.setAnimationLoop(gameLoop);
@@ -3470,23 +3558,17 @@ const gameKit3DRuntimeAfterModelSource = `
     if (disposed) return;
     disposed = true;
     lifecycleGeneration++;
-    models.cancelAll();
-    try { renderBudget.dispose(); } catch (e) {}
+    if (renderer) renderer.setAnimationLoop(null);
     try {
+      disposeImportedScene(true);
+      models.cancelAll();
+      try { renderBudget.dispose(); } catch (e) {}
       // Efeitos, música e AudioContext ficam fora da cena — o teardown do renderer
       // não os alcança. Sem isto poderiam continuar ativos na janela do bfcache.
       releaseFpsInput();
       disposeAudio();
       resetAccessibleHud();
       rules.dispose();
-      if (renderer) {
-        renderer.setAnimationLoop(null);
-        try { renderer.dispose(); } catch (e) {}
-        // dispose() sozinho NÃO devolve o contexto WebGL ao navegador — é o
-        // forceContextLoss() que libera o slot e evita a cena preta depois de
-        // vários "Atualizar".
-        try { renderer.forceContextLoss(); } catch (e) {}
-      }
       var disposedModelResources = { geometries: new Set(), materials: new Set(), textures: new Set(), skeletons: new Set() };
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
@@ -3558,7 +3640,15 @@ const gameKit3DRuntimeAfterModelSource = `
       disposeComposer();
       if (stageEl && stageEl.parentNode) { try { stageEl.parentNode.removeChild(stageEl); } catch (e) {} }
       if (styleEl && styleEl.parentNode) { try { styleEl.parentNode.removeChild(styleEl); } catch (e) {} }
-    } catch (e) {}
+    } catch (e) {
+      warn('Não consegui liberar uma parte do jogo: ' + e);
+    } finally {
+      // Keep GL property listeners alive until scene, caches and targets release their resources.
+      if (renderer) {
+        try { renderer.dispose(); } catch (e) {}
+        try { renderer.forceContextLoss(); } catch (e) {}
+      }
+    }
     renderer = null;
     scene = null;
     camera = null;
@@ -3576,6 +3666,8 @@ const gameKit3DRuntimeAfterModelSource = `
   window.addEventListener('pagehide', disposeAll);
   window.addEventListener('beforeunload', disposeAll);
 
+  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/
+
   // ---- API pública (1 método por bloco) ----
 
   function guard(name, fn) {
@@ -3590,6 +3682,8 @@ const gameKit3DRuntimeAfterModelSource = `
   }
 
   var api = {
+    loadScene: guard('loadScene', loadScene),
+    sceneStart: guard('sceneStart', sceneStart),
     // 🧰 O jogo
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
@@ -3674,6 +3768,8 @@ const gameKit3DRuntimeAfterModelSource = `
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
       if (!isEntity(e)) return;
+      importedArrivals.delete(e);
+      if (importedScene) e.grounded = false;
       e.mesh.position.set(num(x, 0), num(y, 0), num(z, 0));
       touchStatic(e);
       gridSync(e);
@@ -3711,6 +3807,7 @@ const gameKit3DRuntimeAfterModelSource = `
     timeLeft: guard('timeLeft', function () { return rules.timeLeft(); }),
     stopTimer: guard('stopTimer', function () { rules.stopTimer(); }),
     onTimerEnd: guard('onTimerEnd', function (fn) { rules.onTimerEnd(fn); }),
+    onEnterRegion: rules.onEnterRegion,
     say: guard('say', say),
     hideSay: guard('hideSay', hideSay),
     playAnim: guard('playAnim', function (e, name, loop) { playAnim(e, name, loop !== false); }),
@@ -3937,25 +4034,72 @@ const gameKit3DRuntimeAfterModelSource = `
 })();
 `
 
-const gameKit3DRuntimeSource = withGameRules3DRuntime(
-  gameKit3DRuntimeBeforeModelSource +
-    gameKit3DModelAssetsRuntimeSource +
-    gameKit3DRuntimeAfterModelSource,
-)
-  .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
-  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
+/**
+ * A aba Investigar e a medida no 3D Avançado (`../three3dInvestigation.ts`): a pausa é o estado
+ * "pausado" do jogo (o mesmo da tecla de pausa), como no 2D Avançado.
+ */
+const GAME_KIT_3D_INVESTIGATION: ThreeInvestigationEngine = {
+  inspector: 'game-3d-advanced:investigar',
+  paused: "state === 'pausado'",
+  playing: "state === 'jogando'",
+  pause: "setState('pausado');",
+  resume: "setState('jogando');",
+  frameGuard: 'true',
+  plays: "state === 'jogando' && !waitingForScene",
+  frameRenderer: 'renderer',
+  renderer: 'renderer',
+  scene: 'scene',
+}
 
-// Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
-// contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
-// pacote, e no build minificado o esbuild escreve template literals ali.
-export const gameKit3DRuntime = compactOfficialRuntimeSource(
-  withThreeRenderBudgetRuntime(
-    withThreePostProcessingRuntime(withThreeModelsRuntime(gameKit3DRuntimeSource)),
-  ),
-  { trimIndent: true },
-).replace(
-  "import * as THREE from 'three';\n",
-  (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
-)
+function composeGameKit3DRuntime(sceneSource: string, investigate = false): string {
+  const source = withGameRules3DRuntime(
+    withThreeInvestigation(
+      gameKit3DRuntimeBeforeModelSource +
+        gameKit3DModelAssetsRuntimeSource +
+        gameKit3DRuntimeAfterModelSource,
+      investigate ? GAME_KIT_3D_INVESTIGATION : null,
+    ),
+    sceneSource !== gameKit3DSceneAbsentRuntimeSource,
+  )
+    .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', () => gameKit3DPhysicsRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', () => gameKit3DCameraRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_GAMEPLAY_RUNTIME__*/', () => gameKit3DGameplayRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', () => gameKit3DProjectRuntimeSource)
+    .replace('  /*__SZ_GAME_KIT_3D_SCENE_RUNTIME__*/', () => sceneSource)
+  // Sem crase no runtime composto: a indentação sai do payload sem mudar texto nenhum. O
+  // contexto da partida entra DEPOIS da compactação: ele é o `toString()` de uma função do
+  // pacote, e no build minificado o esbuild escreve template literals ali.
+  return compactOfficialRuntimeSource(
+    withThreeRenderBudgetRuntime(withThreePostProcessingRuntime(withThreeModelsRuntime(source))),
+    { trimIndent: true },
+  ).replace(
+    "import * as THREE from 'three';\n",
+    (line) => `${line}${compactOfficialRuntimeSource(buildProjectRunContextRuntime())}\n`,
+  )
+}
+
+/** O runtime COMPLETO, com o cenário do Molda: o que `loadBootstrapScript()` sem contexto injeta. */
+export const gameKit3DRuntime = composeGameKit3DRuntime(gameKit3DSceneRuntimeSource)
+
+const composedByVariant = new Map<string, string>()
+
+/**
+ * O runtime de uma variante, composto uma vez: `gameKit3DRuntimeVariant` (`sceneVariant.ts`) e,
+ * com uma aba da gaveta ligada, a investigação (`investigar`), juntas por `+`.
+ */
+export function gameKit3DRuntimeForVariant(variant: string): string {
+  const parts = new Set(variant.split('+'))
+  const withoutScene = parts.has(GAME_KIT_3D_WITHOUT_SCENE_VARIANT)
+  const investigate = parts.has(THREE_INVESTIGATION_VARIANT)
+  if (!withoutScene && !investigate) return gameKit3DRuntime
+  const key = `${withoutScene}+${investigate}`
+  let composed = composedByVariant.get(key)
+  if (composed === undefined) {
+    composed = composeGameKit3DRuntime(
+      withoutScene ? gameKit3DSceneAbsentRuntimeSource : gameKit3DSceneRuntimeSource,
+      investigate,
+    )
+    composedByVariant.set(key, composed)
+  }
+  return composed
+}

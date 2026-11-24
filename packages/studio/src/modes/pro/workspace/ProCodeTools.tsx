@@ -5,6 +5,7 @@ import { cn, IconX, Modal } from '#ui'
 import { proFileBaseName } from '../../../components/code/proFileKinds'
 import { type ProExample, proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
+import { sameTextExceptLineBreaks } from '../../../monaco/lineBreaks'
 import { getMonacoModelPath } from '../../../monaco/modelPaths'
 import type { ProSymbol } from '../../../monaco/pro/languageService'
 import { useProjectStore } from '../../../state/projectStore'
@@ -18,6 +19,7 @@ import { useProCommands } from './useProCommands'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
+const SYMBOL_PAGE_SIZE = 100
 
 /** O que a faixa do editor pede daqui (as janelas moram aqui; a faixa só abre). */
 export interface ProEditorTools {
@@ -48,6 +50,7 @@ export function ProCodeTools({
   search,
   searchProject = search,
   format,
+  organizeImports,
   help,
   examples = proCodeExamples,
   onToolsReady,
@@ -67,6 +70,8 @@ export function ProCodeTools({
   search: () => void
   searchProject?: () => void
   format: () => void
+  /** Organizar as importações do arquivo aberto (lote 6). */
+  organizeImports?: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
   examples?: (path: string) => ProExample[]
   /** As ações que a faixa do editor chama (`null` ao sair). */
@@ -100,10 +105,35 @@ export function ProCodeTools({
       ? symbolResult
       : null
   const symbols = currentSymbols?.items ?? []
+  const [symbolQuery, setSymbolQuery] = useState('')
+  // A janela pertence ao arquivo e à sessão, não à lista: uma edição devolve uma lista nova do
+  // mesmo arquivo, e voltar a 100 levaria embora o símbolo que a criança estava vendo.
+  const [symbolWindow, setSymbolWindow] = useState<{
+    path: string
+    session: ProWorkspaceLanguage | null
+    count: number
+  } | null>(null)
+  const filteredSymbols = useMemo(() => {
+    const query = symbolQuery.trim().toLocaleLowerCase()
+    return query
+      ? symbols.filter((symbol) => symbol.name.toLocaleLowerCase().includes(query))
+      : symbols
+  }, [symbols, symbolQuery])
+  const symbolCount =
+    symbolWindow?.path === path && symbolWindow.session === language
+      ? symbolWindow.count
+      : SYMBOL_PAGE_SIZE
+  const visibleSymbols = filteredSymbols.slice(0, symbolCount)
   const references =
     referenceResult?.tree === tree && referenceResult.session === language
       ? referenceResult.items
       : []
+  const [referenceWindow, setReferenceWindow] = useState<{
+    result: typeof referenceResult
+    count: number
+  } | null>(null)
+  const referenceCount = referenceWindow?.result === referenceResult ? referenceWindow.count : 100
+  const visibleReferences = references.slice(0, referenceCount)
   const referenceRequest = useRef(0)
   // Requests cannot outlive this panel. The scope below also rejects A → B → A.
   useEffect(
@@ -141,7 +171,7 @@ export function ProCodeTools({
         const model = editor.current?.getModel()
         const matches =
           model &&
-          (model.getValue() === content ||
+          (sameTextExceptLineBreaks(model.getValue(), content) ||
             (language.documentOffset?.(content, model.getValue(), { lineNumber: 1, column: 1 }) ??
               null) !== null)
         if (
@@ -175,7 +205,7 @@ export function ProCodeTools({
       model && cursor
         ? language?.documentOffset
           ? language.documentOffset(content, model.getValue(), cursor)
-          : model.getValue() === content
+          : sameTextExceptLineBreaks(model.getValue(), content)
             ? model.getOffsetAt(cursor)
             : null
         : null
@@ -204,14 +234,12 @@ export function ProCodeTools({
     try {
       const items = await language.request('references', path, selected.offset)
       if (!isCurrent()) return
-      const results = items
-        .flatMap((item) => {
-          const node = tree[item.path]
-          return node?.kind === 'file'
-            ? [{ path: item.path, ...proSourcePosition(node.content, item.span.start) }]
-            : []
-        })
-        .slice(0, 100)
+      const results = items.flatMap((item) => {
+        const node = tree[item.path]
+        return node?.kind === 'file'
+          ? [{ path: item.path, ...proSourcePosition(node.content, item.span.start) }]
+          : []
+      })
       setReferences({ session: language, tree, items: results })
       if (!results.length) setError('Nenhuma referência encontrada para esse nome no projeto.')
     } catch (cause) {
@@ -279,6 +307,17 @@ export function ProCodeTools({
       enabled: Boolean(path) && author && !busy,
       run: format,
     },
+    ...(organizeImports
+      ? [
+          {
+            id: 'organizeImports',
+            label: t('pro.organizeImports'),
+            // Só arquivos de código JavaScript e TypeScript têm importações para organizar.
+            enabled: /\.[cm]?[jt]sx?$/.test(path ?? '') && author && !busy,
+            run: organizeImports,
+          } satisfies ProCommand,
+        ]
+      : []),
     {
       id: 'materials',
       label: t('pro.materialsCommand'),
@@ -437,14 +476,37 @@ export function ProCodeTools({
                 <IconX />
               </button>
             </header>
+            <div className="border-b border-sz-border-soft px-3 py-2">
+              <input
+                type="search"
+                aria-label={t('pro.symbols.search')}
+                placeholder={t('pro.symbols.search')}
+                value={symbolQuery}
+                onChange={(event) => {
+                  setSymbolQuery(event.target.value)
+                  setSymbolWindow({ path, session: language, count: SYMBOL_PAGE_SIZE })
+                }}
+                className="block min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-sm"
+              />
+              {!symbolsPending && !visibleError && (
+                <p role="status" className="mb-0 mt-2 text-xs text-sz-fg-mute">
+                  {t('pro.symbols.count', {
+                    shown: visibleSymbols.length,
+                    total: filteredSymbols.length,
+                  })}
+                </p>
+              )}
+            </div>
             <div className="min-h-0 overflow-auto p-2">
               {symbolsPending && (
                 <p role="status" className="m-0 p-2 text-xs text-sz-fg-mute">
                   {t('pro.symbols.pending')}
                 </p>
               )}
-              {!symbolsPending && !symbols.length && !visibleError && (
-                <p className="m-0 p-2 text-sm text-sz-fg-soft">{t('pro.symbols.empty')}</p>
+              {!symbolsPending && !filteredSymbols.length && !visibleError && (
+                <p className="m-0 p-2 text-sm text-sz-fg-soft">
+                  {t(symbolQuery.trim() ? 'pro.symbols.noMatches' : 'pro.symbols.empty')}
+                </p>
               )}
               {visibleError && (
                 <p role="status" className="m-0 p-2 text-xs text-sz-error">
@@ -452,7 +514,7 @@ export function ProCodeTools({
                 </p>
               )}
               <ul className="m-0 list-none space-y-0.5 p-0">
-                {symbols.map((symbol) => {
+                {visibleSymbols.map((symbol) => {
                   const target = proSourcePosition(content, symbol.start)
                   return (
                     <li key={`${symbol.start}:${symbol.name}`}>
@@ -471,6 +533,21 @@ export function ProCodeTools({
                   )
                 })}
               </ul>
+              {visibleSymbols.length < filteredSymbols.length && (
+                <button
+                  type="button"
+                  className="sz-pro-btn sz-pro-btn--sm mt-2"
+                  onClick={() =>
+                    setSymbolWindow({
+                      path,
+                      session: language,
+                      count: symbolCount + SYMBOL_PAGE_SIZE,
+                    })
+                  }
+                >
+                  {t('pro.symbols.more')}
+                </button>
+              )}
             </div>
           </section>,
         )}
@@ -489,16 +566,36 @@ export function ProCodeTools({
           >
             {t('pro.references.close')}
           </button>
-          {references.map((item) => (
+          <span className="ml-2 text-xs text-sz-fg-soft" aria-live="polite">
+            {t('pro.references.count', {
+              shown: visibleReferences.length,
+              total: references.length,
+            })}
+          </span>
+          {visibleReferences.map((item) => (
             <button
               key={`${item.path}:${item.line}:${item.column}`}
               type="button"
               className={`${button} block w-full text-left`}
-              onClick={() => navigate(item.path, item.line, item.column)}
+              onClick={() => {
+                navigate(item.path, item.line, item.column)
+                editor.current?.focus()
+              }}
             >
               {item.path}:{item.line}
             </button>
           ))}
+          {visibleReferences.length < references.length && (
+            <button
+              type="button"
+              className={button}
+              onClick={() =>
+                setReferenceWindow({ result: referenceResult, count: referenceCount + 100 })
+              }
+            >
+              {t('pro.references.more')}
+            </button>
+          )}
         </section>
       )}
       <Modal open={Boolean(rename)} onClose={() => setRename(null)} title={t('pro.renameSymbol')}>

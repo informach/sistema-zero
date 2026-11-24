@@ -1,0 +1,163 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-cloud-persistence.test.ts:
+(pass) createCloudMirroredPintaPersistence > documento 6 fica recuperável no local e só sobe com a barreira de nuvem 5
+(pass) createCloudMirroredPintaPersistence > gravar local enfileira a subida com o .pinta.json do desenho (id e nome preservados); a marca só avança no commit
+(pass) createCloudMirroredPintaPersistence > nada mudou desde a última sincronia (marca = updatedAt): o produtor devolve null e nada sobe
+(pass) createCloudMirroredPintaPersistence > o que não coube no orçamento (`deferred`) volta em passes seguidos, sem esperar o próximo F5 [47.00ms]
+(pass) createCloudMirroredPintaPersistence > apagar local grava LÁPIDE com a revisão conhecida e o DELETE leva essa base (nunca 0); a confirmação marca a lápide como enviada
+[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho {
+  itemId: "48fdbcb6-1191-449a-84b2-f3035030dc86",
+}
+(pass) createCloudMirroredPintaPersistence > 409 no DELETE: lápide sem revisão → reenvia UMA vez com a revisão corrente da nuvem; revisão MAIOR (editou em outro aparelho) → o desenho volta e a lápide só sai depois de gravar [15.00ms]
+(pass) createCloudMirroredPintaPersistence > base vencida (outro aparelho subiu antes): a versão da nuvem entra como CÓPIA, a marca avança e o desenho daqui sobe de novo
+(pass) createCloudMirroredPintaPersistence > a 1ª carga DESCE o que só existe na nuvem (id preservado) e SOBE o que só existe aqui
+(pass) createCloudMirroredPintaPersistence > apagado aqui e ainda na nuvem: NÃO volta na próxima carga (lápide)
+(pass) createCloudMirroredPintaPersistence > nuvem mais nova com o local também mudado: o local vira `-copia` (id novo) e a nuvem entra
+(pass) createCloudMirroredPintaPersistence > a galeria RELÊ no `sync-end`/`changed` (chama `listAllAssets()` de novo): isso NÃO abre outra reconciliação — uma por carga, nunca em laço [813.00ms]
+(pass) createCloudMirroredPintaPersistence > desenho ABERTO no editor não é gravado por baixo (nem copiado): fica para a próxima reconciliação; a marca não avança
+(pass) createCloudMirroredPintaPersistence > desenho pulado por estar aberto: ao FECHAR o editor (evento do pacote) a versão da nuvem entra na hora, sem esperar a próxima carga [31.00ms]
+(pass) createCloudMirroredPintaPersistence > edição persistida DEPOIS do retrato da reconciliação (antes de gravar) não é sobrescrita pela descida
+(pass) createCloudMirroredPintaPersistence > base vencida com a versão da nuvem IGUAL à daqui (outra aba deste perfil subiu antes): só avança a marca, sem `-copia`
+[criacoes-nuvem] descida recusada (conteúdo inválido ou indisponível) {
+  itemId: "f171daed-6b9a-40e8-aa3f-1f5a5b7c38c9",
+}
+(pass) createCloudMirroredPintaPersistence > descida corrompida (sanitize recusa) NÃO cria cópia nem toca no local
+(pass) createCloudMirroredPintaPersistence > nome já usado por OUTRO desenho local ganha sufixo ao descer (não há teto de quantidade) [16.00ms]
+(pass) createCloudMirroredPintaPersistence > descidas paralelas reservam sufixos diferentes antes de persistir
+(pass) createCloudMirroredPintaPersistence > nuvem fora do ar: a galeria abre com o local (nunca lança)
+(pass) uniqueAssetName > nunca passa do teto do pacote (48), mesmo com sufixo
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > sincroniza apenas a biblioteca ao abrir o Molda, sem baixar desenhos do Pinta
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > salvar a biblioteca enfileira o item ESPECIAL (kind próprio); o commit avança a marca
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > reconciliação: o item especial NÃO vira asset; a biblioteca desce e FUNDE por updatedAt [47.00ms]
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > reconciliação re-sobe uma escrita concorrente que só apareceu no save atômico
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > base vencida na subida: onStale funde com a nuvem e re-sobe [31.00ms]
+(pass) biblioteca "Minhas paletas" no espelho da nuvem > nuvem sem o item: biblioteca local COM conteúdo sobe na reconciliação [31.00ms]
+(pass) lápides e convergência da biblioteca (full review 25/08) > 🚨 EXCLUIR vale por mera reconciliação: a lápide da nuvem mata a cópia local [31.00ms]
+(pass) lápides e convergência da biblioteca (full review 25/08) > mesmo CONTEÚDO em ordens diferentes NÃO re-sobe (mata o pingue-pongue) [32.00ms]
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > a lápide que nasce DEPOIS de o envio começar sobrevive à confirmação (revisão nova) e é promovida a ela; a descida não restaura e o DELETE reenvia com essa base
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > caso normal: apagar e DEPOIS salvar de novo o mesmo id limpa a lápide na confirmação
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > a reconciliação dá `flush` na fila (com teto) ANTES de ler a lista: um DELETE em voo sobe primeiro; a fila falhando não bloqueia a descida
+[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho {
+  itemId: "a81d538c-fa04-4aa0-b381-63de11dcbc9f",
+}
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > restauro do 409 com o desenho ABERTO no editor: nada é gravado e a lápide sobrevive; fechado, o mesmo 409 restaura
+[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho {
+  itemId: "73367a77-4f90-4194-b373-de4476806f05",
+}
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > 2º 409 no DELETE (`retried`): a corrente cresceu de novo → o desenho volta no mesmo id, a marca conhece a revisão da nuvem e a lápide só sai DEPOIS de gravar
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > 2º 409 sem `currentRevision` com a nuvem já sem o desenho: a lápide vira enviada, nada restaura
+(pass) review 06/09: upload em voo × exclusão, flush antes da descida, desenho aberto, 2º 409 > lápide legada `{revision: null}` (dado já em produção): a descida reenvia o DELETE com a revisão da NUVEM e nada é restaurado
+[criacoes-nuvem] descida recusada (conteúdo inválido ou indisponível) {
+  itemId: "5fbe8887-867d-4b24-9e66-9c1a8ba5e73c",
+}
+(pass) formato mais novo que este código: o desenho fica intocado na conta > download que mudou de formato após a listagem fica intocado e bloqueia a subida local
+(pass) formato mais novo que este código: o desenho fica intocado na conta > a reconciliação não desce o item, não o copia e não sobe a versão daqui por cima; a galeria recebe o aviso [15.00ms]
+(pass) formato mais novo que este código: o desenho fica intocado na conta > editar a cópia daqui não sobe por cima: o produtor devolve null enquanto a conta guarda o formato novo
+(pass) formato mais novo que este código: o desenho fica intocado na conta > base vencida na subida com a nuvem em formato novo: sem cópia, sem nova subida, marca parada
+(pass) formato mais novo que este código: o desenho fica intocado na conta > DELETE recusado porque editaram em formato novo: nada é restaurado aqui e a lápide fica
+(pass) formato mais novo que este código: o desenho fica intocado na conta > o aviso some quando o item passa a ser legível ou sai da conta; lápide remota nunca vira aviso
+(pass) formato mais novo que este código: o desenho fica intocado na conta > a versão declarada na subida vem do tipo do desenho e a 1 não entra no corpo
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > mapa fracionário conserva nativo/envelope 5 e declara a capacidade do gravador, sem confundir os eixos
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "1edbfa7d-eab5-494d-9f70-9b17962a9a85",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > revisão compartilhada invalida floor/cache legado privado: legado=%s [16.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "9c721c00-9047-4250-b895-bf237fdce5d1",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > revisão compartilhada invalida floor/cache legado privado: legado=%s [15.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "b39a94c1-4038-4cfc-92d9-bc8ad4c60fc4",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > writtenAt do gravador antigo não autentica RAM4, inclusive persist direto=%s [16.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "6eb040d3-e18a-4d35-90d1-813ef78ef802",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > writtenAt do gravador antigo não autentica RAM4, inclusive persist direto=%s [16.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "f6005218-7cc7-4d71-ba22-50e585981150",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > RAM4 carregada na revisão2 não vira downgrade autorizado da revisão3 só porque o disco virou5 [15.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > load canônico5 na revisão3 permite downgrade legítimo com schema antigo em memória
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "8312f7a4-8d4a-4790-b655-4ec760120806",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > assinatura com capacidade nativa menor que o floor não autoriza o rebaixamento [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > marca avança durante a consulta: payload conserva a CAS capturada, sem adotar revisão nova
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "febb27e9-fc5f-4615-8893-2247e4da674d",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > ACK de A não retaga assinatura de B; uma nova instância C também recusa o cache4 [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > conflito entre duas edições no mesmo formato preserva a cópia e avança a base do retry
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "0d4fcd01-1d8e-4391-aca9-45c1be8f0d53",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > conflito com relógios iguais não autentica RAM4 contra o documento5 de outra revisão
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "ce7de271-d174-42c3-a30b-239e0f48cdff",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: sem memória de formato, a revisão conhecida não autoriza subir o cache cortado [31.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "c5dd1bce-1fd6-49ba-93e4-9ed5ce756d3a",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: editar o cache cortado antes do primeiro envio não autentica a perda [15.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "b275f11c-5b23-423d-b586-4860a6ff2d6e",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: rede falha bloqueia o envio, mas o autosave local continua e o retry preserva a edição [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota sem reinício: a assinatura desta instância permite retirar recursos sem download
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: edição de base canônica 5 pode retirar recursos depois de conferir o floor
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: mapa legado comprovado faz uma consulta por instância, sem bloquear suas edições
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "32f76e89-faed-4368-8cf0-fbb05244f3b1",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > quota e reinício: assinatura zero não confirmada de uma sessão anterior não prova o floor [16.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "8798421a-2df3-46a3-98f6-46118343f201",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > corte de frações 5→4 é detectado mesmo quando a elipse mantém o carimbo completo antigo [15.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "55825161-8fd3-47f7-9117-c56cfb5bfc88",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > a outra aba cortou e salvou: nada sobe, a versão da conta volta no mesmo id e a daqui fica como `-copia` [32.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "a353d068-8404-4bdc-8f39-5a8e6200c904",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > abrir o mapa cortado e editar por cima não esconde o corte: a edição vai para a cópia [15.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > este código baixar o carimbo (a criança apagou a forma) é edição de verdade e sobe [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > salvar de novo com o envio em voo: a confirmação do envio antigo não apaga a assinatura da gravação nova [15.00ms]
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "72ff582b-58f9-4230-a94a-9c7ea1b9128a",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > mapa cortado ABERTO no editor: nada sobe e nada é gravado por baixo; fechado, a conta volta [32.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > a conta guarda formato que este código não lê: nada sobe, nada desce, a galeria recebe o aviso [15.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > a conta já não tem o item: não há versão inteira para proteger e o que há aqui sobe [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > sem carimbo lembrado (o desenho nunca sincronizou por este código): nada é barrado
+[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou {
+  itemId: "mapa-vila",
+  copia: "68a3aa71-a830-46b9-9758-1334f3b7d769",
+}
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > descida grava o carimbo lembrado: o corte de um mapa que só DESCEU também é barrado [16.00ms]
+(pass) registro local cortado por código mais antigo não sobe por cima da conta > desenho sem formato próprio (sprite) nem entra na memória de carimbos
+
+ 72 pass
+ 0 fail
+ 413 expect() calls
+Ran 72 tests across 1 file. [1.91s]

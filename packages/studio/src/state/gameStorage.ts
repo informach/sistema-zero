@@ -1,10 +1,12 @@
 import { sanitizePreviewStorageData } from '../preview/types'
 import { readValue, writeInOneTransaction } from './idbTransaction'
+import { ProjectWriteConflict } from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   GAME_STORAGE_KEY_PREFIX,
   gameStorageKey,
   isGameStorageDeleted,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
   runSerializedProjectWrite,
 } from './projectStorageRuntime'
@@ -25,10 +27,53 @@ export interface GameStoragePersistence {
 
 // O banco dos projetos, pelas transações com commit explícito (`idbTransaction.ts`): o jogo da
 // criança pode estar gravando o placar no instante em que ela recarrega a página.
+async function retainedGameState(scope: ProjectStorageScope, key: string) {
+  if (!isPrivateRegionalProjectScope(scope) || !key.startsWith(GAME_STORAGE_KEY_PREFIX))
+    return undefined
+  const disk = await import('./retainedProjectStore')
+  const manifest = await disk.readRetainedManifest(scope, key.slice(GAME_STORAGE_KEY_PREFIX.length))
+  return manifest ? { disk, manifest } : undefined
+}
+function storeGameState(
+  scope: ProjectStorageScope,
+  key: string,
+  value: Record<string, string> | undefined,
+) {
+  return value
+    ? writeInOneTransaction(scope.store, { puts: [[key, value]] })
+    : writeInOneTransaction(scope.store, { deletes: [key] })
+}
+async function persistGameState(
+  scope: ProjectStorageScope,
+  key: string,
+  value: Record<string, string> | undefined,
+) {
+  if (!isPrivateRegionalProjectScope(scope)) return storeGameState(scope, key, value)
+  const captured = value && { ...value }
+  const active = await retainedGameState(scope, key)
+  if (!active) return storeGameState(scope, key, captured)
+  if (active.manifest.deleted) return
+  const editor = await import('./retainedProjectEditor')
+  await editor.editRetainedAuxiliary(scope, active.manifest, { game: captured })
+}
 const indexedDbPersistence: GameStoragePersistence = {
-  get: (key, scope) => readValue(scope.store, key),
-  set: (key, value, scope) => writeInOneTransaction(scope.store, { puts: [[key, value]] }),
-  delete: (key, scope) => writeInOneTransaction(scope.store, { deletes: [key] }),
+  get: async (key, scope) => {
+    if (!isPrivateRegionalProjectScope(scope)) return readValue(scope.store, key)
+    // A save between reading the manifest and reading the game replaces the manifest. Read the
+    // new one once: answering `{}` made the game start empty and its first write erase the score.
+    for (let attempt = 0; ; attempt++) {
+      const retained = await retainedGameState(scope, key)
+      if (!retained) return readValue(scope.store, key)
+      try {
+        const snapshot = await retained.disk.readRetainedParts(scope, retained.manifest, ['game'])
+        return snapshot.game
+      } catch (error) {
+        if (attempt > 0 || !(error instanceof ProjectWriteConflict)) throw error
+      }
+    }
+  },
+  set: (key, value, scope) => persistGameState(scope, key, value),
+  delete: (key, scope) => persistGameState(scope, key, undefined),
 }
 
 /**
@@ -100,8 +145,20 @@ export function createGameStorageRepository(
       // Apagado enquanto este write esperava na fila (ou já enfileirado após o
       // delete): descarta — não recria o registro do projeto que não existe mais.
       if (isGameStorageDeleted(scope, projectId)) return undefined
-      return { done: bestEffort(() => pickWrite(projectId, data, scope)) }
+      return ordered(
+        scope,
+        bestEffort(() => pickWrite(projectId, data, scope)),
+      )
     })
+  }
+
+  /**
+   * O projeto retido (perfil regional local) lê o manifesto antes de abrir a transação: soltar a
+   * fila no pedido deixava a escrita seguinte (outro placar, um autosave) passar na frente.
+   */
+  async function ordered(scope: ProjectStorageScope, done: Promise<void>) {
+    if (isPrivateRegionalProjectScope(scope)) await done
+    return { done }
   }
 
   /** O registro vazio some (clear/removeItem que esvazia); o resto é gravado sanitizado. */
@@ -123,14 +180,17 @@ export function createGameStorageRepository(
     if (!projectId) return
     const scope = getScope()
     if (!scope) return
-    await runSerializedProjectWrite(scope, projectId, async () => ({
-      done: bestEffort(() => persistence.delete(gameStorageKey(projectId), scope)),
-    }))
+    await runSerializedProjectWrite(scope, projectId, async () =>
+      ordered(
+        scope,
+        bestEffort(() => persistence.delete(gameStorageKey(projectId), scope)),
+      ),
+    )
   }
 
   /** Pro awaits a confirmed write. Capture the profile scope once, before async work. */
-  function session(projectId: string) {
-    const scope = getScope()
+  function session(projectId: string, storageScope?: ProjectStorageScope) {
+    const scope = storageScope ?? getScope()
     return {
       async load(): Promise<Record<string, string>> {
         if (!scope || !projectId) throw new Error('Armazenamento indisponível.')
@@ -140,7 +200,7 @@ export function createGameStorageRepository(
         if (!scope || !projectId) throw new Error('Armazenamento indisponível.')
         await runSerializedProjectWrite(scope, projectId, async () => {
           if (isGameStorageDeleted(scope, projectId)) throw new Error('Projeto excluído.')
-          return { done: pickWrite(projectId, data, scope) }
+          return ordered(scope, pickWrite(projectId, data, scope))
         })
       },
     }

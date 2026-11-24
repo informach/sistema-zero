@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-21T09:18:46.448Z",
+  "source": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "qualification": 44876673236,
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "f634cff6-aafb-4804-8b69-172fad4e946e"
+  },
+  "stagingOnly": true,
+  "mode": "deploy",
+  "policyChanged": true,
+  "pythonSelectorChanged": true,
+  "cloudWriterChanged": false,
+  "ok": true,
+  "result": {
+    "status": "published",
+    "version": 3
+  }
+}

@@ -42,6 +42,11 @@ export interface Thread {
   challengeKey: string | null
   /** Metadado do projeto (vitrine do Estúdio) — selo de nível do remix. `null` = post antigo/sem projeto. */
   studioMeta: ThreadStudioMeta | null
+  /**
+   * Última vez que a criança ATUALIZOU o jogo publicado (selo "Atualizado" no card).
+   * `null` = nunca atualizado. Não muda `createdAt`, `lastActivityAt` nem a ordem do Mural.
+   */
+  gameUpdatedAt: Date | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null

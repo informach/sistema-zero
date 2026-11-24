@@ -24,6 +24,7 @@ export class DemandRenderLoop {
   private dirty = false
   private width = 0
   private height = 0
+  private resizePending = false
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -77,6 +78,12 @@ export class DemandRenderLoop {
       this.frameHandle = null
       if (!this.canRender()) return
       this.dirty = false
+      // setSize limpa o framebuffer: só redimensionar no mesmo frame que o redesenha.
+      // ResizeObserver ocorre depois de RAF e poderia expor um canvas vazio até o próximo RAF.
+      if (this.resizePending) {
+        this.resizePending = false
+        this.renderer.setSize(this.width, this.height, false)
+      }
       if (this.renderFrame()) this.request()
     })
   }
@@ -126,7 +133,7 @@ export class DemandRenderLoop {
     if (width === this.width && height === this.height) return
     this.width = width
     this.height = height
-    this.renderer.setSize(width, height, false)
+    this.resizePending = true
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
     this.request()

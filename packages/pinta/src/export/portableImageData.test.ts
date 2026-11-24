@@ -5,9 +5,13 @@ import { sha256Hex } from '@sistemazero/core/creations'
 import {
   PintaImageDerivationSchema,
   type PintaImageRecipe,
+  PintaImageRecipeSchema,
   type PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { PintaSceneSchema } from '@sistemazero/core/studio/pinta-scene'
 import { unzlibSync } from 'fflate'
+import { vilaEFloresta } from '../../scripts/homologacao/fixture'
+import { resourceScenario } from '../../scripts/homologacao/resources'
 import {
   type AnyTilesetAsset,
   createBitmap,
@@ -21,6 +25,7 @@ import {
 } from '../core/project'
 import { tileLayerAt } from '../testing/fixtures'
 import { addMapObject, createMapObject } from '../tiles/mapObjects'
+import { freezeMapTilesets } from '../tiles/resourceVersions'
 import { addLayer, addObjectLayer, toggleLayerFront } from '../tiles/tilemapOps'
 import { makeRect } from '../vector/shapes'
 import { assetToJson } from './assetJson'
@@ -36,12 +41,264 @@ const limits: PintaImageTargetLimits = {
   dataUrlChars: 800000,
 }
 const colors = ['', '#ff0000', '#0000ff', '#00ff00', ...Array<string>(12).fill('')]
+
+test('o produtor identifica dados avançados e conserva o envelope do mapa legado', async () => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 2, rows: 2, now: 1 })
+  const selection = PintaImageRecipeSchema.parse({
+    version: 1,
+    algorithm: 'pinta-image-1',
+    drawingId: map.id,
+    selection: { kind: 'map' },
+    scale: 1,
+  })
+  const render = () =>
+    deriveLoadedPintaImage(map, selection, limits, { tilesets: [tileset], raster: nativeRaster() })
+  const before = await render()
+  expect((await pintaData(before)).version).toBe(1)
+  expect(Object.hasOwn(before.derivation.output, 'dataVersion')).toBe(false)
+  map.layers[0]!.opacity = 0.5
+  const after = await render()
+  expect((await pintaData(after)).version).toBe(2)
+  expect(after.derivation.output.dataVersion).toBe(2)
+  expect(after.derivation.recipe).toEqual(before.derivation.recipe)
+})
+
+test.each([
+  1, 2,
+])('colisão autoral produz dados 4 e cena 3 na escala %s sem trocar a receita map', async (scale) => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 4, rows: 4, now: 1 })
+  map.layers.push({
+    id: 'objects',
+    kind: 'objects',
+    name: 'Paredes',
+    visible: true,
+    objects: [
+      createMapObject({
+        id: 'wall',
+        x: 16,
+        y: 16,
+        width: 16,
+        height: 8,
+        shape: 'ellipse',
+        collision: true,
+      }),
+    ],
+  })
+  const recipe = PintaImageRecipeSchema.parse({
+    version: 1,
+    algorithm: 'pinta-image-1',
+    drawingId: map.id,
+    selection: { kind: 'map' },
+    scale,
+  })
+  const image = await deriveLoadedPintaImage(map, recipe, limits, {
+    tilesets: [tileset],
+    raster: nativeRaster(),
+  })
+  const data = await pintaData(image)
+  expect(image.derivation.recipe).toEqual(recipe)
+  expect(image.derivation.output.dataVersion).toBe(4)
+  expect(data.version).toBe(4)
+  expect(data.scene.version).toBe(3)
+  expect(
+    data.scene.layers.find((l: { kind: string }) => l.kind === 'objects').objects[0].collision,
+  ).toBe(true)
+  expect(data.tileSize).toBe(16 * scale)
+  expect(data.scene.tileSize).toBe(16)
+})
+
+test('o mapa estruturado sozinho também respeita a soma do atlas e das imagens decodificadas', async () => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const map = createTilemapAsset({ name: 'mapa', tilesetId: tileset.id, cols: 4, rows: 4, now: 1 })
+  map.layers.push({
+    id: 'objects',
+    kind: 'objects',
+    name: 'Paredes',
+    visible: true,
+    objects: [createMapObject({ shape: 'ellipse', width: 16, height: 8, collision: true })],
+  })
+  const recipe = PintaImageRecipeSchema.parse({
+    version: 1,
+    algorithm: 'pinta-image-1',
+    drawingId: map.id,
+    selection: { kind: 'map' },
+    scale: 1,
+  })
+  const image = await deriveLoadedPintaImage(map, recipe, limits, {
+    tilesets: [tileset],
+    raster: nativeRaster(),
+  })
+  const pixels = image.derivation.output.width * image.derivation.output.height
+  await expect(
+    deriveLoadedPintaImage(
+      map,
+      recipe,
+      { ...limits, totalImagePixels: 2 * pixels },
+      { tilesets: [tileset], raster: nativeRaster() },
+    ),
+  ).resolves.toBeDefined()
+  await expect(
+    deriveLoadedPintaImage(
+      map,
+      recipe,
+      { ...limits, totalImagePixels: 2 * pixels - 1 },
+      { tilesets: [tileset], raster: nativeRaster() },
+    ),
+  ).rejects.toThrow('grande demais')
+})
+
+test('colisão só no destino promove o mundo inteiro ao leitor físico sem reescrever a receita', async () => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const root = createTilemapAsset({ name: 'vila', tilesetId: tileset.id, cols: 4, rows: 4, now: 1 })
+  const child = createTilemapAsset({
+    name: 'cabana',
+    tilesetId: tileset.id,
+    cols: 4,
+    rows: 4,
+    now: 1,
+  })
+  root.layers.push({
+    id: 'doors',
+    kind: 'objects',
+    name: 'Portas',
+    visible: true,
+    objects: [
+      createMapObject({
+        role: 'door',
+        shape: 'rect',
+        width: 16,
+        height: 16,
+        properties: { destino: { type: 'asset', value: child.id } },
+      }),
+    ],
+  })
+  child.layers.push({
+    id: 'walls',
+    kind: 'objects',
+    name: 'Paredes',
+    visible: true,
+    objects: [
+      createMapObject({
+        shape: 'polygon',
+        points: [
+          { x: 0, y: 0 },
+          { x: 16, y: 0 },
+          { x: 0, y: 16 },
+        ],
+        width: 16,
+        height: 16,
+        collision: true,
+      }),
+    ],
+  })
+  const recipe = PintaImageRecipeSchema.parse({
+    version: 2,
+    algorithm: 'pinta-image-1',
+    drawingId: root.id,
+    selection: { kind: 'map-world' },
+    scale: 1,
+  })
+  const image = await deriveLoadedPintaImage(root, recipe, limits, {
+    assets: [tileset, child],
+    tilesets: [tileset],
+    raster: nativeRaster(),
+  })
+  const data = await pintaData(image)
+  expect(image.derivation.recipe).toEqual(recipe)
+  expect(image.derivation.output.dataVersion).toBe(4)
+  expect(data.version).toBe(4)
+  expect(data.scene.version).toBe(1)
+  const target = await pintaData({ ...image, dataUrl: data.world.maps[0].png })
+  expect(target.version).toBe(4)
+  expect(target.scene.version).toBe(3)
+  expect(target.world).toBeUndefined()
+})
+
+test('o mundo Python carrega o destino e o ciclo sem aninhar mundos ou incluir desenhos alheios', async () => {
+  const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16, now: 1 })
+  const root = createTilemapAsset({ name: 'vila', tilesetId: tileset.id, cols: 2, rows: 2, now: 1 })
+  const child = createTilemapAsset({
+    name: 'cabana',
+    tilesetId: tileset.id,
+    cols: 2,
+    rows: 2,
+    now: 1,
+  })
+  const unrelated = createTilemapAsset({
+    name: 'outro',
+    tilesetId: tileset.id,
+    cols: 2,
+    rows: 2,
+    now: 1,
+  })
+  for (const [map, destination] of [
+    [root, child],
+    [child, root],
+  ] as const) {
+    map.layers.push({
+      id: `objects-${map.id}`,
+      kind: 'objects',
+      name: 'Lugares',
+      visible: true,
+      objects: [
+        createMapObject({
+          id: `door-${map.id}`,
+          name: 'Porta',
+          role: 'door',
+          shape: 'rect',
+          x: 0,
+          y: 0,
+          width: 16,
+          height: 16,
+          properties: { destino: { type: 'asset', value: destination.id } },
+        }),
+      ],
+    })
+  }
+  const selection = PintaImageRecipeSchema.parse({
+    version: 2,
+    algorithm: 'pinta-image-1',
+    drawingId: root.id,
+    selection: { kind: 'map-world' },
+    scale: 1,
+  })
+  const before = await deriveLoadedPintaImage(root, selection, limits, {
+    tilesets: [tileset],
+    assets: [tileset, child, unrelated],
+    raster: nativeRaster(),
+  })
+  const data = await pintaData(before)
+  expect(data.version).toBe(3)
+  expect(before.derivation.output.dataVersion).toBe(3)
+  expect(data.scene.id).toBe(root.id)
+  expect(data.world.rootId).toBe(root.id)
+  expect(data.world.maps.map((map: { id: string }) => map.id)).toEqual([child.id])
+  const childData = await pintaData({ ...before, dataUrl: data.world.maps[0].png })
+  expect(childData.world).toBeUndefined()
+  expect(childData.scene.id).toBe(child.id)
+  expect(before.derivation.provenance.dependencies.map((item) => item.drawingId)).toContain(
+    child.id,
+  )
+  expect(before.derivation.provenance.dependencies.map((item) => item.drawingId)).not.toContain(
+    unrelated.id,
+  )
+  child.layers[0]!.name = 'Chão da cabana editado'
+  const after = await deriveLoadedPintaImage(root, selection, limits, {
+    tilesets: [tileset],
+    assets: [tileset, child, unrelated],
+    raster: nativeRaster(),
+  })
+  expect(after.derivation.output.sha256).not.toBe(before.derivation.output.sha256)
+  expect(after.derivation.provenance.sourceSha256).toBe(before.derivation.provenance.sourceSha256)
+})
 const recipe = (
   asset: PintaAsset,
   selection: PintaImageRecipe['selection'],
   scale = 2,
 ): PintaImageRecipe => ({
-  version: 1,
+  version: selection.kind === 'map-world' ? 2 : 1,
   algorithm: 'pinta-image-1',
   drawingId: asset.id,
   selection,
@@ -66,9 +323,164 @@ function nativeRaster(): PintaImageRaster {
   }
 }
 
+test('o mundo privado conserva animações e não exige documentos externos', async () => {
+  const scenario = resourceScenario(true)
+  const frozen = freezeMapTilesets(
+    scenario.map,
+    (id) => scenario.assets.find((a) => a.id === id) ?? null,
+  )
+  if (!frozen.ok) throw new Error(frozen.reason)
+  const image = await deriveLoadedPintaImage(
+    frozen.map,
+    recipe(frozen.map, { kind: 'map-world' }, 1),
+    limits,
+    { raster: nativeRaster() },
+  )
+  const data = await pintaData(image)
+  expect(data.version).toBe(3)
+  expect(data.world.maps).toEqual([])
+  expect(image.derivation.provenance.dependencies).toEqual([])
+  expect(data.scene.resources.length).toBeGreaterThan(0)
+  expect((await loadImage(data.scene.art[0].image)).width).toBe(48)
+})
+
+test('o mundo recusa as superfícies temporárias de uma instância de conjunto ampliada', async () => {
+  for (const [size, rotation, copies] of [
+    [12288, 0, 1],
+    [2048, 45, 1],
+    [1024, 0, 9],
+  ] as const) {
+    const { map, assets } = vilaEFloresta()
+    const layer = map.layers.find(
+      (layer) => layer.kind === 'objects' && layer.objects.some((object) => object.setId),
+    )!
+    if (layer.kind !== 'objects') throw new Error('conjunto ausente')
+    const instance = layer.objects.find((object) => object.setId)!
+    instance.width = instance.height = size
+    instance.rotation = rotation
+    for (let index = 1; index < copies; index++)
+      layer.objects.push({ ...structuredClone(instance), id: `copy-${index}` })
+    await expect(
+      deriveLoadedPintaImage(map, recipe(map, { kind: 'map-world' }, 1), limits, {
+        assets,
+        tilesets: assets.filter(
+          (a): a is AnyTilesetAsset => a.kind === 'tileset' || a.kind === 'vector-tileset',
+        ),
+        raster: nativeRaster(),
+      }),
+    ).rejects.toThrow('grande demais')
+  }
+})
+
+test('a captura do mundo não muda com uma edição concorrente; canvases são liberados em sequência', async () => {
+  const { map, ground, deco } = singleWorldMap()
+  const base = nativeRaster()
+  let live = 0,
+    peak = 0
+  const raster: PintaImageRaster = {
+    ...base,
+    createCanvas(width, height) {
+      live++
+      peak = Math.max(peak, live)
+      ground.name = 'editado durante a renderização'
+      return base.createCanvas(width, height)
+    },
+    releaseCanvas(canvas) {
+      live--
+      base.releaseCanvas!(canvas)
+    },
+  }
+  const image = await deriveLoadedPintaImage(map, recipe(map, { kind: 'map-world' }, 1), limits, {
+    tilesets: [ground, deco],
+    raster,
+  })
+  const data = await pintaData(image)
+  expect(data.tilesets[0].name).toBe('terreno')
+  expect(data.scene.tilesets[0].name).toBe('terreno')
+  // One output plus the renderer's one reusable cell canvas, never parallel map atlases.
+  expect(peak).toBe(2)
+  expect(live).toBe(0)
+})
+
+test('o mundo recusa resolução e soma de pixels antes de criar um canvas', async () => {
+  const { map, ground, deco } = singleWorldMap()
+  let canvases = 0
+  const raster = {
+    ...nativeRaster(),
+    createCanvas() {
+      canvases++
+      throw new Error('não deve renderizar')
+    },
+  }
+  for (const target of [
+    { ...limits, dimension: 8 },
+    { ...limits, totalImagePixels: 1 },
+  ])
+    await expect(
+      deriveLoadedPintaImage(map, recipe(map, { kind: 'map-world' }, 1), target, {
+        tilesets: [ground, deco],
+        raster,
+      }),
+    ).rejects.toThrow('limite de resolução')
+  expect(canvases).toBe(0)
+})
+
+test('cancelar durante a preparação do mundo libera o canvas e não entrega um pacote parcial', async () => {
+  const { map, ground, deco } = singleWorldMap()
+  const controller = new AbortController(),
+    base = nativeRaster()
+  let live = 0
+  const raster: PintaImageRaster = {
+    ...base,
+    createCanvas(width, height) {
+      live++
+      controller.abort()
+      return base.createCanvas(width, height)
+    },
+    releaseCanvas(canvas) {
+      live--
+      base.releaseCanvas!(canvas)
+    },
+  }
+  await expect(
+    deriveLoadedPintaImage(map, recipe(map, { kind: 'map-world' }, 1), limits, {
+      tilesets: [ground, deco],
+      raster,
+      signal: controller.signal,
+    }),
+  ).rejects.toThrow()
+  expect(live).toBe(0)
+})
+
 function bytesOf(image: PintaPortableImage): Uint8Array {
   return new Uint8Array(Buffer.from(image.dataUrl.split(',')[1]!, 'base64'))
 }
+
+test('o PNG jogável leva o atlas inteiro da animação fixada, além da folha do terreno', async () => {
+  const scenario = resourceScenario(true)
+  const frozen = freezeMapTilesets(
+    scenario.map,
+    (id) => scenario.assets.find((a) => a.id === id) ?? null,
+  )
+  if (!frozen.ok) throw new Error(frozen.reason)
+  const map = frozen.map
+  const image = await deriveLoadedPintaImage(map, recipe(map, { kind: 'map' }, 1), limits, {
+    tilesets: [],
+    assets: [],
+    raster: nativeRaster(),
+  })
+  const data = await pintaData(image),
+    scene = PintaSceneSchema.parse(data.scene)
+  expect(scene.version).toBe(2)
+  const art = scene.art!.find((a) => a.id === scene.resources![0]!.id)!
+  const atlas = await loadImage(art.image)
+  expect([atlas.width, atlas.height]).toEqual([48, 32])
+  const canvas = createCanvas(atlas.width, atlas.height),
+    ctx = canvas.getContext('2d')
+  ctx.drawImage(atlas, 0, 0)
+  expect([...ctx.getImageData(8, 24, 1, 1).data]).toEqual([255, 0, 0, 255])
+  expect([...ctx.getImageData(40, 24, 1, 1).data]).toEqual([0, 0, 255, 255])
+})
 
 /**
  * Lê os `iTXt` de um PNG, conferindo assinatura e CRCs: o espelho do `ler_dados` do
@@ -337,6 +749,15 @@ describe('tileset — the whole tile sheet with solid/platform marks', () => {
     expect(await pixel(image, 16, 16)).toEqual([0, 255, 0, 255])
   })
 })
+
+function singleWorldMap() {
+  const result = multiTilesetMap()
+  // The historical fixture below intentionally references a missing door and incompatible sheet.
+  result.map.layers = result.map.layers.slice(0, 2)
+  tileLayerAt(result.map, 0).cells[5] = 1
+  tileLayerAt(result.map, 1).cells[5] = 0
+  return result
+}
 
 function multiTilesetMap() {
   const ground = tileset('terreno', [1, 2])

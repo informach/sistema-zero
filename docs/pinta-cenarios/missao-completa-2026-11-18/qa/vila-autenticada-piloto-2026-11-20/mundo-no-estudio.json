@@ -1,0 +1,29 @@
+{
+  "projectId": "01M7WPNJ5QN6GWD26KXGSPX527",
+  "assets": [
+    {
+      "name": "qa-vila-floresta-20261120",
+      "libId": "personal:fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "sceneVersion": 3,
+      "layers": 18,
+      "tilesets": 2,
+      "sets": 1,
+      "objects": 6
+    },
+    {
+      "name": "qa-cabana-20261120",
+      "libId": "personal:fc15aec6-b219-452a-9f85-80c2c2681598",
+      "sceneVersion": 3,
+      "layers": 2,
+      "tilesets": 1,
+      "sets": 0,
+      "objects": 2
+    }
+  ],
+  "rootId": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+  "cabanaId": "fc15aec6-b219-452a-9f85-80c2c2681598",
+  "completeWorld": true,
+  "createdByPlayMapButton": true,
+  "realAuthenticatedStudio": true,
+  "cloudWriter6Activated": false
+}

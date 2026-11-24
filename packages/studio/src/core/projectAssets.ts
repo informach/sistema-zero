@@ -1,7 +1,31 @@
 import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import {
+  codeUsesPintaScenePlayer,
+  PINTA_STUDIO_LEGACY_LIMITS,
+} from '@sistemazero/core/studio/pinta-limits'
+import {
+  type PintaScene,
+  readPintaScene,
+  sceneFitsStudio,
+} from '@sistemazero/core/studio/pinta-scene'
 import { courseModelDataUrl, isCourseModelStub } from './courseModels'
 import { readPintaImageAssetMetadata } from './pintaImageAsset'
-import { validProAssetPath } from './proAssetPaths'
+import {
+  admittedRegionalMarker,
+  assertRegionalProjectAssetProof,
+  type PintaRegionalProjectAdmissions,
+} from './pintaRegionalProjectAdmission'
+import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from './pintaRegionalReference'
+import { validProMaterialPath } from './proAssetPaths'
+import { MAX_ASSETS_COUNT, MAX_ASSETS_TOTAL_CHARS } from './projectAssetBudget'
+import { ProjectDocumentError } from './projectDocumentGuards'
+import {
+  isScene3DAssetKind,
+  isValidScene3DDataUrl,
+  readScene3DDataMetadata,
+  readScene3DPythonMetadata,
+} from './scene3d/assets'
+import { assertScene3DReferences } from './scene3d/referencias'
 
 /** Uma animação nomeada de uma spritesheet (vinda do Pinta). */
 export interface ProjectSpriteAnim {
@@ -113,7 +137,11 @@ export interface ProjectAsset {
    * é bloqueada no preview). `font` (TTF/OTF) é só dos projetos Python: o
    * Raylib e o Pygame Zero abrem a fonte pelo caminho do arquivo.
    */
-  kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font'
+  kind: 'image' | 'audio' | 'model3d' | 'environment3d' | 'font' | 'scene3d' | 'scene3d-data'
+  /** Compiler-owned physical terrain data; no generic binary uploads. */
+  dado3d?: { papel: 'alturas' | 'buracos' }
+  /** Generated source module; user edits are preserved on identical reimport. */
+  cena3dPython?: { modulo: string }
   /**
    * `data:image/...;base64,...` (imagem), `data:audio/...;base64,...` (áudio) ou
    * `data:model|image/...;base64,...` (3D) — validado: o prefixo precisa casar
@@ -168,6 +196,8 @@ export interface ProjectAsset {
    * metas, ESTE vai ao preview (`__SZGAME_ASSET_META`) — o bloco "Criar mapa do
    * meu desenho" monta o mapa inteiro a partir dele em runtime.
    */
+  tilemapFront?: ProjectTilemapMeta
+  scene?: PintaScene
   tilemap?: ProjectTilemapMeta
 }
 
@@ -182,7 +212,7 @@ const MAX_ASSET_NAME_CHARS = 48
  * Estúdio" valida lá primeiro para dar a mensagem gentil; mudar aqui sem lá
  * faria o Pinta recusar o que o Estúdio aceitaria (ou vice-versa).
  */
-const MAX_ASSET_DATA_URL_CHARS = 800_000
+const MAX_ASSET_DATA_URL_CHARS = PINTA_STUDIO_LEGACY_LIMITS.imageChars
 /**
  * Teto do `dataUrl` de UM asset de ÁUDIO (som/música importado). ~7 mi chars ≈
  * 5 MB de binário — cobre efeitos curtos E uma música inteira. Bem maior que o
@@ -202,11 +232,6 @@ const MAX_MODEL3D_DATA_URL_CHARS = 7_000_000
  * título) têm de 20 a 400 KB; uma fonte com milhares de glifos não tem lugar aqui.
  */
 const MAX_FONT_DATA_URL_CHARS = 2_000_000
-/** Orçamento total de assets do projeto (~24 MB de binário inflado em base64;
- * subido de ~8 MB em 2026-07 p/ caber sons importados de até ~5 MB). */
-const MAX_ASSETS_TOTAL_CHARS = 33_000_000
-/** Teto de quantidade de assets por projeto (defesa anti-DoS no load). */
-const MAX_ASSETS_COUNT = 128
 /** Tetos do metadado (anti-DoS; o metadado NÃO conta na cota de `dataUrl`). */
 const MAX_SPRITE_ANIMS = 32
 const MAX_TILESET_SOLID = 64
@@ -219,11 +244,11 @@ const MAX_ANIM_NAME_CHARS = 48
  * (packages/pinta/src/components/editor/EditorScreen.tsx — valida antes p/ dar
  * a mensagem gentil).
  */
-const MAX_TILEMAP_SHEET_CHARS = 180_000
+const MAX_TILEMAP_SHEET_CHARS = PINTA_STUDIO_LEGACY_LIMITS.sheetChars
 /** Grade 100×100 do Pinta ≈ 30–40k chars; 60k = folga. */
-const MAX_TILEMAP_GRID_CHARS = 60_000
+const MAX_TILEMAP_GRID_CHARS = PINTA_STUDIO_LEGACY_LIMITS.gridChars
 /** Colunas/linhas do mapa (o Pinta capa em 100). */
-const MAX_TILEMAP_DIM = 128
+const MAX_TILEMAP_DIM = PINTA_STUDIO_LEGACY_LIMITS.dimension
 
 const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/
 const ASSET_DATA_URL_PREFIX = 'data:image/'
@@ -495,6 +520,7 @@ export function isValidAssetDataUrl(
   dataLimits: ProjectAssetDataLimits = PROJECT_ASSET_LIMITS,
 ): value is string {
   if (typeof value !== 'string') return false
+  if (isScene3DAssetKind(kind)) return isValidScene3DDataUrl(value, kind, fileName)
   if (kind === 'font') {
     if (value.length > MAX_FONT_DATA_URL_CHARS || typeof fileName !== 'string') return false
     const mime = fontMimeFor(fileName)
@@ -556,12 +582,16 @@ export function sanitizeProjectAssetLicense(value: unknown): ProjectAsset['licen
 export function sanitizeProjectAssets(
   raw: unknown,
   options: {
-    materialPath?: (path: unknown) => path is string
+    materialPath?: (path: unknown, kind?: ProjectAsset['kind']) => path is string
     dataLimits?: ProjectAssetDataLimits
+    regionalMaterials?: PintaRegionalProjectAdmissions
+    /** Recebe os avisos do que foi deixado de fora sem derrubar o material (hoje, a cena). */
+    warnings?: string[]
   } = {},
 ): ProjectAsset[] {
+  if (options.regionalMaterials) assertRegionalProjectAssetProof(raw, options.regionalMaterials)
   if (!Array.isArray(raw)) return []
-  const materialPath = options.materialPath ?? validProAssetPath
+  const materialPath = options.materialPath ?? validProMaterialPath
   const dataLimits = options.dataLimits ?? PROJECT_ASSET_LIMITS
   const out: ProjectAsset[] = []
   const seenNames = new Set<string>()
@@ -570,14 +600,42 @@ export function sanitizeProjectAssets(
     if (out.length >= MAX_ASSETS_COUNT) break
     if (!item || typeof item !== 'object' || Array.isArray(item)) continue
     const a = item as Record<string, unknown>
+    const regional = hasRegionalPintaReference(a)
+      ? admittedRegionalMarker(a, options.regionalMaterials)
+      : undefined
+    if (!regional && hasRegionalPintaReference(a))
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     const pintaImage = readPintaImageAssetMetadata(a)
-    if (a.kind !== 'image' && a.kind !== 'audio' && a.kind !== 'font' && !isAsset3DKind(a.kind))
+    if (
+      a.kind !== 'image' &&
+      a.kind !== 'audio' &&
+      a.kind !== 'font' &&
+      !isAsset3DKind(a.kind) &&
+      !isScene3DAssetKind(a.kind)
+    )
       continue
     const kind: ProjectAsset['kind'] = a.kind
     // 3D: a validação cruza extensão × MIME × assinatura, então o nome do
     // arquivo original faz parte do contrato (sem ele o asset é descartado).
     const fileName = typeof a.originalFileName === 'string' ? a.originalFileName : undefined
-    if (!isValidAssetDataUrl(a.dataUrl, kind, fileName, dataLimits)) continue
+    // Imagens de uma cena do Molda (textura, céu 360°, mapa de alturas) vêm com o pacote e o
+    // orçamento da cena; o teto de 800 mil caracteres das imagens soltas de projetos JavaScript
+    // recusava um céu 2048×1024 e o projeto inteiro falhava ao guardar.
+    const daCena =
+      kind === 'image' &&
+      a.source === 'library' &&
+      typeof a.libId === 'string' &&
+      a.libId.startsWith('cenario-recurso:')
+    const limites = daCena
+      ? {
+          ...dataLimits,
+          maxAssetDataUrlChars: Math.max(
+            dataLimits.maxAssetDataUrlChars,
+            MAX_MODEL3D_DATA_URL_CHARS,
+          ),
+        }
+      : dataLimits
+    if (!isValidAssetDataUrl(a.dataUrl, kind, fileName, limites)) continue
     const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
     if (!name || seenNames.has(name)) continue
     if (totalChars + a.dataUrl.length > dataLimits.maxAssetsTotalChars) continue
@@ -590,11 +648,22 @@ export function sanitizeProjectAssets(
       dataUrl: a.dataUrl,
       source,
       ...(pintaImage ? { pintaImage } : {}),
+      ...(regional ? { regional } : {}),
     }
-    if (materialPath(a.proPath)) asset.proPath = a.proPath
+    if (materialPath(a.proPath, kind)) asset.proPath = a.proPath
+    if (kind === 'scene3d-data') {
+      const meta = readScene3DDataMetadata(a.dado3d)
+      if (!meta) continue
+      asset.dado3d = meta
+    }
+    if (a.cena3dPython !== undefined) {
+      const meta = readScene3DPythonMetadata(a.cena3dPython)
+      if (kind !== 'scene3d' || !meta) continue
+      asset.cena3dPython = meta
+    }
     const license = sanitizeProjectAssetLicense(a.license)
     if (license) asset.license = license
-    if (fileName && (isAsset3DKind(kind) || kind === 'font'))
+    if (fileName && (isAsset3DKind(kind) || kind === 'font' || isScene3DAssetKind(kind)))
       asset.originalFileName = fileName.slice(0, 128)
     if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {
       asset.width = Math.floor(a.width)
@@ -621,11 +690,37 @@ export function sanitizeProjectAssets(
     if (tileset) asset.tileset = tileset
     const tilemap = sanitizeTilemapMeta(a.tilemap)
     if (tilemap) asset.tilemap = tilemap
+    const front = sanitizeTilemapMeta(a.tilemapFront)
+    if (front) asset.tilemapFront = front
+    const scene = sanitizeSceneMeta(a.scene)
+    if (scene) {
+      // A cena conta no orçamento, igual à escrita (`projectAssetBudgetChars`). Se ela não
+      // cabe, sai SÓ a cena: a imagem, que cabe, fica, e a criança é avisada.
+      const sceneChars = JSON.stringify(scene).length
+      if (totalChars + a.dataUrl.length + sceneChars > dataLimits.maxAssetsTotalChars) {
+        const warning = `O cenário do desenho "${name}" não coube neste projeto e ficou de fora. A imagem foi mantida.`
+        options.warnings?.push(warning)
+        console.warn(warning)
+      } else {
+        asset.scene = scene
+        totalChars += sceneChars
+      }
+    }
     seenNames.add(name)
     totalChars += a.dataUrl.length
     out.push(asset)
   }
+  assertScene3DReferences(out)
   return out
+}
+
+/**
+ * Quanto um material pesa no orçamento total do projeto: os bytes dele e a cena do Pinta,
+ * que pode passar de 2 milhões de caracteres. Fonte única para a escrita (store, varredura
+ * dos desenhos) e para a leitura: o que a escrita aceita, a leitura não descarta.
+ */
+export function projectAssetBudgetChars(asset: { dataUrl: string; scene?: unknown }): number {
+  return asset.dataUrl.length + (asset.scene ? JSON.stringify(asset.scene).length : 0)
 }
 
 /**
@@ -635,10 +730,14 @@ export function sanitizeProjectAssets(
  */
 export function assetManifest(
   assets: readonly ProjectAsset[] | undefined | null,
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out: Record<string, string> = Object.create(null)
   if (!assets) return out
+  if (regionalMaterials) assertRegionalProjectAssetProof(assets, regionalMaterials)
   for (const a of assets) {
+    if (hasRegionalPintaReference(a) && !regionalMaterials)
+      throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
     if (a && a.kind === 'image' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
       out[a.name] = a.dataUrl
     }
@@ -654,7 +753,7 @@ export function assetManifest(
 export function soundManifest(
   assets: readonly ProjectAsset[] | undefined | null,
 ): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out: Record<string, string> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
     if (a && a.kind === 'audio' && typeof a.name === 'string' && typeof a.dataUrl === 'string') {
@@ -682,7 +781,7 @@ export interface Asset3DManifestEntry {
 export function asset3DManifest(
   assets: readonly ProjectAsset[] | undefined | null,
 ): Record<string, Asset3DManifestEntry> {
-  const out: Record<string, Asset3DManifestEntry> = {}
+  const out: Record<string, Asset3DManifestEntry> = Object.create(null)
   if (!assets) return out
   for (const a of assets) {
     if (!a || !isAsset3DKind(a.kind)) continue
@@ -703,20 +802,40 @@ export function asset3DManifest(
  * o que o runtime precisa: mapa, caixa de colisão e animações nomeadas. Semeado em `window.__SZGAME_ASSET_META`
  * pelos mesmos call sites. Só entra asset com meta presente (objeto vazio = nada
  * a injetar; o assetsBridge emite saída byte-idêntica à de antes).
+ *
+ * A CENA do Pinta (até 2,1 milhões de caracteres) só viaja quando o código do jogo usa um
+ * bloco de cenário: é a mesma pergunta que escolhe o motor (`codeUsesPintaScenePlayer`), feita
+ * ao MESMO contexto (`extensionBootstrapContext`). Sem contexto (chamador antigo, teste) a
+ * cena vai: é o lado seguro. Quando ela fica de fora, vai só o sinal `hasScene`, para o
+ * bloco antigo de mapa dizer à criança que aquele desenho é um cenário.
+ *
+ * `tilemapFront` não viaja: nenhum motor o lê (a frente do cenário é lida da própria cena) e
+ * a folha repetida custava até 180 mil caracteres por documento.
  */
 export function assetMetaManifest(
   assets: readonly ProjectAsset[] | undefined | null,
+  context?: { code: string },
+  regionalMaterials?: PintaRegionalProjectAdmissions,
 ): Record<string, ProjectAssetPreviewMeta> {
   const out: Record<string, ProjectAssetPreviewMeta> = {}
   if (!assets) return out
+  if (regionalMaterials) assertRegionalProjectAssetProof(assets, regionalMaterials)
+  const sendScene = !context || codeUsesPintaScenePlayer(context.code)
   for (const a of assets) {
+    if (hasRegionalPintaReference(a)) {
+      if (!regionalMaterials)
+        throw new ProjectDocumentError('invalid-document', UNSUPPORTED_PINTA_REGION)
+      out[a.name] = { hasScene: true }
+      continue
+    }
     if (a?.kind !== 'image' || typeof a.name !== 'string') continue
     const hitbox = a.sprite?.hitbox
     // Named animation is resolved by the engine, so its geometry travels with it.
     const sprite = a.sprite?.animations.length ? a.sprite : undefined
-    if (!a.tilemap && !hitbox && !sprite) continue
+    if (!a.tilemap && !a.scene && !hitbox && !sprite) continue
     out[a.name] = {
       ...(a.tilemap ? { tilemap: a.tilemap } : {}),
+      ...(a.scene ? (sendScene ? { scene: a.scene } : { hasScene: true as const }) : {}),
       ...(hitbox ? { hitbox } : {}),
       ...(sprite ? { sprite } : {}),
     }
@@ -724,8 +843,11 @@ export function assetMetaManifest(
   return out
 }
 
-/** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa e/ou caixa). */
+/** O que de fato viaja no `window.__SZGAME_ASSET_META` (mapa, cena e/ou caixa). */
 export interface ProjectAssetPreviewMeta {
+  scene?: PintaScene
+  /** O desenho tem cena, mas este jogo não usa bloco de cenário: a cena ficou de fora. */
+  hasScene?: true
   tilemap?: ProjectTilemapMeta
   hitbox?: ProjectSpriteHitbox
   sprite?: ProjectSpriteMeta
@@ -748,3 +870,12 @@ export const PROJECT_ASSET_LIMITS = {
   maxTilemapGridChars: MAX_TILEMAP_GRID_CHARS,
   maxTilemapDim: MAX_TILEMAP_DIM,
 } as const
+
+export function sanitizeSceneMeta(raw: unknown): PintaScene | undefined {
+  const scene = readPintaScene(raw)
+  return scene &&
+    sceneFitsStudio(scene) &&
+    [...scene.tilesets, ...(scene.art ?? [])].every((a) => isValidAssetDataUrl(a.image, 'image'))
+    ? scene
+    : undefined
+}

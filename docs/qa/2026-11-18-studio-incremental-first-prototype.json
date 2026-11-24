@@ -1,0 +1,97 @@
+{
+  "environment": {
+    "platform": "win32",
+    "node": "v24.15.0",
+    "browser": "148.0.7778.96",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "method": "Fresh context per sample; alternating build order; same Farol stress fixture. Timer intervals are scheduling observations, not input latency or FPS. No game profiler.",
+  "samples": [
+    {
+      "arm": "baseline",
+      "size": 2000,
+      "repeat": 0,
+      "readyMs": 6525.950000000186,
+      "timerGapsMs": {
+        "count": 55,
+        "p50": 20.075000000186265,
+        "p95": 665.375,
+        "max": 2413.4500000001863,
+        "total": 6479.535000000149
+      },
+      "longTasksMs": {
+        "count": 12,
+        "p50": 195,
+        "p95": 1851,
+        "max": 1851,
+        "total": 5296
+      }
+    },
+    {
+      "arm": "incremental",
+      "size": 2000,
+      "repeat": 0,
+      "readyMs": 8427.799999999814,
+      "timerGapsMs": {
+        "count": 158,
+        "p50": 20.12999999988824,
+        "p95": 206.714999999851,
+        "max": 1078.875,
+        "total": 8378.270000000019
+      },
+      "longTasksMs": {
+        "count": 28,
+        "p50": 115,
+        "p95": 430,
+        "max": 985,
+        "total": 4742
+      }
+    },
+    {
+      "arm": "baseline",
+      "size": 5000,
+      "repeat": 0,
+      "readyMs": 15460.495000000112,
+      "timerGapsMs": {
+        "count": 55,
+        "p50": 20.050000000279397,
+        "p95": 2509.774999999907,
+        "max": 7641.604999999981,
+        "total": 15427.07499999972
+      },
+      "longTasksMs": {
+        "count": 9,
+        "p50": 491,
+        "p95": 7503,
+        "max": 7503,
+        "total": 13987
+      }
+    },
+    {
+      "arm": "incremental",
+      "size": 5000,
+      "repeat": 0,
+      "readyMs": 36897.00499999989,
+      "timerGapsMs": {
+        "count": 400,
+        "p50": 20.744999999646097,
+        "p95": 324.04000000003725,
+        "max": 6004.149999999907,
+        "total": 36873.01500000013
+      },
+      "longTasksMs": {
+        "count": 68,
+        "p50": 250,
+        "p95": 1354,
+        "max": 4111,
+        "total": 27753
+      }
+    }
+  ]
+}

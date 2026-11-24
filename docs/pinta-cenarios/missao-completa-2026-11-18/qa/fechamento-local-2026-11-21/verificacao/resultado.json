@@ -1,0 +1,237 @@
+{
+  "at": "2026-11-21T10:46:29.914Z",
+  "kind": "local-merge-checkpoint",
+  "sourceHead": "c56fed2500d0a4856b3756c01fcdb45cc6f6c579",
+  "stagingBase": "62125b999477ba00a9bb23bda042f7892148fe9d",
+  "branches": [
+    {
+      "branch": "pinta-gravador-nuvem6-20261120",
+      "head": "5d0d58ab44e5d21125bd4d91091b89e347785aa7"
+    },
+    {
+      "branch": "pinta-externos-20261119",
+      "head": "9d218d2244236aeeb68a828be351bd35cda614af"
+    },
+    {
+      "branch": "pinta-qa-processos-20261121",
+      "head": "3eb2b311e3e3a42a23ec03bb9b3d53bc64ad7a8a"
+    }
+  ],
+  "gates": [
+    {
+      "name": "pinta",
+      "started": "2026-11-21T10:35:08.891Z",
+      "finished": "2026-11-21T10:38:27.640Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-pinta.log"
+    },
+    {
+      "name": "core",
+      "started": "2026-11-21T10:38:27.641Z",
+      "finished": "2026-11-21T10:38:39.794Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-core.log"
+    },
+    {
+      "name": "pinta-types",
+      "started": "2026-11-21T10:38:39.795Z",
+      "finished": "2026-11-21T10:38:53.087Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-pinta-types.log"
+    },
+    {
+      "name": "studio-types",
+      "started": "2026-11-21T10:38:53.088Z",
+      "finished": "2026-11-21T10:42:18.947Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-studio-types.log"
+    },
+    {
+      "name": "runtime-types",
+      "started": "2026-11-21T10:42:18.949Z",
+      "finished": "2026-11-21T10:42:22.680Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-runtime-types.log"
+    },
+    {
+      "name": "runtime-test-types",
+      "started": "2026-11-21T10:42:22.681Z",
+      "finished": "2026-11-21T10:44:36.950Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-runtime-test-types.log"
+    },
+    {
+      "name": "profile",
+      "started": "2026-11-21T10:44:36.950Z",
+      "finished": "2026-11-21T10:44:37.387Z",
+      "exit": 0,
+      "log": ".cache/pinta-local-merge-final-profile.log"
+    },
+    {
+      "name": "biome",
+      "started": "2026-11-21T10:44:37.388Z",
+      "finished": "2026-11-21T10:45:11.500Z",
+      "exit": 1,
+      "log": ".cache/pinta-local-merge-final-biome.log"
+    }
+  ],
+  "files": [
+    {
+      "file": "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+      "sha256": "3aa5a21f6166051d7ff3792ab8487763d48d507fad0bba68c4c2065138b2aa81"
+    },
+    {
+      "file": "packages/core/src/creations/index.ts",
+      "sha256": "0bc4ded213f2819bcf40075270702457d0962d53250f5cf1d71d206c7bef3ad3"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "sha256": "59997f34aaa645b80461ba04ad883c13b0b8b4bd61a13d836a1276eb7840e3c6"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "sha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.test.ts",
+      "sha256": "ab9b5db09927665717822acaae23c9963c7c7e34cdbcd6b53bcb3348c83953a1"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "8528820c101ff7c6c0547cf0e640268e3220daeb15ed7507a7cab6cf461a163e"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "f11d50f89de28b830635ca0ce586de674dcccce2e8d8ed0c5d0038d6b568292e"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "sha256": "28e86f353d4be4e7b4c63874ba3070a90c305ebc44f46c1d48f7bdab3e884ad7"
+    },
+    {
+      "file": "packages/pinta/scripts/qa/bucket-regions.ts",
+      "sha256": "7e3f34954ffacb5a897d5d2a2ff811adc08d5fab5316856661692f1cc6d4b7ef"
+    },
+    {
+      "file": "packages/pinta/scripts/qa/region-document.ts",
+      "sha256": "0d7305703d2a04b34fc45ab0a15c526809ac72304d131ebc2a02bbbc03da51f6"
+    },
+    {
+      "file": "packages/pinta/src/core/mapDocumentBoundary.test.ts",
+      "sha256": "8c48823c57ef6aa4f7318204f9e575b2b477f015bf7282b4e1e4856f93259589"
+    },
+    {
+      "file": "packages/pinta/src/core/mapDocumentBoundary.ts",
+      "sha256": "db40f0c759670905b21a50c6d896ea193abae7347d6a736b05d1f5cfc4a4602e"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "eaa9cd94d22ceb63ea0db646e984ec5dc044357ee56b97527a50bb9cc4845cdb"
+    },
+    {
+      "file": "packages/pinta/src/core/regionDocument.test.ts",
+      "sha256": "5239de308a87f65a2a2936ffd9f9a4309556d2e0dddb2c366ed81e1338f966bc"
+    },
+    {
+      "file": "packages/pinta/src/core/regionDocument.ts",
+      "sha256": "9d575949ed608b646e4d9f3b2b1f662d6660bc01a3599c6735d0f057bed6c6a0"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cell.ts",
+      "sha256": "163979810df7549e772a97e6d91d098d17329cbd65aa7f783e95804aac496091"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "1d18db4f50fc2f1353ee0f4d297bf4eaa0282ebc9a4a02b18510db0ce9f3cc95"
+    },
+    {
+      "file": "packages/pinta/src/tiles/floodFill.ts",
+      "sha256": "aee6f9f4f3ded073baf40cf8af9afaa69efc27b07dfdf97c8683aa81e95688c2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellBudget.test.ts",
+      "sha256": "56bc0de33b405be519573181de2811c339186022892b89e76a15fb3220a596e2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellEdits.ts",
+      "sha256": "1a045610b40123948143ced0c5b86c22d9491e94dc21ba21d7ed25f036fd981e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.test.ts",
+      "sha256": "56ea4039a6f7a6928e10a6cb8d4ad257c3d7a55130d9d373acd5a4132173b6dd"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "9c2379deb9eb72b3b135afaa341ab2e97bb0fce6e63e883da9727778376d5c75"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapSelection.ts",
+      "sha256": "a87d6628ea7d3d67a6870481a231c44d63cdb14d358543707dcd2c8969e408f8"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapSelectionBudget.test.ts",
+      "sha256": "8d23c1a3cfaa5422c03e467b156f5b5de7b3165666aa8e1f7750eb10600ca530"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.test.ts",
+      "sha256": "1a952fc387f9d3fb7e45ba611051276f54cde9a696949d746b366f30cf41c761"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "8020a8b7bb08b6f2af99733d9630d1706d624bfdac93c05824bae985b8afb9d9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.test.ts",
+      "sha256": "a792af3ff6bef10fc0eb75ce149cb74e66b4c2b3a967ad408078576a1c6c146a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "393545c3d8028988922269bf3a622d541e3f3d20de9ef5be2f25907c8549cb0d"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapAccess.test.ts",
+      "sha256": "d694837dcda984938b0f38500648f7ba864658ccbce88c7488c94d64d7f32e24"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapEditing.test.ts",
+      "sha256": "5339d3d518f413fb0cd606d7a3b7017d310a49a38a3162247cf23408008ccbee"
+    },
+    {
+      "file": "packages/pinta/src/tiles/stamp.ts",
+      "sha256": "babde65c090c690dc86a233a9f0d164821c8e37910e821c053f97cac0fd2ec07"
+    },
+    {
+      "file": "packages/pinta/src/tiles/terrain.test.ts",
+      "sha256": "03dcd543abf9b14291a7d82a5edee3e2c0d5d70b6f5f3616224f3d03606ab1ee"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "eb1b19cf858312f9af941a7d01d496d05346aca984a95dda510df4dbe371b195"
+    },
+    {
+      "file": "packages/studio-runtime/tests/fixtures/controlled-zombie-owner.mjs",
+      "sha256": "114da85e81795489a75f2e88c92613271483ba00a03900b19c3c546c6c100c33"
+    },
+    {
+      "file": "packages/studio-runtime/tests/fixtures/native-process-state.ts",
+      "sha256": "d29d436bdc3fdc38cb166ebc5fe0e2ea4f3118294008ad5ea9cd8b1d23851174"
+    },
+    {
+      "file": "packages/studio-runtime/tests/native-process-state.test.ts",
+      "sha256": "426e2ec551bcde78fffb7f551dd021ca02e9c0609f88137af1e733db0d4ed77c"
+    },
+    {
+      "file": "packages/studio-runtime/tests/owned-node-process.test.ts",
+      "sha256": "4d7453a5023895ae4bb906bfcd1fb1872fd39bc67b05f3d408b6e8b50f7be35e"
+    },
+    {
+      "file": "packages/studio-runtime/wrangler.jsonc",
+      "sha256": "35474138853592f2247ad6e26eb2419794e171321eaaf775b56cb55fb25b3185"
+    }
+  ],
+  "sourceScopeNote": "The Studio typecheck began on 2aa5b3bca before the added frozen-contract fixtures arrived from 1136c01a1. Their seven focused tests passed after that merge. Pinta/Core/runtime executable sources remained unchanged during the checks.",
+  "missionComplete": false,
+  "cloudWriterDeployed": false,
+  "productionChanged": false,
+  "pushPerformed": false
+}

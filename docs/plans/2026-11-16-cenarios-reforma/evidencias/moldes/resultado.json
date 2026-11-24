@@ -1,0 +1,45 @@
+{
+  "objetos": [
+    {
+      "nome": "Casa do Molda",
+      "modelo": "mod-0004"
+    },
+    {
+      "nome": "Árvore do Molda",
+      "modelo": "mod-0005"
+    },
+    {
+      "nome": "Casa do Molda nova",
+      "modelo": "mod-0006"
+    },
+    {
+      "nome": "Casa do Molda nova 2",
+      "modelo": "mod-0006"
+    }
+  ],
+  "modelos": [
+    {
+      "id": "mod-0004",
+      "biblioteca": "bib-0003",
+      "modelo": "mod-0004",
+      "digest": "872e17c859ef0241910090ae0ae9d5406f1cfe4c70decab22c50affb3e8449c1",
+      "nome": "Casa do Molda"
+    },
+    {
+      "id": "mod-0005",
+      "biblioteca": "bib-0003",
+      "modelo": "mod-0005",
+      "digest": "605e49b323028039692b0efc0f8e5c7e6bb6f3f136f2beb55c11ed5d26a1fb0c",
+      "nome": "Árvore do Molda"
+    },
+    {
+      "id": "mod-0006",
+      "biblioteca": "bib-0003",
+      "modelo": "mod-0006",
+      "digest": "170274be76abd24976436dbc3f2699b020611c358eed09afaebd090cf38faa7a",
+      "nome": "Casa do Molda nova"
+    }
+  ],
+  "copiasGuardadas": 3,
+  "erros": []
+}

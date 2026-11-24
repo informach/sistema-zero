@@ -1,0 +1,11 @@
+{
+  "published": "f44648d9b2c63509f882ef8cb1ce8c66ee554c7d",
+  "method": "git show do commit ativo em staging; comparação UTF-8 normalizada para LF; teste local do guard idêntico",
+  "wholeGuardFileIdentical": true,
+  "publishedGuardSha256": "83756d8a0611654ee97fee3190563b5a6e4fb95ab51aac90549142bacc301c9a",
+  "currentGuardSha256": "83756d8a0611654ee97fee3190563b5a6e4fb95ab51aac90549142bacc301c9a",
+  "publishedAssetContractHasSceneField": false,
+  "guardChecksAssets": true,
+  "publishedValidationCallsPreservationGuard": true,
+  "fullHistoricalStudioBrowserRun": false
+}

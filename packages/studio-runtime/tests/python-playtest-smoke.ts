@@ -11,7 +11,10 @@ import {
 import { studioPythonLogicalFiles } from '@sistemazero/core/studio/python-runtime-distribution'
 import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
 import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
-import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
+import {
+  buildPythonRuntimeDistribution,
+  PYTHON_RELEASE_BUILD_OPTIONS,
+} from '../../studio/scripts/build-python-runtime'
 import { sha256 } from '../src/artifacts'
 
 // Explicit headless proof. Docker also checks network/resource isolation; neither mode qualifies SDK/remote/performance.
@@ -67,6 +70,7 @@ if (docker) {
   )
 }
 const build = await buildPythonRuntimeDistribution({
+  ...PYTHON_RELEASE_BUILD_OPTIONS,
   vendorDirectory: path.join(cache, 'vendor'),
   outputDirectory: path.join(cache, 'distributions'),
 })

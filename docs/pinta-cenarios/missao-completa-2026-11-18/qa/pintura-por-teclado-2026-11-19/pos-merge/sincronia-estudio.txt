@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [15.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted [16.00ms]
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it [16.00ms]
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [125.00ms]
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição [140.00ms]
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [79.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo) [15.00ms]
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+ 14 pass
+ 0 fail
+ 67 expect() calls
+Ran 14 tests across 2 files. [2.38s]

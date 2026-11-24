@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-19T20:02:16.923Z",
+  "version": "7232eba7-0e8e-4006-8a30-a0d3a900aaa7",
+  "module": {
+    "name": "worker.js",
+    "sha256": "b168ada8bc86b095adaca6bf8ef1671b75f1ca3dc7ed959e96970a2a4de47406",
+    "bytes": 1957492
+  },
+  "fingerprint": "8151d121eb0ef36103c2aa16717a30ba1d4f316da6f2e7369a6e70f529596d2c",
+  "health": {
+    "status": 200,
+    "ok": true
+  },
+  "container": {
+    "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+    "version": 31,
+    "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-cc1a416ae@sha256:1411706838fd121e2897ac12c30f9438fbb3d0e9d517539ff84ee60ce387cf0e",
+    "health": {
+      "errors": [],
+      "instances": {
+        "active": 0,
+        "assigned": 0,
+        "healthy": 4,
+        "stopped": 0,
+        "failed": 0,
+        "scheduling": 0,
+        "starting": 1
+      }
+    }
+  },
+  "pythonActivated": false,
+  "readerAppDeployed": false
+}

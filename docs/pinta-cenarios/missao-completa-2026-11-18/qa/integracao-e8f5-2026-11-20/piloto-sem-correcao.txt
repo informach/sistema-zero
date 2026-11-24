@@ -1,0 +1,81 @@
+
+Running 2 tests using 1 worker
+
+(node:10048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:41:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto (4.2s)
+(node:30884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:85:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo (4.8s)
+
+
+  1) [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:41:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto
+
+    Error: page.evaluate: NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Write permission denied.
+
+       at ..\e2e\helpers\previewShell.ts:104
+
+      102 |     await page.keyboard.insertText(code)
+      103 |   } else {
+    > 104 |     await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+          |                ^
+      105 |     await page.keyboard.press(`${modifier}+V`)
+      106 |   }
+      107 |   if (page.context().browser()?.browserType().name() !== 'webkit') {
+        at replaceBridgeScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e\helpers\previewShell.ts:104:16)
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\.cache\pinta-e8f5-student-tests-diagnostic.spec.ts:46:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:85:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Permissions policy violation: focus-without-user-activation is not allowed in this document.",
+    + ]
+
+       at ..\e2e-runtime\pythonBrowserErrors.ts:22
+
+      20 |       contentType: 'application/json',
+      21 |     })
+    > 22 |     expect(current).toEqual([])
+         |                     ^
+      23 |   })
+      24 | }
+      25 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio\e2e-runtime\pythonBrowserErrors.ts:22:21
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-e8f5-student-diagnostic-results\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:41:1 › Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto
+    [chromium] › .cache\pinta-e8f5-student-tests-diagnostic.spec.ts:85:1 › Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo

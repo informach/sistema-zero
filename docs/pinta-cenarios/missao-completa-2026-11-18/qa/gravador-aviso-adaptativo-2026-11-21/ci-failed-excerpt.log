@@ -1,0 +1,30 @@
+2026-11-21T04:27:16.1777585Z   1) [chromium] › e2e/examples-gallery.spec.ts:459:1 › game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram teardown 
+2026-11-21T04:27:16.1778016Z 
+2026-11-21T04:27:16.1778357Z     Error: warning: SZGameKit3D: modo leve ligado: este computador pediu um jogo mais leve (sombra menor, sem efeitos de cinema)
+2026-11-21T04:27:16.1778693Z 
+2026-11-21T04:27:16.1778831Z     expect(received).toEqual(expected) // deep equality
+2026-11-21T04:27:16.1779005Z 
+2026-11-21T04:27:16.1779088Z     - Expected  - 1
+2026-11-21T04:27:16.1779266Z     + Received  + 3
+2026-11-21T04:27:16.1779403Z 
+2026-11-21T04:27:16.1779469Z     - Array []
+2026-11-21T04:27:16.1779633Z     + Array [
+2026-11-21T04:27:16.1780053Z     +   "warning: SZGameKit3D: modo leve ligado: este computador pediu um jogo mais leve (sombra menor, sem efeitos de cinema)",
+2026-11-21T04:27:16.1780550Z     + ]
+2026-11-21T04:27:16.1780682Z 
+2026-11-21T04:27:16.1780817Z       630 |   await page.waitForTimeout(300)
+2026-11-21T04:27:16.1781067Z       631 |
+2026-11-21T04:27:16.1781358Z     > 632 |   expect(diagnostics, diagnostics.join('\n')).toEqual([])
+2026-11-21T04:27:16.1781744Z           |                                               ^
+2026-11-21T04:27:16.1782005Z       633 | })
+2026-11-21T04:27:16.1782176Z       634 |
+2026-11-21T04:27:16.1782374Z       635 | /**
+2026-11-21T04:27:16.1782844Z         at /home/runner/work/sistema-zero/sistema-zero/packages/studio/e2e/examples-gallery.spec.ts:632:47
+2026-11-21T04:27:16.1783245Z 
+2026-11-21T04:27:16.1784006Z     Error Context: .cache/playwright-results/examples-gallery-game-3d-a-edfcc-iew-real-e-toleram-teardown-chromium/error-context.md
+2026-11-21T04:27:16.1784544Z 
+2026-11-21T04:27:16.1784981Z     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+2026-11-21T04:27:16.1785339Z 
+2026-11-21T04:27:16.1785753Z     Error: warning: SZGameKit3D: modo leve ligado: este computador pediu um jogo mais leve (sombra menor, sem efeitos de cinema)
+2026-11-21T04:27:16.1786175Z 
+2026-11-21T04:27:16.1786556Z     expect(received).toEqual(expected) // deep equality

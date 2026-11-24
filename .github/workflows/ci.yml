@@ -31,7 +31,9 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Staging deve terminar a validação e a onda de deploy ativas. O próximo push aguarda;
+  # novos pushes substituem só o pendente. PRs continuam cancelando a revisão anterior.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/staging' }}
 
 jobs:
   ci:
@@ -99,7 +101,7 @@ jobs:
         run: bun run --cwd packages/studio-runtime typecheck:promoter
 
       - name: Verificar barreira de manutenção
-        run: bun test scripts/release scripts/ci
+        run: bun test scripts/release scripts/ci ./scripts/molda-cenarios-arte.test.ts
 
       - name: Auditar dependências da imagem do Studio Pro
         working-directory: packages/studio-runtime
@@ -114,6 +116,7 @@ jobs:
         run: |
           bun tests/image-smoke.ts
           bun tests/validation-smoke.ts
+          bun tests/templates-smoke.ts
 
       - name: Lint (biome ci)
         run: bun run ci
@@ -216,6 +219,17 @@ jobs:
           bun --version
           bun run test
 
+      # Pacotes puros e rápidos: documento, comandos e migração dos cenários 3D, a
+      # oficina e o cliente dos agentes. Nenhum outro job os executava.
+      - name: Cenários 3D (núcleo, motor, oficina e agente)
+        run: |
+          bun run --cwd packages/molda-cenarios conferir:runtime
+          bun run --cwd packages/studio check:scene3d-runtime
+          bun test --cwd packages/molda-cenarios-core
+          bun test --cwd packages/molda-cenarios-motor
+          bun test --cwd packages/molda-cenarios
+          bun test --cwd packages/molda-cenarios-agente
+
       - name: Preparar navegadores das provas de persistência do Studio
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
@@ -232,6 +246,13 @@ jobs:
       # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
       - name: Testes dos pacotes web e serviços
         run: node scripts/ci/test-service-packages.mjs
+
+      # As provas das áreas do Python com o CPython de verdade (`areas.differential` e
+      # `areas.transaction`) usam o analisador do Estúdio, que chama `ast.parse(..., optimize=0)`
+      # (Python 3.13, o do Pyodide). Sem o 3.13 elas pulam; aqui elas rodam (22/11/2026).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
       - name: Testes do Studio com CPU disponível para os projetos grandes
         run: bun run --filter '@sistemazero/studio' test
@@ -260,7 +281,15 @@ jobs:
           bun run check:pgzero-games
           bun run check:raylib-games
           bun run check:pygame-games
-          (cd ../pinta && bun scripts/pygame-gallery/generate.ts --check && bun test scripts/pygame-gallery/drawing.test.ts scripts/pygame-gallery/png.test.ts scripts/pygame-gallery/derivation.test.ts)
+          (cd ../pinta && bun run check:pygame-gallery && bun run test:scripts)
+          # O trecho da cena no pinta.py é gerado do pacote portátil do Pinta.
+          bun scripts/gen-pinta-scene-python.ts --check
+          # Homologação dos cenários sem navegador: gera em pasta temporária e confere Tiled
+          # (ida e volta pelo importador), o hash do Phaser e o py_compile do projeto Pygame.
+          # Os dois códigos gerados dos cenários regionais também são conferidos: o adaptador
+          # regional do Phaser e o runtime regional composto nos jogos 2D do Estúdio.
+          (cd ../pinta && bun run check:phaser && bun run check:region-phaser && bun run check:homologacao)
+          bun run check:pinta-region-runtime
           bun --no-env-file test ./scripts/python/reference-game-audio.test.ts ./scripts/python/generate-visual-example-block-metadata.test.ts ./scripts/python/pgzero-art-png.test.ts
           bun run test:canvas-survival
           bun run test:grid-games
@@ -367,6 +396,16 @@ jobs:
           MASTERY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_ci
           MASTERY_CONCURRENCY_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_concurrency_ci
           MASTERY_RETENTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_mastery_retention_ci
+          # Pinta causal, paletas e Estúdio selado: cada arquivo cria e migra o próprio banco
+          # `kids_journey_*` e, neste passo, FALHA se a variável sumir (nunca pula calado).
+          PINTA_CAUSAL_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_ci
+          PINTA_CAUSAL_HTTP_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_http_ci
+          PINTA_CAUSAL_ADOPTION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_causal_adoption_ci
+          PINTA_PALETTE_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_palette_ci
+          PINTA_RECOVERY_HELP_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_pinta_recovery_help_ci
+          STUDIO_SEALED_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kids_journey_studio_sealed_ci
+          # Molda Cenários: o teste cria o banco `cenarios_*` se ele ainda não existe.
+          CENARIOS_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/cenarios_ci
 
       - name: Pensa integrado com API e PostgreSQL reais
         working-directory: packages/pensa
@@ -435,7 +474,14 @@ jobs:
           PROFILE_ADMISSION_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/kids_journey_auth_admission_ci
 
       - name: Typecheck (todos os pacotes)
-        run: bun run --filter '*' typecheck
+        # Cada frontend também analisa centenas de milhares de linhas dos workspaces.
+        # Uma checagem por vez evita a disputa de memória entre compiladores; uma falha
+        # continua falhando o job, mas não impede a conferência dos outros pacotes.
+        run: bun run --sequential --no-exit-on-error --filter '*' typecheck
+        env:
+          # Admin sem cache: ~5 GiB medidos; 4 GiB abortava. Um compilador por vez
+          # deixa margem para o sistema no runner público de 16 GB.
+          NODE_OPTIONS: --max-old-space-size=6144
 
       - name: Evidências do Pensa integrado
         if: failure()
@@ -497,8 +543,8 @@ jobs:
           bun run --cwd packages/arquipelago typecheck
           bun run --cwd packages/arquipelago build
       - name: Instalar Chromium para a prova do jogo
-        working-directory: packages/studio
-        run: bunx playwright install --with-deps chromium
+        working-directory: packages/arquipelago
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
       - name: Recuperação de tempo no navegador
         working-directory: packages/arquipelago
         run: bun run test:tempo-browser
@@ -535,8 +581,27 @@ jobs:
         run: 'python -m pip install --only-binary=:all: pygame-ce==2.5.7'
       - name: Conferir a ponte e os materiais do Pinta com pygame-ce real
         run: |
+          bun packages/core/scripts/gen-pinta-scene-transform.ts --check
           python -I -B packages/studio/scripts/python/test-pygame-bridge.py
           python -I -B packages/studio/scripts/python/test-pinta-module.py
+          python -I -B packages/studio/scripts/python/test-pinta-module.py --sem-pygame
+          python -I -B packages/pinta/scripts/homologacao/test-pydew-pinta.py
+      - name: Conferir o PNG de cenário e o projeto Pygame portátil do Pinta com pygame-ce real
+        env:
+          PYTHON: python
+        run: bun packages/pinta/scripts/homologacao/check.ts --exigir-pygame
+      # Pygame Zero sem dependências, como na exportação: com elas o pip traria o pygame antigo.
+      - name: Instalar o Pygame Zero de referência
+        run: 'python -m pip install --only-binary=:all: --no-deps pgzero==1.2.1'
+      # Os ensaios dos cenários regionais com pygame-ce e pgzero de verdade. Com o PYTHON
+      # apontado, faltar a biblioteca reprova em vez de pular (packages/pinta/src/testing/ciPython.ts);
+      # o Raylib nativo precisa de janela e pula com aviso, e o Tiled não existe no CI.
+      - name: Ensaios regionais do Pinta com pygame-ce e pgzero reais
+        env:
+          PYTHON: python
+        run: |
+          (cd packages/pinta && bun test src/export/pythonPygameRegional.test.ts src/export/pythonSceneRuntime.test.ts src/export/regionImage.test.ts src/export/pythonRegional2dBackends.test.ts)
+          (cd packages/studio && bun test src/runtime/python/pintaScenesModule.test.ts)
 
   studio-storage-macos:
     name: studio-storage-macos
@@ -603,6 +668,11 @@ jobs:
     # cortou a cena 184 sem falhas, antes das provas de aula, Pinta e Molda.
     # O orçamento inclui os builds; os limites de cada teste continuam os mesmos.
     timeout-minutes: 45
+    env:
+      # O `next build` do Kids, com a integração do Pinta, passou de 4 GiB na verificação de
+      # tipos (CI 45145521551, "heap out of memory"). Mesmo teto do Dockerfile do app (8 GiB),
+      # que é o build que vai ao Railway; o build roda sozinho, antes dos navegadores.
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - uses: actions/checkout@v5
 
@@ -624,6 +694,11 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:smoke
 
+      - name: Instalar Chromium do Pensa pela CLI do próprio pacote
+        # O Pensa usa outra revisão do Chromium; a instalação do Kids não a fornece.
+        working-directory: packages/pensa
+        run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+
       - name: Planejamento funcional do Pensa em navegador
         working-directory: packages/pensa
         run: bun run e2e
@@ -631,6 +706,9 @@ jobs:
       - name: Experiências ampliadas e responsivas
         working-directory: packages/community-kids
         run: bun run e2e:scenes
+
+      - name: Instalar Chromium do consumidor dos cartões de divulgação
+        run: node packages/studio/node_modules/playwright-core/cli.js install --with-deps chromium
 
       - name: Cartões de divulgação com QR legível no PNG
         run: node packages/ui/tests/share-card-browser.mjs
@@ -677,6 +755,12 @@ jobs:
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
+        with:
+          # O Playwright lê a base do PR para os metadados. Com só o merge raso, ele
+          # inicia um fetch que pode expirar e deixar shallow.lock para o fetch dos
+          # leitores históricos. Os dois pais do merge já incluem a base, sem fetch
+          # automático durante a suíte nem remoção de locks de outro processo.
+          fetch-depth: 2
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -699,6 +783,27 @@ jobs:
       - name: Instalar o compilador confiável para os jogos Pro
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
 
+      - name: Cenários do Pinta e pacote Phaser em desktop e toque
+        if: matrix.shard == 1
+        working-directory: packages/studio
+        run: bun run test:e2e:pinta-scenes
+
+      - name: Autoridade local do Pinta e chunks com leitores históricos reais
+        if: matrix.shard == 1
+        run: |
+          git fetch --no-tags --depth=1 origin 567b93f95258ad6584a923388f9e45fa658fc728 899d2596fc9817e5196435321af39f5eb3a868dc ec4e58066f8e371ef3600c2575a1d4e1d12ce5b6 0ebb89a63c4dc0d2e078023dbcaa3cb6a42a336d 7ddb3b7d7df7a8a8aaa3b031956978e4763f2497
+          cd packages/studio
+          bunx playwright test --config playwright.pinta-chunks.config.ts
+          bunx playwright test --config playwright.pinta-render.config.ts
+          bunx playwright test --config playwright.pinta-minimap.config.ts
+
+      # As aulas protegidas (Cadê e Farol) cobram os objetivos que RODAM o jogo pelo executor do
+      # servidor; sem ele, esses objetivos saíam sem nota. Só o executor aponta para o Chromium do
+      # Playwright: o navegador dos outros testes deste job não muda.
+      - name: Apontar o executor dos objetivos das aulas protegidas
+        working-directory: packages/studio
+        run: node -e "const p=require('playwright-core').chromium.executablePath();require('node:fs').appendFileSync(process.env.GITHUB_ENV,'SZ_CHECK_CHROMIUM='+p+'\n')"
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
@@ -708,7 +813,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: studio-playwright-chromium-${{ matrix.shard }}
-          path: packages/studio/.cache/playwright-results
+          path: |
+            packages/studio/.cache/playwright-results
+            packages/studio/.cache/pinta-scenes-results
+            packages/studio/.cache/pinta-local-chunks-results
+            packages/studio/.cache/pinta-render-pressure-results
+            packages/studio/.cache/pinta-minimap-results
           retention-days: 7
 
   studio-e2e-firefox:
@@ -777,6 +887,56 @@ jobs:
           path: packages/studio/.cache/playwright-results
           retention-days: 7
 
+  molda-cenarios-e2e:
+    name: molda-cenarios-e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Preparar fontes Ubuntu assinadas antes das instalações
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - run: bun install --frozen-lockfile
+      - name: Preparar Chrome e gravação dos ensaios
+        working-directory: packages/molda-cenarios
+        run: node node_modules/playwright-core/cli.js install --with-deps chrome ffmpeg
+      - name: Oficina e compilação reais no navegador
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/molda-review
+          bun run --cwd packages/molda-cenarios dev:oficina > .cache/molda-review/servidor.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4541/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4541/ > /dev/null
+          node packages/molda-cenarios/playground/oficina/verificar-abertura.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-historico.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-importacao.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-formas.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-agua-oficina.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-jogo-luz-oficina.mjs
+          node packages/molda-cenarios/playground/oficina/verificar-compilacao-glb.mjs
+          CENARIOS_QA_JUNCAO=1 node packages/molda-cenarios/playground/oficina/verificar-compilacao-integrada.mjs
+      - name: Guardar diagnóstico dos cenários
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molda-cenarios-browser
+          include-hidden-files: true
+          path: |
+            .cache/molda-review
+            output/cenarios-reforma
+          retention-days: 7
+
   members-image:
     name: members-image
     runs-on: ubuntu-24.04
@@ -797,7 +957,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, arquipelago, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
+    needs: [ci, arquipelago, studio-python-extensions, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image, molda-cenarios-e2e]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-24.04
@@ -994,6 +1154,14 @@ jobs:
                   # precisam acompanhar o pacote para não servir contratos de versões diferentes.
                   packages/pinta/*) add community-kids; add_palco; add community; add admin; add members ;;
                   packages/molda/*) add community-kids; add_palco; add community ;; # oficina 3D compartilhada pelos dois públicos
+                  # Molda Cenários (a oficina de cenários 3D): o documento vai no members (roda os lotes),
+                  # no gateway (limita o corpo do resumo da publicação) e no serviço do jogo, cuja
+                  # imagem constrói o jogo, que lê o cenário publicado; as telas e o motor 3D vão
+                  # nos dois apps de aluno e no Admin. Sem esta linha, um contrato novo ficava só no
+                  # repositório e os serviços seguiam servindo o antigo.
+                  packages/molda-cenarios-core/*) add api-gateway; add arquipelago-api; add admin; add members; add community-kids; add_palco; add community ;;
+                  packages/molda-cenarios-motor/*) add arquipelago-api; add community-kids; add_palco; add community ;;
+                  packages/molda-cenarios/*) add admin; add community-kids; add_palco; add community ;;
                 esac
               done <<< "$CHANGED"
             fi

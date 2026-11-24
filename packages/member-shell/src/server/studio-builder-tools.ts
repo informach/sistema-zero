@@ -9,6 +9,7 @@ import {
   type StudioProRevision,
   studioProDigest,
   studioProGameGuide,
+  verifyStudioProPlatformFiles,
 } from '@sistemazero/core/studio'
 import { isStudioPortablePath } from '@sistemazero/core/studio/portable-path'
 import type { StudioPythonBuilderPolicyResult } from '@sistemazero/core/studio/python-builder-authorization'
@@ -151,12 +152,29 @@ const protectedPath = (name: string) =>
   name
     .split('/')
     .some((part) => part.toLowerCase().startsWith('.env') || isStudioTutorSensitivePath(part))
-function sourceView(revision: StudioProRevision) {
+/**
+ * The published 2D engine copy of a converted Pro (`public/sz-ext/<id>.js`, ~400 thousand
+ * characters) is platform code, recognized like on every host by the core inventory's sha256: it
+ * stays out of the excerpts, reads and searches, and no proposal edits, deletes or renames it. A copy
+ * that is not in the inventory (edited by the child) is the child's file like any other.
+ */
+const engineRefusal = (path: string) =>
+  `O motor do jogo (${path}) é da plataforma: o Zappy não o edita, não o apaga e não o renomeia. Quando houver um motor novo, ele chega pelo botão “Atualizar o motor”.`
+interface SourceFile {
+  content: string
+  protectedFile: boolean
+  platformFile: boolean
+}
+async function sourceView(revision: StudioProRevision): Promise<Record<string, SourceFile>> {
+  const platform = pythonConfiguration(revision)
+    ? undefined
+    : await verifyStudioProPlatformFiles(revision.files)
   return Object.fromEntries(
-    Object.entries(revision.files).map(([name, content]) => {
+    Object.entries(revision.files).map(([name, content]): [string, SourceFile] => {
+      if (platform?.has(name)) return [name, { content, protectedFile: true, platformFile: true }]
       const redacted = redactZappySensitiveText(content)
       const protectedFile = protectedPath(name) || redacted.hadPii || redacted.hadSecret
-      return [name, { content, protectedFile }]
+      return [name, { content, protectedFile, platformFile: false }]
     }),
   )
 }
@@ -171,7 +189,7 @@ export async function prepareStudioBuilderContext(
 ) {
   const revision = await builderWorkingRevision(job)
   const environment = pythonEnvironment(revision, policy)
-  const view = sourceView(revision)
+  const view = await sourceView(revision)
   const words = job.objective.toLowerCase().match(/[a-zá-ú0-9_-]{3,}/g) ?? []
   const ranked = Object.entries(view)
     .map(([name, file]) => ({
@@ -247,7 +265,7 @@ export async function inspectStudioBuilder(
   if (answer.action !== 'inspect' || !answer.inspections.length || answer.edits.length)
     throw new Error('A inspeção precisa conter somente consultas.')
   const revision = await builderWorkingRevision(job),
-    view = sourceView(revision)
+    view = await sourceView(revision)
   const environment = pythonEnvironment(revision, policy)
   const validPath = pythonConfiguration(revision) ? isStudioPortablePath : isStudioProRevisionPath
   const results: unknown[] = []
@@ -367,10 +385,11 @@ export async function proposeStudioBuilder(
   if (answer.action !== 'propose' || !answer.edits.length || answer.inspections.length)
     throw new Error('A proposta precisa conter somente edições.')
   const revision = await builderWorkingRevision(job),
-    view = sourceView(revision)
+    view = await sourceView(revision)
   const patches = []
   for (const edit of answer.edits) {
     const file = view[edit.path]
+    if (file?.platformFile) throw new Error(engineRefusal(edit.path))
     if (python && ['requirements.txt', 'package.json', 'package-lock.json'].includes(edit.path))
       throw new Error(
         'A proposta Python não pode alterar dependências ou arquivos npm. Preserve o ambiente fixado.',

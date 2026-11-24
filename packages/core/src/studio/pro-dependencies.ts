@@ -1,3 +1,5 @@
+import { STUDIO_THREE_TYPES_VERSION, STUDIO_THREE_VERSION } from './three-version'
+
 /** Packages installed in the isolated, network-free build image. Versions are exact. */
 export const STUDIO_PRO_REMOTE_PACKAGES = {
   vite: '8.1.6',
@@ -7,8 +9,8 @@ export const STUDIO_PRO_REMOTE_PACKAGES = {
   'react-dom': '19.2.0',
   '@types/react': '19.2.15',
   '@types/react-dom': '19.2.3',
-  three: '0.180.0',
-  '@types/three': '0.180.0',
+  three: STUDIO_THREE_VERSION,
+  '@types/three': STUDIO_THREE_TYPES_VERSION,
   phaser: '3.90.0',
 } as const
 
@@ -46,7 +48,7 @@ export function resolveStudioProRemoteDependencies(
     manifest.optionalDependencies
   )
     throw new Error(
-      'O compilador remoto ainda não aceita workspaces, overrides ou dependências opcionais. Use o terminal local para este projeto.',
+      'Este jogo não monta com workspaces, overrides ou dependências opcionais. Tire esses campos do package.json.',
     )
   const packages = object(lock?.packages)
   const root = object(packages?.[''])
@@ -59,7 +61,7 @@ export function resolveStudioProRemoteDependencies(
     for (const [name, range] of Object.entries(entries)) {
       if (!Object.hasOwn(STUDIO_PRO_REMOTE_PACKAGES, name))
         throw new Error(
-          `A biblioteca ${name} ainda não está disponível no compilador remoto. Execute este projeto pelo terminal local.`,
+          `A biblioteca ${name} não está entre as que o Estúdio monta aqui. Tire ela do package.json ou use uma das bibliotecas do modelo.`,
         )
       const version = STUDIO_PRO_REMOTE_PACKAGES[name as StudioProRemotePackage]
       if (typeof range !== 'string') throw new Error(`A versão de ${name} é inválida.`)
@@ -73,7 +75,7 @@ export function resolveStudioProRemoteDependencies(
           !new RegExp(`^[~^]${version.replaceAll('.', '\\.')}$`).test(range))
       )
         throw new Error(
-          `O compilador remoto usa ${name}@${version}. Instale essa versão pelo terminal e aguarde a conclusão.`,
+          `O Estúdio monta ${name} na versão ${version}. Escreva "${version}" para ${name} no package.json.`,
         )
       if (
         lock &&

@@ -1,0 +1,83 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-legacy-review.test.ts:
+(pass) último PUT, escritor anterior delete e situação unknown [172.00ms]
+(pass) último PUT, escritor anterior delete e situação expired [47.00ms]
+(pass) último PUT, escritor anterior delete e situação aborted [31.00ms]
+160 |   if(change==='delete'){
+161 |    expect(remaining?.sealed.intentHash).toBe(sealed.sealed.intentHash)
+162 |    expect(await remaining.blobs.get(localDoc.id).arrayBuffer()).toEqual(original)
+163 |    expect(state.epoch).toBe('1');expect(statuses.at(-1).phase).toBe('error')
+164 |   }else if(change==='overwrite'){
+165 |    expect({seal:!!remaining,paintValues:photos.sort()}).toEqual(remaining?{seal:true,paintValues:photos.sort()}:{seal:false,paintValues:[3,5,7]})
+                                                              ^
+error: expect(received).toEqual(expected)
+
+  {
+    "paintValues": [
+-     3,
+      5,
+      7,
+    ],
+    "seal": false,
+  }
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-legacy-review.test.ts:165:57)
+(fail) último PUT, escritor anterior overwrite e situação unknown [78.00ms]
+160 |   if(change==='delete'){
+161 |    expect(remaining?.sealed.intentHash).toBe(sealed.sealed.intentHash)
+162 |    expect(await remaining.blobs.get(localDoc.id).arrayBuffer()).toEqual(original)
+163 |    expect(state.epoch).toBe('1');expect(statuses.at(-1).phase).toBe('error')
+164 |   }else if(change==='overwrite'){
+165 |    expect({seal:!!remaining,paintValues:photos.sort()}).toEqual(remaining?{seal:true,paintValues:photos.sort()}:{seal:false,paintValues:[3,5,7]})
+                                                              ^
+error: expect(received).toEqual(expected)
+
+  {
+    "paintValues": [
+-     3,
+      5,
+      7,
+    ],
+    "seal": false,
+  }
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-legacy-review.test.ts:165:57)
+(fail) último PUT, escritor anterior overwrite e situação expired [32.00ms]
+160 |   if(change==='delete'){
+161 |    expect(remaining?.sealed.intentHash).toBe(sealed.sealed.intentHash)
+162 |    expect(await remaining.blobs.get(localDoc.id).arrayBuffer()).toEqual(original)
+163 |    expect(state.epoch).toBe('1');expect(statuses.at(-1).phase).toBe('error')
+164 |   }else if(change==='overwrite'){
+165 |    expect({seal:!!remaining,paintValues:photos.sort()}).toEqual(remaining?{seal:true,paintValues:photos.sort()}:{seal:false,paintValues:[3,5,7]})
+                                                              ^
+error: expect(received).toEqual(expected)
+
+  {
+    "paintValues": [
+-     3,
+      5,
+      7,
+    ],
+    "seal": false,
+  }
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\terminal-5ef\packages\member-shell\tests\fixtures\terminal-legacy-review.test.ts:165:57)
+(fail) último PUT, escritor anterior overwrite e situação aborted [47.00ms]
+(pass) último PUT, escritor anterior none e situação unknown [31.00ms]
+(pass) último PUT, escritor anterior none e situação expired [31.00ms]
+(pass) último PUT, escritor anterior none e situação aborted [16.00ms]
+
+ 6 pass
+ 3 fail
+ 45 expect() calls
+Ran 9 tests across 1 file. [853.00ms]

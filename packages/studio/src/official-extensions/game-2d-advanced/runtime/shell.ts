@@ -121,7 +121,9 @@ export const gameKitShellRuntime = `
       // As 5 telas PRONTAS, com textos default em português (P24 tem gameOver E
       // missionComplete SEPARADAS — aqui: 'fim' = derrota, 'vitoria' = missão).
       var menu = makeScreen('menu', 'h1', 'Meu Jogo', 'WASD ou setas para andar');
-      makeButton(menu, 'Jogar', function () { api.restartGame(); });
+      // A marca é como os robôs dos testes (o "Meus testes" e o executor do servidor) acham ESTE
+      // botão: pelo texto, um "Jogar" feito pela criança passava por ele.
+      makeButton(menu, 'Jogar', function () { api.restartGame(); }).setAttribute('data-szgk-start', '');
       var pausa = makeScreen('pausa', 'h2', 'Pausa', '');
       makeButton(pausa, 'Continuar', function () { api.resume(); });
       makeButton(pausa, 'Sair para o menu', function () { api.returnToMenu(); });
@@ -296,6 +298,9 @@ export const gameKitShellRuntime = `
         secondTimers = Object.create(null); // sem protótipo: a chave vem da criança
   }
   function resetGameData() {
+    // Os tetos de faíscas avisam uma vez por PARTIDA (lote 4 da missão).
+    delete warnedOnce['particulas-1000'];
+    delete warnedOnce['rastro-1000'];
     _runRuntimeDomainHook('resetGame');
   }
   function runEnterStateHooks(n, prev, force) {

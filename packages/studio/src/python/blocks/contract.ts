@@ -52,6 +52,11 @@ export interface PythonBlockField {
   label: string
   value: string
   options?: readonly (readonly [label: string, value: string])[]
+  /**
+   * Um texto livre com seletor: `scene-region` lista as regiões dos cenários do Molda trazidos
+   * para o projeto (o mesmo campo do bloco de região do JavaScript). O valor continua livre.
+   */
+  picker?: 'scene-region'
 }
 export interface PythonBlockInput {
   name: string
@@ -90,12 +95,24 @@ export interface PythonBlockCodec {
    * The title still names the block in the palette search and tooltips.
    */
   compact?: 'plain' | 'quoted'
+  /**
+   * Text drawn right after a value socket, by input name ("a cada ⟨30⟩ milissegundos"). Only
+   * presentation: it is not part of the shape and never reaches the code.
+   */
+  suffixes?: Readonly<Record<string, string>>
   /** A specialized label is valid only when this root resolves to the official binding. */
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */
   bindingFor?(node: PythonNode): PythonBlockBinding | undefined
+  /**
+   * Onde o vínculo é conferido quando a chamada da API mora DENTRO do nó (o `tela.ontimer` no fim
+   * do corpo do "repetir a cada"): no escopo dela, não no de quem a contém.
+   */
+  bindingScopeNode?(node: PythonNode): PythonNode | undefined
   /** Other names the block also reads (`keys` in `keyboard[keys.SPACE]`): all must resolve. */
   alsoBound?: readonly PythonBlockBinding[]
+  /** A module with no implicit globals can only specialize a program that imports it. */
+  explicitImport?: string
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
   receiverKinds?: readonly PythonReceiverKind[]
   /**

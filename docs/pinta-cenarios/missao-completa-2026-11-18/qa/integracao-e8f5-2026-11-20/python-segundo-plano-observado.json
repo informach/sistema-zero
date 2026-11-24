@@ -1,0 +1,15 @@
+{
+  "distribution": "52ec7bb5b7f4a11dd3ad915064a6b6b9b0f32bb33b8335dba4dbfebc389dcd13",
+  "taken": [
+    "Teste do programa",
+    "Teste do programa",
+    "Teste do programa",
+    "Teste do programa",
+    "Teste do programa",
+    "Teste do programa"
+  ],
+  "hostFocused": false,
+  "allow": "focus-without-user-activation",
+  "status": "running",
+  "errors": []
+}

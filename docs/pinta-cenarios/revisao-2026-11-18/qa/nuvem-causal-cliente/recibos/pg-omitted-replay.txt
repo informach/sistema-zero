@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) Pinta causal over the real migration and existing quota lock > a frozen two-sheet grid and a live artwork follow separate authoring units in either order [828.00ms]
+(pass) Pinta causal over the real migration and existing quota lock > A,B,C: omitted remote consumer, failed second upload, idempotent promotion and sealed snapshot [360.00ms]
+
+ 2 pass
+ 19 filtered out
+ 0 fail
+ 19 expect() calls
+Ran 2 tests across 1 file. [1.60s]

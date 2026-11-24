@@ -3,28 +3,33 @@
  * nova/duplicar/apagar + o badge 🧱 de peça SÓLIDA. Inserir/remover uma peça
  * REMAPEIA as células de todos os MAPAS que usam este tileset (invariante:
  * índice no array = índice na folha = índice nas células) — o remap dos mapas
- * é persistido direto na galeria (fora do undo do tileset; cross-asset).
+ * entra na mesma entrada de histórico e transação da edição das peças.
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaWorkshopAsset,
+} from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   isTilesetKind,
   type PintaAsset,
   type PintaBitmap,
+  pintaAssetDependencyIds,
   resolveAssetPalette,
-  type TilemapAsset,
-  tilemapUsesTileset,
   type VectorFrame,
 } from '../../core/project'
 import { paintBitmap } from '../../pixel/render'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
+import { remapTilesetConsumers } from '../../tiles/tilesetConsumers'
 import {
   addTile,
   cycleCollision,
   duplicateTile,
-  remapTilemapCells,
   removeTile,
   type TileCollision,
   tileCollisionAt,
@@ -32,9 +37,11 @@ import {
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { usePintaApp } from '../appContext'
 import { ToolButton } from '../ui/Button'
+import { Dialog } from '../ui/Dialog'
 import { ArrowUpToLine, BrickWall, Copy, Plus, Trash2 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { DEFAULT_MAP_BRUSH, MapTerrainPanel } from './MapTerrainPanel'
 
 function PixelTileThumb({
   bitmap,
@@ -129,12 +136,22 @@ const COLLISION_LABEL: Record<TileCollision, string> = {
 }
 
 export function TileStrip({ className }: { className?: string }): JSX.Element | null {
-  const { editor, session } = useEditorStores()
-  const { gallery } = usePintaApp()
+  const { editor, session, workshopEditor } = useEditorStores()
+  const { gallery, persistence } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const frameIndex = useSession((state) => state.frameIndex)
+  const [details, setDetails] = useState(false),
+    [brush, setBrush] = useState(DEFAULT_MAP_BRUSH)
   const colors = useMemo(() => resolveAssetPalette(asset), [asset])
+  const queued = useRef(Promise.resolve())
+  const active = useRef(true)
+  useEffect(() => {
+    active.current = true
+    return () => {
+      active.current = false
+    }
+  }, [])
 
   if (!isTilesetKind(asset)) return null
   const selectedIndex = Math.min(frameIndex, asset.tiles.length - 1)
@@ -146,66 +163,105 @@ export function TileStrip({ className }: { className?: string }): JSX.Element | 
    * `commitLinked` — o remap entra na MESMA entrada de undo do tileset (desfazer
    * a edição da peça volta os mapas junto; não deixa mais célula apontando errado).
    */
-  function computeRemap(change: { insertedAt: number } | { removedAt: number }): {
-    before: PintaAsset[]
-    after: PintaAsset[]
-  } {
-    // A galeria contém apenas revisões CONFIRMADAS. Sobrepomos os mapas vivos
-    // do editor para que duas inserções dentro do debounce remapeiem a segunda
-    // a partir do resultado da primeira, sem publicar nada antes do IndexedDB.
-    const affectedById = new Map(
-      gallery
-        .getState()
-        .assets.filter(
-          (a): a is TilemapAsset => a.kind === 'tilemap' && tilemapUsesTileset(a, asset.id),
-        )
-        .map((tilemap) => [tilemap.id, tilemap]),
-    )
-    for (const linked of editor.getState().linkedAssets ?? []) {
-      if (linked.kind === 'tilemap' && tilemapUsesTileset(linked, asset.id)) {
-        affectedById.set(linked.id, linked)
-      }
-    }
-    const affected = [...affectedById.values()]
-    const before: PintaAsset[] = []
-    const after: PintaAsset[] = []
-    for (const tilemap of affected) {
-      // Só as camadas que usam ESTE tileset: as de outras peças não mudam de índice.
-      const next = remapTilemapCells(tilemap, change, asset.id)
-      if (next === tilemap) continue
-      before.push(tilemap)
-      after.push({ ...next, updatedAt: Date.now() })
-    }
-    return { before, after }
+  type Mutation = (tileset: AnyTilesetAsset) => {
+    next: AnyTilesetAsset
+    selectIndex?: number
+    remap?: { insertedAt: number } | { removedAt: number }
+    limitToast?: string
   }
-
-  function mutate(
-    op: (tileset: AnyTilesetAsset) => {
-      next: AnyTilesetAsset
-      selectIndex?: number
-      remap?: { insertedAt: number } | { removedAt: number }
-      limitToast?: string
-    },
-  ): void {
+  function applyMutation(op: Mutation): Promise<void> | void {
+    if (!active.current) return
     const current = editor.getState().asset
-    if (!isTilesetKind(current)) return
+    if (!isTilesetKind(current) || current.id !== asset.id) return
     const { next, selectIndex, remap, limitToast } = op(current)
     if (next === current) {
       if (limitToast) showToast(limitToast)
       return
     }
-    if (remap) {
-      editor.getState().commitLinked(next, computeRemap(remap))
-    } else {
-      editor.getState().commit(next)
+    const renumbers = remap && ('removedAt' in remap || remap.insertedAt < current.tiles.length)
+    const apply = (catalog: readonly PintaWorkshopAsset[]): void => {
+      if (!active.current || editor.getState().asset !== current) return
+      let accepted: boolean
+      if (remap) {
+        // A projected map is not opened here, so its cells cannot follow the new numbering.
+        if (
+          renumbers &&
+          [...catalog, ...gallery.getState().projected].some(
+            (asset) =>
+              isWorkshopProjectedMap(asset) && pintaAssetDependencyIds(asset).includes(current.id),
+          )
+        ) {
+          showToast(COPY.tiles.remapRefusedProjected)
+          return
+        }
+        const linked = remapTilesetConsumers(
+          catalog.filter(isPintaMemoryAsset),
+          (workshopEditor ?? editor).getState().linkedAssets ?? [],
+          current.id,
+          remap,
+        )
+        if (!linked.ok) {
+          showToast(COPY.tiles.remapRefused(linked.assetName))
+          return
+        }
+        if (workshopEditor)
+          accepted = workshopEditor
+            .getState()
+            .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+        else if (
+          linked.before.every((asset): asset is PintaAsset => !isLocalRegionAsset(asset)) &&
+          linked.after.every((asset): asset is PintaAsset => !isLocalRegionAsset(asset))
+        )
+          accepted = editor
+            .getState()
+            .commitLinked(next, { before: linked.before, after: linked.after }, remap)
+        else {
+          showToast(COPY.tiles.remapRefused(current.name))
+          return
+        }
+      } else {
+        accepted = editor.getState().commit(next)
+      }
+      if (accepted && selectIndex !== undefined) session.getState().selectFrame(selectIndex)
     }
-    if (selectIndex !== undefined) session.getState().selectFrame(selectIndex)
+    if (renumbers && persistence.prepareTileRemap)
+      return persistence.prepareTileRemap(current).then(apply, () => {
+        if (active.current) showToast(COPY.tiles.remapRefused(current.name))
+      })
+    apply(gallery.getState().assets)
+  }
+  function mutate(op: Mutation): void {
+    if (persistence.prepareTileRemap) {
+      queued.current = queued.current
+        .then(() => applyMutation(op))
+        .catch(() => {
+          if (active.current) showToast(COPY.tiles.remapRefused(asset.name))
+        })
+    } else {
+      void applyMutation(op)
+    }
   }
 
   return (
     // O cartão branco da faixa azul (11/09/2026, no desenho da faixa de quadros do personagem).
     <div className={clsx('flex items-center gap-2 rounded-2xl bg-pin-surface p-2', className)}>
       <span className="pin-section-title px-1">{COPY.tiles.tiles}</span>
+      <ToolButton
+        tone="quiet"
+        icon={Copy}
+        label={COPY.scene.terrenosPropriedadesEAnimacao}
+        onClick={() => setDetails(true)}
+      />
+      {details ? (
+        <Dialog open title={COPY.scene.detalhesDaPeca} onClose={() => setDetails(false)}>
+          <MapTerrainPanel
+            tileset={asset}
+            tile={selectedIndex}
+            settings={brush}
+            onChange={setBrush}
+          />
+        </Dialog>
+      ) : null}
       <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto p-1">
         {asset.tiles.map((tile, index) => (
           <TileThumbButton

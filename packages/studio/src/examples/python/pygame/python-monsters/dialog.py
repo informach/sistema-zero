@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from settings import *
 from timer import Timer
 
+# 🧩 Meus moldes
 class DialogTree:
     def __init__(self, character, player, all_sprites, font, end_dialog):
         self.player = player

@@ -1,6 +1,13 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { initialKidsJourneyPolicy, projectAdultJourney } from '@sistemazero/core/journey'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
+import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_PHYSICS_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+  type StudioPythonRuntimeFeature,
+} from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioFreeRuntimeRequest,
   StudioLessonRuntimeRequest,
@@ -27,6 +34,7 @@ import {
   currentPublishedSource,
   PublicationError,
   publicationCommand,
+  publishedStatus,
   purgePublication,
 } from '../../studio-runtime/src/publications'
 import { memoryArtifactBucket } from '../../studio-runtime/tests/artifact-bucket'
@@ -50,8 +58,20 @@ async function fixture(
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
   releaseCapabilities?: readonly StudioProjectCapability[],
+  completePintaReader: boolean | 'world' | readonly StudioPythonRuntimeFeature[] = false,
 ) {
-  const f = await authoringFixture(language, kind, releaseCapabilities)
+  const f = await authoringFixture(
+    language,
+    kind,
+    releaseCapabilities,
+    Array.isArray(completePintaReader)
+      ? completePintaReader
+      : completePintaReader
+        ? completePintaReader === 'world'
+          ? [PYTHON_PINTA_WORLD_FEATURE]
+          : [PYTHON_PINTA_WORLD_FEATURE, PYTHON_PINTA_PHYSICS_FEATURE]
+        : undefined,
+  )
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   if (language === 'python') {
     f.configuration.releases[0]!.blockIds = ['sz_py_pass']
@@ -95,6 +115,12 @@ async function fixture(
     prepareFirstFailure: false,
     prepares: 0,
     reservationFault: null as 'snapshot' | 'missing-id' | 'live-id' | null,
+    // O post que o hub devolve como "existing" (republicar o mesmo projeto).
+    existing: null as { id: string; playId: string } | null,
+    updates: [] as Array<Record<string, unknown>>,
+    prepareBodies: [] as Array<Record<string, unknown>>,
+    touches: [] as string[],
+    postBodies: [] as Array<Record<string, unknown>>,
   }
   // Admitted owner + published seed are shared by BFF and runtime authorization.
   const kidsJourney = new KidsJourneyQueryService({
@@ -254,7 +280,9 @@ async function fixture(
             ? await currentPublishedSource(bucket.bucket, input.playId)
             : input.operation === 'resolve-metadata'
               ? await currentPublishedPublication(bucket.bucket, input.playId)
-              : await publicationCommand(bucket.bucket, input),
+              : input.operation === 'resolve-status'
+                ? await publishedStatus(bucket.bucket, input.playId)
+                : await publicationCommand(bucket.bucket, input),
       )
     } catch (error) {
       if (error instanceof PublicationError)
@@ -274,6 +302,21 @@ async function fixture(
     liveWorkspace?: { playId: string }
   }) => {
     state.prepares++
+    state.prepareBodies.push(structuredClone(input) as Record<string, unknown>)
+    if (state.existing && !(input as { asNewPost?: boolean }).asNewPost)
+      return {
+        status: 200,
+        body: {
+          state: 'existing',
+          playId: state.existing.playId,
+          thread: {
+            id: state.existing.id,
+            playId: state.existing.playId,
+            status: state.threadStatus,
+            coverImageUrl: 'https://media.test/studio/cover/old.webp',
+          },
+        },
+      }
     const existing = finalized.get(input.clientIdempotencyKey)
     const canonical = state.canonicalPlayId
       ? [...finalized.values()].find((thread) => thread.playId === state.canonicalPlayId)
@@ -319,6 +362,7 @@ async function fixture(
     studioMeta?: unknown
   }) => {
     state.posts++
+    state.postBodies.push(structuredClone(input) as Record<string, unknown>)
     const thread = { id: crypto.randomUUID(), playId: input.playId, studioMeta: input.studioMeta }
     finalized.set(input.clientIdempotencyKey, thread)
     if (state.posts === 1 && state.hubFirstFailure) return { status: 503, body: null }
@@ -331,6 +375,22 @@ async function fixture(
           status: state.threadStatus,
         },
         deduped: state.posts > 1,
+      },
+    }
+  }
+  const update = (input: Record<string, unknown>) => {
+    state.updates.push(structuredClone(input))
+    return {
+      status: 200,
+      body: {
+        thread: {
+          id: state.existing?.id ?? crypto.randomUUID(),
+          playId: input.playId,
+          status: state.threadStatus,
+          coverImageUrl: input.coverImageUrl ?? 'https://media.test/studio/cover/old.webp',
+        },
+        previousCoverUrl: input.coverImageUrl ? 'https://media.test/studio/cover/old.webp' : null,
+        updated: true,
       },
     }
   }
@@ -422,6 +482,27 @@ async function fixture(
       prepareShowcaseThreadStudioStandalone: prepare,
       createShowcaseThreadStudio: post,
       createShowcaseThreadStudioStandalone: post,
+      updateShowcaseThreadStudio: async (input: Record<string, unknown>) => update(input),
+      updateShowcaseThreadStudioStandalone: async (input: Record<string, unknown>) => update(input),
+      showcaseSource: async () => ({
+        status: 200,
+        body: {
+          thread: state.existing
+            ? {
+                id: state.existing.id,
+                playId: state.existing.playId,
+                status: state.threadStatus,
+                title: 'Meu jogo',
+                body: 'Meu projeto Python',
+                coverImageUrl: null,
+              }
+            : null,
+        },
+      }),
+      touchShowcase: async (playId: string) => {
+        state.touches.push(playId)
+        return { status: 200, body: { touched: true } }
+      },
       resolveStudioPlay: async () => ({
         status: 200,
         body: { visible: state.visible, authorDisplayName: 'Ana' },
@@ -472,6 +553,171 @@ async function fixture(
     requestId,
   }
 }
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  for (const supported of [false, true])
+    for (const { version, world, malformed } of [
+      { version: 2, world: false, malformed: false },
+      { version: 3, world: true, malformed: false },
+      { version: 4, world: false, malformed: false },
+      { version: 4, world: true, malformed: false },
+      { version: 4, world: false, malformed: true },
+    ] as const)
+      for (const revision of context === 'free' ? [false, true] : [false])
+        test(`${context}: ${revision ? 'revisão' : 'publicação'} de dados Pinta ${version} ${world ? 'mundo' : 'mapa'} ${malformed ? (supported ? 'recusa bytes inválidos com leitor novo' : 'recusa bytes inválidos com leitor anterior') : supported ? 'preserva a privacidade' : 'recusa o leitor anterior'}`, async () => {
+          const { pngWithPintaData } = await import('../../pinta/src/export/pngText')
+          const f = await fixture(
+            'classic',
+            context,
+            'kids',
+            'python',
+            undefined,
+            'active',
+            undefined,
+            version === 4 && !supported ? 'world' : supported,
+          )
+          const initial = revision ? await (await f.publish()).json() : null
+          const oldSource = initial
+            ? await currentPublishedSource(f.bucket, initial.publicationId)
+            : null
+          // A byte/policy fixture; rendering is qualified independently in the real browser runtime.
+          const raw = await pngWithPintaData(
+            Buffer.from(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
+              'base64',
+            ),
+            {
+              format: 'pinta',
+              kind: 'map',
+              version,
+              ...(version === 4 && !malformed ? { scene: { version: 3 } } : {}),
+            },
+          )
+          const dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
+          f.project.assets = [
+            {
+              id: 'mapa',
+              name: 'mapa',
+              kind: 'image',
+              source: 'library',
+              libOrigin: 'pinta',
+              libId: 'personal:desenho-privado',
+              width: 1,
+              height: 1,
+              proPath: 'assets/mapa.png',
+              dataUrl,
+              pintaImage: {
+                recipe: {
+                  version: world ? 2 : 1,
+                  algorithm: 'pinta-image-1',
+                  drawingId: 'desenho-privado',
+                  selection: { kind: world ? 'map-world' : 'map' },
+                  scale: 1,
+                },
+                provenance: {
+                  sourceSha256: 'a'.repeat(64),
+                  dependencies: !world ? [{ drawingId: 'tiles', sha256: 'b'.repeat(64) }] : [],
+                },
+                output: {
+                  mime: 'image/png',
+                  width: 1,
+                  height: 1,
+                  bytes: raw.length,
+                  sha256: createHash('sha256').update(raw).digest('hex'),
+                  dataVersion: version,
+                },
+              },
+            },
+          ]
+          const before = JSON.stringify(f.project)
+          // A revisão é a REPUBLICAÇÃO do mesmo projeto: o hub responde "existing" e o
+          // Compartilhar sobe uma versão nova atrás do mesmo link.
+          if (revision)
+            f.state.existing = { id: crypto.randomUUID(), playId: initial.publicationId }
+          const response = revision
+            ? await f.publish(f.project, undefined, crypto.randomUUID())
+            : await f.publish(f.project)
+          expect(response.status).toBe(malformed ? 400 : supported ? 200 : 409)
+          if (supported && !malformed) {
+            const body = await response.json()
+            const retained = await currentPublishedSource(
+              f.bucket,
+              initial?.publicationId ?? body.publicationId,
+            )
+            expect(retained?.source).not.toContain('desenho-privado')
+            expect(JSON.parse(retained!.source).assets[0].dataUrl).toBe(dataUrl)
+          } else {
+            expect(await response.json()).toMatchObject({
+              error: { code: malformed ? 'INVALID_INPUT' : 'RUNTIME_PINTA_READER_OUTDATED' },
+            })
+            expect(f.state.posts).toBe(revision ? 1 : 0)
+            if (initial)
+              expect((await currentPublishedSource(f.bucket, initial.publicationId))?.source).toBe(
+                oldSource?.source,
+              )
+          }
+          expect(JSON.stringify(f.project)).toBe(before)
+        })
+
+for (const supported of [false, true])
+  test(`cenário 3D do Molda ${supported ? 'publica com o leitor de cenas' : 'recusa o ambiente sem o leitor de cenas'}`, async () => {
+    const { MIME_DA_CENA_PARA_STUDIO } = await import('@sistemazero/molda-cenarios-core/studio')
+    const f = await fixture(
+      'classic',
+      'free',
+      'kids',
+      'python',
+      undefined,
+      'active',
+      undefined,
+      supported ? [PYTHON_MOLDA_SCENE_FEATURE] : [],
+    )
+    const envelope = {
+      formato: 'studio-cena3d',
+      versao: 1,
+      recursos: [],
+      cena: {
+        formato: 'molda-cena-compilada',
+        versao: 1,
+        nome: 'Praça vazia',
+        unidade: 'metro',
+        eixoVertical: 'y',
+        fonte: { cenario: 'praca', revisao: 1, digest: 'a'.repeat(64) },
+        arquivos: [],
+        nos: [],
+        entidades: [],
+        colisoes: [],
+        aguas: [],
+        caminhos: [],
+        marcadores: [],
+        texturas: [],
+        fontes: { modelos: [], texturas: [], conjuntos: [] },
+        licencas: [],
+        ambiente: { hora: 12 },
+      },
+    }
+    f.project.assets = [
+      {
+        id: 'praca',
+        name: 'praca',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'praca.json',
+        proPath: 'cenarios/praca.json',
+        dataUrl: `data:${MIME_DA_CENA_PARA_STUDIO};base64,${Buffer.from(JSON.stringify(envelope)).toString('base64')}`,
+      },
+    ]
+    const before = JSON.stringify(f.project)
+    const response = await f.publish(f.project)
+    expect(response.status).toBe(supported ? 200 : 409)
+    if (!supported) {
+      expect(await response.json()).toMatchObject({
+        error: { code: 'RUNTIME_PINTA_READER_OUTDATED' },
+      })
+      expect(f.state.posts).toBe(0)
+    }
+    expect(JSON.stringify(f.project)).toBe(before)
+  })
 
 for (const context of ['free', 'lesson', 'live'] as const)
   for (const kind of ['classic', 'pro'] as const)
@@ -873,23 +1119,43 @@ test('same author and request in two publication contexts never share a cover ob
   expect(identity.publicObjects.has(lessonKey)).toBe(true)
 })
 
-test('free Python publication separates the edited draft from public update, restore and disable', async () => {
+test('free Python republication updates the same link, skips an unchanged game, restores and disables', async () => {
   const f = await fixture('pro', 'free')
   if (f.project.programmingLanguage !== 'python' || f.project.kind !== 'pro')
     throw new Error('Python Pro fixture')
   const result = await (await f.publish()).json()
   const playId = result.publicationId as string
+  // O 1º post existe: o hub passa a responder "existing" para o mesmo projeto.
+  f.state.existing = { id: crypto.randomUUID(), playId }
+  expect(f.state.prepareBodies[0]).toMatchObject({ sourceProjectId: f.project.id })
   const first = await currentPublishedSource(f.bucket, playId)
   const original = JSON.parse(first!.source).tree[f.project.python.entrypoint].content
+
+  const same = await f.publish(f.project, undefined, crypto.randomUUID())
+  expect(same.status).toBe(409)
+  expect((await same.json()).error.code).toBe('SHOWCASE_UNCHANGED')
+  expect(f.state.updates).toHaveLength(0)
+
   f.project.tree[f.project.python.entrypoint] = {
     kind: 'file',
     content: 'print("draft updated")\n',
   }
-  expect(
-    JSON.parse((await currentPublishedSource(f.bucket, playId))!.source).tree[
-      f.project.python.entrypoint
-    ].content,
-  ).toBe(original)
+  const updatedResponse = await f.publish(f.project, undefined, crypto.randomUUID())
+  expect(updatedResponse.status).toBe(200)
+  expect(await updatedResponse.json()).toMatchObject({
+    playUrl: `/jogar/${playId}`,
+    publicationId: playId,
+    updated: true,
+  })
+  expect(f.state.updates).toHaveLength(1)
+  expect(f.state.updates[0]).toMatchObject({ playId, coverImageUrl: null })
+  const play = () =>
+    f.routes.studioPlay.GET(new Request('https://kids.test/'), {
+      params: Promise.resolve({ id: playId }),
+    })
+  expect((await (await play()).json()).tree[f.project.python.entrypoint].content).toBe(
+    'print("draft updated")\n',
+  )
   const mutation = (body: object) =>
     f.routes.studioPublication.POST(
       new Request('https://kids.test/api/studio/publication', {
@@ -898,22 +1164,10 @@ test('free Python publication separates the edited draft from public update, res
         body: JSON.stringify({ ...body, playId, requestId: crypto.randomUUID() }),
       }),
     )
-  const updatedResponse = await mutation({
-    operation: 'update',
-    expectedVersion: 1,
-    project: f.project,
-  })
-  expect(updatedResponse.status).toBe(200)
-  const updated = await updatedResponse.json()
-  expect(updated.version).toBe(2)
-  expect(updated.revisions).toHaveLength(2)
-  const play = () =>
-    f.routes.studioPlay.GET(new Request('https://kids.test/'), {
-      params: Promise.resolve({ id: playId }),
-    })
-  expect((await (await play()).json()).tree[f.project.python.entrypoint].content).toBe(
-    'print("draft updated")\n',
-  )
+  // A operação "update" saiu: atualizar é sempre pelo Compartilhar (post + versão juntos).
+  expect(
+    (await mutation({ operation: 'update', expectedVersion: 2, project: f.project })).status,
+  ).toBe(400)
   expect(
     (
       await mutation({
@@ -924,6 +1178,7 @@ test('free Python publication separates the edited draft from public update, res
       })
     ).status,
   ).toBe(200)
+  expect(f.state.touches).toEqual([playId])
   expect((await (await play()).json()).tree[f.project.python.entrypoint].content).toBe(original)
   expect(
     (
@@ -936,7 +1191,187 @@ test('free Python publication separates the edited draft from public update, res
     ).status,
   ).toBe(200)
   expect((await play()).status).toBe(404)
+  // Desligar o link não é atualizar o jogo: o selo "Atualizado" só vem de restaurar.
+  expect(f.state.touches).toEqual([playId])
   expect(await currentPublishedSource(f.bucket, playId)).toBeNull()
+})
+
+test('the free-studio finalize carries the project identity and the new-post choice to the hub', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  expect((await f.publish()).status).toBe(200)
+  expect(f.state.postBodies[0]).toMatchObject({ sourceProjectId: f.project.id })
+  expect(f.state.postBodies[0]?.asNewPost).toBeUndefined()
+  const form = new FormData()
+  form.set('title', 'Meu jogo')
+  form.set('description', 'Outro jogo')
+  form.set('clientIdempotencyKey', crypto.randomUUID())
+  form.set('asNewPost', '1')
+  form.set('project', new File([JSON.stringify(f.project)], 'project.json'))
+  const request = new Request('https://kids.test/api/studio/publish', {
+    method: 'POST',
+    body: form,
+  })
+  request.headers.set('Content-Length', String((await request.clone().arrayBuffer()).byteLength))
+  expect((await f.routes.studioPublishStandalone.POST(request)).status).toBe(200)
+  expect(f.state.postBodies[1]).toMatchObject({ sourceProjectId: f.project.id, asNewPost: true })
+})
+
+test('a project that changed kind after publishing cannot update the old post', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const playId = crypto.randomUUID()
+  // Um post de antes do histórico cujo retrato era de outro tipo (Python clássico).
+  f.objects.set(
+    `studio/play/${playId}.json`,
+    new TextEncoder().encode(
+      JSON.stringify({
+        id: f.project.id,
+        programmingLanguage: 'python',
+        kind: 'classic',
+        files: {},
+      }),
+    ),
+  )
+  f.state.existing = { id: crypto.randomUUID(), playId }
+  const response = await f.publish()
+  expect(response.status).toBe(409)
+  expect((await response.json()).error.code).toBe('SHOWCASE_KIND_CHANGED')
+  expect(f.state.updates).toHaveLength(0)
+  expect(await currentPublishedSource(f.bucket, playId)).toBeNull()
+})
+
+test('a slow versions service does not hold the classic public game', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const result = await (await f.publish()).json()
+  const before = globalThis.fetch
+  // Keep a real pending request: AbortSignal.timeout is unreferenced, unlike network IO.
+  // A bare never-settling Promise makes Bun 1.3.11 on Windows spin without firing it.
+  const versions = Bun.serve({
+    hostname: '127.0.0.1',
+    port: 0,
+    fetch(request) {
+      return new Promise<Response>((resolve) => {
+        const cancelled = () => resolve(new Response(null, { status: 503 }))
+        if (request.signal.aborted) cancelled()
+        else request.signal.addEventListener('abort', cancelled, { once: true })
+      })
+    },
+  })
+  globalThis.fetch = Object.assign(
+    (_url: RequestInfo | URL, init?: RequestInit) => originalFetch(versions.url, init),
+    { preconnect: before.preconnect },
+  )
+  try {
+    const started = Date.now()
+    const play = await f.routes.studioPlay.GET(new Request('https://kids.test/'), {
+      params: Promise.resolve({ id: result.publicationId }),
+    })
+    expect(play.status).toBe(200)
+    expect(Date.now() - started).toBeLessThan(8_000)
+  } finally {
+    globalThis.fetch = before
+    await versions.stop(true)
+  }
+}, 15_000)
+
+test('classic JavaScript keeps versions behind the same link and the status compares the game', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const response = await f.publish()
+  expect(response.status).toBe(200)
+  const result = await response.json()
+  const playId = result.publicationId as string
+  expect(playId).toBe(result.playUrl.replace('/jogar/', ''))
+  expect((await currentPublishedSource(f.bucket, playId))?.publication).toMatchObject({
+    kind: 'classic',
+    version: 1,
+  })
+  f.state.existing = { id: crypto.randomUUID(), playId }
+  const status = async (project: unknown) =>
+    (
+      await f.routes.studioPublication.POST(
+        new Request('https://kids.test/api/studio/publication', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            operation: 'status',
+            compare: true,
+            context: { kind: 'free', projectId: f.project.id, project },
+          }),
+        }),
+      )
+    ).json()
+  expect(await status(f.project)).toMatchObject({
+    published: true,
+    playId,
+    history: true,
+    unchanged: true,
+  })
+  // Renomear não muda o jogo.
+  expect(await status({ ...f.project, name: 'Outro nome', updatedAt: 99 })).toMatchObject({
+    unchanged: true,
+  })
+  const changed = structuredClone(f.project) as typeof f.project & {
+    files: Record<string, string>
+  }
+  changed.files['script.js'] = `${changed.files['script.js'] ?? ''}\n// versão 2`
+  expect(await status(changed)).toMatchObject({ unchanged: false })
+
+  const cover = await sharp({
+    create: { width: 4, height: 4, channels: 3, background: '#123456' },
+  })
+    .png()
+    .toBuffer()
+  const updated = await f.publish(changed, new Uint8Array(cover), crypto.randomUUID())
+  expect(updated.status).toBe(200)
+  expect(f.state.updates[0]?.coverImageUrl).toMatch(/^https:\/\/media\.test\/studio\/cover\//)
+  const live = await currentPublishedSource(f.bucket, playId)
+  expect(live?.publication).toMatchObject({ kind: 'classic', version: 2 })
+  const play = await f.routes.studioPlay.GET(new Request('https://kids.test/'), {
+    params: Promise.resolve({ id: playId }),
+  })
+  expect((await play.json()).files['script.js']).toContain('versão 2')
+
+  const disable = await f.routes.studioPublication.POST(
+    new Request('https://kids.test/api/studio/publication', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        operation: 'activate',
+        playId,
+        requestId: crypto.randomUUID(),
+        expectedVersion: 2,
+        revision: live!.publication.activeRevision,
+        disabled: true,
+      }),
+    }),
+  )
+  expect(disable.status).toBe(200)
+  const off = await f.routes.studioPlay.GET(new Request('https://kids.test/'), {
+    params: Promise.resolve({ id: playId }),
+  })
+  expect(off.status).toBe(404)
+})
+
+test('"Publicar como jogo novo" skips the existing post and creates another link', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const first = await (await f.publish()).json()
+  f.state.existing = { id: crypto.randomUUID(), playId: first.publicationId }
+  const form = new FormData()
+  form.set('title', 'Meu jogo')
+  form.set('description', 'Outro jogo')
+  form.set('clientIdempotencyKey', crypto.randomUUID())
+  form.set('asNewPost', '1')
+  form.set('project', new File([JSON.stringify(f.project)], 'project.json'))
+  const request = new Request('https://kids.test/api/studio/publish', {
+    method: 'POST',
+    body: form,
+  })
+  request.headers.set('Content-Length', String((await request.clone().arrayBuffer()).byteLength))
+  const response = await f.routes.studioPublishStandalone.POST(request)
+  expect(response.status).toBe(200)
+  const body = await response.json()
+  expect(body.publicationId).not.toBe(first.publicationId)
+  expect(f.state.prepareBodies.at(-1)).toMatchObject({ asNewPost: true })
+  expect(f.state.updates).toHaveLength(0)
 })
 
 /** A structurally valid PNG whose size is set by one private ancillary chunk. */
@@ -1027,4 +1462,37 @@ test('a large PNG publishes at the 6 MiB project cap and fails clearly one encod
     },
   })
   expect(f.state.calls.slice(calls)).toEqual([])
+})
+
+test('a capa acima do teto recusa a publicação com a frase, em vez de sumir do post', async () => {
+  for (const context of ['free', 'lesson'] as const) {
+    const f = await fixture('classic', context, 'kids', 'javascript')
+    const response = await f.publish(f.project, new Uint8Array(4 * 1024 * 1024 + 1))
+    expect(response.status).toBe(413)
+    const body = (await response.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('COVER_TOO_LARGE')
+    expect(body.error.message).toBe(
+      'A imagem da capa é grande demais. Escolha uma imagem menor e tente de novo.',
+    )
+    expect(f.state.postBodies).toHaveLength(0)
+  }
+})
+
+test('o pedido acima do teto do envio diz que o projeto ficou grande, nunca "tente de novo"', async () => {
+  const f = await fixture('classic', 'free', 'kids', 'javascript')
+  const form = new FormData()
+  form.set('title', 'Meu jogo')
+  form.set('description', 'Grande demais')
+  form.set('clientIdempotencyKey', crypto.randomUUID())
+  form.set('project', new File([JSON.stringify(f.project)], 'project.json'))
+  const request = new Request('https://kids.test/api/studio/publish', {
+    method: 'POST',
+    body: form,
+  })
+  request.headers.set('Content-Length', String(10 * 1024 * 1024))
+  const response = await f.routes.studioPublishStandalone.POST(request)
+  expect(response.status).toBe(413)
+  const body = (await response.json()) as { error: { code: string; message: string } }
+  expect(body.error.code).toBe('PROJECT_TOO_LARGE')
+  expect(body.error.message).toContain('grande demais para publicar')
 })

@@ -1,0 +1,15 @@
+{
+  "environment": "staging",
+  "legacyDefaultProfiles": {
+    "total": 0,
+    "active": 0,
+    "active_without_nickname": 0
+  },
+  "legacyKidsPosts": {
+    "total": 0,
+    "visible": 0
+  },
+  "legacyCertificates": {
+    "total": 0
+  }
+}

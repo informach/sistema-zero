@@ -1,6 +1,7 @@
 import type { ExtensionExample } from '#extensions'
 import { HEROI_DO_MOLDA_GLB } from '../game-3d/exampleAssets'
 import { CEU_ESTRELADO_HDR, MUSICA_DA_NOITE_WAV, SOM_DA_FOGUEIRA_WAV } from './exampleAssets'
+import { CAMPO_DO_HEROI_ASSETS } from './sceneExampleAssets'
 
 // Os campos `ir` deste arquivo são gerados por scripts/gen-game-3d-examples.ts.
 // Edite os fontes de referência e rode `bun run gen:game-3d-examples`.
@@ -22362,6 +22363,10 @@ export const heroiDoMoldaExample: ExtensionExample = {
           ground: '#4ade80',
         },
         {
+          type: 'g3k:loadScene',
+          asset: 'dcf98aca7e80238a583b0322634d17a9bea06471ef2bb5f07b0679976fb8a243',
+        },
+        {
           type: 'g3k:screenText',
           screen: 'inicio',
           title: 'Herói do Molda',
@@ -22422,6 +22427,10 @@ export const heroiDoMoldaExample: ExtensionExample = {
                 type: 'num',
                 value: 0,
               },
+            },
+            {
+              type: 'g3k:sceneStart',
+              charVar: 'heroi',
             },
             {
               type: 'g3k:cameraFollow',
@@ -22740,6 +22749,38 @@ export const heroiDoMoldaExample: ExtensionExample = {
             },
           ],
         },
+        {
+          type: 'g3k:onGame',
+          event: 'regiao',
+          objVar: 'heroi',
+          region: 'Campo',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'str',
+                value: 'No campo',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onGame',
+          event: 'regiao',
+          objVar: 'heroi',
+          region: 'Pomar',
+          body: [
+            {
+              type: 'g3k:cornerText',
+              corner: 'top-right',
+              text: {
+                type: 'str',
+                value: 'No pomar das estrelas',
+              },
+            },
+          ],
+        },
       ],
       loops: [
         {
@@ -22950,6 +22991,7 @@ export const heroiDoMoldaExample: ExtensionExample = {
       source: 'library',
       libId: 'example-heroi-do-molda',
     },
+    ...CAMPO_DO_HEROI_ASSETS,
   ],
 }
 

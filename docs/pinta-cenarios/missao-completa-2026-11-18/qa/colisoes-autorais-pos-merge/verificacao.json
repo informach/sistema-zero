@@ -1,0 +1,89 @@
+{
+  "recordedAt": "2026-11-19T09:36:04.225Z",
+  "sourceCommit": "04acef30bef973c3a6c8120a194670cf942b0248",
+  "distribution": "b2dd1ee1694178173526dff73172ed77a8d7a71f79701695d2a4430c428eb7c5",
+  "normalization": "LF; espaços ao fim das linhas de texto removidos",
+  "gates": {
+    "core": {
+      "exitCode": 0,
+      "tests": 43
+    },
+    "studio": {
+      "exitCode": 0,
+      "tests": 90
+    },
+    "publication": {
+      "exitCode": 0,
+      "tests": 85
+    },
+    "pythonBrowser": {
+      "exitCode": 0,
+      "tests": 15,
+      "fps": 57.5
+    },
+    "studioTypes": {
+      "exitCode": 0
+    }
+  },
+  "limitations": [
+    "Não publicado nem ativado em staging.",
+    "Falhas de desempenho de rodadas anteriores conservadas no relatório do lote; estabilidade ainda não comprovada.",
+    "Somente esta máquina; Godot visual e plataformas de mão única permanecem pendentes."
+  ],
+  "files": {
+    "core.log": {
+      "bytes": 4755,
+      "sha256": "0e8b1d68d0e159ad02e7c5ce49def5408daf5fbc9c6cc0a712bb953af9922f3b"
+    },
+    "distribuicao.json": {
+      "bytes": 28603,
+      "sha256": "b8178fad6cd27467e565183c77d04f8bad3bb89d3b1f18f9b2fadffaafce0669"
+    },
+    "estudio.log": {
+      "bytes": 10195,
+      "sha256": "09b5ac59e8fa63cc33329aa20060e76aaf8877a6806f2797fcbc2e2d96e6cd37"
+    },
+    "mundo-1x.json": {
+      "bytes": 1037,
+      "sha256": "a89ff7e5e7179b617787ac3fcf81630ab4081bda675eb173fff05564f5f99860"
+    },
+    "mundo-1x.png": {
+      "bytes": 1993,
+      "sha256": "468fea5eab936e7b1cf12bfccffed22a5a94e6ef2038250aac2e357b7c6ebbf8"
+    },
+    "mundo-2x.json": {
+      "bytes": 1037,
+      "sha256": "b84a0974f2a32ec17691c626851df9751c6a1dd16299ed8f2b18d800027d7290"
+    },
+    "mundo-2x.png": {
+      "bytes": 1990,
+      "sha256": "e2430aa41451a41fa7abd40902ea344b32ce1a8dbb77bab1bee383c0098f8043"
+    },
+    "publicacao.log": {
+      "bytes": 7609,
+      "sha256": "fbd2e88613b8461c0b6d4e7f8921534e512b12c9b0461c048a3d63f6687cb8dd"
+    },
+    "python.json": {
+      "bytes": 907906,
+      "sha256": "17da62cd90857e130f9ea9e50d726ba64d1640acffd0b823ba0ba2c62c9bae51"
+    },
+    "python.log": {
+      "bytes": 2544,
+      "sha256": "ad529f16143bf9bd4fe6d0db8cfccb781b217f3ac8c03b803b01062714f80bef"
+    },
+    "README.md": {
+      "bytes": 1986,
+      "sha256": "2b1b5aba7f33c0d6a64627c953281cb459e20bd803c472c111356e6c71579a15"
+    },
+    "tipos.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "evidenceNormalization": {
+    "at": "2026-11-19T10:49:43.641Z",
+    "previousReceiptSha256": "096de6608f75f77b1d6606c245620978af3ab2cf87ed12901524af62fcea9e8f",
+    "canonicalArtifactDataUnchanged": true,
+    "reason": "Formatação JSON exigida pelo CI; resultados de teste preservados."
+  }
+}

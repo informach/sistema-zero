@@ -1,0 +1,12 @@
+
+Running 3 tests using 1 worker
+
+(node:1716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › e2e\pinta-world-compatibility.flow.ts:29:1 › o envio captura o PNG Python e a biblioteca canônica com todos os destinos no mesmo perfil (886ms)
+  ✓  2 [desktop] › e2e\pinta-world-compatibility.flow.ts:82:3 › um leitor congelado recusa os dados world; sua aba antiga não sobrescreve o mapa offline (1.5s)
+  ✓  3 [desktop] › e2e\pinta-world-compatibility.flow.ts:82:3 › um leitor congelado recusa os dados scene; sua aba antiga não sobrescreve o mapa offline (1.6s)
+
+  3 passed (7.0s)

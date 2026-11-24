@@ -6,13 +6,22 @@ import {
   studioPythonRuntimeRoute,
 } from '@sistemazero/core/studio/python-runtime-distribution'
 import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
+import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  type CenaParaStudio,
+  MIME_DA_CENA_PARA_STUDIO,
+} from '@sistemazero/molda-cenarios-core/studio'
 import { unzipSync } from 'fflate'
 import { pythonWebBytesSha256 } from '../../runtime/python/webFiles'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { exportProject } from '../exportProject'
+import { buildPythonSourceFiles } from '../pythonSource'
 import { buildPythonWebFiles } from '../pythonWeb'
 
 const request = spyOn(globalThis, 'fetch')
@@ -22,7 +31,12 @@ const fetchImplementation = (
 afterEach(() => request.mockReset())
 afterAll(() => request.mockRestore())
 
-async function fixture(kind: 'classic' | 'pro' = 'classic', launcher = true) {
+async function fixture(
+  kind: 'classic' | 'pro' = 'classic',
+  launcher = true,
+  completeReader = false,
+  sceneReader = false,
+) {
   const { project, environment } = await pythonEnvironmentFixture(kind)
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
   for (const path of [
@@ -44,7 +58,10 @@ async function fixture(kind: 'classic' | 'pro' = 'classic', launcher = true) {
     version: 1,
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
-    features: [],
+    features: [
+      ...(completeReader ? [PYTHON_PINTA_WORLD_FEATURE] : []),
+      ...(sceneReader ? [PYTHON_MOLDA_SCENE_FEATURE] : []),
+    ],
     providedModules: [],
     previewHostAudioVersion: 1,
     files: await Promise.all(
@@ -58,6 +75,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic', launcher = true) {
   const original = environment.catalog.releases[0]!
   const release = await createStudioRuntimeRelease({
     ...original.manifest,
+    python: { ...original.manifest.python!, features: distribution.features },
     artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
   })
   project.runtime = {
@@ -108,6 +126,129 @@ async function fixture(kind: 'classic' | 'pro' = 'classic', launcher = true) {
     calls: () => authorizations,
   }
 }
+
+test('o pacote web de cenário exige a capacidade da distribuição exata; a fonte permanece disponível', async () => {
+  const envelope: CenaParaStudio = {
+    formato: 'studio-cena3d',
+    versao: 1,
+    recursos: [],
+    cena: {
+      formato: 'molda-cena-compilada',
+      versao: 1,
+      nome: 'Praça vazia',
+      unidade: 'metro',
+      eixoVertical: 'y',
+      fonte: { cenario: 'praca', revisao: 1, digest: 'a'.repeat(64) },
+      arquivos: [],
+      nos: [],
+      entidades: [],
+      colisoes: [],
+      aguas: [],
+      caminhos: [],
+      marcadores: [],
+      texturas: [],
+      fontes: { modelos: [], texturas: [], conjuntos: [] },
+      licencas: [],
+      ambiente: { hora: 12 },
+    },
+  }
+  for (const supported of [false, true]) {
+    const f = await fixture('classic', true, false, supported)
+    f.project.installedExtensions = [{ id: 'python-raylib-3d', version: '1.0.0', installedAt: 1 }]
+    f.project.assets = [
+      {
+        id: 'praca',
+        name: 'praca',
+        kind: 'scene3d',
+        source: 'library',
+        originalFileName: 'praca.json',
+        proPath: 'cenarios/praca.json',
+        dataUrl: `data:${MIME_DA_CENA_PARA_STUDIO};base64,${Buffer.from(JSON.stringify(envelope)).toString('base64')}`,
+      },
+    ]
+    const before = JSON.stringify(f.project)
+    if (supported) {
+      const web = await buildPythonWebFiles(f.project, f.environment, new AbortController().signal)
+      expect(web.files['project/cenarios/praca.json']).toEqual(
+        new TextEncoder().encode(JSON.stringify(envelope)),
+      )
+    } else {
+      await expect(
+        buildPythonWebFiles(f.project, f.environment, new AbortController().signal),
+      ).rejects.toThrow('cenários do Molda')
+      expect(f.seen).toEqual([f.host.metadataURL])
+    }
+    const desktop = await buildPythonSourceFiles(f.project)
+    expect(desktop.files['cenarios/praca.json']).toBeDefined()
+    expect(JSON.stringify(f.project)).toBe(before)
+  }
+})
+
+test('o pacote web exige o leitor dos dados 2/3; a fonte desktop continua disponível', async () => {
+  const { pngWithPintaData } = await import('../../../../pinta/src/export/pngText')
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
+    'base64',
+  )
+  for (const supported of [false, true])
+    for (const version of [2, 3] as const) {
+      const f = await fixture('classic', true, supported)
+      const bytes = await pngWithPintaData(png, { format: 'pinta', kind: 'map', version })
+      f.project.installedExtensions = [{ id: 'python-pygame', version: '1.0.0', installedAt: 1 }]
+      f.project.assets = [
+        {
+          id: 'map',
+          name: 'map',
+          kind: 'image',
+          source: 'library',
+          libOrigin: 'pinta',
+          libId: 'personal:map',
+          proPath: 'assets/map.png',
+          width: 1,
+          height: 1,
+          dataUrl: `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`,
+          pintaImage: {
+            recipe: {
+              version: version === 3 ? 2 : 1,
+              algorithm: 'pinta-image-1',
+              drawingId: 'map',
+              selection: { kind: version === 3 ? 'map-world' : 'map' },
+              scale: 1,
+            },
+            provenance: {
+              sourceSha256: 'a'.repeat(64),
+              dependencies: version === 2 ? [{ drawingId: 'tiles', sha256: 'b'.repeat(64) }] : [],
+            },
+            output: {
+              mime: 'image/png',
+              width: 1,
+              height: 1,
+              bytes: bytes.length,
+              sha256: await pythonWebBytesSha256(bytes),
+              dataVersion: version,
+            },
+          },
+        },
+      ]
+      const before = JSON.stringify(f.project)
+      if (supported) {
+        const web = await buildPythonWebFiles(
+          f.project,
+          f.environment,
+          new AbortController().signal,
+        )
+        expect(web.files['project/assets/map.png']).toEqual(bytes)
+      } else {
+        await expect(
+          buildPythonWebFiles(f.project, f.environment, new AbortController().signal),
+        ).rejects.toThrow('ambiente')
+        expect(f.seen).toEqual([f.host.metadataURL])
+      }
+      const desktop = await buildPythonSourceFiles(f.project)
+      expect(desktop.files['pinta.py']).toContain('def abrir_destino(self, porta)')
+      expect(JSON.stringify(f.project)).toBe(before)
+    }
+})
 
 for (const kind of ['classic', 'pro'] as const)
   test(`Python ${kind}: ZIP preserves author paths and material attribution, with verified runtime and fresh delivery permission`, async () => {

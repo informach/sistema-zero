@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "id": "atlas-normalized",
+  "name": "atlas-normalized",
+  "cols": 5,
+  "rows": 1,
+  "tileSize": 16,
+  "tilesets": [
+    {
+      "id": "partial",
+      "name": "Partial",
+      "columns": 3,
+      "count": 5,
+      "image": "images/tiles-0.png",
+      "solid": [],
+      "platform": [],
+      "terrains": [
+        {
+          "id": "grass",
+          "name": "Grass",
+          "mode": "corner",
+          "colors": ["#ff0000"],
+          "tiles": {
+            "0": [0, 0, 0, 0, 0, 0, 0, 0],
+            "1": [0, 1, 0, 1, 0, 1, 0, 1]
+          }
+        }
+      ]
+    },
+    {
+      "id": "stone",
+      "name": "Stone",
+      "columns": 1,
+      "count": 1,
+      "image": "images/tiles-1.png",
+      "solid": [],
+      "platform": []
+    }
+  ],
+  "layers": [
+    {
+      "id": "ground",
+      "name": "Ground",
+      "kind": "tiles",
+      "tilesetId": "partial",
+      "visible": true,
+      "cells": [0, 1, 2, 3, 4]
+    },
+    {
+      "id": "decoration",
+      "name": "Decoration",
+      "kind": "tiles",
+      "tilesetId": "stone",
+      "visible": true,
+      "cells": [0, -1, -1, -1, -1]
+    }
+  ]
+}

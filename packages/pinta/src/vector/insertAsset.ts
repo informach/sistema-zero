@@ -52,6 +52,7 @@ export function insertKindFor(asset: PintaAsset): InsertKind | null {
     case 'tileset':
       return asset.tiles[0] ? 'image' : null
     case 'tilemap':
+    case 'map-set':
       return null
   }
 }
@@ -187,13 +188,14 @@ export function imageShapeForInsert(
  * cada toque) e filtra pela busca, sem acento.
  */
 export function insertableAssets(
-  assets: readonly PintaAsset[],
+  assets: readonly import('../core/assetMemory').PintaMemoryAsset[],
   currentId: string,
   query: string,
   normalize: (value: string) => string,
 ): PintaAsset[] {
   const needle = normalize(query)
-  return assets.filter((asset) => {
+  return assets.filter((asset): asset is PintaAsset => {
+    if (asset.kind === 'map-set' || asset.kind === 'tilemap') return false
     if (asset.id === currentId) return false
     if (!insertKindFor(asset)) return false
     if (!needle) return true

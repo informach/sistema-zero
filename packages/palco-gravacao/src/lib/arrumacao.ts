@@ -18,6 +18,22 @@ export function sobrepostas(caixas: readonly Caixa[]): boolean {
   return false
 }
 
+/**
+ * Uma área cresceu para o lado e cobre a vizinha da direita (o bloco encaixado alargou Quando
+ * acontecer por cima de Enquanto estiver rodando). A de baixo, mais ou menos na mesma coluna, não
+ * conta: essa o `desembolar` desce. `lado`: quanto a vizinha começa à direita da outra para serem
+ * lado a lado; `folga`: quanto uma precisa entrar na outra para contar (encostar a borda não conta).
+ */
+export function cobreDoLado(caixas: readonly Caixa[], lado = 40, folga = 12): boolean {
+  for (const a of caixas)
+    for (const b of caixas) {
+      if (a === b || b.left < a.left + lado) continue
+      if (a.right > b.left + folga && a.bottom > b.top + folga && b.bottom > a.top + folga)
+        return true
+    }
+  return false
+}
+
 /** Tentativas de abrir o menu antes de deixar a área como está. */
 const TENTATIVAS = 3
 

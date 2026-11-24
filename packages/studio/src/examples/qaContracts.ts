@@ -100,6 +100,25 @@ export function exampleQaTestTimeoutMs(contract: ExampleQAContract): number {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'game-2d:A Vila e a Floresta',
+    name: 'A Vila e a Floresta',
+    experience: 'game',
+    promise:
+      'Explorar o cenário completo do Pinta com água animada, frente, objetos tipados e conjuntos.',
+    scenario:
+      'Andar com setas, respeitar as paredes, entrar na cabana pela porta e voltar à vila; conferir as propriedades nos blocos.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:A Vila e a Floresta (Avançado)',
+    name: 'A Vila e a Floresta (Avançado)',
+    experience: 'game',
+    promise: 'Explorar as mesmas 18 camadas do Pinta no motor avançado, sem achatar o cenário.',
+    scenario:
+      'Iniciar, andar com setas, atravessar a porta da cabana e voltar; ler objetos, propriedades e áreas.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'core:Descida da Neve (Canvas)',
     name: 'Descida da Neve (Canvas)',
     experience: 'game',
@@ -222,6 +241,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Começar, correr e pular pelas plataformas com as setas, pegar moedas, pisar nos caranguejos, desviar dos buracos, chegar na bandeira e reiniciar.',
     interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Mundo das Portas',
+    name: 'Mundo das Portas',
+    experience: 'game',
+    promise:
+      'Explorar um mundo grande do Pinta em seis regiões, entrando nas cavernas e nas casas pelas portas, pegando moedas e guardando o jogo na cama.',
+    scenario:
+      'Andar pelas setas ou WASD entre as regiões (as entidades da região e das vizinhas aparecem), passar por uma porta e voltar à boca da caverna com as moedas ainda pegas, e deitar na cama de uma casa.',
+    interactions: ['arrows', 'wasd'],
   },
   {
     key: 'game-2d-advanced:Mundo Pirata Profissional',

@@ -1,0 +1,15 @@
+{
+  "arquivos": 36,
+  "bytesZip": 6153294,
+  "bytesExtraidos": 9852181,
+  "fonte": {
+    "cenario": "integracao",
+    "revisao": 7,
+    "digest": "fb877b2a291cccc65e3f55df031fa258285cfea88cbccd4c22c3ee2ef58b7dde"
+  },
+  "temposMs": {
+    "preparacao": 151.71670000000003,
+    "exportacao": 931.8115999999999,
+    "reabertura": 262.53060000000005
+  }
+}

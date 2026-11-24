@@ -1,5 +1,11 @@
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { EditableStudioProject } from '../core/editableProject'
-import { perfSpanAsync } from '../core/perf'
+import {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+  type PrivateRegionalProjectReadOptions,
+  UNSUPPORTED_PINTA_REGION,
+} from '../core/pintaRegionalReference'
 import type { ProjectAsset } from '../core/projectAssets'
 import {
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -9,18 +15,20 @@ import {
 } from '../core/projectDocument'
 import { cancelPendingAutosavesFor } from '../persistence/service'
 import { hasStaleJavaScriptBridgeBlocks } from './bridgeAuthority'
-import {
-  conditionalGeneration,
-  conditionalWrite,
-  readAllKeys,
-  readValue,
-  readValues,
-} from './idbTransaction'
+import { conditionalGeneration, conditionalWrite, readAllKeys, readValue } from './idbTransaction'
 import { notifyProBuilderDeletion, proBuilderDeletionKey } from './proBuilderDeletion'
+import { loadHistoricalProject } from './projectListStorage'
 import { isProjectOpening } from './projectOpening'
 import {
+  notifyMirrorChanged,
+  notifyMirrorDeleted,
+  notifyMirrorThumbChanged,
+  notifyProjectChanged,
+  notifyRecoveredProjects,
+  notifyThumbUpdated,
+} from './projectPersistenceEvents'
+import {
   coordinatedProjectWrite,
-  listPreservedProjectDrafts,
   loadRecoverableProjectDraft,
   mutateProjectRecord,
   recoverProjectWrites,
@@ -29,8 +37,7 @@ import {
 } from './projectStorageCoordinator'
 import {
   APPLICATION_BUDGET_KEY,
-  PROJECT_META_KEY_PREFIX,
-  PROJECT_RECOVERY_PREFIX,
+  PROJECT_STORAGE_VERSION,
   projectApplicationsKey,
   projectAssetsKey,
   projectBlocksKey,
@@ -42,7 +49,6 @@ import {
   projectThumbKey,
 } from './projectStorageKeys'
 import {
-  assembleProjectRecord,
   projectToAssetsRecord,
   projectToBlocksRecord,
   projectToFilesRecord,
@@ -50,46 +56,36 @@ import {
   projectToStateRecord,
   type StoredProjectRecord,
 } from './projectStorageRecords'
-import { copyLocalRevision, installLocalRevision, isLocalHead } from './projectStorageRevision'
+import { copyLocalRevision, localHead, readLocalRevision } from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
   gameStorageKey,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
   type RequestedProjectWrite,
   runSerializedProjectWrite,
   scopedProjectIdentity,
   setProjectStorageNamespace,
 } from './projectStorageRuntime'
-import { type ProjectSummary, toProjectSummary } from './projectSummary'
+import type { ProjectSummary } from './projectSummary'
+import { MAX_PROJECT_THUMB_CHARS, thumbDataUrlOf } from './projectThumbData'
 
+export {
+  listAllProjects,
+  listProjectSummariesLight,
+  loadProjectSummariesByIds,
+  loadProjectSummaryById,
+} from './projectListStorage'
+export {
+  PROJECT_CHANGED_EVENT,
+  PROJECT_THUMB_UPDATED_EVENT,
+  type ProjectChangedDetail,
+  type StudioCloudMirror,
+  setStudioCloudMirror,
+} from './projectPersistenceEvents'
 export type { ProjectSummary } from './projectSummary'
-/** Teto da miniatura (data URL JPEG ~320×192 fica bem abaixo disso). */
-export const MAX_PROJECT_THUMB_CHARS = 300_000
-/** Evento de janela disparado quando uma miniatura termina de gravar. */
-export const PROJECT_THUMB_UPDATED_EVENT = 'sz:project-thumb-updated'
-/**
- * Evento da PÁGINA (`CustomEvent<{ id, deleted? }>`) disparado depois de toda escrita/apagamento
- * de projeto local — inclusive as silenciosas para a nuvem (restauro), porque o silêncio é para
- * o espelho, não para a lista. A lista de projetos relê SÓ aquele item (`loadProjectSummaryById`)
- * em vez de recarregar tudo (meta + capas de todos) a cada renomear/duplicar/apagar/restauro.
- */
-export const PROJECT_CHANGED_EVENT = 'sz:project-changed'
-export interface ProjectChangedDetail {
-  id: string
-  deleted?: boolean
-}
-
-function notifyProjectChanged(id: string, deleted = false): void {
-  if (typeof window === 'undefined') return
-  try {
-    window.dispatchEvent(
-      new CustomEvent<ProjectChangedDetail>(PROJECT_CHANGED_EVENT, { detail: { id, deleted } }),
-    )
-  } catch {
-    // Ambiente sem CustomEvent: a lista recarrega no próximo gesto, como antes.
-  }
-}
+export { MAX_PROJECT_THUMB_CHARS } from './projectThumbData'
 /**
  * Define o namespace do armazenamento local. O HOST chama ANTES de qualquer operação
  * (ProjectList/editor): no Estúdio Completo com o id do perfil kids; vazio = store padrão (a
@@ -99,29 +95,6 @@ function notifyProjectChanged(id: string, deleted = false): void {
 export function setStorageNamespace(namespace: string): void {
   setProjectStorageNamespace(namespace)
 }
-
-/**
- * "Guardado na sua conta" (18/08/2026): o HOST observa TODA escrita e apagamento
- * do armazenamento local por este gancho único — é por aqui que passam o autosave
- * (`PersistenceService`), renomear/duplicar/apagar do `ProjectCard`, o import e a
- * sincronia de desenhos do Pinta. O host relê o snapshot por `loadProjectById(id)`
- * na hora de subir (sempre o estado mais recente). Um só ponto: componentes não
- * sabem que a nuvem existe. `null` desliga (aula, playground, testes).
- */
-export interface StudioCloudMirror {
-  /** Alguma partição do projeto `id` foi gravada (autosave, renomear, assets). */
-  onChanged(id: string): void
-  /** O projeto `id` foi apagado localmente. */
-  onDeleted(id: string): void
-  /**
-   * A MINIATURA do projeto `id` foi gravada (a captura ao sair do editor, a capa escolhida). É
-   * um aviso à parte do `onChanged` de propósito: a capa não muda o `updatedAt` do projeto, e o
-   * host decide se vale uma subida só por ela (só quando a nuvem ainda não tem miniatura).
-   */
-  onThumbChanged?(id: string): void
-}
-
-let cloudMirror: StudioCloudMirror | null = null
 
 /**
  * Registro de projetos ABERTOS em algum editor desta página (qualquer store: a default
@@ -146,44 +119,6 @@ export function markProjectClosed(id: string): void {
 /** O projeto está aberto em algum editor desta página? */
 export function isProjectOpenAnywhere(id: string): boolean {
   return openProjectCounts.has(id)
-}
-
-export function setStudioCloudMirror(mirror: StudioCloudMirror | null): void {
-  cloudMirror = mirror
-}
-
-/** Best-effort: um espelho que lança nunca derruba a gravação local. */
-function notifyMirrorChanged(id: string): void {
-  try {
-    cloudMirror?.onChanged(id)
-  } catch {
-    // O espelho é do host; falha lá é problema de lá.
-  }
-}
-
-function notifyMirrorDeleted(id: string): void {
-  try {
-    cloudMirror?.onDeleted(id)
-  } catch {
-    // idem
-  }
-}
-
-function notifyMirrorThumbChanged(id: string): void {
-  try {
-    cloudMirror?.onThumbChanged?.(id)
-  } catch {
-    // idem
-  }
-}
-
-function notifyThumbUpdated(id: string): void {
-  if (typeof window === 'undefined') return
-  try {
-    window.dispatchEvent(new CustomEvent(PROJECT_THUMB_UPDATED_EVENT, { detail: id }))
-  } catch {
-    // Ambiente sem CustomEvent: a lista relê no próximo gesto.
-  }
 }
 
 function getStore(scope?: ProjectStorageScope) {
@@ -233,6 +168,8 @@ export interface PersistProjectOptions {
   /** Internal exit recovery: stages synchronously; it is not a saved-document ACK. */
   exit?: boolean
   incompleteBlocks?: boolean
+  /** Exit with the page still alive (tab hidden): a confirmed native copy is enough. */
+  pageAlive?: boolean
   /** `silent`: NÃO acorda o espelho da nuvem (restauro do que acabou de DESCER). */
   silent?: boolean
   /**
@@ -263,9 +200,18 @@ export async function persistProject(
       'Converta o projeto antes de guardar nesta versão.',
     )
   const captured = storageScope ?? captureProjectStorageScope()
+  if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials(project)
+  if (isPrivateRegionalProjectScope(captured) && !options.exit && readLocalRevision(project)) {
+    const original = project
+    project = copyLocalRevision(original, copyStudioProjectJson(original) as EditableStudioProject)
+  }
   const generation = conditionalGeneration(captured.identity)
   const requestWrite = async (scope: ProjectStorageScope) => {
     const id = project.id
+    // Reserve the mutation's place before asynchronous migration: a rename or
+    // later autosave must not overtake the document's first write.
+    if (PROJECT_STORAGE_VERSION === 4 && !options.exit && !readLocalRevision(project))
+      notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
     const scopedId = scopedProjectIdentity(scope, id)
     // `replace`: o que o snapshot não trouxer não pode sobreviver ao restauro (blocos
     // velhos, capa velha). Apagado na MESMA transação dos `put`, depois deles: se a
@@ -320,9 +266,21 @@ export async function persistProject(
     // o flush chama isto (nada é esperado antes), então a transação nasce antes de a
     // página ir embora, mesmo com um autosave anterior ainda em voo.
     const write = { puts: pairs, deletes: stale }
+    if (isPrivateRegionalProjectScope(scope) && !options.exit) {
+      const retained = await retainedAccess(scope, id)
+      if (retained) {
+        if (options.replace) throw new Error(UNSUPPORTED_PINTA_REGION)
+        const editor = await import('./retainedProjectEditor')
+        await editor.saveRetainedDocument(scope, retained.manifest, project, write)
+        lastPersistedAssetsRef.set(scopedId, project.assets)
+        return { done: Promise.resolve() }
+      }
+    }
     const done = (
       options.exit
-        ? stageProjectExit(project, write, scope, options.incompleteBlocks)
+        ? stageProjectExit(project, write, scope, options.incompleteBlocks, {
+            pageAlive: options.pageAlive === true,
+          })
         : coordinatedProjectWrite(project, write, scope, generation, options.replace === true)
     ).then(() => {
       // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota
@@ -339,7 +297,7 @@ export async function persistProject(
   }
   await runSerializedWrite(project.id, requestWrite, captured)
   if (captured.identity !== captureProjectStorageScope().identity) return
-  if (!options.silent) notifyMirrorChanged(project.id)
+  if (!options.silent) notifyMirrorChanged(project.id, captured)
   notifyProjectChanged(project.id)
   if (validThumbDataUrl(options.thumb)) notifyThumbUpdated(project.id)
 }
@@ -352,33 +310,38 @@ function validThumbDataUrl(value: unknown): string | null {
     : null
 }
 
+async function retainedAccess(scope: ProjectStorageScope, id: string) {
+  if (!isPrivateRegionalProjectScope(scope)) return undefined
+  const disk = await import('./retainedProjectStore')
+  const manifest = await disk.readRetainedManifest(scope, id)
+  return manifest ? { disk, manifest } : undefined
+}
+
 export async function loadProjectById(
   id: string,
   storageScope?: ProjectStorageScope,
   options: { recoverDraft?: boolean } = {},
 ): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const editor = await import('./retainedProjectEditor')
+      if (options.recoverDraft) {
+        const draft = await editor.loadRetainedProjectDraft(scope, retained.manifest)
+        if (draft) return copyLocalRevision(draft, { ...draft })
+      }
+      return editor.readRetainedDocument(scope, retained.manifest, false)
+    }
+  }
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   if (options.recoverDraft) {
     const draft = await loadRecoverableProjectDraft(scope, id)
     if (draft) return copyLocalRevision(draft, { ...draft })
   }
-  const kvStore = scope.store
-  const [meta, files, state, blocks, assets, head] = await readValues(kvStore, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectStateKey(id),
-    projectBlocksKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  if (meta && files && state) {
-    // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
-    const project = assembleProjectRecord(id, meta, files, state, assets, blocks)
-    return project
-      ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-      : null
-  }
+  const reader = await import('./projectStorageRead')
+  const current = await reader.readCurrentProject(id, scope)
+  if (current) return current
 
   return loadHistoricalProject(id, storageScope)
 }
@@ -396,29 +359,21 @@ export async function loadProjectShellById(
   storageScope?: ProjectStorageScope,
 ): Promise<StoredProjectRecord | null> {
   const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const editor = await import('./retainedProjectEditor')
+      const draft = await editor.loadRetainedProjectDraft(scope, retained.manifest)
+      if (draft) return copyLocalRevision(draft, { ...draft })
+      return editor.readRetainedDocument(scope, retained.manifest, true)
+    }
+  }
   notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
   const draft = await loadRecoverableProjectDraft(scope, id)
   if (draft) return copyLocalRevision(draft, { ...draft })
-  const kvStore = scope.store
-  const [meta, files, assets, head] = await readValues(kvStore, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  if (meta && files) {
-    const project = assembleProjectRecord(
-      id,
-      meta,
-      files,
-      { id, ir: null, blocksState: null },
-      assets,
-    )
-    return project
-      ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-      : null
-  }
-
+  const reader = await import('./projectStorageRead')
+  const current = await reader.readProjectShell(id, scope)
+  if (current) return current
   return loadHistoricalProject(id, storageScope)
 }
 
@@ -433,24 +388,32 @@ export async function loadProjectMetaById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<Record<string, unknown> | null> {
-  const kvStore = getStore(storageScope)
-  const meta = await readValue(kvStore, projectMetaKey(id))
-  if (isRecord(meta)) return meta
-  const historical = await loadHistoricalProject(id, storageScope)
-  if (!historical) return null
-  const migratedMeta = await readValue(kvStore, projectMetaKey(id))
-  return isRecord(migratedMeta) ? migratedMeta : null
+  const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['meta'])
+      return isRecord(v.meta) ? v.meta : null
+    }
+  }
+  const reader = await import('./projectStorageRead')
+  return reader.readProjectMeta(id, scope, () => loadHistoricalProject(id, scope))
 }
 
 export async function loadProjectBlocksById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<unknown | null> {
-  const kvStore = getStore(storageScope)
-  const fromPartition = await readValue(kvStore, projectBlocksKey(id))
-  if (fromPartition != null) return fromPartition
-  const historical = await loadHistoricalProject(id, storageScope)
-  return historical?.blocksState ? { id, blocksState: historical.blocksState } : null
+  const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['blocks'])
+      return isRecord(v.blocks) ? (v.blocks.blocksState ?? null) : null
+    }
+  }
+  const reader = await import('./projectStorageRead')
+  return reader.readProjectBlocks(id, scope, () => loadHistoricalProject(id, scope))
 }
 
 /**
@@ -469,19 +432,46 @@ export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectAsset[]> {
-  const [record, head, meta] = await readValues(getStore(storageScope), [
-    projectAssetsKey(id),
-    projectHeadKey(id),
-    projectMetaKey(id),
-  ])
-  if (!isRecord(record)) return []
-  const assets =
-    isRecord(meta) && meta.programmingLanguage === 'python'
-      ? (await import('../core/pythonAssets')).sanitizePythonProjectAssets(record.assets)
-      : (await import('../core/projectAssets')).sanitizeProjectAssets(record.assets)
-  if (isLocalHead(head)) assetReadHeads.set(assets, head.token)
-  else if (head == null) assetReadHeads.set(assets, null)
-  return assets
+  return (await loadProjectAssetsSnapshotById(id, storageScope)).assets
+}
+
+/** Assets and the pinned runtime share one IndexedDB snapshot and conditional-write token. */
+export async function loadProjectAssetsSnapshotById(
+  id: string,
+  storageScope?: ProjectStorageScope,
+  options?: PrivateRegionalProjectReadOptions,
+): Promise<{
+  assets: ProjectAsset[]
+  environment: Pick<ProjectSummary, 'programmingLanguage' | 'kind' | 'runtime'>
+  installedExtensions?: unknown
+}> {
+  const scope = storageScope ?? captureProjectStorageScope()
+  const reader = await import('./projectStorageRead')
+  let pinned: readonly [unknown, unknown, unknown] | undefined
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, [
+        'assets',
+        'head',
+        'meta',
+      ])
+      const editor = await import('./retainedProjectEditor')
+      pinned = [v.assets, editor.retainedEditorHead(retained.manifest, v.head), v.meta]
+    }
+  }
+  const { assets, environment, installedExtensions, observedHead } =
+    await reader.readProjectAssetsSnapshot(
+      id,
+      scope,
+      async () => {
+        notifyRecoveredProjects(scope, await recoverProjectWrites(scope, id))
+      },
+      options,
+      pinned,
+    )
+  if (observedHead !== undefined) assetReadHeads.set(assets, observedHead)
+  return { assets, environment, installedExtensions }
 }
 
 /**
@@ -498,8 +488,23 @@ export async function persistProjectAssets(
   storageScope?: ProjectStorageScope,
   expectedAssets?: ProjectAsset[],
   canWrite?: () => boolean,
+  liveProject?: EditableStudioProject,
 ): Promise<boolean> {
   const captured = storageScope ?? captureProjectStorageScope()
+  if (!isPrivateRegionalProjectScope(captured)) assertLegacyStudioProjectMaterials({ assets })
+  if (isPrivateRegionalProjectScope(captured))
+    assets = copyStudioProjectJson(assets) as ProjectAsset[]
+  const stamp = liveProject && readLocalRevision(liveProject)
+  if (
+    liveProject &&
+    (!isPrivateRegionalProjectScope(captured) ||
+      !stamp ||
+      stamp.lineage.scope !== captured.identity ||
+      liveProject.id !== id ||
+      !expectedAssets ||
+      !canWrite)
+  )
+    return false
   const expectedToken = expectedAssets ? assetReadHeads.get(expectedAssets) : undefined
   if (expectedAssets && expectedToken === undefined) return false
   if (isProjectOpening(captured, id)) return false
@@ -517,6 +522,23 @@ export async function persistProjectAssets(
       // Sem ele a revisão subia com o mesmo `updatedAt`, o outro computador via "iguais" e
       // nunca baixava a troca de desenho (e, se editasse lá, apagava o desenho novo por
       // cima). Juntos, um não chega ao disco sem o outro.
+      if (isPrivateRegionalProjectScope(scope)) {
+        const retained = await retainedAccess(scope, id)
+        if (retained) {
+          const editor = await import('./retainedProjectEditor')
+          await editor.updateRetainedAssets(
+            scope,
+            retained.manifest,
+            assets,
+            expectedToken,
+            () => !isProjectOpening(scope, id) && canWrite?.() !== false,
+            liveProject,
+          )
+          lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+          written = true
+          return
+        }
+      }
       const done = mutateProjectRecord(
         scope,
         id,
@@ -527,11 +549,12 @@ export async function persistProjectAssets(
           return {
             puts: [
               [projectAssetsKey(id), { id, assets }],
-              [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
+              [projectMetaKey(id), { ...meta, updatedAt: liveProject?.updatedAt ?? Date.now() }],
             ],
           }
         },
         expectedToken,
+        stamp && localHead(stamp),
       )
         .catch((error: unknown) => {
           if (error === revoked) return false
@@ -542,7 +565,10 @@ export async function persistProjectAssets(
           // `persistProject`. Gravamos por fora dele: manter a referência antiga
           // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
           // é o lado seguro — no máximo custa uma reescrita da partição.
-          if (changed) lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+          if (changed) {
+            lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+            if (stamp) stamp.lineage.durableToken = stamp.token
+          }
           written = changed
         })
       return { done }
@@ -553,7 +579,7 @@ export async function persistProjectAssets(
   // Uma varredura iniciada no perfil A pode terminar depois de o host ativar B. Os bytes
   // continuam no scope capturado de A, mas eventos/espelho globais já pertencem a B.
   if (captureProjectStorageScope().identity !== captured.identity) return true
-  notifyMirrorChanged(id)
+  if (!assets.some(hasRegionalPintaReference)) notifyMirrorChanged(id, captured)
   notifyProjectChanged(id)
   return true
 }
@@ -565,26 +591,61 @@ export async function deleteProject(
 ): Promise<void> {
   const scope = storageScope ?? captureProjectStorageScope()
   let builderDeletion = false
-  // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
-  // re-persistiria o projeto recém-apagado.
-  cancelPendingAutosavesFor(id, scope.identity)
-  // Cerca o armazenamento do programa do aluno ANTES de apagar: um flush do
-  // preview já em voo (writeGameStorage) que chegue depois é descartado.
-  fenceGameStorageDelete(scope, id)
+  const remoteDelete = options.notifyCloudMirror === false
+  const fenceDeletion = () => {
+    // Timers and preview writes still in flight cannot recreate a deleted project.
+    cancelPendingAutosavesFor(id, scope.identity)
+    fenceGameStorageDelete(scope, id)
+  }
+  if (!remoteDelete) fenceDeletion()
   // No MESMO mutex de escrita do id: apagar não pode intercalar com um
   // persist/rename do mesmo projeto. Uma transação com commit explícito, como
   // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
   await runSerializedProjectWrite(scope, id, async () => {
+    if (isPrivateRegionalProjectScope(scope)) {
+      const retained = await retainedAccess(scope, id)
+      if (retained) {
+        if (remoteDelete) throw Error(UNSUPPORTED_PINTA_REGION)
+        const editor = await import('./retainedProjectEditor')
+        await editor.removeRetainedProject(scope, retained.manifest)
+        lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+        return
+      }
+    }
     const meta = await readValue(scope.store, projectMetaKey(id))
     if (!meta) await loadHistoricalProject(id, scope)
+    // As cópias de segurança (migração e arquivo das cópias de saída) saem com o projeto, na mesma
+    // transação (P3, decisão da dona em 21/11/2026). Decididas pela chave inteira (o resto depois
+    // do id é o hash), sem ler o conteúdo: o prefixo sozinho também pegaria `id:outro`.
+    const { localProjectBackupKeys } = await import('../project-migrations/localBackups')
+    const backupKeys = await localProjectBackupKeys(id, scope)
+    // O Histórico do projeto do Pro (proposta aprovada em 21/11/2026) sai junto, na mesma transação.
+    // Só um projeto Pro tem histórico: os outros não pagam a leitura do índice.
+    // A gravação em voo termina e nenhuma nova começa antes de as chaves serem lidas.
+    let historyKeys: string[] = []
+    if (isRecord(meta) && meta.kind === 'pro') {
+      const history = await import('./proProjectHistory')
+      await history.quiesceProHistory(scope, id)
+      historyKeys = await history.proHistoryStorageKeys(scope, id)
+    }
     const done = conditionalWrite(
       scope.store,
       scope.identity,
       conditionalGeneration(scope.identity),
-      [projectMigrationKey(id), APPLICATION_BUDGET_KEY, projectMetaKey(id)],
-      ([source, oldBudget, currentMeta]) => {
+      [
+        projectMigrationKey(id),
+        APPLICATION_BUDGET_KEY,
+        projectMetaKey(id),
+        ...(remoteDelete ? [projectAssetsKey(id)] : []),
+      ],
+      ([source, oldBudget, currentMeta, protectedMaterials]) => {
+        assertLegacyStudioProjectMaterials(protectedMaterials)
+        if (remoteDelete) fenceDeletion()
         builderDeletion =
-          isRecord(currentMeta) && currentMeta.kind === 'pro' && options.notifyCloudMirror !== false
+          !isPrivateRegionalProjectScope(scope) &&
+          isRecord(currentMeta) &&
+          currentMeta.kind === 'pro' &&
+          options.notifyCloudMirror !== false
         const nextBudget = isRecord(oldBudget) ? { ...oldBudget } : {}
         delete nextBudget[id]
         return {
@@ -623,6 +684,8 @@ export async function deleteProject(
               projectApplicationsKey(id),
               // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
               gameStorageKey(id),
+              ...backupKeys,
+              ...historyKeys,
             ],
           },
         }
@@ -639,7 +702,7 @@ export async function deleteProject(
   })
   if (builderDeletion) notifyProBuilderDeletion(scope)
   if (scope.identity !== captureProjectStorageScope().identity) return
-  if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
+  if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id, scope)
   notifyProjectChanged(id, true)
 }
 
@@ -663,9 +726,38 @@ export async function renameProjectMeta(
   await runSerializedWrite(
     id,
     async (scope) => {
+      if (isPrivateRegionalProjectScope(scope)) {
+        const retained = await retainedAccess(scope, id)
+        if (retained) {
+          if (retained.manifest.deleted) throw Error('O projeto foi excluído.')
+          const editor = await import('./retainedProjectEditor')
+          const saved = await retained.disk.readRetainedParts(scope, retained.manifest, [
+            'meta',
+            'head',
+          ])
+          if (!isRecord(saved.meta)) throw Error('Os metadados do projeto estão preservados.')
+          const old = editor.retainedEditorHead(retained.manifest, saved.head)
+          const stamp = liveProject && readLocalRevision(liveProject)
+          if (stamp && stamp.lineage.durableToken !== old.token)
+            throw new Error('O projeto mudou em outra aba.')
+          const next = stamp
+            ? { ...localHead(stamp), token: crypto.randomUUID() }
+            : editor.detachedHead(old.token)
+          await editor.patchRetainedProject(scope, retained.manifest, old.token, {
+            values: { meta: { ...saved.meta, name, updatedAt: Date.now() } },
+            nextHead: next,
+          })
+          if (stamp) stamp.lineage.durableToken = next.token
+          return
+        }
+      }
       if (liveProject)
         return { done: renameLiveProject(liveProject, name, scope).then(() => undefined) }
-      await loadHistoricalProject(id, scope)
+      if (
+        PROJECT_STORAGE_VERSION !== 4 ||
+        (await readValue(scope.store, projectMetaKey(id))) === undefined
+      )
+        await loadHistoricalProject(id, scope)
       return {
         done: mutateProjectRecord(scope, id, [], (meta) => ({
           puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
@@ -703,6 +795,16 @@ export async function writeProjectThumb(
     await runSerializedWrite(
       id,
       async (scope) => {
+        if (isPrivateRegionalProjectScope(scope)) {
+          const retained = await retainedAccess(scope, id)
+          if (retained) {
+            if (retained.manifest.deleted || options.silent) return
+            const editor = await import('./retainedProjectEditor')
+            await editor.editRetainedAuxiliary(scope, retained.manifest, { thumb: { id, dataUrl } })
+            stored = true
+            return
+          }
+        }
         const done = conditionalWrite(
           scope.store,
           scope.identity,
@@ -736,6 +838,14 @@ export async function loadProjectThumb(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<string | null> {
+  const scope = storageScope ?? captureProjectStorageScope()
+  if (isPrivateRegionalProjectScope(scope)) {
+    const retained = await retainedAccess(scope, id)
+    if (retained) {
+      const v = await retained.disk.readRetainedParts(scope, retained.manifest, ['thumb'])
+      return thumbDataUrlOf(v.thumb) ?? null
+    }
+  }
   const value = await readValue(getStore(storageScope), projectThumbKey(id))
   return thumbDataUrlOf(value) ?? null
 }
@@ -762,200 +872,4 @@ export async function adoptProjectThumbs(
     if (await writeProjectThumb(item.id, item.thumb, { silent: true }, captured)) adopted += 1
   }
   return adopted
-}
-
-function thumbDataUrlOf(value: unknown): string | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
-  const dataUrl = (value as { dataUrl?: unknown }).dataUrl
-  if (typeof dataUrl !== 'string') return undefined
-  if (!dataUrl.startsWith('data:image/') || dataUrl.length > MAX_PROJECT_THUMB_CHARS)
-    return undefined
-  return dataUrl
-}
-
-export function listAllProjects(storageScope?: ProjectStorageScope): Promise<ProjectSummary[]> {
-  return perfSpanAsync('studio:projects:list', () =>
-    listAllProjectsInternal(storageScope, { withThumbs: true }),
-  )
-}
-
-/**
- * A lista LEVE: só os metadados (sem as capas). Para quem só precisa de id/nome/datas —
- * a varredura de desenhos do Pinta e a descida da nuvem comparavam ids pagando 1,5–12 MB
- * de capas em base64 por chamada. A lista de projetos continua usando `listAllProjects`
- * (com capas); o adapter local (`StudioPersistenceAdapter.list`) também.
- */
-export function listProjectSummariesLight(
-  storageScope?: ProjectStorageScope,
-): Promise<ProjectSummary[]> {
-  return perfSpanAsync('studio:projects:list-light', () =>
-    listAllProjectsInternal(storageScope, { withThumbs: false }),
-  )
-}
-
-/**
- * O resumo de UM projeto (meta + capa), para a lista atualizar só o card que mudou
- * (`PROJECT_CHANGED_EVENT`/`PROJECT_THUMB_UPDATED_EVENT`). `null` = não existe mais.
- */
-export async function loadProjectSummaryById(
-  id: string,
-  storageScope?: ProjectStorageScope,
-): Promise<ProjectSummary | null> {
-  const kvStore = getStore(storageScope)
-  const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
-  let summary = toProjectSummary(id, meta)
-  if (!summary) {
-    const legacy = await loadHistoricalProject(id, storageScope)
-    summary = toProjectSummary(id, legacy)
-  }
-  if (!summary) return null
-  const thumbDataUrl = thumbDataUrlOf(thumb)
-  if (thumbDataUrl) summary.thumbDataUrl = thumbDataUrl
-  return summary
-}
-
-/**
- * Os resumos de VÁRIOS projetos num `getMany` só (meta + capa de cada): a lista drena os
- * ids que chegaram juntos (uma descida da nuvem traz vários) sem N idas ao IndexedDB.
- * Ausente/apagado → `null` na posição.
- */
-export async function loadProjectSummariesByIds(
-  ids: readonly string[],
-  storageScope?: ProjectStorageScope,
-): Promise<Array<ProjectSummary | null>> {
-  if (ids.length === 0) return []
-  const kvStore = getStore(storageScope)
-  const values = await readValues(
-    kvStore,
-    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
-  )
-  const out: Array<ProjectSummary | null> = []
-  for (let index = 0; index < ids.length; index += 1) {
-    const id = ids[index] as string
-    let summary = toProjectSummary(id, values[index * 2])
-    if (!summary) {
-      const legacy = await loadHistoricalProject(id, storageScope)
-      summary = toProjectSummary(id, legacy)
-    }
-    if (summary) {
-      const thumbDataUrl = thumbDataUrlOf(values[index * 2 + 1])
-      if (thumbDataUrl) summary.thumbDataUrl = thumbDataUrl
-    }
-    out.push(summary)
-  }
-  return out
-}
-
-async function listAllProjectsInternal(
-  storageScope: ProjectStorageScope | undefined,
-  options: { withThumbs: boolean },
-): Promise<ProjectSummary[]> {
-  const scope = storageScope ?? captureProjectStorageScope()
-  const kvStore = scope.store
-  let allKeys = await readAllKeys(kvStore)
-  if (allKeys.some((key) => typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX))) {
-    notifyRecoveredProjects(scope, await recoverProjectWrites(scope, undefined, allKeys))
-    allKeys = await readAllKeys(kvStore)
-  }
-  let pending: ProjectSummary[] = []
-  if (
-    allKeys.some(
-      (key) =>
-        typeof key === 'string' &&
-        /^sz:(?:v2:)?project(?:-(?:meta|files|state|blocks|assets))?:/.test(key),
-    )
-  ) {
-    const { migrateLocalProjects } = await import('../project-migrations/localProjects')
-    const migrated = await migrateLocalProjects(scope, allKeys)
-    if (scope.identity === captureProjectStorageScope().identity)
-      for (const id of migrated.changed) {
-        notifyMirrorChanged(id)
-        notifyProjectChanged(id)
-      }
-    allKeys = await readAllKeys(kvStore)
-    pending = migrated.pending
-  }
-  const metaKeys = allKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
-  )
-  const metaValues = await readValues(kvStore, metaKeys)
-  const summaries = metaKeys
-    .map((key, index) =>
-      toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
-    )
-    .filter((summary): summary is ProjectSummary => Boolean(summary))
-  const drafts = await listPreservedProjectDrafts(scope, allKeys)
-  const listed = new Set(summaries.map((summary) => summary.id))
-  summaries.push(...drafts.filter((draft) => !listed.has(draft.id)))
-  const preservedIds = new Set(
-    allKeys.flatMap((key) =>
-      typeof key === 'string' && key.startsWith(PROJECT_RECOVERY_PREFIX)
-        ? [key.slice(PROJECT_RECOVERY_PREFIX.length, key.lastIndexOf(':'))]
-        : [],
-    ),
-  )
-  for (const summary of summaries) if (preservedIds.has(summary.id)) summary.hasPreservedEdit = true
-  if (options.withThumbs) {
-    const currentIds = new Set(summaries.map((summary) => summary.id))
-    const pendingIds = new Set(pending.map((summary) => summary.id))
-    for (const summary of summaries) if (pendingIds.has(summary.id)) summary.hasPreservedEdit = true
-    summaries.push(...pending.filter((summary) => !currentIds.has(summary.id)))
-  }
-
-  // Anexa as miniaturas (partição própria) aos summaries que têm uma.
-  if (options.withThumbs && summaries.length > 0) {
-    const thumbValues = await readValues(
-      kvStore,
-      summaries.map((summary) => projectThumbKey(summary.id)),
-    )
-    for (let index = 0; index < summaries.length; index += 1) {
-      const summary = summaries[index]
-      const thumb = thumbDataUrlOf(thumbValues[index])
-      if (summary && thumb) summary.thumbDataUrl = thumb
-    }
-  }
-
-  summaries.sort((a, b) => b.updatedAt - a.updatedAt)
-  return summaries
-}
-
-function notifyRecoveredProjects(scope: ProjectStorageScope, ids: readonly string[]): void {
-  if (scope.identity !== captureProjectStorageScope().identity) return
-  for (const id of new Set(ids)) {
-    notifyMirrorChanged(id)
-    notifyProjectChanged(id)
-  }
-}
-
-/** Primeira abertura histórica: o módulo só entra quando não há registro atual. */
-async function loadHistoricalProject(
-  id: string,
-  storageScope?: ProjectStorageScope,
-): Promise<StoredProjectRecord | null> {
-  const scope = storageScope ?? captureProjectStorageScope()
-  const old = await readValues(scope.store, [
-    `sz:project:${id}`,
-    `sz:project-meta:${id}`,
-    `sz:v2:project-meta:${id}`,
-  ])
-  if (!old.some(Boolean)) return null
-  const { migrateLocalProject } = await import('../project-migrations/localProjects')
-  const migrated = await migrateLocalProject(id, scope)
-  if (migrated && scope.identity === captureProjectStorageScope().identity) {
-    notifyMirrorChanged(migrated)
-    notifyProjectChanged(migrated)
-  }
-  const [meta, files, state, blocks, assets, head] = await readValues(scope.store, [
-    projectMetaKey(id),
-    projectFilesKey(id),
-    projectStateKey(id),
-    projectBlocksKey(id),
-    projectAssetsKey(id),
-    projectHeadKey(id),
-  ])
-  const project =
-    meta && files && state ? assembleProjectRecord(id, meta, files, state, assets, blocks) : null
-  return project
-    ? installLocalRevision(project, scope.identity, isLocalHead(head) ? head : undefined)
-    : null
 }

@@ -1,0 +1,2013 @@
+{
+  "recibos": [
+    {
+      "nome": "completo",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 8.000563936584058,
+          "y": 0.871227191909778,
+          "z": 7.994818222879889,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 223,
+          "tempo": 3.818099999999998,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.818099999999998
+            }
+          ],
+          "modelo": true,
+          "desenhos": 235
+        },
+        {
+          "x": 8.000563936584058,
+          "y": 0.871227191909778,
+          "z": 7.994818222879889,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 232,
+          "tempo": 4.134699999999999,
+          "geracao": 2,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.13330000000000108
+            }
+          ],
+          "modelo": true,
+          "desenhos": 250
+        },
+        {
+          "x": 8.000563936584058,
+          "y": 0.871227191909778,
+          "z": 7.994818222879889,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 241,
+          "tempo": 4.4682999999999975,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.13349999999999912
+            }
+          ],
+          "modelo": true,
+          "desenhos": 265
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 8.000563936584058,
+          "y": 0.8862811091935934,
+          "z": 5.9941182228798855,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 418,
+          "tempo": 7.419200000000029,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.084399999999999
+            }
+          ],
+          "modelo": true,
+          "desenhos": 536
+        },
+        "corrida": {
+          "x": 8.000563936584058,
+          "y": 0.8653569427261063,
+          "z": 5.143778222879891,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 438,
+          "tempo": 7.752700000000033,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.4178999999999986
+            }
+          ],
+          "modelo": true,
+          "desenhos": 556
+        },
+        "alto": {
+          "x": 8.000563936584058,
+          "y": 1.1792432427261084,
+          "z": 5.143778222879891,
+          "vy": 5.897799999999992,
+          "grounded": false,
+          "quadros": 441,
+          "tempo": 7.802800000000033,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.467999999999999
+            }
+          ],
+          "modelo": true,
+          "desenhos": 559
+        },
+        "pouso": {
+          "x": 7.992127684938236,
+          "y": 0.8599798706306788,
+          "z": 5.130144877587746,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 477,
+          "tempo": 8.40290000000003,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.068099999999999
+            }
+          ],
+          "modelo": true,
+          "desenhos": 595
+        },
+        "curva": {
+          "x": 8.24232768493823,
+          "y": 0.9100166879103253,
+          "z": 5.130144877587746,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 487,
+          "tempo": 8.56970000000003,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.234899999999999
+            }
+          ],
+          "modelo": true,
+          "desenhos": 605
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.000563936584058,
+          "y": 0.871227191909778,
+          "z": 7.994818222879889,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 247,
+          "tempo": 4.568199999999999,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.2333999999999997
+            }
+          ],
+          "modelo": true,
+          "desenhos": 271
+        },
+        "depois": {
+          "x": 8.000563936584058,
+          "y": 0.871227191909778,
+          "z": 7.994818222879889,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 247,
+          "tempo": 4.568199999999999,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999998
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.2333999999999997
+            }
+          ],
+          "modelo": true,
+          "desenhos": 280
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279126,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 226,
+          "tempo": 3.8514000000000026,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 2,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001500000000004
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.8514000000000026
+            }
+          ],
+          "modelo": true,
+          "desenhos": 919
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [],
+      "persistido": true
+    },
+    {
+      "nome": "buraco",
+      "modo": "preview",
+      "ciclos": [
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 245,
+          "tempo": 4.1515999999999975,
+          "geracao": 1,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 245
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 254,
+          "tempo": 4.318300000000001,
+          "geracao": 2,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 254
+        },
+        {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 263,
+          "tempo": 4.485000000000002,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 263
+        }
+      ],
+      "comparadas": 0,
+      "movimentos": {
+        "caminhada": {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 2.000700000000001,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 369,
+          "tempo": 6.2523000000000195,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 391
+        },
+        "inicioQueda": {
+          "x": 10,
+          "y": -0.06258414000000023,
+          "z": 4.526700034047644,
+          "vy": -5.1370000000000005,
+          "grounded": false,
+          "quadros": 472,
+          "tempo": 7.969700000000035,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 494
+        },
+        "queda": {
+          "x": 10,
+          "y": -10.242536779999993,
+          "z": 4.526700034047644,
+          "vy": -21.63919999999999,
+          "grounded": false,
+          "quadros": 517,
+          "tempo": 8.719800000000026,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 539
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 269,
+          "tempo": 4.5850000000000035,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 269
+        },
+        "depois": {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 269,
+          "tempo": 4.5850000000000035,
+          "geracao": 3,
+          "chegada": [0, 0.58, 0],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001499999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 278
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 10,
+          "y": 0.5800099999999999,
+          "z": 0,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 241,
+          "tempo": 4.0181999999999976,
+          "geracao": 1,
+          "chegada": [0, 0.58, 0],
+          "partida": 2,
+          "proprio": true,
+          "recursos": {
+            "geometries": 4,
+            "textures": 3
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001599999999997
+          },
+          "cenas": [
+            {
+              "arvores": 2,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [],
+          "modelo": false,
+          "desenhos": 795
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [],
+      "persistido": true
+    },
+    {
+      "nome": "completo",
+      "modo": "export",
+      "ciclos": [
+        {
+          "x": 8.000135214555577,
+          "y": 0.8703177333988059,
+          "z": 7.998757570070467,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 230,
+          "tempo": 3.934899999999997,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.934899999999997
+            }
+          ],
+          "modelo": true,
+          "desenhos": 244
+        },
+        {
+          "x": 8.000135214555577,
+          "y": 0.8703177333988059,
+          "z": 7.998757570070467,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 239,
+          "tempo": 4.268199999999997,
+          "geracao": 2,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.1331999999999989
+            }
+          ],
+          "modelo": true,
+          "desenhos": 259
+        },
+        {
+          "x": 8.000135214555577,
+          "y": 0.8703177333988059,
+          "z": 7.998757570070467,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 248,
+          "tempo": 4.601799999999996,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.13340000000000055
+            }
+          ],
+          "modelo": true,
+          "desenhos": 274
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 8.000135214555577,
+          "y": 0.88531163788398,
+          "z": 5.998057570070486,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 351,
+          "tempo": 6.3190000000000195,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 1.8505999999999985
+            }
+          ],
+          "modelo": true,
+          "desenhos": 389
+        },
+        "corrida": {
+          "x": 8.000135214555577,
+          "y": 0.866171449908169,
+          "z": 5.147717570070487,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 371,
+          "tempo": 6.652500000000025,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.1840999999999977
+            }
+          ],
+          "modelo": true,
+          "desenhos": 409
+        },
+        "alto": {
+          "x": 8.000135214555577,
+          "y": 1.179504709908169,
+          "z": 5.147717570070487,
+          "vy": 5.8999999999999995,
+          "grounded": false,
+          "quadros": 374,
+          "tempo": 6.702500000000025,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.2340999999999975
+            }
+          ],
+          "modelo": true,
+          "desenhos": 412
+        },
+        "pouso": {
+          "x": 7.991791798082705,
+          "y": 0.8608535488094,
+          "z": 5.134234250408353,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 410,
+          "tempo": 7.302700000000031,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.8342999999999967
+            }
+          ],
+          "modelo": true,
+          "desenhos": 448
+        },
+        "curva": {
+          "x": 8.216941798082702,
+          "y": 0.9057321918606995,
+          "z": 5.134234250408353,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 419,
+          "tempo": 7.452800000000034,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 2.9843999999999964
+            }
+          ],
+          "modelo": true,
+          "desenhos": 457
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.000135214555577,
+          "y": 0.8703177333988059,
+          "z": 7.998757570070467,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 254,
+          "tempo": 4.701799999999998,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.23340000000000058
+            }
+          ],
+          "modelo": true,
+          "desenhos": 280
+        },
+        "depois": {
+          "x": 8.000135214555577,
+          "y": 0.8703177333988059,
+          "z": 7.998757570070467,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 254,
+          "tempo": 4.701799999999998,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001399999999996
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.23340000000000058
+            }
+          ],
+          "modelo": true,
+          "desenhos": 289
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.000133477159102,
+          "y": 0.870314047817227,
+          "z": 7.998773534279126,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 226,
+          "tempo": 3.8514999999999993,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 2,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.001299999999998
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.8514999999999993
+            }
+          ],
+          "modelo": true,
+          "desenhos": 697
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": ["Service Worker registration blocked by Playwright"],
+      "rede": [],
+      "persistido": true
+    },
+    {
+      "nome": "completo",
+      "modo": "jogar",
+      "ciclos": [
+        {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279127,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 230,
+          "tempo": 3.9181999999999984,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.9181999999999984
+            }
+          ],
+          "modelo": true,
+          "desenhos": 243
+        },
+        {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279127,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 239,
+          "tempo": 4.251599999999999,
+          "geracao": 2,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.11660000000000037
+            }
+          ],
+          "modelo": true,
+          "desenhos": 258
+        },
+        {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279127,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 250,
+          "tempo": 4.6182,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.11660000000000037
+            }
+          ],
+          "modelo": true,
+          "desenhos": 275
+        }
+      ],
+      "comparadas": 441,
+      "movimentos": {
+        "caminhada": {
+          "x": 8.000133477159102,
+          "y": 0.8852731873896298,
+          "z": 5.9982235342791235,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 433,
+          "tempo": 7.669300000000028,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.1676999999999995
+            }
+          ],
+          "modelo": true,
+          "desenhos": 553
+        },
+        "corrida": {
+          "x": 8.000133477159102,
+          "y": 0.866209974868468,
+          "z": 5.147883534279129,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 452,
+          "tempo": 7.98620000000003,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.484599999999999
+            }
+          ],
+          "modelo": true,
+          "desenhos": 572
+        },
+        "alto": {
+          "x": 8.000133477159102,
+          "y": 1.178989754868476,
+          "z": 5.147883534279129,
+          "vy": 5.902199999999969,
+          "grounded": false,
+          "quadros": 455,
+          "tempo": 8.036100000000031,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.5345000000000004
+            }
+          ],
+          "modelo": true,
+          "desenhos": 575
+        },
+        "pouso": {
+          "x": 7.991790171335315,
+          "y": 0.8608921442948725,
+          "z": 5.134400393430672,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 491,
+          "tempo": 8.636300000000022,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.134699999999998
+            }
+          ],
+          "modelo": true,
+          "desenhos": 611
+        },
+        "curva": {
+          "x": 8.216940171335311,
+          "y": 0.9056938736631008,
+          "z": 5.134400393430672,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 500,
+          "tempo": 8.78640000000002,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 4.2848
+            }
+          ],
+          "modelo": true,
+          "desenhos": 620
+        }
+      },
+      "pausa": {
+        "antes": {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279127,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 256,
+          "tempo": 4.718200000000001,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.21660000000000035
+            }
+          ],
+          "modelo": true,
+          "desenhos": 281
+        },
+        "depois": {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279127,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 256,
+          "tempo": 4.718200000000001,
+          "geracao": 3,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 1,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0014999999999965
+          },
+          "cenas": [
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 0,
+              "pai": false,
+              "ativa": false
+            },
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 0.21660000000000035
+            }
+          ],
+          "modelo": true,
+          "desenhos": 290
+        }
+      },
+      "recomeco": {
+        "atual": {
+          "x": 8.000133477159102,
+          "y": 0.8703140478172269,
+          "z": 7.998773534279126,
+          "vy": 0,
+          "grounded": true,
+          "quadros": 225,
+          "tempo": 3.8347999999999973,
+          "geracao": 1,
+          "chegada": [8, 0.8700308994593138, 8],
+          "partida": 2,
+          "proprio": true,
+          "recursos": {
+            "geometries": 30,
+            "textures": 29
+          },
+          "orcamento": {
+            "nivel": "alta",
+            "decidido": true,
+            "sonda": 4.0016
+          },
+          "cenas": [
+            {
+              "arvores": 6,
+              "pai": true,
+              "ativa": true
+            }
+          ],
+          "clipes": [
+            {
+              "quantidade": 4,
+              "tempo": 3.8347999999999973
+            }
+          ],
+          "modelo": true,
+          "desenhos": 943
+        },
+        "anteriores": [
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          },
+          {
+            "arvores": 0,
+            "pai": false,
+            "ativa": false
+          }
+        ]
+      },
+      "final": [
+        {
+          "recursos": {
+            "geometries": 0,
+            "textures": 0
+          },
+          "contextoPerdido": true
+        }
+      ],
+      "erros": [],
+      "consoleErros": [],
+      "avisos": [],
+      "rede": [
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111114?reload=0",
+        "http://127.0.0.1:5413/api/studio/play/11111111-1111-4111-8111-111111111114?reload=0"
+      ],
+      "persistido": true
+    }
+  ],
+  "nota": "Jogo 3D real via Blockly/IR, partida gerenciada e avatar do catálogo. Posição do início compilado registrada; percurso medido começa num trecho parcial conhecido da ponte, sem simular travessia por teletransporte. Evento pagehide persistido sintético verifica contrato; não é navegação real de bfcache. API de publicação local controlada; staging/conta real e dispositivos físicos não foram validados. Não aprova IK/direção de arte."
+}

@@ -1,5 +1,105 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Composição pelas imagens: estado atual (16/11/2026)
+
+O `/macro` padrão monta o piloto completo para avaliação do conjunto: praça contínua de lajes do
+Templo, quatro fachadas Fantasy/Cidade, oficina Adventure Land interrompida, seis canteiros, lago
+de catálogo no centro `(39,127)`, ponte arqueada Templo e três lances de escada do Farol. As três
+imagens de referência orientam a composição; não se afirma reprodução pixel a pixel nem aceite
+artístico humano. Entrega e evidências: `docs/qa/2026-11-15-faisca-concepts.md`.
+
+O manifesto prepara 93 modelos a partir do pin `67b72d4a1a90c0e95c6217341dccfc723ebe8c49`; a seleção
+padrão carrega 44. Peças da Morada conservam seu pin individual. O exportador deriva os acabamentos
+com origem e digest próprios; nunca altera o GLB original. Madeira violeta/pedra da ponte e solo
+cultivado têm acabamentos identificados. Reino e complementos autorais não são modelos oficiais Kingdom.
+
+Lajes e praça usam malha/UV de catálogo, recortadas nas juntas e assentadas no relevo. A mesma malha
+gera o Trimesh físico. Sob a escada, terreno e amostragem usam o contorno recortado real: não voltar
+à interpolação do grid de 4 m nessa região. Escada em escala uniforme 0,65; ponte 0,75, verificadas
+com o controlador nativo. Todos os volumes de colisão dos prefabs são preservados, incluindo telhados.
+
+Contorno visual do lago, furo do terreno, bacia e nado são compartilhados. A queda pequena deriva de
+componentes e materiais existentes, assentados nas rochas reais; não é uma cachoeira pronta do kit.
+`preparar-gpu.ts` antecipa texturas e compileAsync da cena montada antes de liberar locomoção. As luzes
+noturnas ficam fora do grupo temporariamente oculto para que a preparação considere a iluminação.
+
+As seis placas físicas recebem texto nas duas faces, ligado ao modelo e iluminado pelo ambiente.
+Etiquetas flutuantes são somente inspeção. Lote Morada 24 × 24 m livre, sem integração da casa da conta.
+Chave de ensaio: `arquipelago:faisca:ensaio:concepts:templo:l2`; demais variantes têm chaves separadas.
+Patins/mochila permanecem no recorte próprio; não mudar campanha, recompensas, inventário, velocidades
+ou identidades Kids/adulta para esta composição. Não ampliar aos seis distritos antes da avaliação.
+
+## Histórico M3, Gate 2: implantação inicial (15/11/2026)
+
+O registro abaixo descreve o marco anterior; a seção de composição pelas imagens prevalece para a cena atual.
+
+O Gate 1 foi liberado com ajustes pelo usuário; a primeira passada ambiental é em `/macro`, ainda
+sem aceite artístico final. `implantacao-da-faisca.ts` declara os volumes de estudo e áreas de solo.
+`assentamento-da-faisca.ts` usa a altura baricêntrica dos mesmos triângulos de 4 m do Rapier, corrigindo
+contato e bases. Correio, vizinho leste e moinho têm patamares locais no relevo compartilhado; não são
+pedestais altos improvisados. Pás do moinho usam o apoio do corpo, e a ponte conserva sua origem medida.
+
+`mundo/faisca/pintura-do-solo.tsx` compõe manchas e caminhos numa textura compartilhada de 2048²,
+aplicada ao próprio material do terreno. Não acrescentar faixas coplanares ou compensações em Y para
+disfarçar z-fighting. Vegetação e carpintaria de referência usam instâncias e liberação explícita.
+Quadro, bancos, balcão e lacre ainda são volumes de estudo, sem conceder progresso de campanha.
+
+A Curadoria 01 foi recebida durante o Gate 2 e seu ensaio A/B foi aprovado pelo usuário. O arquivo
+original está em `docs/plans/2026-11-15-faisca-m3-curadoria01.md`. `prova-curadoria-faisca.ts` declara
+26,5 m de módulos na bancada isolada, ligados pelos encaixes do catálogo sem escala não uniforme.
+`?curadoria=a|b` compara a referência provisória com GLBs reais, sem dupla faixa e sem gravar a posição
+do ensaio. As oito peças extras têm `ensaio:true` no manifesto e só são carregadas nesse modo. O padrão
+continua com 23 peças. Adventure Land tem prioridade quando função, escala e composição são adequadas;
+não promover a pintura provisória a acabamento artístico final nem substituir o lago sem ensaio próprio.
+
+`playground/faisca-vistas.tsx` declara fotografias por `?vista=porta|praca|costa|oficina|farol|subida|ponte-sul|ponte-norte`.
+São câmeras fixas de inspeção, com FOV 55; não mudam a câmera normal, nem salvam o posicionamento na conta
+ou na chave do ensaio. O HUD técnico fica oculto somente nas fotografias. Comparar antes/depois no mesmo
+enquadramento e observar também a câmera normal em movimento.
+
+Patins e mochila são um recorte separado, descrito em `docs/plans/2026-11-15-faisca-patins-mochila-qualidade.md`.
+Não tornar obrigatórios, duplicar inventário, substituir capas ou presumir ausência de clipping. A bolsa
+`costas_bolsa_saco` é candidata; mochila universal ainda depende de teste/arte. Nenhuma recompensa de conta
+ou comportamento V1 foi modificado neste Gate 2.
+
+## Nova geografia macro (15/11/2026)
+
+O mundo novo começa pelo blockout `/macro`, em `playground/arquipelago-macro.tsx`. Regras puras em
+`sistemas/geografia-do-arquipelago.ts`, `setores-do-arquipelago.ts` e `ponte-do-arquipelago.ts`;
+renderizadores em `mundo/macro/`. Avatar em escala 1, sete envelopes de 520–640 m, setores de 80 m,
+um oceano compartilhado e ponte modular Faísca–Bosque. `Personagem` recebe partida/interior e
+`Camera` recebe altura/base do cenário; ambos conservam o controlador e as interações existentes.
+O estado do ensaio é local ao playground e não concede Núcleo nem altera contas. A dona confirmou
+que só administradores acessam o jogo: não criar migração nem compatibilidade com o mundo compacto.
+Preservar identidade e estilo visuais das interfaces adulta e Kids; organização, fluxos e componentes
+podem ser adaptados à nova aventura. O painel técnico do playground não é uma proposta de HUD.
+Plano e aceite: `docs/plans/2026-11-15-arquipelago-macro-design.md`.
+
+## Faísca: mapa e piloto artístico (15/11/2026)
+
+`sistemas/faisca.ts` declara seis distritos, lugares, anel, atalhos e o relevo da Faísca; os ramais
+costeiros usam as âncoras já testadas. Lugares de chegada são externos aos volumes dos modelos.
+`mundo/faisca/` monta caminhos, piloto, coelha e medição; não é a campanha nem a Morada integrada.
+O lote da casa permanece reservado. O palco de conversa usa as classes existentes da Capi e a
+posição real do osso Head da coelha; a ferramenta técnica fica oculta durante a conversa.
+
+`scripts/exportar-arte-faisca.ts` lê objetos Git do commit aprovado, prepara a seleção atual em
+`output/faisca-arte` e gera `arte.generated.ts`, com origem, digest, dimensões, caixas e clipes.
+O servidor local só serve nomes do manifesto. O carregador valida SHA-256, deduplica texturas,
+cancela e libera recursos na saída; uma falha parcial mantém o bloco e permite tentar novamente.
+Peças repetidas usam instâncias, incluindo o buffer de morph dos modelos que o possuem.
+
+A pedido do usuário, a velocidade também está em teste: Exploração 1,5/3,4 m/s, Ágil 1,7/3,9;
+`?ritmo=referencia` reproduz o perfil anterior. `ritmo-da-aventura.ts`, `MUNDO.passo` e
+`personagem/passada.ts` sincronizam fase e amplitude por IK, sem escalar os ossos. A lógica extra
+só vale no perfil macro. Pulo, água, patins e modos especiais mantêm seus clipes; a passada extra
+não se aplica a eles. O teste com GLB real é pulado quando o arquivo privado não está disponível.
+
+Persistência de ensaio: usar a chave da variante ativa, sem migração. Guardar último ponto de terreno
+livre, não o chão sob um sólido ou sob a ponte dos Campos. `medicao-de-percurso.ts` não conta
+teleporte como caminhada; usa tempo ativo sem o truncamento de dt das animações. Plano atual:
+`docs/plans/2026-11-15-faisca-blockout-artistico-design.md`.
+
 ## Morada canônica (14/11/2026)
 
 A casa e o quintal usam o documento Morada da plataforma, por `lerCasaMorada` e
@@ -952,6 +1052,22 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
 - **Sela:** o `montar` e o `desmontar` da arte são de sela baixa (`selaBaixa`). A do dino é alta
   (0,70 m nativos): a arte pediu o corte direto, como no vagonete. Dirigir e ajoelhada no vagonete
   são modos especiais prontos para os veículos.
+- **Empurrar em três alturas (15/11/2026):** o corpo dinâmico diz a altura no `userData`
+  (`{ empurrao: { altura, encostaMais? } }`, `comoSeEmpurra`); `jeitoDeEmpurrar` escolhe
+  `empurrar_baixo` (até 0,25 m do clipe: o tronco do lago e a pedra solta, redondos, com a face
+  0,02 m do clipe mais perto), `empurrar_meio` (até 0,45 m: o caixote e o cogumelo solto) ou o
+  `empurrar` de pé. A faixa de 0,25 a 0,34 m não tem variação na arte e fica com o meio; nenhum
+  objeto do jogo cai nela. Objeto novo que se empurra declara a altura.
+- **Costas (15/11/2026, `personagem/costas.ts`):** com o planador e fora do voo, o planador dobrado
+  vai nas costas (`vestirAsCostas`, o arquivo pela peça de costas vestida, `situationFor` do core);
+  sai sentada (o encosto cortaria), com capa, com as roupas e os cabelos da lista e, atrás de cada
+  bolsa, com os cabelos que batem nele (`hiddenWithByBack`). Peça de costas e fardo saem nos clipes do
+  `offIn` que valem agora (`clipesDoCorpo`: deitada, empurrando agachada ou de meia altura, nadando,
+  boiando, entrando e saindo da água); o personagem passa o jeito do empurrão e o nado como estado,
+  e o `AvatarDoJogo` vê a saída da água (`saindoDaAgua` da locomoção). No barco e na água rasa o
+  fardo fica: a arte mediu os 21 pontos de barco (`seatedInBoatBack` no catálogo). O braço sai da frente da mochila e do fardo nas corridas pelas camadas da arte
+  (`armLayers`, o mesmo `BracoComObjeto` da lanterna). A peça de baixo fixa, as variantes montadas e
+  a troca dos vestidos do pack pelos nossos com shortinho são do desenho comum (`PackAvatarRig`).
 - **Objetos de mão** (`personagem/objeto-na-mao.tsx`): um por vez (`objetoNaMao`): a barra no
   planador, o do gesto, a lanterna acesa. Os dedos fecham pela `pegada` da arte (`fingers` no
   catálogo); o braço afasta pelas camadas largas do balde. Deitada e levantando da cama, o chapéu

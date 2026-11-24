@@ -132,18 +132,42 @@ export function createPythonWorkspaceDraft(
   return draft
 }
 
-/** Capture both parts atomically at the live editor boundary. */
+/**
+ * Capture both parts atomically at the live editor boundary. `kept` são os rascunhos que não
+ * reabriram (crus): voltam para a gravação junto dos de agora, para não sumirem.
+ */
 export function capturePythonWorkspace(
   project: PythonClassicProjectDocument,
   path: string,
   workspace: Record<string, unknown>,
   rootIds: readonly string[],
+  kept: readonly unknown[] = [],
 ) {
   const { program, scratch } = splitPythonWorkspace(workspace)
-  return { draft: createPythonWorkspaceDraft(project, path, program, rootIds), scratch }
+  const blocks = record(workspace.blocks) ? workspace.blocks : { languageVersion: 0 }
+  const live =
+    scratch && record(scratch.blocks) && Array.isArray(scratch.blocks.blocks)
+      ? scratch.blocks.blocks
+      : []
+  return {
+    draft: createPythonWorkspaceDraft(project, path, program, rootIds),
+    scratch: kept.length ? { blocks: { ...blocks, blocks: [...live, ...kept] } } : scratch,
+  }
 }
 
 /** Detached and globally bounded; Blockly still validates each workspace before recovery. */
+/**
+ * Rascunho salvo com a área única "Programa" (antes das áreas do projeto, 22/11/2026): ele não
+ * reabre mais, então conta como ausente e o arquivo abre numa projeção nova (uma oferta de
+ * recuperação que nunca restaura só travaria a criança).
+ */
+function savedWithTheProgramArea(workspace: unknown) {
+  const blocks = record(workspace) && record(workspace.blocks) ? workspace.blocks.blocks : undefined
+  return (
+    Array.isArray(blocks) && blocks.some((block) => record(block) && block.type === 'sz_py_program')
+  )
+}
+
 function readDrafts(project: PythonProjectDocument): {
   drafts: PythonWorkspaceDraft[]
   scratch: PythonWorkspaceState['scratch']
@@ -158,7 +182,10 @@ function readDrafts(project: PythonProjectDocument): {
   const state = decodeState(copyStudioProjectJson(project.blocksState, limits))
   if (!state) return { drafts: [], scratch: [] }
   const drafts = state.drafts.filter(
-    (draft) => draft.path.endsWith('.py') && project.files[draft.path] === draft.baseSource,
+    (draft) =>
+      draft.path.endsWith('.py') &&
+      project.files[draft.path] === draft.baseSource &&
+      !savedWithTheProgramArea(draft.workspace),
   )
   return {
     drafts,

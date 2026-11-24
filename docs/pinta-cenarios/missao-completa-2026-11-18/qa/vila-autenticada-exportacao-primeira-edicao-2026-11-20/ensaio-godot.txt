@@ -1,0 +1,62 @@
+extends SceneTree
+var failed := false
+func require(ok: bool, message: String) -> void:
+    if not ok:
+        failed = true
+        push_error(message)
+func _initialize() -> void:
+    call_deferred("run")
+func run() -> void:
+    var game: Variant = load("res://main.tscn").instantiate()
+    root.add_child(game)
+    await process_frame
+    game.set_physics_process(false)
+    require(game.scene_data.layers.size() == 18, "Missing layers")
+    require(game.scene_data.tilesets.size() == 2, "Missing tilesets")
+    require(game.scene_data.sets.size() == 1, "Missing linked set")
+    require(game.map_objects.size() >= 6, "Missing objects")
+    require(game.animated_cells.size() > 0, "Missing water animation")
+    for layer in game.scene_data.layers:
+        if layer.name == "Chão":
+            require(layer.cells[0] == -1 and layer.cells[1] == 15, "Actual edit missing")
+    var start_y: float = game.player.global_position.y
+    game.set_physics_process(true)
+    Input.action_press("ui_down")
+    for frame in range(10):
+        await physics_frame
+    Input.action_release("ui_down")
+    require(game.player.global_position.y > start_y + 5, "Keyboard movement failed")
+    game.player.global_position = Vector2(64,68)
+    Input.action_press("ui_right")
+    for frame in range(20):
+        await physics_frame
+    Input.action_release("ui_right")
+    var wall_x: float = game.player.global_position.x
+    require(wall_x >= 64 and wall_x <= 76, "House collision failed")
+    game.player.global_position = Vector2(104,104)
+    for frame in range(3):
+        await physics_frame
+    require(game.scene_data.name == "qa-cabana-20261120", "Door to cabin failed")
+    game.player.global_position = Vector2(84,36)
+    for frame in range(3):
+        await physics_frame
+    require(game.scene_data.name == "qa-vila-floresta-20261120", "Return door failed")
+    game.set_physics_process(false)
+    var animation: Dictionary = game.animated_cells[0]
+    game.elapsed = 0
+    game._physics_process(0)
+    var first: Vector2i = animation.layer.get_cell_atlas_coords(animation.position)
+    game._physics_process(0.2)
+    var second: Vector2i = animation.layer.get_cell_atlas_coords(animation.position)
+    require(first != second, "Water frame did not advance")
+    for child in game.player.get_children():
+        if child is Camera2D:
+            child.enabled = false
+    game.player.global_position = Vector2(32,32)
+    await process_frame
+    await RenderingServer.frame_post_draw
+    var image: Image = root.get_texture().get_image()
+    require(not image.is_empty(), "No GPU capture")
+    require(image.save_png("res://../godot-owned.png") == OK, "Cannot save GPU capture")
+    print("OWNED_VILA_GODOT ", JSON.stringify({"failed":failed,"version":Engine.get_version_info().string,"layers":18,"maps":2,"wall_x":wall_x,"keyboard":true,"door_cycle":true,"animation":true,"gpu_capture":true}))
+    quit(1 if failed else 0)

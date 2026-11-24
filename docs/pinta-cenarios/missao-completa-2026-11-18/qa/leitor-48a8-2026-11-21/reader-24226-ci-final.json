@@ -1,0 +1,97 @@
+{
+  "at": "2026-11-21T03:54:59.084Z",
+  "run": 44860880266,
+  "jobs": [
+    {
+      "id": 136713735129,
+      "name": "ci",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": ["Testes do Molda no runtime corrigido de workers"]
+    },
+    {
+      "id": 136713735143,
+      "name": "desktop-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735175,
+      "name": "studio-e2e-chromium-1",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735182,
+      "name": "community-kids-e2e",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735204,
+      "name": "studio-python-extensions",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735217,
+      "name": "studio-storage-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735223,
+      "name": "studio-e2e-chromium-2",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735234,
+      "name": "members-image",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735238,
+      "name": "studio-e2e-chromium-3",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735278,
+      "name": "studio-e2e-webkit",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735306,
+      "name": "arquipelago",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136713735367,
+      "name": "studio-e2e-firefox",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 136719320857,
+      "name": "deploy-staging",
+      "status": "completed",
+      "conclusion": "skipped",
+      "failedSteps": []
+    }
+  ]
+}

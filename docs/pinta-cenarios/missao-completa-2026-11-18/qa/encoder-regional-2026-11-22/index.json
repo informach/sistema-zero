@@ -1,0 +1,32 @@
+{
+  "base": "57dd5ee14fbb018c1232d26cdadfc984b59d2cb8",
+  "after": "132f8cf50c17287493f6fbdf92a74ce1d3187d2a",
+  "fullSuiteAfter": false,
+  "records": [
+    {
+      "file": "full-before.gz",
+      "sha256": "ab4b754adafb25304c0eb880573ba0cced87d1b1ff9fee366d37e49e29d1d9b6",
+      "rawSha256": "8921ccf5a4f65cf6f595732f1d4d7a966bcbbc128f948c856dd67d67f9a0c649"
+    },
+    {
+      "file": "quota-before.gz",
+      "sha256": "27321e1ee39e198625793bf39698146873a4f60c2830054694b44f683293215e",
+      "rawSha256": "093a7976d746ed97dbc03b60ee82be0049771a01ffe100e0ad9c60e3e83e71a1"
+    },
+    {
+      "file": "profile.gz",
+      "sha256": "ffb902dad185fd251cd1236564439eaeca17e493665bf4d844f146ffcf091949",
+      "rawSha256": "e82760ef02462d96642e1e166466e7a24c7acc4fe9a1b7b9dd66a447a113341b"
+    },
+    {
+      "file": "core-after.gz",
+      "sha256": "e90dadf19015e401523c5c14b8efcc87d19459ebd4e611696380341769322d64",
+      "rawSha256": "75e3c6030909f0d8be1e2cdefed537607728dcfab39d1a8d9c1ab1ff64e5db54"
+    },
+    {
+      "file": "quota-after.gz",
+      "sha256": "e7773b7b2a0badb1379bb71ca306d854e8ed50eafe0c028a8a7c578729f7d53b",
+      "rawSha256": "1039d2da0d149d2542df42308a728dea888ba6f6789d95b58a1df78040eb31f7"
+    }
+  ]
+}

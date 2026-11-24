@@ -72,8 +72,8 @@ function paletteAt(level: LearningProfile['level']): { types: Set<string>; names
 }
 
 describe('Auditoria Canvas 3D — inventário e progressão', () => {
-  it('mantém os 71 blocos em um único grupo e no catálogo da aula', () => {
-    expect(CANVAS3D_BLOCKS).toHaveLength(71)
+  it('mantém os 74 blocos em um único grupo e no catálogo da aula', () => {
+    expect(CANVAS3D_BLOCKS).toHaveLength(74)
     expect(CANVAS3D_BLOCK_TYPES.map(String).sort()).toEqual(
       CANVAS3D_BLOCKS.map((block) => block.type).sort(),
     )

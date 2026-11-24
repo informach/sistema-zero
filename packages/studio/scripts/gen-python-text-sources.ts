@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { formatGeneratedSource } from '../../../scripts/format-generated-source'
 
 import {
   VISUAL_REFERENCE_GAME_FILES,
@@ -32,6 +33,12 @@ const bundles = [
     exportName: 'PYTHON_AUDIO_NATIVE_SOURCES',
   },
   // A Pygame-ce desktop export copies the learner module `pinta` and the platform fonts.
+  {
+    directory: 'src/runtime/python/raylib/py',
+    paths: ['cenario.py'],
+    output: 'src/runtime/python/raylib/cenarioSources.generated.ts',
+    exportName: 'RAYLIB_CENARIO_SOURCES',
+  },
   {
     directory: 'src/runtime/python/pygame/py',
     paths: ['pinta.py'],
@@ -153,24 +160,7 @@ outputs.push({
   count: VISUAL_REFERENCE_GAMES.length,
 })
 for (const { output: outputName, raw, count } of outputs) {
-  const formatter = Bun.spawn(
-    [
-      process.execPath,
-      '--no-env-file',
-      'x',
-      '--no-install',
-      'biome',
-      'format',
-      `--stdin-file-path=${outputName}`,
-    ],
-    { cwd: studio, stdin: new Blob([raw]), stdout: 'pipe', stderr: 'pipe' },
-  )
-  const [code, generated, errors] = await Promise.all([
-    formatter.exited,
-    new Response(formatter.stdout).text(),
-    new Response(formatter.stderr).text(),
-  ])
-  if (code !== 0) throw new Error(`Falha ao formatar ${outputName}: ${errors}`)
+  const generated = await formatGeneratedSource(raw, outputName, studio)
   const output = join(studio, outputName)
   if (check) {
     const actual = await readFile(output, 'utf8')

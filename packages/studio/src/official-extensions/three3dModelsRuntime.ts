@@ -173,23 +173,22 @@ const THREE_MODELS_TEMPLATE = `
     }
 
     // Aquecer = compilar o shader e subir a textura antes do primeiro uso (best-effort).
+    // Pelo compile, nunca pelo compileAsync: os dois pedem os mesmos programas (em paralelo
+    // quando o navegador tem KHR_parallel_shader_compile), e o compileAsync só acrescenta uma
+    // conferência a cada 10 ms que lê o programa de cada material num setTimeout, fora de
+    // qualquer catch. Quando a partida recomeça (a tecla R) antes de os shaders ficarem prontos,
+    // os materiais são descartados, o programa some e o jogo para com "reading 'isReady'"
+    // (Ilha do Farol, Aula 2, Parte 6, 22/11/2026).
     function warm(root) {
       var renderer = host.getRenderer ? host.getRenderer() : null;
       var scene = host.getScene ? host.getScene() : null;
       var camera = host.getCamera ? host.getCamera() : null;
       if (!root || !renderer || !scene || !camera) return;
       try {
-        var canCompileAsync = renderer.compileAsync &&
-          (!renderer.extensions || !renderer.extensions.has || renderer.extensions.has('KHR_parallel_shader_compile'));
-        if (canCompileAsync) {
-          var compilation = renderer.compileAsync(root, camera, scene);
-          if (compilation && compilation.catch) {
-            compilation.catch(function (e) {
-              if (!isGone()) host.warnOnce('model-warm', 'não consegui aquecer um modelo 3D: ' + e);
-            });
-          }
-        } else if (renderer.compile) renderer.compile(root, camera, scene);
-      } catch (e) {}
+        if (renderer.compile) renderer.compile(root, camera, scene);
+      } catch (e) {
+        if (!isGone()) host.warnOnce('model-warm', 'não consegui aquecer um modelo 3D: ' + e);
+      }
       try {
         root.traverse(function (o) {
           if (!o.isMesh || !o.material || !renderer.initTexture) return;

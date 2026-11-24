@@ -1,0 +1,230 @@
+{
+  "baseline": "5cb6631e7",
+  "records": [
+    {
+      "file": "pinta-full.log.gz",
+      "bytes": 83805,
+      "sha256": "59a1aef6112d5a747f28aa476b3a1d0b953080cdcf916548d9fc49abe392819f",
+      "rawSha256": "6a3346e3565767531bb04b439f181b1c05cd19e77ce62bf5758c16e6be853b38"
+    },
+    {
+      "file": "focused.log.gz",
+      "bytes": 1198,
+      "sha256": "60b4b334b500fd7074a0427e81749097f889c8632ff98ab99e85773b20a18413",
+      "rawSha256": "f2da2e895db78932c862844fc70880385bc851d511e40c9ab2785703363593de"
+    },
+    {
+      "file": "core-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generated.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "python-generated.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 65,
+      "sha256": "1e53aea3963430e43d594b3200fd52b162f8d4a4cd03f9a0f767740d23022946",
+      "rawSha256": "5fdeac29d45dc9a995460783e96c6b2df6bca6ee389bead5d5cc179f7b28cc37"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 2942,
+      "sha256": "2ccd525a453228d5a101581b869c367f07ca3ead97bafece8bb670b02f42a70b",
+      "rawSha256": "55ab223326e0fb0675ceec81e9f111dc824da50fb6a588cf8053b13e9348a86d"
+    },
+    {
+      "file": "browser-focused.log.gz",
+      "bytes": 777,
+      "sha256": "b18166ae38e3a3bd76f5accf5f2df4981a3fb776d076617110a4ef3126c285c7",
+      "rawSha256": "24b9f86642c4540e0878d43b4ca26d310dfcecaf99d8a9645fcc070691f8b454"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2122,
+      "sha256": "9919ca7ca17dc6ee36aa82c71d9ac0ddb2ccae43dd4e830bb04fae62c48f7014",
+      "rawSha256": "777c9de72099aae33072a9e303652b84302bedcff3a5caeee0536f5ea65e0efd"
+    },
+    {
+      "file": "first.log.gz",
+      "bytes": 911,
+      "sha256": "19a395eb811f4acbec0327501dbedb6b33f920bc209eee61526b97f6d35122ce",
+      "rawSha256": "7ec030602e2afc108cbb7f14b11dc929370e00bd687d9dc24db5c5063b1e6286"
+    },
+    {
+      "file": "buffer-before.log.gz",
+      "bytes": 1141,
+      "sha256": "2a1322b0280a7b5054d90e7f6d4a948d6687d6024f27081f0db626938ed19110",
+      "rawSha256": "119acce0c3272381e84724f0c31cf76c57895fc6f67da05d218cd3306c4eb2da"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "install-frozen.log.gz",
+      "bytes": 153,
+      "sha256": "2244c72b2aab25e98e912bec23bf3b23232bea2e985c2abda153cf2aea4c8820",
+      "rawSha256": "550fbd8dcac7f7389e57a0bc9fea11af426f970bc23b023d9942d03653e6b77d"
+    },
+    {
+      "file": "physical-report.json.gz",
+      "bytes": 334874,
+      "sha256": "c0152eba13d7e0657794a935731ae92a5d2a9b1754ed89c5440361912e92f5e8",
+      "rawSha256": "8e6993ed73331d6c2371ba0bf569821cfc71b91165b8e5302364b5aa10be232d"
+    },
+    {
+      "file": "integration-report.json.gz",
+      "bytes": 929846,
+      "sha256": "11b5214dd6a780c5a75999bbeebd9e3df8e5ab6d3bdcab9f1edf1161975c3f4d",
+      "rawSha256": "24ce3c9294e258215421bcb74a75211f1460dcbfb504fd3ab585a58362ca6a3a"
+    },
+    {
+      "file": "probe-deflate-stream.ts.gz",
+      "bytes": 732,
+      "sha256": "564e5ee485051dc15a7f7d26716ea7182d67872b5631b77fc25d9565267193c2",
+      "rawSha256": "bb6e77c688e4ff534d2d97d8388e21dae1c737862c91502e358bef77a4b63fcd"
+    },
+    {
+      "file": "probe-deflate-stream.json.gz",
+      "bytes": 212,
+      "sha256": "20deb3c6b96f6bc377af9ac61fef8b5abcccee6815297ff0f20fdc30cf53c6c2",
+      "rawSha256": "9170c5b3c4f590096053036f9202b53133a458f621c7711108bd3ccb92eb3d02"
+    },
+    {
+      "file": "probe-pako-zlib.ts.gz",
+      "bytes": 1183,
+      "sha256": "4a492a066428cfbb7c5b21102f79e0755cee4caf237a9ef15a50f3cecda7f97e",
+      "rawSha256": "e3c89abf3bc972d1f4071291befb789190b2fef8c03e64b9c864f0b2fe2a502e"
+    },
+    {
+      "file": "probe-pako-zlib.json.gz",
+      "bytes": 295,
+      "sha256": "5b63f6ff833e9896b5a72172c5f62987058f147dfd03681b9136b7d348e24dcf",
+      "rawSha256": "391186e21ec5f0ebbd01bc1442b884a6e0b0634a3c99ea11a1f6c77721e0dae7"
+    },
+    {
+      "file": "archive-region-png-reader.cjs.gz",
+      "bytes": 2212,
+      "sha256": "3af7f99a813226392e741e362b880294a6877f5142147e58c77e131d6d8b2dd4",
+      "rawSha256": "64aff878e53143eec0b14fbc6dbdd3320666de36be83245dcaa94647c1adcef1"
+    },
+    {
+      "file": "world-png-0.json.gz",
+      "bytes": 217,
+      "sha256": "1474cd8b89c8711bee4c360ebbd9d9d1272fe1f00c5f635ae4fd1df0214ead50",
+      "rawSha256": "dc7fce21849187b0535452a4839f8b860bb2a86be28a6ac7a2776cea393568ab"
+    },
+    {
+      "file": "world-png-1.json.gz",
+      "bytes": 217,
+      "sha256": "1474cd8b89c8711bee4c360ebbd9d9d1272fe1f00c5f635ae4fd1df0214ead50",
+      "rawSha256": "dc7fce21849187b0535452a4839f8b860bb2a86be28a6ac7a2776cea393568ab"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "sha256": "6a48ecc6c59d2716461dadc876f1b0bee902ff30df48744c2b72866d2bc55558",
+      "previousSha256": "b74f0b0597132ebf867c0663c1f90e99fead84bcf4b79d6e3f8f94e52be66bf8"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImage.ts",
+      "sha256": "91ab8e3b5ad7fef20eabcfdacd4bfaa52d897c28a12930a71a6c1e7598cb8131",
+      "previousSha256": "f685ff685fcf6993259638d7af9b0018f3a92198800c739d56386d6a1fc30cfa"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "sha256": "25bf29d453bc5b4662379d3d983862eef990fb597ee19c82f2b5989452e57197",
+      "previousSha256": "6eebc9e0e8c95d5f89a0e3c4290ad8770fba31bf7f1263b9a5b158f2e90dc5c5"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaPngText.test.ts",
+      "sha256": "5abbb014b2934f81c4f26c0f8d3c68273d4bf806a9ee4dffb4031664fc9c9583"
+    },
+    {
+      "file": "packages/pinta/src/export/pintaPngText.ts",
+      "sha256": "f815bfa69ea46154882bb33c838788d717438af4f0805f3a2d3395c0eaacbc66"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageLimits.ts",
+      "sha256": "43ff4c7674f8580b9ca738f95081bab0132573e6acd7840b04e6f070bd86092e"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageWorld.test.ts",
+      "sha256": "8949a60951d46bd8218049557ad1285c4930fbd7e98b30bb84f6fd7a4806e7f4"
+    },
+    {
+      "file": "packages/pinta/src/export/regionImageWorld.ts",
+      "sha256": "32548d211323ea6a657a81ca8368946087bf9c2d9f85d26f4c0426cbfd10aeb5"
+    }
+  ],
+  "pinta": {
+    "pass": 2766,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 35691,
+    "files": 257
+  },
+  "focused": {
+    "pass": 25,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 119,
+    "files": 3
+  },
+  "browser": {
+    "pass": 79,
+    "physical": 67,
+    "integration": 12,
+    "retries": 0
+  },
+  "boundedZlib": true,
+  "strictUtf8": true,
+  "crcStaticPng": true,
+  "privateEncodedWorldAdmission": true,
+  "pixelBudgetPreflight": true,
+  "pixelIdatValidation": "real browser and native test fixtures, not a general IDAT decoder",
+  "engineTemporarySurfaceBudget": false,
+  "publicNative8": false,
+  "pythonRegionalGameplay": false,
+  "noCatalogEdits": true,
+  "noMoldaChanges": true,
+  "pako": {
+    "version": "3.0.1",
+    "license": "(MIT AND Zlib)"
+  },
+  "coreCarried": {
+    "commit": "5cb6631e7",
+    "pass": 3251
+  },
+  "phaserCarried": {
+    "commit": "207b521f6",
+    "pass": 10
+  },
+  "additionalPhysicalDevices": false
+}

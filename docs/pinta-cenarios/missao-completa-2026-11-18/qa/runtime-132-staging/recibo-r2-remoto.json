@@ -1,0 +1,20 @@
+{
+  "httpStatus": 200,
+  "elapsedMs": 58493,
+  "receipt": {
+    "version": 1,
+    "state": "complete",
+    "planSha256": "cb95614580935dba1a11177421e8ea6b1105a0ccd1b98d4998bab517207fe729",
+    "operationalSha256": "b9414df8edd049cd689671a64da01c245e24abf8a7880c25b5a3e653de6d795d",
+    "distributionSha256": "132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e",
+    "releaseManifestSha256": "eec668d098be7605a1534983a588fb05e40da4ca218609c534911d1ad69b52ff",
+    "configurationSha256": "e67e817f6d24b074ad5cf2ddba0da99aef25da4574c1b54d6450f6ab3d57886b",
+    "workerVersion": "15b8dca9-d603-48f7-a018-a90cf017759c",
+    "nonce": "a0431cc0f471c14328d2ec3b25a01a41",
+    "files": 126,
+    "verifiedObjects": 128,
+    "bodyCleanupConfirmed": true,
+    "failures": [],
+    "activationPerformed": false
+  }
+}

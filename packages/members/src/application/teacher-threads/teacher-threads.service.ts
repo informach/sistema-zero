@@ -1,3 +1,4 @@
+import { PintaRecoveryHelpReportSchema } from '@sistemazero/core/creations/pinta-recovery-help'
 import type { CourseAudience } from '../../domain/course/course'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
 import type {
@@ -14,6 +15,11 @@ import type {
   TeacherWorkflowStatus,
 } from '../../domain/ports/teacher-thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
+import {
+  PINTA_RECOVERY_HELP_REF,
+  PINTA_RECOVERY_HELP_TITLE,
+  pintaRecoveryHelpBody,
+} from './pinta-recovery-help'
 
 // Teto do corpo (espelha a coluna `teacher_messages.body`). Folgado o bastante p/ o
 // professor escrever markdown com print (URL de imagem) + trecho de código; o recado
@@ -361,6 +367,36 @@ export class TeacherThreadsService {
    */
   async studentPostByContext(input: Omit<TeacherPostByContextInput, 'authorId'>): Promise<string> {
     return this.postByContext({ ...input, authorId: input.userId }, 'student')
+  }
+
+  // ── Aluno (Ajuda do Pinta — aviso de recuperação da galeria) ─────────────────
+  /**
+   * A ÚNICA conversa que o aluno abre sozinho, fora da aula: o pedido de ajuda da recuperação de
+   * desenhos do Pinta. O dono é o aluno ATIVO que o member-shell autenticou (nunca um id vindo do
+   * corpo). Uma conversa por perfil: o pedido seguinte entra nela e a devolve para a equipe, mesmo
+   * se estava resolvida, em vez de abrir outra.
+   */
+  async studentRequestPintaRecoveryHelp(
+    actor: { userId: string; accountId: string; audience: CourseAudience },
+    rawReport: unknown,
+  ): Promise<{ threadId: string }> {
+    const report = PintaRecoveryHelpReportSchema.safeParse(rawReport)
+    if (!report.success) throw new ValidationError('Pedido de ajuda do Pinta inválido')
+    const threadId = await this.postByContext(
+      {
+        userId: actor.userId,
+        accountId: actor.accountId,
+        audience: actor.audience,
+        contextType: 'pinta_recovery',
+        contextRef: PINTA_RECOVERY_HELP_REF,
+        title: PINTA_RECOVERY_HELP_TITLE,
+        authorId: actor.userId,
+        authorName: null,
+        body: pintaRecoveryHelpBody(report.data),
+      },
+      'student',
+    )
+    return { threadId }
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────

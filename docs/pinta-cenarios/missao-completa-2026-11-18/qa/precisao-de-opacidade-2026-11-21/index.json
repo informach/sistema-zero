@@ -1,0 +1,313 @@
+{
+  "at": "2026-11-21T16:06:57.536Z",
+  "sourceBase": "747289ce9854a9d32eec62e30903a75eb57fd293",
+  "functionalChange": "Direct composition admits only full layer alpha; fractional layer alpha uses canonical chunks",
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "focused": {
+      "passed": 96,
+      "failed": 0,
+      "assertions": 451
+    },
+    "pinta": {
+      "passed": 2431,
+      "skipped": 3,
+      "failed": 0,
+      "assertions": 28960
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0,
+      "assertions": 4372
+    },
+    "browserRenderer": {
+      "passed": 6,
+      "failed": 0,
+      "retries": 0,
+      "canonicalRegionImages": 120,
+      "legacyImages": 72,
+      "comparisons": [
+        {
+          "project": "desktop",
+          "browserVersion": "159.0.8154.6",
+          "cpuSlowdown": 1,
+          "canonicalImageComparisons": 40,
+          "opaqueDirectCases": 8,
+          "layerOpacityCases": 8,
+          "rgbaScratchBytes": 1048576
+        },
+        {
+          "project": "touch",
+          "browserVersion": "159.0.8154.6",
+          "cpuSlowdown": 1,
+          "canonicalImageComparisons": 40,
+          "opaqueDirectCases": 8,
+          "layerOpacityCases": 8,
+          "rgbaScratchBytes": 1048576
+        },
+        {
+          "project": "cpu-4x",
+          "browserVersion": "159.0.8154.6",
+          "cpuSlowdown": 4,
+          "canonicalImageComparisons": 40,
+          "opaqueDirectCases": 8,
+          "layerOpacityCases": 8,
+          "rgbaScratchBytes": 1048576
+        }
+      ]
+    },
+    "browserEditor": {
+      "passed": 12,
+      "failed": 0,
+      "retries": 0
+    },
+    "denseBeforeAfter": {
+      "cases": 4,
+      "beforeChannelsDifferentAtScale1": 36061,
+      "afterChannelsDifferent": 0,
+      "canonicalHashesPreserved": true
+    },
+    "independentVariants": {
+      "variants": 6,
+      "cases": 24,
+      "channelsDifferent": 0
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "studioTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1,
+    "children": false
+  },
+  "review": {
+    "oneFunctionalGuard": true,
+    "rgbaScratchIncludedInUsedBytes": true,
+    "cacheBudgetUnchanged": true,
+    "stylesChanged": false,
+    "latencyTargetQualified": false
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/homologacao/regionRendering.ts",
+      "sha256": "ead82397a2f20570fbaa08ab574aa3c01d63a22fc237cade2e707f72db3fd2d3"
+    },
+    {
+      "file": "packages/pinta/scripts/region-render-probe.ts",
+      "sha256": "f58341f2d1b49e86cbba0c48f7b70aa3f890cb003c226705fd6be5c2598eb330"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunks.ts",
+      "sha256": "0412a907b06a53239df171a17d2984699398143cc22e882a9de8e25662956cbe"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksPressure.test.ts",
+      "sha256": "0940b198f480827732f6253faad8fcdf4363f88ced810292a80599cc4290e3f0"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunksRegions.test.ts",
+      "sha256": "f38ebc1a9a70d30269dbf67d57124a2187a8c0aaaca3f6de4ffd9a8af7c03fa6"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-region-render.flow.ts",
+      "sha256": "33fda18610bbc0e2826b1fbc2cc8d7dbe96c61a0d024b6a05cc7c5b0d161225d"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-render-pressure.flow.ts",
+      "sha256": "117f43ad602ea5bdd95a27f0e205aeccaaf4e028f3c3a0daeadea985a7fce3ec"
+    }
+  ],
+  "records": [
+    {
+      "file": "pinta-render-opacity-red.log.gz",
+      "bytes": 1515,
+      "sha256": "5fff522d33d70402702237c483aeb50189fc92141821f3ada9785d2553d24fe8",
+      "rawBytes": 16291,
+      "rawSha256": "c297eadd2b441b7f3a3b7f81af675ec76283425beccaacb5d2ec986ed8878316"
+    },
+    {
+      "file": "pinta-render-opacity-red-browser.log.gz",
+      "bytes": 687,
+      "sha256": "cb0de2eb1b7908d85f1fbd256ccbe7b3c11f98709b253485eeef7ada3ad293c5",
+      "rawBytes": 2196,
+      "rawSha256": "146e2898f6c87acfd1546af60b21f1041b59df85f086c894f7ec7652285f8ec3"
+    },
+    {
+      "file": "pinta-render-opacity-focused.log.gz",
+      "bytes": 2411,
+      "sha256": "b287733ada7c133c11c81e521a5af210effe7b910c9f18c3156b9ba3a0e9e03b",
+      "rawBytes": 18318,
+      "rawSha256": "8d142fe4d351632a792284020a91cff125deff1a55beb732697f1325d09971fd"
+    },
+    {
+      "file": "pinta-render-opacity-browser.log.gz",
+      "bytes": 952,
+      "sha256": "6e20f21321dbf207840c4fb3ed7052891b21f927be7d731e751e54fb0ec45ebb",
+      "rawBytes": 7474,
+      "rawSha256": "112b6bc2b3030a7763569a0581dc08fed2252efc09f2e6a51384c8bc1581e192"
+    },
+    {
+      "file": "pinta-render-opacity-focused-r2.log.gz",
+      "bytes": 1838,
+      "sha256": "419a0748f5bd84f77220d392ef627cc4f5c326f409347f59f3a2f131119b886f",
+      "rawBytes": 9177,
+      "rawSha256": "850b164549911bc0cba4b85ad31bccd9bcd574002306baa75bd64e36d8a17046"
+    },
+    {
+      "file": "pinta-render-opacity-browser-r2.log.gz",
+      "bytes": 429,
+      "sha256": "beea69685e00b0a472240b1dcba38f0d7fc7d99249b1b58028208ab4ddf8ab77",
+      "rawBytes": 1455,
+      "rawSha256": "e3c0683c674e54ec6be3c0b3dd44e878397e66a602465a77cec8043a49690885"
+    },
+    {
+      "file": "pinta-render-opacity-editor.log.gz",
+      "bytes": 814,
+      "sha256": "111738b0363676731bcf7fe5963060726190952fc5c2f69ca6db06befed40bda",
+      "rawBytes": 3075,
+      "rawSha256": "c2288ea805044a7b71621bd352cb579e07c55c69456b67343682da1cdf14174a"
+    },
+    {
+      "file": "pinta-render-opacity-full.log.gz",
+      "bytes": 74201,
+      "sha256": "f5cf4348a7b78476342b74c1850cb853bd84e82fe0d6c161782117717721a339",
+      "rawBytes": 275701,
+      "rawSha256": "e88016d49dc4123c3a02b9c1824bbaac5a68dd67d5abd5a791bc179c7a524959"
+    },
+    {
+      "file": "pinta-render-opacity-types-r2.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-render-opacity-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-render-opacity-native.log.gz",
+      "bytes": 329,
+      "sha256": "7329dff8a4509e63b620cce74aafa03f19ac23924df017a28be63a86989a680e",
+      "rawBytes": 507,
+      "rawSha256": "e895e4e364055aedd8e0bc08e3928fc86102c26a1d1a7719f285136b762a3232"
+    },
+    {
+      "file": "pinta-render-opacity-final-biome.log.gz",
+      "bytes": 64,
+      "sha256": "4e31aa3a55db1581ab3e4197b3120cfe5dd48d5f675821689e42ca195b8cb427",
+      "rawBytes": 44,
+      "rawSha256": "9cfe49f8e1f8171014e15ccaaf2905dc7812818e2d495bf4895ca61acc5070cf"
+    },
+    {
+      "file": "pinta-dense-pressure-after.json.gz",
+      "bytes": 335,
+      "sha256": "612f6dbf428c750a07d76ec4fa548ff83b4e77fbd278e8826f187c25c9604ce6",
+      "rawBytes": 1337,
+      "rawSha256": "50a42d37059019f8ad0b75bf97fab8c79ec6a8e943e46c2fb3ec6b78e12150d8"
+    },
+    {
+      "file": "pinta-dense-pressure-after-actual.png.gz",
+      "bytes": 36906,
+      "sha256": "023dae5b8ddffe8dfbac98769c94f9099d05852b239388e9b877e72c2ac06a5c",
+      "rawBytes": 40746,
+      "rawSha256": "62f97b246ea3ff14aafedeb0a749e1c0ffb26f9a634fc74a62ab6c2629022fdb"
+    },
+    {
+      "file": "pinta-dense-pressure-after-reference.png.gz",
+      "bytes": 36906,
+      "sha256": "023dae5b8ddffe8dfbac98769c94f9099d05852b239388e9b877e72c2ac06a5c",
+      "rawBytes": 40746,
+      "rawSha256": "62f97b246ea3ff14aafedeb0a749e1c0ffb26f9a634fc74a62ab6c2629022fdb"
+    },
+    {
+      "file": "pinta-dense-pressure-after.log.gz",
+      "bytes": 274,
+      "sha256": "e9310d4a6d32ace2c86a02fc5828fad6887c5777ebb4addcfce7be9b5ec78d75",
+      "rawBytes": 352,
+      "rawSha256": "f7c328629cec98715014e7128825e8fffedbcec1b956ea12a1efcefaa27f9e90"
+    },
+    {
+      "file": "pinta-dense-pressure-after.config.mts.gz",
+      "bytes": 459,
+      "sha256": "31c1439d3fd8b4af01502fd8dbcc9036629333c4b16fbe80087f1ac5c7499d4e",
+      "rawBytes": 715,
+      "rawSha256": "a08150633f0d57f98acb8e079b7230fbb8b8de780b5aa5ac0f690ea10dd1a24e"
+    },
+    {
+      "file": "pinta-dense-pressure-variants-after.json.gz",
+      "bytes": 1025,
+      "sha256": "eaeb20e4a8606ec7d8ca9ac402f77d8d4d9fc19d7a25ffd9e55bb5ad87b60de2",
+      "rawBytes": 9589,
+      "rawSha256": "c5bef674e398dd159800c08977b112214f3b33246fd62c624d0a6ebe651070e5"
+    },
+    {
+      "file": "pinta-dense-pressure-variants-after.log.gz",
+      "bytes": 296,
+      "sha256": "1b4505b8d64bfcc8a95366d808ab76261a407bf0908ad7c97c6b6b6d69e9bbdd",
+      "rawBytes": 386,
+      "rawSha256": "3bb39c3131b60a8eb89f948a0b63c86c8f664de8347a646e41e859fb862bc5eb"
+    },
+    {
+      "file": "pinta-dense-pressure-variants-after.config.mts.gz",
+      "bytes": 468,
+      "sha256": "3c60f4ad569a52402e29ed3b3739547b845e70df2fe747906909cb711722e461",
+      "rawBytes": 741,
+      "rawSha256": "26cc8ead03c29bc223a9d151ec0ad1b330d487bc60289d4670c1b22ee50cca45"
+    },
+    {
+      "file": "qa-dense-pressure-variants-after.flow.cjs.gz",
+      "bytes": 511,
+      "sha256": "08465df20c087561fc4a568b9be1da467404bd254e183288d0e2bb7534f163b8",
+      "rawBytes": 850,
+      "rawSha256": "8f7b1bc18af41382b39f44f688e2adc3345347f26177152b8bb28092672f2da7"
+    },
+    {
+      "file": "playwright-render-report.json.gz",
+      "bytes": 425896,
+      "sha256": "c873b12c21d2e824fa983599757951c053ad35195bd66203de99ba98a2f1a444",
+      "rawBytes": 668560,
+      "rawSha256": "01459a17d7b6f850f751cd69168e2288ba002585096f1db7a53841c1c2e27e0d"
+    },
+    {
+      "file": "playwright-editor-report.json.gz",
+      "bytes": 609070,
+      "sha256": "e0c8d517e789b5b392025ad4610e753b9e62613af931fa637ccbf9f9938b0170",
+      "rawBytes": 1077848,
+      "rawSha256": "33539fdced339359dfa77bc4744f3152260c288c13128e91f4e7813f6774ec1c"
+    },
+    {
+      "file": "playwright-red-report.json.gz",
+      "bytes": 20305,
+      "sha256": "49d4b01975793e08aad5439669c1c500ddd65c0b63fc31245d308c7c33776396",
+      "rawBytes": 48850,
+      "rawSha256": "ac25b68c8f8b33666b2d7e02fbc2e363220f41c2cbf9dd13d18e9ffdd2a6ef89"
+    },
+    {
+      "file": "playwright-memory-expectation-report.json.gz",
+      "bytes": 428317,
+      "sha256": "4f311d5f7e4318984f88907a88e6657820af92b9d312e776cae70142e4d50c2f",
+      "rawBytes": 677126,
+      "rawSha256": "cfb72f526c967c67da6d30ab488c809d1f36397ae6bc9a89039f575dcb1d6608"
+    },
+    {
+      "file": "browser-render.config.mts.gz",
+      "bytes": 421,
+      "sha256": "f55b80cea4176c9d130319c9dd11c540a1af17b10bd2c4df48c02b11e43a8c1e",
+      "rawBytes": 660,
+      "rawSha256": "698499f0196d27115a3a14477810430c4140dc73c38d14bc56ba9366394d20ab"
+    },
+    {
+      "file": "browser-editor.config.mts.gz",
+      "bytes": 438,
+      "sha256": "84fd31d20565f3e2a0c8900b398ef5f2f5b9b8e26bfc6a13c31b6ce5b038eaf3",
+      "rawBytes": 706,
+      "rawSha256": "140852e6c6ff3ae73dd5fcd1966485e4433c74e970ff6d667f2beaaece5bc0fc"
+    }
+  ]
+}

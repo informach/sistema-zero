@@ -1,0 +1,13 @@
+bun test v1.3.11 (af24e281)
+
+tests\unit\cenarios-molda-acesso.test.ts:
+(pass) o Molda de quem abre os cenários > no Kids: o produto Molda do Kids e a capacidade molda do perfil
+(pass) o Molda de quem abre os cenários > no adulto: o produto adulto e a capacidade da jornada adulta
+(pass) o Molda de quem abre os cenários > o "pode" fica 60 s na memória e a revogação da matrícula o apaga na hora
+(pass) o Molda de quem abre os cenários > recusa não fica guardada e leitura que falha vira indisponível, nunca "não tem"
+(pass) o Molda de quem abre os cenários > as faixas seguem a jornada: uma capacidade por faixa, e o adulto antigo tem todas
+
+ 5 pass
+ 0 fail
+ 22 expect() calls
+Ran 5 tests across 1 file. [133.00ms]

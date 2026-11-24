@@ -207,29 +207,32 @@ function isAnimNameEvent(
   return false
 }
 
-/** A subárvore serializada contém bloco de animar/carregar folha? */
+/**
+ * A subárvore serializada contém bloco de animar/carregar folha? Sem recursão: o evento de criar
+ * uma cópia longa traz a cauda `next` inteira.
+ */
 function jsonHasAnimRelatedType(json: unknown): boolean {
-  if (!json || typeof json !== 'object') return false
-  const node = json as {
-    type?: string
-    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
-    next?: { block?: unknown; shadow?: unknown }
-  }
-  if (
-    (node.type && ANIM_PICKER_TYPES.has(node.type)) ||
-    node.type === LOAD_SPRITESHEET_TYPE ||
-    node.type === GK_SET_SHEET_TYPE
-  ) {
-    return true
-  }
-  if (node.inputs) {
-    for (const wrapper of Object.values(node.inputs)) {
-      if (jsonHasAnimRelatedType(wrapper?.block) || jsonHasAnimRelatedType(wrapper?.shadow)) {
-        return true
-      }
+  const pending: unknown[] = [json]
+  while (pending.length > 0) {
+    const current = pending.pop()
+    if (!current || typeof current !== 'object') continue
+    const node = current as {
+      type?: string
+      inputs?: Record<string, { block?: unknown; shadow?: unknown }>
+      next?: { block?: unknown; shadow?: unknown }
     }
+    if (
+      (node.type && ANIM_PICKER_TYPES.has(node.type)) ||
+      node.type === LOAD_SPRITESHEET_TYPE ||
+      node.type === GK_SET_SHEET_TYPE
+    )
+      return true
+    if (node.inputs)
+      for (const wrapper of Object.values(node.inputs))
+        pending.push(wrapper?.block, wrapper?.shadow)
+    pending.push(node.next?.block, node.next?.shadow)
   }
-  return jsonHasAnimRelatedType(node.next?.block) || jsonHasAnimRelatedType(node.next?.shadow)
+  return false
 }
 
 /**

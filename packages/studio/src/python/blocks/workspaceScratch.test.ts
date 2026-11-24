@@ -9,9 +9,13 @@ import {
 } from '../../state/projectStorageRuntime'
 import { createProjectStore, loadSanitizedProjectById } from '../../state/projectStore'
 import { createStudioStores } from '../../state/studioStores'
+import {
+  appendToPythonAreaFrame,
+  ensurePythonAreaFrame,
+  executablePythonAreaFrames,
+} from './areaFrames'
 import { registerPythonBlocks } from './blockly'
-import { ensurePythonProgramArea } from './programArea'
-import { preparePythonScratchRestore } from './restoreWorkspace'
+import { preparePythonScratchRestore, preparePythonScratchRestoreKeeping } from './restoreWorkspace'
 import {
   capturePythonWorkspace,
   readPythonScratchWorkspace,
@@ -27,7 +31,8 @@ async function fixture() {
   const ws = new Blockly.Workspace()
   try {
     registerPythonBlocks()
-    const roots = ensurePythonProgramArea(ws, [], 'folder/helper.py')
+    // Programa vazio: nenhuma área (as áreas só existem com linhas ou quando a criança põe).
+    const roots: string[] = []
     const block = ws.newBlock('sz_py_integer', 'scratch-number')
     block.setFieldValue('73', 'NUMBER')
     block.setCommentText('Minha ideia')
@@ -48,7 +53,7 @@ async function fixture() {
 }
 
 for (const action of ['source edit and undo', 'discard pending edit'] as const) {
-  test(`scratch survives ${action}, IndexedDB reopening and a fresh Program projection`, async () => {
+  test(`scratch survives ${action}, IndexedDB reopening and a fresh projection without areas`, async () => {
     const scope = captureProjectStorageScope()
     setProjectStorageNamespace(`python-scratch-${crypto.randomUUID()}`)
     const ws = new Blockly.Workspace()
@@ -78,14 +83,13 @@ for (const action of ['source edit and undo', 'discard pending edit'] as const) 
       if (reopened?.programmingLanguage !== 'python') throw new Error('Project missing')
       expect(readPythonWorkspaceDraft(reopened, 'folder/helper.py')).toBeUndefined()
       expect(readPythonScratchWorkspace(reopened, 'folder/helper.py')).toEqual(scratch)
-      const roots = ensurePythonProgramArea(ws, [], 'folder/helper.py')
       preparePythonScratchRestore(readPythonScratchWorkspace(reopened, 'folder/helper.py'))!(ws)
       const block = ws.getBlockById('scratch-number')!
       expect(block.getFieldValue('NUMBER')).toBe('73')
       expect(block.getCommentText()).toBe('Minha ideia')
       expect(block.getRelativeToSurfaceXY()).toMatchObject({ x: 810, y: 140 })
       expect(block.getParent()).toBeNull()
-      expect(ws.getBlockById(roots[0]!)!.getInputTargetBlock('BODY')).toBeNull()
+      expect(executablePythonAreaFrames(ws)).toEqual([])
     } finally {
       ws.dispose()
       setProjectStorageNamespace(scope.namespace)
@@ -112,11 +116,45 @@ test('scratch follows a folder rename independently of source cache and disappea
   expect(readPythonScratchWorkspace(removed, 'renamed/helper.py')).toBeUndefined()
 })
 
+test('o rascunho que não reabre fica guardado, e o que reabre volta (bloco a bloco)', async () => {
+  const project = await fixture()
+  const saved = readPythonScratchWorkspace(project, 'folder/helper.py') as {
+    blocks: { blocks: Record<string, unknown>[] }
+  }
+  // Um bloco de uma versão que não existe mais, ao lado do número da criança.
+  const unknown = { type: 'sz_py_bloco_que_saiu', id: 'saiu', x: 10, y: 10 }
+  const raw = { ...saved, blocks: { ...saved.blocks, blocks: [...saved.blocks.blocks, unknown] } }
+  expect(() => preparePythonScratchRestore(raw)).toThrow()
+  const { apply, kept } = preparePythonScratchRestoreKeeping(raw)
+  expect(kept).toEqual([unknown])
+  const ws = new Blockly.Workspace()
+  try {
+    apply!(ws)
+    expect(String(ws.getBlockById('scratch-number')?.getFieldValue('NUMBER'))).toBe('73')
+    // A próxima gravação leva os dois: o que voltou e o que ficou guardado.
+    const { scratch } = capturePythonWorkspace(
+      project,
+      'folder/helper.py',
+      savePythonWorkspace(ws, new Map()),
+      [],
+      kept,
+    )
+    const blocks = (scratch as { blocks: { blocks: Record<string, unknown>[] } }).blocks.blocks
+    expect(blocks.map((block) => block.id)).toEqual(['scratch-number', 'saiu'])
+  } finally {
+    ws.dispose()
+  }
+  // Sem nada que reabra, nada a pôr; tudo guardado.
+  expect(preparePythonScratchRestoreKeeping({ blocks: { blocks: [unknown] } })).toEqual({
+    kept: [unknown],
+  })
+})
+
 test('scratch preflight rejects executable areas and duplicate IDs before appending anything', async () => {
   const project = await fixture()
   const ws = new Blockly.Workspace()
   try {
-    ensurePythonProgramArea(ws, [], 'main.py')
+    appendToPythonAreaFrame(ensurePythonAreaFrame(ws, 'start'), ws.newBlock('sz_py_assign'))
     expect(() => preparePythonScratchRestore(savePythonWorkspace(ws, new Map()))).toThrow(
       'restaurar',
     )

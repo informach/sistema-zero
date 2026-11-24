@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-21T10:25:51.060Z",
+  "readOnly": true,
+  "response": {
+    "success": true,
+    "result": {
+      "instances": [],
+      "durable_objects": [
+        {
+          "assigned_at": "2026-11-21T10:25:48Z",
+          "id": "aff456b4297db4a1070a063df7087c3528d9b493c309d50f39ad5042a2f58077",
+          "name": "language-e84598514df6774378fc005afcc7c7e7"
+        },
+        {
+          "assigned_at": "2026-11-21T10:17:51Z",
+          "id": "a32044125676eb2d41c326c8298bf2a6a84c8d542ac818c1e961da6edab39122",
+          "name": "language-ca4078112d9bbb9dd2b6a80c6aedabc8"
+        },
+        {
+          "assigned_at": "2026-11-21T10:24:09Z",
+          "id": "b77fefe757d91ed0e6051f36b891df2d9b4897ec82d560bcbf4b9ab0a078ee15",
+          "name": "language-b5bd15a2eedc9d95271cf0f36274d264"
+        },
+        {
+          "assigned_at": "2026-11-21T10:21:28Z",
+          "id": "cea47106a05ed9bda1dec400517275207723dc47e8c9255bf2a98c2c2274e834",
+          "name": "language-94943b8f785dad6398dcad104efc5b74"
+        }
+      ]
+    },
+    "errors": [],
+    "messages": [],
+    "result_info": {
+      "per_page": 100
+    }
+  }
+}

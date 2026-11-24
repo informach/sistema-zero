@@ -30,6 +30,10 @@ export function kidsMayAccess(
         '/hub/internal/showcase-thread-studio/prepare',
         '/hub/internal/showcase-thread-studio-standalone',
         '/hub/internal/showcase-thread-studio-standalone/prepare',
+        '/hub/internal/showcase-thread-studio/update',
+        '/hub/internal/showcase-thread-studio-standalone/update',
+        '/hub/internal/showcase-thread-studio/touch',
+        '/hub/internal/showcase-source',
       ].includes(pathname)
     )
       return true
@@ -70,7 +74,9 @@ export function kidsMayAccess(
         ['/members/profile-allowance', '/members/avatars', '/members/ai-usage/me'].includes(
           pathname,
         )) ||
-      // Leituras comerciais da própria conta na Área dos pais.
+      // As ofertas no Início da área dos pais (21/11/2026): o cartão lê as promoções do catálogo
+      // e confere o que a conta já comprou. Sem estas duas leituras o gateway recusava, e o
+      // Início dizia "Não foi possível conferir as ofertas agora" mesmo sem nada quebrado.
       (method === 'GET' &&
         ['/catalog/member-promotions', '/members/commerce/access'].includes(pathname))
     )

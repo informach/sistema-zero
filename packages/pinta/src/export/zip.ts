@@ -13,11 +13,12 @@
  *   LEIA-ME.txt
  */
 import {
-  type AnyTilesetAsset,
-  isTilesetKind,
-  type PintaAsset,
-  resolveAssetPalette,
-} from '../core/project'
+  isPintaMemoryAsset,
+  isWorkshopProjectedMap,
+  type PintaWorkshopAsset,
+} from '../core/assetMemory'
+import { type AnyTilesetAsset, isTilesetKind, resolveAssetPalette } from '../core/project'
+import { isLegacyWorkshopAsset } from '../core/workshopAsset'
 import { flattenCels } from '../pixel/layers'
 import { collectMapTilesets } from '../tiles/mapTilesets'
 import { tilesetPngDataUrl } from '../tiles/packTileset'
@@ -74,7 +75,7 @@ function safeFileName(name: string, index: number, taken: Set<string>): string {
  * arquivo tem só os escolhidos e volta pelo "Trazer de volta".
  */
 export async function buildGalleryFileMap(
-  assets: PintaAsset[],
+  assets: readonly PintaWorkshopAsset[],
   variant: 'gallery' | 'pack' = 'gallery',
 ): Promise<{
   files: FileMap
@@ -99,6 +100,11 @@ export async function buildGalleryFileMap(
   }
 
   for (const asset of assets) {
+    if (isWorkshopProjectedMap(asset)) {
+      // Kept whole in the gallery backup below; this version draws no picture of it yet.
+      readme.push(`• O mapa "${asset.name}" está no arquivo da galeria.`)
+      continue
+    }
     switch (asset.kind) {
       case 'pixel-sprite': {
         const pack = packSpritesheet(asset)
@@ -151,6 +157,25 @@ export async function buildGalleryFileMap(
         break
       }
       case 'tilemap': {
+        if ('origin' in asset) {
+          const { pintaWorkshopBody } = await import('./workshopDocument')
+          const { exportPintaRegionScene } = await import('./regionScene')
+          const map = pintaWorkshopBody(asset)
+          const catalog = new Map(
+            assets.filter(isPintaMemoryAsset).map((item) => [item.id, pintaWorkshopBody(item)]),
+          )
+          if (map.kind === 'tilemap' && 'origin' in map) {
+            // Source remains recoverable even when an external image is currently unavailable.
+            try {
+              files[`mapas/${asset.name}.pinta-scene.json`] = (
+                await exportPintaRegionScene(map, (id) => catalog.get(id) ?? null)
+              ).json
+            } catch {
+              readme.push(`• O mapa "${asset.name}" está no arquivo da galeria.`)
+            }
+          }
+          break
+        }
         // Todas as peças do mapa (a padrão primeiro): cada camada sai com as dela.
         const mapTilesets = collectMapTilesets(asset, (id) => tilesetsById.get(id))
         const tileset = mapTilesets[0]
@@ -198,13 +223,30 @@ export async function buildGalleryFileMap(
     }
   }
 
-  files[PINTA_GALLERY_ZIP_ENTRY] = galleryToPintaJson(assets)
+  const backup = assets.every(isLegacyWorkshopAsset)
+    ? galleryToPintaJson(assets)
+    : await (await import('./workshopDocument')).pintaWorkshopBackup(assets)
+  if (!backup) throw new Error('Não consegui montar o backup completo da galeria.')
+  files[PINTA_GALLERY_ZIP_ENTRY] = backup
   return { files, readme }
+}
+
+/** Preserve the original native gzip files when their exact dependency graph cannot reopen. */
+export async function zipRetainedRecoveryFiles(files: ReadonlyMap<string, Blob>): Promise<Blob> {
+  const { strToU8, zipSync } = await import('fflate')
+  const entries: Record<string, Uint8Array> = {
+    'LEIA-ME.txt': strToU8(
+      'Edições guardadas pelo Pinta neste aparelho. Cada pasta contém os arquivos originais de uma gravação.\n' +
+        'Mantenha as peças e os mapas da mesma versão juntos. Este ZIP serve para recuperar os arquivos; não é um backup completo da galeria.\n',
+    ),
+  }
+  for (const [name, blob] of files) entries[name] = new Uint8Array(await blob.arrayBuffer())
+  return new Blob([zipSync(entries, { level: 0 }).slice().buffer], { type: 'application/zip' })
 }
 
 /** Zipa o mapa (fflate sob demanda; chaves com `/` viram pastas). */
 export async function zipGallery(
-  assets: PintaAsset[],
+  assets: readonly PintaWorkshopAsset[],
   variant: 'gallery' | 'pack' = 'gallery',
 ): Promise<Uint8Array> {
   const { files, readme } = await buildGalleryFileMap(assets, variant)

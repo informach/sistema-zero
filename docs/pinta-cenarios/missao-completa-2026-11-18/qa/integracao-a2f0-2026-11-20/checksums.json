@@ -1,0 +1,122 @@
+[
+  {
+    "file": "README.md",
+    "sha256": "ebf617298fe35c139adfe927ed48bdba9ad236b16c80af4aa6f4a2fa2fef58b2",
+    "bytes": 2501
+  },
+  {
+    "file": "biome.txt",
+    "sha256": "b455c5f42a22d39f53e2fc6a14c8bea9f9156d935d1973b0a8e5c08ad5a184ed",
+    "bytes": 46
+  },
+  {
+    "file": "blockly.txt",
+    "sha256": "63c4629cba744d0fecc1b97bad74d12877fb03d5d0f754d8eb8e64f0029c43c7",
+    "bytes": 5146
+  },
+  {
+    "file": "chromium.json",
+    "sha256": "b1bd69b0d05074a107adc1b5ffeb32f77df479b166930231b0ca9c4207944157",
+    "bytes": 26286
+  },
+  {
+    "file": "chromium.txt",
+    "sha256": "60e737ba0e74123728661862d829f7681e7cc019e0c1e593f3e9e0cafa0181bd",
+    "bytes": 3278
+  },
+  {
+    "file": "components.txt",
+    "sha256": "3e7419e605586cd3f6bc0bc7fe574800055cf13017bffbd27bf99016360bb4b7",
+    "bytes": 271249
+  },
+  {
+    "file": "conflitos.json",
+    "sha256": "a1156c24ccca0d8d9c17ee34c12d4654fc6f1ca9bbb76b40961916c958281ba3",
+    "bytes": 640
+  },
+  {
+    "file": "core.txt",
+    "sha256": "75d756f07cbbae4795b7ea302c823e2f12e53fc58eb379c988a710bf3a3495f7",
+    "bytes": 372126
+  },
+  {
+    "file": "examples.txt",
+    "sha256": "93a62b63b5cbbaf62f4719f0a52d04aa4ce6e3d4c6db7e4d7deeb9e4824ab356",
+    "bytes": 1673
+  },
+  {
+    "file": "firefox.json",
+    "sha256": "82552f3c688a60c4f3b0ed9dc932af90dbff34f34956332de23f56c3080fe491",
+    "bytes": 9062
+  },
+  {
+    "file": "firefox.txt",
+    "sha256": "05a99532472fcc35abf81bbd9f9aa8ef8db0fce525a52e98bfa6275a281067bf",
+    "bytes": 565
+  },
+  {
+    "file": "fontes.json",
+    "sha256": "02bd9e62d496c33fc8075c239b47c9a9e4f2107284c1d0b5fe251d42eac3d16d",
+    "bytes": 4329
+  },
+  {
+    "file": "gates.json",
+    "sha256": "dca8a9402ddd8f679574c70e568d0b0405046090b304a1c36d764e09bef4a624",
+    "bytes": 2843
+  },
+  {
+    "file": "integration.json",
+    "sha256": "7d8cfd0f9a578be470363b0220a4f0261b3467c770c97cb45e6c4061ef9b3f09",
+    "bytes": 1275143
+  },
+  {
+    "file": "integration.txt",
+    "sha256": "d3fc3dc46bacefb5f981f34f069567f82b8884ffea45eeb5fad2311e98324f45",
+    "bytes": 7387
+  },
+  {
+    "file": "members-types.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "file": "profile.txt",
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56",
+    "bytes": 88
+  },
+  {
+    "file": "routes.txt",
+    "sha256": "ae1aaaab5483e113dd04d12e8cdae075eeda2d073cab8b3277568fa68c257437",
+    "bytes": 3961
+  },
+  {
+    "file": "runtime.txt",
+    "sha256": "78574f053a3a834c6bf99a77b7a5a7f39da1b736278b7719f2b68e3314d67750",
+    "bytes": 2836
+  },
+  {
+    "file": "sdk.txt",
+    "sha256": "600397f99795d3097b21d927c6be2095e2bf8bb7794a11a74676bfbafb8d9626",
+    "bytes": 338
+  },
+  {
+    "file": "studio-types.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "file": "validation.txt",
+    "sha256": "e8f975c39a532225eb7dd33b9a6e59b310dccbb767f8115e0af4d8d365b2bbdc",
+    "bytes": 1609
+  },
+  {
+    "file": "webkit.json",
+    "sha256": "93e3a75db212f5625db75154eef287d44589beb52d74a0113111f8223c6404ce",
+    "bytes": 7629
+  },
+  {
+    "file": "webkit.txt",
+    "sha256": "91af0e3089128f6f5799e8492ca7b1d111cf8863a5ecaeb9b34c46926b29f85c",
+    "bytes": 563
+  }
+]

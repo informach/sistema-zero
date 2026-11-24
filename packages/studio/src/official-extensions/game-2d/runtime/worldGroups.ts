@@ -4,6 +4,11 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // cada item, sem motor novo. Teto rígido p/ não vazar memória se o aluno
   // criar sprites sem parar (ex.: um tiro por quadro).
   var MAX_GROUP = 400;
+  // O teto de um grupo (lote 4 da missão, seção 8.4): quem passa dele não entra, e a criança fica
+  // sabendo, uma vez por partida, em vez de o jogo ficar incompleto em silêncio.
+  function _warnGroupFull() {
+    warnOnce('grupo-cheio', 'um grupo (ou tipo de inimigo) só guarda até 400 sprites, e o que passou disso ficou de fora. Use "Tirar do grupo quem sair da tela" ou "Destruir o sprite" para abrir vaga.');
+  }
   // Um sprite pode pertencer a mais de um grupo no modo Código. O redraw de uma
   // imagem pendente pertence ao SPRITE, não a um vínculo isolado: só o liberamos
   // quando o último grupo gerenciado deixa de possuir aquele objeto.
@@ -91,7 +96,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
           methodWrappers[property] = function () {
             var previousItems = target.slice();
             var result = arrayMethod.apply(target, arguments);
-            if (target.length > MAX_GROUP) target.length = MAX_GROUP;
+            if (target.length > MAX_GROUP) { target.length = MAX_GROUP; _warnGroupFull(); }
             _disposeRemovedGroupItems(group, previousItems, target);
             _touchGroup(group);
             if (property === 'push' || property === 'unshift') return target.length;
@@ -104,8 +109,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var arrayIndex = typeof property === 'string' && property
           ? Number(property)
           : -1;
-        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) return true;
-        if (property === 'length' && value > MAX_GROUP) value = MAX_GROUP;
+        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) { _warnGroupFull(); return true; }
+        if (property === 'length' && value > MAX_GROUP) { value = MAX_GROUP; _warnGroupFull(); }
         var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
         var previous = target[property];
@@ -128,9 +133,10 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         var arrayIndex = typeof property === 'string' && property
           ? Number(property)
           : -1;
-        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) return true;
+        if (Number.isInteger(arrayIndex) && arrayIndex >= MAX_GROUP && String(arrayIndex) === property) { _warnGroupFull(); return true; }
         if (property === 'length' && descriptor && descriptor.value > MAX_GROUP) {
           descriptor = Object.assign({}, descriptor, { value: MAX_GROUP });
+          _warnGroupFull();
         }
         var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
@@ -158,6 +164,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
         if (nextItems === items) return;
         var previousItems = items.slice();
         var replacement = Array.isArray(nextItems) ? nextItems.slice(0, MAX_GROUP) : [];
+        if (Array.isArray(nextItems) && nextItems.length > MAX_GROUP) _warnGroupFull();
         items = _trackGroupItems(group, replacement);
         _disposeRemovedGroupItems(group, previousItems, replacement);
         _touchGroup(group);
@@ -202,11 +209,11 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   }
   /**
    * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
-   * Devolve o sprite. Acima do teto, descarta silenciosamente (nunca lança).
+   * Devolve o sprite. Acima do teto, não entra e avisa uma vez por partida (nunca lança).
    */
   function spawn(group, options) {
     if (!group || !group.items) return null;
-    if (group.items.length >= MAX_GROUP) return null;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     var s = createSprite(options);
     group.items.push(s);
     _touchUnmanagedGroup(group);
@@ -215,7 +222,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
   // Cria um TIRO (bolinha brilhante) no grupo. x/y = CENTRO; raio em px.
   function spawnBullet(group, options) {
     if (!group || !group.items) return null;
-    if (group.items.length >= MAX_GROUP) return null;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return null; }
     options = options || {};
     var r = _positiveFiniteNumber(options.radius, 5);
     var s = createSprite({
@@ -313,6 +320,28 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       applyGravity(s);
     }
   }
+  /**
+   * O retângulo do mundo que aparece no palco, com 64 de folga, pela transformação do contexto
+   * (câmera e nitidez). Com rotação ou inclinação, nenhum: nada é recortado (lote 8).
+   * @param {CanvasRenderingContext2D} ctx
+   * @returns {number[] | null}
+   */
+  function _cullRect(ctx) {
+    var t = ctx.getTransform && ctx.getTransform(), c = ctx.canvas;
+    if (!t || t.b || t.c || !t.a || !t.d || !c) return null;
+    var x0 = -t.e / t.a, y0 = -t.f / t.d, x1 = (c.width - t.e) / t.a, y1 = (c.height - t.f) / t.d;
+    return [Math.min(x0, x1) - 64, Math.min(y0, y1) - 64, Math.max(x0, x1) + 64, Math.max(y0, y1) + 64];
+  }
+  /**
+   * Longe do palco? A folga do maior lado cobre o sprite girado em volta do centro.
+   * @param {import('./runtimeContract').GameTwoDSprite | null | undefined} s
+   * @param {number[] | null} r
+   */
+  function _offStage(s, r) {
+    if (!r || !s) return false;
+    var w = s.w || 0, h = s.h || 0, m = Math.max(w, h);
+    return s.x + w + m < r[0] || s.x - m > r[2] || s.y + h + m < r[1] || s.y - m > r[3];
+  }
   /** Desenha todos os sprites do grupo. */
   function drawGroup(ctx, group) {
     if (!ctx || !group || !group.items) return;
@@ -323,7 +352,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     group._drawn = true;
     // Desenhar a VISTA de todos os inimigos conta como desenhar cada tipo.
     if (_isEnemyMirror(group)) _marcarTiposDesenhados();
-    for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
+    var r = _cullRect(ctx);
+    for (var i = 0; i < group.items.length; i++) _drawSprite(ctx, group.items[i], _offStage(group.items[i], r));
     _drawEnemyBeamsIfAny(ctx, group);
     // O player de aula só habilita os controles de busca depois do PRIMEIRO desenho.
     if (typeof window.__szReportGameReady === 'function') window.__szReportGameReady();
@@ -354,7 +384,8 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     snapshot.sort(function (a, b) {
       return (a ? a._depthKey : 0) - (b ? b._depthKey : 0);
     });
-    for (var d = 0; d < snapshot.length; d++) drawSprite(ctx, snapshot[d]);
+    var r = _cullRect(ctx);
+    for (var d = 0; d < snapshot.length; d++) _drawSprite(ctx, snapshot[d], _offStage(snapshot[d], r));
     _drawEnemyBeamsIfAny(ctx, group);
   }
   /**
@@ -405,7 +436,7 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       return;
     }
     if (group.items.indexOf(sprite) !== -1) return;
-    if (group.items.length >= MAX_GROUP) return;
+    if (group.items.length >= MAX_GROUP) { _warnGroupFull(); return; }
     group.items.push(sprite);
     _touchUnmanagedGroup(group);
   }

@@ -1,0 +1,51 @@
+2026-11-19T19:52:40.8395642Z   ✓  1 [firefox] › e2e/preview-executes-user-code.spec.ts:27:3 › preview executa o código do aluno › o script canônico roda e pinta a tela (6.6s)
+2026-11-19T19:52:46.6976524Z   ✓  2 [firefox] › e2e/preview-executes-user-code.spec.ts:42:3 › preview executa o código do aluno › um `<script>` inline no index.html também executa (5.8s)
+2026-11-19T19:52:57.3172860Z   ✓  3 [firefox] › e2e/preview-security.spec.ts:41:3 › segurança do preview › handlers HTML exatos funcionam, preservam return false e têm guarda de loop (10.6s)
+2026-11-19T19:53:03.2157191Z   ✓  4 [firefox] › e2e/preview-security.spec.ts:69:3 › segurança do preview › script inline criado em execução é bloqueado e a IDE continua responsiva (5.9s)
+2026-11-19T19:53:09.0701452Z   ✓  5 [firefox] › e2e/preview-security.spec.ts:94:3 › segurança do preview › script externo criado em execução é recusado e a IDE continua responsiva (5.8s)
+2026-11-19T19:53:18.2165508Z   ✓  6 [firefox] › e2e/preview-shell.spec.ts:164:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (7.9s)
+2026-11-19T19:53:30.3133760Z   ✘  7 [firefox] › e2e/preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor (11.7s)
+2026-11-19T19:53:46.4410475Z   ✘  8 [firefox] › e2e/preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor (retry #1) (14.6s)
+2026-11-19T19:54:00.8448672Z   ✘  9 [firefox] › e2e/preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor (retry #2) (13.1s)
+2026-11-19T19:54:00.9603487Z
+2026-11-19T19:54:00.9608883Z
+2026-11-19T19:54:00.9624495Z   1) [firefox] › e2e/preview-shell.spec.ts:203:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor
+2026-11-19T19:54:00.9625468Z
+2026-11-19T19:54:00.9625709Z     Error: expect(locator).toHaveValue(expected) failed
+2026-11-19T19:54:00.9626097Z
+2026-11-19T19:54:00.9626537Z     Locator: locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+2026-11-19T19:54:00.9627261Z     Timeout: 5000ms
+2026-11-19T19:54:00.9627625Z     - Expected  - 6
+2026-11-19T19:54:00.9628058Z     + Received  + 1
+2026-11-19T19:54:00.9628295Z
+2026-11-19T19:54:00.9628808Z     - document.body.style.background = "rgb(128, 0, 0)"; document.body.style.minHeight = "100vh";
+2026-11-19T19:54:00.9629933Z     - console.log("carga-casca-iniciou");
+2026-11-19T19:54:00.9630572Z     - const dados = Array.from({ length: 300000 }, (_, i) => (i * 7919) % 10007);
+2026-11-19T19:54:00.9631154Z     - const fim = Date.now() + 30000;
+2026-11-19T19:54:00.9631873Z     - function gastar() { if (Date.now() < fim) { dados.slice().sort((a, b) => a - b); gastar(); } }
+2026-11-19T19:54:00.9632756Z     - setTimeout(() => { gastar(); console.log("carga-casca-terminou"); }, 150);
+2026-11-19T19:54:00.9633416Z     + ("carga-casca-terminou"); }, 150);
+2026-11-19T19:54:00.9633740Z
+2026-11-19T19:54:00.9633891Z     Call log:
+2026-11-19T19:54:00.9634669Z       - Expect "toHaveValue" locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' }) with timeout 5000ms
+2026-11-19T19:54:00.9635463Z       - waiting for locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+2026-11-19T19:54:00.9637860Z         12 × locator resolved to <textarea wrap="on" tabindex="0" data-mprt="7" role="textbox" autocorrect="off" autocomplete="off" spellcheck="false" autocapitalize="off" aria-required="false" aria-multiline="true" aria-autocomplete="both" aria-label="Editor content" aria-roledescription="editor" class="inputarea monaco-mouse-cursor-text"></textarea>
+2026-11-19T19:54:00.9639294Z            - unexpected value "("carga-casca-terminou"); }, 150);"
+2026-11-19T19:54:00.9639855Z
+2026-11-19T19:54:00.9639862Z
+2026-11-19T19:54:00.9640034Z       103 |     await page.keyboard.press(`${modifier}+V`)
+2026-11-19T19:54:00.9640363Z       104 |   }
+2026-11-19T19:54:00.9640678Z     > 105 |   await expect(input).toHaveValue(code)
+2026-11-19T19:54:00.9641178Z           |                       ^
+2026-11-19T19:54:00.9641482Z       106 | }
+2026-11-19T19:54:00.9641760Z       107 |
+2026-11-19T19:54:00.9642135Z       108 | async function maiorAtrasoDaPagina(page: Page, ms: number): Promise<number> {
+2026-11-19T19:54:00.9642871Z         at replaceBridgeScript (/home/runner/work/sistema-zero/sistema-zero/packages/studio/e2e/preview-shell.spec.ts:105:23)
+2026-11-19T19:54:00.9643874Z         at /home/runner/work/sistema-zero/sistema-zero/packages/studio/e2e/preview-shell.spec.ts:210:5
+2026-11-19T19:54:00.9644270Z
+2026-11-19T19:54:00.9644697Z     attachment #1: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+2026-11-19T19:54:00.9645843Z     .cache/playwright-results/preview-shell-prévia-dentr-256ac--do-jogo-não-trava-o-editor-firefox/attachments/diagnostico-da-casca-123afbf703a64b6108cbc14abbd8048fd48daf47.json
+2026-11-19T19:54:00.9647635Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+2026-11-19T19:54:00.9648190Z
+2026-11-19T19:54:00.9649236Z     Error Context: .cache/playwright-results/preview-shell-prévia-dentr-256ac--do-jogo-não-trava-o-editor-firefox/error-context.md
+2026-11-19T19:54:00.9650487Z

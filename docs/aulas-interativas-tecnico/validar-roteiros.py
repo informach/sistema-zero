@@ -9,6 +9,9 @@ ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas'
 LEGADO = re.compile(r'Concluir fase|Próxima (?:fase|seção|etapa)|Mapa da Aventura|Caderno do Aluno|Enviar para o professor', re.I)
 CLIP = re.compile(r'^\*\*Clipe:\*\* `([^`]+)`\s*$', re.M)
 FALA = re.compile(r'\*\*Fala para ElevenLabs:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\n```')
+# Cursos para pais: desde 19/11/2026 a voz também é gerada no ElevenLabs (avatar da Helena), então
+# valem a mesma fala com tags e o mesmo .elevenlabs.txt dos cursos das crianças. A pasta só é
+# distinguida para a contagem de manifestos e para recusar travessão na fala.
 PASTA_PAIS = 'pais'
 AULAS_DAS_CRIANCAS = 51
 TAGS = set(json.loads((Path(__file__).resolve().parent / 'qa/direcoes-voz.json').read_text(encoding='utf-8')))
@@ -78,6 +81,8 @@ def audit(path):
     if not script_path.exists():
         return [f'{script_path.name}: roteiro ausente'], None
     script = script_path.read_text(encoding='utf-8').replace('\r\n', '\n')
+    pais = path.parent.parent.name == PASTA_PAIS
+    fala_re = FALA
     videos = {b['key'] for b in manifest['blocks'] if b.get('plannedVideo')}
     expected = [k for s in manifest['sections'] for k in s['blockKeys'] if k in videos]
     markers = list(CLIP.finditer(script))
@@ -88,7 +93,7 @@ def audit(path):
     falas = []
     for i, marker in enumerate(markers):
         body = script[marker.end():markers[i + 1].start() if i + 1 < len(markers) else len(script)]
-        matches = list(FALA.finditer(body))
+        matches = list(fala_re.finditer(body))
         if len(matches) != 1:
             errors.append(f'{script_path.name}/{marker.group(1)}: precisa de um bloco integral de fala')
             continue
@@ -97,6 +102,8 @@ def audit(path):
             errors.append(f'{script_path.name}/{marker.group(1)}: fala vazia')
         if re.search(r'<\/?(?:break|speak|prosody)\b', texto, re.I):
             errors.append(f'{script_path.name}: SSML indevido no v4')
+        if pais and ('—' in texto or '–' in texto):
+            errors.append(f'{script_path.name}/{marker.group(1)}: travessão na fala')
         for tag in re.findall(r'\[[^\]\n]+\]', texto):
             if tag not in TAGS:
                 errors.append(f'{script_path.name}: tag fora do contrato de produção: {tag}')

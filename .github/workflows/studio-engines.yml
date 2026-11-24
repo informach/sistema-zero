@@ -1,0 +1,121 @@
+name: Studio engines (GPU cycles, off-screen drawing and devtools cost)
+
+# Lote 4 da evolução do Estúdio (seção 8 da missão, 21/11/2026): as medidas dos motores fora da
+# suíte que barra o merge (esperas fixas sobre a GPU emulada). A GPU dos motores 3D em 10
+# recomeços no mesmo documento (`engine-gpu-cycles.spec.ts`, com critério que reprova vazamento e
+# recomeço que não recria nada) e o custo de desenhar sprites fora do palco no Jogo 2D
+# (`engine-2d-offscreen.spec.ts`). Desde o lote 3 da conclusão (22/11/2026), também o custo das
+# abas Desempenho e Investigar no processo do jogo (`devtools-cost.spec.ts`, meta da proposta:
+# abaixo de 5% do quadro). Desde o lote 7 da conclusão, também as regiões no motor com o jogo E
+# (`engine-regions.spec.ts`): o cenário é montado e compilado no navegador pela oficina e o Estúdio
+# o importa antes da prova. Desde o lote 8, também o jogo D (`jogo-d.flow.ts`): o 2D de grande
+# porte, com o desempenho por quadro, a sessão de 10 minutos pelas regiões e portas, a volta com o
+# estado, a cama que guarda e o destino quebrado. A evidência vai nos artefatos com o SHA.
+on:
+  push:
+    branches: ['staging']
+    paths:
+      - '.github/workflows/studio-engines.yml'
+      - 'packages/studio/playwright.engines.config.ts'
+      - 'packages/studio/e2e/engine-gpu-cycles.spec.ts'
+      - 'packages/studio/e2e/engine-2d-offscreen.spec.ts'
+      - 'packages/studio/e2e/devtools-cost.spec.ts'
+      - 'packages/studio/e2e/engine-regions.spec.ts'
+      - 'packages/studio/e2e/jogo-d.flow.ts'
+      - 'packages/studio/playwright.jogo-d.config.ts'
+      - 'packages/studio/scripts/serve-jogo-d-proof.ts'
+      - 'packages/studio/scripts/gen-jogo-d.ts'
+      - 'packages/studio/scripts/gen-jogo-e-galeria.ts'
+      - 'packages/studio/scripts/jogo-d/**'
+      - 'packages/studio/src/examples/jogoD*'
+      - 'packages/studio/src/examples/__gen_jogoD.ts'
+      - 'packages/studio/src/official-extensions/map-2d/**'
+      - 'packages/core/src/studio/pinta-scene-player.ts'
+      - 'packages/core/src/studio/pinta-scene-transform.generated.ts'
+      - 'packages/studio/src/preview/storageBridge.ts'
+      - 'packages/studio/playground/cenarios-integration/preparar-jogo-e.ts'
+      - 'packages/molda-cenarios/playground/jogo-e/**'
+      - 'packages/molda-cenarios/playground/oficina/qa-jogo-e.ts'
+      - 'packages/molda-cenarios-motor/src/compilar/**'
+      - 'packages/molda-cenarios-core/src/compilar/**'
+      - 'packages/studio/src/preview/devtoolsBridge.ts'
+      - 'packages/studio/src/check/instrumentCheckScript.ts'
+      - 'packages/studio/src/components/devtools/**'
+      - 'packages/studio/src/official-extensions/game-2d-advanced/**'
+      - 'packages/studio/src/official-extensions/three3dInvestigation.ts'
+      - 'packages/core/src/studio/pro-runtime-bridge.ts'
+      - 'packages/studio/src/official-extensions/game-2d/runtime/**'
+      - 'packages/studio/src/official-extensions/game-3d/**'
+      - 'packages/studio/src/official-extensions/world-3d/**'
+      - 'packages/studio/src/official-extensions/game-3d-advanced/**'
+      - 'packages/studio/src/official-extensions/three3dModelsRuntime.ts'
+      - 'packages/studio/src/official-extensions/threeRenderBudgetRuntime.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: studio-engines-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  engines:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 130
+    defaults:
+      run:
+        shell: bash
+        working-directory: packages/studio
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prepare signed Ubuntu sources
+        working-directory: .
+        run: sudo "$(command -v bun)" --no-env-file scripts/ci/configure-ubuntu-apt.mjs
+      - working-directory: .
+        run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - name: Jogo E (o cenário compilado no navegador pela oficina, depois o Estúdio)
+        timeout-minutes: 20
+        run: |
+          cd ../molda-cenarios
+          bun run dev:oficina > /tmp/oficina.log 2>&1 &
+          for i in $(seq 1 120); do curl -sf http://127.0.0.1:4541/ > /dev/null && break; sleep 1; done
+          # Sem o servidor da oficina, o log dele diz por quê (revisão do lote 7).
+          node playground/jogo-e/preparar-cenario.mjs || { cat /tmp/oficina.log; exit 1; }
+          kill %1 || true
+          cd ../studio
+          bun playground/cenarios-integration/preparar-jogo-e.ts
+      - name: GPU in 10 restarts, off-screen sprites, devtools cost and regions
+        timeout-minutes: 80
+        run: bunx playwright test --config playwright.engines.config.ts
+      - name: Jogo D (materiais em dia, desempenho, sessão de 10 minutos, estado e destino quebrado)
+        if: ${{ !cancelled() }}
+        timeout-minutes: 35
+        env:
+          JOGO_D_SESSAO_MS: '600000'
+        run: |
+          bun run check:jogo-d
+          bunx playwright test --config playwright.jogo-d.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-engines
+          include-hidden-files: true
+          if-no-files-found: warn
+          path: |
+            packages/studio/.cache/mission/engine-gpu-cycles.json
+            packages/studio/.cache/mission/engine-2d-offscreen.json
+            packages/studio/.cache/mission/devtools-cost.json
+            output/cenarios-reforma/jogo-e/medidas.json
+            # O projeto do jogo E e a foto do início: a galeria publica uma foto dele (gen-jogo-e-galeria).
+            output/cenarios-reforma/jogo-e/regioes.project.json
+            output/cenarios-reforma/jogo-e/olhar-inicio.png
+            packages/studio/.cache/engines-results
+            packages/studio/.cache/mission/jogo-d-results

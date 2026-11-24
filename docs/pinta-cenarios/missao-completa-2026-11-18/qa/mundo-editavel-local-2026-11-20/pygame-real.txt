@@ -1,0 +1,8 @@
+(pass) uniform set reflection and rotation preserve every authored rectangle corner
+(pass) real Pygame expansion and queries match the canonical affine geometry and reference namespaces [407.00ms]
+(pass) Pygame movement tests the rotated tile polygon rather than its expanded bounding box [187.00ms]
+
+ 18 pass
+ 0 fail
+ 5231 expect() calls
+Ran 18 tests across 2 files. [3.51s]

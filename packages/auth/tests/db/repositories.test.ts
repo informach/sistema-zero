@@ -634,9 +634,9 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(byChild.items[0]).toEqual({
       id: miguel,
       name: 'Miguel',
-      publicNickname: null,
       avatarUrl: null,
       birthDate: '2016-03-09',
+      publicNickname: null,
       accountUserId: ana.id,
       account: { id: ana.id, email: 'ana@familia.com', firstName: 'Ana', lastName: 'Souza' },
     })

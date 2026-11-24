@@ -3,6 +3,7 @@ import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-cat
 import type { PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
 import { PGZERO_EXTENSION } from '../../runtime/python/pgzero/contract'
+import { supportsPythonPintaScenes } from '../../runtime/python/pintaScenesContract'
 import { PYGAME_EXTENSION } from '../../runtime/python/pygame/contract'
 import {
   RAYLIB_2D_EXTENSION,
@@ -39,7 +40,8 @@ export function pythonExtensionCodeCheck(
   installed: readonly { id: string }[],
   extension: { id: string },
   action: 'install' | 'remove',
-): 'turtle' | 'pgzero' | 'pygame' | 'raylib-remove' | 'raylib-to-2d' | null {
+  activePintaScene?: ReturnType<typeof supportsPythonPintaScenes>,
+): 'turtle' | 'pgzero' | 'pygame' | 'raylib-remove' | 'raylib-to-2d' | 'pinta-removal' | null {
   if (action === 'remove') {
     if (extension.id === TURTLE_EXTENSION.id) return 'turtle'
     if (extension.id === PGZERO_EXTENSION.id) return 'pgzero'
@@ -48,9 +50,25 @@ export function pythonExtensionCodeCheck(
       ? 'raylib-remove'
       : null
   }
+  if (
+    activePintaScene === RAYLIB_2D_EXTENSION.id &&
+    extension.id === RAYLIB_3D_EXTENSION.id &&
+    pythonRaylibSwapRival(installed, extension)?.id === RAYLIB_2D_EXTENSION.id
+  )
+    return 'pinta-removal'
   return extension.id === RAYLIB_2D_EXTENSION.id && pythonRaylibSwapRival(installed, extension)
     ? 'raylib-to-2d'
     : null
+}
+
+export function activePythonPintaSceneExtension(
+  project: PythonProjectDocument,
+  environment: StudioRuntimeEnvironment | null,
+) {
+  const features = environment
+    ? selectStudioRuntimeRelease(environment.catalog, project.runtime)?.manifest.python?.features
+    : undefined
+  return supportsPythonPintaScenes(project.installedExtensions, features)
 }
 
 export function pythonExtensionInstallIssue(
@@ -191,9 +209,20 @@ export async function changePythonExtension(options: {
       if (existing?.version === extension.version) return
       if (existing) throw new Error('Remova a versão instalada antes de escolher outra.')
     } else if (!existing) return
-    const check = pythonExtensionCodeCheck(expected.installedExtensions, extension, action)
-    if (check === 'turtle' || check === 'pgzero' || check === 'pygame') {
-      if (!options.analysis || !removalPolicy?.environment)
+    const activePintaScene = activePythonPintaSceneExtension(expected, initialPolicy.environment)
+    const check = pythonExtensionCodeCheck(
+      expected.installedExtensions,
+      extension,
+      action,
+      activePintaScene,
+    )
+    if (
+      check === 'turtle' ||
+      check === 'pgzero' ||
+      check === 'pygame' ||
+      check === 'pinta-removal'
+    ) {
+      if (!options.analysis || !(removalPolicy ?? initialPolicy).environment)
         throw new Error(
           'A análise Python não está disponível para conferir a remoção. Seu código foi preservado.',
         )
@@ -201,13 +230,20 @@ export async function changePythonExtension(options: {
         './removalReferences'
       )
       current()
-      const label = extensionName(extension.id)
+      const label = extensionName(check === 'pinta-removal' ? RAYLIB_2D_EXTENSION.id : extension.id)
       const modules =
         check === 'turtle'
           ? ['turtle', 'formas_do_pinta']
           : check === 'pgzero'
-            ? ['pgzero', 'pgzrun', 'pygame']
-            : ['pygame', 'pinta']
+            ? [
+                'pgzero',
+                'pgzrun',
+                'pygame',
+                ...(activePintaScene === extension.id ? ['pinta'] : []),
+              ]
+            : check === 'pinta-removal'
+              ? ['pinta']
+              : ['pygame', 'pinta']
       let references: Awaited<ReturnType<typeof inspectPythonReferences>>
       try {
         const implicit =
@@ -265,7 +301,10 @@ export async function changePythonExtension(options: {
       const label = raylibCheck === 'remove' ? extensionName(extension.id) : 'Raylib 3D'
       const query =
         raylibCheck === 'remove'
-          ? { modules: ['pyray', 'raylib'], label }
+          ? {
+              modules: ['pyray', 'raylib', ...(activePintaScene === extension.id ? ['pinta'] : [])],
+              label,
+            }
           : await import('../../runtime/python/raylib/threeDFunctions.generated').then(
               ({ RAYLIB_3D_FUNCTIONS, RAYLIB_3D_C_FUNCTIONS }) => ({
                 modules: ['pyray', 'raylib'],
@@ -289,8 +328,14 @@ export async function changePythonExtension(options: {
           references,
           raylibCheck === 'remove'
             ? {
-                subject: `O código ainda usa o raylib`,
-                advice: `Apague esses trechos antes de remover ${label}. Para trocar de Raylib, instale ${extensionName(extension.id === RAYLIB_2D_EXTENSION.id ? RAYLIB_3D_EXTENSION.id : RAYLIB_2D_EXTENSION.id)} direto: ela entra no lugar desta.`,
+                subject:
+                  activePintaScene === extension.id
+                    ? `${label} ainda é usada`
+                    : 'O código ainda usa o raylib',
+                advice:
+                  activePintaScene === extension.id
+                    ? `Ajuste esses trechos antes de remover ${label}.`
+                    : `Apague esses trechos antes de remover ${label}. Para trocar de Raylib, instale ${extensionName(extension.id === RAYLIB_2D_EXTENSION.id ? RAYLIB_3D_EXTENSION.id : RAYLIB_2D_EXTENSION.id)} direto: ela entra no lugar desta.`,
               }
             : {
                 subject: 'O código usa funções que só a Raylib 3D tem',

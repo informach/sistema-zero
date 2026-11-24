@@ -2,11 +2,16 @@ import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
-import { PLAYGROUND_DEMO_MISSION } from './initialQuery'
+import { PLAYGROUND_DEMO_MISSION, PLAYGROUND_LESSON } from './initialQuery'
 
 const EditorPlayground = lazy(async () => {
   const module = await import('./App')
   return { default: module.App }
+})
+
+const LessonPlayground = lazy(async () => {
+  const module = await import('./lessonHarness')
+  return { default: module.LessonHarness }
 })
 
 function needsEditor(): boolean {
@@ -26,6 +31,14 @@ export function LandingApp(): JSX.Element {
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
+
+  if (PLAYGROUND_LESSON) {
+    return (
+      <Suspense fallback={null}>
+        <LessonPlayground />
+      </Suspense>
+    )
+  }
 
   if (editorRequested) {
     return (

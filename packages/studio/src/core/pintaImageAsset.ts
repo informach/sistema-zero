@@ -1,10 +1,10 @@
 import {
   isPintaImageDataKind,
-  PINTA_IMAGE_DATA_KEYWORD,
   type PintaImageDerivation,
   PintaImageDerivationSchema,
 } from '@sistemazero/core/studio/pinta-image'
 import { decodeProjectAsset, digestAssetBytes, isSvgDataUrl } from './assetBinary'
+import { pintaPngDataRange } from './pintaPngChunk'
 import type { ProjectAsset } from './projectAssets'
 
 type ImageBinding = {
@@ -19,6 +19,8 @@ type ImageBinding = {
   proPath?: unknown
   sprite?: unknown
   tileset?: unknown
+  tilemapFront?: unknown
+  scene?: unknown
   tilemap?: unknown
 }
 
@@ -63,7 +65,9 @@ export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDeri
         !OUTPUT_EXTENSION[metadata.output.mime].test(asset.proPath))) ||
     asset.sprite !== undefined ||
     asset.tileset !== undefined ||
-    asset.tilemap !== undefined
+    asset.tilemap !== undefined ||
+    asset.tilemapFront !== undefined ||
+    asset.scene !== undefined
   )
     throw new Error(
       'A receita do Pinta não corresponde à imagem capturada. O original foi preservado.',
@@ -72,11 +76,11 @@ export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDeri
 }
 
 /** The normal material decoder/digest supplies exact bytes; no image decoder or source lookup. */
-export function assertPintaImageAssetBytes(
+export async function assertPintaImageAssetBytes(
   asset: ProjectAsset,
   bytes: Uint8Array,
   sha256: string,
-): void {
+): Promise<void> {
   const metadata = readPintaImageAssetMetadata(asset)
   if (!metadata) return
   const output = metadata.output
@@ -111,30 +115,15 @@ export function assertPintaImageAssetBytes(
     throw new Error(
       'Os bytes da imagem não correspondem à receita do Pinta. O original foi preservado.',
     )
-  if (isPintaImageDataKind(metadata.recipe.selection.kind) && !hasPintaDataChunk(bytes))
-    throw new Error(
-      'A imagem do Pinta perdeu os dados das animações, peças ou camadas. O original foi preservado.',
-    )
-}
-
-/**
- * Sheets and maps carry the drawing's data in ONE `iTXt` chunk right after IHDR (offset 33):
- * keyword `pinta`, NUL, compression flag 1, method 0. Only the structure is checked here; the
- * SHA above already pins the exact bytes, and the game reads the JSON (`pinta.py`).
- */
-function hasPintaDataChunk(bytes: Uint8Array): boolean {
-  const keyword = PINTA_IMAGE_DATA_KEYWORD
-  const start = 33
-  const header = start + 8 + keyword.length + 3
-  if (bytes.byteLength < header + 12) return false
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-  const length = view.getUint32(start)
-  if (view.getUint32(start + 4) !== 0x69545874 || length < keyword.length + 5) return false
-  if (start + 12 + length > bytes.byteLength) return false
-  for (let index = 0; index < keyword.length; index++)
-    if (bytes[start + 8 + index] !== keyword.charCodeAt(index)) return false
-  const flags = start + 8 + keyword.length
-  return bytes[flags] === 0 && bytes[flags + 1] === 1 && bytes[flags + 2] === 0
+  if (isPintaImageDataKind(metadata.recipe.selection.kind)) {
+    if (!pintaPngDataRange(bytes))
+      throw new Error(
+        'A imagem do Pinta perdeu os dados das animações, peças ou camadas. O original foi preservado.',
+      )
+    const captured = bytes.slice()
+    const { assertPintaPngReaderContract } = await import('./pintaPngData')
+    await assertPintaPngReaderContract(captured, metadata)
+  }
 }
 
 /** Used at project read, not per source keystroke. The caller has already copied its document. */
@@ -142,6 +131,6 @@ export async function assertPintaImageAssets(assets: readonly ProjectAsset[]): P
   for (const asset of assets) {
     if (asset.pintaImage === undefined) continue
     const { bytes } = decodeProjectAsset(asset.dataUrl)
-    assertPintaImageAssetBytes(asset, bytes, await digestAssetBytes(bytes))
+    await assertPintaImageAssetBytes(asset, bytes, await digestAssetBytes(bytes))
   }
 }

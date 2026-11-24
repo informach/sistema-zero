@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-21T10:10:11.338Z",
+  "source": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "qualificationRun": 44891720185,
+  "exit": 1,
+  "sameBundle": true,
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185@sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+  "namespaceDeletion": false,
+  "stagingOnly": true
+}

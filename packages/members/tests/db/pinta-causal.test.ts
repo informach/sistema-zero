@@ -1,0 +1,1325 @@
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import {
+  PintaCausalArchiveItemSchema,
+  PintaCausalArchivePageSchema,
+  type PintaCausalAttestation,
+  type PintaCausalGalleryPage,
+  PintaCausalGalleryPageSchema,
+  type PintaCausalIntent,
+  type PintaCausalManifest,
+  type PintaCausalMember,
+  type PintaCausalRead,
+  PintaCausalSnapshotPageSchema,
+  pintaCausalBlobKey,
+  pintaCausalIntentHash,
+} from '@sistemazero/core/creations/pinta-causal'
+import type { GalleryDeliveryPlan } from '@sistemazero/core/learning'
+import { Elysia } from 'elysia'
+import { CREATION_LIMITS } from '../../src/domain/creations/creation'
+import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzlePintaRetirementRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-retirement'
+import { DrizzlePintaCausalRepository } from '../../src/infrastructure/persistence/drizzle/pinta-causal-units.repository'
+import { pintaCausalRoutes } from '../../src/interfaces/http/routes/pinta-causal.routes'
+import { galleryLesson } from '../fakes/gallery-lesson'
+import { openKidsJourneyTestDatabase, optInKidsJourneyDatabase } from './kids-journey-database'
+
+const url = optInKidsJourneyDatabase('PINTA_CAUSAL_TEST_DATABASE_URL')
+const time = '2026-11-22T12:00:00.000Z'
+async function rejection<T>(p: Promise<T>) {
+  try {
+    await p
+  } catch (error) {
+    return error
+  }
+  throw Error('expected rejection')
+}
+const sha = (n: number) => n.toString(16).padStart(64, '0')
+const slots = (v: number) => v.toString(16).padStart(2, '0') + '00'.repeat(31)
+function actor() {
+  return { userId: randomUUID(), accountId: randomUUID(), audience: 'kids' as const }
+}
+const put = (
+  id: string,
+  n: number,
+  kind: PintaCausalManifest['kind'] = 'pixel-sprite',
+  baseRevision = 0,
+): Extract<PintaCausalMember, { action: 'put' }> => ({
+  action: 'put',
+  itemId: id,
+  name: id,
+  kind,
+  bytes: 5,
+  sha256: sha(n),
+  itemUpdatedAt: time,
+  formatVersion: 6,
+  baseRevision,
+  operation: { type: baseRevision ? 'update' : 'create' },
+})
+const manifest = (
+  m: Extract<PintaCausalMember, { action: 'put' }>,
+  rest: Partial<PintaCausalManifest> = {},
+): PintaCausalManifest => ({
+  version: 1,
+  itemId: m.itemId,
+  name: m.name,
+  kind: m.kind,
+  nativeSchema: 7,
+  requiredNativeSchema: 1,
+  backupVersion: 7,
+  refs: [],
+  doorSelectors: [],
+  ...rest,
+})
+const intent = (
+  epoch: string,
+  members: PintaCausalMember[],
+  readSet: PintaCausalRead[] = [],
+): PintaCausalIntent => ({
+  protocol: 1,
+  opId: randomUUID(),
+  baseEpoch: epoch,
+  reader: 6,
+  members,
+  readSet,
+})
+const reservePage = async (i: PintaCausalIntent) => ({
+  ...i,
+  page: 0,
+  pages: 1,
+  intentHash: await pintaCausalIntentHash(i),
+})
+describe.skipIf(!url)('Pinta causal over the real migration and existing quota lock', () => {
+  let conn: DbConnection, db: DrizzlePintaCausalRepository, legacy: DrizzleCreationsRepository
+  beforeAll(async () => {
+    conn = await openKidsJourneyTestDatabase(url!)
+    db = new DrizzlePintaCausalRepository(conn.db)
+    legacy = new DrizzleCreationsRepository(conn.db)
+  }, 60_000)
+  afterAll(() => conn?.close())
+  async function reserve(a: ReturnType<typeof actor>, i: PintaCausalIntent) {
+    const { status } = await db.reserve(a, await reservePage(i))
+    if (status.state !== 'reserved') throw Error('expected live reservation')
+    return status.tickets
+  }
+  async function complete(
+    a: ReturnType<typeof actor>,
+    i: PintaCausalIntent,
+    contents: (PintaCausalManifest | null)[],
+    transitions: PintaCausalAttestation['transitions'][] = [],
+  ) {
+    const tickets = await reserve(a, i)
+    for (const [n, binding] of tickets.entries())
+      await db.attest(a, {
+        purpose: 'pinta-unit-content-v1',
+        binding,
+        manifest: contents[n]!,
+        transitions: transitions[n] ?? [],
+      })
+    return db.commit(a, { opId: i.opId })
+  }
+  test('paged intent never publishes prefixes, and a changed index invalidates a later page', async () => {
+    const a = actor(),
+      first = put('A', 3),
+      last = put('z', 4)
+    // Seed only owner-scoped, independent index rows to exercise a 100-entry snapshot boundary.
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     select gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','s'||n,'s'||n,'pixel-sprite',now(),1,'fixture/'||n,1,now(),now() from generate_series(1,99) n`
+    const i = intent('99', [first, last])
+    const page = await reservePage(i)
+    const one = { ...page, page: 1, pages: 2, members: [last] },
+      zero = { ...page, page: 0, pages: 2, members: [first] }
+    const prep = await db.reserve(a, one)
+    expect(prep.status.state).toBe('collecting')
+    expect((await db.reserve(a, one)).status).toEqual(prep.status)
+    expect(
+      await rejection(db.reserve(a, { ...one, members: [{ ...last, bytes: 99 }] })),
+    ).toMatchObject({ reason: 'operation-conflict' })
+    expect((await db.page(a, { reader: 6 })).entries).toHaveLength(99)
+    const reserved = await db.reserve(a, zero)
+    if (reserved.status.state !== 'reserved') throw Error('reservation missing')
+    expect(reserved.uploadBytes).toEqual({ A: 5, z: 5 })
+    for (const [n, binding] of reserved.status.tickets.entries())
+      await db.attest(a, {
+        purpose: 'pinta-unit-content-v1',
+        binding,
+        manifest: manifest([first, last][n]!),
+        transitions: [],
+      })
+    await db.commit(a, i)
+    const rawFailure = await rejection(
+      Promise.resolve(
+        conn.sql`update members.creations set name='old protocol' where user_id=${a.userId} and item_id='z'`,
+      ),
+    )
+    expect(rawFailure).toMatchObject({ code: '23514' })
+    const head = await db.page(a, { reader: 6 })
+    expect(head.entries).toHaveLength(100)
+    expect(head.entries[0]?.itemId).toBe('A')
+    expect(
+      (await db.page(a, { reader: 6, epoch: head.epoch, cursor: head.nextCursor! })).entries.map(
+        (r) => r.itemId,
+      ),
+    ).toEqual(['z'])
+    const p = put('new', 5)
+    await complete(a, intent(head.epoch, [p]), [manifest(p)])
+    expect(
+      await rejection(db.page(a, { reader: 6, epoch: head.epoch, cursor: head.nextCursor! })),
+    ).toMatchObject({ reason: 'epoch-changed' })
+  })
+  test('net quota, compacted tombstone, account deletion fence and expired nonce', async () => {
+    const a = actor(),
+      old = put('old', 1),
+      i = intent('0', [old])
+    await complete(a, i, [manifest(old)])
+    // Other tools share the authoritative 1 GiB byte budget.
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     values (gen_random_uuid(),${a.userId},${a.accountId},'kids','studio','quota','quota','classic',now(),1,'fixture',${CREATION_LIMITS.maxTotalBytes - 5},now(),now())`
+    const fresh = put('fresh', 2)
+    expect(await rejection(reserve(a, intent('1', [fresh])))).toMatchObject({ reason: 'quota' })
+    const del = { action: 'delete' as const, itemId: 'old', baseRevision: 1 },
+      swap = intent('1', [fresh, del])
+    await complete(a, swap, [manifest(fresh), null])
+    const ack = (await db.status(a, swap)).status
+    expect(ack.state).toBe('committed')
+    expect((await db.page(a, { reader: 6 })).entries.map((e) => e.itemId)).toEqual(['fresh'])
+    const [tomb] =
+      await conn.sql`delete from members.creations where user_id=${a.userId} and item_id='old' and deleted_at is not null returning revision`
+    expect(tomb?.revision).toBe(2)
+    expect((await db.commit(a, swap)).status).toEqual(ack)
+    const free = intent('2', [{ action: 'delete', itemId: 'fresh', baseRevision: 1 }])
+    const [oldBinding] = await reserve(a, free)
+    const expired = new DrizzlePintaCausalRepository(
+      conn.db,
+      () => new Date(Date.now() + 24 * 3600000),
+    )
+    expect((await expired.status(a, free)).status.state).toBe('expired')
+    expect(
+      await rejection(
+        expired.attest(a, {
+          purpose: 'pinta-unit-content-v1',
+          binding: oldBinding!,
+          manifest: null,
+          transitions: [],
+        }),
+      ),
+    ).toMatchObject({ reason: 'unverified-content' })
+    await conn.sql`insert into members.account_deletion_fences values (${a.accountId},now())`
+    expect(await rejection(db.commit(a, free))).toMatchObject({ reason: 'account-deleting' })
+  })
+  test('takes the next revision above a legacy pending ticket whose reservation counter fell behind', async () => {
+    const a = actor(),
+      old = put('pending', 1)
+    await conn.sql`insert into members.creations
+      (id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,pending_revision,last_reserved_revision,format_version,storage_ref,bytes,created_at,synced_at)
+      values(gen_random_uuid(),${a.userId},${a.accountId},'pinta','pending','pixel-sprite','pending',now(),3,9,1,6,'old.gz',5,now(),now())`
+    const { binding } = await db.backfillTicket(a, {
+      epoch: '1',
+      itemId: 'pending',
+      revision: 3,
+      reader: 6,
+    })
+    await db.backfillAttest(a, {
+      purpose: 'pinta-backfill-content-v1',
+      binding,
+      sha256: old.sha256,
+      manifest: manifest(old),
+    })
+    const next = put('pending', 2, 'pixel-sprite', 3)
+    const op = intent('2', [next])
+    const [ticket] = await reserve(a, op)
+    expect(ticket).toMatchObject({ baseRevision: 3, revision: 10 })
+    await complete(a, op, [manifest(next)])
+    expect((await visible(a)).entries).toMatchObject([
+      { itemId: 'pending', revision: 10, sha256: next.sha256 },
+    ])
+  })
+  test('legacy numerical ACK after compaction identifies neither the original bytes nor a causal base', async () => {
+    const a = actor()
+    const upload = {
+      ...a,
+      tool: 'pinta' as const,
+      itemId: 'file',
+      kind: 'pixel-sprite',
+      name: 'file',
+      bytes: 5,
+      itemUpdatedAt: new Date(time),
+      now: new Date(time),
+      thumb: null,
+      limits: CREATION_LIMITS,
+    }
+    await legacy.reserveUpload(upload)
+    const old = { ...upload, revision: 1, storageRef: 'first.gz' }
+    await legacy.commit(old)
+    await legacy.softDelete(a.userId, 'pinta', 'file', 1, new Date(time))
+    await conn.sql`delete from members.creations where user_id=${a.userId} and item_id='file' and deleted_at is not null`
+    await legacy.reserveUpload(upload)
+    await legacy.commit({ ...old, storageRef: 'next.gz' })
+    expect(await legacy.commit(old)).toMatchObject({ ok: true, alreadyCommitted: true })
+    expect((await legacy.get(a.userId, 'pinta', 'file'))?.storageRef).toBe('next.gz')
+    const snapshot = await visible(a)
+    expect(snapshot.entries).toMatchObject([
+      { itemId: 'file', revision: 1, coverage: 'unknown', sha256: null },
+    ])
+    expect(
+      await rejection(
+        db.item(a, { epoch: snapshot.epoch, itemId: 'file', revision: 1, reader: 6 }),
+      ),
+    ).toMatchObject({ reason: 'unverified-content' })
+    const separate = put('new', 2)
+    await complete(a, intent(snapshot.epoch, [separate]), [manifest(separate)])
+    expect(await rejection(legacy.commit(old))).toMatchObject({ reason: 'protocol-required' })
+  })
+  test('retirement releases only expired exact keys and preserves the confirmed seal', async () => {
+    const a = actor(),
+      m = put('owned', 7),
+      i = intent('0', [m])
+    const [b] = await reserve(a, i)
+    await db.attest(a, {
+      purpose: 'pinta-unit-content-v1',
+      binding: b!,
+      manifest: manifest(m),
+      transitions: [],
+    })
+    await db.commit(a, i)
+    // Only this fixture is due, without advancing the worker clock into unrelated fixtures.
+    await conn.sql`update members.pinta_causal_objects set not_before='2000-01-01' where user_id=${a.userId}`
+    const at = new Date('2001-01-01'),
+      queue = new DrizzlePintaRetirementRepository(conn.db)
+    const job = await queue.claim(at, new Date(0))
+    expect(job?.objectKeys).toEqual([pintaCausalBlobKey(b!, 'upload')])
+    expect(job?.scope).toBe('pinta')
+    expect(job?.prefixes).toEqual([])
+    expect(await queue.claim(at, new Date(0))).toBeNull()
+    expect(await queue.fail(job!.id, at)).toBe(true)
+    const retry = await queue.claim(at, new Date(0))
+    expect(retry?.attempts).toBe(2)
+    expect(await queue.complete(job!.id)).toBe(true)
+    expect(await queue.claim(at, new Date(0))).toBeNull()
+    expect(
+      (await db.item(a, { reader: 6, epoch: '1', itemId: m.itemId, revision: 1 })).storageRef,
+    ).toBe(pintaCausalBlobKey(b!, 'sealed'))
+  })
+  test('internal routes require both gateway credentials and reject browser-supplied facts and mixed adult identities', async () => {
+    const a = actor(),
+      token = 'owned-test-internal-token'
+    const reserveUpload = {
+      assertPersonalWrite: async () => {
+        throw Error('No product entitlement')
+      },
+    }
+    const app = new Elysia()
+      .onError(
+        ({ error }) =>
+          new Response(null, {
+            status:
+              error instanceof Error && /consumer|token|gateway/i.test(error.message) ? 401 : 403,
+          }),
+      )
+      .use(
+        pintaCausalRoutes({
+          causal: db,
+          internalToken: token,
+          reserveUpload,
+        }),
+      )
+      .compile()
+    const call = (path: string, body: unknown, headers: Record<string, string> = {}) =>
+      app.handle(
+        new Request(`http://localhost/members/internal/creations/pinta/${path}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', ...headers },
+          body: JSON.stringify(body),
+        }),
+      )
+    const gateway = { 'x-internal-token': token, 'x-consumer-id': 'member-shell' }
+    // Sem lista de perfis (23/11/2026): todo perfil lê a própria galeria, e só ela. O dono é o par
+    // conta + perfil do envelope que o member-shell assinou; um par trocado não lê nada.
+    const b = actor(),
+      mine = put('mine', 1)
+    await complete(b, intent('0', [mine]), [manifest(mine)])
+    const owned = await call('graph/page', { ...b, payload: { reader: 6 } }, gateway)
+    expect(owned.status).toBe(200)
+    expect((await owned.json()).entries.map((e: { itemId: string }) => e.itemId)).toEqual(['mine'])
+    const crossed = await call(
+      'graph/page',
+      { ...b, accountId: a.accountId, payload: { reader: 6 } },
+      gateway,
+    )
+    expect(crossed.status).not.toBe(200)
+    expect(await crossed.text()).not.toContain('mine')
+    expect(
+      (await call('graph/page', { ...a, payload: { reader: 6 } }, { 'x-internal-token': token }))
+        .status,
+    ).toBe(401)
+    expect(
+      (
+        await call(
+          'graph/page',
+          { ...a, payload: { reader: 6 } },
+          { 'x-consumer-id': 'member-shell' },
+        )
+      ).status,
+    ).toBe(401)
+    expect(
+      (await call('graph/page', { ...a, audience: 'adult', payload: { reader: 6 } }, gateway))
+        .status,
+    ).toBe(422)
+    expect(
+      (await call('units/attest', { ...a, payload: { manifest: {}, verified: true } }, gateway))
+        .status,
+    ).toBe(422)
+    const response = await call('graph/page', { ...a, payload: { reader: 6 } }, gateway)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ epoch: '0', entries: [] })
+    const page = await reservePage(intent('0', [put('x', 1)]))
+    expect((await call('units/reserve', { ...a, payload: page }, gateway)).status).toBe(403)
+    expect(await rejection(db.status(a, page))).toMatchObject({ reason: 'not-found' })
+  })
+  test('unknown legacy resource allows proven paint/append but blocks structural changes', async () => {
+    const a = actor()
+    await conn.sql`insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,format_version,storage_ref,bytes,created_at,synced_at)
+     values(gen_random_uuid(),${a.userId},${a.accountId},'pinta','unknown','tilemap','Unknown',now(),1,6,'unknown.gz',5,now(),now())`
+    const s = put('sheet', 1, 'tileset'),
+      sheet = (m: typeof s, count: number) => manifest(m, { sheet: { tileSize: 8, count } })
+    await complete(a, intent('1', [s]), [sheet(s, 3)])
+    const paint = {
+      ...s,
+      baseRevision: 1,
+      sha256: sha(2),
+      operation: { type: 'paint' as const, slots: slots(6) },
+    }
+    await complete(a, intent('2', [paint]), [sheet(paint, 3)])
+    const append = {
+      ...s,
+      baseRevision: 2,
+      sha256: sha(3),
+      operation: { type: 'append' as const, count: 4 },
+    }
+    await complete(a, intent('3', [append]), [sheet(append, 4)])
+    expect((await visible(a)).entries.find((e) => e.itemId === 'sheet')?.layoutRevision).toBe('2')
+    const remap = {
+      ...s,
+      baseRevision: 3,
+      sha256: sha(4),
+      operation: { type: 'remap' as const, count: 3, oldToNew: [-1, 0, 1, 2] },
+    }
+    expect(await rejection(complete(a, intent('4', [remap]), [sheet(remap, 3)]))).toMatchObject({
+      reason: 'unknown-consumer',
+      itemId: 'unknown',
+    })
+    expect((await visible(a)).epoch).toBe('4')
+    expect(
+      await rejection(db.page({ ...a, accountId: randomUUID() }, { reader: 6 })),
+    ).toMatchObject({ reason: 'not-found' })
+  })
+  test('name door cannot silently retarget; a set cannot drop a live external art resource', async () => {
+    const a = actor(),
+      map = put('a', 1, 'tilemap'),
+      other = { ...put('b', 2, 'tilemap'), name: 'Vila' },
+      art = put('c', 3)
+    const set = put('d', 4, 'map-set'),
+      reads: PintaCausalRead[] = [
+        { source: 'unit', consumerId: 'a', targetId: 'b' },
+        { source: 'unit', consumerId: 'd', targetId: 'c' },
+      ]
+    const state = intent('0', [map, other, art, set], reads)
+    await complete(a, state, [
+      manifest(map, { doorSelectors: ['Vila'] }),
+      manifest(other),
+      manifest(art),
+      manifest(set, { refs: [{ id: 'c', roles: ['art'], implicitArtSlotZero: true }] }),
+    ])
+    const duplicate = { ...put('new-map', 5, 'tilemap'), name: 'Vila' }
+    const dupe = intent('1', [duplicate])
+    expect(await rejection(complete(a, dupe, [manifest(duplicate)]))).toMatchObject({
+      reason: 'missing-consumer',
+      itemId: 'a',
+    })
+    await db.abort(a, dupe)
+    const drop = intent('1', [{ action: 'delete', itemId: 'c', baseRevision: 1 }])
+    expect(await rejection(complete(a, drop, [null]))).toMatchObject({
+      reason: 'missing-consumer',
+      itemId: 'd',
+    })
+    await db.abort(a, drop)
+    const both = intent('1', [
+      { action: 'delete', itemId: 'c', baseRevision: 1 },
+      { ...set, baseRevision: 1, operation: { type: 'update' }, sha256: sha(6) },
+    ])
+    await complete(a, both, [null, manifest(set)])
+    expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['a', 'b', 'd'])
+  })
+  test('an inverse binds every before/after digest across a disappeared slot and rejects a new consumer', async () => {
+    const a = actor(),
+      map = put('map', 1, 'tilemap'),
+      sheet = put('sheet', 2, 'tileset')
+    const read: PintaCausalRead = { source: 'unit', consumerId: 'map', targetId: 'sheet' }
+    const m1 = manifest(map, {
+        refs: [{ id: 'sheet', roles: ['default-sheet'], indices: slots(3) }],
+      }),
+      s1 = manifest(sheet, { sheet: { tileSize: 8, count: 2 } })
+    await complete(a, intent('0', [map, sheet], [read]), [m1, s1])
+    const m2 = { ...map, baseRevision: 1, sha256: sha(3), operation: { type: 'update' as const } },
+      s2 = {
+        ...sheet,
+        baseRevision: 1,
+        sha256: sha(4),
+        operation: { type: 'remap' as const, count: 1, oldToNew: [-1, 0] },
+      }
+    const cut = intent('1', [m2, s2], [read])
+    await complete(
+      a,
+      cut,
+      [
+        manifest(m2, { refs: [{ id: 'sheet', roles: ['default-sheet'], indices: slots(1) }] }),
+        manifest(s2, { sheet: { tileSize: 8, count: 1 } }),
+      ],
+      [[{ sheetId: 'sheet', mode: 'mapped' }], []],
+    )
+    const origMap = { ...map, baseRevision: 2, operation: { type: 'update' as const } },
+      origSheet = {
+        ...sheet,
+        baseRevision: 2,
+        operation: { type: 'remap' as const, count: 2, oldToNew: [1] },
+      }
+    const wrong = {
+      ...intent('2', [{ ...origMap, sha256: sha(5) }, origSheet], [read]),
+      inverseOf: cut.opId,
+    }
+    expect(await rejection(complete(a, wrong, [m1, s1]))).toMatchObject({
+      reason: 'stale-base',
+      itemId: 'map',
+    })
+    await db.abort(a, wrong)
+    const newMap = put('other', 6, 'map-set'),
+      newRead: PintaCausalRead = {
+        consumerId: 'other',
+        targetId: 'sheet',
+        source: 'snapshot',
+        revision: 2,
+        sha256: sha(4),
+        layoutRevision: '2',
+      }
+    await complete(a, intent('2', [newMap], [newRead]), [
+      manifest(newMap, { refs: [{ id: 'sheet', roles: ['art'], implicitArtSlotZero: true }] }),
+    ])
+    for (const operation of [
+      { type: 'append', count: 2 },
+      { type: 'update' },
+      { type: 'remap', count: 2, oldToNew: [0] },
+    ] as const) {
+      const sheetOperation =
+        operation.type === 'remap' ? { ...operation, oldToNew: [0] } : operation
+      const mislabeled = {
+        ...intent('3', [origMap, { ...origSheet, operation: sheetOperation }], [read]),
+        inverseOf: cut.opId,
+      }
+      expect(await rejection(complete(a, mislabeled, [m1, s1]))).toMatchObject({
+        reason: 'unverified-content',
+        itemId: 'sheet',
+      })
+      await db.abort(a, mislabeled)
+      expect((await visible(a)).epoch).toBe('3')
+    }
+    const blocked = { ...intent('3', [origMap, origSheet], [read]), inverseOf: cut.opId }
+    expect(await rejection(complete(a, blocked, [m1, s1]))).toMatchObject({
+      reason: 'missing-consumer',
+      itemId: 'other',
+    })
+    await db.abort(a, blocked)
+    await complete(a, intent('3', [{ action: 'delete', itemId: 'other', baseRevision: 1 }]), [null])
+    const restore = { ...intent('4', [origMap, origSheet], [read]), inverseOf: cut.opId }
+    await complete(a, restore, [m1, s1])
+    expect((await visible(a)).entries.map((e) => e.sha256)).toEqual([map.sha256, sheet.sha256])
+  })
+  test('undo of append drops only the former suffix and preserves later users of the prefix', async () => {
+    const a = actor(),
+      sheet = put('sheet', 1, 'tileset'),
+      before = manifest(sheet, { sheet: { tileSize: 8, count: 2 } })
+    await complete(a, intent('0', [sheet]), [before])
+    const grown = {
+      ...sheet,
+      baseRevision: 1,
+      sha256: sha(2),
+      operation: { type: 'append' as const, count: 3 },
+    }
+    const append = intent('1', [grown])
+    await complete(a, append, [manifest(grown, { sheet: { tileSize: 8, count: 3 } })])
+    const consumer = put('later', 3, 'tilemap')
+    const read: PintaCausalRead = {
+      source: 'snapshot',
+      consumerId: 'later',
+      targetId: 'sheet',
+      sha256: grown.sha256,
+      revision: 2,
+      layoutRevision: '1',
+    }
+    await complete(a, intent('2', [consumer], [read]), [
+      manifest(consumer, { refs: [{ id: 'sheet', roles: ['art'], indices: slots(3) }] }),
+    ])
+    const undo = (mapping: number[]) => ({
+      ...intent('3', [
+        { ...sheet, baseRevision: 2, operation: { type: 'remap', oldToNew: mapping, count: 2 } },
+      ]),
+      inverseOf: append.opId,
+    })
+    const wrong = undo([-1, 0, 1])
+    expect(await rejection(complete(a, wrong, [before]))).toMatchObject({
+      reason: 'unverified-content',
+      itemId: 'sheet',
+    })
+    await db.abort(a, wrong)
+    await complete(a, undo([0, 1, -1]), [before])
+    expect(await visible(a)).toMatchObject({
+      epoch: '4',
+      entries: [
+        { itemId: 'later', revision: 1, sha256: consumer.sha256 },
+        { itemId: 'sheet', sha256: sheet.sha256 },
+      ],
+    })
+  })
+  test('inverse of a compacted creation cannot delete a recreated identical revision and digest', async () => {
+    const a = actor(),
+      doc = put('same', 5),
+      first = intent('0', [doc])
+    await complete(a, first, [manifest(doc)])
+    await complete(a, intent('1', [{ action: 'delete', itemId: 'same', baseRevision: 1 }]), [null])
+    await conn.sql`delete from members.creations where user_id=${a.userId} and item_id='same' and deleted_at is not null`
+    await complete(a, intent('2', [doc]), [manifest(doc)])
+    const inverse = {
+      ...intent('3', [{ action: 'delete', itemId: 'same', baseRevision: 1 }]),
+      inverseOf: first.opId,
+    }
+    expect(await rejection(complete(a, inverse, [null]))).toMatchObject({
+      reason: 'stale-base',
+      itemId: 'same',
+    })
+    expect(await visible(a)).toMatchObject({
+      epoch: '3',
+      entries: [{ revision: 1, sha256: doc.sha256 }],
+    })
+  })
+  test('a frozen two-sheet grid and a live artwork follow separate authoring units in either order', async () => {
+    for (const freezeFirst of [true, false]) {
+      const a = actor(),
+        A = put('A', 1, 'tileset'),
+        B = put('B', 2, 'tileset'),
+        map = put('map', 3, 'tilemap')
+      const before = (n: number) =>
+        manifest(map, {
+          refs: [
+            { id: 'A', roles: ['art', 'default-sheet'], indices: slots(n) },
+            { id: 'B', roles: ['layer-sheet'], indices: slots(1) },
+          ],
+        })
+      const frozen = (n: number) =>
+        manifest(map, {
+          embeddedDefaultLayout: { kind: 'tileset', tileSize: 8 },
+          refs: [{ id: 'A', roles: ['art'], indices: slots(n) }],
+        })
+      const readInUnit = (targetId: string): PintaCausalRead => ({
+        source: 'unit',
+        consumerId: 'map',
+        targetId,
+      })
+      const readSnapshot = (
+        targetId: string,
+        revision: number,
+        sha256: string,
+        layoutRevision: string,
+      ): PintaCausalRead => ({
+        source: 'snapshot',
+        consumerId: 'map',
+        targetId,
+        revision,
+        sha256,
+        layoutRevision,
+      })
+      const sheet = { tileSize: 8, count: 2 }
+      await complete(a, intent('0', [A, B, map], [readInUnit('A'), readInUnit('B')]), [
+        manifest(A, { sheet }),
+        manifest(B, { sheet }),
+        before(2),
+      ])
+      const freeze = async (epoch: string, rev: number, bit: number, live: PintaCausalRead) => {
+        const update = put('map', bit + 8, 'tilemap', rev)
+        await complete(a, intent(epoch, [update], [live]), [frozen(bit)])
+      }
+      const fresh = {
+        ...A,
+        baseRevision: 1,
+        sha256: sha(7),
+        operation: { type: 'remap' as const, oldToNew: [-1, 0], count: 1 },
+      }
+      const afterSheet = manifest(A, { sheet: { tileSize: 8, count: 1 } })
+      if (freezeFirst) await freeze('1', 1, 2, readSnapshot('A', 1, A.sha256, '1'))
+      const epoch = freezeFirst ? '2' : '1'
+      const incomplete = intent(epoch, [fresh])
+      expect(await rejection(complete(a, incomplete, [afterSheet]))).toMatchObject({
+        reason: 'missing-consumer',
+        itemId: 'map',
+      })
+      await db.abort(a, incomplete)
+      const mapping = put('map', 4, 'tilemap', freezeFirst ? 2 : 1)
+      const observed: PintaCausalRead[] = [readInUnit('A')]
+      if (!freezeFirst) observed.push(readSnapshot('B', 1, B.sha256, '1'))
+      const remapped = await complete(
+        a,
+        intent(epoch, [fresh, mapping], observed),
+        [afterSheet, freezeFirst ? frozen(1) : before(1)],
+        [[], [{ sheetId: 'A', mode: 'mapped' }]],
+      )
+      if (!freezeFirst) {
+        if (remapped.status.state !== 'committed') throw Error('missing remap receipt')
+        const seen = remapped.status.result.members.find((m) => m.itemId === 'A')!
+        await freeze(
+          remapped.status.result.epoch,
+          2,
+          1,
+          readSnapshot('A', seen.revision, seen.sha256!, seen.layoutRevision!),
+        )
+      }
+      expect(await visible(a)).toMatchObject({
+        epoch: '3',
+        entries: [
+          { itemId: 'A', revision: 3 },
+          { itemId: 'B', revision: 1 },
+          { itemId: 'map', revision: 3 },
+        ],
+      })
+    }
+  })
+  test('self doors by ID and name use the proven map PUT; external and shadowed selectors still require their target', async () => {
+    const a = actor(),
+      home = { ...put('home', 1, 'tilemap'), name: 'vila' },
+      sheet = put('sheet', 2, 'tileset')
+    const refs: PintaCausalManifest['refs'] = [
+      { id: 'home', roles: ['property'] },
+      { id: 'sheet', roles: ['default-sheet'] },
+    ]
+    const start = manifest(home, { doorSelectors: ['home', 'vila'], refs })
+    const sheetRead: PintaCausalRead = { source: 'unit', consumerId: 'home', targetId: 'sheet' }
+    await complete(a, intent('0', [home, sheet], [sheetRead]), [
+      start,
+      manifest(sheet, { sheet: { tileSize: 8, count: 1 } }),
+    ])
+    expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['home', 'sheet'])
+    const other = put('other', 3, 'tilemap')
+    await complete(a, intent('1', [other]), [manifest(other)])
+    const edit = {
+      ...home,
+      baseRevision: 1,
+      sha256: sha(4),
+      operation: { type: 'update' as const },
+    }
+    const read: PintaCausalRead = {
+      source: 'snapshot',
+      consumerId: 'home',
+      targetId: 'sheet',
+      revision: 1,
+      sha256: sheet.sha256,
+      layoutRevision: '1',
+    }
+    const needsOther = manifest(edit, { refs, doorSelectors: ['other'] })
+    const unwitnessed = intent('2', [edit], [read])
+    expect(await rejection(complete(a, unwitnessed, [needsOther]))).toMatchObject({
+      reason: 'layout-stale',
+      itemId: 'other',
+    })
+    await db.abort(a, unwitnessed)
+    const newcomer = put('vila', 5)
+    // ID-first lookup now sees a sprite, even though the name also matches the original map.
+    expect(
+      await rejection(complete(a, intent('2', [newcomer]), [manifest(newcomer)])),
+    ).toMatchObject({ reason: 'missing-consumer', itemId: 'home' })
+    expect((await visible(a)).epoch).toBe('2')
+  })
+  test('opaque future bytes have an explicit owner archive and cannot be admitted or mutated by reader 7', async () => {
+    const a = actor()
+    await conn.sql`insert into members.creations(id,user_id,account_id,tool,item_id,kind,name,item_updated_at,revision,format_version,storage_ref,bytes,created_at,synced_at)
+     values(gen_random_uuid(),${a.userId},${a.accountId},'pinta','future','tilemap','Future',now(),1,99,'old-numbered.gz',530,now(),now())`
+    const original = await db.archivePage(a, {})
+    expect(PintaCausalArchivePageSchema.safeParse(original).success).toBe(true)
+    expect(PintaCausalSnapshotPageSchema.safeParse(original).success).toBe(false)
+    expect(original.archive.requiredFormat).toBe(99)
+    expect(original.archive.entries[0]?.coverage).toBe('unknown')
+    const pin = { epoch: original.archive.epoch, itemId: 'future', revision: 1 }
+    const recovered = await db.archiveItem(a, pin)
+    expect(PintaCausalArchiveItemSchema.safeParse(recovered).success).toBe(true)
+    expect(recovered.archive.storageRef).toBe('old-numbered.gz')
+    expect(await rejection(db.page(a, { reader: 7 }))).toMatchObject({ reason: 'client-outdated' })
+    expect(await rejection(db.item(a, { ...pin, reader: 7 }))).toMatchObject({
+      reason: 'client-outdated',
+    })
+    expect(await rejection(db.archiveItem(actor(), pin))).toMatchObject({ reason: 'epoch-changed' })
+    expect(
+      await rejection(reserve(a, { ...intent(pin.epoch, [put('sprite', 2)]), reader: 7 })),
+    ).toMatchObject({ reason: 'client-outdated' })
+    expect(await db.archivePage(a, {})).toEqual(original)
+  })
+  test('an old SQL commit already waiting on the quota lock observes adoption before its write', async () => {
+    const a = actor(),
+      legacyInput = {
+        ...a,
+        tool: 'pinta' as const,
+        itemId: 'queued',
+        kind: 'pixel-sprite',
+        name: 'queued',
+        itemUpdatedAt: new Date(time),
+        bytes: 5,
+        thumb: null,
+        now: new Date(time),
+        limits: CREATION_LIMITS,
+        formatVersion: 6,
+        maxReadFormatVersion: 6,
+      }
+    await legacy.reserveUpload(legacyInput)
+    await legacy.commit({ ...legacyInput, revision: 1, storageRef: 'original.gz' })
+    const old = await legacy.reserveUpload({ ...legacyInput, baseRevision: 1 })
+    expect(old).toMatchObject({ ok: true, revision: 2 })
+    const fresh = put('independent', 2),
+      i = intent('1', [fresh]),
+      [binding] = await reserve(a, i)
+    await db.attest(a, {
+      purpose: 'pinta-unit-content-v1',
+      binding: binding!,
+      manifest: manifest(fresh),
+      transitions: [],
+    })
+    let acquired!: (pid: number) => void, release!: () => void
+    const locked = new Promise<number>((r) => {
+        acquired = r
+      }),
+      unlocked = new Promise<void>((r) => {
+        release = r
+      })
+    const holder = conn.sql.begin(async (tx) => {
+      const [r] =
+        await tx`select pg_backend_pid() as pid,pg_advisory_xact_lock(hashtextextended(${`creation-quota:${a.userId}`},0))`
+      acquired(Number(r!.pid))
+      await unlocked
+    })
+    const pid = await locked
+    const commit = db.commit(a, i)
+    let oldWriter: Promise<unknown> | undefined
+    try {
+      await waitForAdvisoryWaiters(pid, 1)
+      oldWriter =
+        conn.sql`update members.creations set revision=pending_revision,storage_ref='old-upload.gz',pending_revision=null
+      where user_id=${a.userId} and audience='kids' and tool='pinta' and item_id='queued' and pending_revision=2`.then(
+          () => null,
+          (error) => error,
+        )
+      await waitForAdvisoryWaiters(pid, 2)
+    } finally {
+      release()
+      await holder
+    }
+    expect((await commit).status.state).toBe('committed')
+    expect(await oldWriter).toMatchObject({ code: '23514' })
+    const epoch = (await db.page(a, { reader: 6 })).epoch
+    expect(epoch).toBe('2')
+    expect(
+      (await db.archiveItem(a, { epoch, itemId: 'queued', revision: 1 })).archive.storageRef,
+    ).toBe('original.gz')
+    expect(
+      await rejection(legacy.commit({ ...legacyInput, revision: 2, storageRef: 'old-upload.gz' })),
+    ).toMatchObject({ reason: 'protocol-required' })
+    expect((await db.page(a, { reader: 6 })).epoch).toBe(epoch)
+  })
+  test('restoring a deleted sheet may recompress only an authoring document proven by the original receipt', async () => {
+    const a = actor(),
+      file = put('file', 3, 'tileset'),
+      content = manifest(file, {
+        sheet: { tileSize: 8, count: 2 },
+        authoredFingerprint: { version: 1, sha256: sha(100) },
+      })
+    const made = intent('0', [file])
+    await complete(a, made, [content])
+    const remove = {
+      ...intent('1', [{ action: 'delete', itemId: 'file', baseRevision: 1 }]),
+      inverseOf: made.opId,
+    }
+    await complete(a, remove, [null])
+    const member = {
+      ...file,
+      baseRevision: 2,
+      sha256: sha(4),
+      itemUpdatedAt: '2026-11-22T13:00:00.000Z',
+      operation: { type: 'update' as const },
+    }
+    const ordinary = intent('2', [member])
+    expect(await rejection(complete(a, ordinary, [content]))).toMatchObject({
+      reason: 'unverified-content',
+    })
+    await db.abort(a, ordinary)
+    const forged = { ...intent('2', [member]), inverseOf: remove.opId }
+    expect(
+      await rejection(
+        complete(a, forged, [
+          { ...content, authoredFingerprint: { version: 1, sha256: sha(101) } },
+        ]),
+      ),
+    ).toMatchObject({ reason: 'stale-base' })
+    await db.abort(a, forged)
+    const restore = { ...intent('2', [member]), inverseOf: remove.opId }
+    await reserve(a, restore)
+    const plan = await db.member(a, { opId: restore.opId, itemId: 'file' })
+    expect(plan.baseEntry).toBeNull()
+    expect(plan.inverse).toEqual({
+      baseRevision: 2,
+      baseSha256: null,
+      restoredSha256: file.sha256,
+      restoredAuthoredFingerprint: content.authoredFingerprint,
+    })
+    await complete(a, restore, [content])
+    expect((await visible(a)).entries).toMatchObject([
+      { itemId: 'file', sha256: member.sha256, layoutRevision: '3' },
+    ])
+  })
+  test('compacting and recreating an ID never revives its previous revision-one object', async () => {
+    const a = actor(),
+      first = put('reused', 91),
+      i = intent('0', [first])
+    const [one] = await reserve(a, i)
+    await complete(a, i, [manifest(first)])
+    await complete(a, intent('1', [{ action: 'delete', itemId: first.itemId, baseRevision: 1 }]), [
+      null,
+    ])
+    await conn.sql`delete from members.creations where user_id=${a.userId} and item_id=${first.itemId} and deleted_at is not null`
+    const fresh = put('reused', 92),
+      j = intent('2', [fresh]),
+      [two] = await reserve(a, j)
+    expect(two!.revision).toBe(one!.revision)
+    expect(two!.nonce).not.toBe(one!.nonce)
+    expect(
+      await rejection(
+        db.attest(a, {
+          purpose: 'pinta-unit-content-v1',
+          binding: one!,
+          manifest: manifest(first),
+          transitions: [],
+        }),
+      ),
+    ).toMatchObject({ reason: 'unverified-content' })
+    await complete(a, j, [manifest(fresh)])
+    expect((await db.commit(a, i)).status.state).toBe('committed')
+    const current = await db.item(a, { reader: 6, epoch: '3', itemId: 'reused', revision: 1 })
+    expect(current.storageRef).toBe(pintaCausalBlobKey(two!, 'sealed'))
+    expect(current.entry.sha256).toBe(fresh.sha256)
+  })
+  async function waitForAdvisoryWaiters(pid: number, n: number) {
+    const until = Date.now() + 2_000
+    while (Date.now() < until) {
+      const [r] =
+        await conn.sql`select count(*)::int as count from pg_locks mine join pg_locks waiter using(locktype,classid,objid,objsubid)
+       where mine.locktype='advisory' and mine.pid=${pid} and mine.granted and not waiter.granted`
+      if (Number(r?.count) >= n) return
+      await Bun.sleep(5)
+    }
+    throw Error(`Expected queued PostgreSQL advisory-lock waiters: ${n}`)
+  }
+  const visible = (a: ReturnType<typeof actor>) => db.page(a, { reader: 6 })
+
+  test('account purge fences a first collecting page before any creation row exists', async () => {
+    const a = actor(),
+      i = intent('0', [put('first', 1)])
+    let acquired!: (pid: number) => void, release!: () => void
+    const locked = new Promise<number>((r) => {
+        acquired = r
+      }),
+      unlocked = new Promise<void>((r) => {
+        release = r
+      })
+    const holder = conn.sql.begin(async (tx) => {
+      const [owner] =
+        await tx`select pg_backend_pid() as pid,pg_advisory_xact_lock(hashtextextended(${`members-account:${a.accountId}`},0))`
+      await tx`insert into members.account_deletion_fences(account_id,created_at) values (${a.accountId},now())`
+      acquired(Number(owner!.pid))
+      await unlocked
+    })
+    const pid = await locked
+    const pending = db.reserve(a, { ...(await reservePage(i)), pages: 2 }).then(
+      () => null,
+      (e) => e,
+    )
+    try {
+      await waitForAdvisoryWaiters(pid, 1)
+    } finally {
+      release()
+      await holder
+    }
+    expect(await pending).toMatchObject({ reason: 'account-deleting' })
+    expect(
+      await conn.sql`select op_id from members.pinta_causal_units where user_id=${a.userId}`,
+    ).toHaveLength(0)
+  })
+  test('A,B,C: omitted remote consumer, failed second upload, idempotent promotion and sealed snapshot', async () => {
+    const a = actor(),
+      s = put('sheet', 1, 'tileset'),
+      m = put('map', 2, 'tilemap')
+    const read: PintaCausalRead = { source: 'unit', consumerId: 'map', targetId: 'sheet' }
+    const m1 = manifest(m, { refs: [{ id: 'sheet', roles: ['default-sheet'], indices: slots(2) }] })
+    const s1 = manifest(s, { sheet: { tileSize: 16, count: 3 } })
+    const initial = intent('0', [m, s], [read])
+    const created = await complete(a, initial, [m1, s1])
+    expect(created.status.state).toBe('committed')
+    const sheet2 = {
+      ...s,
+      baseRevision: 1,
+      operation: { type: 'remap' as const, oldToNew: [-1, 0, 1], count: 2 },
+      sha256: sha(3),
+    }
+    const s2 = manifest(sheet2, { sheet: { tileSize: 16, count: 2 } })
+    const missing = intent('1', [sheet2])
+    expect(await rejection(complete(a, missing, [s2]))).toMatchObject({
+      reason: 'missing-consumer',
+      itemId: 'map',
+    })
+    expect((await visible(a)).entries.map((e) => e.sha256)).toEqual([m.sha256, s.sha256])
+    await db.abort(a, missing)
+    const map2 = { ...m, baseRevision: 1, operation: { type: 'update' as const }, sha256: sha(4) }
+    const unit = intent('1', [map2, sheet2], [read]),
+      [bMap, bSheet] = await reserve(a, unit)
+    await db.attest(a, {
+      purpose: 'pinta-unit-content-v1',
+      binding: bMap!,
+      manifest: manifest(map2, {
+        refs: [{ id: 'sheet', roles: ['default-sheet'], indices: slots(1) }],
+      }),
+      transitions: [{ sheetId: 'sheet', mode: 'mapped' }],
+    })
+    expect(await rejection(db.commit(a, unit))).toMatchObject({ reason: 'unverified-content' })
+    expect((await visible(a)).epoch).toBe('1')
+    expect(
+      await rejection(
+        db.attest(a, {
+          purpose: 'pinta-unit-content-v1',
+          binding: { ...bSheet!, nonce: randomUUID() },
+          manifest: s2,
+          transitions: [],
+        }),
+      ),
+    ).toMatchObject({ reason: 'unverified-content' })
+    await db.attest(a, {
+      purpose: 'pinta-unit-content-v1',
+      binding: bSheet!,
+      manifest: s2,
+      transitions: [],
+    })
+    const committed = await db.commit(a, unit)
+    expect(await db.commit(a, unit)).toEqual(committed)
+    const restarted = new DrizzlePintaCausalRepository(conn.db)
+    const page = await restarted.page(a, { reader: 6 })
+    expect(page.epoch).toBe('2')
+    expect(page.entries.map((e) => e.sha256)).toEqual([map2.sha256, sheet2.sha256])
+    expect(page.entries[1]?.layoutRevision).toBe('2')
+    expect(
+      (
+        await restarted.item(a, {
+          epoch: '2',
+          reader: 6,
+          revision: bSheet!.revision,
+          itemId: 'sheet',
+        })
+      ).storageRef,
+    ).toBe(pintaCausalBlobKey(bSheet!, 'sealed'))
+    expect(
+      await rejection(restarted.item(a, { epoch: '1', reader: 6, revision: 1, itemId: 'map' })),
+    ).toMatchObject({ reason: 'epoch-changed' })
+    expect((await restarted.status(a, unit)).status.state).toBe('committed')
+    expect(await rejection(legacy.list(a.userId, 'pinta'))).toMatchObject({
+      reason: 'protocol-required',
+    })
+    expect(await legacy.list(a.userId, 'molda')).toEqual([])
+  })
+  test('new consumer racing structural change has exactly one visible winner; other actor/audience isolated', async () => {
+    const a = actor(),
+      s = put('s', 12, 'tileset'),
+      start = intent('0', [s])
+    await complete(a, start, [manifest(s, { sheet: { tileSize: 8, count: 3 } })])
+    const sheet2 = {
+        ...s,
+        baseRevision: 1,
+        sha256: sha(13),
+        operation: { type: 'remap' as const, count: 2, oldToNew: [-1, 0, 1] },
+      },
+      m = put('m', 14, 'map-set')
+    const ri = intent('1', [sheet2]),
+      mi = intent(
+        '1',
+        [m],
+        [
+          {
+            source: 'snapshot',
+            consumerId: 'm',
+            targetId: 's',
+            revision: 1,
+            sha256: s.sha256,
+            layoutRevision: '1',
+          },
+        ],
+      )
+    const [rb] = await reserve(a, ri),
+      [mb] = await reserve(a, mi)
+    for (const [binding, content] of [
+      [rb!, manifest(sheet2, { sheet: { tileSize: 8, count: 2 } })],
+      [mb!, manifest(m, { refs: [{ id: 's', roles: ['art'], indices: slots(2) }] })],
+    ] as const)
+      await db.attest(a, {
+        purpose: 'pinta-unit-content-v1',
+        binding,
+        manifest: content,
+        transitions: [],
+      })
+    const outcomes = await Promise.allSettled([db.commit(a, ri), db.commit(a, mi)])
+    expect(outcomes.filter((r) => r.status === 'fulfilled')).toHaveLength(1)
+    expect(outcomes.filter((r) => r.status === 'rejected').map((r) => r.reason.reason)).toEqual([
+      'epoch-changed',
+    ])
+    expect((await visible(a)).epoch).toBe('2')
+    expect((await visible(actor())).entries).toEqual([])
+    expect((await db.page({ ...a, audience: 'adult' }, { reader: 6 })).epoch).toBe('0')
+    expect(await rejection(db.status(actor(), ri))).toMatchObject({ reason: 'not-found' })
+  })
+  test('legacy before adoption gets sealed by revision and epoch; pending old writer cannot cross adoption', async () => {
+    const a = actor(),
+      u = {
+        ...a,
+        tool: 'pinta' as const,
+        itemId: 'old',
+        kind: 'pixel-sprite',
+        name: 'old',
+        itemUpdatedAt: new Date(time),
+        bytes: 5,
+        thumb: null,
+        now: new Date(time),
+        limits: CREATION_LIMITS,
+        formatVersion: 6,
+        maxReadFormatVersion: 6,
+      }
+    expect((await legacy.reserveUpload(u)).ok).toBe(true)
+    expect((await legacy.commit({ ...u, revision: 1, storageRef: 'legacy-upload' })).ok).toBe(true)
+    const pending = await legacy.reserveUpload({ ...u, itemId: 'queued', name: 'queued' })
+    expect(pending.ok).toBe(true)
+    const snapshot = await visible(a)
+    expect(snapshot.epoch).toBe('1')
+    expect(snapshot.entries[0]?.coverage).toBe('unknown')
+    expect(
+      await rejection(db.item(a, { epoch: '1', itemId: 'old', revision: 1, reader: 6 })),
+    ).toMatchObject({ reason: 'unverified-content' })
+    const { binding } = await db.backfillTicket(a, {
+      epoch: '1',
+      itemId: 'old',
+      revision: 1,
+      reader: 6,
+    })
+    const p = {
+      purpose: 'pinta-backfill-content-v1' as const,
+      binding,
+      sha256: sha(7),
+      manifest: manifest(put('old', 7)),
+    }
+    await db.backfillAttest(a, p)
+    expect((await db.backfillAttest(a, p)).entry.sha256).toBe(sha(7))
+    expect(
+      (await db.item(a, { epoch: '2', itemId: 'old', revision: 1, reader: 6 })).storageRef,
+    ).not.toBe('legacy-upload')
+    const fresh = put('new', 8),
+      i = intent('2', [fresh])
+    await complete(a, i, [manifest(fresh)])
+    expect(
+      await rejection(
+        legacy.commit({ ...u, itemId: 'queued', revision: 1, storageRef: 'stale-upload' }),
+      ),
+    ).toMatchObject({ reason: 'protocol-required' })
+    // A leitura antiga segue cercada num perfil adotado: a galeria da aula lista e copia pela
+    // leitura causal (teste seguinte).
+    expect(await rejection(legacy.get(a.userId, 'pinta', 'new', 'kids'))).toMatchObject({
+      reason: 'protocol-required',
+    })
+    expect((await visible(a)).entries.map((e) => e.itemId)).toEqual(['new', 'old'])
+  })
+  test('galeria da aula: lista a cabeça confirmada com miniatura e hash, e copia exatamente esses bytes', async () => {
+    const ctx = galleryLesson('pinta', { galleryPintaCausal: { heads: db } })
+    const a = {
+      userId: ctx.owner.userId,
+      accountId: ctx.owner.accountId,
+      audience: 'kids' as const,
+    }
+    const sibling = { ...a, userId: ctx.sibling }
+    const epoch = async (who: typeof a) => (await db.page(who, { reader: 6 })).epoch
+    // Um desenho do escritor antigo, ainda não adotado pelo protocolo causal (cobertura unknown).
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     values (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','velho','velho','pixel-sprite',now(),1,'legacy/velho.gz',5,now(),now())`
+    const thumb = 'data:image/png;base64,AAAA'
+    const cacto = put('cacto', 11),
+      dino = { ...put('dino', 12), thumb }
+    await complete(a, intent(await epoch(a), [cacto, dino]), [manifest(cacto), manifest(dino)])
+    const irmao = put('irmao', 13)
+    await complete(sibling, intent(await epoch(sibling), [irmao]), [manifest(irmao)])
+
+    const listed = PintaCausalGalleryPageSchema.parse(await db.galleryPage(a, {})).gallery
+    expect(
+      listed.entries.map(({ itemId, coverage, sha256, thumb }) => ({
+        itemId,
+        coverage,
+        sha256,
+        thumb,
+      })),
+    ).toEqual([
+      // Do mais novo para o mais antigo; no mesmo milissegundo, pelo id decrescente.
+      { itemId: 'velho', coverage: 'unknown', sha256: null, thumb: null },
+      { itemId: 'dino', coverage: 'certified', sha256: sha(12), thumb },
+      { itemId: 'cacto', coverage: 'certified', sha256: sha(11), thumb: null },
+    ])
+    type Selection = { itemId: string; revision: number; causalSha256?: string }
+    const prepare = (items: Selection[]) =>
+      ctx.request(`${ctx.path}/gallery-prepare`, {
+        requestId: randomUUID(),
+        revision: ctx.revision,
+        items,
+      })
+    const refusal = async (items: Selection[], code: string, message: string) => {
+      const before = ctx.galleryCopies.attempts.size
+      const response = await prepare(items)
+      expect(response.status).toBe(409)
+      expect(await response.json()).toMatchObject({ error: { code, message } })
+      expect(ctx.galleryCopies.attempts.size).toBe(before)
+    }
+
+    // O seletor viu a cabeça confirmada: a cópia sai do selo imutável que tem esse hash.
+    const seen = (id: string) => {
+      const shown = listed.entries.find((e) => e.itemId === id)
+      if (!shown?.sha256) throw new Error(`A lista não trouxe ${id} certificado.`)
+      return { itemId: id, revision: shown.revision, causalSha256: shown.sha256 }
+    }
+    const chosen = [seen('cacto'), seen('dino')]
+    const first = chosen[0]!
+    const input = { requestId: randomUUID(), revision: ctx.revision, items: chosen }
+    const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, input)
+    expect(prepared.status).toBe(200)
+    const plan = (await prepared.json()) as GalleryDeliveryPlan
+    if (plan.completed) throw new Error('Unexpected completion')
+    const sealed = await Promise.all(
+      chosen.map(async (c) => (await db.galleryItem(a, c)).storageRef),
+    )
+    expect(sealed.every((key) => key.endsWith('/1.sealed.gz'))).toBe(true)
+    expect(plan.copies.map((copy) => copy.source)).toEqual(sealed)
+    expect(plan.snapshot.items).toMatchObject([
+      { itemId: 'cacto', revision: 1, causalSha256: sha(11), parts: [] },
+      { itemId: 'dino', revision: 1, causalSha256: sha(12), parts: [] },
+    ])
+    const committed = await ctx.request(
+      `/internal${ctx.path}/gallery-commit`,
+      { actor: ctx.owner, input, projectForChecks: null, copyGeneration: plan.copyGeneration },
+      { 'x-consumer-id': 'member-shell' },
+    )
+    expect(committed.status).toBe(200)
+    expect((await ctx.studioSubmissions.getOne(a.userId, ctx.blockId))?.project).toEqual(
+      plan.snapshot,
+    )
+    const again = (await (
+      await ctx.request(`${ctx.path}/gallery-prepare`, input)
+    ).json()) as GalleryDeliveryPlan
+    expect(again.completed).toBe(true)
+
+    // O desenho mudou depois da lista: nem a revisão velha nem o hash velho levam bytes novos.
+    const edited = put('dino', 22, 'pixel-sprite', 1)
+    await complete(a, intent(await epoch(a), [edited]), [manifest(edited)])
+    const changed = 'Este desenho mudou. Escolha de novo para enviar a versão nova.'
+    await refusal(chosen, 'GALLERY_PINTA_DRAWING_CHANGED', changed)
+    await refusal(
+      [first, { itemId: 'dino', revision: 2, causalSha256: sha(12) }],
+      'GALLERY_PINTA_DRAWING_CHANGED',
+      changed,
+    )
+    // O desenho de outro perfil da mesma conta nunca é alcançado, nem com o hash certo.
+    await refusal(
+      [first, { itemId: 'irmao', revision: 1, causalSha256: sha(13) }],
+      'GALLERY_PINTA_DRAWING_CHANGED',
+      changed,
+    )
+    // Sem certificado não há cópia; abrir o Pinta adota a unidade, e então ela é enviável.
+    await refusal(
+      [first, { itemId: 'velho', revision: 1, causalSha256: sha(14) }],
+      'GALLERY_PINTA_DRAWING_UNCERTIFIED',
+      'Abra este desenho no Pinta uma vez para poder enviar.',
+    )
+    const adoption = await db.backfillTicket(a, {
+      epoch: await epoch(a),
+      itemId: 'velho',
+      revision: 1,
+      reader: 6,
+    })
+    await db.backfillAttest(a, {
+      purpose: 'pinta-backfill-content-v1',
+      binding: adoption.binding,
+      sha256: sha(15),
+      manifest: manifest(put('velho', 15)),
+    })
+    const adopted = await prepare([first, { itemId: 'velho', revision: 1, causalSha256: sha(15) }])
+    expect(adopted.status).toBe(200)
+    const after = (await adopted.json()) as GalleryDeliveryPlan
+    if (after.completed) throw new Error('Unexpected completion')
+    expect(after.copies[1]?.source).toBe(pintaCausalBlobKey(adoption.binding, 'sealed'))
+  })
+  test('galeria da aula: mais de 100 desenhos paginam do mais novo para o mais antigo, com cursor estável', async () => {
+    const a = actor()
+    const sibling = { ...a, userId: randomUUID() }
+    // 230 desenhos com a ordem dos ids embaralhada em relação ao tempo, três por minuto (empates que
+    // cruzam a borda das páginas) e microssegundos que o fio não mostra. O mais novo tem o MAIOR id:
+    // pela ordem dos ids ele só apareceria na última página.
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at)
+     select gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','d'||lpad(n::text,3,'0'),'d'||n,'pixel-sprite',
+       '2026-11-01T00:00:00Z'::timestamptz + (((n*37)%230)/3) * interval '1 minute' + (n%7) * interval '1 microsecond',
+       1,'legacy/d'||n,5,now(),now() from generate_series(1,230) n`
+    await conn.sql`insert into members.creations (id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,storage_ref,bytes,created_at,synced_at,deleted_at)
+     values (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','zzz-novo','novo','pixel-sprite','2026-11-02T00:00:00Z',1,'legacy/novo',5,now(),now(),null),
+            (gen_random_uuid(),${a.userId},${a.accountId},'kids','pinta','zzz-apagado','apagado','pixel-sprite','2026-11-03T00:00:00Z',1,'legacy/apagado',5,now(),now(),now()),
+            (gen_random_uuid(),${sibling.userId},${a.accountId},'kids','pinta','zzz-irmao','irmao','pixel-sprite','2026-11-04T00:00:00Z',1,'legacy/irmao',5,now(),now(),null)`
+    const minute = (n: number) => Math.floor(((n * 37) % 230) / 3)
+    const at = (m: number) => new Date(Date.UTC(2026, 10, 1, 0, m)).toISOString()
+    const seeded = Array.from({ length: 230 }, (_, i) => ({
+      itemId: `d${String(i + 1).padStart(3, '0')}`,
+      itemUpdatedAt: at(minute(i + 1)),
+    })).sort((x, y) =>
+      x.itemUpdatedAt === y.itemUpdatedAt
+        ? x.itemId < y.itemId
+          ? 1
+          : -1
+        : x.itemUpdatedAt < y.itemUpdatedAt
+          ? 1
+          : -1,
+    )
+    const expected = [{ itemId: 'zzz-novo', itemUpdatedAt: '2026-11-02T00:00:00.000Z' }, ...seeded]
+
+    const pages: PintaCausalGalleryPage['gallery'][] = []
+    let cursor: { epoch: string; cursor: string } | undefined
+    do {
+      const page = PintaCausalGalleryPageSchema.parse(await db.galleryPage(a, cursor ?? {})).gallery
+      pages.push(page)
+      cursor = page.nextCursor ? { epoch: page.epoch, cursor: page.nextCursor } : undefined
+    } while (cursor)
+    expect(pages.map((page) => page.entries.length)).toEqual([100, 100, 31])
+    expect(pages[0]!.entries[0]!.itemId).toBe('zzz-novo')
+    expect(
+      pages.flatMap((page) =>
+        page.entries.map(({ itemId, itemUpdatedAt }) => ({ itemId, itemUpdatedAt })),
+      ),
+    ).toEqual(expected)
+    // O mesmo cursor na mesma época devolve a mesma página.
+    const second = { epoch: pages[0]!.epoch, cursor: pages[0]!.nextCursor! }
+    expect((await db.galleryPage(a, second)).gallery).toEqual(pages[1]!)
+    // Um cursor que não está no inventário desta época recomeça a lista em vez de encurtá-la.
+    expect(
+      await rejection(db.galleryPage(a, { epoch: pages[0]!.epoch, cursor: 'zzz-apagado' })),
+    ).toMatchObject({ reason: 'epoch-changed' })
+    // O inventário do Pinta (e o arquivo do dono) segue pela ordem dos ids.
+    const inventory = await db.page(a, { reader: 6 })
+    expect(inventory.entries[0]!.itemId).toBe('d001')
+    expect(PintaCausalSnapshotPageSchema.safeParse(inventory).success).toBe(true)
+  })
+})

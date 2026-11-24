@@ -1,0 +1,464 @@
+{
+  "environment": {
+    "platform": "win32",
+    "node": "v24.15.0",
+    "browser": "159.0.8154.6",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "arms": [
+    {
+      "name": "adiado",
+      "url": "http://127.0.0.1:5197/"
+    },
+    {
+      "name": "inteiro",
+      "url": "http://127.0.0.1:5197/?montagem=inteira"
+    }
+  ],
+  "method": "Fresh context per sample; alternating arm order; same Farol stress fixture. Timer intervals are scheduling observations, not input latency or FPS. No game profiler. Digests: block ids canonicalized by order of appearance, state serialized with an explicit stack.",
+  "editAfterOpening": true,
+  "samples": [
+    {
+      "arm": "adiado",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 2089.390000000596,
+      "timerGapsMs": {
+        "count": 57,
+        "p50": 20.149999991059303,
+        "p95": 125,
+        "max": 492.73499999940395,
+        "total": 2061.6599999964237
+      },
+      "longTasksMs": {
+        "count": 6,
+        "p50": 92,
+        "p95": 471,
+        "max": 471,
+        "total": 940
+      },
+      "settledMs": 2091.359999999404,
+      "drawnBlocks": 106,
+      "deferredBlocks": 1896,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 309,
+      "editLongTasksMs": {
+        "count": 0,
+        "max": 0,
+        "total": 0
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 2000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 3364.689999997616,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.12000000476837,
+        "p95": 276.42000000178814,
+        "max": 1035.9249999970198,
+        "total": 3348.8250000029802
+      },
+      "longTasksMs": {
+        "count": 8,
+        "p50": 91,
+        "p95": 952,
+        "max": 952,
+        "total": 2034
+      },
+      "settledMs": 3376.4800000041723,
+      "drawnBlocks": 2002,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 334,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 75,
+        "total": 75
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 2000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 3099.9950000047684,
+      "timerGapsMs": {
+        "count": 57,
+        "p50": 20.239999994635582,
+        "p95": 123.82999999821186,
+        "max": 1142.0400000065565,
+        "total": 3083.175000011921
+      },
+      "longTasksMs": {
+        "count": 8,
+        "p50": 81,
+        "p95": 923,
+        "max": 923,
+        "total": 1824
+      },
+      "settledMs": 3102.2450000047684,
+      "drawnBlocks": 2002,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 323,
+      "editLongTasksMs": {
+        "count": 0,
+        "max": 0,
+        "total": 0
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 2000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 1928.719999998808,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.135000005364418,
+        "p95": 123.11499999463558,
+        "max": 461.01500000059605,
+        "total": 1912.6300000101328
+      },
+      "longTasksMs": {
+        "count": 5,
+        "p50": 87,
+        "p95": 435,
+        "max": 435,
+        "total": 780
+      },
+      "settledMs": 1929.8250000029802,
+      "drawnBlocks": 106,
+      "deferredBlocks": 1896,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "12c51686df734030",
+      "filesDigest": "30ea420adff9208e",
+      "editReachedCodeMs": 314,
+      "editLongTasksMs": {
+        "count": 0,
+        "max": 0,
+        "total": 0
+      },
+      "editedBlocksStateDigest": "70aa836081680f04",
+      "editedFilesDigest": "2ee6efb74de58b12",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 5000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 3815.4099999964237,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.12000000476837,
+        "p95": 293.8049999922514,
+        "max": 1751.8799999952316,
+        "total": 3799.9449999928474
+      },
+      "longTasksMs": {
+        "count": 7,
+        "p50": 124,
+        "p95": 1729,
+        "max": 1729,
+        "total": 2733
+      },
+      "settledMs": 3816.5199999958277,
+      "drawnBlocks": 106,
+      "deferredBlocks": 4896,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "95bb441a9a62eba6",
+      "filesDigest": "45ddb464daef59ec",
+      "editReachedCodeMs": 306,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 95,
+        "total": 95
+      },
+      "editedBlocksStateDigest": "372fe123f9d1dcc6",
+      "editedFilesDigest": "31d9fa4072082710",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 5000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 10233.969999998808,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.019999995827675,
+        "p95": 459.4099999964237,
+        "max": 5527.420000001788,
+        "total": 10217.030000001192
+      },
+      "longTasksMs": {
+        "count": 11,
+        "p50": 171,
+        "p95": 4654,
+        "max": 4654,
+        "total": 8273
+      },
+      "settledMs": 10247.460000008345,
+      "drawnBlocks": 5002,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "95bb441a9a62eba6",
+      "filesDigest": "45ddb464daef59ec",
+      "editReachedCodeMs": 1464,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 100,
+        "total": 454
+      },
+      "editedBlocksStateDigest": "372fe123f9d1dcc6",
+      "editedFilesDigest": "31d9fa4072082710",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 5000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 8777.355000004172,
+      "timerGapsMs": {
+        "count": 58,
+        "p50": 20.29500000178814,
+        "p95": 451.0849999934435,
+        "max": 4559.109999999404,
+        "total": 8761.17499999702
+      },
+      "longTasksMs": {
+        "count": 9,
+        "p50": 163,
+        "p95": 3822,
+        "max": 3822,
+        "total": 6797
+      },
+      "settledMs": 8783.570000007749,
+      "drawnBlocks": 5002,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "95bb441a9a62eba6",
+      "filesDigest": "45ddb464daef59ec",
+      "editReachedCodeMs": 1340,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 106,
+        "total": 459
+      },
+      "editedBlocksStateDigest": "372fe123f9d1dcc6",
+      "editedFilesDigest": "31d9fa4072082710",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 5000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 5930.155000001192,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.069999992847443,
+        "p95": 425.2399999946356,
+        "max": 3468.7699999958277,
+        "total": 5912.524999991059
+      },
+      "longTasksMs": {
+        "count": 7,
+        "p50": 193,
+        "p95": 3435,
+        "max": 3435,
+        "total": 4776
+      },
+      "settledMs": 5932.625,
+      "drawnBlocks": 106,
+      "deferredBlocks": 4896,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "95bb441a9a62eba6",
+      "filesDigest": "45ddb464daef59ec",
+      "editReachedCodeMs": 300,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 174,
+        "total": 174
+      },
+      "editedBlocksStateDigest": "372fe123f9d1dcc6",
+      "editedFilesDigest": "31d9fa4072082710",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 13303.355000004172,
+      "timerGapsMs": {
+        "count": 52,
+        "p50": 20.08500000834465,
+        "p95": 755.9200000017881,
+        "max": 9082.439999997616,
+        "total": 13281.939999997616
+      },
+      "longTasksMs": {
+        "count": 7,
+        "p50": 244,
+        "p95": 9051,
+        "max": 9051,
+        "total": 12188
+      },
+      "settledMs": 13304.395000010729,
+      "drawnBlocks": 106,
+      "deferredBlocks": 9894,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 304,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 220,
+        "total": 220
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 10000,
+      "repeat": 0,
+      "cpuProfileEnabled": false,
+      "readyMs": 35919.00500001013,
+      "timerGapsMs": {
+        "count": 59,
+        "p50": 20.105000004172325,
+        "p95": 1813.8299999982119,
+        "max": 21624.160000011325,
+        "total": 35900.23000000417
+      },
+      "longTasksMs": {
+        "count": 12,
+        "p50": 418,
+        "p95": 18255,
+        "max": 18255,
+        "total": 31504
+      },
+      "settledMs": 36151.635000005364,
+      "drawnBlocks": 10000,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 4061,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 243,
+        "total": 1078
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    },
+    {
+      "arm": "inteiro",
+      "size": 10000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 58339.09499999881,
+      "timerGapsMs": {
+        "count": 54,
+        "p50": 20.355000004172325,
+        "p95": 6376.82500000298,
+        "max": 33788.87000000477,
+        "total": 58318.02499999106
+      },
+      "longTasksMs": {
+        "count": 12,
+        "p50": 573,
+        "p95": 32911,
+        "max": 32911,
+        "total": 50765
+      },
+      "settledMs": 58349.20000000298,
+      "drawnBlocks": 10000,
+      "deferredBlocks": 0,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 4739,
+      "editLongTasksMs": {
+        "count": 5,
+        "max": 322,
+        "total": 1434
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    },
+    {
+      "arm": "adiado",
+      "size": 10000,
+      "repeat": 1,
+      "cpuProfileEnabled": false,
+      "readyMs": 18776.394999995828,
+      "timerGapsMs": {
+        "count": 54,
+        "p50": 20.189999997615814,
+        "p95": 1074.640000000596,
+        "max": 14324.119999989867,
+        "total": 18754.50499999523
+      },
+      "longTasksMs": {
+        "count": 7,
+        "p50": 376,
+        "p95": 14285,
+        "max": 14285,
+        "total": 17599
+      },
+      "settledMs": 18798.114999994636,
+      "drawnBlocks": 106,
+      "deferredBlocks": 9894,
+      "offscreenBodies": 0,
+      "blocksStateDigest": "85811b5a2d0cfe8c",
+      "filesDigest": "fe45032ca99ea31e",
+      "editReachedCodeMs": 476,
+      "editLongTasksMs": {
+        "count": 1,
+        "max": 354,
+        "total": 354
+      },
+      "editedBlocksStateDigest": "09ac2536bbad05c3",
+      "editedFilesDigest": "cb313160805e1f60",
+      "pageErrors": []
+    }
+  ],
+  "equivalence": {
+    "ok": true,
+    "failures": []
+  }
+}

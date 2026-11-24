@@ -46,7 +46,8 @@ export const gameKit3DPhysicsRuntimeSource = `
   function setEntityState(e, stateName) {
     if (!isEntity(e)) return;
     var next = text(stateName, '');
-    if (!next || e.state === next) return; // idempotente, como no curso
+    // idempotente, como no curso
+    if (!next || e.state === next) return;
     var queue = e._stateQueue;
     if (!queue) queue = e._stateQueue = [];
     queue.push(next);
@@ -137,20 +138,28 @@ export const gameKit3DPhysicsRuntimeSource = `
   // a NORMAL do contato — não o desempate de eixo, que empurrava de lado num
   // pouso raso.
 
-  var anySolid = false;      // liga a resolução de sólidos só quando há algum
-  var anyTrigger = false;    // idem para as zonas
-  var anyCarrier = false;    // algum molde sólido que se MOVE (plataforma)
-  var _minSolidThin = 1e9;   // o sólido mais FINO do mundo (critério do substep)
+  // liga a resolução de sólidos só quando há algum
+  var anySolid = false;
+  // idem para as zonas
+  var anyTrigger = false;
+  // algum molde sólido que se MOVE (plataforma)
+  var anyCarrier = false;
+  // o sólido mais FINO do mundo (critério do substep)
+  var _minSolidThin = 1e9;
   var MAX_SUBSTEPS = 4;
-  var MIN_GROUND_Y = 0.64;   // ~50°: mais íngreme que isso é PAREDE, escorrega
-  var SNAP_DIST = 0.3;       // grude no chão ao descer rampa (senão vira trampolim)
+  // ~50°: mais íngreme que isso é PAREDE, escorrega
+  var MIN_GROUND_Y = 0.64;
+  // grude no chão ao descer rampa (senão vira trampolim)
+  var SNAP_DIST = 0.3;
   var SKIN = 0.02;
-  var BOUNCE_MIN = 1.2;      // quique morto abaixo disso: não fica tremendo
+  // quique morto abaixo disso: não fica tremendo
+  var BOUNCE_MIN = 1.2;
   var _boxA = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
   var _boxB = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
   var _sweepHit = { t: 1, nx: 0, ny: 0, nz: 0, solid: null };
   var _sweepCandidate = { t: 1, nx: 0, ny: 0, nz: 0, solid: null };
-  var _cand = [];            // candidatos do broadphase (buffer PRÓPRIO — ver nota)
+  // candidatos do broadphase (buffer PRÓPRIO — ver nota)
+  var _cand = [];
   var _candN = 0;
 
   // Caixa MUNDO da entidade a partir da caixa local do molde.
@@ -227,6 +236,14 @@ export const gameKit3DPhysicsRuntimeSource = `
 
   // Pisa no chão-base (y=0): os pés do molde são a origem.
   function resolveGround(e) {
+    if (importedScene) {
+      // Ghosts still fall onto ground, but ignore walls; solid bodies used the capsule path.
+      if (e.body !== 0 && importedScene.fisica.active()) {
+        var mold = molds[e._mold];
+        supportImportedGround(e, SKIN, e._ly + (mold ? mold.col.minY : 0));
+      }
+      return;
+    }
     var p = e.mesh.position;
     var m = molds[e._mold];
     var foot = m ? m.col.minY : 0;
@@ -310,7 +327,8 @@ export const gameKit3DPhysicsRuntimeSource = `
     // Caixa (yaw-aware): resolve no frame LOCAL do sólido e devolve a correção.
     var ehw = (_boxA.maxX - _boxA.minX) / 2;
     var ehd = (_boxA.maxZ - _boxA.minZ) / 2;
-    if (yaw2) { var big = Math.max(ehw, ehd); ehw = big; ehd = big; }  // AABB do movedor não gira
+    // AABB do movedor não gira
+    if (yaw2) { var big = Math.max(ehw, ehd); ehw = big; ehd = big; }
     var ox = Math.min(_loc.x + ehw, c.maxX) - Math.max(_loc.x - ehw, c.minX);
     var oz = Math.min(_loc.z + ehd, c.maxZ) - Math.max(_loc.z - ehd, c.minZ);
     var sMinY = s.mesh.position.y + c.minY;
@@ -646,7 +664,8 @@ export const gameKit3DPhysicsRuntimeSource = `
       var bucket = perMold[e.state];
       if (bucket) runEntityHooks(bucket.step, e, 'enquanto estiver no estado ' + e.state);
     }
-    if (!e._alive) return; // o gancho pode ter recolhido a entidade
+    // o gancho pode ter recolhido a entidade
+    if (!e._alive) return;
     // 1b. O boneco anima. Só quem TEM mixer paga (o curso roda o mixer.update com
     // o mesmo dt clampado). Vem antes do split estático/dinâmico logo abaixo: um
     // boneco parado no lugar ainda respira.
@@ -723,24 +742,29 @@ export const gameKit3DPhysicsRuntimeSource = `
     //    que ser parado por um piso invisível (tiro, drone, câmera). Já ser SÓLIDO
     //    é consequência de EXISTIR: parede para tudo que não é fantasma. Fundir os
     //    dois era o bug do tiro atravessando a parede.
-    var wantSolid = anySolid && e.body === 0;
+    var hasImported = importedScene && importedScene.fisica.active();
+    var wantSolid = (anySolid || hasImported) && e.body === 0;
     if (wantSolid && (dx || dy || dz || e.gravity)) {
       fillCandidates(e, dx, dz);
       var k = _candN > 0 ? substepsFor(e, dx, dy, dz) : 1;
+      if (hasImported) k = Math.max(k, importedBodySteps(e, dx, dy, dz));
       // Integra cada substep com a velocidade VIVA (dt/k). A varredura contínua
       // encontra o impacto mesmo quando o deslocamento pula a parede inteira; o
       // resolveSolids mantém a resposta de rampas/penetrações já existente.
       // Corrige a penetração que JÁ existia antes da varredura. Sem isso, o slab
       // devolve entry < 0 e um tiro que nasceu no sólido atravessa a outra face.
       resolveSolids(e);
+      if (hasImported) resolveImportedBody(e);
       var h = dt / k;
       for (var st = 0; st < k; st++) {
         moveContinuous(e, h);
         if (anySolid) resolveSolids(e);
+        if (hasImported) resolveImportedBody(e);
       }
       if (e.gravity) resolveGround(e);
       // 7. Grude no chão ao descer rampa/degrau (senão a descida vira trampolim).
       if (wasGrounded && !e.grounded && e.vy <= 0 && anySolid) snapDown(e);
+      if (wasGrounded && !e.grounded && e.vy <= 0 && hasImported) supportImportedGround(e, SNAP_DIST, null);
       // 8. Atrito: o mais ESCORREGADIO dos dois manda — gelo no chão OU no disco
       //    e escorrega igual. Não-definido (-1) vale 0 na superfície (gelo, o de
       //    sempre) e 1 em quem anda (sem opinião) → min = a superfície decide,

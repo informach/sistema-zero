@@ -1,0 +1,293 @@
+{
+  "baseline": "b29f25237",
+  "records": [
+    {
+      "file": "core-full.log.gz",
+      "bytes": 71438,
+      "sha256": "a7d4b877a1a1e2a17f8d7f76cf1e7591d7ec4e3755f0f5fe7c20bcb552602443",
+      "rawSha256": "ffefbf5113b50fac9fe0a6442faf564c80aac5ca4f9a55f442e5a35334844bdd"
+    },
+    {
+      "file": "pinta-full.log.gz",
+      "bytes": 82980,
+      "sha256": "4c6923035baf8f1e3338788ec353efbb83a1df79ea2ad5f15a2ae4c3487c6468",
+      "rawSha256": "646c6b929c7037f12220b777a8dd8c250fe2d8fc30f603546c766cdcd192b938"
+    },
+    {
+      "file": "focused.log.gz",
+      "bytes": 1869,
+      "sha256": "59e0880b1580ad36310e6a2c7f42c3da9e2e0d10929bb6b788aa93df3c12780d",
+      "rawSha256": "6ef401e312112068830cc69b23149496c3b32ad65297b598dc706490c60388b9"
+    },
+    {
+      "file": "studio-focused.log.gz",
+      "bytes": 1523,
+      "sha256": "61528708f0e8decf94094e6620c6cd91245a8686111f7045139044f1acdac84c",
+      "rawSha256": "612bbc86c606fbb5f9a238e1a0461fa155a5fc782db6ee254831908e5dcb40d2"
+    },
+    {
+      "file": "core-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "generated.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "python-generated.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 64,
+      "sha256": "6a88022d0a01167ef1a90ba8409503049184fcca1cafd64213518dc375db3d43",
+      "rawSha256": "0a3b0e763cf0b6ea809c30382c9e7b1d6ea723b44b43e4612c5fa7ff1c802fd3"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 2835,
+      "sha256": "e4cb3df4813e632178ba2f5f448f56f9edc3c79c80707d2508c17f6471f4e4ad",
+      "rawSha256": "884070b141d96d490d8e81ac9720f0cb5c85095cdeb00025d243f2cf40324542"
+    },
+    {
+      "file": "browser-focused.log.gz",
+      "bytes": 691,
+      "sha256": "b80d014884f3c4ca0d2992dcf1c03964b04f56e8f912e27495b7553d405581ee",
+      "rawSha256": "57abff72f7ad56ed10cd669115f10c68bcefd5cd3208ed6cf5e03522fb48604f"
+    },
+    {
+      "file": "browser-first.log.gz",
+      "bytes": 1347,
+      "sha256": "e79aa9bae35d50ff25c7d5528a76448c95034667b62289ae3b74c38dc09f50c0",
+      "rawSha256": "d40dffe3e2e99f4c888e23977395f6415b9d1b746851f946a6968b39f344a229"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2114,
+      "sha256": "1595b66479b8158e74e2a7e60a50727a6e2c3bf7ed3ef3a063fae3a5f162dfcc",
+      "rawSha256": "fb6c4fad1665401b1a78cd77c002447d28e1685114f0ed868969df48b29a4d39"
+    },
+    {
+      "file": "phaser-browser.log.gz",
+      "bytes": 802,
+      "sha256": "b152c4f44005a4abcd1d562aa2f7094cd70e5ea1331a80952880658129f95e1e",
+      "rawSha256": "38b55e6ae8b3a8d7b5f42acfb73e70ad8749e6b096a09a7aaf1419499eea9456"
+    },
+    {
+      "file": "sizes.log.gz",
+      "bytes": 353,
+      "sha256": "23ba923c7cd068728a2a93ea7ca9b451266e1a653868331134af75231eb2d641",
+      "rawSha256": "d98aa46e70956f45363aff963d0df8c65d53a9e6ed1c68e992c9027105440e4c"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "physical-report.json.gz",
+      "bytes": 335777,
+      "sha256": "219a7cfbf0671bb4820cc2508d85402e465cddfe12605e07fc087f50e23e6a5b",
+      "rawSha256": "7a8d5951fa7b79b847ef01e9992f9fc3ffd0204b8d49bf8457dbbebd3b0a0b97"
+    },
+    {
+      "file": "integration-report.json.gz",
+      "bytes": 928880,
+      "sha256": "2a74b40ba14d22a15f97b4c7677448e7aa74e51c47e41f5615f540b5d21391e7",
+      "rawSha256": "1fdea13652f932530a99ecd05e7b70807746f145e473d680fb75f9ab87e71592"
+    },
+    {
+      "file": "phaser-report.json.gz",
+      "bytes": 195208,
+      "sha256": "382439bead0a6afc49a3e20336f83a111d0e8838448e82b88e5e234074b7d15b",
+      "rawSha256": "d3a85f6492b33bc4e2679f798c1df7ac58827b2f6d1a3610556eb3cdc5802ef4"
+    },
+    {
+      "file": "region-runtime-equivalence.ts.gz",
+      "bytes": 1537,
+      "sha256": "a31a1f617d6bf49077313eb871cf3d3e6cf88f790600bee88fc821e0b19000b5",
+      "rawSha256": "bc20f8f56f48830c15472f2d5919860cdbd10bcc3e14097f3ee0ba2ac4442c19"
+    },
+    {
+      "file": "region-runtime-equivalence.json.gz",
+      "bytes": 214,
+      "sha256": "33b2ec20b01d80bb82830e4c4def0239b461e3da32ac329c78d488cdae0b0e34",
+      "rawSha256": "d3eb17bf043fb4dc01e038d3521131ccaf0e986130edb5b8acec73e4ff2df77d"
+    },
+    {
+      "file": "region-runtime-equivalence.log.gz",
+      "bytes": 206,
+      "sha256": "9df9ce2c7544ed1be91c82d46ee29dcd02340064ae40dee03a1af6c9cc5c2df1",
+      "rawSha256": "a66c14dea0efa2631aacef7233694576a5d03f701d15fc27be1b96a146163e01"
+    },
+    {
+      "file": "region-game-queries-v2-before.ts.gz",
+      "bytes": 1153,
+      "sha256": "f236c72a036c0afc9e08674b61ef45067e1a53568051a9d592ed3b8a42e415ae",
+      "rawSha256": "db84bd9ce47936645cd3afed9893deca7387195da9143d00c3088bd4c45629a0"
+    },
+    {
+      "file": "region-game-queries-v2-before.json.gz",
+      "bytes": 323,
+      "sha256": "72f905635abe335bb4c1c5c293b21f8880a5e17d75371a69285b34f811375efe",
+      "rawSha256": "29c6a736e0cdd8d085b07538c447722309dc4b3291c8d042eead5706bf2bacc4"
+    },
+    {
+      "file": "region-game-queries-v2-before.log.gz",
+      "bytes": 292,
+      "sha256": "37f6496175df74b4dfe408374b33564bd4e66f77c9518b86ea0f98bfb17217e4",
+      "rawSha256": "eb0aea070043d18ecfad98d9eefa8a2e44bb57e7d2edbefb3e05fbd0e2cecb2f"
+    },
+    {
+      "file": "region-game-queries-v2-after.ts.gz",
+      "bytes": 1184,
+      "sha256": "3b418ca8e342ce1e12deaa53bbcf9ae9612973fea91b6d2654b21a1e5132dd20",
+      "rawSha256": "7a349c36af1b2c60619d46ca4f14e54bbb3ab3b980ccf56eebc23c888e875351"
+    },
+    {
+      "file": "region-game-queries-v2-after.json.gz",
+      "bytes": 315,
+      "sha256": "52236e72eebefe82a6e3c1dd974575f1a1b81ccd48e5f628f15033e2c4b81b69",
+      "rawSha256": "40819f3d4290be0fa951e5a51799f1bad5fde09cb6ee3bf6009a38d56af498fc"
+    },
+    {
+      "file": "region-game-queries-v2-after.log.gz",
+      "bytes": 288,
+      "sha256": "a93eb1455781e0f9109c8abbead61574cd44c16d6c98cc9a00157bdc1014225f",
+      "rawSha256": "08f997430c0a03c8436c555af73ab9ab50a7993b57c947552a66ec5d35d5ca50"
+    },
+    {
+      "file": "archive-region-runtime.cjs.gz",
+      "bytes": 1998,
+      "sha256": "12b1640ebe8d8e9305515e4321b6b1a8f0ee898de81776467429267414fd3346",
+      "rawSha256": "a2f22d53874312c49b9bf383090a13518efafab98420f84ac1fd6ac5055f8c35"
+    },
+    {
+      "file": "vila-query-0.json.gz",
+      "bytes": 220,
+      "sha256": "6ad7162c12b48c527021e8ae1b151ce4388d129168eb3bf9ed765035b9d61d95",
+      "rawSha256": "189e3e5f6be651aa048a44a434f6dfbcadb489f4517fcaf3fb3bc4941e02d1ae"
+    },
+    {
+      "file": "vila-query-1.json.gz",
+      "bytes": 220,
+      "sha256": "6ad7162c12b48c527021e8ae1b151ce4388d129168eb3bf9ed765035b9d61d95",
+      "rawSha256": "189e3e5f6be651aa048a44a434f6dfbcadb489f4517fcaf3fb3bc4941e02d1ae"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/core/scripts/gen-pinta-scene-transform.ts",
+      "sha256": "fcd1af175cc9efe6ca08c7bdc9ba26f73c3442c0aa562a90b5c6d85aaf17b005",
+      "previousSha256": "dc1312d8590ecad0d7b03b303c6a27854c347db1c1594f01f2b664094a9db574"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-geometry.ts",
+      "sha256": "80bc79066a310980725a76dde26db98c0d344373abd061b4169db69b62cba2a8",
+      "previousSha256": "932946b81a742b6ccc89b0d7bbf0fb9c8153645a8c1d5c32b46e706849a3d299"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-runtime.ts",
+      "sha256": "ff6c1c31ae967d934eaa9bbb5f3284e8b082193b4188311bdd97d26407d869ee",
+      "previousSha256": "9056e315fee3e63a271368a9c6fb2d678dc954af2d815cc831ea940d88326370"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-transform.generated.ts",
+      "sha256": "f53a44cf964bd479fa63a8f75310ef8b1397f6f2e4e7f15ebb53b2c5cba808aa",
+      "previousSha256": "c797b515b7c7903e98b27ec23eb93201dd1b1fcafdd26b2bd04f9d23432f3599"
+    },
+    {
+      "file": "packages/pinta/scripts/physical-region-proof.ts",
+      "sha256": "224c2955e266af1c861ae3b7aa06425392002c6883ff6a384c1346801aac2d87",
+      "previousSha256": "c6532ac03826715e09f4f0ea246e4d77e38e8132d01ab96b7735bddb96be8fcc"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-physical-regions.flow.ts",
+      "sha256": "22e44fe58bf56a3ab51b3752ef40d481f2b2845cb9828f0b0ed19fa4376e7ea3",
+      "previousSha256": "1bc1675812f2cc7f62ed4d14cf23bd2e581c405f1dcefa0be634b6e407e033f5"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.test.ts",
+      "sha256": "d7ca7d187f6741ecf5968407c94342d2556f87545c54bb535c8f99725e6c1056"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.ts",
+      "sha256": "3295cf4418754336ba5a320a6027f00cadef33de997eed8c8c8e1fa2cd0c6dba"
+    }
+  ],
+  "core": {
+    "pass": 26,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 211020,
+    "files": 203
+  },
+  "pinta": {
+    "pass": 2748,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 35621,
+    "files": 255
+  },
+  "focused": {
+    "pass": 50,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 17777,
+    "files": 3
+  },
+  "studio": {
+    "pass": 44,
+    "fail": 0,
+    "skipped": 0,
+    "assertions": 6338,
+    "files": 3
+  },
+  "legacyEquivalence": {
+    "baseline": "b29f25237",
+    "scenes": 64,
+    "comparisons": 18560,
+    "legacyQueryJsonIdentical": true,
+    "portableGeometryIdentical": true,
+    "previousSourceChars": 12881,
+    "currentSourceChars": 10171,
+    "sha256": "f9d06c3ded59f21ac60d6dadcd6c742bb8f16a417c9c181f7c8b3af54a21490b"
+  },
+  "correctedProbe": {
+    "before": 5,
+    "after": 0,
+    "cases": 6
+  },
+  "browser": {
+    "pass": 85,
+    "physical": 63,
+    "integration": 12,
+    "phaser": 10,
+    "retries": 0
+  },
+  "privateMemoryQueries4": true,
+  "publicGameRuntime4": false,
+  "worldLoader5": false,
+  "publicNative8": false,
+  "pythonRegionalGameplay": false,
+  "additionalPhysicalDevices": false
+}

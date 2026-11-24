@@ -1,0 +1,11 @@
+
+Running 1 test using 1 worker
+
+(node:45952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+pygame-ce no navegador: 52.5 fps (53.2, 54, 51.4, 52, 51.7)
+  ✓  1 [chrome] › e2e-runtime\python-pygame-performance.spec.ts:6:1 › Pygame-ce keeps a playable frame rate with a full tile map, alpha sprites and text (10.8s)
+
+  1 passed (11.8s)

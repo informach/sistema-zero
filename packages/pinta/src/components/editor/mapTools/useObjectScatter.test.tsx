@@ -1,0 +1,468 @@
+import { expect, it } from 'bun:test'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { useRef } from 'react'
+import { COPY } from '../../../core/copy'
+import {
+  createPixelSpriteAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isObjectLayer,
+} from '../../../core/project'
+import { PINTA_RESOURCE_LIMITS } from '../../../core/projectConfig'
+import { createEditorStore } from '../../../state/editorStore'
+import { createMapSetEditorStore } from '../../../state/mapSetEditorStore'
+import { addMapObject, createMapObject } from '../../../tiles/mapObjects'
+import { DEFAULT_OBJECT_SCATTER } from '../../../tiles/objectScatter'
+import { createMapSet } from '../../../tiles/sets'
+import { addObjectLayer } from '../../../tiles/tilemapOps'
+import { useLibraryPlacement } from './useLibraryPlacement'
+import { useObjectScatter } from './useObjectScatter'
+
+const settings = { ...DEFAULT_OBJECT_SCATTER, width: 1, density: 1, spacing: 0 }
+function scene() {
+  const base = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: 'tiles', cols: 8, rows: 6 }),
+    'Objetos',
+  )
+  return addMapObject(
+    base,
+    base.layers.at(-1)!.id,
+    createMapObject({
+      name: 'arvore',
+      shape: 'art',
+      art: { assetId: 'arte' },
+      x: 0,
+      y: 0,
+      width: 8,
+      height: 8,
+    }),
+  )
+}
+function geometry(container: HTMLElement): void {
+  for (const element of container.querySelectorAll('div'))
+    Object.defineProperty(element, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top: 0, width: 256, height: 192, right: 256, bottom: 192 }),
+    })
+}
+const at = { button: 0, isPrimary: true, pointerId: 1, clientX: 80, clientY: 80 }
+
+it('soltar sem mover o ponteiro confirma a prévia mesmo se o cabeçalho deslocar o papel', () => {
+  const map = scene(),
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  let top = 0
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      scatter = useObjectScatter({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        source: map.layers.filter(isObjectLayer)[0]!.objects[0]!,
+        active: true,
+        settings,
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        paperRef,
+        stageRef,
+        showToast: () => {},
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={scatter.down} />
+        </div>
+        <output>{JSON.stringify(scatter.preview?.addedIds ?? [])}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  for (const element of view.container.querySelectorAll('div'))
+    Object.defineProperty(element, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top, width: 256, height: 192, right: 256, bottom: top + 192 }),
+    })
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), { ...at, clientY: 144 })
+  fireEvent.pointerMove(document, { ...at, clientX: 208, clientY: 144 })
+  const preview = JSON.parse(screen.getByRole('status').textContent ?? '[]')
+  expect(preview).toHaveLength(5)
+  top = 32
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const saved = editor.getState().asset
+  if (saved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  expect(
+    saved.layers
+      .filter(isObjectLayer)[0]!
+      .objects.slice(1)
+      .map((object) => object.id),
+  ).toEqual(preview)
+  editor.getState().undo()
+  expect(editor.getState().asset).toBe(map)
+  // Um ponto novo no pointerup ainda faz parte do gesto, mesmo sem último move.
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), { ...at, clientY: 144 })
+  fireEvent.pointerMove(document, { ...at, clientX: 176, clientY: 144 })
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const moved = editor.getState().asset
+  if (moved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const placed = moved.layers.filter(isObjectLayer)[0]!.objects.slice(1)
+  expect(placed).toHaveLength(5)
+  expect(placed.at(-1)?.id).toEndWith(':30:0')
+})
+
+it('arrastar da biblioteca também conserva a posição da prévia após deslocamento do papel', () => {
+  const map = scene(),
+    source = createPixelSpriteAsset({ name: 'árvore', frameSize: 16 }),
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  let top = 0
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      library = useLibraryPlacement({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        assets: [source],
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        snap: true,
+        paperRef,
+        stageRef,
+        position: () => ({ x: 40, y: 40 }),
+        showToast: () => {},
+        onSelect: () => {},
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <button type="button" onPointerDown={(event) => library.down(source, event)}>
+            Árvore
+          </button>
+        </div>
+        <output>{JSON.stringify(library.preview?.object ?? null)}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  for (const element of view.container.querySelectorAll('div'))
+    Object.defineProperty(element, 'getBoundingClientRect', {
+      value: () => ({ left: 0, top, width: 256, height: 192, right: 256, bottom: top + 192 }),
+    })
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'Árvore' }), { ...at, clientX: 300 })
+  fireEvent.pointerMove(document, { ...at, clientX: 208, clientY: 144 })
+  const preview = JSON.parse(screen.getByRole('status').textContent ?? 'null')
+  expect(preview).not.toBeNull()
+  top = 32
+  fireEvent.pointerUp(document, { ...at, clientX: 208, clientY: 144 })
+  const saved = editor.getState().asset
+  if (saved.kind !== 'tilemap') throw new Error('Mapa esperado')
+  const placed = saved.layers.filter(isObjectLayer)[0]!.objects.at(-1)!
+  expect({ x: placed.x, y: placed.y }).toEqual({ x: preview.x, y: preview.y })
+  editor.getState().undo()
+  expect(editor.getState().asset).toBe(map)
+})
+
+for (const operation of ['library', 'scatter'] as const)
+  for (const set of [false, true])
+    for (const adoption of ['host', 'subscriber'] as const)
+      it(`${operation} não confirma nem guarda histórico alheio durante adoção ${adoption}, conjunto=${set}`, () => {
+        const map = scene(),
+          source = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 }),
+          initial = set
+            ? createMapSet(map, { col: 0, row: 0, cols: 8, rows: 6 }, 16, 'conjunto')
+            : map
+        let armed = true,
+          selected = 0
+        const outer = createEditorStore({
+          asset: initial,
+          persist: async () => {},
+          acceptEdit: () => {
+            if (armed && adoption === 'host') {
+              armed = false
+              outer.getState().replace({ ...initial, name: 'revisao-externa' })
+            }
+            return true
+          },
+        })
+        outer.subscribe((state) => {
+          if (armed && adoption === 'subscriber' && state.asset !== initial) {
+            armed = false
+            outer.getState().replace({ ...state.asset, name: 'revisao-externa' })
+          }
+        })
+        const facade = set ? createMapSetEditorStore(outer) : null,
+          editor = facade?.store ?? outer
+        const unsub = facade
+          ? outer.subscribe(() => facade.store.setState(facade.read(), true))
+          : () => {}
+        const loaded = editor.getState().asset
+        if (loaded.kind !== 'tilemap') throw Error('Mapa esperado')
+        const current = loaded
+        function Host() {
+          const paperRef = useRef<HTMLDivElement>(null),
+            stageRef = useRef<HTMLDivElement>(null),
+            common = {
+              editor,
+              map: current,
+              layerId: current.layers.at(-1)!.id,
+              tileSize: 16,
+              cellPx: 32,
+              pad: 0,
+              paperRef,
+              stageRef,
+              showToast: () => {},
+            },
+            library = useLibraryPlacement({
+              ...common,
+              assets: [source],
+              snap: true,
+              position: () => ({ x: 40, y: 40 }),
+              onSelect: () => {
+                selected++
+              },
+            }),
+            scatter = useObjectScatter({
+              ...common,
+              source: current.layers.find(isObjectLayer)!.objects[0]!,
+              active: true,
+              settings,
+            })
+          return (
+            <div ref={stageRef}>
+              <div ref={paperRef}>
+                <button type="button" onPointerDown={(e) => library.down(source, e)}>
+                  Árvore
+                </button>
+                <canvas role="img" aria-label="Pintar" onPointerDown={scatter.down} />
+              </div>
+              <output>{operation === 'library' ? library.message : scatter.message}</output>
+            </div>
+          )
+        }
+        const view = render(<Host />)
+        geometry(view.container)
+        if (operation === 'library') {
+          fireEvent.pointerDown(screen.getByRole('button', { name: 'Árvore' }), {
+            ...at,
+            clientX: 300,
+          })
+          fireEvent.pointerMove(document, at)
+        } else fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+        fireEvent.pointerUp(document, at)
+        expect(outer.getState().asset.name).toBe('revisao-externa')
+        expect(outer.getState().canUndo).toBe(false)
+        expect(editor.getState().canUndo).toBe(false)
+        expect(selected).toBe(0)
+        expect(screen.getByRole('status').textContent).not.toContain(
+          COPY.scene.libraryPlaced(source.name),
+        )
+        expect(screen.getByRole('status').textContent).not.toContain(
+          COPY.scene.scatterPlacedCount(1),
+        )
+        view.unmount()
+        unsub()
+      })
+
+it('recusa de versões privadas avisa o motivo e não grava objetos ou histórico parciais', () => {
+  const base = scene(),
+    source = base.layers.find(isObjectLayer)!.objects[0]!,
+    art = createTilesetAsset({ name: 'arte', tileSize: 16 }),
+    map = {
+      ...base,
+      resources: Array.from({ length: PINTA_RESOURCE_LIMITS.maxVersions }, (_, index) => ({
+        sourceId: `source-${index}`,
+        capturedAt: 1,
+        asset: {
+          ...art,
+          id: index === 0 ? 'arte' : `resource-${index}`,
+          ...(index === 0
+            ? { tileProperties: { '0': { target: { type: 'object' as const, value: source.id } } } }
+            : {}),
+        },
+      })),
+    },
+    toasts: string[] = [],
+    editor = createEditorStore({ asset: map, persist: async () => {} })
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null),
+      c = useObjectScatter({
+        editor,
+        map,
+        layerId: map.layers.at(-1)!.id,
+        source,
+        active: true,
+        settings,
+        tileSize: 16,
+        cellPx: 32,
+        pad: 0,
+        paperRef,
+        stageRef,
+        showToast: (message) => toasts.push(message),
+      })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={c.down} />
+        </div>
+        <output>{c.message}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  geometry(view.container)
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+  expect(screen.getByRole('status').textContent).toBe(COPY.scene.resourcePasteFailed)
+  fireEvent.pointerUp(document, at)
+  expect(editor.getState().asset).toBe(map)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(toasts).toEqual([COPY.scene.resourcePasteFailed])
+})
+
+it('cópia recuperada durante a prévia não é substituída por eventos atrasados do pincel', async () => {
+  const original = scene(),
+    recovered = { ...original, id: 'vila-recuperada', name: 'copia-recuperada' }
+  const editor = createEditorStore({
+    asset: original,
+    autosaveDelayMs: 100_000,
+    persist: async () => {
+      throw new Error('Conflito de revisão')
+    },
+    recoverPersisted: () => ({ asset: recovered, linked: [] }),
+  })
+  editor.getState().commit({ ...original, name: 'vila-em-edicao' })
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null)
+    const map = editor.getState().asset
+    if (map.kind !== 'tilemap') throw new Error('Mapa esperado')
+    const source = map.layers.filter(isObjectLayer)[0]!.objects[0]!
+    const c = useObjectScatter({
+      editor,
+      map,
+      layerId: map.layers.at(-1)!.id,
+      source,
+      active: true,
+      settings,
+      tileSize: 16,
+      cellPx: 32,
+      pad: 0,
+      paperRef,
+      stageRef,
+      showToast: () => {},
+    })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={c.down} />
+        </div>
+        <output>{c.preview?.addedIds.length ?? 0}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  geometry(view.container)
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+  expect(screen.getByRole('status').textContent).toBe('1')
+  await act(async () => {
+    expect(await editor.getState().flush()).toEqual({ ok: true })
+  })
+  expect(editor.getState().asset).toBe(recovered)
+  fireEvent.pointerUp(document, at)
+  fireEvent.pointerCancel(document, at)
+  expect(editor.getState().asset).toBe(recovered)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(screen.getByRole('status').textContent).toBe('0')
+})
+
+it('recusa do orçamento do host não cria histórico nem anuncia espalhamento confirmado', () => {
+  const map = scene(),
+    toasts: string[] = []
+  const editor = createEditorStore({ asset: map, acceptEdit: () => false, persist: async () => {} })
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null)
+    const c = useObjectScatter({
+      editor,
+      map,
+      layerId: map.layers.at(-1)!.id,
+      source: map.layers.filter(isObjectLayer)[0]!.objects[0]!,
+      active: true,
+      settings,
+      tileSize: 16,
+      cellPx: 32,
+      pad: 0,
+      paperRef,
+      stageRef,
+      showToast: (m) => toasts.push(m),
+    })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef}>
+          <canvas role="img" aria-label="Pintar" onPointerDown={c.down} />
+        </div>
+        <output>{c.message}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  geometry(view.container)
+  fireEvent.pointerDown(screen.getByRole('img', { name: 'Pintar' }), at)
+  fireEvent.pointerUp(document, at)
+  expect(editor.getState().asset).toBe(map)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(toasts).toEqual([COPY.scene.scatterRefused])
+  expect(screen.getByRole('status').textContent).toBe(COPY.scene.scatterRefused)
+})
+
+it('biblioteca também respeita a recusa do host sem selecionar um objeto inexistente', () => {
+  const map = scene(),
+    source = createPixelSpriteAsset({ name: 'arvore', frameSize: 16 }),
+    toasts: string[] = []
+  const editor = createEditorStore({ asset: map, acceptEdit: () => false, persist: async () => {} })
+  let selected = 0
+  function Host() {
+    const paperRef = useRef<HTMLDivElement>(null),
+      stageRef = useRef<HTMLDivElement>(null)
+    const c = useLibraryPlacement({
+      editor,
+      map,
+      layerId: map.layers.at(-1)!.id,
+      assets: [source],
+      tileSize: 16,
+      cellPx: 32,
+      pad: 0,
+      snap: true,
+      paperRef,
+      stageRef,
+      position: () => ({ x: 40, y: 40 }),
+      showToast: (m) => toasts.push(m),
+      onSelect: () => {
+        selected++
+      },
+    })
+    return (
+      <div ref={stageRef}>
+        <div ref={paperRef} />
+        <button
+          type="button"
+          onPointerDown={(e) => c.down(source, e)}
+          onClick={(e) => c.click(source, e)}
+        >
+          Árvore
+        </button>
+        <output>{c.message}</output>
+      </div>
+    )
+  }
+  const view = render(<Host />)
+  geometry(view.container)
+  const card = screen.getByRole('button', { name: 'Árvore' })
+  fireEvent.pointerDown(card, { ...at, clientX: 300 })
+  fireEvent.pointerMove(document, at)
+  fireEvent.pointerUp(document, at)
+  expect(editor.getState().asset).toBe(map)
+  expect(editor.getState().canUndo).toBe(false)
+  expect(selected).toBe(0)
+  expect(toasts).toEqual([COPY.scene.libraryUnavailable])
+  expect(screen.getByRole('status').textContent).not.toContain(COPY.scene.libraryPlaced('arvore'))
+})

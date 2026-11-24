@@ -1,0 +1,64 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T20:22:05.631Z",
+    "duration": 26867.842,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 6631,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "touch",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 3948,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura",
+      "project": "cpu-4x",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 11075,
+          "retry": 0
+        }
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "packages/pinta/src/components/editor/MapObjectPanel.tsx": "05887f01c54ef7c327913303012aeb9b3ff7552f9e61939f78787a8b9136552c",
+    "packages/pinta/src/components/editor/MapObjectsOverlay.tsx": "c23e2f9305dc2cda3d9cc83175884288ca78111b8f5be653613115e9ef69dfe7",
+    "packages/pinta/src/components/editor/MapSetEditor.tsx": "1894b10af7e8b0aba10bb7e79801907b4607571db674c0b812027f8a4683682f",
+    "packages/pinta/src/components/editor/TilemapEditor.tsx": "19ee6993d4ce0f3cbe5c587c319fbcf9d9f8543e3c71e5489da02ee5c2ee9312",
+    "packages/pinta/src/components/editor/mapObjectsUi.test.tsx": "8bde005878c88fa896f43378c5ac8d994a7f5a13906cf3e28b49b7746cf60835",
+    "packages/pinta/src/components/editor/mapTools/commitGuard.ts": "9eaf53df3107cf023549879c8863143c6e0ea66c44efb63cc3813ede786de756",
+    "packages/pinta/src/components/editor/mapTools/mapLayerActions.ts": "9f92b572c89880e34c0e23e188a1c8555e1399c279e955caf2b6d5595c9287c1",
+    "packages/pinta/src/components/editor/mapTools/mapObjectActions.ts": "0f8b77821e9427d604a529c03a37f3b0cba87ee4853872a70c6eb6e4e4751ae0",
+    "packages/pinta/src/components/editor/mapTools/mapTools.test.ts": "a5931ecc24b65cb5ddccb3fdd6356b7630769f0bc79a016d0b60ec2acc050768",
+    "packages/pinta/src/components/editor/mapTools/useTilemapController.ts": "3073759d9604e80794aaefb942f8b4c80a751b9599996b814df666e79bdb38fb",
+    "packages/pinta/src/core/copy.ts": "19a08b7045b18f2d6b8a1f799a73a55a6ee807caf7379f35adb619734acbcd45",
+    "packages/pinta/src/state/editorStore.ts": "4521f99dba1c8b455322b3330c3f0cdb674d039dec835cec8b9ec05b0990c3a8",
+    "packages/pinta/src/tiles/mapObjects.ts": "dbedcfd0d88a83aa302a742b71c2553d9fcbfd766d702b90afa48e61ea8eae8f",
+    "packages/studio/e2e/pinta-keyboard-scenes.flow.ts": "94305fb1d433c938e2bb75d57f36b7641ae19852dac050e6c7b3024c0b78be0d"
+  }
+}

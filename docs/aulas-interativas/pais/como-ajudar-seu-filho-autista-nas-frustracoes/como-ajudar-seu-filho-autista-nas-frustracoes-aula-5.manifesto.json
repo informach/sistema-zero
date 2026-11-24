@@ -1,0 +1,81 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+  "title": "Depois da crise: onde a magia acontece",
+  "blocks": [
+    {
+      "key": "video-a5-acolher",
+      "plannedVideo": "Título: Acolher e ensinar para a próxima vez\n\nRespeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a5-analise",
+      "plannedVideo": "Título: O gatilho, a consequência e os ajustes\n\nDesenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 2."
+    },
+    {
+      "key": "video-a5-fechamento",
+      "plannedVideo": "Título: Hoje eu escuto melhor\n\nRetomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 3."
+    },
+    {
+      "key": "resumo-a5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Depois da recuperação:** procure um momento em que a criança consiga participar. Acolha o sentimento e retome um pedido de ajuda ou outra resposta que ela está aprendendo.\n- **Observe a sequência:** o que aconteceu antes, o que a criança fez e o que aconteceu depois. Consequência quer dizer o que veio depois, não um castigo.\n- **Registre e ajuste:** observações repetidas dão pistas para conversar com a equipe; uma situação sozinha não confirma a função. Ajuste a transição, o ambiente ou o apoio à comunicação.\n- **Treino sistemático:** pratique aos poucos, em momentos tranquilos, a habilidade que precisa de apoio. Mantenha o cuidado durante o sofrimento.\n- **Para levar:** antes, preparar; durante, proteger e reduzir sobrecarga; depois, acolher, observar e ajustar. A pergunta é: o que ficou difícil e como posso ajudar?"
+      }
+    },
+    {
+      "key": "certificado",
+      "content": {
+        "kind": "certificate",
+        "title": "Certificado de conclusão",
+        "introLine": "Certificamos que",
+        "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises",
+        "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "acolher",
+      "title": "Acolher e ensinar para a próxima vez",
+      "objective": "Respeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-acolher"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-acolher"]
+      }
+    },
+    {
+      "key": "analise",
+      "title": "O gatilho, a consequência e os ajustes",
+      "objective": "Desenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado.",
+      "intent": "explanation",
+      "blockKeys": ["video-a5-analise"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-analise"]
+      }
+    },
+    {
+      "key": "fechamento",
+      "title": "Hoje eu escuto melhor",
+      "objective": "Retomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado.",
+      "intent": "delivery",
+      "blockKeys": ["video-a5-fechamento", "resumo-a5", "certificado"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a5-fechamento", "certificado"]
+      }
+    }
+  ]
+}

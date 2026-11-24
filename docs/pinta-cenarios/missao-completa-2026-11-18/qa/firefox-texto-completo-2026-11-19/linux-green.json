@@ -1,0 +1,115 @@
+{
+  "runId": 44604789667,
+  "sourceSha": "c3e9f483d87ecf112436779608ea136855db3f72",
+  "stats": {
+    "startTime": "2026-11-19T20:13:29.652Z",
+    "duration": 62310.37,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "o script canônico roda e pinta a tela",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7577,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "um `<script>` inline no index.html também executa",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4720,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "handlers HTML exatos funcionam, preservam return false e têm guarda de loop",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 9056,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "script inline criado em execução é bloqueado e a IDE continua responsiva",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4569,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "script externo criado em execução é recusado e a IDE continua responsiva",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4447,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 6144,
+          "retry": 0,
+          "latency": []
+        }
+      ]
+    },
+    {
+      "title": "trabalho síncrono longo do jogo não trava o editor",
+      "project": "firefox",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 9544,
+          "retry": 0,
+          "latency": [
+            {
+              "browserName": "firefox",
+              "startMs": 3471,
+              "observationWallMs": 3004,
+              "latencyMs": 53,
+              "workMs": 30000,
+              "observationMs": 3000,
+              "limitMs": 500
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

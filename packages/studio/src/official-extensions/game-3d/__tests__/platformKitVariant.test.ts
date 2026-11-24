@@ -17,8 +17,13 @@ import {
   gameThreeDBootstrapVariant,
   gameThreeDUsesPlatformKit,
 } from '../platformKitVariant'
-import { gameThreeDRuntime, gameThreeDRuntimeWithoutPlatform } from '../runtime'
+import {
+  gameThreeDRuntime,
+  gameThreeDRuntimeForVariant,
+  gameThreeDRuntimeWithoutPlatform,
+} from '../runtime'
 import { gameThreeDPlatformRuntimeSource } from '../runtimePlatform'
+import { gameThreeDRuntimeVariant } from '../sceneVariant'
 
 /**
  * Kit Plataforma injetado só quando o projeto usa (lote 14 do review 3D, P2). O runtime sem o
@@ -104,12 +109,19 @@ describe('Kit Plataforma: detecção pelo código', () => {
     const runtime = gameThreeDExtension.runtime
     if (!runtime.loadBootstrapScript) throw new Error('o Jogo 3D carrega por loadBootstrapScript')
     expect(await runtime.loadBootstrapScript()).toBe(gameThreeDRuntime)
+    // Duas dimensões (kit e cenário do Molda, `sceneVariant.ts`): o completo é o de quem usa
+    // as duas; sem nenhuma, a variante enxuta inteira.
     expect(await runtime.loadBootstrapScript({ code: 'SZGame3D.createScene("t")' })).toBe(
-      gameThreeDRuntimeWithoutPlatform,
+      gameThreeDRuntimeForVariant('sem-kit-plataforma+sem-cenario-molda'),
     )
     expect(await runtime.loadBootstrapScript({ code: 'SZGame3D.loadStage(c, m)' })).toBe(
-      gameThreeDRuntime,
+      gameThreeDRuntimeForVariant('sem-cenario-molda'),
     )
+    expect(
+      await runtime.loadBootstrapScript({
+        code: 'SZGame3D.loadStage(c, m); SZGame3D.loadScene(c, "ilha")',
+      }),
+    ).toBe(gameThreeDRuntime)
   })
 
   it('o host memoiza por variante: o mesmo tipo de código não recompõe', async () => {
@@ -131,7 +143,9 @@ describe('Kit Plataforma: detecção pelo código', () => {
     const b = await loadExtensionBootstrapScript(counted, { code: 'SZGame3D.createBox(c)' })
     expect(a).toBe(b)
     expect(calls).toBe(1)
-    const full = await loadExtensionBootstrapScript(counted, { code: 'SZGame3D.heroIs(h, "x")' })
+    const full = await loadExtensionBootstrapScript(counted, {
+      code: 'SZGame3D.heroIs(h, "x"); SZGame3D.loadScene(c, "ilha")',
+    })
     expect(await loadExtensionBootstrapScript(counted)).toBe(full)
     expect(calls).toBe(2)
   })
@@ -276,6 +290,23 @@ describe('Kit Plataforma: o runtime sem kit roda os jogos sem kit', () => {
     }
     // Anti-vácuo: o catálogo tem 20 jogos sem o kit (só o Reino Cogumelo usa).
     expect(played).toBeGreaterThanOrEqual(20)
+  })
+
+  it('todo exemplo joga igual no runtime da variante dele (kit e cenário) e no completo', () => {
+    // A variante sem cenário do Molda (`sceneVariant.ts`): nenhum exemplo usa cenário, então
+    // todos rodam com o substituto. Tem de ser o MESMO jogo do runtime completo.
+    let played = 0
+    for (const example of gameThreeDExamples) {
+      const files = exampleFiles(example)
+      const variant = gameThreeDRuntimeVariant({ code: files.script })
+      if (variant === '') continue
+      const enxuto = play(gameThreeDRuntimeForVariant(variant), files)
+      const completo = play(gameThreeDRuntime, files)
+      expect({ example: example.name, ...enxuto }).toEqual({ example: example.name, ...completo })
+      expect(enxuto.renders).toBeGreaterThan(150)
+      played++
+    }
+    expect(played).toBeGreaterThanOrEqual(21)
   })
 
   it('Reino Cogumelo (o jogo do kit) recebe o runtime completo', () => {

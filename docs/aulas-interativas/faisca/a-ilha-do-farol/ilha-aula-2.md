@@ -2,7 +2,7 @@
 
 ## Resumo
 
-Aula 2 de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa movimento e termina em aviso. Um envio encerra a construção; o vídeo final reconhece o resultado.
+Aula 2 de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa movimento e termina em aviso. A última parte de construção termina com o envio do projeto e o reconhecimento do que a criança fez.
 
 ## Partes e critérios
 
@@ -35,7 +35,7 @@ Coloque a chave na ilha.
 - Mude x da chave e confira o novo lugar no chão.
 - Mude z da chave e confira o novo lugar no chão.
 
-**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Agora escolha um lugar novo para a chave! No bloco Colocar o objeto chave, troque o z por −2 e o x por −3. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 ### Parte 3. Parece junto, mas está encostando?
 
@@ -66,7 +66,7 @@ Recolha a chave.
 - Esconda chave dentro do encontro do personagem com chave.
 - Alcance a chave no lugar escolhido e recolha apenas ao encostar.
 
-**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Agora faça o personagem pegar a chave! Coloque o encontro logo abaixo do evento da tecla R e, dentro dele, Esconder o objeto chave. Teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 ### Parte 5. Guarde que você pegou a chave
 
@@ -88,7 +88,7 @@ Guarde que você pegou a chave.
 - No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
 - Guarde a coleta e conserve a chave ao continuar andando.
 
-**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Agora faça o jogo guardar que o personagem pegou a chave! Crie temChave com falso em Ao iniciar e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 ### Parte 6. Conte que a chave foi recolhida
 
@@ -111,20 +111,8 @@ Conte que a chave foi recolhida.
 - Guarde a coleta e conserve a chave ao continuar andando.
 - Mude aviso dentro do encontro com chave.
 
-**Zappy na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
-
-### Parte 7. A chave já pode ser encontrada
-
-A chave já pode ser encontrada.
-
-- Intenção: closing.
-- Blocos: video-fecho, ponte-fecho.
-- Conclusão: video-fecho.
-
-
-
-**Zappy na página (não gravar):** Você concluiu os testes desta aula. Clique em Concluir aula.
+**Zappy na página (não gravar):** Agora mostre na tela que a chave foi pega! No encontro com a chave, mude o aviso para Você pegou a chave! Agora vá ao farol. Teste e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
 ## Produção
 
-[Fala integral e notas de tela](ilha-aula-2.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.
+[Fala integral e notas de tela](ilha-aula-2.roteiro.md). Na edição kids, Dedé diz as frases das tabelas de substituição do roteiro. Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.

@@ -1,0 +1,133 @@
+{
+  "base": "d25ab39814682c0ecb9e712a916ed61406fe43f7",
+  "files": [
+    {
+      "file": "packages/core/src/studio/pinta-image.test.ts",
+      "sha256": "6c921cd2ad376df586e7845d94109340bec547324f8da1aed1bd531edaad15f0"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-image.ts",
+      "sha256": "5211cb50e10ba0407893b764cfbc895f710466c0cedbe70480fd0006137dc772"
+    },
+    {
+      "file": "packages/core/src/studio/python-runtime-features.ts",
+      "sha256": "53183b58d982030b76d6938a0c01db7ad3f476ccd90f7a7cd2cb91aaf6c6aa08"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/pythonWorld.ts",
+      "sha256": "e59d91da76ba3fe4951940fe4aa09267c14448fad4963b5b3d2f61789b53db09"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImage.ts",
+      "sha256": "86c5ead21ef9a42a8408495a74dd551f0dab486bdae9490be1d45d50d09ba84d"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImageCapture.test.ts",
+      "sha256": "2b91510bdaca18337d1565a3c19adbd57fd8b503f9e20940da647c465b401d51"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImageData.test.ts",
+      "sha256": "70aacfc0a7e0585527f0d58c3725dbcdf98cd3b231994060c24543c4ee79b2fb"
+    },
+    {
+      "file": "packages/pinta/src/export/portableImageData.ts",
+      "sha256": "96a25593e3190a8dbafa57265917d1e884f5e88099826d9d5da6c70805f81849"
+    },
+    {
+      "file": "packages/pinta/src/export/portableMapWorld.ts",
+      "sha256": "9122ae1f96fb555adc0e6f0150a34188233e5f3e638d3fed824b3f544a528d7a"
+    },
+    {
+      "file": "packages/pinta/src/export/studioLibrary.ts",
+      "sha256": "6fc3ec6dda11300661d44b6740a8d3a88d2e2d39da65e81d9462bdfd00990dbe"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "sha256": "00fda3c0f7ee32408ebe9bf1d1be3092be5fe7cf9da928d471a8e311d931ce1d"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "82b46910a64709933b36bc9ebbe5bbf255b99358ffd476208862fae26827ebf9"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-studio.flow.ts",
+      "sha256": "912da21e1e6f45dc863810a412cf95ec70ebeab7ae06835706b53ed7f1912fa8"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-world-compatibility.flow.ts",
+      "sha256": "14410b1199f932af2a538cb7646531b008af3ec04fbb5c1a593b354488f06a65"
+    },
+    {
+      "file": "packages/studio/playground/pinta-integration/main.tsx",
+      "sha256": "69f7d6bde2808c1f0c58a72b0d5fe554a05634a919e3a6b67b202b95f6d9147e"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-world.config.ts",
+      "sha256": "fe22c3db9b15dfdf5f7447a53089840ef0382cee1bd100c9b19d962a1bf49a3f"
+    },
+    {
+      "file": "packages/studio/scripts/build-python-runtime.ts",
+      "sha256": "7ae7ca7453bb150906b3fdb0334cb6aa2bdc2399f99607c83b9b31186aedf2d3"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pinta-scene-python.ts",
+      "sha256": "d2575f0a9ed06e5e2058c8fe561917ca79189543c03c47fce1c45013beab53af"
+    },
+    {
+      "file": "packages/studio/scripts/python/test-pinta-world.py",
+      "sha256": "d989386e854b3f6a90890326b27c8123aae1510f8e619ca6acdf8070bfb2deb0"
+    },
+    {
+      "file": "packages/studio/scripts/serve-pinta-world-proof.ts",
+      "sha256": "663a1d32aaa7008d48ff133b5c937f337b68d6174651fd658fed0889e1e1bc5c"
+    },
+    {
+      "file": "packages/studio/src/asset-library/pintaImageSync.test.ts",
+      "sha256": "c469471e25e7ba8a1219df39ddfd39eaa634182b8d941f3d2c703edd00ae8afb"
+    },
+    {
+      "file": "packages/studio/src/components/assets/__tests__/PintaImportDialog.cases.tsx",
+      "sha256": "352e1ba03b438d03bc98d4d52f1fed9cbcc3988aa3962b9c6143234e31b54f1d"
+    },
+    {
+      "file": "packages/studio/src/components/assets/pintaImageModes.test.ts",
+      "sha256": "f16cec9210e7a6c808f1f917c6fec0b56c179740c74a1c409b0bc95f22826ec3"
+    },
+    {
+      "file": "packages/studio/src/components/assets/pintaImageModes.ts",
+      "sha256": "fa9fd321620d2de28ca5ea27e9176440df1576fddacc06829e0dc2aacf1fd7ea"
+    },
+    {
+      "file": "packages/studio/src/components/assets/PintaImageSelection.tsx",
+      "sha256": "e34dd21a6c456ae64c45a1415434fab10bfda4ad74de17aa80b7409bc39c8be0"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/shared/en.ts",
+      "sha256": "ee0315a5199b7257b8e85400fec44c71f4f62f3fe310cd09ebaab6b704f244f7"
+    },
+    {
+      "file": "packages/studio/src/core/i18n/shared/pt-BR.ts",
+      "sha256": "f6968740ebcc005ab1305c8a89712cc303ec354eb693ae31fb84b4b5659d11e1"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pygame/desktopSources.generated.ts",
+      "sha256": "56e29fa94414fcd7c3f5d17fe3f7f3e32e9ab6790c58a845e75aca881efec209"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "sha256": "22d1e2b81d028df2d79b32430037369718161b684fe87d51df90fd40f9343aa8"
+    },
+    {
+      "file": "packages/studio/src/runtime/registry.test.ts",
+      "sha256": "578f717b2e1c20d41c372ec8cb35d0a61105452ffa5522c75de184a5f9508ca9"
+    },
+    {
+      "file": "packages/studio/src/runtime/registry.ts",
+      "sha256": "b9f9cfe4f5e9571ea35b20fc4ca89fc5cadc2117e9d711c8688669dcd416c204"
+    },
+    {
+      "file": "packages/studio/tsconfig.json",
+      "sha256": "6b55bfe1db6250c4a8f67fa225ccb369e2d124308174e57a4fcd3f8b5bcb2b62"
+    }
+  ]
+}

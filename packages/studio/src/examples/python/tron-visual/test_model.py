@@ -56,11 +56,11 @@ class AudioRecorder:
 
 
 def load(game):
-    """Executa main.py sem imports, sem o entrypoint e sem criar tartarugas reais."""
+    """Executa main.py sem imports, sem o que ele faz ao iniciar e sem criar tartarugas reais."""
     tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
     kept = []
     for node in tree.body:
-        if isinstance(node, (ast.Import, ast.If)):
+        if isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For)):
             continue
         if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)
@@ -73,6 +73,16 @@ def load(game):
     exec(compile(tree, str(SOURCE), "exec"), game)
     return game
 
+
+
+def register_keys(game):
+    """Faz os registros de tecla do programa (⚡ Quando acontecer), sem abrir janela."""
+    tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
+    tree.body = [node for node in tree.body
+                 if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+                 and isinstance(node.value.func, ast.Attribute)
+                 and node.value.func.attr.startswith("on")]
+    exec(compile(tree, str(SOURCE), "exec"), game)
 
 
 class Rules(unittest.TestCase):
@@ -144,7 +154,7 @@ class Rules(unittest.TestCase):
         self.assertEqual(self.blue.direcao, (-1, 0))
 
     def test_holding_a_key_turns_once_and_a_new_press_turns_again(self):
-        self.game["ligar_tecla"]("a", "vermelha", 1)
+        register_keys(self.game)
         calls = self.game["tela"].calls
         press = [args[0] for call, args in calls if call == "onkeypress" and args[1] == "a"][0]
         release = [args[0] for call, args in calls if call == "onkeyrelease" and args[1] == "a"][0]
@@ -228,8 +238,7 @@ class Rules(unittest.TestCase):
     def test_pause_freezes_and_restart_or_close_never_adds_timers(self):
         screen = self.game["tela"]
         self.go()
-        self.game["agendar"]()
-        self.game["agendar"]()
+        self.game["a_cada_quadro"]()
         self.assertEqual(len(screen.timers), 1)
         self.game["pausar"]()
         head = self.red.casa()

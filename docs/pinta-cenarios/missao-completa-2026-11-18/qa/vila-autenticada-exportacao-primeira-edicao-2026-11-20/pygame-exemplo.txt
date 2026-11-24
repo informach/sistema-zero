@@ -1,0 +1,2 @@
+pygame-ce 2.5.8 (SDL 2.32.10, Python 3.12.10)
+Pinta: qa-vila-floresta-20261120 / 18 camadas / 20 quadros

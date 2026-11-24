@@ -51,7 +51,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## m9-persistir
 
@@ -100,7 +100,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## m9-raciocinar
 
@@ -149,7 +149,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## m9-expressar
 
@@ -198,7 +198,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## m9-rotina
 
@@ -247,7 +247,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## m9-explorar
 
@@ -294,7 +294,7 @@ Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajud
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## 9a12-planejar
 
@@ -1123,7 +1123,7 @@ Conheça o treinamento e os projetos para avaliar se esse caminho de prática po
 
 Botão: Conhecer o treinamento
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## apoio-pendente
 
@@ -1172,7 +1172,7 @@ Você pode conhecer o treinamento para entender os exemplos e o formato. Antes d
 
 Botão: Conhecer o formato e os requisitos
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## ajuda-inicial
 
@@ -1221,7 +1221,7 @@ Você pode conhecer o treinamento para entender os exemplos e o formato. Antes d
 
 Botão: Conhecer o formato e os requisitos
 
-Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+Destino: /kids/comunidade-dos-criadores/oferta
 
 ## professor
 

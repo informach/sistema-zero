@@ -1,4 +1,5 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
+import { PintaAccountSession } from '@sistemazero/member-shell/components/creator/pinta-account-session'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { AcessoSchema } from '@sistemazero/member-shell/lib/arquipelago-contracts'
 import {
@@ -232,7 +233,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <MainContainer>
                 {/* O vocabulário da criança (fase, parte, equipe) nas telas de aula do member-shell. */}
                 <LessonCompletionRefreshProvider key={session.id}>
-                  <KidsLessonCopy>{children}</KidsLessonCopy>
+                  <KidsLessonCopy>
+                    <PintaAccountSession audience="kids" session={session}>
+                      {children}
+                    </PintaAccountSession>
+                  </KidsLessonCopy>
                 </LessonCompletionRefreshProvider>
               </MainContainer>
               {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse

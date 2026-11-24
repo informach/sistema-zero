@@ -1,5 +1,6 @@
-"""Jogo da Velha educacional: casas, vez, vitória e computador visíveis em blocos."""
+# Jogo da Velha educacional: casas, vez, vitória e computador visíveis em blocos.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
@@ -7,6 +8,7 @@ import math
 import sz_audio
 
 
+# 🎛️ Configurações
 CELULA = 150
 CENTRO_Y = -20
 INTERVALO = 16
@@ -23,16 +25,9 @@ COR_VITORIA = "#4ade80"
 # As casas seguem o teclado numérico: 1 2 3 embaixo, 4 5 6 no meio, 7 8 9 em cima.
 LINHAS = [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]
 CANTOS = [0, 2, 6, 8]
-estado = {"aberto": False, "timer_pendente": False, "computador": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-destaque = turtle.Turtle(visible=False)
-cursor = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def posicao(casa):
     return ((casa % 3 - 1) * CELULA, (casa // 3 - 1) * CELULA + CENTRO_Y)
 
@@ -214,8 +209,44 @@ def tocar(casa):
     marcar(casa)
 
 
-def tecla_casa(casa):
-    return lambda: tocar(casa)
+def jogar_na_casa_1():
+    tocar(0)
+
+
+def jogar_na_casa_2():
+    tocar(1)
+
+
+def jogar_na_casa_3():
+    tocar(2)
+
+
+def jogar_na_casa_4():
+    tocar(3)
+
+
+def jogar_na_casa_5():
+    tocar(4)
+
+
+def jogar_na_casa_6():
+    tocar(5)
+
+
+def jogar_na_casa_7():
+    tocar(6)
+
+
+def jogar_na_casa_8():
+    tocar(7)
+
+
+def jogar_na_casa_9():
+    tocar(8)
+
+
+def marcar_no_cursor():
+    tocar(estado["cursor"])
 
 
 def mover(dc, dl):
@@ -224,6 +255,22 @@ def mover(dc, dl):
     if 0 <= coluna < 3 and 0 <= linha < 3:
         estado["cursor"] = linha * 3 + coluna
         mostrar_cursor()
+
+
+def cursor_para_direita():
+    mover(1, 0)
+
+
+def cursor_para_esquerda():
+    mover(-1, 0)
+
+
+def cursor_para_cima():
+    mover(0, 1)
+
+
+def cursor_para_baixo():
+    mover(0, -1)
 
 
 def clicar(x, y):
@@ -252,25 +299,6 @@ def atualizar(tempo):
         estado["espera"] += tempo
         if estado["espera"] >= DEMORA_COMPUTADOR:
             marcar(escolher_casa(estado["tabuleiro"]))
-
-
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
 
 
 def alternar_computador():
@@ -305,7 +333,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -316,41 +343,72 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(600, 700)
-    tela.title("Jogo da Velha • Sistema Zero")
-    tela.bgcolor(COR_FUNDO)
-    tela.tracer(0)
-    tela.register_shape("moldura", moldura(CELULA - 12, 8))
-    for desenho in [cenario, pincel, destaque, cursor, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    cursor.shape("moldura")
-    cursor.color(COR_CURSOR)
-    cursor.showturtle()
-    desenhar_cenario()
-    for numero in range(1, 10):
-        tela.onkey(tecla_casa(numero - 1), str(numero))
-    tela.onkeypress(lambda: mover(1, 0), "Right")
-    tela.onkeypress(lambda: mover(-1, 0), "Left")
-    tela.onkeypress(lambda: mover(0, 1), "Up")
-    tela.onkeypress(lambda: mover(0, -1), "Down")
-    tela.onkey(lambda: tocar(estado["cursor"]), "Return")
-    tela.onkey(lambda: tocar(estado["cursor"]), "space")
-    tela.onkey(alternar_computador, "c")
-    tela.onkey(alternar_computador, "C")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    estado["placar"] = {"X": 0, "O": 0, "empates": 0}
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "computador": False}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+destaque = turtle.Turtle(visible=False)
+cursor = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(600, 700)
+tela.title("Jogo da Velha • Sistema Zero")
+tela.bgcolor(COR_FUNDO)
+tela.tracer(0)
+tela.register_shape("moldura", moldura(CELULA - 12, 8))
+for desenho in [cenario, pincel, destaque, cursor, painel]:
+    desenho.penup()
+    desenho.speed(0)
+cursor.shape("moldura")
+cursor.color(COR_CURSOR)
+cursor.showturtle()
+desenhar_cenario()
+estado["placar"] = {"X": 0, "O": 0, "empates": 0}
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(jogar_na_casa_1, "1")
+tela.onkey(jogar_na_casa_2, "2")
+tela.onkey(jogar_na_casa_3, "3")
+tela.onkey(jogar_na_casa_4, "4")
+tela.onkey(jogar_na_casa_5, "5")
+tela.onkey(jogar_na_casa_6, "6")
+tela.onkey(jogar_na_casa_7, "7")
+tela.onkey(jogar_na_casa_8, "8")
+tela.onkey(jogar_na_casa_9, "9")
+tela.onkeypress(cursor_para_direita, "Right")
+tela.onkeypress(cursor_para_esquerda, "Left")
+tela.onkeypress(cursor_para_cima, "Up")
+tela.onkeypress(cursor_para_baixo, "Down")
+tela.onkey(marcar_no_cursor, "Return")
+tela.onkey(marcar_no_cursor, "space")
+tela.onkey(alternar_computador, "c")
+tela.onkey(alternar_computador, "C")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

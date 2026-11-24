@@ -13,7 +13,7 @@ import { ClassicRunFab, ClassicStage, useClassicStage } from '../components/prev
 import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
 import { classicStageSubject } from '../components/preview/stageSubject'
 import { javaScriptProject } from '../core/editableProject'
-import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
+import { getDisplayedSourceMap } from '../state/canonicalSourceMap'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useUIStore } from '../state/uiStore'
@@ -23,13 +23,14 @@ import { useStudioLayout } from '../studio/layoutContext'
 
 export function BlocksMode(): JSX.Element {
   const t = useT()
-  const { hasProject, blocksState, ir, projectName, js } = useProjectStore(
+  const { hasProject, blocksState, ir, projectName, js, css } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(javaScriptProject(s.project)),
       blocksState: javaScriptProject(s.project)?.blocksState ?? null,
       ir: javaScriptProject(s.project)?.ir ?? null,
       projectName: javaScriptProject(s.project)?.name ?? 'Projeto',
       js: javaScriptProject(s.project)?.files['script.js'] ?? '',
+      css: javaScriptProject(s.project)?.files['style.css'] ?? '',
     })),
   )
   const blocksHydration = useProjectStore((s) => s.blocksHydration)
@@ -64,11 +65,11 @@ export function BlocksMode(): JSX.Element {
     }
     try {
       const header = js.startsWith(GENERATED_JS_HEADER) ? GENERATED_JS_HEADER : undefined
-      setSourceMap(getCanonicalSourceMap(ir, projectName, header))
+      setSourceMap(getDisplayedSourceMap(ir, projectName, header, css))
     } catch {
       // Best-effort: sem mapa, o Console só não mostra o chip.
     }
-  }, [ir, js, projectName, setSourceMap])
+  }, [ir, js, css, projectName, setSourceMap])
 
   // RECOVERY da corrida da Ponte: o aluno digitou código e trocou p/ Blocos
   // dentro da janela do reverse-parse (~0,9s de debounce + worker, que morre

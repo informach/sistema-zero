@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+src\export\__tests__\pythonWeb.test.ts:
+130 |     const before = JSON.stringify(f.project)
+131 |     if (supported) {
+132 |       const web = await buildPythonWebFiles(f.project, f.environment, new AbortController().signal)
+133 |       expect(web.files['project/assets/map.png']).toEqual(bytes)
+134 |     } else {
+135 |       await expect(buildPythonWebFiles(f.project, f.environment, new AbortController().signal)).rejects.toThrow('ambiente')
+                                                                                                              ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\export\__tests__\pythonWeb.test.ts:135:105)
+(fail) o pacote web exige o leitor dos dados 2/3; a fonte desktop continua disponível [47.00ms]
+(pass) Python classic: ZIP preserves author paths and material attribution, with verified runtime and fresh delivery permission [31.00ms]
+(pass) Python pro: ZIP preserves author paths and material attribution, with verified runtime and fresh delivery permission
+(pass) corrupt runtime bytes or a mismatched release cannot produce a web package [16.00ms]
+(pass) an explicit runtime missing a web launcher cannot claim support for this export format
+(pass) private path and known secret are refused before authorization or fetching, without modifying source [15.00ms]
+(pass) access revoked after collecting and zipping still prevents delivery
+(pass) a valid 200-character project name survives the real ZIP payload without truncation [16.00ms]
+(pass) context cancellation during distribution fetch prevents any further file collection
+
+ 8 pass
+ 1 fail
+ 65 expect() calls
+Ran 9 tests across 1 file. [835.00ms]

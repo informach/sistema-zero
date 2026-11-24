@@ -8,8 +8,19 @@ import {
   STUDIO_PRO_TEMPLATE_IDS,
   type StudioProRemoteDependencies,
   type StudioProTemplateId,
+  type StudioProVerifiedPlatformFiles,
   studioProTemplate,
+  verifyStudioBuildPlatformFiles,
 } from '@sistemazero/core/studio'
+import {
+  isStudioProScene3DFile,
+  readStudioProScene3DModule,
+  STUDIO_PRO_SCENE3D_MODULE,
+} from '@sistemazero/core/studio/pro-scene3d'
+import {
+  STUDIO_THREE_TYPES_VERSION,
+  STUDIO_THREE_VERSION,
+} from '@sistemazero/core/studio/three-version'
 import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
 import { prepareRuntimeDependencyLock } from './dependency-lock'
 
@@ -44,6 +55,7 @@ export interface ProBuildFailure {
     | 'TYPECHECK_FAILED'
     | 'PLAYTEST_FAILED'
     | 'OUTPUT_TOO_LARGE'
+    | 'DEPENDENCY_NOT_DECLARED'
     | 'RATE_LIMITED'
   message: string
   output?: string
@@ -57,8 +69,21 @@ export const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 
 export { InvalidBuildRequestError } from '@sistemazero/core/studio'
 
-export function parseBuildRequest(value: unknown): ProBuildRequest {
-  const input = parseStudioBuildSubmission(value)
+/**
+ * O pedido de `/v1/build` e `/v1/preflight`. A cópia do motor 2D de um jogo convertido para o Pro
+ * (`public/sz-ext/<id>.js`, perto de 400 mil caracteres) passa do teto de 256 mil por arquivo; uma
+ * cópia publicada intacta (sha256 do inventário do core, no caminho dela) é da plataforma e fica
+ * fora do orçamento do autor. O envelope continua limitado pelos bytes lidos do corpo.
+ */
+export async function readBuildRequest(value: unknown): Promise<ProBuildRequest> {
+  return parseBuildRequest(value, await verifyStudioBuildPlatformFiles(value))
+}
+
+export function parseBuildRequest(
+  value: unknown,
+  platform?: StudioProVerifiedPlatformFiles,
+): ProBuildRequest {
+  const input = parseStudioBuildSubmission(value, platform)
   const manifest = input.files['package.json'] ?? trustedPackageJson(input.templateId)
   const lock = input.files['package-lock.json']
   let dependencies: StudioProRemoteDependencies
@@ -133,13 +158,13 @@ function verifyRemoteLock(raw: string, packageJson: string): void {
       )
     )
       throw new InvalidBuildRequestError(
-        `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Execute pelo terminal local ou use as dependências compatíveis.`,
+        `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Use as versões das bibliotecas do modelo.`,
       )
   }
 }
 
 export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries']): Promise<void> {
-  for (const entry of Object.values(binaries ?? {})) {
+  for (const [path, entry] of Object.entries(binaries ?? {})) {
     const bytes = Uint8Array.from(atob(entry.base64), (character) => character.charCodeAt(0))
     const digest = await crypto.subtle.digest('SHA-256', bytes)
     const hash = Array.from(new Uint8Array(digest), (byte) =>
@@ -147,15 +172,35 @@ export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries'])
     ).join('')
     if (hash !== entry.sha256)
       throw new InvalidBuildRequestError('O material recebido está incompleto ou foi alterado.')
+    // R3 da revisão de 20/11/2026: o módulo dos cenários só passa no modelo do Estúdio, só com
+    // dados. O contêiner o escreve de novo e troca o runtime e os tipos pelos da imagem.
+    if (path === STUDIO_PRO_SCENE3D_MODULE) {
+      let text: string | null = null
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(bytes)
+      } catch {
+        // Texto que não é UTF-8 não é o módulo do Estúdio.
+      }
+      if (text === null || readStudioProScene3DModule(text) === null)
+        throw new InvalidBuildRequestError(
+          'Os cenários do projeto não conferem com o Estúdio. Abra o projeto de novo e tente outra vez.',
+        )
+    }
   }
 }
 
+/** O pedido traz algum dos arquivos derivados dos cenários do Molda. */
+export function hasStudioProScene3DFiles(binaries: ProBuildRequest['binaries']): boolean {
+  return Object.keys(binaries ?? {}).some(isStudioProScene3DFile)
+}
+
+/** O script da imagem que troca os arquivos derivados dos cenários pelos confiáveis (R3). */
+export const SCENE3D_CANONICAL_COMMAND = 'node /opt/sz-runtime/scene3d-pro-canonical.mjs'
+
 export const normalizeBuildPath = normalizeStudioProBuildPath
 
-export function trustedPackageJson(
-  templateId: ProTemplateId,
-  resolved?: StudioProRemoteDependencies,
-): string {
+/** As dependências que o build confiável instala: as do projeto conferidas, ou as do modelo. */
+function trustedDependencies(templateId: ProTemplateId, resolved?: StudioProRemoteDependencies) {
   const template = studioProTemplate(templateId)
   const dependencies: Record<string, string> = {}
   const devDependencies: Record<string, string> = { vite: '8.1.6' }
@@ -170,24 +215,76 @@ export function trustedPackageJson(
     devDependencies['@types/react-dom'] = '19.2.3'
   }
   if (template?.engine === 'three') {
-    dependencies.three = '0.180.0'
+    dependencies.three = STUDIO_THREE_VERSION
   }
   if (templateId === 'three-ts' || (template?.engine === 'three' && template.kitVersion)) {
-    devDependencies['@types/three'] = '0.180.0'
+    devDependencies['@types/three'] = STUDIO_THREE_TYPES_VERSION
     devDependencies.typescript = '5.9.3'
   }
+  return {
+    dependencies: resolved?.dependencies ?? dependencies,
+    devDependencies: resolved?.devDependencies ?? devDependencies,
+  }
+}
+
+export function trustedPackageJson(
+  templateId: ProTemplateId,
+  resolved?: StudioProRemoteDependencies,
+): string {
   return `${JSON.stringify(
     {
       name: 'sz-pro-lesson',
       private: true,
       type: 'module',
       scripts: { build: 'vite build' },
-      dependencies: resolved?.dependencies ?? dependencies,
-      devDependencies: resolved?.devDependencies ?? devDependencies,
+      ...trustedDependencies(templateId, resolved),
     },
     null,
     2,
   )}\n`
+}
+
+/** O começo da linha que o plugin abaixo escreve; o Worker devolve o recado depois dele. */
+export const UNDECLARED_DEPENDENCY_MARKER = 'STUDIO_UNDECLARED_DEPENDENCY'
+
+/**
+ * Recusa, no build hospedado, o `import` de uma biblioteca que o projeto não declarou (revisão do
+ * lote 4 da conclusão, 22/11/2026). A conferência do catálogo olha só o package.json, e o Vite do
+ * Rodar comum monta com o `node_modules` da imagem: um `import { nanoid } from 'nanoid'` sem
+ * declarar empacotava o nanoid que veio na imagem por ser dependência do postcss (e uns 40
+ * pacotes assim). Só vale para o código do projeto: as bibliotecas importam o que quiserem.
+ *
+ * ⚠️ Vai para a configuração do Vite como TEXTO (`toString`): nada de fora desta função.
+ */
+export function catalogImportsPlugin(declared: readonly string[]) {
+  const allowed = new Set([...declared, 'vite'])
+  return {
+    name: 'sz-catalog-imports',
+    enforce: 'pre' as const,
+    resolveId(this: { error(message: string): never }, source: string, importer?: string) {
+      if (!importer || importer.startsWith('\0') || /[\\/]node_modules[\\/]/.test(importer))
+        return null
+      const bare = source.split(/[?#]/)[0] ?? ''
+      // Caminho relativo ou absoluto, módulo virtual e endereço com esquema (`virtual:`, `data:`).
+      if (!bare || /^(?:[./\\\0]|[A-Za-z]:[\\/]|[a-z][a-z0-9+.-]*:)/i.test(bare)) return null
+      const parts = bare.split('/')
+      const name = bare.startsWith('@') ? parts.slice(0, 2).join('/') : (parts[0] ?? '')
+      if (allowed.has(name)) return null
+      this.error(
+        'STUDIO_UNDECLARED_DEPENDENCY A biblioteca ' +
+          name +
+          ' não está no package.json deste jogo. Se ela é uma das bibliotecas do modelo, escreva ela no package.json; se não, tire o import.',
+      )
+    },
+  }
+}
+
+/** O recado do plugin acima, quando o build falhou por ele. */
+export function undeclaredDependencyMessage(output: string): string | null {
+  const at = output.indexOf(`${UNDECLARED_DEPENDENCY_MARKER} `)
+  if (at < 0) return null
+  const rest = output.slice(at + UNDECLARED_DEPENDENCY_MARKER.length + 1)
+  return rest.split(/\r?\n/)[0]?.trim() || null
 }
 
 export function trustedViteConfig(
@@ -202,8 +299,11 @@ export function trustedViteConfig(
       )
     : templateId === 'react-ts'
   const reactImport = react ? "import react from '@vitejs/plugin-react'\n" : ''
-  const plugins = react ? '  plugins: [react()],\n' : ''
+  const deps = trustedDependencies(templateId, resolved)
+  const declared = [...Object.keys(deps.dependencies), ...Object.keys(deps.devDependencies)]
+  const catalog = `const catalogImports = ${catalogImportsPlugin.toString()}\n`
+  const plugins = `  plugins: [catalogImports(${JSON.stringify(declared)})${react ? ', react()' : ''}],\n`
   // Inline PostCSS disables discovery of executable project/parent configuration.
   // Native config loading avoids writing a bundled config into trusted node_modules.
-  return `import { defineConfig } from 'vite'\n${reactImport}\nexport default defineConfig({\n${plugins}  base: './',\n  envDir: false,\n  envPrefix: [],\n  cacheDir: '.vite-cache',\n  css: { postcss: { plugins: [] } },\n  build: {\n    assetsInlineLimit: 4096,\n    cssCodeSplit: true,\n    sourcemap: false,\n  },\n})\n`
+  return `import { defineConfig } from 'vite'\n${reactImport}${catalog}\nexport default defineConfig({\n${plugins}  base: './',\n  envDir: false,\n  envPrefix: [],\n  cacheDir: '.vite-cache',\n  css: { postcss: { plugins: [] } },\n  build: {\n    assetsInlineLimit: 4096,\n    cssCodeSplit: true,\n    sourcemap: false,\n  },\n})\n`
 }

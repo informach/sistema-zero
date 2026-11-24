@@ -57,3 +57,4 @@ A voz é gerada no ElevenLabs a partir da fala abaixo, com as tags de direção,
 
 [curious] E o que a gente vai ver nesse caminho? [engaging, energetic, conversational voice] Primeiro, eu vou te mostrar os três jeitos de usar a tela, e qual deles mais desenvolve. Depois, eu te conto de onde veio essa ideia, lá dentro da minha casa, e por onde o seu filho pode começar. Aí eu te mostro como isso funciona na prática, e você vai ver que não é difícil. A gente também conversa sobre as dúvidas que os pais mais têm. [excited] E, lá no final, você abre o presente. [upbeat, encouraging voice] Clique em Concluir aula para continuar.
 ```
+

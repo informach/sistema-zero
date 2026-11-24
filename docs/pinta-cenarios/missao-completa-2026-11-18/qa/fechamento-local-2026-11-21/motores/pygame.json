@@ -1,0 +1,19 @@
+{
+  "engine": "pygame-ce",
+  "version": "2.5.8",
+  "python": "3.12.10",
+  "sourceMapHash": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73",
+  "maps": 2,
+  "layers": 18,
+  "tilesets": 2,
+  "linkedSet": true,
+  "movement": true,
+  "wallStop": [69.60000610351562, 68.0, 10.399999618530273, 10.399999618530273],
+  "doorCycle": ["qa-vila-floresta-20261120", "qa-cabana-20261120", "qa-vila-floresta-20261120"],
+  "foreground": true,
+  "animation": true,
+  "imageHashes": [
+    "f8c97d12a80d03c3f422da695906fee4027697348a589b687d3d0515d94528e3",
+    "23d99f6c705cc5fd4bd5aef343befb5e14a0dca2ff3e6708dcb7603f54dd686b"
+  ]
+}

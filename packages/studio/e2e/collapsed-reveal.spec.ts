@@ -1,0 +1,458 @@
+import { expect, type Page, test } from '@playwright/test'
+import { buildSync } from 'esbuild'
+
+/*
+ * "Mostrar o bloco" dentro de uma função recolhida da cauda que nasce sem desenho (lote 2 da
+ * conclusão, 22/11/2026). No Reino Zero Ultra o gesto travava o Chrome conectado por minutos: o
+ * desenho descia pelos corpos ESCONDIDOS de todas as funções recolhidas até o alvo (5.752 blocos
+ * redesenhados para abrir uma), e a abertura mudava o projeto salvo, que regerava os 7 mil blocos
+ * e subia para a conta.
+ *
+ * Duas áreas de trabalho lado a lado com o MESMO projeto (50 funções recolhidas de 31 blocos,
+ * 1.550 blocos, acima do limiar de 1.500): uma abre como sempre, a outra com a cauda adiada. O
+ * gesto é o de verdade (`revealBlockInWorkspace`). O que vale: quantos blocos o gesto desenha, a
+ * posição e o tamanho de cada bloco desenhado comparados com o caminho normal, nenhuma conexão de
+ * bloco sem desenho no banco de conexões, e o estado salvo igual ao de antes.
+ */
+const bundle = buildSync({
+  stdin: {
+    resolveDir: process.cwd(),
+    contents: `
+      import * as Blockly from 'blockly/core';
+      import 'blockly/blocks';
+      import * as En from 'blockly/msg/en';
+      import { showBlocksFromTop } from './src/blockly/cornerSpacer';
+      import { isDeferredBlock, prepareDeferredTail } from './src/blockly/deferredTail';
+      import { drawDeferredBlocks } from './src/blockly/offscreenThreshold';
+      import { createOffscreenBodies } from './src/blockly/offscreenBodies';
+      import { withWorkspaceLoad } from './src/blockly/loadFence';
+      import { revealBlockInWorkspace } from './src/blockly/runtimeMark';
+      import { saveWorkspaceState } from './src/blockly/savedWorkspaceState';
+      Blockly.setLocale(En);
+      Blockly.common.defineBlocksWithJsonArray([{
+        type: 'sz_frame_test', message0: 'area %1 %2',
+        args0: [{ type: 'input_dummy' }, { type: 'input_statement', name: 'CHILDREN' }],
+        colour: 200,
+      }]);
+      // Os desenhos de cada área de trabalho, contados ANTES de a cauda adiada embrulhar o método:
+      // o que ela pula (bloco adiado) não chega aqui.
+      const renders = new Map();
+      // Desenhos de um bloco FORA da página: o texto é medido sem a fonte (o getComputedStyle de
+      // um elemento fora do documento volta vazio).
+      const outOfPage = new Map();
+      const renderEfficiently = Blockly.BlockSvg.prototype.renderEfficiently;
+      Blockly.BlockSvg.prototype.renderEfficiently = function () {
+        renders.set(this.workspace.id, (renders.get(this.workspace.id) ?? 0) + 1);
+        if (!this.getSvgRoot().isConnected)
+          outOfPage.set(this.workspace.id, (outOfPage.get(this.workspace.id) ?? 0) + 1);
+        return renderEfficiently.call(this);
+      };
+      const BODY = 30;
+      const unit = (i, size = BODY) => {
+        let body;
+        for (let k = size - 1; k >= 0; k--)
+          body = { type: 'controls_if', id: 'c' + i + '_' + k, ...(body ? { next: { block: body } } : {}) };
+        return { type: 'controls_repeat', id: 'u' + i, collapsed: true, fields: { TIMES: 10 },
+          inputs: { DO: { block: body } } };
+      };
+      function project(count, longBody) {
+        let chain;
+        for (let i = count - 1; i >= 0; i--) {
+          const item = unit(i, i === 40 && longBody ? longBody : BODY);
+          if (chain) item.next = { block: chain };
+          chain = item;
+        }
+        return { blocks: { languageVersion: 0, blocks: [
+          { type: 'sz_frame_test', id: 'area', x: 20, y: 20, inputs: { CHILDREN: { block: chain } } },
+        ] } };
+      }
+      const settle = async () => {
+        for (let i = 0; i < 4; i++) {
+          await Blockly.renderManagement.finishQueuedRenders();
+          await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 5)));
+        }
+      };
+      const spaces = {};
+      const block = (name, id) => spaces[name].getBlockById(id);
+      // Um bloco de verdade na página: nem adiado nem dentro de um bloco recolhido.
+      const visible = (b) => {
+        if (isDeferredBlock(b)) return false;
+        for (let p = b.getSurroundParent(); p; p = p.getSurroundParent()) if (p.isCollapsed()) return false;
+        return true;
+      };
+      window.__reveal = {
+        settle,
+        async open(name, deferred, longBody = 0) {
+          const ws = Blockly.inject(document.getElementById(name), {
+            sounds: false, renderer: 'zelos', move: { scrollbars: true, drag: true, wheel: true },
+          });
+          spaces[name] = ws;
+          const json = project(50, longBody);
+          const load = deferred ? prepareDeferredTail(ws, json, true) : null;
+          try {
+            withWorkspaceLoad(() => Blockly.serialization.workspaces.load(load ? load.state : json, ws));
+          } finally {
+            if (load) load.finish();
+          }
+          showBlocksFromTop(ws);
+          await settle();
+          return Boolean(load);
+        },
+        resetRenders() { renders.clear(); outOfPage.clear(); },
+        outOfPage(name) { return outOfPage.get(spaces[name].id) ?? 0; },
+        renders(name) { return renders.get(spaces[name].id) ?? 0; },
+        isDeferred: (name, id) => isDeferredBlock(block(name, id)),
+        state: (name) => JSON.stringify(saveWorkspaceState(spaces[name])),
+        undoSize: (name) => spaces[name].getUndoStack().length,
+        reveal: (name, id) => revealBlockInWorkspace(spaces[name], id, false, { transient: true }),
+        center: (name, id) => spaces[name].centerOnBlock(id, true),
+        /** Centraliza e devolve, na MESMA tarefa (antes de a rolagem desenhar algo), quem ficou adiado. */
+        centerAndDeferred(name, id, ids) {
+          spaces[name].centerOnBlock(id, true);
+          return ids.map((other) => isDeferredBlock(block(name, other)));
+        },
+        setCollapsed: (name, id, collapsed) => block(name, id).setCollapsed(collapsed),
+        /** "Organizar blocos" e a foto dos blocos: desenhar tudo o que falta. */
+        drawAll: (name) => drawDeferredBlocks(spaces[name]),
+        /** O painel cresce (mais vista, sem rolar). */
+        resize(name, height) {
+          document.getElementById(name).style.height = height + 'px';
+          Blockly.svgResize(spaces[name]);
+        },
+        scrollToEnd(name) {
+          const ws = spaces[name];
+          for (let i = 0; i < 60; i++) ws.scroll(ws.scrollX, ws.scrollY - 600);
+        },
+        scrollToTop(name) {
+          const ws = spaces[name];
+          for (let i = 0; i < 60; i++) ws.scroll(ws.scrollX, ws.scrollY + 600);
+        },
+        /** Liga o recorte dos corpos longe da vista (o editor liga a partir de 1.500 blocos). */
+        offscreen(name) { createOffscreenBodies(spaces[name], { minBlocks: 0 }); },
+        /** O desenho do bloco está na página? */
+        inPage: (name, id) => block(name, id).getSvgRoot().isConnected,
+        /** Os blocos à vista que divergem do caminho normal, e as conexões adiadas no banco. */
+        compare(name) {
+          const ws = spaces[name], normal = spaces.normal;
+          const tracked = Blockly.RenderedConnection.TrackedState.TRACKED;
+          const geometry = [];
+          let trackedDeferred = 0;
+          // Desenhados, mas dentro de um bloco recolhido: no caminho do Blockly, fora do banco.
+          let trackedHidden = 0;
+          for (const b of ws.getAllBlocks(false)) {
+            if (isDeferredBlock(b)) {
+              if (b.getConnections_(true).some((c) => c.trackedState === tracked)) trackedDeferred++;
+              continue;
+            }
+            if (!visible(b)) {
+              if (b.getConnections_(true).some((c) => c.trackedState === tracked)) trackedHidden++;
+              continue;
+            }
+            if (!b.getParent()) continue;
+            const other = normal.getBlockById(b.id);
+            const p = b.getRelativeToSurfaceXY(), q = other.getRelativeToSurfaceXY();
+            // Com corpo adiado dentro, a altura fecha no último desenhado (como a área com cauda).
+            const next = b.getNextBlock();
+            const bodyDeferred = b.getChildren(false)
+              .some((c) => c !== next && c.getDescendants(false).some((d) => isDeferredBlock(d)));
+            const height = bodyDeferred ? 0 : Math.abs(b.height - other.height);
+            if (Math.abs(p.x - q.x) > 0.01 || Math.abs(p.y - q.y) > 0.01 ||
+                Math.abs(b.width - other.width) > 0.01 || height > 0.01)
+              geometry.push(b.id);
+          }
+          const deferredInPage = ws.getAllBlocks(false)
+            .filter((b) => isDeferredBlock(b) && b.getSvgRoot().isConnected && visible(b)).length;
+          return { geometry, trackedDeferred, trackedHidden, deferredInPage };
+        },
+      };
+    `,
+  },
+  bundle: true,
+  write: false,
+  format: 'iife',
+  platform: 'browser',
+}).outputFiles[0]?.text
+
+async function openBoth(page: Page, longBody = 0) {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  if (!bundle) throw new Error('The collapsed reveal fixture was not compiled')
+  await page.setContent(
+    '<div id="normal" style="width:800px;height:600px"></div><div id="adiado" style="width:800px;height:600px"></div>',
+  )
+  await page.addScriptTag({ content: bundle })
+  const opened = await page.evaluate(async (longBody) => {
+    const r = (window as unknown as { __reveal: Record<string, (...a: unknown[]) => unknown> })
+      .__reveal
+    const normal = await r.open?.('normal', false, longBody)
+    const adiado = await r.open?.('adiado', true, longBody)
+    return { normal, adiado, alvoAdiado: r.isDeferred?.('adiado', 'c40_15') }
+  }, longBody)
+  expect(opened).toEqual({ normal: false, adiado: true, alvoAdiado: true })
+  return errors
+}
+
+type Reveal = { [name: string]: (...args: unknown[]) => unknown }
+const call = (page: Page, fn: string, ...args: unknown[]) =>
+  page.evaluate(
+    ([fn, args]) =>
+      (window as unknown as { __reveal: Reveal }).__reveal[fn as string]?.(...(args as unknown[])),
+    [fn, args] as const,
+  )
+
+test('mostrar um bloco dentro de uma função recolhida da cauda desenha pouco e não muda o projeto', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  const before = await call(page, 'state', 'adiado')
+  expect(await call(page, 'state', 'normal')).toBe(before)
+  // Desenhar a cauda não é editar: o rótulo da forma recolhida, refeito no desenho depois da
+  // carga, não pode entrar no desfazer (nem acordar a regeneração e o salvamento).
+  expect(await call(page, 'undoSize', 'adiado')).toBe(0)
+  expect(await call(page, 'undoSize', 'normal')).toBe(0)
+  await call(page, 'resetRenders')
+  expect(await call(page, 'reveal', 'adiado', 'c40_15')).toBe(true)
+  expect(await call(page, 'reveal', 'normal', 'c40_15')).toBe(true)
+  await call(page, 'settle')
+  const drawn = (await call(page, 'renders', 'adiado')) as number
+  console.log(`[mostrar na função recolhida] blocos desenhados no gesto: ${drawn}`)
+  // Antes: o desenho descia pelos corpos escondidos das 40 funções acima (mais de 1.200 blocos).
+  // Agora: as 41 funções como recolhidas, o corpo da que abriu e a área.
+  expect(drawn).toBeLessThan(120)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  // Abrir para mostrar não é edição: nada no desfazer e o estado salvo é o de antes.
+  expect(await call(page, 'undoSize', 'adiado')).toBe(0)
+  expect(await call(page, 'state', 'adiado')).toBe(before)
+  expect(await call(page, 'state', 'normal')).toBe(before)
+  expect(errors).toEqual([])
+})
+
+test('depois de mostrar, rolar até o fim completa a cauda com a geometria exata', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  await call(page, 'reveal', 'adiado', 'c40_15')
+  await call(page, 'reveal', 'normal', 'c40_15')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('a criança abre outra função recolhida e recolhe a mostrada: o corpo aparece no lugar e o estado segue o gesto dela', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_15')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  // Abrir uma função cujo corpo nunca foi desenhado, e recolher a que só foi mostrada.
+  for (const name of ['adiado', 'normal']) {
+    await call(page, 'setCollapsed', name, 'u45', false)
+    await call(page, 'setCollapsed', name, 'u40', true)
+  }
+  await call(page, 'settle')
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  const state = (await call(page, 'state', 'adiado')) as string
+  expect(await call(page, 'state', 'normal')).toBe(state)
+  // A 45 ficou aberta (gesto dela) e a 40 recolhida.
+  const parsed = JSON.parse(state)
+  const ids: Record<string, boolean> = {}
+  const walk = (node: { id?: string; collapsed?: boolean; next?: { block?: unknown } }) => {
+    if (node.id) ids[node.id] = node.collapsed === true
+    if (node.next?.block) walk(node.next.block as typeof node)
+  }
+  walk(parsed.blocks.blocks[0].inputs.CHILDREN.block)
+  expect(ids.u45).toBe(false)
+  expect(ids.u40).toBe(true)
+  expect(errors).toEqual([])
+})
+
+test('abrir uma função recolhida que ainda não foi desenhada não liga as conexões dela no banco', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  // A u48 está na cauda, longe da vista: abrir por programa (desfazer de um "recolher", o
+  // "abrir todos") não pode pôr no banco as conexões do corpo, ainda sem desenho e sem lugar.
+  expect(await call(page, 'isDeferred', 'adiado', 'u48')).toBe(true)
+  await call(page, 'setCollapsed', 'adiado', 'u48', false)
+  await call(page, 'settle')
+  expect(await call(page, 'isDeferred', 'adiado', 'u48')).toBe(true)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('mostrar um bloco perto do começo de um corpo comprido desenha só até ele e mais uma tela e meia', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page, 300)
+  await call(page, 'resetRenders')
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_10')
+  await call(page, 'settle')
+  const drawn = (await call(page, 'renders', 'adiado')) as number
+  console.log(`[corpo comprido] blocos desenhados no gesto: ${drawn}`)
+  // Sem o corte, o corpo inteiro da função (300 blocos) seria desenhado.
+  expect(drawn).toBeLessThan(150)
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_200')).toBe(true)
+  expect(await call(page, 'isDeferred', 'adiado', 'u41')).toBe(true)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('rolar depois de mostrar no corpo comprido completa o corpo antes da unidade seguinte, com a geometria exata', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page, 300)
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_10')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_299')).toBe(false)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('centralizar num bloco escondido numa função recolhida, sem abri-la, desenha só até a função', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  // O cursor do código e o `select` chegam por aqui sem abrir a função. A função que contém o alvo
+  // é desenhada (recolhida); o alvo segue no corpo escondido, e a cauda depois dela não é desenhada
+  // à procura dele (a rolagem ainda desenha o que ficar perto da vista, depois).
+  expect(
+    await call(page, 'centerAndDeferred', 'adiado', 'c40_15', ['u40', 'c40_15', 'u44', 'u49']),
+  ).toEqual([false, true, true, true])
+  await call(page, 'settle')
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('recolher a função depois de mostrar no corpo comprido: o resto do corpo fica adiado e fora do banco até ela abrir', async ({
+  page,
+}) => {
+  test.setTimeout(120_000)
+  const errors = await openBoth(page, 300)
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c40_10')
+  await call(page, 'settle')
+  // A criança fecha a função mostrada e segue: seleciona a unidade de baixo e rola até o fim.
+  for (const name of ['adiado', 'normal']) await call(page, 'setCollapsed', name, 'u40', true)
+  await call(page, 'center', 'adiado', 'u41')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  // A vista cresce até alcançar a posição antiga do corpo escondido, e "Organizar blocos" desenha
+  // o que falta: nada disso desenha o corpo de uma função recolhida.
+  await call(page, 'resize', 'adiado', 2400)
+  await call(page, 'settle')
+  await call(page, 'settle')
+  await call(page, 'drawAll', 'adiado')
+  await call(page, 'settle')
+  // O resto do corpo escondido não foi desenhado, e nada escondido encaixa.
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_200')).toBe(true)
+  expect(await call(page, 'isDeferred', 'adiado', 'u49')).toBe(false)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  // Ela abre a função de novo: o corpo aparece inteiro, no lugar, e encaixa.
+  for (const name of ['adiado', 'normal']) await call(page, 'setCollapsed', name, 'u40', false)
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  expect(await call(page, 'isDeferred', 'adiado', 'c40_299')).toBe(false)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})
+
+test('mostrar numa função lá de baixo depois de voltar ao alto: o corpo é desenhado dentro da página', async ({
+  page,
+}) => {
+  // Full review final: a partir de 1.500 blocos o editor tira da página o corpo dos blocos longe
+  // da vista (`offscreenBodies`), inclusive o corpo escondido de uma função recolhida já desenhada.
+  // Abrir essa função desenhava o corpo FORA da página, e o texto era medido sem a fonte dele.
+  test.setTimeout(120_000)
+  const errors = await openBoth(page)
+  await call(page, 'offscreen', 'adiado')
+  // As funções da cauda são desenhadas recolhidas, com os corpos escondidos adiados (o "Organizar
+  // blocos" faz isso; rolar até o fim também, aos poucos), e a criança volta ao alto.
+  await call(page, 'drawAll', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'scrollToEnd', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'scrollToTop', 'adiado')
+  await call(page, 'settle')
+  await call(page, 'settle')
+  // O corpo escondido da função 45 saiu da página (sem isto o caso não prova nada).
+  expect(await call(page, 'isDeferred', 'adiado', 'u45')).toBe(false)
+  expect(await call(page, 'inPage', 'adiado', 'c45_0')).toBe(false)
+  await call(page, 'resetRenders')
+  for (const name of ['adiado', 'normal']) await call(page, 'reveal', name, 'c45_10')
+  await call(page, 'settle')
+  // Nenhum bloco do corpo foi desenhado fora da página.
+  expect(await call(page, 'renders', 'adiado')).toBeGreaterThan(0)
+  expect(await call(page, 'outOfPage', 'adiado')).toBe(0)
+  expect(await call(page, 'inPage', 'adiado', 'c45_0')).toBe(true)
+  expect(await call(page, 'inPage', 'adiado', 'c45_10')).toBe(true)
+  expect(await call(page, 'compare', 'adiado')).toEqual({
+    geometry: [],
+    trackedDeferred: 0,
+    trackedHidden: 0,
+    deferredInPage: 0,
+  })
+  expect(errors).toEqual([])
+})

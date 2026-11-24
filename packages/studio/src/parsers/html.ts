@@ -194,6 +194,31 @@ export function extractInlineAssets(
   styleCss: string,
   scriptJs: string,
 ): InlineAssetsResult {
+  return extractAssets(indexHtml, styleCss, scriptJs, true)
+}
+
+/** Recover document wiring without rebuilding the body IR or parsing CSS/JS. */
+export function extractInlineAssetMetadata(
+  indexHtml: string,
+  styleCss: string,
+  scriptJs: string,
+): Omit<InlineAssetsResult, 'html'> {
+  const result = extractAssets(indexHtml, styleCss, scriptJs, false)
+  return {
+    htmlShell: result.htmlShell,
+    cssSource: result.cssSource,
+    jsSource: result.jsSource,
+    cssPlacement: result.cssPlacement,
+    jsPlacement: result.jsPlacement,
+  }
+}
+
+function extractAssets(
+  indexHtml: string,
+  styleCss: string,
+  scriptJs: string,
+  includeBody: boolean,
+): InlineAssetsResult {
   if (!indexHtml.trim()) {
     return {
       html: [],
@@ -255,7 +280,7 @@ export function extractInlineAssets(
       }
     }
 
-    const html = parseBodyNodes(doc)
+    const html = includeBody ? parseBodyNodes(doc) : []
     const baseShell = extractShellFromDoc(doc, indexHtml)
     const shell: HTMLShell = { ...(baseShell ?? {}) }
     if (cssPlacement !== 'external') shell.cssPlacement = cssPlacement
@@ -264,7 +289,10 @@ export function extractInlineAssets(
     const htmlShell = Object.keys(shell).length > 0 ? shell : undefined
 
     return { html, htmlShell, cssSource, jsSource, cssPlacement, jsPlacement }
-  } catch {
+  } catch (error) {
+    // A missing shell must not be mistaken for the default document during
+    // recovery. The caller must preserve the saved files and report failure.
+    if (!includeBody) throw error
     return {
       html: [{ type: 'rawHTML', html: indexHtml, advanced: true }],
       htmlShell: undefined,

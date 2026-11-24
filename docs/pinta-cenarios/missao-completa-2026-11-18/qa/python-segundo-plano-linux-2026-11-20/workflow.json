@@ -1,0 +1,10 @@
+{
+  "source": "fb973c50fbf61fbca2cb955321e8aafca46c459c",
+  "previous": "6c4b5029928bddf089f0f4c15033190505fe0ec7",
+  "previousHead": "709891a42963a131b18fdf92ca0851df5471843c",
+  "artifact": "pinta-staging-runtime-image-fb973c50f",
+  "workflow": ".github/workflows/pinta-runtime-image-20261119.yml",
+  "workflowCommit": "58cf486a7ae5a9d13b5fcfa16693f8dc47b188d8",
+  "profile": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a",
+  "activated": false
+}

@@ -1,5 +1,9 @@
 'use client'
 
+import {
+  PINTA_INVENTORY_READER_VERSION,
+  PINTA_MAX_READ_FORMAT_VERSION,
+} from '@sistemazero/core/creations'
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -9,6 +13,7 @@ import type {
   PintaInitialCanvas,
   PintaInitialIntent,
 } from '@sistemazero/pinta'
+import type { PintaWorkshopAsset } from '@sistemazero/pinta/assets'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -21,9 +26,12 @@ import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
 } from '../../lib/pinta-cloud-persistence'
+import { pintaRecoveryHelpFor } from '../../lib/pinta-recovery-help'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
+import { usePintaAccount } from './pinta-account-scope'
+import { savePintaStudioBundle } from './save-pinta-studio-bundle'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -35,6 +43,25 @@ import {
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
 type PintaModule = typeof import('@sistemazero/pinta')
+
+/**
+ * Regiões do Pinta (23/11/2026, etapa 1): o leitor e o escritor da conta que a oficina anuncia.
+ * Nuvem 7 = nativo 8 (regiões). Nuvem 8 (autorregras e projeções) ainda não está pronta e não é
+ * anunciada; por isso a oficina deste host grava no máximo o nativo 8.
+ */
+export const PINTA_REGIONS_CLOUD_FORMAT = 7 as const
+if (PINTA_REGIONS_CLOUD_FORMAT > PINTA_INVENTORY_READER_VERSION)
+  throw new Error('O leitor regional do Pinta passa do leitor negociado pelo serviço.')
+
+type PintaLoad =
+  | {
+      key: string
+      status: 'ready'
+      mod: PintaModule
+      cloud: CreationsCloud | null
+      persistence: PintaPersistenceLike<PintaWorkshopAsset>
+    }
+  | { key: string; status: 'error' }
 
 /**
  * O resultado da volta da ponte, COM o motivo (o mesmo contrato do Molda; o do Pinta está sendo
@@ -67,12 +94,18 @@ export function PintaClient({
   /** O molde de um objeto do Arquipélago: o Pinta abre (ou reabre) a planificação dele. */
   initialCanvas?: PintaInitialCanvas
 }) {
+  // A conta do Pinta (fila causal e paletas negociadas) vale para todo aluno desde 23/11/2026, sem
+  // flag: o escopo vem do servidor (`PintaAccountSession`) e cobre também o Pinta do Arquipélago.
+  const account = usePintaAccount(viewerId, audience)
   const localNamespace = creatorStorageNamespace(viewerId, audience)
-  const [mod, setMod] = useState<PintaModule | null>(null)
-  const [loadError, setLoadError] = useState(false)
-  // "Guardado na sua conta": a fila da nuvem (uma por montagem, por perfil) e o
-  // armazenamento local EMBRULHADO no espelho — o pacote continua sem backend.
-  const [cloud, setCloud] = useState<CreationsCloud | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  const loadKey = JSON.stringify([viewerId, audience, attempt, account])
+  const [load, setLoad] = useState<PintaLoad | null>(null)
+  const current = load?.key === loadKey ? load : null
+  const session = current?.status === 'ready' ? current : null
+  const mod = session?.mod ?? null
+  const cloud = session?.cloud ?? null
+  const persistence = session?.persistence ?? null
   const pintaControl = useRef<PintaCompletionControl | null>(null)
   const registrarControle = useCallback((controle: PintaCompletionControl | null) => {
     pintaControl.current = controle
@@ -83,15 +116,16 @@ export function PintaClient({
       async concluir() {
         if (!pintaControl.current || !cloud)
           throw new Error('O Pinta ainda não está pronto para guardar a criação')
-        return concluirPinta(pintaControl.current, cloud)
+        return concluirPinta(pintaControl.current, persistence?.accountConfirmation ?? cloud)
       },
     })
     return () => onCompletionControlChange(null)
-  }, [cloud, onCompletionControlChange])
+  }, [cloud, onCompletionControlChange, persistence])
 
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
-  const [syncing, setSyncing] = useState(false)
-  const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
+  const [syncingSession, setSyncingSession] =
+    useState<PintaPersistenceLike<PintaWorkshopAsset> | null>(null)
+  const syncing = persistence !== null && syncingSession === persistence
   const router = useRouter()
   const { setWorkspaceActive } = useFocusMode()
   // O Pinta SEGUE a plataforma (hoje só claro) — sem toggle próprio.
@@ -118,79 +152,98 @@ export function PintaClient({
     if (initialAssetId && !taskId) router.replace('/pinta')
   }, [initialAssetId, taskId, router])
 
-  const loadPinta = useCallback(
-    async (isCurrent?: () => boolean) => {
-      setMod(null)
-      setLoadError(false)
+  useEffect(() => {
+    let retired = false
+    let cloud: CreationsCloud | null = null
+    let persistence: PintaPersistenceLike<PintaWorkshopAsset> | null = null
+    async function loadWorkshop() {
       try {
         const m = await import('@sistemazero/pinta')
+        if (retired) return
         // Namespace por PERFIL ANTES de montar (mesmo contrato do /estudio):
         // irmãos no mesmo navegador não compartilham a galeria.
         m.setPintaStorageNamespace(localNamespace)
-        if (isCurrent && !isCurrent()) return
-        // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Pinta abre
-        // como sempre (só local).
-        if (viewerId) {
-          // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
-          // trocou de perfil (irmão que entrou no meio de um upload em voo).
-          const nextCloud = createCreationsCloud({ tool: 'pinta', viewerId })
-          // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
-          // updater: efeito colateral em updater roda duas vezes no StrictMode).
-          setCloud(nextCloud)
-          setPersistence(
-            createCloudMirroredPintaPersistence({
-              local: m.createPintaPersistence({ namespace: localNamespace }),
-              cloud: nextCloud,
+        if (!viewerId) {
+          // Sem conta: a oficina regional só neste aparelho, com o teto nativo 8.
+          const workshop = await import('@sistemazero/pinta/workshop-reader')
+          if (retired) return
+          persistence = workshop.createWorkshopPintaPersistence({
+            namespace: localNamespace,
+            nativeCeiling: 8,
+          })
+        } else {
+          cloud = createCreationsCloud({
+            tool: 'pinta',
+            maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION,
+            viewerId,
+            audience,
+            pintaPaletteWriteEnabled: !!account,
+            pintaCausalEnabled: !!account,
+            pintaCausalReader: PINTA_REGIONS_CLOUD_FORMAT,
+          })
+          if (cloud.pintaCausal) {
+            // A oficina regional: o mesmo IndexedDB do perfil e a mesma fila V4, com o teto
+            // nativo 8 (o nativo 9 ainda não está pronto e não é anunciado).
+            const workshop = await import('@sistemazero/pinta/workshop-reader')
+            if (retired) return
+            const regional = workshop.createWorkshopPintaPersistence({
+              namespace: localNamespace,
+              guardCausalWrites: true,
+              nativeCeiling: 8,
+            })
+            persistence = createCloudMirroredPintaPersistence({
+              local: regional,
+              cloud,
               viewerId,
               localNamespace,
-              // A descida não grava por baixo de um desenho ABERTO no editor — e, ao fechar um
-              // que ficou pulado, traz a versão da nuvem na hora.
               isAssetOpen: m.isPintaAssetOpen,
               subscribeAssetOpenState: m.subscribePintaAssetOpenState,
-            }),
-          )
+              causal: {
+                local: regional.causal,
+                reader: PINTA_REGIONS_CLOUD_FORMAT,
+                writer: PINTA_REGIONS_CLOUD_FORMAT,
+                holdOpen: (id) => m.holdPintaEditorLock(localNamespace, id),
+                withClosed: (ids, apply) => m.withClosedPintaEditors(localNamespace, ids, apply),
+              },
+            })
+          } else {
+            // Sem a fila causal (suporte em modo leitura, navegador sem gzip/SHA-256, servidor sem
+            // storage), a nuvem antiga declararia nuvem 6 para um documento nativo 8: a conta fica
+            // no armazenamento de sempre, e um regional deste aparelho vira aviso.
+            persistence = createCloudMirroredPintaPersistence({
+              local: m.createPintaPersistence({ namespace: localNamespace }),
+              cloud,
+              viewerId,
+              localNamespace,
+              isAssetOpen: m.isPintaAssetOpen,
+              subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+            })
+          }
         }
-        setMod(m)
+        setLoad({ key: loadKey, status: 'ready', mod: m, cloud, persistence })
       } catch {
-        if (isCurrent && !isCurrent()) return
-        setLoadError(true)
+        if (retired) return
+        setLoad({ key: loadKey, status: 'error' })
       }
-    },
-    [viewerId, localNamespace],
-  )
-
-  useEffect(() => {
-    let active = true
-    void loadPinta(() => active)
-    return () => {
-      active = false
     }
-  }, [loadPinta])
-
-  // Ao sair da página (ou trocar de fila), o que estiver pendente sobe INTEIRO e só
-  // então a fila fecha: `dispose()` antes do fim do `flush` deixava só um item subir.
-  // A troca de perfil no meio é barrada pelo BFF (`x-sz-viewer` ≠ sessão → 409).
-  useEffect(() => {
-    if (!cloud) return
+    void loadWorkshop()
     return () => {
-      // Com teto: sem internet a fila espera o backoff e a antiga nunca fecharia (idas e
-      // vindas na SPA acumulavam filas vivas). O que ficar sobe na próxima carga (reconcilia).
-      void cloud.flush({ timeoutMs: 5000 }).finally(() => cloud.dispose())
+      retired = true
+      persistence?.dispose?.()
+      // The old profile's documents and outbox stay in its database for the next session.
+      cloud?.dispose({ abort: true })
     }
-  }, [cloud])
+  }, [audience, loadKey, localNamespace, account, viewerId])
 
   // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
   // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.
   useEffect(() => {
     if (!persistence) return
-    const unsubscribe = persistence.subscribe?.((event) => {
-      if (event.type === 'sync-start') setSyncing(true)
-      else if (event.type === 'sync-end') setSyncing(false)
+    return persistence.subscribe?.((event) => {
+      if (event.type === 'sync-start') setSyncingSession(persistence)
+      else if (event.type === 'sync-end')
+        setSyncingSession((active) => (active === persistence ? null : active))
     })
-    return () => {
-      unsubscribe?.()
-      persistence.dispose?.()
-    }
   }, [persistence])
 
   // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
@@ -246,8 +299,7 @@ export function PintaClient({
         ? {
             sendToStudio: async (asset) => {
               const namespace = localNamespace
-              const bridge = await import('@sistemazero/studio/personal-assets')
-              return bridge.savePersonalAsset(asset, { namespace })
+              return savePintaStudioBundle(asset, namespace)
             },
           }
         : {}),
@@ -262,7 +314,7 @@ export function PintaClient({
         if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) {
           return { updated: false, reason: 'not-linked' }
         }
-        const result = await bridge.savePersonalAsset(asset, { namespace })
+        const result = await savePintaStudioBundle(asset, namespace)
         if (!result.ok) {
           // O motivo VIAJA (o pacote mostra o recado): antes a recusa da biblioteca morria num
           // `updated: false` mudo, igual ao "nunca foi levado", e a criança não sabia por quê.
@@ -280,16 +332,22 @@ export function PintaClient({
       ...(studioAvailable
         ? {
             sendGameToStudio: async (asset) => {
-              if (!asset.tilemap) return { ok: false }
+              if (!asset.tilemap && !asset.scene) return { ok: false }
+              const saved = await savePintaStudioBundle(asset, localNamespace)
+              if (!saved.ok) return { ok: false, error: saved.error }
               const studio = await import('@sistemazero/studio')
               studio.setStudioStorageNamespace(localNamespace)
               const project = await studio.buildTilemapGameProject({
-                name: asset.name,
+                id: asset.id,
+                libRevision: saved.asset.libRevision,
+                name: saved.asset.name,
                 dataUrl: asset.dataUrl,
                 width: asset.width,
                 height: asset.height,
                 tilemap: asset.tilemap,
                 tilemapFront: asset.tilemapFront,
+                scene: asset.scene,
+                maps: saved.asset.maps,
               })
               if (!project) return { ok: false }
               router.push('/estudio')
@@ -323,6 +381,10 @@ export function PintaClient({
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
   // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.
   const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
+  // O "Preciso de ajuda" do aviso de recuperação da galeria: o canal de recados do aluno, ligado
+  // só com a conta do Pinta dele (o aviso só existe com a nuvem da conta).
+  const help = useMemo(() => pintaRecoveryHelpFor(account), [account])
+  const pintaChrome = useMemo(() => ({ ...hostChrome, help }), [hostChrome, help])
 
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
@@ -350,13 +412,13 @@ export function PintaClient({
           reason={handoff.availability.message}
           onBackToPlan={() => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`)}
         />
-      ) : loadError ? (
+      ) : current?.status === 'error' ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
             <p className="font-semibold">Não consegui carregar o Pinta.</p>
             <button
               type="button"
-              onClick={() => void loadPinta()}
+              onClick={() => setAttempt((value) => value + 1)}
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
             >
               <RefreshCw className="size-4" /> Tentar de novo
@@ -374,11 +436,15 @@ export function PintaClient({
           <HostChromeAnnouncer text={announcement} />
           {/* O wrapper dá ao `h-full` do Pinta uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.PintaHostChromeProvider value={hostChrome}>
+            <mod.PintaHostChromeProvider value={pintaChrome}>
               <mod.PintaApp
-                key={handoff?.mission.id ?? 'free'}
+                key={`${loadKey}:${handoff?.mission.id ?? 'free'}`}
                 adapter={adapter}
-                onCompletionControlChange={registrarControle}
+                // Só a missão que conclui pela oficina (Arquipélago) pede o controle; sem ela, a
+                // galeria pode abrir o cenário grande pela janela focal.
+                {...(onCompletionControlChange
+                  ? { onCompletionControlChange: registrarControle }
+                  : {})}
                 onWorkspaceChange={setWorkspaceActive}
                 {...(persistence ? { persistence } : {})}
               />

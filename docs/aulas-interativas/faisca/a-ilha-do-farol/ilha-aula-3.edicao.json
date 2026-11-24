@@ -16,5 +16,61 @@
     "video-personalizar",
     "video-fecho"
   ],
-  "intervencoes": []
+  "intervencoes": [
+    {
+      "id": "video-sem-chave-K1",
+      "clipe": "video-sem-chave",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "no x e escolha temChave. Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?",
+      "ancoraDepois": "Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A",
+      "falaPrincipal": "E onde eu escrevo que falta a chave?",
+      "falaPersonagem": "E onde eu escrevo que falta a chave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-decisao-K1",
+      "clipe": "video-decisao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro. Solte em cima do número e deixe em verdadeiro.",
+      "ancoraDepois": "Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo do bloco de ganhou, ainda dentro do",
+      "falaPrincipal": "E quem está jogando vai saber que deu certo?",
+      "falaPersonagem": "E quem está jogando vai saber que deu certo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-pergunta-com-nao-K1",
+      "clipe": "video-pergunta-com-nao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "uma palavrinha de diferença. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a palavra não faz com a resposta",
+      "falaPrincipal": "Com o não na pergunta, o que a porta faz?",
+      "falaPersonagem": "Com o não na pergunta, o que a porta faz?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-uma-vez-K1",
+      "clipe": "video-uma-vez",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o farol. Depois ande um pouco para trás pelo cais e volte até o farol. Tá vendo? A luz apagou e acendeu tudo de novo.",
+      "ancoraDepois": "Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez. Sabe o apito",
+      "falaPrincipal": "Ué, por que a luz acendeu de novo?",
+      "falaPersonagem": "Ué, por que a luz acendeu de novo?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-fecho-K1",
+      "clipe": "video-fecho",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "terminar. Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.",
+      "ancoraDepois": "Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se",
+      "falaPrincipal": "E para mostrar o jogo para alguém?",
+      "falaPersonagem": "E para mostrar o jogo para alguém?",
+      "tags": ["[curious]"]
+    }
+  ]
 }

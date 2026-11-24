@@ -1,4 +1,9 @@
 import { createStore } from 'idb-keyval'
+import {
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
+} from '../core/pintaRegionalReference'
+import { captureExitJournalStorage } from './synchronousExitJournalProbe'
 
 export const GAME_STORAGE_KEY_PREFIX = 'sz:game-storage:'
 export const gameStorageKey = (projectId: string): string =>
@@ -8,6 +13,7 @@ export interface ProjectStorageScope {
   readonly namespace: string
   readonly identity: string
   readonly store: ReturnType<typeof createStore>
+  readonly exitJournalStorage?: Storage
   /** Active-profile lifetime; captured storage operations may still finish in their own store. */
   readonly signal?: AbortSignal
 }
@@ -38,6 +44,26 @@ export function getProjectStorageScope(namespace: string): ProjectStorageScope {
   return scope
 }
 
+const PRIVATE_REGIONAL_SCOPE = /^pinta-regional-local:[a-z0-9-]{1,48}$/
+
+export function isPrivateRegionalProjectScope(scope: ProjectStorageScope) {
+  return (
+    PRIVATE_REGIONAL_SCOPE.test(scope.namespace) && scope.identity === databaseName(scope.namespace)
+  )
+}
+
+export function regionalProjectReadOptions(
+  scope: ProjectStorageScope,
+): PrivateRegionalProjectReadOptions {
+  return isPrivateRegionalProjectScope(scope) ? { [PRIVATE_REGIONAL_PROJECT]: scope } : {}
+}
+
+export function privateRegionalProjectScope(profile: string): ProjectStorageScope {
+  const namespace = `pinta-regional-local:${profile}`
+  if (!PRIVATE_REGIONAL_SCOPE.test(namespace)) throw new Error('Perfil de teste local inválido.')
+  return getProjectStorageScope(namespace)
+}
+
 /** Cria um scope imutável sem depender do perfil global ativo. */
 export function createProjectStorageScope(namespace: string): ProjectStorageScope {
   const normalized = namespace.trim()
@@ -46,6 +72,7 @@ export function createProjectStorageScope(namespace: string): ProjectStorageScop
     namespace: normalized,
     identity,
     store: createStore(identity, 'kv'),
+    exitJournalStorage: captureExitJournalStorage(),
   })
 }
 

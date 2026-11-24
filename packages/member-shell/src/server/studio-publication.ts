@@ -3,19 +3,29 @@ import { createHash } from 'node:crypto'
 import { canonicalJson } from '@sistemazero/core/creations'
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
+  isStudioClassicPublication,
+  isStudioProjectId,
   isStudioProPublication,
   isStudioPublication,
   isStudioPublicationId,
   isStudioPythonPublication,
   STUDIO_PRO_PUBLICATION_LIMITS,
+  type StudioClassicPublication,
   type StudioProPublication,
   type StudioPublication,
   type StudioPythonPublication,
 } from '@sistemazero/core/studio'
+import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta-image'
+import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
+import {
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_WORLD_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import type {
   StudioPublicationRuntimeDecision,
   StudioRuntimeCandidate,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import type { EditableStudioProject, Project, PythonProjectDocument } from '@sistemazero/studio'
 import { isCourseModelLibId } from '@sistemazero/studio/course-models'
@@ -32,16 +42,34 @@ import {
 
 /** The selected Python release does not declare `publish`, or this context does not grant it. */
 export const STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED = 'RUNTIME_PUBLISH_NOT_ALLOWED'
+export const STUDIO_PINTA_READER_OUTDATED = 'RUNTIME_PINTA_READER_OUTDATED'
 
 export class StudioPublicationError extends Error {
   constructor(
     readonly status: number,
     message: string,
     /** Specific public error code; callers fall back to their generic publication code. */
-    readonly code?: typeof STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
+    readonly code?: typeof STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED | typeof STUDIO_PINTA_READER_OUTDATED,
   ) {
     super(message)
   }
+}
+
+/** Capture this requirement before stripping private recipe/provenance for publication. */
+type PintaRuntimeFeature = NonNullable<ReturnType<typeof pintaImageRequiredRuntimeFeature>>
+export function studioRequiredPintaRuntimeFeatures(
+  project: EditableStudioProject,
+): PintaRuntimeFeature[] {
+  if (project.programmingLanguage !== 'python') return []
+  const required = new Set<PintaRuntimeFeature>()
+  for (const asset of project.assets ?? []) {
+    const feature = asset.pintaImage && pintaImageRequiredRuntimeFeature(asset.pintaImage)
+    if (feature) required.add(feature)
+  }
+  return [...required]
+}
+export function studioRequiresPintaSceneReader(project: EditableStudioProject): boolean {
+  return studioRequiredPintaRuntimeFeatures(project).length > 0
 }
 
 /** Publish game content, never private tutoring notes or links to the author's workspace. */
@@ -49,6 +77,7 @@ export function studioPublicProject(project: Project): Project
 export function studioPublicProject(project: PythonProjectDocument): PythonProjectDocument
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject
 export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
+  assertLegacyStudioProjectMaterials(project)
   const assets = project.assets?.map(
     // The published image is detached from the author's private Pinta recipe/provenance.
     // A course model keeps its library reference: it is public course art, and without it
@@ -87,6 +116,7 @@ type PublicationResponse =
   | { source: string; publication: StudioPublication }
   | { png: string }
   | { deleted: true }
+  | { exists: boolean; disabled: boolean }
   | null
 export async function callStudioPublication(
   body: Record<string, unknown>,
@@ -142,6 +172,16 @@ export async function callStudioPublication(
     value.deleted === true
   )
     return { deleted: true }
+  if (
+    body.operation === 'resolve-status' &&
+    value &&
+    typeof value === 'object' &&
+    'exists' in value &&
+    typeof value.exists === 'boolean' &&
+    'disabled' in value &&
+    typeof value.disabled === 'boolean'
+  )
+    return { exists: value.exists, disabled: value.disabled }
   if (
     value &&
     typeof value === 'object' &&
@@ -249,6 +289,9 @@ export async function publishStudioProRevision(options: {
  */
 export async function publishStudioPythonRevision(options: {
   project: PythonProjectDocument
+  /** Server-only requirement captured from the private validated project, never a request flag. */
+  requiresPintaSceneReader?: boolean
+  requiredPintaRuntimeFeatures?: readonly PintaRuntimeFeature[]
   playId: string
   owner: string
   requestId: string
@@ -258,6 +301,10 @@ export async function publishStudioPythonRevision(options: {
   signal?: AbortSignal
 }): Promise<StudioPythonPublication> {
   options.signal?.throwIfAborted()
+  const capturedPintaFeatures: PintaRuntimeFeature[] = [
+    ...(options.requiredPintaRuntimeFeatures ?? []),
+    ...(options.requiresPintaSceneReader ? [PYTHON_PINTA_WORLD_FEATURE] : []),
+  ]
   // Validate private metadata and byte hashes before the deliberate privacy projection.
   const original = await prepareEditableStudioProject(options.project)
   if (original?.programmingLanguage !== 'python')
@@ -299,6 +346,28 @@ export async function publishStudioPythonRevision(options: {
       'O ambiente Python deste projeto ainda não permite publicar no Mural.',
       STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
     )
+  const requiredPintaFeatures = new Set<PintaRuntimeFeature>([
+    ...studioRequiredPintaRuntimeFeatures(original),
+    ...capturedPintaFeatures,
+  ])
+  const availablePintaFeatures =
+    selectStudioRuntimeRelease(decision.catalog, project.runtime)?.manifest.python?.features ?? []
+  if ([...requiredPintaFeatures].some((feature) => !availablePintaFeatures.includes(feature)))
+    throw new StudioPublicationError(
+      409,
+      'O ambiente deste projeto precisa ser atualizado para publicar este cenário. O mapa e o programa foram preservados.',
+      STUDIO_PINTA_READER_OUTDATED,
+    )
+  // O cenário do Molda só abre num ambiente que traz o leitor de cenas (`cenario.py`).
+  if (
+    original.assets?.some((asset) => asset.kind === 'scene3d') &&
+    !availablePintaFeatures.includes(PYTHON_MOLDA_SCENE_FEATURE)
+  )
+    throw new StudioPublicationError(
+      409,
+      'O ambiente deste projeto precisa ser atualizado para publicar este cenário 3D. Os materiais e o programa foram preservados.',
+      STUDIO_PINTA_READER_OUTDATED,
+    )
   const result = await callStudioPublication(
     {
       operation: 'promote-python',
@@ -319,5 +388,89 @@ export async function publishStudioPythonRevision(options: {
   )
   if (!isStudioPythonPublication(result))
     throw new StudioPublicationError(502, 'Não foi possível confirmar a revisão Python publicada.')
+  return result
+}
+
+/**
+ * O jogo clássico (JavaScript, sem Pro) guarda versões no mesmo serviço do Pro e do
+ * Python. Sem o serviço configurado (desenvolvimento), a publicação clássica segue como
+ * sempre: um retrato só, sem histórico.
+ */
+export function studioClassicHistoryAvailable(): boolean {
+  const env = getEnv()
+  return Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN)
+}
+
+/** Projeto JavaScript clássico que pode ter histórico (id no formato que o serviço aceita). */
+export function isStudioClassicHistoryProject(project: EditableStudioProject | null): boolean {
+  return Boolean(
+    project &&
+      project.programmingLanguage !== 'python' &&
+      project.kind !== 'pro' &&
+      isStudioProjectId(project.id) &&
+      studioClassicHistoryAvailable(),
+  )
+}
+
+/**
+ * Impressão do JOGO publicado: o projeto público sem o que muda sem mudar o jogo (nome,
+ * datas e a capa escolhida do card). Republicar com a mesma impressão não atualiza nada.
+ */
+export function studioGameFingerprint(project: unknown): string {
+  if (!project || typeof project !== 'object' || Array.isArray(project))
+    throw new StudioPublicationError(400, 'Projeto inválido.')
+  // Mesmo formato do que foi gravado: o objeto em memória pode ter chaves `undefined`.
+  const plain: unknown = JSON.parse(JSON.stringify(project))
+  const {
+    name: _name,
+    createdAt: _createdAt,
+    updatedAt: _updatedAt,
+    coverAssetName: _cover,
+    ...game
+  } = plain as Record<string, unknown>
+  return createHash('sha256').update(canonicalJson(game)).digest('hex')
+}
+
+/** Revisão source-only do jogo clássico: o player público roda a própria fonte. */
+export async function publishStudioClassicRevision(options: {
+  project: Project
+  source: string
+  playId: string
+  owner: string
+  requestId: string
+  expectedVersion: number
+  parentOrigin: string
+  signal?: AbortSignal
+}): Promise<StudioClassicPublication> {
+  assertLegacyStudioProjectMaterials(options.project)
+  if (!isStudioPublicationId(options.playId))
+    throw new StudioPublicationError(400, 'Publicação inválida.')
+  const sourceHash = createHash('sha256').update(options.source).digest('hex')
+  const replay = await callStudioPublication(
+    {
+      operation: 'lookup',
+      playId: options.playId,
+      owner: options.owner,
+      requestId: options.requestId,
+      sourceHash,
+    },
+    options.signal,
+  )
+  if (isStudioClassicPublication(replay)) return replay
+  const result = await callStudioPublication(
+    {
+      operation: 'promote-classic',
+      playId: options.playId,
+      owner: options.owner,
+      requestId: options.requestId,
+      expectedVersion: options.expectedVersion,
+      projectId: options.project.id,
+      parentOrigin: options.parentOrigin,
+      source: options.source,
+    },
+    options.signal,
+  )
+  if (!isStudioClassicPublication(result))
+    throw new StudioPublicationError(502, 'Não foi possível confirmar a versão publicada.')
   return result
 }

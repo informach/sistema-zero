@@ -1,0 +1,71 @@
+{
+  "at": "2026-11-21T06:06:58.743Z",
+  "base": "13e88e9c86fb730255a7809454ce3dabd41fd49f",
+  "reader": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+  "files": [
+    {
+      "file": "packages/core/src/creations/index.ts",
+      "sha256": "0bc4ded213f2819bcf40075270702457d0962d53250f5cf1d71d206c7bef3ad3"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.test.ts",
+      "sha256": "ab9b5db09927665717822acaae23c9963c7c7e34cdbcd6b53bcb3348c83953a1"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-regions.ts",
+      "sha256": "8528820c101ff7c6c0547cf0e640268e3220daeb15ed7507a7cab6cf461a163e"
+    },
+    {
+      "file": "packages/pinta/scripts/qa/bucket-regions.ts",
+      "sha256": "7e3f34954ffacb5a897d5d2a2ff811adc08d5fab5316856661692f1cc6d4b7ef"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "2f69fe1b7dc9222e93b613c5f28b7ff78d31e623efb3cfbb46e79030569ad0f0"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "a8a263a7aac12386492e526628c840ba701dcaa2c7d7654ec2c84212234e0537"
+    },
+    {
+      "file": "packages/pinta/src/tiles/floodFill.ts",
+      "sha256": "aee6f9f4f3ded073baf40cf8af9afaa69efc27b07dfdf97c8683aa81e95688c2"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.test.ts",
+      "sha256": "56ea4039a6f7a6928e10a6cb8d4ad257c3d7a55130d9d373acd5a4132173b6dd"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "9c2379deb9eb72b3b135afaa341ab2e97bb0fce6e63e883da9727778376d5c75"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.test.ts",
+      "sha256": "13e5ee5a3493979685161c7d56a8f8fb8128010699367572081f8de57496e50e"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionCells.ts",
+      "sha256": "8020a8b7bb08b6f2af99733d9630d1706d624bfdac93c05824bae985b8afb9d9"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.test.ts",
+      "sha256": "a792af3ff6bef10fc0eb75ce149cb74e66b4c2b3a967ad408078576a1c6c146a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMap.ts",
+      "sha256": "4afd8d73eaa0e856ec2400e250b733c41883272da01cef94d475bd335fca8116"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapAccess.test.ts",
+      "sha256": "d694837dcda984938b0f38500648f7ba864658ccbce88c7488c94d64d7f32e24"
+    },
+    {
+      "file": "packages/pinta/src/tiles/regionMapEditing.test.ts",
+      "sha256": "5339d3d518f413fb0cd606d7a3b7017d310a49a38a3162247cf23408008ccbee"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "ec6243c54ae5bf7eb2a6cde42e7f0384070118fa153c79b9ffdeffaf7c93ebf1"
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "baseline": "36c3ab7a826d8f5150ed73e41120e859613548af",
+  "records": [
+    {
+      "file": "metadata-admission-red.log.gz",
+      "bytes": 15817,
+      "sha256": "dd1c214deb165c4462993dd10a7956528410827a495826787f839e89c162dd9f",
+      "rawBytes": 1919899,
+      "rawSha256": "5db1f11189faea596167c69c3b01a83cb42bb81fcde9843068c0de3a4f5e5399"
+    },
+    {
+      "file": "metadata-focused.log.gz",
+      "bytes": 2285,
+      "sha256": "59417ca1ab90ec9abc6c795ca37cc58751c486520e585255ec5634359de9b647",
+      "rawBytes": 6162,
+      "rawSha256": "35dd3ebe8f573c1d20ba2e13464e3fad1cd84ebca44bd0dbac99910a678caa23"
+    },
+    {
+      "file": "metadata-full.log.gz",
+      "bytes": 79095,
+      "sha256": "77fe5d455aeb4934fd55c37d987ac1c3496c49c1a2e9345dd8f1ed11f94454a1",
+      "rawBytes": 294177,
+      "rawSha256": "5644111c91320bd477ad99c81748ab4b9bf9fdb0c046c8591ffca80a8fb04c60"
+    },
+    {
+      "file": "metadata-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "metadata-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "metadata-browser.log.gz",
+      "bytes": 340,
+      "sha256": "9f1b1c171e3b916a4f083d13a5ca763c40a8320be1283c4b928e82258022c074",
+      "rawBytes": 990,
+      "rawSha256": "4fa90faf774508e363122b8b843d2cccbd7b8a9a4341d4980273f89a7b02cd24"
+    },
+    {
+      "file": "metadata-workshop-browser.log.gz",
+      "bytes": 570,
+      "sha256": "c495b21ade857c37bf305632d31d1608b709d2859fec7aa468930a9e61e6a44f",
+      "rawBytes": 1632,
+      "rawSha256": "8d5daebaf76bb61643228c9f98d80528f2b3bea123a337395e376ddfa843c20c"
+    },
+    {
+      "file": "metadata-integration-browser.log.gz",
+      "bytes": 2113,
+      "sha256": "86d8ce5a5187bf4ff9b0edf29d2df3dae92bad9bda351f9341e34cfec02b3cab",
+      "rawBytes": 7991,
+      "rawSha256": "a857ea3a24bbe03012617f6387815ec1bfb3153455229a24775187791c5cc31c"
+    },
+    {
+      "file": "metadata-biome.log.gz",
+      "bytes": 65,
+      "sha256": "09999d02c0fd9400ab5ffc013a47619ca7d38067149411464e8d77f91b34d91e",
+      "rawBytes": 45,
+      "rawSha256": "cf5981b1717ef6dc53ebd4aa3e4ea61906689d9ba8f3b9457b38544c6075715f"
+    },
+    {
+      "file": "metadata-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-0-report.json.gz",
+      "bytes": 2347,
+      "sha256": "aa6fea4d2b3f2c2f59ff60c844d33b76de8f55af0aa963475eeed645d79bb5e7",
+      "rawBytes": 13482,
+      "rawSha256": "3d7443b6ecc7c2105b7cf1045c309e5fcf4db31357c2317910e6239d01117b6d"
+    },
+    {
+      "file": "playwright-1-report.json.gz",
+      "bytes": 328177,
+      "sha256": "55d7ba3c0244621771d10d019e19c8fa8db05270037f29e6352dd2db20c4c029",
+      "rawBytes": 456073,
+      "rawSha256": "6217b2476bfe642ff1221491a46d6f9e9cc902a3ceec406aee0debac23fcb7e5"
+    },
+    {
+      "file": "playwright-2-report.json.gz",
+      "bytes": 928979,
+      "sha256": "414b784dd83a174ca4f3c5e7767c2ff6b699fa78ba1a9a3caad883160b5c2af7",
+      "rawBytes": 1287365,
+      "rawSha256": "241e2c7062cec5535011d4a15aae78132203d6e2697c3fc5843352ed556591eb"
+    },
+    {
+      "file": "archive-metadata.cjs.gz",
+      "bytes": 1470,
+      "sha256": "b91ad7f3bc5494ef34b25bc74f3c5388930a7f5179de123529ae4aa513633d6d",
+      "rawBytes": 3382,
+      "rawSha256": "c9498f11d26996c32808a0ecfc52ac1c7960d3b18bb984fbd9209c0808690fbb"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/scripts/serve-memory-regions-e2e.ts",
+      "sha256": "8ba17a2f0bfe59c2f8d39c088e76bf244255d155c5b769fa846da7fcd8c68b9b",
+      "previousSha256": "cd36b344737170f9a6999e79f32640e659e19356d1fd9474ceb267f886721c38"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/mapTools/tileGestures.test.ts",
+      "sha256": "0a5dc00056fb236856229d49ecfaf34465b34e9a9124d16e50d402017d40f60f",
+      "previousSha256": "a5552410bd1e96a962b64ac4c764b36769659174e3f7e87f3b255f508decba08"
+    },
+    {
+      "file": "packages/pinta/src/core/mapDocumentBoundary.ts",
+      "sha256": "075766d4da63eeb2698c4c84f4b6dc235cb223e86864f429f1cc8e02fdcabd01",
+      "previousSha256": "db40f0c759670905b21a50c6d896ea193abae7347d6a736b05d1f5cfc4a4602e"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "e973179ddd161587e89bb4e89e5df59b362fc684c1614cd80e3994e8477b1a81",
+      "previousSha256": "ad9d15ad038809149de20901267ec23c5a9405e783449e3c25bb8f7955c52c1a"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.test.ts",
+      "sha256": "223ab743e019a0977121ac4e2eaf24d7fcb609fdd00cb7deb386b22dc982148b",
+      "previousSha256": "d6216119113cb9ef74dee763c13af9bd07f895ab357a3f34edf8c329b9758a24"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "sha256": "34281d55197924c714e73497e83c8d5795b3f1e049af6209625e0bc7d0f5137d",
+      "previousSha256": "22abab137facd0b8052b61c0c437ec52d6d763cc004280e23ee8173915ee357f"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/metadataBudget.ts",
+      "sha256": "017a6518efadb3e9d99237a77d7a9db8586e2f28664f14ae41e8b30b82691cf7"
+    },
+    {
+      "file": "packages/pinta/scripts/metadata-regions-probe.ts",
+      "sha256": "33ce2ed68ee8186f4455123b60017db2b3e2f2a80d953cb9cff11b69b9c2f5e1"
+    },
+    {
+      "file": "packages/pinta/src/core/metadataBudgetCache.test.ts",
+      "sha256": "e512df6a255d439a37a01fc515d32be67f333035f1d0d405c56f5af533719caf"
+    },
+    {
+      "file": "packages/pinta/src/core/regionSetMetadataBudget.test.ts",
+      "sha256": "dcc494cd2a981501a91b27d5f16889658c7250630b4c292483a8aae5e7c24839"
+    },
+    {
+      "file": "packages/pinta/src/state/editorMetadataAdmission.test.ts",
+      "sha256": "5888afa7ff8fd694f91ff91e4beb4762a098d5afde40602f2911aef317d280e9"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-metadata.flow.ts",
+      "sha256": "bedbb57b14e3bb8d985a0dd5fa1d6c7c6aab3f7b9fc5158a0580c8c6698087a5"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-metadata.config.ts",
+      "sha256": "b8a9c7ccf774c69e102b519ccb13032638264a0f70e897cd39279e0858b41bff"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "desktop",
+      "before": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true
+        },
+        "writes": 2,
+        "setRefused": false,
+        "decodes": 1,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      },
+      "after": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false
+        },
+        "writes": 0,
+        "setRefused": true,
+        "decodes": 0,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      }
+    },
+    {
+      "profile": "touch",
+      "before": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true
+        },
+        "writes": 2,
+        "setRefused": false,
+        "decodes": 1,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      },
+      "after": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false
+        },
+        "writes": 0,
+        "setRefused": true,
+        "decodes": 0,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      }
+    },
+    {
+      "profile": "cpu-4x",
+      "before": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true,
+          "dirty": true,
+          "hostCalls": 1
+        },
+        "linked": {
+          "accepted": true,
+          "unchanged": false,
+          "undo": true
+        },
+        "writes": 2,
+        "setRefused": false,
+        "decodes": 1,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      },
+      "after": {
+        "objects": 2548,
+        "sourceUnits": 8387452,
+        "rejected": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false,
+          "dirty": false,
+          "hostCalls": 0
+        },
+        "linked": {
+          "accepted": false,
+          "unchanged": true,
+          "undo": false
+        },
+        "writes": 0,
+        "setRefused": true,
+        "decodes": 0,
+        "positive": {
+          "goodAccepted": true,
+          "undoToSource": true,
+          "savedName": "outra vila"
+        },
+        "public8": false
+      }
+    }
+  ],
+  "browserTests": 18,
+  "retries": 0,
+  "publicNative8": false,
+  "physicalIO3": false
+}

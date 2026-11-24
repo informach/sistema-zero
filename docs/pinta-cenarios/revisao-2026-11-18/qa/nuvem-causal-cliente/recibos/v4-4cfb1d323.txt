@@ -1,0 +1,88 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\physical-pins-review.test.ts:
+151 |     return {opId:slot.intent.opId,intentHash:slot.intentHash,epoch,members:[{itemId,revision:2,sha256:put.sha256,layoutRevision:null,deleted:false}]}
+152 |   }
+153 |   try {
+154 |     await save(map1.id,'primeira-edicao')
+155 |     const [written] = await sheetBlobs()
+156 |     expect(written?.pixel).toBe(3)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: undefined
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\physical-pins-review.test.ts:156:28)
+(fail) duas operações que leram a mesma folha mantêm uma cópia de seus bytes até o último recibo [62.00ms]
+
+.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\pins-cas-review.test.ts:
+148 |       setIdbWriteGuard((key)=>{
+149 |         if(key==='pinta:sync:observed-resources') {actualPut=true;throw Error('disco recusou folha')}
+150 |       })
+151 |     }
+152 |     proceed.resolve()
+153 |     await expect(write).rejects.toThrow()
+                                      ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\pins-cas-review.test.ts:153:33)
+(fail) a escrita do mapa e da folha observada reverte por different-revision [47.00ms]
+148 |       setIdbWriteGuard((key)=>{
+149 |         if(key==='pinta:sync:observed-resources') {actualPut=true;throw Error('disco recusou folha')}
+150 |       })
+151 |     }
+152 |     proceed.resolve()
+153 |     await expect(write).rejects.toThrow()
+                                      ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\pins-cas-review.test.ts:153:33)
+(fail) a escrita do mapa e da folha observada reverte por last-physical-put [16.00ms]
+
+.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\pins-quota-review.test.ts:
+144 |   const wrapper=createCloudMirroredPintaPersistence({local,viewerId:ns,cloud:{...cloud,pintaCausal:{snapshot:idle,upload:idle,backfill:idle,verifyEpoch:idle,download:idle}},causal:{local:local.causal,holdOpen:async()=>()=>{},withClosed:(_,apply)=>apply()}})
+145 |   try{
+146 |     const before=await local.loadAssetById(map.id)
+147 |     const observed=await local.loadAssetById(sheet.id)
+148 |     const save=()=>wrapper.persistAsset({...before,name:'vila-editada'},{resources:[{id:sheet.id,localRevision:pintaLocalRevisionOf(observed)}]})
+149 |     await expect(save()).rejects.toBeInstanceOf(PintaStorageBudgetError)
+                                       ^
+error:
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\pins-quota-review.test.ts:149:34)
+(fail) cota local inclui bytes da folha apenas lida junto ao PUT do mapa [515.00ms]
+
+.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\transitive-pins-review.test.ts:
+178 |     const pairs=maps.filter(item=>item.name.startsWith('vila')).map(item=>{
+179 |       const [door]=pintaDoorBindings(item,byId)
+180 |       const destination=door?.binding.type==='target'?byId.get(door.binding.id):undefined
+181 |       return [item.name,byId.get(destination?.tilesetId)?.tiles[0].data[0]]
+182 |     })
+183 |     expect(pairs).toContainEqual([expect.stringContaining('vila-do-aparelho'),3])
+                        ^
+error: expect(received).toContainEqual(expected)
+
+Expected to contain: [
+  StringContaining "vila-do-aparelho", 3
+]
+Received: [
+  [ "vila-do-aparelho-copia", 5 ], [ "vila-conta", 7 ]
+]
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-4cfb1d323\packages\member-shell\tests\fixtures\transitive-pins-review.test.ts:183:19)
+(fail) a porta do mapa editado conserva a folha transitiva que só a cabana observa [63.00ms]
+
+ 0 pass
+ 5 fail
+ 14 expect() calls
+Ran 5 tests across 4 files. [859.00ms]

@@ -1,0 +1,51 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T18:33:13.147Z",
+    "duration": 69494.434,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura",
+      "project": "desktop",
+      "status": "passed",
+      "retry": 0,
+      "duration": 10131,
+      "attachments": [
+        {
+          "name": "previa-do-pincel",
+          "file": "previa-desktop.png"
+        }
+      ]
+    },
+    {
+      "title": "espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura",
+      "project": "touch",
+      "status": "passed",
+      "retry": 0,
+      "duration": 8019,
+      "attachments": [
+        {
+          "name": "previa-do-pincel",
+          "file": "previa-touch.png"
+        }
+      ]
+    },
+    {
+      "title": "espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura",
+      "project": "cpu-4x",
+      "status": "passed",
+      "retry": 0,
+      "duration": 40582,
+      "attachments": [
+        {
+          "name": "previa-do-pincel",
+          "file": "previa-cpu-4x.png"
+        }
+      ]
+    }
+  ]
+}

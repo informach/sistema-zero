@@ -1,0 +1,84 @@
+bun test v1.3.11 (af24e281)
+
+tests\check.test.ts:
+studio-runtime check objective failed Não foi possível observar o início inteiro.
+(pass) POST /v1/check > somente navegação 3D usa capacidade dedicada; ausência da capacidade falha fechada [16.00ms]
+studio-runtime check objective failed O motor pausou, reiniciou ou relatou erro.
+studio-runtime check objective failed O motor não avançou durante a observação.
+studio-runtime check objective failed O personagem foi destruído.
+(pass) POST /v1/check > directional observation remains conclusive only with its complete official idle/action evidence
+(pass) POST /v1/check > clássico: serve o documento, julga com a régua do core e devolve a captura
+studio-runtime check objective failed O teste não relatou este objetivo.
+(pass) POST /v1/check > relatório ausente é indisponibilidade, nunca reprovação guardável
+studio-runtime check objective failed Não foi possível observar o resultado inteiro.
+studio-runtime check objective failed leitura incompleta
+(pass) POST /v1/check > leitura truncada/erro é indisponível, mas valor divergente observado reprova
+(pass) POST /v1/check > Pro: compila com a entrada do teste e avisa o script que é kit
+(pass) POST /v1/check > Pro que não compila não cumpre nada (é resposta, não falha do executor)
+studio-runtime check objective failed O teste não relatou este objetivo.
+(pass) POST /v1/check > a verificação da criança não pede captura
+studio-runtime check objective failed page.goto: Timeout 15000ms
+(pass) POST /v1/check > objetivo que o navegador não conseguiu testar é falha do executor, não "não passou"
+studio-runtime check build failed
+(pass) POST /v1/check > Pro que falha sem erro do Vite (tempo esgotado) é falha do executor
+studio-runtime check failed
+falhou
+(pass) POST /v1/check > o executor que falha vira 500, nunca aprovação
+(pass) POST /v1/check > limite de frequência, token e pedido inválido
+(pass) o pedido de teste > movimento oficial é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > clickTarget é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > approachSprite é admitido no clássico e recusado no Pro antes de abrir o jogo
+(pass) o pedido de teste > recusa objetivo malformado, arquivo inexistente e caminho reservado
+(pass) o pedido de teste > navegação 3D é recusada no Pro antes de reservar o executor
+(pass) o pedido de teste > a regra em JavaScript vale no clássico e no Pro e só passa com true
+(pass) o pedido de teste > a entrada do Pro importa cada módulo uma vez e guarda no escopo sorteado
+(pass) Pro observes an explicitly exported value from an existing project module
+
+tests\click-target-cdp.test.ts:
+Native Node24 CDP:7 passed,0 failed/cancelled/skipped; Chromium qualification is separate
+(pass) native Node24 CDP path ownership contracts, including under Bun CI [297.00ms]
+
+tests\motion-observation.test.ts:
+Native Node24 motion:10 passed,0 failed/cancelled/skipped/todo; Chromium qualification is separate
+(pass) native Node24 motion observation contracts, including under Bun CI [187.00ms]
+
+tests\runtime-handler.test.ts:
+[studio-publication] collection {
+  scanned: 0,
+  removed: 0,
+  unreadable: 0,
+}
+(pass) scheduled cleanup drains Kids and adult publication queues with the worker token
+(pass) reservation retirement authenticates before storage and validates its immutable identity
+(pass) default handler wires only configured approved Python distributions and invalidates changed configuration [31.00ms]
+(pass) Python internal routes authenticate before reading metadata or binary bodies
+(pass) JavaScript and health routes never load a configured Python catalog
+(pass) public Python serving rejects digest/bucket changes or cancellation during catalog and artifact awaits [16.00ms]
+(pass) default Python input handler uses approved config, private storage and stable owner quotas [31.00ms]
+studio-runtime build failed 710 |               typeReport.typescript !== '5.9.3' ||
+711 |               typeof typeReport.checkJs !== 'boolean' ||
+712 |               !isStudioProValidationIdentity(typeReport.validation) ||
+713 |               typeReport.validation.runtimeFingerprint !== validationProfile.runtimeFingerprint
+714 |             )
+715 |               throw new Error('Relatório de tipos inválido.')
+                              ^
+error: Relatório de tipos inválido.
+      at fetch (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio-runtime\src\index.ts:715:25)
+
+(pass) handler do Studio Runtime > an outdated image cannot label validation as current or publish an artifact
+(pass) handler do Studio Runtime > preflight uses build paths, dependencies and binary hashes without allocating a sandbox
+(pass) handler do Studio Runtime > dependency preparation is authenticated, bounded and does not boot a container
+(pass) handler do Studio Runtime > validation owns an isolated container and includes exactly four proofs and one pack
+(pass) handler do Studio Runtime > a failed typecheck prevents build; a failed playtest prevents artifact publication; both destroy the container
+(pass) handler do Studio Runtime > duplicate browser proofs and oversized capture cannot produce a review artifact [63.00ms]
+(pass) handler do Studio Runtime > health check é público e token inválido não cria sandbox
+(pass) handler do Studio Runtime > rate limit responde 429 antes de criar sandbox
+(pass) handler do Studio Runtime > rejeita corpo maior que o contrato antes de criar sandbox
+(pass) handler do Studio Runtime > build válido devolve um artefato e sempre limpa a pasta temporária
+(pass) handler do Studio Runtime > erro de compilação responde 422 e ainda limpa a pasta
+(pass) handler do Studio Runtime > falha do sandbox responde 500 e tenta limpar a pasta
+
+ 41 pass
+ 0 fail
+ 196 expect() calls
+Ran 41 tests across 4 files. [1027.00ms]

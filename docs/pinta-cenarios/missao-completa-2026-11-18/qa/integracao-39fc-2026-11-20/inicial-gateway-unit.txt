@@ -1,0 +1,68 @@
+bun test v1.3.11 (af24e281)
+
+tests\unit\config.test.ts:
+(pass) loadGatewayConfig > operações comerciais de membro exigem o BFF assinado; consulta de assinatura é restrita ao funil [31.00ms]
+(pass) loadGatewayConfig > publicação de cursos separa leitura staff de aprovação admin e não aceita HMAC de aluno [16.00ms]
+(pass) loadGatewayConfig > política de regularização tem leitura staff e escrita admin, limitada e auditada
+(pass) loadGatewayConfig > retirada de mensagem exige consumidor HMAC e rota própria limitada
+(pass) loadGatewayConfig > alteração de cartão usa rotas próprias autenticadas e limites de escrita
+(pass) loadGatewayConfig > jornada adulta tem leitura autenticada e configuração restrita à equipe
+(pass) loadGatewayConfig > live execution resolves its exact authenticated bounded route before generic room actions
+(pass) loadGatewayConfig > Studio lesson admission and execution have exact authenticated POST routes
+(pass) loadGatewayConfig > saved live publication has its own exact authenticated bounded route, independent of writer runtime
+(pass) loadGatewayConfig > Studio authoring catalog is an exact staff GET route, never a public execution grant
+(pass) loadGatewayConfig > Instagram publica apenas o webhook exato; inbox exige equipe e atribuição exige HMAC do marketing
+(pass) loadGatewayConfig > publicação da KB exige admin e vence o wildcard staff do Helpdesk
+(pass) loadGatewayConfig > staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only
+(pass) loadGatewayConfig > Studio credentials, usage and reconciliation require member-shell HMAC, never a browser JWT
+(pass) loadGatewayConfig > browser session routes are bounded POST-only identity endpoints [15.00ms]
+(pass) loadGatewayConfig > live boundaries preserve actors and reserve material registration for the BFF
+(pass) loadGatewayConfig > self-service mutante da conta é autenticado no gateway e preserva o Bearer
+(pass) loadGatewayConfig > config real expõe o batch de perfis somente com JWT staff+
+(pass) loadGatewayConfig > irmãos da sessão de perfil (Arquipélago, fase3-12): GET com JWT de conta ativa e token interno
+(pass) loadGatewayConfig > "Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria
+(pass) loadGatewayConfig > valida e aplica defaults
+(pass) loadGatewayConfig > rota apontando para serviço inexistente → erro
+(pass) loadGatewayConfig > rota jwt sem JWT_JWKS_URL → erro
+(pass) loadGatewayConfig > rota jwt COM JWT_JWKS_URL → ok
+(pass) loadGatewayConfig > consumer com hmacSecret vazio → erro (não sobe com auth desabilitada)
+(pass) loadGatewayConfig > upstream com url inválida → erro
+(pass) loadGatewayConfig > transform de tipo desconhecido → erro
+(pass) loadGatewayConfig > header-inject com valor vazio → erro
+(pass) loadGatewayConfig > CORS por rota só aceita origins — campo fantasma (methods etc.) falha no boot
+(pass) loadGatewayConfig > CORS por rota com só origins → ok
+(pass) loadGatewayConfig > maxBodyBytes por rota acima do teto global → erro (o servidor venceria)
+(pass) loadGatewayConfig > audit exige que todos os métodos da rota sejam mutantes
+(pass) loadGatewayConfig > rate limit por campo JSON exige que HMAC autentique o corpo
+(pass) loadGatewayConfig > produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro
+(pass) gateway.config.ts (configuração real) > carrega todas as rotas reais com o teto de corpo padrão [266.00ms]
+(pass) gateway.config.ts (configuração real) > recusa teto explícito que impede o corpo do builder do Studio [266.00ms]
+(pass) gateway.config.ts (configuração real) > o teto padrão comporta a verificação Python; um teto explícito menor continua recusado [250.00ms]
+(pass) gateway.config.ts (configuração real) > Payments só é cadastrado com segredo próprio e recebe quatro capacidades de comunicação [265.00ms]
+(pass) gateway.config.ts (configuração real) > consulta do curso-presente é exclusiva do referrals e re-assinada para members
+(pass) gateway.config.ts (configuração real) > gallery preparation belongs to the active student; confirmation requires a signed actor
+(pass) gateway.config.ts (configuração real) > project checks reach members through the real route registry with a project-sized body
+(pass) gateway.config.ts (configuração real) > a cor do perfil atende GET e PUT em /members/preferences, com token interno [16.00ms]
+(pass) gateway.config.ts (configuração real) > seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas
+(pass) gateway.config.ts (configuração real) > toda rota audit-marcada declara SÓ métodos mutantes
+(pass) gateway.config.ts (configuração real) > ids de rota são únicos
+(pass) gateway.config.ts (configuração real) > portal do helpdesk aceita somente JWT de conta ativa e conserva o token interno
+(pass) gateway.config.ts (configuração real) > rotas novas (analytics + leitura de auditoria) presentes como GET autenticado
+(pass) gateway.config.ts (configuração real) > rankings do aluno e do admin preservam autenticação e token interno
+(pass) gateway.config.ts (configuração real) > restauração de entrega tem rota explícita e auditada; review não usa wildcard
+(pass) gateway.config.ts (configuração real) > runtime público é restrito ao BFF assinado, com cota por publicação e corpo limitado
+(pass) gateway.config.ts (configuração real) > cover reconciliation is a signed member-shell route, separate from public play
+(pass) gateway.config.ts (configuração real) > análise Python usa sessão ativa e cota independente da execução
+(pass) gateway.config.ts (configuração real) > runtime livre exige sessão ativa, transporte interno e candidato limitado sem wildcard
+(pass) gateway.config.ts (configuração real) > Meus testes no Pro: sessão ativa, transporte interno, projeto inteiro e o tempo do Verificar projeto
+(pass) gateway.config.ts (configuração real) > autoria Python exige equipe ativa e transporte interno com candidato limitado
+(pass) gateway.config.ts (configuração real) > persistência gerada pelo BFF do Zappy exige HMAC; demais rotas preservam JWT [16.00ms]
+(pass) gateway.config.ts (configuração real) > rate limit HMAC do Zappy é isolado pelo ator autenticado no corpo
+(pass) gateway.config.ts (configuração real) > registro de download obrigatório só aceita o BFF autenticado por HMAC
+(pass) gateway.config.ts (configuração real) > backfill usa lotes suficientes para não esgotar o limite com bases pequenas
+(pass) gateway.config.ts (configuração real) > reserva das criações aceita o corpo com miniatura + até 128 partes (≥ 64 KB); commit idem
+
+ 60 pass
+ 0 fail
+ 296 expect() calls
+Ran 60 tests across 1 file. [1391.00ms]

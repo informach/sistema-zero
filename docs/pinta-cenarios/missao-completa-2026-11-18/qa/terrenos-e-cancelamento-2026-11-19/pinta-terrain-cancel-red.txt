@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapToolsUi.test.tsx:
+309 |       if (cancel === 'pointercancel') fireEvent.pointerCancel(grid, at(72, 40))
+310 |       else fireEvent.keyDown(window, { key: 'Escape' })
+311 |       // A soltura tardia depois de cancelar não pode confirmar a linha.
+312 |       fireEvent.pointerUp(grid, at(72, 40))
+313 |       fireEvent.click(desfazer())
+314 |       expect(desfazer().disabled).toBe(true)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapToolsUi.test.tsx:314:35)
+(fail) terreno, espalhar e animação da peça > cancelar a prévia com pointercancel não grava nem ocupa o desfazer [328.00ms]
+309 |       if (cancel === 'pointercancel') fireEvent.pointerCancel(grid, at(72, 40))
+310 |       else fireEvent.keyDown(window, { key: 'Escape' })
+311 |       // A soltura tardia depois de cancelar não pode confirmar a linha.
+312 |       fireEvent.pointerUp(grid, at(72, 40))
+313 |       fireEvent.click(desfazer())
+314 |       expect(desfazer().disabled).toBe(true)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapToolsUi.test.tsx:314:35)
+(fail) terreno, espalhar e animação da peça > cancelar a prévia com Escape não grava nem ocupa o desfazer [156.00ms]
+
+ 0 pass
+ 34 filtered out
+ 2 fail
+ 4 expect() calls
+Ran 2 tests across 1 file. [1055.00ms]

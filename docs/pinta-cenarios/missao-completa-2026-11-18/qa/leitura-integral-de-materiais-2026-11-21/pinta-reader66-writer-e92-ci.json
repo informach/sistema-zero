@@ -1,0 +1,207 @@
+{
+  "at": "2026-11-21T06:24:50.691Z",
+  "runs": [
+    {
+      "run": 44871808894,
+      "source": "66e3c54584e4eb4fdd1f37e144df30a1fe95eaff",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/informach/sistema-zero/actions/runs/44871808894",
+      "jobs": [
+        {
+          "id": 136747846877,
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847011,
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847051,
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847072,
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847090,
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847091,
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847116,
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847120,
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "failure",
+          "failedSteps": ["Testes do Studio com CPU disponível para os projetos grandes"]
+        },
+        {
+          "id": 136747847128,
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847131,
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847160,
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136747847201,
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136754353199,
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "skipped",
+          "failedSteps": []
+        }
+      ]
+    },
+    {
+      "run": 44868877191,
+      "source": "e92cbdc9a8e9b8d614753cef45429ec4e940bc68",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/informach/sistema-zero/actions/runs/44868877191",
+      "jobs": [
+        {
+          "id": 136738746573,
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746737,
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746755,
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746768,
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746774,
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746791,
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746847,
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746855,
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746861,
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746886,
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746911,
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136738746935,
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success",
+          "failedSteps": []
+        },
+        {
+          "id": 136752334745,
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "skipped",
+          "failedSteps": []
+        }
+      ]
+    }
+  ],
+  "qualifiesPendingMergedWriter": false,
+  "qualifiesPendingReaderFixtureFix": false
+}

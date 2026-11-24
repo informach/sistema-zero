@@ -1,10 +1,16 @@
 import type { ExtensionDefinition } from '#extensions'
-import { defineExtensionExamples, validateManifest, WORLD_3D_LIFECYCLE } from '#extensions'
+import {
+  defineExtensionDocumentation,
+  defineExtensionExamples,
+  validateManifest,
+  WORLD_3D_LIFECYCLE,
+} from '#extensions'
 import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
 import { world3DBlocks, world3DToolboxCategory } from './blocks'
 import { world3DManifest } from './manifest'
+import { world3DRuntimeVariant } from './sceneVariant'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(world3DManifest)
@@ -25,6 +31,7 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
+  documentation: defineExtensionDocumentation(async () => (await import('./docs')).world3DDocs),
   examples: defineExtensionExamples(14, async () => (await import('./examples')).world3DExamples),
   conflictsWith: fullscreenConflictsFor('world-3d'),
   // O Mundo 3D e o Jogo 3D Avançado abrem no intermediário 3D (26/07), um degrau
@@ -37,7 +44,11 @@ export const worldThreeDExtension: ExtensionDefinition = {
     toolboxCategory: world3DToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).world3DRuntime,
+    // O cenário do Molda só entra quando o código usa `loadScene` (`sceneVariant.ts`);
+    // sem contexto, o runtime completo.
+    loadBootstrapScript: async (context) =>
+      (await import('./runtime')).world3DRuntimeForVariant(world3DRuntimeVariant(context)),
+    bootstrapVariant: world3DRuntimeVariant,
     lifecycle: WORLD_3D_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,

@@ -1,0 +1,97 @@
+total sampled: 392.9 ms
+
+== self by module ==
+   164.6 ms  studio-editor-shared-CujRcMcz.js
+    71.9 ms  blockly-D0u--DT0.js
+    28.0 ms  (program)
+    19.0 ms  (idle)
+    18.7 ms  moreBlocksItem-DX7SMh5P.js
+    17.7 ms  LazyPreviewIframe-SaT2AP6n.js
+    15.8 ms  blockly-VLJaA-0e.js
+    13.1 ms  (garbage collector)
+     8.6 ms  index-DEN8fkv4.js
+     7.7 ms  focus
+     6.3 ms  studio-editor-contracts-1-sSGBx_.js
+     4.3 ms  
+     2.5 ms  getBoundingClientRect
+     2.0 ms  query
+     1.3 ms  elementState
+
+== self by function ==
+    28.0 ms  (program) :0
+    19.4 ms  childStatementBodies$1 studio-editor-shared-CujRcMcz.js:13365
+    19.0 ms  (idle) :0
+    18.7 ms  jsonStringify moreBlocksItem-DX7SMh5P.js:126
+    17.6 ms  readBlock studio-editor-shared-CujRcMcz.js:71787
+    16.9 ms  getAllBlocks blockly-D0u--DT0.js:15373
+    14.5 ms  saveWorkspaceState LazyPreviewIframe-SaT2AP6n.js:87
+    13.1 ms  (garbage collector) :0
+    10.7 ms  getFields blockly-D0u--DT0.js:10267
+     9.0 ms  getAllBlocks blockly-D0u--DT0.js:16193
+     8.6 ms  programmingChildBodyEntries studio-editor-shared-CujRcMcz.js:13524
+     7.7 ms  focus :0
+     6.0 ms  validateValue studio-editor-shared-CujRcMcz.js:18201
+     5.9 ms  compileStatement studio-editor-shared-CujRcMcz.js:77117
+     5.5 ms  visit studio-editor-shared-CujRcMcz.js:14449
+     5.0 ms  blocksStateUsesCanvas3D studio-editor-contracts-1-sSGBx_.js:6634
+     4.7 ms  programmingEmbeddedBodyEntries studio-editor-shared-CujRcMcz.js:13542
+     4.6 ms  saveInputBlocks$$module$build$src$core$serialization$blocks blockly-D0u--DT0.js:1223
+     4.6 ms  validateStatements studio-editor-shared-CujRcMcz.js:18508
+     4.5 ms  cloneSymbols studio-editor-shared-CujRcMcz.js:17992
+     4.5 ms  cloneCanvas3DSymbols studio-editor-shared-CujRcMcz.js:18079
+     4.1 ms  getIcons blockly-D0u--DT0.js:10627
+     4.1 ms  validateG2DReferences studio-editor-shared-CujRcMcz.js:19095
+     4.0 ms  visitStatement studio-editor-shared-CujRcMcz.js:13927
+     3.9 ms  buildIRFromWorkspace blockly-VLJaA-0e.js:7067
+     3.8 ms  reverseSourceMap studio-editor-shared-CujRcMcz.js:70897
+     3.5 ms  save$$module$build$src$core$serialization$blocks blockly-D0u--DT0.js:1180
+     3.4 ms  validateG2DReferenceValue studio-editor-shared-CujRcMcz.js:19077
+     3.4 ms  build studio-editor-shared-CujRcMcz.js:71084
+     3.4 ms  retainProjectTools index-DEN8fkv4.js:12786
+
+== inclusive by function name ==
+   392.9 ms  (root)
+   243.6 ms  evaluate
+   235.5 ms  flush
+   235.5 ms  getProject
+   235.5 ms  projeto
+   235.5 ms  predicate
+   235.5 ms  next
+   100.8 ms  applySemanticDiagnostics
+    81.6 ms  inst._zod.parse
+    81.6 ms  inst._zod.run
+    81.6 ms  safeParse
+    74.0 ms  runChecks
+    44.8 ms  g
+    44.6 ms  buildIRFromWorkspace
+    43.7 ms  generateProjectFilesWithMap
+    40.2 ms  getStatementChildren
+    38.2 ms  blockToIR
+    38.0 ms  gameTwoDBlockToIR
+    37.0 ms  generateBehaviorJSWithMap
+    37.0 ms  generateJSWithMap
+    34.6 ms  validateStatements
+    34.6 ms  validateProgrammingReferences
+    29.7 ms  onMouseDown
+    28.9 ms  setTargetBlock
+    28.9 ms  setStartBlock
+    28.9 ms  handleBlockStart
+    28.0 ms  (program)
+    27.8 ms  findFocusableNodeFor
+    27.5 ms  focusNode
+    25.9 ms  getAllBlocks
+    22.4 ms  programmingChildBodyEntries
+    20.7 ms  bringToFront
+    19.4 ms  childStatementBodies$1
+    19.0 ms  programmingBlockToStatement
+    19.0 ms  (idle)
+    18.7 ms  jsonStringify
+    17.6 ms  readBlock
+    17.2 ms  getNestedTrees
+    17.1 ms  saveWorkspaceState
+    16.9 ms  save$$module$build$src$core$serialization$blocks
+    15.8 ms  visitStatement
+    15.8 ms  validateLifecycleSemantics
+    15.2 ms  performWorkOnRoot
+    15.2 ms  performSyncWorkOnRoot
+    15.2 ms  flushSyncWorkAcrossRoots_impl

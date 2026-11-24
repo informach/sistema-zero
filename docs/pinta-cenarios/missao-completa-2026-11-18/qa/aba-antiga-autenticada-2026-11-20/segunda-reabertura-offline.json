@@ -1,0 +1,24 @@
+{
+  "offline": true,
+  "schema": 7,
+  "physics": "precise",
+  "layers": 2,
+  "objectId": "6dd9d589-1487-407f-a291-3270aaa8a682",
+  "property": {
+    "type": "int",
+    "value": 26
+  },
+  "primarySha256": "00d8e2c2a16fd54be9843e721ae381b44d726ecbb3c6c6bfbf255bdabbe31a7e",
+  "completeDocumentEqual": true,
+  "firstCell": 0,
+  "copyId": "551e4a6b-080f-443c-b373-a0619c5b87bf",
+  "copyName": "homologacao-aba-nklptd-copia",
+  "copyFirstCell": -1,
+  "copyCount": 1,
+  "copySha256": "d699d391c772ed8b589ab0274bb37ad06e3e940cdfa57b5cd0c342e0bbb51447",
+  "freshRealm": true,
+  "modernAuthoringPageClosed": true,
+  "cloudConfigured": false,
+  "codeOnlyBootstrap": true,
+  "coldOfflineHttpAppBootstrapProven": false
+}

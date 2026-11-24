@@ -8,7 +8,12 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { createLessonAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import {
+  createAsset,
+  createLessonAsset,
+  pintaAssetFromWire,
+  pintaAssetToWire,
+} from '@sistemazero/pinta/assets'
 import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -229,6 +234,27 @@ describe('bloco Pinta — entrega', () => {
     expect(res.status).toBe(400)
   })
 
+  // O documento do Pinta aceita LER conjuntos de até 256 peças; a aula segue com o teto de 64.
+  test('conjunto de peças acima do teto da aula é recusado; no teto, passa', async () => {
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+    const base = createAsset({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (base.kind !== 'tileset') throw new Error('fixture Pinta inválida')
+    const peca = base.tiles[0]
+    if (!peca) throw new Error('fixture Pinta sem peça')
+    const comPecas = (quantas: number) =>
+      pintaAssetToWire({
+        ...base,
+        tiles: Array.from({ length: quantas }, () => ({ ...peca, data: peca.data.slice() })),
+        solid: Array.from({ length: quantas }, () => false),
+      })
+
+    const noTeto = await enviar(app, lessonId, blockId, { asset: comPecas(64) })
+    expect(noTeto.status).toBeLessThan(300)
+    const acima = await enviar(app, lessonId, blockId, { asset: comPecas(65) })
+    expect(acima.status).toBe(400)
+  })
+
   test('kind conhecido com estrutura incompleta é recusado e não abre o gate', async () => {
     const { app, courses, lessonId } = cenario()
     const blockId = seedPintaBlock(courses, lessonId)
@@ -420,6 +446,79 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     })
 
     expect(res.status).toBe(400)
+  })
+
+  test('autoria aplica os mesmos limites de peças da entrega do aluno', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+    const base = createAsset({ kind: 'tileset', name: 'pecas', tileSize: 16 })
+    if (base.kind !== 'tileset' || !base.tiles[0]) throw new Error('fixture sem peça')
+    const tile = base.tiles[0]
+    const initialAsset = (count: number) =>
+      pintaAssetToWire({
+        ...base,
+        tiles: Array.from({ length: count }, () => ({ ...tile, data: tile.data.slice() })),
+        solid: Array.from({ length: count }, () => false),
+      })
+    expect((await blocoPinta(app, aulas[0].id, { initialAsset: initialAsset(64) })).status).toBe(
+      200,
+    )
+    const rejected = await blocoPinta(app, aulas[1].id, { initialAsset: initialAsset(65) })
+    expect(rejected.status).toBe(400)
+    expect((await readJson(rejected)).error.message).toContain('limites')
+  })
+
+  test('autoria recusa mapas acima dos limites de colunas, linhas e camadas da aula', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+    const base = createAsset({
+      kind: 'tilemap',
+      name: 'mapa',
+      tilesetId: 'pecas',
+      cols: 2,
+      rows: 2,
+    })
+    if (base.kind !== 'tilemap') throw new Error('fixture sem mapa')
+    const tileLayer = base.layers[0]
+    if (!tileLayer || tileLayer.kind === 'objects' || tileLayer.kind === 'group')
+      throw new Error('fixture sem chão')
+    for (const [cols, rows] of [
+      [128, 1],
+      [1, 128],
+    ]) {
+      const map = {
+        ...base,
+        cols: cols!,
+        rows: rows!,
+        layers: [{ ...tileLayer, cells: new Int16Array(cols! * rows!).fill(-1) }],
+      }
+      expect(
+        (await blocoPinta(app, aulas[0].id, { initialAsset: pintaAssetToWire(map) })).status,
+      ).toBe(200)
+    }
+    const invalid = [
+      {
+        ...base,
+        cols: 129,
+        rows: 1,
+        layers: [{ ...tileLayer, cells: new Int16Array(129).fill(-1) }],
+      },
+      {
+        ...base,
+        cols: 1,
+        rows: 129,
+        layers: [{ ...tileLayer, cells: new Int16Array(129).fill(-1) }],
+      },
+      {
+        ...base,
+        layers: Array.from({ length: 9 }, (_, i) => ({ ...tileLayer, id: `layer-${i}` })),
+      },
+    ]
+    for (const map of invalid) {
+      const response = await blocoPinta(app, aulas[1].id, { initialAsset: pintaAssetToWire(map) })
+      expect(response.status).toBe(400)
+      expect((await readJson(response)).error.message).toContain('limites')
+    }
   })
 
   test('🚨 dois tipos diferentes na MESMA cadeia → 409 nomeando a aula que já a usa', async () => {

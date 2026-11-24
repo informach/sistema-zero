@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { PREVIEW_CONSOLE_MESSAGE_BUDGET, PREVIEW_CONSOLE_WINDOW_MS } from '../preview/limits'
 import {
   type LogKind,
   PREVIEW_MAX_ERROR_CHARS,
@@ -12,8 +13,8 @@ import { StudioStoresContext } from './storesContext'
 
 export const MAX_LOG_TEXT_CHARS = 16_000
 export const MAX_LOG_ENTRIES = 500
-export const LOG_RATE_LIMIT_WINDOW_MS = 1_000
-export const LOG_RATE_LIMIT_MAX_MESSAGES = 180
+export const LOG_RATE_LIMIT_WINDOW_MS = PREVIEW_CONSOLE_WINDOW_MS
+export const LOG_RATE_LIMIT_MAX_MESSAGES = PREVIEW_CONSOLE_MESSAGE_BUDGET
 
 /**
  * O que conta como ERRO de verdade. Vive aqui (e não no Console) porque mais de
@@ -27,6 +28,16 @@ export const ERROR_LOG_KINDS: ReadonlySet<LogKind> = new Set([
   'runtimeError',
   'unhandledRejection',
 ])
+
+/**
+ * Um erro da página de AGORA. No Pro, o que chegou antes de a página recomeçar (`pageLoadedAt`,
+ * marcado pela ponte da prévia) é de um jogo que já foi consertado ou recarregado: não conta em
+ * Problemas, no Investigar nem no que vai ao Zappy (full review final de 21/11/2026; antes só a aba
+ * Problemas filtrava). No Clássico a marca fica em 0 e todo erro vale.
+ */
+export function isCurrentPageError(entry: LogEntry, pageLoadedAt: number): boolean {
+  return ERROR_LOG_KINDS.has(entry.kind) && entry.timestamp >= pageLoadedAt
+}
 
 export interface LogEntry {
   id: number

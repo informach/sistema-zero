@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "result": {
+    "readOnly": true,
+    "publishedGame": true,
+    "width": 640,
+    "height": 480,
+    "rect": {
+      "x": 226,
+      "y": 169,
+      "width": 640,
+      "height": 480
+    },
+    "dpr": 1,
+    "display": "block",
+    "transform": "none",
+    "bottom": [32, 43, 40, 255]
+  }
+}

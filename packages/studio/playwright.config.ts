@@ -30,9 +30,24 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      // As medidas dos motores (lote 4) têm config e workflow próprios: esperas fixas sobre a GPU
+      // emulada não entram na suíte que barra o merge (`playwright.engines.config.ts`).
+      testIgnore: [
+        /engine-gpu-cycles\.spec\.ts/,
+        /engine-2d-offscreen\.spec\.ts/,
+        /devtools-cost\.spec\.ts/,
+        /engine-regions\.spec\.ts/,
+        // A medida dos mundos grandes só vale numa placa de vídeo de verdade (`playwright.gpu.config.ts`).
+        /grande-gpu\.spec\.ts/,
+      ],
       use: {
         ...devices['Desktop Chrome'],
         permissions: ['clipboard-read', 'clipboard-write'],
+        // Ambiente com um Chromium próprio já instalado (outra revisão que a do pacote):
+        // `PW_CHROMIUM=/caminho/do/chrome`. Sem a variável, nada muda.
+        ...(process.env.PW_CHROMIUM
+          ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } }
+          : {}),
       },
     },
     {
@@ -40,8 +55,29 @@ export default defineConfig({
       // Firefox existe para o risco que justificou o segundo engine: CSP/SRI e
       // execução no documento isolado. A galeria completa já é coberta pelo
       // Chromium e duplicá-la adicionava centenas de casos sem sinal novo.
-      testMatch: [/preview-security\.spec\.ts/, /preview-executes-user-code\.spec\.ts/],
-      use: { ...devices['Desktop Firefox'] },
+      // A casca em outro site (lote 3.2) existe por causa do Firefox: o arranjo que o isolou.
+      // A lixeira e o zoom do Blockly (desenho em vetor, a lixeira por cima, a tampa): cada motor
+      // desenha o SVG à sua maneira, e foi no desenho que os ícones sumiram (20/11/2026).
+      // Meus testes: o piloto do teste roda dentro do documento da prévia, sob a CSP dele.
+      // A execução leve do Pro: módulos em blob e mapa de importação inserido por script, num
+      // quadro de origem opaca, é arranjo que cada motor implementa à sua maneira.
+      testMatch: [
+        /preview-security\.spec\.ts/,
+        /preview-executes-user-code\.spec\.ts/,
+        /preview-shell(?:-performance|-hostile)?\.spec\.ts/,
+        /blockly-media\.spec\.ts/,
+        /student-tests\.spec\.ts/,
+        /student-tests-hostile\.spec\.ts/,
+        /pro-light-runtime\.spec\.ts/,
+      ],
+      use: {
+        ...devices['Desktop Firefox'],
+        // O Firefox do Playwright vem com `fission.webContentIsolationStrategy = 0` (iframes de
+        // outro site no MESMO processo da página); o Firefox de mesa usa 1 (isolar todo site).
+        // Sem devolver o 1, o ensaio media o navegador de teste e não o das famílias: foi assim
+        // que a casca pareceu exigir COEP no host (docs/qa/2026-11-20-studio-firefox-site-isolation.md).
+        launchOptions: { firefoxUserPrefs: { 'fission.webContentIsolationStrategy': 1 } },
+      },
     },
     {
       name: 'webkit',
@@ -49,7 +85,19 @@ export default defineConfig({
       // commit explícito (11/09/2026), recarregando logo depois de trazer os arquivos do Molda,
       // a mudança voltou em 0 de 10 recargas. Só os specs dessa gravação: o resto da suíte é
       // coberto pelo Chromium, e duplicá-lo não traria sinal novo.
-      testMatch: [/reload-flush\.spec\.ts/],
+      // A casca: só o funcionamento (nenhum arranjo de iframe isolou o WebKit na medição).
+      // E a lixeira e o zoom do Blockly, como no Firefox (o desenho do SVG é de cada motor), e
+      // Meus testes (o palco escondido do teste no motor do iPad).
+      // A migração da lista interrompida por recarga (lote 1, item 7): o IndexedDB do iPad.
+      testMatch: [
+        /reload-flush\.spec\.ts/,
+        /migration-interrupted\.spec\.ts/,
+        /preview-shell(?:-performance)?\.spec\.ts/,
+        /blockly-media\.spec\.ts/,
+        /student-tests\.spec\.ts/,
+        /student-tests-hostile\.spec\.ts/,
+        /pro-light-runtime\.spec\.ts/,
+      ],
       use: { ...devices['Desktop Safari'] },
     },
   ],

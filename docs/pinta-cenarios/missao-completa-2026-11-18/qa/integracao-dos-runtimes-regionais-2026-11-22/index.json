@@ -1,0 +1,600 @@
+{
+  "baseline": "bb1fd30f7",
+  "head": "c34117d6ab1e652b236bf2898a47bcdfb3b36231",
+  "uncommittedTestHarnessChanges": true,
+  "records": [
+    {
+      "file": "core-full.log.gz",
+      "bytes": 71966,
+      "sha256": "63e55930eea0c20da16e282fd6f6a7fd40984da29aa6a6468842809fe7552cb9",
+      "rawSha256": "43ba663599be9b76f7a221822dbdfaadbe6d36e09471e7161a03024b22956bc5"
+    },
+    {
+      "file": "pinta-full-final.log.gz",
+      "bytes": 85764,
+      "sha256": "82e60773c36287ee5ec08db18a2101db4bbece440a6dfab2d7d0e522ec61ccb8",
+      "rawSha256": "3974423d8c934459663103daee90069fa8bdfaea3f7392f55aa4fece86395350"
+    },
+    {
+      "file": "pinta-full-audit-red.log.gz",
+      "bytes": 86055,
+      "sha256": "327413759c22d33004666df19f62442211ec0b1d65ea011229fbd77d9eb6fd68",
+      "rawSha256": "5c53c070b9b6d2abd2c1b5f87f370835459ad3827b08d3529f90a666d4d4b138"
+    },
+    {
+      "file": "pinta-full-matrix-red.log.gz",
+      "bytes": 86152,
+      "sha256": "fe1388d6f94d03243faa96963abbe14d6548b0aaa81d2e257a706cc95c27c0eb",
+      "rawSha256": "293350c6953bf7e3a95997a29a6c01b8b3604b05f7c6ff3736b5bbef8710d413"
+    },
+    {
+      "file": "matrix-before.log.gz",
+      "bytes": 235,
+      "sha256": "92b287701c840f0c978ae6f3e12867c10de4274c9216031130e9bc92d757ea46",
+      "rawSha256": "85a7ab46913413e9ad1487f91b325ea08e1b00d3fb2b880a637f73570ca1eef1"
+    },
+    {
+      "file": "matrix-final.log.gz",
+      "bytes": 665,
+      "sha256": "9fd22f358bd1dfc2fecf4082cbe60e6b5ca361bb9468f651b755a9eff84cf45d",
+      "rawSha256": "255635f36cfa2c5fdb1ae8d7e82568d3963cae8581e5f1424894ca7d5e9ab8df"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-focused.log.gz",
+      "bytes": 1306,
+      "sha256": "6472ce750a91eafd177b4dc08e56242f72f48f2a5ee1c6f32f3d01c11b8c2a93",
+      "rawSha256": "20aa8c8f4a8ca79abcbd3e442bc03edf9fbee8a76e80b7a7cd3018e8a379c8fe"
+    },
+    {
+      "file": "ce-browser.log.gz",
+      "bytes": 338,
+      "sha256": "88336f7b58e7e841aa3c226089d7b0377b5e44e7875779ff6b6a355455b30e81",
+      "rawSha256": "4be6f85062f1aeedb68c500f01917b2246149d05bb9d9a2eb279cef03cba04ad"
+    },
+    {
+      "file": "ce-browser-report.json.gz",
+      "bytes": 27523,
+      "sha256": "292e65fade577dca9dcfc94399e806ab103f9ef3782c83aeee2fd459d5ad2cd7",
+      "rawSha256": "8cec21eb330c339eea6ba264179857ad62ec59458f4783c7cb7435db23bb3e4c"
+    },
+    {
+      "file": "python-2d-browser.log.gz",
+      "bytes": 467,
+      "sha256": "c671c8b6da950c14b437cf8e75aca6105f757fd74265e77189ed62a86a13675b",
+      "rawSha256": "21bcc065f0f69db85a12b86f99c53a43e892cc1bbeca62702121512a3f2dfd0c"
+    },
+    {
+      "file": "js-players-browser.log.gz",
+      "bytes": 339,
+      "sha256": "0ee56ce3b167a2d79cd19221ff5fd78c14756419bc7ecf24c672785e80c1c51a",
+      "rawSha256": "db27570cde1647269e03bcc9041739911a9e6387b46e2a86e5e4fb1e744b94fe"
+    },
+    {
+      "file": "legacy-python-browser.log.gz",
+      "bytes": 775,
+      "sha256": "35320f82e8ff3962e0016604606c0f5065aa06160c3e338fc53ade05d33e97f8",
+      "rawSha256": "c5bfd3b5611f6bc4fbbdb404dddfd019b1a15060e9bc92bee97ad474e1ceabe1"
+    },
+    {
+      "file": "inventory-pg.log.gz",
+      "bytes": 1492,
+      "sha256": "e9ffcc4946299d84fe867fbb49c8b6f77fbb9eef2d1054cbbdefaa61946d70da",
+      "rawSha256": "2f9b3a8abe38ab5006d9ae0479003fe989a6544b68fc3e5269ad6dd9ee5b330a"
+    },
+    {
+      "file": "inventory-purge.log.gz",
+      "bytes": 922,
+      "sha256": "d451be7f36f4e4980b0950184182a405bb33cc28b1a02f07c682923da54defa1",
+      "rawSha256": "9574cf628fec2730a6a358555b199c7645d9e04b55fd40c1928d7bf8b17fb246"
+    },
+    {
+      "file": "inventory-http.log.gz",
+      "bytes": 2440,
+      "sha256": "567a50d437e98d1b64d118f4a4d0f0f19d905dbca8c6f252612d9509ee4787ba",
+      "rawSha256": "33767d3b1dd52eab044bd74011275aa357ea6e779ea463a283172e4d1a267f06"
+    },
+    {
+      "file": "inventory-bff.log.gz",
+      "bytes": 2502,
+      "sha256": "947be0aafa535ecd038759dff8cfb5a5c3a1769145d3235de556980730f6bc8e",
+      "rawSha256": "34b00f80dcb4da1a97e89c8f2adb4fb7faaf95fa56671ac5fd4f43493a887cc2"
+    },
+    {
+      "file": "inventory-client-red.log.gz",
+      "bytes": 2980,
+      "sha256": "9cabbd32ecabda4b91bd3e11c519b2221eccd4d0c0c0f3637efcee611b4ced5d",
+      "rawSha256": "975795bd1e739b3a87ad894f8e092110ebfd9099a32516aea627d8ee7f9f0df0"
+    },
+    {
+      "file": "inventory-client-final.log.gz",
+      "bytes": 2620,
+      "sha256": "90316cfdbf670562aaac6864a258fad57704e456e5125f0e7ea363095c0a0632",
+      "rawSha256": "aca8826cd6023d0638998393da387ec951066e7856ed86a4bcca77dfee9c0776"
+    },
+    {
+      "file": "core-generator.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "python-generator.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "js-generator.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 65,
+      "sha256": "8b760cf6d7779a883bc0294675c1185a88f10ca8c3b2e3dc98d5d76e0ff05c52",
+      "rawSha256": "14dcf9a177562439966f6997c593a5fcf34af49c59db8cbf09b680cb0175378a"
+    },
+    {
+      "file": "runtime-build.log.gz",
+      "bytes": 648,
+      "sha256": "cbbd176baea6b461f754ee68eb1f51cb354223e07d4cf91e42d5220378a24ae7",
+      "rawSha256": "a5841411f5786c6d236cf52aad2e4e2da13303b13f91a0e9ddaf71315c3290db"
+    },
+    {
+      "file": "runtime-build.json.gz",
+      "bytes": 312,
+      "sha256": "0ddfaeb90048140d4641ce8e6dc3ae0ac2fdd4ce56546b834c89e1e83a0517d4",
+      "rawSha256": "44367a5cd18961d70f6edda42c183e3cf8bccbece3318be6addb9cc23684e932"
+    },
+    {
+      "file": "runtime-builder.ts.gz",
+      "bytes": 808,
+      "sha256": "e11209694f04034c2a6148a21ca0dd14fbb2041b75dd4af191a257ddcaff2f9c",
+      "rawSha256": "072dca4356031441b4fb8d65e343c98c637a1ea6055390978d2532d3f49d3ef2"
+    }
+  ],
+  "sources": [
+    {
+      "file": "experiments/studio-python-runtime/fixtures.ts",
+      "bytes": 11272,
+      "sha256": "c901536f397841b641265efbbcfb7cc4959ae18a9efde63465582d9cc265b506"
+    },
+    {
+      "file": "experiments/studio-python-runtime/pintaBrowser2dFixtures.ts",
+      "bytes": 7974,
+      "sha256": "b429d14c9e7f4c8905ecb89478901edfa81df1439382997f1748b2a80da97b96"
+    },
+    {
+      "file": "experiments/studio-python-runtime/pintaRegionalFixtures.ts",
+      "bytes": 7076,
+      "sha256": "4464f648fd608d3913d60b2cd3e3d44d3b8cf39b690ba2a509197def16c508e2"
+    },
+    {
+      "file": "packages/community-kids/tests/creations-cloud.test.ts",
+      "bytes": 70840,
+      "sha256": "7eed43ef4461c0bdefb448120f9f317b14f83be339d606ba29516e645c9d921c"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "bytes": 4871,
+      "sha256": "a75a39476d2d5aa77c1240b9dc4bc8213c33e74eef9702d8b69ba2731e504980"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "bytes": 8211,
+      "sha256": "c79d53e960d22150ff1fe9cd767394730ad7376dbe40a331393b18104ca1a9f4"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.test.ts",
+      "bytes": 17379,
+      "sha256": "2e5aacfeb7f578a401ecfc3996abc508a0a2e0bf13edc00600b1b1fc7b848bd3"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-query.ts",
+      "bytes": 2282,
+      "sha256": "b3f8330e19ad3d9fed240a77520b8430d130554ff424fdac404a406a395a5146"
+    },
+    {
+      "file": "packages/core/src/studio/pinta-scene-runtime.ts",
+      "bytes": 14927,
+      "sha256": "d8dd22cdc1bc9ae5a06ac16f08d2095944e4da6e14ca28ffa28f3066550c4f0c"
+    },
+    {
+      "file": "packages/member-shell/src/lib/creations-cloud.ts",
+      "bytes": 54073,
+      "sha256": "2425e23e3901b29402ae5296ecf80b71f490f769f3becb6bc01d72094c1d9466"
+    },
+    {
+      "file": "packages/member-shell/src/lib/types.ts",
+      "bytes": 68325,
+      "sha256": "f41388ba80ba833c9dcce8fb96c5fb0750e9268194f6714d5ddff726ba8ba476"
+    },
+    {
+      "file": "packages/member-shell/src/routes/creations.ts",
+      "bytes": 26187,
+      "sha256": "7de5014c9c1229d7b4ce0bfdc3cc4387e7f13fcf1d817d2c9d24890bf2511110"
+    },
+    {
+      "file": "packages/member-shell/src/server/clients.ts",
+      "bytes": 85041,
+      "sha256": "e44ad178bac72a63401855b8431776a465985bc7dceb4d870c86a435c1a04849"
+    },
+    {
+      "file": "packages/member-shell/tests/creations-routes.test.ts",
+      "bytes": 44621,
+      "sha256": "3d5e438ef8efd6c39a4a88b87a3941fcd91c29e4f2901e1d36f1a6b9f91546ee"
+    },
+    {
+      "file": "packages/members/src/application/creations/creations.service.ts",
+      "bytes": 22901,
+      "sha256": "79219cd19bd4ce3275ceff99b3625551823994b4c2cbb018c9e86107b082b580"
+    },
+    {
+      "file": "packages/members/src/domain/creations/creation.ts",
+      "bytes": 9514,
+      "sha256": "02672c8cd762c58765620665a9543c439193acdbde092e10fc3afeefc316a7d2"
+    },
+    {
+      "file": "packages/members/src/domain/ports/creations-repository.port.ts",
+      "bytes": 7832,
+      "sha256": "3ae930335e34347d5537819cce7d27d58fb1516acfa09e18d251f5921b387c6e"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/creations.repository.ts",
+      "bytes": 32349,
+      "sha256": "05462bcdc73fe806aa359f7c9d1e8765622f8074e9fc1f70ad7a1824170f718b"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0166_snapshot.json",
+      "bytes": 425325,
+      "sha256": "eb65212303c8ac5b6b0ed13e65c522bf930d54e7c0f070fcbfedb7d8668fcf73"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0167_snapshot.json",
+      "bytes": 425325,
+      "sha256": "fb6c7478a2f722d8fe8c8598d92e6a1412fcebac30c140cb1d4cac94d0680fd6"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+      "bytes": 24906,
+      "sha256": "162f5f7c3f0086e6c99c8e7ebe009193116d8554a63fbb5e8325d0945f2fec7c"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 173387,
+      "sha256": "5fbf3fdf7716e64475609ca555df399bc1c417c99c3fd86b9e716b6741736a21"
+    },
+    {
+      "file": "packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts",
+      "bytes": 21094,
+      "sha256": "4d2fef4699bf41047ae5c6e3a7695b46afcf124e12361a7a43668b05c65a89c0"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/dtos.ts",
+      "bytes": 75085,
+      "sha256": "56746ef2907806e67dfd7947dd7c8e6bf5b0c0786eaffdecda08e317d21b303d"
+    },
+    {
+      "file": "packages/members/src/interfaces/http/routes/creations.routes.ts",
+      "bytes": 5967,
+      "sha256": "4afb539fae699e71291e0dcad5f242a8ec63a59746f77833ccc40984ebb6fa7c"
+    },
+    {
+      "file": "packages/members/tests/db/creations.repository.test.ts",
+      "bytes": 47184,
+      "sha256": "72c97f3ad6cfb06753a6bed006e8ccb0aeaef1b81fa57177975aa3f87df56205"
+    },
+    {
+      "file": "packages/members/tests/db/user-data-purge.test.ts",
+      "bytes": 15669,
+      "sha256": "27299451e42794189d0fdef169ba8b1687c077325d64f2dba64c2e603998b2b0"
+    },
+    {
+      "file": "packages/members/tests/fakes/creations-in-memory.ts",
+      "bytes": 16335,
+      "sha256": "2a51669023f071606f91d976631030156a41f9b36cb028a10d1f42a0954a023f"
+    },
+    {
+      "file": "packages/members/tests/integration/creations.test.ts",
+      "bytes": 64176,
+      "sha256": "89d46aaa63379bf2d1ec47de355a3bbb5b702ec6a25f8f4cc2adef2f36a8c6a9"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPgzeroRegional.ts",
+      "bytes": 780,
+      "sha256": "6db66d897b90f27bb300e6adf623e20d0d65beb65693c38dae6ea0137b63b9aa"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameAffine.ts",
+      "bytes": 6265,
+      "sha256": "3f09b68124da4bd7edd55ca22226ad0a6be4d70e110d141ec0096005c25ea60e"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameRegional.test.ts",
+      "bytes": 10966,
+      "sha256": "56eda1d409e7cef7a9a63e82db0543840ed3c3a88199bc5c22e013e17433e13f"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonPygameRegional.ts",
+      "bytes": 1958,
+      "sha256": "d984e35365c43a25369489682909447d5233a0e76175a8d01b9dc4af33307cb3"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRaylib2dRegional.ts",
+      "bytes": 5025,
+      "sha256": "9f2ce41bd2c1c5d02761eb95ccce17f1bb07481bd9929a312f123d48e2eb91dd"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonRegional2dBackends.test.ts",
+      "bytes": 13369,
+      "sha256": "fcfd7a29c1f42286173b6dd1f524569ce2cc4caafd4601cf2f8bf061198a276d"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneBackend.ts",
+      "bytes": 5037,
+      "sha256": "96e08de2fa5487ea8a7ab1dfa21ae0ddbe3c78ad293a3834e7596c8f0e75cdd6"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.test.ts",
+      "bytes": 9676,
+      "sha256": "0c9233175b7af25cd0193ba8557a6821190301d3dd40cdab1cc05ce9655397ed"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.ts",
+      "bytes": 8132,
+      "sha256": "09dd1228de3b5d0c0c9ce459339cd90b5797c3c1cabe8515a78b9540bc5a4645"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonScenePhysics.ts",
+      "bytes": 6858,
+      "sha256": "fdf66cc3c27969a13daac0d75f933ad33fad797b5882867f157be45098b71875"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonScenePlacement.ts",
+      "bytes": 10268,
+      "sha256": "ca12ad74f31fc0e1342d77655f2a2d618a15052342119b76a00172bd9dcd663c"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRegions.ts",
+      "bytes": 8298,
+      "sha256": "1803992f71466550d4d7584fdcc59b5c434fc7d0faed4670b346e84ab4c15042"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRuntime.ts",
+      "bytes": 8902,
+      "sha256": "65f4e7b314224722d86a8de562671262cc0d9db978641868ef32532189a06bb7"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneSetCulling.test.ts",
+      "bytes": 9624,
+      "sha256": "0812ab53306d2010a8fca5729525363d4bd795acab790f57e7a5b1295bdf5345"
+    },
+    {
+      "file": "packages/pinta/src/export/regionSceneDrawing.test.ts",
+      "bytes": 8578,
+      "sha256": "941219e1e0f063e7363dee5876e153adafff8268f4a2d4e7c799cd9c6694f8fa"
+    },
+    {
+      "file": "packages/pinta/src/export/sceneDrawing.ts",
+      "bytes": 9547,
+      "sha256": "00e816cdaaf5a171d02189c5faa7e094e8189d39c6a7bdaeea4a9b50b631b3d7"
+    },
+    {
+      "file": "packages/pinta/src/testing/regionPlatformPng.ts",
+      "bytes": 1664,
+      "sha256": "d15793753e4df9a8536a3350575ec724f0e8ec817309e53b5b065aaf122b988a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cell.ts",
+      "bytes": 3673,
+      "sha256": "ed4be72ebf09f5effeb2bc0d9bb4f53938a7a8dafff526c370398d23e6a7b7ae"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "bytes": 8615,
+      "sha256": "04e38ac9d15f7013226a81fc1c48962b86ea9af2c819749061bd71a46611b47f"
+    },
+    {
+      "file": "packages/pinta/src/tiles/chunks.ts",
+      "bytes": 20376,
+      "sha256": "9a49856d8dbc5708749846fdb349121338a8c03f0300871033c5ef3e0999b451"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCellReader.ts",
+      "bytes": 4337,
+      "sha256": "a144e7650926248a9068a7d3b4b54eacc5a96fbeedbba413d371c9505c76fddf"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "bytes": 662,
+      "sha256": "6a589449e515f6dd54da89d65d00226a85e8e4116a95da208b3ec58f4c61511a"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-2d-browser.spec.ts",
+      "bytes": 8794,
+      "sha256": "32f2f301a03298de13b30d3d5695d68493a5490f873907082c7aee3581830642"
+    },
+    {
+      "file": "packages/studio/e2e-runtime/python-pinta-regional.spec.ts",
+      "bytes": 3833,
+      "sha256": "2fedb34057f11408c061737455f3e1c37056ffcc798cf5b4aff518c7b73ee522"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-region-players.flow.ts",
+      "bytes": 4268,
+      "sha256": "e5930d0395915718439462e999f087e29da653b1b9e0d7d6513e394f7280337e"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-python-2d-browser.config.ts",
+      "bytes": 607,
+      "sha256": "9036f0166e7c8f5dac66c0a968b4ce61dc7ef3cd667a3c5fd5a97a00c66e8a65"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-python-regional.config.ts",
+      "bytes": 629,
+      "sha256": "c55f319a275d34a76d5cd6fe815275093ad8fb5be96a63a615f55be6afc0439b"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-region-players.config.ts",
+      "bytes": 461,
+      "sha256": "3bee662eff001dc8411d299878d2c36cda91e7559a322edc8379425414368ab0"
+    },
+    {
+      "file": "packages/studio/scripts/gen-pinta-region-runtime.ts",
+      "bytes": 2939,
+      "sha256": "5d7b1b0465ca381b419671a94f8c7da1a3a6a43114c2e86ab1e492bae75f6e6d"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+      "bytes": 238286,
+      "sha256": "f73aacb769b40c46690819d266ad84e0f0926c3d2e848f9d750cc23a07ff4daf"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/utilities.ts",
+      "bytes": 18934,
+      "sha256": "2da91df76d5e198a07fc03b6b5623087eb8f09ff751cf6c1f6909eb25296a347"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d/runtime/worldTiles.ts",
+      "bytes": 38331,
+      "sha256": "fde5c7b4793d5a25e12f4b0685dcb5d4eefe044bcf684581198814b7efdd9179"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionEngines.test.ts",
+      "bytes": 7248,
+      "sha256": "9a2e7f7d184bfb0d31d8436706846bfc9f2b97025c2cea39a80f114914e24cdb"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionFixture.ts",
+      "bytes": 7507,
+      "sha256": "a5de4d84b2822d405b7e1341eae99cab6d66475efe794b9899cb78aa2b0df591"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/__tests__/regionLegacyCollision.test.ts",
+      "bytes": 4892,
+      "sha256": "881639a0ef39c6ba02794ee897ed14cff4cdfd63d3b84fb819bcc28a75b05953"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/bootstrap.ts",
+      "bytes": 9145,
+      "sha256": "4b07de161e073076ed4fbc356420e458e166ea3661fc2527da6a1fd437849092"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionBootstrap.ts",
+      "bytes": 1940,
+      "sha256": "610bb45cc18d80d50b7a3131ab9ce822691fb873ef0b1512cd8da6c7f8be6c9d"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionHostSource.ts",
+      "bytes": 4779,
+      "sha256": "f4a8e756e5bea0efa4677972a289b81ad83d67f64ab0890500b9acb02720e3da"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionLegacyCollision.ts",
+      "bytes": 6689,
+      "sha256": "9b12941c9e545744cb45e274107fad6b330341a28612086ce0fb8aabf6fd9c42"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionRuntime.generated.ts",
+      "bytes": 21824,
+      "sha256": "cbed7c3a115b78e1cef16caa43474372e43315286b0cef7bb33b1dffaaa0f702"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionRuntime.ts",
+      "bytes": 12350,
+      "sha256": "224d9dc781d86ec84863ad5f8a20c6edcf02b5d4c7e49698bd936b3f020470d0"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/map-2d/regionWire.ts",
+      "bytes": 2442,
+      "sha256": "15d0ab5ca774196fcb88545b997904cc7ecfdee80daccf09a49447ba9f2d1061"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/frame.ts",
+      "bytes": 22886,
+      "sha256": "dfd6b9abdb7bdb45e615cf101e979277eb931e91567e2e36c539225132e5e590"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/interpreter.ts",
+      "bytes": 33788,
+      "sha256": "0ca2a44c794f84885ac6169fddfc1efa979704da85dfaf2346ebeda76abfbe21"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/protocol.ts",
+      "bytes": 13627,
+      "sha256": "effb567322d685e3c5903d19b608bd8b0c083fbe78085b033f18344fc5ed7d0d"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/py/pgzero/_sz.py",
+      "bytes": 38078,
+      "sha256": "f2c4f900ba2b83cf165ffab34aef90c31caea0768933791e5397d6aa27578cea"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.test.ts",
+      "bytes": 21532,
+      "sha256": "8fbfc0af1f5585f303bc3c57762620e6d60c7040a8f35376200dbdce90785690"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pgzero/renderer.ts",
+      "bytes": 43916,
+      "sha256": "acf2f349671d8fc2f1c060b509d1e2d4c4ed32b9e11994a8baf7d04a1735b286"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaBrowserSceneSource.ts",
+      "bytes": 3185,
+      "sha256": "509dfb40c1e3d416784b6cd81d8318d1adc494982cc9e5a7f2657fd0c15eccef"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionProtocol.test.ts",
+      "bytes": 5201,
+      "sha256": "71dd44cb0c6d2ad00747bb16d413e1f3e5b093b32695cc92fe783bdae212557a"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionProtocol.ts",
+      "bytes": 6066,
+      "sha256": "386091cd73773f6f25ba9765e04bf57587f745d1dfd9dc94972e9d0371560524"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionTextures.test.ts",
+      "bytes": 2804,
+      "sha256": "e4bb65b16810ad630ac4c2c384eb46fa29b6ef8860f621567faebbaba984bba4"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pintaRegionTextures.ts",
+      "bytes": 3895,
+      "sha256": "720ad8b7f8ae517fe9ca4c937f57f534dca26f0e2a88bdbfb7b9545aa677e2d5"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/pygame/py/pinta.py",
+      "bytes": 76180,
+      "sha256": "bbcbeb402deb64d6c7d67abc709e6d79b5a94f3678936e8f24c49cf5f0ba0fee"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/__tests__/module_test.py",
+      "bytes": 16042,
+      "sha256": "38c405c06d8129eb31f0da7dc1186b1613ab3af21eeb561d679187819db5f929"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/protocol.ts",
+      "bytes": 12357,
+      "sha256": "7a4fccb600edbd0dbe50761f4158cda2f67d972aff1018f802c69e80b86f6edd"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/py/_szraylib/_rt.py",
+      "bytes": 18182,
+      "sha256": "622aa596bdaa08acd28c324446eb095726bfba75d32a63ee8356b937850b0963"
+    },
+    {
+      "file": "packages/studio/src/runtime/python/raylib/renderer.ts",
+      "bytes": 71017,
+      "sha256": "2e1bd961216bd50a390e566fc18b91b4b5bb212027e5ec0a98fef352b642a751"
+    }
+  ]
+}

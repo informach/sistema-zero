@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+tests\lesson-draft-persistence.test.ts:
+(pass) rascunho Pinta com frações usa documento 5 e capacidade de nuvem 4
+(pass) rascunho nativo 6 nunca declara a capacidade antiga de nuvem
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: missing
+(pass) falha ao reler o disco não se passa por rascunho já sincronizado: read-error
+(pass) studio: download da outra versão não autoriza sobrescrever a conta
+(pass) pinta: download da outra versão não autoriza sobrescrever a conta
+(pass) studio: storage da outra versão não autoriza sobrescrever a conta
+(pass) pinta: storage da outra versão não autoriza sobrescrever a conta
+(pass) offline context opens the existing draft without another network wait or cloud acknowledgement [15.00ms]
+(pass) first admission cannot interpret an unavailable account as absence of previous work
+(pass) studio prepare: incompatible cloud work never replaces the active draft or acknowledges its revision [16.00ms]
+(pass) studio conflict-first: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio conflict-later: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio prepare-local-newer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio submission: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio producer: incompatible cloud work never replaces the active draft or acknowledges its revision
+(pass) studio: identical content fingerprints do not authorize a different Pro template
+(pass) pinta: conflito com o MESMO desenho só adota a revisão e não gasta a outra versão
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) pinta: desenho diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: projeto diferente guarda o da conta; no primeiro contato ele vai para cima: %s
+(pass) estúdio: conflito com o MESMO projeto só adota a revisão
+(pass) estúdio: a versão da conta feita por um Estúdio mais novo vira "página desatualizada", sem gravar nada
+(pass) estúdio: falha do disco ao guardar a outra versão continua sendo falha comum
+(pass) pinta: rascunho da conta em formato mais novo não é baixado ao abrir; o local abre e nada sobe
+(pass) pinta: conflito com a conta em formato mais novo para antes de baixar e pede a página nova
+(pass) pinta: documento com carimbo que esta página não conhece é recusado inteiro, como página antiga
+
+ 28 pass
+ 0 fail
+ 105 expect() calls
+Ran 28 tests across 1 file. [277.00ms]

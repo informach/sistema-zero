@@ -1,0 +1,1131 @@
+{
+  "refs": ["7816a7aca0ba6f7d93a90fe4c15f40638b01525f", "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825"],
+  "itens": [
+    {
+      "id": "arvore_04_pacote",
+      "categoria": "vegetacao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arvore_04_pacote.glb",
+          "dims": [2.834, 2.835, 4.216],
+          "tris": 382,
+          "bytes": 541148,
+          "sha256": "9e9a75b2fc10caa630d37ebda0d8bdb9f14198872b9f6e3c72d43be8c42afc7e",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arvore_04_pacote.glb",
+          "dims": [2.834, 2.835, 4.216],
+          "tris": 382,
+          "bytes": 541148,
+          "sha256": "9e9a75b2fc10caa630d37ebda0d8bdb9f14198872b9f6e3c72d43be8c42afc7e",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "arvore_03_pacote",
+      "categoria": "vegetacao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arvore_03_pacote.glb",
+          "dims": [4.444, 4.455, 9.398],
+          "tris": 446,
+          "bytes": 544116,
+          "sha256": "995b9bab971a35dc30a37fe5b22c8534b02d1a0262139d3ffb32ec4130f18b45",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arvore_03_pacote.glb",
+          "dims": [4.444, 4.455, 9.398],
+          "tris": 446,
+          "bytes": 544116,
+          "sha256": "995b9bab971a35dc30a37fe5b22c8534b02d1a0262139d3ffb32ec4130f18b45",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "arbusto_04_pacote",
+      "categoria": "vegetacao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arbusto_04_pacote.glb",
+          "dims": [2.035, 2.082, 2.227],
+          "tris": 576,
+          "bytes": 311472,
+          "sha256": "4d56e187956f8e089561d1da20df6684c63a71fdee35f0e65ec9e767bbb6f79b",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "vegetacao/glb/arbusto_04_pacote.glb",
+          "dims": [2.035, 2.082, 2.227],
+          "tris": 576,
+          "bytes": 311472,
+          "sha256": "4d56e187956f8e089561d1da20df6684c63a71fdee35f0e65ec9e767bbb6f79b",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "folhagem_01_pacote",
+      "categoria": "vegetacao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "vegetacao/glb/folhagem_01_pacote.glb",
+          "dims": [3.362, 2.676, 2.652],
+          "tris": 848,
+          "bytes": 319628,
+          "sha256": "a1297d0ed2f0941b4e26d8e647ec81975c21279adba543b9281cb388e41a0192",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "vegetacao/glb/folhagem_01_pacote.glb",
+          "dims": [3.362, 2.676, 2.652],
+          "tris": 848,
+          "bytes": 319628,
+          "sha256": "a1297d0ed2f0941b4e26d8e647ec81975c21279adba543b9281cb388e41a0192",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "cerca_02_pacote",
+      "categoria": "construcao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "construcao/glb/cerca_02_pacote.glb",
+          "dims": [3.896, 0.186, 0.578],
+          "tris": 248,
+          "bytes": 302892,
+          "sha256": "59f99c48839e5c5e0a3f2f270f1cf54bb895d845589c437ee08c29c47c79df70",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "construcao/glb/cerca_02_pacote.glb",
+          "dims": [3.896, 0.186, 0.578],
+          "tris": 248,
+          "bytes": 302892,
+          "sha256": "59f99c48839e5c5e0a3f2f270f1cf54bb895d845589c437ee08c29c47c79df70",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "ponte_04_pacote",
+      "categoria": "construcao",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "construcao/glb/ponte_04_pacote.glb",
+          "dims": [4.352, 12.354, 1.106],
+          "tris": 3904,
+          "bytes": 422132,
+          "sha256": "8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "construcao/glb/ponte_04_pacote.glb",
+          "dims": [4.352, 12.354, 1.106],
+          "tris": 3904,
+          "bytes": 422132,
+          "sha256": "8d256d9aefccebcfa35c803c6af188583d6326d23f461a98963beb16fa61775a",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "barril_01_pacote",
+      "categoria": "tesouros",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "tesouros/glb/barril_01_pacote.glb",
+          "dims": [1.103, 1.103, 1.142],
+          "tris": 1124,
+          "bytes": 323496,
+          "sha256": "c8e7fd71c29f2cf906f26840dec773277cae9b78ddcf3f5eb0b1793328f1fdd8",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "tesouros/glb/barril_01_pacote.glb",
+          "dims": [1.103, 1.103, 1.142],
+          "tris": 1124,
+          "bytes": 323496,
+          "sha256": "c8e7fd71c29f2cf906f26840dec773277cae9b78ddcf3f5eb0b1793328f1fdd8",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "bau_02_pacote",
+      "categoria": "tesouros",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "tesouros/glb/bau_02_pacote.glb",
+          "dims": [1.218, 0.909, 0.905],
+          "tris": 1020,
+          "bytes": 570656,
+          "sha256": "fc752ef261e06fde6cd2616fdf19241c094299c27bcfa5479988463c41bd774f",
+          "pontos": [
+            {
+              "tipo": "usar",
+              "ponto": [0, 0.453, 0.454],
+              "direcao": [0, 0, 1],
+              "acao": "abrir",
+              "interativos": "tampa"
+            }
+          ],
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "tesouros/glb/bau_02_pacote.glb",
+          "dims": [1.218, 0.909, 0.905],
+          "tris": 1020,
+          "bytes": 570656,
+          "sha256": "fc752ef261e06fde6cd2616fdf19241c094299c27bcfa5479988463c41bd774f",
+          "pontos": [
+            {
+              "tipo": "usar",
+              "ponto": [0, 0.453, 0.454],
+              "direcao": [0, 0, 1],
+              "acao": "abrir",
+              "interativos": "tampa"
+            }
+          ],
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "casa_02_pacote",
+      "categoria": "plataformas",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "plataformas/glb/casa_02_pacote.glb",
+          "dims": [12.778, 12.778, 12.08],
+          "tris": 4704,
+          "bytes": 433872,
+          "sha256": "f288f2ab5e6068e59e80ac2cc10b9356b13f13a56a9c8e02821d122c193babb9",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "plataformas/glb/casa_02_pacote.glb",
+          "dims": [12.778, 12.778, 12.08],
+          "tris": 4704,
+          "bytes": 433872,
+          "sha256": "f288f2ab5e6068e59e80ac2cc10b9356b13f13a56a9c8e02821d122c193babb9",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "caminho_01_pacote",
+      "categoria": "plataformas",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "plataformas/glb/caminho_01_pacote.glb",
+          "dims": [7.739, 3.907, 1.781],
+          "tris": 3776,
+          "bytes": 616892,
+          "sha256": "fb348f216575935448872257da7f83cd440aedf0f2fe4d568afd0a9ddf9599f9",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "plataformas/glb/caminho_01_pacote.glb",
+          "dims": [7.739, 3.907, 1.781],
+          "tris": 3776,
+          "bytes": 616892,
+          "sha256": "fb348f216575935448872257da7f83cd440aedf0f2fe4d568afd0a9ddf9599f9",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "agua_ilha_pacote",
+      "categoria": "terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "terreno/glb/agua_ilha_pacote.glb",
+          "dims": [999.793, 1000.476, 0],
+          "tris": 2,
+          "bytes": 613184,
+          "sha256": "f2a9d7cc5e07be0cf18451ea155028d6391c662817cf83638ef629d9e39b580b",
+          "pontos": null,
+          "encaixe": null
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "terreno/glb/agua_ilha_pacote.glb",
+          "dims": [999.793, 1000.476, 0],
+          "tris": 2,
+          "bytes": 613184,
+          "sha256": "f2a9d7cc5e07be0cf18451ea155028d6391c662817cf83638ef629d9e39b580b",
+          "pontos": null,
+          "encaixe": null
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "caminho_terra_reto",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/caminho_terra_reto.glb",
+          "dims": [7, 2.6, 0.152],
+          "tris": 232,
+          "bytes": 307340,
+          "sha256": "804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "nota": "liga o meio de duas bordas opostas da célula; vai no chão ou no topo de um platô",
+            "pontos": [
+              {
+                "nome": "ponta_esq",
+                "posicao": [-3.5, 0, 0]
+              },
+              {
+                "nome": "ponta_dir",
+                "posicao": [3.5, 0, 0]
+              }
+            ]
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/caminho_terra_reto.glb",
+          "dims": [7, 2.6, 0.152],
+          "tris": 232,
+          "bytes": 307340,
+          "sha256": "804d14830d9527554012f51b077e0e8330cb0bc6e97c3c12df86dbeba3203131",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "nota": "liga o meio de duas bordas opostas da célula; vai no chão ou no topo de um platô",
+            "pontos": [
+              {
+                "nome": "ponta_esq",
+                "posicao": [-3.5, 0, 0]
+              },
+              {
+                "nome": "ponta_dir",
+                "posicao": [3.5, 0, 0]
+              }
+            ]
+          }
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "caminho_terra_curvo",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/caminho_terra_curvo.glb",
+          "dims": [4.8, 4.8, 0.149],
+          "tris": 236,
+          "bytes": 306692,
+          "sha256": "6f42843e7f26bf6130e86bba1024b2a0cbb722d93bd77873787128534969b399",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "raio_m": 3.5,
+            "nota": "quarto de círculo de raio 3,5 m em volta do canto da célula de 7 m: liga o meio de duas bordas vizinhas, como o caminho reto",
+            "pontos": [
+              {
+                "nome": "ponta_a",
+                "posicao": [1.1, 0, 2.4]
+              },
+              {
+                "nome": "ponta_b",
+                "posicao": [-2.4, 0, -1.1]
+              },
+              {
+                "nome": "canto_da_celula",
+                "posicao": [-2.4, 0, 2.4]
+              }
+            ]
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/caminho_terra_curvo.glb",
+          "dims": [4.8, 4.8, 0.149],
+          "tris": 236,
+          "bytes": 306692,
+          "sha256": "6f42843e7f26bf6130e86bba1024b2a0cbb722d93bd77873787128534969b399",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "raio_m": 3.5,
+            "nota": "quarto de círculo de raio 3,5 m em volta do canto da célula de 7 m: liga o meio de duas bordas vizinhas, como o caminho reto",
+            "pontos": [
+              {
+                "nome": "ponta_a",
+                "posicao": [1.1, 0, 2.4]
+              },
+              {
+                "nome": "ponta_b",
+                "posicao": [-2.4, 0, -1.1]
+              },
+              {
+                "nome": "canto_da_celula",
+                "posicao": [-2.4, 0, 2.4]
+              }
+            ]
+          }
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "lago_nadavel",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/lago_nadavel.glb",
+          "dims": [10.758, 7.973, 1.639],
+          "tris": 7452,
+          "bytes": 1406100,
+          "sha256": "87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+          "pontos": null,
+          "encaixe": {
+            "contorno_furo": [
+              [5.084, 0, 0],
+              [4.985, 0, -0.524],
+              [4.815, 0, -1.023],
+              [4.576, 0, -1.487],
+              [4.279, 0, -1.905],
+              [3.937, 0, -2.273],
+              [3.562, 0, -2.588],
+              [3.164, 0, -2.849],
+              [2.753, 0, -3.058],
+              [2.338, 0, -3.218],
+              [1.927, 0, -3.337],
+              [1.524, 0, -3.423],
+              [1.133, 0, -3.487],
+              [0.752, 0, -3.538],
+              [0.376, 0, -3.581],
+              [0, 0, -3.62],
+              [-0.384, 0, -3.655],
+              [-0.781, 0, -3.673],
+              [-1.19, 0, -3.663],
+              [-1.608, 0, -3.613],
+              [-2.028, 0, -3.513],
+              [-2.442, 0, -3.36],
+              [-2.839, 0, -3.154],
+              [-3.216, 0, -2.896],
+              [-3.568, 0, -2.593],
+              [-3.894, 0, -2.248],
+              [-4.19, 0, -1.865],
+              [-4.45, 0, -1.446],
+              [-4.665, 0, -0.992],
+              [-4.822, 0, -0.507],
+              [-4.916, 0, 0],
+              [-4.949, 0, 0.52],
+              [-4.89, 0, 1.039],
+              [-4.722, 0, 1.534],
+              [-4.454, 0, 1.983],
+              [-4.104, 0, 2.37],
+              [-3.702, 0, 2.69],
+              [-3.273, 0, 2.947],
+              [-2.837, 0, 3.151],
+              [-2.405, 0, 3.31],
+              [-1.982, 0, 3.433],
+              [-1.569, 0, 3.524],
+              [-1.164, 0, 3.582],
+              [-0.767, 0, 3.61],
+              [-0.379, 0, 3.608],
+              [0, 0, 3.58],
+              [0.371, 0, 3.534],
+              [0.739, 0, 3.475],
+              [1.107, 0, 3.407],
+              [1.485, 0, 3.335],
+              [1.88, 0, 3.257],
+              [2.302, 0, 3.168],
+              [2.751, 0, 3.055],
+              [3.221, 0, 2.9],
+              [3.696, 0, 2.685],
+              [4.148, 0, 2.395],
+              [4.543, 0, 2.023],
+              [4.848, 0, 1.575],
+              [5.039, 0, 1.071],
+              [5.112, 0, 0.537]
+            ],
+            "borda_m": 1.55,
+            "agua_m": 1.4,
+            "rasas": [
+              {
+                "meio_graus": 0,
+                "largura_graus": 80
+              },
+              {
+                "meio_graus": 180,
+                "largura_graus": 80
+              }
+            ],
+            "nota": "vai num furo do chão com o contorno de contorno_furo (glTF): a origem fica 1.55 m abaixo do chão (a beirada de grama, 1 cm acima dele, cobre a emenda). Praias rasas nas pontas do eixo comprido (x), barranco no resto"
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/lago_nadavel.glb",
+          "dims": [10.758, 7.973, 1.639],
+          "tris": 7452,
+          "bytes": 1406100,
+          "sha256": "87f49a7059052af87ab2d2c162f441b908ce92ded82e4f43936d071a5114fd5b",
+          "pontos": null,
+          "encaixe": {
+            "contorno_furo": [
+              [5.084, 0, 0],
+              [4.985, 0, -0.524],
+              [4.815, 0, -1.023],
+              [4.576, 0, -1.487],
+              [4.279, 0, -1.905],
+              [3.937, 0, -2.273],
+              [3.562, 0, -2.588],
+              [3.164, 0, -2.849],
+              [2.753, 0, -3.058],
+              [2.338, 0, -3.218],
+              [1.927, 0, -3.337],
+              [1.524, 0, -3.423],
+              [1.133, 0, -3.487],
+              [0.752, 0, -3.538],
+              [0.376, 0, -3.581],
+              [0, 0, -3.62],
+              [-0.384, 0, -3.655],
+              [-0.781, 0, -3.673],
+              [-1.19, 0, -3.663],
+              [-1.608, 0, -3.613],
+              [-2.028, 0, -3.513],
+              [-2.442, 0, -3.36],
+              [-2.839, 0, -3.154],
+              [-3.216, 0, -2.896],
+              [-3.568, 0, -2.593],
+              [-3.894, 0, -2.248],
+              [-4.19, 0, -1.865],
+              [-4.45, 0, -1.446],
+              [-4.665, 0, -0.992],
+              [-4.822, 0, -0.507],
+              [-4.916, 0, 0],
+              [-4.949, 0, 0.52],
+              [-4.89, 0, 1.039],
+              [-4.722, 0, 1.534],
+              [-4.454, 0, 1.983],
+              [-4.104, 0, 2.37],
+              [-3.702, 0, 2.69],
+              [-3.273, 0, 2.947],
+              [-2.837, 0, 3.151],
+              [-2.405, 0, 3.31],
+              [-1.982, 0, 3.433],
+              [-1.569, 0, 3.524],
+              [-1.164, 0, 3.582],
+              [-0.767, 0, 3.61],
+              [-0.379, 0, 3.608],
+              [0, 0, 3.58],
+              [0.371, 0, 3.534],
+              [0.739, 0, 3.475],
+              [1.107, 0, 3.407],
+              [1.485, 0, 3.335],
+              [1.88, 0, 3.257],
+              [2.302, 0, 3.168],
+              [2.751, 0, 3.055],
+              [3.221, 0, 2.9],
+              [3.696, 0, 2.685],
+              [4.148, 0, 2.395],
+              [4.543, 0, 2.023],
+              [4.848, 0, 1.575],
+              [5.039, 0, 1.071],
+              [5.112, 0, 0.537]
+            ],
+            "borda_m": 1.55,
+            "agua_m": 1.4,
+            "rasas": [
+              {
+                "meio_graus": 0,
+                "largura_graus": 80
+              },
+              {
+                "meio_graus": 180,
+                "largura_graus": 80
+              }
+            ],
+            "nota": "vai num furo do chão com o contorno de contorno_furo (glTF): a origem fica 1.55 m abaixo do chão (a beirada de grama, 1 cm acima dele, cobre a emenda). Praias rasas nas pontas do eixo comprido (x), barranco no resto"
+          }
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "agua_mar",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/agua_mar.glb",
+          "dims": [14, 14, 0.058],
+          "tris": 512,
+          "bytes": 628984,
+          "sha256": "3a30b4991416365153c0650faae301b47c5d2a7cd46bc499090c7664f118cddf",
+          "pontos": null,
+          "encaixe": {
+            "modulo_m": 14,
+            "nivel_m": 0.03,
+            "nota": "emenda lado a lado na grade de 14 m (a ondulação e a marola repetem a cada 7 m); ponha com z = nível do mar − 0,03 m. A água é translúcida: por baixo vai o fundo (o talude da ilha, as margens e o fundo da cena)"
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/agua_mar.glb",
+          "dims": [14, 14, 0.058],
+          "tris": 512,
+          "bytes": 628984,
+          "sha256": "3a30b4991416365153c0650faae301b47c5d2a7cd46bc499090c7664f118cddf",
+          "pontos": null,
+          "encaixe": {
+            "modulo_m": 14,
+            "nivel_m": 0.03,
+            "nota": "emenda lado a lado na grade de 14 m (a ondulação e a marola repetem a cada 7 m); ponha com z = nível do mar − 0,03 m. A água é translúcida: por baixo vai o fundo (o talude da ilha, as margens e o fundo da cena)"
+          }
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "plato_organico_g_3m",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/plato_organico_g_3m.glb",
+          "dims": [15.975, 11.148, 3],
+          "tris": 2562,
+          "bytes": 595764,
+          "sha256": "7fec00bf94879512af17beed95bedfd396bcabe3472fafae7e8c7e599663f00f",
+          "pontos": [
+            {
+              "tipo": "agarrar",
+              "de": [7.568, 3, -0.105],
+              "ate": [7.351, 3, -1.408],
+              "fora": [0.9864, 0, -0.1646],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [7.311, 3, -1.631],
+              "ate": [6.848, 3, -2.846],
+              "fora": [0.9344, 0, -0.3562],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [6.738, 3, -3.033],
+              "ate": [5.904, 3, -4.015],
+              "fora": [0.7623, 0, -0.6472],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [5.738, 3, -4.155],
+              "ate": [4.661, 3, -4.8],
+              "fora": [0.5136, 0, -0.858],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [4.459, 3, -4.88],
+              "ate": [2.058, 3, -5.412],
+              "fora": [0.2164, 0, -0.9763],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [1.838, 3, -5.411],
+              "ate": [-2.605, 3, -5.192],
+              "fora": [-0.0493, 0, -0.9988],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-2.833, 3, -5.181],
+              "ate": [-5.535, 3, -4.577],
+              "fora": [-0.2184, 0, -0.9759],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-5.728, 3, -4.491],
+              "ate": [-6.9, 3, -3.664],
+              "fora": [-0.5764, 0, -0.8171],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.039, 3, -3.51],
+              "ate": [-7.723, 3, -2.271],
+              "fora": [-0.8752, 0, -0.4838],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.788, 3, -2.069],
+              "ate": [-7.944, 3, -0.661],
+              "fora": [-0.9939, 0, -0.1104],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.928, 3, -0.434],
+              "ate": [-7.824, 3, 0.959],
+              "fora": [-0.9972, 0, 0.0745],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.802, 3, 1.182],
+              "ate": [-7.394, 3, 2.504],
+              "fora": [-0.9555, 0, 0.2951],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.294, 3, 2.691],
+              "ate": [-6.423, 3, 3.757],
+              "fora": [-0.7747, 0, 0.6324],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-6.26, 3, 3.894],
+              "ate": [-5.073, 3, 4.556],
+              "fora": [-0.487, 0, 0.8734],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-4.861, 3, 4.62],
+              "ate": [-3.657, 3, 4.936],
+              "fora": [-0.2539, 0, 0.9672],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-3.436, 3, 4.973],
+              "ate": [2.264, 3, 5.386],
+              "fora": [-0.0722, 0, 0.9974],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [2.488, 3, 5.397],
+              "ate": [5.266, 3, 4.995],
+              "fora": [0.1434, 0, 0.9897],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [5.462, 3, 4.922],
+              "ate": [6.675, 3, 4.154],
+              "fora": [0.5354, 0, 0.8446],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [6.817, 3, 4.006],
+              "ate": [7.53, 3, 2.789],
+              "fora": [0.8629, 0, 0.5054],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [7.583, 3, 2.595],
+              "ate": [7.606, 3, 0.119],
+              "fora": [1, 0, 0.0092],
+              "altura_m": 3
+            }
+          ],
+          "encaixe": {
+            "topo_m": 3,
+            "forma": "g",
+            "nota": "vai em cima do chão contínuo (ilha_base) ou de outro platô, sem precisar de grade; pode escalar em x e z do glTF (até ±25%) sem mudar a altura. O topo plano fica dentro do contorno menos 0,25 m (beirada); escadarias e rampas entram 1 m no topo",
+            "contorno_topo": [
+              [7.667, 3, 0],
+              [7.41, 3, -1.54],
+              [6.861, 3, -2.98],
+              [5.872, 3, -4.145],
+              [4.589, 3, -4.913],
+              [3.241, 3, -5.33],
+              [1.954, 3, -5.497],
+              [0.756, 3, -5.502],
+              [-0.372, 3, -5.435],
+              [-1.501, 3, -5.359],
+              [-2.729, 3, -5.266],
+              [-4.132, 3, -5.078],
+              [-5.665, 3, -4.609],
+              [-7.033, 3, -3.644],
+              [-7.834, 3, -2.195],
+              [-8.017, 3, -0.548],
+              [-7.895, 3, 1.085],
+              [-7.416, 3, 2.636],
+              [-6.394, 3, 3.888],
+              [-4.997, 3, 4.667],
+              [-3.561, 3, 5.044],
+              [-2.258, 3, 5.197],
+              [-1.093, 3, 5.262],
+              [0, 3, 5.318],
+              [1.123, 3, 5.405],
+              [2.378, 3, 5.474],
+              [3.821, 3, 5.414],
+              [5.393, 3, 5.037],
+              [6.808, 3, 4.14],
+              [7.642, 3, 2.716],
+              [7.785, 3, 1.07]
+            ]
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/plato_organico_g_3m.glb",
+          "dims": [15.975, 11.148, 3],
+          "tris": 2562,
+          "bytes": 595764,
+          "sha256": "7fec00bf94879512af17beed95bedfd396bcabe3472fafae7e8c7e599663f00f",
+          "pontos": [
+            {
+              "tipo": "agarrar",
+              "de": [7.568, 3, -0.105],
+              "ate": [7.351, 3, -1.408],
+              "fora": [0.9864, 0, -0.1646],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [7.311, 3, -1.631],
+              "ate": [6.848, 3, -2.846],
+              "fora": [0.9344, 0, -0.3562],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [6.738, 3, -3.033],
+              "ate": [5.904, 3, -4.015],
+              "fora": [0.7623, 0, -0.6472],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [5.738, 3, -4.155],
+              "ate": [4.661, 3, -4.8],
+              "fora": [0.5136, 0, -0.858],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [4.459, 3, -4.88],
+              "ate": [2.058, 3, -5.412],
+              "fora": [0.2164, 0, -0.9763],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [1.838, 3, -5.411],
+              "ate": [-2.605, 3, -5.192],
+              "fora": [-0.0493, 0, -0.9988],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-2.833, 3, -5.181],
+              "ate": [-5.535, 3, -4.577],
+              "fora": [-0.2184, 0, -0.9759],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-5.728, 3, -4.491],
+              "ate": [-6.9, 3, -3.664],
+              "fora": [-0.5764, 0, -0.8171],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.039, 3, -3.51],
+              "ate": [-7.723, 3, -2.271],
+              "fora": [-0.8752, 0, -0.4838],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.788, 3, -2.069],
+              "ate": [-7.944, 3, -0.661],
+              "fora": [-0.9939, 0, -0.1104],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.928, 3, -0.434],
+              "ate": [-7.824, 3, 0.959],
+              "fora": [-0.9972, 0, 0.0745],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.802, 3, 1.182],
+              "ate": [-7.394, 3, 2.504],
+              "fora": [-0.9555, 0, 0.2951],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-7.294, 3, 2.691],
+              "ate": [-6.423, 3, 3.757],
+              "fora": [-0.7747, 0, 0.6324],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-6.26, 3, 3.894],
+              "ate": [-5.073, 3, 4.556],
+              "fora": [-0.487, 0, 0.8734],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-4.861, 3, 4.62],
+              "ate": [-3.657, 3, 4.936],
+              "fora": [-0.2539, 0, 0.9672],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [-3.436, 3, 4.973],
+              "ate": [2.264, 3, 5.386],
+              "fora": [-0.0722, 0, 0.9974],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [2.488, 3, 5.397],
+              "ate": [5.266, 3, 4.995],
+              "fora": [0.1434, 0, 0.9897],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [5.462, 3, 4.922],
+              "ate": [6.675, 3, 4.154],
+              "fora": [0.5354, 0, 0.8446],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [6.817, 3, 4.006],
+              "ate": [7.53, 3, 2.789],
+              "fora": [0.8629, 0, 0.5054],
+              "altura_m": 3
+            },
+            {
+              "tipo": "agarrar",
+              "de": [7.583, 3, 2.595],
+              "ate": [7.606, 3, 0.119],
+              "fora": [1, 0, 0.0092],
+              "altura_m": 3
+            }
+          ],
+          "encaixe": {
+            "topo_m": 3,
+            "forma": "g",
+            "nota": "vai em cima do chão contínuo (ilha_base) ou de outro platô, sem precisar de grade; pode escalar em x e z do glTF (até ±25%) sem mudar a altura. O topo plano fica dentro do contorno menos 0,25 m (beirada); escadarias e rampas entram 1 m no topo",
+            "contorno_topo": [
+              [7.667, 3, 0],
+              [7.41, 3, -1.54],
+              [6.861, 3, -2.98],
+              [5.872, 3, -4.145],
+              [4.589, 3, -4.913],
+              [3.241, 3, -5.33],
+              [1.954, 3, -5.497],
+              [0.756, 3, -5.502],
+              [-0.372, 3, -5.435],
+              [-1.501, 3, -5.359],
+              [-2.729, 3, -5.266],
+              [-4.132, 3, -5.078],
+              [-5.665, 3, -4.609],
+              [-7.033, 3, -3.644],
+              [-7.834, 3, -2.195],
+              [-8.017, 3, -0.548],
+              [-7.895, 3, 1.085],
+              [-7.416, 3, 2.636],
+              [-6.394, 3, 3.888],
+              [-4.997, 3, 4.667],
+              [-3.561, 3, 5.044],
+              [-2.258, 3, 5.197],
+              [-1.093, 3, 5.262],
+              [0, 3, 5.318],
+              [1.123, 3, 5.405],
+              [2.378, 3, 5.474],
+              [3.821, 3, 5.414],
+              [5.393, 3, 5.037],
+              [6.808, 3, 4.14],
+              [7.642, 3, 2.716],
+              [7.785, 3, 1.07]
+            ]
+          }
+        }
+      ],
+      "mesmoGLB": true
+    },
+    {
+      "id": "rampa_grama_3m",
+      "categoria": "reino/terreno",
+      "snapshots": [
+        {
+          "ref": "7816a7aca0ba6f7d93a90fe4c15f40638b01525f",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/rampa_grama_3m.glb",
+          "dims": [3.5, 7, 3],
+          "tris": 640,
+          "bytes": 546100,
+          "sha256": "35ed33e7e0ea33931c92f34cf02109a6099672a6d591408668ce7ccbf03d8d4e",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "largura_m": 3.5,
+            "sobe_m": 3,
+            "nota": "sobe para −Z do glTF (para trás no Blender, +Y); o topo encosta na borda de um platô 3 m mais alto que o pé",
+            "pontos": [
+              {
+                "nome": "pe",
+                "posicao": [0, 0, 3.5]
+              },
+              {
+                "nome": "topo",
+                "posicao": [0, 3, -3.5]
+              }
+            ]
+          }
+        },
+        {
+          "ref": "4b7ab31c64a659aaf21ab60e5d1b91e0f35a3825",
+          "existe": true,
+          "arquivo": "reino/terreno/glb/rampa_grama_3m.glb",
+          "dims": [3.5, 7, 3],
+          "tris": 640,
+          "bytes": 546100,
+          "sha256": "35ed33e7e0ea33931c92f34cf02109a6099672a6d591408668ce7ccbf03d8d4e",
+          "pontos": null,
+          "encaixe": {
+            "grade_m": 7,
+            "largura_m": 3.5,
+            "sobe_m": 3,
+            "nota": "sobe para −Z do glTF (para trás no Blender, +Y); o topo encosta na borda de um platô 3 m mais alto que o pé",
+            "pontos": [
+              {
+                "nome": "pe",
+                "posicao": [0, 0, 3.5]
+              },
+              {
+                "nome": "topo",
+                "posicao": [0, 3, -3.5]
+              }
+            ]
+          }
+        }
+      ],
+      "mesmoGLB": true
+    }
+  ],
+  "contatoArvore04": {
+    "alturaDoAvatar": 1.16,
+    "minX": -0.855095624923706,
+    "maxX": 0.855095624923706,
+    "minZ": -0.8309611678123474,
+    "maxZ": 0.8309633731842041,
+    "raioDoColisorDeEnsaio": 0.86,
+    "metodo": "Vertices do GLB abaixo de 1,16 m, transformados pela matriz mundial; raio de estudo separado da copa"
+  }
+}

@@ -69,6 +69,8 @@ export interface MoldaStudioReview {
 }
 
 export interface MoldaStudioExportContext {
+  /** O teto do Estúdio continua sendo o padrão; cenários usa seu próprio orçamento. */
+  destino?: 'estudio' | 'cenarios'
   persistence?: MoldaPersistence
   namespace?: string
   acceptedReview?: string
@@ -130,15 +132,21 @@ function materializeExport(
 }
 
 /** Do namespace corrente, ordenada da mais recente para a mais antiga, nas DUAS gerações. */
-export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
-  const persistence = getDefaultMoldaPersistence()
-  const generation = createMoldaSceneCloudSource(getMoldaGenerationStore())
+export async function listGalleryForStudio(
+  context: Pick<MoldaStudioExportContext, 'namespace' | 'persistence' | 'signal'> = {},
+): Promise<MoldaLibraryItem[]> {
+  context.signal?.throwIfAborted()
+  const namespace = context.namespace ?? getMoldaStorageNamespace(),
+    persistence = context.persistence ?? getDefaultMoldaPersistence(namespace)
+  const generation = createMoldaSceneCloudSource(getMoldaGenerationStore(namespace))
   const v1 = persistence.listSummaries
     ? await persistence.listSummaries()
     : (await persistence.loadAll()).map(summarizeAsset)
   // A criação promovida continua sendo a mesma criação para o Estúdio: some daqui e o
   // "Trazer do Molda" deixaria de enxergar o que a criança acabou de modelar.
+  context.signal?.throwIfAborted()
   const scene = await generation.listSummaries()
+  context.signal?.throwIfAborted()
   return [...v1, ...scene].sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
@@ -149,13 +157,14 @@ export async function exportLoadedSceneForStudio(
 ): Promise<ExportForStudioResult> {
   context.signal?.throwIfAborted()
   const namespace = context.namespace ?? getMoldaStorageNamespace()
-  const cache = cacheFor(context.persistence ?? getDefaultMoldaPersistence())
+  const cache = cacheFor(context.persistence ?? getDefaultMoldaPersistence(namespace))
   let snapshotId = sceneSnapshotIds.get(document)
   if (snapshotId === undefined) {
     snapshotId = ++nextSceneSnapshotId
     sceneSnapshotIds.set(document, snapshotId)
   }
   const token = JSON.stringify([
+    context.destino ?? 'estudio',
     namespace,
     document.id,
     document.updatedAt,
@@ -185,7 +194,11 @@ export async function exportLoadedSceneForStudio(
       stats: result.stats,
       byteLength: result.bytes.length,
     })
-    if (!report.fitsSingleCopy)
+    if (
+      context.destino === 'cenarios'
+        ? report.empty || result.bytes.length > 64 * 1024 ** 2
+        : !report.fitsSingleCopy
+    )
       return { ok: false, reason: report.empty ? 'encode-failed' : 'asset-too-big' }
     const counts = new Map<SceneGlbIssue['code'], number>()
     for (const issue of result.issues) counts.set(issue.code, (counts.get(issue.code) ?? 0) + 1)
@@ -240,9 +253,15 @@ export async function exportLoadedAssetForStudio(
 ): Promise<ExportForStudioResult> {
   options.signal?.throwIfAborted()
   const namespace = options.namespace ?? getMoldaStorageNamespace()
-  const persistence = options.persistence ?? getDefaultMoldaPersistence()
+  const persistence = options.persistence ?? getDefaultMoldaPersistence(namespace)
   const cache = cacheFor(persistence)
-  const cacheKey = [namespace, asset.id, String(asset.updatedAt)].join(CACHE_KEY_SEPARATOR)
+  const cacheKey = [
+    options.destino ?? 'estudio',
+    namespace,
+    asset.id,
+    String(asset.updatedAt),
+    String(options.storageRevision ?? ''),
+  ].join(CACHE_KEY_SEPARATOR)
   const cached = cache.get(cacheKey)
   if (cached) return materializeExport(asset, cached)
   const finish = (result: CachedExport): ExportForStudioResult => {
@@ -251,7 +270,10 @@ export async function exportLoadedAssetForStudio(
     return materializeExport(asset, result)
   }
   if (asset.kind === 'model') {
-    const result = exportModelGlb(asset)
+    const result = exportModelGlb(
+      asset,
+      options.destino === 'cenarios' ? Math.ceil((64 * 1024 ** 2) / 3) * 4 + 64 : undefined,
+    )
     if (!result.ok) {
       return finish({
         ok: false,
@@ -294,11 +316,13 @@ export async function exportAssetForStudio(
    */
   context?: MoldaStudioExportContext,
 ): Promise<ExportForStudioResult> {
+  context?.signal?.throwIfAborted()
   const namespace = context?.namespace ?? getMoldaStorageNamespace()
-  const persistence = context?.persistence ?? getDefaultMoldaPersistence()
+  const persistence = context?.persistence ?? getDefaultMoldaPersistence(namespace)
   // Falhar ao ler o inventário v1 não pode impedir a geração seguinte de responder:
   // uma criação promovida não está mais lá, e é justamente ela que precisa sair daqui.
   const asset = await persistence.load(id).catch(() => null)
+  context?.signal?.throwIfAborted()
   if (!asset) return exportSceneForStudio(id, { ...context, namespace, persistence })
   return exportLoadedAssetForStudio(asset, { ...context, persistence, namespace })
 }

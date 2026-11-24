@@ -18,6 +18,18 @@
  * - `assets` inteiros diferentes → false: a criança que só editou/trocou imagens/sons também já
  *   trabalhou (a quantidade pode continuar igual e os 3 arquivos podem seguir intactos).
  * - Entrada nula/torta → false: sem certeza, sem aviso (aviso errado ensina a ignorar avisos).
+ * - Projeto de BLOCOS compara os blocos, não o script (22/11/2026): o projeto inicial dos
+ *   manifestos guarda os blocos sem id, e o código dele usa nomes de evento escritos à mão. Ao
+ *   abrir, o Blockly sorteia os ids e o código regerado os leva, então o `script.js` nunca batia e
+ *   o aviso não aparecia em nenhuma aula montada por manifesto. Os blocos são comparados sem o que
+ *   o editor põe sozinho (id e posição de cada bloco, o `szBehaviorAreasVersion`), junto com a
+ *   página e o estilo; o script é derivado deles. Com código ainda sendo lido pela Ponte
+ *   (`bridgeCodeAhead`) não há certeza, e blocos com variável do Blockly (referência por id) ou
+ *   sem `blocks` seguem a régua dos arquivos.
+ * - O desenho da vaga de arte (`source: 'lesson-art'`) NÃO conta (22/11/2026): o host o põe nos
+ *   materiais a cada abertura (`applyLessonArt`), como a impressão do conteúdo do core já trata.
+ *   Contá-lo calava o aviso em toda aula com vaga. Sai só do lado da criança, junto com a imagem
+ *   do projeto inicial que ele substitui (vaga `replace`, mesmo nome).
  */
 
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
@@ -79,6 +91,84 @@ function jsonValueEqual(
   }
 }
 
+const isLessonArt = (asset: unknown): boolean => isRecord(asset) && asset.source === 'lesson-art'
+
+/** Tira os desenhos da vaga de arte do projeto e, do projeto inicial, as imagens que eles trocam. */
+function withoutLessonArt(
+  own: readonly unknown[],
+  original: readonly unknown[],
+): { own: readonly unknown[]; original: readonly unknown[] } {
+  const drawn = own.filter(isLessonArt)
+  if (drawn.length === 0) return { own, original }
+  const replaced = new Set(drawn.map((asset) => (isRecord(asset) ? asset.name : undefined)))
+  replaced.delete(undefined)
+  return {
+    own: own.filter((asset) => !isLessonArt(asset)),
+    original: original.filter(
+      (asset) => !(isRecord(asset) && !isLessonArt(asset) && replaced.has(asset.name)),
+    ),
+  }
+}
+
+/** O que o editor põe sozinho num bloco ao abrir: não é trabalho da criança. */
+const EDITOR_BLOCK_KEYS = new Set(['id', 'x', 'y'])
+
+/**
+ * O `extraState` sem os ids que o editor sorteia ao abrir: os parâmetros de função e método
+ * (`paramsMutator`) são gravados `{name, id}`, e o projeto inicial dos manifestos não traz o id
+ * (revisão de 22/11/2026). O nome continua contando.
+ */
+function withoutGeneratedIds(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutGeneratedIds)
+  if (!isRecord(value)) return value
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value))
+    if (key !== 'id') out[key] = withoutGeneratedIds(child)
+  return out
+}
+
+const BLOCKS_NOT_COMPARABLE = Symbol('blocos não comparáveis')
+
+/** Os blocos sem id e posição. `null` quando a régua não se aplica (variável referida por id). */
+function blocksContent(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    const items = value.map(blocksContent)
+    return items.includes(BLOCKS_NOT_COMPARABLE) ? BLOCKS_NOT_COMPARABLE : items
+  }
+  if (!isRecord(value)) return value
+  const isBlock = typeof value.type === 'string'
+  const out: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    if (isBlock && EDITOR_BLOCK_KEYS.has(key)) continue
+    if (isBlock && key === 'extraState') {
+      out[key] = withoutGeneratedIds(child)
+      continue
+    }
+    // Campo com objeto é referência por id (variável do Blockly): sem id, não dá para comparar.
+    if (isBlock && key === 'fields' && isRecord(child)) {
+      if (Object.values(child).some((field) => typeof field === 'object' && field !== null))
+        return BLOCKS_NOT_COMPARABLE
+    }
+    const content = blocksContent(child)
+    if (content === BLOCKS_NOT_COMPARABLE) return BLOCKS_NOT_COMPARABLE
+    out[key] = content
+  }
+  return out
+}
+
+/** `true`/`false` quando os dois lados têm blocos comparáveis; `null` para seguir os arquivos. */
+function sameBlocks(own: unknown, original: unknown): boolean | null {
+  if (!isRecord(own) || !isRecord(original)) return null
+  if (!isRecord(own.blocks) || !isRecord(original.blocks)) return null
+  if (own.variables !== undefined || original.variables !== undefined) return null
+  const { szBehaviorAreasVersion: _ownAreas, ...ownRest } = own
+  const { szBehaviorAreasVersion: _originalAreas, ...originalRest } = original
+  const left = blocksContent(ownRest)
+  const right = blocksContent(originalRest)
+  if (left === BLOCKS_NOT_COMPARABLE || right === BLOCKS_NOT_COMPARABLE) return null
+  return jsonValueEqual(left, right)
+}
+
 export function isInitialTemplateProject(project: unknown, template: unknown): boolean {
   if (!isRecord(project) || !isRecord(template)) return false
   if (project.programmingLanguage === 'python' || template.programmingLanguage === 'python') {
@@ -103,7 +193,15 @@ export function isInitialTemplateProject(project: unknown, template: unknown): b
   const projectAssetList = projectAssets(project)
   const templateAssetList = projectAssets(template)
   if (!projectAssetList || !templateAssetList) return false
-  if (!jsonValueEqual(projectAssetList, templateAssetList)) return false
+  const compared = withoutLessonArt(projectAssetList, templateAssetList)
+  if (!jsonValueEqual(compared.own, compared.original)) return false
+  const blocks = sameBlocks(project.blocksState, template.blocksState)
+  if (blocks !== null) {
+    if (!blocks || project.bridgeCodeAhead === true) return false
+    return (['index.html', 'style.css'] as const).every(
+      (name) => canonicalFile(projectFiles, name) === canonicalFile(templateFiles, name),
+    )
+  }
   return CANONICAL_FILES.every(
     (name) => canonicalFile(projectFiles, name) === canonicalFile(templateFiles, name),
   )

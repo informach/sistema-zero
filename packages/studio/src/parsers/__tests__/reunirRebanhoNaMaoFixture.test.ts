@@ -83,7 +83,7 @@ for (let i = 0; i < totalBichos; i = i + 1) {
   bichos.setMatrixAt(i, molde.matrix);
 }
 bichos.instanceMatrix.needsUpdate = true;
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 let pontos = 0;
 let tempoSpawn = 0.5;
 let heroiX = 0;
@@ -134,6 +134,7 @@ document.addEventListener("keyup", (event) => {
   }
 });
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   if (rodando === true) {
     if (esquerda === true) {

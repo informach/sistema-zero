@@ -1,6 +1,8 @@
+# 📦 Bibliotecas
 from pyray import *
 from math import sin, cos, floor
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 TAMANHO_DO_MUNDO = 8
@@ -13,24 +15,11 @@ GIRO_DAS_SETAS = 2.5
 OLHOS = 1.5
 RAIO_DO_CORPO = 0.3
 
-init_window(LARGURA, ALTURA, 'Mundo de Blocos')
-set_target_fps(60)
-# O mouse fica preso na janela: mexer o mouse vira o olhar.
-disable_cursor()
-
 # Cada tipo de bloco é um cubo vestido com uma textura pintada no Molda.
 NOMES = ['grama', 'terra', 'grama-com-terra', 'areia', 'tijolo', 'madeira', 'folhas', 'lava']
-modelos = []
-for nome in NOMES:
-    modelo = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
-    set_material_texture(modelo.materials[0], MATERIAL_MAP_ALBEDO, load_texture(f'images/{nome}.png'))
-    modelos.append(modelo)
-
-# A prévia do bloco escolhido é desenhada numa imagem à parte (uma render texture).
-previa = load_render_texture(120, 120)
-camera_da_previa = Camera3D(Vector3(2, 1.6, 2), Vector3(0, 0, 0), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
 
 
+# 🧩 Meus moldes
 class Bloco:
     def __init__(self, x, y, z, tipo):
         self.posicao = Vector3(x, y, z)
@@ -127,12 +116,28 @@ def comecar():
     escolhido = NOMES.index('tijolo')
     giro_da_previa = 0
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Mundo de Blocos')
+set_target_fps(60)
+# O mouse fica preso na janela: mexer o mouse vira o olhar.
+disable_cursor()
+modelos = []
+for nome in NOMES:
+    modelo = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
+    set_material_texture(modelo.materials[0], MATERIAL_MAP_ALBEDO, load_texture(f'images/{nome}.png'))
+    modelos.append(modelo)
+
+# A prévia do bloco escolhido é desenhada numa imagem à parte (uma render texture).
+previa = load_render_texture(120, 120)
+camera_da_previa = Camera3D(Vector3(2, 1.6, 2), Vector3(0, 0, 0), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
+
 
 camera = Camera3D(Vector3(0, 2, 0), Vector3(1, 2, 0), Vector3(0, 1, 0), 60, CAMERA_PERSPECTIVE)
 alvo = None
 normal = Vector3(0, 1, 0)
 comecar()
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
 

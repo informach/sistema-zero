@@ -14,25 +14,35 @@
  * domina: rail horizontal em cima, paleta em linha única e prévia/animações colapsáveis (os
  * painéis ali seguem em cartão).
  */
+
 import type { JSX } from 'react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useStore } from 'zustand'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { fitZoomFor } from '../../core/guidedCanvas'
-import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
+import { withinLessonMapLimits } from '../../core/lessonLimits'
+import {
+  assetRole,
+  assetStyle,
+  isTilesetKind,
+  type PintaAsset,
+  type PintaAssetRole,
+} from '../../core/project'
+import { observePintaReferences, SceneMapClosureError } from '../../core/sceneMapClosure'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
-import {
-  buildStudioPayload,
-  type StudioPayload,
-  validateStudioPayloadSize,
-} from '../../export/studioBridge'
+import { buildStudioMapBundle, StudioMapBundleError } from '../../export/studioMapBundle'
+import type { PintaEditorState } from '../../state/editorStore'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
+import { isLocalRegionAsset } from '../../state/localRegionAssetAuthority'
 import {
   isPintaStorageBudgetError,
   markPintaAssetClosed,
   markPintaAssetOpen,
+  PintaLocalConflictError,
 } from '../../state/persistence'
 import {
   createSessionStore,
@@ -42,8 +52,10 @@ import {
   VECTOR_ZOOM_LEVELS,
   ZOOM_LEVELS,
 } from '../../state/sessionStore'
-import { usePintaApp } from '../appContext'
+import { createTilesetEditorView } from '../../state/tilesetEditorView'
+import { usePintaApp, usePintaGallery } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
+import { WorkshopMapDownload } from '../export/WorkshopMapDownload'
 import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button, IconButton } from '../ui/Button'
 import {
@@ -67,8 +79,9 @@ import {
 import { PanelLook } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
-import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
+import { PintaEditorProvider, useEditor } from './editorContext'
 import { LayerPanel } from './LayerPanel'
+import { MapSetEditor, RegionalSetEditor } from './MapSetEditor'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
@@ -97,9 +110,10 @@ import { ZoomControls } from './ZoomControls'
  * enquanto salva e vermelha (com o recado do erro) quando falhou. O texto mora DIRETO na região
  * viva (`role="status"`), que é como o leitor anuncia e como os testes a encontram.
  */
-function SaveBadge(): JSX.Element {
-  const saveState = useEditor((state) => state.saveState)
-  const saveError = useEditor((state) => state.saveError)
+function SaveBadge({
+  saveState,
+  saveError,
+}: Pick<PintaEditorState, 'saveState' | 'saveError'>): JSX.Element {
   const label =
     saveState === 'saved'
       ? COPY.editor.saved
@@ -324,6 +338,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   if (asset.kind === 'tilemap') {
     return <TilemapEditor />
   }
+  if (asset.kind === 'map-set') return <MapSetEditor />
   // Kinds vetoriais: o MESMO arranjo do pixel — caixa de ferramentas à
   // esquerda, palco no meio, UMA coluna direita `w-68` (prévia → cores →
   // aparência) e a faixa (Spritesheet/peças + zoom) em LARGURA TOTAL embaixo.
@@ -358,23 +373,34 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
   )
 }
 
-function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolean }): JSX.Element {
+type WorkshopToolbarStore = Pick<
+  PintaEditorStore<PintaMemoryAsset>,
+  'getState' | 'getInitialState' | 'subscribe'
+>
+function EditorTopbar({
+  onBack,
+  closing,
+  editor,
+  session,
+}: {
+  onBack: () => void
+  closing: boolean
+  editor: WorkshopToolbarStore
+  session: PintaSessionStore
+}): JSX.Element {
   const { adapter, gallery, lesson } = usePintaApp()
   const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
-  const asset = useEditor((state) => state.asset)
-  const savedAsset = useEditor((state) => state.savedAsset)
-  const canUndo = useEditor((state) => state.canUndo)
-  const canRedo = useEditor((state) => state.canRedo)
-  const animationId = useSession((state) => state.animationId)
-  const frameIndex = useSession((state) => state.frameIndex)
-  const editorState = useEditor((state) => state)
+  const editorState = useStore(editor, (state) => state)
+  const { asset, savedAsset, canUndo, canRedo } = editorState
+  const animationId = useStore(session, (state) => state.animationId)
+  const frameIndex = useStore(session, (state) => state.frameIndex)
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [resizeOpen, setResizeOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const shortcutEditor = shortcutEditorFor(asset)
-  const allowTools = useToolCuration()
+  const allowTools = adapter.allowTools
   const shortcutTools = useMemo(
     () => shortcutToolsFor(shortcutEditor, allowTools),
     [shortcutEditor, allowTools],
@@ -383,7 +409,8 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   useActionShortcuts([{ combo: shortcut('help'), run: () => setShortcutsOpen(true) }])
   // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor), OU aula em que o
   // professor fixou o tamanho.
-  const resizeTarget = lesson && !lesson.allowResize ? null : resizeTargetOf(asset)
+  const resizeTarget =
+    (lesson && !lesson.allowResize) || isLocalRegionAsset(asset) ? null : resizeTargetOf(asset)
   const canExport = !lesson || lesson.allowExport
   const resynced = useStudioResync({
     asset: savedAsset,
@@ -407,92 +434,58 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
    * `export/studioBridge.ts` (sprites enviam a FOLHA inteira; tilesets a folha
    * de peças; tilemap o mapa achatado; vetoriais rasterizam).
    */
-  async function exportForStudio(): Promise<StudioPayload | null> {
-    return buildStudioPayload(
-      asset,
-      (id) => gallery.getState().assets.find((a) => a.id === id) ?? null,
-      { animationId, frameIndex },
-    )
+  async function exportForStudio(): Promise<import('../../core/types').PintaExportedAsset | null> {
+    return buildStudioMapBundle(asset, gallery.getState().assets, { animationId, frameIndex })
+  }
+
+  function exportError(error: unknown): string {
+    return error instanceof SceneMapClosureError || error instanceof StudioMapBundleError
+      ? error.message
+      : COPY.sendToStudio.error
   }
 
   async function handleSendToStudio(): Promise<void> {
     if (!adapter.sendToStudio || sending) return
-    // A trava arma ANTES da rasterização (async, pode levar centenas de ms) —
-    // senão um duplo clique dispara dois exports + dois envios concorrentes.
     setSending(true)
-    const payload = await exportForStudio().catch(() => null)
-    if (!payload) {
-      setSending(false)
-      showToast(COPY.sendToStudio.error)
-      return
-    }
-    // Tetos do Estúdio (asset e folha do mapa) — validar AQUI dá a mensagem
-    // gentil antes do fail-soft genérico da ponte.
-    if (validateStudioPayloadSize(payload) !== 'ok') {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
     try {
-      const result = await adapter.sendToStudio({
-        id: asset.id,
-        name: asset.name,
-        dataUrl: payload.dataUrl,
-        width: payload.width,
-        height: payload.height,
-        // Animações/tiles/mapa do Pinta viajam junto → o Estúdio oferece o
-        // seletor por nome e o bloco "Criar mapa do meu desenho".
-        ...(payload.sprite ? { sprite: payload.sprite } : {}),
-        ...(payload.tileset ? { tileset: payload.tileset } : {}),
-        ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-      })
-      const successCopy = payload.tilemap
-        ? adapter.studioOwned
-          ? COPY.sendToStudio.mapSuccess
-          : COPY.sendToStudio.mapSuccessLocked
-        : adapter.studioOwned
-          ? COPY.sendToStudio.success
-          : COPY.sendToStudio.successLocked
+      const payload = await exportForStudio()
+      if (!payload) {
+        showToast(COPY.sendToStudio.error)
+        return
+      }
+      const result = await adapter.sendToStudio(payload)
+      const successCopy =
+        payload.tilemap || payload.scene
+          ? adapter.studioOwned
+            ? COPY.sendToStudio.mapSuccess
+            : COPY.sendToStudio.mapSuccessLocked
+          : adapter.studioOwned
+            ? COPY.sendToStudio.success
+            : COPY.sendToStudio.successLocked
       showToast(result.ok ? successCopy : (result.error ?? COPY.sendToStudio.error))
-    } catch {
-      showToast(COPY.sendToStudio.error)
+    } catch (error) {
+      showToast(exportError(error))
     } finally {
       setSending(false)
     }
   }
 
-  /** "Jogar meu mapa": envia o mapa p/ virar um JOGO pronto no Estúdio. */
+  /** The same complete world as the manual send and the library import. */
   async function handlePlayMap(): Promise<void> {
     if (!adapter.sendGameToStudio || sending) return
     setSending(true)
-    const payload = await exportForStudio().catch(() => null)
-    if (!payload?.tilemap) {
-      setSending(false)
-      showToast(COPY.sendToStudio.error)
-      return
-    }
-    // Tetos do Estúdio — paridade com o handleSendToStudio (a miniatura é
-    // capada em 512px, mas o guarda dá a mensagem gentil se ainda estourar).
-    if (validateStudioPayloadSize(payload) !== 'ok') {
-      setSending(false)
-      showToast(COPY.sendToStudio.tooBig)
-      return
-    }
     try {
-      const result = await adapter.sendGameToStudio({
-        id: asset.id,
-        name: asset.name,
-        dataUrl: payload.dataUrl,
-        width: payload.width,
-        height: payload.height,
-        tilemap: payload.tilemap,
-        ...(payload.tilemapFront ? { tilemapFront: payload.tilemapFront } : {}),
-      })
+      const payload = await exportForStudio()
+      if (!payload?.tilemap && !payload?.scene) {
+        showToast(COPY.sendToStudio.error)
+        return
+      }
+      const result = await adapter.sendGameToStudio(payload)
       showToast(
         result.ok ? COPY.sendToStudio.playSuccess : (result.error ?? COPY.sendToStudio.error),
       )
-    } catch {
-      showToast(COPY.sendToStudio.error)
+    } catch (error) {
+      showToast(exportError(error))
     } finally {
       setSending(false)
     }
@@ -546,7 +539,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
       >
         <Redo2 aria-hidden="true" className="size-5" />
       </IconButton>
-      <SaveBadge />
+      <SaveBadge saveState={editorState.saveState} saveError={editorState.saveError} />
       {/* "Guardado na sua conta" do host, ao lado do "Salvo" local (07/09/2026). */}
       {!lesson && hostChrome?.status ? (
         <HostCloudStatus status={hostChrome.status} variant="bar" />
@@ -591,7 +584,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           </Button>
         ) : null}
       </div>
-      {resizeTarget ? (
+      {resizeTarget && !isLocalRegionAsset(asset) ? (
         <ResizeAssetDialog
           open={resizeOpen}
           onClose={() => setResizeOpen(false)}
@@ -599,12 +592,16 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           target={resizeTarget}
           onResize={(next) => {
             // UM commit: o tamanho é uma edição comum e o Ctrl+Z devolve tudo.
-            editorState.commit(next)
+            const current = editor.getState()
+            if (current.asset !== asset || !current.commit(next)) return false
             showToast(COPY.editor.resize.done)
+            return true
           }}
         />
       ) : null}
-      {canExport ? (
+      {canExport && isLocalRegionAsset(asset) ? (
+        <WorkshopMapDownload open={exportOpen} asset={asset} onClose={() => setExportOpen(false)} />
+      ) : canExport && !isLocalRegionAsset(asset) ? (
         <ExportDialog
           open={exportOpen}
           asset={asset}
@@ -624,7 +621,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
 }
 
 /** Qual catálogo de atalhos vale para o asset aberto (pixel · vetor · mapa). */
-function shortcutEditorFor(asset: PintaAsset): ShortcutEditor {
+function shortcutEditorFor(asset: PintaMemoryAsset): ShortcutEditor {
   if (asset.kind === 'tilemap') return 'tilemap'
   return assetStyle(asset.kind) === 'vector' ? 'vector' : 'pixel'
 }
@@ -644,13 +641,14 @@ function shortcutToolsFor(
  * (o palco desenha em px de documento) e começa num zoom confortável para o
  * tamanho; o mapa usa níveis onde o fator É a escala real da célula.
  */
-function sessionDefaultsFor(asset: PintaAsset, fit = false): Partial<PintaSessionState> {
+function sessionDefaultsFor(asset: PintaMemoryAsset, fit = false): Partial<PintaSessionState> {
   // A tela com molde (o host) abre com a planificação inteira à vista.
   if (fit && asset.kind === 'pixel-background') {
     const cel = asset.cels[0]
     if (cel) return { zoom: fitZoomFor(cel.width, cel.height, ZOOM_LEVELS) }
   }
-  if (asset.kind === 'tilemap') return { zoom: 2, zoomLevels: TILEMAP_ZOOM_LEVELS }
+  if (asset.kind === 'tilemap' || asset.kind === 'map-set')
+    return { zoom: 2, zoomLevels: TILEMAP_ZOOM_LEVELS }
   if (assetStyle(asset.kind) !== 'vector') return {}
   const docSize =
     asset.kind === 'vector-sprite'
@@ -689,6 +687,15 @@ function AssetChangeReporter({ onChange }: { onChange: (asset: PintaAsset) => vo
   return null
 }
 
+function AssetOpenMarker({ editor }: { editor: WorkshopToolbarStore }): null {
+  const id = useStore(editor, (state) => state.asset.id)
+  useEffect(() => {
+    markPintaAssetOpen(id)
+    return () => markPintaAssetClosed(id)
+  }, [id])
+  return null
+}
+
 export function EditorScreen({
   assetId,
   fit = false,
@@ -697,24 +704,90 @@ export function EditorScreen({
   /** Abre com o zoom em que o desenho cabe inteiro (a tela com molde do host). */
   fit?: boolean
 }): JSX.Element | null {
-  const { adapter, gallery, persistence, closeEditor, onEditorReady } = usePintaApp()
+  const {
+    adapter,
+    gallery,
+    persistence,
+    closeEditor,
+    onEditorReady,
+    onWorkshopEditorReady,
+    lesson,
+  } = usePintaApp()
+  const catalog = usePintaGallery((state) => state.assets)
   const { showToast } = useToast()
-  const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
+  const [stores] = useState(() => {
     const asset = gallery.getState().assets.find((a) => a.id === assetId)
     if (!asset) return null
-    return {
-      editor: createEditorStore({
-        asset,
-        // O armazenamento vem do contexto, e não do módulo: o `persistAssets` solto vai direto
-        // ao IndexedDB do perfil e furaria o armazenamento injetado pelo host.
-        persist: (saved, linked) => persistence.persistAssets([saved, ...linked]),
+    function build<Asset extends PintaMemoryAsset>(
+      initial: Asset,
+      accepts: (candidate: PintaMemoryAsset) => candidate is Asset,
+    ) {
+      return createEditorStore<Asset>({
+        asset: initial,
+        ...(lesson
+          ? {
+              acceptEdit: (next: Asset) => {
+                if (!isLocalRegionAsset(next) && withinLessonMapLimits(next)) return true
+                showToast(COPY.editor.lessonMapLimit)
+                return false
+              },
+            }
+          : {}),
+        ...(persistence.observesReferences
+          ? {
+              observeResources: (next: Asset) =>
+                observePintaReferences(next, gallery.getState().assets),
+            }
+          : {}),
+        ...(persistence.persistRevision ? { persistRevision: persistence.persistRevision } : {}),
+        persist: (saved, linked, layout, resources, slotLineage) =>
+          persistence.observesReferences
+            ? persistence.persistAssets([saved, ...linked], {
+                ...(layout ? { layout } : {}),
+                ...(slotLineage ? { slotLineage } : {}),
+                resources: resources ?? [],
+              })
+            : persistence.persistAssets([saved, ...linked]),
         persistErrorMessage: (error) =>
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
-      }),
-      session: createSessionStore(sessionDefaultsFor(asset, fit)),
+        recoverPersisted: (error, sourceId) => {
+          if (!(error instanceof PintaLocalConflictError)) return null
+          const copies: ReadonlyMap<string, PintaMemoryAsset> = error.forks
+          const copy = copies.get(sourceId),
+            linked = [...copies.values()].filter((a) => a.id !== copy?.id)
+          if (!copy || !accepts(copy) || !linked.every(accepts)) return null
+          showToast(COPY.gallery.recoveredLocal)
+          gallery.getState().acknowledgeRecovery()
+          return { asset: copy, linked }
+        },
+      })
+    }
+    const session = createSessionStore(sessionDefaultsFor(asset, fit))
+    if (persistence.workshopReader && isTilesetKind(asset)) {
+      const owner = build<PintaMemoryAsset>(asset, (a): a is PintaMemoryAsset => true)
+      const lens = createTilesetEditorView(owner)
+      return {
+        regional: false as const,
+        session,
+        editor: lens.view,
+        workshopEditor: owner,
+        listen: lens.subscribe,
+      }
+    }
+    if (isLocalRegionAsset(asset))
+      return {
+        regional: true as const,
+        session,
+        editor: build<PintaMemoryAsset>(asset, (a): a is PintaMemoryAsset => true),
+      }
+    return {
+      regional: false as const,
+      session,
+      editor: build<PintaAsset>(asset, (a): a is PintaAsset => !isLocalRegionAsset(a)),
     }
   })
+  useLayoutEffect(() => (stores && 'listen' in stores ? stores.listen?.() : undefined), [stores])
   const [closing, setClosing] = useState(false)
 
   // Asset sumiu (apagado em outra aba / id inválido)? Volta pra galeria.
@@ -722,22 +795,19 @@ export function EditorScreen({
     if (!stores) closeEditor()
   }, [stores, closeEditor])
 
-  // Enquanto este editor está montado, o desenho conta como ABERTO (o host não grava por
-  // baixo dele — ver `isPintaAssetOpen`).
-  useEffect(() => {
-    markPintaAssetOpen(assetId)
-    return () => markPintaAssetClosed(assetId)
-  }, [assetId])
-
   // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`. De layout, não
   // de efeito (28/10/2026, teste intermitente no CI): ao voltar para a galeria, o desregistro
   // precisa acontecer no mesmo commit que desmonta o editor. Com `useEffect` ele vinha depois da
   // galeria já na tela, e um `flush()` do host nessa janela recebia o desenho já fechado.
   useLayoutEffect(() => {
-    if (!stores || !onEditorReady) return
-    onEditorReady(stores.editor)
-    return () => onEditorReady(null)
-  }, [stores, onEditorReady])
+    if (!stores) return
+    if (stores.regional) {
+      onWorkshopEditorReady?.(stores.editor)
+      return () => onWorkshopEditorReady?.(null)
+    }
+    onEditorReady?.(stores.editor)
+    return () => onEditorReady?.(null)
+  }, [stores, onEditorReady, onWorkshopEditorReady])
 
   // O primeiro desenho aberto nesta sessão passa a ser o output vinculado do
   // Cartão de Criação. Recarregar é idempotente; trocar de desenho religa.
@@ -823,20 +893,32 @@ export function EditorScreen({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [stores])
 
-  // A curadoria da caixa vem do HOST e desce por contexto, e não por prop em cada caixa: pixel,
-  // vetor e mapa montam em ramos diferentes deste mesmo componente.
   const editorContext = useMemo(
-    () => (stores ? { ...stores, allowTools: adapter.allowTools } : null),
+    () =>
+      stores && !stores.regional
+        ? {
+            editor: stores.editor,
+            workshopEditor: stores.workshopEditor,
+            session: stores.session,
+            allowTools: adapter.allowTools,
+          }
+        : null,
     [stores, adapter.allowTools],
   )
-
-  if (!stores || !editorContext) return null
-
-  return (
-    <PintaEditorProvider value={editorContext}>
-      {adapter.onChange ? <AssetChangeReporter onChange={adapter.onChange} /> : null}
+  if (!stores) return null
+  const region = stores.regional
+    ? { editor: stores.editor, session: stores.session, gallery: catalog }
+    : null
+  const screen = (
+    <>
+      <AssetOpenMarker editor={stores.editor} />
+      {editorContext && adapter.onChange ? (
+        <AssetChangeReporter onChange={adapter.onChange} />
+      ) : null}
       <div className="flex min-h-0 flex-1 flex-col">
         <EditorTopbar
+          editor={stores.editor}
+          session={stores.session}
           closing={closing}
           onBack={() => {
             if (closing) return
@@ -854,9 +936,22 @@ export function EditorScreen({
               })
           }}
         />
-        <EditorBodyBound />
+        {region ? (
+          region.editor.getState().asset.kind === 'map-set' ? (
+            <RegionalSetEditor workspace={region} />
+          ) : (
+            <TilemapEditor regional={region} />
+          )
+        ) : (
+          <EditorBodyBound />
+        )}
       </div>
-    </PintaEditorProvider>
+    </>
+  )
+  return editorContext ? (
+    <PintaEditorProvider value={editorContext}>{screen}</PintaEditorProvider>
+  ) : (
+    screen
   )
 }
 
@@ -868,7 +963,7 @@ function EditorBodyBound(): JSX.Element {
   return (
     <>
       <CoachMarks id={coach} title={coachCopy.title} tips={coachCopy.tips} />
-      <EditorBody asset={asset} />
+      <EditorBody key={asset.id} asset={asset} />
     </>
   )
 }

@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-21T01:00:09.107Z",
+  "reader": "4db9390c2ec732bbce034b4ffd7bee3be849489b",
+  "runtimeBundleByteIdentical": true,
+  "bundleSha256": "91db4e8b7bd88075807e0ffcc61be18833910da2c273f336fafee361c23ac336",
+  "bundleBytes": 1968118,
+  "profile": "069c2ea93f58bb35f59339c14de53670ca7901b90967b6e9a51a70f9ae0ee62a",
+  "cloudWriterDeclarationOnly": true,
+  "pythonDistributionChanged": false,
+  "deployed": false
+}

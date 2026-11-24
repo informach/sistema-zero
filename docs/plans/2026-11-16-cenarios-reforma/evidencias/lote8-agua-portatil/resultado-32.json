@@ -1,0 +1,19 @@
+{
+  "ref": {
+    "caminho": "aguas/lago.glb",
+    "digest": "2a7e4988219847b24656fae914c21bdad9b82d5bd6135da2a09be28a026645db",
+    "bytes": 3060,
+    "mime": "model/gltf-binary",
+    "papel": "agua",
+    "malhas": 1,
+    "triangulos": 2,
+    "verticesMaximos": 4
+  },
+  "pixelsPorMetro": 32,
+  "largura": 128,
+  "altura": 128,
+  "erroMedio": 0.2287878787878788,
+  "erroMaximo": 11,
+  "amostras": 145200,
+  "diagnosticos": []
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "espelho": true,
+    "troca": true,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "reentrada": true,
+    "erros": []
+  }
+]

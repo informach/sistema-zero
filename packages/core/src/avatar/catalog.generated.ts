@@ -7,9 +7,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
   "source": {
     "repo": "informach/artes-3d",
     "ref": "origin/main",
-    "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+    "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
     "syncedAt": "2026-11-15",
-    "rulesBlob": "a91d17d847b69031aae6472708fb5cb40116667d"
+    "rulesBlob": "af256ec361452c18b50b257c859e2c96557bea76"
   },
   "base": {
     "skeleton": {
@@ -25,8 +25,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "defender_com_as_maos",
         "pose_a"
       ],
-      "catalogBlob": "3d9aded168ffe01c7f031c51da431bc9a40a3b0c",
-      "tree": "5eb672c04d4cfd73e50173548aeeada39a13b858",
+      "catalogBlob": "c51fb085cbac220c88159626a3ac65340126d42c",
+      "tree": "98112b71f33b771955ec9a26205f82c828824445",
       "bones": {
         "Root": {
           "parent": null,
@@ -514,11 +514,30 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             0,
             0.0372
           ]
+        },
+        "planador": {
+          "bone": "Spine",
+          "position": [
+            0,
+            0.0419,
+            -0.1566
+          ],
+          "rotation": [
+            0.011192,
+            0,
+            0,
+            0.999937
+          ],
+          "rest": [
+            0,
+            0.4454,
+            -0.1575
+          ]
         }
       },
       "height": 1.156,
       "game": {
-        "file": "base/animacoes-do-jogo.def37ebf5c64.glb",
+        "file": "base/animacoes-do-jogo.59d7d6813089.glb",
         "clips": [
           {
             "id": "parado_relaxado",
@@ -2124,6 +2143,73 @@ export const AVATAR_CATALOG: AvatarCatalog = {
               "medido_no_dino_as_pernas_descem_ate_m": 0.113,
               "medido_no_dino_sela_do_chao_m": 0.695
             }
+          },
+          {
+            "id": "empurrar_baixo",
+            "duration": 1.6,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 49,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 8,
+                "off": 38
+              },
+              {
+                "foot": "right",
+                "on": 34,
+                "off": 14
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "plano_a_frente_m": 0.3,
+              "maos_m": 0.12,
+              "maos_para_o_lado_m": 0.1,
+              "palma_aquem_do_plano_m": 0.067,
+              "objeto_ate_m": 0.25
+            }
+          },
+          {
+            "id": "empurrar_meio",
+            "duration": 1.6,
+            "loop": true,
+            "stride": 0.492,
+            "rise": 0,
+            "frames": 49,
+            "feet": [
+              {
+                "foot": "left",
+                "on": 8,
+                "off": 38
+              },
+              {
+                "foot": "right",
+                "on": 34,
+                "off": 14
+              }
+            ],
+            "handsFree": false,
+            "displacement": [
+              0,
+              0,
+              0.492
+            ],
+            "place": {
+              "plano_a_frente_m": 0.3,
+              "maos_m": 0.31,
+              "maos_para_o_lado_m": 0.09,
+              "palma_aquem_do_plano_m": 0.06,
+              "objeto_de_m": 0.34,
+              "objeto_ate_m": 0.45
+            }
           }
         ],
         "layers": [
@@ -2350,6 +2436,97 @@ export const AVATAR_CATALOG: AvatarCatalog = {
             "objects": [
               "mao_balde"
             ]
+          },
+          {
+            "id": "costas_braco_dir_planador_correr_esquerda",
+            "duration": 0.633,
+            "loop": true,
+            "frames": 20,
+            "bones": [
+              "RightArm"
+            ],
+            "with": "correr_esquerda",
+            "objects": [
+              "planador_dobrado"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_mochila_correr_direita",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_direita",
+            "objects": [
+              "costas_mochila_bolso"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_mochila_correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_tras",
+            "objects": [
+              "costas_mochila_bolso"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_mochilinha_correr_direita",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_direita",
+            "objects": [
+              "costas_mochila_pequena"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_mochilinha_correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_tras",
+            "objects": [
+              "costas_mochila_pequena"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_planador_correr_direita",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_direita",
+            "objects": [
+              "planador_dobrado"
+            ]
+          },
+          {
+            "id": "costas_braco_esq_planador_correr_tras",
+            "duration": 0.6,
+            "loop": true,
+            "frames": 19,
+            "bones": [
+              "LeftArm"
+            ],
+            "with": "correr_tras",
+            "objects": [
+              "planador_dobrado"
+            ]
           }
         ]
       }
@@ -2433,6 +2610,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/bermuda_branca_pacote.bd31be2281f3.webp",
       "tier": "free",
       "tris": 416
+    },
+    "bermuda_short_de_baixo": {
+      "slot": "bermuda",
+      "group": "bermuda",
+      "label": "Short de baixo",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/bermuda_short_de_baixo.74f149d39aa2.glb",
+      "thumb": "miniaturas/bermuda_short_de_baixo.feff5ad04524.webp",
+      "tris": 196,
+      "hidden": true,
+      "origin": {
+        "blob": "67a799fc1f001ed36a4ea688c83bb03a5660fb71",
+        "thumbBlob": "1f5b22423c5d8c3d7e68a16998db8b9a4cd5e09e",
+        "meta": "19b53904c4c4233c",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "bermuda_short_vermelho_pacote": {
       "audience": "both",
@@ -3790,79 +3986,187 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tris": 904
     },
     "calca_saia_babados": {
-      "audience": "girl",
-      "band": "comum",
-      "file": "pecas/calca_saia_babados.9b050a705457.glb",
+      "slot": "calca",
       "group": "calca",
       "label": "Saia de babados",
-      "origin": {
-        "blob": "d6eff11b2e24fe50ccce7cb5f485c47c761e0b3e",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "69dd7deb7d55f1fd",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "d24dd5650a5803f227dc526a922f8051abd174de"
-      },
-      "price": 60,
-      "slot": "calca",
-      "thumb": "miniaturas/calca_saia_babados.6dff6235507d.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 1664
+      "price": 60,
+      "band": "comum",
+      "file": "pecas/calca_saia_babados.28735eff16f2.glb",
+      "thumb": "miniaturas/calca_saia_babados.15aa1a68ff7e.webp",
+      "tris": 1860,
+      "mountedVariant": "calca_saia_babados_montado",
+      "origin": {
+        "blob": "5333234615ae1544dd5f1136556d4c16fa9c1c13",
+        "thumbBlob": "117a992b44bbd78536662b475fd201bf141ebab4",
+        "meta": "4e840530a0ef199c",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "calca_saia_babados_montado": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia de babados (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_babados_montado.0355311475ee.glb",
+      "thumb": "miniaturas/calca_saia_babados_montado.700f7b92df4c.webp",
+      "tris": 1860,
+      "variantOf": "calca_saia_babados",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "3aaae6bb0fc8f9ed44476b3857d6c84a2994a42e",
+        "thumbBlob": "fa8bf61cf802a9bc31a28f18358f6df64efa9f74",
+        "meta": "65e0213923d2d373",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "calca_saia_longa": {
-      "audience": "girl",
-      "band": "especial",
-      "file": "pecas/calca_saia_longa.9ec46d1931d1.glb",
+      "slot": "calca",
       "group": "calca",
       "label": "Saia longa",
-      "origin": {
-        "blob": "04e72d1aacd0e6f191f046ec337c91ab1632db7b",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "e00d8595e5bf2328",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "0f22f1d0f1feb7e835464235ef7e57d75c09d36c"
-      },
-      "price": 80,
-      "slot": "calca",
-      "thumb": "miniaturas/calca_saia_longa.de62cc007be7.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 448
+      "price": 80,
+      "band": "especial",
+      "file": "pecas/calca_saia_longa.1b6d7f69fc06.glb",
+      "thumb": "miniaturas/calca_saia_longa.9d52c928e98c.webp",
+      "tris": 644,
+      "mountedVariant": "calca_saia_longa_montado",
+      "origin": {
+        "blob": "cc6b56fbc6cb68d079f3bb44d794337de18aeeec",
+        "thumbBlob": "805a033be31b91a023dc4c6d77f1df90016fbfac",
+        "meta": "253a9106a0ee74d5",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "calca_saia_longa_montado": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia longa (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 80,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/calca_saia_longa_montado.c366ff1bebfd.glb",
+      "thumb": "miniaturas/calca_saia_longa_montado.3cdd42ff16ab.webp",
+      "tris": 644,
+      "variantOf": "calca_saia_longa",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "20405671cb55b743714073f2a3186b317b990cd8",
+        "thumbBlob": "2e255b9058fc96a18c55237c25d631001bfd5719",
+        "meta": "5d303217c766df5d",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "calca_saia_reta": {
-      "audience": "girl",
-      "band": "comum",
-      "file": "pecas/calca_saia_reta.68c6d5dddf28.glb",
+      "slot": "calca",
       "group": "calca",
       "label": "Saia reta",
-      "origin": {
-        "blob": "e5722af5caf0fd2d561b645bab63b9006d2ab826",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "9f2512111b33b530",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "b7bac192435b12c2549d6d175b360f7d95460326"
-      },
-      "price": 60,
-      "slot": "calca",
-      "thumb": "miniaturas/calca_saia_reta.91e89466a6ed.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 896
+      "price": 60,
+      "band": "comum",
+      "file": "pecas/calca_saia_reta.2375c872d02f.glb",
+      "thumb": "miniaturas/calca_saia_reta.613513530402.webp",
+      "tris": 1092,
+      "mountedVariant": "calca_saia_reta_montado",
+      "origin": {
+        "blob": "00b5e32b05dce26d5e7b458b81674360e13d9c48",
+        "thumbBlob": "fad49c3439a3249a39431d6cb40470cb3455a953",
+        "meta": "33c92a1a221b3c56",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "calca_saia_reta_montado": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia reta (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_reta_montado.8b9deed8a8a5.glb",
+      "thumb": "miniaturas/calca_saia_reta_montado.d28514e7be4b.webp",
+      "tris": 1092,
+      "variantOf": "calca_saia_reta",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "c29adf6b0ea69046f4ea153cad8ab6e1b6644a04",
+        "thumbBlob": "2823b506059a57b291a04a623f7d45d659e49767",
+        "meta": "e823d5024dc145b2",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "calca_saia_rodada": {
-      "audience": "girl",
-      "file": "pecas/calca_saia_rodada.cdbf2e682efc.glb",
+      "slot": "calca",
       "group": "calca",
       "label": "Saia rodada",
-      "origin": {
-        "blob": "b0f6f246f4bf24a288a8317e5999ee24c2a301f1",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "3c14592fdcbc7a40",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "613c5802c3701e905bde05b277a20069f0ee1e8b"
-      },
-      "price": 0,
-      "slot": "calca",
-      "thumb": "miniaturas/calca_saia_rodada.ea0c087070c8.webp",
+      "audience": "girl",
       "tier": "free",
-      "tris": 1024
+      "price": 0,
+      "file": "pecas/calca_saia_rodada.920e6bbdd8c0.glb",
+      "thumb": "miniaturas/calca_saia_rodada.a74e23385a3e.webp",
+      "tris": 1220,
+      "mountedVariant": "calca_saia_rodada_montado",
+      "origin": {
+        "blob": "08c0864095b5323cf69aeea5dc268ac6d44f2d6f",
+        "thumbBlob": "6e5e1fd9ef15e75a90d61c25ac1c5be34c0828c7",
+        "meta": "798b94824d524e0d",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "calca_saia_rodada_montado": {
+      "slot": "calca",
+      "group": "calca",
+      "label": "Saia rodada (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 60,
+      "band": "comum",
+      "review": true,
+      "file": "pecas/calca_saia_rodada_montado.16c8b91ddae9.glb",
+      "thumb": "miniaturas/calca_saia_rodada_montado.126c7f566087.webp",
+      "tris": 1220,
+      "variantOf": "calca_saia_rodada",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "004e845c9eadbf8702630e4eb8961db68d38065f",
+        "thumbBlob": "cc01d061a1ad42590c4d0793bdc7e61ad98a00bb",
+        "meta": "733121d2be6371d7",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "calca_verde_remendada_pacote": {
       "audience": "both",
@@ -6206,11 +6510,18 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_bolsa_saco.3b671829a8ed.glb",
       "thumb": "miniaturas/costas_bolsa_saco.2836a1d4e17d.webp",
       "tris": 1930,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "6e862645c2ca08dbf06051aea6c96b04a47b065a",
         "thumbBlob": "74143cb79664bb44252d8c9b5fe2b565543da67b",
-        "meta": "19c821cf8710858c",
-        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "meta": "b7a35e1ffe308c06",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6225,31 +6536,45 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_capa_cavaleiro.fd5397e35bfe.glb",
       "thumb": "miniaturas/costas_capa_cavaleiro.9e7ad5a02e08.webp",
       "tris": 1144,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "2d00d52448349c10bfc6420fa9c858ae8ea01950",
         "thumbBlob": "d06cf83256d28284623198195cb73583353032ec",
-        "meta": "3c3bc5abbc421489",
-        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "meta": "16acca96431767fe",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
         "migratedAt": "2026-11-15"
       }
     },
     "costas_capa_estrelas": {
-      "audience": "both",
-      "file": "pecas/costas_capa_estrelas.caa3e5f5f7d4.glb",
+      "slot": "costas",
       "group": "costas",
       "label": "Capa de estrelas",
+      "audience": "both",
+      "tier": "festa",
+      "price": 0,
+      "file": "pecas/costas_capa_estrelas.caa3e5f5f7d4.glb",
+      "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
+      "tris": 1684,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
       "origin": {
         "blob": "946e456af53458e5c38e20b1e59776a9216b5ff3",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "7103ab9bcb689240",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "8a722480a668243a1cc3d438d8c1484e8e70612b"
-      },
-      "price": 0,
-      "slot": "costas",
-      "thumb": "miniaturas/costas_capa_estrelas.bc3e2399eacc.webp",
-      "tier": "festa",
-      "tris": 1684
+        "thumbBlob": "8a722480a668243a1cc3d438d8c1484e8e70612b",
+        "meta": "46fcf7cb79bc1beb",
+        "commit": "ec7416c727df769f8844a1bb6f649570eea40ef8",
+        "migratedAt": "2026-11-15"
+      }
     },
     "costas_mochila_bolso": {
       "slot": "costas",
@@ -6262,11 +6587,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_mochila_bolso.dc217d3b9f6e.glb",
       "thumb": "miniaturas/costas_mochila_bolso.5a6411d974db.webp",
       "tris": 1090,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
+      "armLayers": {
+        "correr_tras": "costas_braco_esq_mochila_correr_tras",
+        "correr_direita": "costas_braco_esq_mochila_correr_direita"
+      },
       "origin": {
         "blob": "4705016c65c3354ccbf15d3620f1f1bee05c8854",
         "thumbBlob": "bd93706414c33ac1ff02a2189ea8a1b21b090ae0",
-        "meta": "c32c502bf513d1d0",
-        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "meta": "d3bf9d53062f6ec5",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6281,11 +6617,22 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "file": "pecas/costas_mochila_pequena.1c22473e179f.glb",
       "thumb": "miniaturas/costas_mochila_pequena.27f57174f102.webp",
       "tris": 848,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio"
+      ],
+      "armLayers": {
+        "correr_tras": "costas_braco_esq_mochilinha_correr_tras",
+        "correr_direita": "costas_braco_esq_mochilinha_correr_direita"
+      },
       "origin": {
         "blob": "13f6c913a47003d4d36f6a04faa77647a67da2c1",
         "thumbBlob": "dbf51397661bb5aaedef152a40f4bac7835fc0a0",
-        "meta": "80339c1c5972d200",
-        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "meta": "b265475919ad8f84",
+        "commit": "11ad61a1339cab8d2f4e6c8e41386a33aad72414",
         "migratedAt": "2026-11-15"
       }
     },
@@ -6536,6 +6883,26 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "set",
       "tris": 484
     },
+    "fantasia_cavaleiro_calca": {
+      "slot": "calca",
+      "group": "fantasia",
+      "label": "Cavaleiro: calça",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "review": true,
+      "file": "pecas/fantasia_cavaleiro_calca.54c586a48a6a.glb",
+      "thumb": "miniaturas/fantasia_cavaleiro_calca.30487e12ea51.webp",
+      "tris": 1128,
+      "set": "fantasia_cavaleiro",
+      "origin": {
+        "blob": "748c206ca02b64361488e894fa2d2e009023679b",
+        "thumbBlob": "2d68b9442855c83e816ffb07f17d83229b6e4471",
+        "meta": "4edf085602e813c7",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
     "fantasia_cavaleiro_elmo_chifres_pacote": {
       "audience": "both",
       "file": "pecas/fantasia_cavaleiro_elmo_chifres_pacote.b084c740fc43.glb",
@@ -6575,24 +6942,50 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "set",
       "tris": 800
     },
-    "fantasia_cavaleiro_peitoral_pacote": {
+    "fantasia_cavaleiro_peitoral_montado": {
+      "slot": "fantasia",
+      "group": "fantasia",
+      "label": "Cavaleiro: peitoral (montada)",
       "audience": "both",
-      "file": "pecas/fantasia_cavaleiro_peitoral_pacote.920b28a3a9f4.glb",
+      "tier": "set",
+      "price": 0,
+      "review": true,
+      "file": "pecas/fantasia_cavaleiro_peitoral_montado.a9de02c2c196.glb",
+      "thumb": "miniaturas/fantasia_cavaleiro_peitoral_montado.f69fa980a328.webp",
+      "tris": 604,
+      "variantOf": "fantasia_cavaleiro_peitoral_pacote",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "0728e4fc3a5e6b5991da0971fed142face8a2daf",
+        "thumbBlob": "516e8b1a5132dbefaf4137520042d3a83e033b03",
+        "meta": "a2b054e758dc65f7",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "fantasia_cavaleiro_peitoral_pacote": {
+      "slot": "fantasia",
       "group": "fantasia",
       "label": "Cavaleiro: peitoral",
+      "audience": "both",
+      "tier": "set",
+      "price": 0,
+      "file": "pecas/fantasia_cavaleiro_peitoral_pacote.920b28a3a9f4.glb",
+      "thumb": "miniaturas/fantasia_cavaleiro_peitoral_pacote.60eaea65f207.webp",
+      "tris": 604,
+      "set": "fantasia_cavaleiro",
+      "mountedVariant": "fantasia_cavaleiro_peitoral_montado",
       "origin": {
         "blob": "19c19314ac70f857fa74161b851ec512059c28b4",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "5b749d2c9cfeb8bb",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "37457e55747d221f8899b0e96ec2bd3627b66937"
-      },
-      "price": 0,
-      "set": "fantasia_cavaleiro",
-      "slot": "fantasia",
-      "thumb": "miniaturas/fantasia_cavaleiro_peitoral_pacote.60eaea65f207.webp",
-      "tier": "set",
-      "tris": 604
+        "thumbBlob": "37457e55747d221f8899b0e96ec2bd3627b66937",
+        "meta": "5889584fdd6444c9",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "fantasia_coelho_roxo_botas_pacote": {
       "audience": "both",
@@ -8459,6 +8852,274 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "thumb": "miniaturas/orelhas_corpo_vermelho_pacote.3feceb87fcb9.webp",
       "tier": "auto",
       "tris": 472
+    },
+    "planador_dobrado": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado.3b8a5c5b82eb.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "offIn": [
+        "deitar",
+        "deitado",
+        "levantar_da_cama",
+        "empurrar_baixo",
+        "empurrar_meio",
+        "nadar",
+        "boiar",
+        "entrar_na_agua",
+        "sair_da_agua"
+      ],
+      "armLayers": {
+        "correr_tras": "costas_braco_esq_planador_correr_tras",
+        "correr_esquerda": "costas_braco_dir_planador_correr_esquerda",
+        "correr_direita": "costas_braco_esq_planador_correr_direita"
+      },
+      "situations": {
+        "socket": "planador",
+        "byBack": {
+          "none": "planador_dobrado",
+          "costas_mochila_pequena": "planador_dobrado__costas_mochila_pequena",
+          "costas_mochila_bolso": "planador_dobrado__costas_mochila_bolso",
+          "costas_bolsa_saco": "planador_dobrado__costas_bolsa_saco"
+        },
+        "highStrap": {
+          "none": "planador_dobrado__sem_nada__alca_alta"
+        },
+        "highStrapWith": [
+          "roupa_cima_camisa_amarela_aberta_pacote",
+          "roupa_cima_camisa_roxa_aberta_pacote",
+          "roupa_cima_jaqueta_bege_pacote",
+          "roupa_cima_jaqueta_rosa_pacote",
+          "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+          "roupa_cima_jaqueta_vermelha_pacote",
+          "roupa_cima_moletom_laranja_pacote",
+          "fantasia_cavaleiro_peitoral_pacote",
+          "roupa_cima_jaqueta_azul_acolchoada_pacote",
+          "roupa_cima_jaqueta_laranja_acolchoada_pacote"
+        ],
+        "hiddenWith": [
+          "cabelo_liso_preto_branco_pacote",
+          "cabelo_cacheado_grisalho_pacote",
+          "cabelo_peruca_cachos_branca_pacote",
+          "chapeu_saco_papel_pacote",
+          "chapeu_caixa_brinquedo",
+          "chapeu_caixa_brinquedo_pacote",
+          "costas_capa_cavaleiro",
+          "costas_capa_estrelas",
+          "roupa_cima_jaqueta_vermelha_pacote",
+          "roupa_inteira_macacao_raposa"
+        ],
+        "hiddenWithByBack": {
+          "costas_mochila_pequena": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_liso_cinza_04_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ],
+          "costas_mochila_bolso": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_rabo_cavalo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ],
+          "costas_bolsa_saco": [
+            "cabelo_chanel_castanho_pacote",
+            "cabelo_liso_cinza_04_pacote",
+            "cabelo_coque_baixo_sob_chapeu",
+            "cabelo_rabo_cavalo_sob_chapeu",
+            "cabelo_solto_sob_chapeu"
+          ]
+        },
+        "seatedBack": {
+          "none": 0.218,
+          "costas_mochila_pequena": 0.277,
+          "costas_mochila_bolso": 0.316,
+          "costas_bolsa_saco": 0.307
+        },
+        "seatedInBoatBack": {
+          "none": 0.236,
+          "costas_mochila_pequena": 0.295,
+          "costas_mochila_bolso": 0.334,
+          "costas_bolsa_saco": 0.325
+        }
+      },
+      "hidden": true,
+      "origin": {
+        "blob": "df86a50ca10d0b5af800c249a324ffb4ce9793b2",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "planador_dobrado__costas_bolsa_saco": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_bolsa_saco)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_bolsa_saco.29420f8753c0.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "fca0a8179092afca7f0c9256737db6123dfc5f47",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado"
+    },
+    "planador_dobrado__costas_capa_cavaleiro": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_capa_cavaleiro)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_capa_cavaleiro.18aca598377c.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "5dc487724f66c4e2b05d1a360eb2bc54976deb33",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "dc4d2b5593d00e02",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado",
+      "retired": true
+    },
+    "planador_dobrado__costas_capa_cavaleiro__alca_alta": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_capa_cavaleiro, alça alta)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_capa_cavaleiro__alca_alta.85df97546ec4.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "ee8510f5270b9cc0d238c334c5bb9532549e8ec2",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "dc4d2b5593d00e02",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado",
+      "retired": true
+    },
+    "planador_dobrado__costas_capa_estrelas": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_capa_estrelas)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_capa_estrelas.69932231352c.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "ce4c78120b6df33a3eacd6fd0c33ca656797c0ff",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "dc4d2b5593d00e02",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado",
+      "retired": true
+    },
+    "planador_dobrado__costas_capa_estrelas__alca_alta": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_capa_estrelas, alça alta)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_capa_estrelas__alca_alta.ee5e4433a153.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "955f23a80b516b32b43f86bcc21fb53e42e048f1",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "dc4d2b5593d00e02",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado",
+      "retired": true
+    },
+    "planador_dobrado__costas_mochila_bolso": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_mochila_bolso)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_mochila_bolso.cc1920b19019.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "ca29e4a58f39d4bcda157715cc2c8f1680a693a6",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado"
+    },
+    "planador_dobrado__costas_mochila_pequena": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (costas_mochila_pequena)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__costas_mochila_pequena.5e4ea401818f.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "7815df79a45e8aa4b8d84b1a1c7f5a541a1999cb",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado"
+    },
+    "planador_dobrado__sem_nada__alca_alta": {
+      "slot": "planador",
+      "group": "planador",
+      "label": "Planador dobrado (sem nada nas costas, alça alta)",
+      "audience": "both",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/planador_dobrado__sem_nada__alca_alta.1eb9bc9d47b0.glb",
+      "thumb": "miniaturas/planador_dobrado.4a7d39c212e0.webp",
+      "tris": 1484,
+      "hidden": true,
+      "origin": {
+        "blob": "601c1e2965d7ecb6b861e8412a0cdd573a1484d1",
+        "thumbBlob": "70d02e5eff64d4f9dd5c31587a0e9b7cb866533b",
+        "meta": "8d46d3c8a5fcd893",
+        "commit": "0aabe1b34b97c08ef40c22325c558df308a5f4b9",
+        "migratedAt": "2026-11-15"
+      },
+      "situationOf": "planador_dobrado"
     },
     "rosto_fem_01_apaixonado_pacote": {
       "audience": "girl",
@@ -10614,14 +11275,87 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "price": 110,
       "band": "especial",
-      "file": "pecas/roupa_inteira_avental_confeiteiro.18c325ef85fd.glb",
-      "thumb": "miniaturas/roupa_inteira_avental_confeiteiro.9516644366c2.webp",
-      "tris": 1292,
+      "file": "pecas/roupa_inteira_avental_confeiteiro.a7027c88be35.glb",
+      "thumb": "miniaturas/roupa_inteira_avental_confeiteiro.205df18e1e42.webp",
+      "tris": 1488,
+      "mountedVariant": "roupa_inteira_avental_confeiteiro_montado",
       "origin": {
-        "blob": "5a2f062b8866dd66228509ac48917f3ccaad08ac",
-        "thumbBlob": "de6d4738d9b91652d1d2244ccff7ade11fc6c919",
-        "meta": "5b2bb559455cca92",
-        "commit": "7124870145d61244ac08b982532dbe0d9497983e",
+        "blob": "04726ec2c7ae07079127f5ef0bb326f45064c4d4",
+        "thumbBlob": "517d1548056e3806f2728ee4b9f1a23d76cbfc21",
+        "meta": "7a50d80ba81cc6f1",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_avental_confeiteiro_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Avental de confeiteiro (montada)",
+      "audience": "both",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_avental_confeiteiro_montado.cb0d8257503b.glb",
+      "thumb": "miniaturas/roupa_inteira_avental_confeiteiro_montado.853c97712c3a.webp",
+      "tris": 1488,
+      "variantOf": "roupa_inteira_avental_confeiteiro",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "59a185d8229521afe5152e64b57882470c33124b",
+        "thumbBlob": "510098f0313da5924e0c4577fd334eb8465aeecd",
+        "meta": "8d6a4a269710fdb4",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_camisa_branca_saia_escura": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Camisa branca e saia escura",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_camisa_branca_saia_escura.6d86a3cf0044.glb",
+      "thumb": "miniaturas/roupa_inteira_camisa_branca_saia_escura.3f2764f4c72f.webp",
+      "tris": 1666,
+      "mountedVariant": "roupa_inteira_camisa_branca_saia_escura_montado",
+      "origin": {
+        "blob": "a4009f10e9822c07630663bdeea0333ff3e872d9",
+        "thumbBlob": "c91309bed3ccbacc654537bc862df308969ea986",
+        "meta": "1e45dfd7a7d22de8",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_camisa_branca_saia_escura_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Camisa branca e saia escura (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_camisa_branca_saia_escura_montado.c084b1b13c4a.glb",
+      "thumb": "miniaturas/roupa_inteira_camisa_branca_saia_escura_montado.2dc7e33b7a93.webp",
+      "tris": 1666,
+      "variantOf": "roupa_inteira_camisa_branca_saia_escura",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "ab4321fb641e39fceb58701fdfb05d769e667df3",
+        "thumbBlob": "5eb6a91bc70b9ffbbf2f84c23750647693c3a819",
+        "meta": "1c90be0aaf12a4f6",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       }
     },
@@ -10642,7 +11376,54 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_camisa_branca_saia_escura_pacote.a14726d1bb1a.webp",
       "tier": "coins",
-      "tris": 1470
+      "tris": 1470,
+      "hidden": true
+    },
+    "roupa_inteira_camiseta_branca_saia_vermelha": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Camiseta branca e saia vermelha",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_camiseta_branca_saia_vermelha.a15781d9309e.glb",
+      "thumb": "miniaturas/roupa_inteira_camiseta_branca_saia_vermelha.ccfd15e844ba.webp",
+      "tris": 916,
+      "mountedVariant": "roupa_inteira_camiseta_branca_saia_vermelha_montado",
+      "origin": {
+        "blob": "e3523b8afd064151b1890f70146867c0fd06f85c",
+        "thumbBlob": "de062e906f979da80d108793a6baf1e7420a6e8c",
+        "meta": "a2d74e8cbb8d57ec",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_camiseta_branca_saia_vermelha_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Camiseta branca e saia vermelha (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_camiseta_branca_saia_vermelha_montado.e78f57014a72.glb",
+      "thumb": "miniaturas/roupa_inteira_camiseta_branca_saia_vermelha_montado.f8f7647058b4.webp",
+      "tris": 916,
+      "variantOf": "roupa_inteira_camiseta_branca_saia_vermelha",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "1282f3053bc825c3ead7f1b54eb6f8cea44a36fa",
+        "thumbBlob": "eac039426f535f172f54168a3501245b38ef976f",
+        "meta": "cb011502e6c41373",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_camiseta_branca_saia_vermelha_pacote": {
       "audience": "girl",
@@ -10661,7 +11442,54 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_camiseta_branca_saia_vermelha_pacote.37d2666ddf73.webp",
       "tier": "coins",
-      "tris": 720
+      "tris": 720,
+      "hidden": true
+    },
+    "roupa_inteira_jaqueta_amarela_saia_escura": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Jaqueta amarela e saia escura",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_jaqueta_amarela_saia_escura.379ae5006ccd.glb",
+      "thumb": "miniaturas/roupa_inteira_jaqueta_amarela_saia_escura.64881fcea8a5.webp",
+      "tris": 1394,
+      "mountedVariant": "roupa_inteira_jaqueta_amarela_saia_escura_montado",
+      "origin": {
+        "blob": "b9b073e62792b878fc132cd72592ae607af271b5",
+        "thumbBlob": "c6e0f9eaf060614ea2b198fbc3d71429fe94fad1",
+        "meta": "91651c0b29642eec",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_jaqueta_amarela_saia_escura_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Jaqueta amarela e saia escura (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_jaqueta_amarela_saia_escura_montado.0cb7394c0211.glb",
+      "thumb": "miniaturas/roupa_inteira_jaqueta_amarela_saia_escura_montado.2af8b60863fe.webp",
+      "tris": 1394,
+      "variantOf": "roupa_inteira_jaqueta_amarela_saia_escura",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "47e02b81c2c82e6d6fabaadc5a05186ae860f06b",
+        "thumbBlob": "8471c136fabe8c3fc8993948065ec803c7ebd192",
+        "meta": "b9e81946abea3a92",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_jaqueta_amarela_saia_escura_pacote": {
       "audience": "girl",
@@ -10680,7 +11508,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_jaqueta_amarela_saia_escura_pacote.bebfe9224d12.webp",
       "tier": "coins",
-      "tris": 1198
+      "tris": 1198,
+      "hidden": true
     },
     "roupa_inteira_jaqueta_verde_calca_cinza_pacote": {
       "audience": "both",
@@ -10720,23 +11549,50 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tris": 1480
     },
     "roupa_inteira_jardineira_saia": {
-      "audience": "girl",
-      "band": "especial",
-      "file": "pecas/roupa_inteira_jardineira_saia.f8936b8e45fc.glb",
+      "slot": "roupa_inteira",
       "group": "roupa_inteira",
       "label": "Jardineira-saia",
-      "origin": {
-        "blob": "c6c118799e4b4bf28d6c3f57b0f5e3e1e13a4937",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "f31377fd224c1190",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "f13fa3924985a67c73cd99241e2a2e3735138074"
-      },
-      "price": 110,
-      "slot": "roupa_inteira",
-      "thumb": "miniaturas/roupa_inteira_jardineira_saia.59cf0d3d704b.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 1252
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_jardineira_saia.274f01fe580c.glb",
+      "thumb": "miniaturas/roupa_inteira_jardineira_saia.f32025b4bac6.webp",
+      "tris": 1448,
+      "mountedVariant": "roupa_inteira_jardineira_saia_montado",
+      "origin": {
+        "blob": "6fb0fe17f23f4fdd9f673bec60d429149d9382c5",
+        "thumbBlob": "694915c5cd3202f4539f174bd35df0696539047e",
+        "meta": "4ba3d7236184cdde",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_jardineira_saia_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Jardineira-saia (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_jardineira_saia_montado.200315552743.glb",
+      "thumb": "miniaturas/roupa_inteira_jardineira_saia_montado.d6d1498b5e98.webp",
+      "tris": 1448,
+      "variantOf": "roupa_inteira_jardineira_saia",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "73392084b64f7a2b62fbdabc3a3f2ecae4f3ce05",
+        "thumbBlob": "f1c4e6304b387028451c37d882b53f8e7e4f5960",
+        "meta": "8a958497b43c62a4",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_macacao_gato": {
       "slot": "roupa_inteira",
@@ -10815,23 +11671,95 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       }
     },
     "roupa_inteira_vestido_alcinha": {
-      "audience": "girl",
-      "band": "especial",
-      "file": "pecas/roupa_inteira_vestido_alcinha.caf7c58f7b81.glb",
+      "slot": "roupa_inteira",
       "group": "roupa_inteira",
       "label": "Vestido de alcinha",
-      "origin": {
-        "blob": "312f565545432efc53b98ccc8a2e206b6e4c3033",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "c2f4785c8f79d0e8",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "a8b4cd4c7bc734e13d2165f3be67b33a0160b239"
-      },
-      "price": 110,
-      "slot": "roupa_inteira",
-      "thumb": "miniaturas/roupa_inteira_vestido_alcinha.6a1f4683beb5.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 580
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_vestido_alcinha.f29ac4e57087.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_alcinha.acb78f28e392.webp",
+      "tris": 776,
+      "mountedVariant": "roupa_inteira_vestido_alcinha_montado",
+      "origin": {
+        "blob": "3ba9e20b2571bec416c445c354ff9e6da6cbdd6a",
+        "thumbBlob": "092741951813d4ed8dc941b32cd12086997a546c",
+        "meta": "0d880f544072a3b9",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_alcinha_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido de alcinha (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_alcinha_montado.ec86a007a635.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_alcinha_montado.47a7dfdf5b8f.webp",
+      "tris": 776,
+      "variantOf": "roupa_inteira_vestido_alcinha",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "7171f61a31874fc8802ecfd7b8296f517d04d07d",
+        "thumbBlob": "8a3fba4d461d996a9314065fbc4a1f0bd44bda0a",
+        "meta": "27628007c5882c72",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_azul": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido azul",
+      "audience": "girl",
+      "tier": "free",
+      "price": 0,
+      "file": "pecas/roupa_inteira_vestido_azul.6f48d3b7c16d.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_azul.db0ce70e3e8a.webp",
+      "tris": 1368,
+      "mountedVariant": "roupa_inteira_vestido_azul_montado",
+      "origin": {
+        "blob": "f866b0a86247ee15f1c18429755cde0544032e26",
+        "thumbBlob": "f120a0419f3bb9778ad924ae18ea7d1fb72336cc",
+        "meta": "a9a670d755d164da",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_azul_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido azul (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_azul_montado.05cc625f9364.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_azul_montado.6fde9ec0d9a2.webp",
+      "tris": 1368,
+      "variantOf": "roupa_inteira_vestido_azul",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "c897e9a96cef722d88de7d4b072493068d730088",
+        "thumbBlob": "8c505a2813f750f8b1649106d38a401cc48efbb1",
+        "meta": "47a5e361bdb51824",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_vestido_azul_pacote": {
       "audience": "girl",
@@ -10849,7 +11777,54 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_azul_pacote.614ec04e4de2.webp",
       "tier": "free",
-      "tris": 1172
+      "tris": 1172,
+      "hidden": true
+    },
+    "roupa_inteira_vestido_azul_petroleo": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido azul-petróleo",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_vestido_azul_petroleo.a88393ed27d6.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_azul_petroleo.706cddea9fb2.webp",
+      "tris": 1312,
+      "mountedVariant": "roupa_inteira_vestido_azul_petroleo_montado",
+      "origin": {
+        "blob": "408aa591579321e097c8ca19e455ef4dd1a503ea",
+        "thumbBlob": "ad0b137fa1498c022fd831964b0c131643c54160",
+        "meta": "79f8670a7939befd",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_azul_petroleo_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido azul-petróleo (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_azul_petroleo_montado.45e4a2d79ddb.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_azul_petroleo_montado.c4f2d91ee2b0.webp",
+      "tris": 1312,
+      "variantOf": "roupa_inteira_vestido_azul_petroleo",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "d850328fea44d08e0768446b6dade611219f9873",
+        "thumbBlob": "63ee4f95f7256e3831233bfc9e83335b1c704278",
+        "meta": "8e6a8289922152d2",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_vestido_azul_petroleo_pacote": {
       "audience": "girl",
@@ -10868,45 +11843,146 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_azul_petroleo_pacote.b7df5a052685.webp",
       "tier": "coins",
-      "tris": 1116
+      "tris": 1116,
+      "hidden": true
     },
     "roupa_inteira_vestido_chita": {
-      "audience": "girl",
-      "festa": "junina",
-      "file": "pecas/roupa_inteira_vestido_chita.04e7f8acca19.glb",
+      "slot": "roupa_inteira",
       "group": "roupa_inteira",
       "label": "Vestido de chita",
-      "origin": {
-        "blob": "c499d85a3df23a5a43e95d6bdae2986c78ff63fd",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "fce7efc0af96bc4d",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "8cb97cf4fda0e436d648b9c98ab5f6a4e465e58a"
-      },
-      "price": 0,
-      "slot": "roupa_inteira",
-      "thumb": "miniaturas/roupa_inteira_vestido_chita.676cc61dcead.webp",
+      "audience": "girl",
       "tier": "festa",
-      "tris": 1120
+      "price": 0,
+      "file": "pecas/roupa_inteira_vestido_chita.ca7896d11127.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_chita.496db4c72b65.webp",
+      "tris": 1316,
+      "festa": "junina",
+      "mountedVariant": "roupa_inteira_vestido_chita_montado",
+      "origin": {
+        "blob": "1522601dd0d983dd5d341d16696fe083a73e7114",
+        "thumbBlob": "316841bdad6313a78dbc9472c97e0381778b37d1",
+        "meta": "7512f20cf7f829c1",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_chita_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido de chita (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_chita_montado.c50506da6fb3.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_chita_montado.7826a22fdceb.webp",
+      "tris": 1316,
+      "variantOf": "roupa_inteira_vestido_chita",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "25006644a8d5151d500a225611b45d6000805a5d",
+        "thumbBlob": "c16e007a85c42ed387ee05d0f0907fa69f5e40a6",
+        "meta": "eae4942efb81d46c",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_vestido_longo": {
-      "audience": "girl",
-      "band": "especial",
-      "file": "pecas/roupa_inteira_vestido_longo.5dc641e02e00.glb",
+      "slot": "roupa_inteira",
       "group": "roupa_inteira",
       "label": "Vestido longo listrado",
-      "origin": {
-        "blob": "93169db130d341eca82dd3a2e657602fcd218902",
-        "commit": "cd8d6cd2525508cb7efb519732e927ec4bfe0601",
-        "meta": "f07f30b7ed1ff5f8",
-        "migratedAt": "2026-11-14",
-        "thumbBlob": "74348ed442a99fba79f889d3dc0b1e402c8c892d"
-      },
-      "price": 110,
-      "slot": "roupa_inteira",
-      "thumb": "miniaturas/roupa_inteira_vestido_longo.e325c03366e3.webp",
+      "audience": "girl",
       "tier": "coins",
-      "tris": 832
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_vestido_longo.f38eca830452.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_longo.ba5f074a9500.webp",
+      "tris": 1028,
+      "mountedVariant": "roupa_inteira_vestido_longo_montado",
+      "origin": {
+        "blob": "24ce084c29ffa22dedc1a3b1e31172f44ff42984",
+        "thumbBlob": "26159c7d0fdab838d9a2cf1a319f327196c80e07",
+        "meta": "af4f902897b6e817",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_longo_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido longo listrado (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_longo_montado.33b9b077a380.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_longo_montado.d7afcd033061.webp",
+      "tris": 1028,
+      "variantOf": "roupa_inteira_vestido_longo",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "1ee91daa8fef8e9a4a781f7e600b8a2302167a3d",
+        "thumbBlob": "ab2e2c7c5055380300b70b41c94425bc97f41fb9",
+        "meta": "3599e2df9a5edfd7",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_marrom": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido marrom",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "file": "pecas/roupa_inteira_vestido_marrom.9b699984e538.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_marrom.e9b90c123f31.webp",
+      "tris": 836,
+      "mountedVariant": "roupa_inteira_vestido_marrom_montado",
+      "origin": {
+        "blob": "282179c3e7f538798394338639e0e47076e6672f",
+        "thumbBlob": "3b9c1894e44e1c1625899f4d0df3fc70cb46c7ae",
+        "meta": "a6c0149c460cec98",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_marrom_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido marrom (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_marrom_montado.94fb31ea529a.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_marrom_montado.aa8bb3d43a01.webp",
+      "tris": 836,
+      "variantOf": "roupa_inteira_vestido_marrom",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "b8df45d20c6abfd35904698bef0cf26f2ac62e26",
+        "thumbBlob": "9e297e7bf82f6d7e05e6cf84427b8c5e97e60c42",
+        "meta": "0fcda68b0c598ba2",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
     },
     "roupa_inteira_vestido_marrom_pacote": {
       "audience": "girl",
@@ -10925,7 +12001,8 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "slot": "roupa_inteira",
       "thumb": "miniaturas/roupa_inteira_vestido_marrom_pacote.6427a68a6845.webp",
       "tier": "coins",
-      "tris": 640
+      "tris": 640,
+      "hidden": true
     },
     "roupa_inteira_vestido_princesa": {
       "slot": "roupa_inteira",
@@ -10935,14 +12012,41 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "tier": "coins",
       "price": 110,
       "band": "especial",
-      "file": "pecas/roupa_inteira_vestido_princesa.7aad7f0178a1.glb",
-      "thumb": "miniaturas/roupa_inteira_vestido_princesa.670fc9fda96b.webp",
-      "tris": 1146,
+      "file": "pecas/roupa_inteira_vestido_princesa.8aec054825b5.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_princesa.dc89ebc2677a.webp",
+      "tris": 1342,
+      "mountedVariant": "roupa_inteira_vestido_princesa_montado",
       "origin": {
-        "blob": "b97302fbf7511c8cadf8ce9c5d9ca59595e51a41",
-        "thumbBlob": "01bd5b0d217e2984acd02659fd9690709a53b92e",
-        "meta": "29c8ccbd8976696b",
-        "commit": "8b6b0226b05f5100dcb0c3385a5bd25b85c8b02a",
+        "blob": "06399751118df185c35747e617df75ed2ee4094c",
+        "thumbBlob": "e58a9c7f47445282e7a56214920603b5580643de",
+        "meta": "44e3b51802224c46",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
+        "migratedAt": "2026-11-15"
+      }
+    },
+    "roupa_inteira_vestido_princesa_montado": {
+      "slot": "roupa_inteira",
+      "group": "roupa_inteira",
+      "label": "Vestido de princesa (montada)",
+      "audience": "girl",
+      "tier": "coins",
+      "price": 110,
+      "band": "especial",
+      "review": true,
+      "file": "pecas/roupa_inteira_vestido_princesa_montado.cb6d902f2c55.glb",
+      "thumb": "miniaturas/roupa_inteira_vestido_princesa_montado.33c40ba06647.webp",
+      "tris": 1342,
+      "variantOf": "roupa_inteira_vestido_princesa",
+      "variantFor": [
+        "montado",
+        "montado_largo"
+      ],
+      "hidden": true,
+      "origin": {
+        "blob": "250376afc0fc91fa50bb980d2713fed42656f722",
+        "thumbBlob": "8b100785b8f6c329692f3d1f903f62cbad51a829",
+        "meta": "49a62c96b250a757",
+        "commit": "f9e4405e025ab615ef6e1776eab8c60c6def0a8f",
         "migratedAt": "2026-11-15"
       }
     }
@@ -11035,6 +12139,10 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         {
           "slot": "calcado",
           "part": "fantasia_cavaleiro_botas_pacote"
+        },
+        {
+          "slot": "calca",
+          "part": "fantasia_cavaleiro_calca"
         }
       ],
       "tier": "coins",
@@ -11760,15 +12868,15 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_inteira": {
         "label": "Roupa inteira",
         "parts": [
-          "roupa_inteira_camisa_branca_saia_escura_pacote",
-          "roupa_inteira_vestido_marrom_pacote",
-          "roupa_inteira_vestido_azul_pacote",
-          "roupa_inteira_jaqueta_amarela_saia_escura_pacote",
+          "roupa_inteira_camisa_branca_saia_escura",
+          "roupa_inteira_vestido_marrom",
+          "roupa_inteira_vestido_azul",
+          "roupa_inteira_jaqueta_amarela_saia_escura",
           "roupa_inteira_jaqueta_verde_calca_cinza_pacote",
-          "roupa_inteira_vestido_azul_petroleo_pacote",
+          "roupa_inteira_vestido_azul_petroleo",
           "roupa_inteira_jardineira_azul_pacote",
           "roupa_inteira_macacao_piloto_azul_pacote",
-          "roupa_inteira_camiseta_branca_saia_vermelha_pacote",
+          "roupa_inteira_camiseta_branca_saia_vermelha",
           "roupa_inteira_avental_confeiteiro",
           "roupa_inteira_jardineira_saia",
           "roupa_inteira_macacao_gato",
@@ -12122,6 +13230,14 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_jaqueta_verde_cinto_pacote",
         "roupa_cima_jaqueta_vermelha_pacote"
       ],
+      "calca_saia_babados_montado": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote"
+      ],
       "calca_saia_reta": [
         "roupa_cima_colete_azul_petroleo_listrado_pacote",
         "roupa_cima_colete_bolsos_pacote",
@@ -12132,7 +13248,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_sueter_estrela",
         "roupa_cima_sueter_listrado_vermelho_pacote"
       ],
+      "calca_saia_reta_montado": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_cinza_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote",
+        "roupa_cima_sueter_estrela",
+        "roupa_cima_sueter_listrado_vermelho_pacote"
+      ],
       "calca_saia_rodada": [
+        "roupa_cima_colete_azul_petroleo_listrado_pacote",
+        "roupa_cima_colete_bolsos_pacote",
+        "roupa_cima_colete_franjas",
+        "roupa_cima_jaqueta_universitaria_vermelha_pacote",
+        "roupa_cima_jaqueta_verde_cinto_pacote",
+        "roupa_cima_jaqueta_vermelha_pacote"
+      ],
+      "calca_saia_rodada_montado": [
         "roupa_cima_colete_azul_petroleo_listrado_pacote",
         "roupa_cima_colete_bolsos_pacote",
         "roupa_cima_colete_franjas",
@@ -12362,10 +13496,14 @@ export const AVATAR_CATALOG: AvatarCatalog = {
         "roupa_cima_polo_verde_listrada_pacote",
         "roupa_cima_sueter_estrela",
         "roupa_cima_sueter_listrado_vermelho_pacote",
+        "roupa_inteira_camisa_branca_saia_escura",
+        "roupa_inteira_camisa_branca_saia_escura_montado",
         "roupa_inteira_camisa_branca_saia_escura_pacote",
         "roupa_inteira_jardineira_azul_pacote",
         "roupa_inteira_jardineira_saia",
         "roupa_inteira_macacao_piloto_azul_pacote",
+        "roupa_inteira_vestido_azul",
+        "roupa_inteira_vestido_azul_montado",
         "roupa_inteira_vestido_azul_pacote"
       ],
       "mascara_cirurgica_pacote": [
@@ -12409,26 +13547,36 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "roupa_cima_colete_azul_petroleo_listrado_pacote": [
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "calca_saia_rodada",
+        "calca_saia_rodada_montado",
         "lenco_pescoco"
       ],
       "roupa_cima_colete_bolsos_pacote": [
         "cachecol",
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_reta",
-        "calca_saia_rodada"
+        "calca_saia_reta_montado",
+        "calca_saia_rodada",
+        "calca_saia_rodada_montado"
       ],
       "roupa_cima_colete_cinza_pacote": [
         "cachecol",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "lenco_pescoco"
       ],
       "roupa_cima_colete_franjas": [
         "cachecol",
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "calca_saia_rodada",
+        "calca_saia_rodada_montado",
         "lenco_pescoco"
       ],
       "roupa_cima_colete_xerife": [
@@ -12486,7 +13634,9 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "roupa_cima_jaqueta_universitaria_vermelha_pacote": [
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_rodada",
+        "calca_saia_rodada_montado",
         "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
@@ -12496,14 +13646,20 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       ],
       "roupa_cima_jaqueta_verde_cinto_pacote": [
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "calca_saia_rodada",
+        "calca_saia_rodada_montado",
         "lenco_pescoco"
       ],
       "roupa_cima_jaqueta_vermelha_pacote": [
         "calca_saia_babados",
+        "calca_saia_babados_montado",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "calca_saia_rodada",
+        "calca_saia_rodada_montado",
         "costas_bolsa_saco",
         "costas_capa_cavaleiro",
         "costas_capa_estrelas",
@@ -12531,11 +13687,19 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_cima_sueter_estrela": [
         "cachecol",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
         "lenco_pescoco"
       ],
       "roupa_cima_sueter_listrado_vermelho_pacote": [
         "cachecol",
         "calca_saia_reta",
+        "calca_saia_reta_montado",
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_camisa_branca_saia_escura": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_camisa_branca_saia_escura_montado": [
         "lenco_pescoco"
       ],
       "roupa_inteira_camisa_branca_saia_escura_pacote": [
@@ -12567,6 +13731,12 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "roupa_inteira_macacao_urso_polar": [
         "costas_bolsa_saco",
         "costas_mochila_bolso"
+      ],
+      "roupa_inteira_vestido_azul": [
+        "lenco_pescoco"
+      ],
+      "roupa_inteira_vestido_azul_montado": [
+        "lenco_pescoco"
       ],
       "roupa_inteira_vestido_azul_pacote": [
         "lenco_pescoco"
@@ -12783,7 +13953,31 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "excluded": [
         "roupa_cima_rascunho_pacote",
         "chapeu_caixa_brinquedo_pacote",
+        "roupa_inteira_camisa_branca_saia_escura_pacote",
+        "roupa_inteira_camiseta_branca_saia_vermelha_pacote",
+        "roupa_inteira_jaqueta_amarela_saia_escura_pacote",
+        "roupa_inteira_vestido_azul_pacote",
+        "roupa_inteira_vestido_azul_petroleo_pacote",
+        "roupa_inteira_vestido_marrom_pacote",
         "fantasia_cavaleiro_elmo_chifres_pacote",
+        "calca_saia_babados_montado",
+        "calca_saia_longa_montado",
+        "calca_saia_reta_montado",
+        "calca_saia_rodada_montado",
+        "fantasia_cavaleiro_peitoral_montado",
+        "roupa_inteira_avental_confeiteiro_montado",
+        "roupa_inteira_camisa_branca_saia_escura_montado",
+        "roupa_inteira_camiseta_branca_saia_vermelha_montado",
+        "roupa_inteira_jaqueta_amarela_saia_escura_montado",
+        "roupa_inteira_jardineira_saia_montado",
+        "roupa_inteira_vestido_alcinha_montado",
+        "roupa_inteira_vestido_azul_montado",
+        "roupa_inteira_vestido_azul_petroleo_montado",
+        "roupa_inteira_vestido_chita_montado",
+        "roupa_inteira_vestido_longo_montado",
+        "roupa_inteira_vestido_marrom_montado",
+        "roupa_inteira_vestido_princesa_montado",
+        "bermuda_short_de_baixo",
         "chapeu_gorro_trico_pacote",
         "chapeu_tiara",
         "cabelo_crespo_sob_chapeu"
@@ -12887,6 +14081,25 @@ export const AVATAR_CATALOG: AvatarCatalog = {
       "corpo": "corpo_pele_media_clara_pacote",
       "orelhas": "orelhas_corpo_pele_media_clara_pacote",
       "rosto": "rosto_masc_02_normal_pacote"
+    },
+    "replacements": {
+      "chapeu_caixa_brinquedo_pacote": "chapeu_caixa_brinquedo",
+      "roupa_inteira_camisa_branca_saia_escura_pacote": "roupa_inteira_camisa_branca_saia_escura",
+      "roupa_inteira_camiseta_branca_saia_vermelha_pacote": "roupa_inteira_camiseta_branca_saia_vermelha",
+      "roupa_inteira_jaqueta_amarela_saia_escura_pacote": "roupa_inteira_jaqueta_amarela_saia_escura",
+      "roupa_inteira_vestido_azul_pacote": "roupa_inteira_vestido_azul",
+      "roupa_inteira_vestido_azul_petroleo_pacote": "roupa_inteira_vestido_azul_petroleo",
+      "roupa_inteira_vestido_marrom_pacote": "roupa_inteira_vestido_marrom"
+    },
+    "baseBottom": {
+      "part": "bermuda_short_de_baixo",
+      "slot": "bermuda",
+      "coveringGroups": [
+        "calca",
+        "bermuda",
+        "roupa_inteira",
+        "fantasia"
+      ]
     }
   },
   "equipment": {

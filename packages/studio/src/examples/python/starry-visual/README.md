@@ -30,6 +30,13 @@ exportado, execute `python main.py`.
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `RITMO_ESTRELA` muda a
 velocidade com que o céu se enche, `MAX_ESTRELAS` é o teto, `PONTAS` lista os
 números de pontas sorteados e `TAMANHO_MINIMO`/`TAMANHO_MAXIMO` limitam o
@@ -40,24 +47,26 @@ A classe `Estrela` guarda o modelo de cada estrela: posição, pontas, tamanho,
 cor e se foi feita à mão. O segredo está em `angulo`: em cada ponta a caneta
 gira `180 - 180 / pontas` graus, e depois de todas as pontas ela volta ao lugar
 de onde saiu. `raio` e `rumo_inicial` calculam onde a caneta começa para a
-estrela ficar centrada no ponto escolhido. As setas usam funções rápidas
-(`lambda: mover_luneta(1, 0)`) para passar a direção a uma única função.
+estrela ficar centrada no ponto escolhido. Cada seta chama uma função com nome
+(`luneta_para_direita` chama `mover_luneta(1, 0)`), e todas moram em
+⚡ Quando acontecer.
 
 Quatro tartarugas persistentes desenham a cena: `pincel` desenha cada estrela
 uma única vez, `linhas` desenha a constelação, `luneta` é a marca azul e
-`painel` escreve o placar. Nenhuma estrela é redesenhada depois de pronta. Uma
-única cadeia de `ontimer(..., 16)` mede o tempo com `time.monotonic()`; a pausa
-congela o céu e reiniciar não adiciona outra cadeia. Um quadro atrasado põe no
-máximo duas estrelas.
+`painel` escreve o placar. Nenhuma estrela é redesenhada depois de pronta. O
+laço do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`; a pausa congela o céu e reiniciar não começa outro laço. Um
+quadro atrasado põe no máximo duas estrelas.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que guardam as chamadas e os timers. Os testes refazem o
-caminho da caneta para conferir que toda estrela fecha em volta do próprio
-centro, e conferem o ritmo, a luneta, a constelação, o teto, a limpeza, a pausa,
-o reinício sem cadeia duplicada e o limite de quadro atrasado. Isso verifica o
-modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que guardam as chamadas e os
+timers. Os testes refazem o caminho da caneta para conferir que toda estrela
+fecha em volta do próprio centro, e conferem o ritmo, a luneta, a constelação, o
+teto, a limpeza, a pausa, o reinício sem laço duplicado e o limite de quadro
+atrasado. Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio
+ouvido, foco nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

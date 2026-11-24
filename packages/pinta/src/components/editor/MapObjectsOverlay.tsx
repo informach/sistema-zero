@@ -11,30 +11,51 @@
  * O hit-test é por CONTA (`objectAt` + as alças), não pelo alvo do DOM: o
  * resultado não depende de qual `<rect>` ficou por cima nem do layout.
  */
-import type { JSX, PointerEvent } from 'react'
-import { useRef } from 'react'
+import type { JSX, PointerEvent, RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { PintaMemoryAsset } from '../../core/assetMemory'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { safeSetPointerCapture } from '../../core/pointer'
 import {
+  effectiveLayer,
+  isLayerShown,
   isObjectLayer,
-  type TilemapAsset,
   type TilemapObject,
   type TilemapObjectLayer,
 } from '../../core/project'
+import { createEditorGesture, type EditorGesture } from '../../state/editorGesture'
+import type { PintaEditorStore } from '../../state/editorStore'
+import type { FocalRegionMap } from '../../state/localRegionAuthorSession'
 import type { MapObjectToolId } from '../../state/sessionStore'
+import { type AuthorMap, isAuthorMap } from '../../tiles/mapCellEdits'
 import {
   addMapObject,
-  createMapObject,
   isPointObject,
   nextObjectName,
   objectAt,
   objectLayerById,
-  snapToGrid,
   updateMapObject,
 } from '../../tiles/mapObjects'
+import { objectEditorSpace } from '../../tiles/objectEditorSpace'
+import {
+  insertObjectPoint,
+  minObjectPoints,
+  moveObjectPoint,
+  type ObjectHandle,
+  objectBounds,
+  objectFromWorldPoints,
+  objectHandleAt,
+  objectSegmentAt,
+  objectVertexAt,
+  type Point,
+  removeObjectPoint,
+  resizeObjectFromHandle,
+} from '../../tiles/objectGeometry'
 import { useToast } from '../ui/Toast'
 import { useEditorStores } from './editorContext'
+import { CatalogMapObjectArtwork, MapObjectArtwork } from './MapObjectArtwork'
+import { MAP_EDITOR_LIMITS } from './mapTools/mapEditorLimits'
 
 /** Tira o foco do campo de texto (o blur dele grava o rascunho, de forma síncrona). */
 function commitFocusedField(): void {
@@ -43,14 +64,36 @@ function commitFocusedField(): void {
   if (active instanceof HTMLElement && isTextEntryTarget(active)) active.blur()
 }
 
-/** Cantos que redimensionam um retângulo. */
-type Handle = 'nw' | 'ne' | 'sw' | 'se'
+/** Cantos que mudam o tamanho de um objeto. */
+type Handle = ObjectHandle
 
-type Gesture =
+/** A forma que está sendo desenhada ponto a ponto (ainda não está no mapa). */
+interface ShapeDraft {
+  base: AuthorMap
+  layerId: string
+  shape: 'polygon' | 'polyline'
+  /** Os pontos já tocados, em pixels do mapa (no espaço da camada). */
+  points: Point[]
+}
+
+type Gesture<Asset extends PintaMemoryAsset> = {
+  edit: EditorGesture<Asset>
+  editor: PintaEditorStore<Asset>
+  layerId: string
+  contextKey: string
+} & (
+  | {
+      kind: 'marquee'
+      pointerId: number
+      base: AuthorMap
+      objectId: ''
+      start: { x: number; y: number }
+      initialIds: readonly string[]
+    }
   | {
       kind: 'move'
       pointerId: number
-      base: TilemapAsset
+      base: AuthorMap
       objectId: string
       start: { x: number; y: number }
       origin: { x: number; y: number }
@@ -58,18 +101,28 @@ type Gesture =
   | {
       kind: 'resize'
       pointerId: number
-      base: TilemapAsset
+      base: AuthorMap
       objectId: string
       handle: Handle
-      origin: { x: number; y: number; width: number; height: number }
+      origin: TilemapObject
+    }
+  | {
+      kind: 'vertex'
+      pointerId: number
+      base: AuthorMap
+      objectId: string
+      index: number
+      /** O objeto como estava quando o arrasto começou (já com o ponto novo, se houve). */
+      origin: TilemapObject
     }
   | {
       kind: 'create'
       pointerId: number
-      base: TilemapAsset
+      base: AuthorMap
       objectId: string
       start: { x: number; y: number }
     }
+)
 
 /** Tamanho das alças/marcadores em px de TELA (o desenho divide pela escala). */
 const HANDLE_PX = 10
@@ -77,9 +130,15 @@ const POINT_PX = 7
 const LABEL_PX = 12
 /** Folga do toque em px de tela. */
 const HIT_SLACK_PX = 8
+/** Raio do alvo de toque das alças e dos pontos (44 px de um lado ao outro). */
+const TOUCH_REACH_PX = MAP_EDITOR_LIMITS.touchTargetPx / 2
+const VERTEX_PX = 6
+
+const artworkTransform = (object: TilemapObject) =>
+  `translate(${object.flipX ? 2 * object.x + object.width : 0} ${object.flipY ? 2 * object.y + object.height : 0}) scale(${object.flipX ? -1 : 1} ${object.flipY ? -1 : 1})`
 
 interface MapObjectsOverlayProps {
-  tilemap: TilemapAsset
+  tilemap: AuthorMap
   /** A camada de objetos ativa (`null` = a ativa é de peças: só desenha). */
   activeLayerId: string | null
   /** A camada ativa é de objetos E a ferramenta é de objeto. */
@@ -92,10 +151,23 @@ interface MapObjectsOverlayProps {
   scale: number
   snap: boolean
   selectedObjectId: string | null
-  onSelectObject: (id: string | null) => void
+  selectedObjectIds?: readonly string[]
+  onSelectObject: (id: string | null, additive?: boolean) => void
+  onSelectObjects?: (ids: string[]) => void
+  /** O palco põe aqui o "apagar o ponto escolhido" (o Delete chama antes de apagar o objeto). */
+  deleteVertexRef?: RefObject<() => boolean>
+  /** Objetos provisórios do pincel; não pertencem ainda ao documento do editor. */
+  previewIds?: readonly string[]
+  catalog?: readonly PintaMemoryAsset[]
 }
 
-export function MapObjectsOverlay({
+export function MapObjectsOverlay(props: MapObjectsOverlayProps): JSX.Element {
+  const { editor } = useEditorStores()
+  return <MapEditorObjectsOverlay {...props} editor={editor} />
+}
+
+export function MapEditorObjectsOverlay<Asset extends PintaMemoryAsset>({
+  editor,
   tilemap,
   activeLayerId,
   interactive,
@@ -105,63 +177,223 @@ export function MapObjectsOverlay({
   scale,
   snap,
   selectedObjectId,
+  selectedObjectIds = [],
   onSelectObject,
-}: MapObjectsOverlayProps): JSX.Element {
-  const { editor } = useEditorStores()
+  onSelectObjects,
+  deleteVertexRef,
+  previewIds = [],
+  catalog,
+}: MapObjectsOverlayProps & { editor: PintaEditorStore<Asset> }): JSX.Element {
   const { showToast } = useToast()
+  const previewSet = new Set(previewIds)
   const svgRef = useRef<SVGSVGElement>(null)
-  const gestureRef = useRef<Gesture | null>(null)
+  const contextKey = JSON.stringify([tool, activeLayerId, interactive, tileSize, pad, scale, snap])
+  const gestureRef = useRef<Gesture<Asset> | null>(null)
+  const [marquee, setMarquee] = useState<{
+    x: number
+    y: number
+    width: number
+    height: number
+  } | null>(null)
 
-  const mapW = tilemap.cols * tileSize
-  const mapH = tilemap.rows * tileSize
-  const ring = pad * tileSize
+  const [draft, setDraft] = useState<ShapeDraft | null>(null)
+  const draftRef = useRef<ShapeDraft | null>(null)
+  const [cursor, setCursor] = useState<Point | null>(null)
+  const [vertex, setVertex] = useState<{ objectId: string; index: number } | null>(null)
+  const cancelGesture = useCallback((): void => {
+    const gesture = gestureRef.current
+    gestureRef.current = null
+    gesture?.edit.cancel()
+    setMarquee(null)
+  }, [])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: input/geometry/store changes cancel ownership before the next gesture
+  useEffect(() => {
+    setMarquee(null)
+    return () => {
+      const gesture = gestureRef.current
+      gestureRef.current = null
+      gesture?.edit.cancel()
+    }
+  }, [contextKey, editor])
+  useEffect(() => {
+    const cancel = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || !gestureRef.current || isTextEntryTarget(event.target)) return
+      event.preventDefault()
+      event.stopPropagation()
+      cancelGesture()
+    }
+    window.addEventListener('keydown', cancel, true)
+    return () => window.removeEventListener('keydown', cancel, true)
+  }, [cancelGesture])
+  function changeDraft(next: ShapeDraft | null): void {
+    draftRef.current = next
+    setDraft(next)
+    if (!next) setCursor(null)
+  }
+
+  const space = objectEditorSpace(tilemap, activeLayerId, tileSize, pad, snap)
+  const { clampX, clampY, snapEdge, snapPoint } = space
   const unit = 1 / Math.max(scale, 0.0001)
 
   /** Ponteiro → pixels do mapa (pela caixa REAL do svg, como o canvas faz com a dele). */
-  function pointFromEvent(event: PointerEvent<SVGSVGElement>): { x: number; y: number } {
+  function pointFromEvent(event: PointerEvent<SVGSVGElement>): Point | null {
     const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect || rect.width === 0 || rect.height === 0) return { x: 0, y: 0 }
-    const viewW = mapW + 2 * ring
-    const viewH = mapH + 2 * ring
-    return {
-      x: ((event.clientX - rect.left) * viewW) / rect.width - ring,
-      y: ((event.clientY - rect.top) * viewH) / rect.height - ring,
-    }
+    return rect ? space.fromClient({ x: event.clientX, y: event.clientY }, rect) : null
   }
-
-  const clampX = (x: number, width = 0): number => Math.min(Math.max(x, 0), mapW - width)
-  const clampY = (y: number, height = 0): number => Math.min(Math.max(y, 0), mapH - height)
-  /** Canto de retângulo: na linha da grade com o encaixe ligado. */
-  const snapEdge = (value: number): number =>
-    snap ? snapToGrid(value, tileSize) : Math.round(value)
-  /** Ponto: no MEIO da peça com o encaixe ligado ("o ponto está naquela casa"). */
-  const snapPoint = (value: number): number =>
-    snap ? Math.floor(value / tileSize) * tileSize + tileSize / 2 : Math.round(value)
 
   function currentLayer(): TilemapObjectLayer | null {
     const asset = editor.getState().asset
-    if (asset.kind !== 'tilemap' || !activeLayerId) return null
+    if (!isAuthorMap(asset) || !activeLayerId) return null
     return objectLayerById(asset, activeLayerId)
   }
 
-  function handleAt(object: TilemapObject, x: number, y: number): Handle | null {
-    if (isPointObject(object)) return null
-    const reach = (HANDLE_PX / 2 + 2) * unit
-    const corners: Array<[Handle, number, number]> = [
-      ['nw', object.x, object.y],
-      ['ne', object.x + object.width, object.y],
-      ['sw', object.x, object.y + object.height],
-      ['se', object.x + object.width, object.y + object.height],
-    ]
-    for (const [handle, cx, cy] of corners) {
-      if (Math.abs(x - cx) <= reach && Math.abs(y - cy) <= reach) return handle
-    }
-    return null
+  /**
+   * O alcance do toque numa alça ou num ponto: 22 px de tela para cada lado (alvo de 44 px),
+   * mas nunca mais de um terço do objeto, senão um objeto pequeno seria só alças e não daria
+   * para arrastar pelo meio.
+   */
+  function touchReach(object: TilemapObject): number {
+    const small = Math.min(object.width, object.height) / 3
+    return Math.max((HANDLE_PX / 2 + 2) * unit, Math.min(TOUCH_REACH_PX * unit, small))
   }
 
-  function apply(next: TilemapAsset): void {
+  /** A alça de canto sob o toque. Vale também para o objeto girado. */
+  function handleAt(object: TilemapObject, x: number, y: number): Handle | null {
+    if (isPointObject(object)) return null
+    return objectHandleAt(object, x, y, touchReach(object))
+  }
+
+  const hasPoints = (object: TilemapObject): boolean =>
+    (object.shape === 'polygon' || object.shape === 'polyline') && !!object.points?.length
+
+  function ownsDraft(current: ShapeDraft): boolean {
+    if (editor.getState().asset === current.base && activeLayerId === current.layerId) return true
+    changeDraft(null)
+    showToast(COPY.scene.gestureChanged)
+    return false
+  }
+
+  // ---- Forma desenhada ponto a ponto ------------------------------------
+  /** Fecha a forma: ela entra no mapa de uma vez (um desfazer). */
+  function finishDraft(): void {
+    const current = draftRef.current
+    if (!current || !activeLayerId) return
+    if (!ownsDraft(current)) return
+    const min = minObjectPoints(current.shape)
+    if (current.points.length < min) {
+      showToast(COPY.scene.formaPrecisaDePontos(min))
+      return
+    }
     const state = editor.getState()
-    if (next !== state.asset) state.replace(next)
+    const layer = currentLayer()
+    if (!isAuthorMap(state.asset) || !layer) return
+    const object = space.createObject({
+      name: nextObjectName(layer),
+      shape: current.shape,
+      ...objectFromWorldPoints(current.points),
+    })
+    if (!object) {
+      changeDraft(null)
+      showToast(COPY.scene.gestureRefused)
+      return
+    }
+    const next = addMapObject<Asset & AuthorMap>(state.asset, activeLayerId, object)
+    changeDraft(null)
+    if (next === state.asset) {
+      showToast(COPY.tiles.objectLimit)
+      return
+    }
+    state.commit(next)
+    onSelectObject(object.id)
+  }
+
+  /** Um toque enquanto a forma é desenhada: fecha no primeiro ponto ou põe mais um. */
+  function draftTap(shape: ShapeDraft['shape'], raw: Point): void {
+    const p = { x: clampX(snapEdge(raw.x)), y: clampY(snapEdge(raw.y)) }
+    const current = draftRef.current
+    if (current && !ownsDraft(current)) return
+    if (!current) {
+      const base = editor.getState().asset
+      if (!isAuthorMap(base) || !activeLayerId) return
+      changeDraft({ base, layerId: activeLayerId, shape, points: [p] })
+      setCursor(p)
+      showToast(COPY.scene.comoDesenharAForma)
+      return
+    }
+    const first = current.points[0],
+      last = current.points.at(-1)
+    if (
+      first &&
+      current.points.length >= minObjectPoints(shape) &&
+      Math.hypot(raw.x - first.x, raw.y - first.y) <= TOUCH_REACH_PX * unit
+    ) {
+      finishDraft()
+      return
+    }
+    // O segundo toque de um toque duplo cai no mesmo lugar: não vira ponto repetido.
+    if (last && last.x === p.x && last.y === p.y) return
+    if (current.points.length >= MAP_EDITOR_LIMITS.maxObjectPoints) {
+      showToast(COPY.scene.formaCheiaDePontos(MAP_EDITOR_LIMITS.maxObjectPoints))
+      return
+    }
+    changeDraft({ ...current, points: [...current.points, p] })
+  }
+
+  // Trocar de ferramenta ou de camada no meio da forma joga o rascunho fora.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: os gatilhos são a ferramenta e a camada
+  useEffect(() => {
+    changeDraft(null)
+    setVertex(null)
+  }, [tool, activeLayerId, interactive])
+  // O ponto escolhido é do objeto escolhido: outra escolha larga o ponto.
+  useEffect(() => {
+    setVertex((old) => (old && old.objectId === selectedObjectId ? old : null))
+  }, [selectedObjectId])
+
+  // Enter fecha a forma e Esc cancela. Em captura: vale antes dos outros atalhos do editor.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as funções leem o rascunho pelo ref
+  useEffect(() => {
+    if (!draft) return
+    function onKeyDown(event: KeyboardEvent): void {
+      if (isTextEntryTarget(event.target)) return
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        event.stopPropagation()
+        finishDraft()
+      } else if (event.key === 'Escape') {
+        event.preventDefault()
+        event.stopPropagation()
+        changeDraft(null)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [draft !== null])
+
+  /** O Delete com um ponto escolhido tira o ponto (o objeto fica). */
+  function deleteVertex(): boolean {
+    if (!vertex || !activeLayerId) return false
+    const state = editor.getState()
+    const object = currentLayer()?.objects.find((o) => o.id === vertex.objectId)
+    if (!isAuthorMap(state.asset) || !object || !hasPoints(object)) return false
+    const patch = removeObjectPoint(object, vertex.index)
+    if (!patch) {
+      showToast(COPY.scene.formaPrecisaDePontos(minObjectPoints(object.shape)))
+      return true
+    }
+    const next = updateMapObject<Asset & AuthorMap>(state.asset, activeLayerId, object.id, patch)
+    if (next !== state.asset) state.commit(next)
+    setVertex(null)
+    return true
+  }
+  if (deleteVertexRef) deleteVertexRef.current = interactive ? deleteVertex : () => false
+
+  function apply(next: Asset, edit = gestureRef.current?.edit): boolean {
+    const owned = edit?.isCurrent()
+    if (edit?.replace(next)) return true
+    cancelGesture()
+    showToast(owned ? COPY.scene.gestureRefused : COPY.scene.gestureChanged)
+    return false
   }
 
   function handlePointerDown(event: PointerEvent<SVGSVGElement>): void {
@@ -170,30 +402,83 @@ export function MapObjectsOverlay({
     // um objeto: o blur do navegador viria depois deste gesto, e o desfazer do gesto
     // (`commitGesture(base)`) engoliria a edição do campo.
     commitFocusedField()
-    const asset = editor.getState().asset
+    const edit = createEditorGesture(editor)
+    const asset = edit.base
     const layer = currentLayer()
-    if (asset.kind !== 'tilemap' || !layer) return
-    safeSetPointerCapture(event.currentTarget, event.pointerId)
+    if (!isAuthorMap(asset) || !layer) return
+    if (effectiveLayer(asset, layer).locked) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     const p = pointFromEvent(event)
+    if (!p) return
+    const context = { edit, editor, layerId: activeLayerId, contextKey }
+    // Desenhando uma forma: cada toque é um ponto (nada de arrastar objeto no meio).
+    if (draftRef.current && (tool === 'object-polygon' || tool === 'object-polyline')) {
+      draftTap(draftRef.current.shape, p)
+      return
+    }
+    safeSetPointerCapture(event.currentTarget, event.pointerId)
     // Alça do escolhido vem primeiro (fica por cima de tudo na tela).
     const selected = layer.objects.find((object) => object.id === selectedObjectId) ?? null
+    // Os pontos da forma escolhida: tocar num ponto arrasta ele; tocar num trecho põe um
+    // ponto novo ali e já arrasta. Tudo dentro de um desfazer só.
+    if (selected && hasPoints(selected)) {
+      const reach = touchReach(selected)
+      let index = objectVertexAt(selected, p.x, p.y, reach)
+      let origin = selected
+      if (index < 0) {
+        const at = objectSegmentAt(selected, p.x, p.y, HIT_SLACK_PX * unit)
+        const patch =
+          at >= 0 ? insertObjectPoint(selected, at, p, MAP_EDITOR_LIMITS.maxObjectPoints) : null
+        if (at >= 0 && !patch)
+          showToast(COPY.scene.formaCheiaDePontos(MAP_EDITOR_LIMITS.maxObjectPoints))
+        if (patch) {
+          const next = updateMapObject<Asset & AuthorMap>(asset, activeLayerId, selected.id, patch)
+          const inserted = objectLayerById(next, activeLayerId)?.objects.find(
+            (o) => o.id === selected.id,
+          )
+          if (inserted && next !== asset) {
+            if (!apply(next, edit)) return
+            origin = inserted
+            index = at
+          }
+        }
+      }
+      if (index >= 0) {
+        setVertex({ objectId: selected.id, index })
+        gestureRef.current = {
+          ...context,
+          kind: 'vertex',
+          pointerId: event.pointerId,
+          base: asset,
+          objectId: selected.id,
+          index,
+          origin,
+        }
+        return
+      }
+    }
     const handle = selected ? handleAt(selected, p.x, p.y) : null
     if (selected && handle) {
       gestureRef.current = {
+        ...context,
         kind: 'resize',
         pointerId: event.pointerId,
         base: asset,
         objectId: selected.id,
         handle,
-        origin: { x: selected.x, y: selected.y, width: selected.width, height: selected.height },
+        origin: selected,
       }
       return
     }
     // Tocar num objeto (com qualquer ferramenta de objeto) escolhe e começa a arrastar.
     const hit = objectAt(layer, p.x, p.y, HIT_SLACK_PX * unit)
     if (hit) {
-      onSelectObject(hit.id)
+      setVertex(null)
+      onSelectObject(hit.id, event.shiftKey || event.metaKey || event.ctrlKey)
       gestureRef.current = {
+        ...context,
         kind: 'move',
         pointerId: event.pointerId,
         base: asset,
@@ -203,26 +488,55 @@ export function MapObjectsOverlay({
       }
       return
     }
-    if (tool === 'object-select' || p.x < 0 || p.y < 0 || p.x > mapW || p.y > mapH) {
+    if (tool === 'object-select') {
+      const additive = event.shiftKey || event.ctrlKey || event.metaKey
+      gestureRef.current = {
+        ...context,
+        kind: 'marquee',
+        pointerId: event.pointerId,
+        base: asset,
+        objectId: '',
+        start: p,
+        initialIds: additive ? [...selectedObjectIds] : [],
+      }
+      if (!additive) {
+        if (onSelectObjects) onSelectObjects([])
+        else onSelectObject(null)
+      }
+      setMarquee({ x: p.x, y: p.y, width: 0, height: 0 })
+      return
+    }
+    if (!space.contains(p)) {
       onSelectObject(null)
+      return
+    }
+    // Polígono e linha nascem ponto a ponto: este toque é o primeiro ponto.
+    if (tool === 'object-polygon' || tool === 'object-polyline') {
+      draftTap(tool === 'object-polygon' ? 'polygon' : 'polyline', p)
       return
     }
     // Ponto ou área nova: nasce já no mapa (via `replace`) e o arrasto continua o gesto.
     const isPoint = tool === 'object-point'
-    const object = createMapObject({
+    const object = space.createObject({
       name: nextObjectName(layer),
+      ...(tool === 'object-ellipse' ? { shape: 'ellipse' as const } : {}),
       x: isPoint ? clampX(snapPoint(p.x)) : clampX(snapEdge(p.x)),
       y: isPoint ? clampY(snapPoint(p.y)) : clampY(snapEdge(p.y)),
     })
-    const next = addMapObject(asset, activeLayerId, object)
+    if (!object) {
+      showToast(COPY.scene.gestureRefused)
+      return
+    }
+    const next = addMapObject<Asset & AuthorMap>(asset, activeLayerId, object)
     if (next === asset) {
       showToast(COPY.tiles.objectLimit)
       return
     }
-    apply(next)
+    if (!apply(next, edit)) return
     onSelectObject(object.id)
     gestureRef.current = isPoint
       ? {
+          ...context,
           kind: 'move',
           pointerId: event.pointerId,
           base: asset,
@@ -231,6 +545,7 @@ export function MapObjectsOverlay({
           origin: { x: object.x, y: object.y },
         }
       : {
+          ...context,
           kind: 'create',
           pointerId: event.pointerId,
           base: asset,
@@ -241,26 +556,85 @@ export function MapObjectsOverlay({
 
   function handlePointerMove(event: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
+    // Sem gesto, com uma forma sendo desenhada: o trecho de prévia segue o ponteiro.
+    if (!gesture && draftRef.current) {
+      const raw = pointFromEvent(event)
+      setCursor(raw ? { x: clampX(snapEdge(raw.x)), y: clampY(snapEdge(raw.y)) } : null)
+      return
+    }
     if (!gesture || event.pointerId !== gesture.pointerId || !activeLayerId) return
+    if (
+      !gesture.edit.isCurrent() ||
+      gesture.editor !== editor ||
+      gesture.contextKey !== contextKey ||
+      gesture.layerId !== activeLayerId
+    ) {
+      cancelGesture()
+      return
+    }
     const asset = editor.getState().asset
-    if (asset.kind !== 'tilemap') return
+    if (!isAuthorMap(asset)) return
+    const p = pointFromEvent(event)
+    if (!p) {
+      cancelGesture()
+      return
+    }
+    if (gesture.kind === 'vertex') {
+      // Sempre a partir do objeto do COMEÇO do arrasto: o ponto não escorrega por arredondar.
+      const patch = moveObjectPoint(gesture.origin, gesture.index, {
+        x: clampX(snapEdge(p.x)),
+        y: clampY(snapEdge(p.y)),
+      })
+      if (patch)
+        apply(updateMapObject<Asset & AuthorMap>(asset, activeLayerId, gesture.objectId, patch))
+      return
+    }
+    if (gesture.kind === 'marquee') {
+      const r = {
+        x: Math.min(p.x, gesture.start.x),
+        y: Math.min(p.y, gesture.start.y),
+        width: Math.abs(p.x - gesture.start.x),
+        height: Math.abs(p.y - gesture.start.y),
+      }
+      setMarquee(r)
+      const ids = (currentLayer()?.objects ?? [])
+        .filter((o) => {
+          const b = objectBounds(o)
+          return (
+            b.x >= r.x &&
+            b.y >= r.y &&
+            b.x + b.width <= r.x + r.width &&
+            b.y + b.height <= r.y + r.height
+          )
+        })
+        .map((o) => o.id)
+      onSelectObjects?.([...new Set([...gesture.initialIds, ...ids])])
+      return
+    }
     const object = currentLayer()?.objects.find((o) => o.id === gesture.objectId)
     if (!object) return
-    const p = pointFromEvent(event)
     if (gesture.kind === 'move') {
       const rawX = gesture.origin.x + (p.x - gesture.start.x)
       const rawY = gesture.origin.y + (p.y - gesture.start.y)
       const point = isPointObject(object)
       const x = clampX(point ? snapPoint(rawX) : snapEdge(rawX), object.width)
       const y = clampY(point ? snapPoint(rawY) : snapEdge(rawY), object.height)
-      apply(updateMapObject(asset, activeLayerId, object.id, { x, y }))
+      let next = updateMapObject<Asset & AuthorMap>(asset, activeLayerId, object.id, { x, y })
+      const baseLayer = objectLayerById(gesture.base, activeLayerId)
+      for (const original of baseLayer?.objects ?? [])
+        if (original.id !== object.id && selectedObjectIds.includes(original.id))
+          next = updateMapObject<Asset & AuthorMap>(next, activeLayerId, original.id, {
+            x: original.x + x - gesture.origin.x,
+            y: original.y + y - gesture.origin.y,
+          })
+      apply(next)
       return
     }
     if (gesture.kind === 'create') {
       const endX = clampX(snapEdge(p.x))
       const endY = clampY(snapEdge(p.y))
       apply(
-        updateMapObject(asset, activeLayerId, object.id, {
+        updateMapObject<Asset & AuthorMap>(asset, activeLayerId, object.id, {
           x: Math.min(gesture.start.x, endX),
           y: Math.min(gesture.start.y, endY),
           width: Math.abs(endX - gesture.start.x),
@@ -269,47 +643,67 @@ export function MapObjectsOverlay({
       )
       return
     }
-    // Redimensionar: o canto oposto fica parado; virar do avesso troca os lados.
-    const o = gesture.origin
-    const fixedX = gesture.handle === 'nw' || gesture.handle === 'sw' ? o.x + o.width : o.x
-    const fixedY = gesture.handle === 'nw' || gesture.handle === 'ne' ? o.y + o.height : o.y
-    const moveX = clampX(snapEdge(p.x))
-    const moveY = clampY(snapEdge(p.y))
+    // Mudar o tamanho: o canto do outro lado fica parado no mapa, mesmo com o objeto girado
+    // (a conta leva o ponteiro para o espaço do objeto). Passar do canto parado troca os lados.
+    const turned = !!gesture.origin.rotation
     apply(
-      updateMapObject(asset, activeLayerId, object.id, {
-        x: Math.min(fixedX, moveX),
-        y: Math.min(fixedY, moveY),
-        width: Math.max(1, Math.abs(moveX - fixedX)),
-        height: Math.max(1, Math.abs(moveY - fixedY)),
-      }),
+      updateMapObject<Asset & AuthorMap>(
+        asset,
+        activeLayerId,
+        object.id,
+        resizeObjectFromHandle(gesture.origin, gesture.handle, {
+          x: turned ? p.x : clampX(snapEdge(p.x)),
+          y: turned ? p.y : clampY(snapEdge(p.y)),
+        }),
+      ),
     )
   }
 
   function endGesture(event: PointerEvent<SVGSVGElement>): void {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
-    gestureRef.current = null
+    if (gesture.kind === 'marquee') {
+      gestureRef.current = null
+      setMarquee(null)
+      return
+    }
+    if (
+      !gesture.edit.isCurrent() ||
+      gesture.editor !== editor ||
+      gesture.contextKey !== contextKey ||
+      gesture.layerId !== activeLayerId
+    ) {
+      cancelGesture()
+      return
+    }
     const state = editor.getState()
     const asset = state.asset
     // Área desenhada sem arrastar (ou só numa direção) vira UMA peça de tamanho:
     // retângulo de largura zero seria um ponto disfarçado.
-    if (gesture.kind === 'create' && asset.kind === 'tilemap' && activeLayerId) {
+    if (gesture.kind === 'create' && isAuthorMap(asset) && activeLayerId) {
       const object = objectLayerById(asset, activeLayerId)?.objects.find(
         (o) => o.id === gesture.objectId,
       )
       if (object && (object.width === 0 || object.height === 0)) {
-        state.replace(
-          updateMapObject(asset, activeLayerId, object.id, {
-            width: object.width || Math.min(tileSize, mapW - object.x) || 1,
-            height: object.height || Math.min(tileSize, mapH - object.y) || 1,
-          }),
+        if (
+          !apply(
+            updateMapObject<Asset & AuthorMap>(asset, activeLayerId, object.id, {
+              width: object.width || Math.min(tileSize, space.right - object.x) || 1,
+              height: object.height || Math.min(tileSize, space.bottom - object.y) || 1,
+            }),
+          )
         )
+          return
       }
     }
-    state.commitGesture(gesture.base)
+    gestureRef.current = null
+    gesture.edit.finish()
   }
 
-  const layers = tilemap.layers.filter(isObjectLayer).filter((layer) => layer.visible)
+  const layerOffset = space.offset
+  const layers = tilemap.layers
+    .filter(isObjectLayer)
+    .filter((layer) => isLayerShown(tilemap, layer))
 
   return (
     <svg
@@ -317,7 +711,7 @@ export function MapObjectsOverlay({
       aria-label={COPY.tiles.objectsOverlay}
       data-pin-objects-overlay=""
       className="absolute inset-0 block h-full w-full"
-      viewBox={`${-ring} ${-ring} ${mapW + 2 * ring} ${mapH + 2 * ring}`}
+      viewBox={space.viewBox}
       preserveAspectRatio="none"
       style={{
         pointerEvents: interactive ? 'auto' : 'none',
@@ -327,24 +721,172 @@ export function MapObjectsOverlay({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endGesture}
-      onPointerCancel={endGesture}
+      onPointerCancel={(event) => {
+        if (gestureRef.current?.pointerId === event.pointerId) cancelGesture()
+      }}
+      onDoubleClick={() => {
+        if (draftRef.current) finishDraft()
+      }}
     >
       <title>{COPY.tiles.objectsOverlay}</title>
+      {marquee ? (
+        <rect
+          x={marquee.x + layerOffset.offsetX}
+          y={marquee.y + layerOffset.offsetY}
+          width={marquee.width}
+          height={marquee.height}
+          fill="var(--color-pin-accent)"
+          fillOpacity={0.15}
+          stroke="var(--color-pin-accent)"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
       {layers.map((layer) => {
         const active = layer.id === activeLayerId
         return (
-          <g key={layer.id} data-layer-id={layer.id} opacity={active ? 1 : 0.45}>
+          <g
+            key={layer.id}
+            data-layer-id={layer.id}
+            opacity={(active ? 1 : 0.45) * effectiveLayer(tilemap, layer).opacity}
+            transform={`translate(${effectiveLayer(tilemap, layer).offsetX} ${effectiveLayer(tilemap, layer).offsetY})`}
+          >
             {layer.objects.map((object) => (
-              <MapObjectShape
+              <g
                 key={object.id}
-                object={object}
-                unit={unit}
-                selected={active && object.id === selectedObjectId}
-              />
+                data-pin-scatter-preview={previewSet.has(object.id) ? object.id : undefined}
+                opacity={previewSet.has(object.id) ? 0.6 : undefined}
+                transform={`rotate(${object.rotation ?? 0} ${object.x} ${object.y})`}
+              >
+                <MapObjectShape
+                  key={object.id}
+                  object={object}
+                  showLabel={!previewSet.has(object.id)}
+                  unit={unit}
+                  vertexIndex={
+                    active && interactive && object.id === selectedObjectId && vertex
+                      ? vertex.index
+                      : -1
+                  }
+                  showVertices={active && interactive && object.id === selectedObjectId}
+                  selected={
+                    active &&
+                    (object.id === selectedObjectId || selectedObjectIds.includes(object.id))
+                  }
+                />
+                {object.art || object.setId ? (
+                  <g transform={artworkTransform(object)}>
+                    {catalog ? (
+                      <CatalogMapObjectArtwork
+                        object={object}
+                        assets={catalog}
+                        resources={tilemap.resources}
+                      />
+                    ) : (
+                      <MapObjectArtwork object={object} resourceSource={tilemap} />
+                    )}
+                  </g>
+                ) : null}
+              </g>
             ))}
           </g>
         )
       })}
+      {draft ? (
+        <g
+          data-shape-draft={draft.shape}
+          transform={`translate(${layerOffset.offsetX} ${layerOffset.offsetY})`}
+          pointerEvents="none"
+        >
+          <path
+            d={[...draft.points, ...(cursor ? [cursor] : [])]
+              .map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`)
+              .join(' ')}
+            fill="none"
+            stroke="var(--color-pin-accent, #2563eb)"
+            strokeWidth={2}
+            strokeDasharray="6 3"
+            vectorEffect="non-scaling-stroke"
+          />
+          {draft.points.map((p, i) => (
+            <circle
+              // biome-ignore lint/suspicious/noArrayIndexKey: os pontos do rascunho só crescem no fim
+              key={i}
+              data-draft-point={i}
+              cx={p.x}
+              cy={p.y}
+              r={(i === 0 ? VERTEX_PX + 2 : VERTEX_PX) * unit}
+              fill={
+                i === 0 ? 'var(--color-pin-accent, #2563eb)' : 'var(--color-pin-surface, #ffffff)'
+              }
+              stroke="var(--color-pin-accent, #2563eb)"
+              strokeWidth={2}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </g>
+      ) : null}
+    </svg>
+  )
+}
+
+export function FocalRegionObjectsPreview({
+  map,
+  tileSize,
+  scale,
+  catalog,
+}: {
+  map: FocalRegionMap
+  tileSize: number
+  scale: number
+  catalog: readonly PintaMemoryAsset[]
+}): JSX.Element | null {
+  const layers = map.layers.flatMap((layer) =>
+    layer.kind === 'objects' && layer.placement.visible ? [layer] : [],
+  )
+  if (!layers.length) return null
+  const unit = 1 / Math.max(scale, 0.0001)
+  return (
+    <svg
+      aria-label={COPY.tiles.objectsOverlay}
+      data-pin-objects-overlay=""
+      className="pointer-events-none absolute inset-0 block h-full w-full"
+      viewBox={`${map.origin.col * tileSize} ${map.origin.row * tileSize} ${map.cols * tileSize} ${map.rows * tileSize}`}
+      preserveAspectRatio="none"
+    >
+      <title>{COPY.tiles.objectsOverlay}</title>
+      {layers.map(({ id, objects, placement }) => (
+        <g
+          key={id}
+          data-layer-id={id}
+          opacity={0.45 * placement.opacity}
+          transform={`translate(${placement.offsetX} ${placement.offsetY})`}
+        >
+          {objects.map((object) => (
+            <g
+              key={object.id}
+              transform={`rotate(${object.rotation ?? 0} ${object.x} ${object.y})`}
+            >
+              <MapObjectShape
+                object={object}
+                unit={unit}
+                selected={false}
+                showLabel
+                vertexIndex={-1}
+                showVertices={false}
+              />
+              {object.art || object.setId ? (
+                <g transform={artworkTransform(object)}>
+                  <CatalogMapObjectArtwork
+                    object={object}
+                    assets={catalog}
+                    resources={map.resources}
+                  />
+                </g>
+              ) : null}
+            </g>
+          ))}
+        </g>
+      ))}
     </svg>
   )
 }
@@ -353,12 +895,20 @@ function MapObjectShape({
   object,
   unit,
   selected,
+  showLabel = true,
+  showVertices = false,
+  vertexIndex = -1,
 }: {
   object: TilemapObject
   unit: number
   selected: boolean
+  showLabel?: boolean
+  /** Mostra as bolinhas dos pontos da forma (só no objeto escolhido da camada ativa). */
+  showVertices?: boolean
+  /** O ponto escolhido (fica cheio). */
+  vertexIndex?: number
 }): JSX.Element {
-  const label = object.name || object.type
+  const label = showLabel ? object.name || object.type : ''
   const stroke = selected ? 'var(--color-pin-accent, #2563eb)' : 'var(--color-pin-text, #1f2937)'
   if (isPointObject(object)) {
     const r = POINT_PX * unit
@@ -389,12 +939,17 @@ function MapObjectShape({
   const handle = HANDLE_PX * unit
   return (
     <g data-object-id={object.id} data-object-kind="rect">
-      <rect
-        x={object.x}
-        y={object.y}
-        width={object.width}
-        height={object.height}
-        fill="var(--color-pin-accent, #2563eb)"
+      <path
+        d={
+          object.shape === 'ellipse'
+            ? `M ${object.x} ${object.y + object.height / 2} a ${object.width / 2} ${object.height / 2} 0 1 0 ${object.width} 0 a ${object.width / 2} ${object.height / 2} 0 1 0 ${-object.width} 0`
+            : object.points?.length
+              ? object.points
+                  .map((p, i) => `${i ? 'L' : 'M'} ${p.x + object.x} ${p.y + object.y}`)
+                  .join(' ') + (object.shape === 'polygon' ? ' Z' : '')
+              : `M ${object.x} ${object.y} h ${object.width} v ${object.height} h ${-object.width} Z`
+        }
+        fill={object.shape === 'polyline' ? 'none' : 'var(--color-pin-accent, #2563eb)'}
         fillOpacity={selected ? 0.22 : 0.12}
         stroke={stroke}
         strokeWidth={2}
@@ -423,6 +978,38 @@ function MapObjectShape({
               strokeWidth={2}
               vectorEffect="non-scaling-stroke"
             />
+          ))
+        : null}
+      {showVertices && object.points?.length
+        ? object.points.map((p, i) => (
+            <g
+              // biome-ignore lint/suspicious/noArrayIndexKey: o ponto é a posição dele na lista
+              key={i}
+              data-vertex={i}
+              data-vertex-selected={i === vertexIndex ? '' : undefined}
+            >
+              <title>{COPY.scene.pontoDaForma(i + 1)}</title>
+              {/* O alvo de toque de 44 px (sem tinta) e a bolinha que se vê. */}
+              <circle
+                cx={object.x + p.x}
+                cy={object.y + p.y}
+                r={TOUCH_REACH_PX * unit}
+                fill="transparent"
+              />
+              <circle
+                cx={object.x + p.x}
+                cy={object.y + p.y}
+                r={VERTEX_PX * unit}
+                fill={
+                  i === vertexIndex
+                    ? 'var(--color-pin-accent, #2563eb)'
+                    : 'var(--color-pin-surface, #ffffff)'
+                }
+                stroke="var(--color-pin-accent, #2563eb)"
+                strokeWidth={2}
+                vectorEffect="non-scaling-stroke"
+              />
+            </g>
           ))
         : null}
     </g>

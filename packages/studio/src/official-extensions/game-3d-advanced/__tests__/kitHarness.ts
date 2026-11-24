@@ -205,6 +205,8 @@ export interface KitApi {
   stopTimer(): void
   onTimerEnd(fn: () => void): void
   defineEffect(name: string, opts: Record<string, unknown>): void
+  burstAt(name: string, x: number, y: number, z: number): void
+  scatterDecor(count: number): void
   addAttractor(
     effect: string,
     x: number,
@@ -341,6 +343,8 @@ export async function loadExampleKit(
      * `makeCountingThree`). Sem ele, o THREE é exatamente o de sempre.
      */
     wrapThree?: (three: ReturnType<typeof makeFakeThree>['THREE']) => Record<string, unknown>
+    /** Outro corpo do runtime (uma variante, como a sem cenário); sem ele, o completo. */
+    body?: string
   } = {},
 ): Promise<{
   api: KitApi
@@ -353,17 +357,16 @@ export async function loadExampleKit(
   const THREE = opts.wrapThree ? opts.wrapThree(fake.THREE) : fake.THREE
   const win = globalThis.window as unknown as Record<string, unknown>
   // runtimeBody já injeta window.__SZProjectLifecycle (ver loadStartedKit).
-  new Function('THREE', 'window', runtimeBody)(THREE, win)
+  new Function('THREE', 'window', opts.body ?? runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como
   // parâmetro (não confiar no reflexo de globais do happy-dom).
+  const ready = new Promise<void>((resolve) => api.onEnterState('menu', resolve))
   new Function('SZGameKit3D', 'window', exampleJs)(api, win)
-  // O start() do fim do exemplo espera Promise.all(pending). Os exemplos são
-  // asset-free (pending vazio, resolve num microtick), mas o poll fica: se um
-  // dia um exemplo ganhar asset e o gate regredir, é AQUI que ele congela.
-  for (let i = 0; i < 60 && !renderers[0]?.loop; i++) {
-    await new Promise((resolve) => setTimeout(resolve, 5))
-  }
+  // O próprio evento do motor confirma modelos/cenário prontos; o prazo do teste
+  // continua responsável por detectar uma carga que nunca conclui.
+  await ready
+  await Promise.resolve()
   if (!renderers[0]?.loop) {
     throw new Error(`o loop nunca ligou — preso em "carregando"? estado: ${api.state()}`)
   }

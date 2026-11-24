@@ -1,0 +1,57 @@
+{
+  "environment": {
+    "platform": "win32",
+    "node": "v24.15.0",
+    "browser": "148.0.7778.96",
+    "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+    "logicalCpus": 12,
+    "memoryBytes": 34142584832,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "method": "Fresh context per sample; alternating build order; same Farol stress fixture. Timer intervals are scheduling observations, not input latency or FPS. No game profiler.",
+  "samples": [
+    {
+      "arm": "baseline",
+      "size": 5000,
+      "repeat": 0,
+      "readyMs": 12824.735000000335,
+      "timerGapsMs": {
+        "count": 56,
+        "p50": 20.21499999985099,
+        "p95": 1921.4350000005215,
+        "max": 6257.804999999702,
+        "total": 12797.884999999776
+      },
+      "longTasksMs": {
+        "count": 8,
+        "p50": 518,
+        "p95": 6115,
+        "max": 6115,
+        "total": 11357
+      }
+    },
+    {
+      "arm": "incremental",
+      "size": 5000,
+      "repeat": 0,
+      "readyMs": 77127.00999999978,
+      "timerGapsMs": {
+        "count": 193,
+        "p50": 44.80999999959022,
+        "p95": 2304.649999999441,
+        "max": 6302.264999999665,
+        "total": 77093.41999999993
+      },
+      "longTasksMs": {
+        "count": 149,
+        "p50": 303,
+        "p95": 1519,
+        "max": 4400,
+        "total": 71873
+      }
+    }
+  ]
+}

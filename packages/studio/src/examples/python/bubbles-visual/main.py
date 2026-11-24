@@ -1,5 +1,6 @@
-"""Bolhas no Fundo do Mar: o submarino estoura bolhas antes que o tempo acabe."""
+# Bolhas no Fundo do Mar: o submarino estoura bolhas antes que o tempo acabe.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import math
@@ -7,6 +8,7 @@ import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 500
 INTERVALO = 16
@@ -27,15 +29,9 @@ BONUS_TEMPO = 30
 COR_SUB = "#ffd23f"
 COR_BOLHA = "#9be7ff"
 COR_MAR = "#0b4f6c"
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-teclas = {"esquerda": False, "direita": False, "cima": False, "baixo": False}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Bolha:
     """Cada bolha guarda só o modelo: onde está, o tamanho e a rapidez."""
 
@@ -206,28 +202,40 @@ def atualizar(tempo):
     desenhar_cena()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def segurar(nome, apertada):
     teclas[nome] = apertada
+
+
+def apertar_esquerda():
+    segurar("esquerda", True)
+
+
+def soltar_esquerda():
+    segurar("esquerda", False)
+
+
+def apertar_direita():
+    segurar("direita", True)
+
+
+def soltar_direita():
+    segurar("direita", False)
+
+
+def apertar_cima():
+    segurar("cima", True)
+
+
+def soltar_cima():
+    segurar("cima", False)
+
+
+def apertar_baixo():
+    segurar("baixo", True)
+
+
+def soltar_baixo():
+    segurar("baixo", False)
 
 
 def pausar():
@@ -260,7 +268,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -271,34 +278,58 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Bolhas no Fundo do Mar • Sistema Zero")
-    tela.bgcolor(COR_MAR)
-    tela.tracer(0)
-    for desenho in [cenario, pincel, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    desenhar_cenario()
-    tela.onkeypress(lambda: segurar("esquerda", True), "Left")
-    tela.onkeyrelease(lambda: segurar("esquerda", False), "Left")
-    tela.onkeypress(lambda: segurar("direita", True), "Right")
-    tela.onkeyrelease(lambda: segurar("direita", False), "Right")
-    tela.onkeypress(lambda: segurar("cima", True), "Up")
-    tela.onkeyrelease(lambda: segurar("cima", False), "Up")
-    tela.onkeypress(lambda: segurar("baixo", True), "Down")
-    tela.onkeyrelease(lambda: segurar("baixo", False), "Down")
-    tela.onkey(pausar, "space")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+teclas = {"esquerda": False, "direita": False, "cima": False, "baixo": False}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Bolhas no Fundo do Mar • Sistema Zero")
+tela.bgcolor(COR_MAR)
+tela.tracer(0)
+for desenho in [cenario, pincel, painel]:
+    desenho.penup()
+    desenho.speed(0)
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(apertar_esquerda, "Left")
+tela.onkeyrelease(soltar_esquerda, "Left")
+tela.onkeypress(apertar_direita, "Right")
+tela.onkeyrelease(soltar_direita, "Right")
+tela.onkeypress(apertar_cima, "Up")
+tela.onkeyrelease(soltar_cima, "Up")
+tela.onkeypress(apertar_baixo, "Down")
+tela.onkeyrelease(soltar_baixo, "Down")
+tela.onkey(pausar, "space")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

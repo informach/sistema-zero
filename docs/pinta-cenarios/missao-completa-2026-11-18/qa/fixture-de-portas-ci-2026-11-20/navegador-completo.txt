@@ -1,0 +1,7 @@
+  ✓  45 [touch] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.6s)
+  ✓  46 [touch] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (4.0s)
+
+  ✓  47 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (7.1s)
+  ✓  48 [touch] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (3.8s)
+
+  48 passed (2.9m)

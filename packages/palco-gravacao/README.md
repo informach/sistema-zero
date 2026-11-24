@@ -72,6 +72,13 @@ está sendo conferido.
   jogador, desça até o fim da lista e clique em escolhido"), o roteiro usa `abrir campo` numa fala e
   `escolher "<valor>" em "<bloco>"` na outra, e cada clique cai na sua palavra. A prévia que ainda monta depois de expandir é
   esperada do mesmo jeito.
+- **Nomes repetidos (20/11/2026, A Ilha do Farol):** quando dois blocos começam igual, o nome
+  do roteiro diz qual é: `A dentro de B` (o de dentro daquele bloco), `A abaixo de B` (o logo
+  abaixo dele na pilha, como o encontro novo que chega igual ao que já existe) ou o texto que
+  segue pelos blocos encaixados (`Se valor da variável temChave`). Dois campos iguais no mesmo
+  bloco (o x e o z valendo −2) valem na ordem da leitura da tela. Na paleta, `abrir categoria`
+  com o caminho inteiro acha a subcategoria de mesmo nome (`Jogo 3D > Encostar > Encostar`).
+  A prova com Blockly real (`qa/verificar-organizacao-browser.mjs`) cobre os quatro casos.
 - **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
   encaixado nele, que conta como parte dele.
 - **O jogo sai de cena enquanto a criança monta** (09/11/2026, pedido da Helena): os verbos de

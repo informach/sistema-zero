@@ -1,0 +1,46 @@
+{
+  "altura": 1.4993514915693904,
+  "revisao": 2,
+  "gestos": 1,
+  "erros": [],
+  "previa": 1.5,
+  "centro": {
+    "x": 10.705996259997427,
+    "y": 0,
+    "z": 13.382495324995787
+  },
+  "historico": [
+    {
+      "acao": "desfazer",
+      "altura": 0
+    },
+    {
+      "acao": "refazer",
+      "altura": 1.4993514915693904
+    }
+  ],
+  "recursos": [
+    {
+      "geometrias": 4,
+      "texturas": 4
+    },
+    {
+      "geometrias": 4,
+      "texturas": 4
+    },
+    {
+      "geometrias": 4,
+      "texturas": 4
+    },
+    {
+      "geometrias": 4,
+      "texturas": 4
+    }
+  ],
+  "cabecaNova": {
+    "erro": "AbortError",
+    "basePreservada": true
+  },
+  "cancelamentos": 4,
+  "revisaoReaberta": 4
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "persistence",
+    "started": "2026-11-21T06:36:26.723Z",
+    "finished": "2026-11-21T06:36:35.637Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-preservation-followup-persistence.log"
+  },
+  {
+    "name": "types",
+    "started": "2026-11-21T06:36:35.638Z",
+    "finished": "2026-11-21T06:39:39.548Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-preservation-followup-types.log"
+  },
+  {
+    "name": "biome",
+    "started": "2026-11-21T06:39:39.548Z",
+    "finished": "2026-11-21T06:40:07.983Z",
+    "exit": 0,
+    "log": ".cache/pinta-writer-preservation-followup-biome.log"
+  }
+]

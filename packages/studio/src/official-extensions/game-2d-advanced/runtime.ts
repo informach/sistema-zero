@@ -45,6 +45,23 @@ const sceneApiEntries = [
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
+/*
+ * A aba Investigar do Estúdio (proposta aprovada em 20/11/2026,
+ * `docs/estudio-evolucao/paineis-proposta.md`) fala com este motor pela porta opt-in dos
+ * inspetores, `game-2d-advanced:investigar`, que só existe quando o host passa o registro (a
+ * prévia com a aba ligada; o jogo comum e o exportado não a têm). Os comentários ficam AQUI,
+ * fora do texto do runtime, porque o que está dentro dele vai a todo jogo:
+ * - `jogados` conta os quadros em que o jogo ANDOU (estado "jogando", fora da batalha), o quadro
+ *   que a criança vê; o `frameCount` e o `perf.passos` andam também na pausa.
+ * - `alvoDoPasso` é o "Avançar 1 quadro": o jogo volta a jogar e pausa no começo do passo
+ *   seguinte ao quadro pedido, exato também com o relógio fixo (que pode rodar zero ou dois
+ *   passos num mesmo quadro da tela).
+ * - `desenhados` conta quem o `drawEntity` pôs no canvas no último quadro, depois do recorte da
+ *   câmera (a aba Desempenho).
+ * - A leitura devolve também as três ações (`pause`, `resume`, `step`), sem parâmetro nenhum:
+ *   a dívida de parâmetros sem tipo do runtime (`runtimeTypecheck.test.ts`) não cresce.
+ * Testes: `__tests__/investigar.test.ts` e, com a ponte, `preview/__tests__/devtoolsBridgeAdvanced.test.ts`.
+ */
 export const gameKitRuntimeSource = `(function () {
   var _szGameUIFont = (window.SZGameUIFont && window.SZGameUIFont.family) || 'sans-serif';
   // ⚠️ Defensivo de propósito: a família deixou de vir embutida no runtime e passou
@@ -95,6 +112,7 @@ ${gameRuntimeDomains}
   var lastTime = 0;
   var currentDt = 0;
   var frameCount = 0;                    // carimbo do quadro (mede "anda?" 1× por quadro)
+  var jogados = 0, alvoDoPasso = 0, desenhados = 0;
   /**
    * SONDA DE TRABALHO. Contadores DETERMINISTICOS do que o quadro fez: pares
    * examinados, caixas contornadas, comparacoes desperdicadas, linhas de mapa
@@ -386,6 +404,7 @@ ${gameKitShellRuntime}
     }
     var tx = centerX(camera.target) - config.w / 2;
     var ty = centerY(camera.target) - config.h / 2;
+    // MAP_2D_SIGNED_CAMERA
     camera.x = Math.max(0, Math.min(camera.worldW - config.w, tx));
     camera.y = Math.max(0, Math.min(camera.worldH - config.h, ty));
   }
@@ -486,7 +505,9 @@ ${gameKitShellRuntime}
     var entry = Object.prototype.hasOwnProperty.call(ASSET_META, an) ? ASSET_META[an] : null;
     var meta = (entry && entry.tilemap && typeof entry.tilemap === 'object') ? entry.tilemap : null;
     if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' || typeof meta.grid !== 'string') {
-      warn('o desenho "' + an + '" não veio com um MAPA do Pinta — envie o MAPA pelo foguete do Pinta');
+      // Só a cena (mapa grande ou rico demais para este bloco): aponta o bloco novo.
+      if (entry && (entry.scene || entry.hasScene)) warn('o desenho "' + an + '" é um cenário. Use o bloco "Criar cenário do meu desenho"');
+      else warn('o desenho "' + an + '" não veio com um MAPA do Pinta — envie o MAPA pelo foguete do Pinta');
       return;
     }
     var solid = Object.create(null);
@@ -773,12 +794,17 @@ ${gameKitShellRuntime}
   }
 
   function stepGameState(dt) {
+    if (alvoDoPasso && jogados >= alvoDoPasso) {
+      alvoDoPasso = 0;
+      if (state === 'jogando') setState('pausado');
+    }
     if (camera.shakeT > 0) camera.shakeT = Math.max(0, camera.shakeT - dt);
     stepScreenFx(dt);
     var estavaEmBatalha = state === 'batalha';
     stepPkmBattle(dt);
     stepRpgBattle(dt);
     if (state === 'jogando' && !estavaEmBatalha) {
+      jogados += 1;
       stepSystems(dt);
       var sceneEpoch = _spriteScene ? _spriteScene.epoch() : 0;
       if (_spriteScene) _spriteScene.step(dt);
@@ -820,6 +846,7 @@ ${gameKitShellRuntime}
         stepGameState(dt);
         justPressed = {};
       }
+      desenhados = 0;
       render();
     } catch (e) {
       warnOnce('gameloop', 'erro no laço do jogo: ' + e);
@@ -1032,6 +1059,7 @@ ${gameKitShellRuntime}
         return;
       }
     }
+    desenhados += 1;
     // Anda? = mudou de posição desde o último quadro (serve p/ grade, teclas e
     // velocidade). Alimenta a folha de andar direcional. ⚠️ Carimbo de quadro: só
     // mede UMA vez por quadro por entidade — desenhar o mesmo personagem 2× (ex.:
@@ -1496,6 +1524,7 @@ ${gameKitPoolsRuntime}
     var c1 = Math.floor((num(who.x, 0) + num(who.w, 0) - 1) / t);
     var r0 = Math.floor(num(who.y, 0) / t);
     var r1 = Math.floor((num(who.y, 0) + num(who.h, 0) - 1) / t);
+    // MAP_2D_LEGACY_ADVANCED_SOLID
     for (var r = r0; r <= r1; r++) {
       var rowArr = m.rows[r];
       if (!rowArr) continue;
@@ -1557,6 +1586,7 @@ ${gameKitPoolsRuntime}
     var feetTo = oneWayFeetTo(who, d);
     var c0 = Math.floor(hbLeft(who) / t);
     var c1 = Math.floor((hbRight(who) - 1) / t);
+    // MAP_2D_LEGACY_ADVANCED_PLATFORM
     var rowCount = m.rows.length; if (!rowCount) return;
     // A API pública aceita posição/velocidade: limite ao mapa real para não
     // percorrer milhões de índices inexistentes nem ultrapassar o inteiro seguro.
@@ -1589,6 +1619,7 @@ ${gameKitPoolsRuntime}
     if (!who || typeof who !== 'object') return;
     var mk = text(mapName, '');
     var m = tilemaps[mk];
+    // MAP_2D_LEGACY_ADVANCED_MAP
     if (!m || !m.rows) {
       warnOnce('colmap:' + mk, 'o mapa "' + mk + '" não existe — carregue com "Carregar o mapa"');
       return;
@@ -4442,7 +4473,9 @@ ${advancedSceneAdapter}
 ${advancedSpriteSceneAdapter}
 ${gameKitDrawingRuntime}
   /** @type {Omit<GameKitRuntimeApi, 'runProject'>} */
+  // MAP_2D_RUNTIME_SLOT
   var api = {
+    // MAP_2D_API_SLOT
     drawRectangle: guard('drawRectangle', drawRectangle),
     drawCircle: guard('drawCircle', drawCircle),
     drawTriangle: guard('drawTriangle', drawTriangle),
@@ -5041,6 +5074,25 @@ ${sceneApiEntries}
         var lido = { quadros: perf.quadros, passos: perf.passos, pares: perf.pares, caixas: perf.caixas, visitas: perf.visitas, linhasDeMapa: perf.linhasDeMapa };
         if (zerar === true) perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, visitas: 0, linhasDeMapa: 0 };
         return lido;
+      };
+      var investigar = {
+        pause: function () {
+          alvoDoPasso = 0;
+          if (state === 'jogando') setState('pausado');
+        },
+        resume: function () {
+          alvoDoPasso = 0;
+          if (state === 'pausado') setState('jogando');
+        },
+        step: function () {
+          if (state !== 'pausado') return;
+          alvoDoPasso = jogados + 1;
+          setState('jogando');
+        }
+      };
+      runtimeInspectors['game-2d-advanced:investigar'] = function () {
+        return { frame: jogados, paused: state === 'pausado', canPause: state === 'jogando' || state === 'pausado',
+          drawn: desenhados, pause: investigar.pause, resume: investigar.resume, step: investigar.step };
       };
       runtimeInspectors['game-2d-advanced:rpg'] = function () {
         var hero = rpg.hero;

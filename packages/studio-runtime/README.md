@@ -43,8 +43,11 @@ Python, configure também as duas regras de um dia descritas abaixo. `published/
 Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
 
 Para qualificar uma imagem local específica sem substituir a tag de outra sessão,
-use `bun tests/image-smoke.ts <imagem>` e `bun tests/validation-smoke.ts <imagem>`.
-Sem argumento, ambos mantêm a imagem padrão `sistemazero-studio-runtime:verify`.
+use `bun tests/image-smoke.ts <imagem>`, `bun tests/validation-smoke.ts <imagem>` (os kits) e
+`bun tests/templates-smoke.ts <imagem>` (os modelos genéricos three-ts, react-ts e phaser, uma
+faixa `^` com a trava, e as duas recusas: import de biblioteca não declarada e erro de sintaxe).
+Sem argumento, todos mantêm a imagem padrão `sistemazero-studio-runtime:verify`; os três rodam no
+`ci.yml`, no `studio-runtime-image.yml` e no `studio-mission.yml`.
 
 ## Fluxo
 
@@ -224,6 +227,27 @@ bunx wrangler secret put INTERNAL_TOKEN
 
 Use um segredo aleatório com pelo menos 24 caracteres. Nos BFFs Admin e Community Kids, configure o mesmo valor em `STUDIO_PRO_RUNTIME_TOKEN` e a URL pública do Worker em `STUDIO_PRO_RUNTIME_URL`. Nunca use prefixo `NEXT_PUBLIC_`.
 
+### Casca da prévia do Clássico (`/v1/classic-shell/1.html`)
+
+A página que roda o jogo do Clássico em outro site, longe do editor (etapa 4 da missão do Estúdio).
+Sem `STUDIO_CLASSIC_SHELL_PARENT_ORIGINS` a rota responde 404. Com a lista, ela só aceita ser
+embutida e só conversa com essas origens (`frame-ancestors` e a checagem do `postMessage`).
+
+- **Staging (desde 20/11/2026):** a lista é um secret do Worker de staging, com as origens dos dois
+  apps (`https://community-kids-staging.up.railway.app https://community-staging-66f2.up.railway.app`).
+  Não é segredo, mas fica como secret e fora de `vars` no `wrangler.jsonc`: o secret sobrevive aos
+  deploys sem reconstruir os contêineres, e o mesmo nome em `vars` e em secret faz o deploy falhar.
+  Para mudar, o mesmo comando com a lista nova:
+
+  ```powershell
+  bunx wrangler secret put STUDIO_CLASSIC_SHELL_PARENT_ORIGINS --env staging
+  ```
+
+- **Nos apps:** `STUDIO_CLASSIC_SHELL_ENABLED=1` (só no staging do Kids e do adulto) faz o layout raiz
+  entregar a URL ao Estúdio (`classicShellUrlFromEnv`, do core). O `frame-src` já libera a origem
+  do Worker pelo `STUDIO_PRO_RUNTIME_URL`. Produção: nada configurado, a rota responde 404.
+- Se a casca não responder em 4 s, a prévia volta ao documento direto e avisa nas Mensagens do jogo.
+
 ## Desenvolvimento
 
 1. Rode `bun install` na raiz do monorepo.
@@ -279,7 +303,7 @@ Validação local adicional: `bun tests/image-smoke.ts` executa a imagem com red
 
 ## Compatibilidade de dependências
 
-O catálogo público está em `core/src/studio/pro-dependencies.ts`; um teste compara cada versão com o lock da imagem. O template é apenas a origem do projeto: bibliotecas adicionadas depois são lidas do seu `package.json`. Pacote ou versão fora do catálogo produz erro acionável antes do build. O terminal local continua permitindo outros pacotes.
+O catálogo público está em `core/src/studio/pro-dependencies.ts`; um teste compara cada versão com o lock da imagem. O template é apenas a origem do projeto: bibliotecas adicionadas depois são lidas do seu `package.json`. Pacote ou versão fora do catálogo produz erro acionável antes do build. O `import` de uma biblioteca que o `package.json` não declara para no plugin `sz-catalog-imports` da configuração confiável do Vite (`catalogImportsPlugin`): sem ele, o build empacotava o que a imagem tem por ser dependência de outra (o `nanoid` do postcss). O Worker responde 422 com o código `DEPENDENCY_NOT_DECLARED` e o recado da criança. O terminal local continua permitindo outros pacotes.
 
 Versões exatas podem ser compiladas antes da primeira instalação. Faixas `^`/`~` da versão aprovada exigem um lock npm v2/v3 completo, com a especificação da raiz correspondente. O Worker confere versões e integridades das entradas transitivas contra seu lock. Não aceita trocar código instalado silenciosamente, workspaces, overrides ou URLs de pacotes. A imagem usa seu próprio lock imutável e `npm ci --ignore-scripts`; não executa `npm install` do projeto.
 

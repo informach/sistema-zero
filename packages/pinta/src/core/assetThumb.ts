@@ -9,7 +9,8 @@
 import { flattenCels } from '../pixel/layers'
 import { resolveMaskScene } from '../vector/mask'
 import type { VectorShape } from '../vector/model'
-import type { PintaAsset, PintaBitmap } from './project'
+import type { PintaMemoryAsset } from './assetMemory'
+import type { PintaBitmap } from './project'
 
 /** Visíveis + fontes escondidas ainda necessárias ao recorte, na ordem original. */
 function thumbnailVectorScene(shapes: VectorShape[]): VectorShape[] {
@@ -19,7 +20,7 @@ function thumbnailVectorScene(shapes: VectorShape[]): VectorShape[] {
 }
 
 /** Bitmap "cara" do asset para a miniatura (null = sem prévia raster). */
-export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
+export function thumbnailBitmap(asset: PintaMemoryAsset): PintaBitmap | null {
   switch (asset.kind) {
     // Miniatura mostra o desenho VISÍVEL (camadas achatadas).
     case 'pixel-sprite': {
@@ -37,7 +38,7 @@ export function thumbnailBitmap(asset: PintaAsset): PintaBitmap | null {
 
 /** Documento vetorial "cara" do asset para a miniatura SVG (null = não vetor). */
 export function thumbnailShapes(
-  asset: PintaAsset,
+  asset: PintaMemoryAsset,
 ): { width: number; height: number; shapes: VectorShape[] } | null {
   switch (asset.kind) {
     case 'vector-background':

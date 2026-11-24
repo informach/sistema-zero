@@ -2,6 +2,7 @@ import type {
   StudioJavaScriptClassicDocument,
   StudioJavaScriptProDocument,
 } from '@sistemazero/core/studio/project-document'
+import type { StudioStudentTest } from '@sistemazero/core/studio/student-tests'
 import type { SZIRInput } from '#ir'
 import { createBlankProjectSnapshot } from './blankProject'
 import type { IDEMode } from './modes'
@@ -58,6 +59,13 @@ export interface Project {
    * seguem byte-idênticos).
    */
   coverAssetName?: string
+  /**
+   * "Meus testes" (aba da gaveta, painéis aprovados em 20/11/2026): os testes que a criança
+   * escreveu, no formato dos objetivos das aulas (`@sistemazero/core/studio/student-tests`). Só
+   * no projeto clássico em JavaScript, e a chave é OMITIDA sem testes (os projetos de antes
+   * seguem byte a byte iguais). Viaja no meta, para a conta e para o arquivo baixado.
+   */
+  studentTests?: StudioStudentTest[]
   ir: SZIRInput | null
   blocksState: unknown | null
   /**

@@ -1,0 +1,164 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\mapSelectionBudget.test.ts:
+12 |   return { map: setCell(setCell(map, id, 0, 0, 1), id, 0, 1, 4), id }
+13 | }
+14 | 
+15 | test('selection clips logical columns instead of aliasing the following dense row', () => {
+16 |   const { map, id } = fixture(), rect = { col: 3, row: 0, cols: 1, rows: 1 }
+17 |   expect(hasFilledCell(map, id, rect)).toBe(false)
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:17:40)
+(fail) selection clips logical columns instead of aliasing the following dense row
+26 |     { col: 0, row: 0, cols: 65537, rows: 1 },
+27 |     { col: 0, row: 0, cols: -1, rows: 1 },
+28 |     { col: NaN, row: 0, cols: 1, rows: 1 },
+29 |   ]) {
+30 |     const cut = extractRegion(map, id, rect)
+31 |     expect(cut.remaining).toBe(map)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "10f549e1-4e0a-4a87-a1cf-cc9a8e18b1bf",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795252102286,
+  updatedAt: 1795252102286,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "2f2ebf18-a31a-4e5e-8d8e-7ebdd7450c87",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 1, -1, -1, 4, -1, -1 ],
+    }
+  ],
+}
+Received: serializes to the same string
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:31:27)
+(fail) invalid selection extents are refused without clearing or allocating a partial cut
+36 | 
+37 | test('a heterogeneous paste refuses all cells if one reference is outside the native format', () => {
+38 |   const { map, id } = fixture()
+39 |   for (const invalid of [256, makeCell(256, CELL_FLAGS_MASK), -2]) {
+40 |     const stamp = { cols: 2, rows: 1, tiles: Int16Array.of(2, invalid) }
+41 |     expect(stampRegionAt(map, id, { col: 0, row: 0 }, stamp)).toBe(map)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "2ee303a9-f5ad-466b-b01d-402dcf45d60f",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795252102288,
+  updatedAt: 1795252102288,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "5b41509c-43e4-4120-b12a-79f69da28dee",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 1, -1, -1, 4, -1, -1 ],
+    }
+  ],
+}
+Received: {
+  id: "2ee303a9-f5ad-466b-b01d-402dcf45d60f",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795252102288,
+  updatedAt: 1795252102288,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "5b41509c-43e4-4120-b12a-79f69da28dee",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 2, 256, -1, 4, -1, -1 ],
+    }
+  ],
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:41:63)
+(fail) a heterogeneous paste refuses all cells if one reference is outside the native format
+48 |   for (const stamp of [
+49 |     { cols: 2, rows: 1, tiles: Int16Array.of(2) },
+50 |     { cols: 0, rows: 1, tiles: new Int16Array() },
+51 |     { cols: 0.5, rows: 2, tiles: Int16Array.of(2) },
+52 |   ]) {
+53 |     expect(stampRegionAt(map, id, { col: 0, row: 0 }, stamp)).toBe(map)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "40b3dd46-1c91-49b9-a39a-d94207251a02",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795252102288,
+  updatedAt: 1795252102288,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "298b9b54-b35b-4eb8-a318-0fba1606d31e",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 1, -1, -1, 4, -1, -1 ],
+    }
+  ],
+}
+Received: {
+  id: "40b3dd46-1c91-49b9-a39a-d94207251a02",
+  kind: "tilemap",
+  name: "vila",
+  createdAt: 1795252102288,
+  updatedAt: 1795252102288,
+  tilesetId: "terra",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "298b9b54-b35b-4eb8-a318-0fba1606d31e",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ 2, -1, -1, 4, -1, -1 ],
+    }
+  ],
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:53:63)
+(fail) malformed stamps and fractional anchors do not create a partial gesture
+62 |   if (!prepared.ok) throw Error(prepared.reason)
+63 |   const expanded = expandRegionMap(prepared.map, { col: -32, row: -32, cols: 10000, rows: 10000 })
+64 |   if (!expanded.ok) throw Error(expanded.reason)
+65 |   const value = makeCell(255, CELL_FLAGS_MASK), source = setCell(expanded.map, id, -32, -32, value)
+66 |   const rect = { col: -32, row: -32, cols: 2, rows: 1 }
+67 |   expect(hasFilledCell(source, id, rect)).toBe(true)
+                                               ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\mapSelectionBudget.test.ts:67:43)
+(fail) selection and repeating stamps work at negative origins in a sparse maximum-extent map
+(pass) locked layers and no-op pastes preserve the original map and snapshots
+
+ 1 pass
+ 5 fail
+ 8 expect() calls
+Ran 6 tests across 1 file. [383.00ms]

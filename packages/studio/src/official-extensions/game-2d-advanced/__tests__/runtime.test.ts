@@ -866,6 +866,31 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
   })
 })
 
+describe('SZGameKit — os tetos avisam (lote 4 da missão, seção 8.4, 21/11/2026)', () => {
+  it('passar de 1000 partículas ao mesmo tempo avisa, uma vez por partida', () => {
+    const h = loadRuntime()
+    const warns: string[] = []
+    const original = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.defineEffect('chuva', { count: 200 })
+      for (let i = 0; i < 5; i++) h.api.burst('chuva', 50, 50)
+      const avisos = () => warns.filter((w) => w.includes('chegou a 1000 faíscas')).length
+      expect(avisos()).toBe(0)
+      for (let i = 0; i < 3; i++) h.api.burst('chuva', 50, 50)
+      expect(avisos()).toBe(1)
+      for (let i = 0; i < 3; i++) h.api.burst('chuva', 50, 50)
+      expect(avisos()).toBe(1)
+      // Revisão do lote 4: uma vez por PARTIDA. Jogar de novo volta a avisar.
+      h.api.restartGame()
+      for (let i = 0; i < 8; i++) h.api.burst('chuva', 50, 50)
+      expect(avisos()).toBe(2)
+    } finally {
+      console.warn = original
+    }
+  })
+})
+
 describe('SZGameKit — R1: correções do full review', () => {
   it('recycle FORA do forEach devolve ao pool (o slot é reaproveitado)', () => {
     const { api } = loadRuntime()

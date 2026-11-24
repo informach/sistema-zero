@@ -1,0 +1,425 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      ".cache/pinta-52ec-shared-chrome.config.ts",
+      "--grep",
+      "cena-gabarito (models3d|shaders3d|shapes2d|shapes3d|text2d|textures2d)"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-52ec-shared-chrome.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e-runtime",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/.cache/pinta-52ec-raylib-control/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome",
+        "name": "chrome",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e-runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "python-runtime.spec.ts",
+          "python-provider.spec.ts",
+          "python-turtle.spec.ts",
+          "python-audio.spec.ts",
+          "python-inspection.spec.ts",
+          "python-raylib.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chrome",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "python-runtime.spec.ts",
+          "python-provider.spec.ts",
+          "python-turtle.spec.ts",
+          "python-audio.spec.ts",
+          "python-inspection.spec.ts",
+          "python-raylib.spec.ts"
+        ],
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5595",
+          "headless": true,
+          "trace": "retain-on-failure",
+          "channel": "chrome"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chrome"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "python-raylib.spec.ts",
+      "file": "python-raylib.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Raylib: cena-gabarito models3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2676,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:54:51.893Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "models3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-models3d-chrome\\attachments\\models3d-a9ecb5985470b36893afa30b16aec4b3ff4e82cf.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-6b4da167cea619525766",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shaders3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1645,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:54:54.783Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shaders3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-shaders3d-chrome\\attachments\\shaders3d-7c46bb7ab56361f3be212ee2ba5e25010ecd9e0d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-78a9dcb78e956d3773cf",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shapes2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1650,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:54:56.445Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shapes2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-shapes2d-chrome\\attachments\\shapes2d-31e5f951f5066049ad3b97c96ef238595c4def0e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-c56b89ecfaa0d2a6fbe5",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito shapes3d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1607,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:54:58.110Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "shapes3d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-shapes3d-chrome\\attachments\\shapes3d-77f08e3ee8e42612dd85075c540d018f38cc7944.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-2afc890b604e731bf139",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito text2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1684,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:54:59.728Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "text2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-text2d-chrome\\attachments\\text2d-f0662f4a102c2b3254657f048c7ca6db1a8ea79d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-9bf7a2d965bd50cfefa8",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        },
+        {
+          "title": "Raylib: cena-gabarito textures2d",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "pixels-diferentes",
+                  "description": "0 (400x300)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chrome",
+              "projectName": "chrome",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1642,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T20:55:01.425Z",
+                  "annotations": [
+                    {
+                      "type": "pixels-diferentes",
+                      "description": "0 (400x300)"
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "textures2d",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-52ec-raylib-control\\artifacts\\python-raylib-Raylib-cena-gabarito-textures2d-chrome\\attachments\\textures2d-5b70dd744e51a32d1bd76736cb0f3cf61efcfe12.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcf0f44e3be5d8fa9c60-39b367eb937d35cbc51b",
+          "file": "python-raylib.spec.ts",
+          "line": 85,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T20:54:51.261Z",
+    "duration": 11955.934000000001,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

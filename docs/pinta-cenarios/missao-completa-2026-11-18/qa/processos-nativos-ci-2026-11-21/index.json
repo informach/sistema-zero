@@ -1,0 +1,116 @@
+{
+  "capturedAt": "2026-11-21T08:33:39.272Z",
+  "scope": "test infrastructure only; deterministic Linux zombie proof and unchanged production artifacts; no replacement for a fresh whole CI",
+  "files": [
+    {
+      "file": "ci44881202754-job136776667762.log.gz",
+      "bytes": 1466471,
+      "sha256": "f2e2f45a3d2dce8d1545b603a1c89cf3401a1e127dc8361db3b688aefdf99937"
+    },
+    {
+      "file": "Dockerfile.process-qa.txt",
+      "bytes": 145,
+      "sha256": "17afd0c0c1692bb8a5f421a54a8d3e408fde2446ac42d01fe0f7e940841559dc"
+    },
+    {
+      "file": "failed-ci-provenance.json",
+      "bytes": 464,
+      "sha256": "4711c1401cd289a01867e978e33098926554a9151c57f43a2e1499a272e49cce"
+    },
+    {
+      "file": "linux-zombie-reproduction.cjs.txt",
+      "bytes": 2057,
+      "sha256": "974899d635d97f1f9b88894238f91a2fd563697e8e9b5279e42c315f4dc281f8"
+    },
+    {
+      "file": "pinta-owned-process-final-biome.log",
+      "bytes": 43,
+      "sha256": "57409e9c15278d4a2fa356003c23c97938128248ac7adfa443c7c1602c08d606"
+    },
+    {
+      "file": "pinta-owned-process-final-freeze.json",
+      "bytes": 816,
+      "sha256": "9376df220452aca56a734355ff15e6f19939909edb8ecef4a850d9c34f7dcc3f"
+    },
+    {
+      "file": "pinta-owned-process-final-gates.json",
+      "bytes": 1510,
+      "sha256": "4a008b84103c24ab9b28c4c7cb0e3601bbd1f40986e30dbe63ab417f168fe0c7"
+    },
+    {
+      "file": "pinta-owned-process-final-linux-repeat.log",
+      "bytes": 7920,
+      "sha256": "346075f590ea80fb97e5ea07574e84bc4784267313a0bb6beb77a6a7e6a0a80b"
+    },
+    {
+      "file": "pinta-owned-process-final-negative.log",
+      "bytes": 780,
+      "sha256": "5ee6fd7fbf8b3fa8ca96d1607f01b3cfec611cb8557841638159c3db279399ac"
+    },
+    {
+      "file": "pinta-owned-process-final-profile.log",
+      "bytes": 88,
+      "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+    },
+    {
+      "file": "pinta-owned-process-final-proof.json",
+      "bytes": 1185,
+      "sha256": "344bedf7ec24c29a40515dad8ce84abde43d349228e082b6b2226874eff217b4"
+    },
+    {
+      "file": "pinta-owned-process-final-types.log",
+      "bytes": 60,
+      "sha256": "57abcdb89ee6ec288ff0c7c6a13f657e7da934050645ca9d9c843c2ac53c515d"
+    },
+    {
+      "file": "pinta-owned-process-final-windows.log",
+      "bytes": 764,
+      "sha256": "f40c62682d0e8d81eb14dc141e597cc67bd378dbf201c2d648a744a624a8028f"
+    },
+    {
+      "file": "pinta-owned-process-final-worker.log",
+      "bytes": 2562,
+      "sha256": "e2a567417b86b87b864208c64b4d82949f003413d065069f585b4e8db4e5950b"
+    },
+    {
+      "file": "pinta-owned-process-format.log",
+      "bytes": 1861,
+      "sha256": "e8350620bab20a08f0947fee8588d9b666be7254276f4e7d8f5a8212982ec498"
+    },
+    {
+      "file": "pinta-owned-process-format2.log",
+      "bytes": 44,
+      "sha256": "2717110f2bcbb33ef5bf574d2c4bff1dd330d9be7f9019d72ad23b4886380758"
+    },
+    {
+      "file": "pinta-owned-process-linux-baseline.log",
+      "bytes": 418,
+      "sha256": "7985ae3b3a3a8f192fcf3fc442768cdfec3dbbfc6bc65bac8d8ce3d9043c146f"
+    },
+    {
+      "file": "pinta-owned-process-linux-fixed.log",
+      "bytes": 809,
+      "sha256": "d80d35bbd5300ead7e296398733fdd2b182d487d3ada8eb6554402ba87a4d0c0"
+    },
+    {
+      "file": "pinta-owned-process-linux-fixed2.log",
+      "bytes": 809,
+      "sha256": "4fc983c2c44c5c42c6e738c2b9bdd3e9fdd9d213e63f7f0180bcfe8bcc80e7f7"
+    },
+    {
+      "file": "pinta-process-qa-image-build.log",
+      "bytes": 5345,
+      "sha256": "6c86f0376d95099aeaa8ac694e8c7d91a7367350e348ac518a577aebea00d249"
+    },
+    {
+      "file": "pinta-process-zombie-linux-proof.log",
+      "bytes": 133,
+      "sha256": "5e377ea6dbba4056e5eeae5df74e07ac94fa5105b09df8d87ef1df8881770502"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2756,
+      "sha256": "e0a136afa0597c7ed971fdd636dcb0f28311944d3f32bf7a06e2d9e62be97ad3"
+    }
+  ]
+}

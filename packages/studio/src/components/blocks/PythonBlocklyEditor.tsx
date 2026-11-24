@@ -1,8 +1,12 @@
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { type OrganizerWorkspace, patchContextMenuWords } from '../../blockly/contextMenuWords'
 import { installCornerSpacer } from '../../blockly/cornerSpacer'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
+import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
+import { withWorkspaceLoad } from '../../blockly/loadFence'
+import { loadWorkspaceState } from '../../blockly/loadWorkspaceState'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import {
   MORE_BLOCKS_KIND,
@@ -22,6 +26,35 @@ import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyou
 import { szGridColourFor, szThemeFor } from '../../blockly/theme'
 import { isPythonProject } from '../../core/editableProject'
 import {
+  clearPythonAreaRules,
+  PYTHON_AREA_CHECKER,
+  registerPythonAreaChecker,
+  setPythonAreaRules,
+} from '../../python/blocks/areaConnectionChecker'
+import {
+  layoutPythonAreaFrames,
+  pythonAreaFrames,
+  pythonAreaPositions,
+  pythonScratchRoots,
+  registerPythonAreaFrames,
+} from '../../python/blocks/areaFrames'
+import { attachPythonAreaGuards } from '../../python/blocks/areaGuards'
+import {
+  applyPythonAreaNotes,
+  organizePythonWorkspace,
+  type PythonOrganizerWorkspace,
+  registerPythonOrganizeMenu,
+} from '../../python/blocks/areaOrganize'
+import {
+  analyzePythonModuleAreas,
+  PYTHON_AREA_BY_KIND,
+  PYTHON_AREA_FRAME_TYPES,
+  type PythonAreaContext,
+  type PythonAreaKind,
+  pythonDisplayAreas,
+  pythonOfferedAreas,
+} from '../../python/blocks/areas'
+import {
   pythonVisualToWorkspace,
   pythonWorkspaceToVisual,
   registerPythonBlocks,
@@ -37,13 +70,6 @@ import {
   pythonCategoryLabel,
 } from '../../python/blocks/paletteGroups'
 import {
-  ensurePythonProgramArea,
-  PYTHON_PROGRAM,
-  pythonProgramArea,
-  pythonScratchRoots,
-  registerPythonProgramArea,
-} from '../../python/blocks/programArea'
-import {
   createPythonProgramNavigation,
   type PythonProgramNavigationState,
 } from '../../python/blocks/programNavigation'
@@ -56,7 +82,7 @@ import {
 import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
 import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
 import {
-  preparePythonScratchRestore,
+  preparePythonScratchRestoreKeeping,
   preparePythonWorkspaceRestore,
 } from '../../python/blocks/restoreWorkspace'
 import type { PythonProjectModules } from '../../python/blocks/scope'
@@ -81,6 +107,8 @@ import {
 import { createPythonAnalysisController } from '../../python/language/controller'
 import type { PythonAnalysisSession } from '../../python/language/session'
 import { pythonPositionToOffset } from '../../python/language/sourceEdits'
+import { indexPythonSourceLines } from '../../python/language/sourceLines'
+import { pythonStatementLines } from '../../python/language/statementMoves'
 import type {
   PythonNode,
   PythonParsedDocument,
@@ -234,7 +262,11 @@ function toolbox(
       kind: 'category',
       name: '🗂️ Áreas do projeto',
       colour: '#475569',
-      contents: [{ kind: 'block', type: PYTHON_PROGRAM, disabled: true }],
+      // As áreas que a paleta usa (o ⚙️ Ao iniciar está sempre): a criança arrasta as que vai usar.
+      contents: pythonOfferedAreas(palette.entries.map((entry) => entry.id)).map((kind) => ({
+        kind: 'block',
+        type: PYTHON_AREA_BY_KIND.get(kind)!.frameType,
+      })),
     },
   ] as unknown as Blockly.utils.toolbox.StaticCategoryInfo[]
   return { kind: 'categoryToolbox', contents: [...top, ...groups.values()] }
@@ -301,7 +333,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   const t = useT()
   const [program, setProgram] = useState<PythonProgramNavigationState>({ entries: [], scratch: 0 })
   // Reflect the actual open scope, including navigation from Ponte, undo and tutor.
-  const activeDefinition = program.entries.filter((entry) => entry.expanded).at(-1)?.id ?? ''
+  // A função (ou o chapéu) aberta agora: as áreas ficam sempre abertas e não contam.
+  const activeDefinition =
+    program.entries.filter((entry) => entry.expanded && !entry.area).at(-1)?.id ?? ''
   const [view, setView] = useState<View>({
     phase: 'loading',
     message: 'Preparando os blocos Python…',
@@ -356,7 +390,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     }
     Blockly.setLocale(PtBr as unknown as Record<string, string>)
     registerPythonBlocks(props.codecs)
-    registerPythonProgramArea()
+    registerPythonAreaFrames()
+    registerPythonAreaChecker()
+    registerPythonOrganizeMenu()
+    // As palavras de criança no menu (e o "Arrumar blocos" nativo fora, como no JavaScript).
+    patchContextMenuWords()
     // "Procurar um bloco" é a categoria de busca do Estúdio, com o resolvedor do Python.
     registerPtSearchCategory()
     registerMoreBlocksItem()
@@ -376,7 +414,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       renderer: 'zelos',
       horizontalLayout: horizontal,
       toolboxPosition: 'start',
-      plugins: { flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout },
+      // A regra das áreas do projeto vale no arraste (carga e menus não passam por ela).
+      plugins: {
+        flyoutsHorizontalToolbox: SearchAwareHorizontalFlyout,
+        connectionChecker: PYTHON_AREA_CHECKER,
+      },
       sounds: false,
       collapse: false,
       // Execution is described by Python source, never by an invisible workspace flag.
@@ -397,11 +439,20 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       },
       move: { scrollbars: true, drag: true, wheel: true },
       trashcan: !observer,
+      // Uma área de cada tipo: a paleta, o duplicar e o colar respeitam (a guarda cobre o resto).
+      maxInstances: Object.fromEntries([...PYTHON_AREA_FRAME_TYPES].map((type) => [type, 1])),
     })
+    setPythonAreaRules(workspace, props.codecs)
+    // Uma área de cada tipo e o "ligar o jogo" no fim (só depois de gestos da criança).
+    const detachAreaGuards = observer ? () => {} : attachPythonAreaGuards(workspace)
     ;(workspace as unknown as SearchResolverWorkspace).__szSearchItems = (search) =>
       pythonSearchItems(callbacks.current.palette, search, callbacks.current.codecs)
     ;(workspace as unknown as MoreBlocksWorkspace).__szOpenExtensions = () =>
       openExtensions.current(true)
+    // Os materiais do projeto POR INSTÂNCIA, como no JavaScript: o seletor de regiões do bloco
+    // "Entrou na região" (Raylib 3D) lê os cenários do Molda trazidos para o projeto (lote 7b).
+    ;(workspace as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
+      store.getState().project?.assets ?? []
     // Lixeira e zoom mais para cima, como no JavaScript (ver `cornerSpacer.ts`).
     installCornerSpacer(workspace)
     // A cor dos valores dentro de bloco de extensão (ver `literalTint.ts`): o dono de cada tipo.
@@ -424,6 +475,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let rootIds: string[] = []
     const navigation = createPythonProgramNavigation(workspace, setProgram)
     let offer: PythonWorkspaceDraft | undefined
+    /** Os rascunhos deste arquivo que não reabriram: crus, voltam em toda gravação. */
+    let keptScratch: unknown[] = []
     let timer: ReturnType<typeof setTimeout> | undefined
     // `from settings import *` is understood from the project's own settings.py.
     const knownStarExports = pythonResolverOptionsOf(props.codecs).starExports
@@ -432,6 +485,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let parsedModules = new Map<string, PythonNode | null>()
     let modulesStale = false
     let committing = false
+    /** O código mudou por fora (abrir, Ponte, Código): organiza no primeiro gesto nos blocos. */
+    let organizePending = false
+    let sourceLines:
+      | { source: string; lines: ReturnType<typeof indexPythonSourceLines> }
+      | undefined
     const instanceId = crypto.randomUUID()
     const currentProject = () => {
       const project = store.getState().project
@@ -539,23 +597,108 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         presentWorkspace(workspace, tree, origins, props.codecs, props.officialModules)
       }
     }
+    /** O que as áreas precisam saber do projeto (o que `from … import *` cria, os módulos dele). */
+    const areaContext = (): PythonAreaContext => ({
+      starExports: knownStarExports,
+      projectModules: new Set(
+        Object.keys(currentProject()?.files ?? {})
+          .filter((path) => path.endsWith('.py') && path !== props.path)
+          .map((path) => path.slice(0, -3).split('/')[0]!),
+      ),
+    })
+    /** A linha que divide a linha do arquivo com outro comando (`;`) não sai do lugar. */
+    const movable = (block: Blockly.Block) => {
+      const node = origins.get(block.id)
+      if (!node || !parsed?.tree) return true
+      if (sourceLines?.source !== parsed.source)
+        sourceLines = { source: parsed.source, lines: indexPythonSourceLines(parsed.source) }
+      return !!pythonStatementLines(parsed, node, sourceLines.lines)
+    }
+    /** As notas das linhas que ficaram fora da área delas (sem mexer em nada). */
+    function refreshAreaNotes() {
+      const { notes } = organizePythonWorkspace(workspace, props.codecs, {
+        context: areaContext(),
+        movable,
+        apply: false,
+      })
+      Blockly.Events.disable()
+      try {
+        applyPythonAreaNotes(workspace, notes)
+      } finally {
+        Blockly.Events.enable()
+      }
+    }
+    /** Organiza as áreas (um passo de desfazer); o commit normal grava o arquivo. */
+    function organizeNow(arrange: boolean) {
+      if (
+        disposed ||
+        applying ||
+        committing ||
+        offer ||
+        observer ||
+        store.getState().editingAccess !== 'author' ||
+        workspace.isDragging() ||
+        // Um campo aberto (texto, número, lista): mexer nos blocos agora fecharia ou deslocaria o
+        // campo no meio da digitação. Fica para o próximo gesto.
+        Blockly.WidgetDiv.isVisible() ||
+        Blockly.DropDownDiv.isVisible() ||
+        !parsed?.tree ||
+        loadedSource !== parsed.source
+      )
+        return false
+      const group = Blockly.Events.getGroup()
+      if (!group) Blockly.Events.setGroup(true)
+      try {
+        if (arrange) layoutPythonAreaFrames(workspace)
+        const result = organizePythonWorkspace(workspace, props.codecs, {
+          context: areaContext(),
+          movable,
+        })
+        // Programa que não pôde ser lido agora: o pedido continua pendente (não organizou nada).
+        if (result.incomplete) return false
+        applyPythonAreaNotes(workspace, result.notes)
+      } finally {
+        if (!group) Blockly.Events.setGroup(false)
+      }
+      return true
+    }
+    ;(workspace as unknown as PythonOrganizerWorkspace & OrganizerWorkspace).__szOrganizes = true
+    ;(workspace as unknown as PythonOrganizerWorkspace).__szOrganizePython = observer
+      ? undefined
+      : () => {
+          if (organizeNow(true)) organizePending = false
+        }
     function load(document: PythonParsedDocument, draft?: PythonWorkspaceDraft) {
       if (!document.tree) return
       const restored = draft
         ? preparePythonWorkspaceRestore(draft, document, props.codecs)
         : undefined
-      const restoreScratch = preparePythonScratchRestore(
-        readPythonScratchWorkspace(currentProject()!, props.path),
-        props.codecs,
-      )
+      // Rascunho que não reabre (salvo por uma versão com defeito) não pode travar o arquivo nos
+      // blocos: o código abre sem ele, e ele fica GUARDADO como estava (`keptScratch` volta em
+      // toda gravação). Full review das áreas, 22/11/2026.
+      const savedScratch = readPythonScratchWorkspace(currentProject()!, props.path)
+      const scratchRestore = preparePythonScratchRestoreKeeping(savedScratch, props.codecs)
+      keptScratch = scratchRestore.kept
+      if (keptScratch.length)
+        console.warn('[python-blocos] rascunhos que não reabrem ficaram guardados sem aparecer')
       applying = true
       loadedSource = undefined
+      // A arrumação das áreas que a criança fez sobrevive à volta do código (Ponte, desfazer).
+      let previousPositions = new Map<PythonAreaKind, { x: number; y: number }>()
+      try {
+        previousPositions = pythonAreaPositions(workspace)
+      } catch {
+        // Área repetida no meio de um arraste: a arrumação padrão resolve.
+      }
       Blockly.Events.disable()
       try {
         navigation.restore()
-        workspace.clear()
+        withWorkspaceLoad(() => workspace.clear())
         if (restored) {
-          Blockly.serialization.workspaces.load(restored.state, workspace)
+          // O carregador que devolve o estado global do Blockly se a carga lançar, o mesmo do
+          // editor JavaScript (full review final de 21/11/2026: aqui ficava o "Desfazer" desligado
+          // em todo editor da página depois de um rascunho que não carregava).
+          loadWorkspaceState(restored.state, workspace)
           rootIds = restored.rootIds
           origins = restored.origins
         } else {
@@ -564,17 +707,40 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             officialModules: props.officialModules,
             projectModules,
           })
-          rootIds = pythonVisualToWorkspace(projection, workspace, props.codecs)
-          for (const id of rootIds) workspace.getBlockById(id)?.moveBy(24, 24)
+          // Áreas do projeto: cada linha de topo na área em que ela aparece (sem mexer no arquivo).
+          const areas = pythonDisplayAreas(
+            analyzePythonModuleAreas(
+              document.tree,
+              projection.body.map((value) => (value.kind === 'block' ? value.codecId : undefined)),
+              areaContext(),
+            ).statements,
+          )
+          rootIds = pythonVisualToWorkspace(projection, workspace, props.codecs, { areas })
           origins = bindPythonVisualOrigins(
             pythonWorkspaceToVisual(workspace, rootIds, projection.typeIgnores, props.codecs),
             document.tree,
             props.codecs,
           )
         }
-        const hadProgramArea = !!pythonProgramArea(workspace)
-        rootIds = ensurePythonProgramArea(workspace, rootIds, props.path)
-        restoreScratch?.(workspace)
+        try {
+          scratchRestore.apply?.(workspace)
+        } catch (error) {
+          // Identificador repetido com o programa: o Blockly recusa antes de pôr qualquer bloco.
+          console.warn('[python-blocos] rascunhos que não reabrem ficaram guardados', error)
+          const blocks = savedScratch?.blocks as { blocks?: unknown[] } | undefined
+          keptScratch = blocks?.blocks ?? []
+        }
+        if (!restored) {
+          const frames = pythonAreaFrames(workspace)
+          if (frames.size && [...frames.keys()].every((kind) => previousPositions.has(kind)))
+            for (const [kind, frame] of frames) {
+              const at = previousPositions.get(kind)!
+              // `moveTo` é do BlockSvg; o mapa das áreas é de Block.
+              if (frame instanceof Blockly.BlockSvg)
+                frame.moveTo(new Blockly.utils.Coordinate(at.x, at.y))
+            }
+          else layoutPythonAreaFrames(workspace)
+        }
         forgetBlocklyHistory(workspace)
         presentWorkspace(
           workspace,
@@ -584,18 +750,21 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           props.officialModules,
           projectModules,
         )
-        // Legacy caches have no area and often save every definition expanded.
-        // Give them the same compact initial view as a freshly projected file.
-        void navigation.initialize(!restored || !hadProgramArea)
+        // Uma projeção nova abre com as funções fechadas (o rascunho guarda o que a criança abriu).
+        void navigation.initialize(!restored)
+        refreshAreaNotes()
         const saved = savePythonWorkspace(workspace, origins)
-        fingerprint = JSON.stringify(saved)
+        fingerprint = jsonStringify(saved) ?? ''
         loadedSource = document.source
+        // Quem pode editar vê o arquivo organizado pelas áreas no primeiro gesto nos blocos (nunca
+        // enquanto digita na Ponte: a carga vem de cada mudança do código).
+        organizePending = !observer && store.getState().editingAccess === 'author'
         // Gallery examples start as Python files. Save their initial Program
         // area as soon as projection succeeds, without requiring a user gesture.
         // A recovery offer must remain pending until its source transaction.
         const project = currentProject()
         if (
-          (!restored || !hadProgramArea) &&
+          !restored &&
           !draft?.pending &&
           !observer &&
           store.getState().editingAccess === 'author' &&
@@ -606,6 +775,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             props.path,
             saved,
             rootIds,
+            keptScratch,
           )
           initial.pending = false
           const issue = store
@@ -707,7 +877,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         return
       try {
         const saved = savePythonWorkspace(workspace, origins)
-        const nextFingerprint = JSON.stringify(saved)
+        const nextFingerprint = jsonStringify(saved) ?? ''
         if (nextFingerprint === fingerprint) return
         // Layout, collapsed definitions and scratch pieces do not change source.
         // Persist them without parsing/projecting the entire file. Pending
@@ -718,7 +888,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           fingerprint &&
           samePythonWorkspaceProgram(JSON.parse(fingerprint), saved)
         ) {
-          const { draft, scratch } = capturePythonWorkspace(project, props.path, saved, rootIds)
+          const { draft, scratch } = capturePythonWorkspace(
+            project,
+            props.path,
+            saved,
+            rootIds,
+            keptScratch,
+          )
           draft.pending = false
           const issue = store
             .getState()
@@ -754,6 +930,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           document: parsed,
           workspace: saved,
           rootIds,
+          keptScratch,
           codecs: props.codecs,
           projection: () => {
             if (!projection) throw issue
@@ -776,12 +953,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
               props.officialModules,
               projectModules,
             )
+            refreshAreaNotes()
             // A star import the gesture added is read from the other files afterwards.
             if (!projectModules && importsStar(document.tree!)) modulesStale = true
             if (modulesStale) schedule()
             // Only the captured gesture was committed. A later live edit can
             // precede delivery of its Blockly event (RAF followed by a timer).
-            fingerprint = JSON.stringify(rebasePythonWorkspaceState(saved, origins))
+            fingerprint = jsonStringify(rebasePythonWorkspaceState(saved, origins)) ?? ''
             surface.current?.selectCursor()
             report('ready')
             flush()
@@ -865,6 +1043,15 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     const activate = () => history?.markActive('blocks')
     element.addEventListener('pointerdown', activate)
     element.addEventListener('focusin', activate)
+    // Depois do clique (ou do arraste) nos blocos, não no meio dele: organiza o que veio do código.
+    const organizeOnReturn = () => {
+      if (!organizePending) return
+      setTimeout(() => {
+        if (organizePending && organizeNow(false)) organizePending = false
+      }, 0)
+    }
+    element.addEventListener('pointerup', organizeOnReturn)
+    element.addEventListener('focusin', organizeOnReturn)
     const resize = new ResizeObserver(() => Blockly.svgResize(workspace))
     resize.observe(element)
     let previousSource = currentProject()?.files[props.path]
@@ -1044,7 +1231,11 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
               ? 'ready'
               : 'unavailable',
         // A parse still in flight must not describe old blocks as current source.
-        ...(sameSource ? { workspace: Blockly.serialization.workspaces.save(workspace) } : {}),
+        // Em objetos comuns: o `save` cru do Blockly é sem protótipo, e o JSON.stringify do V8 recursa
+        // nele a partir de ~800 blocos numa cadeia (lote 3 da missão, 21/11/2026).
+        ...(sameSource
+          ? { workspace: jsonPlainCopy(Blockly.serialization.workspaces.save(workspace)) }
+          : {}),
       }
     }
     classicCapture.current = capture
@@ -1065,12 +1256,17 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       element.removeEventListener('focusout', leave)
       document.removeEventListener('pointerdown', leave, true)
       element.removeEventListener('focusin', activate)
+      element.removeEventListener('pointerup', organizeOnReturn)
+      element.removeEventListener('focusin', organizeOnReturn)
       workspace.removeChangeListener(changed)
       detachCallLabels()
       detachLiteralTint()
       parser.dispose()
       navigation.dispose()
-      workspace.dispose()
+      detachAreaGuards()
+      clearPythonAreaRules(workspace)
+      // Sob a cerca: a exclusão segura das áreas não resgata filhos de um workspace que some.
+      withWorkspaceLoad(() => workspace.dispose())
       if (classicCapture.current === capture) classicCapture.current = null
       if (surface.current?.workspace === workspace) surface.current = null
       callbacks.current.onWorkspaceReady?.(null)
@@ -1124,10 +1320,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   useEffect(() => {
     if (!revealRequest || revealRequest.nonce === handledReveal.current) return
     const target = revealRequest.target
-    if (target.kind === 'runtime' && runtimeMark && !samePythonPath(runtimeMark.file, props.path)) {
-      // O erro está em outro .py: abre aquele arquivo e o pedido espera o editor dele ficar
-      // pronto (este efeito roda de novo com o `path` e a fase novos).
-      const file = filesRef.current?.find((item) => samePythonPath(item, runtimeMark.file))
+    const wantedFile =
+      target.kind === 'runtime' ? runtimeMark?.file : target.kind === 'line' ? target.file : null
+    if (wantedFile && !samePythonPath(wantedFile, props.path)) {
+      // O erro (ou o passo do caminho até ele) está em outro .py: abre aquele arquivo e o pedido
+      // espera o editor dele ficar pronto (este efeito roda de novo com o `path` e a fase novos).
+      const file = filesRef.current?.find((item) => samePythonPath(item, wantedFile))
       if (file && changeFileRef.current) changeFileRef.current(file)
       else handledReveal.current = revealRequest.nonce
       return
@@ -1140,7 +1338,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (surface.current !== current) return
-        let id = target.kind === 'runtime' ? runtimeErrorBlockId(current.workspace) : target.blockId
+        let id =
+          target.kind === 'runtime'
+            ? runtimeErrorBlockId(current.workspace)
+            : target.kind === 'block'
+              ? target.blockId
+              : current.blockAtLine(target.line)
         if (!id && target.kind === 'runtime' && runtimeMark) {
           // Os blocos foram refeitos depois da marca (uma edição na Ponte): marca de novo pela
           // linha antes de mostrar.

@@ -42,11 +42,22 @@ const MAX_EDITOR_ROUTE_JS_FILES = 20
  * A folga nova é de ~5,5% sobre a medição, não "um byte acima do que passa": teto rente ao
  * medido transforma o guarda num alarme que dispara a cada bloco novo. O modo Ponte fica onde
  * estava — está em 4,0 M, com folga de verdade.
+ *
+ * O teto de ARQUIVOS do modo Código subiu de 18 para 20 em 23/11/2026 (o mesmo dos outros dois).
+ * A revisão local do Pro passou a ler a cópia publicada do motor 2D (`proRevision` importa o
+ * `proEngineCopies` sob demanda), e como o `proRevision` vive num pedaço dividido com outras
+ * telas, o empacotador separou o `proEngineCopies` num arquivo próprio que o modo Código carrega.
+ * Nenhum byte a mais: medido com o arquivo novo,
+ *
+ *   Código  2 803 642 cru · 798 297 gzip · 19 arquivos
+ *
+ * isto é, 70% do teto cru e 61% do gzip. A lista inicial segue em 351 816 cru, 113 910 gzip e
+ * 2 arquivos, dentro do teto que importa.
  */
 const MODE_BUDGETS = {
   BlocksMode: { raw: 4_750_000, gzip: 1_450_000, files: 20 },
   BridgeMode: { raw: 4_500_000, gzip: 1_450_000, files: 20 },
-  CodeMode: { raw: 4_000_000, gzip: 1_300_000, files: 18 },
+  CodeMode: { raw: 4_000_000, gzip: 1_300_000, files: 20 },
 } as const
 
 test('a lista inicial não pré-carrega o editor nem os catálogos pesados', async () => {
@@ -96,6 +107,33 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
         moduleId.replace(/\\/g, '/').includes('/src/core/i18n/pro/'),
       ),
     ).toEqual([])
+    expect(
+      Object.keys(chunk.modules).filter((moduleId) =>
+        moduleId.replace(/\\/g, '/').includes('/src/core/i18n/editor/'),
+      ),
+    ).toEqual([])
+    expect(
+      Object.keys(chunk.modules).filter((moduleId) =>
+        moduleId.replace(/\\/g, '/').endsWith('/state/projectSynchronousExitRecovery.ts'),
+      ),
+    ).toEqual([])
+    for (const module of [
+      'projectStorageTransport',
+      'projectStorageRead',
+      'projectJsonGraphDecode',
+      'projectIndexedRecovery',
+      'projectRecoveryGuards',
+      'projectRecoverySources',
+      'exitJournalDecode',
+      'synchronousExitJournalRead',
+      'exitJournalCodec',
+      'projectStorageCoordinator',
+    ])
+      expect(
+        Object.keys(chunk.modules).filter((moduleId) =>
+          moduleId.replace(/\\/g, '/').endsWith(`/state/${module}.ts`),
+        ),
+      ).toEqual([])
   }
   const initialBytes = initialChunks.reduce(
     (total, entry) => total + (entry?.type === 'chunk' ? Buffer.byteLength(entry.code) : 0),

@@ -1,0 +1,138 @@
+{
+  "sourceCommit": "f0dfed557a95ff8ebe2751a6c26673f5759d9e43",
+  "recordedAtUtc": "2026-11-18T19:07:05.6427752Z",
+  "scope": "issue026 only; independent prior gates remain dated separately",
+  "gates": [
+    {
+      "package": "pinta",
+      "command": "bun run typecheck",
+      "exitCode": 0,
+      "summary": "exit0",
+      "log": ".tmp/pinta-026-types.log",
+      "completedAtUtc": "2026-11-18T18:55:17.1166346Z",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "package": "pinta",
+      "command": "PYTHON=<pygame-ce> bun test src scripts",
+      "exitCode": 0,
+      "summary": "2076 pass;0 fail;24332 expect;0 skip",
+      "log": ".tmp/pinta-026-full.log",
+      "completedAtUtc": "2026-11-18T18:58:12.370286Z",
+      "sha256": "2877bbdcd8804b512b7ea3e1a4f83cd71752500f3cddba5c701ea67eb384bc36"
+    },
+    {
+      "package": "member-shell",
+      "command": "bun run typecheck",
+      "exitCode": 0,
+      "summary": "exit0",
+      "log": ".tmp/pinta-026-shell-types.log",
+      "completedAtUtc": "2026-11-18T18:35:14.909862Z",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "package": "member-shell",
+      "command": "bun test",
+      "exitCode": 0,
+      "summary": "2480 pass;0 fail;0 skip",
+      "log": ".tmp/pinta-026-shell-tests.log",
+      "completedAtUtc": "2026-11-18T18:37:21.9552353Z",
+      "sha256": "70c02a870623d689e6301f4873ae7475d1bcc70cd4430f3ad580aa9c3aaa71b3"
+    },
+    {
+      "package": "member-shell",
+      "command": "bun test tests/pinta-format-memory.test.ts tests/pinta-local-authority.test.ts",
+      "exitCode": 0,
+      "summary": "7 pass;0 fail;15 expect; isolated child has3 cases",
+      "log": ".tmp/pinta-026-host-final.log",
+      "completedAtUtc": "2026-11-18T18:41:57.1439064Z",
+      "sha256": "d7191dd6576e189a15ea5122e8fbe172ad2ed8c3cdd874c20a63d71d5a0199c6"
+    },
+    {
+      "package": "community-kids",
+      "command": "bun run typecheck",
+      "exitCode": 0,
+      "summary": "exit0",
+      "log": ".tmp/pinta-026-kids-types.log",
+      "completedAtUtc": "2026-11-18T18:39:46.9548555Z",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "package": "community-kids",
+      "command": "bun test",
+      "exitCode": 0,
+      "summary": "1698 pass;0 fail;0 skip",
+      "log": ".tmp/pinta-026-kids-tests.log",
+      "completedAtUtc": "2026-11-18T18:43:29.8576813Z",
+      "sha256": "983f0bf8f738f340d6f4c805fd8bacc46848bc705f2cdc750838cd8ede233015"
+    },
+    {
+      "package": "studio",
+      "command": "bun run typecheck",
+      "exitCode": 0,
+      "summary": "exit0",
+      "log": ".tmp/pinta-026-studio-types.log",
+      "completedAtUtc": "2026-11-18T18:50:21.4820879Z",
+      "sha256": "05553ca9dd2e46ef84cccb16131dea1a8b4bf09117e57615c59246ebef1a08e9"
+    },
+    {
+      "package": "studio",
+      "command": "bunx tsc --project .cache/tsconfig-pinta-authority.json --noEmit",
+      "exitCode": 0,
+      "summary": "exit0; final harness only; inherits studio compiler options",
+      "log": ".tmp/pinta-026-harness-types.log",
+      "completedAtUtc": "2026-11-18T19:04:00.1206174Z",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "package": "studio",
+      "command": "bunx playwright test --config playwright.pinta-authority.config.ts",
+      "exitCode": 0,
+      "summary": "5 passed;0 skipped",
+      "log": ".tmp/pinta-026-browser.log",
+      "completedAtUtc": "2026-11-18T19:04:13.4014727Z",
+      "sha256": "57eb18dc5ee45a47aaa1a027a72c620a0c8f09a59baa9937258dc207045ef811"
+    },
+    {
+      "package": "studio",
+      "command": "PINTA_E2E_PORT=5402 bunx playwright test --config playwright.pinta.config.ts",
+      "exitCode": 0,
+      "summary": "4 passed;0 skipped",
+      "log": ".tmp/pinta-026-vila-browser.log",
+      "completedAtUtc": "2026-11-18T18:53:36.8755898Z",
+      "sha256": "b23be84eeba20e29d96cae739add27d7f27f3cb6d5a3e2524e42b091b57e9d51"
+    },
+    {
+      "package": "root",
+      "command": "bun docs/pinta-cenarios/revisao-2026-11-18/qa/repro-local-only-026.ts",
+      "exitCode": 0,
+      "summary": "1 pass;0 fail;13 expect",
+      "log": ".tmp/pinta-026-real-baseline.log",
+      "completedAtUtc": "2026-11-18T18:38:03.6449705Z",
+      "sha256": "fcd9b118f3732dc69bc940ebaf1f17891b6849e4b35a9e813f2f4dc696114924"
+    },
+    {
+      "package": "root",
+      "command": "bunx biome check <33 changed source files>",
+      "exitCode": 0,
+      "summary": "33 files;0 warnings;0 errors",
+      "log": ".tmp/pinta-026-biome.log",
+      "completedAtUtc": "2026-11-18T19:05:20.2441009Z",
+      "sha256": "da7413125a32c18e73dea5ab5eaef661bbbb7fda260b7a5be4e64f2a3d3098e7"
+    },
+    {
+      "package": "studio",
+      "command": "bunx playwright test --config playwright.pinta-authority.config.ts --grep \"editor adota\" --repeat-each 10",
+      "exitCode": 0,
+      "summary": "10 passed;0 retries; state/center synchronization check",
+      "log": ".tmp/pinta-026-editor-repeat.log",
+      "completedAtUtc": "2026-11-18T19:03:32.2759344Z",
+      "sha256": "673217669e530f8eded09d48c3a7659b354422225413bde673eefb91d95f54e0"
+    }
+  ],
+  "notes": [
+    "Type-only harness config was generated under packages/studio/.cache, extending ../tsconfig.json with include ../e2e/pinta-authority.flow.ts and ../playwright.pinta-authority.config.ts and incremental:false.",
+    "No full Studio unit suite, backend/Core suite, Tiled/Godot or physical device run was repeated for this correction.",
+    "During verification the recovery notice was connected to the existing gallery toast. A continuation assertion initially hit a tool/cell synchronization race; it now waits for pressed state and uses cell center, with strict saved-data checks. Ten repetitions passed before the final five-case run."
+  ]
+}

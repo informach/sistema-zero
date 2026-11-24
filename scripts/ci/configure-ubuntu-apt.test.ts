@@ -14,6 +14,35 @@ test.each(['http', 'https'])('replaces the exact Azure %s archive in mirror list
   expect(useOfficialUbuntuArchive(expected)).toBe(expected)
 })
 
+test.each([
+  'http',
+  'https',
+])('replaces signed Ubuntu EC2 %s archive sources used by current runners', (scheme) => {
+  const before = [
+    `URIs: ${scheme}://us-east-2.ec2.archive.ubuntu.com/ubuntu/`,
+    'Suites: noble noble-updates noble-backports',
+    'Components: main restricted universe multiverse',
+    'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg',
+    '',
+  ].join('\n')
+  const expected = before.replace(
+    `${scheme}://us-east-2.ec2.archive.ubuntu.com`,
+    'https://archive.ubuntu.com',
+  )
+  expect(useOfficialUbuntuArchive(before)).toBe(expected)
+  expect(useOfficialUbuntuArchive(expected)).toBe(expected)
+})
+
+test('EC2 lookalikes, unrelated archives and comments remain unchanged', () => {
+  const before = [
+    'URIs: http://us-east-2.ec2.archive.ubuntu.com.evil.invalid/ubuntu/',
+    'URIs: http://us-east-2.ec2.archive.ubuntu.com/ubuntu-private',
+    'URIs: http://vendor.invalid/path/http://us-east-2.ec2.archive.ubuntu.com/ubuntu/',
+    '# http://us-east-2.ec2.archive.ubuntu.com/ubuntu/',
+  ].join('\n')
+  expect(useOfficialUbuntuArchive(before)).toBe(before)
+})
+
 test('preserves deb822 signatures, components, suites, multiple URIs and CRLF', () => {
   const before = [
     'Types: deb deb-src',
@@ -98,7 +127,9 @@ test('every Ubuntu job prepares signed sources before its first apt or Playwrigh
   const prepared: string[] = []
   for (const job of jobs) {
     if (!/^ {4}runs-on: ubuntu-(?:latest|\d+\.\d+)\r?$/m.test(job)) continue
-    const install = job.search(/apt-get|playwright install --with-deps/)
+    const install = job.search(
+      /apt-get|(?:playwright|playwright-core\/cli\.js) install --with-deps/,
+    )
     if (install === -1) continue
     const name = /^ {2}([a-z][a-z0-9-]*):/.exec(job)?.[1]
     if (!name) throw new Error('Ubuntu job name is required')
@@ -114,6 +145,7 @@ test('every Ubuntu job prepares signed sources before its first apt or Playwrigh
     'community-kids-e2e',
     'studio-e2e-chromium',
     'studio-e2e-firefox',
+    'molda-cenarios-e2e',
   ])
   expect(workflow).not.toContain('sudo sed -i')
   expect(workflow).toContain('sudo apt-get install -y --no-install-recommends ffmpeg')

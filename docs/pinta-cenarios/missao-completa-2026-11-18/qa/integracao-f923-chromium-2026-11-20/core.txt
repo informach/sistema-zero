@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+src\studio\classic-shell.test.ts:
+(pass) casca da prévia do Clássico > aceita só origens http(s) exatas, sem caminho nem credencial
+(pass) casca da prévia do Clássico > a página usa o mesmo sandbox da prévia direta e nunca allow-same-origin
+(pass) casca da prévia do Clássico > os cabeçalhos só restringem quem embute: um srcdoc herda a CSP da casca
+(pass) casca da prévia do Clássico > reconhece o aviso de pronta
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > liga com a chave e o endereço do runtime, sem barra dupla
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > sem a chave, sem runtime ou com endereço inseguro, não liga
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > o computador local pode usar http
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > o "carregou" devolve o número do documento, e o de um documento trocado não sai
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > sem número no pedido (editor antigo), o aviso sai como antes
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > lê o número do aviso só quando é inteiro
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > com a casca em foco, o jogo novo herda o foco ao carregar (as setas chegam depois de Rodar)
+(pass) classicShellUrlFromEnv: a casca só liga com a chave e um runtime válido > sem foco na casca (a criança no editor), o jogo novo não rouba o foco
+
+ 12 pass
+ 0 fail
+ 29 expect() calls
+Ran 12 tests across 1 file. [39.00ms]

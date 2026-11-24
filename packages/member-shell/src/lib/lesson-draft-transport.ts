@@ -20,6 +20,7 @@
  * baixaria a versão da conta de novo para falhar do mesmo jeito.
  */
 
+import { PINTA_MAX_READ_FORMAT_VERSION } from '@sistemazero/core/creations'
 import {
   type CloudItemState,
   type CloudPeek,
@@ -174,6 +175,7 @@ export function createLessonDraftCloud(options: {
   const nuvem = (ferramenta: Ferramenta) =>
     createCreationsCloud({
       tool: ferramenta === 'studio' ? 'lesson-studio' : 'lesson-pinta',
+      ...(ferramenta === 'pinta' ? { maxFormatVersion: PINTA_MAX_READ_FORMAT_VERSION } : {}),
       viewerId: options.viewerId,
       idleMs: IDLE_MS[ferramenta],
       ...(options.fetch ? { fetch: options.fetch } : {}),

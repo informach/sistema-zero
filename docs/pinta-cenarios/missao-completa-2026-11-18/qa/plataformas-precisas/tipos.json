@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-11-19T10:33:28.390Z",
+  "sourceFingerprint": "58246b8ab1306c8f09c6c2b35b5d6bdcf7a5b4808ec6ac2510cac8bf7564f471",
+  "gates": [
+    {
+      "package": "core",
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "exitCode": 0,
+      "elapsedMs": 8602,
+      "log": ".cache/pinta-platform-core-types-final.log"
+    },
+    {
+      "package": "pinta",
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "exitCode": 0,
+      "elapsedMs": 14990,
+      "log": ".cache/pinta-platform-pinta-types-final.log"
+    },
+    {
+      "package": "studio",
+      "command": "node node_modules/typescript/bin/tsc --noEmit --pretty false",
+      "exitCode": 0,
+      "elapsedMs": 255858,
+      "log": ".cache/pinta-platform-studio-types-final.log"
+    }
+  ],
+  "completedAt": "2026-11-19T10:38:10.130Z"
+}

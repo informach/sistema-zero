@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\user-data-purge.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+(pass) Purga de dados do usuário no Postgres real > remove dados de todas as tabelas pessoais, inclusive as adicionadas recentemente [1859.00ms]
+(pass) Purga de dados do usuário no Postgres real > espera reservas em voo no mesmo lock antes de instalar a cerca e apagar o índice [360.00ms]
+(pass) Purga de dados do usuário no Postgres real > finalize sem a cerca de exclusão recusa sem apagar; com a cerca, purga o que chegou depois [437.00ms]
+(pass) Purga de dados do usuário no Postgres real > Molda Cenários: leva o espaço da conta inteiro e agenda os arquivos; o da equipe fica [672.00ms]
+
+ 4 pass
+ 0 fail
+ 42 expect() calls
+Ran 4 tests across 1 file. [10.01s]

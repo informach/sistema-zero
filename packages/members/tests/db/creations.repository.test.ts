@@ -112,6 +112,36 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       account_id uuid primary key,
       created_at timestamptz not null
     )`)
+    await conn.sql.unsafe('drop table if exists members.creation_inventory_floors')
+    await conn.sql.unsafe('drop table if exists members.pinta_causal_units')
+    await conn.sql.unsafe('drop function if exists members.pinta_graph_individual_write()')
+    await conn.sql.unsafe('drop function if exists members.pinta_palette_write_fence()')
+    await conn.sql.unsafe('drop function if exists members.pinta_palette_generation_fence()')
+    // 0174/0175 criam tabelas e funções sem `if not exists`; o banco de tests/db é compartilhado.
+    await conn.sql.unsafe('drop table if exists members.studio_sealed_heads')
+    await conn.sql.unsafe('drop table if exists members.studio_sealed_objects')
+    await conn.sql.unsafe('drop function if exists members.studio_sealed_creation_fence()')
+    await conn.sql.unsafe('drop function if exists members.studio_sealed_head_fence()')
+    for (const name of [
+      '0166_pinta_inventory_floor',
+      '0167_backfill_pinta_inventory_floor',
+      '0168_pinta_causal_units',
+      '0170_pinta_causal_writer_fence',
+      '0171_pinta_palette_write_authority',
+      '0172_pinta_palette_write_fence',
+      '0173_studio_sealed_readers',
+      '0174_studio_sealed_writer',
+      '0175_studio_sealed_writer_fence',
+    ]) {
+      const migration = await Bun.file(
+        new URL(
+          `../../src/infrastructure/persistence/drizzle/migrations/${name}.sql`,
+          import.meta.url,
+        ),
+      ).text()
+      for (const statement of migration.split('--> statement-breakpoint'))
+        if (statement.trim()) await conn.sql.unsafe(statement)
+    }
     repo = new DrizzleCreationsRepository(conn.db)
   })
 
@@ -135,6 +165,221 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     limits: LIMITS,
   }
 
+  test('backfill escolhe o maior formato histórico confirmado ou pendente e preserva o piso existente', async () => {
+    const userId = randomUUID(),
+      accountId = randomUUID()
+    const insert = async (
+      item: string,
+      format: number,
+      kind: string,
+      pendingVersion: number,
+      pendingKind: string,
+    ) => {
+      await conn.sql`insert into members.creations(id,user_id,account_id,audience,tool,item_id,name,kind,item_updated_at,revision,format_version,pending_revision,last_reserved_revision,pending_format_version,pending_kind,pending_bytes,pending_name,pending_item_updated_at,created_at,synced_at,deleted_at)
+        values(${randomUUID()},${userId},${accountId},'kids','pinta',${item},'test',${kind},now(),1,${format},2,2,${pendingVersion},${pendingKind},10,'pending',now(),now(),now(),now())`
+    }
+    await insert('a', 8, 'tilemap', 1, 'sprite')
+    await insert('b', 1, 'sprite', 99, 'map-set')
+    await insert('c', 200, 'sprite', 251, 'sprite')
+    const sql = await Bun.file(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0167_backfill_pinta_inventory_floor.sql',
+        import.meta.url,
+      ),
+    ).text()
+    await conn.sql.unsafe(sql)
+    const get = async () =>
+      (
+        await conn.sql`select required_version from members.creation_inventory_floors where user_id=${userId}`
+      )[0]!.required_version
+    expect(await get()).toBe(99)
+    await conn.sql`delete from members.creations where user_id=${userId} and item_id='b'`
+    await conn.sql.unsafe(sql)
+    expect(await get()).toBe(99)
+  })
+  test.each([
+    7, 99,
+  ])('a reserva de um mapa %i protege os outros IDs, inclusive tickets que já fizeram PUT', async (version) => {
+    const userId = randomUUID(),
+      accountId = randomUUID()
+    const input = {
+      ...base,
+      userId,
+      accountId,
+      tool: 'pinta' as const,
+      itemId: 'sheet',
+      kind: 'tileset',
+      formatVersion: 6,
+    }
+    const ticket = await repo.reserveUpload(input)
+    if (!ticket.ok) throw Error('Reserva inicial recusada')
+    const commit = { ...input, revision: ticket.revision, storageRef: 'original' }
+    expect(await repo.commit(commit)).toMatchObject({ ok: true, alreadyCommitted: false })
+    const pending = await repo.reserveUpload({
+      ...input,
+      baseRevision: 1,
+      ...(version === 99 ? { maxReadFormatVersion: 7 } : {}),
+    })
+    if (!pending.ok) throw Error('Reserva da folha recusada')
+    expect(
+      await repo.reserveUpload({
+        ...input,
+        itemId: 'map',
+        kind: 'tilemap',
+        formatVersion: version,
+        baseRevision: 3,
+      }),
+    ).toMatchObject({ reason: 'stale-base' })
+    expect(
+      await repo.reserveUpload({ ...input, itemId: 'brush', kind: 'sprite', formatVersion: 1 }),
+    ).toMatchObject({ ok: true })
+    // No upload or commit of the map. A restarted repository must already see its barrier.
+    const map = await repo.reserveUpload({
+      ...input,
+      itemId: 'map',
+      kind: 'tilemap',
+      formatVersion: version,
+      baseRevision: 0,
+    })
+    expect(map).toMatchObject({ ok: true, revision: 1 })
+    const reopened = new DrizzleCreationsRepository(conn.db)
+    const denied = { ok: false, reason: 'client-outdated', requiredVersion: version } as const
+    expect(
+      await reopened.reserveUpload({
+        ...input,
+        itemId: 'brush',
+        kind: 'sprite',
+        formatVersion: 1,
+        ...(version === 99 ? { maxReadFormatVersion: 7 } : {}),
+      }),
+    ).toEqual(denied)
+    expect(
+      await reopened.commit({ ...commit, revision: pending.revision, storageRef: 'orphan' }),
+    ).toEqual(denied)
+    expect(await reopened.commit(commit)).toMatchObject({ ok: true, alreadyCommitted: true })
+    expect(await reopened.get(userId, 'pinta', 'sheet')).toMatchObject({
+      storageRef: 'original',
+      revision: 1,
+      pending: null,
+    })
+    expect(
+      await reopened.softDelete(userId, 'pinta', 'sheet', 1, now, version === 99 ? 7 : 6),
+    ).toEqual(denied)
+    if (version === 7) {
+      expect(
+        await reopened.reserveUpload({
+          ...input,
+          itemId: 'brush',
+          kind: 'sprite',
+          formatVersion: 1,
+          maxReadFormatVersion: 7,
+        }),
+      ).toMatchObject({ ok: true })
+    }
+    expect(await reopened.softDelete(userId, 'pinta', 'map', 0, now, version)).toMatchObject({
+      ok: true,
+    })
+    await reopened.compactTombstones(new Date(now.getTime() + 1000), 50)
+    expect(
+      await reopened.reserveUpload({
+        ...input,
+        itemId: 'new-sprite',
+        kind: 'sprite',
+        formatVersion: 1,
+      }),
+    ).toEqual(denied)
+    for (const [target, patch] of [
+      [new DrizzleCreationsRepository(conn.db, 'adult'), {}],
+      [repo, { userId: randomUUID() }],
+      [repo, { userId: randomUUID(), accountId: randomUUID() }],
+      [repo, { tool: 'studio' as const, formatVersion: 2 }],
+    ] as const) {
+      expect(await target.reserveUpload({ ...input, itemId: 'separate', ...patch })).toMatchObject({
+        ok: true,
+      })
+    }
+  })
+
+  test('reserva substituída por serviço antigo não herda a capacidade da revisão anterior', async () => {
+    const userId = randomUUID(),
+      accountId = randomUUID()
+    const input = {
+      ...base,
+      userId,
+      accountId,
+      tool: 'pinta' as const,
+      itemId: 'sprite',
+      kind: 'sprite',
+      formatVersion: 1,
+    }
+    const modern = await repo.reserveUpload({ ...input, maxReadFormatVersion: 7 })
+    expect(modern).toMatchObject({ ok: true, revision: 1 })
+    expect(
+      await repo.reserveUpload({ ...input, itemId: 'world', kind: 'tilemap', formatVersion: 7 }),
+    ).toMatchObject({ inventoryFloor: 7 })
+    // An older repository only knew the pre-migration pending columns.
+    await conn.sql`update members.creations set pending_revision=2,last_reserved_revision=2 where user_id=${userId} and item_id='sprite'`
+    expect(await repo.commit({ ...input, revision: 2, storageRef: 'old-ticket' })).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: 7,
+    })
+    expect(await repo.get(userId, 'pinta', 'sprite')).toMatchObject({
+      revision: 0,
+      storageRef: null,
+      pending: null,
+    })
+  })
+  test('commits racing a reservation cannot publish a stale dependency after the floor has been established', async () => {
+    const userId = randomUUID(),
+      accountId = randomUUID()
+    const input = {
+      ...base,
+      userId,
+      accountId,
+      tool: 'pinta' as const,
+      itemId: 'art',
+      kind: 'sprite',
+      formatVersion: 1,
+    }
+    const reserved = await repo.reserveUpload(input)
+    if (!reserved.ok) throw Error('Reserva inicial recusada')
+    // Hold the actual repository lock to queue the two independent transactions in this order.
+    let release!: () => void, locked!: () => void
+    const gate = new Promise<void>((r) => {
+        release = r
+      }),
+      ready = new Promise<void>((r) => {
+        locked = r
+      })
+    const held = conn.sql.begin(async (tx) => {
+      await tx`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${userId}`},0))`
+      locked()
+      await gate
+    })
+    await ready
+    async function waitForQueue(n: number) {
+      for (let i = 0; i < 200; i++) {
+        const [row] =
+          await conn.sql`select count(*)::int as n from pg_locks waiter join pg_locks holder using(locktype,database,classid,objid,objsubid) where waiter.locktype='advisory' and not waiter.granted and holder.granted and holder.objid=(hashtextextended(${`creation-quota:${userId}`},0) & 4294967295)::oid`
+        if (row!.n >= n) return
+        await Bun.sleep(5)
+      }
+      throw Error('Transações não alcançaram o lock')
+    }
+    let blocked: Promise<unknown> | undefined, map: Promise<unknown> | undefined
+    try {
+      map = repo.reserveUpload({ ...input, itemId: 'map', kind: 'tilemap', formatVersion: 7 })
+      await waitForQueue(1)
+      blocked = repo.commit({ ...input, revision: reserved.revision, storageRef: 'uncommitted' })
+      await waitForQueue(2)
+    } finally {
+      release()
+      await held
+    }
+    expect(await map).toMatchObject({ ok: true })
+    expect(await blocked).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 7 })
+  })
   test('cerca de exclusão recusa reserva mesmo com credencial antiga', async () => {
     const fencedAccount = randomUUID()
     await conn.sql`
@@ -269,7 +514,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     })
   })
 
-  test('delete confere capacidade contra formato confirmado e pendente sob lock', async () => {
+  test.each([
+    2, 6,
+  ])('delete confere capacidade contra formato %s confirmado e pendente sob lock', async (formatVersion) => {
     const input = {
       ...base,
       tool: 'pinta' as const,
@@ -280,28 +527,44 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     const first = await repo.reserveUpload(input)
     if (!first.ok) throw new Error('Expected initial reservation')
     await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
-    const next = await repo.reserveUpload({ ...input, formatVersion: 2 })
+    const next = await repo.reserveUpload({ ...input, formatVersion })
     if (!next.ok) throw new Error('Expected future reservation')
     const before = await repo.get(input.userId, input.tool, input.itemId)
-    for (const cap of [undefined, 1]) {
+    for (const cap of formatVersion === 6 ? [undefined, 1, 4, 5] : [undefined, 1]) {
       expect(
         await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, cap),
-      ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+      ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: formatVersion })
       expect(await repo.get(input.userId, input.tool, input.itemId)).toEqual(before)
     }
     await repo.commit({ ...input, revision: next.revision, storageRef: 'future' })
     expect(
       await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now),
-    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: formatVersion })
     expect(
-      await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, 2),
+      await repo.softDelete(
+        input.userId,
+        input.tool,
+        input.itemId,
+        first.revision,
+        now,
+        formatVersion,
+      ),
     ).toMatchObject({ ok: false, reason: 'stale-base' })
     expect(
-      await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now, 2),
+      await repo.softDelete(
+        input.userId,
+        input.tool,
+        input.itemId,
+        next.revision,
+        now,
+        formatVersion,
+      ),
     ).toMatchObject({ ok: true, deleted: true, storageRef: 'future' })
   })
 
-  test('delete espera uma atualização concorrente e reavalia a versão, sem preflight externo', async () => {
+  test.each([
+    2, 6,
+  ])('delete reavalia formato %s após atualização concorrente sob lock', async (formatVersion) => {
     const input = {
       ...base,
       tool: 'pinta' as const,
@@ -321,17 +584,28 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       release = resolve
     })
     const promoted = conn.sql.begin(async (sql) => {
-      await sql`update members.creations set format_version = 2 where user_id = ${input.userId} and item_id = ${input.itemId}`
+      await sql`update members.creations set format_version = ${formatVersion} where user_id = ${input.userId} and item_id = ${input.itemId}`
       locked()
       await barrier
     })
     await ready
-    const deleting = repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now)
+    const deleting = repo.softDelete(
+      input.userId,
+      input.tool,
+      input.itemId,
+      first.revision,
+      now,
+      formatVersion === 6 ? 4 : undefined,
+    )
     release()
     await promoted
-    expect(await deleting).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    expect(await deleting).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: formatVersion,
+    })
     expect(await repo.get(input.userId, input.tool, input.itemId)).toMatchObject({
-      formatVersion: 2,
+      formatVersion,
       storageRef: 'original',
       deletedAt: null,
     })
@@ -409,6 +683,48 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     expect(record?.storageRef).toBe('new')
     expect(record?.formatVersion).toBe(2)
     expect(record?.pending).toBeNull()
+  })
+
+  // A página que vai embora no meio da subida (lote 1, item 9, 22/11/2026): a reserva fica
+  // pendurada, sem commit. A página seguinte reserva com a MESMA base (a marca não avançou): a base
+  // é conferida com a revisão confirmada, então passa, e a reserva nova troca a pendurada.
+  test('a reserva pendurada de uma página que morreu é trocada pela próxima com a mesma base', async () => {
+    const dono = { ...base, userId: randomUUID(), accountId: randomUUID(), itemId: 'jogo-que-caiu' }
+    expect(await repo.reserveUpload(dono)).toEqual({ ok: true, revision: 1, missingParts: [] })
+    expect((await repo.commit({ ...dono, revision: 1, storageRef: 'caiu/1' })).ok).toBe(true)
+
+    // Página 1: reserva com a base 1 e morre antes do commit.
+    expect(await repo.reserveUpload({ ...dono, bytes: 120, baseRevision: 1 })).toEqual({
+      ok: true,
+      revision: 2,
+      missingParts: [],
+    })
+    // Página 2: a mesma base passa e a reserva ganha número (e chave no armazenamento) novos.
+    expect(await repo.reserveUpload({ ...dono, bytes: 130, baseRevision: 1 })).toEqual({
+      ok: true,
+      revision: 3,
+      missingParts: [],
+    })
+    // Um PUT velho da página 1 que chegasse tarde não confirma por cima da reserva nova.
+    expect(await repo.commit({ ...dono, revision: 2, storageRef: 'caiu/2' })).toEqual({
+      ok: false,
+    })
+    expect(await repo.commit({ ...dono, revision: 3, storageRef: 'caiu/3' })).toEqual({
+      ok: true,
+      alreadyCommitted: false,
+      previousStorageRef: 'caiu/1',
+      releasedPartRefs: [],
+    })
+    const [listado] = await repo.list(dono.userId, 'studio')
+    expect(listado?.revision).toBe(3)
+    expect(listado?.bytes).toBe(130)
+    // A próxima edição já parte da revisão 3.
+    expect((await repo.reserveUpload({ ...dono, baseRevision: 3 })).ok).toBe(true)
+    expect(await repo.reserveUpload({ ...dono, baseRevision: 1 })).toEqual({
+      ok: false,
+      reason: 'stale-base',
+      currentRevision: 3,
+    })
   })
 
   test('reserva → commit promove os pendentes; commit errado recusado; lixeira; contador nunca volta; idempotência', async () => {

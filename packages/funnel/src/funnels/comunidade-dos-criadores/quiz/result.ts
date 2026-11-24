@@ -326,7 +326,7 @@ function cartaM9(answers: QuizAnswers, d: DecisionM9): ResultadoConversa {
     answers.m9_cena === 'irmao' ? IRMAO_M9 : '',
   )
   const semCondicao = d.unmet.length > 0
-  const destino = comunidadeOfferPath('criar-junto')
+  const destino = comunidadeOfferPath('9a17')
   const blocos: BlocoConversa[] = [
     { tipo: 'p', texto: f(primeiro) },
     { tipo: 'h', texto: f(copy.whyTitle) },

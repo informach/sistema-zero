@@ -1,0 +1,26 @@
+{
+  "resultados": [
+    {
+      "ritmo": "referencia",
+      "correr": false,
+      "metros": 12.9,
+      "segundos": 12.5,
+      "medidas": "Altura do avatar\n1,16 m · escala 1\nAndar / correr\n0,92 / 2,21 m/s\nPonte do Bosque\n232,23 × 5 m\nPosição\n0, 4,64, 137,77 m\nQuadros\n53 / s\nSetores com física\n24\nChamadas de desenho\n96\nTriângulos\n145.237\nGeometrias\n114\nTexturas\n38"
+    },
+    {
+      "ritmo": "explorar",
+      "correr": false,
+      "metros": 12.7,
+      "segundos": 7.8,
+      "medidas": "Altura do avatar\n1,16 m · escala 1\nAndar / correr\n1,5 / 3,4 m/s\nPonte do Bosque\n232,23 × 5 m\nPosição\n-0, 4,66, 137,38 m\nQuadros\n54 / s\nSetores com física\n24\nChamadas de desenho\n96\nTriângulos\n145.237\nGeometrias\n114\nTexturas\n37"
+    },
+    {
+      "ritmo": "explorar",
+      "correr": true,
+      "metros": 12.7,
+      "segundos": 3.5,
+      "medidas": "Altura do avatar\n1,16 m · escala 1\nAndar / correr\n1,5 / 3,4 m/s\nPonte do Bosque\n232,23 × 5 m\nPosição\n-0, 4,58, 138,85 m\nQuadros\n60 / s\nSetores com física\n24\nChamadas de desenho\n98\nTriângulos\n145.309\nGeometrias\n115\nTexturas\n37"
+    }
+  ],
+  "erros": []
+}

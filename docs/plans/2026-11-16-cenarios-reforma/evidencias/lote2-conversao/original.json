@@ -1,0 +1,44 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "instanciasOriginais": 523,
+    "pecas": 54,
+    "relevo": true,
+    "alturaDoPainel": 3.9994811932555123,
+    "reaberto": {
+      "base": "terreno",
+      "deslocamento": 1.001,
+      "revisao": 3
+    },
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "instanciasOriginais": 523,
+    "pecas": 54,
+    "relevo": true,
+    "alturaDoPainel": 3.9994811932555123,
+    "reaberto": {
+      "base": "terreno",
+      "deslocamento": 1.001,
+      "revisao": 3
+    },
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "instanciasOriginais": 523,
+    "pecas": 54,
+    "relevo": true,
+    "alturaDoPainel": 3.9994811932555123,
+    "reaberto": {
+      "base": "terreno",
+      "deslocamento": 1.001,
+      "revisao": 3
+    },
+    "erros": []
+  }
+]

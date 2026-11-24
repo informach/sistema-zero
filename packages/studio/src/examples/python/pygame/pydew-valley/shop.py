@@ -1,9 +1,11 @@
+# 📦 Bibliotecas
 import pygame
 import pinta
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, SALE_PRICES, PURCHASE_PRICES, ITEM_NAMES
 from timer import Timer
 
 
+# 🧩 Meus moldes
 class Shop:
     """The trader's shop: arrows choose a line, Space sells or buys, Esc closes."""
 

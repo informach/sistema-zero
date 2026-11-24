@@ -9,6 +9,7 @@ import type { PintaSessionState, PintaSessionStore } from '../../state/sessionSt
 
 export interface PintaEditorContextValue {
   editor: PintaEditorStore
+  workshopEditor?: PintaEditorStore<import('../../core/assetMemory').PintaMemoryAsset>
   session: PintaSessionStore
   /**
    * Curadoria da caixa de ferramentas vinda do HOST (o bloco de aula). Ausente ou vazia = nada
@@ -39,5 +40,5 @@ export function useSession<T>(selector: (state: PintaSessionState) => T): T {
 
 /** A lista curada do host, ou `undefined` quando ninguém curou. */
 export function useToolCuration(): readonly string[] | undefined {
-  return useEditorStores().allowTools
+  return useContext(PintaEditorContext)?.allowTools
 }

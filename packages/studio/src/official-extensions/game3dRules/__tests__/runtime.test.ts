@@ -40,6 +40,7 @@ interface Rules {
   onClickObject(obj: Obj, fn: () => void): void
   onCanvasClick(fn: () => void): void
   onTouchGroup(obj: Obj, group: Obj[], fn: (item: Obj) => void): void
+  onEnterRegion(obj: Obj | null, name: string, fn: () => void): void
   setScreenText(kind: string, title: string, text: string, button: string): void
   endGame(result: string): void
   restart(): void
@@ -53,9 +54,16 @@ interface Rules {
   dispose(): void
 }
 
+// A região vem do motor (`sceneRegion`, definida no fragmento do cenário de cada um): aqui, a do
+// teste que estiver rodando.
+let regionOf: (obj: Obj | null, at: string | null, name: string) => string | null | undefined =
+  () => undefined
 const createSzGameRules = new Function(
+  'sceneRegion',
   `${gameRules3DRuntimeSource}\nreturn createSzGameRules;`,
-)() as (host: Record<string, unknown>) => Rules
+)((obj: Obj | null, at: string | null, name: string) => regionOf(obj, at, name)) as (
+  host: Record<string, unknown>,
+) => Rules
 
 function setup(options: { random?: number[] } = {}) {
   const state = {
@@ -65,6 +73,9 @@ function setup(options: { random?: number[] } = {}) {
     clickWired: 0,
     deferred: [] as (() => void)[],
     touching: new Set<Obj>(),
+    // A região de cada objeto (undefined = o cenário ainda não chegou) e as conhecidas.
+    region: new Map<Obj | null, string | null | undefined>(),
+    asked: [] as string[],
   }
   const randoms = [...(options.random ?? [])]
   let rules: Rules
@@ -96,6 +107,10 @@ function setup(options: { random?: number[] } = {}) {
       for (const other of group) if (state.touching.has(other)) out.push(other)
       return out
     },
+  }
+  regionOf = (obj, _at, name) => {
+    state.asked.push(name)
+    return state.region.get(obj)
   }
   rules = createSzGameRules(host)
   const flush = () => {
@@ -455,6 +470,65 @@ describe('regras de jogo 3D — o fragmento compartilhado', () => {
     state.touching.add(inimigo)
     rules.step(0.016)
     expect(vezes).toBe(2)
+  })
+
+  it('entrar na região dispara uma vez por entrada, inclusive começando dentro', () => {
+    const { rules, state } = setup()
+    const heroi: Obj = {}
+    let vila = 0
+    rules.onEnterRegion(heroi, 'Vila', () => vila++)
+    // O cenário ainda não chegou: nada.
+    rules.step(0.016)
+    expect(vila).toBe(0)
+    state.region.set(heroi, 'Vila')
+    rules.step(0.016)
+    rules.step(0.016)
+    expect(vila).toBe(1)
+    // Sair para fora de todas e voltar conta de novo; ir para outra região, não.
+    state.region.set(heroi, null)
+    rules.step(0.016)
+    state.region.set(heroi, 'Vila')
+    rules.step(0.016)
+    state.region.set(heroi, 'Floresta')
+    rules.step(0.016)
+    expect(vila).toBe(2)
+  })
+
+  it('entrar na região não dispara pausado, e some no recomeçar', () => {
+    const { rules, state } = setup()
+    const heroi: Obj = {}
+    let vezes = 0
+    rules.onEnterRegion(heroi, 'Vila', () => vezes++)
+    rules.endGame('perdeu')
+    state.region.set(heroi, 'Vila')
+    rules.step(0.016)
+    expect(vezes).toBe(0)
+    rules.reset()
+    rules.step(0.016)
+    expect(vezes).toBe(0)
+  })
+
+  it('o recomeço leve (que guarda os "Quando…") faz a entrada na região contar de novo', () => {
+    const { rules, state } = setup()
+    let vezes = 0
+    rules.onEnterRegion(null, 'Vila', () => vezes++)
+    state.region.set(null, 'Vila')
+    rules.step(0.016)
+    ;(rules.reset as (keep?: boolean) => void)(true)
+    rules.step(0.016)
+    expect(vezes).toBe(2)
+  })
+
+  it('o jogador implícito (o Mundo 3D), e o nome pedido vai ao motor (que avisa o desconhecido)', () => {
+    const { rules, state } = setup()
+    let entradas = 0
+    rules.onEnterRegion(null, 'Floresta', () => entradas++)
+    rules.onEnterRegion(null, 'Caverna', () => {})
+    state.region.set(null, 'Floresta')
+    rules.step(0.016)
+    rules.step(0.016)
+    expect(entradas).toBe(1)
+    expect(new Set(state.asked)).toEqual(new Set(['Floresta', 'Caverna']))
   })
 
   it('clique acerta o objeto (ou uma peça dele) e liga o clique uma vez no host', () => {

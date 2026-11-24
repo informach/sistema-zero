@@ -1,0 +1,164 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T06:04:56.232Z",
+    "duration": 40251.183000000005,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "Pinta world 1x renders and crosses doors in real browser Python",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2759,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pinta world 2x renders and crosses doors in real browser Python",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2401,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce keeps a playable frame rate with a full tile map, alpha sprites and text",
+      "status": "unexpected",
+      "results": [
+        {
+          "status": "failed",
+          "duration": 11623,
+          "errors": [
+            {
+              "location": {
+                "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\e2e-runtime\\python-pygame-performance.spec.ts",
+                "column": 19,
+                "line": 34
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m45\u001b[39m\nReceived:    \u001b[31m44.660000000000004\u001b[39m\n\n  32 |   const average = steady.reduce((total, value) => total + value, 0) / steady.length\n  33 |   console.log(`pygame-ce no navegador: ${average.toFixed(1)} fps (${steady.join(', ')})`)\n> 34 |   expect(average).toBeGreaterThanOrEqual(45)\n     |                   ^\n  35 |   await page.evaluate(() => globalThis.providerProbe.dispose('game'))\n  36 | })\n  37 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\e2e-runtime\\python-pygame-performance.spec.ts:34:19"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce update(None) keeps the displayed pixels until a real refresh",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1905,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pong runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1751,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game space-shooter runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1922,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game platformer runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1805,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game monster-battle runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1916,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pirate-maker runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1976,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game vampire-survivor runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2449,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game pydew-valley runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1991,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game python-monsters runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2543,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "title": "Pygame-ce gallery game super-pirate-world runs with assets and input",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 1831,
+          "errors": []
+        }
+      ]
+    }
+  ]
+}

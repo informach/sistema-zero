@@ -1,0 +1,211 @@
+[
+  {
+    "arquivo": "modelos/modelo-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "colisoes/objeto-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "modelos/modelo-1.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 2,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_1"
+      },
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/4/primitives/0/attributes/TEXCOORD_1"
+      }
+    ]
+  },
+  {
+    "arquivo": "colisoes/objeto-1.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "colisoes/chao-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "terreno/terreno-2.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "caminhos/caminho-3.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "caminhos/caminho-4.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "colisoes/caminho-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-5.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "aguas/agua-6.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "aguas/agua-7.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "aguas/agua-8.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "UNUSED_OBJECT",
+        "message": "This object may be unused.",
+        "severity": 2,
+        "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+      }
+    ]
+  },
+  {
+    "arquivo": "aguas/agua-9.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-10.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-11.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-12.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-13.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 1,
+    "mensagens": [
+      {
+        "code": "IMAGE_NPOT_DIMENSIONS",
+        "message": "Image has non-power-of-two dimensions: 68x58.",
+        "severity": 2,
+        "pointer": "/images/0"
+      }
+    ]
+  },
+  {
+    "arquivo": "aguas/agua-14.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "aguas/agua-15.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  },
+  {
+    "arquivo": "colisoes/agua-0.glb",
+    "erros": 0,
+    "avisos": 0,
+    "informacoes": 0,
+    "mensagens": []
+  }
+]

@@ -1,5 +1,36 @@
 # CLAUDE.md — @sistemazero/members
 
+## Molda Cenários: versões de cada ilha e "Voltar para esta versão" (21/11/2026)
+
+- `GET /members/cenarios/publicacoes/perfis/:ilha/versoes` (JWT) → `VersoesPublicadas` do core:
+  até `LIMITE_DE_VERSOES_LISTADAS` (20) versões, da mais nova à mais antiga, `atual` lido do
+  apontador na MESMA consulta (`listarVersoes`). Autor = só o `autorId`.
+- `POST /members/internal/cenarios/publicacoes/voltar` (HMAC do `member-shell`, `{ator, pedido}`,
+  `PedidoDeVoltaSchema`: `operacaoId`, `perfil`, `versaoEsperada`, `publicacaoId`): copia manifesto,
+  fonte e arquivos da versão escolhida numa versão NOVA (`versaoEsperada + 1`). Mesma autorização
+  (`exigirEquipe`), mesmo CAS e mesmas travas da publicação (espaço, depois perfil); repetição por
+  `operacaoId` precede o CAS (digest próprio, `digestDoPedidoDeVolta`). Arquivo sem confirmação ou
+  com lápide em `cenario_blobs_saindo` → 409 `PUBLICACAO_CENARIO_SEM_ARQUIVOS`. Sem migration.
+- ⚠️ Não existe poda de versões: TODAS guardam referências aos blobs (o jogo só LÊ a atual e a anterior).
+- Testes: `tests/unit|integration|db/cenarios-publicacoes.test.ts` (o de banco com `CENARIOS_TEST_DATABASE_URL`).
+
+## Meus testes no Pro do Estúdio Completo (20/11/2026)
+
+`POST /members/studio/student-tests?audience=` (`StudioStudentTestsService`,
+`application/studio/studio-student-tests.service.ts`): os testes que a criança escreve na aba
+"Meus testes" do Pro em JavaScript, `{project, tests}`. Confere o acesso ao Pro do Estúdio Completo
+(`FreeStudioAccessService.execute(actor, 'existing-pro', 'javascript')`), o projeto Pro com modelo
+conhecido, cada teste pela régua do Pro (`isRunnableStudentTestRule(rule, 'javascript', 'pro')`:
+texto, mensagens, estado do kit ou função exportada de `src`) e roda no MESMO
+`ProjectExecutionChecker` do "Verificar projeto" (`requester` = o perfil). UM lote por pedido
+(`studentTestServerBatches` do core: até 8 testes e 40 s de espera); mais que isso é 400 (o
+Estúdio manda em sequência). O projeto que NÃO COMPILA não é recusa: o executor responde 200 com
+nada passando ("O projeto não compilou: …"), e o Estúdio mostra "o jogo deu erro durante o teste",
+a frase do JavaScript clássico e do Python (22/11/2026). A recusa de verdade (projeto grande
+demais, forma que o executor não aceita) volta como 400 com o motivo; fora do ar e ocupado seguem
+424/429. Nada é guardado. Corpo até o teto do Estúdio
+(`bodyLimitForPath`). Teste: `tests/unit/studio-student-tests.service.test.ts`.
+
 ## Identidade pública e certificado (full review da Aula 7, 19/11/2026)
 
 O emissor recebe `profileSession` obrigatório da fronteira autenticada: `kids-context=student`,
@@ -15,6 +46,81 @@ A composição real precisa passar `publicIdentities` ao `LiveService`.
 Regressões: `live-public-identities`, `live-contract-1410`, `certificate` e `public-author-identities`.
 
 
+## Recursos de relevo do Molda Cenários (17/11/2026, migration `0157`)
+
+- `POST /members/cenarios/cenarios/:id/recursos/reservar`: reserva até 50 peças por chamada no espaço autorizado do cenário. Papel `terreno`, MIME `application/octet-stream`, 8.474 bytes, mesma cota e PUT imutável dos modelos.
+- O BFF confere SHA-256 e cabeçalho SZHT e chama `POST /members/internal/cenarios/lotes` por HMAC de `member-shell`. Ator, cenário, espaço, lote e provas são conferidos; uma chamada JWT comum não confirma arquivos.
+- `gravarLote` confirma recursos e grava a edição na mesma transação, depois do CAS/idempotência, sob a trava do espaço. A base precisa referir todas as peças confirmadas, com mínimo/máximo iguais ao cabeçalho. Falhas fazem rollback.
+- Histórico, fotografias e cópias protegem os hashes de terreno. Apagar mundo/cenário devolve `{apagar: chaves[]}` só dos arquivos sem referências, para a limpeza do BFF. Outra conta nunca divide o mesmo objeto de armazenamento.
+- `ehImagemDeCenario` enumera os papéis de imagem explicitamente; um terreno não pode servir de capa. O núcleo e os testes de fronteira continuam sem Three/React/IO.
+
+## Molda Cenários: abertura pronta, faixas e mundos por criança (20/11/2026, lote 10)
+
+- **Abertura com o Molda.** Nos modos `lista` e `aberto`, quem não é da equipe precisa também do
+  Molda (`AberturaDosCenarios.produto`, `application/cenarios/molda-dos-cenarios.ts`): o produto
+  pela conta (`creativeToolAccessRef('molda', público)`, o cache curto da posse das criações, que a
+  revogação de matrícula apaga) e a capacidade `molda` na jornada de quem pede (Kids: a do perfil;
+  adulto: a jornada adulta). Sem a conferência ligada, só a equipe. O "pode" fica 60 s na memória.
+- **Faixas de ferramentas.** O catálogo é `FAMILIAS_DA_OFICINA` de `molda-cenarios-core/v2`
+  (`faixas.ts`), com as três faixas do Molda. `aplicarMudanca` compara o documento antes e depois
+  (`familiasTrancadas`) e recusa com 403 `CENARIO_FERRAMENTA_TRANCADA` (`details.familias`) o lote
+  de quem não é da equipe que cria ou muda uma família fora das faixas
+  (`AberturaDosCenarios.faixas`, a régua do Molda: no adulto sem currículo, `molda` dá todas).
+  Desfazer, refazer e voltar a uma versão (`restaurarRevisao`) não passam pela conferência.
+  Criar, editar e publicar conjuntos exigem `objetos.conjuntos` (intermediário). O relevo
+  esculpido não diz qual ferramenta o fez: rampa, platô, ruído e erosão só a tela tranca.
+- **Mundos por criança.** Numa sessão de perfil, o espaço da família lista e abre só os mundos que
+  o perfil criou (`podeNoMundo`); o de um irmão responde "não existe". Bibliotecas e os rascunhos
+  de conjunto delas seguem da família; fora de sessão de perfil, a conta vê todos.
+- **Cota da conta.** `CENARIOS_COTA_DA_CONTA_MB` (opcional, padrão 2048; criar no Railway antes de
+  pôr no `.railway/variables.ts`). Vale também para os espaços que já existem: a cota guardada é
+  trocada no próximo uso (`definirLimiteDaConta`). O espaço da equipe não muda.
+
+## Molda Cenários: bibliotecas, mundos e cenários 3D (16/11/2026, migration `0151`)
+
+Os dados da oficina de cenários 3D (`@sistemazero/molda-cenarios`). Plano da reforma em
+`docs/plans` ainda não existe; o desenho está no pacote `molda-cenarios-core` (`src/v2`).
+
+```
+Espaço (a conta, ou o da equipe) → Bibliotecas → Modelos
+                                 → Mundos → Cenários (documento v2 + registro de lotes)
+```
+
+- **Dono é o ESPAÇO** (`cenario_espacos`). O da conta tem **o id da própria conta** (no Kids a
+  família compartilha; `criado_por` guarda o perfil); o da equipe é um só, com id sorteado, e vale
+  para `isPrivilegedActor` fora de sessão de suporte (`podeNoEspaco`). O acervo licenciado mora nele
+  e nunca aparece para outra conta. Biblioteca `restrita` só existe no espaço da equipe.
+- **Abertura**: `CENARIOS_MODO` = `desligado` (padrão) | `equipe` | `lista` | `aberto`, e
+  `CENARIOS_LISTA` (contas, separadas por vírgula). `GET /members/cenarios/acesso` responde
+  `{aberto}`; toda outra rota recusa com 403 `CENARIOS_FECHADOS`. ⚠️ Variável nova: criar no painel
+  do Railway antes de entrar em `.railway/variables.ts`.
+- **Arquivos** (GLB do modelo, miniatura, capa): bucket UGC, `cenarios/<espaço>/blobs/<sha256>`,
+  por conteúdo e sem dividir entre espaços. O navegador pede a RESERVA (`…/modelos/reservar`, até
+  50 por chamada, conta na cota por 1 h), sobe direto por URL assinada pelo BFF e o **BFF** afirma
+  que chegou nas rotas internas (`POST /members/internal/cenarios/modelos` e `/capa`, HMAC,
+  `x-consumer-id: member-shell`, ator no corpo). O navegador nunca confirma arquivo. Cota: 2 GB por
+  conta, 20 GB na equipe, separada do 1 GB das criações.
+- **Cenário**: o documento é o `molda-cenario` v2 inteiro num jsonb; `POST …/cenarios/:id/lotes`
+  `{revisaoEsperada, comandos, operacaoId}` roda o `executarLote` do core no servidor, troca só na
+  revisão esperada (409 `CENARIO_DESATUALIZADO` com `details.revisaoAtual`) e guarda o lote em
+  `cenario_lotes`. O mesmo `operacaoId` de novo devolve a revisão já gravada, sem aplicar outra
+  vez. Lote recusado: 422 com `details.problemas`. Modelo citado no documento precisa de arquivo
+  confirmado NO MESMO espaço (409 `details.digests`). Corpo do lote até 1 MB (`bodyLimitForPath`).
+- **Apagar** modelo ou biblioteca solta o arquivo só quando nenhum modelo nem cenário do espaço o
+  usa (a consulta olha `documento -> 'modelos'`). Quem apaga o objeto no bucket é o BFF, com os
+  digests que a rota devolve.
+- **Exclusão de conta**: a purga apaga o espaço da conta (FK em cascata leva o resto) e o job de
+  limpeza ganha o prefixo `cenarios/<conta>/`; o Admin tenta o mesmo prefixo na hora.
+- ⚠️ **Subconsulta numa seleção de uma tabela só**: o drizzle escreve a coluna de fora sem a tabela
+  (`"id"`) e o Postgres a resolve na tabela de DENTRO quando ela também tem `id`. A contagem de
+  cenários por mundo dava sempre zero. Use `deFora(tabela, 'id')` (`cenarios.repository.ts`).
+- ⚠️ **Ordem dos nomes**: listas pequenas são ordenadas em JS (`Intl.Collator('pt-BR')`); a de
+  modelos, paginada, usa `busca collate "C"`. A ordenação padrão do banco depende de como o
+  servidor foi criado ("Árvore" ia para depois de "Pedra").
+- Testes: `tests/unit/cenarios.service.test.ts` e `tests/integration/cenarios.test.ts` (repositório
+  em memória); SQL real em `tests/db/cenarios.repository.test.ts` (`CENARIOS_TEST_DATABASE_URL`,
+  banco local `cenarios_*`, aplica o DDL da `0151`; sem a variável é pulado) e o caso dos cenários
+  em `tests/db/user-data-purge.test.ts`.
 
 ## Presente por oferta: curso nomeado e Mural nos avisos (15/11/2026)
 
@@ -2643,6 +2749,49 @@ Listas/download/commit expõem o formato do documento confirmado. Aplicar migrat
 antes do backend e terminar o rollout dos guards antes de novos escritores.
 Rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
 
+**Pinta, dependências entre itens (22/11/2026).** As migrations 0166 e 0167 acrescentam e
+preenchem o piso de leitura da galeria por perfil/público/ferramenta. Reservas aprovadas de
+mapas, folhas e conjuntos com formato ≥7 elevam esse piso ao formato integral. Reserva, commit
+e DELETE usam o lock da quota do perfil. Uma aba incompatível mantém a revisão confirmada na
+conta, inclusive quando já fez PUT de outro item. O ticket carrega `inventoryFloor` e, quando
+declarada, a capacidade `maxReadFormatVersion` da reserva. O commit usa a capacidade persistida.
+A escrita/leitura pública do Pinta continua em 6. Ordem de rollout, ensaios e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/piso-de-leitura-do-inventario-2026-11-22/`
+na raiz. A causalidade de alterações em várias criações por um escritor compatível segue aberta.
+
+**Galeria da aula × Pinta causal (23/11/2026): liberada pela cabeça confirmada.** Num perfil
+antigo nada muda (`listCreations`/`get`, cópia de `storageRef` + partes). Num perfil adotado, a
+listagem antiga responde `protocol-required` e o seletor (`member-shell/src/lib/gallery-choices.ts`)
+passa a listar por `GET /api/pinta/causal/gallery` → `graph/page` com `mode: 'gallery'`: o MESMO
+`readPage` do inventário (cerca de QA, conta + perfil dono, sem piso de leitor) com a miniatura da
+cabeça confirmada (`PintaCausalGalleryPageSchema`). Cada escolha leva `causalSha256`; o preparo lê
+`galleryItem` (o `readItem` do inventário pela revisão, sem época) e só copia o selo imutável
+cujo hash confere (`parts: []`; o hash cobre o arquivo inteiro). O BFF confere que o plano manteve
+o hash e o sha256 dos bytes da cópia antes de confirmar. Recusas: `GALLERY_PINTA_DRAWING_CHANGED`
+(outra revisão/hash, apagado, de outro perfil, ou lista antiga num perfil que virou causal) e
+`GALLERY_PINTA_DRAWING_UNCERTIFIED` (cobertura `unknown`: o desenho aparece bloqueado com "Abra
+este desenho no Pinta uma vez para poder enviar."; a sincronização do Pinta adota a unidade por
+backfill e o hash passa a existir). `GALLERY_PINTA_CAUSAL_UNSUPPORTED` fica só para perfil causal
+sem a leitura causal (o serviço montado sem ela, como nos testes; em produção ela existe para todo
+perfil desde 23/11/2026, sem flag nem lista de perfis). A página da
+galeria (só ela; o inventário e o arquivo seguem pelo id) vem do mais novo para o mais antigo
+ATRAVÉS das páginas: `date_trunc('milliseconds', item_updated_at) desc, item_id collate "C" desc`
+(a data ao milissegundo é a do fio, e o schema confere essa ordem). O cursor continua sendo o id
+da última entrada; a linha do cursor é relida na mesma época e, se não está viva, `epoch-changed`
+(a lista recomeça, nunca encurta em silêncio). Prova com 231 desenhos em `tests/db/pinta-causal.test.ts`.
+
+**Sem flag (23/11/2026).** `PINTA_CAUSAL_CANDIDATE`, `PINTA_PALETTE_WRITE_CANDIDATE`,
+`PINTA_CAUSAL_QA_PROFILES`, `STUDIO_SEALED_PARTS_CANDIDATE` e `STUDIO_SEALED_QA_PROFILES` saíram do
+`env.ts`: a composição monta sempre o inventário causal (rotas + galeria da aula), a paleta negociada e
+o gravador selado. As rotas internas continuam exigindo `INTERNAL_API_TOKEN` e o consumidor
+`member-shell`, e o teto de 2 MiB das provas vale sempre. Sem a lista, o dono é o par conta + perfil
+do envelope HMAC: o inventário filtra por conta (`wherePersonal`) e `checkEpoch`/`paletteGeneration`
+recusam um par trocado. A cerca do cliente antigo não mudou: num perfil adotado, lista, download,
+reserva, commit e DELETE individuais de um desenho respondem 409 `PINTA_CAUSAL_CONFLICT`/
+`protocol-required` sem tocar na linha (prova em `tests/db/pinta-causal-http.test.ts`). Adoção de
+um perfil grande e antigo, retomada no meio: `tests/db/pinta-causal-adocao.test.ts`. Inventário:
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md` (raiz).
+
 **Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
 BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
 Essa confirmação não substitui o rollout de todos os guards.
@@ -3412,8 +3561,10 @@ mostra na revisão.
   `postgres`** (full review 26/09/2026): o servidor devolve o 23505 e fica em `ClientRead`
   esperando um `Sync` que o driver não manda; o teste morre no timeout com `CONNECTION_DESTROYED`.
   A MESMA chamada num try/catch (`lanca()` em `help.repository.test.ts`) ou num `bun -e` lança o
-  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow`, que os outros
-  arquivos usam, não trava.
+  erro de domínio em 12 ms. Medido com `pg_stat_activity`. `rejects.toThrow` TAMBÉM trava
+  (23/11/2026, `pinta-palette-writes.test.ts`: conexão `idle in transaction` logo após o `begin`,
+  Bun 1.3.11 + postgres 3.4.9); capture o erro com try/catch (`failure()` ali, `rejection()` em
+  `pinta-causal.test.ts`).
 - **Regras que o full review fechou (26/09/2026):** o `PATCH` recusa slug reservado/inválido
   (400) e **slug de tutorial PUBLICADO (409 `HELP_SLUG_LOCKED`)**: `/como-fazer/<slug>` é contrato
   de URL das aulas e do `helpReferences` do Zappy; despublique para trocar. O `export` NÃO leva

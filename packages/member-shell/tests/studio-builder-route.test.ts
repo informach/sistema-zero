@@ -6,6 +6,8 @@ import {
   type StudioProBuilderClaim,
   type StudioProBuilderCommand,
   type StudioProBuilderJob,
+  type StudioProPlatformFiles,
+  serializeStudioProBuildEnvelope,
   studioProBuilderView,
   studioProDigest,
 } from '@sistemazero/core/studio'
@@ -13,6 +15,13 @@ import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/pytho
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { currentPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { controlledPythonBuilderReport } from '../../members/tests/fakes/python-builder-report'
+import {
+  currentProEngineCopies,
+  PRO_ENGINE_EXTENSION_IDS,
+  proEngineCopyPath,
+} from '../../studio/src/modes/pro/proEngineCopies'
+import { type ProBuildRequest, readBuildRequest } from '../../studio-runtime/src/contracts'
+import type { preflightStudioProBuild } from '../src/server/studio-pro-runtime'
 import { pensaKidsJourney } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
@@ -59,17 +68,27 @@ async function fixture(
     preflightFails?: boolean
     authorization?: StudioProBuilderClaim['authorization']
     authorizationStatus?: number
+    /** Arquivos a mais na revisão-base (e as pastas deles). */
+    files?: Record<string, string>
+    directories?: string[]
+    /** A lista de arquivos da plataforma com que o CLIENTE montou a revisão. */
+    platformFiles?: StudioProPlatformFiles
+    /** O compilador remoto no preflight (por padrão, só conta as chamadas). */
+    preflight?: (input: Parameters<typeof preflightStudioProBuild>[0]) => Promise<void>
   } = {},
 ) {
-  const base = await createStudioProRevision({
-    projectId: 'route-game',
-    templateId: options.templateId ?? 'vanilla-vite',
-    devScript: 'dev',
-    files: { 'index.html': '<main>Game</main>' },
-    directories: [],
-    assets: '{}',
-    assetFiles: {},
-  })
+  const base = await createStudioProRevision(
+    {
+      projectId: 'route-game',
+      templateId: options.templateId ?? 'vanilla-vite',
+      devScript: 'dev',
+      files: { 'index.html': '<main>Game</main>', ...options.files },
+      directories: options.directories ?? [],
+      assets: '{}',
+      assetFiles: {},
+    },
+    options.platformFiles ? { platformFiles: options.platformFiles } : {},
+  )
   const job: StudioProBuilderJob = {
     id: crypto.randomUUID(),
     projectId: base.projectId,
@@ -149,8 +168,9 @@ async function fixture(
   }
   const route = createStudioBuilderRoutes({
     members,
-    preflight: async () => {
+    preflight: async (input: Parameters<typeof preflightStudioProBuild>[0]) => {
       preflightCalls++
+      await options.preflight?.(input)
       if (options.preflightFails)
         throw new StudioProRuntimeInputError(
           413,
@@ -489,6 +509,44 @@ describe('Studio builder browser boundary', () => {
     for (const key of ['base', 'binaries', 'notes', 'token']) expect(body.job[key]).toBeUndefined()
     expect(JSON.stringify(body)).not.toContain('PRIVATE')
     expect(response.headers.get('Cache-Control')).toBe('no-store')
+  })
+  // O 2D convertido para o Pro: a cópia do motor (`public/sz-ext/<id>.js`, perto de 400 mil
+  // caracteres) passa do teto de 256 mil por arquivo. Até 23/11/2026 o BFF recusava a revisão.
+  test.each(
+    PRO_ENGINE_EXTENSION_IDS,
+  )('%s convertido: o BFF relê a revisão com o motor publicado, o compilador o confere e o Members recebe a base', async (id) => {
+    const path = proEngineCopyPath(id)
+    const engine = (await currentProEngineCopies(id)).completo
+    const compiled: ProBuildRequest[] = []
+    const f = await fixture({
+      files: { [path]: engine },
+      directories: ['public', 'public/sz-ext'],
+      // O preflight leva ao Worker o envelope exato; aqui, o parser do Worker no lugar da rede.
+      preflight: async (input) => {
+        compiled.push(await readBuildRequest(JSON.parse(serializeStudioProBuildEnvelope(input))))
+      },
+    })
+    const response = await f.post()
+    expect(response.status).toBe(200)
+    expect(compiled[0]?.files[path]).toBe(engine)
+    const command = f.commands[0]?.command
+    if (command?.operation !== 'create') throw new Error('O Members recebe a criação.')
+    expect(command.base.files[path]).toBe(engine)
+    // O Members (studio-builder.service) recria a revisão e compara o hash.
+    expect((await createStudioProRevision(command.base)).hash).toBe(f.input.base.hash)
+  })
+  test('um motor editado, aceito só pela lista do cliente, é recusado antes do compilador e do Members', async () => {
+    const path = proEngineCopyPath('game-2d')
+    const edited = `${(await currentProEngineCopies('game-2d')).completo} `
+    const f = await fixture({
+      files: { [path]: edited },
+      directories: ['public', 'public/sz-ext'],
+      platformFiles: { [path]: [await studioProDigest(edited)] },
+    })
+    const response = await f.post()
+    expect(response.status).toBe(400)
+    expect(f.preflightCalls).toBe(0)
+    expect(f.commands).toHaveLength(0)
   })
   test('durable cancellation is returned even if ledger finishing temporarily fails', async () => {
     const f = await fixture({ finishFails: true }),

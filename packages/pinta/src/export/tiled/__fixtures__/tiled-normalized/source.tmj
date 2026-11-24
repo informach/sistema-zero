@@ -1,0 +1,193 @@
+{
+  "type": "map",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "infinite": false,
+  "width": 5,
+  "height": 1,
+  "tilewidth": 16,
+  "tileheight": 16,
+  "tilesets": [
+    {
+      "firstgid": 1,
+      "name": "Partial",
+      "tilewidth": 16,
+      "tileheight": 16,
+      "tilecount": 5,
+      "columns": 3,
+      "margin": 0,
+      "spacing": 0,
+      "image": "images/tiles-0.png",
+      "imagewidth": 48,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "pinta:id",
+          "type": "string",
+          "value": "partial"
+        },
+        {
+          "name": "pinta:atlas",
+          "type": "string",
+          "value": "{\"version\":1,\"count\":5,\"columns\":3,\"tileSize\":16,\"imageDataUrlSha256\":\"c6365d2d9e36cb7378aad4cbe81fc234d1d24fa3e7e0ac4dc57d352bb69007e1\"}"
+        }
+      ],
+      "tiles": [],
+      "wangsets": [
+        {
+          "name": "Grass",
+          "properties": [
+            {
+              "name": "pinta:id",
+              "type": "string",
+              "value": "grass"
+            },
+            {
+              "name": "pinta:emptyTiles",
+              "type": "string",
+              "value": "[0]"
+            }
+          ],
+          "type": "corner",
+          "tile": -1,
+          "colors": [
+            {
+              "name": "Terreno 1",
+              "color": "#ff0000",
+              "tile": -1,
+              "probability": 1
+            }
+          ],
+          "wangtiles": [
+            {
+              "tileid": 0,
+              "wangid": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "tileid": 1,
+              "wangid": [
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "firstgid": 7,
+      "name": "Stone",
+      "tilewidth": 16,
+      "tileheight": 16,
+      "tilecount": 1,
+      "columns": 1,
+      "margin": 0,
+      "spacing": 0,
+      "image": "images/tiles-1.png",
+      "imagewidth": 16,
+      "imageheight": 16,
+      "properties": [
+        {
+          "name": "pinta:id",
+          "type": "string",
+          "value": "stone"
+        }
+      ],
+      "tiles": [],
+      "wangsets": []
+    }
+  ],
+  "layers": [
+    {
+      "id": 1,
+      "name": "Ground",
+      "visible": true,
+      "opacity": 1,
+      "offsetx": 0,
+      "offsety": 0,
+      "parallaxx": 1,
+      "parallaxy": 1,
+      "locked": false,
+      "x": 0,
+      "y": 0,
+      "properties": [
+        {
+          "name": "pinta:id",
+          "type": "string",
+          "value": "ground"
+        }
+      ],
+      "type": "tilelayer",
+      "width": 5,
+      "height": 1,
+      "data": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Decoration",
+      "visible": true,
+      "opacity": 1,
+      "offsetx": 0,
+      "offsety": 0,
+      "parallaxx": 1,
+      "parallaxy": 1,
+      "locked": false,
+      "x": 0,
+      "y": 0,
+      "properties": [
+        {
+          "name": "pinta:id",
+          "type": "string",
+          "value": "decoration"
+        }
+      ],
+      "type": "tilelayer",
+      "width": 5,
+      "height": 1,
+      "data": [
+        7,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "nextlayerid": 3,
+  "nextobjectid": 1,
+  "properties": [
+    {
+      "name": "pinta:id",
+      "type": "string",
+      "value": "atlas-normalized"
+    },
+    {
+      "name": "pinta:name",
+      "type": "string",
+      "value": "atlas-normalized"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Resumo
 
-Aula 1 de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa inicio e termina em movimento. Um envio encerra a construção; o vídeo final reconhece o resultado.
+Aula 1 de A Ilha do Farol, no Faísca. Usa Programação e Jogo 3D. O projeto começa na etapa inicio e termina em movimento. A última parte de construção termina com o envio do projeto e o reconhecimento do que a criança fez.
 
 ## Partes e critérios
 
@@ -16,7 +16,7 @@ Jogue na ilha.
 
 
 
-**Zappy na página (não gravar):** Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas para andar e explore a ilha. A tecla R recomeça. Quando terminar, clique em Próxima parte.
 
 ### Parte 2. Seu passo a passo do projeto
 
@@ -28,7 +28,7 @@ Seu passo a passo do projeto.
 
 
 
-**Zappy na página (não gravar):** Consulte seu Passo a passo do projeto quando quiser. Para seguir, clique em Próxima parte.
+**Zappy na página (não gravar):** Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 ### Parte 3. O que aparece quando você muda de lugar?
 
@@ -46,25 +46,9 @@ O que aparece quando você muda de lugar?
 
 Faça o personagem andar.
 
-- Intenção: application.
-- Blocos: video-movimento, ponte-movimento.
-- Conclusão: video-movimento; objetivos do projeto atual.
-
-- Dentro de A cada quadro, coloque o comando que move personagem com o teclado.
-- Faça o personagem andar para a direita com a seta correspondente.
-- Faça o personagem andar para a esquerda com a seta correspondente.
-- Faça o personagem andar para o fundo com a seta correspondente.
-- Faça o personagem andar para a frente com a seta correspondente.
-
-**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
-
-### Parte 5. Confira seu primeiro percurso
-
-Confira seu primeiro percurso.
-
 - Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Conclusão: video-entrega, projeto; objetivos do projeto atual; envio atualizado confirmado.
+- Blocos: video-movimento, ponte-movimento, projeto.
+- Conclusão: video-movimento, projeto; objetivos do projeto atual; envio atualizado confirmado.
 
 - Dentro de A cada quadro, coloque o comando que move personagem com o teclado.
 - Faça o personagem andar para a direita com a seta correspondente.
@@ -72,20 +56,8 @@ Confira seu primeiro percurso.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 
-**Zappy na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
-
-### Parte 6. Seu personagem já explora a ilha
-
-Seu personagem já explora a ilha.
-
-- Intenção: closing.
-- Blocos: video-fecho, ponte-fecho.
-- Conclusão: video-fecho.
-
-
-
-**Zappy na página (não gravar):** Você concluiu os testes desta aula. Clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Coloque o movimento no começo de A cada quadro da cena e troque a velocidade por 4. Teste as quatro setas e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 
 ## Produção
 
-[Fala integral e notas de tela](ilha-aula-1.roteiro.md). Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.
+[Fala integral e notas de tela](ilha-aula-1.roteiro.md). Na edição kids, Debinha diz as frases das tabelas de substituição do roteiro. Fonte editorial: ilha-do-farol-conteudo.ts. O Passo a passo fica na parte 2 da primeira aula; consulta e download são opcionais. Sem certificado. Mídia e publicação pendentes.

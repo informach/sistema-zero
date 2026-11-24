@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\mapTools.test.ts:
+392 |     const t = montar(comPeca())
+393 |     t.arrastar({ col: 1, row: 1 }, { col: 1, row: 1 })
+394 |     t.arrastar({ col: 1, row: 1 }, { col: 2, row: 2 })
+395 |     const destination = { col: 2, row: 2, cols: 1, rows: 1 }
+396 |     t.controller().selectRect(destination)
+397 |     expect(t.selRef.current).toEqual({ kind: 'rect', rect: destination })
+                                   ^
+error: expect(received).toEqual(expected)
+
+- {
+-   "kind": "rect",
+-   "rect": {
+-     "col": 2,
+-     "cols": 1,
+-     "row": 2,
+-     "rows": 1,
+-   },
+- }
++ null
+
+- Expected  - 9
++ Received  + 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\pinta\src\components\editor\mapTools\mapTools.test.ts:397:30)
+(fail) seleção de um pedaço do mapa > selecionar o destino de um pedaço flutuante usa a revisão recém-carimbada
+
+ 0 pass
+ 30 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [1350.00ms]

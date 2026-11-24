@@ -1,0 +1,40 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "bytes": 63,
+      "sha256": "8747c082d3d66bdabb82b7b0dfc03e1d4b658e1fc43e002fa1fdb2a535dbf5ed"
+    },
+    {
+      "file": "http.txt",
+      "bytes": 8027,
+      "sha256": "25a5025673340667cb87ab80c07068e0e568c70e551197c1348a6849fb3c66f3"
+    },
+    {
+      "file": "leitor-autenticado.json",
+      "bytes": 6340,
+      "sha256": "eaeb6a3421a455f33f3d92e9f5845dfc90815185b153d911aa65786de20c8599"
+    },
+    {
+      "file": "postgres-isolamento.json",
+      "bytes": 219,
+      "sha256": "51eaa7c7eacd7ab6baeaa1506d6b1895d62023d3450e83438e454f9f1cd52d7b"
+    },
+    {
+      "file": "postgres.txt",
+      "bytes": 3431,
+      "sha256": "1c1a100c9ebcb6b161dc8543adf26b915d6131c52f735974013dec9f4c82ee20"
+    },
+    {
+      "file": "preflight.json",
+      "bytes": 315,
+      "sha256": "fff119f668bafd1391f8348f794d37f0f76600b682b01c0063e3a075c7e80c59"
+    },
+    {
+      "file": "README.md",
+      "bytes": 1829,
+      "sha256": "ab8ac3210d3e1c278b2372770359948e9ea5d0bce0ab1246faf88ebabe4dff2f"
+    }
+  ]
+}

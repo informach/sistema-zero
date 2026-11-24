@@ -1,10 +1,13 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE_DO_GIRO = 2
 VELOCIDADE_DA_BOLA = 3
 
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Primeira Cena 3D')
 set_target_fps(60)
 
@@ -20,6 +23,7 @@ giro = 0
 sentido = 1
 bola = Vector3(2.5, 0.5, 0)
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     # Espaço troca o sentido do giro; as setas andam com a bola pelo chão.

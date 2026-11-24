@@ -1,0 +1,108 @@
+[WebServer] (node:35848) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 12 tests using 1 worker
+
+(node:31152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘   1 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (6.0s)
+(node:44088) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   2 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:130:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (2.0s)
+  ✓   3 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:186:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (9.5s)
+  ✓   4 [desktop] › e2e\pinta-keyboard-scenes.flow.ts:277:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (6.0s)
+(node:47472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   5 [touch] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (4.9s)
+  ✓   6 [touch] › e2e\pinta-keyboard-scenes.flow.ts:130:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (2.1s)
+  ✓   7 [touch] › e2e\pinta-keyboard-scenes.flow.ts:186:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (10.2s)
+  ✓   8 [touch] › e2e\pinta-keyboard-scenes.flow.ts:277:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (4.6s)
+(node:31644) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓   9 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura (13.5s)
+  ✓  10 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:130:1 › mapa rolado: cursor visível e deslocamento herdado aplicado uma vez (5.4s)
+  ✓  11 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:186:1 › terreno pronto por teclado: materiais, borracha, retângulo, balde e histórico (26.7s)
+  ✓  12 [cpu-4x] › e2e\pinta-keyboard-scenes.flow.ts:277:1 › marcador sem ponteiro: Tab, Enter, campos, Esc, histórico e reabertura (9.6s)
+
+
+  1) [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 4
+    + Received  + 4
+
+    @@ -1,37 +1,37 @@
+      Array [
+        Object {
+          "cells": Array [
+    -       0,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+    -       0,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+    -       0,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+    -       0,
+    +       -1,
+    +       -1,
+    +       -1,
+    +       -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+
+      124 |   const reopened = (await backup(page)).find((a) => a.kind === 'tilemap')
+      125 |   if (reopened?.kind !== 'tilemap') throw new Error('Mapa esperado')
+    > 126 |   expect(reopened.layers).toEqual(map.layers)
+          |                           ^
+      127 |   await cdp.detach()
+      128 | })
+      129 |
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\pinta-keyboard-scenes.flow.ts:126:27
+
+    Error Context: .cache\pinta-keyboard-paint-r7-final\pinta-keyboard-scenes.flow-6f6a7--seleção-cópia-e-reabertura-desktop\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-keyboard-paint-r7-final\pinta-keyboard-scenes.flow-6f6a7--seleção-cópia-e-reabertura-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-keyboard-paint-r7-final\pinta-keyboard-scenes.flow-6f6a7--seleção-cópia-e-reabertura-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › e2e\pinta-keyboard-scenes.flow.ts:56:1 › pintar por teclado: pixel real, linha, cancelamento, seleção, cópia e reabertura
+  11 passed (1.8m)

@@ -12,13 +12,20 @@
       "!**/dist",
       "!**/migrations",
       "!bun.lock",
+      "!packages/pinta/src/export/phaser/phaser.generated.ts",
+      "!packages/molda-cenarios/src/exportar/runtime-three.generated.ts",
+      "!packages/studio/src/three/scene3dRuntime.generated.ts",
+      "!packages/studio/src/three/scene3dProRuntime.generated.ts",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
+      "!packages/studio/src/examples/jogoD.generated.ts",
       "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",
       "!packages/studio/playground/moldaDemoAssets.json",
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",
       "!packages/studio-runtime/runtime/python-playtest.generated.mjs",
       "!packages/studio-runtime/runtime/execution-observation.generated.mjs",
+      "!packages/studio-runtime/runtime/click-target.generated.mjs",
+      "!packages/studio-runtime/runtime/scene3d-pro.generated.mjs",
       "!packages/edisvg/vendor",
       "!packages/edisvg/assets",
       "!packages/edisvg/src/builtins.generated.ts",
@@ -26,6 +33,8 @@
       "!packages/core/src/morada/catalog.generated.ts",
       "!packages/community/src/app/globals.generated.css",
       "!art/edisvg",
+      "!docs/pinta-cenarios/missao-completa-2026-11-18/qa/automapping-2026-11-22/mundo.pinta.json",
+      "!docs/pinta-cenarios/missao-completa-2026-11-18/qa/automapping-2026-11-22/mapa.pinta-regras.json",
       "!**/.astro",
       "!**/.next",
       "!**/next-env.d.ts",
@@ -88,6 +97,10 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.json"],
+      "json": { "formatter": { "expand": "always" } }
+    },
     {
       "includes": ["packages/studio/src/examples/python/pygameGames/*.generated.ts"],
       "linter": {

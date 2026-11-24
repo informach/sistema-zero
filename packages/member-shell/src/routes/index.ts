@@ -1314,6 +1314,34 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
+   * A foto do avatar 3D de cada filho da conta, para o menu da área dos pais (kids), que monta
+   * a lista dos filhos no navegador. Antes de 21/11/2026 o menu mostrava só a inicial, enquanto
+   * o Início e a Família, que leem as fotos no servidor, mostravam o rosto. Os ids saem da
+   * própria conta (`profiles.list()`), nunca do pedido. O shim do KIDS gateia com
+   * `requireParentGateAccountOnly`, como o children-stats.
+   */
+  const familyAvatars = {
+    GET: async () => {
+      const list = await profiles.list()
+      if (list.status !== 200) {
+        return NextResponse.json(list.body ?? { avatars: {} }, { status: list.status })
+      }
+      const ids = (list.body?.profiles ?? []).map((profile) => profile.id)
+      if (ids.length === 0) return NextResponse.json({ avatars: {} })
+      const found = await members.listAvatarsByProfileIds(ids)
+      if (found.status !== 200) {
+        return NextResponse.json(found.body ?? { error: { code: 'SERVICE_UNAVAILABLE' } }, {
+          status: found.status,
+        })
+      }
+      const avatars: Record<string, string | null> = Object.fromEntries(
+        ids.map((id) => [id, found.body?.avatars?.[id]?.photoUrl ?? null]),
+      )
+      return NextResponse.json({ avatars })
+    },
+  }
+
+  /**
    * Preferência do REPORT semanal dos pais (opt-out). Como o children-stats, é
    * tela EXCLUSIVA dos pais — o shim do KIDS gateia com
    * `requireParentGateAccountOnly` (sessão de perfil é recusada lá).
@@ -1961,6 +1989,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     streakFreezeBuy,
     vacationSet,
     childrenStats,
+    familyAvatars,
     parentReportPrefs,
     ambassadorMe,
     lessonPosition,

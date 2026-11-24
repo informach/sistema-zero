@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+src\official-extensions\map-2d\runtime.test.ts:
+174 |     new Function('window','requestAnimationFrame',await mapTwoDBootstrap(target))(win,()=>0)
+175 |     const api=win[target==='g2d'?'SZGame2D':'SZGameKit'] as MapTwoDApi
+176 |     api.createMapScene('map','precise')
+177 |     const falling={x:40,y:100,w:4,h:4,vx:0,vy:90,_prevX:40,_prevY:10,onGround:false}
+178 |     api.collideMapScene(falling,'map')
+179 |     expect(falling.y).toBeCloseTo(36.25,7)
+                            ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 36.25
+Received: 100
+
+Expected precision: 7
+Expected difference: < 0.00000005
+Received difference: 63.75
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:179:23)
+(fail) g2d: plataforma precisa conserva o piso pequeno, salto e apoio [31.00ms]
+174 |     new Function('window','requestAnimationFrame',await mapTwoDBootstrap(target))(win,()=>0)
+175 |     const api=win[target==='g2d'?'SZGame2D':'SZGameKit'] as MapTwoDApi
+176 |     api.createMapScene('map','precise')
+177 |     const falling={x:40,y:100,w:4,h:4,vx:0,vy:90,_prevX:40,_prevY:10,onGround:false}
+178 |     api.collideMapScene(falling,'map')
+179 |     expect(falling.y).toBeCloseTo(36.25,7)
+                            ^
+error: expect(received).toBeCloseTo(expected, precision)
+
+Expected: 36.25
+Received: 100
+
+Expected precision: 7
+Expected difference: < 0.00000005
+Received difference: 63.75
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\src\official-extensions\map-2d\runtime.test.ts:179:23)
+(fail) gk: plataforma precisa conserva o piso pequeno, salto e apoio [16.00ms]
+
+ 0 pass
+ 19 filtered out
+ 2 fail
+ 2 expect() calls
+Ran 2 tests across 1 file. [652.00ms]

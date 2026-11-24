@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personal.test.ts:
+Isolated ./src/asset-library/__tests__/personal.cases.ts: 27 pass, 0 fail, 88 expect() calls
+(pass) personal.test.ts mock cases own an isolated module realm [641.00ms]
+
+src\asset-library\personalSync.test.ts:
+Isolated ./src/asset-library/__tests__/personalSync.cases.ts: 90 pass, 0 fail, 419 expect() calls
+(pass) personalSync.test.ts mock cases own an isolated module realm [7390.00ms]
+
+src\components\assets\DrawingSyncWatcher.test.ts:
+Isolated ./src/components/assets/__tests__/DrawingSyncWatcher.cases.tsx: 6 pass, 0 fail, 33 expect() calls
+(pass) DrawingSyncWatcher keeps its IndexedDB fixture in an isolated module realm [922.00ms]
+
+ 3 pass
+ 0 fail
+Ran 3 tests across 3 files. [9.35s]

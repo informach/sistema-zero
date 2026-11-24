@@ -28,28 +28,88 @@
  *
  * ⚠️ Descidas gravadas por aqui NÃO passam pelo `persistAssets` embrulhado (senão
  * o que acabou de descer subiria de novo).
+ *
+ * ⚠️⚠️ Formato mais novo que este código (`pintaCanReadFormatVersion`): o item NÃO desce, não
+ * vira cópia e não é restaurado. Ler um desenho é passar pelo `sanitizePintaAsset`, que
+ * reconstrói o registro e descarta o que não conhece; gravar esse resultado no aparelho e depois
+ * subi-lo cortaria o desenho de verdade. São TRÊS os caminhos que baixam e leem (a reconciliação,
+ * a base vencida na subida e o DELETE recusado) e os três param antes de ler. O item entra em
+ * `getReadIssues` para a galeria pedir que a página seja atualizada.
+ *
+ * ⚠️⚠️ Registro local CORTADO por código mais antigo (18/11/2026, `PintaFormatMemory`): outra aba
+ * deste aparelho, ainda com o Pinta antigo carregado, pode abrir um mapa do IndexedDB, reconstruir
+ * o registro sem o que não conhece e salvar por cima com `updatedAt` novo. A subida DELA a nuvem
+ * recusa, mas este código veria "local mudou" e subiria o registro cortado declarando a versão
+ * atual. Por isso, ao lado da marca de sincronia, fica lembrado o carimbo `schema` que o desenho
+ * tinha na última sincronia e qual gravação saiu DESTE código. Carimbo menor que o lembrado numa
+ * gravação que não é nossa = corte: não sobe. A versão da nuvem volta no mesmo id e a daqui
+ * fica como `-copia` (`resolveLostFormat`). Baixar o carimbo por aqui (a criança apagou o último
+ * objeto com forma) é gravação nossa e sobe normalmente.
  */
 
 import {
+  PINTA_MAX_READ_FORMAT_VERSION,
   PINTA_PALETTE_LIBRARY_ITEM_ID,
   PINTA_PALETTE_LIBRARY_KIND,
   PINTA_PALETTE_LIBRARY_TOOL,
+  PintaClientOutdatedError,
+  pintaCanReadFormatVersion,
+  pintaCanWriteNativeSchema,
+  pintaWriteFormatVersion,
 } from '@sistemazero/core/creations'
-import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
+import type { PintaPaletteUploadCapability } from '@sistemazero/core/creations/pinta-palette-writer'
+import type {
+  LocalRegionAuthorSession,
+  LocalRegionCausalBinding,
+  PintaCausalLocalPort as NativeCausalPort,
+  PintaEditorWriteContext,
+  RegionGalleryIndex,
+} from '@sistemazero/pinta'
+import type {
+  PaletteAccount,
+  PaletteAccountSnapshot,
+  PaletteLibrary,
+  PintaAsset,
+  PintaWorkshopAsset,
+} from '@sistemazero/pinta/assets'
 import {
   assetFromJson,
   assetToJson,
-  emptyPaletteLibrary,
-  mergePaletteLibraries,
+  inheritPintaLocalOrigin,
+  isLegacyWorkshopAsset,
+  observePintaReferences,
   PINTA_LIMITS,
-  paletteLibraryContentKey,
-  sanitizePaletteLibrary,
+  PINTA_MAX_SCHEMA,
+  PintaLocalConflictError,
+  pintaAssetSchema,
+  pintaLocalRevisionOf,
+  readAccountPaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import { conflictCopyName, uniqueCreationName } from './creation-names'
-import type { CloudCreationSummary, CreationsCloud } from './creations-cloud'
+import type { CloudCreationSummary, CloudDownload, CreationsCloud } from './creations-cloud'
 import { createStoredSyncedMarks, reconcileCreations, type SyncedMarks } from './creations-sync'
 import { perfSpanAsync } from './perf'
+import {
+  type PintaCausalRemapBase,
+  type PintaQueuedSlots,
+  type PintaRegionCausalPins,
+  pintaPinBoundary,
+  pintaRegionCausalReads,
+  pintaRegionCausalUnit,
+  preparePintaCausalRemap,
+  preparePintaOfflineRemap,
+  stagePintaCausalWrite,
+} from './pinta-causal-authoring'
+import { PintaCausalRequestError, pintaCausalGzipHash } from './pinta-causal-cloud'
+import { encodePintaObservedResources } from './pinta-causal-pins'
+import {
+  discoverPintaCausalSnapshot,
+  PintaCausalRecoveryNeedsFilesError,
+  readPintaCausalJson,
+} from './pinta-causal-pull'
+import { flushPintaCausalOutbox, freezePintaCausalPending } from './pinta-causal-queue'
+import { syncPintaCausalAccount } from './pinta-causal-sync'
 
 /** O que o wrapper avisa ao pacote (espelho estrutural de `PintaPersistenceEvent`). */
 export type PintaCloudPersistenceEvent =
@@ -57,20 +117,201 @@ export type PintaCloudPersistenceEvent =
   | { type: 'changed' }
   | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
+  | { type: 'recovered'; names: string[] }
+  | { type: 'account-removal-returned'; names: string[] }
+  | { type: 'account-recovered'; names: string[] }
+
+/**
+ * Um desenho guardado na conta num formato mais novo que o deste navegador. Ele fica intocado na
+ * nuvem; a galeria mostra o aviso e o botão de atualizar a página (espelho estrutural de
+ * `PintaReadIssue` do pacote).
+ */
+export interface PintaCloudReadIssue {
+  id: string
+  name: string
+  status: 'unsupported'
+  version: number
+}
+
+/**
+ * O que fica lembrado por desenho, ao lado da marca de sincronia, para perceber um registro local
+ * que perdeu recursos (ver o cabeçalho). Só existe para desenho que já sincronizou COM carimbo.
+ */
+type PintaCausalLocalPort = NativeCausalPort<PintaWorkshopAsset>
+
+export interface PintaFormatMemoryEntry {
+  /** Native revision whose bytes were actually synchronized; independent of wall clocks. */
+  localRevision?: string
+  /** O carimbo `schema` do desenho na última sincronia confirmada (subida ou descida). */
+  schema: number
+  /** Revisão confirmada à qual o floor pertence; não acompanha marcas de outra instância. */
+  revision?: number
+  /** Assinatura deste gravador: `writtenAt` antigo, sozinho, não autentica um documento. */
+  signature?: { at: number; schema: number; revision: number; maxSchema: number; writerId: string }
+  /** Campo legado mantido para leitores anteriores; sozinho não autentica a gravação. */
+  writtenAt?: number
+  /** Já foi visto cortado e ainda não foi resolvido: continua valendo mesmo se editarem por cima. */
+  cut?: true
+}
+
+export interface PintaFormatMemory {
+  get(id: string): PintaFormatMemoryEntry | undefined
+  set(id: string, entry: PintaFormatMemoryEntry): void
+  delete(id: string): void
+}
+
+/** Memória de formato só em memória (testes, storage indisponível). */
+export function createMemoryPintaFormatMemory(): PintaFormatMemory {
+  const entries = new Map<string, PintaFormatMemoryEntry>()
+  return {
+    get: (id) => entries.get(id),
+    set: (id, entry) => {
+      entries.set(id, entry)
+    },
+    delete: (id) => {
+      entries.delete(id)
+    },
+  }
+}
+
+function isFormatMemoryEntry(value: unknown): value is PintaFormatMemoryEntry {
+  if (!value || typeof value !== 'object') return false
+  const entry = value as Record<string, unknown>
+  return (
+    typeof entry.schema === 'number' &&
+    Number.isFinite(entry.schema) &&
+    (entry.localRevision === undefined ||
+      (typeof entry.localRevision === 'string' && entry.localRevision.length > 0)) &&
+    (entry.revision === undefined ||
+      (Number.isInteger(entry.revision) && Number(entry.revision) >= 0)) &&
+    (entry.signature === undefined || isFormatSignature(entry.signature)) &&
+    (entry.writtenAt === undefined || typeof entry.writtenAt === 'number') &&
+    (entry.cut === undefined || entry.cut === true)
+  )
+}
+
+function isFormatSignature(
+  value: unknown,
+): value is NonNullable<PintaFormatMemoryEntry['signature']> {
+  if (!value || typeof value !== 'object') return false
+  const signature = value as Record<string, unknown>
+  return (
+    typeof signature.at === 'number' &&
+    Number.isFinite(signature.at) &&
+    typeof signature.writerId === 'string' &&
+    signature.writerId.length > 0 &&
+    [signature.schema, signature.revision, signature.maxSchema].every(
+      (n) => Number.isInteger(n) && Number(n) >= 0,
+    )
+  )
+}
+
+/**
+ * Memória de formato em `localStorage`, por perfil. Lê do storage a cada consulta (o registro é
+ * pequeno: só desenhos com carimbo) para enxergar o que outra aba gravou. Storage indisponível
+ * ou cheio = fica só em memória. Após reiniciar sem essa memória, o espelho confere o remoto
+ * antes da primeira subida de um desenho cuja revisão já era conhecida.
+ */
+export function createStoredPintaFormatMemory(storageKey: string): PintaFormatMemory {
+  let store: Storage | null = null
+  try {
+    store = typeof localStorage !== 'undefined' ? localStorage : null
+  } catch {
+    store = null
+  }
+  let fallback = new Map<string, PintaFormatMemoryEntry>()
+  const read = (): Map<string, PintaFormatMemoryEntry> => {
+    if (!store) return fallback
+    try {
+      const raw = store.getItem(storageKey)
+      const parsed: unknown = raw ? JSON.parse(raw) : {}
+      const next = new Map<string, PintaFormatMemoryEntry>()
+      if (parsed && typeof parsed === 'object')
+        for (const [id, value] of Object.entries(parsed as Record<string, unknown>))
+          if (isFormatMemoryEntry(value)) next.set(id, value)
+      fallback = next
+      return next
+    } catch {
+      return fallback
+    }
+  }
+  const write = (entries: Map<string, PintaFormatMemoryEntry>): void => {
+    fallback = entries
+    if (!store) return
+    try {
+      if (entries.size === 0) store.removeItem(storageKey)
+      else store.setItem(storageKey, JSON.stringify(Object.fromEntries(entries)))
+    } catch {
+      // Não releia o valor antigo depois de uma escrita que falhou: ele apagaria a
+      // proteção que acabamos de guardar. Esta instância segue só em memória.
+      store = null
+    }
+  }
+  return {
+    get: (id) => read().get(id),
+    set: (id, entry) => {
+      const entries = read()
+      entries.set(id, entry)
+      write(entries)
+    },
+    delete: (id) => {
+      const entries = read()
+      if (entries.delete(id)) write(entries)
+    },
+  }
+}
+
+/**
+ * O carimbo necessário ao conteúdo, sem confiar num campo `schema` antigo mantido pelo editor.
+ * Zero = sem carimbo. A gravação nativa usa o mesmo contrato.
+ */
+function schemaStampOf(asset: PintaWorkshopAsset): number {
+  return isLegacyWorkshopAsset(asset) ? pintaAssetSchema(asset) : (asset.schema ?? 0)
+}
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
-export interface PintaPersistenceLike {
-  persistAsset(asset: PintaAsset): Promise<void>
-  persistAssets(assets: readonly PintaAsset[]): Promise<void>
-  deleteAsset(id: string): Promise<void>
-  loadAssetById(id: string): Promise<PintaAsset | null>
-  listAllAssets(): Promise<PintaAsset[]>
+export interface PintaPersistenceLike<Asset extends PintaWorkshopAsset = PintaAsset> {
+  readonly workshopReader?: true
+  persistAsset(asset: Asset, context?: PintaEditorWriteContext): Promise<void>
+  persistAssets(assets: readonly Asset[], context?: PintaEditorWriteContext): Promise<void>
+  deleteAsset(id: string, base?: Asset): Promise<void>
+  loadAssetById(id: string): Promise<Asset | null>
+  listAllAssets(): Promise<Asset[]>
+  observesReferences?: true
+  needsRetainedRecovery?(): boolean
+  loadRetainedRecoveryFiles?(): Promise<ReadonlyMap<string, Blob>>
+  describeRetainedRecovery?(): Promise<readonly { opId: string; itemIds: readonly string[] }[]>
+  holdOpen?(id: string): Promise<() => void>
+  /**
+   * A janela focal de um cenário grande. No espelho da conta ela só existe com a fila causal: cada
+   * gesto grava os chunks e a unidade V4 juntos (`LocalRegionCausalBinding`).
+   */
+  openRegionSession?(
+    id: string,
+    signal?: AbortSignal,
+    causal?: LocalRegionCausalBinding,
+  ): Promise<LocalRegionAuthorSession | null>
+  /**
+   * Os cartões da galeria focal (23/11/2026). No espelho da conta só existe com a fila causal: o
+   * índice do armazenamento é lido ao lado da fila V4 (`causal: true`), e cada cartão abre pela
+   * janela ligada à fila.
+   */
+  listGalleryIndex?(options?: { causal?: true }): Promise<RegionGalleryIndex | null>
+  prepareTileRemap?(source: Asset): Promise<readonly Asset[]>
+  accountConfirmation?: Pick<CreationsCloud, 'confirm' | 'download'>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
   /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
-  savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
+  paletteAccount?: PaletteAccount
+  savePaletteLibrary?(
+    library: PaletteLibrary,
+    ready?: () => boolean,
+    observed?: PaletteLibrary,
+  ): Promise<PaletteLibrary>
   /** Reconcilia apenas o item de paletas, sem baixar a galeria inteira. */
   syncPaletteLibrary?(): Promise<void>
+  /** Desenhos da conta que este código não sabe ler (ver `PintaCloudReadIssue`). */
+  getReadIssues?(): PintaCloudReadIssue[]
   /** Desliga o que o wrapper escuta por fora (abrir/fechar do editor). O host chama ao trocar. */
   dispose?(): void
 }
@@ -138,13 +379,22 @@ export function copyName(name: string, taken: Set<string>): string {
   return conflictCopyName(name, taken, MAX_NAME)
 }
 
-export function createCloudMirroredPintaPersistence(options: {
-  local: PintaPersistenceLike
+interface MirrorOptions<Asset extends PintaWorkshopAsset> {
+  local: PintaPersistenceLike<Asset>
   cloud: CreationsCloud
+  causal?: {
+    reader?: number
+    writer?: number
+    local: PintaCausalLocalPort
+    holdOpen(id: string): Promise<() => void>
+    withClosed(ids: readonly string[], apply: () => Promise<boolean>): Promise<boolean>
+  }
   /** Perfil (namespace) — as marcas de sincronia são por perfil. */
   viewerId: string
   localNamespace?: string
   marks?: SyncedMarks
+  /** O carimbo lembrado por desenho (ver `PintaFormatMemory`). Padrão: `localStorage` do perfil. */
+  formatMemory?: PintaFormatMemory
   now?: () => number
   /**
    * O desenho está ABERTO no editor agora? (`isPintaAssetOpen` do pacote.) A descida NÃO
@@ -166,9 +416,466 @@ export function createCloudMirroredPintaPersistence(options: {
   budgetMs?: number
   passDelayMs?: number
   reconcileMinIntervalMs?: number
-}): PintaPersistenceLike {
+}
+export function createCloudMirroredPintaPersistence(
+  options: MirrorOptions<PintaAsset>,
+): PintaPersistenceLike<PintaAsset>
+export function createCloudMirroredPintaPersistence(
+  options: MirrorOptions<PintaWorkshopAsset>,
+): PintaPersistenceLike<PintaWorkshopAsset>
+export function createCloudMirroredPintaPersistence(
+  options: MirrorOptions<PintaWorkshopAsset>,
+): PintaPersistenceLike<PintaWorkshopAsset> {
   const { local, cloud } = options
+  const causalLocal = options.causal?.local
+  const causalCloud = cloud.pintaCausal
+  const causalSession = new AbortController()
+  let lastRemap: PintaCausalRemapBase | undefined
+  let lastRemapChain = ''
+  let queuedSlots: PintaQueuedSlots | undefined
+  let knownLegacy = false
+  let needsRetainedRecovery = false
+  async function loadRetainedRecoveryFiles(): Promise<ReadonlyMap<string, Blob>> {
+    const files = new Map<string, Blob>()
+    if (!causalLocal) return files
+    const signal = causalSession.signal
+    for (const [opId, { puts, blobs, manifest }] of await causalLocal.retainedArchive()) {
+      for (const { itemId, sha256 } of puts) {
+        signal.throwIfAborted()
+        const blob = blobs.get(itemId)
+        if (!blob || (await pintaCausalGzipHash(await blob.arrayBuffer())) !== sha256)
+          throw Error('Não consegui conferir os arquivos guardados neste aparelho.')
+        files.set(`${opId}/${encodeURIComponent(itemId)}.pinta.json.gz`, blob)
+      }
+      files.set(
+        `${opId}/revisoes-e-vinculos.json`,
+        new Blob([manifest], { type: 'application/json' }),
+      )
+    }
+    signal.throwIfAborted()
+    return files
+  }
+  /** O pedido de ajuda da galeria: as edições guardadas e os desenhos de cada uma, sem bytes. */
+  async function describeRetainedRecovery() {
+    if (!causalLocal) return []
+    return [...(await causalLocal.retainedArchive())].map(([opId, { puts }]) => ({
+      opId,
+      itemIds: puts.map(({ itemId }) => itemId),
+    }))
+  }
+  let causalTimer: ReturnType<typeof setTimeout> | null = null
+  async function reportCausalQueue(error?: unknown): Promise<void> {
+    if (error instanceof PintaCausalRecoveryNeedsFilesError) needsRetainedRecovery = true
+    if (!causalLocal || !cloud.reportPintaQueue || causalSession.signal.aborted) return
+    const { sealed, pending, unbased, recovered, confirmed } = await causalLocal.inspect()
+    if (causalSession.signal.aborted) return
+    const ids = new Set(pending.flatMap((unit) => unit.members.map((member) => member.itemId)))
+    for (const member of sealed?.local.members ?? []) ids.add(member.itemId)
+    for (const member of unbased?.members ?? []) ids.add(member.itemId)
+    if (!ids.size && confirmed.size) {
+      const assets = new Map((await local.listAllAssets()).map((asset) => [asset.id, asset]))
+      const deviceChanges = [...confirmed]
+        .filter(([id, mark]) => {
+          const asset = assets.get(id)
+          return !mark.deleted && (!asset || mark.localRevision !== pintaLocalRevisionOf(asset))
+        })
+        .map(([id]) => id)
+      if (causalSession.signal.aborted) return
+      if (deviceChanges.length) {
+        cloud.reportPintaQueue(
+          deviceChanges,
+          'error',
+          'Há versões diferentes neste aparelho e na conta. Feche o editor para conferir os desenhos.',
+        )
+        return
+      }
+    }
+    if (!ids.size) cloud.reportPintaQueue([], recovered?.size ? 'device-only' : 'saved')
+    else if (typeof navigator !== 'undefined' && !navigator.onLine)
+      cloud.reportPintaQueue([...ids], 'offline')
+    else if (error)
+      cloud.reportPintaQueue(
+        [...ids],
+        'error',
+        error instanceof PintaCausalRecoveryNeedsFilesError
+          ? 'Faltam peças da versão anterior. Baixe as edições guardadas na galeria.'
+          : error instanceof PintaClientOutdatedError ||
+              (error instanceof PintaCausalRequestError &&
+                [
+                  'operation-expired',
+                  'operation-aborted',
+                  'not-found',
+                  'unresolved-predecessor',
+                ].includes(error.reason))
+            ? 'Seus desenhos estão neste aparelho. Uma nova versão da conta precisa ser conferida.'
+            : 'Seus desenhos estão neste aparelho. Não consegui guardá-los na conta agora.',
+      )
+    else cloud.reportPintaQueue([...ids], 'saving')
+  }
+  async function probeCausal(signal = causalSession.signal) {
+    if (!causalLocal || !causalCloud) return null
+    const snapshot = await discoverPintaCausalSnapshot({
+      local: causalLocal,
+      cloud: causalCloud,
+      signal,
+    })
+    knownLegacy = snapshot === null
+    return snapshot
+  }
+  function queueChain(current: Awaited<ReturnType<PintaCausalLocalPort['inspect']>>): string {
+    return [current.sealed?.local.opId, ...(current.prepared?.keys() ?? [])].join('/')
+  }
+  async function freezeBeforeBoundary(
+    rootId: string | undefined,
+    remapping: boolean,
+    pinning: boolean,
+  ) {
+    if (!causalLocal) return
+    let current = await causalLocal.inspect()
+    for (const group of current.pending) {
+      if (current.prepared?.has(group.opId)) continue
+      const otherRemap = group.members.some(
+        (member) => member.operation?.type === 'remap' && member.itemId !== rootId,
+      )
+      const sameRemap = group.members.some(
+        (member) => member.operation?.type === 'remap' && member.itemId === rootId,
+      )
+      const changesOtherDocuments = group.members.some((member) => member.itemId !== rootId)
+      const touchesPriorGroup = group.members.some((member) => member.itemId === rootId)
+      if (
+        !group.independent &&
+        !pinning &&
+        !(otherRemap && (remapping || touchesPriorGroup)) &&
+        !(remapping && !sameRemap && changesOtherDocuments)
+      )
+        continue
+      const frozen = await freezePintaCausalPending(causalLocal, group.opId, causalSession.signal)
+      current = await causalLocal.inspect()
+      if (
+        !frozen &&
+        !current.prepared?.has(group.opId) &&
+        current.pending.some(({ opId }) => opId === group.opId)
+      )
+        throw Error('Uma das mudanças guardadas foi atualizada em outra janela.')
+    }
+  }
+  async function prepareTileRemap(
+    source: PintaWorkshopAsset,
+  ): Promise<readonly PintaWorkshopAsset[]> {
+    if (!causalLocal || !causalCloud) return local.listAllAssets()
+    await freezeBeforeBoundary(source.id, true, false)
+    const state = await causalLocal.inspect()
+    if (!knownLegacy && state.epoch === null && state.writeEpoch === undefined)
+      return local.listAllAssets()
+    if (
+      lastRemap?.source.id === source.id &&
+      lastRemapChain === queueChain(state) &&
+      (state.pending.some(
+        (unit) => unit.opId === queuedSlots?.opId && !state.prepared?.has(unit.opId),
+      ) ||
+        (lastRemap.epoch === (state.writeEpoch ?? state.epoch) &&
+          pintaLocalRevisionOf(lastRemap.source) === pintaLocalRevisionOf(source)))
+    )
+      return lastRemap.assets
+    const catalog = await local.listAllAssets()
+    let snapshot: Awaited<ReturnType<typeof probeCausal>>
+    try {
+      snapshot = await probeCausal()
+    } catch (error) {
+      if (causalSession.signal.aborted || !(error instanceof TypeError)) throw error
+      lastRemap = preparePintaOfflineRemap(source, catalog, state)
+      lastRemapChain = queueChain(state)
+      return lastRemap.assets
+    }
+    if (!snapshot) {
+      if (await cloud.peek(source.id))
+        throw Error('Ainda não consegui conferir a conta para mudar a ordem das peças.')
+      return catalog
+    }
+    lastRemap = await preparePintaCausalRemap({
+      source,
+      snapshot,
+      local: catalog,
+      localState: state,
+      decodeCandidate: causalLocal.decodeCandidate,
+      cloud: causalCloud,
+      signal: causalSession.signal,
+    })
+    lastRemapChain = queueChain(state)
+    return lastRemap.assets
+  }
+  /**
+   * A janela focal pela conta (23/11/2026). Só abre com a fila causal já presa a uma época (o
+   * primeiro gravar sem época vai pelo editor inteiro, que guarda a sombra). Antes de abrir, congela
+   * as unidades mutáveis: a janela passa a ser a única dona da ponta. A sessão do pacote recebe a
+   * ligação que monta a unidade DENTRO da transação de cada gesto; os bytes dos recursos lidos são
+   * fixados uma vez aqui, e cada gesto só relê a cabeça confirmada deles.
+   */
+  async function openCausalRegionSession(
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<LocalRegionAuthorSession | null> {
+    if (!causalLocal || !causalCloud || !local.openRegionSession || needsRetainedRecovery)
+      return null
+    const opening = signal ? AbortSignal.any([causalSession.signal, signal]) : causalSession.signal
+    let state = await causalLocal.inspect()
+    if ((state.writeEpoch ?? state.epoch) === null) return null
+    const focalOwner = (unit: (typeof state.pending)[number]) =>
+      unit.members.length === 1 && unit.members[0]?.itemId === id && !state.shadows?.has(unit.opId)
+    for (let attempts = state.pending.length; ; attempts--) {
+      const mutable = state.pending.filter((unit) => !state.prepared?.has(unit.opId))
+      const head = mutable[0]
+      if (!head || mutable.every(focalOwner)) break
+      if (attempts <= 0 || !(await freezePintaCausalPending(causalLocal, head.opId, opening)))
+        throw Error('Uma das mudanças guardadas foi atualizada em outra janela.')
+      state = await causalLocal.inspect()
+    }
+    let reads: readonly { id: string; localRevision: string | null }[] = []
+    let pins: PintaRegionCausalPins | null = null
+    const session = await local.openRegionSession(id, opening, {
+      unit(current, change) {
+        if (!pins) throw Error('Ainda estou conferindo as peças deste cenário.')
+        return pintaRegionCausalUnit(current, change, reads, pins)
+      },
+    })
+    if (!session) return null
+    try {
+      reads = session.resources
+      const catalog = await local.listAllAssets()
+      const map = catalog.find((asset) => asset.id === id)
+      if (!map || pintaLocalRevisionOf(map) !== session.store.getState().revision)
+        throw Error('O cenário mudou enquanto abria. Abra de novo.')
+      state = await causalLocal.inspect()
+      const fixed = await encodePintaObservedResources({
+        local: causalLocal,
+        state,
+        candidates: [map],
+        catalog,
+        readSet: pintaRegionCausalReads(state, id, reads),
+        signal: opening,
+      })
+      pins = {
+        candidate: fixed.candidate,
+        revisions: new Map(fixed.bases.map((basis) => [basis.itemId, basis.localRevision])),
+      }
+    } catch (error) {
+      session.close()
+      throw error
+    }
+    // O selo "salvando" acompanha a fila; a subida inteira acorda quando a janela fecha.
+    const reported = <T extends { changed: boolean }>(result: T): T => {
+      if (result.changed) void reportCausalQueue().catch(() => {})
+      return result
+    }
+    return {
+      ...session,
+      apply: (draft) => session.apply(draft).then(reported),
+      undo: () => session.undo().then(reported),
+      redo: () => session.redo().then(reported),
+      retry: () => session.retry().then(reported),
+    }
+  }
+  function wakeCausal(): void {
+    if (!causalLocal || !causalCloud || causalSession.signal.aborted || causalTimer) return
+    causalTimer = setTimeout(() => {
+      causalTimer = null
+      if (reconcileInFlight) {
+        wakeCausal()
+        return
+      }
+      void local
+        .listAllAssets()
+        .then(startReconcile)
+        .catch(() => {})
+    }, 1_500)
+  }
+  const slotSnapshots = new WeakMap<readonly symbol[], readonly symbol[]>()
+  function captureSlots(slots: readonly symbol[]): readonly symbol[] {
+    const previous = slotSnapshots.get(slots)
+    if (
+      previous &&
+      previous.length === slots.length &&
+      previous.every((slot, i) => slot === slots[i])
+    )
+      return previous
+    const copy = [...slots]
+    slotSnapshots.set(slots, copy)
+    return copy
+  }
+  async function stageCausal(
+    authoring: readonly PintaWorkshopAsset[],
+    requestedContext?: PintaEditorWriteContext,
+    requestedDeletion?: { id: string; before?: PintaWorkshopAsset },
+  ): Promise<boolean> {
+    if (!causalLocal || !causalCloud) return false
+    // Capture one detached version before the first await. The document and its retained gzip
+    // must never encode different contents under the same IndexedDB revision.
+    const assets = authoring.map((asset) => causalLocal.captureCandidate(asset))
+    const authors = new Map(authoring.map((asset) => [asset.id, asset]))
+    const deletion = requestedDeletion && {
+      id: requestedDeletion.id,
+      before: requestedDeletion.before && causalLocal.captureCandidate(requestedDeletion.before),
+    }
+    const context = requestedContext && {
+      resources: requestedContext.resources.map((ref) => ({ ...ref })),
+      layout: requestedContext.layout && {
+        oldToNew: [...requestedContext.layout.oldToNew],
+        count: requestedContext.layout.count,
+      },
+      slotLineage: requestedContext.slotLineage && {
+        before: captureSlots(requestedContext.slotLineage.before),
+        after: captureSlots(requestedContext.slotLineage.after),
+      },
+    }
+    let state = await causalLocal.inspect()
+    const renumbering = !!context?.layout?.oldToNew.some((next, old) => next !== old)
+    const structure = !!deletion || renumbering
+    if (
+      !state.protocolKnown &&
+      knownLegacy &&
+      !state.unbased &&
+      assets.every(isLegacyWorkshopAsset) &&
+      (!deletion?.before || isLegacyWorkshopAsset(deletion.before))
+    )
+      return false
+    if (deletion?.before && state.epoch !== null) {
+      const [base] = await causalLocal.capture([deletion.id])
+      if (
+        base?.before &&
+        base.beforeRevision === pintaLocalRevisionOf(deletion.before) &&
+        (await causalLocal.discardUnpublished({ ...base, after: null }))
+      ) {
+        await reportCausalQueue().catch(() => {})
+        return true
+      }
+    }
+    const root = assets[0]
+    const independent = root && pintaPinBoundary(await local.loadAssetById(root.id), root)
+    if (state.writeEpoch !== undefined || state.epoch !== null) {
+      await freezeBeforeBoundary(root?.id ?? deletion?.id, renumbering, !!independent)
+      state = await causalLocal.inspect()
+    }
+    const remap =
+      root &&
+      lastRemap?.source.id === root.id &&
+      context?.layout &&
+      (lastRemap.epoch === (state.writeEpoch ?? state.epoch) ||
+        state.pending.some(
+          (unit) => unit.opId === queuedSlots?.opId && !state.prepared?.has(unit.opId),
+        ))
+        ? lastRemap
+        : undefined
+    const receipt = root && state.confirmed.get(root.id)
+    const undo =
+      queuedSlots &&
+      (receipt?.opId === queuedSlots.opId || receipt?.originalOpId === queuedSlots.opId) &&
+      context?.slotLineage?.before === queuedSlots.after &&
+      context.slotLineage.after === queuedSlots.before
+        ? receipt.opId
+        : undefined
+    if (!remap && (state.writeEpoch ?? state.epoch) === null) {
+      const targets = new Map(assets.map((asset) => [asset.id, asset]))
+      const ids = deletion ? [deletion.id] : [...targets.keys()]
+      if (!ids.length) return true
+      const entries = await causalLocal.capture(ids)
+      const changes = entries.map((before) => {
+        const after = targets.get(before.id) ?? null
+        const author = after ?? deletion?.before
+        if (before.beforeRevision !== (author ? (pintaLocalRevisionOf(author) ?? null) : null))
+          throw Error('Um dos desenhos mudou em outra janela.')
+        return { ...before, after }
+      })
+      const catalog = await local.listAllAssets()
+      const gallery = [...catalog, ...assets]
+      const observations = new Map(
+        context?.resources.map(({ id, localRevision }) => [id, localRevision]),
+      )
+      const readSet = assets.flatMap((consumer) =>
+        observePintaReferences(consumer, gallery).map((ref) => ({
+          consumerId: consumer.id,
+          targetId: ref.id,
+          localRevision: observations.get(ref.id) ?? (structure ? ref.localRevision : null),
+        })),
+      )
+      const migrating =
+        state.unbased && !state.shadows?.has(state.unbased.opId)
+          ? state.unbased.members.filter(({ itemId, deleted }) => !deleted && !ids.includes(itemId))
+          : []
+      const retained = await causalLocal.capture(migrating.map(({ itemId }) => itemId))
+      const retainedAssets = retained.map(({ id, before, beforeRevision }) => {
+        if (
+          !before ||
+          !migrating.some(
+            ({ itemId, localRevision }) => itemId === id && localRevision === beforeRevision,
+          )
+        )
+          throw Error('Uma mudança guardada foi atualizada em outra janela.')
+        return before
+      })
+      const shadow = await causalLocal.encodeCandidates(
+        [...retainedAssets, ...assets],
+        causalSession.signal,
+      )
+      const writtenIds = new Set(ids)
+      const known =
+        state.unbased?.members.filter(
+          ({ itemId, deleted }) => !deleted && !writtenIds.has(itemId),
+        ) ?? []
+      const prior = new Map(catalog.map((asset) => [asset.id, asset]))
+      const carried = known.map(({ itemId, localRevision }) => {
+        const asset = prior.get(itemId)
+        if (!asset || pintaLocalRevisionOf(asset) !== localRevision)
+          throw Error('Uma mudança guardada foi atualizada em outra janela.')
+        return asset
+      })
+      const pins = await encodePintaObservedResources({
+        local: causalLocal,
+        state,
+        candidates: [...carried, ...assets],
+        catalog,
+        readSet: [
+          ...(state.unbased?.readSet.filter(({ consumerId }) => !writtenIds.has(consumerId)) ?? []),
+          ...readSet,
+        ].map((edge) => ({ ...edge, source: 'local' as const })),
+        signal: causalSession.signal,
+      })
+      await causalLocal.stageUnbased({
+        shadow,
+        pins,
+        authors,
+        migrations: migrating,
+        transitions: changes,
+        readSet,
+        requireKnownInventory: structure,
+        ...(root && context?.slotLineage && context.slotLineage.before === context.slotLineage.after
+          ? { stableTilesets: [root.id] }
+          : {}),
+      })
+      await reportCausalQueue().catch(() => {})
+      wakeCausal()
+      return true
+    }
+    const staged = await stagePintaCausalWrite({
+      local: causalLocal,
+      signal: causalSession.signal,
+      catalog: await local.listAllAssets(),
+      assets,
+      authors,
+      context,
+      deletion,
+      remapBase: undo ? undefined : remap,
+      inverseReadBase: undo && root?.id === lastRemap?.source.id ? lastRemap : undefined,
+      queuedSlots,
+      inverseOf: undo,
+      ...(independent ? { independent: true as const } : {}),
+    })
+    if (staged.slots) queuedSlots = staged.slots
+    await reportCausalQueue().catch(() => {})
+    wakeCausal()
+    return true
+  }
   const now = options.now ?? (() => Date.now())
+  const paletteAccount = local.paletteAccount
   const loadLibrary = local.loadPaletteLibrary?.bind(local)
   const saveLibrary = local.savePaletteLibrary?.bind(local)
   const reconcileMinIntervalMs = options.reconcileMinIntervalMs ?? RECONCILE_MIN_INTERVAL_MS
@@ -179,22 +886,263 @@ export function createCloudMirroredPintaPersistence(options: {
     createStoredSyncedMarks(
       `sz:creations-synced:pinta:${options.localNamespace ?? options.viewerId}`,
     )
+  const formatMemory =
+    options.formatMemory ??
+    createStoredPintaFormatMemory(
+      `sz:creations-synced:pinta:${options.localNamespace ?? options.viewerId}:formato`,
+    )
+
+  /** Só mapas, peças e conjuntos levam carimbo; os outros tipos nem entram na memória. */
+  const hasFormat = (kind: string): boolean => pintaWriteFormatVersion(kind) > 1
+  const writerId = crypto.randomUUID()
+
+  // A assinatura de um autosave não prova que o cache que a criança abriu estava inteiro.
+  // Guarda a base observada antes dela enquanto falta o floor confirmado pela conta.
+  const unverifiedBases = new Map<string, number>()
+  const observedRevisions = new Map<string, number>()
+  const verifiedLegacy = new Map<string, number>()
+  const formatChecks = new Map<string, Promise<CloudDownload | undefined>>()
+
+  function knownFormatFloor(id: string): boolean {
+    const revision = marks.revision(id)
+    const entry = formatMemory.get(id)
+    if (entry && revision !== undefined && entry.revision === revision) {
+      verifiedLegacy.delete(id)
+      return true
+    }
+    return revision !== undefined && verifiedLegacy.get(id) === revision
+  }
+
+  function needsFormatBaseline(asset: PintaWorkshopAsset): boolean {
+    return (
+      hasFormat(asset.kind) && (marks.revision(asset.id) ?? 0) > 0 && !knownFormatFloor(asset.id)
+    )
+  }
+
+  function observeUnverifiedBase(asset: PintaWorkshopAsset): void {
+    if (hasFormat(asset.kind) && !observedRevisions.has(asset.id))
+      observedRevisions.set(
+        asset.id,
+        formatMemory.get(asset.id)?.revision ?? marks.revision(asset.id) ?? 0,
+      )
+    if (!unverifiedBases.has(asset.id) && needsFormatBaseline(asset))
+      unverifiedBases.set(asset.id, schemaStampOf(asset))
+  }
+
+  async function observeBeforeWrite(asset: PintaWorkshopAsset): Promise<void> {
+    if (!hasFormat(asset.kind)) return
+    const entry = formatMemory.get(asset.id)
+    const inspect = needsFormatBaseline(asset) || (entry && schemaStampOf(asset) < entry.schema)
+    if (!inspect || unverifiedBases.has(asset.id)) return
+    // Só lê o disco: a rede nunca entra no caminho do autosave. Se a base local não puder ser
+    // lida, ela continua desconhecida; salvar a edição não pode autenticá-la como íntegra.
+    const before = await local.loadAssetById(asset.id).catch(() => null)
+    if (before) lostFormat(before) // Marca o cache cortado ANTES de autenticar a nova edição.
+    if (!observedRevisions.has(asset.id))
+      observedRevisions.set(asset.id, entry?.revision ?? marks.revision(asset.id) ?? 0)
+    if (!needsFormatBaseline(asset) || unverifiedBases.has(asset.id)) return
+    unverifiedBases.set(asset.id, before ? schemaStampOf(before) : 0)
+  }
+
+  async function verifyFormatBaseline(
+    id: string,
+    baseRevision: number,
+  ): Promise<CloudDownload | undefined> {
+    const existing = formatChecks.get(id)
+    if (existing) return existing
+    const check = (async () => {
+      const downloaded = await cloud.download(id)
+      if (downloaded && downloaded.summary.itemId !== id)
+        throw new Error('Não foi possível conferir o desenho guardado na conta.')
+      if (downloaded && noteUnreadable(downloaded.summary)) return undefined
+      const remote =
+        downloaded && !downloaded.summary.deletedAt
+          ? sanitizePintaAsset(assetFromJson(downloaded.json).asset)
+          : null
+      if (downloaded && !downloaded.summary.deletedAt && (!remote || remote.id !== id))
+        throw new Error('Não foi possível conferir o desenho guardado na conta.')
+      const schema = remote ? schemaStampOf(remote) : 0
+      const revision = downloaded?.summary.revision ?? baseRevision
+      const entry = formatMemory.get(id)
+      if (entry?.revision !== undefined && entry.revision > revision)
+        throw new Error('O desenho mudou durante a conferência. Tente de novo.')
+      const cut = remote && (entry?.cut || schema > (unverifiedBases.get(id) ?? 0))
+      formatMemory.set(id, {
+        schema,
+        revision,
+        ...(entry?.signature ? { signature: entry.signature } : {}),
+        ...(entry?.localRevision ? { localRevision: entry.localRevision } : {}),
+        writtenAt: entry?.writtenAt ?? remote?.updatedAt ?? marks.get(id),
+        ...(cut ? { cut: true as const } : {}),
+      })
+      if (schema === 0) verifiedLegacy.set(id, revision)
+      else verifiedLegacy.delete(id)
+      unverifiedBases.delete(id)
+      return remote && downloaded ? downloaded : undefined
+    })()
+    formatChecks.set(id, check)
+    try {
+      return await check
+    } finally {
+      if (formatChecks.get(id) === check) formatChecks.delete(id)
+    }
+  }
+
+  /** A descida foi preservada: no próprio id ou na cópia de um conflito já resolvido. */
+  function rememberDownloaded(
+    asset: PintaWorkshopAsset,
+    revision: number,
+    localVersion = asset,
+  ): void {
+    const schema = schemaStampOf(asset)
+    unverifiedBases.delete(asset.id)
+    observedRevisions.set(asset.id, revision)
+    if (schema === 0 && hasFormat(asset.kind)) verifiedLegacy.set(asset.id, revision)
+    else verifiedLegacy.delete(asset.id)
+    const localRevision =
+      legacyDocument(asset) === legacyDocument(localVersion)
+        ? pintaLocalRevisionOf(localVersion)
+        : undefined
+    if (schema > 0 || localRevision)
+      formatMemory.set(asset.id, {
+        schema,
+        revision,
+        ...(localRevision ? { localRevision } : {}),
+        writtenAt: localVersion.updatedAt,
+        signature: {
+          at: localVersion.updatedAt,
+          schema: schemaStampOf(localVersion),
+          revision,
+          maxSchema: PINTA_MAX_SCHEMA,
+          writerId,
+        },
+      })
+    else formatMemory.delete(asset.id)
+  }
+
+  /**
+   * Uma SUBIDA confirmou este floor. Conserva o instante/conteúdo da última gravação e só
+   * confirma sua revisão causal quando ela pertence a esta instância, derivada do envio.
+   */
+  function rememberUploaded(
+    id: string,
+    schema: number,
+    updatedAt: number,
+    revision: number,
+    baseRevision: number,
+    localRevision: string | undefined,
+  ): void {
+    if (observedRevisions.get(id) === baseRevision) observedRevisions.set(id, revision)
+    if (schema === 0) verifiedLegacy.set(id, revision)
+    else verifiedLegacy.delete(id)
+    const entry = formatMemory.get(id)
+    const signature = entry?.signature
+    const acknowledged =
+      signature && signature.writerId === writerId && signature.revision === baseRevision
+        ? { ...signature, revision }
+        : signature
+    if (entry || schema > 0 || localRevision)
+      formatMemory.set(id, {
+        schema,
+        revision,
+        ...(localRevision ? { localRevision } : {}),
+        writtenAt: entry?.writtenAt ?? updatedAt,
+        ...(acknowledged ? { signature: acknowledged } : {}),
+        ...(entry?.cut ? { cut: true } : {}),
+      })
+  }
+
+  /**
+   * Este código vai gravar o desenho no aparelho: assina conteúdo, capacidade e origem. Feito
+   * ANTES de gravar, para nenhuma leitura ver o registro novo sem a assinatura; se a gravação
+   * falhar, a assinatura de um `updatedAt` que não está no disco não combina com nada.
+   */
+  function noteWrittenHere(asset: PintaWorkshopAsset): void {
+    if (!hasFormat(asset.kind)) return
+    const entry = formatMemory.get(asset.id) ?? { schema: 0 }
+    formatMemory.set(asset.id, {
+      ...entry,
+      writtenAt: asset.updatedAt,
+      signature: {
+        at: asset.updatedAt,
+        schema: schemaStampOf(asset),
+        revision:
+          observedRevisions.get(asset.id) ?? entry.revision ?? marks.revision(asset.id) ?? 0,
+        maxSchema: PINTA_MAX_SCHEMA,
+        writerId,
+      },
+    })
+  }
+
+  /**
+   * Carimbo menor que o floor só é legítimo com assinatura capaz de ler esse floor e vinculada
+   * à mesma revisão. Uma vez visto, o corte fica marcado até ser resolvido: assinar uma nova
+   * edição por cima do cache cortado não o conserta.
+   */
+  function signedFor(
+    asset: PintaWorkshopAsset,
+    schema: number,
+    revision: number | undefined,
+  ): boolean {
+    const signature = formatMemory.get(asset.id)?.signature
+    return (
+      !!signature &&
+      signature.at === asset.updatedAt &&
+      signature.schema === schemaStampOf(asset) &&
+      signature.revision === revision &&
+      signature.maxSchema >= schema
+    )
+  }
+
+  function lostFormat(asset: PintaWorkshopAsset): boolean {
+    if (!hasFormat(asset.kind)) return false
+    const entry = formatMemory.get(asset.id)
+    if (!entry) return false
+    if (entry.cut) return true
+    const schema = schemaStampOf(asset)
+    if (schema >= entry.schema || signedFor(asset, entry.schema, entry.revision)) return false
+    formatMemory.set(asset.id, { ...entry, cut: true })
+    return true
+  }
+
+  /** Carimbo do que cada envio em voo leu do disco, para lembrar na confirmação. */
+  const sendingSchema = new Map<string, number>()
+  const sendingBase = new Map<string, number>()
+
   /**
    * Quando o envio de cada desenho COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
    * commit compara esse instante com o `at` da lápide: uma exclusão que nasceu DEPOIS de o envio
    * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
    */
   const sendingAt = new Map<string, number>()
+  const sendingLocalRevision = new Map<string, string | undefined>()
 
-  function enqueue(asset: PintaAsset): void {
+  function legacyDocument(asset: PintaWorkshopAsset): string {
+    if (!isLegacyWorkshopAsset(asset)) throw new PintaClientOutdatedError()
+    return assetToJson(asset)
+  }
+
+  function hasLocalChanges(asset: PintaWorkshopAsset, syncedAt = marks.get(asset.id)): boolean {
+    if (asset.updatedAt !== syncedAt) return true
+    const revision = pintaLocalRevisionOf(asset)
+    // A pre-authority sync mark has no causal native base. Preserve it conservatively
+    // once; only a confirmed download/upload can establish that base.
+    return revision !== undefined && revision !== formatMemory.get(asset.id)?.localRevision
+  }
+
+  function enqueue(asset: PintaWorkshopAsset): void {
     cloud.enqueueUpload(
       asset.id,
       async () => {
+        // Fixa a base causal antes de qualquer await; marcas compartilhadas podem avançar.
+        const entry = formatMemory.get(asset.id)
+        const floorRevision = entry?.revision ?? marks.revision(asset.id) ?? 0
+        const baseRevision = Math.min(floorRevision, entry?.signature?.revision ?? floorRevision)
         // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
         // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
         sendingAt.set(asset.id, now())
         // Sempre o estado MAIS RECENTE do disco (a fila pode rodar depois de mais edições).
-        const current = await local.loadAssetById(asset.id)
+        let current = await local.loadAssetById(asset.id)
         if (!current) {
           sendingAt.delete(asset.id)
           return null
@@ -202,18 +1150,68 @@ export function createCloudMirroredPintaPersistence(options: {
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é este `updatedAt`): não
         // sobe — zero HTTP. É o que segura o editor, que persiste `[salvo, ...ligados]` e
         // reenfileirava peças/mapas intocados a cada autosave.
-        if (marks.get(asset.id) === current.updatedAt) {
+        if (!hasLocalChanges(current)) {
           sendingAt.delete(asset.id)
           return null
         }
+        if (
+          !pintaCanWriteNativeSchema(schemaStampOf(current), pintaWriteFormatVersion(current.kind))
+        ) {
+          sendingAt.delete(asset.id)
+          throw new PintaClientOutdatedError()
+        }
+        // A conta guarda este desenho num formato que este código não lê: a cópia daqui é mais
+        // velha por definição e não sobe por cima.
+        if (readIssues.has(asset.id)) {
+          sendingAt.delete(asset.id)
+          return null
+        }
+        observeUnverifiedBase(current)
+        let checkedDownload: CloudDownload | undefined
+        if (unverifiedBases.has(asset.id)) {
+          try {
+            checkedDownload = await verifyFormatBaseline(asset.id, baseRevision)
+          } catch (error) {
+            sendingAt.delete(asset.id)
+            throw error // A fila existente faz retry; nenhuma edição local depende da rede.
+          }
+          // A criança pode ter salvo/apagado enquanto a conta era consultada.
+          current = await local.loadAssetById(asset.id)
+          if (!current || readIssues.has(asset.id)) {
+            sendingAt.delete(asset.id)
+            return null
+          }
+        }
+        // O registro perdeu recursos por uma gravação de código mais antigo (outra aba): não
+        // sobe. A versão da conta volta e a daqui fica como cópia.
+        if (lostFormat(current)) {
+          sendingAt.delete(asset.id)
+          void resolveLostFormat(asset.id, checkedDownload).catch(() => undefined)
+          return null
+        }
+        const checkedFloor = formatMemory.get(asset.id)?.revision ?? verifiedLegacy.get(asset.id)
+        if (
+          hasFormat(current.kind) &&
+          baseRevision > 0 &&
+          (checkedFloor === undefined || checkedFloor < baseRevision)
+        )
+          throw new Error('O desenho mudou durante a conferência. Tente de novo.')
+        sendingSchema.set(asset.id, schemaStampOf(current))
+        sendingBase.set(asset.id, baseRevision)
+        sendingLocalRevision.set(asset.id, pintaLocalRevisionOf(current))
         return {
-          json: assetToJson(current),
+          json: legacyDocument(current),
           meta: {
             name: current.name,
             kind: current.kind,
             updatedAt: current.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
-            baseRevision: marks.revision(asset.id) ?? 0,
+            baseRevision,
+            // Por TIPO, nunca pelo conteúdo (ver `pinta-format.ts` no core). Versão 1 não vai no
+            // corpo: é o padrão do servidor, e o pedido fica igual ao de antes.
+            ...(pintaWriteFormatVersion(current.kind) > 1
+              ? { formatVersion: pintaWriteFormatVersion(current.kind) }
+              : {}),
           },
         }
       },
@@ -222,6 +1220,20 @@ export function createCloudMirroredPintaPersistence(options: {
         const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
         sendingAt.delete(itemId)
         marks.set(itemId, updatedAt, revision)
+        const sentSchema = sendingSchema.get(itemId)
+        sendingSchema.delete(itemId)
+        const baseRevision = sendingBase.get(itemId) ?? 0
+        sendingBase.delete(itemId)
+        if (sentSchema !== undefined)
+          rememberUploaded(
+            itemId,
+            sentSchema,
+            updatedAt,
+            revision,
+            baseRevision,
+            sendingLocalRevision.get(itemId),
+          )
+        sendingLocalRevision.delete(itemId)
         // A criança apagou o desenho com este upload EM VOO (a lápide nasceu depois de o envio
         // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
         // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
@@ -249,19 +1261,41 @@ export function createCloudMirroredPintaPersistence(options: {
    */
   async function resolveStale(id: string): Promise<void> {
     const downloaded = await cloud.download(id)
+    // Outro aparelho subiu este desenho num formato que este código não lê. Não vira cópia (a
+    // cópia seria o desenho cortado) e não sobe de novo: a nuvem recusaria, e é o certo.
+    if (downloaded && noteUnreadable(downloaded.summary)) return
     if (downloaded) {
       const parsed = assetFromJson(downloaded.json)
       const remote = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
       const mine = await local.loadAssetById(id)
       // A versão da nuvem É a deste aparelho (mesmo `updatedAt`: outra aba deste perfil subiu
       // antes de as marcas se encontrarem): só avança a marca — cópia aqui seria uma duplicata.
-      if (remote && mine && remote.updatedAt === mine.updatedAt) {
+      if (
+        remote &&
+        mine &&
+        remote.updatedAt === mine.updatedAt &&
+        (!hasFormat(mine.kind) || legacyDocument(remote) === legacyDocument(mine))
+      ) {
         marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+        rememberDownloaded(remote, downloaded.summary.revision)
+        return
+      }
+      // O registro daqui foi cortado por código mais antigo: não é um conflito de duas edições
+      // boas. A versão da conta volta no mesmo id (a daqui fica como cópia) e nada sobe por cima.
+      if (
+        remote &&
+        mine &&
+        (lostFormat(mine) ||
+          (hasFormat(mine.kind) &&
+            schemaStampOf(remote) > schemaStampOf(mine) &&
+            !signedFor(mine, schemaStampOf(remote), downloaded.summary.revision)))
+      ) {
+        await resolveLostFormat(id, downloaded)
         return
       }
       if (remote) {
         const taken = new Set((await local.listAllAssets()).map((a) => a.name))
-        const copy: PintaAsset = {
+        const copy: PintaWorkshopAsset = {
           ...remote,
           id: crypto.randomUUID(),
           name: copyName(remote.name, taken),
@@ -270,11 +1304,81 @@ export function createCloudMirroredPintaPersistence(options: {
         await local.persistAssets([copy])
         emitChangedSoon()
         enqueue(copy)
+        // Só rebaseia depois de guardar a edição remota. O formato dela foi conservado e
+        // a próxima CAS pode usar essa revisão sem repetir o mesmo conflito indefinidamente.
+        const current = await local.loadAssetById(id)
+        if (
+          current &&
+          (schemaStampOf(current) >= schemaStampOf(remote) ||
+            signedFor(current, schemaStampOf(remote), downloaded.summary.revision))
+        )
+          rememberDownloaded(remote, downloaded.summary.revision, current)
       }
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
     }
     const current = await local.loadAssetById(id)
     if (current) enqueue(current)
+  }
+
+  /**
+   * O registro local perdeu recursos (`lostFormat`). Tratado como conflito em que a conta vence:
+   * a versão da nuvem volta NO MESMO id e o registro daqui fica como `-copia` (id novo, sobe como
+   * desenho novo), porque a outra aba pode ter pintado algo nele além de cortar. Nada sobe por
+   * cima do item original.
+   *
+   * Não resolve agora, e tenta de novo na próxima subida ou reconciliação, quando: o desenho
+   * está aberto no editor (não grava por baixo), a nuvem não respondeu com algo legível, ou a
+   * conta guarda um formato que este código não lê. Nuvem SEM o item: não há versão inteira para
+   * proteger; o que há aqui sobe.
+   */
+  async function resolveLostFormat(id: string, checkedDownload?: CloudDownload): Promise<void> {
+    // Aberto no editor: nem baixa (cada autosave passaria por aqui). Fica para quando fechar.
+    if (options.isAssetOpen?.(id)) {
+      skippedOpen.add(id)
+      return
+    }
+    const downloaded = checkedDownload ?? (await cloud.download(id))
+    if (!downloaded || downloaded.summary.deletedAt) {
+      formatMemory.delete(id)
+      const current = await local.loadAssetById(id)
+      if (current) enqueue(current)
+      return
+    }
+    if (noteUnreadable(downloaded.summary)) return
+    const parsed = assetFromJson(downloaded.json)
+    const remote = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
+    if (!remote || remote.id !== id) return
+    // Abriu o editor enquanto a nuvem respondia: não grava por baixo.
+    if (options.isAssetOpen?.(id)) {
+      skippedOpen.add(id)
+      return
+    }
+    const mine = await local.loadAssetById(id)
+    const others = (await local.listAllAssets()).filter((asset) => asset.id !== id)
+    const taken = new Set(others.map((asset) => asset.name))
+    const restored = taken.has(remote.name)
+      ? { ...remote, name: uniqueAssetName(remote.name, taken) }
+      : remote
+    taken.add(restored.name)
+    const copy: PintaWorkshopAsset | null =
+      mine &&
+      (mine.updatedAt !== remote.updatedAt || legacyDocument(mine) !== legacyDocument(remote))
+        ? { ...mine, id: crypto.randomUUID(), name: copyName(mine.name, taken), updatedAt: now() }
+        : null
+    // Uma gravação só: ou entram a versão da conta e a cópia, ou nada muda.
+    const replacement = inheritPintaLocalOrigin(restored, mine)
+    await local.persistAssets(copy ? [replacement, copy] : [replacement])
+    marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    rememberDownloaded(replacement, downloaded.summary.revision)
+    emitChangedSoon()
+    if (copy) enqueue(copy)
+    console.warn(
+      '[pinta-nuvem] registro local cortado por código antigo: a versão da conta voltou',
+      {
+        itemId: id,
+        copia: copy?.id ?? null,
+      },
+    )
   }
 
   /**
@@ -320,6 +1424,9 @@ export function createCloudMirroredPintaPersistence(options: {
       marks.setTombstone(id, { ...tombstone, sent: true })
       return
     }
+    // Editado em outro aparelho num formato mais novo: restaurar aqui gravaria o desenho cortado.
+    // A lápide fica; a exclusão não vence a edição e o desenho segue inteiro na conta.
+    if (noteUnreadable(downloaded.summary)) return
     // ABERTO no editor agora? Não grava por baixo: o editor segura a versão antiga em memória e
     // o próximo autosave sobrescreveria o restauro. A lápide fica como está e a próxima
     // reconciliação, já com o desenho fechado, decide de novo.
@@ -335,6 +1442,7 @@ export function createCloudMirroredPintaPersistence(options: {
       : remote
     await local.persistAssets([restored])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    rememberDownloaded(restored, downloaded.summary.revision)
     marks.clearTombstone(id)
     emitChangedSoon()
     console.warn('[pinta-nuvem] exclusão desfeita: o desenho mudou em outro aparelho', {
@@ -342,108 +1450,274 @@ export function createCloudMirroredPintaPersistence(options: {
     })
   }
 
+  let paletteReadSequence = 0
+  let paletteMinimumRevision = 0
+  let paletteSyncInFlight: Promise<number> | null = null
+
+  async function settlePaletteSubmission(seen: PaletteAccountSnapshot) {
+    const transfer = seen.submission,
+      base = seen.head,
+      account = paletteAccount
+    if (!transfer || !base || !account) return
+    if (!cloud.confirmPalette)
+      throw Error('A nuvem precisa confirmar o envio anterior das suas paletas.')
+    const ready = () => !causalSession.signal.aborted
+    let nonce = transfer.ticket.nonce
+    let result: Awaited<ReturnType<CreationsCloud['upload']>>
+    try {
+      try {
+        result = await cloud.confirmPalette(
+          base,
+          transfer.revision,
+          transfer.ticket,
+          causalSession.signal,
+        )
+      } catch (error) {
+        if ((error as { code?: string }).code !== 'PINTA_PALETTE_UPLOAD_MISSING') throw error
+        // After a crash before the PUT, reserve fresh single-use storage for the retained document.
+        result = await cloud.upload(
+          {
+            itemId: PALETTE_LIBRARY_ITEM_ID,
+            kind: PALETTE_LIBRARY_KIND,
+            name: 'Minhas paletas',
+            updatedAt: transfer.sent.updatedAt,
+            baseRevision: base.revision,
+            paletteHead: base,
+            async preparePalette(revision, ticket) {
+              const saved = await account.prepare(
+                seen,
+                { ticket, revision, sent: transfer.sent },
+                ready,
+                transfer.ticket.nonce,
+              )
+              if (saved) nonce = ticket.nonce
+              return saved
+            },
+          },
+          JSON.stringify(transfer.sent),
+        )
+      }
+    } catch (error) {
+      causalSession.signal.throwIfAborted()
+      const code = (error as { code?: string }).code
+      if (code !== 'CREATION_REVISION_MISMATCH' && code !== 'PINTA_PALETTE_CONTENT_INVALID')
+        throw error
+      const current = await account.inspect()
+      if (current.submission?.ticket.nonce === nonce)
+        await account.release(
+          current,
+          nonce,
+          current.submission.revision,
+          ready,
+          code === 'PINTA_PALETTE_CONTENT_INVALID',
+        )
+      return
+    }
+    causalSession.signal.throwIfAborted()
+    if (!result.paletteHead) throw Error('A nuvem não confirmou as paletas enviadas.')
+    const acknowledged = await account.acknowledge(
+      seen,
+      transfer.sent,
+      result.revision,
+      ready,
+      result.paletteHead,
+      nonce,
+    )
+    if (acknowledged && ready()) {
+      marks.set(PALETTE_LIBRARY_ITEM_ID, transfer.sent.updatedAt, result.revision)
+      if (acknowledged.dirty) enqueuePaletteUpload()
+    }
+  }
+
   /** Sobe a biblioteca "Minhas paletas" (item especial) quando o registro local mudou. */
   function enqueuePaletteUpload(): void {
-    if (!loadLibrary) return
+    if (!paletteAccount || causalSession.signal.aborted) return
+    const account = paletteAccount
+    let produced: PaletteAccountSnapshot | null = null
+    let preparedNonce: string | undefined
     cloud.enqueueUpload(
       PALETTE_LIBRARY_ITEM_ID,
       async () => {
-        const library = await loadLibrary()
-        if (!library) return null
-        if (marks.get(PALETTE_LIBRARY_ITEM_ID) === library.updatedAt) return null
+        let read = await account.inspect()
+        if (read.head && !cloud.readPalette)
+          throw Error(
+            'Este dispositivo precisa confirmar a identidade da biblioteca de paletas para sincronizar.',
+          )
+        if (cloud.readPalette && (!read.head || read.needsHead || read.submission)) {
+          await syncPaletteLibraryDirect()
+          read = await account.inspect()
+          if (!read.head || read.needsHead || read.submission)
+            throw Error('A nuvem ainda não confirmou a biblioteca de paletas.')
+        }
+        if (read.rejected)
+          throw Error(
+            'A conta não aceitou esta biblioteca. As paletas continuam neste aparelho. Edite a paleta antes de tentar novamente.',
+          )
+        read = await account.inspect(0, () => !causalSession.signal.aborted, true)
+        if (
+          read.submission ||
+          read.needsHead ||
+          read.rejected ||
+          !!read.head !== !!cloud.readPalette
+        )
+          throw Error('A biblioteca de paletas mudou enquanto o envio era preparado.')
+        produced = read
+        if (!read.dirty || !read.candidate || read.minimum > (read.revision ?? 0)) return null
         return {
-          json: JSON.stringify(library),
+          json: JSON.stringify(read.candidate),
           meta: {
-            name: 'Minhas paletas',
             kind: PALETTE_LIBRARY_KIND,
-            updatedAt: library.updatedAt,
-            baseRevision: marks.revision(PALETTE_LIBRARY_ITEM_ID) ?? 0,
+            name: 'Minhas paletas',
+            updatedAt: read.candidate.updatedAt,
+            baseRevision: read.revision ?? 0,
+            ...(read.head
+              ? {
+                  paletteHead: read.head,
+                  async preparePalette(revision: number, ticket: PintaPaletteUploadCapability) {
+                    const saved = await account.prepare(
+                      read,
+                      { ticket, revision, sent: read.candidate! },
+                      () => !causalSession.signal.aborted,
+                    )
+                    if (saved) preparedNonce = ticket.nonce
+                    return saved
+                  },
+                }
+              : {}),
           },
         }
       },
-      ({ itemId, updatedAt, revision }) => {
-        marks.set(itemId, updatedAt, revision)
-        marks.clearTombstone(itemId)
+      async ({ itemId, updatedAt, revision, paletteHead }) => {
+        if (
+          !produced?.candidate ||
+          itemId !== PALETTE_LIBRARY_ITEM_ID ||
+          updatedAt !== produced.candidate.updatedAt ||
+          causalSession.signal.aborted
+        )
+          return
+        const ack = await account.acknowledge(
+          produced,
+          produced.candidate,
+          revision,
+          () => !causalSession.signal.aborted,
+          paletteHead,
+          preparedNonce,
+        )
+        if (ack && !causalSession.signal.aborted) {
+          marks.set(itemId, updatedAt, revision)
+          marks.clearTombstone(itemId)
+          if (ack.dirty) enqueuePaletteUpload()
+        }
       },
-      () => resolvePaletteConflict(),
+      async ({ currentRevision }) => {
+        if (causalSession.signal.aborted || !produced) return
+        // A GET which started before an unversioned conflict cannot certify the reply.
+        if ((!currentRevision || cloud.readPalette) && paletteSyncInFlight) paletteReadSequence++
+        if (produced.head && (await account.inspect()).submission) {
+          if (paletteSyncInFlight) paletteReadSequence++
+          await syncPaletteLibraryDirect()
+          return
+        }
+        if (
+          !(await account.observeConflict(
+            produced,
+            cloud.readPalette ? 0 : (currentRevision ?? 0),
+            () => !causalSession.signal.aborted,
+          ))
+        )
+          return
+        await syncPaletteLibraryDirect(cloud.readPalette ? 0 : currentRevision, true)
+      },
     )
   }
 
-  /**
-   * Desce a biblioteca da nuvem e FUNDE com a local (paletas por id +
-   * updatedAt, LÁPIDES por id + removedAt — `mergePaletteLibraries`, a regra
-   * ÚNICA; é a lápide que faz uma EXCLUSÃO valer aqui em vez de a cópia local
-   * ressuscitar). Grava o resultado e, quando o CONTEÚDO difere do remoto,
-   * sobe de novo. Serve a reconciliação (revisão que esta marca não conhece)
-   * E a base vencida na subida (outro aparelho subiu antes).
-   *
-   * ⚠️ A comparação usa `paletteLibraryContentKey` (insensível à ORDEM dos
-   * arrays): comparar os arrays crus já fez aparelhos re-subirem conteúdo
-   * equivalente em ordens diferentes.
-   */
-  async function resolvePaletteConflict(): Promise<void> {
-    if (!saveLibrary) return
-    const downloaded = await cloud.download(PALETTE_LIBRARY_ITEM_ID)
-    if (downloaded) {
-      let remote: PaletteLibrary | null = null
-      try {
-        remote = sanitizePaletteLibrary(JSON.parse(downloaded.json))
-      } catch {
-        remote = null
-      }
-      if (remote) {
-        const base = (await loadLibrary?.()) ?? emptyPaletteLibrary()
-        let merged = mergePaletteLibraries(base, remote)
-        // A UI pode ter salvo ENTRE a leitura e a gravação (o registro é um
-        // documento só): relê e re-funde para não sobrescrever a escrita dela.
-        const latest = (await loadLibrary?.()) ?? emptyPaletteLibrary()
-        if (latest.updatedAt !== base.updatedAt) {
-          merged = mergePaletteLibraries(latest, remote)
-        }
-        const changedVsRemote =
-          paletteLibraryContentKey(merged) !== paletteLibraryContentKey(remote)
-        // Merge que difere do remoto é uma "edição" local: carimbo novo para o
-        // produtor ver que há o que subir (a marca fica na revisão da nuvem).
-        let saved = await saveLibrary(
-          changedVsRemote
-            ? { ...merged, updatedAt: Math.max(now(), merged.updatedAt + 1) }
-            : merged,
-        )
-        // O save local ainda pode ter fundido uma escrita atômica de outra aba
-        // depois da releitura acima. Decide a re-subida pelo valor realmente
-        // gravado, e garante um carimbo posterior ao remoto se essa diferença
-        // só apareceu dentro da transação.
-        let savedDiffersFromRemote =
-          paletteLibraryContentKey(saved) !== paletteLibraryContentKey(remote)
-        if (
-          savedDiffersFromRemote &&
-          !changedVsRemote &&
-          saved.updatedAt <= downloaded.summary.itemUpdatedAt
-        ) {
-          saved = await saveLibrary({
-            ...saved,
-            updatedAt: Math.max(now(), saved.updatedAt + 1, downloaded.summary.itemUpdatedAt + 1),
-          })
-          savedDiffersFromRemote =
-            paletteLibraryContentKey(saved) !== paletteLibraryContentKey(remote)
-        }
-        emit({ type: 'palette-library-changed' })
-        marks.set(
-          PALETTE_LIBRARY_ITEM_ID,
-          downloaded.summary.itemUpdatedAt,
-          downloaded.summary.revision,
-        )
-        if (savedDiffersFromRemote) enqueuePaletteUpload()
-        return
-      }
-      marks.set(
-        PALETTE_LIBRARY_ITEM_ID,
-        downloaded.summary.itemUpdatedAt,
-        downloaded.summary.revision,
-      )
+  /** Read and merge the reserved item. A stale result asks the callers to refresh once. */
+  async function resolvePaletteConflict(): Promise<number> {
+    if (!paletteAccount)
+      throw Error('Este armazenamento mantém suas paletas somente neste aparelho.')
+    const signal = causalSession.signal
+    signal.throwIfAborted()
+    const sequence = paletteReadSequence
+    const active = () => !signal.aborted && sequence === paletteReadSequence
+    let token = await paletteAccount.inspect(0, () => !signal.aborted)
+    if (token.submission) {
+      await settlePaletteSubmission(token)
+      token = await paletteAccount.inspect(0, () => !signal.aborted)
+      if (token.submission) throw Error('A nuvem ainda está confirmando as suas paletas.')
     }
-    // Nuvem sem o item (ou ilegível): o que há aqui sobe.
-    enqueuePaletteUpload()
+    signal.throwIfAborted()
+    if (token.head && !cloud.readPalette)
+      throw Error('A versão da nuvem precisa confirmar a identidade da biblioteca de paletas.')
+    const qualified = await cloud.readPalette?.({ signal })
+    const downloaded = qualified
+      ? qualified.download
+      : await cloud.download(PALETTE_LIBRARY_ITEM_ID, { signal })
+    signal.throwIfAborted()
+    if (!active() || (!downloaded && paletteMinimumRevision > 0)) return -1
+    const summary = downloaded?.summary
+    if (
+      summary &&
+      (summary.itemId !== PALETTE_LIBRARY_ITEM_ID ||
+        summary.kind !== PALETTE_LIBRARY_KIND ||
+        summary.revision < paletteMinimumRevision)
+    )
+      return -1
+    const doc = downloaded ? readAccountPaletteLibrary(JSON.parse(downloaded.json)) : null
+    if (downloaded && !doc) throw Error('Não consegui conferir a biblioteca de paletas da conta.')
+    const result = await paletteAccount.receive(
+      token,
+      doc && summary
+        ? { library: doc, revision: summary.revision, updatedAt: summary.itemUpdatedAt }
+        : null,
+      active,
+      now(),
+      marks.get(PALETTE_LIBRARY_ITEM_ID),
+      qualified?.head,
+    )
+    signal.throwIfAborted()
+    if (!result) return -1
+    if (summary) marks.set(PALETTE_LIBRARY_ITEM_ID, summary.itemUpdatedAt, summary.revision)
+    else {
+      const last = marks.get(PALETTE_LIBRARY_ITEM_ID)
+      if (last !== undefined) marks.set(PALETTE_LIBRARY_ITEM_ID, last, 0)
+    }
+    if (result.dirty) enqueuePaletteUpload()
+    if (doc) emit({ type: 'palette-library-changed' })
+    return result.revision ?? 0
+  }
+
+  async function syncPaletteLibraryDirect(
+    minimumRevision = 0,
+    conflictObserved = false,
+  ): Promise<void> {
+    if (!cloud.supported || !loadLibrary || !saveLibrary || causalSession.signal.aborted) return
+    if (!paletteAccount)
+      throw Error('Este armazenamento mantém suas paletas somente neste aparelho.')
+    if (cloud.readPalette) minimumRevision = 0
+    paletteMinimumRevision = Math.max(paletteMinimumRevision, minimumRevision)
+    if (minimumRevision && !conflictObserved)
+      await paletteAccount.inspect(minimumRevision, () => !causalSession.signal.aborted)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      paletteMinimumRevision = Math.max(paletteMinimumRevision, minimumRevision)
+      paletteSyncInFlight ??= resolvePaletteConflict()
+        .catch((error) => {
+          if (
+            error instanceof DOMException &&
+            error.name === 'AbortError' &&
+            !causalSession.signal.aborted
+          )
+            return -1
+          throw error
+        })
+        .finally(() => {
+          paletteSyncInFlight = null
+          paletteMinimumRevision = 0
+        })
+      const revision = await paletteSyncInFlight
+      causalSession.signal.throwIfAborted()
+      if (revision >= minimumRevision) return
+    }
+    throw Error('A biblioteca de paletas mudou durante a leitura. Tente novamente.')
   }
 
   function enqueueRemove(id: string): void {
@@ -461,7 +1735,23 @@ export function createCloudMirroredPintaPersistence(options: {
     )
   }
 
-  let reconcileInFlight: Promise<PintaAsset[]> | null = null
+  /** Desenhos da conta em formato mais novo que este código, por id. */
+  const readIssues = new Map<string, PintaCloudReadIssue>()
+  /** Anota o item se ele não pode ser lido aqui. Verdadeiro = pare, não leia o conteúdo. */
+  function noteUnreadable(summary: CloudCreationSummary): boolean {
+    if (summary.deletedAt || pintaCanReadFormatVersion(summary.formatVersion)) return false
+    const known = readIssues.get(summary.itemId)
+    readIssues.set(summary.itemId, {
+      id: summary.itemId,
+      name: summary.name.slice(0, MAX_NAME),
+      status: 'unsupported',
+      version: summary.formatVersion ?? 1,
+    })
+    if (!known) emitChangedSoon()
+    return true
+  }
+
+  let reconcileInFlight: Promise<PintaWorkshopAsset[]> | null = null
   /** Quando a última reconciliação terminou (`-Infinity` = nunca). */
   let lastReconcileEndedAt = Number.NEGATIVE_INFINITY
   /** Ids que a última reconciliação PULOU por estarem abertos no editor. */
@@ -470,6 +1760,15 @@ export function createCloudMirroredPintaPersistence(options: {
   const emit = (event: PintaCloudPersistenceEvent) => {
     for (const listener of listeners) listener(event)
   }
+  const unsubscribeLocal = local.subscribe?.((event) => {
+    if (
+      event.type === 'recovered' ||
+      event.type === 'changed' ||
+      event.type === 'account-removal-returned' ||
+      event.type === 'account-recovered'
+    )
+      emit(event)
+  })
   // `changed` coalescido: cada desenho que desce avisaria uma vez; a galeria relê em lote.
   let changedTimer: ReturnType<typeof setTimeout> | null = null
   const emitChangedSoon = () => {
@@ -487,8 +1786,31 @@ export function createCloudMirroredPintaPersistence(options: {
     }
   }
 
-  async function reconcile(localAssets: PintaAsset[]): Promise<PintaAsset[]> {
+  async function reconcile(localAssets: PintaWorkshopAsset[]): Promise<PintaWorkshopAsset[]> {
     if (!cloud.supported) return localAssets
+    if (causalLocal && causalCloud && options.causal) {
+      // The reserved palette item is independent even when the map graph cannot be downloaded.
+      void syncPaletteLibraryDirect().catch(() => {})
+      const started = now()
+      const result = await syncPintaCausalAccount({
+        local: causalLocal,
+        cloud: causalCloud,
+        reader: options.causal.reader ?? PINTA_MAX_READ_FORMAT_VERSION,
+        writer: options.causal.writer,
+        signal: causalSession.signal,
+        withClosed: options.causal.withClosed,
+        isOpen: (id) => options.isAssetOpen?.(id) ?? false,
+        canContinue: () => now() - started < budgetMs,
+      })
+      knownLegacy = result.mode === 'legacy'
+      if (result.mode === 'causal') {
+        if (result.applied) {
+          needsRetainedRecovery = false
+          if ((await causalLocal.inspect()).pending.length > 0) wakeCausal()
+        }
+        return local.listAllAssets()
+      }
+    }
     // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser lida:
     // senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa (ou, com a
     // revisão nova já confirmada, trazia o item de volta). Com teto, para a galeria não ficar
@@ -511,7 +1833,7 @@ export function createCloudMirroredPintaPersistence(options: {
     if (paletteSummary) {
       if (marks.revision(PALETTE_LIBRARY_ITEM_ID) !== paletteSummary.revision) {
         try {
-          await resolvePaletteConflict()
+          await syncPaletteLibraryDirect(paletteSummary.revision)
         } catch {
           // A falha da biblioteca não bloqueia a galeria.
         }
@@ -519,14 +1841,15 @@ export function createCloudMirroredPintaPersistence(options: {
     } else if (loadLibrary) {
       void loadLibrary()
         .then((library) => {
-          if (library && library.palettes.length > 0) enqueuePaletteUpload()
+          if (library && (library.palettes.length > 0 || library.removed.length > 0))
+            enqueuePaletteUpload()
         })
         .catch(() => {})
     }
   }
 
   /** Um passe da reconciliação; devolve quantos itens ficaram de fora por tempo. */
-  async function reconcilePass(localAssets: PintaAsset[]): Promise<number> {
+  async function reconcilePass(localAssets: PintaWorkshopAsset[]): Promise<number> {
     const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
     if (!remote) return 0
     skippedOpen.clear()
@@ -537,12 +1860,27 @@ export function createCloudMirroredPintaPersistence(options: {
       ? remote.filter((s) => s.itemId !== PALETTE_LIBRARY_ITEM_ID)
       : remote
     await reconcilePaletteSummary(paletteSummary)
+    // Refeito a cada passe: um item que saiu da nuvem (ou uma página já atualizada) limpa o aviso.
+    const before = readIssues.size
+    readIssues.clear()
+    for (const summary of assetSummaries) noteUnreadable(summary)
+    if (before !== readIssues.size) emitChangedSoon()
     const takenNames = new Set(localAssets.map((a) => a.name))
     const nameOwner = new Map(localAssets.map((a) => [a.name, a.id]))
-    const report = await reconcileCreations<PintaAsset, PintaAsset>({
-      local: localAssets,
-      cloud: assetSummaries,
+    const privateIds = new Set(
+      localAssets.filter((asset) => !isLegacyWorkshopAsset(asset)).map((asset) => asset.id),
+    )
+    const report = await reconcileCreations<PintaWorkshopAsset, PintaWorkshopAsset>({
+      // Nenhum dos dois lados de um item ilegível entra na reconciliação por carimbo de tempo:
+      // carimbos iguais não podem dar por sincronizado um desenho que este código não lê, e a
+      // cópia local (se houver) não pode subir por cima dele.
+      local: localAssets.filter((asset) => !readIssues.has(asset.id) && !privateIds.has(asset.id)),
+      cloud: assetSummaries.filter(
+        (summary) => !readIssues.has(summary.itemId) && !privateIds.has(summary.itemId),
+      ),
       marks,
+      hasLocalChanges: (asset, at) =>
+        pintaLocalRevisionOf(asset) ? hasLocalChanges(asset, at) : undefined,
       now,
       budgetMs,
       // Peças ANTES dos mapas: o `tilesetId` do mapa aponta para elas.
@@ -558,13 +1896,15 @@ export function createCloudMirroredPintaPersistence(options: {
       localUpdatedAt: async (itemId) => (await local.loadAssetById(itemId))?.updatedAt ?? null,
       fetch: async (summary: CloudCreationSummary, signal: AbortSignal) => {
         const downloaded = await cloud.download(summary.itemId, { signal })
-        if (!downloaded) return null
+        // O arquivo pode ter mudado entre a listagem e o download.
+        if (!downloaded || noteUnreadable(downloaded.summary)) return null
+        if (downloaded.summary.revision !== summary.revision) return null
         const parsed = assetFromJson(downloaded.json)
         const asset = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
         if (!asset || asset.id !== summary.itemId) return null
         return asset
       },
-      apply: async (_summary, asset) => {
+      apply: async (summary, asset) => {
         // Nome já usado por OUTRO desenho local: sufixo (a galeria exige nome único).
         const owner = nameOwner.get(asset.name)
         const named =
@@ -577,12 +1917,18 @@ export function createCloudMirroredPintaPersistence(options: {
         takenNames.add(named.name)
         nameOwner.set(named.name, named.id)
         // Grava DIRETO no local (id preservado), fora do embrulho: não é edição.
-        await local.persistAssets([named])
+        const replacement = inheritPintaLocalOrigin(
+          named,
+          localAssets.find((a) => a.id === named.id),
+        )
+        await local.persistAssets([replacement])
+        // O local ficou igual à conta: é este o carimbo a comparar daqui em diante.
+        rememberDownloaded(replacement, summary.revision)
         emitChangedSoon()
         return true
       },
       keepLocalCopy: async (item) => {
-        const copy: PintaAsset = {
+        const copy: PintaWorkshopAsset = {
           ...item,
           id: crypto.randomUUID(),
           name: copyName(item.name, takenNames),
@@ -607,7 +1953,8 @@ export function createCloudMirroredPintaPersistence(options: {
       },
       deleteLocal: async (itemId) => {
         const item = localAssets.find((asset) => asset.id === itemId)
-        await local.deleteAsset(itemId)
+        await local.deleteAsset(itemId, item)
+        formatMemory.delete(itemId)
         if (item && nameOwner.get(item.name) === itemId) {
           nameOwner.delete(item.name)
           takenNames.delete(item.name)
@@ -634,11 +1981,18 @@ export function createCloudMirroredPintaPersistence(options: {
   }
 
   /** Dispara uma reconciliação (single-flight) e avisa o pacote do começo e do fim. */
-  function startReconcile(localAssets: PintaAsset[]): void {
-    if (!cloud.supported || reconcileInFlight) return
+  function startReconcile(localAssets: PintaWorkshopAsset[]): void {
+    if (!cloud.supported || reconcileInFlight || causalSession.signal.aborted) return
     emit({ type: 'sync-start' })
     reconcileInFlight = perfSpanAsync('kids:pinta:reconcile', () => reconcile(localAssets))
-      .catch(() => localAssets) // nuvem fora do ar: fica com o que há aqui, como sempre
+      .then(async (assets) => {
+        await reportCausalQueue().catch(() => {})
+        return assets
+      })
+      .catch(async (error) => {
+        await reportCausalQueue(error).catch(() => {})
+        return localAssets
+      })
       .finally(() => {
         lastReconcileEndedAt = now()
         reconcileInFlight = null
@@ -651,29 +2005,239 @@ export function createCloudMirroredPintaPersistence(options: {
   // (fora do intervalo mínimo — é um pedido pontual, não uma releitura em laço).
   let unsubscribeOpenState: (() => void) | null =
     options.subscribeAssetOpenState?.((event) => {
-      if (event.type !== 'closed' || !skippedOpen.has(event.id)) return
+      if (event.type !== 'closed') return
+      if (lastRemap?.source.id === event.id) lastRemap = undefined
+      if (causalLocal && causalCloud) wakeCausal()
+      if (!skippedOpen.has(event.id)) return
       skippedOpen.delete(event.id)
       void local.listAllAssets().then((localAssets) => startReconcile(localAssets))
     }) ?? null
 
+  if (causalLocal && causalCloud && typeof window !== 'undefined')
+    window.addEventListener('online', wakeCausal)
+  /**
+   * Uma versão da fila (selada, pendente ou sem época) que não bate com o que este aparelho lê
+   * pede os arquivos guardados antes de qualquer gravação. A galeria inteira e o índice da galeria
+   * focal passam pela mesma conta, com as revisões que cada um leu.
+   */
+  async function refreshRetainedRecovery(
+    observed: ReadonlyMap<string, string | undefined>,
+  ): Promise<void> {
+    if (!causalLocal || !causalCloud || needsRetainedRecovery) return
+    const state = await causalLocal.inspect()
+    const latest = new Map([
+      ...(state.sealed?.local.members ?? []).map(
+        (part) =>
+          [
+            part.itemId,
+            { localRevision: part.localRevision, deleted: part.action === 'delete' },
+          ] as const,
+      ),
+      ...state.pending.flatMap((group) =>
+        group.members.map(
+          (part) =>
+            [
+              part.itemId,
+              { localRevision: part.localRevision, deleted: part.action === 'delete' },
+            ] as const,
+        ),
+      ),
+      ...(state.unbased?.members ?? []).map((part) => [part.itemId, part] as const),
+    ])
+    const differs = (id: string, revision: string) => observed.get(id) !== revision
+    const inherited = [...(state.sealed ? [state.sealed.local] : []), ...state.pending].filter(
+      ({ opId }) => !state.pins?.has(opId),
+    )
+    needsRetainedRecovery =
+      [...latest].some(([id, version]) => !version.deleted && differs(id, version.localRevision)) ||
+      inherited.some(({ readSet }) =>
+        readSet.some((edge) => {
+          if (edge.source === 'unit') return false
+          if (edge.source === 'predecessor') return differs(edge.targetId, edge.base.localRevision)
+          const mark = state.confirmed.get(edge.targetId)
+          return (
+            !mark ||
+            mark.deleted ||
+            mark.revision !== edge.revision ||
+            mark.sha256 !== edge.sha256 ||
+            (mark.layoutRevision ?? undefined) !== edge.layoutRevision ||
+            differs(edge.targetId, mark.localRevision)
+          )
+        }),
+      ) ||
+      (!!state.unbased &&
+        !state.pins?.has(state.unbased.opId) &&
+        state.unbased.readSet.some(
+          ({ targetId, localRevision }) => !!localRevision && differs(targetId, localRevision),
+        ))
+  }
+
+  /**
+   * A galeria focal pela conta (23/11/2026). O índice do armazenamento é lido ao lado da fila V4
+   * e passa pela mesma conta de recuperação da galeria inteira; se ela pedir os arquivos
+   * guardados, a galeria cai no inventário completo (`null`). A reconciliação com a nuvem não
+   * espera o inventário: ele é decodificado em segundo plano, como na carga de sempre.
+   */
+  async function listCausalGalleryIndex(): Promise<RegionGalleryIndex | null> {
+    if (!causalLocal || !causalCloud || !local.listGalleryIndex || needsRetainedRecovery)
+      return null
+    const index = await local.listGalleryIndex({ causal: true })
+    if (!index) return null
+    await refreshRetainedRecovery(
+      new Map([
+        ...index.assets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)] as const),
+        ...index.cards.map((card) => [card.id, card.revision] as const),
+      ]),
+    )
+    if (needsRetainedRecovery) return null
+    for (const asset of index.assets) {
+      observeUnverifiedBase(asset)
+      lostFormat(asset)
+    }
+    if (now() - lastReconcileEndedAt >= reconcileMinIntervalMs)
+      void local
+        .listAllAssets()
+        .then(startReconcile)
+        .catch(() => {})
+    return index
+  }
+
+  const accountConfirmation: PintaPersistenceLike['accountConfirmation'] =
+    causalLocal && causalCloud
+      ? {
+          async confirm(id, confirmation) {
+            const signal = AbortSignal.any([
+              causalSession.signal,
+              AbortSignal.timeout(confirmation?.timeoutMs ?? 15_000),
+            ])
+            const snapshot = await probeCausal(signal)
+            if (!snapshot) return cloud.confirm(id, confirmation)
+            await flushPintaCausalOutbox({
+              local: causalLocal,
+              cloud: causalCloud,
+              reader: options.causal?.reader ?? PINTA_MAX_READ_FORMAT_VERSION,
+              writer: options.causal?.writer,
+              inventoryFloor: snapshot.requiredFormat,
+              signal,
+            })
+            const { pending, sealed, confirmed } = await causalLocal.inspect()
+            if (
+              !confirmed.get(id)?.sha256 ||
+              pending.some((unit) => unit.members.some((member) => member.itemId === id)) ||
+              sealed?.local.members.some((member) => member.itemId === id)
+            )
+              throw Error('A versão do desenho ainda não foi confirmada na conta')
+          },
+          async download(id) {
+            if (!(await causalLocal.inspect()).protocolKnown) return cloud.download(id)
+            const signal = causalSession.signal
+            const snapshot = await probeCausal()
+            const entry = snapshot?.entries.find((item) => item.itemId === id)
+            if (!snapshot || !entry) return null
+            const json = await readPintaCausalJson(
+              await causalCloud.download(entry, snapshot.epoch, signal),
+              signal,
+            )
+            await causalCloud.verifyEpoch(snapshot.epoch, signal)
+            const updatedAt = Date.parse(entry.itemUpdatedAt)
+            return {
+              json,
+              summary: { ...entry, itemUpdatedAt: updatedAt, syncedAt: updatedAt, thumb: null },
+              parts: [],
+              fetchPart: async () => {
+                throw Error('O desenho não tem partes separadas.')
+              },
+            }
+          },
+        }
+      : undefined
   return {
-    async persistAsset(asset) {
-      await local.persistAsset(asset)
+    ...(local.workshopReader ? { workshopReader: true } : {}),
+    ...(causalLocal && causalCloud && options.causal
+      ? {
+          observesReferences: true as const,
+          needsRetainedRecovery: () => needsRetainedRecovery,
+          loadRetainedRecoveryFiles,
+          describeRetainedRecovery,
+          prepareTileRemap,
+          holdOpen: options.causal.holdOpen,
+          accountConfirmation,
+          ...(local.openRegionSession
+            ? {
+                openRegionSession: (id: string, signal?: AbortSignal) =>
+                  openCausalRegionSession(id, signal),
+              }
+            : {}),
+          ...(local.openRegionSession && local.listGalleryIndex
+            ? { listGalleryIndex: () => listCausalGalleryIndex() }
+            : {}),
+        }
+      : {}),
+    async persistAsset(asset, context) {
+      if (await stageCausal([asset], context)) return
+      await observeBeforeWrite(asset)
+      noteWrittenHere(asset)
+      try {
+        await local.persistAsset(asset)
+      } catch (error) {
+        if (error instanceof PintaLocalConflictError)
+          for (const copy of error.forks.values()) enqueue(copy)
+        throw error
+      }
       enqueue(asset)
     },
-    async persistAssets(assets) {
-      await local.persistAssets(assets)
+    async persistAssets(assets, context) {
+      if (await stageCausal(assets, context)) return
+      for (const asset of assets) await observeBeforeWrite(asset)
+      for (const asset of assets) noteWrittenHere(asset)
+      try {
+        await local.persistAssets(assets)
+      } catch (error) {
+        if (error instanceof PintaLocalConflictError)
+          for (const copy of error.forks.values()) enqueue(copy)
+        throw error
+      }
       for (const asset of assets) enqueue(asset)
     },
-    async deleteAsset(id) {
-      await local.deleteAsset(id)
+    async deleteAsset(id, base) {
+      if (await stageCausal([], undefined, { id, before: base })) return
+      await local.deleteAsset(id, base)
       // A lápide (com a revisão conhecida) ANTES de apagar a marca.
       enqueueRemove(id)
       marks.delete(id)
+      formatMemory.delete(id)
+      unverifiedBases.delete(id)
+      observedRevisions.delete(id)
+      verifiedLegacy.delete(id)
     },
-    loadAssetById: (id) => local.loadAssetById(id),
+    async loadAssetById(id) {
+      const asset = await local.loadAssetById(id)
+      // Marca o corte ANTES de o editor abrir e salvar por cima (a assinatura da gravação dele
+      // esconderia o corte da subida).
+      if (asset) {
+        const entry = formatMemory.get(id),
+          signature = entry?.signature
+        if (
+          signature &&
+          signature.at === asset.updatedAt &&
+          signature.schema === schemaStampOf(asset) &&
+          signature.maxSchema >= (entry?.schema ?? 0)
+        )
+          observedRevisions.set(id, signature.revision)
+        observeUnverifiedBase(asset)
+        lostFormat(asset)
+      }
+      return asset
+    },
     async listAllAssets() {
       const localAssets = await local.listAllAssets()
+      await refreshRetainedRecovery(
+        new Map(localAssets.map((asset) => [asset.id, pintaLocalRevisionOf(asset)])),
+      )
+      for (const asset of localAssets) {
+        observeUnverifiedBase(asset)
+        lostFormat(asset)
+      }
       // A galeria abre AGORA com o que há neste aparelho; a reconciliação com a nuvem corre
       // em segundo plano (single-flight) e avisa o pacote: `sync-start` → a galeria mostra
       // "buscando…", `changed` a cada lote que desce (a galeria relê), `sync-end` no fim.
@@ -690,13 +2254,18 @@ export function createCloudMirroredPintaPersistence(options: {
         listeners.delete(listener)
       }
     },
+    getReadIssues: () => [
+      ...new Map(
+        [...(local.getReadIssues?.() ?? []), ...readIssues.values()].map((issue) => [
+          issue.id,
+          issue,
+        ]),
+      ).values(),
+    ],
     async syncPaletteLibrary() {
-      if (!cloud.supported) return
-      const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
-      if (!remote) return
-      await reconcilePaletteSummary(
-        remote.find((item) => item.itemId === PALETTE_LIBRARY_ITEM_ID) ?? null,
-      )
+      // Palettes keep their independent document; adopted galleries refuse the
+      // old asset inventory even though this item's direct download stays valid.
+      await syncPaletteLibraryDirect()
     },
     // A biblioteca "Minhas paletas": leitura direta; salvar TAMBÉM enfileira a
     // subida do item especial. Os métodos só existem quando o local os tem
@@ -704,16 +2273,27 @@ export function createCloudMirroredPintaPersistence(options: {
     ...(loadLibrary ? { loadPaletteLibrary: () => loadLibrary() } : {}),
     ...(saveLibrary
       ? {
-          savePaletteLibrary: async (library: PaletteLibrary) => {
-            const saved = await saveLibrary(library)
+          savePaletteLibrary: async (
+            library: PaletteLibrary,
+            ready?: () => boolean,
+            observed?: PaletteLibrary,
+          ) => {
+            const saved = await saveLibrary(library, ready, observed)
             enqueuePaletteUpload()
             return saved
           },
         }
       : {}),
     dispose() {
+      causalSession.abort()
+      if (causalTimer) clearTimeout(causalTimer)
+      if (typeof window !== 'undefined') window.removeEventListener('online', wakeCausal)
+      unsubscribeLocal?.()
       unsubscribeOpenState?.()
       unsubscribeOpenState = null
+      unverifiedBases.clear()
+      observedRevisions.clear()
+      verifiedLegacy.clear()
     },
   }
 }

@@ -1,0 +1,54 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "modeloReal": true,
+    "toqueNaRaiz": true,
+    "transformacoes": true,
+    "tamanhoUniforme": true,
+    "semClonesAutorais": true,
+    "duplicar": true,
+    "separarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "modeloReal": true,
+    "toqueNaRaiz": true,
+    "transformacoes": true,
+    "tamanhoUniforme": true,
+    "semClonesAutorais": true,
+    "duplicar": true,
+    "separarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "light",
+    "largura": 1024,
+    "modeloReal": true,
+    "toqueNaRaiz": true,
+    "transformacoes": true,
+    "tamanhoUniforme": true,
+    "semClonesAutorais": true,
+    "duplicar": true,
+    "separarUndo": true,
+    "reabrir": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "modeloReal": true,
+    "toqueNaRaiz": true,
+    "transformacoes": true,
+    "tamanhoUniforme": true,
+    "semClonesAutorais": true,
+    "duplicar": true,
+    "separarUndo": true,
+    "reabrir": true,
+    "erros": []
+  }
+]

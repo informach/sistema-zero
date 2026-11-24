@@ -1,0 +1,139 @@
+{
+  "base": {
+    "objetos": 0,
+    "triangulos": 964,
+    "desenhos": 3,
+    "carregando": 0,
+    "geometrias": 4,
+    "texturas": 3
+  },
+  "ciclos": [
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    },
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    },
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    },
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    },
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    },
+    {
+      "durante": {
+        "objetos": 0,
+        "triangulos": 6772,
+        "desenhos": 8,
+        "carregando": 0,
+        "geometrias": 10,
+        "texturas": 10
+      },
+      "depois": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "vistaRestaurada": true
+    }
+  ],
+  "apos": {
+    "objetos": 0,
+    "triangulos": 964,
+    "desenhos": 3,
+    "carregando": 0,
+    "geometrias": 4,
+    "texturas": 3
+  },
+  "falha": true,
+  "cancelado": "AbortError",
+  "cabecaNovaEncerra": true,
+  "vistaRestaurada": true,
+  "erros": []
+}

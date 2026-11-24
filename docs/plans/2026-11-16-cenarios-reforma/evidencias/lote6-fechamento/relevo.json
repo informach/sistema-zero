@@ -1,0 +1,54 @@
+{
+  "antes": {
+    "carregando": 0,
+    "falhas": [],
+    "avisos": []
+  },
+  "depois": {
+    "carregando": 0,
+    "falhas": [],
+    "avisos": []
+  },
+  "alterouPiso": true,
+  "fontesPreservadas": true,
+  "origemPreservada": true,
+  "menorErroDeBase": -1.180992743599063e-7,
+  "basesConferidas": 1774,
+  "muroBloqueia": true,
+  "ciclos": [
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": []
+      },
+      "geometries": 5,
+      "textures": 11,
+      "desenhos": 5,
+      "triangulos": 31014
+    },
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": []
+      },
+      "geometries": 5,
+      "textures": 11,
+      "desenhos": 5,
+      "triangulos": 31014
+    },
+    {
+      "estado": {
+        "carregando": 0,
+        "falhas": [],
+        "avisos": []
+      },
+      "geometries": 5,
+      "textures": 11,
+      "desenhos": 5,
+      "triangulos": 31014
+    }
+  ],
+  "erros": []
+}

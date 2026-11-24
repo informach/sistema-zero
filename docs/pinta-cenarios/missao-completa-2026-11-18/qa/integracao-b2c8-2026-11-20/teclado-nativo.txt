@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:9080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [firefox] › packages\studio\e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (10.1s)
+
+  1 passed (11.4s)

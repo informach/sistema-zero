@@ -1,0 +1,86 @@
+{
+  "implementation": "8ec832486aee7ea211737afeab3fc3902f191216",
+  "upstream": "acaf4b1a89436109f5ea857b057e9f3641b045a0",
+  "stats": {
+    "startTime": "2026-11-19T02:05:43.513Z",
+    "duration": 92218.897,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "uma porta configurada depois acrescenta seu mapa ao jogo existente sem mudar o programa",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 14296,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "Pinta real cria jogo estruturado; atualização do cenário conserva a programação",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 16376,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 9691,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "Trazer do Pinta importa a Vila e o destino da porta juntos, sem mudar o programa",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 8652,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "Trazer do Pinta conserva o mapa nativo 6 autocontido e sua animação sem os originais",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 4911,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "title": "falha síncrona no segundo put não deixa metade da Vila na biblioteca nem no projeto",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 2600,
+          "retry": 0
+        }
+      ]
+    }
+  ]
+}

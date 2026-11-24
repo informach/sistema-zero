@@ -1,0 +1,8 @@
+{
+  "run": 44765924545,
+  "source": "74d6f5fedad70782291131c4fd5b13845be609ce",
+  "job": 136390395465,
+  "failed": 2,
+  "passed": 46,
+  "reason": "fixture created a door to a missing floresta map; portable export correctly refused an incomplete world"
+}

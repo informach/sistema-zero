@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from os.path import join
 from random import choice
 
@@ -8,6 +9,7 @@ from settings import TILE_SIZE, LAYERS, SOIL_PIECES, GROW_SPEED, PLANT_LIFT, PLA
 from things import Thing, Flash
 
 
+# 🧩 Meus moldes
 class Plant(pygame.sprite.Sprite):
     """Corn or tomato growing on one square of the field."""
 

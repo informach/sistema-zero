@@ -26,37 +26,84 @@
  */
 
 import { canonicalJson } from '@sistemazero/core/creations'
+import type { PintaImageDerivation } from '@sistemazero/core/studio/pinta-image'
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  PINTA_SCENE_RUNTIME_MESSAGE,
+  pintaImageRuntimeCompatible,
+} from '../runtime/pintaImageCompatibility'
+import { mergeDrawingIntoAsset, PERSONAL_LIB_PREFIX, personalIdOf } from './personalAssetMerge'
+import { pintaMapWorld, pintaWorldNeedsInventory } from './pintaMapWorld'
+
+export { mergeDrawingIntoAsset, personalIdOf } from './personalAssetMerge'
+
+type DrawingContent = {
+  dataUrl: string
+  scene?: unknown
+  tilemap?: unknown
+  tilemapFront?: unknown
+}
+
+/**
+ * O que a biblioteca MANDA no material do jogo: os bytes, e a cena e os mapas quando o
+ * desenho os define. `tileset` e `sprite` ficam de fora de propósito: a criança os configura
+ * no Estúdio (`updateAssetMeta`) e o desenho não os conhece; compará-los dava "precisa
+ * sincronizar" para sempre, com cada varredura regravando o jogo sem mudar nada.
+ *
+ * Desenho COM cena é a fonte inteira do mapa: `tilemap`/`tilemapFront` ausentes nele querem
+ * dizer "este mapa saiu do envelope antigo", e o material que ainda os guarda está velho.
+ * Desenho sem cena só compara o mapa que ele traz (o do jogo pode ter sido montado aqui).
+ */
+function sameDrawingContent(asset: DrawingContent, drawing: DrawingContent): boolean {
+  if (asset.dataUrl !== drawing.dataUrl) return false
+  const same = (a: unknown, b: unknown) => canonicalJson(a ?? null) === canonicalJson(b ?? null)
+  if (drawing.scene !== undefined)
+    return (
+      same(asset.scene, drawing.scene) &&
+      same(asset.tilemap, drawing.tilemap) &&
+      same(asset.tilemapFront, drawing.tilemapFront)
+    )
+  return (
+    (drawing.tilemap === undefined || same(asset.tilemap, drawing.tilemap)) &&
+    (drawing.tilemapFront === undefined || same(asset.tilemapFront, drawing.tilemapFront))
+  )
+}
+
 import { ulid } from 'ulid'
-import { isValidAssetDataUrl, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset, projectAssetBudgetChars } from '#core'
 import { perfSpanAsync } from '../core/perf'
+import { PRIVATE_REGIONAL_PROJECT } from '../core/pintaRegionalReference'
+import { idsDosRecursosDeCena3D } from '../core/scene3d/referencias'
 import {
   listProjectSummariesLight,
-  loadProjectAssetsById,
+  loadProjectAssetsSnapshotById,
   persistProjectAssets,
 } from '../state/persistence'
+import { preparePintaMapBundle } from '../state/pintaMapBundle'
 import {
   captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
 } from '../state/projectStorageRuntime'
 import type { ProjectStoreApi } from '../state/projectStore'
-import type { StudioPintaLibraryAdapter } from '../studio/pinta-library'
+import type { StudioPintaImportedAsset, StudioPintaLibraryAdapter } from '../studio/pinta-library'
 import {
   getPersonalAsset,
   getPersonalAssets,
   getPersonalAssetsNamespace,
   type PersonalAsset,
-  personalAssetsChangedAt,
+  personalAssetsChangeToken,
+  readPersonalAssetInventory,
   savePersonalAsset,
 } from './personal'
 
-const PERSONAL_LIB_PREFIX = 'personal:'
-
 interface DrawingSyncState {
-  lastSyncAt: number
+  lastSyncToken: string
   didInitialSweep: boolean
   inFlight: Promise<DrawingSyncResult> | null
   inFlightAdapter?: StudioPintaLibraryAdapter | null
   inFlightSignal?: AbortSignal
+  inFlightRuntimeCatalog?: () => StudioRuntimeCatalog | null
   inFlightStore?: ProjectStoreApi
   token?: object
   controller?: AbortController
@@ -69,6 +116,10 @@ interface DrawingSyncContext {
   state: DrawingSyncState
   canonicalChanged?: boolean
   callerSignal?: AbortSignal
+  runtimeCatalog?: () => StudioRuntimeCatalog | null
+  mapInventory?: Promise<PersonalAsset[]>
+  attemptedWorlds?: Map<string, Set<string>>
+  canonicalWriteRefused?: boolean
   python?: {
     signal: AbortSignal
     attemptedOpen: Set<string>
@@ -91,7 +142,7 @@ function captureSyncContext(): DrawingSyncContext {
   const identity = syncIdentity(namespace, storageScope)
   let state = syncStates.get(identity)
   if (!state) {
-    state = { lastSyncAt: 0, didInitialSweep: false, inFlight: null, pendingFailures: [] }
+    state = { lastSyncToken: '', didInitialSweep: false, inFlight: null, pendingFailures: [] }
     syncStates.set(identity, state)
   }
   return { namespace, storageScope, state }
@@ -140,19 +191,6 @@ function yieldToMain(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0))
 }
 
-/** O id do desenho no Pinta, quando o asset veio de "Meus desenhos". */
-export function personalIdOf(asset: Pick<ProjectAsset, 'libId'>): string | null {
-  const libId = asset.libId
-  if (typeof libId !== 'string' || !libId.startsWith(PERSONAL_LIB_PREFIX)) return null
-  const id = libId.slice(PERSONAL_LIB_PREFIX.length)
-  return id.length > 0 ? id : null
-}
-
-/**
- * Decide o que fazer com um asset. Puro (testável sem IndexedDB): bytes iguais
- * não geram trabalho. `libRevision` é um token de igualdade, não um relógio global:
- * valores produzidos por aparelhos distintos nunca são ordenados.
- */
 /**
  * The Molda's 360° sky enters a Raylib project as its panorama PNG (`raylibReadyCreation`: the
  * desktop raylib does not open .hdr), so the project holds an IMAGE of an `environment3d`
@@ -182,6 +220,7 @@ export async function raylibSkyAsImage(
   }
 }
 
+/** Content, not timestamps, decides whether a canonical personal copy needs an update. */
 export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | null): boolean {
   if (!drawing) return false
   if (asset.kind === 'audio') return false
@@ -192,7 +231,7 @@ export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | n
   // inverso) não é "o mesmo desenho, mais novo". Só recusa com as DUAS marcas presentes;
   // legado sem `libOrigin` ou registro sem `origin` segue pelos bytes.
   if (drawing.origin && asset.libOrigin && drawing.origin !== asset.libOrigin) return false
-  if (asset.dataUrl === drawing.dataUrl) return false
+  if (sameDrawingContent(asset, drawing)) return false
   return true
 }
 
@@ -232,7 +271,14 @@ export async function reconcileDrawingsFromRestoredProject(
     const id = personalIdOf(asset)
     // A captured frame is deliberately different from the canonical spritesheet.
     // It must retain the editable drawing identity, never become a personal copy.
-    if (!id || asset.kind === 'audio' || asset.kind === 'font' || asset.pintaImage !== undefined)
+    if (
+      !id ||
+      asset.kind === 'audio' ||
+      asset.kind === 'font' ||
+      asset.kind === 'scene3d' ||
+      asset.kind === 'scene3d-data' ||
+      asset.pintaImage !== undefined
+    )
       continue
     try {
       const drawing = drawings.get(id) ?? null
@@ -247,7 +293,7 @@ export async function reconcileDrawingsFromRestoredProject(
         continue
       }
       if (drawing.kind !== asset.kind) continue
-      if (drawing.dataUrl === asset.dataUrl) {
+      if (sameDrawingContent(asset, drawing)) {
         if (asset.libRevision !== drawing.updatedAt) {
           nextAssets[index] = { ...asset, libRevision: drawing.updatedAt }
           projectChanged = true
@@ -272,6 +318,8 @@ export async function reconcileDrawingsFromRestoredProject(
           sprite: asset.sprite,
           tileset: asset.tileset,
           tilemap: asset.tilemap,
+          tilemapFront: asset.tilemapFront,
+          scene: asset.scene,
         },
         options,
       )
@@ -309,6 +357,58 @@ async function resolveDrawings(
   return cache
 }
 
+function attemptedWorlds(context: DrawingSyncContext, projectId: string): Set<string> {
+  context.attemptedWorlds ??= new Map()
+  let ids = context.attemptedWorlds.get(projectId)
+  if (!ids) {
+    ids = new Set()
+    context.attemptedWorlds.set(projectId, ids)
+  }
+  return ids
+}
+
+async function captureMapWorld(
+  root: PersonalAsset,
+  context: DrawingSyncContext,
+): Promise<StudioPintaImportedAsset> {
+  if (!context.mapInventory && !pintaWorldNeedsInventory(root)) return pintaMapWorld(root, [])
+  context.mapInventory ??= readPersonalAssetInventory({ namespace: context.namespace }).then(
+    (result) => {
+      if (!result.ok) throw new Error(result.error)
+      return result.assets
+    },
+  )
+  const inventory = await context.mapInventory
+  // The point read may predate an atomic library update. Use the root and children from
+  // the same getMany snapshot rather than combining that old root with newer destinations.
+  const current = inventory.find((asset) => asset.id === root.id)
+  if (!current) throw new Error('Este mapa mudou durante a conferência. O jogo foi mantido.')
+  return pintaMapWorld(current, inventory)
+}
+
+function worldChangedCount(
+  assets: readonly ProjectAsset[],
+  world: StudioPintaImportedAsset,
+): number {
+  return [world, ...(world.maps ?? [])].filter((map) => {
+    const previous = assets.find((asset) => personalIdOf(asset) === map.id)
+    return !previous || !sameDrawingContent(previous, map)
+  }).length
+}
+
+function worldFailure(
+  context: DrawingSyncContext,
+  result: DrawingSyncResult,
+  error: unknown,
+): void {
+  context.canonicalWriteRefused = true
+  pushFailure(
+    result,
+    context.state,
+    error instanceof Error ? error.message : 'Não consegui atualizar os mapas. O jogo foi mantido.',
+  )
+}
+
 /**
  * Reconcilia os desenhos do Pinta com TODOS os jogos da criança (o alcance que
  * ela escolheu: não só o que está aberto).
@@ -318,7 +418,11 @@ async function resolveDrawings(
  */
 export function syncDrawingsIntoProjects(
   storeApi: ProjectStoreApi,
-  options: { pintaLibrary?: StudioPintaLibraryAdapter | null; signal?: AbortSignal } = {},
+  options: {
+    pintaLibrary?: StudioPintaLibraryAdapter | null
+    signal?: AbortSignal
+    runtimeCatalog?: () => StudioRuntimeCatalog | null
+  } = {},
 ): Promise<DrawingSyncResult> {
   const context = captureSyncContext()
   const adapter = options.pintaLibrary
@@ -327,20 +431,22 @@ export function syncDrawingsIntoProjects(
     context.state.inFlightStore === storeApi &&
     context.state.inFlightAdapter === adapter &&
     context.state.inFlightSignal === options.signal &&
+    context.state.inFlightRuntimeCatalog === options.runtimeCatalog &&
     !options.signal?.aborted &&
     !context.state.controller?.signal.aborted &&
     !context.storageScope.signal?.aborted
   )
     return context.state.inFlight
-  const changedAt = personalAssetsChangedAt(context.namespace)
+  const changeToken = personalAssetsChangeToken(context.namespace)
   context.canonicalChanged =
-    !context.state.didInitialSweep || changedAt !== context.state.lastSyncAt
+    !context.state.didInitialSweep || !changeToken || changeToken !== context.state.lastSyncToken
   if (options.signal?.aborted || (!context.canonicalChanged && !adapter?.inspectImage)) {
     return Promise.resolve(emptyResult())
   }
   const token = {}
   context.state.token = token
   context.callerSignal = options.signal
+  context.runtimeCatalog = options.runtimeCatalog
   context.state.controller?.abort()
   const lifetime = new AbortController()
   context.state.controller = lifetime
@@ -375,9 +481,10 @@ export function syncDrawingsIntoProjects(
         createPintaImageSync(adapter, signal),
       )),
   }
-  const run = sweep(storeApi, changedAt, context)
+  const run = sweep(storeApi, changeToken, context)
   context.state.inFlightAdapter = adapter
   context.state.inFlightSignal = options.signal
+  context.state.inFlightRuntimeCatalog = options.runtimeCatalog
   context.state.inFlightStore = storeApi
   context.state.inFlight = run
   return run.finally(() => {
@@ -389,7 +496,7 @@ export function syncDrawingsIntoProjects(
 
 function sweep(
   storeApi: ProjectStoreApi,
-  changedAt: number,
+  changeToken: string,
   context: DrawingSyncContext,
 ): Promise<DrawingSyncResult> {
   // O `detail` é preenchido DURANTE a varredura (quantos projetos, quantos trocados): a medida
@@ -398,7 +505,7 @@ function sweep(
   return perfSpanAsync(
     'studio:drawings:sweep',
     async () => {
-      const result = await sweepUnmeasured(storeApi, changedAt, context, detail)
+      const result = await sweepUnmeasured(storeApi, changeToken, context, detail)
       detail.updated = result.updatedInOpenProject + result.updatedInOtherProjects
       detail.failures = result.failures.length
       return result
@@ -409,11 +516,17 @@ function sweep(
 
 async function sweepUnmeasured(
   storeApi: ProjectStoreApi,
-  changedAt: number,
+  changeToken: string,
   context: DrawingSyncContext,
   detail: Record<string, unknown> = {},
 ): Promise<DrawingSyncResult> {
   const result = emptyResult()
+  if (isPrivateRegionalProjectScope(context.storageScope)) {
+    // The private library and the open editor must belong to the same local profile.
+    if (context.namespace === context.storageScope.namespace && context.canonicalChanged)
+      await syncPrivateRegionalDrawings(storeApi, context, result, changeToken)
+    return result
+  }
   const drawings = new Map<string, PersonalAsset | null>()
   let canonicalWritesCompleted = true
 
@@ -431,10 +544,15 @@ async function sweepUnmeasured(
     detail.projects = summaries.length
   } catch {
     summaries = []
+    canonicalWritesCompleted = false
   }
   let visited = 0
   for (const summary of summaries) {
-    const pythonProject = summary.programmingLanguage === 'python'
+    if (summary.migrationPending) {
+      canonicalWritesCompleted = false
+      continue
+    }
+    let pythonProject = summary.programmingLanguage === 'python'
     if (!context.canonicalChanged && !pythonProject) continue
     if (context.callerSignal?.aborted) break
     if (pythonProject && !context.python?.current()) continue
@@ -449,8 +567,12 @@ async function sweepUnmeasured(
     // por fora seria sobrescrito pelo próximo autosave do editor (que ainda tem
     // a cópia velha em memória) e a atualização se perderia em silêncio.
     if (storeApi.getState().project?.id === summary.id) continue
+    let worldPrepared = false
     try {
-      const assets = await loadProjectAssetsById(summary.id, context.storageScope)
+      const snapshot = await loadProjectAssetsSnapshotById(summary.id, context.storageScope)
+      const { assets, environment } = snapshot
+      if (environment.programmingLanguage === 'unknown') continue
+      pythonProject = environment.programmingLanguage === 'python'
       if (assets.length === 0) continue
       if (context.canonicalChanged)
         await resolveDrawings(
@@ -462,12 +584,16 @@ async function sweepUnmeasured(
       // podia empurrar o total acima do teto, e o `sanitizeProjectAssets` do
       // LOAD descarta o que passa — a criança abriria o jogo com imagens
       // faltando, sem nenhum aviso.
-      let total = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
+      // A cena do Pinta conta junto (`projectAssetBudgetChars`), igual ao load.
+      let total = assets.reduce((sum, a) => sum + projectAssetBudgetChars(a), 0)
       let changed = false
-      const next = [...assets]
+      const updatedPythonImages: PintaImageDerivation[] = []
+      let next = [...assets]
+      const recursosDeCenas = idsDosRecursosDeCena3D(assets)
       for (let index = 0; index < next.length; index++) {
         const asset = next[index]
         if (!asset) continue
+        if (recursosDeCenas.has(asset.id)) continue
         if (pythonProject && asset.pintaImage !== undefined) {
           if (!context.python?.current()) break
           try {
@@ -475,8 +601,19 @@ async function sweepUnmeasured(
             const replacement = await resolver.reconcile(asset, next)
             if (!context.python.current()) break
             if (replacement) {
+              if (replacement.pintaImage) {
+                if (
+                  !pintaImageRuntimeCompatible(
+                    replacement.pintaImage,
+                    environment.runtime,
+                    context.runtimeCatalog?.(),
+                  )
+                )
+                  throw new Error(PINTA_SCENE_RUNTIME_MESSAGE)
+                updatedPythonImages.push(replacement.pintaImage)
+              }
               next[index] = replacement
-              total += replacement.dataUrl.length - asset.dataUrl.length
+              total += projectAssetBudgetChars(replacement) - projectAssetBudgetChars(asset)
               changed = true
             }
           } catch (error) {
@@ -487,7 +624,31 @@ async function sweepUnmeasured(
         }
         if (!context.canonicalChanged) continue
         const id = personalIdOf(asset)
+        if (id && attemptedWorlds(context, summary.id).has(id)) continue
         const drawing = await raylibSkyAsImage(asset, id ? (drawings.get(id) ?? null) : null)
+        if (
+          !pythonProject &&
+          asset.pintaImage === undefined &&
+          drawing?.scene &&
+          drawing.kind === asset.kind &&
+          !(drawing.origin && asset.libOrigin && drawing.origin !== asset.libOrigin)
+        ) {
+          const attempted = attemptedWorlds(context, summary.id)
+          attempted.add(drawing.id)
+          try {
+            const world = await captureMapWorld(drawing, context)
+            for (const map of [world, ...(world.maps ?? [])]) attempted.add(map.id)
+            if (context.callerSignal?.aborted) break
+            if (worldChangedCount(next, world) === 0) continue
+            next = preparePintaMapBundle(next, world)
+            worldPrepared = true
+            total = next.reduce((sum, value) => sum + projectAssetBudgetChars(value), 0)
+            changed = true
+          } catch (error) {
+            worldFailure(context, result, error)
+          }
+          continue
+        }
         if (!drawingNeedsSync(asset, drawing) || !drawing) continue
         if (asset.pintaImage !== undefined) {
           pushFailure(
@@ -510,7 +671,7 @@ async function sweepUnmeasured(
           )
           continue
         }
-        const projected = total - asset.dataUrl.length + drawing.dataUrl.length
+        const projected = total - projectAssetBudgetChars(asset) + projectAssetBudgetChars(merged)
         if (projected > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
           pushFailure(
             result,
@@ -532,12 +693,31 @@ async function sweepUnmeasured(
         () =>
           !context.callerSignal?.aborted &&
           storeApi.getState().project?.id !== summary.id &&
+          updatedPythonImages.every((image) =>
+            pintaImageRuntimeCompatible(image, environment.runtime, context.runtimeCatalog?.()),
+          ) &&
           (!pythonProject || context.python?.current() === true),
       )
       if (written) result.updatedInOtherProjects += 1
-      else if (context.canonicalChanged) canonicalWritesCompleted = false
+      else {
+        if (context.canonicalChanged) canonicalWritesCompleted = false
+        if (
+          updatedPythonImages.some(
+            (image) =>
+              !pintaImageRuntimeCompatible(image, environment.runtime, context.runtimeCatalog?.()),
+          )
+        )
+          pushFailure(result, context.state, PINTA_SCENE_RUNTIME_MESSAGE)
+      }
     } catch {
       // Um projeto ilegível não pode derrubar a varredura dos outros.
+      if (context.canonicalChanged) canonicalWritesCompleted = false
+      if (worldPrepared)
+        worldFailure(
+          context,
+          result,
+          new Error('Não consegui salvar os mapas do jogo. O jogo anterior foi mantido.'),
+        )
     }
   }
 
@@ -548,11 +728,90 @@ async function sweepUnmeasured(
 
   // A pending opening/CAS can refuse a required write. Keep its marker unconsumed so the
   // next normal focus/hydration sweep can reconcile it; do not retry inside this sweep.
-  if (canonicalWritesCompleted && context.python?.current()) {
-    context.state.lastSyncAt = changedAt
+  if (canonicalWritesCompleted && !context.canonicalWriteRefused && context.python?.current()) {
+    context.state.lastSyncToken = changeToken
     context.state.didInitialSweep = true
   }
   return result
+}
+
+async function syncPrivateRegionalDrawings(
+  store: ProjectStoreApi,
+  context: DrawingSyncContext,
+  result: DrawingSyncResult,
+  changeToken: string,
+) {
+  const { storageScope: scope, namespace } = context
+  const signal = context.python?.signal ?? context.callerSignal
+  const [
+    { readPersonalRegionalMap, PINTA_REGIONAL_PERSONAL_CAPTURE },
+    { refreshPrivateRegionalProjectAsset },
+    { pintaRegionalMarkerOf },
+  ] = await Promise.all([
+    import('./personalRegional'),
+    import('../state/pintaRegionalProjectRefresh'),
+    import('../core/pintaRegionalMaterial'),
+  ])
+  const live = store.getState().project
+  const projects = await listProjectSummariesLight(scope)
+  const captured = new Map<string, Awaited<ReturnType<typeof readPersonalRegionalMap>>>()
+  for (const summary of projects) {
+    if (signal?.aborted || !isContextActive(context)) return
+    const open = live?.id === summary.id ? live : undefined
+    try {
+      const assets =
+        open?.assets ??
+        (
+          await loadProjectAssetsSnapshotById(summary.id, scope, {
+            [PRIVATE_REGIONAL_PROJECT]: scope,
+          })
+        ).assets
+      for (const asset of assets) {
+        const sourceId = personalIdOf(asset)
+        if (!sourceId || asset.kind !== 'image' || asset.libOrigin === 'molda' || asset.pintaImage)
+          continue
+        if (signal?.aborted || !isContextActive(context)) return
+        if (!captured.has(sourceId))
+          captured.set(
+            sourceId,
+            await readPersonalRegionalMap(sourceId, {
+              namespace,
+              capability: PINTA_REGIONAL_PERSONAL_CAPTURE,
+            }),
+          )
+        const row = captured.get(sourceId)
+        if (!row || pintaRegionalMarkerOf(asset)?.sha256 === row.sha256) continue
+        const updated = await refreshPrivateRegionalProjectAsset({
+          scope,
+          store,
+          projectId: summary.id,
+          assetId: asset.id,
+          signal,
+          stillCurrent: () =>
+            isContextActive(context) &&
+            (!changeToken || personalAssetsChangeToken(namespace) === changeToken),
+          capture: {
+            width: row.width,
+            height: row.height,
+            dataUrl: row.dataUrl,
+            regional: { dataVersion: 5, sourceId, sha256: row.sha256 },
+          },
+        })
+        // A project that cannot run the regional material keeps its drawing; nothing to retry.
+        if (updated === 'kept') continue
+        if (updated) {
+          if (open) result.updatedInOpenProject++
+          else result.updatedInOtherProjects++
+        } else context.canonicalWriteRefused = true
+      }
+    } catch (error) {
+      if (!signal?.aborted && isContextActive(context)) worldFailure(context, result, error)
+    }
+  }
+  if (!context.canonicalWriteRefused && !signal?.aborted && isContextActive(context)) {
+    context.state.didInitialSweep = true
+    context.state.lastSyncToken = changeToken
+  }
 }
 
 /** Reconcilia o projeto que está no editor, pela store (caminho de uma edição). */
@@ -588,8 +847,10 @@ async function syncOpenProject(
         context.namespace,
       )
     if (!isContextActive(context)) return
+    const recursosDeCenas = idsDosRecursosDeCena3D(openProject.assets)
     for (const asset of openProject.assets) {
       if (!active || context.callerSignal?.aborted) return
+      if (recursosDeCenas.has(asset.id)) continue
       if (pythonProject && asset.pintaImage !== undefined) {
         if (!context.python?.current()) return
         const attempt = `${openProject.id}\u0000${asset.id}`
@@ -615,6 +876,15 @@ async function syncOpenProject(
           )
             continue
           resolver.assertFits(replacement, current.assets ?? [])
+          if (
+            replacement.pintaImage &&
+            !pintaImageRuntimeCompatible(
+              replacement.pintaImage,
+              current.runtime,
+              context.runtimeCatalog?.(),
+            )
+          )
+            throw new Error(PINTA_SCENE_RUNTIME_MESSAGE)
           const error = storeApi.getState().updateAssetImage(asset.id, {
             dataUrl: replacement.dataUrl,
             width: replacement.width,
@@ -631,7 +901,44 @@ async function syncOpenProject(
       }
       if (!context.canonicalChanged) continue
       const id = personalIdOf(asset)
+      if (id && attemptedWorlds(context, openProject.id).has(id)) continue
       const drawing = await raylibSkyAsImage(asset, id ? (drawings.get(id) ?? null) : null)
+      if (
+        !pythonProject &&
+        asset.pintaImage === undefined &&
+        drawing?.scene &&
+        drawing.kind === asset.kind &&
+        !(drawing.origin && asset.libOrigin && drawing.origin !== asset.libOrigin)
+      ) {
+        const attempted = attemptedWorlds(context, openProject.id)
+        attempted.add(drawing.id)
+        try {
+          const world = await captureMapWorld(drawing, context)
+          for (const map of [world, ...(world.maps ?? [])]) attempted.add(map.id)
+          if (!active || !isContextActive(context) || context.callerSignal?.aborted) return
+          const current = storeApi.getState().project
+          const target = current?.assets?.find((candidate) => candidate.id === asset.id)
+          if (
+            current?.id !== openProject.id ||
+            !target ||
+            personalIdOf(target) !== drawing.id ||
+            target.kind !== 'image' ||
+            target.pintaImage
+          ) {
+            context.canonicalWriteRefused = true
+            continue
+          }
+          const changed = worldChangedCount(current.assets ?? [], world)
+          if (!changed) continue
+          const error = storeApi.getState().importPintaMapBundle(world)
+          if (error) worldFailure(context, result, new Error(error))
+          else result.updatedInOpenProject += changed
+        } catch (error) {
+          if (active && isContextActive(context) && !context.callerSignal?.aborted)
+            worldFailure(context, result, error)
+        }
+        continue
+      }
       if (!drawingNeedsSync(asset, drawing) || !drawing) continue
       if (asset.pintaImage !== undefined) {
         pushFailure(
@@ -649,6 +956,8 @@ async function syncOpenProject(
         sprite: drawing.sprite,
         tileset: drawing.tileset,
         tilemap: drawing.tilemap,
+        tilemapFront: drawing.tilemapFront,
+        scene: drawing.scene,
         libRevision: drawing.updatedAt,
       })
       if (error) pushFailure(result, context.state, error)
@@ -680,53 +989,6 @@ function pushFailure(result: DrawingSyncResult, state: DrawingSyncState, message
  * por ela e só aqui seria pego. Sem esta guarda o asset ia ao disco e o
  * `sanitizeProjectAssets` da próxima abertura o descartava sem aviso.
  */
-export function mergeDrawingIntoAsset(
-  asset: ProjectAsset,
-  drawing: PersonalAsset,
-): ProjectAsset | null {
-  // Legacy canonical copies cannot replace an explicitly derived frame/map.
-  if (asset.pintaImage !== undefined) return null
-  const is3D = asset.kind === 'model3d' || asset.kind === 'environment3d'
-  // 3D: o nome do arquivo faz parte da validação (extensão × MIME × assinatura), então
-  // vale o da criação nova e, sem ele, o que o asset já tinha.
-  const originalFileName = is3D
-    ? typeof drawing.originalFileName === 'string' && drawing.originalFileName.trim()
-      ? drawing.originalFileName.trim().slice(0, 128)
-      : asset.originalFileName
-    : undefined
-  if (
-    is3D
-      ? !isValidAssetDataUrl(drawing.dataUrl, asset.kind, originalFileName)
-      : !isValidAssetDataUrl(drawing.dataUrl, 'image')
-  ) {
-    return null
-  }
-  const width = typeof drawing.width === 'number' && drawing.width > 0 ? drawing.width : undefined
-  const height =
-    typeof drawing.height === 'number' && drawing.height > 0 ? drawing.height : undefined
-  const sameGeometry =
-    (width ?? asset.width) === asset.width && (height ?? asset.height) === asset.height
-  const sprite = drawing.sprite ?? (sameGeometry ? asset.sprite : undefined)
-  const tileset = drawing.tileset ?? (sameGeometry ? asset.tileset : undefined)
-  const tilemap = drawing.tilemap ?? (sameGeometry ? asset.tilemap : undefined)
-  // Nome/id/libId/source intocados — os blocos referenciam o asset pelo NOME.
-  const next: ProjectAsset = {
-    ...asset,
-    dataUrl: drawing.dataUrl,
-    ...(width ? { width } : {}),
-    ...(height ? { height } : {}),
-    libRevision: drawing.updatedAt,
-    // 3D: o nome do arquivo que acabou de passar na validação (o novo ou o que já havia).
-    ...(originalFileName ? { originalFileName } : {}),
-  }
-  if (sprite) next.sprite = sprite
-  else delete next.sprite
-  if (tileset) next.tileset = tileset
-  else delete next.tileset
-  if (tilemap) next.tilemap = tilemap
-  else delete next.tilemap
-  return next
-}
 
 /** Libera o estado efêmero de um perfil ao sair dele; operações em voo conservam o próprio
  * contexto, mas deixam de ser encontradas pelas chamadas do próximo perfil. */

@@ -1,6 +1,6 @@
 # Moedas na ilha
 
-Poder do Faísca · Moedas no caminho · 3D. Um projeto contínuo, uma entrega. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
+Poder do Faísca · Moedas no caminho · 3D. Um projeto contínuo, enviado na última construção. Ajuda livre no Passo a passo do projeto; sem certificado nem publicação obrigatória.
 
 ## Parte 1. As moedas chegaram à ilha
 
@@ -42,10 +42,10 @@ O número na tela da ilha.
 
 O baú da ilha abre.
 
-- Intenção: application.
-- Blocos: video-bau, ponte-bau.
+- Intenção: delivery.
+- Blocos: video-bau, ponte-bau, projeto.
 - Estúdio: projeto.
-- Conclusão: video-bau.
+- Conclusão: video-bau, projeto; envio atualizado.
 
 - Mostre o número de moedas na tela.
 - Com menos de 5 moedas, o baú fica fechado e o aviso diz o que falta.
@@ -56,25 +56,13 @@ O baú da ilha abre.
 
 Pense nas moedas da ilha.
 
-- Intenção: explanation.
+- Intenção: closing.
 - Blocos: ponte-revisao, quiz.
 - Estúdio: não.
 - Conclusão: quiz.
 
 
 
-## Parte 6. Envie a sua ilha com moedas
-
-Envie a sua ilha com moedas.
-
-- Intenção: delivery.
-- Blocos: video-entrega, ponte-entrega, projeto.
-- Estúdio: projeto.
-- Conclusão: video-entrega, projeto; envio atualizado.
-
-- Mostre o número de moedas na tela.
-- Com menos de 5 moedas, o baú fica fechado e o aviso diz o que falta.
-- Com 5 moedas o baú abre (pelo menos 5), e voltar pelo caminho não conta de novo.
-- Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.
+Na edição kids, Dedé diz as frases das tabelas de substituição do roteiro.
 
 [Fala integral](moedas-aula-2.roteiro.md) · [Passo a passo](passo-a-passo.md).

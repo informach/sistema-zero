@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+tests/native-process-state.test.ts:
+68 |         await Bun.sleep(10)
+69 |       } while (performance.now() < until)
+70 |       expect(zombie).toBe(true)
+71 |       // The previous assertion would fail here even though the child cannot run/access input.
+72 |       expect(process.kill(child, 0)).toBe(true)
+73 |       expect(await nativeProcessIsRetired(child)).toBe(true)
+                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/qa/tests/native-process-state.test.ts:73:51)
+(fail) a controlled Linux zombie is retired while its stopped owner is still alive [231.27ms]
+
+ 0 pass
+ 3 filtered out
+ 1 fail
+ 3 expect() calls
+Ran 1 test across 1 file. [361.00ms]

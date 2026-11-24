@@ -1,3 +1,9 @@
+import {
+  type CreationStoragePartRef,
+  isStudioSealedObjectKey,
+  type StudioSealedReceipt,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+
 /**
  * "Guardado na sua conta" (18/08/2026): as CRIAÇÕES dos editores livres — os jogos
  * do Estúdio Completo e os desenhos do Pinta — que o navegador sobe sozinho depois
@@ -109,17 +115,20 @@ export const CREATION_LIMITS = {
  * (`creationPartStorageKey`). O autosave sobe só o manifesto; uma parte só sobe quando o
  * item ainda não a tem (a reserva responde quais FALTAM). O Pinta não usa partes (0).
  */
-export interface CreationPartRef {
-  hash: string
-  /** Bytes COMPRIMIDOS da parte no R2 (contam na quota do item junto com o manifesto). */
-  bytes: number
-  /**
-   * A revisão (da reserva) em que ESTA cópia da parte subiu: entra na chave do R2
-   * (`…/parts/<hash>.<rev>.gz`). Uma parte conhecida mantém a sua; uma que volta depois de
-   * solta sobe com chave NOVA — o apagar best-effort da antiga (que roda depois da resposta,
-   * e pode atrasar) nunca alcança o objeto novo.
-   */
-  rev: number
+export type CreationPartRef = CreationStoragePartRef
+
+/** Includes incomplete or future receipts so a legacy mutation cannot discard them. */
+export function hasStudioSealedStorage(record: {
+  studioSealReceipt?: unknown
+  storageRef: string | null
+  parts: unknown
+}): boolean {
+  return (
+    record.studioSealReceipt != null ||
+    (record.storageRef !== null && isStudioSealedObjectKey(record.storageRef)) ||
+    (Array.isArray(record.parts) &&
+      record.parts.some((part) => part && typeof part === 'object' && 'protocol' in part))
+  )
 }
 
 export const CREATION_PART_HASH_PATTERN = /^[a-f0-9]{64}$/
@@ -155,6 +164,7 @@ export interface CreationSummary {
 export interface CreationPendingUpload {
   revision: number
   formatVersion: number
+  maxReadFormatVersion?: number
   /** TOTAL reservado: manifesto + Σ partes referenciadas. */
   bytes: number
   name: string
@@ -180,6 +190,8 @@ export interface CreationRecord extends CreationSummary {
   storageRef: string | null
   /** As partes da revisão CORRENTE (vazio = blob único, ou legado). */
   parts: CreationPartRef[]
+  /** Recibo autoritativo do manifesto Studio, presente apenas em uma publicação selada. */
+  studioSealReceipt?: StudioSealedReceipt
   deletedAt: Date | null
   createdAt: Date
 }

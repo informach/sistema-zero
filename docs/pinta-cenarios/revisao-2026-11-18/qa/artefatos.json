@@ -1,0 +1,71 @@
+{
+  "sourceCommit": "b19b4149d8456b19f1e6b60dc8b118ec20e9d899",
+  "generated": "2026-11-18T11:27:07.753Z",
+  "artifacts": [
+    {
+      "file": "formato-legado.json",
+      "bytes": 321,
+      "sha256": "1373f9c14cd8867093d3f8f0da13d4b0a66b65240b488517e820fda11057ed1a"
+    },
+    {
+      "file": "local-only-026.json",
+      "bytes": 471,
+      "sha256": "4d280dc5a08718a27a8363e54e6bde94aef87eda4edd30d64edd768a01ecf100"
+    },
+    {
+      "file": "navegador.json",
+      "bytes": 1659,
+      "sha256": "0972038893e27ab37a1b30bde132a13d62a9fddaf2199de4e507127fef476425"
+    },
+    {
+      "file": "phaser-vila-desktop.png",
+      "bytes": 16648,
+      "sha256": "e4f38842c95e9593307a9cd3be958d0c316e602669442e3592d37290daa638f0"
+    },
+    {
+      "file": "phaser-vila-touch.png",
+      "bytes": 167891,
+      "sha256": "069da3e405d30f58e309e9fe8c6e57f572419c150e4dc7b2174c77ea06c87107"
+    },
+    {
+      "file": "pinta-vila-desktop.png",
+      "bytes": 120756,
+      "sha256": "601efc1929a53f276e2263acf7806d8b6d40ccd8c32568d6745f5c2e7e450634"
+    },
+    {
+      "file": "pinta-vila-touch.png",
+      "bytes": 276441,
+      "sha256": "8e4b9b2c918cbcdda2642470e0a4e6e72004362d6f3db9a13f17f6d1bad1d6ca"
+    },
+    {
+      "file": "pydew.png",
+      "bytes": 18279,
+      "sha256": "28b6198c4c0503ee918ef0cbb84fd8a52d3f7f82a399a045701907e5caecbed6"
+    },
+    {
+      "file": "suplementar.json",
+      "bytes": 2337,
+      "sha256": "b29c9c588d9fd16c28a401cdbcbd32feae08660ad69995a7617c5d55f474b002"
+    },
+    {
+      "file": "tiled/mapa-0.json",
+      "bytes": 70432,
+      "sha256": "19fb45cbe619e171e374d8ff582ada82ed1553f1adc9444494e31b352bdf328d"
+    },
+    {
+      "file": "tiled/mapa-1.json",
+      "bytes": 3134,
+      "sha256": "8f172d5ab3241aa1a287fe5ee92c7ca76913c509b703b529b3e556e5ea109d0f"
+    },
+    {
+      "file": "tiled/origem.json",
+      "bytes": 819,
+      "sha256": "bf3a6369a29fb33f0b5cf8f29cd6e34a6178c2ce770ea9f0d739509e82d252f5"
+    },
+    {
+      "file": "tiled-locked.json",
+      "bytes": 141,
+      "sha256": "db0429ef074d024e2146d3ffef143aaa07abc69e76a1c5a982efcd318559d553"
+    }
+  ]
+}

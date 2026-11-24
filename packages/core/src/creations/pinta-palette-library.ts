@@ -14,18 +14,17 @@ interface CreationIdentity {
 }
 
 /**
- * Classifica a identidade reservada da biblioteca. `tool: pinta` sozinho é
- * comum a todos os desenhos; itemId e kind são os marcadores reservados.
+ * O ID é reservado no canal do Pinta. O kind é exclusivo da biblioteca.
  */
 export function classifyPintaPaletteLibraryCreation(
   identity: CreationIdentity,
 ): PintaPaletteLibraryCreationClassification {
-  const reservedItem = identity.itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
+  const reservedItem =
+    identity.tool === PINTA_PALETTE_LIBRARY_TOOL &&
+    identity.itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
   const reservedKind = identity.kind === PINTA_PALETTE_LIBRARY_KIND
   if (!reservedItem && !reservedKind) return 'regular'
-  return identity.tool === PINTA_PALETTE_LIBRARY_TOOL && reservedItem && reservedKind
-    ? 'palette-library'
-    : 'invalid-partial'
+  return reservedItem && reservedKind ? 'palette-library' : 'invalid-partial'
 }
 
 export function isPintaPaletteLibraryCreation(identity: CreationIdentity): boolean {

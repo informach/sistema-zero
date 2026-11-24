@@ -1,0 +1,62 @@
+{
+  "stats": {
+    "startTime": "2026-11-19T06:24:32.946Z",
+    "duration": 21395.998,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3046,
+      "posicao": {
+        "x": 35,
+        "isMobile": false
+      }
+    },
+    {
+      "title": "o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato",
+      "project": "touch",
+      "status": "passed",
+      "duration": 2492,
+      "posicao": {
+        "x": 35,
+        "isMobile": true
+      }
+    },
+    {
+      "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+      "project": "desktop",
+      "status": "passed",
+      "duration": 3884,
+      "ambiente": {
+        "browser": "148.0.7778.96",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "isMobile": false,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36"
+      }
+    },
+    {
+      "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+      "project": "touch",
+      "status": "passed",
+      "duration": 3910,
+      "ambiente": {
+        "browser": "148.0.7778.96",
+        "viewport": {
+          "width": 412,
+          "height": 839
+        },
+        "isMobile": true,
+        "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Mobile Safari/537.36"
+      }
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+(pass) normalizeAssetName > kebabiza, remove acento e minúsculiza [16.00ms]
+(pass) normalizeAssetName > rejeita nomes vazios ou só de símbolos
+(pass) normalizeAssetName > rejeita nome longo demais
+(pass) isValidAssetDataUrl > aceita data:image/ e data:audio/ dentro do teto de cada um
+(pass) isValidAssetDataUrl > o parâmetro kind exige o prefixo casado
+(pass) isValidAssetDataUrl > áudio tem teto próprio (bem maior que o de imagem)
+(pass) isValidAssetDataUrl > valida GLB v2 e HDR por extensão, MIME e assinatura
+(pass) isValidAssetDataUrl > 3D respeita o teto próprio (bem maior que o de imagem)
+(pass) sanitizeProjectAssets > normaliza, deduplica por nome e descarta dataUrl inválido
+(pass) sanitizeProjectAssets > preserva `libOrigin` (pinta/molda) só nos assets da biblioteca e descarta valor inválido
+(pass) sanitizeProjectAssets > preserva a origem `lesson-art` (o desenho da vaga de arte) e trata origem estranha como upload
+(pass) sanitizeProjectAssets > respeita o orçamento total (descarta o que estoura)
+(pass) sanitizeProjectAssets > tolera entradas não-array/lixo
+(pass) sanitizeProjectAssets > preserva assets 3D válidos e descarta metadados de arquivo inconsistentes
+(pass) imagens de uma cena do Molda > passam do teto das imagens soltas sem abrir esse teto para as outras imagens
+(pass) assetManifest > mapeia nome → dataUrl, só imagens (ignora áudio e ausência) [16.00ms]
+(pass) soundManifest > mapeia nome → dataUrl, só áudio (ignora imagem e ausência)
+(pass) asset3DManifest > separa os binários 3D com tipo e nome de arquivo confiáveis
+(pass) asset3DManifest > imagem comum não vaza para o manifesto 3D nem o 3D para o de imagem
+(pass) createEmptyProject > nasce com assets: [] (retrocompatível)
+(pass) starter pack (asset-library) > todo item é um data:image válido com nome kebab normalizado e id único
+(pass) starter pack (asset-library) > o pack inteiro sobrevive ao sanitizeProjectAssets (entra no projeto sem perdas)
+(pass) Python Classic/Pro prepara recursos e módulo ao lado do entrypoint sem alterar as fontes [156.00ms]
+(pass) Python conserva módulos autorais e fontes geradas editadas, com nomes livres e aviso de precedência [47.00ms]
+(pass) Python sem Raylib 3D recusa a importação e conserva o documento
+(pass) Python reaproveita o arquivo existente e resolve dois caminhos lógicos sem duplicar bytes [31.00ms]
+(pass) Python recusa colisão de pasta/material e nunca sobrescreve fonte pelo aplicador
+(pass) Python adapta vínculos equivalentes pela conversão Raylib compartilhada, sem alterar o pacote de origem [32.00ms]
+(pass) preparo conta instâncias/partes reais: 48 cabe, 49 é excesso nominal e não altera o projeto [47.00ms]
+(pass) 5 MiB por modelo é medido nos bytes reais, sem aceitar arredondamento [1625.00ms]
+(pass) reimportação conserva IDs e nomes; revisão nova compartilha bytes sem reescrever a anterior [15.00ms]
+(pass) recursos idênticos em dois caminhos usam um asset e conservam os dois nós [16.00ms]
+(pass) o orçamento inclui modelos comuns e bytes já presentes no projeto [3109.00ms]
+(pass) falha e cancelamento não alteram o projeto ou escondem dependências [16.00ms]
+(pass) uma cópia idêntica adicionada depois não muda os IDs já usados pela revisão
+(pass) preparo captura o projeto e o pacote antes de ceder execução [15.00ms]
+(pass) a alternativa de junção usa o agrupador real e conserva a autoria original [1000.00ms]
+(pass) nome de arquivo compilado longo conserva a procedência sem ultrapassar o nome do asset [16.00ms]
+(pass) preparo de cena aceita metadados profundos dentro do orçamento do documento [109.00ms]
+(pass) modelo comum com extensão que a compilação recusa não impede importar; conta as primitivas
+(pass) criação ligada ao Pinta/Molda com o mesmo conteúdo não vira dependência fixada da cena [16.00ms]
+(pass) Canvas 3D — codec semântico dos macros > restaura o macro íntegro e mantém a geração determinística sem IDs efêmeros [94.00ms]
+(pass) Canvas 3D — codec semântico dos macros > continua abrindo marcadores legados salvos antes do framing v2
+(pass) Canvas 3D — codec semântico dos macros > não confia no metadado quando o JavaScript expandido foi editado [31.00ms]
+(pass) Canvas 3D — codec semântico dos macros > não confia no payload semântico quando só o metadado foi alterado [15.00ms]
+(pass) Canvas 3D — codec semântico dos macros > não confunde a sentinela de fim dentro do texto do letreiro com framing
+(pass) Canvas 3D — codec semântico dos macros > reserva auxiliares contra nomes do aluno e o JavaScript real continua parseável
+(pass) Canvas 3D — codec semântico dos macros > remove o kernel gerado do código→blocos sem perder o bloco de física
+(pass) Canvas 3D — codec semântico dos macros > separa o kernel e os metadados internos do código didático da Ponte
+(pass) Canvas 3D — codec semântico dos macros > mantém o source map alinhado depois dos cabeçalhos semânticos
+(pass) Canvas 3D — referências tipadas > aceita o fluxo manual quando cada recurso foi declarado no papel certo [16.00ms]
+(pass) Canvas 3D — referências tipadas > recusa tela ausente e recurso usado no papel errado
+(pass) Canvas 3D — referências tipadas > recusa câmera, compositor e mundo físico que ainda não existem [16.00ms]
+(pass) Canvas 3D — referências tipadas > adapta automaticamente somente a câmera de perspectiva compatível
+(pass) Canvas 3D — referências tipadas > recusa corpo físico ausente ou criado depois do comando que o usa
+(pass) Canvas 3D — referências tipadas > reserva mover e pular para corpos do tipo personagem
+(pass) Canvas 3D — referências tipadas > aceita como sólidos somente objetos com colisor e cidades com mapa de colisão
+(pass) Canvas 3D — referências tipadas > recusa IDs físicos duplicados dentro do mesmo mundo e permite reutilizar após remover
+(pass) Canvas 3D — referências tipadas > só disponibiliza a função de altura depois de preparar o terreno [15.00ms]
+(pass) Canvas 3D — referências tipadas > mantém estrada e prédio planos válidos quando nenhuma função de altura foi escolhida
+(pass) Canvas 3D — referências tipadas > recusa dois terrenos que declaram a mesma função de altura
+(pass) Canvas 3D — referências tipadas > eleva bindings de import porque o gerador também move imports para o topo
+(pass) Canvas 3D — referências tipadas > não mistura uma cena Three.js crua com o mundo-fachada do Jogo 3D
+(pass) Canvas 3D — referências tipadas > recusa objeto comum no comando especializado de água
+(pass) Canvas 3D — referências tipadas > distingue carregador de modelo de carregador de áudio
+(pass) Canvas 3D — limites, lifecycle e carregamento > restringe água, grama e passo da física a contextos contínuos
+(pass) Canvas 3D — limites, lifecycle e carregamento > limita densidade, tesselação, DPR e tamanho da cidade no código executável
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita criação de recursos 3D dentro do laço de animação
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita construtor persistente encaixado como valor dentro do laço [16.00ms]
+(pass) Canvas 3D — limites, lifecycle e carregamento > mantém valores matemáticos temporários disponíveis dentro do laço
+(pass) Canvas 3D — limites, lifecycle e carregamento > distingue classe local de addon realmente importado no lifecycle
+(pass) Canvas 3D — limites, lifecycle e carregamento > rejeita toda preparação persistente que ainda podia ser recriada a cada quadro
+(pass) Canvas 3D — limites, lifecycle e carregamento > inclui a biblioteca 3D quando um facilitador gera código que depende dela
+(pass) Canvas 3D — limites, lifecycle e carregamento > gera callback de erro para loaders e o parser o preserva
+(pass) SZ Physics Lite runtime > integra em passo fixo e mantém o corpo acima do chão analítico [15.00ms]
+(pass) SZ Physics Lite runtime > resolve caixa estática e publica a colisão real
+(pass) SZ Physics Lite runtime > aterrissa personagem sobre esfera estática e permite pular
+(pass) SZ Physics Lite runtime > separa corpo e esfera mesmo quando os centros coincidem
+(pass) SZ Physics Lite runtime > emite entrada e saída de gatilho sem repetir entrada a cada quadro
+(pass) SZ Physics Lite runtime > limpa contatos ao remover IDs que contêm o antigo delimitador interno
+(pass) SZ Physics Lite runtime > oferece salto de personagem e raycast no colisor mais próximo
+(pass) SZ Physics Lite runtime > personagem empurra corpos dinâmicos usando broadphase da grade
+(pass) SZ Physics Lite runtime > produz o mesmo deslocamento com 60 ou 120 chamadas por segundo
+(pass) SZ Physics Lite runtime > usa micro-passos para não atravessar uma parede fina em alta velocidade
+(pass) SZ Physics Lite runtime > limita entidades, remove qualquer tipo e permite cancelar listeners [16.00ms]
+(pass) SZ Physics Lite runtime > não inclui Rapier, WASM ou dependência externa
+(pass) SZ Physics Lite runtime > rejeita nomes que poderiam alterar o protótipo dos índices internos
+(pass) resolve pelo ID e usa o runtime canônico, preservando fonte, matrizes e descarte em três ciclos [407.00ms]
+(pass) não resolve por nome e recusa recurso ausente ou bytes adulterados [343.00ms]
+(pass) captura os bytes e opções antes da primeira espera, sem reter alterações posteriores [329.00ms]
+(pass) cancelamento antes e entre recursos não entrega uma cena parcial [343.00ms]
+(pass) cancelamento na microtarefa da entrega descarta o resultado já carregado [328.00ms]
+(pass) orçamento do transporte é conferido antes de decodificar recursos [344.00ms]
+(pass) o SDK conserva a cena no pagehide persistido e libera no pagehide definitivo [375.00ms]
+(pass) a ligação troca apenas a base importada e libera os recursos anteriores, conservando o programa Three [422.00ms]
+(pass) a receita de atualização usa o loop existente antes e depois do carregamento, com foco em coordenadas globais [375.00ms]
+(pass) erro de preparo e sinal já cancelado conservam a cena vigente [360.00ms]
+(pass) um preparo atrasado não substitui a escolha mais recente nem retém sua geometria [343.00ms]
+(pass) cancelar uma ligação não afeta outra cena e não sobrescreve o ambiente alterado pelo programa [391.00ms]
+(pass) encerrar durante preparo libera o resultado atrasado e impede novas instalações [375.00ms]
+(pass) o ambiente autoral alterado enquanto o arquivo prepara é restaurado ao retirar a primeira base [359.00ms]
+(pass) uma troca conserva também o ambiente que o programa alterou entre duas bases importadas [360.00ms]
+(pass) cancelar pelo evento de montagem Three conserva a base anterior e libera o preparo novo [359.00ms]
+(pass) Physics Lite usa o chão compilado fora da origem, sem chamar o piso analítico anterior [360.00ms]
+(pass) o recorte compilado deixa o corpo cair por gravidade, sem piso zero invisível [593.00ms]
+(pass) o tabuleiro real sustenta o corpo, permite salto e o teto compilado impede atravessamento [610.00ms]
+(pass) troca e descarte não consultam BVH liberado nem recriam chão; corpos e colisores autorais permanecem [359.00ms]
+(pass) o deslocamento subdividido não atravessa a parede triangular fina, inclusive com corpo pequeno e rápido [344.00ms]
+(pass) atravessa a junta entre peças reais sem preencher todo o buraco com um piso artificial [578.00ms]
+(pass) remover a ligação emprestada não descarta a cena visual; clear permite reutilizar o mundo legado [344.00ms]
+(pass) o cenário participa dos limites e dos IDs físicos; uma ligação inválida conserva a atual [343.00ms]
+(pass) os pés apoiam sobre toras arredondadas sem escorregar lateralmente nas juntas da ponte [32.00ms]
+(pass) o personagem conserva apoio em repouso no plano inclinado real e pode saltar dele [15.00ms]
+(pass) o apoio do personagem não retira o quique de um corpo dinâmico no cenário nativo
+(pass) Pro busca só dependências do cenário, confere bytes/hash e reutiliza o cache sem trocar o SDK global [453.00ms]
+(pass) bytes adulterados não entram no cache e uma repetição válida usa o carregador canônico [359.00ms]
+(pass) o fluxo acima do tamanho declarado é cancelado antes de copiar bytes fora do orçamento [391.00ms]
+(pass) cancelar durante a leitura encerra o fluxo e não deixa dados parciais no cache [391.00ms]
+(pass) recomeça no mesmo canvas sem perder seu contexto WebGL, liberando-o no encerramento [62.00ms]
+(pass) o recomeço com o renderer mantido solta o mapa de sombra das luzes da partida anterior [16.00ms]
+(pass) libera o renderer da partida anterior quando o novo início não reutiliza aquele canvas [16.00ms]
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > prepara o canvas para navegação por teclado e tecnologias assistivas
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > desregistra as peças quando remove um modelo e quando um objeto termina de cair
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > descarta uma única vez um objeto que já terminou de cair
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > reutiliza câmeras ortográficas e recalcula a projeção no resize [15.00ms]
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > clona os materiais de cada peça quando o molde copiado é um modelo
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > fecha o contexto de áudio no descarte completo
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > limita as vozes simultâneas e desconecta todas no descarte
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > mantém a geometria do molde enquanto houver cópias no grupo
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > inclui as cópias visíveis do grupo na seleção pelo ponteiro
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > ignora objetos invisíveis e ancestrais escondidos no raycast
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > move apenas a câmera FPS do canvas que possui o pointer lock
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > executa todos os blocos a cada quadro ligados à mesma cena
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > o fim de jogo interrompe os callbacks restantes e pausa os próximos quadros [16.00ms]
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > remove o listener de teclado do personagem substituído
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > isola o erro de um bloco animado e mantém os demais blocos e o desenho ativos
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > remove o objeto de seu mundo real mesmo quando recebe outra cena
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > não mistura modelos, peças e cópias de cenas diferentes
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > não atualiza física nem kits com um objeto pertencente a outra cena [16.00ms]
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > mantém apenas o modo de câmera escolhido por último
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > não reinicia a rotação quando a câmera FPS é chamada novamente no quadro
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > solta a câmera do jogador ao trocar de FPS para seguir
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > restaura uma câmera em perspectiva ao entrar no modo FPS depois da isométrica
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > o mesmo bloco volta à perspectiva ao trocar a vista de cima por "segue de trás"
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > o modo sem objeto só vale para as vistas que olham o centro
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > inclui os personagens da Travessia e da Corrida na seleção pelo ponteiro
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > descarta uma única vez o bloco móvel que errou a torre
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > ignora as próprias peças de um modelo ao mirar e procurar o chão
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > congela a travessia depois do fim de jogo [15.00ms]
+(pass) gameThreeDRuntime - ciclo de vida real com Three.js > congela a corrida depois do fim de jogo
+ 150 pass
+ 0 fail
+ 585 expect() calls
+Ran 150 tests across 12 files. [18.50s]

@@ -1,0 +1,441 @@
+{
+  "antes": {
+    "documento": {
+      "formato": "molda-cenario",
+      "versao": 2,
+      "id": "cen-0002",
+      "nome": "Gestos",
+      "unidade": "metro",
+      "eixoVertical": "y",
+      "base": {
+        "tipo": "plano",
+        "largura": 256,
+        "comprimento": 256
+      },
+      "modelos": [],
+      "grupos": [],
+      "instancias": [],
+      "caminhos": [],
+      "aguas": [],
+      "marcadores": [
+        {
+          "id": "zona",
+          "nome": "Zona",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": 0,
+            "z": 0,
+            "y": 0
+          },
+          "giro": 0,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "zona",
+            "forma": {
+              "tipo": "caixa",
+              "tamanho": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+              }
+            }
+          }
+        },
+        {
+          "id": "inicio",
+          "nome": "Início",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": -4,
+            "z": -3,
+            "y": 0
+          },
+          "giro": 1.5707963267948966,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "inicio",
+            "principal": true
+          }
+        }
+      ],
+      "iluminacao": {
+        "hora": 12
+      }
+    },
+    "gestos": 0
+  },
+  "movido": {
+    "documento": {
+      "formato": "molda-cenario",
+      "versao": 2,
+      "id": "cen-0002",
+      "nome": "Gestos",
+      "unidade": "metro",
+      "eixoVertical": "y",
+      "base": {
+        "tipo": "plano",
+        "largura": 256,
+        "comprimento": 256
+      },
+      "modelos": [],
+      "grupos": [],
+      "instancias": [],
+      "caminhos": [],
+      "aguas": [],
+      "marcadores": [
+        {
+          "id": "zona",
+          "nome": "Zona",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": 1.284,
+            "z": 0,
+            "y": 0
+          },
+          "giro": 0,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "zona",
+            "forma": {
+              "tipo": "caixa",
+              "tamanho": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+              }
+            }
+          }
+        },
+        {
+          "id": "inicio",
+          "nome": "Início",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": -4,
+            "z": -3,
+            "y": 0
+          },
+          "giro": 1.5707963267948966,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "inicio",
+            "principal": true
+          }
+        }
+      ],
+      "iluminacao": {
+        "hora": 12
+      }
+    },
+    "gestos": 1
+  },
+  "escalado": {
+    "documento": {
+      "formato": "molda-cenario",
+      "versao": 2,
+      "id": "cen-0002",
+      "nome": "Gestos",
+      "unidade": "metro",
+      "eixoVertical": "y",
+      "base": {
+        "tipo": "plano",
+        "largura": 256,
+        "comprimento": 256
+      },
+      "modelos": [],
+      "grupos": [],
+      "instancias": [],
+      "caminhos": [],
+      "aguas": [],
+      "marcadores": [
+        {
+          "id": "zona",
+          "nome": "Zona",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": 1.284,
+            "z": 0,
+            "y": 0
+          },
+          "giro": 0,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "zona",
+            "forma": {
+              "tipo": "caixa",
+              "tamanho": {
+                "x": 2.737,
+                "y": 2,
+                "z": 2
+              }
+            }
+          }
+        },
+        {
+          "id": "inicio",
+          "nome": "Início",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": -4,
+            "z": -3,
+            "y": 0
+          },
+          "giro": 1.5707963267948966,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "inicio",
+            "principal": true
+          }
+        }
+      ],
+      "iluminacao": {
+        "hora": 12
+      }
+    },
+    "gestos": 2
+  },
+  "cabecaNova": {
+    "documento": {
+      "formato": "molda-cenario",
+      "versao": 2,
+      "id": "cen-0002",
+      "nome": "Gestos",
+      "unidade": "metro",
+      "eixoVertical": "y",
+      "base": {
+        "tipo": "plano",
+        "largura": 256,
+        "comprimento": 256
+      },
+      "modelos": [],
+      "grupos": [],
+      "instancias": [],
+      "caminhos": [],
+      "aguas": [],
+      "marcadores": [
+        {
+          "id": "zona",
+          "nome": "Cabeça nova",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": 1.284,
+            "z": 0,
+            "y": 0
+          },
+          "giro": 0,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "zona",
+            "forma": {
+              "tipo": "caixa",
+              "tamanho": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+              }
+            }
+          }
+        },
+        {
+          "id": "inicio",
+          "nome": "Início",
+          "grupo": null,
+          "bloqueado": false,
+          "oculto": false,
+          "posicao": {
+            "x": -4,
+            "z": -3,
+            "y": 0
+          },
+          "giro": 1.5707963267948966,
+          "noChao": true,
+          "objeto": null,
+          "configuracao": {
+            "tipo": "inicio",
+            "principal": true
+          }
+        }
+      ],
+      "iluminacao": {
+        "hora": 12
+      }
+    },
+    "gestos": 2
+  },
+  "cam": {
+    "vista": {
+      "posicao": {
+        "x": 7,
+        "y": 6,
+        "z": 9
+      },
+      "alvo": {
+        "x": 1,
+        "y": 0,
+        "z": -1
+      },
+      "campoDeVisao": 61
+    },
+    "voltou": {
+      "posicao": {
+        "x": 7,
+        "z": 9,
+        "y": 6.000000000000001
+      },
+      "alvo": {
+        "x": 1,
+        "z": -1,
+        "y": 0
+      },
+      "campoDeVisao": 61
+    },
+    "antes": {
+      "posicao": {
+        "x": 0,
+        "z": 12,
+        "y": 8
+      },
+      "alvo": {
+        "x": 0,
+        "z": 0,
+        "y": 0
+      },
+      "campoDeVisao": 48
+    },
+    "depois": {
+      "posicao": {
+        "x": 0,
+        "z": 12,
+        "y": 8
+      },
+      "alvo": {
+        "x": 0,
+        "z": 0,
+        "y": 0
+      },
+      "campoDeVisao": 48
+    }
+  },
+  "colisao": {
+    "estado": {
+      "fontes": 1,
+      "triangulos": 2,
+      "erro": null
+    },
+    "retratoLimpo": true
+  },
+  "teste": {
+    "estado": {
+      "modo": "primeira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": -4,
+        "y": 0.000010000000000665726,
+        "z": -3
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "protegeu": true,
+    "vista": {
+      "posicao": {
+        "x": 0,
+        "z": 12,
+        "y": 8
+      },
+      "alvo": {
+        "x": 0,
+        "z": 0,
+        "y": 0
+      },
+      "campoDeVisao": 48
+    },
+    "retorno": {
+      "posicao": {
+        "x": 0,
+        "z": 12,
+        "y": 8
+      },
+      "alvo": {
+        "x": 0,
+        "z": 0,
+        "y": 0
+      },
+      "campoDeVisao": 48
+    },
+    "autoriaPreservada": true
+  },
+  "direcaoInicial": {
+    "x": -4.318750000000003,
+    "y": 0.000010000000000686977,
+    "z": -3
+  },
+  "pontos": [
+    {
+      "x": -1.0501743585826775,
+      "y": 1.5,
+      "z": 0.47490903569252824
+    },
+    {
+      "x": 2,
+      "y": 1.5,
+      "z": 0
+    }
+  ],
+  "poligono": [
+    {
+      "x": -3,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "z": 5
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "z": -2.000000000938543
+    }
+  ],
+  "erros": []
+}

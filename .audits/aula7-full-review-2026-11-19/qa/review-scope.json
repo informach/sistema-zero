@@ -1,0 +1,12 @@
+{
+  "executedAt": "2026-11-19T20:44:21.648424+00:00",
+  "head": "9614f31afefde0f46078d81f0f5188ba9c7c0d95",
+  "scope": [
+    "native gift/purchase",
+    "child identity and certificates",
+    "public names and workshops",
+    "Aula 7 scripts, ElevenLabs and manifests",
+    "migrations and deployed source"
+  ],
+  "applicationMutations": false
+}

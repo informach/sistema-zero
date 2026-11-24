@@ -52,6 +52,7 @@ export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGro
       ['Cores e sorteio', '🎲'],
       ['Avançado', '🧪'],
       ['Shaders', '✨'],
+      ['Cenário do Molda', '🏞️'],
     ],
   },
   'python-pygame': {

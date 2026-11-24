@@ -1,0 +1,28 @@
+{
+  "resultado": [
+    {
+      "antigaFalha": true,
+      "ignorouAntiga": false,
+      "falhas": ["Leitura antiga interrompida"],
+      "volume": null
+    },
+    {
+      "antigaFalha": false,
+      "ignorouAntiga": false,
+      "falhas": [],
+      "volume": {
+        "min": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "max": {
+          "x": 2,
+          "y": 2,
+          "z": 0
+        }
+      }
+    }
+  ],
+  "erros": []
+}

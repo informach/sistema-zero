@@ -1,11 +1,13 @@
-"""Spinner educacional: impulso, atrito e contagem de voltas visíveis em blocos, Ponte e Python."""
+# Spinner educacional: impulso, atrito e contagem de voltas visíveis em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import math
 import time
 import sz_audio
 
 
+# 🎛️ Configurações
 LARGURA = 700
 ALTURA = 700
 CENTRO_Y = -20
@@ -19,14 +21,9 @@ COR_DESTAQUE = "#ff5c7a"
 COR_BOLA = "#5cc8ff"
 COR_BRACO = "#94a3b8"
 COR_CENTRO = "#ffe14a"
-estado = {"aberto": False, "timer_pendente": False, "recorde": 0}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-bracos = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def posicao_bola(indice):
     # Os três braços ficam a 120 graus um do outro.
     angulo = math.radians(estado["angulo"] + indice * 120)
@@ -126,25 +123,16 @@ def impulsionar(sentido=0):
     sz_audio.play("impulso.wav", volume=0.5)
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
+def girar_para_direita():
+    impulsionar(-1)
 
 
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar()
-    desenhar_painel()
-    tela.update()
-    agendar()
+def girar_para_esquerda():
+    impulsionar(1)
+
+
+def clicar(x, y):
+    impulsionar()
 
 
 def pausar():
@@ -170,7 +158,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -181,32 +168,56 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(LARGURA, ALTURA)
-    tela.title("Spinner • Sistema Zero")
-    tela.bgcolor("#0b1120")
-    tela.tracer(0)
-    for desenho in [cenario, bracos, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    bracos.pensize(10)
-    desenhar_cenario()
-    tela.onkey(impulsionar, "space")
-    tela.onkey(lambda: impulsionar(-1), "Right")
-    tela.onkey(lambda: impulsionar(1), "Left")
-    tela.onscreenclick(lambda x, y: impulsionar())
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "recorde": 0}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+bracos = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(LARGURA, ALTURA)
+tela.title("Spinner • Sistema Zero")
+tela.bgcolor("#0b1120")
+tela.tracer(0)
+for desenho in [cenario, bracos, painel]:
+    desenho.penup()
+    desenho.speed(0)
+bracos.pensize(10)
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkey(impulsionar, "space")
+tela.onkey(girar_para_direita, "Right")
+tela.onkey(girar_para_esquerda, "Left")
+tela.onscreenclick(clicar)
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar()
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

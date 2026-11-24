@@ -1,0 +1,69 @@
+{
+  "base": "7347a7707fe15453c33e9ec526a627416e809482",
+  "sources": [
+    {
+      "path": "packages/arquipelago/tests/fronteira.test.ts",
+      "sha256": "7319f34b412a92dcb0e7640b99335d1a62783e3dcef2673f8338fccd9a76f53a"
+    },
+    {
+      "path": "packages/members/Dockerfile",
+      "sha256": "055ce4d57df23128a324305401cc5e7b79c0cc2e28f8c55a1fb249fd7c34615d"
+    },
+    {
+      "path": "packages/members/qa/README.md",
+      "sha256": "cbe764100743595707d97550fe11538ee7f1242498e8504398ad9726841a2532"
+    },
+    {
+      "path": "packages/members/qa/image-smoke.mjs",
+      "sha256": "bceaa4bda8696c263475c179b694f53d63d38b6f7bf5d5867f586a7feece0afd"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/check-javascript-modules.mjs",
+      "sha256": "f50af634e6af24f9d6e83805694aa16f2d8a90e86b55ceca13fc1e10e86c2da6"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/package-lock.json",
+      "sha256": "a8c7d5d249efa57ef2be4d1421f371b4988230da4588077cbc044ddc055620f8"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/package.json",
+      "sha256": "05f58dfefd8865839f97a666b976fc3426682a93ed57f1f34ed9d448bbf7e21c"
+    },
+    {
+      "path": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "280ffc45de0c68af2521bb11d3ac217d897b3e929280a270c62911b5d41cd56c"
+    },
+    {
+      "path": "packages/studio-runtime/tests/check-javascript-modules.test.mjs",
+      "sha256": "9682498a05be1b3bce5360d43516eedc5fa6e80af6f2f1df5750af882faa374b"
+    },
+    {
+      "path": "packages/studio/scripts/python/test-pinta-module.py",
+      "sha256": "67630d001f794f0c2e7a30a08ce557903aeef10dd754a7d09ce09e885989c954"
+    }
+  ],
+  "checks": {
+    "runtimeTypes": 0,
+    "globalStyle": 0,
+    "architecture": {
+      "passed": 7,
+      "assertions": 7
+    },
+    "runtimeContracts": {
+      "passed": 19,
+      "assertions": 99
+    },
+    "pygame": ["2.5.7", "2.5.8"],
+    "purePythonChecks": 52,
+    "localAuthority": {
+      "core": 44,
+      "host": 1,
+      "browser": 7
+    }
+  },
+  "limits": {
+    "linuxImageLocallyQualified": false,
+    "authenticatedRolloutQualified": false,
+    "missionComplete": false
+  }
+}

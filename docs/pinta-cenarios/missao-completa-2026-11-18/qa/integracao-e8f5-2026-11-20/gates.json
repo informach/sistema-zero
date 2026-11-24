@@ -1,0 +1,107 @@
+[
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-20T22:16:47.598Z",
+    "finished": "2026-11-20T22:16:59.731Z",
+    "log": ".cache/pinta-e8f5-r2-core.log"
+  },
+  {
+    "name": "core-types",
+    "exit": 0,
+    "started": "2026-11-20T22:16:59.742Z",
+    "finished": "2026-11-20T22:17:08.157Z",
+    "log": ".cache/pinta-e8f5-r2-core-types.log"
+  },
+  {
+    "name": "studio",
+    "exit": 0,
+    "started": "2026-11-20T22:17:08.172Z",
+    "finished": "2026-11-20T22:28:25.486Z",
+    "log": ".cache/pinta-e8f5-r2-studio.log"
+  },
+  {
+    "name": "atlas",
+    "exit": 0,
+    "started": "2026-11-20T22:28:25.494Z",
+    "finished": "2026-11-20T22:28:25.597Z",
+    "log": ".cache/pinta-e8f5-r2-atlas.log"
+  },
+  {
+    "name": "runtime",
+    "exit": 0,
+    "started": "2026-11-20T22:28:25.607Z",
+    "finished": "2026-11-20T22:28:26.679Z",
+    "log": ".cache/pinta-e8f5-r2-runtime.log"
+  },
+  {
+    "name": "runtime-native",
+    "exit": 0,
+    "started": "2026-11-20T22:28:26.690Z",
+    "finished": "2026-11-20T22:28:31.904Z",
+    "log": ".cache/pinta-e8f5-r2-runtime-native.log"
+  },
+  {
+    "name": "sdk",
+    "exit": 0,
+    "started": "2026-11-20T22:28:31.916Z",
+    "finished": "2026-11-20T22:28:32.230Z",
+    "log": ".cache/pinta-e8f5-r2-sdk.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T22:28:32.240Z",
+    "finished": "2026-11-20T22:28:32.414Z",
+    "log": ".cache/pinta-e8f5-r2-profile.log"
+  },
+  {
+    "name": "browser",
+    "exit": 0,
+    "started": "2026-11-20T22:28:32.423Z",
+    "finished": "2026-11-20T22:32:08.393Z",
+    "log": ".cache/pinta-e8f5-r2-browser.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "started": "2026-11-20T22:32:08.405Z",
+    "finished": "2026-11-20T22:34:11.062Z",
+    "log": ".cache/pinta-e8f5-r2-integration.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-20T22:34:11.075Z",
+    "finished": "2026-11-20T22:37:15.177Z",
+    "log": ".cache/pinta-e8f5-r2-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-20T22:37:15.188Z",
+    "finished": "2026-11-20T22:39:24.057Z",
+    "log": ".cache/pinta-e8f5-r2-members-types.log"
+  },
+  {
+    "name": "shell-types",
+    "exit": 0,
+    "started": "2026-11-20T22:39:24.069Z",
+    "finished": "2026-11-20T22:42:09.264Z",
+    "log": ".cache/pinta-e8f5-r2-shell-types.log"
+  },
+  {
+    "name": "runtime-types",
+    "exit": 0,
+    "started": "2026-11-20T22:42:09.276Z",
+    "finished": "2026-11-20T22:44:16.785Z",
+    "log": ".cache/pinta-e8f5-r2-runtime-types.log"
+  },
+  {
+    "name": "biome",
+    "exit": 1,
+    "started": "2026-11-20T22:44:16.794Z",
+    "finished": "2026-11-20T22:44:47.204Z",
+    "log": ".cache/pinta-e8f5-r2-biome.log"
+  }
+]

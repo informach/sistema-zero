@@ -1,22 +1,15 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 800
 TITLE = 'Mergulho Alienígena'
 
-nave = Actor('nave')
-tiro = Actor('tiro')
-aliens = []
-bombas = []
-ceu_y = 0
-quadros = 0
-vidas = 3
-pontos = 0
-venceu = False
 
-
+# 🧩 Meus moldes
 def montar_aliens():
     aliens.clear()
     for fila in range(2):
@@ -124,7 +117,33 @@ def perder_vida():
     # As bombas que estavam caindo somem: a nave ganha um respiro.
     bombas.clear()
 
+# ⚙️ Ao iniciar
+nave = Actor('nave')
+tiro = Actor('tiro')
+aliens = []
+bombas = []
+ceu_y = 0
+quadros = 0
+vidas = 3
+pontos = 0
+venceu = False
 
+
+novo_jogo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if key != keys.SPACE:
+        return
+    if vidas == 0 or venceu:
+        novo_jogo()
+    elif tiro.y <= -20:
+        tiro.midbottom = nave.midtop
+        sounds.tiro.play()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     screen.blit('estrelas', (0, ceu_y))
@@ -170,17 +189,4 @@ def update():
     if not sobrou_algum():
         venceu = True
         sounds.vitoria.play()
-
-
-def on_key_down(key):
-    if key != keys.SPACE:
-        return
-    if vidas == 0 or venceu:
-        novo_jogo()
-    elif tiro.y <= -20:
-        tiro.midbottom = nave.midtop
-        sounds.tiro.play()
-
-
-novo_jogo()
 pgzrun.go()

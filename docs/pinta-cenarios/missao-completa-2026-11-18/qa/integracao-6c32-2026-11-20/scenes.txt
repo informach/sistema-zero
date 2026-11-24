@@ -1,0 +1,17 @@
+  ✓  38 [touch] › e2e\pinta-object-scatter-scenes.flow.ts:40:1 › espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, histórico e reabertura (4.9s)
+
+  ✓  39 [touch] › e2e\pinta-physics-scenes.flow.ts:25:1 › plataforma precisa: salvar, reabrir, pousar e pular no teste lateral (3.1s)
+  ✓  40 [touch] › e2e\pinta-physics-scenes.flow.ts:77:1 › contornos autorais: editar colisão, desfazer, refazer e reabrir (1.7s)
+  ✓  41 [touch] › e2e\pinta-physics-scenes.flow.ts:117:1 › o personagem para na peça fina de um conjunto, salva e reabre o mapa sem alterar o formato (2.4s)
+
+  ✓  42 [touch] › e2e\pinta-resources-scenes.flow.ts:32:1 › recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels (3.8s)
+  ✓  43 [touch] › e2e\pinta-resources-scenes.flow.ts:114:1 › mapa autocontido de 48 px abre sem originais e cola objetos na grade correta (1.4s)
+  ✓  44 [touch] › e2e\pinta-resources-scenes.flow.ts:165:1 › copiar para outro mapa após reabrir leva a versão privada e desfaz os dados juntos (2.9s)
+
+  ✓  45 [touch] › e2e\pinta-scenes.flow.ts:40:1 › autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir (4.4s)
+  ✓  46 [touch] › e2e\pinta-scenes.flow.ts:86:1 › Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real (3.3s)
+
+  ✓  47 [touch] › e2e\pinta-terrain-scenes.flow.ts:69:1 › terrenos: duas folhas, materiais, gestos, prévia, cancelamento, histórico e reabertura (6.7s)
+  ✓  48 [touch] › e2e\pinta-terrain-scenes.flow.ts:218:1 › Começar: criar o bosque pronto e pintar materiais sem preparar regras (3.5s)
+
+  48 passed (2.6m)

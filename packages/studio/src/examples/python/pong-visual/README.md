@@ -26,6 +26,13 @@ Turtle. Com CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções e as
+classes do jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer
+(as teclas) e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário
+no começo de cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `RAQUETE_ALTURA` e
 `RAQUETE_X` mudam as raquetes; `VELOCIDADE_INICIAL`, `ACELERACAO` e
 `VELOCIDADE_MAXIMA` mudam o ritmo da bola; `VELOCIDADE_COMPUTADOR` deixa o
@@ -35,19 +42,21 @@ partida; `COR_ESQUERDA`, `COR_DIREITA` e `COR_BOLA` mudam as cores.
 A classe `Raquete` guarda a posição e as teclas seguradas, e `mover` prende a
 raquete dentro do campo. A classe `Bola` guarda posição e velocidade (`vx` e
 `vy`). Depois veja `rebater`: a distância entre o centro da bola e o centro da
-raquete vira o ângulo da volta. As teclas usam `ligar_tecla`, que cria duas
-funções rápidas (`lambda`) para apertar e soltar a mesma tecla.
+raquete vira o ângulo da volta. Cada tecla tem uma função com nome para apertar
+e outra para soltar (`esquerda_sobe` e `esquerda_para_de_subir` chamam
+`segurar`), e todas moram em ⚡ Quando acontecer.
 
-Uma única cadeia de `ontimer(..., 16)` mede o tempo com `time.monotonic()` e
-divide cada quadro em passos curtos, para a bola rápida não atravessar a
-raquete. A pausa congela a partida, reiniciar não adiciona outra cadeia e um
-quadro atrasado avança no máximo dois quadros.
+O laço do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo
+com `time.monotonic()` e divide cada quadro em passos curtos, para a bola rápida
+não atravessar a raquete. A pausa congela a partida, reiniciar não começa outro
+laço e um quadro atrasado avança no máximo dois quadros.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam timers e chamadas. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam timers e chamadas.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

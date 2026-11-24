@@ -1,0 +1,4 @@
+  ✓  1 [desktop] › packages\studio\e2e\pinta-minimap.flow.ts:5:1 › minimapa existente navega por teclado e ponteiro sem alterar as células (1.5s)
+  ✓  2 [touch] › packages\studio\e2e\pinta-minimap.flow.ts:5:1 › minimapa existente navega por teclado e ponteiro sem alterar as células (1.5s)
+  ✓  3 [cpu-4x] › packages\studio\e2e\pinta-minimap.flow.ts:5:1 › minimapa existente navega por teclado e ponteiro sem alterar as células (3.3s)
+  3 passed (39.4s)

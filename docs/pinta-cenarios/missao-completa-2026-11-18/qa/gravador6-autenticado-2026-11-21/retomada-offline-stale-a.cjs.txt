@@ -1,0 +1,14 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict'),b=qa.retowB6;assert(b.phase==='gesture-saved');assert(!qa.retowOfflineA);assert(qa.oldNetworkSuspended&&!qa.old.isClosed());
+ const cloud=qa.retowCloudCheckpoints.at(-1).items.find(a=>a.itemId===qa.ownedVila.mapId);assert.equal(cloud.revision,2);assert.equal(cloud.formatVersion,6);
+ const prefix='qa-vila-floresta-20261120-copia';
+ const before=await qa.makeAuthorityPage();let existing;
+ try{existing=await before.evaluate(async({namespace,prefix})=>(await window.pinta026.createPintaPersistence({namespace}).listAllAssets()).filter(a=>a.kind==='tilemap'&&a.name.startsWith(prefix)).map(a=>a.id),{namespace:qa.ownedStorageNamespace,prefix})}finally{await before.close()}
+ qa.retowOfflineA={phase:'closing-modern-page',existing,prefix,expectedPrimary:b.nativeAfterGesture.assets.find(a=>a.id===qa.ownedVila.mapId).sha256};
+ await b.page.close();await qa.context.setOffline(true);qa.retowOfflineA.phase='offline-gesture';
+ assert.equal(await qa.old.evaluate(()=>navigator.onLine),false);
+ await qa.old.getByRole('button',{name:'Chão',exact:true}).click();await qa.old.getByRole('button',{name:'Borracha',exact:true}).click();
+ const canvas=qa.old.getByRole('img',{name:'Grade do mapa',exact:true}),box=await canvas.boundingBox();assert(box);
+ await canvas.click({position:{x:4.5*box.width/32,y:0.5*box.height/24}});
+ return{gestureDispatched:true,networkOffline:true,modernAuthoringPageClosed:true,oldSource:'85d16fcd99efe2a72a8350181542cf475a55db37',cellEdited:4,priorCopies:existing.length,primarySha256Expected:qa.retowOfflineA.expectedPrimary};
+};

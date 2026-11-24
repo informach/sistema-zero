@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { fakeUseStore } from '../../testing/fakeIdbStore'
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import { failNextFakeIdbWrite, fakeUseStore, resetFakeIdb } from '../../testing/fakeIdbStore'
 
 // Mock FUNCIONAL (Map por DB) do idb-keyval — o IndexedDB não existe no
 // happy-dom. Como nos demais arquivos da suíte, o mock NÃO é restaurado (o
@@ -8,6 +8,8 @@ import { fakeUseStore } from '../../testing/fakeIdbStore'
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
 let failDeletes = false
+let failReads = false
+let beforeDelete: (() => void) | undefined
 const kvOf = (store?: { name?: string }): KV => {
   const key = store?.name ?? ''
   let kv = dbs.get(key)
@@ -30,13 +32,19 @@ mock.module('idb-keyval', () => ({
     for (const [key, value] of pairs) kvOf(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {
+    beforeDelete?.()
     if (failDeletes) throw new Error('IndexedDB indisponível')
     kvOf(store).delete(key)
   },
   delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
+    beforeDelete?.()
+    if (failDeletes) throw new Error('IndexedDB indisponível')
     for (const key of keys) kvOf(store).delete(key)
   },
-  keys: async (store?: { name?: string }) => [...kvOf(store).keys()],
+  keys: async (store?: { name?: string }) => {
+    if (failReads) throw new Error('IndexedDB indisponível')
+    return [...kvOf(store).keys()]
+  },
   update: async (
     key: IDBValidKey,
     updater: (old: unknown) => unknown,
@@ -49,10 +57,13 @@ mock.module('idb-keyval', () => ({
 
 const {
   listPersonalAssets,
+  readPersonalAssetInventory,
   PERSONAL_ASSET_LIMITS,
   personalAssetsChangedAt,
+  personalAssetsChangeToken,
   removePersonalAsset,
   savePersonalAsset,
+  savePersonalAssetBundle,
   setPersonalAssetsNamespace,
 } = await import('../personal')
 
@@ -61,6 +72,9 @@ const PNG = 'data:image/png;base64,AAAA'
 beforeEach(() => {
   dbs.clear()
   failDeletes = false
+  failReads = false
+  beforeDelete = undefined
+  resetFakeIdb()
   setPersonalAssetsNamespace('')
 })
 
@@ -69,6 +83,167 @@ afterEach(() => {
 })
 
 describe('savePersonalAsset / listPersonalAssets', () => {
+  it('commits no mesmo instante têm sinais distintos e conservam o carimbo legado', async () => {
+    const clock = spyOn(Date, 'now').mockReturnValue(1720000000000)
+    try {
+      await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+      const before = personalAssetsChangeToken()
+      await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: `${PNG}BB` })
+      expect(personalAssetsChangeToken()).not.toBe(before)
+      expect(personalAssetsChangedAt()).toBe(1720000000000)
+    } finally {
+      clock.mockRestore()
+    }
+  })
+  it('o leitor de sinais aceita o legado e trata falta ou corrupção como desconhecida', () => {
+    setPersonalAssetsNamespace('marcador-legado')
+    const key = 'sz:desenhos-alterados:marcador-legado'
+    localStorage.setItem(key, JSON.stringify({ at: 7 }))
+    expect(personalAssetsChangeToken()).toBe(JSON.stringify({ at: 7 }))
+    localStorage.setItem(key, 'quebrado')
+    expect(personalAssetsChangeToken()).toBe('')
+    localStorage.removeItem(key)
+    expect(personalAssetsChangeToken()).toBe('')
+  })
+  it('falha ao publicar o sinal invalida o anterior e conserva o desenho já gravado', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    expect(personalAssetsChangeToken()).not.toBe('')
+    const storage = localStorage
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
+    const failingStorage: Storage = {
+      get length() {
+        return storage.length
+      },
+      clear: storage.clear.bind(storage),
+      getItem: storage.getItem.bind(storage),
+      key: storage.key.bind(storage),
+      removeItem: storage.removeItem.bind(storage),
+      setItem: () => {
+        throw new DOMException('Sem espaço', 'QuotaExceededError')
+      },
+    }
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: failingStorage })
+    try {
+      expect((await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: `${PNG}BB` })).ok).toBe(
+        true,
+      )
+      expect(personalAssetsChangeToken()).toBe('')
+      expect((await listPersonalAssets())[0]?.dataUrl).toBe(`${PNG}BB`)
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'localStorage', original)
+      else Reflect.deleteProperty(globalThis, 'localStorage')
+    }
+  })
+  it('apagar sem namespace explícito conserva o dono quando o perfil muda durante o IO', async () => {
+    let instant = 1720000000000
+    const clock = spyOn(Date, 'now').mockImplementation(() => ++instant)
+    try {
+      setPersonalAssetsNamespace('dono-a')
+      await savePersonalAsset({ id: 'a', name: 'heroi', dataUrl: PNG })
+      setPersonalAssetsNamespace('dono-b')
+      await savePersonalAsset({ id: 'b', name: 'outro', dataUrl: PNG })
+      const markerB = personalAssetsChangeToken()
+      setPersonalAssetsNamespace('dono-a')
+      const markerA = personalAssetsChangeToken()
+      beforeDelete = () => setPersonalAssetsNamespace('dono-b')
+      expect((await removePersonalAsset('a')).ok).toBe(true)
+      expect(personalAssetsChangeToken()).toBe(markerB)
+      expect((await listPersonalAssets()).map((a) => a.id)).toEqual(['b'])
+      setPersonalAssetsNamespace('dono-a')
+      expect(personalAssetsChangeToken()).not.toBe(markerA)
+      expect(await listPersonalAssets()).toEqual([])
+    } finally {
+      clock.mockRestore()
+    }
+  })
+  it('a leitura estrita distingue vazio de falha, preservando a leitura tolerante da galeria', async () => {
+    expect(await readPersonalAssetInventory()).toEqual({ ok: true, assets: [] })
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    failReads = true
+    expect(await readPersonalAssetInventory()).toMatchObject({
+      ok: false,
+      error: expect.any(String),
+    })
+    expect(await listPersonalAssets()).toEqual([])
+    failReads = false
+    expect(await readPersonalAssetInventory()).toMatchObject({ ok: true, assets: [{ id: 'root' }] })
+  })
+  it('a falha de commit no banco conserva a raiz e não grava só um destino', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    const before = await listPersonalAssets()
+    const marker = personalAssetsChangedAt()
+    failNextFakeIdbWrite(new DOMException('Sem espaço', 'QuotaExceededError'))
+    expect(
+      (
+        await savePersonalAssetBundle([
+          { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+          { id: 'child', name: 'cabana', dataUrl: PNG },
+        ])
+      ).ok,
+    ).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+    expect(personalAssetsChangedAt()).toBe(marker)
+  })
+  it('grava um conjunto completo com nomes únicos e revisões por desenho', async () => {
+    await savePersonalAsset({ id: 'old', name: 'vila', dataUrl: PNG })
+    const first = await savePersonalAsset({ id: 'root', name: 'raiz', dataUrl: PNG })
+    const saved = await savePersonalAssetBundle([
+      { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+      { id: 'child', name: 'vila', dataUrl: PNG },
+    ])
+    expect(saved.ok).toBe(true)
+    if (!saved.ok) throw new Error(saved.error)
+    expect(saved.assets.map((a) => a.name)).toEqual(['vila-2', 'vila-3'])
+    expect(saved.assets[0]!.updatedAt).toBeGreaterThan(first.updatedAt!)
+    expect(await listPersonalAssets()).toHaveLength(3)
+  })
+
+  it('uma recusa no último mapa conserva todos os registros e o marcador', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    const before = await listPersonalAssets()
+    const marker = personalAssetsChangedAt()
+    const result = await savePersonalAssetBundle([
+      { id: 'root', name: 'vila', dataUrl: `${PNG}AA` },
+      { id: 'child', name: 'cabana', dataUrl: 'inválida' },
+    ])
+    expect(result.ok).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+    expect(personalAssetsChangedAt()).toBe(marker)
+  })
+
+  it('inventário indisponível não vira biblioteca vazia para um escritor', async () => {
+    await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: PNG })
+    failReads = true
+    expect((await savePersonalAsset({ id: 'root', name: 'vila', dataUrl: `${PNG}AA` })).ok).toBe(
+      false,
+    )
+    expect(
+      (await savePersonalAssetBundle([{ id: 'child', name: 'cabana', dataUrl: PNG }])).ok,
+    ).toBe(false)
+    failReads = false
+    expect((await listPersonalAssets()).map((a) => [a.id, a.dataUrl])).toEqual([['root', PNG]])
+  })
+
+  it('o teto de contagem recusa o mundo inteiro, inclusive a atualização da raiz', async () => {
+    for (let i = 0; i < PERSONAL_ASSET_LIMITS.maxCount; i++)
+      await savePersonalAsset({
+        id: `old-${i}`,
+        name: `old-${i}`,
+        kind: 'image',
+        dataUrl: PNG,
+        updatedAt: i,
+      })
+    const before = await listPersonalAssets()
+    expect(
+      (
+        await savePersonalAssetBundle([
+          { id: 'old-0', name: 'old-0', dataUrl: `${PNG}AA` },
+          { id: 'new', name: 'nova-area', dataUrl: PNG },
+        ])
+      ).ok,
+    ).toBe(false)
+    expect(await listPersonalAssets()).toEqual(before)
+  })
   it('salva, normaliza o nome e lista', async () => {
     const result = await savePersonalAsset({ id: 'a1', name: 'Meu Herói', dataUrl: PNG, width: 8 })
     expect(result).toEqual({ ok: true, name: 'meu-heroi', updatedAt: expect.any(Number) })

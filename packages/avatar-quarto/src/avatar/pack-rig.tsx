@@ -8,7 +8,9 @@ import {
   type AvatarEquipment,
   type AvatarSlots,
   avatarFileUrl,
+  withBaseBottom,
   withEars,
+  withReplacements,
 } from '@sistemazero/core/avatar'
 import {
   Component,
@@ -248,7 +250,7 @@ function PackEquipment({
  * uma carrega, o boneco faz a "cabine" (encolhe, gira e flutua). Fica em pé UMA vez (pés no chão).
  *
  * As regras de combinação já vêm aplicadas no `slots` (`equipPart` do core): aqui só se desenha o
- * que está lá, mais as orelhas da cor do corpo.
+ * que está lá, mais as orelhas da cor do corpo e a peça de baixo fixa quando nada cobre.
  */
 export function PackAvatarRig({
   slots,
@@ -332,10 +334,11 @@ export function PackAvatarRig({
     }
   }, [actions, pose, poseTake, onAnimations, reduced])
 
-  // Encaixe → arquivo da peça, com as orelhas da cor do corpo.
+  // Encaixe → arquivo da peça, com as orelhas da cor do corpo e a peça de baixo fixa.
   const parts = useMemo(() => {
     const lista: [string, string, string][] = []
-    for (const [slot, id] of Object.entries(withEars(catalog, slots))) {
+    const desenho = withBaseBottom(catalog, withEars(catalog, withReplacements(catalog, slots)))
+    for (const [slot, id] of Object.entries(desenho)) {
       const file = catalog.parts[id]?.file
       if (file) lista.push([slot, id, file])
     }

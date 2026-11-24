@@ -1,0 +1,17 @@
+{
+  "state": {
+    "engine": "object",
+    "canvases": 1
+  },
+  "requests": [
+    {
+      "url": "https://esm.sh/three@0.184.0/build/three.module.js",
+      "allowed": true
+    },
+    {
+      "url": "https://esm.sh/three@0.184.0/build/three.core.js",
+      "allowed": true
+    }
+  ],
+  "errors": []
+}

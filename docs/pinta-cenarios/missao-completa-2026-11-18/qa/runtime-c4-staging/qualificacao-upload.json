@@ -1,0 +1,31 @@
+{
+  "activationQualified": false,
+  "authorization": "Usuário solicitou missão completa e homologação em staging; produção está excluída.",
+  "distributionSha256": "c4e6107747ac998e0030dad09578ab5ec12dc81941e8675970894ca8a6f8600f",
+  "evidence": [
+    {
+      "path": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/verificacao.json",
+      "sha256": "692ac44940f3d0348402bfb051ba3186fed07307d86758dba596b863e4a770be"
+    },
+    {
+      "path": "docs/pinta-cenarios/missao-completa-2026-11-18/qa/plataformas-precisas/python-navegador.json",
+      "sha256": "33f0aeeee10f572ca23194cbf49f1b463d9313edf36357be98100babe78484c9"
+    },
+    {
+      "path": ".cache/pinta-operational-promoter-tests.log",
+      "sha256": "5a605f55765ea1f5105d7747f6c8951592c0927847848caa1d4e8f5769bc33d7"
+    },
+    {
+      "path": ".cache/pinta-studio-canonical-result.json",
+      "sha256": "6624dcaec87765e3ee634ef67dbb5c83960dca2a451326c2173243939714bd92"
+    }
+  ],
+  "kind": "studio.python.upload-qualification",
+  "limitations": [
+    "Não ativa catálogo, release nem gravador de nuvem.",
+    "Fluxo autenticado dos leitores novos e qualificação ampliada das capacidades do runtime permanecem gates de ativação."
+  ],
+  "releaseManifestSha256": "d9ac5ea3503278be9fae8338ae03365f828120f6398eb01cb34938b53deca68f",
+  "scope": "Somente integridade e transporte dos arquivos locais qualificados do Pinta para R2 staging.",
+  "version": 1
+}

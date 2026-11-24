@@ -1,0 +1,11 @@
+{
+  "workerUploaded": true,
+  "containerUpdated": false,
+  "errorCode": "DURABLE_OBJECT_ALREADY_HAS_APPLICATION",
+  "workerVersion": "b8e8f727-2426-4d80-8cfd-46c4f72e65fb",
+  "cause": "Config achatada perdeu sufixo de ambiente nos nomes gerados",
+  "repairedBy": {
+    "ProBuildSandbox": "sistemazero-studio-runtime-staging-probuildsandbox-staging",
+    "ThreeDCheckSandbox": "sistemazero-studio-runtime-staging-threedchecksandbox-staging"
+  }
+}

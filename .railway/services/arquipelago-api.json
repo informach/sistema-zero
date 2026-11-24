@@ -8,6 +8,7 @@
       "/packages/arquipelago-contracts/**",
       "/packages/avatar-quarto/**",
       "/packages/core/**",
+      "/packages/molda-cenarios-core/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore",

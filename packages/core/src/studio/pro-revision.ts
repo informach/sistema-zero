@@ -1,6 +1,12 @@
 import { canonicalJson } from '../creations/content-fingerprint'
-import { studioProBuildFileLimitError } from './pro-build'
+import {
+  type StudioProPlatformFiles,
+  type StudioProVerifiedPlatformFiles,
+  studioProBuildFileLimitError,
+} from './pro-build'
+import { STUDIO_PRO_PLATFORM_FILES } from './pro-engine-copies'
 import type { StudioProRevisionConfiguration } from './pro-revision-configuration'
+import { isStudioProScene3DFile } from './pro-scene3d'
 import { isStudioDocumentTemplateId, isStudioProjectId } from './project-format'
 import { copyStudioProjectJson } from './project-json'
 
@@ -48,9 +54,40 @@ export const STUDIO_PRO_REVISION_LIMITS = {
   maxSummaryChars: 2_000,
 } as const
 
+export type { StudioProPlatformFiles, StudioProVerifiedPlatformFiles } from './pro-build'
+/**
+ * Platform files: path → accepted SHA-256 digests. A revision file whose digest is listed for its
+ * own path stays in the revision (and in its hash) but outside the author's source budget; any
+ * other content at that path is the author's and counts as usual. A JavaScript revision accepts the
+ * published 2D engine copies (`STUDIO_PRO_PLATFORM_FILES`) on every host, the HTTP boundary
+ * (`parseStudioProRevision`) and every server included, so the client and the servers agree.
+ */
+export interface StudioProRevisionOptions {
+  /** Replaces the published copies (the editor adds the copies it writes today; tests pass their own). */
+  platformFiles?: StudioProPlatformFiles
+}
+
 export async function studioProDigest(text: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
   return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+/**
+ * The platform files among `files` (untrusted input is fine): each file at an accepted path whose
+ * SHA-256 is accepted there, with the exact text that matched. Only the accepted paths are hashed.
+ */
+export async function verifyStudioProPlatformFiles(
+  files: unknown,
+  accepted: StudioProPlatformFiles = STUDIO_PRO_PLATFORM_FILES,
+): Promise<StudioProVerifiedPlatformFiles> {
+  const verified = new Map<string, string>()
+  if (!files || typeof files !== 'object' || Array.isArray(files)) return verified
+  for (const [path, content] of Object.entries(files)) {
+    const digests = Object.hasOwn(accepted, path) ? accepted[path] : undefined
+    if (typeof content === 'string' && digests?.includes(await studioProDigest(content)))
+      verified.set(path, content)
+  }
+  return verified
 }
 
 /** HTTP boundary parser, shared without bringing a validation framework into the editor bundle. */
@@ -133,11 +170,12 @@ function assertLayout(
   files: Record<string, string>,
   directories: string[],
   validPath = isStudioProRevisionPath,
+  platform?: StudioProVerifiedPlatformFiles,
 ) {
   if (
     directories.length > STUDIO_PRO_REVISION_LIMITS.maxDirectories ||
     Object.values(files).some((content) => typeof content !== 'string') ||
-    studioProBuildFileLimitError(files)
+    studioProBuildFileLimitError(files, undefined, platform)
   )
     throw new Error('A revisão ultrapassou os limites de arquivos.')
   const seen = new Set<string>()
@@ -160,15 +198,27 @@ async function revisionPathValidator(python: boolean): Promise<(path: string) =>
 
 export function createStudioProRevision(
   input: Omit<StudioProRevisionV1, 'version' | 'hash'> & { version?: 1 },
+  options?: StudioProRevisionOptions,
 ): Promise<StudioProRevisionV1>
 export function createStudioProRevision(
   input: Omit<StudioProRevisionV2, 'hash'>,
+  options?: StudioProRevisionOptions,
 ): Promise<StudioProRevisionV2>
-export function createStudioProRevision(input: StudioProRevisionInput): Promise<StudioProRevision>
+export function createStudioProRevision(
+  input: StudioProRevisionInput,
+  options?: StudioProRevisionOptions,
+): Promise<StudioProRevision>
 export async function createStudioProRevision(
   input: StudioProRevisionInput,
+  options: StudioProRevisionOptions = {},
 ): Promise<StudioProRevision> {
   input = copyStudioProjectJson(input) as StudioProRevisionInput
+  // Snapshot before the first await, like the input: the caller cannot widen it mid-hash.
+  const platformFiles = options.platformFiles
+    ? Object.fromEntries(
+        Object.entries(options.platformFiles).map(([path, digests]) => [path, [...digests]]),
+      )
+    : undefined
   const configuration =
     input.version === 2
       ? (await import('./pro-revision-configuration')).parseStudioProRevisionConfiguration(
@@ -177,6 +227,7 @@ export async function createStudioProRevision(
       : undefined
   const python = configuration?.programmingLanguage === 'python'
   const validPath = await revisionPathValidator(python)
+  const accepted = platformFiles ?? (python ? undefined : STUDIO_PRO_PLATFORM_FILES)
   if (
     !isStudioProjectId(input.projectId) ||
     !isStudioDocumentTemplateId(input.templateId) ||
@@ -185,7 +236,12 @@ export async function createStudioProRevision(
     input.assets.length > STUDIO_PRO_REVISION_LIMITS.maxAssetManifestChars
   )
     throw new Error('Identidade ou manifesto da revisão inválido.')
-  assertLayout(input.files, input.directories, validPath)
+  assertLayout(
+    input.files,
+    input.directories,
+    validPath,
+    accepted && (await verifyStudioProPlatformFiles(input.files, accepted)),
+  )
   if (configuration?.programmingLanguage === 'python') {
     if (!Object.hasOwn(input.files, configuration.python.entrypoint))
       throw new Error('O arquivo inicial não existe na revisão.')
@@ -199,7 +255,7 @@ export async function createStudioProRevision(
     throw new Error('Manifesto de arquivos inválido.')
   const validAssetPath = python
     ? (await import('./project-environment')).isStudioPythonAssetPath
-    : (path: string) => path.startsWith('public/')
+    : (path: string) => path.startsWith('public/') || isStudioProScene3DFile(path)
   const assetPaths: string[] = []
   for (const [path, hash] of Object.entries(input.assetFiles)) {
     const lower = path.toLowerCase()
@@ -265,13 +321,17 @@ export async function createStudioProRevision(
 export async function applyStudioProChange<Revision extends StudioProRevision>(
   base: Revision,
   change: StudioProChange,
+  options: StudioProRevisionOptions = {},
 ): Promise<{
   revision: Revision
   inverse: StudioProChange
 }> {
   base = copyStudioProjectJson(base) as Revision
   change = copyStudioProjectJson(change) as StudioProChange
-  if ((await createStudioProRevision(base)).hash !== base.hash || change.baseHash !== base.hash)
+  if (
+    (await createStudioProRevision(base, options)).hash !== base.hash ||
+    change.baseHash !== base.hash
+  )
     throw new Error('A revisão-base mudou. Gere uma proposta sobre a versão atual.')
   if (
     typeof change.summary !== 'string' ||
@@ -357,6 +417,7 @@ export async function applyStudioProChange<Revision extends StudioProRevision>(
     base.version === 2
       ? { ...base, files, directories: [...directories], configuration: configuration! }
       : { ...base, files, directories: [...directories] },
+    options,
   )
   if (revision.hash === base.hash) throw new Error('A proposta não altera o projeto.')
   return {

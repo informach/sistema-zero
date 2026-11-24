@@ -1,0 +1,114 @@
+[
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-20T19:52:12.505Z",
+    "finished": "2026-11-20T19:52:22.938Z",
+    "log": ".cache/pinta-a2f-core.log"
+  },
+  {
+    "name": "blockly",
+    "exit": 0,
+    "started": "2026-11-20T19:52:22.940Z",
+    "finished": "2026-11-20T19:52:26.177Z",
+    "log": ".cache/pinta-a2f-blockly.log"
+  },
+  {
+    "name": "validation",
+    "exit": 0,
+    "started": "2026-11-20T19:52:26.178Z",
+    "finished": "2026-11-20T19:52:26.990Z",
+    "log": ".cache/pinta-a2f-validation.log"
+  },
+  {
+    "name": "components",
+    "exit": 0,
+    "started": "2026-11-20T19:52:26.991Z",
+    "finished": "2026-11-20T19:53:43.146Z",
+    "log": ".cache/pinta-a2f-components.log"
+  },
+  {
+    "name": "examples",
+    "exit": 0,
+    "started": "2026-11-20T19:53:43.146Z",
+    "finished": "2026-11-20T19:53:52.193Z",
+    "log": ".cache/pinta-a2f-examples.log"
+  },
+  {
+    "name": "routes",
+    "exit": 0,
+    "started": "2026-11-20T19:53:52.194Z",
+    "finished": "2026-11-20T19:53:52.904Z",
+    "log": ".cache/pinta-a2f-routes.log"
+  },
+  {
+    "name": "runtime",
+    "exit": 0,
+    "started": "2026-11-20T19:53:52.905Z",
+    "finished": "2026-11-20T19:53:53.295Z",
+    "log": ".cache/pinta-a2f-runtime.log"
+  },
+  {
+    "name": "sdk",
+    "exit": 0,
+    "started": "2026-11-20T19:53:53.296Z",
+    "finished": "2026-11-20T19:53:53.601Z",
+    "log": ".cache/pinta-a2f-sdk.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T19:53:53.602Z",
+    "finished": "2026-11-20T19:53:53.767Z",
+    "log": ".cache/pinta-a2f-profile.log"
+  },
+  {
+    "name": "chromium",
+    "exit": 0,
+    "started": "2026-11-20T19:53:53.768Z",
+    "finished": "2026-11-20T19:54:35.472Z",
+    "log": ".cache/pinta-a2f-chromium.log"
+  },
+  {
+    "name": "firefox",
+    "exit": 0,
+    "started": "2026-11-20T19:54:35.473Z",
+    "finished": "2026-11-20T19:54:54.227Z",
+    "log": ".cache/pinta-a2f-firefox.log"
+  },
+  {
+    "name": "webkit",
+    "exit": 0,
+    "started": "2026-11-20T19:54:54.228Z",
+    "finished": "2026-11-20T19:55:10.341Z",
+    "log": ".cache/pinta-a2f-webkit.log"
+  },
+  {
+    "name": "integration",
+    "exit": 0,
+    "started": "2026-11-20T19:55:10.342Z",
+    "finished": "2026-11-20T19:57:11.656Z",
+    "log": ".cache/pinta-a2f-integration.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-20T19:57:11.657Z",
+    "finished": "2026-11-20T20:00:09.389Z",
+    "log": ".cache/pinta-a2f-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-20T20:00:09.389Z",
+    "finished": "2026-11-20T20:02:18.317Z",
+    "log": ".cache/pinta-a2f-members-types.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-20T20:02:18.318Z",
+    "finished": "2026-11-20T20:02:46.722Z",
+    "log": ".cache/pinta-a2f-biome.log"
+  }
+]

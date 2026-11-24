@@ -1,0 +1,7 @@
+module.exports=async function(qa){if(!qa.ownedVilaUpdate?.customProgramPreserved)throw Error('Vila update missing');
+ const previous=qa.vilaPage,page=await qa.context.newPage();await page.goto(qa.origin+'/estudio',{waitUntil:'domcontentloaded',timeout:45000});
+ await page.getByRole('button',{name:'Abrir projeto qa-vila-floresta-20261120',exact:true}).click();await page.locator('[data-live-target="studio-run"]:visible').waitFor({state:'visible',timeout:30000});
+ const current=await require('./checkpoint-owned-vila-program.cjs')({...qa,vilaPage:page});
+ if(current.programSha256!==qa.ownedVilaProgramBeforeUpdate.programSha256||current.sceneSha256!==qa.ownedVilaUpdate.sceneAfter||!current.markerInFiles||!current.markerInIR)throw Error('Vila reopening changed code or scene');
+ qa.previousVilaStudioPage=previous;qa.vilaPage=page;qa.ownedVilaProgramReopened=current;
+ return {...current,reopenedFreshApp:true,customProgramPreserved:true,updatedScenePreserved:true,oldPagePreserved:!qa.old.isClosed()};};

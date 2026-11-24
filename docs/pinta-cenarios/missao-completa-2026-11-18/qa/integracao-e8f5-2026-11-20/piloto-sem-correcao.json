@@ -1,0 +1,271 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      ".cache/pinta-e8f5-student-diagnostic.config.ts"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-e8f5-student-diagnostic-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache",
+        "testIgnore": [],
+        "testMatch": ["pinta-e8f5-student-tests-diagnostic.spec.ts"],
+        "timeout": 90000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache",
+        "testIgnore": [],
+        "testMatch": "pinta-e8f5-student-tests-diagnostic.spec.ts",
+        "timeout": 90000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5500",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "headless": true,
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\.cache\\pinta-e8f5-student-diagnostic-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "pinta-e8f5-student-tests-diagnostic.spec.ts",
+      "file": "pinta-e8f5-student-tests-diagnostic.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Meus testes: cria, roda no palco escondido, mostra o resultado e guarda no projeto",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4178,
+                  "error": {
+                    "message": "Error: page.evaluate: NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Write permission denied.",
+                    "stack": "Error: page.evaluate: NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Write permission denied.\n    at replaceBridgeScript (C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\helpers\\previewShell.ts:104:16)\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-tests-diagnostic.spec.ts:46:3",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\helpers\\previewShell.ts",
+                      "column": 16,
+                      "line": 104
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m..\\e2e\\helpers\\previewShell.ts:104\n\n \u001b[90m 102 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mkeyboard\u001b[33m.\u001b[39minsertText(code)\n \u001b[90m 103 |\u001b[39m   } \u001b[36melse\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 104 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mevaluate((text) \u001b[33m=>\u001b[39m navigator\u001b[33m.\u001b[39mclipboard\u001b[33m.\u001b[39mwriteText(text)\u001b[33m,\u001b[39m code)\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 105 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mkeyboard\u001b[33m.\u001b[39mpress(\u001b[32m`${modifier}+V`\u001b[39m)\n \u001b[90m 106 |\u001b[39m   }\n \u001b[90m 107 |\u001b[39m   \u001b[36mif\u001b[39m (page\u001b[33m.\u001b[39mcontext()\u001b[33m.\u001b[39mbrowser()\u001b[33m?.\u001b[39mbrowserType()\u001b[33m.\u001b[39mname() \u001b[33m!==\u001b[39m \u001b[32m'webkit'\u001b[39m) {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\helpers\\previewShell.ts",
+                        "column": 16,
+                        "line": 104
+                      },
+                      "message": "Error: page.evaluate: NotAllowedError: Failed to execute 'writeText' on 'Clipboard': Write permission denied.\n\n   at ..\\e2e\\helpers\\previewShell.ts:104\n\n  102 |     await page.keyboard.insertText(code)\n  103 |   } else {\n> 104 |     await page.evaluate((text) => navigator.clipboard.writeText(text), code)\n      |                ^\n  105 |     await page.keyboard.press(`${modifier}+V`)\n  106 |   }\n  107 |   if (page.context().browser()?.browserType().name() !== 'webkit') {\n    at replaceBridgeScript (C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\helpers\\previewShell.ts:104:16)\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-tests-diagnostic.spec.ts:46:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T21:39:44.196Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "W10="
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-d5056-sultado-e-guarda-no-projeto-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e\\helpers\\previewShell.ts",
+                    "column": 16,
+                    "line": 104
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8bf84c632798d70a6710-00dfaeda449cea3ea6d3",
+          "file": "pinta-e8f5-student-tests-diagnostic.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "Meus testes: clicar no sprite de um grupo, no jogo final do Cadê Todo Mundo",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4797,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime\\pythonBrowserErrors.ts:22:21",
+                    "location": {
+                      "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime\\pythonBrowserErrors.ts",
+                      "column": 21,
+                      "line": 22
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m..\\e2e-runtime\\pythonBrowserErrors.ts:22\n\n \u001b[90m 20 |\u001b[39m       contentType\u001b[33m:\u001b[39m \u001b[32m'application/json'\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 21 |\u001b[39m     })\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m     expect(current)\u001b[33m.\u001b[39mtoEqual([])\n \u001b[90m    |\u001b[39m                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m   })\n \u001b[90m 24 |\u001b[39m }\n \u001b[90m 25 |\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime\\pythonBrowserErrors.ts",
+                        "column": 21,
+                        "line": 22
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Permissions policy violation: focus-without-user-activation is not allowed in this document.\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n   at ..\\e2e-runtime\\pythonBrowserErrors.ts:22\n\n  20 |       contentType: 'application/json',\n  21 |     })\n> 22 |     expect(current).toEqual([])\n     |                     ^\n  23 |   })\n  24 | }\n  25 |\n    at C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime\\pythonBrowserErrors.ts:22:21"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T21:39:49.211Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "browser-errors",
+                      "contentType": "application/json",
+                      "body": "WyJQZXJtaXNzaW9ucyBwb2xpY3kgdmlvbGF0aW9uOiBmb2N1cy13aXRob3V0LXVzZXItYWN0aXZhdGlvbiBpcyBub3QgYWxsb3dlZCBpbiB0aGlzIGRvY3VtZW50LiJd"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-e8f5-student-diagnostic-results\\pinta-e8f5-student-tests-d-5b2c9-go-final-do-Cadê-Todo-Mundo-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e-runtime\\pythonBrowserErrors.ts",
+                    "column": 21,
+                    "line": 22
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8bf84c632798d70a6710-325ba6ff52ff01a98c04",
+          "file": "pinta-e8f5-student-tests-diagnostic.spec.ts",
+          "line": 85,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T21:39:43.507Z",
+    "duration": 11040.510999999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

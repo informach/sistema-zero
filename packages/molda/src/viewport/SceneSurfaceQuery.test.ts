@@ -174,3 +174,25 @@ test('unknown geometry, empty ranges and singular matrices retain native behavio
     material.dispose()
   }
 })
+
+test('explicit revision retires the old snapshot and keeps native picking without changing draw buffers', () => {
+  const geometry = new BoxGeometry(2, 2, 2),
+    material = new MeshBasicMaterial(),
+    object = new Mesh(geometry, material),
+    query = new SceneSurfaceQuery(),
+    ray = new Raycaster(new Vector3(0, 10, 0), new Vector3(0, -1, 0))
+  object.updateMatrixWorld(true)
+  try {
+    query.setSources([geometry])
+    expect(check(query, object, ray)[0]!.point.y).toBe(1)
+    geometry.translate(0, 3, 0)
+    const positions = [...geometry.getAttribute('position').array]
+    query.invalidateGeometry(geometry)
+    expect(check(query, object, ray)[0]!.point.y).toBe(4)
+    expect([...geometry.getAttribute('position').array]).toEqual(positions)
+  } finally {
+    query.dispose()
+    geometry.dispose()
+    material.dispose()
+  }
+})

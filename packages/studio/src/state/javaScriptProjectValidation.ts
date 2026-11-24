@@ -3,6 +3,7 @@ import {
   StudioProjectDocumentSchema,
   StudioProjectIdSchema,
 } from '@sistemazero/core/studio/project-document'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
 import type { JavaScriptProjectDocument } from '../core/project'
 import { assertProjectContentPreserved, ProjectDocumentError } from '../core/projectDocument'
 import { copyLocalRevision } from './projectStorageRevision'
@@ -13,7 +14,11 @@ import { sanitizeJavaScriptProjectPayload } from './projectValidation'
  */
 export function refineJavaScriptProjectDocument(
   raw: unknown,
-  options: { requestedId?: string; proBuildLimits?: StudioProBuildLimits } = {},
+  options: {
+    requestedId?: string
+    proBuildLimits?: StudioProBuildLimits
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } = {},
 ): JavaScriptProjectDocument {
   const document = StudioProjectDocumentSchema.parse(raw)
   if (document.programmingLanguage !== 'javascript')
@@ -30,6 +35,7 @@ export function refineJavaScriptProjectDocument(
       ? document.id
       : StudioProjectIdSchema.parse(options.requestedId),
     options.proBuildLimits,
+    options.regionalMaterials,
   )
   if (!payload)
     throw new ProjectDocumentError('invalid-document', 'O conteúdo JavaScript é inválido.')
@@ -46,6 +52,9 @@ export function refineJavaScriptProjectDocument(
     installedExtensions: payload.installedExtensions,
     assets: payload.assets,
     coverAssetName: payload.coverAssetName,
+    ...(document.kind === 'classic' && payload.studentTests
+      ? { studentTests: payload.studentTests }
+      : {}),
   }
   let project: JavaScriptProjectDocument
   if (document.kind === 'pro') {

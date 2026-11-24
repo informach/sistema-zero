@@ -25,7 +25,10 @@ import { type JSX, StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
 
-setPintaStorageNamespace('playground')
+// Banco isolado para a homologação, sem misturar seus desenhos com o playground habitual.
+setPintaStorageNamespace(
+  new URLSearchParams(window.location.search).get('namespace')?.trim() || 'playground',
+)
 
 const root = document.getElementById('root')
 if (!root) throw new Error('#root não encontrado')
@@ -167,6 +170,8 @@ function PintaDemo() {
   return (
     <PintaApp
       adapter={{
+        theme:
+          new URLSearchParams(window.location.search).get('theme') === 'dark' ? 'dark' : 'light',
         sendToStudio: async (asset) => {
           console.log('[playground] sendToStudio', {
             id: asset.id,

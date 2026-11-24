@@ -1,8 +1,12 @@
-import { canonicalJson } from '@sistemazero/core/creations'
-import { isStudioPythonAssetPath } from '@sistemazero/core/studio/portable-path'
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import { encodeProjectJsonGraph } from '@sistemazero/core/studio/project-json-graph'
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
+import {
+  type StudioStudentTest,
+  StudioStudentTestsSchema,
+} from '@sistemazero/core/studio/student-tests'
 import { useContext } from 'react'
 import { ulid } from 'ulid'
 import { useStore } from 'zustand'
@@ -25,9 +29,11 @@ import {
   type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
+  projectAssetBudgetChars,
   type StudioProBuildLimits,
   sanitizeProjectAssetLicense,
   sanitizeProjectAssets,
+  sanitizeSceneMeta,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
@@ -75,6 +81,9 @@ import {
   raylibRelocatedAssets,
   raylibRenamedAsset,
 } from '../core/raylibMediaPaths'
+import { isPythonMaterialPath, isScene3DAssetKind } from '../core/scene3d/assets'
+import type { PlanoDeImportacaoDeCena3D } from '../core/scene3d/importar'
+import { cenasQueUsamAsset, scene3DResourceChangeIssue } from '../core/scene3d/referencias'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
   emptyPythonWorkspaceState,
@@ -82,6 +91,7 @@ import {
 } from '../python/blocks/workspaceDraft'
 import { hasPygameExtension } from '../runtime/python/pygame/contract'
 import { hasTurtleExtension } from '../runtime/python/turtle/contract'
+import type { StudioPintaImportedAsset } from '../studio/pinta-library'
 import { prepareEditableCloudProject } from './editableCloudProject'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import {
@@ -97,8 +107,9 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import { preparePintaMapBundle } from './pintaMapBundle'
 import { beginProjectOpening } from './projectOpening'
-import { bindProjectToDurableHead } from './projectStorageCoordinator'
+import { bindProjectToDurableHead, projectExitRecoveryStatus } from './projectStorageCoordinator'
 import {
   advanceLocalRevision,
   copyLocalRevision,
@@ -108,7 +119,9 @@ import {
 import {
   captureProjectStorageScope,
   getProjectStorageScope,
+  isPrivateRegionalProjectScope,
   type ProjectStorageScope,
+  regionalProjectReadOptions,
 } from './projectStorageRuntime'
 import {
   getAllowedBlocklyBlockTypes,
@@ -269,7 +282,12 @@ interface ProjectStore {
   // --- Assets embutidos (imagens/sprites) ---
   /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
   addAsset: (input: NewAssetInput) => string | null
-  removeAsset: (id: string) => void
+  importPintaMapBundle: (input: StudioPintaImportedAsset) => string | null
+  importScene3DBundle: (
+    plano: PlanoDeImportacaoDeCena3D,
+    sinal?: AbortSignal,
+  ) => Promise<string | null>
+  removeAsset: (id: string) => string | null
   /** Renomeia um asset. Devolve erro ou null. */
   renameAsset: (id: string, newName: string) => string | null
   /**
@@ -299,6 +317,12 @@ interface ProjectStore {
    * legível ou `null`.
    */
   setCoverAsset: (assetId: string | null) => string | null
+  /**
+   * Os testes da aba "Meus testes" (proposta aprovada em 20/11/2026), guardados no projeto. Só no
+   * Estúdio clássico em JavaScript. A lista inteira de uma vez (a aba edita uma cópia); vazia tira
+   * a chave do projeto. Bumpa `updatedAt`, como qualquer edição. Devolve erro legível ou `null`.
+   */
+  setStudentTests: (tests: StudioStudentTest[]) => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -359,6 +383,8 @@ export interface NewAssetInput {
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
+  scene?: unknown
+  tilemapFront?: unknown
   tilemap?: unknown
 }
 
@@ -391,6 +417,8 @@ export interface UpdateAssetImageInput {
   /** Metadados do desenho de origem; ausentes seguem a regra da geometria. */
   sprite?: unknown
   tileset?: unknown
+  scene?: unknown
+  tilemapFront?: unknown
   tilemap?: unknown
   /** Revisão dos bytes na biblioteca pessoal. */
   libRevision?: number
@@ -414,9 +442,10 @@ export async function loadSanitizedProjectById(
   storageScope?: ProjectStorageScope,
   recoverDraft = false,
 ): Promise<Project | null> {
-  const raw = await loadProjectById(id, storageScope, { recoverDraft })
+  const scope = storageScope ?? captureProjectStorageScope()
+  const raw = await loadProjectById(id, scope, { recoverDraft })
   if (!raw) return null
-  const sanitized = await prepareEditableStudioProject(raw)
+  const sanitized = await prepareEditableStudioProject(raw, regionalProjectReadOptions(scope))
   if (sanitized && sanitized.id !== id) throw new Error('O projeto salvo tem outra identidade.')
   return sanitized
 }
@@ -425,17 +454,21 @@ export async function loadSanitizedProjectShellById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
-  const shell = await loadProjectShellById(id, storageScope)
+  const scope = storageScope ?? captureProjectStorageScope()
+  const shell = await loadProjectShellById(id, scope)
   if (!shell) return null
   // A migração precisa do documento inteiro antes de separar suas partições.
-  if (projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION) {
+  if (
+    projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION ||
+    isPrivateRegionalProjectScope(scope)
+  ) {
     // Python source is authoritative; its derived visual partition stays opaque.
-    const prepared = await prepareEditableStudioProject(shell)
+    const prepared = await prepareEditableStudioProject(shell, regionalProjectReadOptions(scope))
     if (prepared && prepared.id !== id) throw new Error('O projeto salvo tem outra identidade.')
     return prepared
   }
   if (projectFormatVersion(shell) !== CURRENT_PROJECT_FORMAT_VERSION)
-    return loadSanitizedProjectById(id, storageScope)
+    return loadSanitizedProjectById(id, scope)
   const sanitized = sanitizeStoredProject(shell, id)
   return sanitized ? copyLocalRevision(shell, sanitized) : null
 }
@@ -493,6 +526,22 @@ export interface CreateProjectStoreOptions {
 }
 
 /** O objeto capturado muda a cada troca de perfil, inclusive A → B → A. */
+/**
+ * A origem de um Pro importado (`proMeta.origin`, a cópia em blocos de "Virar profissional") só
+ * fica quando a cópia existe neste aparelho (full review final de 21/11/2026). Vinda de outra conta
+ * ou de outro computador, ela fazia o menu dizer "A versão em blocos foi apagada" de uma cópia que a
+ * criança nunca teve. Sem conseguir ler, fica: quem decide é a abertura.
+ */
+async function keepKnownProOrigin(project: Project, scope: ProjectStorageScope): Promise<Project> {
+  if (isPythonProject(project) || project.kind !== 'pro') return project
+  const meta = project.proMeta
+  if (!meta?.origin) return project
+  const exists = await loadProjectMetaById(meta.origin.projectId, scope).then(Boolean, () => true)
+  if (exists) return project
+  const { origin: _origin, ...proMeta } = meta
+  return { ...project, proMeta }
+}
+
 function assertProjectCreationScope(scope: ProjectStorageScope): void {
   if (scope !== captureProjectStorageScope()) {
     throw new Error('O perfil mudou durante a criação. Inicie novamente no perfil atual.')
@@ -792,9 +841,11 @@ export function createProjectStore(
         if (!result.project) throw new Error('Documento de projeto inválido.')
         assertCurrent()
         const { warnings } = result
+        const imported = await keepKnownProOrigin(withoutProjectPublication(result.project), scope)
+        assertCurrent()
         const now = Date.now()
         const project = {
-          ...withoutProjectPublication(result.project),
+          ...imported,
           id: ulid(),
           createdAt: now,
           updatedAt: now,
@@ -821,7 +872,7 @@ export function createProjectStore(
         if (get().project?.id === project.id || isProjectOpenAnywhere(project.id)) {
           throw new Error('Snapshot recusado: o projeto está aberto no editor.')
         }
-        await bindProjectToDurableHead(project, scope)
+        await bindProjectToDurableHead(project, scope, { legacyMaterialsOnly: true })
         // Antes de persistir, converge desenhos por revisão. Se só um lado é mais novo,
         // ele vence; legado divergente preserva ambos e religa o projeto à cópia remota.
         const drawings = await reconcileDrawingsFromRestoredProject(project, {
@@ -916,12 +967,14 @@ export function createProjectStore(
           next,
           isPythonProject(project)
             ? {
-                materialPath: isStudioPythonAssetPath,
+                materialPath: isPythonMaterialPath,
                 dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
               }
             : undefined,
         )
         assertProjectContentPreserved({ assets: next }, { ...project, assets: sanitized })
+        const sceneIssue = scene3DResourceChangeIssue(project.assets ?? [], sanitized)
+        if (sceneIssue) throw new Error(sceneIssue)
         if (isPythonProject(project)) {
           const error = commitPython({ ...project, assets: sanitized })
           if (error) throw new Error(error)
@@ -1289,6 +1342,99 @@ export function createProjectStore(
           saveError: null,
         })
       },
+      importScene3DBundle: async (plano, sinal) => {
+        const project = get().project,
+          scope = captureProjectStorageScope()
+        if (!project || project.id !== plano.projetoId)
+          return 'O projeto aberto mudou. Traga o cenário novamente.'
+        if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+        const conferirSessao = () => {
+          sinal?.throwIfAborted()
+          if (scope !== captureProjectStorageScope() || scope.signal?.aborted)
+            throw new Error('O perfil mudou durante a importação. Traga o cenário novamente.')
+          if (get().project !== project)
+            throw new Error('O projeto mudou durante a importação. Suas edições foram preservadas.')
+          if (get().editingAccess !== 'author') throw new Error('Este projeto está em observação.')
+        }
+        try {
+          conferirSessao()
+          const capturado = copyStudioProjectJson(plano) as PlanoDeImportacaoDeCena3D,
+            conteudoBase = encodeProjectJsonGraph(project),
+            hash = await sha256Hex(conteudoBase)
+          conferirSessao()
+          if (capturado.baseHash !== hash)
+            return 'O projeto mudou depois do preparo. Traga o cenário novamente; suas edições foram preservadas.'
+          const [{ prepararImportacaoDeCena3D }, { pacoteDeCena3D }, fontesPython] =
+            await Promise.all([
+              import('../core/scene3d/importar'),
+              import('../core/scene3d/referencias'),
+              isPythonProject(project) ? import('../core/scene3d/python') : Promise.resolve(null),
+            ])
+          conferirSessao()
+          const asset = capturado.assets.find(
+            (a) => a.id === capturado.assetId && a.kind === 'scene3d',
+          )
+          if (!asset) return 'O cenário preparado está incompleto. Nenhum material foi adicionado.'
+          // Rebuild from verified bytes, never trust a serialized budget or a proposed asset replacement.
+          const verificado = await prepararImportacaoDeCena3D(
+            project,
+            pacoteDeCena3D(asset, capturado.assets),
+            { sinal },
+          )
+          conferirSessao()
+          if (encodeProjectJsonGraph(project) !== conteudoBase)
+            return 'O projeto mudou durante a importação. Suas edições foram preservadas.'
+          if (
+            verificado.baseHash !== capturado.baseHash ||
+            verificado.assetId !== capturado.assetId ||
+            canonicalJson(verificado.assets) !== canonicalJson(capturado.assets) ||
+            canonicalJson(verificado.fontesPython ?? []) !==
+              canonicalJson(capturado.fontesPython ?? [])
+          )
+            return 'O preparo do cenário mudou. Traga o cenário novamente; o projeto foi mantido.'
+          if (
+            canonicalJson(project.assets ?? []) === canonicalJson(verificado.assets) &&
+            !verificado.fontesPython?.length
+          )
+            return null
+          let proximo: Project = { ...project, assets: verificado.assets }
+          if (isPythonProject(project)) {
+            if (!fontesPython) throw Error('O preparo das fontes Python está indisponível.')
+            const python = fontesPython.aplicarFontesPythonDoCenario(
+              project,
+              verificado.assets,
+              verificado.fontesPython ?? [],
+            )
+            const erro = pythonProjectLayoutError(python, pythonEditLimits)
+            if (erro) return erro
+            proximo = python
+          }
+          conferirSessao()
+          set({
+            project: bump(proximo),
+            isDirty: true,
+            saveError: null,
+          })
+          return null
+        } catch (error) {
+          return error instanceof Error
+            ? error.message
+            : 'Não consegui trazer o cenário. O projeto foi mantido.'
+        }
+      },
+      importPintaMapBundle: (input) => {
+        const project = get().project
+        if (!project) return 'Nenhum projeto carregado.'
+        if (isPythonProject(project)) return 'Traga uma seleção de imagem para este projeto Python.'
+        if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
+        try {
+          const assets = preparePintaMapBundle(project.assets ?? [], input)
+          set({ project: bump({ ...project, assets }), isDirty: true, saveError: null })
+          return null
+        } catch (error) {
+          return error instanceof Error ? error.message : 'Não consegui trazer os mapas agora.'
+        }
+      },
       addAsset: (input) => {
         const p = get().project
         if (!p) return 'Nenhum projeto carregado.'
@@ -1339,15 +1485,21 @@ export function createProjectStore(
           return `Limite de ${PROJECT_ASSET_LIMITS.maxAssetsCount} arquivos por projeto.`
         }
         if (assets.some((a) => a.name === name)) return `Já existe um asset com o nome "${name}".`
-        const totalChars =
-          assets.reduce((sum, a) => sum + a.dataUrl.length, 0) + input.dataUrl.length
-        if (totalChars > dataLimits.maxAssetsTotalChars) {
-          return 'Os assets do projeto excedem o tamanho total permitido.'
-        }
         // Metadados do Pinta (e dimensões) só valem p/ IMAGEM; som e 3D nunca os têm.
         const sprite = isImage ? sanitizeSpriteMeta(input.sprite) : undefined
         const tileset = isImage ? sanitizeTilesetMeta(input.tileset) : undefined
         const tilemap = isImage ? sanitizeTilemapMeta(input.tilemap) : undefined
+        const scene = isImage ? sanitizeSceneMeta(input.scene) : undefined,
+          tilemapFront = isImage ? sanitizeTilemapMeta(input.tilemapFront) : undefined
+        if (input.scene && !scene)
+          return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
+        // A cena conta no total, igual ao load: o que entra aqui não some ao reabrir.
+        const totalChars =
+          assets.reduce((sum, a) => sum + projectAssetBudgetChars(a), 0) +
+          projectAssetBudgetChars({ dataUrl: input.dataUrl, scene })
+        if (totalChars > dataLimits.maxAssetsTotalChars) {
+          return 'Os assets do projeto excedem o tamanho total permitido.'
+        }
         let pintaImage: ProjectAsset['pintaImage']
         try {
           pintaImage = readPintaImageAssetMetadata({ ...input, kind })
@@ -1384,6 +1536,8 @@ export function createProjectStore(
           ...(sprite ? { sprite } : {}),
           ...(tileset ? { tileset } : {}),
           ...(tilemap ? { tilemap } : {}),
+          ...(scene ? { scene } : {}),
+          ...(tilemapFront ? { tilemapFront } : {}),
           ...(pintaImage ? { pintaImage } : {}),
         }
         if (isPythonProject(p)) {
@@ -1427,7 +1581,7 @@ export function createProjectStore(
               return 'Este projeto abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
             asset.proPath = `assets/${name}.${extension}`
           }
-          if (!isStudioPythonAssetPath(asset.proPath))
+          if (!isPythonMaterialPath(asset.proPath, asset.kind))
             return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
           return commitPython({ ...p, assets: [...assets, asset] })
         }
@@ -1436,10 +1590,13 @@ export function createProjectStore(
       },
       removeAsset: (id) => {
         const p = get().project
-        if (!p?.assets) return
+        if (!p?.assets) return null
+        const usadas = cenasQueUsamAsset(p.assets, id)
+        if (usadas.length)
+          return `Este material é usado pelos cenários: ${usadas.join(', ')}. Remova primeiro os cenários que dependem dele.`
         const target = p.assets.find((a) => a.id === id)
         const next = p.assets.filter((a) => a.id !== id)
-        if (next.length === p.assets.length) return
+        if (next.length === p.assets.length) return null
         // A capa escolhida era esta imagem: some junto (volta à foto automática).
         const { coverAssetName, ...rest } = p
         const wasCover = target !== undefined && coverAssetName === target.name
@@ -1448,6 +1605,7 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+        return null
       },
       updateAssetMeta: (id, meta) => {
         const p = get().project
@@ -1483,6 +1641,11 @@ export function createProjectStore(
         const target = p.assets.find((a) => a.id === id)
         if (!target) return 'Imagem não encontrada.'
         if (target.kind === 'audio') return 'Esse arquivo não é uma imagem.'
+        if (isScene3DAssetKind(target.kind))
+          return 'Traga uma nova revisão do cenário pelo Molda para alterar esses dados.'
+        const usadas = cenasQueUsamAsset(p.assets, id)
+        if (usadas.length && target.dataUrl !== image.dataUrl)
+          return `Este material é usado pelos cenários: ${usadas.join(', ')}. Traga uma nova revisão do cenário para preservar os recursos existentes.`
         if (target.pintaImage && image.pintaImage === undefined)
           return 'Prepare a imagem usando a receita do Pinta antes de atualizar este material.'
         let pintaImage: ProjectAsset['pintaImage']
@@ -1496,6 +1659,8 @@ export function createProjectStore(
             sprite: image.sprite,
             tileset: image.tileset,
             tilemap: image.tilemap,
+            scene: image.scene,
+            tilemapFront: image.tilemapFront,
           })
         } catch (error) {
           return error instanceof Error ? error.message : 'A receita do Pinta é inválida.'
@@ -1518,6 +1683,14 @@ export function createProjectStore(
             : undefined
         if (
           target.dataUrl === image.dataUrl &&
+          (image.scene === undefined
+            ? image.tilemapFront === undefined ||
+              canonicalJson(target.tilemapFront ?? null) === canonicalJson(image.tilemapFront)
+            : // Com cena, mapa antigo ausente é REMOÇÃO: sobra velha no jogo não é "nada a fazer".
+              canonicalJson(target.scene ?? null) === canonicalJson(image.scene) &&
+              canonicalJson(target.tilemap ?? null) === canonicalJson(image.tilemap ?? null) &&
+              canonicalJson(target.tilemapFront ?? null) ===
+                canonicalJson(image.tilemapFront ?? null)) &&
           (libRevision === undefined || target.libRevision === libRevision) &&
           (pintaImage === undefined ||
             canonicalJson(target.pintaImage ?? null) === canonicalJson(pintaImage))
@@ -1541,7 +1714,7 @@ export function createProjectStore(
         // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
         // ficado bem maior).
         const othersChars = p.assets.reduce(
-          (sum, a) => (a.id === id ? sum : sum + a.dataUrl.length),
+          (sum, a) => (a.id === id ? sum : sum + projectAssetBudgetChars(a)),
           0,
         )
         if (othersChars + image.dataUrl.length > dataLimits.maxAssetsTotalChars) {
@@ -1567,10 +1740,28 @@ export function createProjectStore(
         const tileset = pintaImage
           ? undefined
           : (sanitizeTilesetMeta(image.tileset) ?? (sameGeometry ? target.tileset : undefined))
+        // Desenho com cena manda no mapa inteiro: o mapa antigo que ele não traz SAI, sem
+        // herança por geometria (a miniatura de um mapa que cresceu pode ter a mesma medida).
+        const inheritMap = sameGeometry && image.scene === undefined
         const tilemap = pintaImage
           ? undefined
-          : (sanitizeTilemapMeta(image.tilemap) ?? (sameGeometry ? target.tilemap : undefined))
+          : (sanitizeTilemapMeta(image.tilemap) ?? (inheritMap ? target.tilemap : undefined))
 
+        const scene = pintaImage
+          ? undefined
+          : (sanitizeSceneMeta(image.scene) ?? (sameGeometry ? target.scene : undefined))
+        const tilemapFront = pintaImage
+          ? undefined
+          : (sanitizeTilemapMeta(image.tilemapFront) ??
+            (inheritMap ? target.tilemapFront : undefined))
+        if (image.scene && !scene)
+          return 'Este cenário passou do limite do Estúdio ou tem dados inválidos.'
+        // A cena conta no total, igual ao load: aceitar aqui e perder ao reabrir seria pior.
+        if (
+          othersChars + projectAssetBudgetChars({ dataUrl: image.dataUrl, scene }) >
+          dataLimits.maxAssetsTotalChars
+        )
+          return `O cenário do desenho "${target.name}" não cabe neste jogo.`
         // ⚠️ `name`, `id`, `libId` e `source` ficam INTOCADOS: os blocos referenciam
         // o asset PELO NOME (FieldAssetPicker serializa a string), então renomear
         // aqui quebraria o jogo em silêncio — e o nome no projeto pode divergir do
@@ -1590,6 +1781,10 @@ export function createProjectStore(
         else delete next.tileset
         if (tilemap) next.tilemap = tilemap
         else delete next.tilemap
+        if (scene) next.scene = scene
+        else delete next.scene
+        if (tilemapFront) next.tilemapFront = tilemapFront
+        else delete next.tilemapFront
 
         set({
           project: bump({ ...p, assets: p.assets.map((a) => (a.id === id ? next : a)) }),
@@ -1627,7 +1822,14 @@ export function createProjectStore(
         )
           return 'Imagem inválida ou grande demais.'
         // Os metadados de JavaScript (peças/mapa configurados aqui) não valem para a receita.
-        const { sprite: _sprite, tileset: _tileset, tilemap: _tilemap, ...kept } = target
+        const {
+          sprite: _sprite,
+          tileset: _tileset,
+          tilemap: _tilemap,
+          scene: _scene,
+          tilemapFront: _front,
+          ...kept
+        } = target
         const libRevision =
           typeof link.libRevision === 'number' &&
           Number.isFinite(link.libRevision) &&
@@ -1677,7 +1879,12 @@ export function createProjectStore(
           return 'Já existe uma imagem com esse nome.'
         }
         if (target.name === name) return null
-        if (isPythonProject(p) && (projectUsesPgzero(p) || projectUsesRaylib(p))) {
+        if (
+          isPythonProject(p) &&
+          !isScene3DAssetKind(target.kind) &&
+          !cenasQueUsamAsset(p.assets, id).length &&
+          (projectUsesPgzero(p) || projectUsesRaylib(p))
+        ) {
           // Pygame Zero finds the file by name and raylib by path: the file follows the name.
           const renamed = projectUsesRaylib(p)
             ? raylibRenamedAsset(p, target, name)
@@ -1715,6 +1922,30 @@ export function createProjectStore(
           isDirty: true,
           saveError: null,
         })
+        return null
+      },
+      setStudentTests: (tests) => {
+        const p = get().project
+        if (!p) return 'Nenhum projeto carregado.'
+        // O Pro em JavaScript também guarda (os testes rodam no executor do servidor); o Python
+        // Pro não tem a aba.
+        if (p.kind === 'pro' && isPythonProject(p)) return 'Os testes valem no Estúdio clássico.'
+        if (!StudioStudentTestsSchema.safeParse(tests).success) return 'Teste com forma inválida.'
+        // O Python clássico guarda os testes no documento dele (testar o programa e testar uma
+        // função, proposta aprovada em 20/11/2026), pelo mesmo caminho das outras edições.
+        if (isPythonProject(p)) {
+          if (tests.length > 0) return commitPython({ ...p, studentTests: tests })
+          if (p.studentTests === undefined) return null
+          const { studentTests: _tests, ...rest } = p
+          return commitPython(rest)
+        }
+        if (tests.length === 0) {
+          if (p.studentTests === undefined) return null
+          const { studentTests: _tests, ...rest } = p
+          set({ project: bump(rest), isDirty: true, saveError: null })
+          return null
+        }
+        set({ project: bump({ ...p, studentTests: tests }), isDirty: true, saveError: null })
         return null
       },
       addProFile: (path) => {
@@ -1779,12 +2010,14 @@ export function createProjectStore(
         if (isPythonProject(p)) {
           const assets = materials
             ? sanitizeProjectAssets(materials.assets, {
-                materialPath: isStudioPythonAssetPath,
+                materialPath: isPythonMaterialPath,
                 dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
               })
             : p.assets
           if (materials)
             assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          const sceneIssue = scene3DResourceChangeIssue(p.assets ?? [], assets ?? [])
+          if (sceneIssue) return sceneIssue
           const document = { ...p, ...pythonConfiguration, tree, assets }
           if (materials) {
             if (materials.coverAssetName) {
@@ -1813,6 +2046,8 @@ export function createProjectStore(
         if (materials) {
           const assets = sanitizeProjectAssets(materials.assets)
           assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          const sceneIssue = scene3DResourceChangeIssue(p.assets ?? [], assets)
+          if (sceneIssue) return sceneIssue
           if (
             materials.coverAssetName &&
             !assets.some((a) => a.kind === 'image' && a.name === materials.coverAssetName)
@@ -1976,8 +2211,17 @@ export function createLocalPersistenceAdapter(
     },
     save: (project) => persistProject(project, {}, scope),
     flushOnExit: (project, options) =>
-      persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),
+      persistProject(
+        project,
+        {
+          exit: true,
+          incompleteBlocks: options?.incompleteBlocks,
+          ...(options?.pageAlive ? { pageAlive: true } : {}),
+        },
+        scope,
+      ),
     localScope: scope,
+    exitRecoveryStatus: projectExitRecoveryStatus,
     // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
     // nascem: o serviço não precisa encadear os saves (ver `appliesSavesInCallOrder`).
     appliesSavesInCallOrder: true,

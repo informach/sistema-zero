@@ -1,0 +1,71 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-5dd13e641\packages\member-shell\tests\fixtures\palette-review.test.ts:
+189 |       if (e.type === 'palette-library-changed') paletteReady.resolve()
+190 |     })
+191 |     await wrapper.listAllAssets()
+192 |     await end.promise
+193 |     expect(mapReads).toBe(1)
+194 |     expect(paletteReads).toBe(1)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-5dd13e641\packages\member-shell\tests\fixtures\palette-review.test.ts:194:26)
+(fail) o erro de download de um mapa deixa a biblioteca independente descer [62.00ms]
+228 |   })
+229 |   try {
+230 |     gate.resolve()
+231 |     await pending.catch(() => {})
+232 |     expect((await b.loadPaletteLibrary()).palettes.map((p) => p.id)).toEqual(['b'])
+233 |     expect((await a.loadPaletteLibrary()).palettes.map((p) => p.id)).toEqual(['a'])
+                                                                           ^
+error: expect(received).toEqual(expected)
+
+  [
+    "a",
++   "remota-a",
+  ]
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-5dd13e641\packages\member-shell\tests\fixtures\palette-review.test.ts:233:70)
+(fail) uma leitura já iniciada pára de escrever e publicar marcas após A→sair→B [16.00ms]
+(pass) com zero cores vivas a lápide sobe e a galeria permite reabrir depois de uma falha
+295 |     // A versão antiga pode chegar só depois do handler 409. A versão corrente deve prevalecer.
+296 |     await Promise.resolve()
+297 |     if (reads > 1) await stale
+298 |     finish.resolve()
+299 |     await Promise.all([direct, stale])
+300 |     expect(marked.revision(id)).toBe(3)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 2
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-5dd13e641\packages\member-shell\tests\fixtures\palette-review.test.ts:300:33)
+(fail) resposta GET anterior ao conflito não retrocede a revisão já conhecida do item [16.00ms]
+321 |     await w.savePaletteLibrary(lib('minha', 100))
+322 |     const ack2 = onUploaded
+323 |     await w.syncPaletteLibrary()
+324 |     expect(marks.revision(id)).toBe(3)
+325 |     ack2({ itemId: id, updatedAt: 100, revision: 2 })
+326 |     expect(marks.revision(id)).toBe(3)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 2
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-5dd13e641\packages\member-shell\tests\fixtures\palette-review.test.ts:326:32)
+(fail) um recibo atrasado não retrocede a marca da paleta mais recente
+(pass) metadado divergente ou biblioteca vazia não cria upload fantasma
+
+ 2 pass
+ 4 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [1068.00ms]

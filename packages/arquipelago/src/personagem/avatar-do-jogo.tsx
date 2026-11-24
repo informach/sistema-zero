@@ -31,6 +31,7 @@ import {
   Vector3,
 } from 'three'
 import { useEstado } from '../estado/contexto'
+import { MUNDO } from '../mundo/mundo-escolhido'
 import { CORPO } from '../sistemas/corpo'
 import {
   CLIPES_DO_JOGO,
@@ -45,6 +46,8 @@ import {
 import { descidaDoEntrarNaAgua, PATINS_NOS_PES } from '../sistemas/lugares-dos-clipes'
 import { ENTRAR_NO_NADO } from '../sistemas/modos/chao'
 import { jogoPausado } from '../sistemas/pausa'
+import { amplitudeDoPasso } from '../sistemas/ritmo-da-aventura'
+import { clipesDoCorpo, vestirAsCostas } from './costas'
 import {
   type ApoioDasMaos,
   acharBracos,
@@ -60,6 +63,7 @@ import {
   type ObjetoDeMao,
   objetoNaMao,
 } from './objeto-na-mao'
+import { ampliarPassada } from './passada'
 import {
   type AlturaDoChao,
   acharPernas,
@@ -195,6 +199,10 @@ export function AvatarDoJogo({
   semChapeu = false,
   apoioDasMaos,
   montada = false,
+  planadorNasCostas = false,
+  sentada = false,
+  empurrandoComo = null,
+  nadando = false,
 }: {
   movimento: RefObject<EntradaDaLocomocao>
   /** O chão embaixo de cada pé (o raio da física); sem ele, os pés ficam como a animação deixa. */
@@ -213,18 +221,45 @@ export function AvatarDoJogo({
   apoioDasMaos?: RefObject<ApoioDasMaos | null>
   /** Montada: as peças com variante para montar (a saia assentada na sela) trocam por ela. */
   montada?: boolean
+  /** Tem o planador e não está voando: o planador dobrado vai nas costas (`vestirAsCostas`). */
+  planadorNasCostas?: boolean
+  /** Sentada num assento: o fardo do planador sai (o encosto o cortaria). */
+  sentada?: boolean
+  /** Empurrando (o jeito pela altura): agachada, as peças de costas e o fardo saem. */
+  empurrandoComo?: 'baixo' | 'meio' | 'alto' | null
+  /** Nadando: o fardo sai (a arte, a partir da próxima entrega). */
+  nadando?: boolean
 }) {
   const slotsDoJogo = useEstado((s) => s.avatar.slots)
+  // Saindo da água (o `sair_da_agua` da locomoção, já fora do nado): o fardo do planador sai.
+  const [saindoDaAgua, setSaindoDaAgua] = useState(false)
+  const saindoMostrado = useRef(false)
   const pausado = useEstado(jogoPausado)
   const deRodas = comPatins && Boolean(AVATAR_CATALOG.parts[PATINS_NOS_PES.peca])
-  const slots = useMemo(() => {
+  const { slots, bracoDasCostas } = useMemo(() => {
     const doPack = avatarDoPack(slotsDoJogo)
     const vestido = montada ? withMountedVariants(AVATAR_CATALOG, doPack) : doPack
     const calcado = deRodas ? { ...vestido, calcado: PATINS_NOS_PES.peca } : vestido
-    if (!semChapeu || !calcado.chapeu) return calcado
-    const { chapeu: _fora, ...semOChapeu } = calcado
-    return semOChapeu
-  }, [slotsDoJogo, deRodas, semChapeu, montada])
+    // Deitada (o mesmo `semChapeu`), a mochila sai; com o planador, o fardo entra nas costas.
+    const costas = vestirAsCostas(calcado, {
+      planador: planadorNasCostas,
+      clipes: clipesDoCorpo({ deitada: semChapeu, empurrandoComo, nadando, saindoDaAgua }),
+      sentada,
+    })
+    if (!semChapeu || !costas.slots.chapeu) return costas
+    const { chapeu: _fora, ...semOChapeu } = costas.slots
+    return { ...costas, slots: semOChapeu }
+  }, [
+    slotsDoJogo,
+    deRodas,
+    semChapeu,
+    montada,
+    planadorNasCostas,
+    sentada,
+    empurrandoComo,
+    nadando,
+    saindoDaAgua,
+  ])
   const naMao = objetoNaMao({ planando, doGesto: objetoDoGesto, comLanterna })
   const equipamento = equipamentoDaMao(naMao)
   const comBraco = naMao !== null && camadasDoBraco(naMao).length > 0
@@ -266,6 +301,11 @@ export function AvatarDoJogo({
     if (pausado) return
     const dt = Math.min(dtBruto, 0.1)
     const l = passoDaLocomocao(locomocao.current, movimento.current, dt)
+    const saindo = l.saindoDaAgua > 0
+    if (saindo !== saindoMostrado.current) {
+      saindoMostrado.current = saindo
+      setSaindoDaAgua(saindo)
+    }
     const p = poseDosClipes(l, pose.current)
     for (const id of CLIPES_DO_JOGO) {
       const acao = acoes.current[id]
@@ -296,6 +336,15 @@ export function AvatarDoJogo({
                 key={`braco-${naMao}`}
                 corpo={personagem}
                 objeto={naMao}
+                pose={pose}
+              />
+            ) : null}
+            {bracoDasCostas ? (
+              // O braço sai da frente do que vai nas costas (a mochila, o fardo) nas corridas.
+              <BracoComObjeto
+                key={`costas-${bracoDasCostas}`}
+                corpo={personagem}
+                objeto={bracoDasCostas}
                 pose={pose}
               />
             ) : null}
@@ -365,6 +414,13 @@ function PesNoChao({
     if (!pausado) peso.current = suavizarPeso(peso.current, pesoDosPes(movimento.current), dt)
     // Parte da pose do mixer (na pausa ele não reescreve: o ajuste do quadro anterior somaria).
     limpa.current.antes()
+    const e = movimento.current
+    if (e.noChao && !e.nadando && !e.especial && !e.patinando && MUNDO.passo)
+      ampliarPassada(
+        pernas.current,
+        r,
+        amplitudeDoPasso(e.velocidade, CORPO.andar, MUNDO.passo.amplitude),
+      )
     assentarOsPes(pernas.current, r, chao, peso.current)
     limpa.current.depois()
   })

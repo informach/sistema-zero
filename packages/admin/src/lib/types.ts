@@ -911,6 +911,8 @@ export type TeacherThreadContext =
   | 'mural_publication'
   | 'general'
   | 'lesson_section'
+  /** Ajuda do Pinta: o pedido do aviso de recuperação de desenhos, sem aula. */
+  | 'pinta_recovery'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 export interface TeacherMessageView {

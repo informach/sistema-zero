@@ -30,6 +30,13 @@ exportado, execute `python main.py`.
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `ACESO` é quanto tempo cada cor
 fica acesa na demonstração, `APAGADO` a pausa entre elas, `TOQUE` quanto a cor
 brilha quando você toca e `PAUSA_RODADA` o respiro antes da próxima rodada.
@@ -46,19 +53,20 @@ longe.
 
 O anel não é imagem: `setor` calcula um pedaço de anel com seno e cosseno, e a
 mesma forma é carimbada quatro vezes, girada para cada direção. Quatro
-tartarugas persistentes desenham a cena: `cenario` carimba as cores apagadas
-uma vez, `luz` é a cor acesa por cima, `dedo` marca o seu toque e `painel`
-escreve o placar. Uma única cadeia de `ontimer(..., 16)` mede o tempo com
-`time.monotonic()`; a pausa congela a partida e reiniciar não adiciona outra
-cadeia. Um quadro atrasado conta no máximo 100 ms, então a demonstração nunca
-pula passos.
+tartarugas persistentes desenham a cena: `cenario` carimba as cores apagadas uma
+vez, `luz` é a cor acesa por cima, `dedo` marca o seu toque e `painel` escreve o
+placar. O laço do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o
+tempo com `time.monotonic()`; a pausa congela a partida e reiniciar não começa
+outro laço. Um quadro atrasado conta no máximo 100 ms, então a demonstração
+nunca pula passos.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam chamadas e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho. Não há tempo
-limite para responder: você pode pensar o quanto quiser em cada passo.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam chamadas e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho. Não há tempo limite para responder: você pode pensar o quanto
+quiser em cada passo.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { emptyPaletteLibrary, type PaletteLibrary } from '../core/paletteLibrary'
 import { createPixelSpriteAsset } from '../core/projectConfig'
 import { galleryToPintaJson } from '../export/projectJson'
-import { clearIdbMock } from '../testing/idbMock'
+import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
 
 const { createPintaPersistence, setPintaStorageNamespace } = await import('./persistence')
 
@@ -33,6 +33,44 @@ function libraryOf(): PaletteLibrary {
 }
 
 describe('biblioteca de paletas na persistência local', () => {
+  it('verifica a sessão dentro da transação depois de aguardar uma escrita anterior', async () => {
+    const local = createPintaPersistence({ namespace: 'paletas-pendentes' })
+    const saved = libraryOf()
+    await local.savePaletteLibrary?.(saved)
+    const sprite = createPixelSpriteAsset({ name: 'ocupado', frameSize: 8 })
+    let release!: () => void
+    let started!: () => void
+    const writing = new Promise<void>((resolve) => {
+      started = resolve
+    })
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    setIdbWriteGuard(async (key) => {
+      if (key === `pinta:asset:${sprite.id}`) {
+        started()
+        await gate
+      }
+    })
+    try {
+      const drawing = local.persistAsset(sprite)
+      await writing
+      let active = true
+      const pending = local.savePaletteLibrary?.(
+        { ...saved, updatedAt: 100, palettes: [], removed: [{ id: 'p1', removedAt: 100 }] },
+        () => active,
+      )
+      active = false
+      release()
+      await drawing
+      await expect(pending).rejects.toThrow()
+      expect(await local.loadPaletteLibrary?.()).toEqual(saved)
+    } finally {
+      release()
+      setIdbWriteGuard(null)
+    }
+  })
+
   it('salva e recarrega saneada; ausente → null', async () => {
     const persistence = createPintaPersistence()
     expect(await persistence.loadPaletteLibrary?.()).toBeNull()

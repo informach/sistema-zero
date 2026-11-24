@@ -1,0 +1,89 @@
+{
+  "movimento": {
+    "antes": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.005233827223703,
+        "y": 0.28662434143525173,
+        "z": 7.994550244116535
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "depois": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.00224721781984,
+        "y": 0.2593658756941324,
+        "z": 6.295885898050442
+      },
+      "altura": 1.16,
+      "velocidade": 1.5,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "pausado": true,
+    "retomado": {
+      "modo": "terceira",
+      "pausado": false,
+      "caiu": false,
+      "noChao": true,
+      "nadando": false,
+      "posicao": {
+        "x": 8.005307065132502,
+        "y": 0.2860189574105001,
+        "z": 7.991903077971581
+      },
+      "altura": 1.16,
+      "velocidade": 0,
+      "clipes": [],
+      "percurso": {
+        "estado": "parado",
+        "inicio": null,
+        "fim": null,
+        "direta": 0,
+        "caminhada": 0,
+        "segundos": 0
+      }
+    },
+    "falhas": [],
+    "distancia": 1.6986669716079954
+  },
+  "recursosSemSessao": 87,
+  "origensExternas": [],
+  "erros": [],
+  "pacote": {
+    "arquivos": 36,
+    "bytesZip": 6153294,
+    "bytesExtraidos": 9852181,
+    "fonte": {
+      "cenario": "integracao",
+      "revisao": 7,
+      "digest": "fb877b2a291cccc65e3f55df031fa258285cfea88cbccd4c22c3ee2ef58b7dde"
+    }
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "baseline": "30b108a9ddb69f18930fda4d7cff4d2211bd71e4",
+  "records": [
+    {
+      "file": "remap-regions-red.log.gz",
+      "bytes": 1364,
+      "sha256": "c6454afd59d0148e3064426fee3e8dce52e93d91248126f8edb6808e279eba73",
+      "rawBytes": 4192,
+      "rawSha256": "66c8f078ddf9fd7bfc40d9a8fd2aff0d1be681dfb05c3fe32ee58894e95c3c79"
+    },
+    {
+      "file": "remap-regions-budget-red.log.gz",
+      "bytes": 494,
+      "sha256": "e5b339fc2bec280d189ccce8b7e2fe06b96979dd9a4acc75762b9fe2c70b1366",
+      "rawBytes": 1106,
+      "rawSha256": "1c41de3591c3acc680a593abd746299046640501cc07068532215498408989ae"
+    },
+    {
+      "file": "remap-consumers-red.log.gz",
+      "bytes": 1473,
+      "sha256": "bdb73ae7593def3dd21723dc17bec031ce15fcaa313b604ad96c5abb7d8ae449",
+      "rawBytes": 4503,
+      "rawSha256": "763bb152d166746b79f89d765cdbcef21adf2731b271bc0dff732ca1bb296566"
+    },
+    {
+      "file": "remap-widget-red.log.gz",
+      "bytes": 1799,
+      "sha256": "e5d87e33f3772b640afd6cbee75b5d8b689ee8ad9bcf3299bfc702fab7be3964",
+      "rawBytes": 11827,
+      "rawSha256": "0c120fa4ba794857e2d0df154b0ffc6a9f45b889629d86ec90c75129249a5663"
+    },
+    {
+      "file": "remap-integrated-focused.log.gz",
+      "bytes": 1849,
+      "sha256": "cb5536e0528ea39deff9c4cebe0a726a3b58bbdb1f0b0322f95f32227e1e7b1d",
+      "rawBytes": 4788,
+      "rawSha256": "de3cffadcf6a063480afb3c323f41c92b8c030a79fd047b051f3f4fb0632841d"
+    },
+    {
+      "file": "remap-full-pinta.log.gz",
+      "bytes": 78706,
+      "sha256": "c82779d25dd049448d2bfa0f7a545d36871795fe39a5c8f474fd1c2313f78995",
+      "rawBytes": 292997,
+      "rawSha256": "119dc997312913c7d64d2acb9ceb0dfb86962188c7310f3c57f60ffca41204c7"
+    },
+    {
+      "file": "remap-pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "remap-studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "remap-browser.log.gz",
+      "bytes": 592,
+      "sha256": "f293b3a36ba96d23a2f79732be3d96bf3dc851d487c05a74ae43518bdc649343",
+      "rawBytes": 2923,
+      "rawSha256": "f605e639361d12876675286695e5971b3c8f3806cc80dc59451dc8f7996893a8"
+    },
+    {
+      "file": "remap-workshop-browser.log.gz",
+      "bytes": 1337,
+      "sha256": "12c941f30c0f229775465e1330d6e0144971a175ef3af5f5b4d7ae4a96739834",
+      "rawBytes": 6317,
+      "rawSha256": "f553548490c0f779014339761bda524af958681ec9c94f7a3fb29c156bda1cea"
+    },
+    {
+      "file": "remap-biome.log.gz",
+      "bytes": 65,
+      "sha256": "33b3531204c1e45010aca556555815d438dde411738aa9068410c1400ce11ac9",
+      "rawBytes": 45,
+      "rawSha256": "2ed389a7d8cabead1acfa79204a92297d62ffeeb865911ef3921d6ede16cfc54"
+    },
+    {
+      "file": "remap-diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "playwright-remap-report.json.gz",
+      "bytes": 57722,
+      "sha256": "e906d21110822b0a6055087a155bc1ad2a319b8a266fde04bdac94220e797e1b",
+      "rawBytes": 812450,
+      "rawSha256": "1c4746dbb79dab4762af7d160d5e6cb5c35649e826f5bafe249be9062d28ed2d"
+    },
+    {
+      "file": "playwright-workshop-report.json.gz",
+      "bytes": 3002531,
+      "sha256": "9323e53d061f61432ba6fbe88e6339aedc71d6adab1048e9245e826da0d92039",
+      "rawBytes": 4436290,
+      "rawSha256": "ca6e2580b639a878daafbec35134255642b112aa9334d1b7a5fa271624f3e81d"
+    },
+    {
+      "file": "prove-remap-widget.cjs.gz",
+      "bytes": 637,
+      "sha256": "68910434742be74e73c9158b7f50466575c709798cd224d06694c185ff90206d",
+      "rawBytes": 1156,
+      "rawSha256": "b7a45f0a8a4ac262ef94c5ef2bf8ab70d0b185ce74a4066b64e52e24856edeab"
+    },
+    {
+      "file": "archive-remap.cjs.gz",
+      "bytes": 1554,
+      "sha256": "042455485b86381bda8a712fe2d36d9604c6eef65b331581ac4f45452d125f44",
+      "rawBytes": 3900,
+      "rawSha256": "994a48e22193fb982864fa7647c67f3dc1c71bbc96493473e1e05188c3fe2a03"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/components/editor/TileStrip.tsx",
+      "sha256": "186735c5e2b5f5453e66585b95892338e39b0dbe96c829a5579042fa788b7345",
+      "previousSha256": "73ae3c90ac55992a2dd4b84af12df43b96e675a6d72eb7c974ca6b2d719e0539"
+    },
+    {
+      "file": "packages/pinta/src/core/copy.ts",
+      "sha256": "2270a5d619af3d9fcdeaef9f46d599a5b13126183ca61925da07eed8038c37e4",
+      "previousSha256": "1b6e8a0b9da3b134b0929a95a111434da6a21a9b38cfadf54ca9f059fb3b23c7"
+    },
+    {
+      "file": "packages/pinta/src/core/dependentTilemaps.test.ts",
+      "sha256": "216e0809b5f3a6c6c79c8611552c0d19bdf39b916eaf562043edd85d37ef6869",
+      "previousSha256": "4041018ab6738fbe7b737084c993bb672bf794f21bd8f4aef3fbe8588b6b6672"
+    },
+    {
+      "file": "packages/pinta/src/core/dependentTilemaps.ts",
+      "sha256": "7fd6e58ea6baea33e78891e5ab17b8ea634054c100d78a028e6da32d914255d5",
+      "previousSha256": "dd97baa12b60db1f4230bf351cf8c44f70530a727bf001241f04c1f42f225c19"
+    },
+    {
+      "file": "packages/pinta/src/core/project.ts",
+      "sha256": "ad9d15ad038809149de20901267ec23c5a9405e783449e3c25bb8f7955c52c1a",
+      "previousSha256": "07948f4214683ce8b8c193a6535586c6fbc362ab5e33e72cf44725830d279797"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.test.ts",
+      "sha256": "d6216119113cb9ef74dee763c13af9bd07f895ab357a3f34edf8c329b9758a24",
+      "previousSha256": "25d53af9754c4d9dba12d8911355cc4d69257a85a3646c40f426794cb4f959b6"
+    },
+    {
+      "file": "packages/pinta/src/state/editorStore.ts",
+      "sha256": "22abab137facd0b8052b61c0c437ec52d6d763cc004280e23ee8173915ee357f",
+      "previousSha256": "285d6fd6f63b55537212b662cf16b30809ae9589855d4343e432ebd9f414b8fa"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetOps.ts",
+      "sha256": "6171c97685157f11d3b199f014571f0512352033c838887a180362423aa91283",
+      "previousSha256": "3cebd16683dda101472e0217b740f20534874257c854ea104995ebbb545f597d"
+    },
+    {
+      "file": "packages/pinta/tsconfig.json",
+      "sha256": "28bad6de97d1843cd5d2791932271230777079ef007bfd20972c816d9999334b",
+      "previousSha256": "240b8e3fa8589a65e67c57e2254cc6ec779c5b2d0562c3ce2a946d5f3a0f6521"
+    },
+    {
+      "file": "packages/studio/tsconfig.json",
+      "sha256": "333d263294a9b6cb5fd2659bff9d87e3d30b8effe43fedae09702ea010ba53c6",
+      "previousSha256": "4a5b87c35b766529be26fc26c889e2ecb4fc6b3f1b4e5cd674b8e36b4def5a5f"
+    },
+    {
+      "file": "packages/pinta/scripts/homologacao/tilesetRemapHost.tsx",
+      "sha256": "8ef0fa531e0fda66a4175df83d0843212985e05911d74cfa9befad512361966f"
+    },
+    {
+      "file": "packages/pinta/scripts/remap-regions-probe.ts",
+      "sha256": "7dc3f5e4b0417b9078eb6ab949622909be0a9acb74558b69900cf5e4215fecb5"
+    },
+    {
+      "file": "packages/pinta/scripts/serve-tileset-remap-e2e.ts",
+      "sha256": "6ac7092b272bcbb499708e2c699ecceb0a2d8296503533ff62d8d13775ca3dd1"
+    },
+    {
+      "file": "packages/pinta/scripts/tileset-remap-entry.tsx",
+      "sha256": "74f8a1d92e9fea5075dd6fe226d7a81363165db2249bf00df4b0095594bafc54"
+    },
+    {
+      "file": "packages/pinta/src/components/editor/tilesetRemapUi.test.tsx",
+      "sha256": "878f1f0392ee74d122eee2a414f540b3ff2ac0fb94033d444e6775ef4d94a7c1"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetConsumers.test.ts",
+      "sha256": "b4c5dacd2d7ff3697c7aa1e0574d6d5dd7a5db674fddd4e755d32a4daea58e90"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetConsumers.ts",
+      "sha256": "a7d4dfe3369e139ec9658b53bb0ef3007503b2e65a0ce635ef3c4926ebe71024"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilesetRegions.test.ts",
+      "sha256": "21a3da9188f08e31a45ca2903d3d942008a389f3ad79602e24e90dcc743e624b"
+    },
+    {
+      "file": "packages/studio/e2e/pinta-remap.flow.ts",
+      "sha256": "0bd26b52d8fc95efece6949890981fb1986445b5e19c818157803d21adc7dfd6"
+    },
+    {
+      "file": "packages/studio/playwright.pinta-remap.config.ts",
+      "sha256": "56cac9ba5ee91f2dc45f43de9cf6217641c0b24f72f1662fbc2d3c1fdaa3c35e"
+    }
+  ],
+  "browser": {
+    "currentWidgetPasses": 12,
+    "historicalPositiveControls": 3,
+    "historicalExpectedFailures": 9,
+    "currentRegionKernelPasses": 3,
+    "publicWorkshopPasses": 33,
+    "retries": 0
+  },
+  "publicNative8": false,
+  "physicalIO3": false
+}

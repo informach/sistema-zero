@@ -1,0 +1,23 @@
+{
+  "name": "@sistemazero/molda-cenarios-agente",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "cli": "bun src/oficina/cli.ts",
+    "mcp": "bun src/oficina/mcp.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@sistemazero/molda-cenarios": "workspace:*",
+    "@sistemazero/molda-cenarios-core": "workspace:*",
+    "@sistemazero/molda-cenarios-motor": "workspace:*",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^5.7.0"
+  }
+}

@@ -10,7 +10,6 @@
 import type { JSX } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { COPY } from '../../../core/copy'
-import type { PintaAsset } from '../../../core/project'
 import { normalizeSearchText } from '../../../core/searchText'
 import { insertableAssets, insertKindFor } from '../../../vector/insertAsset'
 import { usePintaGallery } from '../../appContext'
@@ -34,10 +33,7 @@ export function VectorInsertAssetDialog({
   // Índice por id estável (o `AssetThumb` do mapa procura as peças por card; sem memo, cada
   // card fazia uma busca linear e a função nova por render anulava qualquer memo).
   const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
-  const findAsset = useCallback(
-    (id: string): PintaAsset | null => assetsById.get(id) ?? null,
-    [assetsById],
-  )
+  const findAsset = useCallback((id: string) => assetsById.get(id) ?? null, [assetsById])
   const disponiveis = useMemo(
     () => insertableAssets(assets, currentId, '', normalizeSearchText),
     [assets, currentId],

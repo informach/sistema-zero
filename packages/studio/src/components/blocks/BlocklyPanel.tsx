@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BLOCKLY_MEDIA_PATH } from '../../blockly/media'
 import { javaScriptProject } from '../../core/editableProject'
 import 'blockly/blocks'
@@ -13,7 +13,6 @@ import {
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
   HTMLConnectionChecker,
-  markLifecycleBlocksState,
   type PasteTargetHandlers,
   registerClassesFlyout,
   registerFunctionsFlyout,
@@ -26,13 +25,15 @@ import {
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { extensionMinLevel } from '#extensions'
-import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '#generators'
+import { generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
+import { isBlockInView } from '../../blockly/blockInView'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
 import type { OrganizerWorkspace, ZappyOpenerWorkspace } from '../../blockly/contextMenuWords'
 import { installCornerSpacer, showBlocksFromTop } from '../../blockly/cornerSpacer'
+import type { DeferredTailLoad } from '../../blockly/deferredTail'
 import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   attachAnimationNameWatcher,
@@ -42,21 +43,42 @@ import {
   attachSpriteThumbWatcher,
   refreshSpriteThumbs,
 } from '../../blockly/fields/FieldSpritePicker'
+import { jsonStringify } from '../../blockly/jsonPlainCopy'
+import { loadWorkspaceState } from '../../blockly/loadWorkspaceState'
 import { MORE_BLOCKS_KIND, type MoreBlocksWorkspace } from '../../blockly/moreBlocksItem'
+import type { OffscreenBodies } from '../../blockly/offscreenBodies'
+import {
+  disposeDeferredDrawing,
+  mayHaveManyBlocks,
+  OFFSCREEN_BODIES_MIN_BLOCKS,
+  onDemandMountingEnabled,
+  WORKSPACE_SEARCH_MIN_BLOCKS,
+} from '../../blockly/offscreenThreshold'
+import { blockFontSpec, waitForOpeningFonts } from '../../blockly/openingRender'
 import {
   revealBlockInWorkspace,
   runtimeErrorBlockId,
   setRuntimeErrorBlock,
 } from '../../blockly/runtimeMark'
+import { saveWorkspaceState } from '../../blockly/savedWorkspaceState'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
+import {
+  differsOnlyInStackPositions,
+  forgetShownWhenTouched,
+  isBumpWhileShowing,
+} from '../../blockly/transientExpansion'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
 import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
-import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { blockGenerationInput } from '../../state/blockGenerationInput'
+import { getDisplayedSourceMap, primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
+import { cssSourceCompatible } from '../../state/cssSourceCompatibility'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
 import { useHighlightStore, useHighlightStoreApi } from '../../state/highlightStore'
+import { htmlSourceCompatible } from '../../state/htmlSourceCompatibility'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { decideSavedSource, type SavedSourceDecision } from '../../state/savedSourceDecision'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
@@ -179,31 +201,6 @@ function restoreStackPositions(
   return moved
 }
 
-/**
- * Diz se o bloco já está inteiramente visível na viewport atual. Usamos para
- * só centralizar (centerOnBlock) quando o bloco está fora da tela — assim a
- * sincronização cursor→bloco não fica sacudindo o canvas a cada movimento.
- * Em caso de dúvida (não conseguimos medir), retorna false para que o fallback
- * centralize.
- */
-function isBlockInView(workspace: Blockly.WorkspaceSvg, block: Blockly.BlockSvg): boolean {
-  try {
-    const metricsManager = workspace.getMetricsManager?.()
-    if (!metricsManager || typeof metricsManager.getViewMetrics !== 'function') return false
-    const view = metricsManager.getViewMetrics(true) // coordenadas do workspace
-    const xy = block.getRelativeToSurfaceXY()
-    const size = block.getHeightWidth()
-    return (
-      xy.x >= view.left &&
-      xy.y >= view.top &&
-      xy.x + size.width <= view.left + view.width &&
-      xy.y + size.height <= view.top + view.height
-    )
-  } catch {
-    return false
-  }
-}
-
 function resizeBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   try {
     Blockly.svgResize(workspace)
@@ -227,6 +224,27 @@ function rerenderBlocklyWorkspace(workspace: Blockly.WorkspaceSvg): void {
   } catch {
     // Workspace pode ter sido descartado entre o agendamento e o render.
   }
+}
+
+/**
+ * A abertura que não desenha a cauda distante (`deferredTail.ts`) só é baixada para projeto
+ * grande, junto da espera da fonte. Se o download falhar, o projeto abre como sempre abriu.
+ */
+function loadDeferredTail(serialized: string) {
+  if (!onDemandMountingEnabled() || !mayHaveManyBlocks(serialized)) return null
+  return import('../../blockly/deferredTail').catch((error: unknown) => {
+    console.warn('Abrindo sem adiar o desenho:', error)
+    return null
+  })
+}
+
+/** Roda depois dos eventos que o Blockly já enfileirou (mesmo caminho do despacho dele). */
+function afterBlocklyEventDispatch(callback: () => void): void {
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => setTimeout(callback, 0))
+    return
+  }
+  setTimeout(callback, 0)
 }
 
 function scheduleBlocklyRerender(workspace: Blockly.WorkspaceSvg): void {
@@ -323,6 +341,9 @@ export interface BlocklyPanelProps {
   onWorkspaceReady?: (workspace: Blockly.WorkspaceSvg | null) => void
 }
 
+// Procurar no programa: só em projeto grande, baixado sob demanda (fora do pacote de abertura).
+const WorkspaceSearch = lazy(() => import('./WorkspaceSearch'))
+
 export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
   const { blocksState, installedExtensions, projectMode, blocksHydration, projectToolsKey } =
     useProjectStore(
@@ -368,6 +389,20 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // pintam ANTES do trabalho pesado, então o aluno vê "carregando" em vez de uma
   // tela congelada.
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(false)
+  // A restauração dos blocos falhou (lote 3, conserto B, 21/11/2026): o `load` do Blockly 12 parava
+  // no meio (numa sequência única de ~2 mil blocos, o desenho recursa na cadeia de pais), o erro
+  // virava só um aviso no console e a regeneração seguinte GRAVAVA o workspace parcial: 10 mil
+  // blocos viravam ~2,1 mil, calados. Com a trava, nada do workspace vai para o projeto até uma
+  // carga dar certo, e a área de blocos diz que nada se perdeu.
+  const [restoreFailed, setRestoreFailed] = useState(false)
+  const restoreFailedRef = useRef(false)
+  const [searchAvailable, setSearchAvailable] = useState(false)
+  // A paleta horizontal (painel estreito na injeção) ocupa o alto: a busca vai para baixo.
+  const [toolboxHorizontal, setToolboxHorizontal] = useState(false)
+  // A limpeza da falha não conseguiu esvaziar o canvas: descartá-lo também pode lançar.
+  const restoreClearFailedRef = useRef(false)
+  const [searchOpenPending, setSearchOpenPending] = useState(false)
+  const handleSearchOpened = useCallback(() => setSearchOpenPending(false), [])
 
   const blocklyRef = useRef<HTMLDivElement>(null)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
@@ -378,8 +413,35 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // Misturar os dois estados fazia um BLOCK_MOVE só-de-layout, entregue antes
   // do BLOCK_MOVE de conexão do mesmo gesto, envenenar o dedupe do compilador.
   const lastAppliedBlocksStateRef = useRef<string>('')
+  // Um afastamento causado por "Mostrar o bloco" ficou fora da gravação desde o último estado
+  // aplicado (`isBumpWhileShowing`): a comparação da saída e do Jogar ignora só essa diferença.
+  const bumpSkippedRef = useRef(false)
+  // O OBJETO cujo texto é o `lastAppliedBlocksStateRef`, quando ele é o mesmo que foi à store (lote
+  // 3, 21/11/2026). A store guarda o estado sem copiar e nunca o altera, então a volta do estado
+  // que este painel acabou de gravar é reconhecida pela identidade, sem serializar de novo: com 10
+  // mil blocos, a comparação pelo texto custava 14 ms de cada gesto. `null` quando o texto veio de
+  // um estado que não foi guardado (o que o workspace salvou depois de uma carga).
+  const lastAppliedBlocksStateObjectRef = useRef<object | null>(null)
+  // O estado da store que a ÚLTIMA carga pôs no canvas (objeto e texto). O `FINISHED_LOADING` dela
+  // chega depois (um quadro + `setTimeout(0)`): se a store já tem outros blocos nessa hora, a carga
+  // foi superada e a regeneração dela não pode valer (ver `regenerateFromBlocks`).
+  const loadedBlocksStateRef = useRef<{ state: unknown; serialized: string } | null>(null)
   const lastRegeneratedBlocksStateRef = useRef<string>('')
+  // One load checkpoint, paired with Blockly's own undo stack (not a second history).
+  const loadedGenerationRef = useRef<{
+    projectId: string
+    ir: ReturnType<typeof blockGenerationInput>['ir']
+    jsHeader: string | undefined
+  } | null>(null)
+  // A decisão de manter o CSS e o HTML salvos no lugar do gerado, por projeto
+  // (`state/savedSourceDecision.ts`, C5 da revisão de 20/11/2026).
+  const savedCssRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
+  const savedHtmlRef = useRef<{ projectId: string; decision: SavedSourceDecision } | null>(null)
   const isApplyingStateRef = useRef(false)
+  // Uma carga agendada que ainda não começou (o quadro adiado e a espera pela fonte, até
+  // 1,5 s). O canvas que está à vista vai ser trocado pelo estado salvo: nada feito nele conta
+  // como edição. Separado do `isApplyingStateRef` porque o cancelamento sempre o desliga.
+  const loadPendingRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
   const initialViewDoneRef = useRef(false)
   const t = useT()
@@ -506,6 +568,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // programática, senão sobrescreveria o código escrito à mão.
   const regenerateFromBlocks = useCallback(
     (workspace: Blockly.Workspace, options: { force?: boolean } = {}) => {
+      // Workspace de uma restauração que falhou: o que está nele é parte do projeto, nunca ele.
+      if (restoreFailedRef.current) return
       // Blocos DEFASADOS em relação aos arquivos (o aluno editou CÓDIGO na Ponte
       // e o reverse-parse não assentou — trocou de modo dentro da janela, e o
       // worker morre com a Ponte): uma CARGA (force) nunca pode regenerar
@@ -522,18 +586,63 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
             s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch)
         )
           return
+        // Carga SUPERADA: a store recebeu outros blocos depois dela e a carga nova já foi pedida.
+        // É a recuperação da Ponte (o `BlocksMode` refaz os blocos do código digitado) chegando
+        // entre a carga dos blocos velhos e o `FINISHED_LOADING` dela: a trava de cima já não vê o
+        // código à frente, e regenerar daqui gravava arquivos e blocos a partir do canvas VELHO por
+        // cima do código digitado (o canvas ficava vazio; intermitente do `css-learning`, 21/11/2026).
+        // A carga nova regenera quando terminar.
+        const loaded = loadedBlocksStateRef.current
+        const current = javaScriptProject(s.project)?.blocksState ?? null
+        if (
+          options.force &&
+          loaded &&
+          current !== loaded.state &&
+          (jsonStringify(current) ?? '') !== loaded.serialized
+        )
+          return
       }
-      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace))
-      const serialized = JSON.stringify(state)
+      const state = saveWorkspaceState(workspace)
+      const serialized = jsonStringify(state) ?? ''
       if (!options.force && serialized === lastRegeneratedBlocksStateRef.current) return
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = state
       lastRegeneratedBlocksStateRef.current = serialized
+      bumpSkippedRef.current = false
 
       const built = buildIRFromWorkspace(workspace)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
       // casca do documento (head/doctype) que os blocos não representam.
       const current = javaScriptProject(projectStoreApi.getState().project)
-      const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      let generationInput: ReturnType<typeof blockGenerationInput>
+      try {
+        generationInput = blockGenerationInput(built, current, options.force === true)
+      } catch {
+        diagnosticsStoreApi
+          .getState()
+          .setSemanticIssues([
+            { message: 'Não foi possível recuperar o documento salvo. Seu código foi preservado.' },
+          ])
+        return
+      }
+      const { ir } = generationInput
+      if (current && options.force) {
+        loadedGenerationRef.current = {
+          projectId: current.id,
+          ir,
+          jsHeader: generationInput.jsHeader,
+        }
+      } else {
+        const loaded = loadedGenerationRef.current
+        if (
+          loaded &&
+          current?.id === loaded.projectId &&
+          workspace.getUndoStack().length === 0 &&
+          deepEqualIR(ir, loaded.ir)
+        )
+          generationInput.jsHeader = loaded.jsHeader
+      }
+      const { jsHeader } = generationInput
       // ⭐ Abrir não é editar. Na CARGA (force) com os mesmos blocos que estão salvos,
       // nada do que a criança fez mudou: o que falta completar é só o que DERIVA deles.
       // A casca do projeto chega SEM a IR (o load não lê essa partição:
@@ -544,7 +653,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const blocksUnchanged =
         options.force === true &&
         current !== null &&
-        JSON.stringify(current.blocksState) === serialized
+        jsonStringify(current.blocksState) === serialized
       // Comparação ESTRUTURAL do IR (uma só varredura) no lugar de
       // `JSON.stringify(a) === JSON.stringify(b)` (duas serializações O(N) do
       // projeto inteiro) — caminho de carga, mas sem desperdiçar duas strings.
@@ -563,15 +672,39 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         applyProjectState({ blocksState: state })
         return
       }
-      const projectNameForGen = current?.name ?? 'Projeto'
-      const { files, sourceMap } = generateProjectFilesWithMap({
-        ir,
-        projectName: projectNameForGen,
-        jsHeader: GENERATED_JS_HEADER,
-      })
+      const projectNameForGen = generationInput.projectName
+      const { files, sourceMap } = generateProjectFilesWithMap(generationInput)
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
-      primeCanonicalSourceMap(ir, projectNameForGen, GENERATED_JS_HEADER, sourceMap)
+      primeCanonicalSourceMap(ir, projectNameForGen, jsHeader, sourceMap, files['style.css'])
+      // O CSS que difere do gerado só na ordem das declarações e o HTML que difere só na ordem dos
+      // atributos (o bloco guarda a classe à parte) ficam como estão ao abrir: abrir não regrava o
+      // arquivo nem recarrega a prévia. A decisão é lembrada por par (gerado, salvo): uma edição
+      // que não mexe no arquivo gerado a reaproveita sem analisar de novo, e uma que mexe (até só
+      // na ordem dos blocos) vale como a criança fez.
+      if (current) {
+        const opening = options.force === true
+        const decide = (
+          ref: typeof savedCssRef,
+          file: 'style.css' | 'index.html',
+          compatible: (saved: string, canonical: string) => boolean,
+        ) => {
+          const previous = ref.current?.projectId === current.id ? ref.current.decision : null
+          const decision = decideSavedSource({
+            previous,
+            canonical: files[file],
+            saved: current.files[file],
+            opening,
+            compatible,
+          })
+          ref.current = decision ? { projectId: current.id, decision } : null
+          if (decision?.keep) files[file] = decision.saved
+        }
+        decide(savedCssRef, 'style.css', cssSourceCompatible)
+        decide(savedHtmlRef, 'index.html', htmlSourceCompatible)
+      }
+      const displayedMap = () =>
+        getDisplayedSourceMap(ir, projectNameForGen, jsHeader, files['style.css'])
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState
@@ -598,11 +731,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         current.files['script.js'] === files['script.js']
       ) {
         hydrateDerivedIR()
-        setSourceMap(sourceMap)
+        setSourceMap(displayedMap())
         return
       }
       applyProjectState({ ir, blocksState: state, files })
-      setSourceMap(sourceMap)
+      setSourceMap(displayedMap())
       // Os arquivos acabaram de ser gerados DESTES blocos — eles refletem a
       // época corrente de edição de código (autoridade retomada).
       const storeState = projectStoreApi.getState()
@@ -618,8 +751,31 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     }
     const pending = pendingRegenerationWorkspaceRef.current
     pendingRegenerationWorkspaceRef.current = null
-    if (pending) regenerateFromBlocks(pending)
-  }, [regenerateFromBlocks])
+    if (pending) {
+      regenerateFromBlocks(pending)
+      return
+    }
+    // Edição que o Blockly ainda NÃO entregou ao painel: ele despacha os eventos num quadro +
+    // `setTimeout(0)`, e com a aba escondida o quadro nem vem (o iPad descarta a aba sem
+    // `pagehide`). Entre o gesto e esse despacho não há regeneração agendada, e a gravação de
+    // saída lia o projeto de antes (lacuna "a janela de 120 ms dos blocos", 22/11/2026). Aqui o
+    // canvas é comparado com o último estado APLICADO a ele (não com o último regenerado: depois
+    // de uma carga com o código da Ponte à frente, o regenerado fica velho, e regenerar dele
+    // escreveria os arquivos a partir dos blocos defasados).
+    if (!workspace || isApplyingStateRef.current || loadPendingRef.current) return
+    if (restoreFailedRef.current) return
+    const svgWorkspace = workspace as Blockly.WorkspaceSvg
+    if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) return
+    const serialized = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+    if (serialized === lastAppliedBlocksStateRef.current) return
+    // Só a pilha que "Mostrar o bloco" afastou: mostrar não é editar, nem no Jogar.
+    if (
+      bumpSkippedRef.current &&
+      differsOnlyInStackPositions(serialized, lastAppliedBlocksStateRef.current)
+    )
+      return
+    regenerateFromBlocks(workspace)
+  }, [regenerateFromBlocks, workspace])
 
   const scheduleRegenerateFromBlocks = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
@@ -682,14 +838,17 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // sintoma era mudo: os blocos apareciam e ficavam salvos, mas preview,
       // arquivos e avisos do bloco continuavam no estado anterior.
       if (regenerationTimerRef.current || pendingRegenerationWorkspaceRef.current) return
-      const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace))
-      const serialized = JSON.stringify(state)
+      if (restoreFailedRef.current) return
+      const state = saveWorkspaceState(targetWorkspace)
+      const serialized = jsonStringify(state) ?? ''
       if (serialized === lastAppliedBlocksStateRef.current) return
       // Isto evita que o efeito de restore recarregue o workspace, mas NÃO marca
       // o snapshot como compilado. Num arrasto que conecta, o Blockly entrega
       // antes um movimento de coordenadas e depois o movimento de conexão; a IR
       // ainda precisa processar o estado final quando o segundo evento chegar.
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = state
+      bumpSkippedRef.current = false
       applyProjectState({ blocksState: state })
     },
     [applyProjectState],
@@ -714,6 +873,33 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     registerClassesFlyout(workspace as Blockly.WorkspaceSvg, profile)
     return unregisterFunctionsFlyout
   }, [workspace, profile])
+
+  // "Procurar no programa" só aparece em projeto grande: a contagem é refeita (num quadro) quando
+  // blocos nascem ou somem, sem andar a árvore com recursão (`getAllBlocks(false)` é em largura).
+  useEffect(() => {
+    if (!workspace) return
+    let frame = 0
+    const check = () => {
+      frame = 0
+      setSearchAvailable(workspace.getAllBlocks(false).length >= WORKSPACE_SEARCH_MIN_BLOCKS)
+    }
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (
+        frame ||
+        (event.type !== Blockly.Events.BLOCK_CREATE &&
+          event.type !== Blockly.Events.BLOCK_DELETE &&
+          event.type !== Blockly.Events.FINISHED_LOADING)
+      )
+        return
+      frame = requestAnimationFrame(check)
+    }
+    check()
+    workspace.addChangeListener(listener)
+    return () => {
+      workspace.removeChangeListener(listener)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [workspace])
 
   // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,
   // mas precisam ficar inequivocamente diferentes do código que entra no preview.
@@ -755,6 +941,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   useEffect(() => {
     if (!workspace) return
     const listener = (event: Blockly.Events.Abstract) => {
+      // Antes de gravar: o gesto da criança num bloco aberto só para mostrar tira a marca dele.
+      forgetShownWhenTouched(workspace, event)
       if (event.type === Blockly.Events.FINISHED_LOADING) {
         isApplyingStateRef.current = false
         // Se havia posições a preservar (recarregamento durante edição), as
@@ -770,9 +958,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
             Blockly.Events.enable()
           }
         }
-        lastAppliedBlocksStateRef.current = JSON.stringify(
-          markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-        )
+        lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+        lastAppliedBlocksStateObjectRef.current = null
         // Regenera o IR/sourcemap a partir dos blocos recém-carregados também
         // em modo Ponte. Sem isso, um projeto salvo antes da introdução de
         // `ctorId`/`__declIds` no IR continuaria com o sourcemap incompleto
@@ -804,7 +991,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         }
         return
       }
-      if (isApplyingStateRef.current || event.isUiEvent) return
+      if (isApplyingStateRef.current || loadPendingRef.current || event.isUiEvent) return
       if (
         event.type !== Blockly.Events.BLOCK_CREATE &&
         event.type !== Blockly.Events.BLOCK_DELETE &&
@@ -816,6 +1003,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const layoutOnly =
         event.type === Blockly.Events.BLOCK_MOVE &&
         isPureWorkspaceLayoutMove(event as Blockly.Events.BlockMove)
+      // O afastamento automático causado por uma função aberta só para mostrar não é gravado.
+      if (layoutOnly && isBumpWhileShowing(workspace, event)) {
+        bumpSkippedRef.current = true
+        return
+      }
       const svgWorkspace = workspace as Blockly.WorkspaceSvg
       if (typeof svgWorkspace.isDragging === 'function' && svgWorkspace.isDragging()) {
         if (layoutOnly) shouldPersistLayoutAfterDragRef.current = true
@@ -1017,8 +1209,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const target = revealRequest.target
     let frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
-        let id = target.kind === 'runtime' ? runtimeErrorBlockId(svgWorkspace) : target.blockId
         const { runtimeMark: mark, cross: map } = markLookupRef.current
+        let id =
+          target.kind === 'runtime'
+            ? runtimeErrorBlockId(svgWorkspace)
+            : target.kind === 'block'
+              ? target.blockId
+              : target.file === 'script.js'
+                ? map.lookupLine('script.js', target.line)
+                : null
         if (!id && target.kind === 'runtime' && mark?.file === 'script.js') {
           // O erro chegou antes de os blocos terminarem de carregar: marca agora pela linha.
           const found = map.lookupLine('script.js', mark.line, mark.column ?? undefined)
@@ -1029,7 +1228,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         Blockly.svgResize(svgWorkspace)
         isSelectingFromEditorRef.current = true
         try {
-          revealBlockInWorkspace(svgWorkspace, id, true)
+          // Só para mostrar (22/11/2026): a função recolhida que envolve o bloco abre sem virar
+          // edição (sem desfazer, sem regerar e salvar o projeto, que segue gravando-a recolhida).
+          revealBlockInWorkspace(svgWorkspace, id, true, { transient: true })
         } finally {
           queueMicrotask(() => {
             isSelectingFromEditorRef.current = false
@@ -1078,11 +1279,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
+      loadedBlocksStateRef.current = null
+      // O canvas vazio é o próprio projeto: uma falha de restauração anterior não vale mais.
+      if (restoreFailedRef.current) workspace.setIsReadOnly(false)
+      restoreFailedRef.current = false
+      setRestoreFailed(false)
       // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
       forgetBlocklyHistory(workspace)
-      lastAppliedBlocksStateRef.current = JSON.stringify(
-        markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-      )
+      lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+      lastAppliedBlocksStateObjectRef.current = null
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
       queueMicrotask(() => {
         isApplyingStateRef.current = false
@@ -1091,7 +1296,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     }
     // A fronteira de abertura já entregou o documento atual.
     const stateToLoad = blocksState
-    const serialized = JSON.stringify(stateToLoad)
+    // O estado que este painel acabou de gravar voltando da store: nada a carregar.
+    if (stateToLoad === lastAppliedBlocksStateObjectRef.current) return
+    const serialized = jsonStringify(stateToLoad) ?? ''
     if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)
 
@@ -1109,20 +1316,39 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // mas não carrega"). Mantendo tudo no rAF, um rAF cancelado é um no-op total e a
     // próxima execução recarrega corretamente; o cleanup ainda solta o spinner.
     let cancelled = false
-    const handle = requestAnimationFrame(() => {
+    loadPendingRef.current = true
+    const load = (deferredTail: Awaited<ReturnType<typeof loadDeferredTail>>) => {
       if (cancelled) return
+      loadPendingRef.current = false
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
       lastAppliedBlocksStateRef.current = serialized
+      lastAppliedBlocksStateObjectRef.current = null
+      loadedBlocksStateRef.current = { state: stateToLoad, serialized }
+      let deferredLoad: DeferredTailLoad | null | undefined = null
       try {
+        // Projeto grande: a cauda de cada área longe da vista nasce sem desenho (fecha no `finally`).
+        deferredLoad = deferredTail?.prepareDeferredTail(
+          workspace as Blockly.WorkspaceSvg,
+          stateToLoad,
+          !initialViewDoneRef.current,
+        )
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
         // intermediários (deixando passar só o FINISHED_LOADING, onde resolvem a
         // assinatura uma única vez) — evita o O(N·M) ao abrir projetos grandes.
+        // Se o `load` lançar, `loadWorkspaceState` devolve o que ele mudou no Blockly (o desfazer,
+        // o grupo de eventos, o cache de texto e o redimensionar) antes de o erro chegar aqui.
         withWorkspaceLoad(() =>
-          Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
+          loadWorkspaceState(
+            (deferredLoad?.state ?? stateToLoad) as Record<string, unknown>,
+            workspace,
+          ),
         )
+        if (restoreFailedRef.current) workspace.setIsReadOnly(false)
+        restoreFailedRef.current = false
+        setRestoreFailed(false)
         // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
         // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
         forgetBlocklyHistory(workspace)
@@ -1137,7 +1363,13 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o
         // evento não dispare): também ressincroniza para que o dedup do listener
         // continue confiável e nenhuma normalização regenere/sobrescreva o código.
-        queueMicrotask(() => {
+        // ⚠️ O Blockly despacha eventos em `requestAnimationFrame → setTimeout(0)`
+        // (events/utils.ts `fireInternal`). Um microtask rodava SEMPRE antes do
+        // FINISHED_LOADING, e a abertura salvava, regenerava e repintava o projeto inteiro
+        // DUAS vezes (medido em 19/11/2026: duas repinturas completas por abertura). No mesmo
+        // caminho do despacho, este fallback entra na fila DEPOIS dele e só trabalha quando o
+        // evento de fato não veio.
+        afterBlocklyEventDispatch(() => {
           if (!isApplyingStateRef.current) return
           // Fallback caso FINISHED_LOADING não dispare: restaura posições aqui.
           const preserved = preservedPositionsRef.current
@@ -1150,9 +1382,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
               Blockly.Events.enable()
             }
           }
-          lastAppliedBlocksStateRef.current = JSON.stringify(
-            markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
-          )
+          lastAppliedBlocksStateRef.current = jsonStringify(saveWorkspaceState(workspace)) ?? ''
+          lastAppliedBlocksStateObjectRef.current = null
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo
           // Ponte garante que o IR no store contenha os ids do construtor,
           // métodos e declarações CSS — sem isso o sourcemap ficaria incompleto
@@ -1166,14 +1397,45 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           needsPostLoadRenderRef.current = true
         })
       } catch (e) {
+        // A trava vem antes de qualquer coisa: os eventos da carga parcial ainda estão na fila do
+        // Blockly e chegariam ao ouvinte que regenera e grava.
+        restoreFailedRef.current = true
+        setRestoreFailed(true)
         isApplyingStateRef.current = false
+        // Sem os blocos parciais à vista: a criança não pode editar meio projeto achando que é ele.
+        Blockly.Events.disable()
+        try {
+          workspace.clear()
+        } catch (clearError) {
+          // A cadeia parcial pode ser funda demais até para limpar: a trava já protege o projeto, e
+          // o descarte do canvas, na saída, passa a esperar o mesmo erro.
+          restoreClearFailedRef.current = true
+          console.warn('Não foi possível limpar o canvas da restauração que falhou:', clearError)
+        } finally {
+          Blockly.Events.enable()
+        }
+        // O canvas limpo fica só para ler: nada colado ou arrastado ali, embaixo do recado, se
+        // perderia calado (revisão do lote 3, achado 2).
+        workspace.setIsReadOnly(true)
         console.warn('Não foi possível restaurar blocksState:', e)
       } finally {
+        deferredLoad?.finish()
         setIsLoadingWorkspace(false)
       }
+    }
+    const handle = requestAnimationFrame(() => {
+      if (cancelled) return
+      // Fonte ainda chegando: espera um pouco (no máximo 1,5 s) para medir os textos uma vez só,
+      // com a fonte certa. Com a fonte pronta, a carga segue na mesma tarefa, como antes. No
+      // projeto grande, o módulo da abertura adiada é baixado durante essa mesma espera.
+      void Promise.all([
+        waitForOpeningFonts(document, undefined, blockFontSpec(workspace as Blockly.WorkspaceSvg)),
+        loadDeferredTail(serialized),
+      ]).then(([, deferredTail]) => load(deferredTail))
     })
     return () => {
       cancelled = true
+      loadPendingRef.current = false
       cancelAnimationFrame(handle)
       // rAF cancelado antes de rodar: solta o spinner (o `finally` dentro do rAF
       // nunca correrá). Sem isto o overlay "carregando" ficava preso.
@@ -1194,6 +1456,34 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox
+    // Projeto muito grande: o corpo dos blocos longe da vista sai da página (`offscreenBodies.ts`).
+    // O módulo só carrega quando o projeto passa do limiar (fora do pacote de abertura): até lá
+    // um vigia barato olha só a carga terminada e os blocos criados.
+    let offscreenBodies: OffscreenBodies | null = null
+    let offscreenDisposed = false
+    let offscreenLoading = false
+    const offscreenGate = (event: Blockly.Events.Abstract) => {
+      if (offscreenLoading || offscreenBodies || !onDemandMountingEnabled()) return
+      if (
+        event.type !== Blockly.Events.FINISHED_LOADING &&
+        event.type !== Blockly.Events.BLOCK_CREATE
+      )
+        return
+      if (injected.getAllBlocks(false).length < OFFSCREEN_BODIES_MIN_BLOCKS) return
+      offscreenLoading = true
+      injected.removeChangeListener(offscreenGate)
+      void import('../../blockly/offscreenBodies').then(({ createOffscreenBodies }) => {
+        if (offscreenDisposed) return
+        offscreenBodies = createOffscreenBodies(injected, {
+          // À vista dos testes de navegador e de quem depura: quantos corpos estão fora da página.
+          onChange: (count) => {
+            container.dataset.szOffscreenBodies = String(count)
+          },
+        })
+        offscreenBodies.sync()
+      })
+    }
+    injected.addChangeListener(offscreenGate)
     // Acessor POR INSTÂNCIA dos assets do projeto, lido pelo FieldAssetPicker ao
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
@@ -1243,6 +1533,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           // Fontes bloqueadas/indisponíveis: segue com a fonte de fallback.
         })
     }
+    setToolboxHorizontal(horizontalToolbox)
     setWorkspace(injected)
     onWorkspaceReadyRef.current?.(injected)
 
@@ -1291,7 +1582,19 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
       onWorkspaceReadyRef.current?.(null)
-      injected.dispose()
+      offscreenDisposed = true
+      injected.removeChangeListener(offscreenGate)
+      offscreenBodies?.dispose()
+      disposeDeferredDrawing(injected)
+      if (restoreClearFailedRef.current) {
+        try {
+          injected.dispose()
+        } catch (error) {
+          // Os blocos parciais da restauração que falhou recursam no descarte do Blockly; o projeto
+          // não depende deste canvas (a trava impediu qualquer gravação a partir dele).
+          console.warn('Não foi possível descartar o canvas da restauração que falhou:', error)
+        }
+      } else injected.dispose()
       appliedToolboxRef.current = null
     }
   }, [projectStoreApi, notifyPaste])
@@ -1315,17 +1618,72 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const isHydrationPending = blocksState == null && blocksHydration === 'pending'
 
   return (
-    <div className={['relative h-full w-full', className].filter(Boolean).join(' ')}>
+    <div
+      className={['relative h-full w-full', className].filter(Boolean).join(' ')}
+      onKeyDownCapture={(event) => {
+        // Ctrl+F na área de blocos abre "Procurar no programa" (só onde a busca existe).
+        if (!searchAvailable || restoreFailed) return
+        if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f') {
+          event.preventDefault()
+          setSearchOpenPending(true)
+        }
+      }}
+    >
       <div ref={blocklyRef} className="h-full w-full" />
+      {searchAvailable && !restoreFailed && workspace && (
+        <div
+          className={[
+            // Acima da paleta (`.blocklyToolbox` tem z-index 70); com a paleta horizontal no alto,
+            // embaixo à esquerda, longe da lixeira e do zoom.
+            'pointer-events-none absolute z-[80] flex',
+            toolboxHorizontal ? 'bottom-3 left-3 justify-start' : 'top-3 right-3 justify-end',
+          ].join(' ')}
+        >
+          <Suspense fallback={null}>
+            <WorkspaceSearch
+              workspace={workspace}
+              openPending={searchOpenPending}
+              onOpenHandled={handleSearchOpened}
+              onReveal={(blockId) =>
+                highlightApi.getState().revealBlock({ kind: 'block', blockId })
+              }
+            />
+          </Suspense>
+        </div>
+      )}
       {(isLoadingWorkspace || isHydrationPending) && (
         <div
           aria-busy="true"
+          data-sz-blocks-loading=""
+          // Segura o clique enquanto o canvas à vista vai ser trocado pelo estado salvo: com a
+          // espera pela fonte (até 1,5 s), arrastar um bloco ali apagava a carga pendente.
           className={[
-            isHydrationPending ? 'pointer-events-auto' : 'pointer-events-none',
+            'pointer-events-auto',
             'absolute inset-0 z-10 flex items-center justify-center bg-sz-bg/60',
           ].join(' ')}
         >
           <Spinner />
+        </div>
+      )}
+      {restoreFailed && !isLoadingWorkspace && (
+        <div
+          data-sz-blocks-restore-failed=""
+          className="absolute inset-0 z-[80] flex items-center justify-center bg-sz-bg/80 p-6"
+        >
+          <div
+            role="alert"
+            className="max-w-md rounded-2xl border-2 border-sz-border bg-sz-panel px-5 py-4 text-center text-sz-fg shadow-lg"
+          >
+            <p className="font-bold">{t('blocks.restoreFailed.title')}</p>
+            <p className="mt-2 text-sm">
+              {/* Só aponta a Ponte onde ela existe: a aula gravada, por exemplo, só tem Blocos. */}
+              {t(
+                studioConfig.allowedModes.includes('bridge')
+                  ? 'blocks.restoreFailed.body'
+                  : 'blocks.restoreFailed.bodyNoBridge',
+              )}
+            </p>
+          </div>
         </div>
       )}
       {pasteNotice && (

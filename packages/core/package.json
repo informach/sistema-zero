@@ -19,6 +19,12 @@
     "./course/modality": "./src/course/modality.ts",
     "./course/module-animation": "./src/course/module-animation.ts",
     "./creations": "./src/creations/index.ts",
+    "./creations/pinta-causal": "./src/creations/pinta-causal.ts",
+    "./creations/pinta-map-projection": "./src/creations/pinta-map-projection.ts",
+    "./creations/pinta-palette-writer": "./src/creations/pinta-palette-writer.ts",
+    "./creations/pinta-recovery-help": "./src/creations/pinta-recovery-help.ts",
+    "./creations/studio-sealed-storage": "./src/creations/studio-sealed-storage.ts",
+    "./creations/studio-sealed-writer": "./src/creations/studio-sealed-writer.ts",
     "./security": "./src/security/index.ts",
     "./logging": "./src/logging/index.ts",
     "./errors": "./src/errors/index.ts",
@@ -41,6 +47,8 @@
     "./morada/schema": "./src/morada/schema.ts"
   },
   "scripts": {
+    "gen:pinta-scene-transform": "bun scripts/gen-pinta-scene-transform.ts",
+    "check:pinta-scene-transform": "bun scripts/gen-pinta-scene-transform.ts --check",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "check": "biome check .",
@@ -49,6 +57,7 @@
     "lint": "biome lint ."
   },
   "dependencies": {
+    "pako": "3.0.1",
     "zod": "4.3.6"
   },
   "devDependencies": {

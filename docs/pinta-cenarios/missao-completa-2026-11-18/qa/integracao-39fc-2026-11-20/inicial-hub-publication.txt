@@ -1,0 +1,77 @@
+bun test v1.3.11 (af24e281)
+
+tests\integration\showcase-update.test.ts:
+(pass) republicar o mesmo projeto atualiza o post do Mural > Estúdio livre: o mesmo projeto vira "existing" e o update mantém id, link, data, ordem e desafio [63.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > sem capa nova o post mantém a capa atual [16.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > "Publicar como jogo novo" cria outro post e passa o vínculo para ele [15.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > projetos diferentes e autores diferentes nunca se misturam [16.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > post apagado perde o vínculo; oculto continua atualizável e oculto [15.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > cliente antigo (sem sourceProjectId) segue criando um post por publicação [16.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > adoção: link local de publicação antiga vincula o post de antes ao projeto [16.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > aula: status, update com título autoritativo e post antigo adotado pela reserva [15.00ms]
+(pass) republicar o mesmo projeto atualiza o post do Mural > restaurar uma versão carimba a atualização só para o autor [16.00ms]
+
+tests\integration\showcase.test.ts:
+(pass) vitrine (Mural dos Criadores) > Mural, comentários e jogo público usam apelido atual mesmo com nome privado no snapshot [15.00ms]
+(pass) vitrine (Mural dos Criadores) > auto-publica o projeto: visível, autor do header de perfil, conteúdo do members [16.00ms]
+(pass) vitrine (Mural dos Criadores) > presenteado visitante não publica ao concluir curso; assinatura ativa libera
+(pass) vitrine (Mural dos Criadores) > projeto NÃO elegível → não publica nem notifica o nível do aluno [15.00ms]
+(pass) vitrine (Mural dos Criadores) > capa AUSENTE no corpo → cai na capa padrão do members
+(pass) vitrine (Mural dos Criadores) > publica no canal parede mesmo quando outro canal vem antes na ordenação
+(pass) vitrine (Mural dos Criadores) > idempotente: mesma criança/projeto devolve o post existente [16.00ms]
+(pass) vitrine (Mural dos Criadores) > projeto NÃO elegível (não concluído) → 403 (o hub re-valida, não confia no corpo)
+(pass) vitrine (Mural dos Criadores) > canal staff_only barra post normal da criança, mas a vitrine passa [16.00ms]
+(pass) vitrine (Mural dos Criadores) > recusa publicar em servidor ADULTO (defesa em profundidade)
+(pass) vitrine (Mural dos Criadores) > recusa publicar em canal de postagem livre (não staff_only)
+(pass) vitrine (Mural dos Criadores) > sem x-internal-token → 401 (chamada interna) [15.00ms]
+(pass) vitrine (Mural dos Criadores) > projetos AVULSOS (sem cadeia) do mesmo curso NÃO colidem na idempotência
+(pass) vitrine (Mural dos Criadores) > capa padrão NÃO-https do members é descartada (parede infantil é HTTPS) [16.00ms]
+(pass) vitrine (Mural dos Criadores) > studio: exige identidade assinada pelo BFF e confere autor e audiência com o JWT
+(pass) vitrine (Mural dos Criadores) > studio: corpo = descrição da criança, título do members, playId persistido [16.00ms]
+(pass) vitrine (Mural dos Criadores) > studio: visitante não usa publicação kid-driven mesmo com curso elegível
+(pass) vitrine (Mural dos Criadores) > presente com Mural completo publica; depois volta a visitante e mantém o jogo público [15.00ms]
+(pass) vitrine (Mural dos Criadores) > studio: studioMeta persiste saneado (dedupe) e volta na view; ausente → null [16.00ms]
+(pass) vitrine (Mural dos Criadores) > studio-play: só valida playId enquanto o post está visível [15.00ms]
+(pass) vitrine (Mural dos Criadores) > studio: mesmo clientIdempotencyKey dedup-a; republicar o MESMO projeto devolve o post existente [16.00ms]
+(pass) vitrine (Mural dos Criadores) > studio: projeto NÃO elegível → 403 (re-valida no members)
+(pass) vitrine (Mural dos Criadores) > studio: sem x-internal-token → 401
+(pass) vitrine (Mural dos Criadores) > com allowlist de parede: recusa space kids staff_only que NÃO é a parede [16.00ms]
+(pass) vitrine (Mural dos Criadores) > oficina publica com prova do snapshot, deduplica e não concede marco de curso ou desafio [15.00ms]
+(pass) vitrine (Mural dos Criadores) > standalone: com produto → publica título E descrição da criança + playId
+(pass) vitrine (Mural dos Criadores) > standalone: visitante com Estúdio separado ainda precisa assinar para publicar no Mural [16.00ms]
+(pass) vitrine (Mural dos Criadores) > standalone: studioMeta persiste ({pro:true} do modo Código) e volta na view
+(pass) vitrine (Mural dos Criadores) > standalone Python retains language/runtime metadata, deduplicates extensions and rejects missing runtime [16.00ms]
+(pass) vitrine (Mural dos Criadores) > standalone: SEM o produto → 403 (elegibilidade = posse, re-validada no hub)
+(pass) vitrine (Mural dos Criadores) > standalone: EQUIPE (privileged) publica SEM o produto — chave-mestra virtual p/ testar o Mural [15.00ms]
+(pass) vitrine (Mural dos Criadores) > standalone: chave-mestra KIDS cobre a publicação [16.00ms]
+(pass) vitrine (Mural dos Criadores) > standalone: mesmo clientKey dedup-a; key novo = post NOVO
+(pass) vitrine (Mural dos Criadores) > standalone: sem x-internal-token → 401 [15.00ms]
+(pass) vitrine (Mural dos Criadores) > studio-play com count=1 conta a jogada; sem count só valida [16.00ms]
+(pass) vitrine (Mural dos Criadores) > desafio do mês (challengeKey no standalone) > posse Clube+Estúdio + mês corrente → tag entra + notifica o members
+(pass) vitrine (Mural dos Criadores) > desafio do mês (challengeKey no standalone) > SEM o Clube: publica normal, mas a tag cai em silêncio (sem notificação) [16.00ms]
+(pass) vitrine (Mural dos Criadores) > desafio do mês (challengeKey no standalone) > mês ERRADO/formato inválido: publica normal, tag cai em silêncio [15.00ms]
+(pass) vitrine (Mural dos Criadores) > desafio do mês (challengeKey no standalone) > listagem com ?challenge= devolve SÓ os posts do desafio do mês [32.00ms]
+(pass) vitrine (Mural dos Criadores) > showcase-by-authors (rota interna HMAC) > devolve SÓ os posts dos autores pedidos na janela; sem HMAC → 401 [15.00ms]
+(pass) vitrine (Mural dos Criadores) > gamificação do standalone (retenção pós-cursos) > publicar standalone NOTIFICA o members (marco + XP diário) com o playId [16.00ms]
+(pass) vitrine (Mural dos Criadores) > gamificação do standalone (retenção pós-cursos) > o hit que CRUZA 10 jogadas dispara o marco de plays (1× — nem antes, nem depois) [47.00ms]
+(pass) vitrine (Mural dos Criadores) > gamificação do standalone (retenção pós-cursos) > play-check (S2S HMAC): visível → {visible, authorId}; oculto → false; sem HMAC → 401
+(pass) vitrine (Mural dos Criadores) > my-showcase-stats agrega SÓ os posts visíveis do próprio autor [15.00ms]
+
+tests\integration\studio-reservations.test.ts:
+(pass) prepare is private, idempotent and creates no thread, play reference, notification or delivery [16.00ms]
+(pass) finalize requires reservation, exact snapshot, context and author; concurrent/lost-ACK retry is one visible thread [16.00ms]
+(pass) preparation and late finalize preserve hidden instead of restoring a thread [15.00ms]
+(pass) preparation and late finalize preserve deleted instead of restoring a thread
+(pass) preparation and late finalize preserve rejected instead of restoring a thread [16.00ms]
+(pass) live prepare keeps the Members-attested play ID and token expiry is not part of semantic identity
+(pass) standalone finalize alone persists a stable event; replay and terminal retries add none [15.00ms]
+(pass) live revocation between preparation and finalization publishes nothing [16.00ms]
+(pass) cover reconciliation retains an open reservation without adopting or comparing a URL
+
+tests\unit\showcase-delivery.test.ts:
+(pass) failed delivery survives worker replacement and retries with a stable id
+
+ 63 pass
+ 0 fail
+ 267 expect() calls
+Ran 63 tests across 4 files. [1289.00ms]

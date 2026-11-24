@@ -5,6 +5,8 @@ export const gameTwoDTextSpritesRuntime = `
   var _textFontRevision = 0;
   var _spritePaintEpoch = 0;
   var _spritePaintOrder = 0;
+  // Sprites desenhados entre duas "Limpar a tela" (a aba Desempenho do Estúdio lê pelo inspetor).
+  var _paintOrderAtClear = 0, _paintedLastFrame = 0;
   /** @type {WeakMap<object, Map<string, WeakMap<object, string>>>} */
   var _targetClickIds = new WeakMap();
   /** @type {WeakMap<object, string>} */

@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-20T12:25:16.163Z",
+  "source": "e8c77ab8d14e908d942748014b3b23ea2e28c09f",
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "f634cff6-aafb-4804-8b69-172fad4e946e"
+  },
+  "stagingOnly": true,
+  "readOnly": true,
+  "ok": true,
+  "result": {
+    "status": "preflight"
+  }
+}

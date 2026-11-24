@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-4f1f1cb15\packages\member-shell\tests\fixtures\palette-review.test.ts:
+(pass) o erro de download de um mapa deixa a biblioteca independente descer [78.00ms]
+(pass) uma leitura já iniciada pára de escrever e publicar marcas após A→sair→B
+(pass) com zero cores vivas a lápide sobe e a galeria permite reabrir depois de uma falha [15.00ms]
+(pass) resposta GET anterior ao conflito não retrocede a revisão já conhecida do item
+(pass) um recibo atrasado não retrocede a marca da paleta mais recente
+(pass) metadado divergente ou biblioteca vazia não cria upload fantasma
+
+ 6 pass
+ 0 fail
+ 21 expect() calls
+Ran 6 tests across 1 file. [760.00ms]

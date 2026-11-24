@@ -1,0 +1,71 @@
+{
+  "mundo": "mundo-2km",
+  "pagina": "regioes.html",
+  "perfil": {
+    "nome": "notebook",
+    "largura": 1366,
+    "altura": 768,
+    "cpu": 4
+  },
+  "vsync": false,
+  "medidoEm": "2026-11-23T12:22:50.898Z",
+  "sha": "97e2e4d2d1ec6986d9fab36b7acb013e19fca6a0",
+  "sujo": true,
+  "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3050 (0x00002584) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "duracaoMs": 90000,
+  "quadros": 6882,
+  "fpsMediano": 79.4,
+  "quadroMs": {
+    "p50": 12.599999999991269,
+    "p95": 17.70000000001164,
+    "p99": 32.799999999995634,
+    "maximo": 70.90000000000146
+  },
+  "desenhos": {
+    "p50": 68,
+    "p95": 78,
+    "maximo": 85
+  },
+  "triangulos": {
+    "p50": 111552,
+    "p95": 126454,
+    "maximo": 137976
+  },
+  "entradas": [
+    {
+      "regiao": "Floresta",
+      "quadros": 130,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 70.90000000000146
+    },
+    {
+      "regiao": "Caverna",
+      "quadros": 147,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 49.599999999998545
+    },
+    {
+      "regiao": "Montanha",
+      "quadros": 149,
+      "acima100": 0,
+      "acima200": 0,
+      "piorMs": 34
+    }
+  ],
+  "regioesVisitadas": ["Vila", "Floresta", "Caverna", "Montanha"],
+  "memoria": {
+    "heapJs": 212508360,
+    "geometrias": 97,
+    "texturas": 9,
+    "programas": 13,
+    "bytesDeTexturas": 0
+  },
+  "rota": {
+    "pontos": 18,
+    "metros": 9216,
+    "voltas": 0.2
+  },
+  "erros": []
+}

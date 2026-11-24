@@ -134,12 +134,14 @@ const EnvSchema = z
     // o builder mantém seu próprio limite de 3.004.096 bytes por rota;
     // os webhooks da SendGrid continuam limitados a 2 MB por rota.
     // Rotas individuais AFINAM o teto via
-    // `maxBodyBytes` na config (nunca o aumentam — validado no boot).
+    // `maxBodyBytes` na config (nunca o aumentam — validado no boot). 9 MB cobre o lote do
+    // relevo dos cenários (`CENARIOS_LOTE_MAX_BYTES`, 8 MB + 64 KB) com folga; era a constante
+    // do piloto antigo dos cenários, que saiu no lote 10 (20/11/2026), com o mesmo valor.
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
       .int()
       .positive()
-      .default(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES),
+      .default(Math.max(SECTION_PYTHON_PROJECT_TEST_BODY_BYTES, 9 * 1024 * 1024)),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),

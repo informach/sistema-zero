@@ -1,0 +1,708 @@
+bun test v1.3.11 (af24e281)
+
+src\components\preview\PreviewIframe.test.tsx:
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > não anuncia execução enquanto a leitura do estado salvo ainda segura o documento [125.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,U1pHYW1lMkQudXNlRm9udCgiYnVuZ2VlIik7". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > preserva o jogo ao preparar outra fonte e permite Parar durante a preparação [1312.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > aguarda comando explícito sem anunciar execução nem bloquear o botão Rodar [47.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > um cenário 3D que não confere vai para os Problemas sem derrubar a prévia [31.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > executa ao montar, reexecuta ao atualizar e volta a executar ao sair de parado [203.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > Parar libera uma primeira execução sem load e conserva a fonte [47.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > Rodar de novo libera uma primeira execução sem load e conserva a fonte [94.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > documento novo sem load que dá sinal de vida é esperado [4609.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+
+(pass) PreviewIframe > documento novo sem load e calado é trocado [4563.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://previa.exemplo.test/jogo.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [onRemoveAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:271:18)
+      at [removeNamedItem] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\NamedNodeMap.js:203:62)
+      at removeAttribute (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:722:60)
+      at setValueForAttribute (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:1475:20)
+      at setProp (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:20388:15)
+      at updateProperties (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:21128:13)
+      at commitUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:22168:7)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitHostUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13601:9)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [onRemoveAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:271:18)
+      at [removeNamedItem] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\NamedNodeMap.js:203:62)
+      at removeAttribute (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:722:60)
+      at setProp (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:19998:24)
+      at updateProperties (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:21128:13)
+      at commitUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:22168:7)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitHostUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13601:9)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14842:13)
+
+(pass) PreviewIframe > em outra origem, o Parar reconhece o jogo preso e troca o iframe com o intervalo [297.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://casca.exemplo.test/v1/classic-shell/1.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13662:22)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13745:11)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "about:blank". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [onRemoveAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:271:18)
+      at [removeNamedItem] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\NamedNodeMap.js:203:62)
+      at removeAttribute (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:722:60)
+      at setProp (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:19998:24)
+      at updateProperties (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:21128:13)
+      at commitUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:22168:7)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitHostUpdate (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13601:9)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14842:13)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > a casca em outro site que nunca fica pronta volta ao documento direto e avisa [4047.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://casca.exemplo.test/v1/classic-shell/1.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13662:22)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13676:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13745:11)
+
+(pass) PreviewIframe > na casca, o "carregou" de um documento já trocado não vale pelo atual [984.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > Rodar de novo mantém o mesmo iframe; Parar põe um iframe novo no lugar [109.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > a marca já existe quando o documento executável é observado no DOM [94.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > a marca de execução permanece após sinais de vida e só sai ao parar ou sair corretamente [125.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > o erro do jogo vira a fase "erro" com o lugar no código e o sinal do bloco; um jogo novo limpa [125.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > executa quando o projeto carregado chega depois da montagem do preview [63.00ms]
+An update to PreviewIframe inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) PreviewIframe > permite Pointer Lock para a câmera FPS sem abrir o isolamento de origem [15.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > mostra gamepad automaticamente somente em touch quando a IR usa teclado [31.00ms]
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,ZG9jdW1lbnQuYm9keS5kYXRhc2V0LmV4ZWN1dGVkID0gInRydWUiOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe > não mostra gamepad em dispositivo sem touch mesmo quando a IR usa teclado [47.00ms]
+(pass) heldPreviewDocument (achado E4): o iframe trocado não recebe o documento que travou > enquanto o próximo prepara, segura o documento que já estava
+(pass) heldPreviewDocument (achado E4): o iframe trocado não recebe o documento que travou > mas não o que travou o iframe que acabou de ser trocado
+(pass) heldPreviewDocument (achado E4): o iframe trocado não recebe o documento que travou > pronto o próximo, vale o próximo
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<!doctype html><html><body><h1>oi</h1></body></ht
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: ""
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "   "
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<!doctype html><html><head><title>Meu Jogo</title
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>   Espaçado   </title></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>Frutas &amp; Verduras</title></head>
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>5 &lt; 10 &amp;&amp; 10 &gt; 5</titl
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>Aspas &quot;duplas&quot; e &#39;simp [16.00ms]
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title lang=\"pt-BR\">Com Atributo</title><
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><TITLE>Maiúsculo</TITLE></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>Primeiro</title><title>Segundo</titl
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title></title></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>   </title></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><title>Linha 1\n  Linha 2</title></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<head><titlebar>Não é título</titlebar></head>"
+(pass) extractDocumentTitle (paridade com o parse completo) > casa o parse completo para: "<body><title>No Corpo</title></body>"
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,U1pHYW1lMkQudXNlRm9udCgicHJlc3NTdGFydDJQIik7". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe — a fonte escolhida chega ao documento > embute a fonte que o bloco pediu, e só ela [62.00ms]
+(pass) chosenCoverPausesSnapshots (B3, 26/09/2026): o preview para de fotografar pela capa RESOLVIDA, não pelo nome cru > sem projeto, ou sem capa escolhida, as fotos seguem
+(pass) chosenCoverPausesSnapshots (B3, 26/09/2026): o preview para de fotografar pela capa RESOLVIDA, não pelo nome cru > capa escolhida que EXISTE no projeto segura as fotos
+(pass) chosenCoverPausesSnapshots (B3, 26/09/2026): o preview para de fotografar pela capa RESOLVIDA, não pelo nome cru > nome pendurado (a imagem já não está no projeto, ou não é imagem) NÃO segura as fotos: a capa cai na automática e ela precisa existir
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,Y29uc3QgY2VuYSA9IFNaR2FtZTNELmNyZWF0ZUZ1bGxzY3JlZW5TY2VuZSgiIzAwMCIpOw==". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+544 |             (browserSettings.disableJavaScriptFileLoading || !browserSettings.enableJavaScriptEvaluation)) {
+545 |             if (browserSettings.handleDisabledFileLoadingAsSuccess) {
+546 |                 this.dispatchEvent(new Event('load'));
+547 |             }
+548 |             else {
+549 |                 const error = new window.DOMException(`Failed to load script "${absoluteURL}". JavaScript file loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                    ^
+NotSupportedError: Failed to load script "data:text/javascript;base64,Y29uc3Qgam9nbyA9IFNaR2FtZTNELmNyZWF0ZVBsYXRmb3JtU2NlbmUoInRlbGEiKTs=". JavaScript file loading is disabled.
+      at #loadScript (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:549:31)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-script-element\HTMLScriptElement.js:315:22)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\element\Element.js:1072:50)
+      at parseRawTextElementContent (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:654:49)
+      at parse (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\html-parser\HTMLParser.js:244:30)
+      at write (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\document\Document.js:1225:16)
+      at #loadPage (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:319:42)
+      at [onSetAttribute] (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\node_modules\.bun\happy-dom@20.11.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:252:18)
+
+(pass) PreviewIframe — o Kit Plataforma troca de variante AO VIVO > sem o kit no código, o runtime vem sem ele; a criança usa o kit e o runtime recarrega com ele [907.00ms]
+
+ 44 pass
+ 0 fail
+ 315 expect() calls
+Ran 44 tests across 1 file. [18.76s]

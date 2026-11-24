@@ -78,3 +78,57 @@ describe('runtimes oficiais: fragmento entra por FUNÇÃO no marcador', () => {
     expect(offenders).toEqual([])
   })
 })
+
+describe('compactOfficialRuntimeSource com stripBlockComments (lote 4, 21/11/2026)', () => {
+  const strip = (lines: string[]) =>
+    compactOfficialRuntimeSource(lines.join('\n'), { stripBlockComments: true }).split('\n')
+
+  it('tira o comentário de bloco que começa a linha, de uma ou de várias linhas', () => {
+    expect(
+      strip(['/**', ' * explica', ' */', 'var a = 1;', '  /* curto */', 'var b = 2;']),
+    ).toEqual(['var a = 1;', 'var b = 2;'])
+  })
+
+  it('o código depois do fim do comentário, na mesma linha, fica', () => {
+    expect(strip(['/* um', '   dois */ var a = 1;', '/* três */ var b = 2;'])).toEqual([
+      '  var a = 1;',
+      '  var b = 2;',
+    ])
+  })
+
+  it('não mexe no comentário no meio da linha nem num "/*" dentro de uma string', () => {
+    expect(strip(['f(/* x */ 1);', "var t = 'a /* b */ c';"])).toEqual([
+      'f(/* x */ 1);',
+      "var t = 'a /* b */ c';",
+    ])
+  })
+
+  it('um "/*" aberto no meio do código deixa a função cautelosa até o próximo "*/"', () => {
+    // `'image/*'` parece abrir um comentário; dali em diante nada sai até aparecer um `*/`.
+    expect(
+      strip(["var aceita = 'image/*';", '/* fica */', 'var a = 1;', '/* sai */', 'var b = 2;']),
+    ).toEqual(["var aceita = 'image/*';", '/* fica */', 'var a = 1;', 'var b = 2;'])
+  })
+
+  it('recusa linha com barra de continuação e comentário sem fim', () => {
+    expect(() => strip(["var s = 'a\\", "b';"])).toThrow('barra de continuação')
+    expect(() => strip(['/* sem fim', 'var a = 1;'])).toThrow('sem fim')
+  })
+})
+
+// Revisão do lote 4 (21/11/2026): os dois padrões que a primeira versão errava. Nenhum existe nas
+// fontes de hoje; os testes provam que, se aparecerem, o programa continua o mesmo.
+describe('stripBlockComments: os casos da revisão do lote 4', () => {
+  const strip = (lines: string[]) =>
+    compactOfficialRuntimeSource(lines.join('\n'), { stripBlockComments: true }).split('\n')
+
+  it('o modo cauteloso que termina numa linha que reabre um comentário continua cauteloso', () => {
+    const source = ['a(); /* c1', '*/ b(); /* c2', '/* x', '*/ c();']
+    expect(strip(source)).toEqual(source)
+  })
+
+  it('uma abertura "/*/" não conta o próprio fechamento sobreposto', () => {
+    const source = ['a(); /*/ abre', '/* y */ b();']
+    expect(strip(source)).toEqual(source)
+  })
+})

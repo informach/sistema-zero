@@ -9,19 +9,33 @@
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import {
+  effectiveLayer,
   isObjectLayer,
   normalizeObjectPropertyKey,
-  OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_LIMITS,
-  type TilemapAsset,
+  PINTA_MAP_FORMAT_LIMITS,
+  sanitizeObjectExtras,
+  sanitizeObjectProperties,
+  sanitizeRegionMapObject,
   type TilemapObject,
   type TilemapObjectLayer,
   type TilemapObjectPropertyValue,
 } from '../core/project'
+import type { AuthorMap } from './mapCellEdits'
+import { objectContains } from './objectGeometry'
 import { withMapLayer } from './tilemapOps'
 
 /** Os tipos de valor que a criança escolhe para uma propriedade. */
-export const OBJECT_PROPERTY_KINDS = ['text', 'number', 'boolean'] as const
+export const OBJECT_PROPERTY_KINDS = [
+  'text',
+  'number',
+  'boolean',
+  'int',
+  'float',
+  'color',
+  'object',
+  'asset',
+] as const
 
 export type ObjectPropertyKind = (typeof OBJECT_PROPERTY_KINDS)[number]
 
@@ -30,6 +44,7 @@ export function isObjectPropertyKind(value: string): value is ObjectPropertyKind
 }
 
 export function objectPropertyKind(value: TilemapObjectPropertyValue): ObjectPropertyKind {
+  if (typeof value === 'object') return value.type
   if (typeof value === 'number') return 'number'
   if (typeof value === 'boolean') return 'boolean'
   return 'text'
@@ -40,26 +55,44 @@ export function convertPropertyValue(
   value: TilemapObjectPropertyValue,
   kind: ObjectPropertyKind,
 ): TilemapObjectPropertyValue {
+  const primitive = typeof value === 'object' ? value.value : value
+  if (kind === 'int' || kind === 'float') {
+    const parsed = Number(String(primitive).replace(',', '.'))
+    return {
+      type: kind,
+      value: Number.isFinite(parsed) ? (kind === 'int' ? Math.round(parsed) : parsed) : 0,
+    }
+  }
+  if (kind === 'color')
+    return {
+      type: kind,
+      value: /^#[\da-f]{6}([\da-f]{2})?$/i.test(String(primitive))
+        ? String(primitive).toLowerCase()
+        : '#000000',
+    }
+  if (kind === 'object' || kind === 'asset')
+    return { type: kind, value: String(primitive).slice(0, 200) || 'nenhum' }
   if (kind === 'number') {
-    const parsed = typeof value === 'number' ? value : Number(String(value).replace(',', '.'))
+    const parsed =
+      typeof primitive === 'number' ? primitive : Number(String(primitive).replace(',', '.'))
     return Number.isFinite(parsed) ? parsed : 0
   }
   if (kind === 'boolean') {
     if (typeof value === 'boolean') return value
     if (typeof value === 'number') return value !== 0
-    return value.trim() !== '' && value.trim().toLowerCase() !== 'false'
+    return String(primitive).trim() !== '' && String(primitive).trim().toLowerCase() !== 'false'
   }
-  return String(value).slice(0, PINTA_LIMITS.maxObjectPropertyStringChars)
+  return String(primitive).slice(0, PINTA_LIMITS.maxObjectPropertyStringChars)
 }
 
 /** O ponto de um objeto: largura e altura zero. */
 export function isPointObject(object: TilemapObject): boolean {
-  return object.width === 0 && object.height === 0
+  return object.shape === 'point' || (!object.shape && object.width === 0 && object.height === 0)
 }
 
 function clampMeasure(value: number): number {
   const rounded = Math.round(Number.isFinite(value) ? value : 0)
-  return Math.min(Math.max(rounded, 0), PINTA_LIMITS.maxObjectCoord)
+  return Math.min(Math.max(rounded, 0), PINTA_MAP_FORMAT_LIMITS.maxObjectCoord)
 }
 
 function clampText(value: string): string {
@@ -70,6 +103,13 @@ function clampText(value: string): string {
 export function snapToGrid(value: number, step: number): number {
   if (!(step > 0)) return Math.round(value)
   return Math.round(value / step) * step
+}
+
+/** Um marcador fica no centro da casa; áreas e artes usam as bordas. */
+export function snapObjectPoint(value: number, tileSize: number, snap: boolean): number {
+  return snap && tileSize > 0
+    ? Math.floor(value / tileSize) * tileSize + tileSize / 2
+    : Math.round(value)
 }
 
 /**
@@ -88,25 +128,9 @@ export function createMapObject(
     y: clampMeasure(input.y ?? 0),
     width: clampMeasure(input.width ?? 0),
     height: clampMeasure(input.height ?? 0),
-    properties: filterProperties(input.properties ?? {}),
+    properties: sanitizeObjectProperties(input.properties ?? {}),
+    ...sanitizeObjectExtras(input),
   }
-}
-
-function filterProperties(
-  raw: Record<string, TilemapObjectPropertyValue>,
-): Record<string, TilemapObjectPropertyValue> {
-  const entries: Array<[string, TilemapObjectPropertyValue]> = []
-  for (const [key, value] of Object.entries(raw)) {
-    if (entries.length >= PINTA_LIMITS.maxObjectProperties) break
-    if (key.length > PINTA_LIMITS.maxObjectPropertyKeyChars) continue
-    if (!OBJECT_PROPERTY_KEY_PATTERN.test(key)) continue
-    if (typeof value === 'number' && !Number.isFinite(value)) continue
-    entries.push([
-      key,
-      typeof value === 'string' ? value.slice(0, PINTA_LIMITS.maxObjectPropertyStringChars) : value,
-    ])
-  }
-  return Object.fromEntries(entries)
 }
 
 /** Nome automático do próximo objeto da camada ("Objeto 3"). */
@@ -119,30 +143,74 @@ export function nextObjectName(layer: TilemapObjectLayer): string {
   return COPY.tiles.objectNamePrefix
 }
 
+/** Region authoring preserves signed fractional geometry or refuses the whole object. */
+export function createRegionMapObject(
+  input: Partial<Omit<TilemapObject, 'id'>> & { id?: string } = {},
+): TilemapObject | null {
+  return sanitizeRegionMapObject({
+    ...input,
+    id: input.id ?? newId(),
+    name: input.name ?? '',
+    type: input.type ?? '',
+    x: input.x ?? 0,
+    y: input.y ?? 0,
+    width: input.width ?? 0,
+    height: input.height ?? 0,
+    properties: input.properties ?? {},
+  })
+}
+
 /** A camada de OBJETOS com este id (`null` para peças ou id desconhecido). */
-export function objectLayerById(tilemap: TilemapAsset, layerId: string): TilemapObjectLayer | null {
+export function objectLayerById(tilemap: AuthorMap, layerId: string): TilemapObjectLayer | null {
   const layer = tilemap.layers.find((l) => l.id === layerId)
   return layer && isObjectLayer(layer) ? layer : null
 }
 
-function withObjectLayer(
-  tilemap: TilemapAsset,
+function withObjectLayer<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   update: (layer: TilemapObjectLayer) => TilemapObjectLayer,
-): TilemapAsset {
-  return withMapLayer(tilemap, layerId, (layer) => (isObjectLayer(layer) ? update(layer) : layer))
+): Map {
+  return withMapLayer(tilemap, layerId, (layer) =>
+    isObjectLayer(layer) && !effectiveLayer(tilemap, layer).locked ? update(layer) : layer,
+  )
 }
 
 /** Acrescenta o objeto no TOPO da camada. No teto (`maxTilemapObjects`) devolve o mesmo asset. */
-export function addMapObject(
-  tilemap: TilemapAsset,
+export function addMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   object: TilemapObject,
-): TilemapAsset {
+): Map {
+  return addMapObjects(tilemap, layerId, [object])
+}
+
+/** Insere o lote inteiro ou nada, com as mesmas guardas da inserção única. */
+export function addMapObjects<Map extends AuthorMap>(
+  tilemap: Map,
+  layerId: string,
+  objects: readonly TilemapObject[],
+): Map {
+  if (objects.length === 0) return tilemap
   return withObjectLayer(tilemap, layerId, (layer) => {
-    if (layer.objects.length >= PINTA_LIMITS.maxTilemapObjects) return layer
-    if (layer.objects.some((existing) => existing.id === object.id)) return layer
-    return { ...layer, objects: [...layer.objects, createMapObject(object)] }
+    if (layer.objects.length + objects.length > PINTA_LIMITS.maxTilemapObjects) return layer
+    const ids = new Set(
+      ('origin' in tilemap
+        ? tilemap.layers.filter(isObjectLayer).flatMap((l) => l.objects)
+        : layer.objects
+      ).map((object) => object.id),
+    )
+    const added: TilemapObject[] = []
+    for (const object of objects) {
+      if (ids.has(object.id)) return layer
+      const normalized =
+        'origin' in tilemap ? createRegionMapObject(object) : createMapObject(object)
+      if (!normalized) return layer
+      if (ids.has(normalized.id)) return layer
+      ids.add(normalized.id)
+      added.push(normalized)
+    }
+    return { ...layer, objects: [...layer.objects, ...added] }
   })
 }
 
@@ -153,19 +221,37 @@ export type MapObjectPatch = Partial<Omit<TilemapObject, 'id'>>
  * Muda campos de um objeto (posição, tamanho, nome, tipo, propriedades), com os
  * mesmos cortes da criação. Mesmo asset quando o resultado é igual.
  */
-export function updateMapObject(
-  tilemap: TilemapAsset,
+export function updateMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   objectId: string,
   patch: MapObjectPatch,
-): TilemapAsset {
+): Map {
+  return updateMapObjects(tilemap, layerId, new Map([[objectId, patch]]))
+}
+
+/** Admit every target first; one invalid object keeps the complete previous history value. */
+export function updateMapObjects<Map extends AuthorMap>(
+  tilemap: Map,
+  layerId: string,
+  patches: ReadonlyMap<string, MapObjectPatch>,
+): Map {
+  if (!patches.size) return tilemap
   return withObjectLayer(tilemap, layerId, (layer) => {
-    const index = layer.objects.findIndex((object) => object.id === objectId)
-    const current = layer.objects[index]
-    if (!current) return layer
-    const next = createMapObject({ ...current, ...patch, id: current.id })
-    if (sameObject(current, next)) return layer
-    return { ...layer, objects: layer.objects.map((o, i) => (i === index ? next : o)) }
+    if (patches.size > layer.objects.length) return layer
+    const existing = new Map(layer.objects.map((object) => [object.id, object]))
+    const updates = new Map<string, TilemapObject>()
+    for (const [id, patch] of patches) {
+      const current = existing.get(id)
+      if (!current) return layer
+      const input = { ...current, ...patch, id: current.id }
+      const next = 'origin' in tilemap ? createRegionMapObject(input) : createMapObject(input)
+      if (!next) return layer
+      if (!sameObject(current, next)) updates.set(id, next)
+    }
+    return updates.size
+      ? { ...layer, objects: layer.objects.map((object) => updates.get(object.id) ?? object) }
+      : layer
   })
 }
 
@@ -176,7 +262,29 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
     a.x !== b.x ||
     a.y !== b.y ||
     a.width !== b.width ||
-    a.height !== b.height
+    a.height !== b.height ||
+    JSON.stringify([
+      a.shape,
+      a.points,
+      a.rotation,
+      a.flipX,
+      a.flipY,
+      a.art,
+      a.role,
+      a.setId,
+      a.collision,
+    ]) !==
+      JSON.stringify([
+        b.shape,
+        b.points,
+        b.rotation,
+        b.flipX,
+        b.flipY,
+        b.art,
+        b.role,
+        b.setId,
+        b.collision,
+      ])
   ) {
     return false
   }
@@ -184,15 +292,18 @@ function sameObject(a: TilemapObject, b: TilemapObject): boolean {
   const bKeys = Object.keys(b.properties)
   return (
     aKeys.length === bKeys.length &&
-    aKeys.every((key, i) => key === bKeys[i] && a.properties[key] === b.properties[key])
+    aKeys.every(
+      (key, i) =>
+        key === bKeys[i] && JSON.stringify(a.properties[key]) === JSON.stringify(b.properties[key]),
+    )
   )
 }
 
-export function removeMapObject(
-  tilemap: TilemapAsset,
+export function removeMapObject<Map extends AuthorMap>(
+  tilemap: Map,
   layerId: string,
   objectId: string,
-): TilemapAsset {
+): Map {
   return withObjectLayer(tilemap, layerId, (layer) => {
     if (!layer.objects.some((object) => object.id === objectId)) return layer
     return { ...layer, objects: layer.objects.filter((object) => object.id !== objectId) }
@@ -266,18 +377,7 @@ export function objectAt(
   for (let i = layer.objects.length - 1; i >= 0; i -= 1) {
     const object = layer.objects[i]
     if (!object) continue
-    if (isPointObject(object)) {
-      if (Math.hypot(x - object.x, y - object.y) <= Math.max(slack, 1)) return object
-      continue
-    }
-    if (
-      x >= object.x - slack &&
-      x <= object.x + object.width + slack &&
-      y >= object.y - slack &&
-      y <= object.y + object.height + slack
-    ) {
-      return object
-    }
+    if (objectContains(object, x, y, slack)) return object
   }
   return null
 }

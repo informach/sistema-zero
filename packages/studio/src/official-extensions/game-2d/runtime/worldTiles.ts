@@ -108,13 +108,21 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
   // o laço e avisa UMA vez (o jogo segue rodando).
   var _tileMapCreates = 0;
   function createTileMap(options) {
-    options = options || {};
     _tileMapCreates += 1;
     if (_tileMapCreates === 61) {
       console.warn(
         'SZGame2D: "Criar mapa" está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte o bloco de criar o mapa FORA do laço (uma vez só) e deixe dentro do laço apenas o "Desenhar o mapa".'
       );
     }
+    return _newTileMap(options);
+  }
+  /**
+   * O mapa de tiles, sem a conta do "rodando sem parar": o cenário do Pinta cria um a cada porta
+   * (lote 8 da conclusão do plano do Estúdio, 22/11/2026), e isso não é o bloco num laço.
+   * @param {*} options as mesmas do createTileMap
+   */
+  function _newTileMap(options) {
+    options = options || {};
     // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
@@ -164,7 +172,9 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     if (!meta || !meta.tileset || typeof meta.tileset.dataUrl !== 'string' ||
         typeof meta.grid !== 'string') {
       try {
-        console.warn('O desenho "' + name + '" nao veio com um mapa do Pinta. Envie o MAPA pelo foguete do Pinta (ou use "Criar mapa de tiles" para montar na mao).');
+        // Só a cena (mapa grande ou rico demais para este bloco): aponta o bloco novo.
+        if (entry && (entry.scene || entry.hasScene)) console.warn('O desenho "' + name + '" é um cenário. Use o bloco "Criar cenário do meu desenho".');
+        else console.warn('O desenho "' + name + '" nao veio com um mapa do Pinta. Envie o MAPA pelo foguete do Pinta (ou use "Criar mapa de tiles" para montar na mao).');
       } catch (e) {}
       return createTileMap({ image: '', tile: 32, solid: '', grid: '' });
     }
@@ -531,8 +541,10 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
       else r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - oy) / t));
     }
     if (c0 > c1 || r0 > r1) return;
+    // MAP_2D_LEGACY_BASIC_BEGIN
     for (var r = r0; r <= r1; r++) {
       for (var c = c0; c <= c1; c++) {
+        // MAP_2D_LEGACY_BASIC_BODY
         // Peça PLATAFORMA (one-way): segura o sprite na face para a qual a
         // gravidade puxa. Com gravidade normal, pousa por cima; com gravidade
         // negativa, pousa por baixo. Atravessar pela face oposta, andar de lado
@@ -634,6 +646,7 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
         }
       }
     }
+    // MAP_2D_LEGACY_BASIC_END
     // Depois da resolução: a posição já é a final do quadro, então "estou dentro da
     // moeda" é medido onde o sprite de fato parou.
     _recordTileOverlaps(sprite, map);

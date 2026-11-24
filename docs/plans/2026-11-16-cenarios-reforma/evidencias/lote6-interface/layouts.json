@@ -1,0 +1,38 @@
+[
+  {
+    "largura": 1440,
+    "altura": 900,
+    "tema": "light",
+    "preparar": true,
+    "guardar": true,
+    "overflow": false,
+    "erros": []
+  },
+  {
+    "largura": 1366,
+    "altura": 900,
+    "tema": "dark",
+    "preparar": true,
+    "guardar": true,
+    "overflow": false,
+    "erros": []
+  },
+  {
+    "largura": 1024,
+    "altura": 768,
+    "tema": "light",
+    "preparar": true,
+    "guardar": true,
+    "overflow": false,
+    "erros": []
+  },
+  {
+    "largura": 390,
+    "altura": 844,
+    "tema": "dark",
+    "preparar": true,
+    "guardar": true,
+    "overflow": false,
+    "erros": []
+  }
+]

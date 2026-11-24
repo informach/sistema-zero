@@ -190,6 +190,34 @@
       "when": 1793495146279,
       "tag": "0026_dias_de_jogo",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1794818582429,
+      "tag": "0027_misty_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1794819608338,
+      "tag": "0028_serious_captain_flint",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794824539855,
+      "tag": "0029_right_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795190609609,
+      "tag": "0030_remover_cenarios_do_piloto",
+      "breakpoints": true
     }
   ]
 }

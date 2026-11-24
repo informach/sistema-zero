@@ -1,5 +1,593 @@
 # CLAUDE.md — @sistemazero/pinta
 
+## Oficina de cenários: como está em 23/11/2026
+
+Estado e próximos passos: `docs/superpowers/plans/2026-11-23-pinta-estado-da-retomada.md`. Os
+números de formato moram em `@sistemazero/core/creations` (`pinta-format.ts`), nunca aqui.
+
+### Oficina, nativo 8/9 e físico 3
+
+A oficina é a persistência `createWorkshopPintaPersistence({ nativeCeiling })`
+(`state/workshopPersistence.ts`). Ela guarda os documentos que o editor clássico não guarda:
+- **nativo 8:** mapa por regiões (`RegionTilemapAsset`, chunks de 32 × 32, coordenadas
+  assinadas). Na nuvem é `formatVersion` 7;
+- **nativo 9:** mapa com livro de autorregras (`automapping`) ou mapa projetado (`projection`).
+  Na nuvem é 8;
+- **físico 3:** o registro do mapa regional no IndexedDB, com cabeçalho e chunks gravados à parte
+  (`localRegionAssetAuthority.ts`, `localRegionEditing.ts`).
+
+O Pinta solto (Kids e adulto) monta a oficina com teto **8**. O teto 9 fica só na qualificação
+local (é o padrão da função). Gravar acima do teto lança `WORKSHOP_NATIVE_CEILING_MESSAGE` e não
+grava nada. Um leitor antigo (6) vê o regional como "feito numa versão mais nova do Pinta"; nada é
+apagado nem regravado. O Pinta da aula não tem oficina: persistência própria, sem mapas na galeria.
+
+### Regiões e "Mundo gigante" (etapa 1, sem flag)
+
+- **Criar:** cartão "Mundo gigante" no passo de tamanho do `NewAssetDialog` (1024 × 768 peças;
+  só ocupa espaço onde se pinta). Aparece quando o armazenamento é a oficina e não há pedido de arte
+  de missão.
+- **Editar:** `RegionMapWorkspace.tsx` e a janela focal (`FocalEditorScreen`/`FocalRegionMapStage`).
+  Ao sair de uma janela que gravou, um mapa já levado ao Estúdio é atualizado por
+  `resyncStudioCopies`.
+- **Na conta:** cada gesto da janela focal grava junto com a fila causal, numa transação só
+  (`LocalRegionCausalBinding`; plano `2026-11-23-pinta-focal-na-conta.md`).
+- **Ainda fora:**
+  - etapas 3–5: terreno, objetos, conjuntos, caminhos, portas, animações e profundidade nas regiões;
+  - etapa 6: mensagens, níveis, teclado/Esc e p95;
+  - o menu de exportação, que só abre mapas de tamanho fixo;
+  - a biblioteca do Estúdio, que recusa a captura regional com recado.
+
+Plano: `docs/superpowers/plans/2026-11-23-pinta-etapa-1-regioes.md`.
+
+### Nuvem causal para todo aluno (sem flag)
+
+Todo aluno ativo usa a fila causal V4: o perfil kids com a conta responsável e o adulto com a
+própria conta. O host lê o escopo que o servidor entrega (`PintaAccountSession` →
+`usePintaAccount`). Saíram `NEXT_PUBLIC_PINTA_CAUSAL_CLIENT_V1`, `PINTA_CAUSAL_CANDIDATE`,
+`PINTA_PALETTE_WRITE_CANDIDATE`, `PINTA_CAUSAL_QA_PROFILES`, `PINTA_WORKSHOP_SERVICE_READER` e os
+`STUDIO_SEALED_*`. `scripts/ci/pinta-sem-flags.test.ts` impede que voltem.
+
+O BFF só precisa da infraestrutura: `MEMBER_SHELL_HMAC_SECRET` e o R2 privado. Sem ela, as rotas
+`/api/pinta/causal/*` respondem 404. O corpo nativo 9 depende da constante
+`WORKSHOP_BODY_READABLE = PINTA_INVENTORY_READER_VERSION >= 8`; hoje o leitor é 7, então fica
+fechado. O suporte em modo leitura ainda não recebe o escopo. Detalhes:
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md`.
+
+### Autorregras
+
+Ficam em `tiles/automapping/` (`book`, `engine`, `editor`, `import`, `native`), com o painel
+`components/editor/MapAutomappingPanel.tsx`. São regras próprias do Pinta, feitas por exemplos em
+várias camadas, e o livro viaja no nativo 9. Por isso só abrem com teto 9.
+
+Vocabulário aprovado em 23/11, que a etapa 6 aplica na tela:
+- **"Copiar o antes"**, **"Guardar o depois"** e **"🎲 Sortear de novo"**;
+- sem o UUID da camada;
+- sem o "Uma folha mudou" mostrado enquanto carrega.
+
+### Projeções
+
+Isométrica em diamante e hexagonal: `core/projectedDocument`, `export/workshopProjection.ts`
+(nativo 9 com `projection`) e Scene 5 (`export/projectedScene.ts`). Geometria e provas:
+`docs/pinta-cenarios/geometria-das-projecoes.md`. Tiled, Phaser e Godot levam o projetado; o
+Pygame recusa de propósito.
+
+A etapa 8 está fora do escopo atual: abrir e editar na oficina, PNG 6 e o Python projetado. Não
+anunciar nativo 9 / nuvem 8 antes destes quatro passos:
+1. teto 9 na oficina;
+2. leitor e escritor 8 no host;
+3. `PINTA_INVENTORY_READER_VERSION` 8 no core;
+4. leitura do corpo 9 no BFF.
+
+### Exportadores regionais e runners reais
+
+`export/regionScenePackage.ts` monta os quatro pacotes com Scene 4. Guia de uso e limites:
+`docs/pinta-cenarios/compatibilidade-exportadores-regionais.md`.
+
+Os ensaios com os programas de verdade rodam em `packages/pinta`:
+
+| Destino | Comando | Variável |
+|---|---|---|
+| Tiled | `bun test ./src/export/tiled/regional.test.ts ./src/export/tiled/rasterizer.test.ts` | `PINTA_TILED_BIN` |
+| Phaser | `bun scripts/homologacao/verify-region-phaser.ts` | nenhuma (Node + Chromium do Playwright) |
+| Pygame | `bun scripts/homologacao/verify-region-pygame.ts` (física precisa e antiga) | `PINTA_PYTHON_BIN` |
+| Godot | `bun scripts/homologacao/verify-region-godot.ts [--dense]` | `PINTA_GODOT_BIN` |
+| Raylib 2D | `src/export/pythonRegional2dBackends.test.ts` e o `pintaScenesModule.test.ts` do Estúdio | `PINTA_RAYLIB_PYTHON` |
+
+Sem a variável, o ensaio pula com aviso. O Raylib precisa de janela, então pula no CI. Com `PYTHON`
+apontado, faltar pygame-ce ou pgzero reprova em vez de pular (`src/testing/ciPython.ts`).
+
+`check:homologacao` (mapas de tamanho fixo) usa **outros nomes**: `PYTHON`, `TILED` e `GODOT`, com
+`--exigir-pygame`, `--exigir-tiled` e `--exigir-godot`. Nesta máquina, Tiled e Godot ficam em
+`.tmp/pinta-tools/` da árvore principal.
+
+### Conferências dos gerados
+
+Rodar a cada integração. Outras frentes já deixaram arquivos gerados velhos duas vezes.
+
+```powershell
+bun run --cwd packages/pinta check:region-phaser          # export/phaser/regionPlayer.generated.ts
+bun run --cwd packages/pinta check:phaser                 # Phaser embutido: SHA-256 e licença
+bun run --cwd packages/studio check:pinta-region-runtime  # tocador regional do Estúdio
+bun run --cwd packages/studio check:pro-engine-copies     # cópias do motor no Pro
+bun run --cwd packages/studio-runtime check:validation-profile
+cd packages/studio && bun scripts/gen-pinta-scene-python.ts --check   # trecho de cena do pinta.py
+bun packages/core/scripts/gen-pinta-scene-transform.ts --check
+```
+
+### Tetos do motor 2D com cenário (Estúdio)
+
+Os tetos de `f79c03025` foram aprovados pela dona em 23/11:
+
+| O que | Teto |
+|---|---|
+| Motor com cenário (Jogo 2D / Avançado) | 394.000 / 435.000 |
+| Fragmento sobre o legado | 25.000 |
+| Tocador privado antes dos dados (Jogo 2D / Avançado) | 422.500 / 464.000 |
+
+Os valores ficam em `official-extensions/map-2d/bootstrap.ts` e `regionBootstrap.ts`. Todo
+aumento futuro vai com a medida de `bun packages/studio/scripts/measure-pinta-runtime.ts`.
+
+## Retomada do rollout e regiões (21/11/2026)
+
+O código integrado lê nuvem 6 e declara escrita 6 para mapas, folhas e conjuntos.
+Isso não atesta a versão implantada: o leitor de rollback 85d16fcd9 declara 4.
+Conferir a fonte publicada e executar produtor real, CAS, cliente antigo e
+rollback antes de concluir o rollout. As seções datadas abaixo incluem o histórico
+do corte anterior; os números atuais pertencem a `core/creations/pinta-format.ts`.
+
+O ciclo do gravador 6 foi homologado com login em staging em 21/11: B → A → B,
+edição local conservada em A e sincronizada intacta por B; serviço temporário
+removido, frontends compartilhados preservados. Alcance e recibos em
+`qa/rollback-publicado-2026-11-21/`, no diretório da missão. Não confundir essa
+prova com ativação dos futuros contratos de regiões ou com o ciclo final do jogo.
+
+Em 21/11, `RegionTilemapAsset`/codec 8 ainda eram preparação interna. Desde 23/11 as regiões
+estão ligadas para todos (seção acima). As frases "não é suporte no host" e "constantes públicas
+inalteradas" dos parágrafos seguintes registram os lotes de 21–22/11.
+Plano aprovado: `docs/superpowers/plans/2026-11-21-pinta-missao-retomada.md`.
+
+`export/regionScene.ts` é emissor privado de cena 4. Compartilha metadados e
+recursos/imagens com o conversor legado, admite todos os cabeçalhos e orçamento
+agregado antes dos payloads, mede o JSON UTF-8 completo e usa o codec do Core.
+Retorna `json` para transporte e `scene` para memória; nunca serializar os
+`Int16Array` da segunda como DTO. `physics` conserva o modo autoral, independente
+da versão de armazenamento. Imagens reais e reabertura da Vila em outro contexto
+estão em `qa/emissor-de-cena-regional-2026-11-22/`. Não é suporte no host,
+PNG 5, runtime ou exportadores externos regionais; constantes públicas inalteradas.
+
+O compositor existente `sceneDrawing.ts` também aceita a cena regional privada,
+visitando células armazenadas pelo leitor comum em ordem global. A definição de
+conjunto desconta sua própria origem depois da escala; a imagem final desconta
+a origem do mapa. `scenePng` confere o orçamento regional antes de DOM/imagens,
+mantendo o comportamento legado. Provas de pixels, arte real e miniatura 512
+estão em `qa/composicao-de-cena-regional-2026-11-22/`. Essa composição não é
+exportação de dados PNG 5, runtime de jogo ou ativação na oficina pública.
+
+`export/regionImage.ts` prepara/embute uma cena wire 4 em metadados privados
+Pinta 5 no PNG. JSON e memória decodificada continuam separados; o encoder
+compartilhado recebe texto já serializado e conserva a aquisição/serialização
+assíncrona legada. Capa estática limitada a 4.096/lado, 4 Mi pixels e arquivo
+final de 16 MiB; metadados/cena têm tetos próprios. PNG com dados Pinta anteriores
+é recusado para não criar duas autoridades. Descritores de mundo não equivalem
+a validar seus PNGs filhos: falta integração do loader/encoder do mundo e dos
+motores antes do host. Fixture do leitor PNG 4 é autêntica e congelada, sem
+seleção no produto. Provas em `qa/envelope-png-regional-2026-11-22/`.
+
+`tiles/regionCells.ts` reexporta consulta/visita do Core; a implementação única
+está em `creations/pinta-region-reader.ts`. Mutação permanece no editor e usa
+as mesmas chaves/ordem/índice em memória. Não usar esses helpers como autoridade
+de IO ou validação de documento. A leitura é para snapshots imutáveis já
+admitidos; não há cache global de documentos. Provas e comparações exatas em
+`qa/leitura-regional-compartilhada-2026-11-22/`. Motores ainda precisam consumir
+regiões sem materializar `rows × cols`, respeitando a física legada/precisa.
+
+`state/localRegionChunkStorage.ts` prepara o físico 3 como política opt-in do
+IO transacional existente. `parsePintaRegionLayerLocations` confere cabeçalhos
+antes das requisições de buffers; limites globais, IDs e dono das chaves são
+obrigatórios. O padrão público continua no codec denso 1/2. Não selecionar a
+política 3 na fábrica pública antes de integrar autoridade/CAS 8, espelho,
+inventário/host, transporte e adaptadores. Abertura ainda lê os chunks do
+documento; não anunciar carregamento sob demanda. Provas em
+`qa/io-regional-interno-2026-11-21/`, no diretório da missão.
+
+`createLocalAssetAuthority` é o mesmo mecanismo para as políticas nativas;
+exports públicos conservam 0–7. `localRegionAssetAuthority.ts` seleciona 8 só
+internamente e usa espelho compacto vinculado à revisão exata da autoridade,
+sem repetir buffers. Validação conserva a origem causal da RAM. Quota da
+persistência usa resumos por transação: não reutilizar cache de identidades
+mutáveis entre gravações. Permitir exclusão estrita de dados inalterados para
+liberar espaço acima do teto. A fábrica pública/host ainda não selecionam 8.
+Provas e limites em `qa/autoridade-regional-interna-2026-11-22/`.
+
+`createLocalPintaPersistence` compartilha a fábrica existente por política de
+formato, conservando o padrão público. `localRegionPersistence.ts` é opt-in
+privado: escolhe autoridade 8, físico 3 e quota regional completa, sem passar
+regiões pelo cache/RLE legado da galeria de sprites. Namespace, FIFO, eventos,
+CAS, cópias e lápides são os mesmos. O espelho compacto nunca substitui a
+autoridade. Não exportar/selecionar essa fábrica no host antes de completar
+galeria, transporte, adaptadores e segurança do inventário parcial da nuvem.
+Provas em `qa/fabrica-regional-interna-2026-11-22/`. Abertura ainda reconstrói
+todos os chunks do documento; isso não é carregamento sob demanda.
+
+`captureRegionPintaAssetForImage` usa o capturador transacional comum com essa
+política e inclui os lugares ligados por padrão, inclusive portas de conjuntos
+usados como raiz. Captura regional estrita recusa inventário incompatível e
+folhas indisponíveis; a captura visual pública conserva sua política anterior.
+`regionAssetBundleToJson` reutiliza o coletor portátil e o backup privado 8,
+conservando IDs e vínculos. Não selecionar no host antes dos adaptadores/cena
+e da proteção de inventário parcial da nuvem. Provas e pacotes da Vila real em
+`qa/captura-e-transporte-regional-2026-11-22/`; não homologam cena 4 ou exportadores
+externos regionais, nem ativam importação 8 na galeria pública.
+
+`RegionMapSetAsset`/codec 8 também permanecem internos. Captura, instância e
+separação usam células por regiões e o clonador comum; a separação esparsa conserva
+a árvore de grupos. O gesto admite no máximo 65.536 células ocupadas, além do teto
+global de chunks; recusa conserva o mesmo mapa. Inserção/atualização de objetos
+usam a admissão estrita para posições assinadas/fracionárias. Render e protocolo 3
+ainda precisam ser integrados. Provas em
+`qa/conjuntos-por-regioes-2026-11-21/`, no diretório da missão.
+
+Seleção/clipboard e templates já usam o mesmo grafo e o modelo interno de regiões.
+Colar religa também dependentes indiretos das versões privadas, com admissão atômica
+de objetos/recursos; alinhar valida todos os destinos antes do gesto. O espelho de
+clipboard 3 conserva posições assinadas/fracionárias e é recusado pelo módulo antigo;
+1/2 mantêm os bytes anteriores. O template usa base neutra sem materializar o mundo.
+Isso não ativa formato 8 público. Provas em `qa/objetos-por-regioes-2026-11-21/`.
+
+O espalhamento também usa limites assinados e deltas fracionários no núcleo
+interno. Amostras têm teto de 65.536, e objetos/recursos são admitidos juntos.
+O clonador comum aceita IDs determinísticos por gesto; cada cópia religa as peças
+privadas. `MapObjectArtwork` resolve a arte no snapshot exibido, inclusive prévia,
+e não apenas no editor salvo. O formato 8 ainda não está ativo na oficina.
+Provas, comparação com 48 composições legadas e retificação do hook de CPU em
+`qa/espalhamento-de-objetos-por-regioes-2026-11-21/`, no diretório da missão.
+
+O render de chunks também usa o leitor comum e `mapCellBounds`, com coordenadas
+globais assinadas. O recorte esparso visita apenas chunks armazenados; leitor por
+camada/frame e cache de 32 MiB. A referência densa de QA mantém o alinhamento
+global e o mesmo orçamento. O lote não ativa a oficina 8. Provas e achado de
+precisão entre composição direta/cache com opacidade de camada estão em
+`qa/renderizacao-por-regioes-2026-11-21/`, no diretório da missão. Esse achado foi
+corrigido em `qa/precisao-de-opacidade-2026-11-21/`: `directPixels` exige alpha
+composto 1; opacidade parcial conserva chunks canônicos. `usedBytes` inclui o
+scratch. Os casos diretos qualificados continuam sem canvases; não ampliar o
+orçamento nem relaxar igualdade de pixels para admitir uma composição diferente.
+
+O teto efetivo de parallax continua 4, agora em `maxLayerParallax`: a edição não
+aceita mais 16 para o leitor cortar na reabertura. Separar conserva o parallax
+herdado e recusa uma composição densa fora do contrato. Nenhum estilo mudou.
+
+O LRU de chunks reutiliza composições canônicas por conteúdo, com um único dono
+por entrada: posição/camada não gera aliases retidos. Fingerprint é só índice;
+atlas, tamanho, contagem de peças, fase e todas as células precisam coincidir.
+Há uma colisão real nos testes e prova de mutação da comparação integral.
+Expulsão/clear limpam o índice; bytes/scratch conservam o orçamento.
+O atlas continua imutável por identidade. Não inferir fluidez global desse lote:
+provas, controles sem repetição e medições em `qa/cache-por-conteudo-2026-11-21/`.
+
+O lote seguinte refina estimativas que excedem a capacidade por composições
+distintas, usando a mesma identidade e preparo do LRU. Receitas admitidas são
+transitórias ao quadro e reaproveitadas no desenho. Excesso de bytes ou buckets
+com oito colisões conserva a estimativa nominal/caminho anterior. Os guardas de
+alpha/transformação não mudam. A capacidade segue em 32 MiB; nenhum dado autoral
+é convertido em imagem. Medição do renderer e limites, incluindo o controle sem
+repetição, em `qa/pressao-por-composicoes-2026-11-21/`. Não é SLA da oficina/IO.
+
+O minimapa aceita o contrato interno de regiões com visão geral de no máximo
+256 × 256 pixels e desempate global, visitando células armazenadas. O painel
+existente usa a origem lógica nos destinos e conta buffers no orçamento; as cores
+brutas legadas continuam sem cache, enquanto a interface compartilha cache por
+identidade imutável. Não é exportação visual completa. Provas em
+`qa/minimapa-por-regioes-2026-11-21/`, no diretório da missão. Miniaturas/imagens,
+IO 3 e ativação pública 8 continuam pendentes; estilos do painel preservados.
+
+As imagens de peças pixel/vetor também aceitam regiões internamente, pelo leitor
+comum com visita opcional em ordem global linha/coluna. O percurso padrão por
+chunks permanece igual. PNG de regiões tem admissão prévia de 8.192 px/lado e
+16 Mi pixels; a miniatura tem teto 512 e o SVG 8 Mi unidades UTF-16. O SVG entregue
+ao decoder usa o tamanho raster, conservando o viewBox lógico. `withSvgRootSize`
+foi extraído do compositor portátil, sem duplicação; a área de `scenePng` conserva
+o limite anterior compartilhado. A imagem antiga achatada permanece igual, e o
+novo contrato usa composição completa das camadas. Provas em
+`qa/imagens-por-regioes-2026-11-21/`. Objetos/conjuntos na imagem 8 ainda dependem
+do adaptador Scene 4 existente no plano; não há outro compositor independente.
+
+Pincéis usam o escritor comum com resultado de recusa; linhas/retângulos são
+admitidos antes de gerar pontos e carimbos expandem blocos distintos. Cada coleção
+e traço aceita até 65.536 destinos; revisitas não gastam o teto, e o pincel fica
+estável até soltar. `replaceIfCurrent(expected, next)` é CAS **em RAM**: passe o
+snapshot produzido pelo próprio gesto, não uma leitura recente para legitimar uma
+proposta antiga. O retorno é o snapshot que sobreviveu aos assinantes, ou `null`.
+A fachada de conjuntos possui identidade por revisão externa e adapta essa mesma
+operação. Recusa/cancelamento não restaura a base sobre outra revisão do mesmo ID.
+O CAS persistente/local da issue 026 permanece separado. Outros gestos contínuos,
+geometria/câmera e ativação pública 8 continuam no plano. Provas e limites em
+`qa/pinceis-por-regioes-2026-11-21/`, no diretório da missão.
+
+Objetos e opacidade de camada usam a sessão `state/editorGesture.ts`, sobre o
+mesmo CAS em RAM: término/cancelamento só atua na própria revisão sobrevivente.
+Recusa no meio restaura a base; Esc, pointercancel e desmontagem cancelam o gesto.
+Keyup não fecha um arrasto de ponteiro no range. O rascunho de polígono/caminho
+retém revisão e camada iniciais e é descartado se mudarem. Estilos preservados;
+isso não migra automaticamente os gestos de vetor/recursos, nem promove formato 8.
+Provas em `qa/gestos-de-objetos-e-camadas-2026-11-21/`, no diretório da missão.
+
+O papel/canvas usa `mapCellBounds` e conversões comuns de mundo, ponteiro e CSS.
+Seleção, cursor, destinos do minimapa e ponto de inserção descontam a origem.
+O canvas de oficina aceita o documento interno por regiões, com colisões pelo
+leitor comum e bitmap limitado ao viewport. A biblioteca conserva coordenadas
+assinadas/fracionárias e o deslocamento herdado; o legado conserva sua régua.
+A grade passou a visitar somente linhas que podem atingir o canvas, com margem
+de antialiasing em pixels e pontas/coordenadas originais. O lote isolado conserva
+RGBA e orçamento; não resolve a pressão do cache em mapas densos. Provas e escopo
+do perfil em `qa/recorte-da-grade-2026-11-21/`, no diretório da missão.
+Isso não ativa edição pública 8: movimento SVG de objetos, recursos, modelos de
+store/IO e adaptadores continuam no plano. Provas em
+`qa/geometria-do-papel-2026-11-21/`, no diretório da missão.
+
+O SVG de objetos usa `tiles/objectEditorSpace.ts`: origem global, limites locais
+com offsets e frações regionais; o ramo denso conserva a aritmética anterior.
+O overlay aceita leitura regional, mas o store público continua denso. Sem layout
+válido, o gesto é cancelado; mudar zoom, anel, snap, ferramenta, camada ou store
+também cancela somente a própria revisão. Não simular edição 8 por casts.
+Provas em `qa/espaco-de-objetos-2026-11-21/`, no diretório da missão.
+
+`ObjectScatterStroke` coleta posições do mundo com limites assinados e teto de
+65.536 destinos distintos; segmentos excessivos são recusados antes da linha.
+Uma recusa é terminal e não admite parte do segmento. A prévia da biblioteca
+usa `MapLibraryPreview`, conservando estilos e compensando a origem no SVG.
+Biblioteca/espalhamento confirmam pela sessão condicional, sem registrar histórico
+se um assinante adotar outra revisão durante a escrita. As geometrias dos hooks
+são conferidas também nos eventos, antes da limpeza dos efeitos. Preparação interna;
+o store público continua denso. Provas em `qa/confirmacao-de-previas-2026-11-21/`.
+
+**Terrenos por regiões (preparação interna):** `paintTerrain` usa o leitor comum
+e `editMapCellBatch`, com vizinhança e gesto limitados a 65.536 casas. A busca de
+variações conserva ordem/semente; falta de encaixe e de orçamento recusam tudo.
+`collectTerrainRegion` distingue recusa de região vazia; `terrainRegion` conserva
+a API de array. Formato 8 público, protocolo 3 e mensagens da oficina expansível
+continuam condicionados aos demais consumidores. Provas e limites em
+`qa/terrenos-por-regioes-2026-11-21/`, no diretório da missão.
+
+Versões de recursos usam o mesmo núcleo para mapas densos e regiões internas.
+A captura 8 e a migração densa conferem snapshots canônicos integralmente, sem
+normalização com perda nem cópia dos buffers já guardados. Troca de objeto
+recusada não deixa snapshot solto. Origem/horário inválidos e carimbos futuros
+não geram uma versão ilegível. Dependências e limpeza conservam cadeias privadas.
+Provas em `qa/versoes-de-recursos-por-regioes-2026-11-21/`, no diretório da missão.
+O formato 8 continua interno; store/IO e adaptadores seguem condicionados aos
+consumidores completos.
+
+Memória de regiões é contada por buffer de chunk; `snapshotShared` delega para
+`sharedAssetParts`, sem outro histórico. `retainedAssetBytes` inclui regras e
+propriedades nas edições/capturas. O leitor legado conserva a métrica de payload
+de `assetBytes`: não recusar retroativamente seus catálogos por uma estimativa
+nova. O leitor interno 8 e a migração usam a métrica ampliada. Tetos preservados;
+isso não é medição de heap nem ativação de store/IO 3. Provas em
+`qa/memoria-por-regioes-2026-11-21/`, no diretório da missão.
+
+Camadas internas por regiões usam os mesmos comandos de árvore, com criação
+vazia e teto compartilhado de 32. `tilemapLayerHeader` exclui payload da comparação;
+`sanitizeRegionLayerHeader` compartilha a admissão com o leitor 8. Defaults
+explícitos e offsets fracionários não são canonicalizados para o legado. A troca
+de folhas conserva o vínculo explícito e a trava herdada; o ramo denso mantém
+sua política. Provas em `qa/camadas-por-regioes-2026-11-21/`. Achatar, remapear,
+store/IO e adaptadores ainda precisam completar os consumidores antes da promoção.
+
+Remapeamento de peças também admite regiões internamente: duas passagens de
+orçamento antes do payload, chunks inalterados compartilhados e recusa atômica
+de índices fora do contrato. `remapTilesetConsumers` sobrepõe todos os pendentes
+antes de filtrar consumidores; não ressuscitar referências da galeria confirmada
+entre dois comandos antes do autosave. `commitLinked` informa aceitação efetiva
+para a seleção acompanhar somente a operação aceita. Mesmos estilos e tetos.
+Provas em `qa/remapeamento-por-regioes-2026-11-21/`. Isso não promove store/IO 3.
+
+Consultas por casa e detecção de frente admitem regiões internas. Os achatados
+aceitam a origem lógica, com recusa antes do payload acima de 65.536 casas;
+`flattenMapWindow` oferece recorte explícito com o mesmo teto fixo. Não aumentar
+esse teto ao ampliar o mundo autoral. A grade contém índices/folhas e não é cena
+estruturada nem substituto do documento. O ramo denso conserva os resultados
+anteriores. Provas em `qa/consultas-por-regioes-2026-11-21/`; promoção pública,
+IO e adaptadores continuam no plano.
+
+Crescimento/redimensionamento regional usa limites globais: expandir não move
+portas, caminhos ou células. Recortar conserva objetos nas coordenadas globais,
+inclusive fora da área visível, e só copia chunks com peças retiradas. Objetos
+fora da tela continuam no documento; peças recortadas voltam pelo desfazer.
+O ramo denso conserva âncora/deslocamento anteriores. A curadoria lê os chunks.
+O diálogo de tamanho só fecha/anuncia sucesso quando a edição é aceita, e o topo
+confere a própria revisão antes de gravar. Provas e distinção entre React agrupado,
+Chromium e oficina real em `qa/tamanho-por-regioes-2026-11-21/`. Não promove formato 8.
+
+## Formatos 4/5/6/7, tetos em dois níveis e carimbo na gravação (19/11/2026)
+
+**Admissão interna 8:** o store existente é genérico, com `PintaAsset` como padrão
+público. Consumidores internos explícitos podem usar `PintaMemoryAsset`; não usar
+casts para simular suporte da oficina. Metadados de candidatos/lotes ligados são
+conferidos antes de host, histórico e autosave. O cache fraco por instância exige
+revisões imutáveis; não reutilizar seus resumos para wire mutável. O conjunto e
+seu mapa compartilham o orçamento antes de decodificar chunks. Isso não ativa
+backup/transporte 8, físico 3, cena 4 ou PNG 5; o orçamento JSON com encoder
+efetivo ainda precisa ser integrado. Provas em `qa/admissao-de-metadados-2026-11-21/`.
+
+**Backup regional interno:** `export/regionBackup.ts` prepara o contêiner 8 com
+RLE/codec/layout existentes, restauro atômico e medição exata de UTF-8 antes da
+string final. Bitmap com campo futuro precisa recusar antes do decoder legado
+o descartar. O arquivo 8 tem orçamento separado de 32 MiB de buffers decodificados,
+além dos 32 MiB de texto: somar cabeçalhos antes do primeiro decoder, contando
+cópias repetidas. Não aplicar essa política retroativamente a 0–7 nem alegar
+heap de 32 MiB. O escritor/importador públicos continuam em 7; medição antes do
+histórico, IO 3 e adaptadores seguem pendentes. Provas em
+`qa/backup-regional-interno-2026-11-21/`.
+
+**JSON antes do histórico:** `RegionBackupSizeCache` mede a representação real
+por objetos autorais imutáveis, com números em chaves fracas; não reencodar o
+mapa completo a cada gesto. Core confere descritores/buffer antes de `cellTile`.
+Store admite o snapshot inteiro ligado, incluindo timestamp, antes do host e
+do histórico/autosave. Lotes só legados conservam sua política. Não confundir
+esse limite com a quota de itens da galeria fora do lote, responsabilidade de
+inventário/host/persistência. Físico 3, transporte público e adaptadores seguem
+pendentes. Provas em `qa/admissao-json-2026-11-21/`.
+
+**Referências nos conjuntos (21/11):** `core/mapClone.ts` é a operação comum de
+clonagem/remapeamento usada por importação e conjuntos. IDs de camadas e objetos
+possuem escopos separados. Um fragmento só troca o ID de uma versão incorporada
+quando precisa religar propriedades de objeto nela; arte inalterada é reutilizada.
+`createMapSet` admite o recorte antes de alocar; `detachMapSet` conserva locks
+herdados. O remapeador preserva vínculos explícitos de folhas no modelo interno 8,
+conservando a canonicalização densa. Conjuntos esparsos ainda não estão ativos.
+Provas: `qa/referencias-de-conjuntos-2026-11-21/`, no diretório da missão.
+
+Correções da revisão dos cenários 2D. Plano e decisões: `docs/pinta-cenarios/README.md`.
+
+**Autoridade local offline (issue 026):** `pinta:local:document:<id>` é o documento
+autoritativo; `pinta:asset:<id>` é espelho de compatibilidade. Revisão, espelho, cópias
+e lápide são transacionais no mesmo banco/store. A primeira leitura moderna protege o
+legado antes de entregar RAM. Divergência antiga vira cópia; origem de RAM acompanha a
+linhagem, nunca a última listagem. Falha/quota aborta tudo. Não comparar por maior schema
+ou horário, nem remover checkpoint para caber. Captura e exportação usam a mesma autoridade.
+Saves protegidos têm custo O(galeria); só sprites mantêm o inventário incremental.
+
+O caminho incremental de sprites também classifica as chaves na própria
+transação `readwrite` do put. Documento protegido ou ID desconhecido do
+inventário força a autoridade completa, mesmo que tenha surgido depois da
+consulta anterior. O IO enumera cabeçalhos; chunks só são lidos por referências
+admitidas pelo codec. O cache da quota separa projeções e confirmações, para
+warmup/abort não autenticar bytes não gravados com timestamp igual. Provas e
+contadores em `qa/gravacao-atomica-de-sprites-2026-11-22/`.
+
+Leitores atualizados recuperam também RAM compatível quando a autoridade passa
+a um formato ilegível: lote inteiro vira cópias religadas, com originais intactos.
+Um consumidor futuro sob outro ID também impede alterar/apagar suas possíveis
+artes vivas. O selo `pinta:local:compatibility:<readerSchema>` compara inventário
+exato de IDs/revisões para permitir continuar a cópia; mudanças revogam a exceção.
+Sem revisão confiável ou selo válido não há exceção. Envelope físico 2 e lápide
+conservam o selo na mesma transação. Não inferir proteção de código histórico já
+carregado ou inventário parcial de nuvem. Provas: `qa/recuperacao-de-formatos-futuros-2026-11-21/`.
+
+**Chunks locais (etapa 8a):** mapas/conjuntos com pelo menos 32.768 células
+usam envelope físico 2 (`storage: 'pinta-cells-32-v1'`) e chunks de 32 × 32
+sob `pinta:local:chunk:`. O IO `assetAuthorityDb.ts` reconstrói o envelope
+lógico 1 antes do planejador. `localChunkStorage.ts` valida limites e chaves
+do próprio documento antes de alocar; chunk ausente/inválido aborta, sem
+fallback para o espelho. Escrita, revisão, espelho, cópias e coleta de chunks
+obsoletos são uma transação. Igualdade usa células exatas, sem hash de dados.
+Leitores anteriores já recusam envelope `version > 1`; legado que ignora a
+autoridade continua sendo recuperado pela issue 026. IDs antigos longos ou
+Unicode não emparelhado conservam armazenamento denso, sem alterar o ID.
+Nativo 3–7, backup, nuvem e contratos dos motores continuam independentes
+desse protocolo físico. O espelho ainda grava o buffer completo e o
+cabeçalho ainda leva os recursos imutáveis; não declarar escrita total de
+apenas 2 KiB nem carregamento autoral somente da região visível.
+Contrato, retenção, provas e limites: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
+
+**Render sob pressão:** `TileChunkCache` mantém o teto de 32 MiB. Quando o
+working set o excede, o compositor pode desenhar diretamente células alinhadas
+a pixels, sem suavização/efeitos/composição especial. Escala fracionária com
+peças transformadas conserva os chunks: a amostragem é diferente. O recorte
+adicional usa os limites reais do canvas, nunca supõe clip pelo viewport.
+Comparação com renderer publicado, orçamento e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/render-sob-pressao-2026-11-20/README.md`.
+
+**Carimbo `schema` e envelope `.pinta.json` dependem do conteúdo.**
+- `PINTA_MAP_SCHEMA = 3`: o que é de CAMADAS (grupos, opacidade, deslocamento, trava, colisão,
+  peça virada, mapa grande, conjunto de peças com mais de 64 peças).
+- `PINTA_SCENE_SCHEMA = 4`: a CENA COMPLETA. No mapa, qualquer objeto com forma, giro, espelho,
+  papel, arte, instância de conjunto ou propriedade tipada (`objectNeedsV4`), e propriedades
+  tipadas de camadas/grupos. Nas peças, animação, terreno ou propriedade (`tilesetNeedsV4`).
+- `PINTA_PRECISE_SCHEMA = 5`: offsets fracionários de camada. O leitor completo 4 também
+  os arredondava, conservando o carimbo 4; ele precisa recusar o novo documento. Conjuntos
+  exigem pelo menos 4 e acompanham o formato do mapa interno.
+- `PINTA_RESOURCE_SCHEMA = 6`: catálogo de versões autocontidas de artes e seleção de animação
+  por objeto. IDs da cópia são imutáveis; `sourceId` é proveniência,
+  não dependência externa. Teto de 32 versões / 8 MiB físicos; limpeza explícita e histórico
+  compartilhando as mesmas cópias. Contrato e provas em
+  `docs/pinta-cenarios/missao-completa-2026-11-18/recursos-e-animacoes.md`.
+- `PINTA_COLLISION_SCHEMA = 7`: `collision: true` nos objetos e opção explícita
+  `physics: 'precise'` no mapa. `PINTA_MAX_SCHEMA = 7`. Campo ausente conserva o legado;
+  não gravar `false` nem promover jogos existentes silenciosamente. Conjuntos acompanham
+  o mapa interno. Cena 3 e PNG de dados 4 exigem o leitor `pinta-scene-physics-v1`;
+  receitas permanecem em 1 (mapa) / 2 (mundo). O leitor de rollback lê nuvem 6 e
+  declara 4; o gravador preparado declara 6. Conferir o rollout efetivamente publicado:
+  somente a integração Git não comprova a subida dos documentos 6/7 para a conta.
+- Motivo: o 3 foi publicado duas vezes com o mesmo número (bf6e895f só com camadas, depois a cena
+  completa). O código de bf6e895f lia o 3 da cena completa e cortava o que não conhecia. Com 4 ele
+  recusa o mapa (`null`) e recusa o arquivo (recado de versão). Reprodução manual e resultado
+  medido no cabeçalho de `core/mapFormat4.test.ts`.
+- Quem só usa camadas continua em 3; documento antigo continua sem carimbo e byte a byte igual
+  (conferido contra o código de bf6e895f). A leitura aceita 3, 4, 5, 6 e 7, inclusive o mapa completo que
+  já foi gravado com 3: ele é lido inteiro e passa a 4.
+- `tilemapNeedsV3` continua respondendo "precisa de formato novo (3 ou superior)?", que é a pergunta do
+  desenho e da entrega ao Estúdio. Para o número, use `tilemapSchemaFor`, `tilesetSchemaFor` ou
+  `pintaAssetSchema`. ⚠️ Não compare `asset.schema === 3`: use as funções.
+- ⚠️ O que o carimbo NÃO resolve: o leitor de PEÇAS de bf6e895f não confere `schema` (lê e descarta
+  as animações) e o código de produção de antes das camadas não confere `schema` em nada. Para
+  esses casos a proteção é a versão declarada à nuvem e a memória de carimbo da sincronia
+  (`PintaFormatMemory`, CLAUDE.md do member-shell).
+
+**O carimbo é recalculado em toda GRAVAÇÃO** (`withPintaSchemaStamp`): `state/persistence.ts`
+(IndexedDB), `assets/wire.ts` (nuvem e aula) e `export/projectJson.ts` (arquivo). O editor muda o
+mapa em memória sem mexer no carimbo, então só o sanitizador não bastava: o registro ia para o
+disco sem carimbo e outra aba com código antigo o abria e cortava. Quem cria desenho em código
+não precisa escrever `schema`; se escrever errado, a gravação corrige.
+
+**Tetos da autoria, do formato e da aula (medidos em 18/11/2026).**
+- `PINTA_LIMITS` permite CRIAR 256 × 256 células, 32 camadas e 256 peças. O total permanece
+  em 2.097.152 células (4 MiB de índices). A expansão foi medida com gravação e reabertura
+  reais, cache limitado e CPU 4× mais lenta; ver `docs/pinta-cenarios/missao-completa-2026-11-18/`.
+- `PINTA_MAP_FORMAT_LIMITS` é o que o documento aceita ao ser LIDO: 256 × 256, 32 camadas, 256
+  peças, 2.097.152 células. Importação, sanitizador e modelos passam por aqui.
+- Mapa grande importado abre e pode ser pintado. Crescer, criar camada, criar peça e soltar
+  conjunto além do teto de criação devolvem o MESMO desenho (a tela mostra o recado de limite).
+- `PINTA_LIMITS.maxObjectCoord` fica no valor do formato (256 × 48) de propósito: puxar objeto de
+  mapa grande para dentro do teto de criação seria corte.
+- A entrega HTTP da aula mantém 128 × 128, 8 camadas e 64 peças em `PINTA_LESSON_MAP_LIMITS`.
+  O editor da aula recusa a operação inteira antes do histórico/autosave e avisa pela Toast
+  existente. Os valores do editor e de `members/src/domain/course/lesson-block.ts` são
+  travados por teste de conformidade, independentemente da galeria pessoal.
+- `TileChunkCache` empresta o canvas só até a próxima consulta. O render o desenha imediatamente;
+  o próximo bloco pode reciclar esse canvas. O cache não amplia o teto para caber a tela inteira
+  e o unmount o libera. O caso de um orçamento menor que um bloco usa um único canvas de
+  trabalho: teto RGBA = max(orçamento, bytes de um bloco). Na configuração padrão são 32 MiB.
+
+**Conjuntos (`tiles/sets.ts`).** `createMapSet` e `detachMapSet` não escrevem chave no valor
+padrão (opacidade 1, deslocamento 0, sem giro, sem espelho). `detachMapSet` recusa, sem mudar
+nada, o conjunto que (já girado) é maior que o mapa, e conta o teto de CRIAÇÃO de camadas.
+
+**Peças (`tiles/tilesetOps.ts`).** Ao remover peça, `animations` e `tileProperties` que ficam
+vazios somem do desenho (mapa vazio fazia o conjunto pedir formato novo sem usar nada).
+
+**Teste de arquitetura das células (`tiles/cellAccess.test.ts`).** Além de `cells[`, a varredura
+pega `.cells.forEach/map/some/...`, `for (... of x.cells)` e a máscara escrita na mão (`& 4095`,
+`>> 12`). Arquivo novo que leia células reprova até entrar na lista com o que faz.
+
+Testes: `core/mapFormat4.test.ts`, `core/mapFormat5.test.ts`, `tiles/sets.test.ts`, `tiles/tilesetMetadata.test.ts`, e os
+blocos novos em `state/{persistence,galleryStore,clipboardStore,editorStore}.test.ts`.
+
+## Trava de formato na nuvem: o leitor (17/11/2026)
+
+Primeiro passo do conserto do risco M3 (cliente antigo regravando um mapa novo pela nuvem; ver a
+nota mais abaixo). Diagnóstico e plano: `docs/pinta-cenarios/README.md`.
+
+- A regra mora no core (`@sistemazero/core/creations`, `pinta-format.ts`):
+  `PINTA_MAX_READ_FORMAT_VERSION` (o que este código lê), `PINTA_MAP_WRITE_FORMAT_VERSION` (o que
+  mapas e peças declaram ao subir) e `pintaWriteFormatVersion(kind)`. A versão declarada é função
+  do TIPO do desenho, nunca do conteúdo.
+- A trava de leitura deve ser publicada antes do gravador. O leitor e o gravador completos
+  usam versão de escrita de nuvem 4 para mapa, tilesets e conjuntos; demais tipos continuam em 1.
+  O rollout A do documento 6 lê nuvem 5, conserva o gravador 4 e recusa enviar nativo 6 com
+  declaração 4 sem apagar o checkpoint. Depois de verificar esse leitor publicado em staging,
+  o rollout B habilita o gravador 5. Nunca publique o gravador novo antes do leitor.
+  A implementação parcial de camadas declarava 2, a cena completa anterior declarava 3;
+  ambas precisam ser barradas ao gravar o documento preciso 5. Nuvem e nativo são eixos distintos.
+  Esta branch não executa rollout: ver o procedimento em `docs/pinta-cenarios/diagnostico-e-arquitetura.md`.
+  O servidor não rebaixa versão; em rollback, a trava preserva o desenho e pede atualização.
+- `PintaPersistence.getReadIssues?()` (`PintaReadIssue`): desenhos que o armazenamento conhece e
+  este código não lê. A galeria (`galleryStore.readIssues`) mostra o aviso
+  `COPY.gallery.newerFormat` com "Atualizar a página" e NÃO os põe na lista. O host preenche (ver o
+  CLAUDE.md do member-shell).
+- Testes: `state/gallerySync.test.ts`, `components/gallery/galleryNewerFormatUi.test.tsx`.
+
 ## Tela com MOLDE pedida pelo host (28/10/2026, o Arquipélago)
 
 `PintaHostAdapter.initialCanvas?: PintaInitialCanvas` (`{name, width, height, guide}`, retângulos
@@ -79,6 +667,21 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 > (`src/assets/index.ts`), o desenho como DADO — `createAsset`, `sanitizePintaAsset`,
 > `assetToJson`/`assetFromJson`, `PINTA_LIMITS`, presets — sem uma linha de React, que é o que o
 > servidor importa. Ver a seção dedicada mais abaixo.
+>
+> Quarta e quinta exceções (23/11/2026), as duas sem React:
+> - **`@sistemazero/pinta/workshop-reader`** (`src/assets/workshopReader.ts`) é a oficina para o
+>   host. Exporta `createWorkshopPintaPersistence`, `captureWorkshopPintaAssetForImage`,
+>   `workshopNativeSchema` e `pintaWorkshopAssetFromJson`/`ToJson`. O `pinta-client.tsx` e o
+>   `arquipelago-pinta.ts` do member-shell a carregam por import dinâmico.
+> - **`@sistemazero/pinta/assets/causal`** (`src/assets/causal.ts`) é o verificador do BFF
+>   autenticado. Exporta `inspectPintaCausalDocument`, `verifyWorkshopRuleSheets`, as provas
+>   `provePintaCausalMutation`/`Pin`/`ConsumerRemaps`, `pintaCausalChangedSurvivingSlots`,
+>   `pintaCausalPinSourceIds` e `MAX_PINTA_CAUSAL_DOCUMENT_BYTES`. Quem usa:
+>   `member-shell/src/server/pinta-causal-{proof,content}.ts` e `lib/pinta-causal-authoring.ts`.
+>
+> O campo `exports` do `package.json` tem os sete caminhos: `.`, `./assets`, `./assets/causal`,
+> `./lesson`, `./workshop-reader`, `./studio-library` e `./styles.css`. Um subpath novo entra
+> nos dois lugares.
 
 - **`<PintaApp adapter={PintaHostAdapter} persistence?={PintaPersistence} />`** — uncontrolled,
   navegação por ESTADO (galeria ⇄ editor, sem router). `persistence` ausente = IndexedDB do perfil.
@@ -2233,19 +2836,14 @@ Pinta — inclusive o que não é peça (onde o jogador começa, inimigos, porta
 - Testes: `mapObjectsUi.test.tsx` (rascunho com e sem foco, sem desfazer vazio, Delete com
   janela, chave recusada) e o caso "a camada sem as peças dela" de `mapObjects.test.ts`.
 
-⚠️⚠️ **Risco registrado (M3, sem conserto no Pinta): cliente ANTIGO regravando pela nuvem.** Um
-bundle anterior às camadas de objetos (outro aparelho com a aba aberta) desce o mapa novo pelo
-`sanitizePintaAsset` DELE, que descarta a camada de objetos e corta as camadas 5 a 8 (o teto era
-4), e grava o resultado no IndexedDB local. Se a criança mexer nele lá, a subida leva o mapa
-cortado por cima do da conta. O Pinta não alcança o código velho; a proteção barata existe no
-Members: a reserva recusa com `CREATION_CLIENT_OUTDATED` quem declara `formatVersion` menor que o
-guardado (o Molda já usa). Para ligá-la, o host (member-shell, não este pacote) teria de: subir
-os mapas com `formatVersion: 2` em `pinta-cloud-persistence.ts` (todo mapa, não só o que precisa
-de v2: senão apagar a camada de objetos rebaixaria para 1 e o próprio cliente novo seria
-recusado), criar a nuvem do Pinta com `maxFormatVersion: 2` em `pinta-client.tsx` e
-`molda-client.tsx` (senão o DELETE de um item v2 é recusado), e o mesmo no canal `lesson-pinta`.
-Mesmo assim o aparelho velho guarda a cópia cortada no disco local e, depois do F5, a edição dele
-sobe (é o que a criança viu e editou). Janela: até a aba antiga recarregar.
+**M3: proteção implementada (17/11/2026).** A nuvem declara a versão por tipo com
+`pintaWriteFormatVersion`; leitura, conflito e remoção preservam versões futuras. O cliente
+completo declara 3 e recusa leituras acima disso. O servidor barra a regravação por clientes
+anteriores, inclusive a implementação parcial que declarava 2. A galeria apresenta atualização
+quando encontra formato futuro. Testes e limites de homologação: `docs/pinta-cenarios/`.
+A proteção depende da ordem de publicação leitor → gravador. Uma aba antiga no mesmo aparelho
+não pode ser corrigida localmente pelo bundle novo; a nuvem conserva a cópia íntegra. Envios
+em aula não têm trava de formato; mapas continuam fora dos tipos oferecidos na autoria.
 
 ## PNG com os dados do Pinta dentro, para o pygame (10/2026)
 
@@ -3539,7 +4137,9 @@ por px reais.
 
 ## Comandos
 
-`bun run typecheck` · `bun test src` · `bun run check[:fix]`
+`bun run typecheck` · `bun test src` · `bun run test:scripts` · `bun run check` (só lê;
+nunca `check:fix` nem `--write` no pacote) · as conferências dos gerados e os runners reais
+estão na primeira seção deste arquivo.
 
 ## Histórico / status
 
@@ -3635,3 +4235,65 @@ por px reais.
 - **Backlog de produto conhecido (baixo)**: strings de UI soltas fora do copy.ts; auto-avançar no
   passo de tamanho; nome do estilo "Vetor" pode virar "Desenho de formas" se o QA com crianças
   mandar.
+## Leitura privada de mundos PNG 5 (22/11/2026)
+
+`export/pintaPngText.ts` captura bytes próprios, valida o PNG estático/CRC/tetos,
+recusa iTXt Pinta duplicado antes de descomprimir e lê UTF-8 estrito. O zlib usa
+os buffers explícitos da API pública de pako 3.0.1: no máximo 16 KiB por saída,
+saldo + um byte junto do limite, checksum e consumo integral da entrada.
+Não usar `slice` do Buffer para capturar bytes nem descompressão integral sem teto.
+`regionImageLimits.ts` reúne o mesmo orçamento do escritor e do leitor.
+
+`regionImageWorld.ts` combina essa extração com os planos Core, captura somente
+PNGs inline dos destinos/recursos e confere geometria de folhas/artes e pixels
+agregados, compartilhando URLs idênticas. Não busca rede ou caminhos de arquivo.
+Retorna bytes/dados admitidos; IDAT e superfícies são decodificados pelos motores.
+Ainda faltam os adaptadores e seus tetos temporários, inclusive os três destinos
+Python, antes de ativar receitas/formatos públicos. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-de-mundos-regionais-2026-11-22/`.
+
+## Base Python independente do motor (22/11/2026)
+
+`export/pythonSceneGeometry.ts` é a fonte única das funções Python de contorno,
+animação e transformação afim. O compositor existente as embute com o mesmo
+texto entregue; conferir `studio/scripts/gen-pinta-scene-python.ts --check`.
+`export/pythonSceneRegions.ts` prepara somente células wire: cabeçalhos e teto
+por mapa antes de base64, snapshot próprio, tentativa única e arrays i16 por
+contexto. Cenas, referências, mundo, imagens e física ainda exigem seus leitores.
+Não ativar formatos/receitas por essa base nem tratá-la como suporte completo em
+Pygame, Pygame Zero ou Raylib 2D. Provas CPython e escopo em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/base-python-geometria-e-regioes-2026-11-22/`.
+
+`pythonSceneDocument.ts` prepara cenas privadas 4 com a tabela gerada do Core,
+semântica compartilhada pelos futuros adaptadores e planos de células. Tudo é
+admitido antes do base64; tentativa única, resultado inteiro e inteiros nativos
+após conservar a leitura binary64. O documento decodificado contém contextos de
+células, não é JSON/wire. PNG, mundos, imagens e gameplay ainda exigem seus
+loaders/adaptadores. Não ativar receitas por esse leitor. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/admissao-python-de-cenas-regionais-2026-11-22/`.
+
+`pythonPngText.ts` captura bytes imutáveis, confere o perfil PNG estático/CRC e
+extrai iTXt com zlib limitado. Entrada/saída em janelas de até 16 KiB; fim exato,
+UTF-8 estrito e somente o BOM inicial removido. Não usar `flush` como teto nem
+repassar uma grande sobra comprimida a cada janela de saída. Não interpreta
+JSON, IDAT/pixels ou mundos. Provas e comparação com o leitor JavaScript em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-png-python-compartilhado-2026-11-22/`.
+
+`pythonRegionWorld.ts` compõe os leitores em um registro privado de mapas e
+imagens. Admite todos os cabeçalhos/recursos e os tetos agregados antes dos
+índices; devolve o mundo completo ou recusa. O medidor `pythonJsonWire.ts`
+conserva o tamanho/projeção de JSON.stringify para a cena; não é JCS.
+Não confundir CRC/perfil PNG com validação de IDAT/pixels ou superfícies: essa
+prova pertence a cada adaptador. Os formatos públicos continuam inalterados.
+Provas e limites em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/mundo-png-python-compartilhado-2026-11-22/`.
+
+Os adaptadores regionais Python são privados e compartilham CenaRegional,
+admissão e geometria. `pythonPygameRegional.ts` aplica tolerância float32 ao
+pouso e entrega FRect; o padrão do núcleo segue a precisão dupla. `objetos()`
+é iterador: não materializar conjuntos repetidos para achar a primeira porta.
+Raylib nativo usa descarte explícito/context manager na thread da janela.
+As provas CE/Wasm compõem o código no fonte do projeto QA; isso não instala
+novos módulos no runtime público nem homologa PGZero/Raylib do navegador.
+O fix de elipse subnormal deve conferir no gerador do pygame legado. Provas:
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/adaptadores-python-regionais-2026-11-22/`.

@@ -1,0 +1,38 @@
+[
+  {
+    "file": "packages/pinta/CLAUDE.md",
+    "sha256": "a222aaf26a9afe03eb3fd03360e5e64ce6e3b57f986b6988eec74afddf7b6eb2"
+  },
+  {
+    "file": "packages/pinta/scripts/serve-map-budget-e2e.ts",
+    "sha256": "f63b256b3663fc6667d92af9f112cf4a77cab5e0029ed07206ba8318eb806301"
+  },
+  {
+    "file": "packages/pinta/src/tiles/chunks.ts",
+    "sha256": "2fc0fe4dccf3124ecc26013c029be3eb98f3b1e9b2febe854efb6ee961f90f44"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-local-chunks.flow.ts",
+    "sha256": "b944356275c866a41fb8fbbe3c3e16bb75ace61e74de94e30f0b2d53bd214181"
+  },
+  {
+    "file": "packages/studio/tsconfig.json",
+    "sha256": "4cf4fab52d3ee076ec1ec800a39482ae88eb3c46855d09c7de6d7c7b35434124"
+  },
+  {
+    "file": "packages/pinta/scripts/map-render-probe.ts",
+    "sha256": "61d79c68f8a7c0291a4c2ffc0aa5509741038d9965e433760ae1c5455cd47d83"
+  },
+  {
+    "file": "packages/pinta/src/tiles/chunksPressure.test.ts",
+    "sha256": "c38402abb0e74069896e7ddb275e960f3ca6db199cb6e8290e3a4e2093f0664f"
+  },
+  {
+    "file": "packages/studio/e2e/pinta-render-pressure.flow.ts",
+    "sha256": "7fbe6579c2e099aa16aa5aee4d05d53657d38630de4020f74cbef464ee48c632"
+  },
+  {
+    "file": "packages/studio/playwright.pinta-render.config.ts",
+    "sha256": "ccee390d816801a516c47ddcc6b6bd8e8b92f25b34034e62b2110a81acb22a0c"
+  }
+]

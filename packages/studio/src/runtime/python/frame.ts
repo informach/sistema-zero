@@ -9,8 +9,10 @@ import {
   readStudioPythonMissionProbe,
   type StudioPythonMissionFrameObservation,
 } from '@sistemazero/core/studio/python-mission-observation'
+import { executionKeyEvent, readExecutionKey } from '../../studentTests/keyEvent'
 import type { StudioRuntimeImage } from '../types'
 import { pythonCanvasExtension } from './canvasExtension'
+import { createFramePause } from './framePause'
 import {
   isPythonChallenge,
   PYTHON_FRAME_PROTOCOL,
@@ -22,6 +24,7 @@ import {
 import { createPgzeroAudioQueue } from './pgzero/audioQueue'
 import type { PgzeroAudioCommand } from './pgzero/protocol'
 import type { PgzeroRenderer } from './pgzero/renderer'
+import { isPintaTextureRequest } from './pintaRegionProtocol'
 import { installPythonPlayerBridge } from './playerBridge'
 import { createProtectedPythonWorker } from './protectedWorker'
 import type { RaylibRenderer } from './raylib/renderer'
@@ -105,6 +108,11 @@ async function initialize(event: MessageEvent<unknown>) {
       | { type: 'audio-request'; requestId: string; request: string }
       | { type: 'saved-file'; path: string; bytes: Uint8Array<ArrayBuffer> | null }
       | {
+          type: 'perf'
+          slice: { fps: number; frameMsAvg: number; frameMsMax: number; canvas: boolean }
+        }
+      | { type: 'pause'; held: boolean; frame: number }
+      | {
           type: 'ack'
           commandId: number
           ok: boolean
@@ -122,9 +130,83 @@ async function initialize(event: MessageEvent<unknown>) {
     }
     port.postMessage(payload)
   }
+  /**
+   * A aba Desempenho. Com a medida ligada, o quadro olha, a cada quadro da tela, quantos quadros o
+   * renderizador já pintou, e manda uma fatia a cada meio segundo: os quadros por segundo e o
+   * intervalo entre dois quadros pintados (médio e o maior). Não toca no programa nem no worker,
+   * e desligada não custa nada. O programa sem tela (só print e input) manda fatias sem quadros.
+   */
+  let perf: { frame: number; timer: ReturnType<typeof setInterval> } | null = null
+  // A aba Investigar: a pausa na troca de quadro (`framePause.ts`), nos programas que desenham na
+  // tela (Turtle, Pygame Zero, pygame-ce e Raylib); o programa sem tela recusa o comando. O Turtle
+  // pausa na próxima resposta, e a espera dele é acordada para ela chegar.
+  const pause = createFramePause({
+    onHeld: (frame) => send({ type: 'pause', held: true, frame }),
+  })
+  let pausable = false
+  let pauseOnAnyReply = false
+  const wakeTurtle = () => {
+    if (pauseOnAnyReply && renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
+  }
+  function stopPerf() {
+    if (!perf) return
+    cancelAnimationFrame(perf.frame)
+    clearInterval(perf.timer)
+    perf = null
+  }
+  function startPerf() {
+    stopPerf()
+    let painted = renderer?.paintedFrames() ?? 0
+    let paintedAt = performance.now()
+    let frames = 0
+    let total = 0
+    let longest = 0
+    let sliceStart = performance.now()
+    const state = { frame: 0, timer: 0 as unknown as ReturnType<typeof setInterval> }
+    const watch = () => {
+      const now = performance.now()
+      const current = renderer?.paintedFrames() ?? painted
+      if (current !== painted) {
+        const interval = now - paintedAt
+        frames += current - painted
+        total += interval
+        longest = Math.max(longest, interval)
+        painted = current
+        paintedAt = now
+      }
+      state.frame = requestAnimationFrame(watch)
+    }
+    state.frame = requestAnimationFrame(watch)
+    state.timer = setInterval(() => {
+      if (!renderer) {
+        send({ type: 'perf', slice: { fps: 0, frameMsAvg: 0, frameMsMax: 0, canvas: false } })
+        return
+      }
+      const now = performance.now()
+      const seconds = Math.max((now - sliceStart) / 1000, 0.001)
+      // Um quadro que ainda não chegou também conta como atraso (o programa parado no meio dele).
+      const waiting = now - paintedAt
+      send({
+        type: 'perf',
+        slice: {
+          fps: Math.min(1000, frames / seconds),
+          frameMsAvg: Math.min(60_000, frames ? total / frames : waiting),
+          frameMsMax: Math.min(60_000, Math.max(longest, frames ? 0 : waiting)),
+          canvas: true,
+        },
+      })
+      frames = 0
+      total = 0
+      longest = 0
+      sliceStart = now
+    }, 500)
+    perf = state
+  }
   function close() {
     if (closed) return
     closed = true
+    stopPerf()
+    pause.dispose()
     pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
     pendingAudio = undefined
     audio.close()
@@ -213,7 +295,30 @@ async function initialize(event: MessageEvent<unknown>) {
         return
       }
       if (command.type === 'run') supervisor.run()
-      else if (
+      else if (command.type === 'perf' && 'on' in command && typeof command.on === 'boolean') {
+        if (command.on) startPerf()
+        else stopPerf()
+      } else if (command.type === 'pause' && 'on' in command && typeof command.on === 'boolean') {
+        if (!pausable) throw new Error('Este programa ainda não pausa pelo Estúdio.')
+        pause.set(command.on)
+        if (command.on) wakeTurtle()
+      } else if (command.type === 'step') {
+        if (!pause.step()) throw new Error('O programa não está pausado.')
+        wakeTurtle()
+      } else if (command.type === 'key' && 'down' in command && typeof command.down === 'boolean') {
+        // A tecla do teste chega como a do teclado: no desenho (o Turtle escuta nele) e, subindo,
+        // na janela (Pygame Zero, pygame-ce e Raylib). Sem desenho, na janela.
+        const key = readExecutionKey('key' in command ? command.key : undefined)
+        if (!key) throw new Error('Tecla de teste inválida.')
+        const target: EventTarget = document.body.querySelector('canvas') ?? window
+        target.dispatchEvent(
+          new KeyboardEvent(command.down ? 'keydown' : 'keyup', {
+            ...executionKeyEvent(key),
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
+      } else if (
         command.type === 'audio-response' &&
         'requestId' in command &&
         isPythonRequestId(command.requestId) &&
@@ -248,6 +353,8 @@ async function initialize(event: MessageEvent<unknown>) {
           throw new Error('A sonda da missão está incompleta.')
         supervisor.observeMission(command.requestId, readStudioPythonMissionProbe(command.probe))
         if (renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
+        // Pausado, a ponte espera num pedido curto: uma volta deixa o ponto de checagem responder.
+        pause.wake()
       } else if (
         command.type === 'activity-check' &&
         'requestId' in command &&
@@ -305,6 +412,9 @@ async function initialize(event: MessageEvent<unknown>) {
   try {
     if ('mission' in value && value.mission !== undefined && value.mission !== true)
       throw new Error('Modo de observação inválido.')
+    if ('background' in value && value.background !== undefined && value.background !== true)
+      throw new Error('Modo de apresentação Python inválido.')
+    const focus = !('background' in value && value.background === true)
     activity =
       'activity' in value && value.activity !== undefined
         ? StudioPythonActivitySchema.parse(value.activity)
@@ -317,6 +427,9 @@ async function initialize(event: MessageEvent<unknown>) {
     )
       throw new Error('O snapshot pertence a outra execução.')
     const canvas = pythonCanvasExtension(snapshot.configuration.extensions)
+    const pintaRegional = canvas === 'python-pgzero' || canvas === 'python-raylib-2d'
+    pausable = canvas !== undefined
+    pauseOnAnyReply = canvas === 'python-turtle'
     rendererReady = !canvas
     const ready = () => {
       document.documentElement.style.height = '100%'
@@ -340,6 +453,7 @@ async function initialize(event: MessageEvent<unknown>) {
           if (closed) return
           renderer = module.createTurtleRenderer(document.body, {
             activityPresentation: !!activity,
+            focus,
           })
           ready()
         })
@@ -352,7 +466,9 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./pgzero/renderer')) => {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
+            focus,
             name: canvas === 'python-pygame' ? 'Pygame-ce' : 'Pygame Zero',
+            pintaRegional,
             ...('mission' in value && value.mission === true ? { mission: true as const } : {}),
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
@@ -371,6 +487,8 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./raylib/renderer')) => {
           if (closed) return
           renderer = module.createRaylibRenderer(document.body, {
+            focus,
+            pintaRegional,
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {
@@ -448,9 +566,17 @@ async function initialize(event: MessageEvent<unknown>) {
               request: string,
               images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
             ) => {
-              if (!prepared || !renderer || closed)
+              const current = renderer
+              if (!prepared || !current || closed)
                 throw new Error('O ambiente gráfico ainda não está pronto.')
-              return renderer.exchange(request, images)
+              if (pintaRegional && isPintaTextureRequest(request))
+                return current.exchange(request, images)
+              return pause.exchange(
+                request,
+                () => current.exchange(request, images),
+                () => current.paintedFrames(),
+                pauseOnAnyReply,
+              )
             },
           }
         : {}),

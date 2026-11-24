@@ -1,5 +1,5 @@
 import 'server-only'
-import { type ProjetoGravado, projetoAntes } from '~/lib/projeto-gravado'
+import { type ProjetoGravado, projetoAntes, tomadaAntes } from '~/lib/projeto-gravado'
 
 /**
  * O que cada parte gravada montou no Estúdio, por aula e bloco, para a parte seguinte abrir com
@@ -32,4 +32,13 @@ export function guardarProjeto(
 
 export function projetoGravadoAntes(lessonId: string, blockId: string, numero: number): unknown {
   return projetoAntes([...(gravados.get(chave(lessonId, blockId))?.values() ?? [])], numero)
+}
+
+/** A tomada de antes com a parte dela, para o palco comparar com o projeto da aula. */
+export function tomadaGravadaAntes(
+  lessonId: string,
+  blockId: string,
+  numero: number,
+): ProjetoGravado | null {
+  return tomadaAntes([...(gravados.get(chave(lessonId, blockId))?.values() ?? [])], numero)
 }

@@ -59,6 +59,8 @@ OP_SCALE = 38
 OP_LINE_BEZIER = 39
 OP_POINTS = 40
 OP_TEXTURE_NPATCH = 41
+OP_PINTA_AFFINE = 42
+OP_PINTA_RELEASE = 43
 # 3D (a extensão Raylib 3D): _camera3d.py, _draw3d.py e _models.py.
 OP_BEGIN_3D = 60
 OP_END_3D = 61
@@ -167,6 +169,8 @@ input = _Input()
 
 ops = array('d')
 _previous_payload = None
+_pinta_owners = set()
+_pinta_release_after_present = set()
 _transport = None
 _decoder = None
 _root = '.'
@@ -199,9 +203,25 @@ def configure(transport, decoder, root, extension_mode='2d', *, checkpoint=None)
     _checkpoint = checkpoint
 
 
+#: O pedido curto de quem espera com o programa pausado pela aba Investigar do Estúdio (o mesmo
+#: do Pygame Zero, framePause.ts do quadro).
+HOLD_REQUEST = {'hold': True}
+_held = False
+
+
 def checkpoint():
+    """O ponto de checagem do quadro e, com o programa pausado pelo Estúdio, a espera.
+
+    A cada resposta com hold, o ponto de checagem roda de novo (responde a leitura dos valores) e
+    o pedido curto vai de novo; a resposta sem hold continua o programa."""
+    global _held
     if _checkpoint is not None:
         _checkpoint()
+    while _held:
+        reply, _ = _exchange(HOLD_REQUEST, b'')
+        _held = reply.get('hold') is True
+        if _checkpoint is not None:
+            _checkpoint()
 
 
 def new_id():
@@ -233,14 +253,15 @@ def count_texture(width, height, function):
     global _texture_count, _total_pixels
     if width > MAX_TEXTURE_SIDE or height > MAX_TEXTURE_SIDE:
         raise ValueError(f'{function}: a imagem passa de {MAX_TEXTURE_SIDE} pixels de lado.')
-    _texture_count += 1
-    _total_pixels += width * height
-    if _texture_count > MAX_TEXTURES:
+    # Os limites antes de contar: uma textura recusada não fica somada (revisão do lote 7b).
+    if _texture_count + 1 > MAX_TEXTURES:
         raise RuntimeError(f'{function}: o jogo carregou mais de {MAX_TEXTURES} texturas. '
                            'Carregue as imagens uma vez, antes do laço do jogo.')
-    if _total_pixels > MAX_TOTAL_PIXELS:
+    if _total_pixels + width * height > MAX_TOTAL_PIXELS:
         raise RuntimeError(f'{function}: as imagens do jogo somam pixels demais. Carregue cada '
                            'imagem uma vez, antes do laço, e descarregue as que não usa mais.')
+    _texture_count += 1
+    _total_pixels += width * height
 
 
 def forget_texture(width, height):
@@ -256,8 +277,8 @@ def require_window(function):
         raise RuntimeError(f'{function}: abra a janela antes com init_window(largura, altura, "título").')
 
 
-def check_records():
-    if len(ops) > MAX_RECORDS:
+def check_records(additional=0):
+    if len(ops) + additional > MAX_RECORDS:
         raise RuntimeError('O quadro tem desenhos demais. Um laço está desenhando sem parar? '
                            'Confira se end_drawing() está dentro do laço do jogo.')
 
@@ -272,6 +293,44 @@ def _exchange(header, payload):
     if 'error' in reply:
         raise RaylibError(str(reply['error']))
     return reply, pixels
+
+
+def _pinta_carregar(images, payload):
+    require_window('abrir cenário do Pinta')
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    reply, _ = _exchange({'pintaLoad': images}, payload)
+    return reply.get('pintaOwner')
+
+
+def _pinta_closing_records():
+    # end_drawing appends one command for each mode that is still open.
+    return int(window.mode_2d) + int(window.texture_mode)
+
+
+def _pinta_desenhar(owner, index, crop, matrix, opacity):
+    require_window('desenhar cenário do Pinta')
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    if len(crop) != 4 or len(matrix) != 6:
+        raise ValueError('O recorte e a matriz do cenário do Pinta têm tamanho inválido.')
+    check_records(14 + _pinta_closing_records())
+    ops.extend((OP_PINTA_AFFINE, owner, index, *crop, *matrix, opacity))
+    _pinta_owners.add(owner)
+
+
+def _pinta_descartar(owner):
+    if mode != '2d':
+        raise RuntimeError('Este cenário do Pinta usa Raylib 2D.')
+    if owner in _pinta_owners:
+        if len(ops) + 2 + _pinta_closing_records() <= MAX_RECORDS:
+            ops.extend((OP_PINTA_RELEASE, owner))
+        else:
+            # A full frame still needs its texture. Release it after the render acknowledgement.
+            _pinta_release_after_present.add(owner)
+        _pinta_owners.discard(owner)
+    else:
+        _exchange({'pintaRelease': owner}, b'')
 
 
 def decode_image(path):
@@ -317,7 +376,7 @@ def _attachments():
 
 def present():
     """Manda o quadro desenhado e aplica a resposta (entrada, relógio, sons)."""
-    global _previous_payload
+    global _previous_payload, _held
     from . import _audio
     _audio.watch_music()
     w = window
@@ -359,7 +418,13 @@ def present():
     pending_free[:] = [item for item in pending_free if item in waiting]
     audio.clear()
     _previous_payload = payload
+    _pinta_owners.clear()
+    if _pinta_release_after_present:
+        for owner in tuple(_pinta_release_after_present):
+            _exchange({'pintaRelease': owner}, b'')
+            _pinta_release_after_present.remove(owner)
     _apply_reply(reply)
+    _held = reply.get('hold') is True
     return reply
 
 

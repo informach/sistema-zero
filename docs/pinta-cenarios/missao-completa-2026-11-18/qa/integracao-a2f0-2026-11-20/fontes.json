@@ -1,0 +1,108 @@
+{
+  "files": [
+    {
+      "file": "packages/core/src/studio/project-document.ts",
+      "sha256": "6b5cc0d8f70b5503006ce4a9ff85a4f428effee57b1c92fa93adeb05c6882488"
+    },
+    {
+      "file": "packages/core/src/studio/student-test-runnable.ts",
+      "sha256": "7f06a222c854a3c3bd86d34c0c61dd0d0f822861f69566a3c591ee0e9be9b75a"
+    },
+    {
+      "file": "packages/core/src/studio/student-tests.ts",
+      "sha256": "846ec42b3e2d063bfd1ac0763af1807712d99cd601de810070a0d0076ecf91ff"
+    },
+    {
+      "file": "packages/core/tests/studio-student-tests.test.ts",
+      "sha256": "36ce56ed85a94b602b1856584b8310673946b68571ca1eb0f0c99a71f77f9aa7"
+    },
+    {
+      "file": "packages/member-shell/src/routes/cenarios.ts",
+      "sha256": "d37cecde27adf6442d61be19f138cc1c7f97a56ad46edda618956fa3740667e0"
+    },
+    {
+      "file": "packages/member-shell/tests/cenarios-routes.test.ts",
+      "sha256": "dc8d0c06c984514f94de0151a1a3b8d023af3273130047771fde831389d18652"
+    },
+    {
+      "file": "packages/molda-cenarios/src/oficina/oficina-regras.css",
+      "sha256": "5819f7914a644951863d9c4ecb98e4723c812532dfbd755bebf041bca4e32ee5"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "sha256": "4b67228f4a8343710cd7285e4a21f61b3b31509033240d4ca30ae144d091fcb1"
+    },
+    {
+      "file": "packages/studio-runtime/runtime/validation-profile.json",
+      "sha256": "b16b3803471d2f62739b6f43d7776856e093d038ca20443a64fb4a6ac83d30bd"
+    },
+    {
+      "file": "packages/studio/e2e/offscreen-lifecycle.spec.ts",
+      "sha256": "72683223facf388dd587b923e9897971f20b353b8b7bd8efe088cf88e74e4347"
+    },
+    {
+      "file": "packages/studio/e2e/preview-shell.spec.ts",
+      "sha256": "65a043f5175c4fe8a1704f389864a8e883e8afcc37efbf9b642f39456bf88817"
+    },
+    {
+      "file": "packages/studio/src/blockly/__tests__/classMutators.test.ts",
+      "sha256": "234e2bf141ea62cff93e21d740690e09be2749217629dba2927d11e360eed37f"
+    },
+    {
+      "file": "packages/studio/src/blockly/blocks/argsMutator.ts",
+      "sha256": "cde1ad3cb5f9f901baa439928da4bd3a9d03990f48001605662f475e0b48be4d"
+    },
+    {
+      "file": "packages/studio/src/blockly/deferredTail.test.ts",
+      "sha256": "fa703a61661147f09dcaf36f853a91a5366ac77587d1393ab22098552c333fd7"
+    },
+    {
+      "file": "packages/studio/src/blockly/deferredTail.ts",
+      "sha256": "21e50d4c9393f6eab81dd203f2a72c0b3ad39bdb27b1444dc801bf63f1916bbc"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocksWorkspaceEditor.test.tsx",
+      "sha256": "7c8ac44685b4e92a6e358508a6cb08246be18822db74bdd801b76aff69ce839d"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocksWorkspaceEditor.tsx",
+      "sha256": "c7dff4179946ed52ddcf1a3b4c184afa1757a0b2fc0520dfc256dc41261c641a"
+    },
+    {
+      "file": "packages/studio/src/components/preview/PreviewIframe.test.tsx",
+      "sha256": "2c82a8c3cbe9eb1693d7cd4e6833f41efb99c611051b90f7fab80cbc5eb606ec"
+    },
+    {
+      "file": "packages/studio/src/core/project.ts",
+      "sha256": "ccbfae787d9c81474ce162ee25ab7e02600f73c9a223641dfa3fe4967749e269"
+    },
+    {
+      "file": "packages/studio/src/core/projectMetadata.ts",
+      "sha256": "1de8b012852826c0512d98422f9ada07d664490f089023a29679d7a103795612"
+    },
+    {
+      "file": "packages/studio/src/examples/reinoZeroUltraExample.test.ts",
+      "sha256": "41fe48493384b6a19a1de97fec36cd89b41a9fd360b88546263562368de53615"
+    },
+    {
+      "file": "packages/studio/src/official-extensions/game-2d-advanced/__tests__/kitHarness.ts",
+      "sha256": "bdd295197919b65a9f01d0166f100cdb9d1517a778720cd1c1091de5215bf6cb"
+    },
+    {
+      "file": "packages/studio/src/state/javaScriptProjectValidation.ts",
+      "sha256": "0e72c6bd639d1a6eee24720fe6315ae18ca3f8bedca2050f0b136ea1fd441e6a"
+    },
+    {
+      "file": "packages/studio/src/state/projectStorageRecords.ts",
+      "sha256": "7a7ab8f95bbc98e70de23cf10b08cf167696b78dee80bafafc0bc805549028d4"
+    },
+    {
+      "file": "packages/studio/src/state/projectValidation.test.ts",
+      "sha256": "fba63850a392f75ac7663de191cbf2d54d6349ca8591381e088f01c61811408b"
+    },
+    {
+      "file": "packages/studio/src/state/projectValidation.ts",
+      "sha256": "c0f81436d3022e97d33cc94ee96c947bd38e3ee0b325a1375cbb3a451b9a308b"
+    }
+  ]
+}

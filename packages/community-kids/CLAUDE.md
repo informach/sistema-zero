@@ -7,6 +7,24 @@ Arquipélago transmite esse valor inteiro em `perfil.primeiroNome` (nome histór
 não cortar no primeiro espaço. Nome completo privado é reservado ao responsável e certificado.
 
 
+## Molda Cenários: a oficina de cenários 3D (16/11/2026)
+
+`/molda/cenarios` (`app/(app)/molda/cenarios/page.tsx`) monta o `CenariosClient` do member-shell:
+mundos, cenários e bibliotecas de modelos, guardados na CONTA (members), com os arquivos no
+armazenamento. Nada fica só no navegador.
+
+- **Quem abre**: o members decide (`CENARIOS_MODO`; hoje só a equipe). A página pergunta com
+  `checkCenariosAccessReadonly()` e, sem acesso, responde 404 (sem cartaz de "em breve"). Não há
+  item no menu enquanto a ferramenta é só da equipe: o endereço e o atalho do Admin levam até ela.
+- **Rota de tela cheia**: `/molda/cenarios` cai no regime do `/molda` (`isEmbeddedAppPath`, o
+  `proxy.ts` e o foco). O menu recolhe quando um cenário abre no editor.
+- **API**: `app/api/cenarios/[...caminho]/route.ts` exporta os quatro métodos de
+  `shell.routes.cenarios` (o BFF do member-shell). As chamadas levam a prova da sessão
+  (`sessionFetch`) e o perfil em `x-sz-viewer`.
+- **CSS**: `globals.css` importa `molda-cenarios/src/oficina/oficina-regras.css` logo depois do
+  `molda.css` (só as regras `mcn-`; os tokens e as receitas são os do Molda).
+- **Next**: `transpilePackages` ganhou `@sistemazero/molda-cenarios`, `-core` e `-motor`. O deploy
+  deste app acompanha os três pacotes (mapa do `ci.yml`).
 
 ## Presente Kids: 5 a 17 anos (13/11/2026)
 
@@ -31,6 +49,13 @@ de Pinta da aula entra no jogo do bloco de Estúdio, com o extra "Meu primeiro d
   `minha-chave` com o selo "Seu desenho da aula" em Imagens, troca a imagem no "Criar sprite
   chave", verifica (2 de 2) e envia; depois redesenha, envia de novo, reabre a aula e confere que a
   imagem do jogo mudou. Fora do CI, `SZ_CHECK_CHROMIUM` aponta o Chromium da página e do executor.
+- **Segundo caso (22/11/2026, `mode: 'serial'`: continua a aula do primeiro, no mesmo members em
+  memória):** num navegador novo o editor abre com o envio; uma edição ainda não enviada, o POST do
+  envio abortado (`page.route`) mostra "Não foi possível enviar o projeto. Tente de novo." e o editor
+  fica igual; recarregar abre o rascunho deste navegador (vence o envio); o reenvio entra; "Recomeçar"
+  volta ao projeto inicial com o desenho da vaga ainda nos materiais; e a confirmação do envio mostra
+  o aviso de projeto inicial. Foi ele que achou o aviso morto nas aulas de manifesto e o desenho que
+  sumia ao recomeçar (CLAUDE.md do member-shell, "Aviso você está enviando o projeto INICIAL").
 
 ## Arquipélago Vagalume: a página do jogo (27/10/2026)
 
@@ -350,6 +375,11 @@ página própria.
   os filhos lidos de `/api/profiles`), Cursos para pais (`/pais/cursos`), Oficinas ao vivo, Conta e
   Ajuda; no pé, "Ir para a área da criança", Trocar senha e Sair. No celular, barra no alto e barra
   embaixo (Início, Família, Cursos, Oficinas, Mais). `variant="lesson"` é o regime de aula.
+  A foto do avatar de cada filho no menu vem de `GET /api/parents/avatares` (desde 21/11/2026,
+  `shell.routes.familyAvatars` atrás de `requireParentGateAccountOnly`): até então o menu passava
+  `avatarUrl={null}` e só mostrava a inicial, enquanto o Início e a Família, que leem as fotos no
+  servidor (`listAvatarsByProfileIdsReadonly`), mostravam o rosto. Sem foto (ou se a leitura
+  falhar) fica a inicial. Teste: `tests/parent-shell-avatars.test.tsx`.
 - **Início** (`parents-client.tsx`): guia v3, aviso `?aluno=`, novidade da fala, "Precisa da sua
   atenção", "Seus filhos esta semana" (`ChildSummaryRow`), "Seu curso" e créditos.
 - **Família** (`familia/`): os `ChildCard` (botão principal "Ver a página de X"; "Acesso nos

@@ -16,19 +16,9 @@
  * de saída em qualquer navegador), e é isso que deixa a SHA da imagem derivada estável.
  */
 
-const CRC_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
-  let crc = value
-  for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0)
-  return crc >>> 0
-})
+import { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
 
-/** CRC-32 do PNG (ISO 3309), sobre `bytes[start, end)`. */
-export function pngCrc32(bytes: Uint8Array, start = 0, end = bytes.length): number {
-  let crc = 0xffffffff
-  for (let index = start; index < end; index++)
-    crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ bytes[index]!) & 0xff]!
-  return (crc ^ 0xffffffff) >>> 0
-}
+export { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
 
 const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10]
 /** Assinatura (8) + IHDR inteiro (4 tamanho + 4 tipo + 13 dados + 4 CRC). */
@@ -91,7 +81,24 @@ export async function pngWithPintaData(
   data: unknown,
   keyword = 'pinta',
 ): Promise<Uint8Array<ArrayBuffer>> {
+  return pngWithSerializedPintaData(png, () => JSON.stringify(data), keyword)
+}
+
+/** Already-serialized wire JSON; decoded typed-array scenes are not a transport DTO. */
+export async function pngWithPintaJson(
+  png: Uint8Array,
+  json: string,
+  keyword = 'pinta',
+): Promise<Uint8Array<ArrayBuffer>> {
+  return pngWithSerializedPintaData(png, () => json, keyword)
+}
+
+async function pngWithSerializedPintaData(
+  png: Uint8Array,
+  serialize: () => string,
+  keyword: string,
+): Promise<Uint8Array<ArrayBuffer>> {
   const { strToU8, zlibSync } = await import('fflate')
-  const text = zlibSync(strToU8(JSON.stringify(data)), { level: 9 })
+  const text = zlibSync(strToU8(serialize()), { level: 9 })
   return insertPngChunkAfterIhdr(png, pngChunk('iTXt', iTxtChunkData(keyword, text)))
 }

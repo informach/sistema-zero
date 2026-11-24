@@ -1,3 +1,4 @@
+import { isStudioPortablePath } from '@sistemazero/core/studio/portable-path'
 import { normalizeProPath } from './proPaths'
 
 export const PRO_ASSET_DIRECTORY = 'public/studio-assets'
@@ -16,5 +17,17 @@ export function validProAssetPath(path: unknown): path is string {
     normalizeProPath(path) === path &&
     !/\.(?:[cm]?[jt]sx?|json|html|css|md|txt)$/i.test(path) &&
     !path.split('/').some((p) => p.startsWith('.'))
+  )
+}
+
+/** JSON is allowed only for the typed, inert scene envelope. Media keep their former policy. */
+export function validProMaterialPath(path: unknown, kind?: string): path is string {
+  if (kind !== 'scene3d') return validProAssetPath(path)
+  return (
+    typeof path === 'string' &&
+    path.startsWith('public/') &&
+    isStudioPortablePath(path) &&
+    !path.split('/').some((p) => p.startsWith('.')) &&
+    path.endsWith('.json')
   )
 }

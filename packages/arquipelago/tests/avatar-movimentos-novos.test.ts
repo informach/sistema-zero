@@ -13,6 +13,14 @@ import {
   passoDaLocomocao,
   pesosDaDirecao,
 } from '../src/sistemas/locomocao'
+import {
+  avancoNoEmpurrao,
+  comoSeEmpurra,
+  jeitoDeEmpurrar,
+  NO_EMPURRAR,
+  NO_EMPURRAR_BAIXO,
+  NO_EMPURRAR_MEIO,
+} from '../src/sistemas/lugares-dos-clipes'
 
 const soma = (p: Record<string, number>) => Object.values(p).reduce((a, b) => a + b, 0)
 const chao = (velocidade: number, extra: Partial<EntradaDaLocomocao> = {}): EntradaDaLocomocao => ({
@@ -39,6 +47,8 @@ describe('os movimentos que a arte e o pack já tinham', () => {
       ['AndarNaAgua', 'andar_na_agua'],
       ['Acender', 'acender'],
       ['Empurrar', 'empurrar'],
+      ['EmpurrarBaixo', 'empurrar_baixo'],
+      ['EmpurrarMeio', 'empurrar_meio'],
     ] as const) {
       expect(POSE_DO_ESTADO[estado].clipe, estado).toBe(clipe)
       expect(doCatalogo.has(clipe), clipe).toBe(true)
@@ -84,6 +94,13 @@ describe('os movimentos que a arte e o pack já tinham', () => {
     expect(
       rodar(undefined, chao(1.5, { empurrando: true, naAguaRasa: true }), 1).pesos.Empurrar,
     ).toBeCloseTo(1)
+    // Objeto baixo: agachada, o empurrar_baixo; de meia altura, o empurrar_meio.
+    const como = (empurrandoComo: 'baixo' | 'meio' | 'alto', empurrando = true) =>
+      rodar(undefined, chao(1.5, { empurrando, empurrandoComo }), 1).pesos
+    expect(como('baixo').EmpurrarBaixo).toBeCloseTo(1)
+    expect(como('meio').EmpurrarMeio).toBeCloseTo(1)
+    expect(como('alto').Empurrar).toBeCloseTo(1)
+    expect(como('baixo', false).EmpurrarBaixo).toBeCloseTo(0)
     // Acender: parada, o gesto no lugar do "Parado", uma vez (o tempo para no fim).
     const l = rodar(undefined, chao(0, { acendendo: true }), duracaoDoEstado('Acender') + 0.5)
     expect(l.pesos.Acender).toBeCloseTo(1)
@@ -128,5 +145,44 @@ describe('as rodas dos patins, o braço com a lanterna e os encaixes', () => {
       9,
     )
     expect(CORPO.doCentro.olhos).toBeLessThan(CORPO.doCentro.topo)
+  })
+})
+
+describe('empurrar agachada, de meia altura ou de pé', () => {
+  const escala = CORPO.medidas.scale
+  const tronco = { altura: 0.32, encostaMais: 0.02 * escala }
+  const caixote = { altura: 0.72 }
+
+  test('o tronco é baixo, o caixote é de meia altura e o objeto alto vai de pé', () => {
+    expect(NO_EMPURRAR_BAIXO.objetoAte).toBeCloseTo(0.25 * escala, 9)
+    expect(NO_EMPURRAR_MEIO.objetoAte).toBeCloseTo(0.45 * escala, 9)
+    expect(jeitoDeEmpurrar(tronco)).toBe('baixo')
+    expect(jeitoDeEmpurrar(caixote)).toBe('meio')
+    expect(jeitoDeEmpurrar({ altura: 1.2 })).toBe('alto')
+    // A faixa sem variação (0,25 a 0,34 m do clipe) fica com o meio.
+    expect(jeitoDeEmpurrar({ altura: 0.3 * escala })).toBe('meio')
+    expect(jeitoDeEmpurrar(null)).toBe('alto')
+  })
+
+  test('agachada, a face do tronco fica 2 cm (do clipe) mais perto, para os dedos encostarem', () => {
+    const daFace = 0.5
+    expect(avancoNoEmpurrao(daFace)).toBeCloseTo(daFace - NO_EMPURRAR.aFrente, 9)
+    expect(avancoNoEmpurrao(daFace, caixote)).toBeCloseTo(daFace - NO_EMPURRAR_MEIO.aFrente, 9)
+    expect(avancoNoEmpurrao(daFace, { altura: 1.2 })).toBeCloseTo(daFace - NO_EMPURRAR.aFrente, 9)
+    expect(avancoNoEmpurrao(daFace, tronco)).toBeCloseTo(
+      daFace - (NO_EMPURRAR_BAIXO.aFrente - 0.02 * escala),
+      9,
+    )
+  })
+
+  test('o que o objeto diz de si vem do userData do corpo; o resto não conta', () => {
+    expect(comoSeEmpurra({ empurrao: { altura: 0.3, encostaMais: 0.04 } })).toEqual({
+      altura: 0.3,
+      encostaMais: 0.04,
+    })
+    expect(comoSeEmpurra({ empurrao: { altura: 0.72 } })).toEqual({ altura: 0.72 })
+    expect(comoSeEmpurra({ empurrao: { altura: 'alto' } })).toBeNull()
+    expect(comoSeEmpurra(undefined)).toBeNull()
+    expect(comoSeEmpurra({})).toBeNull()
   })
 })

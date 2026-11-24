@@ -1,0 +1,44 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\creations\pinta-regions.test.ts:
+(pass) preserva todos os valores de célula, endian e representação JSON canônica
+(pass) região vazia não aloca células e pode cobrir uma extensão lógica grande
+(pass) mantém buffers em memória e não compartilha buffers entre chunks decodificados
+(pass) coordenadas negativas e bordas não alinhadas preservam as células
+(pass) rejeita chunks vazios, duplicados, malformados e células inválidas sem cortar dados
+(pass) barreira de formato rejeita versões, campos e codificações desconhecidos
+(pass) rejeita limites inválidos antes de ler dados de chunks
+(pass) orçamento é global e precede decodificação e alocação de buffers
+(pass) base64 deve ser exato e canônico, sem payload truncado, lixo ou células negativas
+(pass) teto real de 2048 regiões conserva 4 MiB sem alocar as áreas vazias do mundo [47.00ms]
+(pass) codificação ordena os chunks por linha e coluna sem reordenar o documento
+(pass) o gravador também confere o orçamento global antes de acessar os buffers
+(pass) preserva todos os 32769 valores históricos sem interpretar as flags das peças
+(pass) payload não-JSON ou futuro falha fechado e nunca lança ao chamador
+(pass) validador de extensão compartilhado é estrito e protege também acessores defeituosos
+
+packages\pinta\src\tiles\cellAccess.test.ts:
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+
+packages\pinta\src\tiles\regionCells.test.ts:
+(pass) lê células negativas e lacunas sem alocar a extensão vazia
+(pass) um lote conserva flags e copia apenas os chunks alterados para o histórico
+(pass) última escrita vence e gesto que volta ao valor original não cria histórico
+(pass) apagar o último conteúdo remove o chunk, sem manter regiões vazias
+(pass) admissão usa o custo final do gesto, independentemente da ordem de apagar e pintar
+(pass) recusa atômica não conserva nem a primeira mudança de um lote inválido
+(pass) limite de trabalho é conferido antes de acessar os pontos do gesto
+(pass) conversão densa respeita origem parcial e conserva todos os valores e flags
+(pass) conversão vazia não materializa chunks e recusa dimensões ou dados inconsistentes
+(pass) gesto espalhado sobre muitas regiões vazias é recusado pelo orçamento ocupado [16.00ms]
+(pass) sequência determinística de gestos mantém o resultado das operações densas existentes [16.00ms]
+
+ 32 pass
+ 0 fail
+ 211 expect() calls
+Ran 32 tests across 3 files. [633.00ms]

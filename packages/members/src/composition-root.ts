@@ -22,6 +22,9 @@ import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
 import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by-profiles.service'
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
+import { CenariosService } from './application/cenarios/cenarios.service'
+import { criarConferenciaDoMolda } from './application/cenarios/molda-dos-cenarios'
+import { PublicacoesDeCenariosService } from './application/cenarios/publicacoes.service'
 import { SendChallengeLifecycleService } from './application/challenge-lifecycle/send-challenge-lifecycle.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
@@ -128,6 +131,7 @@ import { AuthorizePythonAnalysisService } from './application/studio/authorize-p
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
 import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
 import { PythonProjectCheckerService } from './application/studio/python-project-checker.service'
+import { StudioStudentTestsService } from './application/studio/studio-student-tests.service'
 import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
@@ -180,6 +184,8 @@ import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle
 import { ArquipelagoCourseActivityRepository } from './infrastructure/persistence/drizzle/arquipelago-course-activity.repository'
 import { ArquipelagoInventoryRepository } from './infrastructure/persistence/drizzle/arquipelago-inventory.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
+import { DrizzleCenariosRepository } from './infrastructure/persistence/drizzle/cenarios.repository'
+import { DrizzlePublicacoesDeCenariosRepository } from './infrastructure/persistence/drizzle/cenarios-publicacoes.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
 import { DrizzleChallengeLifecycleRepository } from './infrastructure/persistence/drizzle/challenge-lifecycle.repository'
@@ -218,6 +224,7 @@ import { DrizzlePensaProjectCommands } from './infrastructure/persistence/drizzl
 import { DrizzlePensaProjectRepository } from './infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzlePensaRewardsRepository } from './infrastructure/persistence/drizzle/pensa-rewards.repository'
 import { DrizzlePensaTeamRepository } from './infrastructure/persistence/drizzle/pensa-team.repository'
+import { DrizzlePintaCausalRepository } from './infrastructure/persistence/drizzle/pinta-causal-units.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -379,7 +386,6 @@ export async function createApplication(env: Env): Promise<Application> {
       )
     : undefined
   const clock = () => new Date()
-
   // Adapters
   const learningRepository = new DrizzleLearningRepository(db, studioAuthoringPolicy)
   const courses = new DrizzleCourseRepository(db)
@@ -456,6 +462,27 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  const cenariosRepo = new DrizzleCenariosRepository(db)
+  const cenariosService = new CenariosService(cenariosRepo, clock, {
+    modo: env.CENARIOS_MODO,
+    regioes: env.CENARIOS_REGIOES,
+    lista: new Set(
+      (env.CENARIOS_LISTA ?? '')
+        .split(',')
+        .map((id) => id.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+    ...criarConferenciaDoMolda({ accessCheck, kidsJourney: kidsJourneyQuery, adultJourney }),
+    ...(env.CENARIOS_COTA_DA_CONTA_MB
+      ? { cotaDaContaBytes: env.CENARIOS_COTA_DA_CONTA_MB * 1024 ** 2 }
+      : {}),
+  })
+  const publicacoesDeCenarios = new PublicacoesDeCenariosService(
+    new DrizzlePublicacoesDeCenariosRepository(db),
+    cenariosRepo,
+    cenariosService,
+    clock,
+  )
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
@@ -469,6 +496,11 @@ export async function createApplication(env: Env): Promise<Application> {
     freeStudioAccess,
     studioRuntimePolicy,
     studioAuthoringPolicy,
+  )
+  // "Meus testes" no Pro: os testes da criança no executor do "Verificar projeto".
+  const studioStudentTests = new StudioStudentTestsService(
+    freeStudioAccess,
+    projectExecutor ?? null,
   )
   const liveBenefits = new DrizzleLiveBenefitsRepository(db)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
@@ -1273,6 +1305,10 @@ export async function createApplication(env: Env): Promise<Application> {
     studioRuntimePolicy,
     () => clock().getTime(),
   )
+  // O inventário causal do Pinta, para todo perfil (23/11/2026, sem flag nem lista de perfis): as
+  // rotas causais e a galeria da aula leem o MESMO repositório. As rotas internas continuam
+  // exigindo o token do gateway e o consumidor `member-shell`.
+  const pintaCausal = new DrizzlePintaCausalRepository(db, clock)
   const server = createServer({
     coursePromotion:
       sourcePeer && env.COURSE_PUBLICATION_PEER_TOKEN
@@ -1352,6 +1388,7 @@ export async function createApplication(env: Env): Promise<Application> {
           storageBaseURL: env.STUDIO_GALLERY_STORAGE_BASE_URL,
           allowLoopbackHttp: env.NODE_ENV !== 'production',
         }),
+        { heads: pintaCausal },
       ),
       preferences,
       learning,
@@ -1395,6 +1432,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getChallenge,
       getStudioUnlocks,
       authorizeFreeRuntime,
+      studioStudentTests,
       getMissions,
       claimMission,
       claimUnitChest,
@@ -1477,7 +1515,22 @@ export async function createApplication(env: Env): Promise<Application> {
       ),
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    cenarios: {
+      cenarios: cenariosService,
+      publicacoes: publicacoesDeCenarios,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     creations: {
+      studioSeal: {
+        repository: { kids: creationsRepo, adult: adultCreationsRepo },
+        clock,
+        authoring: freeStudioAccess,
+      },
+      palette: {
+        repository: { kids: creationsRepo, adult: adultCreationsRepo },
+        clock,
+      },
+      causal: pintaCausal,
       adult: {
         list: new ListCreationsService(adultCreationsRepo),
         reserveUpload: new ReserveCreationUploadService(
@@ -1557,6 +1610,7 @@ export async function createApplication(env: Env): Promise<Application> {
       validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    pintaRecoveryHelp: { teacherThreads, internalToken: env.INTERNAL_API_TOKEN },
     adultHelp: {
       help: adultHelp,
       internalToken: env.INTERNAL_API_TOKEN,

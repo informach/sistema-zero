@@ -28,6 +28,13 @@ Turtle. Com CPython/Tk, esses arquivos e o módulo `sz_audio` exportado, execute
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 As constantes no topo são o painel de controle: `COLUNAS` e `LINHAS` mudam o
 tamanho do tabuleiro, `CELULA` o tamanho das casas, `QUEDA` a velocidade da peça
 em pixels por segundo e `PISCAR` o ritmo da seta. As cores ficam em
@@ -40,21 +47,23 @@ simples: a partir da peça que acabou de pousar, ela anda nos dois sentidos de
 cada uma das quatro `DIRECOES` contando peças iguais. Troque o `4` de
 `len(casas) >= 4` por `3` e o jogo vira um Ligue 3.
 
-As teclas numéricas usam `tecla_coluna`, uma função que devolve uma função
-rápida (`lambda: escolher(coluna)`). Seis tartarugas persistentes desenham a
-cena: `cenario` pinta o tabuleiro e os furos uma vez, `pincel` pinta as peças que
-pousaram, `destaque` marca a vitória, `queda` é a peça caindo, `cursor` é a seta
-e `painel` escreve o placar. Uma única cadeia de `ontimer(..., 16)` mede o tempo
-com `time.monotonic()`, faz a peça cair e a seta pulsar; reiniciar não adiciona
-outra cadeia. Um quadro atrasado conta no máximo 100 ms, então a peça nunca
-atravessa o tabuleiro de uma vez.
+Cada tecla chama uma função com nome (`jogar_na_coluna_3` chama `escolher(2)`,
+`cursor_para_direita` chama `mover(1)`), e todas moram em ⚡ Quando acontecer.
+Seis tartarugas persistentes desenham a cena: `cenario` pinta o tabuleiro e os
+furos uma vez, `pincel` pinta as peças que pousaram, `destaque` marca a vitória,
+`queda` é a peça caindo, `cursor` é a seta e `painel` escreve o placar. O laço
+do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`, faz a peça cair e a seta pulsar; reiniciar não começa outro
+laço. Um quadro atrasado conta no máximo 100 ms, então a peça nunca atravessa o
+tabuleiro de uma vez.
 
 ## Verificação e limites
 
 `python test_model.py` verifica regras reais do programa sem abrir Tk, navegador
-ou dispositivo de áudio: o arquivo é carregado sem os imports, e as tartarugas
-viram gravadores que contam chamadas e timers. Isso verifica o modelo e seus
-efeitos pedidos, não pixels, áudio ouvido, foco nem desempenho. Não há
-computador adversário: o jogo é para duas pessoas no mesmo teclado.
+ou dispositivo de áudio: o arquivo é carregado sem os imports e sem o que ele
+faz ao iniciar, e as tartarugas viram gravadores que contam chamadas e timers.
+Isso verifica o modelo e seus efeitos pedidos, não pixels, áudio ouvido, foco
+nem desempenho. Não há computador adversário: o jogo é para duas pessoas no
+mesmo teclado.
 
 Autoria e licença estão em [NOTICE.md](NOTICE.md) e [LICENSE](LICENSE).

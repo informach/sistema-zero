@@ -3,6 +3,7 @@ import {
   StudioProjectIdSchema,
 } from '@sistemazero/core/studio/project-document'
 import { assertPintaImageAssets } from '../core/pintaImageAsset'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
 import {
   assertProjectContentPreserved,
   ProjectDocumentError,
@@ -10,6 +11,7 @@ import {
 } from '../core/projectDocumentGuards'
 import { sanitizePythonProjectAssets } from '../core/pythonAssets'
 import type { PythonClassicProjectDocument, PythonProjectDocument } from '../core/pythonProject'
+import { assertScene3DAssets } from '../core/scene3d/validacao'
 import { copyLocalRevision } from './projectStorageRevision'
 
 export type {
@@ -29,7 +31,11 @@ export { pythonFilesToTree } from './pythonProjectLayout'
  */
 export async function refinePythonProjectDocument(
   raw: unknown,
-  options: { requestedId?: string; kind?: 'classic' | 'pro' } = {},
+  options: {
+    requestedId?: string
+    kind?: 'classic' | 'pro'
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } = {},
 ): Promise<PythonProjectDocument> {
   const document = StudioProjectDocumentSchema.parse(raw)
   if (document.programmingLanguage !== 'python' || (options.kind && document.kind !== options.kind))
@@ -45,10 +51,20 @@ export async function refinePythonProjectDocument(
     options.requestedId === undefined
       ? document.id
       : StudioProjectIdSchema.parse(options.requestedId)
-  const assets = sanitizePythonProjectAssets(document.assets)
+  const assets = sanitizePythonProjectAssets(document.assets, options.regionalMaterials)
   const project = copyLocalRevision(raw as { id: string }, { ...document, id, assets })
   assertProjectContentPreserved(document, project)
-  await assertPintaImageAssets(assets)
+  try {
+    await assertPintaImageAssets(assets)
+  } catch (error) {
+    throw new ProjectDocumentError(
+      'invalid-document',
+      error instanceof Error
+        ? error.message
+        : 'Os dados do desenho do Pinta estão inválidos. O original foi preservado.',
+    )
+  }
+  await assertScene3DAssets(assets)
   const issue = pythonProjectLayoutIssue(project)
   if (issue?.code === 'too-large') throw new ProjectTooLargeError(issue.message)
   if (issue) throw new ProjectDocumentError(issue.code, issue.message)

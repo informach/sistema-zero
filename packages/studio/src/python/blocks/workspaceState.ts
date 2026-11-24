@@ -1,50 +1,66 @@
 import * as Blockly from 'blockly/core'
+import { jsonPlainCopy, jsonStringify } from '../../blockly/jsonPlainCopy'
 import type { PythonNode, PythonValue } from '../language/types'
+import { PYTHON_AREA_BY_FRAME, PYTHON_AREA_FRAME_TYPES } from './areas'
 import type { PythonBlocklyBlock } from './blockly'
 import { isNode, pythonSemanticTree } from './nodes'
-import { PYTHON_PROGRAM } from './programArea'
 import type { PythonOpaqueBlock, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
+import { isExecutablePythonAreaState } from './workspaceParts'
 
 /** Presentation and scratch blocks do not change the executable program. */
 export function samePythonWorkspaceProgram(
   before: Record<string, unknown>,
   after: Record<string, unknown>,
 ): boolean {
+  // Sem recursão: uma sequência longa no mesmo corpo é uma cadeia `next` tão funda quanto ela
+  // (lote 3 da missão, 21/11/2026). A cópia em objetos comuns e o laço com pilha explícita tiram a
+  // apresentação de cada bloco e sombra, mantendo a ordem das chaves.
   const executable = (state: Record<string, unknown>) => {
     const saved = state as ReturnType<typeof Blockly.serialization.workspaces.save>
     const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
-    if (!roots) return state
-    const areas = roots.filter((block) => block.type === PYTHON_PROGRAM)
-    const selected = areas.length === 1 ? areas : roots
-    const clean = (block: Blockly.serialization.blocks.State): unknown => {
-      const { x: _x, y: _y, collapsed: _collapsed, icons: _icons, ...rest } = block
-      const connection = (value: Blockly.serialization.blocks.ConnectionState) => ({
-        ...value,
-        ...(value.block ? { block: clean(value.block) } : {}),
-        ...(value.shadow ? { shadow: clean(value.shadow) } : {}),
-      })
-      return {
-        ...rest,
-        ...(block.inputs
-          ? {
-              inputs: Object.fromEntries(
-                Object.entries(block.inputs).map(([key, value]) => [key, connection(value)]),
-              ),
-            }
-          : {}),
-        ...(block.next ? { next: connection(block.next) } : {}),
+    if (!roots) return jsonPlainCopy(state)
+    // Áreas do projeto: só as áreas com linhas, na ordem do arquivo (áreas vazias e rascunhos não
+    // mudam o código). Sem área nenhuma (estado antigo, testes), vale a lista de raízes.
+    const frames = roots.filter((block) => PYTHON_AREA_FRAME_TYPES.has(block.type))
+    const selected = frames.length
+      ? frames
+          .filter(isExecutablePythonAreaState)
+          .sort(
+            (a, b) =>
+              PYTHON_AREA_BY_FRAME.get(a.type)!.index - PYTHON_AREA_BY_FRAME.get(b.type)!.index,
+          )
+      : roots
+    const copy = jsonPlainCopy({ blocks: { ...saved.blocks, blocks: selected } }) as {
+      blocks: { blocks: Record<string, unknown>[] }
+    }
+    const pending = [...copy.blocks.blocks]
+    while (pending.length) {
+      const block = pending.pop() as Record<string, unknown>
+      delete block.x
+      delete block.y
+      delete block.collapsed
+      delete block.icons
+      const connections = [
+        ...Object.values((block.inputs ?? {}) as Record<string, Record<string, unknown>>),
+        ...(block.next ? [block.next as Record<string, unknown>] : []),
+      ]
+      for (const connection of connections) {
+        if (connection.block) pending.push(connection.block as Record<string, unknown>)
+        if (connection.shadow) pending.push(connection.shadow as Record<string, unknown>)
       }
     }
-    return { blocks: { ...saved.blocks, blocks: selected.map(clean) } }
+    return copy
   }
-  return JSON.stringify(executable(before)) === JSON.stringify(executable(after))
+  // Pilha explícita também no texto: o `JSON.stringify` do Firefox recursa a partir de ~2 mil elos
+  // (revisão do lote 3, achado 5).
+  return jsonStringify(executable(before)) === jsonStringify(executable(after))
 }
 
 function sourceWithCurrentOrigin(value: PythonOpaqueBlock, parsed?: PythonNode): PythonOpaqueBlock {
   const node =
     parsed &&
-    JSON.stringify(pythonSemanticTree(value.node)) === JSON.stringify(pythonSemanticTree(parsed))
+    jsonStringify(pythonSemanticTree(value.node)) === jsonStringify(pythonSemanticTree(parsed))
       ? structuredClone(parsed)
       : withoutPythonOrigins(value.node)
   return { ...value, node, origin: { nodeId: node.id, range: node.range } }
@@ -63,21 +79,24 @@ export function rebasePythonWorkspaceState(
   state: Record<string, unknown>,
   origins: PythonWorkspaceOrigins,
 ): Record<string, unknown> {
-  const saved = structuredClone(state) as ReturnType<typeof Blockly.serialization.workspaces.save>
+  // Cópia em objetos comuns e sem recursão (`structuredClone` estoura com 859 blocos numa cadeia
+  // no Chromium 159; o estado do Blockly é JSON, então a cópia pelas regras do JSON é exata).
+  const saved = jsonPlainCopy(state) as ReturnType<typeof Blockly.serialization.workspaces.save>
   const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
   const queue = [...(roots ?? [])]
   while (queue.length) {
     const state = queue.pop()!
     const parsed = state.id ? origins.get(state.id) : undefined
-    if (state.type.startsWith('sz_py_source_'))
+    if (PYTHON_AREA_FRAME_TYPES.has(state.type)) {
+      // O bloco de área não tem origem no código: só o que está dentro dele.
+    } else if (state.type.startsWith('sz_py_source_'))
       state.extraState = sourceWithCurrentOrigin(state.extraState as PythonOpaqueBlock, parsed)
-    else if (state.type.startsWith('sz_py_') && state.type !== PYTHON_PROGRAM) {
+    else if (state.type.startsWith('sz_py_')) {
       state.extraState = {
         ...state.extraState,
         origin: parsed ? { nodeId: parsed.id, range: structuredClone(parsed.range) } : undefined,
       }
-    } else if (state.type !== PYTHON_PROGRAM)
-      throw new Error('O rascunho contém um bloco de outro ambiente.')
+    } else throw new Error('O rascunho contém um bloco de outro ambiente.')
     for (const connection of [
       ...Object.values(state.inputs ?? {}),
       ...(state.next ? [state.next] : []),

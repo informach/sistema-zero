@@ -17,7 +17,7 @@ import {
 } from '@sistemazero/core/learning'
 import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { t } from 'elysia'
-import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
+import { MAX_SUBMISSION_MESSAGE_CHARS, PINTA_ASSET_KINDS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
 import { moduleAnimationInputSchema } from './module-animation.schema'
 
@@ -1206,15 +1206,7 @@ const PintaAssetSchema = t.Object(
   {
     id: t.String({ minLength: 1, maxLength: 100 }),
     name: t.String({ maxLength: 100 }),
-    kind: t.Union([
-      t.Literal('pixel-sprite'),
-      t.Literal('pixel-background'),
-      t.Literal('tileset'),
-      t.Literal('tilemap'),
-      t.Literal('vector-sprite'),
-      t.Literal('vector-background'),
-      t.Literal('vector-tileset'),
-    ]),
+    kind: t.Union(PINTA_ASSET_KINDS.map((kind) => t.Literal(kind))),
   },
   { additionalProperties: true },
 )
@@ -1429,6 +1421,7 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('mural_publication'),
   t.Literal('general'),
   t.Literal('lesson_section'),
+  t.Literal('pinta_recovery'),
 ])
 /**
  * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).
@@ -1587,6 +1580,7 @@ export const CreationItemParams = t.Union([
 const CreationFormatVersion = t.Number({ minimum: 1, maximum: 65_535, multipleOf: 1 })
 export const CreationUploadBody = t.Object({
   formatVersion: t.Optional(CreationFormatVersion),
+  maxReadFormatVersion: t.Optional(CreationFormatVersion),
   name: t.String({ minLength: 1, maxLength: 120 }),
   kind: t.String({ minLength: 1, maxLength: 40 }),
   /** `updatedAt` do item no relógio do editor (ISO). */

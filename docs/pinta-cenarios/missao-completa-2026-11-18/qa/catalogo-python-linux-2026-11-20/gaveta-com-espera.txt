@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+src\modes\pro\workspace\ProDock.view.test.tsx:
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > JavaScript: Mensagens do jogo · Problemas (com a contagem) · Terminal avançado, em abas de verdade [78.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: Problemas · Experimentar comandos · Mensagens do programa (sem terminal)
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens [375.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Python: esconder "Mensagens do programa" pelo menu ⋯ não leva o Experimentar comandos junto
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > cada problema vira um cartão: lugar, a dica como texto principal, ir para a linha e pedir dica [16.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem problemas, a aba ganha o ✓ e o texto convida a rodar o jogo
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > sem a análise pronta (ainda analisando, ou ela falhou) não há ✓: zero problemas não é "tudo certo" [15.00ms]
+(pass) a gaveta de baixo do Pro (redesenho de 11/2026) > Mensagens: filtros Tudo · Avisos · Erros sobre o console da instância [16.00ms]
+
+ 8 pass
+ 0 fail
+ 27 expect() calls
+Ran 8 tests across 1 file. [1165.00ms]

@@ -1,0 +1,98 @@
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/projectAssets.ts is dynamically imported by src/state/persistence.ts but also statically imported by src/asset-library/personal.ts, src/core/glbSummary.ts, src/core/pgzeroMediaPaths.ts, src/core/project.ts, src/core/pythonAssets.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/proProject.ts is dynamically imported by src/components/code/pro-templates/index.ts but also statically imported by src/core/index.ts, src/core/projectFactory.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/learning/python-project-execution.ts, ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/pythonAssets.ts is dynamically imported by src/components/assets/editorAssetEntries.ts, src/projects/createPythonExampleProject.ts, src/state/persistence.ts, src/state/proRevision.ts, src/state/proWorkspaceOperations.ts but also statically imported by src/export/pythonSource.ts, src/export/pythonWeb.ts, src/runtime/python/snapshot.ts, src/state/pythonProRevision.ts, src/state/pythonProjectValidation.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/pythonProjectValidation.ts is dynamically imported by src/projects/createPythonExampleProject.ts, src/state/editableProjectValidation.ts, src/state/projectStore.ts but also statically imported by src/export/pythonSource.ts, src/export/pythonWeb.ts, src/runtime/python/snapshot.ts, src/state/pythonProProjectValidation.ts, src/state/pythonPromotion.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/runtime/python/snapshot.ts is dynamically imported by src/runtime/capture.ts, src/runtime/contextEnvironmentCore.ts but also statically imported by src/export/pythonWeb.ts, src/runtime/python/controller.ts, src/runtime/python/provider.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, src/index.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/asset-library/personal.ts is dynamically imported by ../member-shell/src/components/creator/pinta-client.tsx, ../member-shell/src/components/creator/use-studio-creation-libraries.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/AssetsPanel.tsx, src/components/assets/DrawingSyncWatcher.tsx, src/index.ts, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectStorageCoordinator.ts, src/state/projectValidation.ts but also statically imported by src/state/editableCloudProject.ts, src/state/projectStore.ts, src/studio/StudioCore.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/projectStore.ts is dynamically imported by src/components/projects/ImportButton.tsx, src/components/projects/ProjectCard.tsx, src/projects/ProjectList.tsx but also statically imported by src/components/assets/AssetsPanel.tsx, src/components/assets/DrawingSyncWatcher.tsx, src/components/assets/MoldaImportDialog.tsx, src/components/assets/PintaImageSelection.tsx, src/components/assets/PintaImportDialog.tsx, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/index.ts is dynamically imported by ../member-shell/src/components/creator/pinta-client.tsx but also statically imported by playground/pinta-integration/main.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+[WebServer]   - rolldown:vite-resolve (23%)
+[WebServer]   - vite:asset (15%)
+[WebServer]   - vite:worker (13%)
+[WebServer]   - vite:css-post (13%)
+[WebServer]   - vite:css (12%)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+
+Running 1 test using 1 worker
+
+(node:33408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✘  1 [desktop] › e2e\pinta-studio.flow.ts:128:1 › editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa (20.3s)
+
+
+  1) [desktop] › e2e\pinta-studio.flow.ts:128:1 › editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Atualizado no Estúdio', { exact: true })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 15000ms[22m
+    [2m  - waiting for getByText('Atualizado no Estúdio', { exact: true })[22m
+
+
+      146 |   await edit.goto(`/pinta?desenho=${encodeURIComponent(tileset.id)}`)
+      147 |   await edit.getByRole('button', { name: /^Mudar a colisão da peça/ }).click()
+    > 148 |   await expect(edit.getByText('Atualizado no Estúdio', { exact: true })).toBeVisible({
+          |                                                                          ^
+      149 |     timeout: 15000,
+      150 |   })
+      151 |   await page.bringToFront()
+        at C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\studio\e2e\pinta-studio.flow.ts:148:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-integration-results\pinta-studio.flow.ts-edita-2883b--sem-abrir-ou-editar-o-mapa-desktop\test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .cache\pinta-integration-results\pinta-studio.flow.ts-edita-2883b--sem-abrir-ou-editar-o-mapa-desktop\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-integration-results\pinta-studio.flow.ts-edita-2883b--sem-abrir-ou-editar-o-mapa-desktop\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    .cache\pinta-integration-results\pinta-studio.flow.ts-edita-2883b--sem-abrir-ou-editar-o-mapa-desktop\trace.zip
+    Usage:
+
+        npx playwright show-trace .cache\pinta-integration-results\pinta-studio.flow.ts-edita-2883b--sem-abrir-ou-editar-o-mapa-desktop\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › e2e\pinta-studio.flow.ts:128:1 › editar as peças atualiza os mapas vinculados sem abrir ou editar o mapa

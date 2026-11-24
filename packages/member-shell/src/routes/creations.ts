@@ -3,14 +3,28 @@ import {
   CONTENT_FINGERPRINT_PATTERN,
   creationPartStorageKey,
   creationStorageKey,
+  PINTA_INVENTORY_READER_VERSION,
+  PINTA_PALETTE_LIBRARY_ITEM_ID,
+  PINTA_PALETTE_LIBRARY_KIND,
+  pintaInventoryFloorConfirmed,
 } from '@sistemazero/core/creations'
+import {
+  PINTA_PALETTE_WRITE_PROTOCOL,
+  PintaPaletteBaseSchema,
+  PintaPaletteCommitCapabilitySchema,
+} from '@sistemazero/core/creations/pinta-palette-writer'
+import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import type { MembersClient } from '../server/clients'
-import { CREATION_BLOB_CONTENT_TYPE, signCreationDownload } from '../server/creation-download'
+import {
+  CREATION_BLOB_CONTENT_TYPE,
+  StudioStorageDownloadError,
+  signCreationDownload,
+} from '../server/creation-download'
 import { mediaErrorResponse } from '../server/media'
 import {
   r2DeleteObjectsUgc,
@@ -21,6 +35,7 @@ import {
   r2ReadCreationJson,
 } from '../server/r2'
 import type { SessionModule } from '../server/session'
+import { type createPintaPaletteWrites, isPaletteDownloadKey } from './pinta-palette-writes'
 
 export type CreationsRoutes = ReturnType<typeof createCreationsRoutes>
 
@@ -68,7 +83,9 @@ const LessonBlockId = z
   .string()
   .regex(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i)
 const UploadBody = z.strictObject({
+  maxReadFormatVersion: z.number().int().min(1).max(PINTA_INVENTORY_READER_VERSION).optional(),
   formatVersion: z.number().int().min(1).max(65_535).optional(),
+  paletteWrite: PintaPaletteBaseSchema.optional(),
   // Corte por CARACTERE (não por UTF-16): um emoji na borda não vira meio par substituto.
   name: z
     .string()
@@ -117,10 +134,12 @@ const UploadBody = z.strictObject({
 const CommitBody = z.strictObject({
   revision: z.number().int().min(1),
   uploadedParts: z.array(PartHash).max(MAX_PARTS).optional(),
+  paletteWrite: PintaPaletteCommitCapabilitySchema.optional(),
 })
 const DeleteBody = z.strictObject({
   baseRevision: z.number().int().min(0),
   maxFormatVersion: z.number().int().min(1).max(65_535).optional(),
+  paletteWrite: PintaPaletteBaseSchema.optional(),
 })
 const ListQuery = z.strictObject({
   cursor: z.string().min(1).max(512).optional(),
@@ -154,6 +173,8 @@ function responseErrorCode(body: unknown): string | null {
 
 type ItemCtx = { params: Promise<{ tool: string; itemId: string }> }
 type ToolCtx = { params: Promise<{ tool: string }> }
+const paletteItem = (item: { tool: ToolName; itemId: string }) =>
+  item.tool === 'pinta' && item.itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
 
 /**
  * BFF do "Guardado na sua conta" (18/08/2026): as criações do Estúdio Completo e do
@@ -191,6 +212,7 @@ function deferWithNextAfter(task: () => Promise<void>): void {
 export function createCreationsRoutes(deps: {
   members: MembersClient
   session: SessionModule
+  palette?: ReturnType<typeof createPintaPaletteWrites>
   storage?: CreationsStorage
   /** Só testes: onde o apagar no R2 é agendado (default: `after()` do Next, com fallback). */
   defer?: (task: () => Promise<void>) => void
@@ -261,10 +283,21 @@ export function createCreationsRoutes(deps: {
     return null
   }
 
-  /** Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. */
-  async function requireAdultNamespace(tool: ToolName): Promise<NextResponse | null> {
+  /**
+   * Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. O eco
+   * `audience` da listagem vem do repositório adulto e vale para qualquer ferramenta. A
+   * paleta do Pinta fica fora da cerca causal de propósito, mas a listagem do Pinta não:
+   * num perfil causal ela responde 409 `protocol-required` e a paleta nunca mais subiria
+   * pelo caminho antigo. Para a paleta, a sonda lista o Estúdio, que a cerca não alcança.
+   */
+  async function requireAdultNamespace(item: {
+    tool: ToolName
+    itemId: string
+  }): Promise<NextResponse | null> {
     if (session.audience !== 'adult') return null
-    const probe = await members.listCreations(tool, { limit: 1 })
+    const probe = await members.listCreations(paletteItem(item) ? 'studio' : item.tool, {
+      limit: 1,
+    })
     if (probe.status !== 200) return response(probe.status, probe.body)
     if (probe.body?.audience === 'adult') return null
     return NextResponse.json(
@@ -312,13 +345,26 @@ export function createCreationsRoutes(deps: {
 
   const creationsUploadUrl = {
     POST: async (req: Request, ctx: ItemCtx) => {
-      const readonly = await requireWritableSession(req)
-      if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
-      const incompatible = await requireAdultNamespace(item.tool)
-      if (incompatible) return incompatible
       const parsed = UploadBody.safeParse(await req.json().catch(() => null))
+      if (parsed.success && parsed.data.paletteWrite) {
+        const { paletteWrite, baseRevision, itemUpdatedAt, bytes, kind, formatVersion, parts } =
+          parsed.data
+        if (
+          !paletteItem(item) ||
+          kind !== PINTA_PALETTE_LIBRARY_KIND ||
+          (formatVersion !== undefined && formatVersion !== 1) ||
+          parts?.length ||
+          !deps.palette
+        )
+          return invalid()
+        return deps.palette.reserve(req, { ...paletteWrite, baseRevision, itemUpdatedAt, bytes })
+      }
+      const readonly = await requireWritableSession(req)
+      if (readonly) return readonly
+      const incompatible = await requireAdultNamespace(item)
+      if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       // Acima do teto por item (manifesto + partes declaradas): a MESMA resposta que o members
       // daria (409 de quota, com o "grande demais"), para o selo dizer a verdade — um 400
@@ -336,6 +382,8 @@ export function createCreationsRoutes(deps: {
           { status: 409 },
         )
       }
+      // An explicit receipt distinguishes a server that protected dependencies from one that only stamped the item.
+      const requestedReader = parsed.data.maxReadFormatVersion
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
       if (session.audience === 'adult') {
@@ -372,7 +420,17 @@ export function createCreationsRoutes(deps: {
       // Only absence means legacy 1; malformed values (including null/string) fail closed.
       const confirmedFormat =
         reserved.body.formatVersion === undefined ? 1 : reserved.body.formatVersion
-      if (confirmedFormat !== (parsed.data.formatVersion ?? 1)) {
+      if (
+        !pintaInventoryFloorConfirmed(
+          item.tool,
+          parsed.data.kind,
+          parsed.data.formatVersion ?? 1,
+          reserved.body.inventoryFloor,
+          requestedReader,
+        ) ||
+        confirmedFormat !== (parsed.data.formatVersion ?? 1) ||
+        (requestedReader !== undefined && reserved.body.maxReadFormatVersion !== requestedReader)
+      ) {
         return NextResponse.json(
           {
             error: {
@@ -421,6 +479,10 @@ export function createCreationsRoutes(deps: {
         return NextResponse.json({
           revision: reserved.body.revision,
           formatVersion: confirmedFormat,
+          ...(reserved.body.inventoryFloor === undefined
+            ? {}
+            : { inventoryFloor: reserved.body.inventoryFloor }),
+          ...(requestedReader === undefined ? {} : { maxReadFormatVersion: requestedReader }),
           bytes: reserved.body.bytes,
           uploadUrl,
           method: 'PUT',
@@ -435,13 +497,21 @@ export function createCreationsRoutes(deps: {
 
   const creationsCommit = {
     POST: async (req: Request, ctx: ItemCtx) => {
-      const readonly = await requireWritableSession(req)
-      if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
-      const incompatible = await requireAdultNamespace(item.tool)
-      if (incompatible) return incompatible
       const parsed = CommitBody.safeParse(await req.json().catch(() => null))
+      if (parsed.success && parsed.data.paletteWrite) {
+        if (!paletteItem(item) || parsed.data.uploadedParts?.length || !deps.palette)
+          return invalid()
+        return deps.palette.commit(req, {
+          ...parsed.data.paletteWrite,
+          revision: parsed.data.revision,
+        })
+      }
+      const readonly = await requireWritableSession(req)
+      if (readonly) return readonly
+      const incompatible = await requireAdultNamespace(item)
+      if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       // PARTES que o cliente diz ter enviado: HEAD best-effort no R2 ANTES do members — um 404
       // definitivo é bug de cliente (ou a corrida residual do GC) e vira 409 retriável, sem
@@ -529,6 +599,7 @@ export function createCreationsRoutes(deps: {
         ...(verifiedPartHashes ? { verifiedPartHashes } : {}),
         ...(verifiedFormatVersion !== undefined ? { verifiedFormatVersion } : {}),
       })
+      const code = responseErrorCode(body)
       if (status === 200 && body) {
         // Best-effort e DEPOIS da resposta: o manifesto anterior e as partes que a revisão
         // nova não referencia mais já não são de ninguém. Se falhar, fica um objeto órfão no
@@ -538,9 +609,9 @@ export function createCreationsRoutes(deps: {
         deleteManyQuietly(released, 'a revisão anterior')
       } else if (
         status === 409 &&
-        ['CREATION_QUOTA_EXCEEDED', 'CREATION_REVISION_MISMATCH'].includes(
-          responseErrorCode(body) ?? '',
-        )
+        (code === 'CREATION_QUOTA_EXCEEDED' ||
+          code === 'CREATION_REVISION_MISMATCH' ||
+          (item.tool === 'pinta' && code === 'CREATION_CLIENT_OUTDATED'))
       ) {
         // O PUT já aconteceu, mas o members confirmou que esta revisão não entrou
         // no índice. A chave é determinística e, portanto, pode ser removida sem
@@ -566,17 +637,78 @@ export function createCreationsRoutes(deps: {
 
   const creationsDownloadUrl = {
     GET: async (req: Request, ctx: ItemCtx) => {
-      const mismatch = await requireViewerMatch(req)
-      if (mismatch) return mismatch
       const item = await parseItem(ctx)
       if (!item) return invalid()
-      const incompatible = await requireAdultNamespace(item.tool)
-      if (incompatible) return incompatible
-      const ticket = await members.getCreationDownload(item.tool, item.itemId)
+      const palette = paletteItem(item)
+      const query = new URL(req.url).searchParams
+      const requestProtocol = query.getAll('paletteWrite')
+      const reader = query.getAll('studioReader')
+      const studioReader = reader[0]
+      if (
+        reader.length > 0 &&
+        (item.tool !== 'studio' ||
+          reader.length !== 1 ||
+          studioReader !== STUDIO_SEALED_STORAGE_READER)
+      ) {
+        return invalid()
+      }
+      if (requestProtocol.length > 0) {
+        if (
+          !palette ||
+          !deps.palette ||
+          requestProtocol.length !== 1 ||
+          requestProtocol[0] !== PINTA_PALETTE_WRITE_PROTOCOL
+        )
+          return invalid()
+        return deps.palette.head(req)
+      }
+      const mismatch = await requireViewerMatch(req)
+      if (mismatch) return mismatch
+      if (!palette) {
+        const incompatible = await requireAdultNamespace(item)
+        if (incompatible) return incompatible
+      }
+      const ticket = studioReader
+        ? await members.getCreationDownload(item.tool, item.itemId, studioReader)
+        : await members.getCreationDownload(item.tool, item.itemId)
       if (ticket.status !== 200 || !ticket.body) return response(ticket.status, ticket.body)
+      if (palette && session.audience === 'adult') {
+        const user = await session.getSession()
+        if (
+          !user ||
+          !isPaletteDownloadKey(
+            ticket.body.storageKey,
+            { userId: user.id, audience: 'adult' },
+            ticket.body.revision,
+          ) ||
+          ticket.body.parts?.length
+        )
+          return response(503, {
+            error: {
+              code: 'UPSTREAM_INCOMPATIBLE',
+              message: 'A biblioteca adulta está indisponível.',
+            },
+          })
+      }
       try {
-        return NextResponse.json(await signCreationDownload(storage.presignGet, ticket.body))
+        const actor =
+          studioReader && ticket.body.studioSealReceipt ? await session.getSession() : null
+        const sealedRead =
+          studioReader && actor
+            ? {
+                reader: studioReader,
+                locator: { userId: actor.id, audience: session.audience, itemId: item.itemId },
+              }
+            : undefined
+        return NextResponse.json(
+          await signCreationDownload(storage.presignGet, ticket.body, sealedRead),
+        )
       } catch (error) {
+        if (error instanceof StudioStorageDownloadError) {
+          return response(409, {
+            error: { code: 'STUDIO_STORAGE_PROTOCOL_REQUIRED', message: error.message },
+          })
+        }
         return mediaErrorResponse(error)
       }
     },
@@ -584,13 +716,20 @@ export function createCreationsRoutes(deps: {
 
   const creationsDelete = {
     DELETE: async (req: Request, ctx: ItemCtx) => {
-      const readonly = await requireWritableSession(req)
-      if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
-      const incompatible = await requireAdultNamespace(item.tool)
-      if (incompatible) return incompatible
       const parsed = DeleteBody.safeParse(await req.json().catch(() => null))
+      if (parsed.success && parsed.data.paletteWrite) {
+        if (!paletteItem(item) || !deps.palette) return invalid()
+        return deps.palette.remove(req, {
+          ...parsed.data.paletteWrite,
+          baseRevision: parsed.data.baseRevision,
+        })
+      }
+      const readonly = await requireWritableSession(req)
+      if (readonly) return readonly
+      const incompatible = await requireAdultNamespace(item)
+      if (incompatible) return incompatible
       if (!parsed.success) return invalid()
       const { status, body } = await members.deleteCreation(item.tool, item.itemId, parsed.data)
       if (status === 200 && body) {

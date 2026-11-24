@@ -1,0 +1,2 @@
+$ bun --no-env-file scripts/gerar-runtime.ts --check
+Runtime conferido: 1117069 caracteres, 3 dependências, SHA-256 dca2b8a7bb6270f5e764c3d0344ee53b86aa143075a0d60381e50ad6f4752436.

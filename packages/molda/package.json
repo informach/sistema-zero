@@ -9,7 +9,12 @@
     ".": "./src/index.ts",
     "./assets": "./src/assets/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
+    "./cenarios-library": "./src/export/cenariosLibrary.ts",
     "./tools": "./src/core/toolFamilies.ts",
+    "./ui": "./src/components/ui/public.ts",
+    "./palco": "./src/viewport/palco.ts",
+    "./arquivos": "./src/import/arquivos.ts",
+    "./gltf": "./src/import/gltf.ts",
     "./styles.css": "./src/styles/molda.css"
   },
   "scripts": {
@@ -25,6 +30,7 @@
     "test:3": "bun test --timeout 20000 src/accessibility-contract.test.ts src/host-conformance.test.ts src/assets src/core src/model src/paint src/sky src/state src/styles src/templates src/testing src/texture src/viewport"
   },
   "dependencies": {
+    "@sistemazero/molda-cenarios-core": "workspace:*",
     "clsx": "^2.1.1",
     "earcut": "3.2.4",
     "fflate": "^0.8.2",

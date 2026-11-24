@@ -7,6 +7,25 @@ import type {
   CoursePublicationPreview,
   CoursePublicationStatus,
 } from '@sistemazero/core/course/publication'
+import type {
+  PintaCausalAttestation,
+  PintaCausalAuthoredFingerprint,
+  PintaCausalBackfillBinding,
+  PintaCausalBinding,
+  PintaCausalIntent,
+  PintaCausalManifest,
+  PintaCausalReservePage,
+  PintaCausalResult,
+} from '@sistemazero/core/creations/pinta-causal'
+import type {
+  PintaPaletteCommitProof,
+  PintaPaletteTicket,
+} from '@sistemazero/core/creations/pinta-palette-writer'
+import type {
+  CreationStoragePartRef,
+  StudioSealedReceipt,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+import type { StudioSealedTicket } from '@sistemazero/core/creations/studio-sealed-writer'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -47,6 +66,16 @@ import type {
   StudioProBuilderResult,
   StudioProRevision,
 } from '@sistemazero/core/studio'
+import type {
+  MimeDaPublicacao,
+  PerfilDePublicacao,
+} from '@sistemazero/molda-cenarios-core/publicacao'
+import type {
+  ComandoDeCenario,
+  DocumentoDeCenario,
+  FragmentoBasico,
+  MetadadosDeTerreno,
+} from '@sistemazero/molda-cenarios-core/v2'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
@@ -55,6 +84,8 @@ import {
   check,
   customType,
   date,
+  doublePrecision,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -63,6 +94,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
   varchar,
@@ -1608,6 +1640,8 @@ export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'mural_publication',
   'general',
   'lesson_section',
+  // Ajuda do Pinta (23/11/2026): o pedido do aviso de recuperação da galeria, sem aula (0176).
+  'pinta_recovery',
 ])
 export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
 export const lessonEvidence = members.table(
@@ -2206,12 +2240,6 @@ export const creationToolEnum = members.enum('creation_tool', [
   'lesson-pinta',
 ])
 
-/** Shape de uma parte no JSONB (espelho de `CreationPartRef` do domínio). */
-export interface CreationPartRefRow {
-  hash: string
-  bytes: number
-}
-
 export const creations = members.table(
   'creations',
   {
@@ -2241,6 +2269,26 @@ export const creations = members.table(
     /** Reserva em voo (a chave já foi assinada). `null` = nada reservado. */
     pendingRevision: integer('pending_revision'),
     pendingFormatVersion: integer('pending_format_version'),
+    /** The revision binds the reader even if an older server replaces pending_* during rollout. */
+    causalManifest: jsonb('causal_manifest').$type<PintaCausalManifest>(),
+    causalSha256: varchar('causal_sha256', { length: 64 }),
+    layoutRevision: bigint('layout_revision', { mode: 'bigint' }),
+    pendingUnit: uuid('pending_unit'),
+    pendingBinding: jsonb('pending_binding').$type<PintaCausalBinding>(),
+    pendingAttestation: jsonb('pending_attestation').$type<PintaCausalAttestation>(),
+    backfillTicket: jsonb('backfill_ticket').$type<{
+      binding: PintaCausalBackfillBinding
+      storageRef: string
+    }>(),
+    pendingInventoryReader: jsonb('pending_inventory_reader').$type<{
+      revision: number
+      version: number
+    }>(),
+    pendingPaletteWrite: jsonb('pending_palette_write').$type<PintaPaletteTicket>(),
+    paletteWriteReceipt: jsonb('palette_write_receipt').$type<PintaPaletteCommitProof>(),
+    studioSealReceipt: jsonb('studio_seal_receipt').$type<StudioSealedReceipt>(),
+    pendingStudioSeal: jsonb('pending_studio_seal').$type<StudioSealedTicket>(),
+    studioSealProofSha256: varchar('studio_seal_proof_sha256', { length: 64 }),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
@@ -2259,9 +2307,9 @@ export const creations = members.table(
      * conteúdo, cada um um objeto próprio no R2 (o manifesto em `storage_ref` só aponta os
      * hashes). `[]` = blob único (Pinta, legado). `bytes` da linha = TOTAL (manifesto + partes).
      */
-    parts: jsonb('parts').$type<CreationPartRefRow[]>().notNull().default(sql`'[]'::jsonb`),
+    parts: jsonb('parts').$type<CreationStoragePartRef[]>().notNull().default(sql`'[]'::jsonb`),
     /** As partes da reserva em voo (todas as que a revisão reservada referencia). */
-    pendingParts: jsonb('pending_parts').$type<CreationPartRefRow[]>(),
+    pendingParts: jsonb('pending_parts').$type<CreationStoragePartRef[]>(),
     /**
      * Impressão digital do CONTEÚDO da revisão corrente (`v1:<sha256>`, calculada no navegador
      * pela régua do core): é o que o "envio em dia" compara com a do envio. Texto opaco aqui;
@@ -2285,6 +2333,117 @@ export const creations = members.table(
     index('creations_usage_idx')
       .on(t.userId, t.tool, t.bytes)
       .where(sql`${t.deletedAt} is null and ${t.storageRef} is not null`),
+  ],
+)
+
+/** Survives tombstones and abandoned reservations. Scoped to the inventory where IDs resolve. */
+/** Durable per-item write authority survives physical compaction of a Studio tombstone. */
+export const studioSealedHeads = members.table(
+  'studio_sealed_heads',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    generation: uuid('generation').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.itemId] }),
+    index('studio_sealed_heads_account_idx').on(t.accountId),
+    check('studio_sealed_heads_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+  ],
+)
+
+/** Exact staged/immutable addresses, registered before a presign may exist. */
+export const studioSealedObjects = members.table(
+  'studio_sealed_objects',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    objectKey: text('object_key').notNull(),
+    partNonce: uuid('part_nonce'),
+    partHash: varchar('part_hash', { length: 64 }),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+  },
+  (t) => [
+    uniqueIndex('studio_sealed_objects_key_uq').on(t.objectKey),
+    index('studio_sealed_objects_due_idx').on(t.notBefore),
+    index('studio_sealed_objects_account_idx').on(t.accountId),
+    check('studio_sealed_objects_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+  ],
+)
+
+export const creationInventoryFloors = members.table(
+  'creation_inventory_floors',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    tool: creationToolEnum('tool').notNull(),
+    requiredVersion: integer('required_version').notNull(),
+    graphEpoch: bigint('graph_epoch', { mode: 'bigint' }).notNull().default(sql`0`),
+    requiresCausalRead: boolean('requires_causal_read').notNull().default(false),
+    /** Sticky writer authority for the reserved item, independent of the graph and format floor. */
+    paletteGeneration: uuid('palette_generation'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.tool] }),
+    index('creation_inventory_floors_account_idx').on(t.accountId),
+  ],
+)
+
+/** Idempotency metadata and pending descriptors only. The current document lives in creations. */
+export const pintaCausalUnits = members.table(
+  'pinta_causal_units',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    opId: uuid('op_id').notNull(),
+    intentHash: varchar('intent_hash', { length: 64 }).notNull(),
+    state: text('state')
+      .$type<'collecting' | 'reserved' | 'committed' | 'aborted' | 'expired'>()
+      .notNull(),
+    pages: jsonb('pages').$type<PintaCausalReservePage[] | { proofBytes: number }>(),
+    intent: jsonb('intent').$type<PintaCausalIntent>(),
+    result: jsonb('result').$type<{
+      receipt: PintaCausalResult
+      undoGuards?: Record<string, { rowId: string; slots?: number[] }>
+      priorDigests: Record<string, string | null>
+      priorAuthored?: Record<string, PintaCausalAuthoredFingerprint>
+    }>(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.audience, t.opId] }),
+    index('pinta_causal_units_expiry_idx').on(t.expiresAt),
+    index('pinta_causal_units_account_idx').on(t.accountId),
+  ],
+)
+
+/** Exact immutable keys awaiting retirement; a live pointer is never eligible. */
+export const pintaCausalObjects = members.table(
+  'pinta_causal_objects',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: text('audience').$type<CourseAudience>().notNull(),
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    objectKey: text('object_key').notNull(),
+    requiresFence: boolean('requires_fence').notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+  },
+  (t) => [
+    uniqueIndex('pinta_causal_objects_key_uq').on(t.objectKey),
+    index('pinta_causal_objects_due_idx').on(t.notBefore),
   ],
 )
 
@@ -3213,7 +3372,529 @@ export const creatorJourneyCourseGrants = members.table(
   ],
 )
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Molda Cenários (16/11/2026): a oficina de cenários 3D.
+//   espaço (da conta ou da equipe) → bibliotecas → modelos
+//                                   → mundos → cenários → lotes
+// Os arquivos (GLB, retratos, capas) moram no bucket UGC, por conteúdo e por espaço;
+// aqui fica só o registro de cada um, que é o que conta na cota.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const cenarioEspacos = members.table(
+  'cenario_espacos',
+  {
+    id: uuid('id').primaryKey(),
+    tipo: text('tipo').$type<'conta' | 'equipe'>().notNull(),
+    /** A conta dona. Nulo só no espaço da equipe. */
+    contaId: uuid('conta_id'),
+    limiteBytes: bigint('limite_bytes', { mode: 'number' }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check(
+      'cenario_espacos_tipo_check',
+      sql`(${t.tipo} = 'conta' and ${t.contaId} is not null) or (${t.tipo} = 'equipe' and ${t.contaId} is null)`,
+    ),
+    uniqueIndex('cenario_espacos_conta_uq').on(t.contaId).where(sql`${t.tipo} = 'conta'`),
+    // Um espaço da equipe só.
+    uniqueIndex('cenario_espacos_equipe_uq').on(t.tipo).where(sql`${t.tipo} = 'equipe'`),
+  ],
+)
+
+export const cenarioBlobs = members.table(
+  'cenario_blobs',
+  {
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    /** SHA-256 do conteúdo: com o espaço, é o endereço do arquivo no bucket. */
+    digest: varchar('digest', { length: 64 }).notNull(),
+    tipo: text('tipo')
+      .$type<
+        | 'modelo'
+        | 'miniatura'
+        | 'capa'
+        | 'textura'
+        | 'terreno'
+        | 'manifesto-compilado'
+        | 'recurso-compilado'
+      >()
+      .notNull(),
+    tipoDoConteudo: varchar('tipo_do_conteudo', { length: 80 }).$type<
+      | 'model/gltf-binary'
+      | 'image/webp'
+      | 'image/png'
+      | 'application/octet-stream'
+      | 'application/vnd.sistemazero.cena-compilada+json'
+    >(),
+    terreno: jsonb('terreno').$type<MetadadosDeTerreno>(),
+    bytes: integer('bytes').notNull(),
+    /** Nulo enquanto a reserva espera o envio; preenchido quando o BFF confere o arquivo. */
+    confirmadoEm: timestamp('confirmado_em', { withTimezone: true }),
+    /** Até quando uma reserva não confirmada segura espaço na cota. */
+    venceEm: timestamp('vence_em', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.espacoId, t.digest] }),
+    check(
+      'cenario_blobs_tipo_check',
+      sql`${t.tipo} in ('modelo', 'miniatura', 'capa', 'textura', 'terreno', 'manifesto-compilado', 'recurso-compilado')`,
+    ),
+    check(
+      'cenario_blobs_conteudo_check',
+      sql`(${t.tipoDoConteudo} is null and ${t.tipo} not in ('manifesto-compilado', 'recurso-compilado')) or (${t.tipo} = 'modelo' and ${t.tipoDoConteudo} = 'model/gltf-binary') or (${t.tipo} in ('miniatura', 'capa', 'textura') and ${t.tipoDoConteudo} in ('image/webp', 'image/png')) or (${t.tipo} = 'terreno' and ${t.tipoDoConteudo} = 'application/octet-stream') or (${t.tipo} = 'manifesto-compilado' and ${t.tipoDoConteudo} = 'application/vnd.sistemazero.cena-compilada+json') or (${t.tipo} = 'recurso-compilado' and ${t.tipoDoConteudo} in ('model/gltf-binary', 'image/webp', 'image/png', 'application/octet-stream'))`,
+    ),
+    check(
+      'cenario_blobs_terreno_check',
+      sql`case when ${t.tipo} = 'terreno' then
+        ${t.bytes} in (8474, 520, 4233, 8458, 12683, 16908, 21133, 25358, 29583, 33808)
+        and (${t.confirmadoEm} is null or (
+          ${t.terreno} is not null and (
+            (${t.bytes} = 8474 and not (${t.terreno} ? 'tipo') and
+              jsonb_typeof(${t.terreno} -> 'min') = 'number' and jsonb_typeof(${t.terreno} -> 'max') = 'number' and
+              (${t.terreno} ->> 'min')::numeric >= -10000 and (${t.terreno} ->> 'max')::numeric <= 10000 and
+              (${t.terreno} ->> 'min')::numeric < (${t.terreno} ->> 'max')::numeric) or
+            (${t.bytes} = 520 and ${t.terreno} ->> 'tipo' = 'buracos') or
+            (${t.terreno} ->> 'tipo' = 'pintura' and jsonb_typeof(${t.terreno} -> 'camadas') = 'number' and
+              (${t.terreno} ->> 'camadas')::numeric between 1 and 8 and
+              (${t.terreno} ->> 'camadas')::numeric = trunc((${t.terreno} ->> 'camadas')::numeric) and
+              ${t.bytes} = 8 + 4225 * (${t.terreno} ->> 'camadas')::numeric)
+          )
+        ) is true) else ${t.terreno} is null end`,
+    ),
+    check('cenario_blobs_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
+    check('cenario_blobs_bytes_check', sql`${t.bytes} > 0`),
+    check(
+      'cenario_blobs_compilado_mime_check',
+      sql`${t.tipo} not in ('manifesto-compilado', 'recurso-compilado') or ${t.tipoDoConteudo} is not null`,
+    ),
+    check(
+      'cenario_blobs_compilado_bytes_check',
+      sql`(${t.tipo} <> 'manifesto-compilado' or ${t.bytes} <= 16777216) and (${t.tipo} <> 'recurso-compilado' or ${t.bytes} <= 268435456)`,
+    ),
+  ],
+)
+
+/**
+ * Arquivo sem dono saindo do armazenamento (`cenario_blobs` já apagado): o BFF apaga o objeto
+ * depois da resposta e só então retira esta linha. Enquanto ela existe, uma reserva do mesmo
+ * hash espera em vez de confiar num objeto que pode sumir no meio do caminho.
+ */
+export const cenarioBlobsSaindo = members.table(
+  'cenario_blobs_saindo',
+  {
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    desde: timestamp('desde', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.espacoId, t.digest] })],
+)
+
+export const cenarioBibliotecas = members.table(
+  'cenario_bibliotecas',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Biblioteca derivada de uma fonte da própria conta; só o serviço atribui. */
+    fonte: varchar('fonte', { length: 120 }),
+    descricao: varchar('descricao', { length: 1000 }).notNull().default(''),
+    /** Miniatura de um modelo existente, sem duplicar imagens nem criar arquivos órfãos. */
+    capaModelo: uuid('capa_modelo').references((): AnyPgColumn => cenarioModelos.id, {
+      onDelete: 'set null',
+    }),
+    licenca: text('licenca').$type<'livre' | 'propria' | 'restrita'>().notNull(),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check(
+      'cenario_bibliotecas_licenca_check',
+      sql`${t.licenca} in ('livre', 'propria', 'restrita')`,
+    ),
+    index('cenario_bibliotecas_espaco_idx').on(t.espacoId),
+    uniqueIndex('cenario_bibliotecas_fonte_unica').on(t.espacoId, t.fonte),
+  ],
+)
+
+export const cenarioModelos = members.table(
+  'cenario_modelos',
+  {
+    id: uuid('id').primaryKey(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Caminho dentro da biblioteca, com `/` entre os níveis. Vazio = raiz. */
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    /** Nome, pasta e etiquetas sem acento e em minúsculas: é onde a busca procura. */
+    busca: varchar('busca', { length: 600 }).notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    triangulos: integer('triangulos').notNull(),
+    /** Caixa do modelo: `[minX, minY, minZ, maxX, maxY, maxZ]`. */
+    caixa: jsonb('caixa').$type<[number, number, number, number, number, number]>().notNull(),
+    miniatura: varchar('miniatura', { length: 64 }),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    // O mesmo conteúdo não entra duas vezes na mesma biblioteca.
+    uniqueIndex('cenario_modelos_biblioteca_digest_uq').on(t.bibliotecaId, t.digest),
+    index('cenario_modelos_lista_idx').on(t.bibliotecaId, t.nome, t.id),
+    index('cenario_modelos_digest_idx').on(t.digest),
+  ],
+)
+
+export const cenarioTexturas = members.table(
+  'cenario_texturas',
+  {
+    id: uuid('id').primaryKey(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    busca: varchar('busca', { length: 600 }).notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    largura: integer('largura').notNull(),
+    altura: integer('altura').notNull(),
+    repeticaoMetros: doublePrecision('repeticao_metros').notNull().default(2),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('cenario_texturas_biblioteca_digest_uq').on(t.bibliotecaId, t.digest),
+    index('cenario_texturas_lista_idx').on(t.bibliotecaId, t.nome, t.id),
+    check(
+      'cenario_texturas_dimensoes_check',
+      sql`${t.largura} between 1 and 4096 and ${t.altura} between 1 and 4096 and ${t.largura}::bigint * ${t.altura} <= 8388608`,
+    ),
+    check('cenario_texturas_repeticao_check', sql`${t.repeticaoMetros} between 0.05 and 1000`),
+    check('cenario_texturas_bytes_check', sql`${t.bytes} > 0 and ${t.bytes} <= 4194304`),
+    check('cenario_texturas_digest_check', sql`${t.digest} ~ '^[a-f0-9]{64}$'`),
+  ],
+)
+
+export const cenarioConjuntos = members.table(
+  'cenario_conjuntos',
+  {
+    id: uuid('id').primaryKey(),
+    operacaoId: varchar('operacao_id', { length: 64 }).notNull(),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    pasta: varchar('pasta', { length: 240 }).notNull().default(''),
+    etiquetas: jsonb('etiquetas').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    busca: varchar('busca', { length: 600 }).notNull(),
+    revisao: integer('revisao').notNull().default(1),
+    cenarioDeEdicaoId: uuid('cenario_de_edicao_id').references(
+      (): AnyPgColumn => cenarioCenarios.id,
+    ),
+    revisaoPublicadaDoCenario: integer('revisao_publicada_do_cenario'),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('cenario_conjuntos_lista_idx').on(t.bibliotecaId, t.busca, t.id),
+    uniqueIndex('cenario_conjuntos_operacao_uq').on(t.bibliotecaId, t.operacaoId),
+    uniqueIndex('cenario_conjuntos_edicao_uq').on(t.cenarioDeEdicaoId),
+    check(
+      'cenario_conjuntos_edicao_check',
+      sql`(${t.cenarioDeEdicaoId} is null and ${t.revisaoPublicadaDoCenario} is null) or (${t.cenarioDeEdicaoId} is not null and ${t.revisaoPublicadaDoCenario} is not null and ${t.revisaoPublicadaDoCenario} >= 0)`,
+    ),
+    check('cenario_conjuntos_revisao_check', sql`${t.revisao} > 0`),
+  ],
+)
+
+/** Conteúdo fixado por revisão; o catálogo aponta para a corrente e nunca reescreve as antigas. */
+export const cenarioConjuntoVersoes = members.table(
+  'cenario_conjunto_versoes',
+  {
+    conjuntoId: uuid('conjunto_id')
+      .notNull()
+      .references(() => cenarioConjuntos.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    operacaoId: varchar('operacao_id', { length: 64 }).notNull(),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    conteudo: jsonb('conteudo').$type<FragmentoBasico>().notNull(),
+    miniatura: varchar('miniatura', { length: 64 }),
+    bytes: integer('bytes').notNull(),
+    objetos: integer('objetos').notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.conjuntoId, t.revisao] }),
+    uniqueIndex('cenario_conjunto_versoes_operacao_uq').on(t.conjuntoId, t.operacaoId),
+    check('cenario_conjunto_versoes_revisao_check', sql`${t.revisao} > 0`),
+    check('cenario_conjunto_versoes_bytes_check', sql`${t.bytes} between 1 and 8388608`),
+    check('cenario_conjunto_versoes_objetos_check', sql`${t.objetos} between 1 and 2000`),
+    check(
+      'cenario_conjunto_versoes_miniatura_check',
+      sql`${t.miniatura} is null or ${t.miniatura} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+)
+
+export const cenarioMundos = members.table(
+  'cenario_mundos',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'cascade' }),
+    bibliotecaConjuntosId: uuid('biblioteca_conjuntos_id').references(() => cenarioBibliotecas.id, {
+      onDelete: 'cascade',
+    }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Quem criou: o perfil da criança no Kids, a conta no adulto. */
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('cenario_mundos_espaco_idx').on(t.espacoId),
+    uniqueIndex('cenario_mundos_conjuntos_biblioteca_uq').on(t.bibliotecaConjuntosId),
+  ],
+)
+
+export const cenarioMundoBibliotecas = members.table(
+  'cenario_mundo_bibliotecas',
+  {
+    mundoId: uuid('mundo_id')
+      .notNull()
+      .references(() => cenarioMundos.id, { onDelete: 'cascade' }),
+    bibliotecaId: uuid('biblioteca_id')
+      .notNull()
+      .references(() => cenarioBibliotecas.id, { onDelete: 'cascade' }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.mundoId, t.bibliotecaId] }),
+    index('cenario_mundo_bibliotecas_biblioteca_idx').on(t.bibliotecaId),
+  ],
+)
+
+export const cenarioCenarios = members.table(
+  'cenario_cenarios',
+  {
+    id: uuid('id').primaryKey(),
+    mundoId: uuid('mundo_id')
+      .notNull()
+      .references(() => cenarioMundos.id, { onDelete: 'cascade' }),
+    nome: varchar('nome', { length: 120 }).notNull(),
+    /** Cresce um a cada lote aplicado. Quem edita precisa conhecer a corrente. */
+    revisao: integer('revisao').notNull().default(0),
+    /** O cenário como está agora (formato `molda-cenario`, versão 2). */
+    documento: jsonb('documento').$type<DocumentoDeCenario>().notNull(),
+    historico: jsonb('historico')
+      .$type<{ passado: number[]; futuro: number[] }>()
+      .notNull()
+      .default({ passado: [], futuro: [] }),
+    capa: varchar('capa', { length: 64 }),
+    criadoPor: uuid('criado_por').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('cenario_cenarios_mundo_idx').on(t.mundoId)],
+)
+
+/** Só as cabeças participam das atualizações vivas; revisões antigas conservam snapshots próprios. */
+export const cenarioConjuntoUsos = members.table(
+  'cenario_conjunto_usos',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    montagemId: varchar('montagem_id', { length: 160 }).notNull(),
+    conjuntoId: uuid('conjunto_id').notNull(),
+    revisao: integer('revisao').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.montagemId] }),
+    foreignKey({
+      columns: [t.conjuntoId, t.revisao],
+      foreignColumns: [cenarioConjuntoVersoes.conjuntoId, cenarioConjuntoVersoes.revisao],
+      name: 'cenario_conjunto_usos_versao_fk',
+    }).onDelete('cascade'),
+    index('cenario_conjunto_usos_conjunto_idx').on(t.conjuntoId, t.cenarioId),
+    check('cenario_conjunto_usos_revisao_check', sql`${t.revisao} > 0`),
+  ],
+)
+
+/** O registro de cada lote aplicado: o histórico do cenário e a prova da operação repetida. */
+export const cenarioLotes = members.table(
+  'cenario_lotes',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    /** A revisão que este lote produziu. */
+    revisao: integer('revisao').notNull(),
+    operacaoId: varchar('operacao_id', { length: 80 }).notNull(),
+    comandos: jsonb('comandos').$type<ComandoDeCenario[]>().notNull(),
+    inversos: jsonb('inversos').$type<ComandoDeCenario[]>(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.revisao] }),
+    uniqueIndex('cenario_lotes_operacao_uq').on(t.cenarioId, t.operacaoId),
+  ],
+)
+
+/** Fotografias esparsas: inicial e a cada 50 lotes. O restante é reconstruído pelo registro. */
+export const cenarioRevisoes = members.table(
+  'cenario_revisoes',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    documento: jsonb('documento').$type<DocumentoDeCenario>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.cenarioId, t.revisao] })],
+)
+
+/** Imagem fixada na revisão fotografada, independente dos snapshots JSON esparsos. */
+export const cenarioRetratos = members.table(
+  'cenario_retratos',
+  {
+    cenarioId: uuid('cenario_id')
+      .notNull()
+      .references(() => cenarioCenarios.id, { onDelete: 'cascade' }),
+    revisao: integer('revisao').notNull(),
+    espacoId: uuid('espaco_id').notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.cenarioId, t.revisao] }),
+    foreignKey({
+      columns: [t.espacoId, t.digest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+      name: 'cenario_retratos_blob_fk',
+    }),
+    index('cenario_retratos_blob_idx').on(t.espacoId, t.digest),
+    check('cenario_retratos_revisao_check', sql`${t.revisao} >= 0`),
+  ],
+)
+
+/** Versões de execução imutáveis. A fonte é proveniência, sem FK que apague a publicação. */
+export const cenarioPublicacoes = members.table(
+  'cenario_publicacoes',
+  {
+    id: uuid('id').primaryKey(),
+    espacoId: uuid('espaco_id')
+      .notNull()
+      .references(() => cenarioEspacos.id, { onDelete: 'restrict' }),
+    perfil: text('perfil').$type<PerfilDePublicacao['tipo']>().notNull(),
+    ilha: text('ilha').$type<PerfilDePublicacao['ilha']>().notNull(),
+    versao: integer('versao').notNull(),
+    fonteCenarioId: uuid('fonte_cenario_id').notNull(),
+    fonteRevisao: integer('fonte_revisao').notNull(),
+    fonteDigest: varchar('fonte_digest', { length: 64 }).notNull(),
+    manifestoDigest: varchar('manifesto_digest', { length: 64 }).notNull(),
+    manifestoBytes: integer('manifesto_bytes').notNull(),
+    operacaoId: uuid('operacao_id').notNull(),
+    digestDaOperacao: varchar('digest_da_operacao', { length: 64 }).notNull(),
+    autorId: uuid('autor_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('cenario_publicacoes_operacao_uq').on(t.operacaoId),
+    uniqueIndex('cenario_publicacoes_versao_uq').on(t.perfil, t.ilha, t.versao),
+    unique('cenario_publicacoes_espaco_uq').on(t.id, t.espacoId),
+    unique('cenario_publicacoes_destino_uq').on(t.id, t.perfil, t.ilha),
+    foreignKey({
+      name: 'cenario_publicacoes_manifesto_fk',
+      columns: [t.espacoId, t.manifestoDigest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+    }).onDelete('restrict'),
+    check(
+      'cenario_publicacoes_perfil_check',
+      sql`${t.perfil} = 'arquipelago-v2' and ${t.ilha} in ('sua-ilha', 'bosque', 'vila-doce', 'recife', 'pico', 'vale-dos-dinos', 'nuvens')`,
+    ),
+    check('cenario_publicacoes_versao_check', sql`${t.versao} > 0 and ${t.fonteRevisao} >= 0`),
+    check(
+      'cenario_publicacoes_digest_check',
+      sql`${t.fonteDigest} ~ '^[a-f0-9]{64}$' and ${t.manifestoDigest} ~ '^[a-f0-9]{64}$' and ${t.digestDaOperacao} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check(
+      'cenario_publicacoes_manifesto_bytes_check',
+      sql`${t.manifestoBytes} between 1 and 16777216`,
+    ),
+  ],
+)
+
+/** Referências de todas as versões, não apenas a corrente. Participam da cota e da limpeza. */
+export const cenarioPublicacaoArquivos = members.table(
+  'cenario_publicacao_arquivos',
+  {
+    publicacaoId: uuid('publicacao_id').notNull(),
+    espacoId: uuid('espaco_id').notNull(),
+    digest: varchar('digest', { length: 64 }).notNull(),
+    bytes: integer('bytes').notNull(),
+    mime: varchar('mime', { length: 80 }).$type<MimeDaPublicacao>().notNull(),
+    papel: text('papel').$type<'manifesto' | 'recurso'>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.publicacaoId, t.digest] }),
+    foreignKey({
+      name: 'cenario_publicacao_arquivos_versao_fk',
+      columns: [t.publicacaoId, t.espacoId],
+      foreignColumns: [cenarioPublicacoes.id, cenarioPublicacoes.espacoId],
+    }).onDelete('cascade'),
+    foreignKey({
+      name: 'cenario_publicacao_arquivos_blob_fk',
+      columns: [t.espacoId, t.digest],
+      foreignColumns: [cenarioBlobs.espacoId, cenarioBlobs.digest],
+    }).onDelete('restrict'),
+    index('cenario_publicacao_arquivos_blob_idx').on(t.espacoId, t.digest),
+    check('cenario_publicacao_arquivos_bytes_check', sql`${t.bytes} between 1 and 268435456`),
+    check(
+      'cenario_publicacao_arquivos_tipo_check',
+      sql`(${t.papel} = 'manifesto' and ${t.mime} = 'application/vnd.sistemazero.cena-compilada+json') or (${t.papel} = 'recurso' and ${t.mime} in ('model/gltf-binary', 'image/png', 'image/webp', 'application/octet-stream'))`,
+    ),
+  ],
+)
+
+export const cenarioPerfisPublicados = members.table(
+  'cenario_perfis_publicados',
+  {
+    perfil: text('perfil').$type<PerfilDePublicacao['tipo']>().notNull(),
+    ilha: text('ilha').$type<PerfilDePublicacao['ilha']>().notNull(),
+    publicacaoId: uuid('publicacao_id').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.perfil, t.ilha] }),
+    foreignKey({
+      name: 'cenario_perfis_publicados_destino_fk',
+      columns: [t.publicacaoId, t.perfil, t.ilha],
+      foreignColumns: [cenarioPublicacoes.id, cenarioPublicacoes.perfil, cenarioPublicacoes.ilha],
+    }).onDelete('restrict'),
+  ],
+)
+
 export const schema = {
+  cenarioPublicacoes,
+  cenarioPublicacaoArquivos,
+  cenarioPerfisPublicados,
   creatorJourneyCourseGrants,
   kidsJourneyPolicy,
   kidsJourneyPreparations,
@@ -3321,12 +4002,29 @@ export const schema = {
   adultHelpCollections,
   adultHelpTutorials,
   creations,
+  creationInventoryFloors,
+  pintaCausalUnits,
+  pintaCausalObjects,
   accountDeletionFences,
   creationCleanupJobs,
   galleryCopyAttempts,
   pensaDeletionJobs,
   pensaProviderUsage,
   processedWebhooks,
+  cenarioEspacos,
+  cenarioBlobs,
+  cenarioBibliotecas,
+  cenarioModelos,
+  cenarioTexturas,
+  cenarioConjuntos,
+  cenarioConjuntoVersoes,
+  cenarioConjuntoUsos,
+  cenarioMundos,
+  cenarioMundoBibliotecas,
+  cenarioCenarios,
+  cenarioLotes,
+  cenarioRevisoes,
+  cenarioRetratos,
 }
 
 // Linha-tipo (importado por testes/seed se útil).

@@ -3,6 +3,9 @@ import {
   assertStudioPythonActivityScope,
   StudioPythonActivitySchema,
 } from '@sistemazero/core/studio/python-activity'
+import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
+import { createGameStorageSession } from '../../state/gameStorage'
+import { scopedProjectIdentity } from '../../state/projectStorageRuntime'
 import {
   type StudioExecutionIdentity,
   type StudioRuntimeProvider,
@@ -16,7 +19,7 @@ import {
   withPythonSavedFile,
 } from './savedFiles'
 import { preparePythonFrameSession } from './session'
-import { preparePythonExecutionSnapshot } from './snapshot'
+import { preparePythonExecutionSnapshot, requiresAdmittedPythonPintaScenes } from './snapshot'
 
 export interface ApprovedPythonFrame {
   /** Host/catalog-owned URL on the separate execution origin. Never project content. */
@@ -49,6 +52,7 @@ export function createPythonRuntimeProvider(options: {
     id: options.id,
     async prepare(input) {
       const { frame, signal } = input
+      const background = input.pythonBackground === true
       const activity =
         input.pythonActivity === undefined
           ? undefined
@@ -62,7 +66,10 @@ export function createPythonRuntimeProvider(options: {
       if (signal.aborted)
         throw signal.reason ?? new DOMException('Execução cancelada.', 'AbortError')
       // Snapshot reader captures all project data before its first await.
-      const snapshot = await preparePythonExecutionSnapshot(input.project)
+      const snapshot = await preparePythonExecutionSnapshot(input.project, {
+        [PRIVATE_REGIONAL_PROJECT]: input[PRIVATE_REGIONAL_PROJECT],
+        signal,
+      })
       if (activity) assertStudioPythonActivityScope(activity, snapshot.configuration)
       if (
         snapshot.projectId !== identity.projectId ||
@@ -76,13 +83,18 @@ export function createPythonRuntimeProvider(options: {
       // Files the program saved in earlier runs (savedFiles.ts). A storage that does not
       // answer only means nothing was kept: the run goes on.
       const projectId = snapshot.projectId
-      const store = options.savedFiles?.(projectId)
+      // The account's store is not authority for a same-ID project in the private namespace.
+      const regionalScope = input[PRIVATE_REGIONAL_PROJECT]
+      const store = regionalScope
+        ? createGameStorageSession(projectId, regionalScope)
+        : options.savedFiles?.(projectId)
+      const storageId = regionalScope ? scopedProjectIdentity(regionalScope, projectId) : projectId
       let record: Record<string, string> = {}
       if (store)
         try {
           // A finished write may start the next one; wait for the whole chain (bounded).
-          for (let turn = 0; turn < 32 && savingByProject.has(projectId); turn++)
-            await savingByProject.get(projectId)
+          for (let turn = 0; turn < 32 && savingByProject.has(storageId); turn++)
+            await savingByProject.get(storageId)
           record = await store.load()
         } catch {
           record = {}
@@ -109,9 +121,9 @@ export function createPythonRuntimeProvider(options: {
           .finally(() => {
             writing = false
             if (latest) persist()
-            else if (savingByProject.get(projectId) === done) savingByProject.delete(projectId)
+            else if (savingByProject.get(storageId) === done) savingByProject.delete(storageId)
           })
-        savingByProject.set(projectId, done)
+        savingByProject.set(storageId, done)
       }
       const keepSavedFile = store
         ? (file: PythonSavedFileChange) => {
@@ -167,6 +179,10 @@ export function createPythonRuntimeProvider(options: {
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),
         ...(input.pythonMission ? { mission: true } : {}),
+        ...(input.requirePintaScenes || requiresAdmittedPythonPintaScenes(snapshot)
+          ? { requirePintaScenes: true }
+          : {}),
+        ...(background ? { background: true as const } : {}),
       })
     },
   }

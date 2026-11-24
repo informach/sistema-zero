@@ -1,4 +1,23 @@
-/** Mesmo template, tipografia e componentes do Cadê; desenhos usam as definições do Estúdio. */
+/**
+ * Passo a passo do projeto de A Ilha do Farol, na receita do caderno visual (20/11/2026,
+ * `../caderno-visual/README.md`), no molde do gerador da Chave do Farol.
+ *
+ * Todo texto que a criança lê mora em `caderno-conteudo.json`: aqui ficam só a composição, os
+ * desenhos dos encaixes (com os rótulos que os blocos 3D mostram no Estúdio), as galerias das
+ * escolhas e a capa. A arte da capa (`caderno-visual/arte/capa-ilha-farol.jpg`) é a ilha do jogo,
+ * renderizada com as peças publicadas por `docs/design/ilha-do-farol-blender/capa.py`.
+ *
+ * Itens do conteúdo: `text`, `step` (título "N. …" vira passo numerado), `box` (com `tone`),
+ * `note`, `activity` (com `pill`), `delivery` (com `finish`), `gallery` (com `category`),
+ * `drawing` (com `name`, um dos desenhos abaixo, e `title`), `index` (o "Encontre seu passo" da
+ * primeira folha), `views` (prints do jogo lado a lado, com `images`) e `figure` (com `name`, um dos
+ * desenhos das páginas de conceito, e `title`). Uma página `{ "id": "guia-…", "guia": true }` é uma
+ * folha "Conheça a plataforma" (`guia-da-plataforma/guia.ts`): na Ilha, o jogo em 3D e os botões
+ * da vista. Em todo texto, `<br/>` separa parágrafos e um caminho da paleta em negrito
+ * ("Jogo 3D &gt; …") ganha a cor de caminho. `{{pagina:<id>}}` vira o número da página.
+ *
+ * Gerar e conferir: `python docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py ilha-farol`.
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
@@ -7,365 +26,448 @@ import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/val
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { ilhaAulas } from '../../qa/ilha-do-farol-conteudo'
-import { ILHA_PREPARO } from '../../qa/ilha-do-farol-projeto'
+import {
+  arteDoCurso,
+  cabecalho,
+  caixa,
+  capaHtml,
+  criarBlocos,
+  cssDoCaderno,
+  entrega,
+  icone,
+  nota,
+  paragrafos,
+  passo,
+  rodape,
+  secao,
+} from '../caderno-visual/visual'
+import { GUIA_CSS, guiaSecao } from '../guia-da-plataforma/guia'
 
-const root = resolve(import.meta.dirname, '../../../..')
-const out = resolve(root, 'tmp/pdfs/ilha-farol')
-mkdirSync(out, { recursive: true })
-const reference = readFileSync(
-  resolve(import.meta.dirname, '../cade-todo-mundo/caderno-do-aluno.template.html'),
-  'utf8',
-)
-const baseCss = reference.match(/<style>([\s\S]*?)<\/style>/)?.[1]
-if (!baseCss) throw Error('Template do Cadê sem CSS')
-const css = baseCss.replace(
-  '/* {{FONT_FACES}} */',
-  `
-@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}
-@font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`,
-)
-const esc = (s: string) =>
-  s
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-const definitions = new Map(
-  [...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameThreeDBlocks].map((b) => [b.type, b]),
-)
-const colors: Record<string, string> = {}
-function attrs(type: string) {
-  const color = definitions.get(type)?.colour
-  if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color))
-    throw Error('Cor ausente: ' + type)
-  colors[type] = color
-  return `data-block-type="${type}" style="background-color:${color}"`
+type Item = {
+  kind: string
+  title?: string
+  text?: string
+  tone?: string
+  finish?: string
+  category?: string
+  name?: string
+  pill?: string
+  days?: { kicker: string; title: string; text: string; pages: string }[]
+  extras?: { icon: string; title: string; text: string }[]
+  images?: { image: string; caption: string }[]
 }
-const field = (s: string) => `<span class="field">${esc(s)}</span>`
-const value = (type: string, s: string) =>
-  `<span class="value-block" ${attrs(type)}>${type === 'sz_val_variable' ? 'valor da variável ' : type === 'sz_val_text' ? 'texto ' : ''}${field(s)}</span>`
-const num = (n: string) => value('sz_val_number', n)
-const bool = (b: string) => value('sz_val_bool', b)
-const block = (type: string, s: string) => `<div class="block" ${attrs(type)}>${s}</div>`
-const nested = (type: string, s: string, body: string) =>
-  block(
-    type,
-    `${s}<div class="do-row"><span class="do-label">fazer</span><div class="event-body">${body}</div></div>`,
-  )
-const prepared = (s: string) => `<div class="prepared">${s} (já vem no projeto)</div>`
-const area = (type: string, name: string, body: string) =>
-  `<div class="event-block" ${attrs(type)}><span class="tag">Áreas do projeto · ${name}</span><div class="event-body">${body}</div></div>`
-const visible = (name: string, show = false) =>
-  block('sz_g3d_set_visible', `${field(show ? 'Mostrar' : 'Esconder')} o objeto ${field(name)}`)
-const assign = (name: string, v: string) =>
-  block('sz_js_var_assign', `Alterar variável ${field(name)} para ${v}`)
-const message = (s: string) => assign('aviso', value('sz_val_text', s))
-const encounter = (other: string, body: string) =>
-  area(
-    'sz_frame_events',
-    'Quando acontecer',
-    nested('sz_g3d_on_touch', `Quando ${field('personagem')} encostar em ${field(other)}`, body),
-  )
-const choice = (yes: string, no: string) =>
-  block(
-    'sz_js_if_else',
-    `Se ${value('sz_val_variable', 'temChave')}<div class="branch-label">então</div><div class="event-body">${yes}</div><div class="branch-label">senão</div><div class="event-body">${no}</div>`,
-  )
-/** A guarda da partida: o Se temChave inteiro mora no então do Se não ganhou. */
-const notWon = (inner: string) =>
-  block(
-    'sz_js_if_else',
-    `Se <span class="value-block" ${attrs('sz_val_not')}>não ${value('sz_val_variable', 'ganhou')}</span><div class="branch-label">então</div><div class="event-body">${inner}</div>`,
-  )
-const model = (name: string, file: string, size: string) =>
-  block(
-    'sz_g3d_create_model_file',
-    `Criar o objeto ${field(name)} com o modelo ${field(file)} na cena ${field('cena')} tamanho ${num(size)}`,
-  )
-const drawings: Record<string, string> = {
-  movimento: area(
-    'sz_frame_loops',
-    'Enquanto estiver rodando',
-    nested(
-      'sz_g3d_animate',
-      `A cada quadro da cena ${field('cena')}`,
-      block(
-        'sz_g3d_top_down',
-        `Fazer ${field('personagem')} andar com as setas (ou WASD), velocidade ${num('4')}`,
-      ) + prepared('Aviso e chegada do barco'),
-    ),
-  ),
-  posicao: area(
-    'sz_frame_start',
-    'Ao iniciar',
-    prepared('Outros objetos da ilha') +
-      block(
-        'sz_g3d_set_position',
-        `Colocar o objeto ${field('chave')} em x ${num('−3')} y ${num('1')} z ${num('−2')}`,
-      ),
-  ),
-  recolher: encounter('chave', visible('chave')),
-  memoria:
-    area(
-      'sz_frame_start',
-      'Ao iniciar',
-      prepared('Blocos anteriores') +
-        block('sz_js_var_create', `Criar variável ${field('temChave')} com valor ${bool('falso')}`),
-    ) + encounter('chave', visible('chave') + assign('temChave', bool('verdadeiro'))),
-  aviso: encounter(
-    'chave',
-    visible('chave') +
-      assign('temChave', bool('verdadeiro')) +
-      message('Você pegou a chave! Agora vá ao farol.'),
-  ),
-  aparencia: area(
-    'sz_frame_start',
-    'Ao iniciar',
-    prepared('Criar a cena, a câmera e a luz') +
-      model('cenario', 'noite-na-ilha', String(ILHA_PREPARO.cenario.tamanho)) +
-      prepared('Colocar o objeto cenario') +
-      model('farol', 'farol-de-pedra', String(ILHA_PREPARO.farol.tamanho)) +
-      prepared('Colocar o objeto farol') +
-      model('barco', 'barco-pirata', String(ILHA_PREPARO.barco.tamanho)) +
-      prepared('Pedras e posições') +
-      model('personagem', 'pirata', String(ILHA_PREPARO.personagem.tamanho)) +
-      model('chave', 'chave-de-estrela', String(ILHA_PREPARO.chave.tamanho)) +
-      prepared('Outros blocos'),
-  ),
-  'sem-chave': encounter(
-    'farol',
-    choice(
-      '<div class="prepared">Vazio nesta parte</div>',
-      message('Falta a chave. Procure na ilha antes de voltar.'),
-    ),
-  ),
-  decisao: encounter(
-    'farol',
-    choice(
-      block(
-        'sz_g3d_play_animation',
-        `Tocar a animação ${field('acender')} em ${field('farol')} ${field('uma vez')}`,
-      ) +
-        assign('ganhou', bool('verdadeiro')) +
-        message('Você acendeu o farol! O barco pode chegar.'),
-      message('Falta a chave. Procure na ilha antes de voltar.'),
-    ),
-  ),
-  'uma-vez': encounter(
-    'farol',
-    notWon(
-      choice(
-        '<div class="prepared">Acender, ganhou e aviso</div>',
-        '<div class="prepared">Aviso da chave que falta</div>',
-      ),
-    ),
-  ),
-}
-type Page = {
+type ContentPage = {
   id: string
-  lesson: number
   kicker: string
   title: string
   subtitle: string
-  body: string
-  image?: string
+  lit?: boolean
+  guia?: false
+  items: Item[]
 }
-const pages: Page[] = []
-const text = (s: string) => `<p>${esc(s)}</p>`
-const box = (title: string, s: string, tone = 'note') =>
-  `<div class="soft-box box-${tone}"><h3>${esc(title)}</h3>${text(s)}</div>`
-const steps = (ss: string[]) =>
-  `<div class="steps">${ss.map((s, i) => `<div class="step"><span class="number">${i + 1}</span><p>${esc(s)}</p></div>`).join('')}</div>`
-const exit = (delivery: boolean) =>
-  `<div class="check"><span class="pill pill--test">${delivery ? 'Verificar e enviar' : 'Confira no seu jogo'}</span><p>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente, até aparecer <b>Objetivo cumprido!</b> Espere <b>Salvo</b>. ${delivery ? 'Clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique' : 'Clique'} em <b>Próxima parte</b>.</p></div>`
-pages.push({
-  id: 'inicio',
-  lesson: 1,
-  kicker: 'Seu passo a passo do projeto',
-  title: 'A Ilha do Farol',
-  subtitle: 'Encontre a chave e acenda o farol para o barco chegar.',
-  body:
-    text(
-      'Você já construiu A Chave do Farol. Agora vai programar essa aventura em três dimensões e investigar o que muda quando o mundo ganha profundidade.',
-    ) +
-    box(
-      'Use quando precisar',
-      'Este material acompanha as partes das aulas. Primeiro deixe à vista o lugar do encaixe; depois procure o bloco na paleta. Você pode ler aqui mesmo ou clicar em Baixar para guardar.',
-    ) +
-    '<div class="index"></div>' +
-    box(
-      'Comece pela partida pronta',
-      'Clique dentro do jogo e segure as setas do teclado ou as letras W, A, S e D. Para recomeçar, toque na tecla R. Você pode continuar a aula mesmo sem terminar essa partida.',
-      'experience',
-    ),
-})
-// A experiência só com a ideia e o convite (molde do Cadê, 02/11/2026): a ideia e uma pergunta
-// que convida, e o que investigar sai da instrução da própria atividade (`instrucao`), sem
-// sequência de cliques nem resultado. A montagem continua com os passos completos.
-// A pergunta com o não (aula 3, 02/11/2026) é a porta do Farol, em 2D: sem ilustração da ilha 3D.
-const experiences: Record<string, { intro: string; image?: string }> = {
-  'ponto-de-vista': {
-    intro:
-      'A câmera é o lugar de onde você olha a ilha, como os seus olhos dentro do jogo. Se a câmera mudar de lugar, a chave também muda de lugar?',
-    image: 'vista-frente',
+type GuiaPage = { id: string; guia: true }
+const root = resolve(import.meta.dir, '../../../..')
+const pages = JSON.parse(
+  readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
+) as (ContentPage | GuiaPage)[]
+const fontes = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nunito.base64}) format('woff2');font-weight:400 800}
+@font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`
+const arte = arteDoCurso('capa-ilha-farol.jpg')
+
+// Os blocos: as definições do Estúdio trazem a cor de cada tipo (os 3D em tons de dourado).
+const B = criarBlocos([...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameThreeDBlocks])
+const lista = (valor: string) => B.campo(valor, { lista: true })
+const bool = (valor: string) => B.valor('sz_val_bool', lista(valor))
+const variavel = (nome: string) => B.valor('sz_val_variable', `valor da variável ${lista(nome)}`)
+const assign = (nome: string, valor: string) =>
+  B.bloco('sz_js_var_assign', `Alterar variável ${lista(nome)} para ${valor}`)
+const aviso = (texto: string) => assign('aviso', B.texto('sz_val_text', texto))
+const esconder = () =>
+  B.bloco('sz_g3d_set_visible', `${lista('Esconder')} o objeto ${lista('chave')}`)
+const FALTA = 'Falta a chave. Procure na ilha antes de voltar.'
+/** O encontro, com a palavra "fazer" à esquerda da boca, como no Estúdio. */
+const encontro = (outro: string, pronto: string, corpo: string) =>
+  B.area(
+    'Quando acontecer',
+    B.pronto(pronto, B.cor('sz_frame_events')) +
+      B.comBoca(
+        'sz_g3d_on_touch',
+        `Quando ${lista('personagem')} encostar em ${lista(outro)}`,
+        corpo,
+      ),
+  )
+const encontroChave = (corpo: string) => encontro('chave', 'Quando apertar a tecla R', corpo)
+const encontroFarol = (corpo: string) =>
+  encontro('farol', 'Quando apertar a tecla R e o encontro com a chave', corpo)
+const seChave = (entao: string, senao: string) =>
+  B.se('sz_js_if_else', variavel('temChave'), [
+    { rotulo: 'então', explica: 'quando temChave é verdadeiro', corpo: entao },
+    { rotulo: 'senão', explica: 'quando temChave é falso', corpo: senao },
+  ])
+const acender = () =>
+  B.bloco(
+    'sz_g3d_play_animation',
+    `Tocar a animação ${lista('acender')} em ${lista('farol')} ${lista('uma vez')}`,
+  ) +
+  assign('ganhou', bool('verdadeiro')) +
+  aviso('Você acendeu o farol! O barco pode chegar.')
+
+// Os desenhos dos encaixes. O conteúdo escolhe onde cada um entra e dá o título dele.
+const drawings: Record<string, { area: string; corpo: () => string }> = {
+  movimento: {
+    area: 'Enquanto estiver rodando',
+    corpo: () =>
+      B.area(
+        'Enquanto estiver rodando',
+        B.comBoca(
+          'sz_g3d_animate',
+          `A cada quadro da cena ${lista('cena')}`,
+          B.bloco(
+            'sz_g3d_top_down',
+            `Fazer ${lista('personagem')} andar com as setas (ou WASD), velocidade ${B.numero('4')}`,
+          ) + B.pronto('Escrever na tela e a chegada do barco', B.cor('sz_g3d_animate')),
+        ),
+      ),
   },
-  'posicao-3d': {
-    intro:
-      'Na ilha, o lugar da chave tem três números: x, y e z. No jogo 2D, você usava só x e y. E o y, será que continua fazendo o que fazia no jogo 2D?',
-    image: 'posicao',
-  },
-  'contato-3d': {
-    intro:
-      'Encostar é quando duas coisas do jogo se tocam de verdade. Olhando de cima, a chave pode parecer estar em cima do personagem. Será que eles estão encostando?',
-    image: 'contato',
-  },
-  'pergunta-com-nao': {
-    intro:
-      'A porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim. Com o não na pergunta, o que a porta faz?',
-  },
-}
-for (const [li, a] of ilhaAulas.entries()) {
-  for (const [ti, t] of a.trechos.entries()) {
-    // Na aula 3, a revisão é a parte logo antes da aparência.
-    const quizAt = a.trechos.findIndex((x) => x.key === 'aparencia')
-    const part = ti + 1 + (li === 2 && ti >= quizAt ? 1 : 0)
-    if (li === 2 && t.key === 'aparencia')
-      pages.push({
-        id: 'quiz',
-        lesson: 3,
-        kicker: `Aula 3 · Parte ${part - 1} · Revisão`,
-        title: 'O que você descobriu no 3D',
-        subtitle: 'Responda na própria aula e observe a demonstração.',
-        body:
-          steps([
-            'Escolha uma resposta. As opções têm a mesma aparência antes da sua escolha.',
-            'Clique em Ver o que acontece. Observe a cena e leia a explicação.',
-            'Se precisar, clique em Tentar de novo. Depois da resposta conferida, clique em Próxima pergunta. Na última, use Concluir revisão.',
-            'Ao terminar a revisão, clique em Próxima parte e volte ao seu projeto.',
-          ]) +
-          box(
-            'Retome suas descobertas',
-            'Você pode voltar às experiências e comparar novamente. O importante é entender o que aconteceu, não decorar uma sequência de botões.',
-            'experience',
+  posicao: {
+    area: 'Ao iniciar',
+    corpo: () =>
+      B.area(
+        'Ao iniciar',
+        B.pronto('Os objetos da ilha e as outras posições', B.cor('sz_frame_start')) +
+          B.bloco(
+            'sz_g3d_set_position',
+            `Colocar o objeto ${lista('chave')} em x ${B.numero('−3')} y ${B.numero('1')} z ${B.numero('−2')}`,
           ),
-      })
-    if (t.kind === 'intro' || t.kind === 'material') continue
-    if (t.kind === 'closing' && li < 2) continue
-    const e = experiences[t.key]
-    if (e && !t.instrucao) throw new Error(`${t.key}: experiência sem instrução`)
-    const body = e
-      ? text(e.intro) +
-        (e.image
-          ? `<img class="experiment" data-image="${e.image}" alt="Cena da experiência 3D">`
-          : '') +
-        box('O que investigar', t.instrucao!, 'experience') +
-        box(
-          'Sua investigação',
-          'O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.',
-          'experience',
-        )
-      : t.steps
-        ? steps(t.steps) + exit(t.kind === 'delivery')
-        : box(
-            'Sua ilha está pronta',
-            'Você programou movimento, coleta, memória e decisão. Agora pode jogar de novo e mostrar sua criação a alguém. Clique em Concluir aula.',
-            'test',
-          ) +
-          box(
-            'Publique se quiser',
-            'No Estúdio, clique em Compartilhar. O título já vem preenchido. Escreva um resumo, clique em Gerar capa e confira. Clique em Publicar e espere Seu jogo está no Mural! Copie o link de jogar para mostrar à família e aos amigos; peça ajuda a um adulto se precisar. Clique em Fechar para voltar. Você pode concluir sem publicar.',
-          ) +
-          box(
-            'Se precisar de ajuda',
-            'Volte ao vídeo da montagem e compare os encaixes. O Passo a passo fica na parte 2 da primeira aula. No rodapé, clique em Preciso de ajuda e conte o que tentou e o que aconteceu.',
-          ) +
-          box(
-            'Se mudar depois do envio',
-            'Espere Salvo, clique em Enviar de novo e confirme em Reenviar. Assim, a equipe recebe a versão atual do seu jogo.',
-          )
-    pages.push({
-      id: `${li + 1}-${t.key}`,
-      lesson: li + 1,
-      kicker: `Aula ${li + 1} · Parte ${part}${e ? ' · Experiência' : t.steps ? ' · Construção' : ''}`,
-      title: t.title,
-      subtitle: e ? 'Explore, compare e repita.' : a.title,
-      body,
-    })
-    if (drawings[t.key])
-      pages.push({
-        id: `${li + 1}-${t.key}-blocos`,
-        lesson: li + 1,
-        kicker: `Aula ${li + 1} · Parte ${part} · Encaixes`,
-        title: 'Confira se ficou assim',
-        subtitle: t.title,
-        body:
-          `<div class="blocks"><h3>Esquema dos encaixes</h3>${drawings[t.key]}<p class="diagram-note">As cores são as mesmas dos blocos no Estúdio. Os espaços cinza representam a preparação que já vem no projeto.</p></div>` +
-          box(
-            'Teste antes de seguir',
-            t.steps?.at(-1) ?? 'Clique em Rodar de novo e confira o resultado no jogo.',
+      ),
+  },
+  recolher: { area: 'Quando acontecer', corpo: () => encontroChave(esconder()) },
+  memoria: {
+    area: 'Ao iniciar e Quando acontecer',
+    corpo: () =>
+      B.area(
+        'Ao iniciar',
+        B.pronto(
+          'Os blocos que já estão em Ao iniciar, até o que cria aviso',
+          B.cor('sz_frame_start'),
+        ) +
+          B.bloco(
+            'sz_js_var_create',
+            `Criar variável ${B.campo('temChave')} com valor ${bool('falso')}`,
           ),
-      })
-  }
+      ) + encontroChave(esconder() + assign('temChave', bool('verdadeiro'))),
+  },
+  aviso: {
+    area: 'Quando acontecer',
+    corpo: () =>
+      encontroChave(
+        esconder() +
+          assign('temChave', bool('verdadeiro')) +
+          aviso('Você pegou a chave! Agora vá ao farol.'),
+      ),
+  },
+  // Aula 3, parte 1: só o senão tem bloco; o então fica vazio até a parte seguinte.
+  'sem-chave': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      encontroFarol(
+        seChave(B.vazio('vazio por enquanto: você completa na próxima parte'), aviso(FALTA)),
+      ),
+  },
+  decisao: {
+    area: 'Quando acontecer',
+    corpo: () => encontroFarol(seChave(acender(), aviso(FALTA))),
+  },
+  // A guarda da partida: o Se temChave inteiro mora no então do Se não ganhou.
+  'uma-vez': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      encontroFarol(
+        B.se('sz_js_if_else', B.valor('sz_val_not', `não ${variavel('ganhou')}`), [
+          {
+            rotulo: 'então',
+            explica: 'enquanto a partida ainda não foi ganha',
+            corpo: seChave(
+              B.pronto('Tocar a animação, ganhou e o aviso da vitória', B.cor('sz_js_if_else')),
+              B.pronto('O aviso de que falta a chave', B.cor('sz_js_if_else')),
+            ),
+          },
+        ]),
+      ),
+  },
 }
-// A galeria da personalização: as miniaturas saem dos mesmos modelos do jogo
+
+// As escolhas da personalização: as miniaturas saem dos mesmos modelos do jogo
 // (docs/design/ilha-do-farol-blender/galeria), com o nome que aparece na lista do bloco.
 const galeriaDir = resolve(root, 'docs/design/ilha-do-farol-blender/galeria')
-const tile = (nome: string) =>
-  `<figure class="opcao"><img src="data:image/webp;base64,${readFileSync(resolve(galeriaDir, `${nome}.webp`)).toString('base64')}" alt="${esc(nome)}"><figcaption>${esc(nome)}</figcaption></figure>`
-const grupo = (titulo: string, nomes: string[], largo = false) =>
-  `<div class="galeria"><h3>${esc(titulo)}</h3><div class="opcoes${largo ? ' opcoes--largas' : ''}">${nomes.map(tile).join('')}</div></div>`
-const galeria: Page[] = [
-  {
-    id: '3-galeria-1',
-    lesson: 3,
-    kicker: `Aula 3 · Parte ${ilhaAulas[2].trechos.findIndex((t) => t.key === 'aparencia') + 2} · Escolhas`,
-    title: 'Todas as opções do seu jogo',
-    subtitle: 'O nome embaixo de cada uma é o mesmo da lista do bloco.',
-    body:
-      grupo('Personagens', [
-        'aventureiro',
-        'menina-de-laco',
-        'marinheira',
-        'menino-de-bone',
-        'exploradora-de-chapeu',
-        'pirata',
-        'mergulhador',
-        'robo',
-      ]) + grupo('Chaves', ['chave-dourada', 'chave-prateada', 'chave-de-estrela']),
-  },
-  {
-    id: '3-galeria-2',
-    lesson: 3,
-    kicker: `Aula 3 · Parte ${ilhaAulas[2].trechos.findIndex((t) => t.key === 'aparencia') + 2} · Escolhas`,
-    title: 'Barcos, faróis e cenários',
-    subtitle: 'Todo farol sabe acender: troque o modelo num lugar só.',
-    body:
-      grupo('Barcos', ['veleiro', 'barco-de-pesca', 'lancha', 'barco-pirata']) +
-      grupo('Faróis', ['farol-listrado', 'farol-de-pedra', 'farol-de-madeira', 'farol-colorido']) +
-      grupo('Cenários', ['praia-tropical', 'costa-rochosa', 'ilha-nevada', 'noite-na-ilha'], true),
-  },
-]
-pages.splice(
-  pages.findIndex((p) => p.id === '3-aparencia'),
-  0,
-  ...galeria,
+const GALERIAS: Record<string, readonly string[]> = {
+  personagens: [
+    'aventureiro',
+    'menina-de-laco',
+    'marinheira',
+    'menino-de-bone',
+    'exploradora-de-chapeu',
+    'pirata',
+    'mergulhador',
+    'robo',
+  ],
+  cenarios: ['praia-tropical', 'costa-rochosa', 'ilha-nevada', 'noite-na-ilha'],
+  barcos: ['veleiro', 'barco-de-pesca', 'lancha', 'barco-pirata'],
+  chaves: ['chave-dourada', 'chave-prateada', 'chave-de-estrela'],
+  farois: ['farol-listrado', 'farol-de-pedra', 'farol-de-madeira', 'farol-colorido'],
+}
+const opcao = (nome: string) =>
+  `<figure class="galeria-item ilha-opcao"><img src="data:image/webp;base64,${readFileSync(resolve(galeriaDir, `${nome}.webp`)).toString('base64')}" alt="${nome}"><figcaption>${nome}</figcaption></figure>`
+function gallery(category: string | undefined): string {
+  const nomes = GALERIAS[category ?? '']
+  if (!nomes) throw new Error(`Galeria desconhecida: ${category}`)
+  return `<div class="galeria ilha-galeria ilha-galeria--${category}">${nomes.map(opcao).join('')}</div>`
+}
+
+// As figuras das páginas de conceito (22/11/2026). Os prints do jogo vêm do guia da plataforma
+// (`guia-da-plataforma/telas/ilha-do-farol`, de `capturar-telas.py`), e os desenhos usam os modelos
+// do jogo renderizados com fundo transparente (`arte/`). Na página de encostar, as fotos são da
+// experiência da Aula 2, Parte 3, de cima e de lado, como a criança viu.
+const telasDir = resolve(import.meta.dir, '../guia-da-plataforma/telas/ilha-do-farol')
+const arteDir = resolve(import.meta.dir, 'arte')
+const dataUrl = (arquivo: string, tipo: string) =>
+  `data:${tipo};base64,${readFileSync(arquivo).toString('base64')}`
+const modelo = (nome: string) => dataUrl(resolve(arteDir, `${nome}.webp`), 'image/webp')
+
+function views(images: Item['images']): string {
+  if (!images?.length) throw new Error('Página com views sem imagens.')
+  const figuras = images
+    .map(
+      (v) =>
+        `<figure class="ilha-vista"><img src="${dataUrl(resolve(telasDir, `${v.image}.jpg`), 'image/jpeg')}" alt="${v.caption}"><figcaption>${v.caption}</figcaption></figure>`,
+    )
+    .join('')
+  return `<div class="ilha-vistas">${figuras}</div>`
+}
+
+// As cores dos eixos são as do Estúdio e da maioria dos programas 3D: x vermelho, y verde, z azul.
+const EIXO = { x: '#d64545', y: '#2a9457', z: '#2f6fdb' } as const
+const FONTE_DESENHO = `font-family="'Baloo 2', Nunito, sans-serif" font-weight="800"`
+const ponta = (eixo: keyof typeof EIXO) =>
+  `<marker id="ponta-${eixo}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4.4" markerHeight="4.4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${EIXO[eixo]}"/></marker>`
+const seta = (eixo: keyof typeof EIXO, x1: number, y1: number, x2: number, y2: number) =>
+  `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${EIXO[eixo]}" stroke-width="6" stroke-linecap="round" marker-end="url(#ponta-${eixo})"/>`
+const rotulo = (eixo: keyof typeof EIXO, x: number, y: number, explica: string, ancora = 'start') =>
+  `<text x="${x}" y="${y}" text-anchor="${ancora}" ${FONTE_DESENHO} fill="${EIXO[eixo]}"><tspan font-size="34">${eixo}</tspan><tspan font-size="17" dx="6">${explica}</tspan></text>`
+
+/**
+ * As três direções na vista do começo: a câmera fica do lado de quem olha, então o x vai para a
+ * direita, o y para cima e o z vem para perto, pelo chão (no desenho, o z desce seguindo a
+ * perspectiva do chão, que foge para o fundo).
+ */
+function desenhoEixos(): string {
+  return `<svg class="ilha-desenho" viewBox="0 0 480 300" role="img" aria-label="A chave no ar, com as setas do x, do y e do z">
+<defs>${ponta('x')}${ponta('y')}${ponta('z')}</defs>
+<rect width="480" height="300" rx="18" fill="#e6f3ff"/>
+<polygon points="40,266 440,266 360,132 120,132" fill="#f2d9a6" stroke="#d8b878" stroke-width="2"/>
+<ellipse cx="200" cy="208" rx="30" ry="8" fill="#0000001f"/>
+${seta('y', 200, 208, 200, 52)}
+${seta('x', 200, 208, 338, 208)}
+${seta('z', 200, 208, 191, 262)}
+<image href="${modelo('chave')}" x="166" y="92" width="68" height="63"/>
+${rotulo('x', 348, 218, 'para os lados')}
+${rotulo('y', 214, 60, 'a altura')}
+${rotulo('z', 150, 292, 'perto e longe')}
+</svg>`
+}
+
+const FIGURAS: Record<string, () => string> = { eixos: desenhoEixos }
+function figure(item: Item): string {
+  const desenho = FIGURAS[item.name ?? '']
+  if (!desenho) throw new Error(`Figura desconhecida: ${item.name}`)
+  return `<figure class="ilha-figura">${desenho()}<figcaption>${item.title ?? ''}</figcaption></figure>`
+}
+
+/** Card de cada caixa: o tom e o ícone seguem o que a caixa diz, como nas folhas de referência. */
+function boxStyle(item: Item): { tom: 'azul' | 'amarelo'; icone: string } {
+  const titulo = item.title ?? ''
+  if (/^Se Compartilhar/.test(titulo)) return { tom: 'amarelo', icone: 'boia' }
+  if (/^Preciso de ajuda/.test(titulo)) return { tom: 'azul', icone: 'ajuda' }
+  if (/nome que os blocos/.test(titulo)) return { tom: 'azul', icone: 'etiqueta' }
+  if (/^O que investigar/.test(titulo)) return { tom: 'amarelo', icone: 'olho' }
+  if (/^Comemore/.test(titulo)) return { tom: 'amarelo', icone: 'medalha' }
+  if (/^Um lugar para/.test(titulo)) return { tom: 'amarelo', icone: 'mapa' }
+  if (/^Teste/.test(titulo)) return { tom: 'amarelo', icone: 'controle' }
+  if (item.tone === 'experience') return { tom: 'amarelo', icone: 'setas' }
+  if (item.tone === 'test') return { tom: 'amarelo', icone: 'controle' }
+  return { tom: 'azul', icone: 'livro' }
+}
+
+function indexCards(item: Item): string {
+  const tons = ['azul', 'ambar', 'vermelho']
+  const aulas = (item.days ?? [])
+    .map(
+      (d, i) =>
+        `<div class="indice-dia indice-dia--${tons[i] ?? 'azul'}"><div class="kicker">${d.kicker}</div><h3>${d.title}</h3><p>${d.text}</p><p class="indice-paginas">${d.pages}</p></div>`,
+    )
+    .join('')
+  const extras = (item.extras ?? [])
+    .map(
+      (e) =>
+        `<div class="indice-extra">${icone(e.icon, 'indice-icone')}<h3>${e.title}</h3><p>${e.text}</p></div>`,
+    )
+    .join('')
+  return `<h3 class="titulo-secao">${item.title ?? ''}</h3><p class="texto">${item.text ?? ''}</p><div class="indice-dias">${aulas}</div><div class="indice-extras">${extras}</div>`
+}
+
+function renderItem(item: Item, page: { kicker: string }, index: number): string {
+  if (item.kind === 'gallery')
+    return `${item.title ? `<h3 class="titulo-secao">${item.title}</h3>` : ''}${gallery(item.category)}`
+  if (item.kind === 'drawing') {
+    const drawing = drawings[item.name ?? '']
+    if (!drawing) throw new Error(`Desenho desconhecido: ${item.name}`)
+    return B.esquema(item.title ?? '', drawing.area, drawing.corpo())
+  }
+  if (item.kind === 'index') return indexCards(item)
+  if (item.kind === 'views') return views(item.images)
+  if (item.kind === 'figure') return figure(item)
+  const text = item.text ?? ''
+  if (item.kind === 'text')
+    // Nas folhas de experiência, a ideia do vídeo abre a folha num card, antes do convite.
+    return /Experiência/i.test(page.kicker) && index === 0
+      ? caixa({ tom: 'azul', icone: 'filme', html: text })
+      : `<div class="texto">${paragrafos(text)}</div>`
+  if (item.kind === 'note') return nota(text)
+  if (item.kind === 'activity')
+    return caixa({ tom: 'amarelo', icone: 'controle', titulo: item.pill, html: text })
+  if (item.kind === 'step') {
+    const match = item.title?.match(/^(\d+)\.\s*(.*)$/)
+    return match ? passo(match[1] ?? '', match[2] ?? '', text) : secao(item.title ?? '', text)
+  }
+  if (item.kind === 'delivery')
+    return entrega(
+      'Confira antes de enviar',
+      `Funcionou? Clique em <strong>Verificar projeto</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <strong>Objetivo cumprido!</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando aparecer <strong>Projeto enviado!</strong>, clique em <strong>${item.finish}</strong>.`,
+    )
+  if (item.kind === 'box') {
+    // "Verificar e continuar" fecha a folha no card escuro.
+    if (item.tone === 'test' && /^Verificar/.test(item.title ?? ''))
+      return entrega(item.title ?? '', text)
+    return caixa({ ...boxStyle(item), titulo: item.title, html: text })
+  }
+  throw new Error(`Item desconhecido no caderno: ${item.kind}`)
+}
+
+/** A cor de cada folha segue a aula; na Aula 3, a surpresa e o fim ganham cores próprias. */
+function tema(kicker: string): string {
+  if (/^Aula 1/.test(kicker)) return 'tema-azul'
+  if (/^Aula 2/.test(kicker)) return 'tema-ambar'
+  const parte = Number(kicker.match(/^Aula 3 · Parte (\d+)/)?.[1] ?? 0)
+  if (parte >= 1 && parte <= 5) return 'tema-vermelho'
+  if (parte >= 6 && parte <= 7) return 'tema-roxo'
+  if (parte === 8 || /^Seu jogo/.test(kicker)) return 'tema-verde'
+  return 'tema-azul'
+}
+
+const ui = {
+  titulo: 'Passo a passo do projeto - A Ilha do Farol',
+  cenaAlt: 'A Ilha do Farol em três dimensões',
+  curso: 'A Ilha do Farol',
+}
+const montadas = pages.map((page) => {
+  if (page.guia)
+    return {
+      id: page.id,
+      html: (numero: string) =>
+        guiaSecao(page.id, {
+          curso: 'ilha-do-farol',
+          kicker: (parte) => `Aula 1 · Parte ${parte}`,
+          rodape: rodape(ui.curso, numero),
+        }),
+    }
+  const body = page.items.map((item, i) => renderItem(item, page, i)).join('')
+  const topo =
+    page.id === 'p1'
+      ? // A primeira folha apresenta o curso: título grande e a faixa da arte, sem cabeçalho.
+        `<div class="abertura"><div class="kicker">${page.kicker}</div><h2>${page.title}</h2><p>${page.subtitle}</p><div class="abertura-faixa"><div class="abertura-faixa-arte" role="img" aria-label="${ui.cenaAlt}" style="background-image:url(${arte})"></div></div></div>`
+      : cabecalho({
+          cena: arte,
+          alt: ui.cenaAlt,
+          kicker: page.kicker,
+          titulo: page.title,
+          resumo: page.subtitle,
+        })
+  return {
+    id: page.id,
+    html: (numero: string) =>
+      `<section class="page ${tema(page.kicker)}" data-id="${page.id}"><div class="inner">${topo}<div class="content">${body}</div></div>${rodape(ui.curso, numero)}</section>`,
+  }
+})
+// A numeração conta a capa como página 1.
+function pageNumber(id: string): number {
+  const index = montadas.findIndex((sheet) => sheet.id === id)
+  if (index < 0) throw new Error(`Página citada no caderno não existe: ${id}`)
+  return index + 2
+}
+const withPages = (text: string) =>
+  text.replace(/\{\{pagina:([a-z0-9-]+)\}\}/g, (_, id: string) => String(pageNumber(id)))
+const total = montadas.length + 1
+const cover = capaHtml({
+  arte,
+  iconeSelo: 'mapa',
+  linha1: 'A Ilha',
+  linha2: 'do Farol',
+  frase: 'Todos os passos para construir as regras do seu jogo em três dimensões.',
+  fraseBaixo: 'Do primeiro passo na ilha à luz que guia o barco.',
+  tema: 'capa--ilha',
+})
+const body = montadas
+  .map((sheet, index) => withPages(sheet.html(`${index + 2} / ${total}`)))
+  .join('\n')
+// Cores da Ilha: o verde-água do mar raso, a areia no fundo das folhas e o azul do caminho.
+const cursoCss = `
+body { --fundo: #f6fbfa; --tinta: #0b3036; --texto: #3a4b4e; --destaque: #0e7c86; --destaque-claro: #ddf2f1; --caminho: #1f6fd1;
+  --entrega-fundo: #0e6871; --entrega-borda: #0e6871; --entrega-texto: #ffffff; --entrega-rotulo: #ffd23f; --entrega-forte: #ffd23f; }
+.capa--ilha { --capa-painel: #0f8a8f; --capa-painel-fundo: linear-gradient(#11939a, #0a4f59); --capa-amarelo: #ffd23f; --capa-frase: #dcf6f3; --selo-fundo: #e2563b; --selo-topo: 608px; --selo-altura: 62px; --selo-largura: 534px; --selo-letra: 27px; --titulo-topo: 692px; --frase-largura: 430px; }
+.abertura { margin-bottom: 4mm; }
+.abertura h2 { font-size: 28pt; margin: 1mm 0 1mm; }
+.abertura p { font-size: 13pt; font-weight: 800; color: var(--tinta); }
+.abertura-faixa { margin-top: 3mm; background: #fff; border: 1px solid #dbe9e8; border-radius: 16px; padding: 3mm; box-shadow: 0 4px 14px #1b3a3a10; }
+.abertura-faixa-arte { height: 24mm; border-radius: 10px; background-size: 112% auto; background-position: 40% 38%; }
+.indice-dias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3mm; }
+.indice-dia { border-radius: 14px; padding: 3mm 4mm; border: 1px solid; }
+.indice-dia h3 { font-size: 13pt; margin: 1mm 0 1.4mm; }
+.indice-dia p { font-size: 10pt; font-weight: 600; line-height: 1.4; }
+.indice-dia .indice-paginas { margin-top: 2mm; font-weight: 700; }
+.indice-dia--azul { background: #e3eefa; border-color: #c8dcf0; --destaque: #0b5394; }
+.indice-dia--ambar { background: #fdf1d6; border-color: #f0d9a2; --destaque: #a36a00; }
+.indice-dia--vermelho { background: #fde8e8; border-color: #f4c8c8; --destaque: #c22a2a; }
+.indice-extras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.4mm; }
+.indice-extra { background: #fff; border: 1px solid #dbe9e8; border-radius: 12px; padding: 2.6mm 3mm; }
+.indice-icone { width: 5.4mm; height: 5.4mm; color: var(--destaque); }
+.indice-extra h3 { font-family: Nunito, Arial, sans-serif; font-size: 9.6pt; font-weight: 800; line-height: 1.2; margin: 1.2mm 0 .6mm; }
+.indice-extra p { font-size: 8.8pt; font-weight: 600; line-height: 1.3; }
+/* O nome do modelo nunca quebra: a criança procura esse nome exato na lista do Estúdio. */
+.nome { white-space: nowrap; }
+.ilha-galeria { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ilha-galeria img { height: 34mm; object-fit: contain; }
+.ilha-galeria figcaption { white-space: nowrap; }
+.ilha-galeria--cenarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ilha-galeria--cenarios img { height: 46mm; object-fit: cover; border-radius: 8px; }
+.ilha-galeria--chaves { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ilha-galeria--chaves img { height: 26mm; }
+.ilha-galeria--barcos img, .ilha-galeria--farois img { height: 30mm; }
+.ilha-vistas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3mm; margin: 1mm 0 3mm; }
+.ilha-vista { margin: 0; }
+.ilha-vista img { display: block; width: 100%; border-radius: 10px; border: 1px solid #dbe9e8; }
+.ilha-vista figcaption, .ilha-figura figcaption { font-size: 9.6pt; font-weight: 700; color: var(--tinta); text-align: center; margin-top: 1.4mm; }
+.ilha-figura { margin: 1mm 0 3mm; }
+.ilha-desenho { display: block; width: 100%; max-height: 72mm; margin: 0 auto; }
+${GUIA_CSS}
+`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${ui.titulo}</title><style>${cssDoCaderno(fontes)}\n${cursoCss}</style></head><body>${cover}${body}</body></html>`
+if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')
+const pasta = 'tmp/pdfs/ilha-farol'
+const out = resolve(root, pasta)
+mkdirSync(out, { recursive: true })
+writeFileSync(resolve(out, 'caderno.html'), html)
+writeFileSync(
+  resolve(out, 'cores-estudio.json'),
+  JSON.stringify(Object.fromEntries(B.usadas), null, 2),
 )
-const index = ilhaAulas
-  .map(
-    (a, i) =>
-      `<p><b>Aula ${i + 1} · ${esc(a.title)}</b><br>Página ${pages.findIndex((p) => p.id.startsWith(`${i + 1}-`)) + 2}</p>`,
-  )
-  .join('')
-pages[0].body = pages[0].body.replace(
-  '<div class="index"></div>',
-  `<div class="soft-box box-note"><h3>Encontre sua aula</h3>${index}</div>`,
-)
-const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" data-image="ilha" alt="Ilha em 3D com ponte e farol"></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>A Ilha<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras do seu jogo em 3D.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div></section>`
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Passo a passo do projeto - A Ilha do Farol</title><style>${css}
-.lesson-hero{min-height:38mm;margin-bottom:5mm}.lesson-hero .scene{width:32%;object-fit:cover;background:#94d5f5}.lesson-hero h2{font-size:22pt;text-wrap:balance}.lesson-hero .kicker{font-size:9pt;letter-spacing:.04em}.content{display:grid;gap:4mm;font-size:11pt}.content p{font-size:11pt;line-height:1.5;text-wrap:pretty}.content h3{margin-bottom:2mm}.box-note{background:var(--blue-soft)}.box-experience{background:var(--brand-soft);border:1px dashed #b9b0ff}.box-test{background:var(--green-soft)}.blocks{margin:0;padding:14px}.block,.event-block{line-height:1.65}.value-block{border:1px solid #ffffff70}.field{white-space:normal;box-decoration-break:clone}.prepared{color:var(--muted);background:#edf0f7;border-radius:8px;padding:6px 10px;font-size:9pt;font-weight:600}.branch-label{color:#fff;margin-top:6px}.diagram-note{font-size:9pt!important;color:var(--muted);margin-top:12px}.check p{margin-top:9px}.cover-art{height:50%;background:#94d5f5}.cover-art .scene{object-fit:contain}.cover .cover-bottom{margin-top:12mm}.experiment{width:100%;height:55mm;object-fit:contain;border-radius:14px;background:#eff5fa}.content .steps{gap:12px}.galeria h3{margin-bottom:2mm}.opcoes{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}.opcoes--largas{grid-template-columns:repeat(4,1fr)}.opcao{margin:0;background:#fff;border:1px solid #e3e8f2;border-radius:10px;padding:2mm;text-align:center}.opcao img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:8px}.opcoes--largas .opcao img{aspect-ratio:1.6;object-fit:cover}.opcao figcaption{font-size:8.5pt;font-weight:700;margin-top:1mm;word-break:break-word}.lesson-three{--accent:var(--green);--accent-soft:var(--green-soft)}.lesson-three .number{background:var(--green-soft);color:var(--green)}
-@media print{body{background:#fff}.page{margin:0}}
-</style></head><body>${cover}${pages.map((p, i) => `<section class="page lesson-${['one', 'two', 'three'][p.lesson - 1]}" data-id="${p.id}"><div class="inner"><div class="lesson-hero"><img class="scene" data-image="ilha" alt="A Ilha do Farol"><div class="lesson-hero-text"><div class="kicker">${esc(p.kicker)}</div><h2>${esc(p.title)}</h2><p>${esc(p.subtitle)}</p></div></div><div class="content">${p.body}</div></div><div class="page-no"><span class="brand">A Ilha do Farol | Passo a passo do projeto</span><span>${i + 2} / ${pages.length + 1}</span></div></section>`).join('\n')}</body></html>`
-writeFileSync(resolve(out, 'caderno.template.html'), html)
-writeFileSync(resolve(out, 'cores-estudio.json'), JSON.stringify(colors, null, 2))
-console.log(`${pages.length + 1} páginas no template compartilhado do Cadê.`)
+console.log(`${total} páginas preparadas em ${pasta}/caderno.html`)

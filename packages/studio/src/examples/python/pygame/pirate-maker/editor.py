@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 import pygame, sys
 from pygame.math import Vector2 as vector
 from pygame.mouse import get_pressed as mouse_buttons
@@ -12,6 +13,7 @@ from timer import Timer
 
 from random import choice, randint
 
+# 🧩 Meus moldes
 class Editor:
     def __init__(self, land_tiles, switch):
 

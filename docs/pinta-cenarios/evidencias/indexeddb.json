@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-17",
+  "environment": "Chromium no Windows, playground local; não representa aparelho físico móvel",
+  "namespace": "pinta-cenarios-perf",
+  "cols": 256,
+  "rows": 256,
+  "tileLayers": 32,
+  "cells": 2097152,
+  "rawCellBytes": 4194304,
+  "content": "padrão repetido de células 0 e -1",
+  "persistAssetsMilliseconds": [117.5, 85.6, 108.2, 82.7, 81.7],
+  "loadMilliseconds": 64.4,
+  "loadedLayers": 32,
+  "scope": "gravação e leitura; não mede um aparelho fraco nem o orçamento de texto do Studio"
+}

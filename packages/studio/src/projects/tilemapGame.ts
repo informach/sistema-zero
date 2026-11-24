@@ -1,3 +1,8 @@
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import {
+  sceneObjectIntersectsBox,
+  sceneVisitColliders,
+} from '@sistemazero/core/studio/pinta-scene-geometry'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
@@ -11,6 +16,7 @@ import {
   type ProjectTilemapMeta,
   sanitizeTilemapMeta,
 } from '../core/project'
+import { sanitizeSceneMeta } from '../core/projectAssets'
 import { persistProject } from '../state/persistence'
 
 /**
@@ -30,12 +36,16 @@ import { persistProject } from '../state/persistence'
 
 /** Subconjunto do `PintaExportedAsset` que o host repassa (sem acoplar tipos). */
 export interface TilemapGamePayload {
+  maps?: Array<Omit<TilemapGamePayload, 'maps'>>
+  id?: string
+  libRevision?: number
+  scene?: unknown
   name: string
   dataUrl: string
   width: number
   height: number
   /** ProjectTilemapMeta-like — re-sanitizado aqui (dedup/tetos). */
-  tilemap: unknown
+  tilemap?: unknown
   tilemapFront?: unknown
 }
 
@@ -89,7 +99,7 @@ function buildIR(
 ): SZIR {
   const size = Math.max(8, meta.tileSize - 4)
   const move = platformer
-    ? { type: 'g2d:platformer' as const, spriteVar: 'jogador', ctxVar: 'ctx', speed: 4, jump: 11 }
+    ? { type: 'g2d:platformerWithTerrain' as const, spriteVar: 'jogador', speed: 4, jump: 11 }
     : { type: 'g2d:topDown' as const, spriteVar: 'jogador', speed: 3 }
   const js: SZIR['js'] = [
     { type: 'g2d:createTileMapFromAsset', varName: 'mapa', image: mapName },
@@ -134,6 +144,7 @@ function buildIR(
       type: 'g2d:updateEachFrame',
       body: [
         { type: 'g2d:clear' },
+        ...(platformer ? [{ type: 'g2d:applyGravity' as const, spriteVar: 'jogador' }] : []),
         move,
         { type: 'g2d:collideWorld', spriteVar: 'jogador', worldVar: 'mundo' },
         { type: 'g2d:followCameraInWorld', spriteVar: 'jogador', worldVar: 'mundo' },
@@ -153,7 +164,20 @@ function buildIR(
     },
   ]
   return {
-    html: [{ type: 'canvas', id: 'tela', width: VIEWPORT_W, height: VIEWPORT_H }],
+    html: [
+      {
+        type: 'canvas',
+        id: 'tela',
+        width: VIEWPORT_W,
+        height: VIEWPORT_H,
+        children: [
+          {
+            type: 'text',
+            text: 'Explore o cenário usando as setas.',
+          },
+        ],
+      },
+    ],
     css: [
       {
         selector: 'body',
@@ -178,6 +202,51 @@ function buildIR(
  * válido (sem grade/folha).
  */
 export function assembleTilemapGameProject(payload: TilemapGamePayload): Project | null {
+  if (payload.scene !== undefined) {
+    const scene = sanitizeSceneMeta(payload.scene)
+    if (!scene) return null
+    const mapName = normalizeAssetName(payload.name) ?? 'meu-mapa'
+    const ir = buildSceneIR(mapName, scene)
+    const asset: ProjectAsset = {
+      id: ulid(),
+      name: mapName,
+      kind: 'image',
+      source: 'library',
+      dataUrl: payload.dataUrl,
+      width: payload.width,
+      height: payload.height,
+      scene,
+      ...(payload.id ? { libId: `personal:${payload.id}`, libOrigin: 'pinta' as const } : {}),
+      ...(payload.libRevision ? { libRevision: payload.libRevision } : {}),
+    }
+    const assets = [asset]
+    if ((payload.maps?.length ?? 0) > 15) return null
+    for (const extra of payload.maps ?? []) {
+      const scene = sanitizeSceneMeta(extra.scene),
+        name = normalizeAssetName(extra.name)
+      if (!scene || !name || assets.some((a) => a.name === name)) return null
+      assets.push({
+        id: ulid(),
+        name,
+        kind: 'image',
+        source: 'library',
+        dataUrl: extra.dataUrl,
+        width: extra.width,
+        height: extra.height,
+        scene,
+        ...(extra.id ? { libId: `personal:${extra.id}`, libOrigin: 'pinta' as const } : {}),
+        ...(extra.libRevision ? { libRevision: extra.libRevision } : {}),
+      })
+    }
+    return {
+      ...createEmptyProject(ulid(), mapName),
+      ir,
+      blocksState: buildWorkspaceStateFromIR(ir),
+      files: generateProjectFiles({ ir, projectName: mapName }),
+      assets,
+      installedExtensions: [{ id: 'game-2d', version: gameTwoDVersion(), installedAt: Date.now() }],
+    }
+  }
   const bgMeta = sanitizeTilemapMeta(payload.tilemap)
   if (!bgMeta) return null
   const frontMeta = payload.tilemapFront ? sanitizeTilemapMeta(payload.tilemapFront) : undefined
@@ -201,6 +270,133 @@ export function assembleTilemapGameProject(payload: TilemapGamePayload): Project
     assets,
     installedExtensions: [{ id: 'game-2d', version: gameTwoDVersion(), installedAt: Date.now() }],
   }
+}
+
+function buildSceneIR(image: string, scene: PintaScene): SZIR {
+  const str = (value: string) => ({ type: 'str' as const, value }),
+    variable = (name: string) => ({ type: 'var' as const, name }),
+    // O ponto de início e o tamanho do mundo são LIDOS do cenário quando o jogo roda
+    // ("início do cenário", "tamanho do cenário"). Número fixo aqui congelaria o mapa de hoje
+    // no programa: a criança mudaria o início no Pinta e o jogo começaria no lugar antigo.
+    fromScene = (method: 'mapSpawn' | 'mapSize', axis: string) => ({
+      type: 'g2d:sceneValue' as const,
+      method,
+      args: [str('mapa'), str(axis)],
+    })
+  const world = {
+    x: 0,
+    y: 0,
+    width: scene.cols * scene.tileSize,
+    height: scene.rows * scene.tileSize,
+  }
+  // The opt-in scene uses actual visible pieces, including transformed sets.
+  // Keep the previous generation rule for scenes 1/2 and existing game programs.
+  const platformer =
+    scene.version === 3
+      ? sceneVisitColliders(scene, world, 'platform', (tile) =>
+          sceneObjectIntersectsBox(tile, world),
+        )
+      : scene.layers.some(
+          (l) =>
+            l.kind === 'tiles' &&
+            l.visible &&
+            l.cells.some(
+              (c) =>
+                c >= 0 &&
+                scene.tilesets.find((t) => t.id === l.tilesetId)?.platform.includes(c & 4095),
+            ),
+        )
+  const old = buildIR(
+    image,
+    null,
+    {
+      tileSize: scene.tileSize,
+      cols: scene.cols,
+      rows: scene.rows,
+      grid: '',
+      solid: [],
+      tileset: { dataUrl: '', width: 0, height: 0 },
+    },
+    false,
+  )
+  old.js = [
+    { type: 'g2d:sceneCommand', method: 'createMapScene', args: [str('mapa'), str(image)] },
+    {
+      type: 'g2d:createWorld',
+      varName: 'mundo',
+      width: fromScene('mapSize', 'width'),
+      height: fromScene('mapSize', 'height'),
+    },
+    {
+      type: 'g2d:configureWorldCamera',
+      worldVar: 'mundo',
+      horizontal: 'free',
+      vertical: 'free',
+      deadZoneX: 0,
+      deadZoneY: 0,
+    },
+    {
+      type: 'g2d:createSprite',
+      varName: 'jogador',
+      x: fromScene('mapSpawn', 'x'),
+      y: fromScene('mapSpawn', 'y'),
+      w: Math.max(6, scene.tileSize - 4),
+      h: Math.max(6, scene.tileSize - 4),
+      color: '#4ade80',
+    },
+    {
+      type: 'g2d:sceneEvent',
+      method: 'mapArea',
+      args: [str('mapa'), variable('jogador'), str('door')],
+      parameter: 'porta',
+      body: [
+        {
+          type: 'g2d:sceneCommand',
+          method: 'useMapDoor',
+          args: [str('mapa'), variable('jogador'), variable('porta')],
+        },
+        {
+          type: 'memberSet',
+          object: variable('mundo'),
+          name: 'width',
+          value: fromScene('mapSize', 'width'),
+        },
+        {
+          type: 'memberSet',
+          object: variable('mundo'),
+          name: 'height',
+          value: fromScene('mapSize', 'height'),
+        },
+      ],
+    },
+    {
+      type: 'g2d:updateEachFrame',
+      body: [
+        { type: 'g2d:clear' },
+        ...(platformer
+          ? [
+              { type: 'g2d:applyGravity' as const, spriteVar: 'jogador' },
+              {
+                type: 'g2d:platformerWithTerrain' as const,
+                spriteVar: 'jogador',
+                speed: 4,
+                jump: 11,
+              },
+            ]
+          : [{ type: 'g2d:topDown' as const, spriteVar: 'jogador', speed: 3 }]),
+        {
+          type: 'g2d:sceneCommand',
+          method: 'collideMapScene',
+          args: [variable('jogador'), str('mapa')],
+        },
+        { type: 'g2d:followCameraInWorld', spriteVar: 'jogador', worldVar: 'mundo' },
+        { type: 'g2d:sceneCommand', method: 'drawMapScene', args: [str('mapa'), str('back')] },
+        { type: 'g2d:drawSprite', spriteVar: 'jogador', ctxVar: 'ctx' },
+        { type: 'g2d:sceneCommand', method: 'drawMapScene', args: [str('mapa'), str('front')] },
+      ],
+    },
+  ]
+  return old
 }
 
 /**

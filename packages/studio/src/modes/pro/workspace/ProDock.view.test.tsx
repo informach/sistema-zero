@@ -70,12 +70,14 @@ function mount({
 }
 
 describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
-  it('JavaScript: Mensagens do jogo · Problemas (com a contagem) · Terminal avançado, em abas de verdade', () => {
+  it('JavaScript: Mensagens do jogo · Problemas (com a contagem) · Investigar · Desempenho · Terminal avançado, em abas de verdade', () => {
     const { selected } = mount()
     const tabs = screen.getAllByRole('tab')
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       'Mensagens do jogo',
       'Problemas1',
+      'Investigar',
+      'Desempenho',
       'Terminalavançado',
     ])
     expect(screen.getByRole('region', { name: 'Problemas e saída do jogo' })).toBeTruthy()
@@ -103,10 +105,10 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     ])
   })
 
-  it('Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens', () => {
+  it('Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens', async () => {
     mount({ python: true, initial: 'repl' })
     expect(
-      within(screen.getByRole('tabpanel')).getByRole('textbox', { name: 'Comando Python' }),
+      await within(screen.getByRole('tabpanel')).findByRole('textbox', { name: 'Comando Python' }),
     ).toBeTruthy()
     fireEvent.click(screen.getByRole('tab', { name: 'Mensagens do programa' }))
     const messages = screen.getByRole('tabpanel')
@@ -171,5 +173,207 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     expect(panel.textContent).toContain('0 mensagens')
     fireEvent.click(within(panel).getByRole('button', { name: 'Avisos' }))
     expect(panel.textContent).toContain('1 mensagem')
+  })
+})
+
+describe('Investigar e Desempenho no Pro (proposta aprovada em 20/11/2026)', () => {
+  it('Investigar: o caminho até o erro com o arquivo, a linha e "Ir para a linha"', async () => {
+    const { stores, navigate } = mount({ diagnostics: [] })
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    expect(await screen.findByText(/Quando o jogo parar com um erro/)).toBeTruthy()
+    act(() =>
+      stores.logs.getState().push({
+        source: 'sz-preview',
+        kind: 'runtimeError',
+        parts: ['TypeError: score is not a function'],
+        error: {
+          message: 'TypeError: score is not a function',
+          stack: [
+            'TypeError: score is not a function',
+            '    at https://jogo.test/src/main.ts?t=1:1:7',
+            '    at https://jogo.test/node_modules/.vite/deps/lib.js:9:1',
+          ].join('\n'),
+        },
+        timestamp: 1,
+      }),
+    )
+    const painel = screen.getByRole('tabpanel', { name: 'Investigar' })
+    expect(within(painel).getByText('O caminho até o erro')).toBeTruthy()
+    expect(within(painel).getByText('src/main.ts, linha 1')).toBeTruthy()
+    // A linha do arquivo como a criança escreveu; a biblioteca fica de fora.
+    expect(within(painel).getByText(content)).toBeTruthy()
+    expect(within(painel).queryByText(/lib\.js/)).toBeNull()
+    fireEvent.click(
+      within(painel).getByRole('button', { name: 'Ir para a linha 1 de src/main.ts' }),
+    )
+    expect(navigate).toHaveBeenCalledWith('src/main.ts', 1, 7)
+  })
+
+  // Achado no ensaio do Pro com dependência (21/11/2026): depois de o Vite recarregar o jogo
+  // consertado, a aba seguia dizendo "O jogo parou com um problema" com o erro da página anterior.
+  it('o erro de execução de uma página anterior não conta depois que a página do jogo recomeça', () => {
+    const { stores } = mount({ diagnostics: [] })
+    const erro = (timestamp: number, text: string) =>
+      stores.logs.getState().push({
+        source: 'sz-preview',
+        kind: 'runtimeError',
+        parts: [text],
+        error: { message: text },
+        timestamp,
+      })
+    act(() => erro(1_000, 'TypeError: nanoid is not a function'))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+    act(() => stores.proRun.getState().markPageLoaded(2_000))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).not.toMatch(/\d/)
+    // Full review final: a aba Investigar da mesma gaveta também esquece o erro velho (antes ela
+    // seguia mostrando "O jogo parou…" com a pilha da página anterior).
+    fireEvent.click(screen.getByRole('tab', { name: 'Investigar' }))
+    const investigar = screen.getByRole('tabpanel', { name: 'Investigar' })
+    expect(within(investigar).getByText(/Quando o jogo parar com um erro/)).toBeTruthy()
+    expect(within(investigar).queryByText(/nanoid is not a function/)).toBeNull()
+    act(() => erro(3_000, 'TypeError: outra coisa'))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+    // Um aviso de começo mais antigo que o último não volta a mostrar o erro velho.
+    act(() => stores.proRun.getState().markPageLoaded(500))
+    expect(screen.getByRole('tab', { name: /^Problemas/ }).textContent).toContain('1')
+  })
+
+  it('Desempenho: a medida liga pela aba e para quando a gaveta fecha', async () => {
+    const { stores, selected } = mount()
+    fireEvent.click(screen.getByRole('tab', { name: 'Desempenho' }))
+    const medir = await screen.findByRole('switch', { name: 'Medir o desempenho' })
+    // No Pro a medida não monta o jogo de novo.
+    expect(screen.getByText(/A medida segue enquanto a gaveta estiver aberta/)).toBeTruthy()
+    fireEvent.click(medir)
+    expect(stores.ui.getState().measuring).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar a gaveta' }))
+    expect(selected()).toBe('closed')
+    expect(stores.ui.getState().measuring).toBe(false)
+  })
+
+  it('Python Pro não ganha as abas (a tabela da proposta é do Pro em JavaScript)', () => {
+    mount({ python: true })
+    const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
+    expect(abas).not.toContain('Investigar')
+    expect(abas).not.toContain('Desempenho')
+  })
+})
+
+describe('Meus testes no Pro (proposta aprovada em 20/11/2026)', () => {
+  function mountWithServer(answer: (id: string) => { passed: boolean; detail?: string }) {
+    const calls: { tests: { id: string }[]; project: unknown }[] = []
+    const stores = createStudioStores({
+      persistence: 'none',
+      studentTestsServer: {
+        async run({ project, tests }) {
+          calls.push({ project, tests: [...tests] })
+          return { results: tests.map((test) => ({ id: test.id, ...answer(test.id) })) }
+        },
+      },
+    })
+    const proTree: ProjectTree = {
+      'src/main.js': {
+        kind: 'file',
+        content: 'document.body.textContent = "Editado em JavaScript"',
+      },
+      'src/regras.js': {
+        kind: 'file',
+        content: 'export function somarPontos(pontos, bonus) {\n  return pontos + bonus\n}',
+      },
+    }
+    stores.project.setState({
+      project: {
+        ...createEmptyProject('dock-pro', 'Meu projeto'),
+        kind: 'pro',
+        mode: 'code',
+        tree: proTree,
+        proMeta: { templateId: 'vanilla-vite', devScript: 'dev' },
+      } as never,
+    })
+    function Harness() {
+      const [bottom, setBottom] = useState<ProWorkspaceBottom>('closed')
+      return (
+        <ProDock
+          tree={proTree}
+          diagnostics={[]}
+          selected={bottom}
+          onSelect={setBottom}
+          navigate={() => {}}
+        />
+      )
+    }
+    render(
+      <StudioStoresContext.Provider value={stores}>
+        <Harness />
+      </StudioStoresContext.Provider>,
+    )
+    return { stores, calls }
+  }
+
+  it('sem o servidor do host, a aba não aparece no Pro', () => {
+    mount()
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).not.toContain('Meus testes')
+  })
+
+  it('o teste do jogo e o de uma função exportada, rodados no servidor com o resultado de cada um', async () => {
+    const { stores, calls } = mountWithServer((id) =>
+      id === 'errado'
+        ? { passed: false, detail: 'Com (2, 3) respondeu 6; esperava 5.' }
+        : { passed: true },
+    )
+    const abas = screen.getAllByRole('tab').map((tab) => tab.textContent)
+    expect(abas).toEqual([
+      'Mensagens do jogo',
+      'Problemas✓Nenhum problema',
+      'Investigar',
+      'Desempenho',
+      'Meus testes',
+      'Terminalavançado',
+    ])
+    fireEvent.click(screen.getByRole('tab', { name: 'Meus testes' }))
+    fireEvent.click(await screen.findByRole('button', { name: '+ Novo teste' }))
+    expect(screen.getByRole('button', { name: 'Testar o jogo' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    )
+    // No Pro (fora dos kits), a conferência é o texto da página ou as mensagens.
+    const alvo = screen.getByLabelText('O que conferir') as HTMLSelectElement
+    expect([...alvo.options].map((option) => option.value)).toEqual(['text', 'console'])
+    fireEvent.change(screen.getByLabelText('Nome do teste'), { target: { value: 'O recado' } })
+    fireEvent.change(alvo, { target: { value: 'text' } })
+    fireEvent.change(screen.getByLabelText('Como comparar'), { target: { value: 'contains' } })
+    fireEvent.change(screen.getByLabelText('Valor para comparar'), { target: { value: 'Editado' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Tirar o passo 1' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teste' }))
+    await screen.findByText(/No fim, o texto na tela tem o texto "Editado"\./)
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo teste' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Testar uma função' }))
+    fireEvent.change(screen.getByLabelText('Nome do teste'), { target: { value: 'Somar' } })
+    fireEvent.change(screen.getByLabelText('A função'), {
+      target: { value: 'src/regras.js:somarPontos' },
+    })
+    fireEvent.change(screen.getByLabelText('Casos, um por linha'), {
+      target: { value: '2, 3 -> 5' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar teste' }))
+    await screen.findByText('somarPontos(2, 3) responde 5.')
+    const project = stores.project.getState().project as { studentTests?: { rule: unknown }[] }
+    expect(project.studentTests?.[1]?.rule).toEqual({
+      type: 'functionReturns',
+      name: 'somarPontos',
+      module: 'src/regras.js',
+      cases: [{ args: [2, 3], expected: 5 }],
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Rodar os testes' }))
+    expect(await screen.findByText('2 de 2 testes passaram.')).toBeTruthy()
+    expect(screen.getByText(/Rodou no servidor em 1 segundo\./)).toBeTruthy()
+    expect(screen.getByText('Passou: o texto na tela tem o texto "Editado".')).toBeTruthy()
+    expect(screen.getByText('Passou: a função respondeu certo.')).toBeTruthy()
+    // Um lote só (até 8 testes), com o projeto inteiro.
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.tests).toHaveLength(2)
+    expect(calls[0]?.project).toMatchObject({
+      kind: 'pro',
+      proMeta: { templateId: 'vanilla-vite' },
+    })
   })
 })

@@ -1,11 +1,13 @@
-"""Tron educacional: motos, rastros, rodadas e placar visíveis em blocos, Ponte e Python."""
+# Tron educacional: motos, rastros, rodadas e placar visíveis em blocos, Ponte e Python.
 
+# 📦 Bibliotecas
 import turtle
 import math
 import time
 import sz_audio
 
 
+# 🎛️ Configurações
 CELULA = 16
 COLUNAS = 44
 LINHAS = 30
@@ -19,14 +21,9 @@ COR_CABECA_VERMELHA = "#ffb4a8"
 COR_RASTRO_AZUL = "#3b82f6"
 COR_CABECA_AZUL = "#b8ecff"
 COR_BATIDA = "#fff3a3"
-estado = {"aberto": False, "timer_pendente": False, "teclas": set()}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 class Moto:
     """Uma moto anda uma casa por passo; o rastro fica no conjunto do jogo."""
 
@@ -211,26 +208,6 @@ def atualizar(tempo):
         dar_passo()
 
 
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
-
-
 def virar(nome, sentido):
     if estado["pausado"]:
         return
@@ -251,9 +228,52 @@ def soltar(tecla):
     estado["teclas"].discard(tecla)
 
 
-def ligar_tecla(tecla, nome, sentido):
-    tela.onkeypress(lambda: apertar(tecla, nome, sentido), tecla)
-    tela.onkeyrelease(lambda: soltar(tecla), tecla)
+def apertar_a():
+    apertar("a", "vermelha", 1)
+
+
+def apertar_A():
+    apertar("A", "vermelha", 1)
+
+
+def apertar_d():
+    apertar("d", "vermelha", -1)
+
+
+def apertar_D():
+    apertar("D", "vermelha", -1)
+
+
+def apertar_seta_esquerda():
+    apertar("Left", "azul", 1)
+
+
+def apertar_seta_direita():
+    apertar("Right", "azul", -1)
+
+
+def soltar_a():
+    soltar("a")
+
+
+def soltar_A():
+    soltar("A")
+
+
+def soltar_d():
+    soltar("d")
+
+
+def soltar_D():
+    soltar("D")
+
+
+def soltar_seta_esquerda():
+    soltar("Left")
+
+
+def soltar_seta_direita():
+    soltar("Right")
 
 
 def pausar():
@@ -278,7 +298,6 @@ def reiniciar():
     desenhar_painel()
     estado["ultimo_tempo"] = time.monotonic()
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -289,36 +308,65 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(760, 620)
-    tela.title("Tron • Sistema Zero")
-    tela.bgcolor("#05070f")
-    tela.tracer(0)
-    for desenho in [cenario, pincel, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("square")
-    pincel.shapesize(CELULA / 20 * 0.95)
-    desenhar_cenario()
-    ligar_tecla("a", "vermelha", 1)
-    ligar_tecla("A", "vermelha", 1)
-    ligar_tecla("d", "vermelha", -1)
-    ligar_tecla("D", "vermelha", -1)
-    ligar_tecla("Left", "azul", 1)
-    ligar_tecla("Right", "azul", -1)
-    tela.onkey(pausar, "space")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "teclas": set()}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(760, 620)
+tela.title("Tron • Sistema Zero")
+tela.bgcolor("#05070f")
+tela.tracer(0)
+for desenho in [cenario, pincel, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("square")
+pincel.shapesize(CELULA / 20 * 0.95)
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(apertar_a, "a")
+tela.onkeyrelease(soltar_a, "a")
+tela.onkeypress(apertar_A, "A")
+tela.onkeyrelease(soltar_A, "A")
+tela.onkeypress(apertar_d, "d")
+tela.onkeyrelease(soltar_d, "d")
+tela.onkeypress(apertar_D, "D")
+tela.onkeyrelease(soltar_D, "D")
+tela.onkeypress(apertar_seta_esquerda, "Left")
+tela.onkeyrelease(soltar_seta_esquerda, "Left")
+tela.onkeypress(apertar_seta_direita, "Right")
+tela.onkeyrelease(soltar_seta_direita, "Right")
+tela.onkey(pausar, "space")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

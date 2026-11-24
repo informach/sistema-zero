@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+tests\runtime-handler.test.ts:
+[studio-publication] collection {
+  scanned: 0,
+  removed: 0,
+  unreadable: 0,
+}
+(pass) scheduled cleanup drains Kids and adult publication queues with the worker token
+(pass) reservation retirement authenticates before storage and validates its immutable identity [15.00ms]
+(pass) default handler wires only configured approved Python distributions and invalidates changed configuration [32.00ms]
+(pass) Python internal routes authenticate before reading metadata or binary bodies
+(pass) JavaScript and health routes never load a configured Python catalog
+(pass) public Python serving rejects digest/bucket changes or cancellation during catalog and artifact awaits [31.00ms]
+(pass) default Python input handler uses approved config, private storage and stable owner quotas [16.00ms]
+studio-runtime build failed 683 |               typeReport.typescript !== '5.9.3' ||
+684 |               typeof typeReport.checkJs !== 'boolean' ||
+685 |               !isStudioProValidationIdentity(typeReport.validation) ||
+686 |               typeReport.validation.runtimeFingerprint !== validationProfile.runtimeFingerprint
+687 |             )
+688 |               throw new Error('Relatório de tipos inválido.')
+                              ^
+error: Relatório de tipos inválido.
+      at fetch (C:\Users\tocha\projects\sistema-zero-pinta-integracao-20261120\packages\studio-runtime\src\index.ts:688:25)
+
+(pass) handler do Studio Runtime > an outdated image cannot label validation as current or publish an artifact
+(pass) handler do Studio Runtime > preflight uses build paths, dependencies and binary hashes without allocating a sandbox
+(pass) handler do Studio Runtime > dependency preparation is authenticated, bounded and does not boot a container
+(pass) handler do Studio Runtime > validation owns an isolated container and includes exactly four proofs and one pack
+(pass) handler do Studio Runtime > a failed typecheck prevents build; a failed playtest prevents artifact publication; both destroy the container [15.00ms]
+(pass) handler do Studio Runtime > duplicate browser proofs and oversized capture cannot produce a review artifact [63.00ms]
+(pass) handler do Studio Runtime > health check é público e token inválido não cria sandbox
+(pass) handler do Studio Runtime > rate limit responde 429 antes de criar sandbox
+(pass) handler do Studio Runtime > rejeita corpo maior que o contrato antes de criar sandbox
+(pass) handler do Studio Runtime > build válido devolve um artefato e sempre limpa a pasta temporária
+(pass) handler do Studio Runtime > erro de compilação responde 422 e ainda limpa a pasta
+(pass) handler do Studio Runtime > falha do sandbox responde 500 e tenta limpar a pasta
+
+ 19 pass
+ 0 fail
+ 114 expect() calls
+Ran 19 tests across 1 file. [346.00ms]

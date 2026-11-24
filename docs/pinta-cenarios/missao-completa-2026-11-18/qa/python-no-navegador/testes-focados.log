@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src\export\__tests__\pygameDesktop.test.ts:
+(pass) Pygame-ce export preserves the game, Pinta PNG and WAV, with a native dependency [79.00ms]
+(pass) a learner module named pinta.py is kept instead of the platform one [46.00ms]
+(pass) a learner fontes/ folder still receives each platform font it does not have [32.00ms]
+(pass) platform files never collide with a learner file or a name in other letter case [93.00ms]
+(pass) Pygame-ce exports the Pinta module and fonts beside a nested entrypoint [94.00ms]
+
+src\runtime\python\pygame\contract.test.ts:
+(pass) Pygame-ce owns the canvas only at its exact pinned version
+(pass) the wheel is the same file, size and sha in the contract, the vendor manifest and the snippets
+
+src\runtime\python\pygame\sdlScreen.test.ts:
+(pass) the SDL canvas keeps a copy of each flip, taken once
+(pass) only the page objects a worker lacks are defined, and they are inert [16.00ms]
+(pass) a frame takes the flip of its own size; another size or no flip fails by name
+
+ 10 pass
+ 0 fail
+ 54 expect() calls
+Ran 10 tests across 3 files. [825.00ms]

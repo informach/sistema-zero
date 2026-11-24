@@ -1,0 +1,21 @@
+{
+  "environment": "staging",
+  "liveEnrollments": {
+    "total": 1,
+    "kids": 1,
+    "kids_with_outdated_name": 1
+  },
+  "membersJournal": {
+    "canonical": 164,
+    "applied": 165,
+    "unknown": [
+      {
+        "createdAt": "1789814273530"
+      }
+    ],
+    "missing": [],
+    "hashMismatches": [
+      "0059_amused_retro_girl"
+    ]
+  }
+}

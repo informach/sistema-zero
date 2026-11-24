@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-21T11:32:20.164Z",
+  "source": "5d0d58ab44e5d21125bd4d91091b89e347785aa7",
+  "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+  "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "mode": "verify",
+  "deployRequested": false,
+  "ok": true,
+  "result": {
+    "status": "published",
+    "version": 3
+  }
+}

@@ -1,16 +1,20 @@
 'use client'
 
-import {
-  GALLERY_DRAWING_KINDS,
-  type GalleryDeliveryConfig,
-  type GallerySelection,
-} from '@sistemazero/core/learning'
+import type { GalleryDeliveryConfig, GallerySelection } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Check, ExternalLink, Images, Send } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { apiGet, apiSend } from '../lib/api'
-import type { CreationIndexView, CreationSummaryView, LessonBlockView } from '../lib/types'
+import {
+  type GalleryChoice,
+  type GalleryCursor,
+  type GalleryLoad,
+  gallerySelectionOf,
+  loadGalleryChoices,
+  mergeGalleryChoices,
+} from '../lib/gallery-choices'
+import type { LessonBlockView } from '../lib/types'
 import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 import { VoiceInputButton } from './voice-input/voice-input-button'
@@ -27,8 +31,10 @@ export function LessonGalleryDelivery({
   const player = useLessonPlayer()
   const { galeria, erroDoServidor } = useLessonCopy()
   const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<CreationSummaryView[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
+  const [items, setItems] = useState<GalleryChoice[]>([])
+  const [cursor, setCursor] = useState<GalleryCursor | null>(null)
+  // Perfil adotado pelo Pinta causal: as próximas cargas vão direto à listagem causal.
+  const listing = useRef<GalleryLoad['mode'] | undefined>(undefined)
   const [selected, setSelected] = useState<GallerySelection[]>([])
   const [message, setMessage] = useState('')
   // O recado tem texto que veio da fala (botão "Falar"): a equipe vê o chip "falado".
@@ -47,29 +53,23 @@ export function LessonGalleryDelivery({
   const permitted =
     player &&
     (!player.submissionAllowedBlockIds || player.submissionAllowedBlockIds.includes(block.id))
-  async function load(next?: string) {
+  async function load(next?: GalleryCursor) {
     if (busy.current) return
     busy.current = true
     setLoading(true)
     setError('')
     try {
-      const result = await apiGet<{ items: CreationIndexView[]; nextCursor: string | null }>(
-        `/api/members/creations/${tool}?limit=100${next ? `&cursor=${encodeURIComponent(next)}` : ''}`,
-        { 'x-sz-viewer': player?.viewerId ?? '' },
-      )
-      const available = result.items.filter(
-        (item): item is CreationSummaryView =>
-          'name' in item &&
-          !item.deletedAt &&
-          (tool !== 'pinta' || GALLERY_DRAWING_KINDS.includes(item.kind)),
-      )
-      setItems((previous) => [
-        ...new Map(
-          [...(next ? previous : []), ...available].map((item) => [item.itemId, item]),
-        ).values(),
-      ])
-      setCursor(result.nextCursor)
-      if (!next) {
+      const result = await loadGalleryChoices({
+        tool,
+        viewerId: player?.viewerId ?? '',
+        get: apiGet,
+        ...(listing.current ? { mode: listing.current } : {}),
+        ...(next ? { cursor: next } : {}),
+      })
+      listing.current = result.mode
+      setItems((previous) => mergeGalleryChoices(previous, result, !!next))
+      setCursor(result.next)
+      if (!next || result.restarted) {
         setSelected([])
         request.current = null
       }
@@ -121,14 +121,16 @@ export function LessonGalleryDelivery({
       setSending(false)
     }
   }
-  function toggle(item: CreationSummaryView) {
+  function toggle(item: GalleryChoice) {
+    if (item.needsPinta) return
+    const choice = gallerySelectionOf(item)
     setSelected((previous) =>
       previous.some((entry) => entry.itemId === item.itemId)
         ? previous.filter((entry) => entry.itemId !== item.itemId)
         : config.maxItems === 1
-          ? [{ itemId: item.itemId, revision: item.revision }]
+          ? [choice]
           : previous.length < config.maxItems
-            ? [...previous, { itemId: item.itemId, revision: item.revision }]
+            ? [...previous, choice]
             : previous,
     )
   }
@@ -209,10 +211,11 @@ export function LessonGalleryDelivery({
           <div className="grid max-h-[45dvh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
             {items.map((item) => {
               const checked = selected.some((entry) => entry.itemId === item.itemId)
+              const hint = item.needsPinta ? `gallery-hint-${block.id}-${item.itemId}` : undefined
               return (
                 <label
                   key={item.itemId}
-                  className={`cursor-pointer space-y-2 rounded-xl border-2 p-3 ${checked ? 'border-primary bg-primary/5' : 'border-border'}`}
+                  className={`space-y-2 rounded-xl border-2 p-3 ${item.needsPinta ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'} ${checked ? 'border-primary bg-primary/5' : 'border-border'}`}
                 >
                   {item.thumb ? (
                     <img
@@ -231,13 +234,20 @@ export function LessonGalleryDelivery({
                       disabled={
                         sending ||
                         loading ||
+                        item.needsPinta ||
                         (!checked && config.maxItems > 1 && selected.length >= config.maxItems)
                       }
+                      aria-describedby={hint}
                       onChange={() => toggle(item)}
                       className="mt-0.5 size-5 shrink-0 accent-primary"
                     />
                     <span className="break-words">{item.name}</span>
                   </span>
+                  {hint && (
+                    <span id={hint} className="block text-sm text-muted-foreground">
+                      {galeria.abrirNoPinta}
+                    </span>
+                  )}
                 </label>
               )
             })}

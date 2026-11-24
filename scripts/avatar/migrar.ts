@@ -110,6 +110,36 @@ function argumentos(args: readonly string[]) {
   return { ids, destino, ref, tudo, soEsqueleto, buscar }
 }
 
+/** As situações em que a variante vale (`usar_em` da arte, texto ou lista), sem repetir. */
+export function situacoesDaVariante(usarEm: ItemDaArte['usar_em']): string[] {
+  if (!usarEm) return []
+  return [...new Set(Array.isArray(usarEm) ? usarEm : [usarEm])]
+}
+
+/**
+ * Os arquivos de uma peça com situações (o planador dobrado): para cada situação da arte (`sem_nada`
+ * vira `none`), o id da peça daquela situação e o arquivo dela, e o mesmo para a alça alta. A
+ * situação `sem_nada` com o arquivo da própria peça é a própria peça.
+ */
+export function arquivosDasSituacoes(
+  item: Pick<ItemDaArte, 'id' | 'arquivo' | 'situacoes'>,
+): { chave: string; id: string; arquivo: string; alcaAlta: boolean }[] {
+  const lista: { chave: string; id: string; arquivo: string; alcaAlta: boolean }[] = []
+  for (const [nome, s] of Object.entries(item.situacoes ?? {})) {
+    const chave = nome === 'sem_nada' ? 'none' : nome
+    const id = s.arquivo === item.arquivo ? item.id : `${item.id}__${nome}`
+    lista.push({ chave, id, arquivo: s.arquivo, alcaAlta: false })
+    if (s.arquivo_alca_alta)
+      lista.push({
+        chave,
+        id: `${item.id}__${nome}__alca_alta`,
+        arquivo: s.arquivo_alca_alta,
+        alcaAlta: true,
+      })
+  }
+  return lista
+}
+
 /** Os clipes dos dedos de um objeto de mão (a `pegada` da arte e a da segunda mão), sem repetir. */
 export function dedosDaPegada(item: Pick<ItemDaArte, 'pegada'>): string[] {
   const clipes = [item.pegada?.clipe_dedos, item.pegada?.segunda_mao?.clipe_dedos]
@@ -352,6 +382,39 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
       if (await enviar(arquivo, pronta.glb)) enviados += 1
       if (await enviar(thumb, miniatura)) enviados += 1
 
+      // Peça com um arquivo por situação (o planador): cada arquivo vira uma peça escondida
+      // (`situationOf`), com o editorial da principal; a principal diz qual usar (`situations`).
+      const daSituacao = arquivosDasSituacoes(item)
+      const idsDaSituacao: Record<string, string> = {}
+      const idsDaAlcaAlta: Record<string, string> = {}
+      const noSentado: Record<string, number> = {}
+      const escondidaCom: Record<string, string[]> = {}
+      const noBarco: Record<string, number> = {}
+      for (const s of daSituacao) {
+        if (s.alcaAlta) idsDaAlcaAlta[s.chave] = s.id
+        else idsDaSituacao[s.chave] = s.id
+        const nome = s.chave === 'none' ? 'sem_nada' : s.chave
+        const atras = item.situacoes?.[nome]?.no_sentado_ate_m
+        if (typeof atras === 'number') noSentado[s.chave] = atras
+        const atrasNoBarco = item.situacoes?.[nome]?.no_sentado_no_barco_ate_m
+        if (typeof atrasNoBarco === 'number') noBarco[s.chave] = atrasNoBarco
+        const com = item.situacoes?.[nome]?.nao_aparece_com
+        if (com?.length) escondidaCom[s.chave] = [...com]
+      }
+      const situacoes =
+        daSituacao.length > 0
+          ? {
+              ...(item.encaixe ? { socket: item.encaixe } : {}),
+              byBack: idsDaSituacao,
+              ...(Object.keys(idsDaAlcaAlta).length > 0 ? { highStrap: idsDaAlcaAlta } : {}),
+              ...(item.alca_alta_com?.length ? { highStrapWith: [...item.alca_alta_com] } : {}),
+              ...(item.nao_aparece_com?.length ? { hiddenWith: [...item.nao_aparece_com] } : {}),
+              ...(Object.keys(escondidaCom).length > 0 ? { hiddenWithByBack: escondidaCom } : {}),
+              ...(Object.keys(noSentado).length > 0 ? { seatedBack: noSentado } : {}),
+              ...(Object.keys(noBarco).length > 0 ? { seatedInBoatBack: noBarco } : {}),
+            }
+          : undefined
+
       const antes = catalogo.parts[item.id]
       const conjunto = conjuntoDaParte.get(item.id)
       // Peça nova que é parte de uma fantasia não tem preço próprio: vem com o conjunto.
@@ -367,7 +430,10 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
           }
         : conjunto
           ? { audience: proposta.audience, tier: 'set' as const, price: 0, review: true as const }
-          : { ...proposta, review: true as const }
+          : item.so_no_jogo || item.peca_de_baixo_fixa
+            ? // Não se vende: a peça só do jogo e a de baixo fixa (entra sozinha) são de todo mundo.
+              { audience: 'both' as const, tier: 'free' as const, price: 0 }
+            : { ...proposta, review: true as const }
       const entrada: AvatarPartEntry = {
         slot: item.slot,
         // O rascunho do pack não tem grupo (fica escondido): vale o encaixe.
@@ -388,10 +454,26 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         ...(item.variante_montado ? { mountedVariant: item.variante_montado } : {}),
         // A variante (a saia montada) não se vende nem sai no sorteio: só troca de lugar com a original.
         ...(item.variante_de
-          ? { variantOf: item.variante_de, ...(item.usar_em ? { variantFor: item.usar_em } : {}) }
+          ? {
+              variantOf: item.variante_de,
+              ...(item.usar_em ? { variantFor: situacoesDaVariante(item.usar_em) } : {}),
+            }
           : {}),
+        ...(item.sai_nas_animacoes?.length ? { offIn: [...item.sai_nas_animacoes] } : {}),
+        ...(item.camadas_braco && Object.keys(item.camadas_braco).length > 0
+          ? {
+              armLayers: Object.fromEntries(
+                Object.entries(item.camadas_braco).map(([animacao, c]) => [animacao, c.clipe]),
+              ),
+            }
+          : {}),
+        ...(situacoes ? { situations: situacoes } : {}),
+        // Fora da loja e do sorteio: o rascunho, a variante, a peça do pack substituída, a peça só do
+        // jogo (os patins, o planador) e a peça de baixo fixa (entra sozinha, pela regra).
         ...(item.rascunho ||
         item.variante_de ||
+        item.so_no_jogo ||
+        item.peca_de_baixo_fixa ||
         substituidas.has(item.id) ||
         SO_NO_JOGO.has(item.id)
           ? { hidden: true as const }
@@ -405,6 +487,33 @@ export async function migrar(args: readonly string[], hoje = new Date()) {
         },
       }
       catalogo.parts[item.id] = entrada
+      for (const s of daSituacao) {
+        if (s.id === item.id) continue
+        const caminho = `${item.pasta}/${s.arquivo}`
+        const preparada = await prepararPeca(arte.ler(caminho))
+        const arquivoDaSituacao = `pecas/${s.id}.${digital(preparada.glb)}.glb`
+        for (const textura of preparada.texturas) {
+          const nome = `base/textura.${textura.digital}.${textura.extensao}`
+          if (await enviar(nome, textura.bytes)) enviados += 1
+          catalogo.base.textures[textura.digital] = nome
+        }
+        if (await enviar(arquivoDaSituacao, preparada.glb)) enviados += 1
+        const { situations: _s, offIn: _o, armLayers: _a, review: _r, ...base } = entrada
+        const qual = s.chave === 'none' ? 'sem nada nas costas' : s.chave
+        catalogo.parts[s.id] = {
+          ...base,
+          label: `${item.rotulo} (${qual}${s.alcaAlta ? ', alça alta' : ''})`,
+          file: arquivoDaSituacao,
+          hidden: true,
+          situationOf: item.id,
+          origin: { ...entrada.origin, blob: arte.blob(caminho) },
+        }
+      }
+      // A situação que saiu da arte (as capas, 16/11/2026) fica no catálogo, aposentada.
+      const deAgora = new Set(daSituacao.map((s) => s.id))
+      for (const [id, p] of Object.entries(catalogo.parts))
+        if (p.situationOf === item.id && !deAgora.has(id) && !p.retired)
+          catalogo.parts[id] = { ...p, retired: true }
       console.log(`${antes ? 'atualizada' : 'nova'}: ${item.id}`)
     })
   })
@@ -419,7 +528,7 @@ Só o esqueleto: ${enviados} arquivos enviados.`)
   // 3. Quem saiu da arte fica, aposentada. Quem voltou deixa de estar. As cópias para dentro da
   //    fantasia (`copyOf`) não estão na arte: são refeitas no passo 4.
   for (const [id, entrada] of Object.entries(catalogo.parts)) {
-    if (entrada.copyOf) continue
+    if (entrada.copyOf || entrada.situationOf) continue
     if (!naArte.has(id) && !entrada.retired) {
       catalogo.parts[id] = { ...entrada, retired: true }
       console.log(`aposentada: ${id}`)

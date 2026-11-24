@@ -1,0 +1,1166 @@
+{
+  "at": "2026-11-19T10:57:30.522Z",
+  "upstream": "973bebd82db16d417b9c8dd2ba8e75f8e455c905",
+  "exitCode": 1,
+  "count": 163,
+  "categories": {
+    "format": 162,
+    "lint/suspicious/noAssignInExpressions": 1
+  },
+  "groups": {
+    "docs/aulas-interativas-tecnico/qa": 1,
+    "docs/aulas-interativas/pais": 7,
+    "docs/estudio-evolucao/classico-baseline-windows.json": 1,
+    "docs/estudio-evolucao/evidencias": 14,
+    "docs/estudio-evolucao/isolamento-windows-chromium-completo.json": 1,
+    "docs/estudio-evolucao/isolamento-windows.json": 1,
+    "docs/plans/2026-11-16-cenarios-reforma": 122,
+    "packages/molda-cenarios/playground": 3,
+    "packages/studio/e2e/fixtures": 13
+  },
+  "pintaErrors": [],
+  "newOrModifiedErrors": [],
+  "diagnostics": [
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas-tecnico/qa/matriz-compatibilidade.json",
+      "currentBlob": "50a0e98551ddd8bdc24832d053b3e11c805e6cee",
+      "upstreamBlob": "50a0e98551ddd8bdc24832d053b3e11c805e6cee",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-1.manifesto.json",
+      "currentBlob": "bcc8f691118fe40d6226a355bcc123e2e5cebade",
+      "upstreamBlob": "bcc8f691118fe40d6226a355bcc123e2e5cebade",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-2.manifesto.json",
+      "currentBlob": "b406d8e823b39c4f9fcc339353b9556eb2edbb01",
+      "upstreamBlob": "b406d8e823b39c4f9fcc339353b9556eb2edbb01",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-3.manifesto.json",
+      "currentBlob": "b397751972bf3ed386bd324f51977b5eebe09049",
+      "upstreamBlob": "b397751972bf3ed386bd324f51977b5eebe09049",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-4.manifesto.json",
+      "currentBlob": "64ea39766d3377b2f212b8b31634a1828c4eaf9a",
+      "upstreamBlob": "64ea39766d3377b2f212b8b31634a1828c4eaf9a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-5.manifesto.json",
+      "currentBlob": "0edf00f07b69d58ed41509e8fc1d527c57506038",
+      "upstreamBlob": "0edf00f07b69d58ed41509e8fc1d527c57506038",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-6.manifesto.json",
+      "currentBlob": "161e2264bf7b2bc53aba62c7f5d2df8e7033fc6e",
+      "upstreamBlob": "161e2264bf7b2bc53aba62c7f5d2df8e7033fc6e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/transformando-o-vilao-em-aliado-aula-7.manifesto.json",
+      "currentBlob": "52d019dd732619b7403e15f0fa0da7228ad23092",
+      "upstreamBlob": "52d019dd732619b7403e15f0fa0da7228ad23092",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/classico-baseline-windows.json",
+      "currentBlob": "e055e6e00611f1c7ca6737f85bd518fd8a7fda1f",
+      "upstreamBlob": "e055e6e00611f1c7ca6737f85bd518fd8a7fda1f",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/cade-todo-mundo-aula-1/primeiro-achado.objetivos.json",
+      "currentBlob": "84e6d0ab8e19a877c75cf0b021fcf72c22bf47a7",
+      "upstreamBlob": "84e6d0ab8e19a877c75cf0b021fcf72c22bf47a7",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/cade-todo-mundo-aula-2/contar-achados.objetivos.json",
+      "currentBlob": "30a81abf7fbf7a20a20227a266eb1f746b80cc27",
+      "upstreamBlob": "30a81abf7fbf7a20a20227a266eb1f746b80cc27",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/cade-todo-mundo-aula-2/personalizar.objetivos.json",
+      "currentBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "upstreamBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-1/andar.objetivos.json",
+      "currentBlob": "de15977def246d9375f9d8eeff4b206e331bcfd4",
+      "upstreamBlob": "de15977def246d9375f9d8eeff4b206e331bcfd4",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-1/borda.objetivos.json",
+      "currentBlob": "67d46365098e462f4f6e7a93f20c4e499b05289f",
+      "upstreamBlob": "67d46365098e462f4f6e7a93f20c4e499b05289f",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-2/guardar.objetivos.json",
+      "currentBlob": "cda07635b8cbb21ccf4b6c92befe6ccd46ab21c8",
+      "upstreamBlob": "cda07635b8cbb21ccf4b6c92befe6ccd46ab21c8",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-2/programar-chave.objetivos.json",
+      "currentBlob": "c68167ec3a203caecd31bd031cba21f63595f442",
+      "upstreamBlob": "c68167ec3a203caecd31bd031cba21f63595f442",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-2/recolher.objetivos.json",
+      "currentBlob": "0085da5899bb977e18930ca5d9cb3ec4958a9c89",
+      "upstreamBlob": "0085da5899bb977e18930ca5d9cb3ec4958a9c89",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-3/decisao.objetivos.json",
+      "currentBlob": "d5f9442992d096c6dfb58e65fe03d29630ee94c4",
+      "upstreamBlob": "d5f9442992d096c6dfb58e65fe03d29630ee94c4",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-3/farol-mensagens.objetivos.json",
+      "currentBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "upstreamBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-3/personalizar.objetivos.json",
+      "currentBlob": "f68ed4c2f10fb3e764dd2e4a55c8b9237e8ad505",
+      "upstreamBlob": "f68ed4c2f10fb3e764dd2e4a55c8b9237e8ad505",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-3/posicionar-chave.objetivos.json",
+      "currentBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "upstreamBlob": "0637a088a01e8ddab3bf3fa98dbe804cbde1a0dc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/a3-depois-windows/desafio-dia-3/sem-chave.objetivos.json",
+      "currentBlob": "a9d6e935b1d35b38ff3c0167285fa2227c524dc5",
+      "upstreamBlob": "a9d6e935b1d35b38ff3c0167285fa2227c524dc5",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/evidencias/pdf-inventario.json",
+      "currentBlob": "2f979951ce742d70418fb5b94cb26b7d7c540bd0",
+      "upstreamBlob": "2f979951ce742d70418fb5b94cb26b7d7c540bd0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/isolamento-windows-chromium-completo.json",
+      "currentBlob": "70a7362387911ca8760bcb44245e624b750fb0de",
+      "upstreamBlob": "70a7362387911ca8760bcb44245e624b750fb0de",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/estudio-evolucao/isolamento-windows.json",
+      "currentBlob": "c57f3efcbd7ec3236c8576453a4f28fcc3ab0fae",
+      "upstreamBlob": "c57f3efcbd7ec3236c8576453a4f28fcc3ab0fae",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-base/regressao-espalhamento.json",
+      "currentBlob": "5bf8350de198184716e3545aca5000e0021c47cf",
+      "upstreamBlob": "5bf8350de198184716e3545aca5000e0021c47cf",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-biblioteca/aceito.json",
+      "currentBlob": "9a8a693a14f66ac328f80f3707753341c59ea28b",
+      "upstreamBlob": "9a8a693a14f66ac328f80f3707753341c59ea28b",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-biblioteca/atualizacao.json",
+      "currentBlob": "07986df88c192658932ed8371062c41efb29ae5c",
+      "upstreamBlob": "07986df88c192658932ed8371062c41efb29ae5c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-biblioteca/fotografias.json",
+      "currentBlob": "7dd42ac2da85625fc60217503de6e209697ba405",
+      "upstreamBlob": "7dd42ac2da85625fc60217503de6e209697ba405",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-biblioteca/regressao.json",
+      "currentBlob": "f4726b4ebc4e678b391496e890194b7fed81c2a7",
+      "upstreamBlob": "f4726b4ebc4e678b391496e890194b7fed81c2a7",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos-biblioteca/resultados.json",
+      "currentBlob": "c7d04351e268c0629cebe786c259da792f5f1a7c",
+      "upstreamBlob": "c7d04351e268c0629cebe786c259da792f5f1a7c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-conjuntos/resultados.json",
+      "currentBlob": "1f476ad177b8975293345da03826d1dd5343f984",
+      "upstreamBlob": "1f476ad177b8975293345da03826d1dd5343f984",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-eficiencia/biblioteca.json",
+      "currentBlob": "c7d04351e268c0629cebe786c259da792f5f1a7c",
+      "upstreamBlob": "c7d04351e268c0629cebe786c259da792f5f1a7c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-eficiencia/buffers.json",
+      "currentBlob": "c28c76ff8195dab148113676d0ac649ad5d53570",
+      "upstreamBlob": "c28c76ff8195dab148113676d0ac649ad5d53570",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-eficiencia/camera.json",
+      "currentBlob": "efb0ef24c435adaeabf5a80b0a0dff97b4f2a63d",
+      "upstreamBlob": "efb0ef24c435adaeabf5a80b0a0dff97b4f2a63d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-eficiencia/conjuntos.json",
+      "currentBlob": "f4726b4ebc4e678b391496e890194b7fed81c2a7",
+      "upstreamBlob": "f4726b4ebc4e678b391496e890194b7fed81c2a7",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-espalhamento/acervo.json",
+      "currentBlob": "6ddcf6e25db9fd3c602d3cbb211e585eb4c708a2",
+      "upstreamBlob": "6ddcf6e25db9fd3c602d3cbb211e585eb4c708a2",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-espalhamento/resultado.json",
+      "currentBlob": "5bf8350de198184716e3545aca5000e0021c47cf",
+      "upstreamBlob": "5bf8350de198184716e3545aca5000e0021c47cf",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-retratos/resultados.json",
+      "currentBlob": "c37d2346f3dc267b9dca4da818518109be0e2ea9",
+      "upstreamBlob": "c37d2346f3dc267b9dca4da818518109be0e2ea9",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-testar/ensaio.json",
+      "currentBlob": "cad867bde05b4a00e209b927dedbb1597b1353b0",
+      "upstreamBlob": "cad867bde05b4a00e209b927dedbb1597b1353b0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-testar/faisca-resultados.json",
+      "currentBlob": "f5022e2f75559de5f6e302649658dcbf86ea95f5",
+      "upstreamBlob": "f5022e2f75559de5f6e302649658dcbf86ea95f5",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-testar/fisica.json",
+      "currentBlob": "eac0bddef1f724765f485b5f627758b3e79f0608",
+      "upstreamBlob": "eac0bddef1f724765f485b5f627758b3e79f0608",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-testar/interface-resultados.json",
+      "currentBlob": "8f266cae156302a77446340624a372a4a53b59ef",
+      "upstreamBlob": "8f266cae156302a77446340624a372a4a53b59ef",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote3-testar/recursos.json",
+      "currentBlob": "dda70a7e287aec2d95291a574348e17605a66084",
+      "upstreamBlob": "dda70a7e287aec2d95291a574348e17605a66084",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-material/faisca-percursos.json",
+      "currentBlob": "a6e9988fdefa1abf7544552713a998217f98b94f",
+      "upstreamBlob": "a6e9988fdefa1abf7544552713a998217f98b94f",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-material/resultados.json",
+      "currentBlob": "e46e5ddbcefe910bc24c0084b0a94be8c1675cb1",
+      "upstreamBlob": "e46e5ddbcefe910bc24c0084b0a94be8c1675cb1",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-terreno/conjuntos.json",
+      "currentBlob": "e26930253ff69a76b2c0da9b43ae57a10453066d",
+      "upstreamBlob": "e26930253ff69a76b2c0da9b43ae57a10453066d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-terreno/escultura.json",
+      "currentBlob": "951dd5cbb425ecdc24077cb74ed6f12d47ef24fc",
+      "upstreamBlob": "951dd5cbb425ecdc24077cb74ed6f12d47ef24fc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-terreno/faisca-percursos.json",
+      "currentBlob": "a46b354e02e48ef4c9dac8d572042d2d31a1c2bb",
+      "upstreamBlob": "a46b354e02e48ef4c9dac8d572042d2d31a1c2bb",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-terreno/oficina.json",
+      "currentBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "upstreamBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote4-terreno/renderer.json",
+      "currentBlob": "35c44afaaa620a0ceb65acd86dfbba078ef09295",
+      "upstreamBlob": "35c44afaaa620a0ceb65acd86dfbba078ef09295",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/edicao-previa.json",
+      "currentBlob": "41bad6782a6e83f91fab8a1ef7b1e92e596dba56",
+      "upstreamBlob": "41bad6782a6e83f91fab8a1ef7b1e92e596dba56",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/interface-oficina.json",
+      "currentBlob": "6ba22aa77da1737908b09295c1465e02ad49498d",
+      "upstreamBlob": "6ba22aa77da1737908b09295c1465e02ad49498d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/material-gpu.json",
+      "currentBlob": "204a26aec9916e03a17d7faae289b0347ca7839e",
+      "upstreamBlob": "204a26aec9916e03a17d7faae289b0347ca7839e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/modelo-fisica.json",
+      "currentBlob": "ccda99f01f622f4c062ddd094454f0cba51d027d",
+      "upstreamBlob": "ccda99f01f622f4c062ddd094454f0cba51d027d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/regressao-faisca.json",
+      "currentBlob": "8f2a1becd016b258570d96153c91b32114c1c024",
+      "upstreamBlob": "8f2a1becd016b258570d96153c91b32114c1c024",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/regressao-terreno-interface.json",
+      "currentBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "upstreamBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/worker-build-local.json",
+      "currentBlob": "4fc8070583d13e8d0774e9ac80585819b652a5aa",
+      "upstreamBlob": "4fc8070583d13e8d0774e9ac80585819b652a5aa",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote5-agua/worker-preparo.json",
+      "currentBlob": "f2da85ad332b8ec2a1f0466873da84fed44f4462",
+      "upstreamBlob": "f2da85ad332b8ec2a1f0466873da84fed44f4462",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-encontros/percursos.json",
+      "currentBlob": "95cc4d53efa40576ba435e52b0d195d06810a465",
+      "upstreamBlob": "95cc4d53efa40576ba435e52b0d195d06810a465",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/agua.json",
+      "currentBlob": "6ba22aa77da1737908b09295c1465e02ad49498d",
+      "upstreamBlob": "6ba22aa77da1737908b09295c1465e02ad49498d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/faisca.json",
+      "currentBlob": "2693bd80d084b8d2f51a6c0e9053551a00339136",
+      "upstreamBlob": "2693bd80d084b8d2f51a6c0e9053551a00339136",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/interface.json",
+      "currentBlob": "52ceb92e0fc99f841b497352f4fe6336501a995e",
+      "upstreamBlob": "52ceb92e0fc99f841b497352f4fe6336501a995e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/pontes.json",
+      "currentBlob": "90827288d71fd0d3261ce521f2eeb4538ef363f8",
+      "upstreamBlob": "90827288d71fd0d3261ce521f2eeb4538ef363f8",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/relevo.json",
+      "currentBlob": "4aa783634e89ee694ee2e02133a50079f669e105",
+      "upstreamBlob": "4aa783634e89ee694ee2e02133a50079f669e105",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-fechamento/workers.json",
+      "currentBlob": "48b5071fe38694793dd8393315061f252e59bf3d",
+      "upstreamBlob": "48b5071fe38694793dd8393315061f252e59bf3d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-interface/layouts.json",
+      "currentBlob": "d3862b5e9e8e82266a1e9ae400b38fea8dc6e4c6",
+      "upstreamBlob": "d3862b5e9e8e82266a1e9ae400b38fea8dc6e4c6",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-interface/resultado.json",
+      "currentBlob": "01d4fd6440a138f8529e477a38cd3d6f408e2974",
+      "upstreamBlob": "01d4fd6440a138f8529e477a38cd3d6f408e2974",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-interface/workers.json",
+      "currentBlob": "48b5071fe38694793dd8393315061f252e59bf3d",
+      "upstreamBlob": "48b5071fe38694793dd8393315061f252e59bf3d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-palco/resultado.json",
+      "currentBlob": "262e42be90533c1f0e3e54c8c9a6c9ef671805bd",
+      "upstreamBlob": "262e42be90533c1f0e3e54c8c9a6c9ef671805bd",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-pontes/resultado.json",
+      "currentBlob": "41136b8cf677a1ac4fc3abd13d6057f20d836f4e",
+      "upstreamBlob": "41136b8cf677a1ac4fc3abd13d6057f20d836f4e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-pontos/resultado.json",
+      "currentBlob": "1f1c62b50d2cb017663534d7c23ce8ab27d28efc",
+      "upstreamBlob": "1f1c62b50d2cb017663534d7c23ce8ab27d28efc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote6-relevo/resultado.json",
+      "currentBlob": "4aa783634e89ee694ee2e02133a50079f669e105",
+      "upstreamBlob": "4aa783634e89ee694ee2e02133a50079f669e105",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/ambiente.json",
+      "currentBlob": "5918b4bfe99f0e487d6b6181e25abdb671ccc011",
+      "upstreamBlob": "5918b4bfe99f0e487d6b6181e25abdb671ccc011",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/clipboard-misto.json",
+      "currentBlob": "16cade7f41827251d9e520bbd0d84cf1efd33574",
+      "upstreamBlob": "16cade7f41827251d9e520bbd0d84cf1efd33574",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/faisca.json",
+      "currentBlob": "35a924d9a8159b56a84e9c136cecfadf4e524c3d",
+      "upstreamBlob": "35a924d9a8159b56a84e9c136cecfadf4e524c3d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/guias.json",
+      "currentBlob": "3afa95cae91de0d1ae999957f7bcf0af5b4aadb0",
+      "upstreamBlob": "3afa95cae91de0d1ae999957f7bcf0af5b4aadb0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/layout.json",
+      "currentBlob": "e8b0aeb772a6181288df85e90a6c73198caad441",
+      "upstreamBlob": "e8b0aeb772a6181288df85e90a6c73198caad441",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/recusas.json",
+      "currentBlob": "00c0b0a318052cd208d8ef8cbe064df1ae592a17",
+      "upstreamBlob": "00c0b0a318052cd208d8ef8cbe064df1ae592a17",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-fechamento/terreno.json",
+      "currentBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "upstreamBlob": "ea37488b0a5717cb2c8c54002131e8852229a973",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-iluminacao/resultado.json",
+      "currentBlob": "d1f16f474ff95053dc97c95f9b1e7231beb1b9f7",
+      "upstreamBlob": "d1f16f474ff95053dc97c95f9b1e7231beb1b9f7",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-interface/layout.json",
+      "currentBlob": "06ab796094b26b0442fe73477effd9a8acdd8511",
+      "upstreamBlob": "06ab796094b26b0442fe73477effd9a8acdd8511",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-interface/resultado.json",
+      "currentBlob": "9f641dff7b572d608e7dbd7919627cf254f1b73c",
+      "upstreamBlob": "9f641dff7b572d608e7dbd7919627cf254f1b73c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-palco/gestos.json",
+      "currentBlob": "ee4ffa0cf127b0c43b9daaddbe3f990ba1f16536",
+      "upstreamBlob": "ee4ffa0cf127b0c43b9daaddbe3f990ba1f16536",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-palco/recursos.json",
+      "currentBlob": "03e93906f866ee926a02d4cee820ea1a8bf55805",
+      "upstreamBlob": "03e93906f866ee926a02d4cee820ea1a8bf55805",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-palco/regressao-faisca.json",
+      "currentBlob": "1a1d73baecee1b299c91bdb383bbc2e29334edf5",
+      "upstreamBlob": "1a1d73baecee1b299c91bdb383bbc2e29334edf5",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote7-palco/selecao.json",
+      "currentBlob": "885f32635d65da495db0b3a201e1e568d40920fa",
+      "upstreamBlob": "885f32635d65da495db0b3a201e1e568d40920fa",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-acabamento-atores/cute-resultado.json",
+      "currentBlob": "c9ed73a91d8c330303b1bf1e6022a6dded129bbb",
+      "upstreamBlob": "c9ed73a91d8c330303b1bf1e6022a6dded129bbb",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-acabamento-atores/cute-validacao.json",
+      "currentBlob": "ee0bf509d8faf8b429e097d315d7c53e3497b73e",
+      "upstreamBlob": "ee0bf509d8faf8b429e097d315d7c53e3497b73e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-acabamento-atores/fixture-resultado.json",
+      "currentBlob": "e3b34084efdd7f0536bdb428a5c1a2f01e73ae9e",
+      "upstreamBlob": "e3b34084efdd7f0536bdb428a5c1a2f01e73ae9e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-acabamento-atores/fixture-validacao.json",
+      "currentBlob": "833942d116b0fef4636f6f430dfa43e97f414737",
+      "upstreamBlob": "833942d116b0fef4636f6f430dfa43e97f414737",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/gpu-antes.json",
+      "currentBlob": "3f6599eb3ba685d332766794a8a0d09f341d75af",
+      "upstreamBlob": "3f6599eb3ba685d332766794a8a0d09f341d75af",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/gpu-depois.json",
+      "currentBlob": "71e8ea0ff39eb95c927c38005ddad5729034ae2a",
+      "upstreamBlob": "71e8ea0ff39eb95c927c38005ddad5729034ae2a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/regressao-solo.json",
+      "currentBlob": "0465b8834d7376690fb984a96bb9c641ccccaef9",
+      "upstreamBlob": "0465b8834d7376690fb984a96bb9c641ccccaef9",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/resultado-32.json",
+      "currentBlob": "63379cd297c3a248303e16882a00538dd63e2850",
+      "upstreamBlob": "63379cd297c3a248303e16882a00538dd63e2850",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/resultado-8.json",
+      "currentBlob": "604b5dd53959675383faf2e27629df1f76615831",
+      "upstreamBlob": "604b5dd53959675383faf2e27629df1f76615831",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/validacao-32.json",
+      "currentBlob": "da3f84efd6dfca127cedea8cefb5921d01a705fc",
+      "upstreamBlob": "da3f84efd6dfca127cedea8cefb5921d01a705fc",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-agua-portatil/validacao-8.json",
+      "currentBlob": "c375efe20b6d9a5746b1dedf7da148ce2cda281c",
+      "upstreamBlob": "c375efe20b6d9a5746b1dedf7da148ce2cda281c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-animacao/cute-resultado.json",
+      "currentBlob": "719bb40b8a6e783d81a9ee3610da67da02adf478",
+      "upstreamBlob": "719bb40b8a6e783d81a9ee3610da67da02adf478",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-animacao/cute-validacao-khronos.json",
+      "currentBlob": "ecc1a518b125fa62baa5384134b0a5ecba12b430",
+      "upstreamBlob": "ecc1a518b125fa62baa5384134b0a5ecba12b430",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-animacao/resultado.json",
+      "currentBlob": "d5d0f731bf77bbefb3a0a1ff4139e2b615f26309",
+      "upstreamBlob": "d5d0f731bf77bbefb3a0a1ff4139e2b615f26309",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-animacao/validacao-khronos.json",
+      "currentBlob": "9d2bcb63057136b6d69f36b6fd3d676fa2f9fe30",
+      "upstreamBlob": "9d2bcb63057136b6d69f36b6fd3d676fa2f9fe30",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-glb-unico/imagem-recusada.json",
+      "currentBlob": "9a2802c4f72d1995b2d4d424a80c0918179cd91a",
+      "upstreamBlob": "9a2802c4f72d1995b2d4d424a80c0918179cd91a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-glb-unico/resultado.json",
+      "currentBlob": "01fd53854a572713214d07886bda509da0fe8878",
+      "upstreamBlob": "01fd53854a572713214d07886bda509da0fe8878",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-glb-unico/validacao-khronos.json",
+      "currentBlob": "c313c01c477b680d209530c921d4bb0733325d81",
+      "upstreamBlob": "c313c01c477b680d209530c921d4bb0733325d81",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-integracao/plano/resultado.json",
+      "currentBlob": "d1013047210e283a8d786c428e8053a4e51a2665",
+      "upstreamBlob": "d1013047210e283a8d786c428e8053a4e51a2665",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-integracao/plano/validacao-khronos.json",
+      "currentBlob": "a2ca2c7dff05f3f8ff5c3fc8f5e0184820f9ce96",
+      "upstreamBlob": "a2ca2c7dff05f3f8ff5c3fc8f5e0184820f9ce96",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-integracao/terreno/resultado.json",
+      "currentBlob": "66e3769b99d35e8918dff0f26a7a285bbed44f05",
+      "upstreamBlob": "66e3769b99d35e8918dff0f26a7a285bbed44f05",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-integracao/terreno/validacao-khronos.json",
+      "currentBlob": "edcf5043d877c3ee9ef10f0f8a9d5a2168fbdd81",
+      "upstreamBlob": "edcf5043d877c3ee9ef10f0f8a9d5a2168fbdd81",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-interface/portatil.json",
+      "currentBlob": "2915b2660ffc603ede7c53e4903374d0f510aca4",
+      "upstreamBlob": "2915b2660ffc603ede7c53e4903374d0f510aca4",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-interface/resultado.json",
+      "currentBlob": "72c533b12042cec80e87defa1949f587b510aa69",
+      "upstreamBlob": "72c533b12042cec80e87defa1949f587b510aa69",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/catalogo-juncao/resultado.json",
+      "currentBlob": "d3a18de67545d3ef9d4480478c2c9962d8f16b37",
+      "upstreamBlob": "d3a18de67545d3ef9d4480478c2c9962d8f16b37",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/catalogo-juncao/validacao-khronos.json",
+      "currentBlob": "41242382e0dabc85e01946ea19e6cfb3b264d689",
+      "upstreamBlob": "41242382e0dabc85e01946ea19e6cfb3b264d689",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/catalogo/resultado.json",
+      "currentBlob": "a4d50e3a1928a1461510493e9dda08014e7ee569",
+      "upstreamBlob": "a4d50e3a1928a1461510493e9dda08014e7ee569",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/catalogo/validacao-khronos.json",
+      "currentBlob": "b6eecb0f5d5c5ca84475f62af30f8eea3216f5c9",
+      "upstreamBlob": "b6eecb0f5d5c5ca84475f62af30f8eea3216f5c9",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/facetado-antes/resultado.json",
+      "currentBlob": "29b6c8100357db89ef7ac807c702b2bf669f773a",
+      "upstreamBlob": "29b6c8100357db89ef7ac807c702b2bf669f773a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/facetado-depois/resultado.json",
+      "currentBlob": "71128aab29b5a33a752004f9f1c308160b7a1dd5",
+      "upstreamBlob": "71128aab29b5a33a752004f9f1c308160b7a1dd5",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/plano-juncao/resultado.json",
+      "currentBlob": "5db8255938bc9e12210ab46aa1d5b25ce217d41d",
+      "upstreamBlob": "5db8255938bc9e12210ab46aa1d5b25ce217d41d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/plano-juncao/validacao-khronos.json",
+      "currentBlob": "07c55ac4a73d1b36df5e4bbe4e9b05bcc01eeac0",
+      "upstreamBlob": "07c55ac4a73d1b36df5e4bbe4e9b05bcc01eeac0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/plano/resultado.json",
+      "currentBlob": "ea8818630524e9a0cb4ae8244ac6838805ac184b",
+      "upstreamBlob": "ea8818630524e9a0cb4ae8244ac6838805ac184b",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-juncao/plano/validacao-khronos.json",
+      "currentBlob": "a2ca2c7dff05f3f8ff5c3fc8f5e0184820f9ce96",
+      "upstreamBlob": "a2ca2c7dff05f3f8ff5c3fc8f5e0184820f9ce96",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-materializacao/resultado-glb.json",
+      "currentBlob": "66cf54027b7a7c59da479991d21891118232d526",
+      "upstreamBlob": "66cf54027b7a7c59da479991d21891118232d526",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-materializacao/validacao-khronos.json",
+      "currentBlob": "8cd1f68a2f68c421499e376db77b8a28cf71f464",
+      "upstreamBlob": "8cd1f68a2f68c421499e376db77b8a28cf71f464",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-objetos/resultado.json",
+      "currentBlob": "9a93474c6b04cc7b4c0dddd58e3c07e447c8eb00",
+      "upstreamBlob": "9a93474c6b04cc7b4c0dddd58e3c07e447c8eb00",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-pintura/resultado.json",
+      "currentBlob": "bef44c6523e2a1cee50d2b65840f8420cef998b0",
+      "upstreamBlob": "bef44c6523e2a1cee50d2b65840f8420cef998b0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-preparo/verificacao.json",
+      "currentBlob": "9309afa358cb771f76140966551405f397dfab66",
+      "upstreamBlob": "9309afa358cb771f76140966551405f397dfab66",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-raylib/comparacao.json",
+      "currentBlob": "3cfe80bbd975ebf3c40252058e9f2d8af679a9c5",
+      "upstreamBlob": "3cfe80bbd975ebf3c40252058e9f2d8af679a9c5",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-raylib/exemplo-native.json",
+      "currentBlob": "0d8d54846e46711288101530c6b050e0fa26c9a3",
+      "upstreamBlob": "0d8d54846e46711288101530c6b050e0fa26c9a3",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-raylib/interface.json",
+      "currentBlob": "d1d499c643047cb38cbe3aa6925223817aacea35",
+      "upstreamBlob": "d1d499c643047cb38cbe3aa6925223817aacea35",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-raylib/pyodide.json",
+      "currentBlob": "5827b4a57894730088f74ded7ece1b76793ec400",
+      "upstreamBlob": "5827b4a57894730088f74ded7ece1b76793ec400",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-raylib/three-sem-sessao.json",
+      "currentBlob": "2e7f30ded681730db9956a8a39fc6b97d7b0cfc2",
+      "upstreamBlob": "2e7f30ded681730db9956a8a39fc6b97d7b0cfc2",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-runtime/imagem-invalida.json",
+      "currentBlob": "494fbccb7c5e53551a807c3a7295660e0c896a4a",
+      "upstreamBlob": "494fbccb7c5e53551a807c3a7295660e0c896a4a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-runtime/portatil.json",
+      "currentBlob": "0f7394a08343e2ecc2334e8ec70c086c062f2964",
+      "upstreamBlob": "0f7394a08343e2ecc2334e8ec70c086c062f2964",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-runtime/resultado.json",
+      "currentBlob": "ce2cb41d923863fc2e615fba56017804d1c954e1",
+      "upstreamBlob": "ce2cb41d923863fc2e615fba56017804d1c954e1",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-solo-acabamento/resultado.json",
+      "currentBlob": "a215c53bfcdb4bfc5cd7457a66010e0632cb2d3b",
+      "upstreamBlob": "a215c53bfcdb4bfc5cd7457a66010e0632cb2d3b",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-solo-caminhos/resultado.json",
+      "currentBlob": "950a9e3fe69602627cfc5b96d2115e7d64ddd63e",
+      "upstreamBlob": "950a9e3fe69602627cfc5b96d2115e7d64ddd63e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-solo-caminhos/validacao.json",
+      "currentBlob": "3c56767d6cee9e62e26fed078a99337853970ff9",
+      "upstreamBlob": "3c56767d6cee9e62e26fed078a99337853970ff9",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-studio-python-importacao/classic-browser.json",
+      "currentBlob": "556d0027bd2d23b65edd26a4420e1c62d781f079",
+      "upstreamBlob": "556d0027bd2d23b65edd26a4420e1c62d781f079",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-studio-python-importacao/classic-importacao.json",
+      "currentBlob": "61723ec7cf6743feded30bfc1769b81b42930554",
+      "upstreamBlob": "61723ec7cf6743feded30bfc1769b81b42930554",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-studio-python-importacao/pro-browser.json",
+      "currentBlob": "76fe7cfbada9f6568e9354e06e791582e9966ea0",
+      "upstreamBlob": "76fe7cfbada9f6568e9354e06e791582e9966ea0",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-studio-python-importacao/pro-importacao.json",
+      "currentBlob": "a5e175cdb7542aa6c731b47ba79e32d65021d1d4",
+      "upstreamBlob": "a5e175cdb7542aa6c731b47ba79e32d65021d1d4",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-studio-raylib-assets/browser.json",
+      "currentBlob": "e736312afb65a11c1db741d69b3aa1d4819b4c55",
+      "upstreamBlob": "e736312afb65a11c1db741d69b3aa1d4819b4c55",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-zip-faixas/leitura-baseline.json",
+      "currentBlob": "80bd2383e210ac2487782bc07a19ecaa3eefa56f",
+      "upstreamBlob": "80bd2383e210ac2487782bc07a19ecaa3eefa56f",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-zip-faixas/leitura-browser.json",
+      "currentBlob": "c5f63662bd3d003cf4282bb3e2113f5422136024",
+      "upstreamBlob": "c5f63662bd3d003cf4282bb3e2113f5422136024",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-zip-faixas/leitura-decoder.json",
+      "currentBlob": "885a9421a8a6fc7a68161fdbcaa741e150e49e9b",
+      "upstreamBlob": "885a9421a8a6fc7a68161fdbcaa741e150e49e9b",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-zip-faixas/leitura-faixas.json",
+      "currentBlob": "1214f92b0900781eaeb86666e4100ea7c715775c",
+      "upstreamBlob": "1214f92b0900781eaeb86666e4100ea7c715775c",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "docs/plans/2026-11-16-cenarios-reforma/evidencias/lote8-zip-faixas/pacote.json",
+      "currentBlob": "0396d8d470f8cffc595761427f0d928de52b1fee",
+      "upstreamBlob": "0396d8d470f8cffc595761427f0d928de52b1fee",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/molda-cenarios/playground/oficina/verificar-escultura.mjs",
+      "currentBlob": "1d0fd6284e0d6df6cc387441f20a630e8e4c1294",
+      "upstreamBlob": "1d0fd6284e0d6df6cc387441f20a630e8e4c1294",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "lint/suspicious/noAssignInExpressions",
+      "path": "packages/molda-cenarios/playground/oficina/verificar-terreno-oficina.mjs",
+      "currentBlob": "c13e5fc88d810d7f5dab02f61bed54e8338081be",
+      "upstreamBlob": "c13e5fc88d810d7f5dab02f61bed54e8338081be",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/molda-cenarios/playground/oficina/verificar-terreno-oficina.mjs",
+      "currentBlob": "c13e5fc88d810d7f5dab02f61bed54e8338081be",
+      "upstreamBlob": "c13e5fc88d810d7f5dab02f61bed54e8338081be",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/cade-todo-mundo-aula-1/primeiro-achado.script.js",
+      "currentBlob": "3733214b4d8524541ca857beb1d6fdfd368bfed4",
+      "upstreamBlob": "3733214b4d8524541ca857beb1d6fdfd368bfed4",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/cade-todo-mundo-aula-2/contar-achados.script.js",
+      "currentBlob": "e35ca91eaebb469180a45de1409dc3bcbff2e710",
+      "upstreamBlob": "e35ca91eaebb469180a45de1409dc3bcbff2e710",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/cade-todo-mundo-aula-2/personalizar.script.js",
+      "currentBlob": "abb5339162620c94af369831349bcc8579f0a79d",
+      "upstreamBlob": "abb5339162620c94af369831349bcc8579f0a79d",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-1/andar.script.js",
+      "currentBlob": "d9c8669f0b738af43006e3a19d92bdaf04f2eb7e",
+      "upstreamBlob": "d9c8669f0b738af43006e3a19d92bdaf04f2eb7e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-1/borda.script.js",
+      "currentBlob": "4ce99ef265d10bdf89fb9c1cab088a24cc31ee0e",
+      "upstreamBlob": "4ce99ef265d10bdf89fb9c1cab088a24cc31ee0e",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-2/guardar.script.js",
+      "currentBlob": "73da89a07c4041edafd636aaf2840bfc2307fd92",
+      "upstreamBlob": "73da89a07c4041edafd636aaf2840bfc2307fd92",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-2/programar-chave.script.js",
+      "currentBlob": "c72894b0824b7b52f05246116a9d36f93b3e94b1",
+      "upstreamBlob": "c72894b0824b7b52f05246116a9d36f93b3e94b1",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-2/recolher.script.js",
+      "currentBlob": "4a9b77abcba12e0ebf27a3ea8f6b648a7adef393",
+      "upstreamBlob": "4a9b77abcba12e0ebf27a3ea8f6b648a7adef393",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-3/decisao.script.js",
+      "currentBlob": "3b988929b06afa30b24e1c9db7c24422c321829f",
+      "upstreamBlob": "3b988929b06afa30b24e1c9db7c24422c321829f",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-3/farol-mensagens.script.js",
+      "currentBlob": "ef0a50f1c4af8451e1212bf87889703898a0f5ca",
+      "upstreamBlob": "ef0a50f1c4af8451e1212bf87889703898a0f5ca",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-3/personalizar.script.js",
+      "currentBlob": "2612a615d552eee1e3d883c3174647468f463dad",
+      "upstreamBlob": "2612a615d552eee1e3d883c3174647468f463dad",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-3/posicionar-chave.script.js",
+      "currentBlob": "b822e9eb0d3d641e8faa3162b5a97d6f535d9b8a",
+      "upstreamBlob": "b822e9eb0d3d641e8faa3162b5a97d6f535d9b8a",
+      "sameAsUpstream": true
+    },
+    {
+      "category": "format",
+      "path": "packages/studio/e2e/fixtures/protected-lessons/desafio-dia-3/sem-chave.script.js",
+      "currentBlob": "21a8e2e37cdc2928b8117ded9261265b62379652",
+      "upstreamBlob": "21a8e2e37cdc2928b8117ded9261265b62379652",
+      "sameAsUpstream": true
+    }
+  ]
+}

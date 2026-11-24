@@ -6,12 +6,16 @@
  * repetindo), o pulo toca "Esticar" UMA VEZ na mão ("Tocar a animação … uma vez") e o "Quando …
  * terminar a animação" o devolve ao "parado". O floco de gelo CONGELA o herói: "Parar a
  * animação" o deixa duro no lugar até o "depois de 1.5 s" devolvê-lo ao "parado" (e à animação
- * do estado). O objetivo é curto: pôr as cinco estrelas na mochila.
+ * do estado). O objetivo é curto: pôr as cinco estrelas na mochila. O cenário tem duas regiões
+ * (Campo e Pomar), e o "Quando o heroi entrar na região" diz no canto onde o herói está.
  *
  * `bun run gen:game-3d-examples` regrava a IR em examples.ts a partir daqui.
  */
+import { CAMPO_DO_HEROI_ID } from './sceneExampleAssets'
+
 export const HEROI_MOLDA_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 30, sky: "#7dd3fc", ground: "#4ade80" });
+SZGameKit3D.loadScene(${JSON.stringify(CAMPO_DO_HEROI_ID)});
 SZGameKit3D.setScreenText("inicio", "Herói do Molda", "Um herói feito no Molda! Ande com WASD, pule com espaço e pegue as cinco estrelas. Cuidado com os flocos de gelo: eles congelam o herói. Troque pelo seu herói e use os nomes das animações dele.", "Jogar");
 SZGameKit3D.setScreenText("vitoria", "Todas as estrelas!", "O seu herói pegou as cinco.", "Jogar de novo");
 SZGameKit3D.defineMold("heroi", { health: 3, speed: 5 }, function () {
@@ -32,6 +36,7 @@ SZGameKit3D.setStateAnim("heroi", "parado", "Acenar");
 SZGameKit3D.setStateAnim("heroi", "andando", "Esticar");
 SZGameKit3D.onEnterState("jogando", function () {
   const heroi = SZGameKit3D.spawn("heroi", 0, 0, 0);
+  SZGameKit3D.sceneStart(heroi);
   SZGameKit3D.cameraFollow(heroi, 8, 4);
   SZGameKit3D.spawn("estrela", 6, 0, 6);
   SZGameKit3D.spawn("estrela", -6, 0, 6);
@@ -96,6 +101,12 @@ SZGameKit3D.onOverlap("estrela", function (zona, quem) {
       SZGameKit3D.endGame("ganhou");
     }
   }
+});
+SZGameKit3D.onEnterRegion("heroi", "Campo", function () {
+  SZGameKit3D.hudText("top-right", "No campo");
+});
+SZGameKit3D.onEnterRegion("heroi", "Pomar", function () {
+  SZGameKit3D.hudText("top-right", "No pomar das estrelas");
 });
 SZGameKit3D.onUpdate(function (dt) {
   SZGameKit3D.hudText("top-left", "Estrelas: " + SZGameKit3D.bagCount("estrela") + " de 5");

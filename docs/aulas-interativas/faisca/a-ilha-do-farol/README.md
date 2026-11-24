@@ -8,7 +8,7 @@ Curso do posto **Faísca**, depois de **A Chave do Farol**. Três aulas em bloco
 | [A chave está ao seu alcance](ilha-aula-2.roteiro.md) | X/Z no chão, Y na altura; contato em três dimensões | Posição da chave, coleta, memória e aviso |
 | [A luz volta ao farol](ilha-aula-3.roteiro.md) | Revisão e aplicação dos conceitos, sem repetir experiências do 2D | Resposta sem chave, vitória com chave (o farol acende com a animação do modelo), a luz que acende uma vez só (guarda `Se não ganhou`), personalização com as variações e teste completo |
 
-Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e índice de edição. A fonte editorial é [ilha-do-farol-conteudo.ts](../../../aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts). Não editar somente os derivados. Nesta versão a professora grava o master inteiro, sem substituições por Dedé/Debinha.
+Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e índice de edição. A fonte editorial é [ilha-do-farol-conteudo.ts](../../../aulas-interativas-tecnico/qa/ilha-do-farol-conteudo.ts). Não editar somente os derivados. A professora grava o master inteiro; na edição kids, a Debinha (aulas 1 e 3) e o Dedé (aula 2) dizem as frases das tabelas de substituição do roteiro, com a voz dos arquivos `.debinha.elevenlabs.txt` e `.dede.elevenlabs.txt` (ver abaixo, 22/11/2026).
 
 - [Passo a passo em PDF](passo-a-passo-do-projeto.pdf) e [versão em texto](passo-a-passo.md).
 - [Projeto final importável no Estúdio](ilha-do-farol.szproject.json).
@@ -50,13 +50,58 @@ Implementação e autoria locais: experiências, quiz, objetivos, projetos progr
 
 **Pendências de produção desta mudança (08/11/2026):** gerar de novo a voz do Zappy no Admin (as falas das experiências mudaram, com a ideia e o "No seu jogo" de cada uma), reimportar as três aulas (o progresso em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e conferir se algum vídeo já gravado mostra a cena antiga da aula 3 (o mapa 2D com a tabela).
 
-Ainda dependem de produção: geração e escuta das vozes, gravação dos vídeos, anexação do PDF no Admin e publicação. `plannedVideo` é um molde de produção, não um vídeo publicado. O manifesto já contém os passos como material de texto para consulta; o PDF é anexado na publicação. Não houve importação remota nem implantação nesta tarefa.
+Ainda dependem de produção: geração e escuta das vozes, gravação dos vídeos, anexação do PDF no Admin e publicação. `plannedVideo` é um molde de produção, não um vídeo publicado. O bloco de materiais leva o livro do PDF e os links do Como Fazer, sem os passos em texto (desde 22/11/2026: criança assiste ao vídeo, não lê); o PDF é anexado na publicação. Não houve importação remota nem implantação nesta tarefa.
 
-O caderno é anexado uma única vez, em `materiais`, na parte 2 da primeira aula. As demais aulas remetem a ele. Seu PDF segue o mesmo template visual do Cadê Todo Mundo e da Chave do Farol, com capa ilustrada, índice, experiências, passos numerados, esquemas com as cores reais dos blocos, testes, entrega e ajuda. O encerramento oferece publicação opcional no Mural, sem transformá-la em requisito de conclusão.
+O caderno é anexado uma única vez, em `materiais`, na parte 2 da primeira aula. As demais aulas remetem a ele. Desde 20/11/2026 o PDF segue a [receita do Passo a passo](../../../aulas-interativas-tecnico/recursos/caderno-visual/README.md) (capa, abertura com o índice das aulas, uma folha por parte com o cabeçalho da cena, passos numerados, esquemas com as cores dos blocos do Estúdio, galerias das escolhas, publicação no Mural e ajuda). O texto mora em `recursos/ilha-farol/caderno-conteudo.json`, e a arte da capa é a ilha do jogo, renderizada com as peças do curso por `docs/design/ilha-do-farol-blender/capa.py`. O encerramento oferece publicação opcional no Mural, sem transformá-la em requisito.
 
 Usar o curso reservado **`jornada-faisca-base-3d`**; na oferta adulta, **`jornada-faisca-base-3d-adulto`**. A projeção de destino conserva os IDs internos e a cadeia do projeto. Conferir os cursos existentes por slug antes de importar; não recriar o curso nem reiniciar progresso. O currículo aponta para esta autoria, mantendo o hash do outline original do seed. Os títulos e a montagem completos vêm destes manifestos. Havendo aulas provisórias no Admin, reconciliar sua identidade antes da publicação.
 
 Um ensaio com iniciantes ainda é necessário para avaliar compreensão, legibilidade e tempo de exploração. Os testes de software conferem funcionamento, não comprovam aprendizagem.
+
+## Revisão de 20/11/2026: falas, gravação automática e Passo a passo
+
+No molde do Cadê Todo Mundo? e de A Chave do Farol:
+
+- **Falas:** uma ideia por parágrafo, o porquê antes do como, a retomada "Tá vendo?" com a causa,
+  "É este bloco que…" e cada clique na sua frase. Nenhuma fala espera o "Salvo". A abertura
+  guarda as mudanças da Helena ("Oi!" e "Explore a ilha. Quando terminar, clique em Próxima
+  parte.").
+- **Estrutura:** o envio fecha a última construção de cada aula, como no Farol. Aula 1 com quatro
+  partes (a entrega e o fecho entraram no movimento), Aula 2 com seis (o fecho entrou no aviso) e
+  Aula 3 com oito, mais a revisão; o fecho da Aula 3 continua com o Compartilhar.
+- **Na tela:** cada gesto na sua palavra, nos verbos do palco (ESPEC-ROTEIRO, seção 9). O jogo é
+  de teclado: `[rodar de novo]` dá o foco ao jogo no Estúdio, e `[tocar jogo]` no jogo pronto. Os
+  caminhos das setas contam a velocidade 4 e os sólidos (a pedra fecha a linha do começo) e se
+  acertam no Verificar plano. Para os nomes repetidos da paleta e dos blocos 3D (Encostar dentro
+  de Encostar, dois Se, o encontro novo igual ao que já existe), o palco ganhou o caminho de
+  categorias, `abaixo de` e o nome que segue pelos blocos encaixados.
+- **Recados na página:** cada parte tem o seu, como no Farol.
+- **Passo a passo:** refeito na receita do caderno visual, com 29 páginas.
+
+**Pendências de produção:** gerar a voz nova (os três `.elevenlabs.txt`), gravar com o palco e
+acertar os tempos das setas no Verificar plano, reimportar as três aulas (a Aula 1 perdeu as seções
+`entrega` e `fecho`, e a Aula 2 a `fecho`) e anexar o PDF novo no Admin.
+
+## Debinha e Dedé: 22/11/2026
+
+A Ilha não tinha falas dos personagens. Agora tem, como o Cadê e a Chave do Farol: a Debinha nas
+aulas 1 e 3 e o Dedé na aula 2, doze frases ao todo. O campo `kids` de cada parte em
+`ilha-do-farol-conteudo.ts` marca a frase, e o gerador escreve a tabela de substituições no
+roteiro, o `.edicao.json` e o arquivo de voz do personagem.
+
+| Aula | Personagem | Frases |
+| --- | --- | --- |
+| 1 | Debinha | a pedra que esconde (abertura), a câmera e a chave (experiência), onde vai o bloco que faz andar |
+| 2 | Dedé | o y no 3D e o encostar (experiências), a chave que some para sempre?, como ver que o jogo guardou a chave |
+| 3 | Debinha | onde vai o aviso de que falta a chave, quem joga vai saber que deu certo?, o não na pergunta (experiência), por que a luz acendeu de novo, como mostrar o jogo para alguém |
+
+As perguntas das experiências e a do aviso da vitória já estavam na fala da professora e só
+ganharam a marcação. As outras seis são novas, no molde das que já foram gravadas na Chave do
+Farol e no Cadê, e a resposta seguinte começa pelo que foi pedido. Como a voz da Ilha ainda não foi
+gerada, nada gravado muda; todas as deixas do Na tela continuam na fala.
+
+**Pendência de produção:** gerar no ElevenLabs a voz de cada personagem com o arquivo dele, junto
+com a voz nova da professora, e o vídeo dos personagens para a montagem kids.
 
 ## Faísca: revisão de 27/10/2026
 

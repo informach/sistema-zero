@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-21T06:50:58.734Z",
+  "head": "8a4b415abe5c208614ccea60afdde5bb6e574b19",
+  "reader": "85d16fcd99efe2a72a8350181542cf475a55db37",
+  "delta": [
+    {
+      "file": "packages/community-kids/tests/pinta-cloud-persistence.test.ts",
+      "sha256": "3aa5a21f6166051d7ff3792ab8487763d48d507fad0bba68c4c2065138b2aa81"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "sha256": "59997f34aaa645b80461ba04ad883c13b0b8b4bd61a13d836a1276eb7840e3c6"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "sha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "f11d50f89de28b830635ca0ce586de674dcccce2e8d8ed0c5d0038d6b568292e"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "sha256": "28e86f353d4be4e7b4c63874ba3070a90c305ebc44f46c1d48f7bdab3e884ad7"
+    },
+    {
+      "file": "packages/studio-runtime/wrangler.jsonc",
+      "sha256": "35474138853592f2247ad6e26eb2419794e171321eaaf775b56cb55fb25b3185"
+    }
+  ],
+  "readLimit": 6,
+  "writeDeclaration": 6,
+  "preservedPackageTree": "06f0dcb116f9fc1afcddeaa0788c210c3685081e",
+  "reader85MergeChangesPackages": false,
+  "newWholeCiPending": true,
+  "activated": false,
+  "backendFormatTestsUseInMemoryHandlers": true
+}

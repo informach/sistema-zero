@@ -5,9 +5,13 @@ import type { ReactNode } from 'react'
 import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
 import { missionSessionFixture } from '../../ui/tests/mission-fixture'
 
-const actualNavigation = await import('next/navigation')
-const actualPinta = await import('@sistemazero/pinta')
-const actualPersonal = await import('@sistemazero/studio/personal-assets')
+// CÓPIAS das exportações, não os namespaces: o `mock.module` do Bun reescreve as exportações
+// vivas, inclusive no arquivo de origem (`state/persistence.ts`), e o namespace guardado passaria
+// a devolver o falso. Restaurado com ele, o `createPintaPersistence` falso (sem paletas) vazava
+// para os arquivos seguintes (o `pinta-palette-writer.test.ts`, no CI de 23/11/2026).
+const actualNavigation = { ...(await import('next/navigation')) }
+const actualPinta = { ...(await import('@sistemazero/pinta')) }
+const actualPersonal = { ...(await import('@sistemazero/studio/personal-assets')) }
 const namespaces: string[] = []
 /** O adapter que o host entregou ao último `<PintaApp>` montado. */
 let lastAdapter: PintaHostAdapter | undefined
@@ -96,11 +100,17 @@ mock.module('@sistemazero/studio/personal-assets', () => ({
     personalNamespaces.push(options?.namespace)
     return personalRecords.get(id) ?? null
   },
-  savePersonalAsset: async (input: Record<string, unknown>, options?: { namespace?: string }) => {
+  savePersonalAssetBundle: async (
+    inputs: Array<Record<string, unknown>>,
+    options?: { namespace?: string },
+  ) => {
     personalNamespaces.push(options?.namespace)
-    savedToStudio.push(input)
+    savedToStudio.push(...inputs)
     if (personalSaveFailure) return { ok: false, error: personalSaveFailure }
-    return { ok: true, name: String(input.name), updatedAt: 1 }
+    return {
+      ok: true,
+      assets: inputs.map((input) => ({ ...input, name: String(input.name), updatedAt: 1 })),
+    }
   },
 }))
 

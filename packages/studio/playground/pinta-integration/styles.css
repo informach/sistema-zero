@@ -1,0 +1,4 @@
+@import "../styles.css";
+@import "../../../pinta/src/styles/pinta.css";
+@source "../../../pinta/src";
+@source "../../../member-shell/src/components/creator/pinta-client.tsx";

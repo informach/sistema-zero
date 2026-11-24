@@ -1,94 +1,162 @@
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e leve o personagem até o farol, sem passar pela chave. Tá vendo? Nada acontece, porque o farol ainda não confere se o personagem está com a chave.
+[upbeat, welcoming voice] Seu personagem já pega a chave. Agora é a vez do farol!
 
-[engaging, energetic, conversational voice] Lembra da porta do jogo 2D? Ela fazia uma pergunta: o personagem está com a chave? Para o sim, ela tinha uma resposta, e para o não, outra. Agora a gente vai montar essa pergunta no farol da ilha, começando pela resposta do não!
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e leve o personagem até o farol, sem passar pela chave. Tá vendo? Nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega ao farol.
 
-[engaging, energetic, conversational voice] Chegar ao farol também é um encontro, e os encontros ficam na área Quando acontecer. Encontre lá o encontro com a chave e deixe à vista o espaço logo abaixo dele, fora do fazer dele.
+[engaging, energetic, conversational voice] Lembra da porta do jogo 2D? Ela fazia uma pergunta: o personagem está com a chave? Com a resposta sim, o farol acendia. Com a resposta não, o aviso dizia que falta a chave. Agora a gente vai montar essa pergunta no farol da ilha, começando pelo aviso!
 
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço.
+[engaging, energetic, conversational voice] Primeiro, o jogo precisa perceber quando o personagem chega ao farol. Chegar ao farol é um encontro, como pegar a chave, e os encontros ficam na área Quando acontecer.
 
-[confident, clear, unhurried voice] Repare que ele chega com chave no segundo nome. Clique em chave e escolha farol.
+[confident, clear, unhurried voice] Encontre essa área. Lá dentro está o encontro com a chave. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.
 
-[engaging, energetic, conversational voice] Agora deixe à vista o espaço ao lado da palavra fazer, dentro desse novo encontro.
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Encostar e depois Encostar de novo, e pegue o bloco Quando personagem encostar em chave.
 
-[engaging, energetic, conversational voice] Quem faz uma pergunta no jogo é o bloco Se. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do encontro com a chave. Não coloque um encontro dentro do outro.
 
-[confident, clear, unhurried voice] Repare que o Se já vem com uma pergunta pronta: x maior que 0. Não é isso que o farol precisa perguntar. Segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos.
+[confident, clear, unhurried voice] Repare: o bloco chega com chave no segundo nome. Clique em chave e escolha farol.
 
-[confident, clear, unhurried voice] O lugar ao lado de Se ficou vazio. Abra Programação e depois Valores, pegue o bloco valor da variável e solte nesse lugar.
+[engaging, energetic, conversational voice] É este bloco que percebe quando o personagem chega ao farol.
 
-[confident, clear, unhurried voice] Repare que ele chega com x. Clique no x e escolha temChave.
+[engaging, energetic, conversational voice] Agora, dentro desse encontro, o farol vai fazer a pergunta. Ela vai no espaço ao lado da palavra fazer. Deixe esse espaço à vista.
 
-[engaging, energetic, conversational voice] Pronto: quando o personagem encostar no farol, o jogo pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?
+[engaging, energetic, conversational voice] Para fazer uma pergunta, o seu jogo usa o bloco Se.
 
-[engaging, energetic, conversational voice] Como a porta, o Se tem um lugar para cada resposta. A resposta do sim fica no então. A resposta do não fica no senão.
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
 
-[engaging, energetic, conversational voice] O aviso de que falta a chave é a resposta do não, por isso ele vai no senão. Só que o Se chega sem esse espaço.
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer.
 
-[engaging, energetic, conversational voice] Olha aqui, na linha de baixo do bloco Se, depois do então: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha. Clique no segundo.
+[confident, clear, unhurried voice] Repare: o Se chega com uma pergunta pronta, x maior que 0. Não é isso que o farol precisa perguntar.
+
+[confident, clear, unhurried voice] Por isso, segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos.
+
+[confident, clear, unhurried voice] Agora o lugar ao lado de Se ficou vazio. É ali que vai a pergunta certa.
+
+[engaging, energetic, conversational voice] A pergunta certa é sobre temChave. O bloco que traz o que temChave guarda se chama valor da variável.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco valor da variável.
+
+[confident, clear, unhurried voice] Arraste e solte no lugar vazio ao lado de Se.
+
+[confident, clear, unhurried voice] Repare: esse bloco chega com x. Clique no x e escolha temChave.
+
+[engaging, energetic, conversational voice] Pronto: agora o Se pergunta se temChave é verdadeiro. Ou seja: o personagem pegou a chave?
+
+[curious] E onde eu escrevo que falta a chave?
+
+[engaging, energetic, conversational voice] Num espaço do próprio Se. No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
+
+[engaging, energetic, conversational voice] O aviso de que falta a chave é a resposta do não. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
 
 [confident, clear, unhurried voice] Repare: apareceu o espaço do senão. Deixe esse espaço à vista.
 
-[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Alterar variável para e solte dentro do senão. Repare que ele chega com o nome contador. Clique em contador e escolha aviso.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
-[confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva: Falta a chave. Procure na ilha antes de voltar.
+[confident, clear, unhurried voice] Arraste e solte dentro do senão.
 
-[engaging, energetic, conversational voice] O então fica vazio por enquanto. Ele guarda a resposta do sim, que você monta na próxima parte.
+[confident, clear, unhurried voice] Esse bloco chega com contador. Clique em contador e escolha aviso.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo e vá direto ao farol, sem passar pela chave.
+[engaging, energetic, conversational voice] Agora troque o número por um texto, como você fez na aula passada.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte em cima do número.
+
+[confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: Falta a chave. Procure na ilha antes de voltar.
+
+[engaging, energetic, conversational voice] O espaço do então fica vazio por enquanto. Você completa a resposta do sim na próxima parte.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e vá direto ao farol, sem passar pela chave.
 
 [interested, animated voice] Olha só: o farol continua apagado, e o aviso pede a chave. É a resposta do senão funcionando!
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Quando acontecer está o encontro do personagem com o farol, dentro dele está o Se com temChave, e dentro do senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro do personagem com o farol, dentro dele está o Se com temChave, e dentro do senão está o aviso de que falta a chave.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, pegue a chave e leve o personagem até o farol. Tá vendo? A luz não acende, porque a resposta do sim, no então, ainda está vazia.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, pegue a chave e leve o personagem até o farol. Tá vendo? A luz não acende, porque o espaço do então, o da resposta do sim, ainda está vazio.
 
-[engaging, energetic, conversational voice] Agora a gente vai montar essa resposta, para quem chega com a chave!
+[engaging, energetic, conversational voice] Agora a gente vai pôr a resposta do sim no então do seu jogo!
 
-[interested, animated voice] No jogo 2D, a gente trocava a imagem do farol apagado pela do farol aceso. Aqui o farol é um modelo só, e ele sabe acender: o modelo tem uma animação de acender.
+[engaging, energetic, conversational voice] A resposta do sim vai ter três blocos, um embaixo do outro: um que acende a luz, um que guarda que a partida foi ganha e um aviso para quem está jogando.
 
-[confident, clear, unhurried voice] Nos blocos, encontre o encontro com farol e deixe à vista o então do Se temChave.
+[interested, animated voice] No jogo 2D, a gente trocava a imagem do farol apagado pela do farol aceso. Aqui o farol é um modelo 3D, e ele sabe acender: o modelo tem uma animação de acender.
 
-[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo. Pegue o bloco Tocar a animação e solte dentro do então.
+[confident, clear, unhurried voice] Continue no Se, dentro do encontro com o farol, e deixe à vista o espaço do então.
 
-[confident, clear, unhurried voice] No primeiro espaço, escolha acender. No objeto, escolha farol. No último espaço, escolha uma vez.
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
+
+[confident, clear, unhurried voice] Arraste e solte dentro do então.
+
+[confident, clear, unhurried voice] Repare: ele chega com Andar, heroi e repetindo. Primeiro diga quem vai tocar a animação: clique em heroi e escolha farol.
+
+[confident, clear, unhurried voice] Depois clique em Andar e escolha acender.
+
+[confident, clear, unhurried voice] Por último, clique em repetindo e escolha uma vez.
 
 [engaging, energetic, conversational voice] Uma vez quer dizer que a luz acende e fica acesa no fim. Repetindo faria a animação recomeçar sem parar.
 
-[engaging, energetic, conversational voice] Quando o farol acende, a partida está ganha. O jogo guarda isso numa variável chamada ganhou: ela começa falso e precisa virar verdadeiro agora.
+[engaging, energetic, conversational voice] O segundo bloco guarda que a partida foi ganha. Para isso existe a variável ganhou: ela começa falso e vira verdadeiro quando o farol acende.
 
-[interested, animated voice] Olha aqui, em Enquanto estiver rodando: tem uma regra que olha ganhou. Quando ganhou é verdadeiro e a luz termina de acender, ela deixa o farol aceso, com o feixe girando, e traz o barco.
+[interested, animated voice] Olha aqui, em Enquanto estiver rodando: tem uma regra pronta que olha ganhou. Quando ganhou é verdadeiro, ela deixa o farol aceso, com o feixe girando, e traz o barco.
 
-[confident, clear, unhurried voice] Volte ao então e deixe à vista o lugar logo abaixo de Tocar a animação. Abra Programação e depois Variáveis, pegue o bloco Alterar variável para e solte ali. Repare que ele chega com o nome contador. Clique em contador e escolha ganhou.
+[confident, clear, unhurried voice] Volte ao então e deixe à vista o lugar logo abaixo de Tocar a animação.
 
-[confident, clear, unhurried voice] Agora abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1, no valor desse bloco.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
-[confident, clear, unhurried voice] Ainda dentro do então, logo abaixo de ganhou, solte mais um bloco Alterar variável para. Repare que ele chega com o nome contador. Clique em contador e escolha aviso.
+[confident, clear, unhurried voice] Arraste e solte logo abaixo de Tocar a animação.
 
-[confident, clear, unhurried voice] Abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva: Você acendeu o farol! O barco pode chegar.
+[confident, clear, unhurried voice] Clique em contador e escolha ganhou.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo e visite o farol sem a chave: ele continua apagado.
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco verdadeiro.
 
-[upbeat, encouraging voice] Depois pegue a chave e volte ao farol.
+[confident, clear, unhurried voice] Solte em cima do número e deixe em verdadeiro.
 
-[interested, animated voice] Olha só: a luz acende, o feixe começa a girar, o aviso muda e o barco se aproxima.
+[curious] E quem está jogando vai saber que deu certo?
 
-[upbeat, encouraging voice] Toque na tecla R para começar outra partida e confira que tudo volta ao começo.
+[engaging, energetic, conversational voice] Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo do bloco de ganhou, ainda dentro do então.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do então estão Tocar a animação acender em farol uma vez, ganhou verdadeiro e o aviso da vitória. Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de ganhou.
+
+[confident, clear, unhurried voice] Clique em contador e escolha aviso.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte em cima do número.
+
+[confident, clear, unhurried voice] Clique em Olá, apague e escreva: Você acendeu o farol! O barco pode chegar.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e vá ao farol sem a chave. A luz continua apagada.
+
+[upbeat, encouraging voice] Depois busque a chave e volte ao farol.
+
+[interested, animated voice] Olha só: a luz acende, o feixe começa a girar, o aviso muda e o barco vem chegando!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do então estão Tocar a animação acender em farol uma vez, ganhou verdadeiro e o aviso da vitória.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não.
+[engaging, energetic, conversational voice] Seu farol já acende! Daqui a pouco, ele vai precisar de uma palavrinha nova numa pergunta: o não.
 
-[curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
+[engaging, energetic, conversational voice] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
 
-[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim.
+[engaging, energetic, conversational voice] Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim.
 
 [curious] Com o não na pergunta, o que a porta faz?
 
@@ -100,110 +168,172 @@
 
 [engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Rodar de novo, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
 
-[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. Isso acontece porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
+[interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo.
 
-[curious] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais gol, porque a partida acabou.
+[curious] Ué, por que a luz acendeu de novo?
+
+[engaging, energetic, conversational voice] Porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
+
+[engaging, energetic, conversational voice] Sabe o apito final de um jogo de futebol? Depois dele, chutar a bola no gol não vale mais, porque a partida acabou.
 
 [engaging, energetic, conversational voice] No seu jogo, o apito final é ganhou ficar verdadeiro. Depois disso, a partida já foi vencida, e o farol não precisa responder outra vez.
 
 [engaging, energetic, conversational voice] Por isso, o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? Para fazer essa pergunta, a gente usa a palavra não.
 
-[engaging, energetic, conversational voice] Lembra da porta da experiência? Com o não na pergunta, a resposta virava ao contrário, e a porta só abria quando não estava trancada.
+[engaging, energetic, conversational voice] Lembra da porta da experiência? Com o não na pergunta, a resposta virava ao contrário.
 
-[engaging, energetic, conversational voice] No seu jogo é igual. Enquanto ganhou é falso, a partida ainda não foi ganha: a resposta é sim, e o farol responde.
+[engaging, energetic, conversational voice] No seu jogo é igual. Enquanto ganhou é falso, a partida ainda não foi ganha: a resposta é sim, e o farol responde. Quando ganhou vira verdadeiro, a resposta passa a ser não, e o farol para de responder.
 
-[engaging, energetic, conversational voice] Quando ganhou vira verdadeiro, a resposta passa a ser não, e o farol não responde mais.
+[confident, clear, unhurried voice] Nos blocos, encontre o encontro com o farol, na área Quando acontecer.
 
-[confident, clear, unhurried voice] Nos blocos, em Quando acontecer, deixe à vista o encontro com farol e um espaço vazio ao lado dele, fora do fazer. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco Se.
 
-[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço vazio.
+[confident, clear, unhurried voice] Arraste e solte no espaço ao lado de fazer, no encontro com o farol, em cima do Se que já está lá.
 
-[confident, clear, unhurried voice] Repare que o Se chega com a pergunta x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
+[interested, animated voice] Repare: o Se novo entrou no lugar, e o Se temChave desceu. Ele ficou logo abaixo do Se novo.
 
-[confident, clear, unhurried voice] Abra de novo Programação e depois Lógica e Se, pegue o bloco não e solte no lugar vazio ao lado de Se.
+[confident, clear, unhurried voice] O Se novo chega com a pergunta x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
 
-[confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco valor da variável e solte no espaço do não. Clique no x e escolha ganhou.
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, e pegue o bloco não.
+
+[confident, clear, unhurried voice] Solte no lugar vazio ao lado do Se novo.
+
+[confident, clear, unhurried voice] Repare: o não também chega com uma pergunta pronta, x maior que 0. Segure essa pergunta pelo sinal de maior e arraste até a lixeira.
+
+[confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco valor da variável.
+
+[confident, clear, unhurried voice] Solte no espaço do não. Depois clique no x e escolha ganhou.
 
 [interested, animated voice] Pronto: o Se novo pergunta não ganhou. Ou seja: a partida ainda não foi ganha?
 
 [engaging, energetic, conversational voice] Agora a pergunta da chave vai ficar dentro dessa pergunta nova. Assim, o farol só confere a chave enquanto a partida ainda não foi ganha.
 
-[confident, clear, unhurried voice] Volte ao encontro com farol. Segure o Se temChave pela palavra Se e arraste até o espaço do então do Se novo. Tudo o que estava dentro dele vai junto.
-
-[interested, animated voice] Repare: o fazer do encontro com farol ficou vazio.
-
-[confident, clear, unhurried voice] Agora segure o Se novo pela palavra Se e solte dentro desse fazer vazio.
+[confident, clear, unhurried voice] Segure o Se temChave pela palavra Se e arraste até o espaço do então do Se novo. Tudo o que está dentro dele vai junto.
 
 [interested, animated voice] Olha aqui: o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere a chave.
 
-[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo, pegue a chave e acenda o farol. Ande para trás pelo cais e volte.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez, pegue a chave e acenda o farol. Ande para trás pelo cais e volte.
 
 [interested, animated voice] Olha só: a luz continua acesa, o feixe segue girando e o barco continua chegando.
 
 [upbeat, encouraging voice] Toque na tecla R e vá ao farol sem a chave: ele continua pedindo a chave.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com farol está o Se com não ganhou, e o Se temChave inteiro está dentro do então dele. Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com o farol está o Se com não ganhou, e o Se temChave inteiro está dentro do então dele.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[curious] O seu farol já acende! E agora chegou uma surpresa: olha quantas versões o seu jogo pode ter. Outro personagem, outro barco, outra chave, outro farol e até outro cenário.
+[curious] O seu farol já acende! E agora chegou uma surpresa: o seu jogo pode ter outras versões. Outro personagem, outro barco, outra chave, outro farol e até outro cenário.
 
-[interested, animated voice] São as mesmas opções da Chave do Farol, com os mesmos nomes, agora em 3D.
+[interested, animated voice] São as mesmas opções da Chave do Farol, com os mesmos nomes, agora em três dimensões.
 
 [engaging, energetic, conversational voice] Eu vou mostrar com o pirata. Você escolhe o que quiser, e o que você gostou pode ficar como está.
 
-[confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e deixe à vista Criar o objeto personagem com o modelo aventureiro. Clique no nome aventureiro para abrir a lista e escolha outro. Eu escolho o pirata.
+[confident, clear, unhurried voice] Encontre a área Ao iniciar e o bloco Criar o objeto personagem com o modelo aventureiro.
+
+[confident, clear, unhurried voice] Clique em aventureiro para abrir a lista e escolha outro. Eu escolho o pirata.
 
 [interested, animated voice] Olha só: ele aparece no mesmo lugar e do mesmo tamanho, porque todos os personagens deste jogo foram feitos com a mesma medida. E ele também anda e respira, como o aventureiro.
 
 [confident, clear, unhurried voice] Repare que o nome do objeto continua personagem, porque os outros blocos usam esse nome. Troque só o modelo e deixe o nome e o tamanho como estão.
 
-[engaging, energetic, conversational voice] Os blocos Criar o objeto barco, chave e farol funcionam do mesmo jeito: clique no nome do modelo e escolha outro. Eu vou escolher barco pirata, chave de estrela e farol de pedra.
+[engaging, energetic, conversational voice] Os blocos Criar o objeto barco, chave e farol funcionam do mesmo jeito: clique no nome do modelo e escolha outro.
+
+[confident, clear, unhurried voice] No barco, eu escolho barco pirata.
+
+[confident, clear, unhurried voice] Na chave, chave de estrela.
+
+[confident, clear, unhurried voice] E no farol, farol de pedra.
 
 [interested, animated voice] No 2D, o farol tinha duas imagens, apagada e acesa. Aqui cada farol é um modelo só, e todos sabem acender. Por isso basta trocar num lugar.
 
-[engaging, energetic, conversational voice] Agora falta o lugar onde a história acontece. O primeiro Criar o objeto, o cenario, é a ilha inteira: o mar, o chão, a ponte, as árvores e o céu. Clique em praia tropical e escolha outro. Eu vou usar noite na ilha.
+[engaging, energetic, conversational voice] Agora falta o lugar onde a história acontece. O primeiro Criar o objeto, o cenario, é a ilha inteira: o mar, o chão, a ponte, as árvores e o céu.
+
+[confident, clear, unhurried voice] Clique em praia tropical e escolha outro. Eu vou usar noite na ilha.
 
 [interested, animated voice] Olha só: o caminho, a ponte e o lugar do farol continuam os mesmos.
 
-[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Rodar de novo e vá até o farol sem a chave: ele continua apagado. Depois busque a chave e volte.
+[upbeat, encouraging voice] Agora teste a sua combinação! Clique em Rodar de novo, pegue a chave e vá até o farol.
 
 [interested, animated voice] Olha só: o farol de pedra acende, e o barco pirata vem chegando!
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: você trocou só o modelo, e cada modelo está no bloco do mesmo tipo: personagem no personagem, barco no barco. Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: você trocou só o modelo, e cada modelo está no bloco do mesmo tipo: personagem no personagem, barco no barco.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
-
-[long pause]
-
-[upbeat, encouraging voice] Agora escolha outro lugar para a chave. Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave.
-
-[confident, clear, unhurried voice] Mude o x e o z para escolher o lugar no chão. Você também pode ajustar o y, mas o personagem precisa conseguir encostar na chave.
-
-[thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água.
-
-[engaging, energetic, conversational voice] Por isso, clique em Rodar de novo e vá até o lugar que você escolheu. Confira se a coleta acontece e se dá para voltar ao farol.
-
-[reassuring, encouraging voice] Se não conseguir, volte à posição da chave, mude um número de cada vez e teste novamente.
-
-[engaging, energetic, conversational voice] Se quiser, escreva seus próprios avisos nas linhas que mudam aviso. Só conserve o papel de cada mensagem: começo, coleta, falta da chave e vitória.
-
-[upbeat, encouraging voice] Agora faça uma partida sem pegar a chave: o farol deve ficar apagado e pedir que você procure. Depois recolha a chave e acenda o farol.
-
-[upbeat, encouraging voice] Toque na tecla R e confira se tudo volta ao começo.
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[confident, clear, unhurried voice] Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[pleased, lively voice] Você transformou a ideia da Chave do Farol em um jogo 3D! Programou o movimento, escolheu um lugar alcançável para a chave, fez o farol acender com a coleta e deixou o jogo com a sua cara. Também aprendeu a mudar o ponto de vista para investigar o que a imagem não mostra de primeira.
+[upbeat, encouraging voice] Agora a chave vai para o esconderijo que você escolher!
 
-[upbeat, encouraging voice] Seu jogo está pronto! Se quiser publicar no Mural, clique em Compartilhar no Estúdio. O título já vem preenchido. Escreva um resumo, clique em Gerar capa e confira a imagem. Depois clique em Publicar e espere aparecer Seu jogo está no Mural!
+[engaging, energetic, conversational voice] Lembra do x, do y e do z? O x e o z levam a chave pelo chão, e o y muda a altura.
 
-[pleased, lively voice] Olha só: seu jogo ganhou um lugar para outras pessoas jogarem! Clique em Copiar link de jogar para mostrar à família e aos amigos. Se precisar, peça ajuda a um adulto.
+[confident, clear, unhurried voice] Em Ao iniciar, encontre de novo o bloco Colocar o objeto chave.
 
-[confident, clear, unhurried voice] Clique em Fechar para voltar. Você também pode continuar sem publicar. Para terminar, clique em Concluir aula.
+[confident, clear, unhurried voice] Mude o x e o z para escolher um lugar no chão da ilha. Eu vou usar x menos 8 e z 3, perto da praia.
+
+[thoughtful] Ver a chave não basta. Ela pode estar alta demais ou do outro lado da água, e aí o personagem não alcança.
+
+[engaging, energetic, conversational voice] Por isso, teste sempre. Clique em Rodar de novo e vá até o lugar que você escolheu.
+
+[interested, animated voice] Olha só: o personagem alcança a chave e pega a chave.
+
+[reassuring, encouraging voice] Se não conseguir pegar, volte ao bloco, mude um número de cada vez e teste novamente.
+
+[engaging, energetic, conversational voice] Se quiser, escreva também os seus próprios avisos, nos blocos que mudam aviso. Só conserve o papel de cada mensagem: começo, chave pega, falta a chave e vitória.
+
+[upbeat, encouraging voice] Agora faça uma partida completa. Toque na tecla R e vá ao farol sem pegar a chave: ele fica apagado e pede a chave.
+
+[upbeat, encouraging voice] Depois pegue a chave no esconderijo novo e volte ao farol.
+
+[interested, animated voice] Olha só: a luz acende e o barco vem chegando!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco Colocar o objeto chave tem o x e o z do seu esconderijo, e o y em 1.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, o seu jogo em três dimensões está completo!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[pleased, lively voice] Você transformou a ideia da Chave do Farol em um jogo em três dimensões! Programou o movimento, escolheu o lugar da chave, fez o farol acender com a chave e deixou o jogo com a sua cara.
+
+[pleased, lively voice] Seu jogo está pronto! Agora, se quiser, você pode publicar o seu jogo no Mural.
+
+[engaging, energetic, conversational voice] O Mural é o lugar da plataforma onde ficam os jogos publicados. Lá, a sua família e os seus amigos podem jogar o seu jogo.
+
+[engaging, energetic, conversational voice] Você também pode clicar em Concluir aula e continuar a jornada sem publicar.
+
+[engaging, energetic, conversational voice] Para publicar, clique em Compartilhar, no alto do Estúdio. Ele pode aparecer só como uma setinha para cima.
+
+[confident, clear, unhurried voice] Abre uma janela. Repare: o resumo do projeto já vem preenchido, por isso pode deixar como está.
+
+[engaging, energetic, conversational voice] Agora o seu jogo precisa de uma capa, a imagem que apresenta o jogo no Mural. Clique em Gerar capa e espere a imagem aparecer.
+
+[interested, animated voice] Olha só: essa é a capa do seu jogo!
+
+[confident, clear, unhurried voice] Confira se a capa ficou boa e clique em Publicar. Depois espere a publicação terminar.
+
+[pleased, lively voice] Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.
+
+[curious] E para mostrar o jogo para alguém?
+
+[engaging, energetic, conversational voice] Clique em Copiar link de jogar. Depois mande esse link para a sua família e os seus amigos, com a ajuda de um adulto se precisar.
+
+[engaging, energetic, conversational voice] Quem receber o link pode jogar direto, no computador, com o teclado.
+
+[engaging, energetic, conversational voice] Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula.

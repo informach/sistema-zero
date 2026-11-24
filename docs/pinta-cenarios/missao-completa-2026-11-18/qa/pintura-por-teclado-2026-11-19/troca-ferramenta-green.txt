@@ -1,0 +1,17 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\useKeyboardPainting.test.tsx:
+(pass) two-point preview is outside autosave and confirms exactly one undo [31.00ms]
+(pass) Escape cancels the draft without writes or delayed confirmation
+(pass) blur cancels the draft without writes or delayed confirmation
+(pass) pointer cancels the draft without writes or delayed confirmation
+(pass) brush cancels the draft without writes or delayed confirmation
+(pass) host refusal, held Enter and an active pointer do not commit [15.00ms]
+(pass) changing only the tool clears a two-point preview immediately
+(pass) a recovered document cannot receive a keyboard preview from the original revision
+(pass) a Pinta modal blocks keyboard painting behind it
+
+ 9 pass
+ 0 fail
+ 36 expect() calls
+Ran 9 tests across 1 file. [693.00ms]

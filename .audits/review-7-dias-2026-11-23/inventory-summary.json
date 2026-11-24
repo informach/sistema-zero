@@ -1,0 +1,217 @@
+{
+  "since": "2026-11-16T16:28:01Z",
+  "base": "cb9f7471daa27e9fe2fadfcdf50a75f29f562bcd",
+  "head": "8c76682010730ae95c48918920929cf1bcc4dc56",
+  "commits": 1454,
+  "files": 8940,
+  "kinds": {
+    "documentation-or-data": 3188,
+    "test": 1248,
+    "binary": 1961,
+    "implementation": 2360,
+    "generated": 183
+  },
+  "areas": [
+    {
+      "area": "docs",
+      "files": 4941,
+      "added": 790710,
+      "removed": 38333,
+      "implementation": 75,
+      "tests": 12
+    },
+    {
+      "area": "packages/studio",
+      "files": 1507,
+      "added": 135114,
+      "removed": 10153,
+      "implementation": 808,
+      "tests": 521
+    },
+    {
+      "area": "packages/pinta",
+      "files": 582,
+      "added": 89543,
+      "removed": 3137,
+      "implementation": 339,
+      "tests": 205
+    },
+    {
+      "area": "packages/molda-cenarios",
+      "files": 270,
+      "added": 52905,
+      "removed": 2977,
+      "implementation": 230,
+      "tests": 36
+    },
+    {
+      "area": "packages/molda-cenarios-motor",
+      "files": 213,
+      "added": 31993,
+      "removed": 0,
+      "implementation": 124,
+      "tests": 87
+    },
+    {
+      "area": "packages/members",
+      "files": 204,
+      "added": 424029,
+      "removed": 437,
+      "implementation": 113,
+      "tests": 55
+    },
+    {
+      "area": "packages/member-shell",
+      "files": 179,
+      "added": 27365,
+      "removed": 697,
+      "implementation": 109,
+      "tests": 67
+    },
+    {
+      "area": "packages/molda-cenarios-core",
+      "files": 178,
+      "added": 30243,
+      "removed": 210,
+      "implementation": 108,
+      "tests": 69
+    },
+    {
+      "area": "packages/core",
+      "files": 101,
+      "added": 11660,
+      "removed": 47,
+      "implementation": 62,
+      "tests": 35
+    },
+    {
+      "area": "packages/community-kids",
+      "files": 88,
+      "added": 3872,
+      "removed": 139,
+      "implementation": 45,
+      "tests": 22
+    },
+    {
+      "area": "packages/arquipelago",
+      "files": 75,
+      "added": 4529,
+      "removed": 2385,
+      "implementation": 52,
+      "tests": 22
+    },
+    {
+      "area": ".audits",
+      "files": 73,
+      "added": 4105,
+      "removed": 478,
+      "implementation": 0,
+      "tests": 1
+    },
+    {
+      "area": "packages/funnel",
+      "files": 67,
+      "added": 8136,
+      "removed": 2159,
+      "implementation": 42,
+      "tests": 18
+    },
+    {
+      "area": "packages/community",
+      "files": 61,
+      "added": 610,
+      "removed": 18,
+      "implementation": 37,
+      "tests": 2
+    },
+    {
+      "area": "packages/admin",
+      "files": 60,
+      "added": 1371,
+      "removed": 597,
+      "implementation": 31,
+      "tests": 8
+    },
+    {
+      "area": "packages/studio-runtime",
+      "files": 43,
+      "added": 2231,
+      "removed": 437,
+      "implementation": 12,
+      "tests": 22
+    },
+    {
+      "area": "packages/auth",
+      "files": 34,
+      "added": 2715,
+      "removed": 49,
+      "implementation": 24,
+      "tests": 8
+    },
+    {
+      "area": "packages/molda",
+      "files": 33,
+      "added": 1052,
+      "removed": 75,
+      "implementation": 23,
+      "tests": 9
+    },
+    {
+      "area": ".compozy",
+      "files": 31,
+      "added": 1235,
+      "removed": 0,
+      "implementation": 0,
+      "tests": 0
+    },
+    {
+      "area": "packages/hub",
+      "files": 26,
+      "added": 3629,
+      "removed": 43,
+      "implementation": 16,
+      "tests": 7
+    },
+    {
+      "area": "packages/molda-cenarios-agente",
+      "files": 26,
+      "added": 3986,
+      "removed": 359,
+      "implementation": 18,
+      "tests": 7
+    },
+    {
+      "area": "scripts",
+      "files": 21,
+      "added": 1170,
+      "removed": 290,
+      "implementation": 10,
+      "tests": 10
+    },
+    {
+      "area": "packages/arquipelago-api",
+      "files": 18,
+      "added": 2704,
+      "removed": 1519,
+      "implementation": 13,
+      "tests": 2
+    },
+    {
+      "area": "packages/referrals",
+      "files": 18,
+      "added": 3433,
+      "removed": 20,
+      "implementation": 8,
+      "tests": 6
+    },
+    {
+      "area": "experiments",
+      "files": 17,
+      "added": 1616,
+      "removed": 28,
+      "implementation": 17,
+      "tests": 0
+    }
+  ],
+  "riskCandidates": 247
+}

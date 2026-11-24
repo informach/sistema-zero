@@ -1,0 +1,147 @@
+bun test v1.3.11 (af24e281)
+
+src\tiles\regionMapEditing.test.ts:
+16 | 
+17 | test('existing pencil paints and erases negative region coordinates without changing the snapshot', () => {
+18 |   const map = expanded(), id = map.layers[0]!.id, value = makeCell(3, CELL_FLIP_H)
+19 |   const painted = setCell(map, id, -1, -1, value)
+20 |   expect(painted.origin).toEqual(map.origin)
+21 |   expect(cellAt(painted, id, -1, -1)).toBe(value)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: 4099
+Received: -1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\regionMapEditing.test.ts:21:39)
+(fail) existing pencil paints and erases negative region coordinates without changing the snapshot [15.00ms]
+28 | 
+29 | test('one batch paints across regions, clips outside cells and keeps the previous history value', () => {
+30 |   const map = expanded(), id = map.layers[0]!.id
+31 |   const painted = setCells(map, id, [{ col: -1, row: -1 }, { col: 33, row: 33 }, { col: 41, row: 33 }], 4)
+32 |   expect(painted.origin).toEqual(map.origin)
+33 |   expect(cellAt(painted, id, -1, -1)).toBe(4)
+                                           ^
+error: expect(received).toBe(expected)
+
+Expected: 4
+Received: -1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\regionMapEditing.test.ts:33:39)
+(fail) one batch paints across regions, clips outside cells and keeps the previous history value
+39 | })
+40 | 
+41 | test('dense pencil and batches cannot alias fractional coordinates into a different valid cell', () => {
+42 |   const map = createTilemapAsset({ name: 'Dense', tilesetId: 'tiles', cols: 3, rows: 2 })
+43 |   const id = map.layers[0]!.id
+44 |   expect(setCell(map, id, 0.5, 0.5, 5)).toBe(map)
+                                             ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "f54f9e8a-3b14-4581-9db4-120619d33375",
+  kind: "tilemap",
+  name: "Dense",
+  createdAt: 1795239103279,
+  updatedAt: 1795239103279,
+  tilesetId: "tiles",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "96b0a122-0dd4-4aaf-84b5-1012188c3458",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ -1, -1, -1, -1, -1, -1 ],
+    }
+  ],
+}
+Received: {
+  id: "f54f9e8a-3b14-4581-9db4-120619d33375",
+  kind: "tilemap",
+  name: "Dense",
+  createdAt: 1795239103279,
+  updatedAt: 1795239103279,
+  tilesetId: "tiles",
+  cols: 3,
+  rows: 2,
+  layers: [
+    {
+      id: "96b0a122-0dd4-4aaf-84b5-1012188c3458",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(6) [ -1, -1, 5, -1, -1, -1 ],
+    }
+  ],
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\regionMapEditing.test.ts:44:41)
+(fail) dense pencil and batches cannot alias fractional coordinates into a different valid cell
+49 | test('region editing respects inherited locks and refuses malformed cell values without history', () => {
+50 |   const source = expanded(), id = source.layers[0]!.id
+51 |   const map = { ...source, layers: [{ kind: 'group' as const, id: 'locked', name: 'Locked', visible: true, locked: true }, ...source.layers.map(layer => ({ ...layer, parentId: 'locked' }))] }
+52 |   expect(setCell(map, id, 0, 0, 2)).toBe(map)
+53 |   expect(setCells(map, id, [{ col: 0, row: 0 }], 2)).toBe(map)
+54 |   expect(setCell(source, id, 0, 0, 65535)).toBe(source)
+                                                ^
+error: expect(received).toBe(expected)
+
+Expected: {
+  id: "1dc352e5-36cd-4615-909b-d427eea076fc",
+  kind: "tilemap",
+  name: "Paint",
+  createdAt: 1795239103280,
+  updatedAt: 1795239103280,
+  tilesetId: "tiles",
+  cols: 80,
+  rows: 80,
+  layers: [
+    {
+      id: "d423fbc6-16ef-42bc-a4eb-89504538e59b",
+      name: "Chão",
+      visible: true,
+      cells: {
+        kind: "regions",
+        version: 1,
+        side: 32,
+        chunks: [],
+      },
+    }
+  ],
+  schema: 8,
+  origin: {
+    col: -40,
+    row: -40,
+  },
+}
+Received: {
+  id: "1dc352e5-36cd-4615-909b-d427eea076fc",
+  kind: "tilemap",
+  name: "Paint",
+  createdAt: 1795239103280,
+  updatedAt: 1795239103280,
+  tilesetId: "tiles",
+  cols: 80,
+  rows: 80,
+  layers: [
+    {
+      id: "d423fbc6-16ef-42bc-a4eb-89504538e59b",
+      name: "Chão",
+      visible: true,
+      cells: Int16Array(0) [],
+    }
+  ],
+  schema: 8,
+  origin: {
+    col: -40,
+    row: -40,
+  },
+}
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\regionMapEditing.test.ts:54:44)
+(fail) region editing respects inherited locks and refuses malformed cell values without history
+
+ 0 pass
+ 4 fail
+ 8 expect() calls
+Ran 4 tests across 1 file. [414.00ms]

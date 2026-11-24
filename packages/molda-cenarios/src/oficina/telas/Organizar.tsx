@@ -1,0 +1,252 @@
+import {
+  alinharObjetos,
+  type ComandoDeCenario,
+  type DocumentoDeCenario,
+  distribuirObjetos,
+  type EixoDeComposicao,
+  espelharObjetos,
+  type FonteDeAlturas,
+  indiceDaOrganizacao,
+  repetirObjetos,
+  sortearTransformacoes,
+  type VolumeDeComposicao,
+} from '@sistemazero/molda-cenarios-core/v2'
+import { type JSX, useMemo, useState } from 'react'
+import { comMedidasConferidas, novoIdAleatorio } from '../acoes'
+import { CampoNumero } from './Painel'
+
+/** Ferramentas da seleção, dentro do painel aprovado. Todas gravam um único lote desfazível. */
+export function Organizar({
+  documento,
+  selecao,
+  executar,
+  medir,
+  fonte,
+  aoTrocar,
+}: {
+  documento: DocumentoDeCenario
+  selecao: readonly string[]
+  executar(comandos: ComandoDeCenario[]): void
+  medir?(id: string): VolumeDeComposicao | null
+  fonte?: FonteDeAlturas
+  aoTrocar(): void
+}): JSX.Element {
+  const [eixo, setEixo] = useState<EixoDeComposicao>('x')
+  const [copias, setCopias] = useState(3),
+    [passo, setPasso] = useState(3)
+  const [tipo, setTipo] = useState<'fila' | 'circulo'>('fila')
+  const [centroX, setCentroX] = useState(0),
+    [centroZ, setCentroZ] = useState(0),
+    [arco, setArco] = useState(360)
+  const [semente, setSemente] = useState(1234),
+    [giro, setGiro] = useState(180)
+  const [min, setMin] = useState(0.9),
+    [max, setMax] = useState(1.1)
+  const [erro, setErro] = useState<string | null>(null)
+  const indice = useMemo(() => indiceDaOrganizacao(documento), [documento])
+  const trancado = !selecao.length || selecao.some((id) => indice.flags.get(id)?.bloqueado)
+  const temMontagem = Boolean(documento.montagens?.some((m) => selecao.includes(m.id)))
+  const acao = (preparar: (doc: DocumentoDeCenario) => ComandoDeCenario[]) => {
+    try {
+      executar(comMedidasConferidas(documento, selecao, medir, preparar))
+      setErro(null)
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não consegui organizar a seleção')
+    }
+  }
+  const botao = (texto: string, aoTocar: () => void, desabilitado = false) => (
+    <button
+      type="button"
+      className="sz-tool-pill sz-tool-pill--outline"
+      disabled={desabilitado}
+      onClick={aoTocar}
+    >
+      {texto}
+    </button>
+  )
+  return (
+    <div className="mcn-painel-corpo">
+      <fieldset className="mcn-grupo" disabled={trancado}>
+        <legend>Organizar seleção</legend>
+        <label className="mcn-campo">
+          <span>Eixo</span>
+          <select value={eixo} onChange={(e) => setEixo(e.target.value as EixoDeComposicao)}>
+            <option value="x">X · largura</option>
+            <option value="y">Y · altura</option>
+            <option value="z">Z · profundidade</option>
+          </select>
+        </label>
+        <div className="mcn-acoes-composicao">
+          {(['inicio', 'centro', 'fim'] as const).map((lado) => (
+            <button
+              key={lado}
+              type="button"
+              className="sz-tool-pill sz-tool-pill--outline"
+              disabled={selecao.length < 2}
+              onClick={() => acao((doc) => alinharObjetos(doc, selecao, eixo, lado, fonte))}
+            >
+              {lado === 'inicio'
+                ? 'Alinhar início'
+                : lado === 'fim'
+                  ? 'Alinhar fim'
+                  : 'Alinhar centro'}
+            </button>
+          ))}
+        </div>
+        <div className="mcn-acoes-composicao">
+          {botao(
+            'Centros iguais',
+            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'centros', fonte)),
+            selecao.length < 3,
+          )}
+          {botao(
+            'Vãos iguais',
+            () => acao((doc) => distribuirObjetos(doc, selecao, eixo, 'vaos', fonte)),
+            selecao.length < 3,
+          )}
+        </div>
+      </fieldset>
+      <fieldset className="mcn-grupo" disabled={trancado || temMontagem}>
+        <legend>Espelhar ou trocar</legend>
+        {temMontagem ? (
+          <p className="text-sm text-mld-muted">
+            Separe as peças do conjunto para espelhar ou trocar um modelo.
+          </p>
+        ) : null}
+        <p className="text-sm text-mld-muted">
+          O espelho inverte a forma no eixo local, mantendo sua posição e apoio.
+        </p>
+        <div className="mcn-acoes-composicao">
+          {(['x', 'y', 'z'] as const).map((e) => (
+            <button
+              key={e}
+              type="button"
+              className="sz-tool-pill sz-tool-pill--outline"
+              onClick={() => acao((doc) => espelharObjetos(doc, selecao, e))}
+            >
+              Espelhar {e.toUpperCase()}
+            </button>
+          ))}
+          {botao('Trocar modelo', aoTrocar)}
+        </div>
+      </fieldset>
+      <fieldset className="mcn-grupo" disabled={trancado}>
+        <legend>Repetir</legend>
+        <label className="mcn-campo">
+          <span>Disposição</span>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value as 'fila' | 'circulo')}>
+            <option value="fila">Em fila</option>
+            <option value="circulo">Em círculo</option>
+          </select>
+        </label>
+        <CampoNumero
+          rotulo="Novas cópias"
+          valor={copias}
+          min={1}
+          max={Math.max(1, Math.floor(450 / selecao.length))}
+          passo={1}
+          aoMudar={(n) => setCopias(Math.round(n))}
+        />
+        {tipo === 'fila' ? (
+          <CampoNumero rotulo="Passo entre cópias" sufixo="m" valor={passo} aoMudar={setPasso} />
+        ) : (
+          <>
+            <div className="mcn-linha">
+              <CampoNumero rotulo="Centro X" valor={centroX} aoMudar={setCentroX} />
+              <CampoNumero rotulo="Centro Z" valor={centroZ} aoMudar={setCentroZ} />
+            </div>
+            <CampoNumero
+              rotulo="Arco"
+              sufixo="°"
+              valor={arco}
+              min={1}
+              max={360}
+              passo={15}
+              aoMudar={setArco}
+            />
+          </>
+        )}
+        {botao('Criar repetição', () =>
+          acao((doc) => {
+            const novos = Array.from({ length: copias * selecao.length }, novoIdAleatorio)
+            return repetirObjetos(
+              doc,
+              selecao,
+              tipo === 'fila'
+                ? {
+                    tipo,
+                    copias,
+                    deslocamento: {
+                      x: eixo === 'x' ? passo : 0,
+                      y: eixo === 'y' ? passo : 0,
+                      z: eixo === 'z' ? passo : 0,
+                    },
+                  }
+                : {
+                    tipo,
+                    copias,
+                    centro: { x: centroX, z: centroZ },
+                    arco: (arco * Math.PI) / 180,
+                    girar: true,
+                  },
+              novos,
+              fonte,
+            )
+          }),
+        )}
+      </fieldset>
+      <fieldset className="mcn-grupo">
+        <legend>Variar giro e tamanho</legend>
+        <CampoNumero
+          rotulo="Semente"
+          valor={semente}
+          min={0}
+          max={4294967295}
+          passo={1}
+          aoMudar={(n) => setSemente(Math.round(n))}
+        />
+        <CampoNumero
+          rotulo="Variação do giro"
+          sufixo="°"
+          valor={giro}
+          min={0}
+          max={180}
+          passo={15}
+          aoMudar={setGiro}
+        />
+        <div className="mcn-linha">
+          <CampoNumero
+            rotulo="Fator mínimo"
+            valor={min}
+            min={0.01}
+            max={100}
+            passo={0.05}
+            aoMudar={setMin}
+          />
+          <CampoNumero
+            rotulo="Fator máximo"
+            valor={max}
+            min={0.01}
+            max={100}
+            passo={0.05}
+            aoMudar={setMax}
+          />
+        </div>
+        {botao('Aplicar variação', () =>
+          acao((doc) =>
+            sortearTransformacoes(doc, selecao, semente, {
+              giro: (giro * Math.PI) / 180,
+              tamanhoMin: min,
+              tamanhoMax: max,
+            }),
+          ),
+        )}
+      </fieldset>
+      {erro ? (
+        <p role="alert" className="text-sm text-mld-danger">
+          {erro}
+        </p>
+      ) : null}
+    </div>
+  )
+}

@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from os.path import join
 from random import randint
 
@@ -14,6 +15,7 @@ from hud import Hud, SleepFade
 from shop import Shop
 
 
+# 🧩 Meus moldes
 class Camera(pygame.sprite.Group):
     """All the sprites of the map, drawn around the farmer, layer by layer."""
 
@@ -52,7 +54,7 @@ class Farm:
         self.trees = pygame.sprite.Group()
 
         farm_map = pinta.carregar_mapa('fazenda')
-        house_map = pinta.carregar_mapa('casa-e-objetos')
+        house_map = farm_map  # One Pinta drawing, all sixteen layers.
         self.field = Field(farm_map, self.all_sprites, self.solid_sprites)
         self.build(farm_map, house_map)
 
@@ -101,7 +103,7 @@ class Farm:
 
         for spot in house_map.camada('Árvores'):
             Tree((spot.x, spot.y), art.image(spot.propriedades['imagem']), spot.nome, self)
-        for spot in house_map.camada('Enfeites'):
+        for spot in house_map.camada('Enfeites da casa'):
             Decoration((spot.x, spot.y), art.image(spot.propriedades['imagem']), [self.all_sprites, self.solid_sprites])
 
         # 'Colisão' is a hidden layer: invisible walls along the edges of the farm.

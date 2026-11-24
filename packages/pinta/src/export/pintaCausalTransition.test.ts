@@ -1,0 +1,437 @@
+import { expect, test } from 'bun:test'
+import type { PintaCausalOperation } from '@sistemazero/core/creations/pinta-causal'
+import {
+  createTilemapAsset,
+  createTilesetAsset,
+  createVectorTilesetAsset,
+  isObjectLayer,
+  isTileLayer,
+  type TilemapCells,
+} from '../core/project'
+import { CELL_FLIP_H, makeCell } from '../tiles/cell'
+import { createMapObject, removeMapObject } from '../tiles/mapObjects'
+import { freezeMapTilesets, freezeObjectResource } from '../tiles/resourceVersions'
+import { addLayer, addObjectLayer, removeLayer } from '../tiles/tilemapOps'
+import {
+  addTile,
+  duplicateTile,
+  remapTilemapCells,
+  removeTile,
+  tryRemapTilemapIndices,
+} from '../tiles/tilesetOps'
+import { makeRect } from '../vector/shapes'
+import { assetToJson } from './assetJson'
+import { inspectPintaCausalDocument } from './pintaCausalManifest'
+import {
+  pintaCausalChangedSurvivingSlots,
+  pintaCausalPinSourceIds,
+  provePintaCausalConsumerRemaps,
+  provePintaCausalMutation,
+  provePintaCausalPin,
+} from './pintaCausalTransition'
+
+const removeFirst = {
+  type: 'remap',
+  oldToNew: [-1, 0, 1],
+  count: 2,
+} as const satisfies PintaCausalOperation
+
+function sheet() {
+  const sheet = addTile(addTile(createTilesetAsset({ name: 'folha', tileSize: 16 }), 0), 1)
+  for (const [index, tile] of sheet.tiles.entries()) tile.data.fill(index + 1)
+  sheet.platform[1] = true
+  sheet.animations = { '1': [{ tile: 2, duration: 120 }] }
+  return sheet
+}
+
+test('proves using the exact recipe for removal and refuses a same-length wrong edit', () => {
+  const before = sheet()
+  const after = removeTile(before, 0)
+  expect(provePintaCausalMutation(before, after, removeFirst)).toBe(true)
+  expect(provePintaCausalMutation(before, removeTile(before, 1), removeFirst)).toBe(false)
+  const swapped = { ...before, tiles: [before.tiles[1]!, before.tiles[0]!, before.tiles[2]!] }
+  expect(provePintaCausalMutation(before, swapped, { type: 'update' })).toBe(false)
+  expect(
+    provePintaCausalMutation(before, swapped, { type: 'remap', oldToNew: [1, 0, 2], count: 3 }),
+  ).toBe(false)
+})
+
+test('a declared paint scope and literal append each preserve existing slots outside their edit', () => {
+  const before = sheet()
+  const after = structuredClone(before)
+  after.tiles[1]!.data.fill(5)
+  expect(
+    provePintaCausalMutation(before, after, { type: 'paint', slots: `02${'00'.repeat(31)}` }),
+  ).toBe(true)
+  expect(
+    provePintaCausalMutation(before, after, { type: 'paint', slots: `01${'00'.repeat(31)}` }),
+  ).toBe(false)
+  const appended = addTile(before, 2)
+  expect(provePintaCausalMutation(before, appended, { type: 'append', count: 4 })).toBe(true)
+  const wrongPrefix = structuredClone(appended)
+  wrongPrefix.animations!['1']![0]!.tile = 3
+  expect(provePintaCausalMutation(before, wrongPrefix, { type: 'append', count: 4 })).toBe(false)
+})
+
+test('the remap proof compares cells and flags even with identical manifest indices', () => {
+  const tiles = sheet()
+  const map = addLayer(
+    createTilemapAsset({
+      name: 'vila',
+      tilesetId: tiles.id,
+      cols: 2,
+      rows: 1,
+    }),
+    'Água',
+    'outra-folha',
+  )
+  isTileLayer(map.layers[0]!) && map.layers[0].cells.set([makeCell(1, CELL_FLIP_H), 2])
+  isTileLayer(map.layers[1]!) && map.layers[1].cells.set([-1, 2])
+  const expectation = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), expectation)!
+  const after = remapTilemapCells(map, { removedAt: 0 }, tiles.id)
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  expect(provePintaCausalConsumerRemaps(base, after, remaps)).toEqual([
+    { sheetId: tiles.id, mode: 'mapped' },
+  ])
+
+  const corrupted = structuredClone(after)
+  const layer = corrupted.layers[0]!
+  if (!isTileLayer(layer)) throw new Error('Camada sem peças')
+  layer.cells.set([1, makeCell(0, CELL_FLIP_H)])
+  const wrong = inspectPintaCausalDocument(assetToJson(corrupted), expectation)!
+  const mapped = inspectPintaCausalDocument(assetToJson(after), expectation)!
+  expect(wrong.manifest.refs).toEqual(mapped.manifest.refs)
+  expect(provePintaCausalConsumerRemaps(base, wrong.asset, remaps)).toBeNull()
+})
+
+test('vector duplicate allows only fresh identities for the duplicated artwork', () => {
+  const before = addTile(createVectorTilesetAsset({ name: 'vetor', tileSize: 16 }), 0)
+  const style = {
+    fill: '#112233',
+    stroke: { color: '#ffffff', width: 0.5 },
+    opacity: 0.75,
+  }
+  const shape = makeRect({ x: 1, y: 2 }, { x: 4, y: 6 }, style, 1)
+  before.tiles[0]!.push(shape)
+  const operation = {
+    type: 'remap',
+    oldToNew: [0, 2],
+    count: 3,
+  } as const satisfies PintaCausalOperation
+  const candidate = duplicateTile(before, 0)
+  const duplicated = candidate.tiles[1]![0]!
+  expect(duplicated).toMatchObject({
+    type: 'rect',
+    x: 1,
+    y: 2,
+    w: 3,
+    h: 4,
+    rx: 1,
+    rotation: 0,
+    ...style,
+  })
+  expect(duplicated.id).not.toBe(shape.id)
+  expect(duplicated.motionId).not.toBe(shape.motionId)
+  expect(provePintaCausalMutation(before, candidate, operation)).toBe(true)
+  const alias = { ...candidate, tiles: [before.tiles[0]!, before.tiles[0]!, before.tiles[1]!] }
+  expect(provePintaCausalMutation(before, alias, operation)).toBe(false)
+})
+
+test('proves composed unlinking, duplication and paint of a surviving final slot', () => {
+  const before = addTile(addTile(sheet(), 2), 3)
+  const after = structuredClone(duplicateTile(removeTile(removeTile(before, 0), 2), 0))
+  after.tiles[2]!.data.fill(6)
+  const oldToNew = [-1, 0, 2, -1, 3]
+  expect(pintaCausalChangedSurvivingSlots(before, after, oldToNew)).toEqual([2])
+  const operation = { type: 'remap', oldToNew, count: 4 } as const satisfies PintaCausalOperation
+  expect(provePintaCausalMutation(before, after, operation)).toBe(false)
+  expect(
+    provePintaCausalMutation(before, after, { ...operation, paintedSlots: `04${'00'.repeat(31)}` }),
+  ).toBe(true)
+
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: before.id, cols: 3, rows: 1 }),
+    'Objetos',
+  )
+  const tiles = map.layers.find(isTileLayer)!
+  tiles.cells.set([makeCell(3, CELL_FLIP_H), makeCell(2, CELL_FLIP_H), 1])
+  const objects = map.layers.find(isObjectLayer)!
+  objects.objects.push(
+    createMapObject({ id: 'arte-zero', shape: 'art', art: { assetId: before.id } }),
+  )
+  const expected = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), expected)!
+  const afterRemoveA = remapTilemapCells(map, { removedAt: 0 }, before.id)
+  const afterRemoveD = remapTilemapCells(afterRemoveA, { removedAt: 2 }, before.id)
+  const composed = remapTilemapCells(afterRemoveD, { insertedAt: 1 }, before.id)
+  const candidate = inspectPintaCausalDocument(assetToJson(composed), expected)!
+  expect(
+    candidate.asset.kind === 'tilemap' &&
+      candidate.asset.layers.find(isTileLayer<TilemapCells>)?.cells,
+  ).toEqual(Int16Array.from([-1, makeCell(2, CELL_FLIP_H), 0]))
+  expect(
+    candidate.asset.kind === 'tilemap' &&
+      candidate.asset.layers.find(isObjectLayer)?.objects[0]?.shape,
+  ).toBe('rect')
+  expect(
+    provePintaCausalConsumerRemaps(base, candidate.asset, [{ sheetId: before.id, operation }]),
+  ).toEqual([{ sheetId: before.id, mode: 'mapped' }])
+})
+
+test('the pin alternative needs the same frozen sheet bytes and its canonical slot bindings', () => {
+  const before = sheet()
+  const map = createTilemapAsset({ name: 'vila', tilesetId: before.id, cols: 2, rows: 1 })
+  map.layers[0]!.cells!.set([makeCell(1, CELL_FLIP_H), 2])
+  const captured = freezeMapTilesets(map, (id) => (id === before.id ? before : null), 100)
+  if (!captured.ok) throw new Error(captured.reason)
+  const expectation = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), expectation)!
+  const candidate = inspectPintaCausalDocument(assetToJson(captured.map), expectation)!
+  const admittedBefore = inspectPintaCausalDocument(assetToJson(before), {
+    itemId: before.id,
+    kind: before.kind,
+    formatVersion: 6,
+  })?.asset
+  if (admittedBefore?.kind !== 'tileset') throw new Error('Folha inválida')
+  const remaps = [{ sheetId: before.id, operation: removeFirst }]
+  expect(pintaCausalPinSourceIds(base, candidate.asset, remaps)).toEqual([before.id])
+  expect(provePintaCausalConsumerRemaps(base, candidate.asset, remaps)).toBeNull()
+  expect(
+    provePintaCausalConsumerRemaps(
+      base,
+      candidate.asset,
+      remaps,
+      new Map([[before.id, provePintaCausalPin(base.asset, candidate.asset, admittedBefore)!]]),
+    ),
+  ).toEqual([{ sheetId: before.id, mode: 'pinned' }])
+
+  const corrupted = structuredClone(candidate.asset)
+  if (corrupted.kind !== 'tilemap' || corrupted.resources?.[0]?.asset.kind !== 'tileset')
+    throw new Error('Versão privada inválida')
+  corrupted.resources[0].asset.tiles[1]!.data[0] = 7
+  expect(provePintaCausalPin(base.asset, corrupted, admittedBefore)).toBeNull()
+})
+
+test('a composed move through another slot keeps art at effective zero', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Objetos',
+  )
+  map.layers.find(isTileLayer)!.cells.set([1, -1])
+  map.layers.find(isObjectLayer)!.objects.push(
+    createMapObject({
+      id: 'arte',
+      shape: 'art',
+      art: { assetId: tiles.id },
+    }),
+  )
+  const expectation = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), expectation)!
+  const shifted = remapTilemapCells(map, { insertedAt: 0 }, tiles.id)
+  const returned = remapTilemapCells(shifted, { removedAt: 0 }, tiles.id)
+  const candidate = remapTilemapCells(returned, { insertedAt: 1 }, tiles.id)
+  expect(candidate.layers.find(isObjectLayer)?.objects[0]?.art?.tile).toBe(0)
+  expect(
+    provePintaCausalConsumerRemaps(base, candidate, [
+      {
+        sheetId: tiles.id,
+        operation: { type: 'remap', oldToNew: [0, 2, 3], count: 4 },
+      },
+    ]),
+  ).toEqual([{ sheetId: tiles.id, mode: 'mapped' }])
+})
+
+test('proves removal of an identified layer or artwork while preserving other content', () => {
+  const tiles = sheet()
+  const source = addObjectLayer(
+    addLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+      'consumidora',
+    ),
+    'Objetos',
+  )
+  const layer = source.layers.filter(isTileLayer)[1]!
+  layer.cells.set([makeCell(1, CELL_FLIP_H), -1])
+  const objects = source.layers.find(isObjectLayer)!
+  objects.objects.push(
+    createMapObject({ id: 'consumidor', shape: 'art', art: { assetId: tiles.id } }),
+    createMapObject({ id: 'visita', name: 'Visita', role: 'start' }),
+  )
+  const spec = { itemId: source.id, kind: source.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(source), spec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const withoutLayer = removeLayer(source, layer.id)
+  const detached = removeMapObject(withoutLayer, objects.id, 'consumidor')
+  expect(provePintaCausalConsumerRemaps(base, detached, remaps)).toEqual([
+    { sheetId: tiles.id, mode: 'detached' },
+  ])
+  expect(detached.layers.find(isObjectLayer)?.objects.map(({ id }) => id)).toEqual(['visita'])
+  expect(detached.tilesetId).toBe(tiles.id)
+
+  const mapped = remapTilemapCells(withoutLayer, { removedAt: 0 }, tiles.id)
+  expect(provePintaCausalConsumerRemaps(base, mapped, remaps)).toEqual([
+    { sheetId: tiles.id, mode: 'mapped' },
+  ])
+  expect(provePintaCausalConsumerRemaps(base, withoutLayer, remaps)).toBeNull()
+
+  const erased = structuredClone(source)
+  erased.layers.filter(isTileLayer)[1]!.cells.fill(-1)
+  erased.layers.find(isObjectLayer)!.objects.shift()
+  expect(provePintaCausalConsumerRemaps(base, erased, remaps)).toBeNull()
+
+  const wrong = structuredClone(detached)
+  wrong.layers.find(isObjectLayer)!.objects[0]!.x = 17
+  expect(provePintaCausalConsumerRemaps(base, wrong, remaps)).toBeNull()
+})
+
+test('a locked layer cannot become detached by omitting the authored object or layer', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    addLayer(
+      createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+      'consumidora',
+    ),
+    'Objetos',
+  )
+  const layer = map.layers.filter(isTileLayer)[1]!
+  layer.cells.set([1, -1])
+  layer.locked = true
+  const objects = map.layers.find(isObjectLayer)!
+  objects.locked = true
+  objects.objects.push(
+    createMapObject({ id: 'arte', shape: 'art', art: { assetId: tiles.id, tile: 1 } }),
+  )
+  const spec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), spec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const withoutLayer = { ...map, layers: map.layers.filter(({ id }) => id !== layer.id) }
+  expect(provePintaCausalConsumerRemaps(base, withoutLayer, remaps)).toBeNull()
+  const withoutObject = structuredClone(map)
+  withoutObject.layers.find(isObjectLayer)!.objects.length = 0
+  expect(provePintaCausalConsumerRemaps(base, withoutObject, remaps)).toBeNull()
+})
+
+test('pinning refuses a private id that would capture a property link from the verified sheet', () => {
+  const tiles = sheet()
+  tiles.tileProperties = { 0: { treasure: { type: 'asset', value: 'recurso-publico' } } }
+  const map = createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 })
+  map.layers.find(isTileLayer)!.cells.set([1, -1])
+  const mapSpec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const source = inspectPintaCausalDocument(assetToJson(map), mapSpec)!
+  const oldSheet = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (oldSheet?.kind !== 'tileset') throw new Error('Folha inválida')
+  const pin = {
+    ...map,
+    tilesetId: 'recurso-publico',
+    resources: [
+      {
+        capturedAt: 7,
+        sourceId: tiles.id,
+        asset: { ...tiles, id: 'recurso-publico' },
+      },
+    ],
+  }
+  const candidate = inspectPintaCausalDocument(assetToJson(pin), mapSpec)!
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  expect(candidate.manifest.refs).toEqual([])
+  expect(
+    provePintaCausalConsumerRemaps(
+      source,
+      candidate.asset,
+      remaps,
+      new Map([[tiles.id, provePintaCausalPin(source.asset, candidate.asset, oldSheet)!]]),
+    ),
+  ).toBeNull()
+})
+
+test('uses the two actual freeze gestures and remaps the bindings still pointing at the live sheet', () => {
+  const tiles = sheet()
+  const map = addObjectLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Objetos',
+  )
+  map.layers.find(isTileLayer)!.cells.set([makeCell(2, CELL_FLIP_H), -1])
+  const objects = map.layers.find(isObjectLayer)!
+  const art = createMapObject({ shape: 'art', art: { assetId: tiles.id, tile: 2 } })
+  objects.objects.push(art)
+  const find = (id: string) => (id === tiles.id ? tiles : null)
+  const mapSpec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), mapSpec)!
+  const source = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (source?.kind !== 'tileset') throw new Error('Folha inválida')
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  const prove = (candidate: typeof map) => {
+    const inspected = inspectPintaCausalDocument(assetToJson(candidate), mapSpec)!
+    const pin = provePintaCausalPin(base.asset, inspected.asset, source)
+    if (!pin) throw new Error('Snapshot inválido')
+    return provePintaCausalConsumerRemaps(base, inspected.asset, remaps, new Map([[tiles.id, pin]]))
+  }
+
+  const frozenGrid = freezeMapTilesets(map, find, 5)
+  if (!frozenGrid.ok) throw new Error(frozenGrid.reason)
+  const mappedArt = tryRemapTilemapIndices(frozenGrid.map, removeFirst.oldToNew, tiles.id)
+  if (!mappedArt.ok) throw new Error(mappedArt.reason)
+  expect(mappedArt.map.layers.find(isTileLayer)!.cells[0]).toBe(makeCell(2, CELL_FLIP_H))
+  expect(mappedArt.map.layers.find(isObjectLayer)!.objects[0]!.art).toEqual({
+    assetId: tiles.id,
+    tile: 1,
+  })
+  expect(prove(mappedArt.map)).toEqual([{ sheetId: tiles.id, mode: 'pinned' }])
+  const mixed = structuredClone(frozenGrid.map)
+  mixed.layers.find(isObjectLayer)!.objects[0]!.art!.assetId = mixed.tilesetId
+  expect(prove(mixed)).toBeNull()
+
+  const frozenArt = freezeObjectResource(map, objects.id, art.id, find, 5)
+  if (!frozenArt.ok) throw new Error(frozenArt.reason)
+  const mappedGrid = tryRemapTilemapIndices(frozenArt.map, removeFirst.oldToNew, tiles.id)
+  if (!mappedGrid.ok) throw new Error(mappedGrid.reason)
+  expect(mappedGrid.map.layers.find(isTileLayer)!.cells[0]).toBe(makeCell(1, CELL_FLIP_H))
+  expect(mappedGrid.map.layers.find(isObjectLayer)!.objects[0]!.art).toEqual({
+    assetId: frozenArt.map.resources![0]!.asset.id,
+    tile: 2,
+  })
+  expect(prove(mappedGrid.map)).toEqual([{ sheetId: tiles.id, mode: 'pinned' }])
+})
+
+test('a multi-sheet grid requires a certified base for every captured binding', () => {
+  const tiles = sheet()
+  const other = { ...sheet(), name: 'segunda-folha' }
+  const map = addLayer(
+    createTilemapAsset({ name: 'vila', tilesetId: tiles.id, cols: 2, rows: 1 }),
+    'Piso de fora',
+    other.id,
+  )
+  map.layers.filter(isTileLayer)[0]!.cells.set([1, -1])
+  map.layers.filter(isTileLayer)[1]!.cells.set([2, -1])
+  const spec = { itemId: map.id, kind: map.kind, formatVersion: 6 }
+  const base = inspectPintaCausalDocument(assetToJson(map), spec)!
+  const freeze = freezeMapTilesets(
+    map,
+    (id) => [tiles, other].find((item) => item.id === id) ?? null,
+  )
+  if (!freeze.ok) throw new Error(freeze.reason)
+  const candidate = inspectPintaCausalDocument(assetToJson(freeze.map), spec)!
+  const source = inspectPintaCausalDocument(assetToJson(tiles), {
+    itemId: tiles.id,
+    kind: tiles.kind,
+    formatVersion: 6,
+  })?.asset
+  if (source?.kind !== 'tileset') throw new Error('Folha inválida')
+  const pin = provePintaCausalPin(base.asset, candidate.asset, source)
+  if (!pin) throw new Error('Versão privada inválida')
+  const remaps = [{ sheetId: tiles.id, operation: removeFirst }]
+  expect(pintaCausalPinSourceIds(base, candidate.asset, remaps)).toEqual([tiles.id])
+  expect(
+    provePintaCausalConsumerRemaps(base, candidate.asset, remaps, new Map([[tiles.id, pin]])),
+  ).toBeNull()
+})

@@ -1,0 +1,57 @@
+const fs = require('node:fs'), cp = require('node:child_process');
+const { chromium } = require('../packages/studio/node_modules/@playwright/test');
+const port = 5491, url = `http://127.0.0.1:${port}`;
+const destination = process.argv[2];
+if (!destination || fs.existsSync(destination)) throw Error('Use a new evidence directory');
+fs.mkdirSync(destination);
+const log = fs.openSync(destination + '/server.txt', 'wx');
+const server = cp.spawn('bun', ['scripts/serve-map-budget-e2e.ts'], {
+  cwd: 'packages/pinta', env: { ...process.env, PINTA_BUDGET_PORT: String(port) },
+  windowsHide: true, stdio: ['ignore', log, log],
+});
+let browser;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+(async () => {
+  const deadline = Date.now() + 30000;
+  for (;;) {
+    try { if ((await fetch(url)).ok) break; } catch {}
+    if (Date.now() > deadline || server.exitCode !== null) throw Error('Probe server unavailable');
+    await sleep(250);
+  }
+  browser = await chromium.launch({ headless: true });
+  const measurements = [];
+  for (let run = 0; run < 13; run++) {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 960 } });
+    try {
+      const page = await context.newPage();
+      await page.goto(url);
+      await page.waitForFunction(() => typeof window.runMapBudgetProbe === 'function');
+      const cdp = await context.newCDPSession(page);
+      if (run === 12) {
+        await cdp.send('Profiler.enable');
+        await cdp.send('Profiler.setSamplingInterval', { interval: 1000 });
+        await cdp.send('Profiler.start');
+      }
+      const report = await page.evaluate(() => window.runMapBudgetProbe());
+      if (run === 12) {
+        const { profile } = await cdp.send('Profiler.stop');
+        fs.writeFileSync(destination + '/render.cpuprofile', JSON.stringify(profile));
+        const nodes = new Map(profile.nodes.map(node => [node.id, node]));
+        const counts = new Map();
+        for (let index = 0; index < (profile.samples ?? []).length; index++) {
+          const node = nodes.get(profile.samples[index]);
+          const key = `${node.callFrame.functionName}:${node.callFrame.lineNumber}`;
+          counts.set(key, (counts.get(key) ?? 0) + (profile.timeDeltas?.[index] ?? 0));
+        }
+        fs.writeFileSync(destination + '/hotspots.json', JSON.stringify([...counts].sort((a,b) => b[1]-a[1]).slice(0,25), null, 2));
+      }
+      measurements.push({ run, warmup: run < 3, ...report });
+      console.log(JSON.stringify({ run, warmup: run < 3, frames: report.frames }));
+    } finally { await context.close(); }
+  }
+  fs.writeFileSync(destination + '/measurements.json', JSON.stringify(measurements, null, 2));
+})().catch(error => { console.error(error.message); process.exitCode = 1; }).finally(async () => {
+  if (browser) await browser.close();
+  server.kill();
+  fs.closeSync(log);
+});

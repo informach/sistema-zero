@@ -37,6 +37,7 @@ import {
   gameKit3DGameplayStatementToBlock,
 } from '../official-extensions/game-3d-advanced/gameplayCodec'
 import { gameKit3DModelStatementToBlock } from '../official-extensions/game-3d-advanced/modelCodec'
+import { sceneGameKit3DStatementToBlock } from '../official-extensions/game-3d-advanced/sceneCodec'
 import {
   gameRulesExpressionToBlock,
   gameRulesStatementToBlock,
@@ -800,6 +801,38 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
 
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
+    case 'threeSceneLoad':
+      return block(
+        'sz_t3d_load_scene',
+        {
+          ASSET: stmt.asset,
+          SCENE: stmt.scene,
+          RENDERER: stmt.renderer,
+          PARAM: stmt.param,
+          ERROR_PARAM: stmt.errorParam ?? 'erro',
+        },
+        { DO: statementsToBlocks(stmt.body), DO_ERROR: statementsToBlocks(stmt.errorBody ?? []) },
+        stmt.__id,
+      )
+    case 'threeSceneUpdate': {
+      const dt = exprToValueBlock(stmt.dt)
+      return dt
+        ? block(
+            'sz_t3d_update_scene',
+            { SCENE: stmt.scene, CAMERA: stmt.camera, FOCUS: stmt.focus },
+            {},
+            stmt.__id,
+            { DT: dt },
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteScene':
+      return block(
+        'sz_t3d_physics_scene',
+        { SCENE: stmt.scene, WORLD: stmt.world, ID: stmt.id },
+        {},
+        stmt.__id,
+      )
     case 'loaderLoad': {
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
       // literal de string). O parser já classificou o recurso semanticamente;
@@ -1116,7 +1149,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       if (!vs) return rawJSBlock(stmt)
       return block(
         'sz_t3d_physics_setup',
-        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction },
+        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction ?? '' },
         {},
         stmt.__id,
         vs,
@@ -3498,6 +3531,15 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       }
       case 'g3d:skyPhoto':
         return block('sz_g3d_sky_photo', { PHOTO: stmt.asset, WORLD: stmt.worldVar }, {}, stmt.__id)
+      case 'g3d:loadScene':
+        return block(
+          'sz_g3d_load_scene',
+          { ASSET: stmt.asset, WORLD: stmt.worldVar },
+          {},
+          stmt.__id,
+        )
+      case 'g3d:sceneStart':
+        return block('sz_g3d_scene_start', { OBJ: stmt.objVar }, {}, stmt.__id)
       case 'g3d:setColor':
         return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
       case 'g3d:setOpacity': {
@@ -5592,6 +5634,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       raw: rawJSBlock,
     }
     const model =
+      sceneGameKit3DStatementToBlock(stmt, codecTools) ??
       gameKit3DModelStatementToBlock(stmt, codecTools) ??
       gameKit3DGameplayStatementToBlock(stmt, codecTools)
     if (model) return model
@@ -6997,19 +7040,22 @@ function methodToBlock(m: {
  * Pós-passo do round-trip código→blocos: dentro do escopo de um
  * construtor/método, um `sz_val_variable` cujo nome é um parâmetro vira o
  * relator de parâmetro `sz_val_arg` (bloco cinza estilo MakeCode). Percorre a
- * subárvore serializada (inputs + next).
+ * subárvore serializada (inputs + next), sem recursão: o corpo pode ser uma cadeia longa.
  */
-function retypeParamsAsArgs(node: SerializedBlocklyBlock, params: Set<string>): void {
-  if (params.size > 0 && node.type === 'sz_val_variable') {
-    const name = node.fields?.NAME
-    if (typeof name === 'string' && params.has(name)) node.type = 'sz_val_arg'
-  }
-  if (node.inputs) {
-    for (const input of Object.values(node.inputs)) {
-      if (input?.block) retypeParamsAsArgs(input.block, params)
+function retypeParamsAsArgs(root: SerializedBlocklyBlock, params: Set<string>): void {
+  if (params.size === 0) return
+  const pending: SerializedBlocklyBlock[] = [root]
+  while (pending.length > 0) {
+    const node = pending.pop() as SerializedBlocklyBlock
+    if (node.type === 'sz_val_variable') {
+      const name = node.fields?.NAME
+      if (typeof name === 'string' && params.has(name)) node.type = 'sz_val_arg'
     }
+    if (node.inputs) {
+      for (const input of Object.values(node.inputs)) if (input?.block) pending.push(input.block)
+    }
+    if (node.next?.block) pending.push(node.next.block)
   }
-  if (node.next?.block) retypeParamsAsArgs(node.next.block, params)
 }
 
 /**

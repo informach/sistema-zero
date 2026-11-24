@@ -1,6 +1,7 @@
 import type * as Babel from '@babel/types'
 import type * as Blockly from 'blockly/core'
 import type { JSExpr, JSStatement } from '#ir'
+import { sceneGameThreeDBlockToIR, sceneGameThreeDCallToIR } from './sceneCodec'
 
 /**
  * Codec local do lote de plataforma clássica do Jogo 3D (lote "Reino Cogumelo").
@@ -83,6 +84,8 @@ export function platformGameThreeDCallToIR(
   args: unknown[],
   tools: PlatformCodecTools,
 ): JSStatement | null | undefined {
+  const scene = sceneGameThreeDCallToIR(method, args, tools)
+  if (scene !== undefined) return scene
   const { identifierName, toExpr, isSimpleValue, isInlineFunction, bodyOfFn } = tools
 
   switch (method) {
@@ -391,6 +394,8 @@ export function platformGameThreeDBlockToIR(
   tools: PlatformBlockTools,
 ): JSStatement | undefined {
   const f = (name: string) => tools.field(block, name)
+  const scene = sceneGameThreeDBlockToIR(block.type, f)
+  if (scene !== undefined) return scene
   const number = (name: string, value: number) =>
     tools.expression(block, name, { type: 'num', value })
   switch (block.type) {

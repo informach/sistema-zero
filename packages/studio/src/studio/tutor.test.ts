@@ -243,3 +243,122 @@ describe('buildStudioTutorContext', () => {
     expect(serialized).toContain('[segredo removido]')
   })
 })
+
+describe('lote 5 da missão (seção 15): as abas Investigar e Desempenho no contexto', () => {
+  const project = createEmptyProject('observado', 'Observado')
+
+  it('sem as abas ligadas, nada vai', () => {
+    const context = buildStudioTutorContext({ project, selectedBlockId: null, lastError: null })
+    expect(context.investigation).toBeUndefined()
+    expect(context.performance).toBeUndefined()
+  })
+
+  it('os valores vão com teto de 20, nomes e textos cortados e segredos limpos', () => {
+    const values = Array.from({ length: 30 }, (_, index) => ({
+      name: `valor${index}${'x'.repeat(80)}`,
+      text: index === 0 ? 'minha senha é sk-abcdefghijklmnopqrstuvwxyz0123456789' : 'y'.repeat(300),
+    }))
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      investigation: {
+        frame: 12,
+        paused: true,
+        values,
+        stopped: { frame: 9, values: [{ name: 'vidas', text: '0' }] },
+      },
+    })
+    expect(context.investigation?.values).toHaveLength(20)
+    expect(context.investigation?.values[1]?.name.length).toBe(60)
+    expect(context.investigation?.values[1]?.text.length).toBe(160)
+    expect(context.investigation?.values[0]?.text).not.toContain('sk-abcdefghijklmnopqrstuvwxyz')
+    expect(context.investigation?.stopped).toEqual({
+      frame: 9,
+      values: [{ name: 'vidas', text: '0' }],
+    })
+  })
+
+  it('o desempenho vai arredondado, sem número inventado (contas ausentes ficam nulas)', () => {
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      performance: {
+        seconds: 12,
+        fpsNow: 18.6,
+        fpsMin: 11.2,
+        slowEpisodes: 2,
+        slowestFrameMs: 140.4,
+        sprites: 380,
+        objects: null,
+        draws: Number.NaN,
+      },
+    })
+    expect(context.performance).toEqual({
+      seconds: 12,
+      fpsNow: 19,
+      fpsMin: 11,
+      slowEpisodes: 2,
+      slowestFrameMs: 140,
+      sprites: 380,
+      objects: null,
+      draws: null,
+    })
+  })
+
+  // Revisão do lote 5: um valor fora dos tetos do esquema do member-shell recusava a pergunta
+  // inteira (uma fatia forjada pelo próprio jogo passa deles).
+  it('cada número cabe nos tetos do servidor, e valor sem nome não vai', () => {
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      investigation: {
+        frame: 2_000_000_000.7,
+        paused: false,
+        values: [
+          { name: '', text: 'sem nome' },
+          { name: 'pontos', text: '1' },
+        ],
+      },
+      performance: {
+        seconds: 5,
+        fpsNow: 5000,
+        fpsMin: 4000,
+        slowEpisodes: 9999,
+        slowestFrameMs: 9_000_000,
+        sprites: 50_000_000,
+        objects: 3.4,
+        draws: null,
+      },
+      observing: { investigate: true, performance: true },
+    })
+    expect(context.investigation).toEqual({
+      frame: 1_000_000_000,
+      paused: false,
+      values: [{ name: 'pontos', text: '1' }],
+    })
+    expect(context.performance).toEqual({
+      seconds: 5,
+      fpsNow: 1000,
+      fpsMin: 1000,
+      slowEpisodes: 1000,
+      slowestFrameMs: 600_000,
+      sprites: 10_000_000,
+      objects: 3,
+      draws: null,
+    })
+    expect(context.observing).toEqual({ investigate: true, performance: true })
+  })
+
+  it('as abas desligadas não vão no contexto', () => {
+    const context = buildStudioTutorContext({
+      project,
+      selectedBlockId: null,
+      lastError: null,
+      observing: { investigate: false, performance: false },
+    })
+    expect(context.observing).toBeUndefined()
+  })
+})

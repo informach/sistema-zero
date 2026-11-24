@@ -1,0 +1,15 @@
+{
+  "path": "/estudio",
+  "ownedProjectVisible": true,
+  "matches": [
+    {
+      "tag": "BUTTON",
+      "action": "BUTTON",
+      "role": null,
+      "label": null,
+      "href": null
+    }
+  ],
+  "oldPagePreserved": true,
+  "oldNetworkSuspended": true
+}

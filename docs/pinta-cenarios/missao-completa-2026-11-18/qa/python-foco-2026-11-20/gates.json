@@ -1,0 +1,37 @@
+[
+  {
+    "name": "python",
+    "exit": 0,
+    "started": "2026-11-20T20:18:32.334Z",
+    "finished": "2026-11-20T20:18:52.552Z",
+    "log": ".cache/pinta-python-focus-python.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-20T20:18:52.555Z",
+    "finished": "2026-11-20T20:18:52.743Z",
+    "log": ".cache/pinta-python-focus-profile.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "started": "2026-11-20T20:18:52.744Z",
+    "finished": "2026-11-20T20:21:53.345Z",
+    "log": ".cache/pinta-python-focus-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "started": "2026-11-20T20:21:53.346Z",
+    "finished": "2026-11-20T20:24:09.492Z",
+    "log": ".cache/pinta-python-focus-members-types.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-20T20:24:09.493Z",
+    "finished": "2026-11-20T20:24:38.450Z",
+    "log": ".cache/pinta-python-focus-biome.log"
+  }
+]

@@ -9,7 +9,6 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { PAGINA_9A17 } from '../src/funnels/comunidade-dos-criadores/oferta/pagina-9a17'
 import { PAGINA_CONTINUAR } from '../src/funnels/comunidade-dos-criadores/oferta/pagina-continuar'
-import { PAGINA_MENOR9 } from '../src/funnels/comunidade-dos-criadores/oferta/pagina-menor9'
 
 export const PASTA_ESPELHO = join(
   import.meta.dir,
@@ -29,7 +28,6 @@ export const PASTA_ESPELHO = join(
  */
 export const MODULOS_ESPELHO: Record<string, { arquivo: string; modulo: object }> = {
   '9a17': { arquivo: 'pagina-9-a-17.md', modulo: PAGINA_9A17 },
-  'criar-junto': { arquivo: 'pagina-menor-9.md', modulo: PAGINA_MENOR9 },
   continuar: { arquivo: 'pagina-e-continuidade.md', modulo: PAGINA_CONTINUAR },
 }
 

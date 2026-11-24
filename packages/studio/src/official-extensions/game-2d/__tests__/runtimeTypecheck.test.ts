@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
 import { BASIC_SPRITE_SCENE_API_KEYS as SCENE_API_KEYS } from '../../scene-2d/spriteContract'
-import { gameTwoDRuntime } from '../runtime'
+import { gameTwoDRuntime, gameTwoDRuntimeSource } from '../runtime'
 
 const RUNTIME_FILE = 'game-2d-runtime.generated.js'
 const BROKEN_RUNTIME_FILE = 'game-2d-runtime.broken.generated.js'
@@ -30,6 +30,9 @@ const HOST_CONTRACT = `
 type GameTwoDRuntimeApi = import('./runtimeContract').GameTwoDRuntimeApi
 
 interface SZGameTileMapAssetMetadata {
+  /** Cenário do Pinta: a cena inteira, ou só o sinal quando o jogo não usa bloco de cenário. */
+  scene?: object
+  hasScene?: true
   sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] }
   tilemap?: {
     grid?: string
@@ -263,10 +266,13 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
 
 let cachedRuntimeTypeErrors: Map<string, string[]> | undefined
 function runtimeTypeErrors(fileName: string): string[] {
+  // Desde 21/11/2026 (lote 4 da missão) o runtime injetado sai sem os comentários de bloco, e
+  // os tipos JSDoc moram neles. O typecheck lê a FONTE, que é o mesmo programa: o
+  // `bundle.test.ts` prova, com um parser de verdade, que tirar os comentários não muda o código.
   cachedRuntimeTypeErrors ??= compileRuntimeVariants(
     new Map([
-      [RUNTIME_FILE, gameTwoDRuntime],
-      [BROKEN_RUNTIME_FILE, gameTwoDRuntime.replace('_hitboxOf(a)', '_missingHitboxOf(a)')],
+      [RUNTIME_FILE, gameTwoDRuntimeSource],
+      [BROKEN_RUNTIME_FILE, gameTwoDRuntimeSource.replace('_hitboxOf(a)', '_missingHitboxOf(a)')],
     ]),
   )
   return cachedRuntimeTypeErrors.get(fileName) ?? [`resultado ausente para ${fileName}`]
@@ -421,7 +427,14 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // pública do contrato, como o `onOverlap` ao lado.
   // +2: despacho comum de tecla e borda do pad; ambos com JSDoc explícito. O contador
   // sintático também conta parâmetros tipados, e a prova semântica acima continua exigida.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1497)
+  // +1 (19/11): pageHide(event) no ciclo de vida compartilhado preserva o jogo
+  // quando event.persisted indica BFCache. A guarda semântica acima permanece.
+  // +6 (22/11, recorte dos sprites fora do palco): `_drawSprite(ctx, sprite, fora)`, o corpo do
+  // `drawSprite` público (que segue com os dois do contrato), `_cullRect(ctx)` e
+  // `_offStage(s, r)`, todos com JSDoc; a prova semântica acima cobre os três.
+  // +1 (22/11): `_newTileMap(options)`, o corpo do createTileMap sem a conta do "rodando sem
+  // parar" (o cenário do Pinta cria um mapa a cada porta), com JSDoc.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1505)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

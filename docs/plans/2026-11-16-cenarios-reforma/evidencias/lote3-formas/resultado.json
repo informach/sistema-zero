@@ -1,0 +1,38 @@
+[
+  {
+    "tema": "light",
+    "largura": 1440,
+    "formas": 4,
+    "modelosGlb": 0,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "espelho": true,
+    "reentrada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 1440,
+    "formas": 4,
+    "modelosGlb": 0,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "espelho": true,
+    "reentrada": true,
+    "erros": []
+  },
+  {
+    "tema": "dark",
+    "largura": 390,
+    "formas": 4,
+    "modelosGlb": 0,
+    "cancelamento": true,
+    "desfazer": true,
+    "refazer": true,
+    "espelho": true,
+    "reentrada": true,
+    "erros": []
+  }
+]

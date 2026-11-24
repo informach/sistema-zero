@@ -1,4 +1,5 @@
 import { renderedPalette } from '@sistemazero/core/palette'
+import { classicShellUrlFromEnv } from '@sistemazero/core/studio/classic-shell'
 import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
 import { GeistMono } from 'geist/font/mono'
 import type { Metadata, Viewport } from 'next'
@@ -73,7 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         suppressHydrationWarning
         className="min-h-screen bg-background text-foreground antialiased"
       >
-        <Providers>{children}</Providers>
+        <Providers previewShellUrl={classicShellUrlFromEnv(process.env)}>{children}</Providers>
       </body>
     </html>
   )

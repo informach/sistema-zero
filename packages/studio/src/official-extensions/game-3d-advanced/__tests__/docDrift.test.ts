@@ -10,6 +10,7 @@ import {
 } from '../../__tests__/paletteDrift'
 import { gameKit3DPromptContext } from '../ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from '../blocks'
+import { gameKit3DDocs } from '../docs'
 import { gameKit3DManifest } from '../manifest'
 import { GAME_KIT_THREE_D_PALETTE } from '../palette'
 import { gameKit3DRuntime } from '../runtime'
@@ -107,7 +108,7 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
   }
 
   it('toda seção das docs que alega um chip aponta para um chip REAL', () => {
-    const titulos = titulosDasDocs(gameKit3DManifest.docs ?? '')
+    const titulos = titulosDasDocs(gameKit3DDocs ?? '')
     const totalClaims = titulos.flatMap(claimsDoTitulo).length
     // Anti-vácuo: uma regex morta passaria em silêncio (a doença do R20 do 2D).
     expect(totalClaims).toBeGreaterThanOrEqual(6)
@@ -164,7 +165,7 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
   })
 
   it('o manual tem uma seção por família, na MESMA ordem da árvore, e cada seção de verdade', () => {
-    const docs = gameKit3DManifest.docs ?? ''
+    const docs = gameKit3DDocs ?? ''
     const at = GAME_KIT_THREE_D_PALETTE.map((family) => docs.indexOf(`### ${family.name}\n`))
     expect(at.filter((index) => index < 0)).toEqual([])
     expect([...at].sort((a, b) => a - b)).toEqual(at)

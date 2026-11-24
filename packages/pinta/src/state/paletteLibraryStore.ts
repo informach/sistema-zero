@@ -51,7 +51,7 @@ export interface PaletteLibraryState {
 export type PaletteLibraryStore = ReturnType<typeof createPaletteLibraryStore>
 
 export function createPaletteLibraryStore(
-  persistence: PintaPersistence,
+  persistence: Pick<PintaPersistence, 'loadPaletteLibrary' | 'savePaletteLibrary' | 'subscribe'>,
   options: { disabled?: boolean; now?: () => number } = {},
 ) {
   const now = options.now ?? (() => Date.now())
@@ -85,7 +85,13 @@ export function createPaletteLibraryStore(
     ): Promise<boolean> {
       const library: PaletteLibrary = { version: 1, updatedAt: libraryUpdatedAt, palettes, removed }
       try {
-        const saved = await persistence.savePaletteLibrary?.(library)
+        const previous = get()
+        const saved = await persistence.savePaletteLibrary?.(library, undefined, {
+          version: 1,
+          updatedAt: previous.libraryUpdatedAt,
+          palettes: previous.palettes,
+          removed: previous.removed,
+        })
         if (!saved) throw new Error('Persistência não devolveu a biblioteca gravada')
         lastLogicalTimestamp = Math.max(lastLogicalTimestamp, saved.updatedAt)
         set({

@@ -1,0 +1,27 @@
+[WebServer] (node:44572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 6 tests using 1 worker
+
+(node:7192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 [desktop] › e2e\pinta-level-design-scenes.flow.ts:29:1 › modelo girado: guardar pela oficina, reutilizar vinculado, desfazer e reabrir (3.4s)
+  ✓  2 [desktop] › e2e\pinta-level-design-scenes.flow.ts:131:1 › autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena (3.2s)
+(node:43256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  3 [touch] › e2e\pinta-level-design-scenes.flow.ts:29:1 › modelo girado: guardar pela oficina, reutilizar vinculado, desfazer e reabrir (3.3s)
+  ✓  4 [touch] › e2e\pinta-level-design-scenes.flow.ts:131:1 › autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena (3.2s)
+(node:49916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  5 [cpu-4x] › e2e\pinta-level-design-scenes.flow.ts:29:1 › modelo girado: guardar pela oficina, reutilizar vinculado, desfazer e reabrir (7.6s)
+  ✓  6 [cpu-4x] › e2e\pinta-level-design-scenes.flow.ts:131:1 › autoria profissional: caminhos, áreas, porta, propriedades e grupo sobrevivem ao save e à cena (10.4s)
+
+  6 passed (36.7s)

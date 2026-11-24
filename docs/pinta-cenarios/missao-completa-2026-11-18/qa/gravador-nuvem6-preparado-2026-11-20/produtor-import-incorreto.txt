@@ -1,0 +1,63 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-local-authority.test.ts:
+20 |     const [code, stdout, stderr] = await Promise.all([
+21 |       child.exited,
+22 |       new Response(child.stdout).text(),
+23 |       new Response(child.stderr).text(),
+24 |     ])
+25 |     expect(code, stdout + stderr).toBe(0)
+                                       ^
+error: bun test v1.3.11 (af24e281)
+
+tests\fixtures\pinta-local-authority.fixture.ts:
+ 98 |     const produce = producers.get(rich.id)
+ 99 |     expect(produce).toBeDefined()
+100 |     const snapshot = await produce!()
+101 |     expect(snapshot?.meta).toMatchObject({ formatVersion: 6, baseRevision: 0 })
+102 |     const restored = assetFromJson(snapshot!.json)
+103 |     expect(restored?.kind).toBe('tilemap')
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "tilemap"
+Received: undefined
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\fixtures\pinta-local-authority.fixture.ts:103:28)
+(fail) o gravador B sobe a autoridade nativa 7 inteira com nuvem 6 e só confirma após o commit
+[criacoes-nuvem] descida falhou {
+  itemId: "ad75d743-a990-4917-95ce-2d61f107165c",
+  error: PintaLocalStorageError: Guardei suas mudanças numa cópia para proteger as duas versões.
+ forks: Map(1) {
+    "ad75d743-a990-4917-95ce-2d61f107165c": [Object ...],
+  },
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\pinta\src\state\persistence.ts:495:40)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\pinta\src\state\persistence.ts:475:13)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1179:21)
+      at async worker (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\creations-sync.ts:653:34)
+      at async reconcileCreations (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\creations-sync.ts:699:17)
+      at async reconcilePass (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1130:26)
+      at async reconcile (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\src\lib\pinta-cloud-persistence.ts:1083:30)
+,
+}
+(pass) reconciliação não empresta uma revisão lida depois do snapshot, mesmo com relógios iguais [16.00ms]
+(pass) reinício com lápide restaura revisão remota nova no ID original
+(pass) conflito local enfileira somente cópias confirmadas, sem subir o original atrasado [15.00ms]
+
+ 3 pass
+ 1 fail
+ 15 expect() calls
+Ran 4 tests across 1 file. [104.00ms]
+
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-gravador-20261120\packages\member-shell\tests\pinta-local-authority.test.ts:25:35)
+(fail) a ponte de nuvem preserva a autoridade local em realm isolado [140.00ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [186.00ms]

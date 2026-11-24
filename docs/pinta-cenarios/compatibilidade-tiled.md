@@ -1,0 +1,146 @@
+# Compatibilidade com o Tiled
+
+Revisado em 19/11/2026. O importador aceita mapas ortogonais de tamanho fixo em JSON ou TMX,
+com folhas embutidas ou externas (TSX e JSON). A galeria recebe os arquivos do mapa e as
+dependências, ou um ZIP, em **Trazer mapa**. A escolha do mapa e o relatório de conversão
+aparecem antes de fechar.
+
+Na revisão atual, o **Tiled 1.12.2** abriu e reexportou o TMX da Vila pela linha de comando.
+As comparações e os limites dessa prova constam no [QA](revisao-2026-11-18/qa.md).
+A compatibilidade abaixo também é conferida pelos testes de `packages/pinta/src/export/tiled/`.
+Os arquivos em `__fixtures__/tiled-real/` foram escritos à mão seguindo o formato do Tiled 1.10;
+não saíram do programa.
+
+A revisão de 19/11 exercitou os dois sentidos de conversão no Tiled 1.12.2:
+cinco mapas em quatro pacotes, dez conversões, cena inteira igual e nenhum aviso.
+A fixture `__fixtures__/tiled-normalized/` contém saídas do programa real e os
+hashes dos arquivos. [Reprodução e provas](missao-completa-2026-11-18/qa/motores-externos-2026-11-19/README.md).
+
+Referências de objeto usam IDs numéricos externos em objetos, camadas e metadados de peças;
+a importação as religa aos IDs nativos. Referências locais em conjuntos recebem o namespace
+da instância; referências externas são preservadas. Coordenadas negativas de objetos são
+recusadas explicitamente: o documento atual do Pinta não as representa sem perda.
+
+Uma imagem girada dentro de conjunto com escala não uniforme pode exigir cisalhamento.
+O exportador Tiled recusa essa imagem; polígonos compatíveis usam seus pontos exatos.
+Pygame e Godot conservam a transformação e omitem só o suplemento Tiled incompatível,
+incluindo `COMPATIBILIDADE-TILED.txt`. Phaser/Tiled exigem a conversão Tiled integral e
+recusam esse caso. Isso não é suporte universal a todo arquivo do Tiled.
+
+## O que é convertido
+
+| Recurso | Tratamento |
+|---|---|
+| Gids e as oito combinações de espelho e giro | bits do Tiled para a célula do Pinta e de volta |
+| Grupos, visibilidade, opacidade, deslocamento e parallax | preservados; opacidade e parallax fora da faixa são ajustados com aviso |
+| Dados em XML, CSV, base64, base64 com zlib e com gzip | lidos; o fluxo compactado é cortado no tamanho do mapa |
+| Ponto, retângulo, elipse, polígono e polilinha | preservados com giro |
+| Objeto de peça | âncora de baixo à esquerda convertida; espelhos e o bit diagonal viram giro de 90° e espelhos do objeto |
+| Propriedades | texto, verdadeiro/falso, inteiro, decimal, cor, objeto e arquivo, pelo `type` (sem `type` é texto) |
+| Animação de peça | quadros e duração; duração fora de 16 a 60000 ms é ajustada com aviso |
+| Terrenos Wang | canto, borda e misto, com as cores |
+| Conjuntos vinculados do Pinta | objeto original e definição em propriedades `pinta:*`; a expansão visual gerada para outros leitores é reconhecida e não duplica |
+| Texto de várias linhas em atributo do TMX | gravado com `&#10;`, `&#13;` e `&#9;` |
+
+## O que entra com aviso no relatório
+
+| Caso | O que acontece |
+|---|---|
+| Camada com peças de várias folhas | vira uma camada por folha |
+| Nome de camada, objeto, folha ou terreno com mais de 48 sinais | encurtado |
+| Texto de propriedade com mais de 200 sinais | cortado |
+| Nome de propriedade com espaço, acento ou mais de 32 sinais | propriedade não trazida |
+| Mais de 16 propriedades | as últimas não são trazidas |
+| Propriedade de tipo próprio do Tiled (`class`) | não trazida |
+| Propriedades do mapa (as que não são `pinta:*`) | não trazidas |
+| Classe da camada | guardada como a propriedade `class` (se já existir uma, a classe não é trazida) |
+| Cor de fundo, classe e origem do parallax do mapa | não trazidas |
+| Objeto com modelo (`template`) | entra só com o lugar, o nome e as propriedades do mapa |
+| Objeto escondido | entra visível |
+| Objeto de texto | não convertido |
+| Camada de imagem | não convertida |
+| Mistura (`mode`) ou tonalidade (`tintcolor`) da camada | não convertidas |
+| Ordem de desenho "de cima para baixo" numa camada com objetos de peça | os objetos ficam na ordem da lista |
+| Chance de sorteio, formas de colisão e classe das peças | não trazidas |
+| Alinhamento de objetos da folha diferente de baixo à esquerda | objetos de peça podem sair do lugar |
+| Deslocamento de desenho e cor transparente da folha | não trazidos |
+| Nomes das cores de terreno | não trazidos |
+| Mais de 64 quadros numa animação, mais de 16 terrenos numa folha | ficam os primeiros |
+| Arte com mais de 63 cores ou transparência parcial | reduzida para a paleta do Pinta |
+
+## O que é recusado, com frase para a criança
+
+- Mapa infinito, isométrico, hexagonal ou escalonado.
+- Peças não quadradas; mapa com mais de 256 × 256 casas; mais de 32 camadas (contando grupos e
+  camadas divididas por folha); mais de 2.097.152 casas somadas; grupos além de 4 níveis.
+- Folha com margem ou espaçamento, com mais de 256 peças, de tamanho diferente das casas do
+  mapa, ou feita de imagens soltas. Mais de 32 folhas.
+- Mapa sem nenhuma folha de peças.
+- Mais de 512 objetos numa camada; objeto ou deslocamento além de 12.288 pixels; forma com mais
+  de 256 pontos.
+- Gid acima da última peça da folha, em camada ou em objeto. Animação ou terreno que aponta
+  para peça ou cor que não existe.
+- Camada compactada com zstd; camada cujo tamanho não bate com o mapa (maior ou menor);
+  dados corrompidos.
+- XML com DTD ou ENTITY; XML inválido.
+- No pacote: caminho com `..` que sai da pasta, caminho absoluto, endereço de internet; arquivo
+  acima de 32 MiB; ZIP que abre em mais de 128 MiB.
+- Na conversão para o editor: peças de tamanho diferente de 16, 32 ou 48 pixels; desenho de
+  objeto acima de 512 × 512.
+
+Um erro que não esteja nesta lista aparece como um recado geral, nunca como texto técnico.
+
+## Ida e volta
+
+O Tiled pode completar a última linha de um atlas e omitir regras Wang com
+oito valores zero. O Pinta reserva o espaço físico completo nos GIDs e grava
+`pinta:atlas` versão 1 e `pinta:emptyTiles`. A contagem autoral só é restaurada
+quando a imagem continua idêntica e nenhuma referência usa o preenchimento.
+Pintar a imagem, usar uma peça adicional ou editar uma regra no Tiled conserva
+a edição. Remover as propriedades `pinta:*` remove essa informação de origem.
+Metadados inválidos ou de versão desconhecida são recusados com mensagem.
+
+Propriedades `pinta:*` conservam identificações, papéis, frente, colisão e conjuntos. Os testes
+de ida e volta comparam a cena inteira (`toEqual`) em JSON, TMX com folha externa e TMX com
+folha embutida, nas quatro codificações de camada. Os caminhos de imagem são resolvidos em
+relação à folha externa.
+
+Na revisão de 18/11, Tiled 1.12.2 reexportou os dois TMX da Vila/Cabana para JSON; a
+comparação integral da cena resultou em zero diferenças e zero avisos. Um ensaio adicional
+JSON → TMX → JSON conservou `locked: true`. As cores ARGB do Tiled são convertidas para
+RGB quando opacas, e RGBA quando possuem alfa diferente de FF; essa normalização evita
+uma diferença puramente representacional na ida e volta. Ver [provas atuais](revisao-2026-11-18/qa/verification.md).
+
+O [registro de homologação](homologacao.md) diz o que tem teste automático e o que não foi
+realizado.
+
+## Exportação de cenários regionais ortogonais
+
+O pacote regional contém mapas JSON, TMX com folhas TSX externas e as imagens PNG.
+As camadas usam chunks de 32 × 32, inclusive em coordenadas negativas. GIDs guardam as oito
+combinações de espelho e giro. O mapa pode ter uma área autoral maior que os chunks preenchidos.
+Ela fica em `pinta:bounds`, junto com os dados de colisão, conjuntos e ligações usados pelos
+leitores do Pinta. [Formato JSON do Tiled](https://doc.mapeditor.org/en/stable/reference/json-map-format/) · [Formato TMX](https://doc.mapeditor.org/en/stable/reference/tmx-map-format/) · [GIDs](https://doc.mapeditor.org/en/stable/reference/global-tile-ids/)
+
+O Tiled edita as camadas, as folhas, os objetos e suas propriedades. Portas e colisões
+dependem da lógica do jogo que usa o mapa. As cópias visíveis dos conjuntos são projeções
+para o Tiled. A definição fica em `pinta:sets`. Animações sem repetição conservam essa opção nos
+metadados, enquanto o Tiled as exibe em repetição.
+
+O ensaio com a Vila e a Cabana, no Tiled 1.12.2, confere JSON → TMX → JSON e TMX com TSX →
+JSON. Ele compara células ocupadas nas coordenadas assinadas, GIDs, bases das folhas,
+identidade, limites, modo de física e definições. O ensaio importa as duas cenas usando
+o mesmo leitor de objetos, propriedades e folhas dos mapas fixos.
+
+O retorno regional privado usa `importRegionalTiledWorld`. Ele recebe os arquivos do pacote
+e a escolha de um JSON ou TMX por mapa, começando pelo lugar inicial. Se faltar um destino ou
+uma peça estiver fora de `pinta:bounds`, a importação recusa o pacote inteiro. Camadas regionais
+usam uma folha cada. O retorno reorganiza os chunks do Tiled em regiões de 32 × 32 e valida
+o PNG5 resultante pelo leitor do Estúdio. Esse PNG pode alimentar a exportação para Tiled de novo.
+
+O ZIP regional inclui `desenhos.pinta.json` com um backup nativo privado dos originais,
+além de `maps.json` para execução. O retorno usa o arquivo escolhido no Tiled para aplicar
+as edições. O menu público **Trazer mapa** continua aceitando mapas finitos ortogonais.
+
+Execute `bun test ./src/export/tiled/regional.test.ts` em `packages/pinta` com
+`PINTA_TILED_BIN` apontando para o executável.

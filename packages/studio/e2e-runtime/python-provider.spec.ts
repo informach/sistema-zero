@@ -313,3 +313,331 @@ test('provider delivers lines and EOF without evaluating input as code', async (
     ),
   ).toBe("Nome: primeiro: \"print('não executar')\"\nvazio: ''\nEOF\n")
 })
+test('a aba Desempenho: o quadro conta os quadros pintados do jogo e para quando desliga', async ({
+  page,
+}) => {
+  await prepare(page, 'perf', 'pgzeroGame')
+  await page.locator('iframe').evaluate((frame) => {
+    frame.style.cssText = 'width:640px;height:480px;border:0'
+  })
+  await page.evaluate(() => globalThis.providerProbe.run('perf'))
+  await page.evaluate(() => globalThis.providerProbe.measure('perf', true))
+  const drawn = () =>
+    page.evaluate(
+      () =>
+        globalThis.providerProbe.read('perf').perf.filter((slice) => slice.canvas && slice.fps > 0)
+          .length,
+    )
+  await expect.poll(drawn, { timeout: 30_000 }).toBeGreaterThan(1)
+  const last = (await page.evaluate(() => globalThis.providerProbe.read('perf').perf)).at(-1)
+  expect(last?.canvas).toBe(true)
+  expect(last?.frameMsAvg).toBeGreaterThan(0)
+  // Desligada, o quadro para de mandar fatias.
+  await page.evaluate(() => globalThis.providerProbe.measure('perf', false))
+  const before = await page.evaluate(() => globalThis.providerProbe.read('perf').perf.length)
+  await page.waitForTimeout(1200)
+  expect(await page.evaluate(() => globalThis.providerProbe.read('perf').perf.length)).toBe(before)
+  await page.evaluate(() => globalThis.providerProbe.dispose('perf'))
+})
+test('a aba Desempenho num programa sem tela: as fatias dizem que não há quadros', async ({
+  page,
+}) => {
+  await prepare(page, 'perf-text', 'loop')
+  await page.evaluate(() => globalThis.providerProbe.run('perf-text'))
+  await page.evaluate(() => globalThis.providerProbe.measure('perf-text', true))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.providerProbe.read('perf-text').perf.length), {
+      timeout: 10_000,
+    })
+    .toBeGreaterThan(0)
+  expect(await page.evaluate(() => globalThis.providerProbe.read('perf-text').perf[0])).toEqual({
+    fps: 0,
+    frameMsAvg: 0,
+    frameMsMax: 0,
+    canvas: false,
+  })
+  await page.evaluate(() => globalThis.providerProbe.dispose('perf-text'))
+})
+
+test('Meus testes: o quadro do Python aperta a tecla do teste e o jogo responde', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('teclas', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('teclas'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('teclas').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const read = async (path: string) => {
+    const { observation } = await page.evaluate(
+      (path) => globalThis.pythonControllerProbe.observe('teclas', path),
+      path,
+    )
+    if (observation.type !== 'value' || !observation.observed.found) throw new Error(path)
+    return Number(observation.observed.value)
+  }
+  const press = (key: string, down: boolean) =>
+    page.evaluate(([key, down]) => globalThis.pythonControllerProbe.pressKey('teclas', key, down), [
+      key,
+      down,
+    ] as const)
+  // Espaço: o `on_key_down` do jogo soma um ponto.
+  expect(await read('pontos')).toBe(0)
+  await press('Space', true)
+  await press('Space', false)
+  await expect.poll(() => read('pontos')).toBe(1)
+  // Seta segurada: o `keyboard.right` do jogo anda com o herói enquanto a tecla está apertada.
+  const before = await read('heroi.x')
+  await press('ArrowRight', true)
+  await expect.poll(() => read('heroi.x')).toBeGreaterThan(before)
+  await press('ArrowRight', false)
+  const stopped = await read('heroi.x')
+  await page.waitForTimeout(300)
+  expect(await read('heroi.x')).toBe(stopped)
+  // A função do jogo, chamada no quadro (o `marcar()` responde None).
+  expect(
+    (await page.evaluate(() => globalThis.pythonControllerProbe.call('teclas', 'marcar', [[]])))
+      .observation,
+  ).toEqual({ id: 'chamada', type: 'functionReturns', cases: [{ ok: true, value: null }] })
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('teclas'))
+})
+
+test('Meus testes: o executor testa uma função do Python clássico numa execução escondida', async ({
+  page,
+}) => {
+  const run = (expected: number) =>
+    page.evaluate(
+      (expected) =>
+        globalThis.pythonControllerProbe.studentTest('classic-portable', {
+          id: 'atual',
+          name: 'O valor atual',
+          rule: { type: 'functionReturns', name: 'current', cases: [{ args: [], expected }] },
+        }),
+      expected,
+    )
+  const certo = await run(7)
+  expect(certo.status).toBe('passed')
+  const errado = await run(8)
+  expect(errado.status).toBe('failed')
+  if (errado.status === 'failed') expect(errado.detail).toContain('respondeu 7')
+  // A execução escondida sai da página no fim.
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
+/**
+ * Os casos da aba Meus testes no Python (lote 3 da conclusão, 22/11/2026), pelo executor inteiro
+ * da aba numa execução escondida: chave, porta, vida, placar e fim num jogo de Pygame Zero, o
+ * programa que não compila e o jogo que trava. O par JavaScript mora em
+ * `e2e/student-tests.spec.ts` e `e2e/student-tests-hostile.spec.ts`; a frase que a criança lê sai da
+ * mesma régua (`studentTestsText.ts`): erro do programa vira "o jogo deu erro durante o teste" e o
+ * prazo vira "o jogo não respondeu a tempo".
+ */
+const PYTHON_CASES = [
+  {
+    name: 'A seta leva até a chave',
+    steps: [{ action: 'press', key: 'ArrowRight', holdMs: 1000 }],
+    expect: { target: { kind: 'value', path: 'tem_chave' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+  {
+    name: 'Com a chave a porta abre',
+    steps: [{ action: 'press', key: 'ArrowRight', holdMs: 1500 }],
+    expect: { target: { kind: 'value', path: 'porta_aberta' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+  {
+    name: 'Espaço abre a porta',
+    steps: [{ action: 'press', key: 'Space' }],
+    expect: { target: { kind: 'value', path: 'porta_aberta' }, compare: 'equals', value: true },
+    status: 'failed',
+  },
+  {
+    name: 'Parado no começo perde vida',
+    steps: [{ action: 'wait', ms: 1500 }],
+    expect: { target: { kind: 'value', path: 'vidas' }, compare: 'decreased' },
+    status: 'passed',
+  },
+  {
+    name: 'Espaço marca ponto',
+    steps: [{ action: 'press', key: 'Space' }],
+    expect: { target: { kind: 'value', path: 'pontos' }, compare: 'increased' },
+    status: 'passed',
+  },
+  {
+    name: 'Sem vidas o jogo acaba',
+    steps: [{ action: 'wait', ms: 4500 }],
+    expect: { target: { kind: 'value', path: 'fim' }, compare: 'equals', value: true },
+    status: 'passed',
+  },
+] as const
+
+const studentTest = (page: Page, fixture: string, item: (typeof PYTHON_CASES)[number]) =>
+  page.evaluate(
+    ({ fixture, item }) =>
+      globalThis.pythonControllerProbe.studentTest(fixture, {
+        id: 'caso',
+        name: item.name,
+        rule: { type: 'behavior', steps: item.steps, expect: item.expect },
+      } as never),
+    { fixture, item },
+  )
+
+test('Meus testes no Pygame Zero: chave, porta, vida, placar e fim', async ({ page }) => {
+  test.setTimeout(300_000)
+  for (const item of PYTHON_CASES) {
+    const outcome = await studentTest(page, 'classic-pgzeroCasos', item)
+    // O resultado inteiro no recado: esta suíte só roda no CI (o servidor de provas exige Bun 1.4
+    // no Windows), e "failed" sozinho não diz o que o programa fez.
+    expect(outcome.status, `${item.name}: ${JSON.stringify(outcome).slice(0, 800)}`).toBe(
+      item.status,
+    )
+  }
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
+test('Meus testes no Python: o programa que não compila conta o erro, e o que trava não segura o teste', async ({
+  page,
+}) => {
+  test.setTimeout(240_000)
+  const ponto = PYTHON_CASES[4]
+  const quebrado = await studentTest(page, 'classic-pgzeroErroDeEscrita', ponto)
+  // O mesmo caminho do JavaScript: o teste não passa e a observação traz o erro do programa (a aba
+  // diz "o jogo deu erro durante o teste").
+  expect(quebrado.status).toBe('failed')
+  if (quebrado.status === 'failed') {
+    // `errors` e nada em `error`: com `error`, a aba diria "o teste não terminou (…)" com o erro cru.
+    expect(quebrado.observation.error).toBeUndefined()
+    expect(quebrado.observation.errors?.length ?? 0).toBeGreaterThan(0)
+  }
+  const travado = await studentTest(page, 'classic-pgzeroTrava', ponto)
+  expect(travado.status, JSON.stringify(travado).slice(0, 800)).toBe('timeout')
+  expect(await page.locator('iframe[title="Teste do programa"]').count()).toBe(0)
+})
+
+test('Investigar: o controlador no modo de observação lê as variáveis do jogo a cada quadro', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('investigar', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('investigar'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('investigar').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const read = (path: string) =>
+    page.evaluate((path) => globalThis.pythonControllerProbe.observe('investigar', path), path)
+  expect((await read('WIDTH')).observation).toEqual({
+    type: 'value',
+    observed: { found: true, value: 320 },
+  })
+  const first = (await read('quadros')).observation
+  const second = (await read('quadros')).observation
+  if (first.type !== 'value' || second.type !== 'value') throw new Error('valor esperado')
+  expect(Number(second.observed.value)).toBeGreaterThan(Number(first.observed.value))
+  expect((await read('nao_existe')).observation).toEqual({
+    type: 'value',
+    observed: { found: false },
+  })
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('investigar'))
+})
+
+test('Investigar: Pausar segura o jogo no quadro, Avançar anda 1 quadro e Continuar solta', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('pausa', 'pgzeroGame', { observation: true }),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('pausa'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('pausa').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const quadros = async () => {
+    const { observation } = await page.evaluate(() =>
+      globalThis.pythonControllerProbe.observe('pausa', 'quadros'),
+    )
+    if (observation.type !== 'value' || !observation.observed.found) throw new Error('quadros')
+    return Number(observation.observed.value)
+  }
+  const held = await page.evaluate(() => globalThis.pythonControllerProbe.pause('pausa', true))
+  if (!held) throw new Error('O jogo não parou no quadro.')
+  // Parado: as leituras dos valores são respondidas, e o jogo não anda.
+  const parado = await quadros()
+  await page.waitForTimeout(300)
+  expect(await quadros()).toBe(parado)
+  const next = await page.evaluate(() => globalThis.pythonControllerProbe.step('pausa'))
+  if (!next) throw new Error('O jogo não parou de novo depois de avançar.')
+  expect(next.frame).toBeGreaterThan(held.frame)
+  const avancou = await quadros()
+  expect(avancou).toBeGreaterThan(parado)
+  await page.waitForTimeout(300)
+  expect(await quadros()).toBe(avancou)
+  expect(await page.evaluate(() => globalThis.pythonControllerProbe.pause('pausa', false))).toBe(
+    null,
+  )
+  await expect.poll(quadros).toBeGreaterThan(avancou)
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('pausa'))
+})
+
+test('Investigar: o Turtle parado no mainloop pausa na próxima resposta e responde as leituras', async ({
+  page,
+}) => {
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.create('tartaruga', 'turtleEvents', { observation: true }),
+  )
+  // O desenho anda cinco passos e fica parado no mainloop, sem relógio nenhum: só a espera
+  // acordada pelo quadro devolve uma resposta.
+  await page.evaluate(() =>
+    globalThis.pythonControllerProbe.source(
+      'tartaruga',
+      [
+        'import turtle',
+        's = turtle.Screen()',
+        's.tracer(0)',
+        't = turtle.Turtle()',
+        'passos = 0',
+        'def andar():',
+        '    global passos',
+        '    passos += 1',
+        '    t.forward(10)',
+        '    s.update()',
+        '    if passos < 5:',
+        '        s.ontimer(andar, 20)',
+        'andar()',
+        's.mainloop()',
+        '',
+      ].join('\n'),
+    ),
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.run('tartaruga'))
+  await expect
+    .poll(() => page.evaluate(() => globalThis.pythonControllerProbe.read('tartaruga').status), {
+      timeout: 40_000,
+    })
+    .toBe('running')
+  const passos = async () => {
+    const { observation } = await page.evaluate(() =>
+      globalThis.pythonControllerProbe.observe('tartaruga', 'passos'),
+    )
+    if (observation.type !== 'value') throw new Error('passos')
+    // A tartaruga já checa ao nascer: antes de `passos = 0` a leitura responde que não achou.
+    return observation.observed.found ? Number(observation.observed.value) : null
+  }
+  await expect.poll(passos, { timeout: 10_000 }).toBe(5)
+  const held = await page.evaluate(() => globalThis.pythonControllerProbe.pause('tartaruga', true))
+  expect(held).not.toBeNull()
+  expect(await passos()).toBe(5)
+  expect(
+    await page.evaluate(() => globalThis.pythonControllerProbe.pause('tartaruga', false)),
+  ).toBe(null)
+  expect(await page.evaluate(() => globalThis.pythonControllerProbe.read('tartaruga').status)).toBe(
+    'running',
+  )
+  await page.evaluate(() => globalThis.pythonControllerProbe.stop('tartaruga'))
+})

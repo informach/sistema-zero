@@ -1,0 +1,17 @@
+[
+  {
+    "name": "pygame-example",
+    "exit": 0,
+    "log": ".cache/pinta-owned-vila-pygame-example.log"
+  },
+  {
+    "name": "godot-import",
+    "exit": 0,
+    "log": ".cache/pinta-owned-vila-godot-import.log"
+  },
+  {
+    "name": "godot-run",
+    "exit": 0,
+    "log": ".cache/pinta-owned-vila-godot-run.log"
+  }
+]

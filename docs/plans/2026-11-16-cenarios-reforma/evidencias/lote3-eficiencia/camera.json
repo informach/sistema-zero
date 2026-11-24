@@ -1,0 +1,23 @@
+[
+  {
+    "tipo": "plano",
+    "largura": 800,
+    "altura": 600,
+    "esquerda": 168,
+    "direita": 358
+  },
+  {
+    "tipo": "plano",
+    "largura": 300,
+    "altura": 800,
+    "esquerda": 28,
+    "direita": 76
+  },
+  {
+    "tipo": "terreno",
+    "largura": 800,
+    "altura": 600,
+    "esquerda": 165,
+    "direita": 362
+  }
+]

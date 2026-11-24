@@ -1,4 +1,5 @@
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
+import type { StudioSealedReceipt } from '@sistemazero/core/creations/studio-sealed-storage'
 import type {
   LessonLearningProgress,
   LessonRequirement,
@@ -774,6 +775,8 @@ export interface CreationPartTicketView {
 
 /** `POST /members/creations/:tool/:itemId/upload` — a reserva que o BFF assina (+ as partes FALTANTES). */
 export interface CreationUploadTicketView {
+  inventoryFloor?: number
+  maxReadFormatVersion?: number
   revision: number
   /** Missing only from old servers; confirms legacy format 1, never a newer format. */
   formatVersion?: number
@@ -810,6 +813,7 @@ export interface CreationDownloadTicketView {
   bytes: number
   summary: CreationSummaryView
   parts?: CreationPartTicketView[]
+  studioSealReceipt?: StudioSealedReceipt
 }
 
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
@@ -1803,6 +1807,8 @@ export interface HubThreadView {
   lastActivityAt: string
   createdAt: string
   editedAt: string | null
+  /** Última atualização do jogo publicado pela criança (selo "Atualizado"); `null`/ausente = nunca. */
+  gameUpdatedAt?: string | null
 }
 
 /** Payload autoritativo da vitrine (members) — o BFF monta o post a partir dele. */
@@ -1822,6 +1828,8 @@ export type TeacherThreadContext =
   | 'mural_publication'
   | 'general'
   | 'lesson_section'
+  /** Ajuda do Pinta: o pedido do aviso de recuperação de desenhos, sem aula. */
+  | 'pinta_recovery'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 /** Um turno da conversa (mirror do members). */
@@ -1962,4 +1970,5 @@ export interface CreationDownloadUrlView {
   item: CreationSummaryView
   parts: Array<{ hash: string; bytes: number; url: string }>
   serverNow: string
+  studioSealReceipt?: StudioSealedReceipt
 }

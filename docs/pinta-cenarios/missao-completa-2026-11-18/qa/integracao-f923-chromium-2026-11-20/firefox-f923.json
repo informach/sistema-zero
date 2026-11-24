@@ -1,0 +1,737 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=firefox",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\playwright.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-f923-firefox-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["**/*.@(spec|test).?(c|m)[jt]s?(x)"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-f923-firefox-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/preview-security\\.spec\\.ts/",
+          "/preview-executes-user-code\\.spec\\.ts/",
+          "/preview-shell(?:-performance|-hostile)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/.cache/pinta-f923-firefox-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-integracao-20261120/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/reload-flush\\.spec\\.ts/",
+          "/preview-shell(?:-performance)?\\.spec\\.ts/",
+          "/blockly-media\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f923-firefox-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "firefox",
+        "testDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "snapshotDir": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\e2e",
+        "testIgnore": [],
+        "testMatch": [{}, {}, {}, {}],
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5495",
+          "trace": "on-first-retry",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "firefox",
+          "launchOptions": {
+            "firefoxUserPrefs": {
+              "fission.webContentIsolationStrategy": 1
+            }
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "firefox"
+      }
+    ],
+    "quiet": false,
+    "reporter": [["list"], ["json"]],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "bun run serve:e2e",
+      "env": {
+        "E2E_PORT": "5495"
+      },
+      "url": "http://127.0.0.1:5495",
+      "reuseExistingServer": true,
+      "stdout": "pipe",
+      "stderr": "pipe",
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "blockly-media.spec.ts",
+      "file": "blockly-media.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "zoom e lixeira usam o desenho em vetor do SDK, servido pelo host",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5299,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T18:17:49.011Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73e7d984409bd9c996be-80a5731518109a1cafb3",
+          "file": "blockly-media.spec.ts",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "firefox",
+              "projectName": "firefox",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5225,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T18:17:54.829Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "73e7d984409bd9c996be-ec3bfaab42ed95ce42b5",
+          "file": "blockly-media.spec.ts",
+          "line": 56,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "preview-executes-user-code.spec.ts",
+      "file": "preview-executes-user-code.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "preview executa o código do aluno",
+          "file": "preview-executes-user-code.spec.ts",
+          "line": 26,
+          "column": 6,
+          "specs": [
+            {
+              "title": "o script canônico roda e pinta a tela",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5144,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:00.078Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3e86948db50d60015ba3-64c692e5ac2a57140454",
+              "file": "preview-executes-user-code.spec.ts",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "um `<script>` inline no index.html também executa",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5233,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:05.234Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3e86948db50d60015ba3-789a7e313d7bc550f4ff",
+              "file": "preview-executes-user-code.spec.ts",
+              "line": 42,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-security.spec.ts",
+      "file": "preview-security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "segurança do preview",
+          "file": "preview-security.spec.ts",
+          "line": 40,
+          "column": 6,
+          "specs": [
+            {
+              "title": "handlers HTML exatos funcionam, preservam return false e têm guarda de loop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9995,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:10.487Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d9a7fb3b96c1b46d666d-ec2e54aa2096919f695e",
+              "file": "preview-security.spec.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "script inline criado em execução é bloqueado e a IDE continua responsiva",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5261,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:20.495Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d9a7fb3b96c1b46d666d-4c28fa446998a87e954e",
+              "file": "preview-security.spec.ts",
+              "line": 69,
+              "column": 3
+            },
+            {
+              "title": "script externo criado em execução é recusado e a IDE continua responsiva",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6258,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:25.768Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d9a7fb3b96c1b46d666d-c8c70d9f03252c2eff6e",
+              "file": "preview-security.spec.ts",
+              "line": 94,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-shell-hostile.spec.ts",
+      "file": "preview-shell-hostile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "programas hostis na prévia dentro da casca",
+          "file": "preview-shell-hostile.spec.ts",
+          "line": 46,
+          "column": 6,
+          "specs": [
+            {
+              "title": "trabalho síncrono longo que não é laço não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12020,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:32.777Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-86d8550f3a0eb853a6a2",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 53,
+              "column": 3
+            },
+            {
+              "title": "recursão sem fim vira erro do jogo, não do editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10362,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:45.249Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-bf96a81ccefcbc187d1f",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 67,
+              "column": 3
+            },
+            {
+              "title": "enxurrada de mensagens não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10703,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:18:55.646Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-5ec03e72f13255784bf8",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "memória crescendo sem parar não derruba o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10471,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:19:06.379Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0590753a05e97d7889cf-d6a7fa236a6b253abb9b",
+              "file": "preview-shell-hostile.spec.ts",
+              "line": 82,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-shell-performance.spec.ts",
+      "file": "preview-shell-performance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia isolada: resposta durante CPU ocupada",
+          "file": "preview-shell-performance.spec.ts",
+          "line": 21,
+          "column": 6,
+          "specs": [
+            {
+              "title": "trabalho síncrono longo do jogo não trava o editor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12072,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:19:17.785Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "latencia-do-editor",
+                          "contentType": "application/json",
+                          "path": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-integracao-20261120\\packages\\studio\\.cache\\pinta-f923-firefox-results\\preview-shell-performance--49cc3--do-jogo-não-trava-o-editor-firefox\\attachments\\latencia-do-editor-97911f1f0ef2d25917ecb5281b68f159755fff0f.json"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "121d71cc19b42cd2f0df-6f0b7356c92ec5c5f9e0",
+              "file": "preview-shell-performance.spec.ts",
+              "line": 23,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "preview-shell.spec.ts",
+      "file": "preview-shell.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "prévia dentro da casca em outro site",
+          "file": "preview-shell.spec.ts",
+          "line": 17,
+          "column": 6,
+          "specs": [
+            {
+              "title": "o jogo roda na casca, fala com o console e volta a rodar depois do Parar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6805,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:19:31.113Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-c6f0d509574e95704a6b",
+              "file": "preview-shell.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "depois de Rodar, as setas chegam ao jogo sem clicar no palco",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 90000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-20T18:19:38.381Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "teclado-nativo-firefox",
+                          "contentType": "application/json",
+                          "body": "eyJicm93c2VyVmVyc2lvbiI6IjE1OS4wIiwicHJvdG9jb2wiOiJXM0MgV2ViRHJpdmVyIiwic2l0ZUlzb2xhdGlvbiI6MSwicmVhbFN0dWRpb1VpIjp0cnVlLCJyb3VuZHMiOlt7Iml0ZXJhdGlvbiI6MCwiZm9jdXMiOnsidG9wIjp7ImFjdGl2ZSI6IklGUkFNRSIsImZvY3VzZWQiOnRydWV9LCJtaWRkbGUiOnsiYWN0aXZlIjoiSUZSQU1FIiwiZm9jdXNlZCI6dHJ1ZX0sImlubmVyIjp7ImFjdGl2ZSI6IkJPRFkiLCJmb2N1c2VkIjp0cnVlLCJyZWFkeSI6InNpbSJ9fSwibmF0aXZlQXJyb3dSZWNlaXZlZCI6dHJ1ZSwidHJ1c3RlZEV2ZW50Ijp0cnVlLCJub1ByZXZpZXdDbGljayI6dHJ1ZX0seyJpdGVyYXRpb24iOjEsImZvY3VzIjp7InRvcCI6eyJhY3RpdmUiOiJJRlJBTUUiLCJmb2N1c2VkIjp0cnVlfSwibWlkZGxlIjp7ImFjdGl2ZSI6IklGUkFNRSIsImZvY3VzZWQiOnRydWV9LCJpbm5lciI6eyJhY3RpdmUiOiJCT0RZIiwiZm9jdXNlZCI6dHJ1ZSwicmVhZHkiOiJzaW0ifX0sIm5hdGl2ZUFycm93UmVjZWl2ZWQiOnRydWUsInRydXN0ZWRFdmVudCI6dHJ1ZSwibm9QcmV2aWV3Q2xpY2siOnRydWV9LHsiaXRlcmF0aW9uIjoyLCJmb2N1cyI6eyJ0b3AiOnsiYWN0aXZlIjoiSUZSQU1FIiwiZm9jdXNlZCI6dHJ1ZX0sIm1pZGRsZSI6eyJhY3RpdmUiOiJJRlJBTUUiLCJmb2N1c2VkIjp0cnVlfSwiaW5uZXIiOnsiYWN0aXZlIjoiQk9EWSIsImZvY3VzZWQiOnRydWUsInJlYWR5Ijoic2ltIn19LCJuYXRpdmVBcnJvd1JlY2VpdmVkIjp0cnVlLCJ0cnVzdGVkRXZlbnQiOnRydWUsIm5vUHJldmlld0NsaWNrIjp0cnVlfV19"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "51f1a65b01783b3202fa-cd22439201f6cbbdd924",
+              "file": "preview-shell.spec.ts",
+              "line": 59,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T18:17:48.495Z",
+    "duration": 120219.014,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

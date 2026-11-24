@@ -10,6 +10,7 @@ import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learni
 import type { Logger } from '@sistemazero/core/logging'
 import { MORADA_LIMITS } from '@sistemazero/core/morada/schema'
 import { safeEqual } from '@sistemazero/core/security'
+import { MAX_BYTES_DO_RESUMO_DE_PUBLICACAO } from '@sistemazero/molda-cenarios-core/publicacao'
 import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
 import type { LivePublicationService } from '../../application/live/live-publication.service'
@@ -31,6 +32,8 @@ import { adultJourneyRoutes } from './routes/adult-journey.routes'
 import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
+import { type CenariosRoutesDeps, cenariosRoutes } from './routes/cenarios.routes'
+import { cenariosPublicacoesRoutes } from './routes/cenarios-publicacoes.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import {
   coursePromotionPeerRoutes,
@@ -56,11 +59,18 @@ import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
 import { masteryRoutes } from './routes/mastery.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
+import { pintaCausalRoutes } from './routes/pinta-causal.routes'
+import { pintaPaletteWriteRoutes } from './routes/pinta-palette-writes.routes'
+import {
+  type PintaRecoveryHelpRoutesDeps,
+  pintaRecoveryHelpRoutes,
+} from './routes/pinta-recovery-help.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
 import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
 import { studioPublicRuntimeRoutes } from './routes/studio-public-runtime.routes'
 import { studioPythonAnalysisRoutes } from './routes/studio-python-analysis.routes'
+import { studioSealedWriteRoutes } from './routes/studio-sealed-writes.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -94,6 +104,8 @@ export interface HttpDeps {
   pensa: PensaRoutesDeps
   /** Equipe no Pensa (14/10/2026): equipe, funções, recursos e artes da equipe. */
   creations: CreationsRoutesDeps
+  /** Molda Cenários: a oficina de cenários 3D. */
+  cenarios: CenariosRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
@@ -101,6 +113,8 @@ export interface HttpDeps {
   coursePromotion?: Parameters<typeof coursePromotionPeerRoutes>[0]
   coursePromotionSource?: Parameters<typeof coursePromotionSourceRoutes>[0]
   internal: InternalRoutesDeps
+  /** Ajuda do Pinta: o aluno abre a conversa de recuperação de desenhos (S2S do member-shell). */
+  pintaRecoveryHelp?: PintaRecoveryHelpRoutesDeps
   /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
   help: HelpRoutesDeps
   adultHelp?: HelpRoutesDeps
@@ -128,12 +142,24 @@ const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
 const ARQUIPELAGO_OBJECTIVES_PATH =
   /^\/members\/internal\/arquipelago\/objetivos\/(?:analisar|verificar)$/
 const ARQUIPELAGO_OBJECTIVES_BODY_BYTES = 4 * 1024 * 1024
+const CENARIOS_DOCUMENTO_BODY_BYTES = 8 * 1024 * 1024 + 64 * 1024
 
 // Rotas do Pensa com corpo GRANDE (conversa de turno, artefato jsonb, replace de
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
+const CREATION_PROOF_BODY_BYTES = 2 * 1024 * 1024
+const PINTA_CAUSAL_PROOF_PATH =
+  /^\/members\/internal\/creations\/pinta\/(?:units\/(?:reserve|attest)|backfill\/attest)$/
+const STUDIO_SEALED_PROOF_PATH =
+  /^\/members\/internal\/creations\/studio\/seal\/(?:reserve|commit)$/
+
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (PINTA_CAUSAL_PROOF_PATH.test(pathname) || STUDIO_SEALED_PROOF_PATH.test(pathname))
+    return CREATION_PROOF_BODY_BYTES
+  // O resumo do pacote (inventário + procedência); o manifesto em si nunca vem no corpo.
+  if (pathname === '/members/internal/cenarios/publicacoes/confirmar')
+    return MAX_BYTES_DO_RESUMO_DE_PUBLICACAO
   if (pathname === '/members/house') return MORADA_LIMITS.bytes + 1024
   if (pathname === '/members/internal/course-promotions/preview') return 64_000_000
   if (pathname === '/members/admin/python-project-checks/test')
@@ -146,6 +172,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     /^\/members\/lessons\/[^/]+\/blocks\/[^/]+\/studio-runtime$/.test(pathname) ||
     pathname === '/members/admin/studio/authoring-runtime' ||
     pathname === '/members/studio/free-runtime' ||
+    // "Meus testes" no Pro: o projeto inteiro e os testes.
+    pathname === '/members/studio/student-tests' ||
     pathname === '/members/studio/python-analysis' ||
     pathname === '/members/internal/studio/public-runtime' ||
     /^\/members\/live\/workspaces\/[^/]+\/publication-runtime$/.test(pathname) ||
@@ -166,6 +194,14 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
   if (/^\/members\/internal\/(?:adult\/)?pensa\//.test(pathname)) return 1024 * 1024
+  // Uma definição fixada/restauração pode conter o documento inteiro, limitado a 8 MiB.
+  if (
+    /^\/members\/cenarios\/cenarios\/[^/]+\/lotes$/.test(pathname) ||
+    pathname === '/members/internal/cenarios/lotes' ||
+    /^\/members\/cenarios\/bibliotecas\/[^/]+\/conjuntos$/.test(pathname) ||
+    /^\/members\/cenarios\/conjuntos\/[^/]+\/publicar$/.test(pathname)
+  )
+    return CENARIOS_DOCUMENTO_BODY_BYTES
   if (/^\/members\/(?:adult\/)?pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }
@@ -182,8 +218,10 @@ export function createServer(deps: HttpDeps) {
     deps.coursePromotion ? 64_000_000 : 0,
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     ARQUIPELAGO_OBJECTIVES_BODY_BYTES,
+    CENARIOS_DOCUMENTO_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
+    CREATION_PROOF_BODY_BYTES,
     1024 * 1024,
   )
   const app = new Elysia({
@@ -309,6 +347,11 @@ export function createServer(deps: HttpDeps) {
       }),
     )
     .use(creationsRoutes(deps.creations))
+    .use(pintaCausalRoutes(deps.creations))
+    .use(pintaPaletteWriteRoutes(deps.creations))
+    .use(studioSealedWriteRoutes(deps.creations))
+    .use(cenariosRoutes(deps.cenarios))
+    .use(cenariosPublicacoesRoutes(deps.cenarios))
     .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
     .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
     .use(deps.masteries ? masteryRoutes(deps.masteries) : new Elysia())
@@ -324,6 +367,7 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(deps.coursePublication ? coursePublicationRoutes(deps.coursePublication) : new Elysia())
     .use(internalRoutes(deps.internal))
+    .use(deps.pintaRecoveryHelp ? pintaRecoveryHelpRoutes(deps.pintaRecoveryHelp) : new Elysia())
     .use(deps.arquipelagoCoins ? arquipelagoCoinsRoutes(deps.arquipelagoCoins) : new Elysia())
     .use(
       deps.arquipelagoInternal ? arquipelagoInternalRoutes(deps.arquipelagoInternal) : new Elysia(),

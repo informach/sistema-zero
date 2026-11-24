@@ -5,7 +5,8 @@
  * "Trazer de volta" — com o tileset de um mapa marcado incluído SOZINHO.
  */
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { gzipSync, strToU8, unzipSync } from 'fflate'
 import { COPY } from '../../core/copy'
 import type { PintaAsset } from '../../core/project'
 import {
@@ -13,10 +14,12 @@ import {
   createTilemapAsset,
   createTilesetAsset,
 } from '../../core/projectConfig'
+import type { PintaHostChrome, PintaRecoveryHelpReport } from '../../core/types'
 import type { PintaPersistence, PintaPersistenceEvent } from '../../state/persistence'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
+const { PintaHostChromeProvider } = await import('../hostChrome')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
 const { readPintaBackupFile } = await import('../../export/backupFile')
@@ -334,4 +337,185 @@ describe('modo de seleção da galeria (pack)', () => {
       expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()
     })
   })
+})
+
+it('baixa os gzip originais e seus vínculos quando a recuperação depende de uma peça anterior', async () => {
+  await withDownloadCapture(async ({ downloads, names }) => {
+    const listeners = new Set<(event: PintaPersistenceEvent) => void>()
+    const gzip = gzipSync(strToU8('{"name":"vila"}'))
+    const files = new Map([
+      ['op/vila.pinta.json.gz', new Blob([gzip.slice().buffer])],
+      ['op/revisoes-e-vinculos.json', new Blob(['{"authority":{"itemId":"vila"}}'])],
+    ])
+    let needsFiles = false
+    const persistence: PintaPersistence = {
+      persistAsset: async () => {},
+      persistAssets: async () => {},
+      deleteAsset: async () => {},
+      loadAssetById: async () => null,
+      listAllAssets: async () => [],
+      subscribe: (listener) => {
+        listeners.add(listener)
+        return () => listeners.delete(listener)
+      },
+      needsRetainedRecovery: () => needsFiles,
+      loadRetainedRecoveryFiles: async () => files,
+    }
+    render(<PintaApp persistence={persistence} />)
+    expect(screen.queryByRole('button', { name: COPY.gallery.downloadRetainedRecovery })).toBeNull()
+    await act(async () => {
+      needsFiles = true
+      for (const listener of listeners) listener({ type: 'sync-end' })
+    })
+    const download = await screen.findByRole('button', {
+      name: COPY.gallery.downloadRetainedRecovery,
+    })
+    // The ZIP does not restore anything: the notice says the edits are kept and the files are
+    // for the team. It names no in-lesson button, which this screen does not have.
+    const alert = download.closest('[role=alert]')?.textContent ?? ''
+    expect(alert).toContain('continuam guardadas')
+    expect(alert).toContain('Avise a equipe')
+    expect(alert).not.toContain('Preciso de ajuda')
+    expect(COPY.gallery.downloadRetainedRecovery).toContain('equipe')
+    fireEvent.click(download)
+    await waitFor(() => expect(downloads).toHaveLength(1))
+    expect(names).toEqual(['edicoes-guardadas-pinta.zip'])
+    const zip = unzipSync(new Uint8Array(await downloads[0]!.arrayBuffer()))
+    expect(zip['op/vila.pinta.json.gz']).toEqual(gzip)
+    expect(zip['op/revisoes-e-vinculos.json']).toBeDefined()
+    expect(zip['LEIA-ME.txt']).toBeDefined()
+    expect(screen.getByRole('button', { name: COPY.gallery.downloadRetainedRecovery })).toBeTruthy()
+  })
+})
+
+it('o Preciso de ajuda da recuperação manda à equipe o perfil, as edições e os desenhos, sem bytes', async () => {
+  setPintaStorageNamespace('perfil-recuperacao')
+  const vila = createPixelSpriteAsset({ name: 'vila', frameSize: 8 })
+  const sent: PintaRecoveryHelpReport[] = []
+  let filesRead = 0
+  const persistence: PintaPersistence = {
+    persistAsset: async () => {},
+    persistAssets: async () => {},
+    deleteAsset: async () => {},
+    loadAssetById: async () => null,
+    listAllAssets: async () => [vila],
+    needsRetainedRecovery: () => true,
+    loadRetainedRecoveryFiles: async () => {
+      filesRead += 1
+      return new Map()
+    },
+    describeRetainedRecovery: async () => [{ opId: 'op-1', itemIds: [vila.id, 'apagado'] }],
+  }
+  const chrome: PintaHostChrome = {
+    menu: null,
+    status: null,
+    back: null,
+    account: null,
+    help: {
+      async send(report) {
+        sent.push(report)
+        return { label: 'nos seus recados', href: '/recados/conversa-1' }
+      },
+    },
+  }
+  render(
+    <PintaHostChromeProvider value={chrome}>
+      <PintaApp persistence={persistence} />
+    </PintaHostChromeProvider>,
+  )
+  await screen.findByRole('button', { name: /Abrir vila/ })
+  const help = await screen.findByRole('button', { name: COPY.gallery.recoveryHelp })
+  // O botão vive SÓ no aviso da recuperação, e o aviso diz o que ele faz.
+  expect(screen.getAllByRole('button', { name: COPY.gallery.recoveryHelp })).toHaveLength(1)
+  expect(help.closest('[role=alert]')?.textContent).toContain(COPY.gallery.retainedRecoveryHelp)
+  fireEvent.click(help)
+  // A confirmação é curta e infantil (toast); a linha do aviso diz onde a resposta aparece.
+  await screen.findByText(COPY.gallery.recoveryHelpSent)
+  screen.getByText(COPY.gallery.recoveryHelpAnswer('nos seus recados'), { exact: false })
+  // Já está com a equipe: o botão não manda o mesmo pedido de novo.
+  expect((help as HTMLButtonElement).disabled).toBe(true)
+  expect(sent).toHaveLength(1)
+  expect(sent[0]).toMatchObject({
+    kind: 'retained-recovery',
+    profile: 'perfil-recuperacao',
+    operations: [
+      {
+        opId: 'op-1',
+        drawings: [
+          { id: vila.id, name: 'vila' },
+          { id: 'apagado', name: null },
+        ],
+      },
+    ],
+  })
+  expect(Number.isNaN(Date.parse(sent[0]!.requestedAt))).toBe(false)
+  // Só identifica a recuperação: nenhum arquivo é lido nem enviado.
+  expect(filesRead).toBe(0)
+  expect(
+    screen
+      .getByRole('link', { name: COPY.gallery.recoveryHelpSeeConversation })
+      .getAttribute('href'),
+  ).toBe('/recados/conversa-1')
+})
+
+function recoveryFixture(options: { retained: boolean; fail?: boolean; help?: boolean }) {
+  setPintaStorageNamespace('perfil-recuperacao')
+  const vila = createPixelSpriteAsset({ name: 'vila', frameSize: 8 })
+  let sends = 0
+  const persistence: PintaPersistence = {
+    persistAsset: async () => {},
+    persistAssets: async () => {},
+    deleteAsset: async () => {},
+    loadAssetById: async () => null,
+    listAllAssets: async () => [vila],
+    needsRetainedRecovery: () => options.retained,
+    loadRetainedRecoveryFiles: async () => new Map(),
+    describeRetainedRecovery: async () => [{ opId: 'op-1', itemIds: [vila.id] }],
+  }
+  const chrome: PintaHostChrome = {
+    menu: null,
+    status: null,
+    back: null,
+    account: null,
+    help:
+      options.help === false
+        ? null
+        : {
+            async send() {
+              sends += 1
+              if (options.fail) throw new Error('fora do ar')
+              return { label: 'nos seus recados', href: '/recados/conversa-1' }
+            },
+          },
+  }
+  render(
+    <PintaHostChromeProvider value={chrome}>
+      <PintaApp persistence={persistence} />
+    </PintaHostChromeProvider>,
+  )
+  return { sends: () => sends }
+}
+
+it('o Preciso de ajuda só aparece no aviso de recuperação, e só com o canal de recados do host', async () => {
+  recoveryFixture({ retained: false })
+  await screen.findByRole('button', { name: /Abrir vila/ })
+  expect(screen.queryByRole('button', { name: COPY.gallery.recoveryHelp })).toBeNull()
+  expect(screen.queryByText(COPY.gallery.retainedRecoveryHelp)).toBeNull()
+  cleanup()
+
+  recoveryFixture({ retained: true, help: false })
+  await screen.findByRole('button', { name: COPY.gallery.downloadRetainedRecovery })
+  expect(screen.queryByRole('button', { name: COPY.gallery.recoveryHelp })).toBeNull()
+  // Sem o canal, o aviso não cita um botão que não existe.
+  screen.getByText(COPY.gallery.retainedRecovery)
+})
+
+it('quando o pedido falha, a criança lê uma frase clara e pode tentar de novo', async () => {
+  const fixture = recoveryFixture({ retained: true, fail: true })
+  const help = await screen.findByRole('button', { name: COPY.gallery.recoveryHelp })
+  fireEvent.click(help)
+  await screen.findByText(COPY.gallery.recoveryHelpError)
+  expect(fixture.sends()).toBe(1)
+  await waitFor(() => expect((help as HTMLButtonElement).disabled).toBe(false))
+  expect(screen.queryByRole('link', { name: COPY.gallery.recoveryHelpSeeConversation })).toBeNull()
 })

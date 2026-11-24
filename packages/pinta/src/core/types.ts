@@ -68,7 +68,15 @@ export interface PintaTilemapMeta {
   tileset: { dataUrl: string; width: number; height: number }
 }
 
+/** Cena enviada ao Estúdio: a legada (1–3) ou a regional 4 no wire canônico. O Estúdio
+ * da raiz continua recusando a 4 sem a admissão PNG 5 privada. */
+export type PintaSceneWire =
+  | import('@sistemazero/core/studio/pinta-scene').PintaScene
+  | import('@sistemazero/core/studio/pinta-region-scene').PintaRegionSceneWire
+
 export interface PintaExportedAsset {
+  maps?: Array<Omit<PintaExportedAsset, 'maps'>>
+  scene?: PintaSceneWire
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */
   id: string
   /** Nome kebab-case (vira o nome que os blocos do Estúdio referenciam). */
@@ -265,9 +273,37 @@ export interface PintaHostChromeAccount {
   label: string
 }
 
+/**
+ * O pedido de ajuda da recuperação (23/11/2026): o que a equipe precisa para restaurar as edições
+ * guardadas neste aparelho sem pedir arquivo à criança. Só identifica a recuperação; os bytes
+ * ficam no aparelho.
+ */
+export interface PintaRecoveryHelpReport {
+  kind: 'retained-recovery'
+  /** O perfil do Pinta neste aparelho (o nome do armazenamento local). */
+  profile: string
+  /** Quando a criança pediu ajuda (ISO 8601). */
+  requestedAt: string
+  /** Cada edição guardada e os desenhos que ela leva (o nome, quando a galeria o conhece). */
+  operations: readonly {
+    opId: string
+    drawings: readonly { id: string; name: string | null }[]
+  }[]
+}
+
+/**
+ * O canal de recados do host: o MESMO do "Preciso de ajuda" da aula. Sem ele (aula, playground,
+ * host que ainda não liga o canal) o botão não aparece.
+ */
+export interface PintaHostChromeHelp {
+  /** Manda o pedido à equipe; devolve onde a resposta aparece ("nos seus recados"). */
+  send(report: PintaRecoveryHelpReport): Promise<{ label: string; href: string }>
+}
+
 export interface PintaHostChrome {
   menu: PintaHostChromeMenu | null
   status: PintaHostChromeStatus | null
   back: PintaHostChromeBack | null
   account: PintaHostChromeAccount | null
+  help?: PintaHostChromeHelp | null
 }

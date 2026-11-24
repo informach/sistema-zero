@@ -1,5 +1,6 @@
-"""Quebra-cabeça de 15 educacional: grade, vizinhos, embaralhar e vitória visíveis em blocos."""
+# Quebra-cabeça de 15 educacional: grade, vizinhos, embaralhar e vitória visíveis em blocos.
 
+# 📦 Bibliotecas
 import turtle
 import random
 import time
@@ -7,6 +8,7 @@ import math
 import sz_audio
 
 
+# 🎛️ Configurações
 LADO = 4
 CELULA = 100
 CENTRO_Y = -20
@@ -21,16 +23,9 @@ COR_CERTA = "#22c55e"
 COR_NUMERO = "#1f2937"
 COR_VAZIO = "#38bdf8"
 RESOLVIDO = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]
-estado = {"aberto": False, "timer_pendente": False, "melhor": None}
-
-tela = turtle.Screen()
-cenario = turtle.Turtle(visible=False)
-pincel = turtle.Turtle(visible=False)
-numeros = turtle.Turtle(visible=False)
-vazio = turtle.Turtle(visible=False)
-painel = turtle.Turtle(visible=False)
 
 
+# 🧩 Meus moldes
 def posicao(casa):
     return ((casa % LADO - (LADO - 1) / 2) * CELULA, ((LADO - 1) / 2 - casa // LADO) * CELULA + CENTRO_Y)
 
@@ -185,6 +180,22 @@ def empurrar(dx, dy):
         sz_audio.play("bloqueio.wav", volume=0.4)
 
 
+def empurrar_para_esquerda():
+    empurrar(-1, 0)
+
+
+def empurrar_para_direita():
+    empurrar(1, 0)
+
+
+def empurrar_para_cima():
+    empurrar(0, -1)
+
+
+def empurrar_para_baixo():
+    empurrar(0, 1)
+
+
 def clicar(x, y):
     coluna = math.floor(x / CELULA + LADO / 2)
     linha = math.floor((CENTRO_Y - y) / CELULA + LADO / 2)
@@ -209,26 +220,6 @@ def atualizar(tempo):
     # O relógio da partida só começa no primeiro movimento.
     if estado["fase"] == "jogando" and estado["movimentos"] > 0:
         estado["tempo"] += tempo
-
-
-def agendar():
-    if estado["aberto"] and not estado["timer_pendente"]:
-        estado["timer_pendente"] = True
-        tela.ontimer(quadro, INTERVALO)
-
-
-def quadro():
-    estado["timer_pendente"] = False
-    if not estado["aberto"]:
-        return
-    agora = time.monotonic()
-    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
-    estado["ultimo_tempo"] = agora
-    if not estado["pausado"]:
-        atualizar(tempo)
-    desenhar_painel()
-    tela.update()
-    agendar()
 
 
 def pausar():
@@ -261,7 +252,6 @@ def reiniciar():
     estado["ultimo_tempo"] = time.monotonic()
     sz_audio.play("embaralhar.wav", volume=0.5)
     tela.update()
-    # Não agende aqui: o reinício reutiliza a cadeia existente.
 
 
 def fechar():
@@ -272,40 +262,65 @@ def fechar():
     tela.bye()
 
 
-def iniciar():
-    tela.setup(600, 680)
-    tela.title("Quebra-cabeça de 15 • Sistema Zero")
-    tela.bgcolor(COR_FUNDO)
-    tela.tracer(0)
-    tela.register_shape("moldura", moldura(CELULA - 8, 8))
-    for desenho in [cenario, pincel, numeros, vazio, painel]:
-        desenho.penup()
-        desenho.speed(0)
-    pincel.shape("square")
-    pincel.shapesize((CELULA - 8) / 20)
-    numeros.color(COR_NUMERO)
-    vazio.shape("moldura")
-    vazio.color(COR_VAZIO)
-    vazio.showturtle()
-    desenhar_cenario()
-    tela.onkeypress(lambda: empurrar(-1, 0), "Left")
-    tela.onkeypress(lambda: empurrar(1, 0), "Right")
-    tela.onkeypress(lambda: empurrar(0, -1), "Up")
-    tela.onkeypress(lambda: empurrar(0, 1), "Down")
-    tela.onkey(pausar, "p")
-    tela.onkey(pausar, "P")
-    tela.onkey(pausar, "space")
-    tela.onkey(reiniciar, "r")
-    tela.onkey(reiniciar, "R")
-    tela.onkey(fechar, "Escape")
-    tela.onscreenclick(clicar)
-    tela.listen()
-    estado["aberto"] = True
-    reiniciar()
-    agendar()
-    if estado["aberto"]:
-        tela.mainloop()
+# ⚙️ Ao iniciar
+estado = {"aberto": True, "melhor": None}
+
+tela = turtle.Screen()
+cenario = turtle.Turtle(visible=False)
+pincel = turtle.Turtle(visible=False)
+numeros = turtle.Turtle(visible=False)
+vazio = turtle.Turtle(visible=False)
+painel = turtle.Turtle(visible=False)
+
+tela.setup(600, 680)
+tela.title("Quebra-cabeça de 15 • Sistema Zero")
+tela.bgcolor(COR_FUNDO)
+tela.tracer(0)
+tela.register_shape("moldura", moldura(CELULA - 8, 8))
+for desenho in [cenario, pincel, numeros, vazio, painel]:
+    desenho.penup()
+    desenho.speed(0)
+pincel.shape("square")
+pincel.shapesize((CELULA - 8) / 20)
+numeros.color(COR_NUMERO)
+vazio.shape("moldura")
+vazio.color(COR_VAZIO)
+vazio.showturtle()
+desenhar_cenario()
+reiniciar()
 
 
-if __name__ == "__main__":
-    iniciar()
+# ⚡ Quando acontecer
+tela.onkeypress(empurrar_para_esquerda, "Left")
+tela.onkeypress(empurrar_para_direita, "Right")
+tela.onkeypress(empurrar_para_cima, "Up")
+tela.onkeypress(empurrar_para_baixo, "Down")
+tela.onkey(pausar, "p")
+tela.onkey(pausar, "P")
+tela.onkey(pausar, "space")
+tela.onkey(reiniciar, "r")
+tela.onkey(reiniciar, "R")
+tela.onkey(fechar, "Escape")
+tela.onscreenclick(clicar)
+tela.listen()
+
+
+# 🔁 Enquanto estiver rodando
+def a_cada_quadro():
+    if not estado["aberto"]:
+        return
+    agora = time.monotonic()
+    tempo = max(0, (agora - estado["ultimo_tempo"]) * 1000)
+    estado["ultimo_tempo"] = agora
+    if not estado["pausado"]:
+        atualizar(tempo)
+    desenhar_painel()
+    tela.update()
+    # Se a janela fechou durante esta volta, o laço para aqui.
+    if not estado["aberto"]:
+        return
+    tela.ontimer(a_cada_quadro, INTERVALO)
+
+
+a_cada_quadro()
+tela.mainloop()

@@ -113,6 +113,27 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     for (const col of ['thread_id uuid', 'author_role text', 'created_at timestamptz']) {
       await conn.sql.unsafe(`alter table members.teacher_messages add column if not exists ${col}`)
     }
+    // Lacuna "o envio da aula" (22/11/2026): cada envio grava uma evidência imutável. Regra da
+    // pasta: create da forma real + alter de cada coluna usada (outra suíte pode ter criado antes).
+    await conn.sql.unsafe(`create table if not exists members.lesson_evidence (
+      id uuid primary key, user_id uuid not null, account_id uuid, lesson_id uuid not null,
+      block_id uuid, section_id uuid, kind text not null, revision text not null,
+      payload jsonb not null, created_at timestamptz not null
+    )`)
+    for (const col of [
+      'account_id uuid',
+      'block_id uuid',
+      'section_id uuid',
+      'kind text',
+      'revision text',
+      'payload jsonb',
+      'created_at timestamptz',
+    ]) {
+      await conn.sql.unsafe(`alter table members.lesson_evidence add column if not exists ${col}`)
+    }
+    await conn.sql.unsafe(
+      'create table if not exists members.account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
+    )
     repo = new DrizzleStudioSubmissionRepository(conn.db)
   })
 
@@ -160,6 +181,57 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     const detail = await repo.getOne(aluno, blockId)
     expect(detail?.project).toEqual({ name: 'v3' })
     expect(detail?.previousSubmittedAt?.toISOString()).toBe(t2.toISOString())
+  })
+
+  // O `studio_submissions` guarda só a versão atual e UMA anterior: depois de dois reenvios o
+  // original some do "Trazer o que eu enviei". Cada envio, porém, grava uma linha IMUTÁVEL em
+  // `lesson_evidence` na mesma transação, e é dali que a equipe vê todas as versões.
+  test('três envios: previous_* guarda só o penúltimo, e lesson_evidence guarda os três', async () => {
+    const blockId = randomUUID()
+    const lessonId = randomUUID()
+    await conn.sql`insert into members.lesson_blocks (id, lesson_id, kind, content, content_revision)
+      values (${blockId}, ${lessonId}, 'studio', ${JSON.stringify({ kind: 'studio' })}::jsonb, ${'r1'})`
+    const t1 = new Date('2026-08-01T10:00:00.000Z')
+    const t2 = new Date('2026-08-10T10:00:00.000Z')
+    const t3 = new Date('2026-08-15T10:00:00.000Z')
+
+    await repo.upsert(entrega(blockId, { name: 'original' }, t1))
+    await repo.upsert(entrega(blockId, { name: 'reenvio 1' }, t2))
+    await repo.upsert(entrega(blockId, { name: 'reenvio 2' }, t3))
+
+    expect((await repo.getPrevious(aluno, blockId))?.project).toEqual({ name: 'reenvio 1' })
+    const evidence = await conn.sql<{ project: { name: string }; created_at: Date }[]>`
+      select payload->'project' as project, created_at from members.lesson_evidence
+      where user_id = ${aluno} and block_id = ${blockId} order by created_at`
+    expect(evidence.map((row) => row.project.name)).toEqual(['original', 'reenvio 1', 'reenvio 2'])
+    expect(evidence.map((row) => new Date(row.created_at).toISOString())).toEqual([
+      t1.toISOString(),
+      t2.toISOString(),
+      t3.toISOString(),
+    ])
+  })
+
+  test('uma falha depois da evidência desfaz o envio inteiro: nem evidência nem entrega', async () => {
+    const blockId = randomUUID()
+    const lessonId = randomUUID()
+    await conn.sql`insert into members.lesson_blocks (id, lesson_id, kind, content, content_revision)
+      values (${blockId}, ${lessonId}, 'studio', ${JSON.stringify({ kind: 'studio' })}::jsonb, ${'r1'})`
+    // O recado acima do varchar(1000) faz o INSERT da entrega falhar DEPOIS do da evidência.
+    let failed = false
+    try {
+      await repo.upsert(
+        entrega(blockId, { name: 'não pode ficar' }, new Date('2026-08-01T10:00:00.000Z'), {
+          message: 'x'.repeat(1001),
+        }),
+      )
+    } catch {
+      failed = true
+    }
+    expect(failed).toBe(true)
+    expect(await repo.getOne(aluno, blockId)).toBeNull()
+    const evidence = await conn.sql`
+      select id from members.lesson_evidence where user_id = ${aluno} and block_id = ${blockId}`
+    expect(evidence).toHaveLength(0)
   })
 
   test('restaurar troca atual↔anterior num UPDATE só e preserva carimbo e recado', async () => {

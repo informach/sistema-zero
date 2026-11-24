@@ -1,0 +1,162 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 4250,
+    "sha256": "e48b0cdda44ac8be0b1ccb9cdc6908004910030af34c53842103c985534ce3ce"
+  },
+  {
+    "file": "anexo-fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b.txt",
+    "bytes": 42211,
+    "sha256": "fad7db8ad747d78d526af699a518e02c651c02ac40fb3df27784a41ce9737e5b"
+  },
+  {
+    "file": "biome.txt",
+    "bytes": 46,
+    "sha256": "87c8f99c1bcc923fff7b892f6e9d468a3a4aa23db907c1e727d156bb6dfeb3ff"
+  },
+  {
+    "file": "catalogo-preparado.json",
+    "bytes": 852,
+    "sha256": "4c3b1e949aa232efb705e374e01c3e652037610f7e85c9f16aaff47f379b695f"
+  },
+  {
+    "file": "chromium-comparacao.json",
+    "bytes": 214615,
+    "sha256": "3ab2d7701ea6a490d59062ecc37d51ee35f4ede63f4e23a2a5308bb85e2ee8d6"
+  },
+  {
+    "file": "chromium-comparacao.txt",
+    "bytes": 28267,
+    "sha256": "b685828da6c74b130e4bbe19997d74215ef114d9783d96f63ae67d355e639566"
+  },
+  {
+    "file": "dependencias-runtime.txt",
+    "bytes": 25,
+    "sha256": "3453e1d2a2ddbbfb914f8896675529d4f26cece14490a8ebd4012ade58c86221"
+  },
+  {
+    "file": "distribuicao.json",
+    "bytes": 592,
+    "sha256": "830accc85dbf838640017ada6fb0a68638777eb8f3b7627e12bbf23eca3e3539"
+  },
+  {
+    "file": "fontes.json",
+    "bytes": 554,
+    "sha256": "2eb1d08eddd0766cbd1a783c82530ef491894c5abb8643c2330d52fd534a5d02"
+  },
+  {
+    "file": "gates.json",
+    "bytes": 1169,
+    "sha256": "3e1407bde42ac9621e827a92382ddd5709e821150ede714ecb2758625a16a54e"
+  },
+  {
+    "file": "gaveta-com-espera.txt",
+    "bytes": 1362,
+    "sha256": "2a155ae12bff16fdee026fe679e7996374dbae3af98c49226bfa7661e22147b7"
+  },
+  {
+    "file": "gaveta-sem-espera.txt",
+    "bytes": 4392,
+    "sha256": "a4735e42fdd9ac8022f886e82d30b1f54fe651419b612c029c914e278fa88e11"
+  },
+  {
+    "file": "gzip-equivalencia.json",
+    "bytes": 389,
+    "sha256": "fc6ac845245acb3d8d352bd5e4c6255c4e81fb1d71e7f16bb10cb46c61080c2d"
+  },
+  {
+    "file": "imagem-linux-ci.txt",
+    "bytes": 239428,
+    "sha256": "0ff32d997f6999f3d048813220305c2f39020a18e1a868bbc8fa158cefb4fa39"
+  },
+  {
+    "file": "imagem-registry.json",
+    "bytes": 598,
+    "sha256": "4dea9976b4da16f62ac03e9227a83a5e19f2d5ac73690cfba2b8d47c51950a47"
+  },
+  {
+    "file": "members-policy.txt",
+    "bytes": 1212,
+    "sha256": "421e33d41973b765db982e1cd8ae7a5c227e9b09cdc5a053b48a43a6ad520429"
+  },
+  {
+    "file": "members-types.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "modos.txt",
+    "bytes": 126400,
+    "sha256": "812843c567f25d17a9a5aef1d9a27c32f2ac120c4a5414702f5a28e63261de52"
+  },
+  {
+    "file": "politica-linux.txt",
+    "bytes": 1222,
+    "sha256": "6322beeea44a87d8b1759d9ec5398d9d6b705f79c174e3d8700fd6aa7adaa62c"
+  },
+  {
+    "file": "profile.txt",
+    "bytes": 88,
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+  },
+  {
+    "file": "promotor.txt",
+    "bytes": 6188,
+    "sha256": "460ef38dc5b1a3003feb478538aab272b253ec839e31ae06b3c7cefe88a48fee"
+  },
+  {
+    "file": "pygame.json",
+    "bytes": 903088,
+    "sha256": "7729af4138a634571a286f5fe05693ae74e46be27da1d090e565e52e4a8a180a"
+  },
+  {
+    "file": "pygame.txt",
+    "bytes": 2702,
+    "sha256": "f5e6a0a98eea6dca346fc9917876b6d9e0a3d86806473afcbce10e3daf8c8344"
+  },
+  {
+    "file": "raylib-control.json",
+    "bytes": 14324,
+    "sha256": "5d2b0a0de557636c2f60ddb1801349a754cabbb4e40970d7d29e71193b7821c5"
+  },
+  {
+    "file": "raylib-control.txt",
+    "bytes": 836,
+    "sha256": "8f639ded9a3bf0654f20d7a056c098e250f33660df4e4537e79681047e90581d"
+  },
+  {
+    "file": "selecao-testes.json",
+    "bytes": 71145,
+    "sha256": "c3d92d09ba3d2ad926dfb2d85153c47c34b4dae185e840f21a3ac5c26c2b044a"
+  },
+  {
+    "file": "shared-chrome.json",
+    "bytes": 189203,
+    "sha256": "6fb36cc6f45a0a2b647f3885a9f8a1149e0cf1d7fc81c718aeb6312ed011217e"
+  },
+  {
+    "file": "shared-chrome.txt",
+    "bytes": 12160,
+    "sha256": "3622fb698862062e936ef2c318a9c7bf04e17fb8040169d84cdf909354bdf5d2"
+  },
+  {
+    "file": "studio-resume.txt",
+    "bytes": 80757,
+    "sha256": "2b0f9ae0af40df8e7c04a8c3c4119a5efe155e003cedeaaf26865d9c34c5fcdd"
+  },
+  {
+    "file": "studio-tentativa-inicial.txt",
+    "bytes": 1772358,
+    "sha256": "b45a7e2bf6d866b2578b9e60ba4d88bcf5b7b444c0d6567a3cb5ce0d40c3dc22"
+  },
+  {
+    "file": "studio-types.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "troca-candidata.json",
+    "bytes": 384,
+    "sha256": "a3d6c4de6d8adb3f6ac728a3c3ba1c9aa0f969809b7320def1b28bd7061afe49"
+  }
+]

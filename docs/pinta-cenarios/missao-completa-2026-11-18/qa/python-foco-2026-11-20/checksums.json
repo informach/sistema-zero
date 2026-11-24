@@ -1,0 +1,77 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 2052,
+    "sha256": "c9b63ca730a229a3a89f049264b498eebdad345f42581859f40ebf98e309f783"
+  },
+  {
+    "file": "biome.txt",
+    "bytes": 46,
+    "sha256": "da9fbc2db401fbc6164095a8176cc693e8c5f0abf5ea9dfe8680572359c6dff3"
+  },
+  {
+    "file": "diferencas.json",
+    "bytes": 752,
+    "sha256": "68ba50e8c75f98efe952c29eacdaca87253c80cea5c69944a480a6fca06adf54"
+  },
+  {
+    "file": "distribuicao.json",
+    "bytes": 376,
+    "sha256": "3731e8622df6dcb1b20ccf043afae3d41d413053142fbb3d21e3733457570036"
+  },
+  {
+    "file": "fontes.json",
+    "bytes": 1063,
+    "sha256": "3071219a6469160c5dde306aaefdc85f1c24805c63d30fa091e4a9927e5ba7bc"
+  },
+  {
+    "file": "gates.json",
+    "bytes": 944,
+    "sha256": "3914103f80cbb8cf574cab6e708ada7525c75290c4e628e43df7665b0d1882ee"
+  },
+  {
+    "file": "members-types.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "navegador.json",
+    "bytes": 887042,
+    "sha256": "dc969a468f497f087ccbe6196917e16f33be304ee9d6dbcd0ade9f0f4dbd73be"
+  },
+  {
+    "file": "navegador.txt",
+    "bytes": 2702,
+    "sha256": "e57b54b0a804a21c25f75f96c1039671930f2c0f8e19a9c704ec491447c7618f"
+  },
+  {
+    "file": "profile.txt",
+    "bytes": 88,
+    "sha256": "d95f93e83ebb9ed520ad5261606509d7a232546f7b1231ad84f299bbcbacaa56"
+  },
+  {
+    "file": "python.txt",
+    "bytes": 32167,
+    "sha256": "3e9b3f43ab43ed5d950ccfca4b04bb3f7efd4c33513fcde8cb92b6b0fca32eff"
+  },
+  {
+    "file": "reproducao-sem-correcao.json",
+    "bytes": 54444,
+    "sha256": "665476941b4e710d3a92b54a00c0eb3d6a8ce0ae5cdefc998721e6b53af7f3e8"
+  },
+  {
+    "file": "reproducao-sem-correcao.txt",
+    "bytes": 19753,
+    "sha256": "4d0213b1295275da519c6c161e5eeddfd8934ae50ea9e2c46448164407c88a36"
+  },
+  {
+    "file": "studio-types.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "unitario.txt",
+    "bytes": 1971,
+    "sha256": "1c979c50009c4b4461d31c2ae2814078cfc084b2b2f523f27ae687dd543e7441"
+  }
+]

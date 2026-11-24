@@ -1,0 +1,43 @@
+{
+  "sourceSha": "81dfb3d8d114ab9de60a9e9b8e9389c46b8dfba0",
+  "platform": "linux",
+  "bun": "1.3.11",
+  "variants": [
+    {
+      "name": "complete",
+      "characters": 248676,
+      "bytes": 248933,
+      "gzipBytes": 67504,
+      "sha256": "1606c6f346185114e3ad9d563a2a7243625d3a67b48c3ad14bbf0fa724f0090e",
+      "parameters": 1092
+    },
+    {
+      "name": "without-platform",
+      "characters": 214594,
+      "bytes": 214807,
+      "gzipBytes": 58082,
+      "sha256": "bc919a126b7236beb15821bd8aaeadd0a839616afe038f265846cf5c5d0e7618",
+      "parameters": 933
+    },
+    {
+      "name": "advanced-3d",
+      "characters": 210610,
+      "bytes": 210909,
+      "gzipBytes": 59734,
+      "sha256": "46daf56020679a4ffba933cbd38f81a2f220e202ee0c4e1a4bb20f11def6bc43",
+      "parameters": 715
+    },
+    {
+      "name": "world-3d",
+      "characters": 357367,
+      "bytes": 357858,
+      "gzipBytes": 102838,
+      "sha256": "3704a4c9889c79997216c32ade25711f5560facef8ff9bb0f7779e5ff396fc28",
+      "parameters": 1024
+    }
+  ],
+  "parameters": {
+    "basic": 1498,
+    "advanced": 1400
+  }
+}

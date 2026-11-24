@@ -38,7 +38,13 @@
  * O módulo do Estúdio é carregado dinamicamente pelo host (Monaco/Blockly não
  * rodam no SSR): as funções chegam por parâmetro, nunca por import estático.
  */
+import {
+  canReadStudioSealedStorage,
+  STUDIO_SEALED_STORAGE_READER,
+  StudioSealedManifestSchema,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
 
 export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
 
@@ -186,6 +192,7 @@ const PART_FETCH_CONCURRENCY = 3
 export async function buildStudioCloudSnapshot(
   project: StudioProjectLike,
 ): Promise<{ json: string; parts?: CloudPart[] }> {
+  assertLegacyStudioProjectMaterials(project)
   const assets = Array.isArray(project.assets) ? project.assets : []
   if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(project) }
   // Um asset por vez: o pico de memória é UM JSON canônico (um cenário pode ter MB), não
@@ -225,17 +232,49 @@ export async function resolveStudioCloudDocument(
   localAssets: readonly unknown[] | (() => Promise<readonly unknown[]>),
 ): Promise<unknown> {
   const raw = JSON.parse(downloaded.json) as unknown
-  if (!isStudioPartsManifest(raw)) return raw
+  const receipt = downloaded.studioSealReceipt
+  const sealedOrFuture =
+    receipt !== undefined ||
+    (raw !== null &&
+      typeof raw === 'object' &&
+      'format' in raw &&
+      raw.format === STUDIO_PARTS_FORMAT &&
+      (!('version' in raw) || raw.version !== STUDIO_PARTS_VERSION))
+  let manifest: Pick<StudioPartsManifest, 'program' | 'assets'>
+  if (sealedOrFuture) {
+    const parsed = StudioSealedManifestSchema.safeParse(raw)
+    if (
+      !receipt ||
+      !hashSupported() ||
+      !canReadStudioSealedStorage(STUDIO_SEALED_STORAGE_READER, receipt.requirements) ||
+      !parsed.success ||
+      parsed.data.requirements.projectFormat !== receipt.requirements.projectFormat ||
+      parsed.data.requirements.materials !== receipt.requirements.materials ||
+      parsed.data.program.id !== downloaded.summary.itemId ||
+      parsed.data.assets.length !== downloaded.parts.length ||
+      parsed.data.assets.some((hash, index) => hash !== downloaded.parts[index]?.hash) ||
+      (await sha256Hex(downloaded.json)) !== receipt.jsonSha256
+    ) {
+      throw new Error(
+        'Esta revisão do Estúdio usa um armazenamento incompatível. O projeto foi preservado.',
+      )
+    }
+    manifest = parsed.data
+  } else {
+    if (!isStudioPartsManifest(raw)) return raw
+    manifest = raw
+  }
   const local = new Map<string, unknown>()
   if (hashSupported()) {
     const daqui = typeof localAssets === 'function' ? await localAssets() : localAssets
     await Promise.all(
       daqui.map(async (asset) => {
-        local.set(await sha256Hex(canonicalJson(asset)), asset)
+        const json = canonicalJson(asset)
+        local.set(await sha256Hex(json), sealedOrFuture ? JSON.parse(json) : asset)
       }),
     )
   }
-  const missing = [...new Set(raw.assets)].filter((hash) => !local.has(hash))
+  const missing = [...new Set(manifest.assets)].filter((hash) => !local.has(hash))
   const fetched = new Map<string, unknown>()
   await perfSpanAsync(
     'kids:studio:parts',
@@ -252,11 +291,11 @@ export async function resolveStudioCloudDocument(
         Array.from({ length: Math.min(PART_FETCH_CONCURRENCY, missing.length) }, worker),
       )
     },
-    { total: raw.assets.length, fetched: missing.length },
+    { total: manifest.assets.length, fetched: missing.length },
   )
   return {
-    ...raw.program,
-    assets: raw.assets.map((hash) => local.get(hash) ?? fetched.get(hash)),
+    ...manifest.program,
+    assets: manifest.assets.map((hash) => local.get(hash) ?? fetched.get(hash)),
   }
 }
 

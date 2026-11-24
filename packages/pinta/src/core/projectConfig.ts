@@ -1,3 +1,7 @@
+import {
+  PINTA_COLLISION_NATIVE_SCHEMA,
+  PINTA_RESOURCE_NATIVE_SCHEMA,
+} from '@sistemazero/core/creations'
 import { COPY } from './copy'
 import { newId } from './id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from './palette'
@@ -18,6 +22,11 @@ import type {
  * "sem teto, igual o Estúdio") — o que limita é o orçamento portátil de 32 MiB do backup
  * (`MAX_BACKUP_FILE_BYTES`, com recado próprio) e, na nuvem, os tetos do members. A galeria tem
  * BUSCA por nome/tipo/jogo para continuar navegável com centenas de desenhos.
+ *
+ * Autoria e leitura permitem 256 × 256 células, 32 camadas e 256 peças. O orçamento total
+ * continua em 2.097.152 células (4 MiB de índices); o cache RGBA retém no máximo 32 MiB.
+ * Medições reais de renderização, gravação e reabertura estão em `scripts/map-budget-probe.ts`.
+ * A entrega de aulas mantém seu orçamento HTTP próprio, definido no consumidor Members.
  */
 export const PINTA_LIMITS = {
   maxAnimations: 12,
@@ -25,11 +34,11 @@ export const PINTA_LIMITS = {
   minFrameSize: 8,
   maxFrameSize: 128,
   maxBitmapSize: 512,
-  maxTiles: 64,
-  maxTilemapCols: 128,
-  maxTilemapRows: 128,
+  maxTiles: 256,
+  maxTilemapCols: 256,
+  maxTilemapRows: 256,
   /** Camadas de peças E de objetos, somadas. */
-  maxTilemapLayers: 8,
+  maxTilemapLayers: 32,
   /** Objetos por camada de objetos. */
   maxTilemapObjects: 512,
   maxObjectProperties: 16,
@@ -37,14 +46,79 @@ export const PINTA_LIMITS = {
   maxObjectPropertyStringChars: 200,
   /** Nome e tipo de um objeto do mapa. */
   maxObjectNameChars: 48,
-  /** Maior coordenada/medida de objeto em pixels do mapa (128 colunas × peça de 48). */
-  maxObjectCoord: 128 * 48,
+  /**
+   * Maior coordenada/medida de objeto em pixels do mapa (256 colunas × peça de 48). É a do
+   * formato, de propósito: um objeto de um mapa grande importado não pode ser puxado para dentro
+   * do teto de criação quando o mapa cresce.
+   */
+  maxObjectCoord: 256 * 48,
   maxPixelLayers: 4,
   maxShapes: 500,
   maxNameChars: 48,
   maxAnimationNameChars: 30,
   maxExtraColors: 48,
 } as const
+
+/** Orçamento da entrega HTTP de aulas; independente da galeria pessoal. */
+export const PINTA_LESSON_MAP_LIMITS = {
+  maxCols: 128,
+  maxRows: 128,
+  maxLayers: 8,
+  maxTiles: 64,
+} as const
+
+/**
+ * O que o DOCUMENTO do mapa aceita ao ser LIDO (o sanitizador, a importação), separado do que o
+ * editor deixa CRIAR (`PINTA_LIMITS`). Um mapa grande que chegue por importação ou de outro
+ * aparelho é lido inteiro, nunca cortado. Cada destino mantém o seu próprio orçamento.
+ *
+ * `maxCells` é o orçamento que segura a memória: colunas × linhas × camadas de peças.
+ */
+export const PINTA_MAP_FORMAT_LIMITS = {
+  maxTiles: 256,
+  maxCols: 256,
+  maxRows: 256,
+  maxLayers: 32,
+  maxCells: 2_097_152,
+  /** Um grupo dentro de outro, até esta profundidade. */
+  maxGroupDepth: 4,
+  maxLayerProperties: 16,
+  /** Deslocamento de camada, em pixels do mapa, para cada lado. */
+  maxLayerOffset: 256 * 48,
+  maxLayerParallax: 4,
+  /** Maior coordenada de objeto em pixels do mapa (256 colunas × peça de 48). */
+  maxObjectCoord: 256 * 48,
+} as const
+
+/**
+ * Carimbo `schema` do registro para o que o formato de CAMADAS descreve: grupos, propriedades de
+ * camada, peças viradas, mapa grande, conjunto de peças com mais de 64 peças.
+ */
+export const PINTA_MAP_SCHEMA = 3
+
+/**
+ * Carimbo `schema` para o que só a CENA COMPLETA descreve: formas, giro, papel e propriedades
+ * tipadas de objeto, arte e instância de conjunto, animações, terrenos e propriedades de peça, e
+ * o desenho do tipo conjunto.
+ *
+ * É um número separado do 3 porque já existe código publicado que conhece o 3 só com camadas. Se
+ * a cena completa também gravasse 3, aquele código abriria o mapa, jogaria fora o que não conhece
+ * e salvaria o resto por cima. Com 4 ele recusa o mapa (devolve `null`) e o registro fica como
+ * está. Quem só usa camadas continua gravando 3.
+ */
+export const PINTA_SCENE_SCHEMA = 4
+
+/** Offsets fracionários: o leitor completo de schema 4 arredondava esses valores. */
+export const PINTA_PRECISE_SCHEMA = 5
+
+/** Versões de recursos autocontidas e animação específica de objeto. */
+export const PINTA_RESOURCE_SCHEMA = PINTA_RESOURCE_NATIVE_SCHEMA
+/** Explicit object collision; previous readers silently discard this field. */
+export const PINTA_COLLISION_SCHEMA = PINTA_COLLISION_NATIVE_SCHEMA
+export const PINTA_RESOURCE_LIMITS = { maxVersions: 32, maxSnapshotBytes: 8 * 1024 * 1024 } as const
+
+/** O maior carimbo que este código sabe ler. */
+export const PINTA_MAX_SCHEMA = PINTA_COLLISION_SCHEMA
 
 export function uniqueAnimationName(desired: string, takenNames: Iterable<string>): string {
   const taken = new Set(takenNames)

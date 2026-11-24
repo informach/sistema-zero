@@ -1,0 +1,72 @@
+{
+  "scope": "local Windows headless; one observation per engine; not typing latency or FPS",
+  "conditions": "full state/persistence/migrations suite with typecheck running concurrently; external machine load uncontrolled",
+  "baseRevision": "6a06f1cdd6daf98740bc449b1e4d52c023c0f478",
+  "sourceSha256": {
+    "packages/studio/src/project-migrations/localV3Recovery.ts": "ba00b293f8c9da8182a333a1d8dc682406e1206bca221483bb67b3d124f2929c",
+    "packages/studio/src/project-migrations/localV3Recovery.test.ts": "5bab343f6cdaccac8def297f4a1e8ba161fdd5dc64874f33d377f682ef901374",
+    "packages/studio/src/state/fixtures/projectDeepStorageBrowser.ts": "2f9eeb12c9bfbf2e3b20c7bf4781d4c52eb9375e04a820e9918df1b90522292c",
+    "packages/studio/src/state/projectStorageTransport.ts": "ee2c1298fbee45ada8ade3d27ea5ba6e1593d2ba7bb7c18060c121a8777d2125",
+    "packages/studio/src/state/projectJsonGraph.ts": "9dd6647d0161b637dc52d855f37e012d0219905e74c0e6df244f97f6e9921abc",
+    "packages/studio/src/state/projectJsonGraphDecode.ts": "20bd17fa5122809472d53396462376632a6d10c358c3d8a7d7342436faca49a7",
+    "bun.lock": "170ce719625e25023cdb29b1c959375a39e8f5ab1756be9f451f737e7a8d9b4b"
+  },
+  "exitFault": "abort",
+  "blocksRequested": 10000,
+  "defaultNamespace": 3,
+  "sourceRetention": "asserted before fixture-only localStorage cleanup; product stage does not acknowledge; v4 archive and pending journal remain",
+  "measurements": [
+    {
+      "engine": "chromium",
+      "migration": {
+        "migrated": true,
+        "legacyCopy": true
+      },
+      "legacyRecovery": {
+        "pendingOnly": true,
+        "sourceRetained": true,
+        "wireChars": 1769020,
+        "timingsMs": {
+          "sourceWrite": 56,
+          "sourceRead": 277,
+          "prepare": 182,
+          "stage": 56,
+          "verification": 490,
+          "total": 1062
+        }
+      },
+      "blocks": 10000,
+      "ids": 9920,
+      "depth": 2503,
+      "nativeCloneError": "RangeError",
+      "graphChars": 1767283,
+      "firstRoundTripMs": 387
+    },
+    {
+      "engine": "webkit",
+      "migration": {
+        "migrated": true,
+        "legacyCopy": true
+      },
+      "legacyRecovery": {
+        "pendingOnly": true,
+        "sourceRetained": true,
+        "wireChars": 1769020,
+        "timingsMs": {
+          "sourceWrite": 70,
+          "sourceRead": 328,
+          "prepare": 309,
+          "stage": 119,
+          "verification": 479,
+          "total": 1305
+        }
+      },
+      "blocks": 10000,
+      "ids": 9920,
+      "depth": 2503,
+      "nativeCloneError": null,
+      "graphChars": 1767283,
+      "firstRoundTripMs": 455
+    }
+  ]
+}

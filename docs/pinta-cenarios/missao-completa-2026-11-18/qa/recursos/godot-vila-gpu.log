@@ -1,0 +1,14 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 3.3.0 NVIDIA 610.88 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 3050
+
+Pinta: vila-e-floresta / 18 camadas
+Pinta: vila-e-floresta / 18 camadas
+Pinta: cabana / 2 camadas
+Pinta: vila-e-floresta / 18 camadas
+Godot QA: máscara do chão=1; física=true
+Godot QA: sólidos=[17, 18, 20, 21]; contém18=true; polígonos=1; célula=(2, 2); máscara personagem=1
+Godot QA: posição contra parede=(74.79642, 68.0)
+Pinta: cabana / 2 camadas
+Pinta: vila-e-floresta / 18 camadas
+Godot GPU: pixels do personagem, água animada e primeiro plano conferidos
+Godot QA: 18 camadas, objetos, IDs únicos, referências, origem afim, animação, movimento, colisão e portas; falhas=false

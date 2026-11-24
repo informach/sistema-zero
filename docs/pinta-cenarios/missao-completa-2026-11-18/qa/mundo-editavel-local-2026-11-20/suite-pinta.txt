@@ -1,0 +1,8 @@
+(skip) real Pygame expansion and queries match the canonical affine geometry and reference namespaces
+(skip) Pygame movement tests the rotated tile polygon rather than its expanded bounding box
+
+ 2269 pass
+ 3 skip
+ 0 fail
+ 22963 expect() calls
+Ran 2272 tests across 194 files. [211.64s]

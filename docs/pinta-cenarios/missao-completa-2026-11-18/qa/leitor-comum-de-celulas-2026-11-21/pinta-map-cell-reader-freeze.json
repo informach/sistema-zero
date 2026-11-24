@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-21T04:16:11.971Z",
+  "head": "e56c3ffc96750bef2584a1f12688eda392121b87",
+  "files": [
+    {
+      "file": "packages/pinta/src/tiles/mapCells.ts",
+      "sha256": "ef6c00e659355718c1e9c6108dd346ffdf5964ed17dc794da77d604056c693d4"
+    },
+    {
+      "file": "packages/pinta/src/tiles/mapCells.test.ts",
+      "sha256": "56ea4039a6f7a6928e10a6cb8d4ad257c3d7a55130d9d373acd5a4132173b6dd"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "50ccc9e288d71764732d2f02ee1896a7bdd9091f81f72ca4a91329b4e5fac0c7"
+    },
+    {
+      "file": "packages/pinta/src/tiles/tilemapOps.ts",
+      "sha256": "7451586256a423bc3e2a3faa3e8db7b9f6897ca4e55ce2d0bd2fe497634d667f"
+    }
+  ]
+}

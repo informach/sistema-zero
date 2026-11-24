@@ -6,6 +6,7 @@ import {
   modelAssetsGameThreeDExpressionSchemas,
   modelAssetsGameThreeDStatementSchemas,
 } from './modelAssetsIR'
+import { type SceneGameThreeDStatement, sceneGameThreeDStatementSchemas } from './sceneIR'
 
 type IdField = { __id: z.ZodOptional<z.ZodString> }
 
@@ -128,6 +129,7 @@ interface StageNode extends Common {
  * (`generators/__tests__/architecture.test.ts`) e a extensão cresce.
  */
 export type PlatformGameThreeDStatement =
+  | SceneGameThreeDStatement
   | ClassicPlatformer
   | ForEachHit
   | ObjectFlag
@@ -283,5 +285,6 @@ export function platformGameThreeDStatementSchemas(
       ...id,
     }),
     ...modelAssetsGameThreeDStatementSchemas(expr, irText, id),
+    ...sceneGameThreeDStatementSchemas(irText, id),
   ] as const
 }

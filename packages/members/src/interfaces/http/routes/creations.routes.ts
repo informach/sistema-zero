@@ -1,5 +1,6 @@
+import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
 import { ForbiddenError } from '@sistemazero/core/http'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type {
   CommitCreationUploadService,
   CompactCreationTombstonesService,
@@ -25,7 +26,31 @@ import {
   CreationUploadBody,
 } from '../dtos'
 
+const CreationDownloadQuery = t.Object({
+  ...AudienceQuery.properties,
+  studioReader: t.Optional(t.Literal(STUDIO_SEALED_STORAGE_READER)),
+})
+
 export interface CreationsRoutesDeps {
+  causal?: import('../../../infrastructure/persistence/drizzle/pinta-causal-units.repository').DrizzlePintaCausalRepository
+  palette?: {
+    repository: Record<
+      'kids' | 'adult',
+      import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
+    >
+    clock: () => Date
+  }
+  studioSeal?: {
+    repository: Record<
+      'kids' | 'adult',
+      import('../../../infrastructure/persistence/drizzle/creations.repository').DrizzleCreationsRepository
+    >
+    clock: () => Date
+    authoring: Pick<
+      import('../../../application/studio/free-studio-access.service').FreeStudioAccessService,
+      'execute'
+    >
+  }
   list: ListCreationsService
   reserveUpload: ReserveCreationUploadService
   commitUpload: CommitCreationUploadService
@@ -93,6 +118,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             name: body.name,
             kind: body.kind,
             formatVersion: body.formatVersion ?? 1,
+            maxReadFormatVersion: body.maxReadFormatVersion,
             itemUpdatedAt: new Date(body.itemUpdatedAt),
             bytes: body.bytes,
             thumb: body.thumb ?? null,
@@ -128,8 +154,11 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             resolveUserId(headers),
             params.tool,
             params.itemId,
+            query.studioReader
+              ? { reader: query.studioReader, accountId: resolveAccountId(headers) }
+              : undefined,
           ),
-        { query: AudienceQuery, params: CreationItemParams },
+        { query: CreationDownloadQuery, params: CreationItemParams },
       )
       // Lixeira lógica (idempotente).
       .delete(

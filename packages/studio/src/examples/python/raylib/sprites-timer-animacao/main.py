@@ -1,27 +1,17 @@
+# 📦 Bibliotecas
 from pyray import *
 from random import randint
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 # A linha da grama, na tela. O herói fica em pé nela, qualquer que seja o tamanho do desenho.
 PE = 384
 ESCALA = 4
-
-init_window(LARGURA, ALTURA, 'Sprites, Timer e Animação')
-init_audio_device()
-set_target_fps(60)
-
-# A folha do herói tem os quadros da caminhada lado a lado, do jeito que o Pinta exporta.
-# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
-textura_heroi = load_texture('images/heroi.png')
 QUADROS = 4
-LARGURA_QUADRO = textura_heroi.width / QUADROS
-ALTURA_QUADRO = textura_heroi.height
-textura_maca = load_texture('images/maca.png')
-som_pegar = load_sound('sounds/pegar.wav')
-som_perder = load_sound('sounds/perder.wav')
 
 
+# 🧩 Meus moldes
 class Cronometro:
     """Chama uma função depois de `duracao` segundos; se repetir, recomeça sozinho."""
 
@@ -94,18 +84,33 @@ class Maca(Sprite):
         draw_texture_ex(textura_maca, self.posicao, 0, ESCALA, WHITE)
 
 
+def soltar_maca():
+    macas.append(Maca())
+
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Sprites, Timer e Animação')
+init_audio_device()
+set_target_fps(60)
+
+# A folha do herói tem os quadros da caminhada lado a lado, do jeito que o Pinta exporta.
+# O tamanho de um quadro sai da própria imagem: um desenho de qualquer tamanho entra no lugar.
+textura_heroi = load_texture('images/heroi.png')
+LARGURA_QUADRO = textura_heroi.width / QUADROS
+ALTURA_QUADRO = textura_heroi.height
+textura_maca = load_texture('images/maca.png')
+som_pegar = load_sound('sounds/pegar.wav')
+som_perder = load_sound('sounds/perder.wav')
+
+
 heroi = Heroi()
 macas = []
 pontos = 0
 vidas = 3
 
 
-def soltar_maca():
-    macas.append(Maca())
-
-
 cronometro = Cronometro(0.9, True, soltar_maca)
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     if vidas > 0:

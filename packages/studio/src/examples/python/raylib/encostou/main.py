@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 TAMANHO = 50
 VELOCIDADE = 220
 # 1 = parede, M = moeda, S = começo, E = saída
@@ -15,10 +17,8 @@ MAPA = [
     '1111111111111111',
 ]
 
-init_window(len(MAPA[0]) * TAMANHO, len(MAPA) * TAMANHO, 'Encostou!')
-set_target_fps(60)
 
-
+# 🧩 Meus moldes
 def criar_moedas():
     moedas = []
     for linha, texto in enumerate(MAPA):
@@ -26,6 +26,26 @@ def criar_moedas():
             if letra == 'M':
                 moedas.append(Vector2(coluna * TAMANHO + 25, linha * TAMANHO + 25))
     return moedas
+
+
+def colisao(eixo):
+    # Andou e encostou numa parede? Volta até a borda dela, só no eixo em que andou.
+    for parede in paredes:
+        if check_collision_recs(parede, jogador):
+            if eixo == 'x':
+                if direcao.x > 0:
+                    jogador.x = parede.x - jogador.width
+                if direcao.x < 0:
+                    jogador.x = parede.x + parede.width
+            else:
+                if direcao.y > 0:
+                    jogador.y = parede.y - jogador.height
+                if direcao.y < 0:
+                    jogador.y = parede.y + parede.height
+
+# ⚙️ Ao iniciar
+init_window(len(MAPA[0]) * TAMANHO, len(MAPA) * TAMANHO, 'Encostou!')
+set_target_fps(60)
 
 
 paredes = []
@@ -44,22 +64,7 @@ moedas = criar_moedas()
 venceu = False
 
 
-def colisao(eixo):
-    # Andou e encostou numa parede? Volta até a borda dela, só no eixo em que andou.
-    for parede in paredes:
-        if check_collision_recs(parede, jogador):
-            if eixo == 'x':
-                if direcao.x > 0:
-                    jogador.x = parede.x - jogador.width
-                if direcao.x < 0:
-                    jogador.x = parede.x + parede.width
-            else:
-                if direcao.y > 0:
-                    jogador.y = parede.y - jogador.height
-                if direcao.y < 0:
-                    jogador.y = parede.y + parede.height
-
-
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     if venceu:

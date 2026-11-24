@@ -4,6 +4,7 @@
  * chamada gera ids FRESCOS (asset/animação/camada) → o template vira uma CÓPIA
  * independente por construção (sem clonar/regenerar ids depois).
  */
+import { tileLayerToWire } from '../assets/wire'
 import { newId } from '../core/id'
 import {
   type AnyTilesetAsset,
@@ -13,9 +14,11 @@ import {
   createVectorBackgroundAsset,
   createVectorSpriteAsset,
   isCompatibleMapTileset,
+  isTileLayer,
   normalizeAssetName,
   OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
   type PixelSpriteAsset,
   sanitizePintaAsset,
   type TilemapAsset,
@@ -125,7 +128,7 @@ export interface TilemapSpec {
   /** Tamanho do mapa em células. Ausente = o da 1ª camada de peças com `rows`. */
   cols?: number
   rows?: number
-  /** Fundo primeiro. Peças e objetos dividem o teto de `PINTA_LIMITS.maxTilemapLayers`. */
+  /** Fundo primeiro. Peças e objetos dividem o teto de `PINTA_MAP_FORMAT_LIMITS.maxLayers`. */
   layers: TilemapLayerSpec[]
   /** Unidade das coordenadas dos objetos: `pixels` do mapa (padrão) ou `tiles` (× tamanho da peça). */
   objectUnits?: 'pixels' | 'tiles'
@@ -152,8 +155,8 @@ export function buildTilemap(spec: TilemapSpec): TilemapAsset {
   const name = normalizeAssetName(spec.name)
   if (!name) fail(spec.name, 'nome inválido (use letras, números e hífen)')
   if (spec.layers.length === 0) fail(name, 'o mapa precisa de pelo menos uma camada')
-  if (spec.layers.length > PINTA_LIMITS.maxTilemapLayers) {
-    fail(name, `no máximo ${PINTA_LIMITS.maxTilemapLayers} camadas`)
+  if (spec.layers.length > PINTA_MAP_FORMAT_LIMITS.maxLayers) {
+    fail(name, `no máximo ${PINTA_MAP_FORMAT_LIMITS.maxLayers} camadas`)
   }
   const base = spec.tileset
   const known = new Map<string, AnyTilesetAsset>([[base.id, base]])
@@ -166,8 +169,11 @@ export function buildTilemap(spec: TilemapSpec): TilemapAsset {
   const cols = spec.cols ?? fromArt?.cols
   const rows = spec.rows ?? fromArt?.rows
   if (!cols || !rows) fail(name, 'informe cols/rows ou uma camada de peças com `rows`')
-  if (cols > PINTA_LIMITS.maxTilemapCols || rows > PINTA_LIMITS.maxTilemapRows) {
-    fail(name, `no máximo ${PINTA_LIMITS.maxTilemapCols} × ${PINTA_LIMITS.maxTilemapRows} células`)
+  if (cols > PINTA_MAP_FORMAT_LIMITS.maxCols || rows > PINTA_MAP_FORMAT_LIMITS.maxRows) {
+    fail(
+      name,
+      `no máximo ${PINTA_MAP_FORMAT_LIMITS.maxCols} × ${PINTA_MAP_FORMAT_LIMITS.maxRows} células`,
+    )
   }
   const unit = spec.objectUnits === 'tiles' ? base.tileSize : 1
 
@@ -268,9 +274,7 @@ export function buildTilemap(spec: TilemapSpec): TilemapAsset {
 }
 
 function wireLayers(map: TilemapAsset): unknown {
-  return map.layers.map((layer) =>
-    layer.kind === 'objects' ? layer : { ...layer, cells: Array.from(layer.cells) },
-  )
+  return map.layers.map((layer) => (isTileLayer(layer) ? tileLayerToWire(layer, map) : layer))
 }
 
 /**

@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from settings import *
 
+# 🧩 Meus moldes
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites):
         super().__init__(groups)

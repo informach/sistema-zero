@@ -65,6 +65,9 @@ export function world3DNewBlockToIR(
   const num = (name: string, value: number) => tools.expression(block, name, { type: 'num', value })
   let node: World3DNewStatement
   switch (block.type) {
+    case 'sz_w3d_use_scene':
+      node = { type: 'w3d:useScene', scene: f('SCENE') }
+      break
     case 'sz_w3d_collectible':
       node = {
         type: 'w3d:collectible',
@@ -143,6 +146,8 @@ export function world3DNewStatementToCode(s: JSStatement, t: CodeTools): string 
   const call = (method: string, args: string[]) =>
     `${t.pad}SZWorld3D.${method}(${args.join(', ')});`
   switch (s.type) {
+    case 'w3d:useScene':
+      return call('loadScene', [q(s.scene)])
     case 'w3d:collectible':
       return call('collectible', [e(s.n), q(s.kind), q(s.name), e(s.x), e(s.z), e(s.r)])
     case 'w3d:onCollectItem':
@@ -181,6 +186,7 @@ function stringArg(args: unknown[], index: number): string | null {
 }
 
 const NEW_METHODS = new Set([
+  'loadScene',
   'collectible',
   'onCollectItem',
   'removeNamed',
@@ -206,6 +212,11 @@ export function world3DNewCallToIR(
   const size = (count: number) => args.length === count
   let node: World3DNewStatement | null = null
   switch (method) {
+    case 'loadScene': {
+      const scene = str(0)
+      if (size(1) && scene !== null && scene.length <= 64) node = { type: 'w3d:useScene', scene }
+      break
+    }
     case 'collectible': {
       const [n, x, z, r] = [value(0), value(3), value(4), value(5)]
       const kind = str(1)
@@ -311,6 +322,8 @@ export function world3DNewStatementToBlock(
     return t.block(type, fields, body ? { BODY: t.statements(body) } : {}, s.__id, converted)
   }
   switch (s.type) {
+    case 'w3d:useScene':
+      return make('sz_w3d_use_scene', { SCENE: s.scene }, {})
     case 'w3d:collectible':
       return make(
         'sz_w3d_collectible',

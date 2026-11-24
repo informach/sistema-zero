@@ -1,0 +1,9 @@
+{
+  "windows": "5547157507fe0e54141bd784fccc4a7596a0417f4a353fbd16fa7b7b5ca54a1f",
+  "linux": "52ec7bb5b7f4a11dd3ad915064a6b6b9b0f32bb33b8335dba4dbfebc389dcd13",
+  "logicalFilesByteIdentical": 110,
+  "transportRepresentationsDecodedAndHashed": 32,
+  "differingFilesAreOnlyGzip": true,
+  "selectedArtifact": "Linux distribution retained by CI 44813052295",
+  "activationPerformed": false
+}

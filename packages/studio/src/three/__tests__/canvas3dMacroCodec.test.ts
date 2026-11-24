@@ -38,6 +38,14 @@ describe('Canvas 3D — codec semântico dos macros', () => {
     expect(first).not.toContain('%22__id%22')
   })
 
+  it('a mesma receita com as chaves em outra ordem gera o mesmo marcador', () => {
+    // Revisão da missão: a IR que volta dos blocos traz as chaves em outra ordem que a do
+    // exemplo. A soma do marcador mudava, e abrir o Folio 3D regravava o script.js (a prévia
+    // navegava de novo no meio da tecla).
+    const reordered = Object.fromEntries(Object.entries(particles).reverse()) as JSStatement
+    expect(generateJS({ statements: [reordered] })).toBe(generateJS({ statements: [particles] }))
+  })
+
   it('continua abrindo marcadores legados salvos antes do framing v2', () => {
     const generated = generateJS({ statements: [particles] })
     const markerStart = generated.indexOf('/*__SZ_CANVAS3D_MACRO__')
@@ -66,9 +74,12 @@ describe('Canvas 3D — codec semântico dos macros', () => {
 
   it('não confia no payload semântico quando só o metadado foi alterado', () => {
     const generated = generateJS({ statements: [particles] })
-    const originalPayload = encodeURIComponent(JSON.stringify(particles))
+    // O payload sai com as chaves em ordem (o mesmo vale para a adulteração).
+    const sorted = (value: object) =>
+      Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+    const originalPayload = encodeURIComponent(JSON.stringify(sorted(particles)))
     const changedPayload = encodeURIComponent(
-      JSON.stringify({ ...particles, count: { type: 'num', value: 999 } }),
+      JSON.stringify(sorted({ ...particles, count: { type: 'num', value: 999 } })),
     )
     const tampered = generated.replace(originalPayload, changedPayload)
     const parsed = parseJS(tampered)

@@ -21,6 +21,11 @@ export interface ProjectCardProps {
   onOpen: (id: string) => void
   /** Nomes de TODOS os projetos da lista — renomear para um já usado é recusado. */
   takenNames?: ReadonlySet<string>
+  /**
+   * O nome da cópia em blocos de onde este Pro veio, quando ela está na lista (proposta aprovada
+   * em 21/11/2026). Sem ela, a linha não aparece: não há como dizer o nome do que foi apagado.
+   */
+  originName?: string
 }
 
 // Um formatador por módulo: `toLocaleString` com objeto de opções criava um `Intl.DateTimeFormat`
@@ -67,6 +72,7 @@ export const ProjectCard = memo(function ProjectCard({
   onChanged,
   onOpen,
   takenNames,
+  originName,
 }: ProjectCardProps): JSX.Element {
   const t = useSharedT()
   const [editing, setEditing] = useState(false)
@@ -76,6 +82,8 @@ export const ProjectCard = memo(function ProjectCard({
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  // Recado do card preservado (restaurar/baixar), no lugar da linha de data.
+  const [notice, setNotice] = useState<string | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const renameInputRef = useRef<HTMLInputElement | null>(null)
@@ -206,6 +214,52 @@ export const ProjectCard = memo(function ProjectCard({
     downloadProjectAsJSON(full)
   }
 
+  // Projeto preservado (migração pendente): o ⋯ oferece a cópia do backup e o arquivo para o
+  // suporte. Os dois só leem o armazenamento; o módulo carrega sob demanda (fora da lista inicial).
+  const handleRestoreBackup = async () => {
+    closeMenu()
+    try {
+      const { restorePreservedProject } = await import('../../project-migrations/localBackups')
+      const copy = await restorePreservedProject(summary.id)
+      if (!copy) {
+        setNotice(t('projects.preserved.noBackup'))
+        return
+      }
+      if (copy.warnings.length) console.warn('[studio] cópia restaurada com avisos', copy.warnings)
+      setNotice(
+        t(
+          copy.warnings.length
+            ? 'projects.preserved.restoredPartial'
+            : 'projects.preserved.restored',
+        ),
+      )
+      onChanged(copy.id)
+    } catch (error) {
+      console.error('[studio] restaurar backup', error)
+      setNotice(t('projects.preserved.failed'))
+    }
+  }
+
+  const handleDownloadPreserved = async () => {
+    closeMenu()
+    try {
+      const [{ exportPreservedProjectRecords }, { triggerDownload }] = await Promise.all([
+        import('../../project-migrations/localBackups'),
+        import('../../export/download'),
+      ])
+      const text = await exportPreservedProjectRecords(summary.id, undefined, () =>
+        setNotice(t('projects.preserved.partial')),
+      )
+      triggerDownload(
+        new Blob([text], { type: 'application/json' }),
+        `${summary.id.replace(/[^\w-]+/g, '_')}.preservado.json`,
+      )
+    } catch (error) {
+      console.error('[studio] baixar preservado', error)
+      setNotice(t('projects.preserved.failed'))
+    }
+  }
+
   // Começa a baixar/avaliar o chunk do modo salvo ANTES do clique (hover e
   // pointerdown), para que a navegação não espere o download. Idempotente.
   const prefetch = () => prefetchMode(summary.mode, summary.programmingLanguage)
@@ -306,7 +360,6 @@ export const ProjectCard = memo(function ProjectCard({
               ref={triggerRef}
               type="button"
               aria-label="Mais ações"
-              disabled={summary.migrationPending}
               aria-expanded={menuOpen}
               aria-haspopup="menu"
               style={{ touchAction: 'manipulation' }}
@@ -350,37 +403,65 @@ export const ProjectCard = memo(function ProjectCard({
                     className="fixed z-50 w-48 overflow-hidden rounded-xl border-2 border-sz-border bg-sz-panel shadow-2xl"
                     style={{ left: menuPosition.left, top: menuPosition.top }}
                   >
-                    <MenuItem
-                      onClick={() => {
-                        setMenuOpen(false)
-                        setEditing(true)
-                      }}
-                    >
-                      {t('projects.rename')}
-                    </MenuItem>
-                    <MenuItem onClick={() => void handleDuplicate()}>
-                      {t('projects.duplicate')}
-                    </MenuItem>
-                    <MenuItem onClick={() => void handleExport()}>{t('projects.export')}</MenuItem>
-                    <MenuItem
-                      danger
-                      onClick={() => {
-                        // closeMenu() devolve o foco ao kebab ANTES de o menu
-                        // desmontar; assim o Modal do ConfirmDialog captura o
-                        // gatilho como activeElement e o restaura ao fechar
-                        // (sem isso o foco caía no <body> e se perdia).
-                        closeMenu()
-                        setDeleteOpen(true)
-                      }}
-                    >
-                      {t('projects.delete')}
-                    </MenuItem>
+                    {summary.migrationPending ? (
+                      <>
+                        <MenuItem onClick={() => void handleRestoreBackup()}>
+                          {t('projects.preserved.restore')}
+                        </MenuItem>
+                        <MenuItem onClick={() => void handleDownloadPreserved()}>
+                          {t('projects.preserved.download')}
+                        </MenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <MenuItem
+                          onClick={() => {
+                            setMenuOpen(false)
+                            setEditing(true)
+                          }}
+                        >
+                          {t('projects.rename')}
+                        </MenuItem>
+                        <MenuItem onClick={() => void handleDuplicate()}>
+                          {t('projects.duplicate')}
+                        </MenuItem>
+                        {summary.hasRetainedLegacySource && (
+                          <MenuItem onClick={() => void handleDownloadPreserved()}>
+                            {t('projects.preserved.download')}
+                          </MenuItem>
+                        )}
+                        <MenuItem onClick={() => void handleExport()}>
+                          {t('projects.export')}
+                        </MenuItem>
+                        <MenuItem
+                          danger
+                          onClick={() => {
+                            // closeMenu() devolve o foco ao kebab ANTES de o menu
+                            // desmontar; assim o Modal do ConfirmDialog captura o
+                            // gatilho como activeElement e o restaura ao fechar
+                            // (sem isso o foco caía no <body> e se perdia).
+                            closeMenu()
+                            setDeleteOpen(true)
+                          }}
+                        >
+                          {t('projects.delete')}
+                        </MenuItem>
+                      </>
+                    )}
                   </div>
                 </StudioThemeScope>,
                 document.body,
               )}
           </div>
         </div>
+
+        {/* De onde o Pro veio, logo abaixo do nome. `pointer-events-none`: o clique atravessa
+            até o botão de abrir, como na capa. */}
+        {originName && !editing ? (
+          <p className="pointer-events-none relative z-10 -mt-1 truncate text-sz-fg-soft text-xs">
+            {t('projects.card.madeFrom', { name: originName })}
+          </p>
+        ) : null}
 
         {!editing && (
           // Capa capturada ao sair do editor. `pointer-events-none` deixa o clique
@@ -437,12 +518,18 @@ export const ProjectCard = memo(function ProjectCard({
             (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
             ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
         <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sz-fg-soft text-xs">
-          <span className="whitespace-nowrap">
-            {summary.migrationPending
-              ? 'Preservado — peça ajuda para abrir'
-              : summary.hasPreservedEdit
-                ? 'Há uma edição anterior preservada'
-                : `Atualizado em ${formatDate(summary.updatedAt)}`}
+          {/* O recado de restaurar/baixar é mais longo que a data: quebra em vez de vazar do card. */}
+          <span
+            className={notice ? undefined : 'whitespace-nowrap'}
+            role={notice ? 'status' : undefined}
+          >
+            {notice
+              ? notice
+              : summary.migrationPending
+                ? 'Preservado — peça ajuda para abrir'
+                : summary.hasPreservedEdit
+                  ? 'Há uma edição anterior preservada'
+                  : `Atualizado em ${formatDate(summary.updatedAt)}`}
           </span>
           {/* A pílula azul chapada de largura inteira, com a pasta aberta (a imagem-modelo). O
               nome acessível segue "Abrir" (o e2e usa) — o ícone é decorativo. */}

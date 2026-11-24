@@ -6,7 +6,7 @@ O objetivo é reconstruir a relação causal do Farol em um mundo 3D: mover, rec
 
 1. **Uma ilha com profundidade:** jogar a versão pronta, conhecer o material de consulta, comparar a mesma ilha de frente/lado/cima e programar o movimento. A experiência distingue a posição da câmera da posição dos objetos. O projeto já traz cenário, câmera, caminhos, HUD e reinício; o aluno acrescenta a regra de controle e testa as quatro direções.
 2. **A chave está ao seu alcance:** explorar os três eixos com referências visuais, colocar a chave em outro lugar, investigar a diferença entre sobreposição na imagem e contato real, programar coleta, guardar `temChave` e mudar o aviso. A posição entra antes de ser usada na montagem. Uma chave alta demais não pode ser recolhida, mesmo que pareça sobre o personagem de cima.
-3. **A luz volta ao farol:** montar primeiro a resposta do `senão`, depois a vitória no `então`; consertar a luz que recomeçava a cada volta ao farol com a guarda da partida (`Se não ganhou`); responder ao quiz; escolher uma posição pessoal para a chave; testar os dois caminhos e o reinício; enviar a versão atual. O quiz antecede a entrega final para permitir aplicar a descoberta ao próprio jogo. Fechamento sem certificado.
+3. **A luz volta ao farol:** montar primeiro a resposta do `senão`, depois a vitória no `então`; consertar a luz que recomeçava a cada volta ao farol com a guarda da partida (`Se não ganhou`); mudar a aparência; escolher uma posição pessoal para a chave; testar os dois caminhos e o reinício; enviar a versão atual; responder ao quiz. O quiz é a penúltima parte, logo antes do fechamento, como no Cadê e na Chave do Farol, em que ele vem logo antes do certificado. Fechamento sem certificado.
 
 ## Experiências e linguagem
 
@@ -71,7 +71,7 @@ Montagens: uma ideia por fala, o porquê antes do como, **Rodar de novo** no lug
 **toque na tecla R** no lugar de "pressione R", rótulos reais (**Mostrar o objeto**, **verdadeiro**,
 **Alterar variável para**, o segundo sinal de mais para o **senão**), "É este bloco que…" na posição
 e no encontro, `ganhou` explicada antes de ser escolhida e a conferência no formato das Diretrizes.
-A revisão da aula 3 passou a ficar, no roteiro, antes da aparência, como no manifesto.
+A revisão da aula 3 passou a ficar, no roteiro, no mesmo lugar do manifesto. Desde 23/11/2026, ela é a penúltima parte, depois do envio e antes do fechamento. Antes, ficava entre o farol que acende uma vez e a aparência.
 
 O **não** (parte **O farol acende uma vez só**) ficou sem experiência: nenhuma cena existente mostra
 uma pergunta e a sua inversão (a porta do Farol, `lighthouse-key`, só responde a `temChave`). A

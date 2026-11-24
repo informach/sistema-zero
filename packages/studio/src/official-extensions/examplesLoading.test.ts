@@ -134,7 +134,13 @@ const goldenCatalogs = {
     // tela "fim" que serve aos dois jeitos de perder; Salto (nuvens 3 m acima do chão) e
     // Parkour (chão de lava) perdem ao pisar no chão lá embaixo; Noite e Tiro pausam na dica
     // (o Tiro ganha o "Prepare a mira!" que se fecha sozinho); Guardião sem "semente".
-    sha256: '2b3f2a8858b2511160af0e4e72aa6082ad36dee8002452941b2d51fb60c820f0',
+    // 19/11 (2932075e4): Herói do Molda recebe loadScene, sceneStart e os três
+    // materiais do cenário. Reverter somente essas adições reproduz o hash
+    // anterior 2b3f2a88…; os outros 19 exemplos e sua ordem permanecem idênticos.
+    // 22/11 (a3b5809c9, lote 6 da conclusão): o cenário do Herói do Molda ganhou as regiões
+    // Campo e Pomar (o id do cenário muda junto) e o exemplo, os dois "Quando o heroi entrar na
+    // região". Só o Herói mudou no diff do examples.ts; antes: bfde8f7f….
+    sha256: '3e0214183833802311505e033c6b735c00c1b81cb0bd58bcdec93f347e0dcda3',
   },
   'world-3d': {
     count: 14,
@@ -153,12 +159,18 @@ describe('catálogos lazy das extensões oficiais', () => {
   it('preserva quantidade e ordem da saída validada e sanitizada', async () => {
     for (const extension of OFFICIAL_CATALOG) {
       const golden = goldenCatalogs[extension.manifest.id as keyof typeof goldenCatalogs]
-      expect(extension.examples.count).toBe(golden.count)
+      const sceneExample = ['game-2d', 'game-2d-advanced'].includes(extension.manifest.id)
+      expect(extension.examples.count).toBe(golden.count + (sceneExample ? 1 : 0))
       expect('examples' in extension.manifest).toBe(false)
 
       const examples = await loadExtensionExamples(extension)
-      const sha256 = createHash('sha256').update(JSON.stringify(examples)).digest('hex')
-      expect(examples).toHaveLength(golden.count)
+      expect(examples).toHaveLength(golden.count + (sceneExample ? 1 : 0))
+      // A adição da cena não pode alterar nenhum exemplo publicado nem sua ordem.
+      const previous = sceneExample
+        ? examples.filter((e) => !e.name.startsWith('A Vila e a Floresta'))
+        : examples
+      expect(previous).toHaveLength(golden.count)
+      const sha256 = createHash('sha256').update(JSON.stringify(previous)).digest('hex')
       expect(sha256).toBe(golden.sha256)
     }
   })

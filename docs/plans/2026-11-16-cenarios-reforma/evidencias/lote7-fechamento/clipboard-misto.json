@@ -1,0 +1,9 @@
+{
+  "selecaoMistaPorTeclado": true,
+  "colisaoNoInspectorDeJogo": true,
+  "clipboardMisto": true,
+  "associacaoInternaRemapeada": true,
+  "colagemAtomica": true,
+  "apagarEUndoAposReabrir": true,
+  "erros": []
+}

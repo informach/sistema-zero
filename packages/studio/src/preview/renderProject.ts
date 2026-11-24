@@ -8,7 +8,13 @@ import {
   preloadCourseModels,
   soundManifest,
 } from '#core'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
+} from '../core/pintaRegionalReference'
 import { isDocumentRecord } from '../core/projectDocument'
+import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { extensionBootstrapContext } from '../extensions/runtime'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import {
@@ -18,7 +24,7 @@ import {
 import { prepareProjectForHost } from '../state/projectValidation'
 import type { PreviewSecurityProfile } from './csp'
 
-export interface RenderProjectOptions {
+export interface RenderProjectOptions extends PrivateRegionalProjectReadOptions {
   /** Opt-in host diagnostics. Inspectors return snapshots; the public game API is unchanged. */
   runtimeInspection?: boolean
   /** Origem do host (targetOrigin dos interceptors — defesa em profundidade). */
@@ -36,6 +42,7 @@ export interface RenderProjectOptions {
    * de variáveis aqui, `check/instrumentCheckScript.ts`). Antes da preparação ele seria refeito.
    */
   transformScript?: (script: string) => string
+  signal?: AbortSignal
 }
 
 /**
@@ -62,12 +69,25 @@ export async function renderProjectToPreviewDocAsync(
   }
   if (captured.kind === 'pro')
     throw new Error('Projetos Pro precisam de um artefato compilado para jogar ou capturar.')
+  const regional =
+    Array.isArray(captured.assets) && captured.assets.some(hasRegionalPintaReference)
+      ? await (
+          await import('../runtime/javascript/pintaRegionalMaterials')
+        ).prepareJavaScriptRegionalMaterials(
+          captured.assets,
+          captured.installedExtensions,
+          opts[PRIVATE_REGIONAL_PROJECT],
+          opts.signal,
+        )
+      : undefined
+  const policy = regional ? { regionalMaterials: regional.proof } : undefined
   const playableProject =
     captured.formatVersion === 3
       ? (await import('../state/javaScriptProjectValidation')).refineJavaScriptProjectDocument(
           captured,
+          policy,
         )
-      : await prepareProjectForHost(captured)
+      : await prepareProjectForHost(captured, policy)
   if (!playableProject) throw new Error('Não foi possível preparar este jogo.')
   const prepared = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
   const files = opts.transformScript
@@ -82,6 +102,7 @@ export async function renderProjectToPreviewDocAsync(
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
   // Modelos da biblioteca dos cursos: o projeto guarda a referência, o jogo precisa do arquivo.
   await preloadCourseModels(assets, files['script.js'])
+  const cenas3d = criarTransporteDeCenas3D(assets)
   const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
     resolveGameUiFontId({ ir: playableProject.ir, files }),
@@ -91,7 +112,11 @@ export async function renderProjectToPreviewDocAsync(
       js: files['script.js'],
       extraFiles,
     }),
+    !!cenas3d,
+    regional,
   )
+  opts.signal?.throwIfAborted()
+  opts[PRIVATE_REGIONAL_PROJECT]?.signal?.throwIfAborted()
 
   return buildJavaScriptClassicDocument({
     html: files['index.html'] ?? '',
@@ -99,10 +124,15 @@ export async function renderProjectToPreviewDocAsync(
     js: files['script.js'] ?? '',
     resources,
     extraFiles,
-    assets: assetManifest(assets),
-    assetsMeta: assetMetaManifest(assets),
+    assets: assetManifest(assets, regional?.proof),
+    assetsMeta: assetMetaManifest(
+      assets,
+      extensionBootstrapContext({ html: files['index.html'], js: files['script.js'], extraFiles }),
+      regional?.proof,
+    ),
     sounds: soundManifest(assets),
     models3d: asset3DManifest(assets),
+    cenas3d,
     parentOrigin: opts.parentOrigin,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     securityProfile: opts.securityProfile,

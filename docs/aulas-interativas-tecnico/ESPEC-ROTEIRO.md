@@ -338,6 +338,7 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | --- | --- |
 | `[achar arbusto]` | toca num alvo do jogo pronto, pelo nome ou pelo id do alvo no manifesto |
 | `[apontar jogo]`, `[apontar jogo 75 26]` | aponta o meio do jogo ou um ponto, em pixels do palco do jogo (o placar, uma mensagem) |
+| `[tocar jogo]`, `[tocar jogo 480 300]` | clica no meio do jogo pronto (ou num ponto): num jogo de teclado, o 3D sem setas na tela, é o que dá o foco ao jogo antes de `[segurar tecla ArrowRight por 1 s]` |
 | `[jogar de novo]` | recomeça o jogo pronto |
 | `[segurar seta da direita por 1,5 s]` | segura uma seta da tela do jogo (direita, esquerda, cima ou baixo) pelo tempo dito; sem tempo, 1 segundo |
 | `[apontar setas]` | aponta as quatro setas da tela, no canto de baixo do jogo |
@@ -368,9 +369,12 @@ Desde 09/11/2026 o vídeo não aponta nem toca controles da experiência (seçã
 | `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
 | `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
 | `[abrir categoria Jogo 2D > Movimento > Movimentos prontos]` | abre sem nunca recolher: a categoria que já está aberta só é apontada. Use na segunda montagem de uma parte, quando Jogo 2D ficou aberta do encaixe anterior |
+| `[abrir categoria Jogo 3D > Encostar > Encostar]` | com um nome repetido no caminho (a subcategoria Encostar mora dentro da categoria Encostar, na paleta 3D), escreva o caminho inteiro em cada gesto: `[abrir categoria Jogo 3D]`, depois `[abrir categoria Jogo 3D > Encostar]` e `[abrir categoria Jogo 3D > Encostar > Encostar]`. Cada categoria é achada dentro da anterior, a já aberta fica como está e só a primeira fechada é clicada |
 | `[jogar na lixeira ">" em "Se"]` | pega o bloco pelo campo dito (o sinal de maior da pergunta **x > 0** que o Se traz) e o solta na lixeira da área de código |
 | `[abrir "senão" em "Se"]`, `[apontar mais de "senão se" em "Se"]` | clica (ou só aponta) o botão de mais que fica logo antes do rótulo dito: abre o espaço do **senão** |
 | `"Se dentro de Quando o sprite personagem começar a encostar no sprite farol"` | em qualquer tag de bloco, `dentro de` diz qual bloco quando há vários com o mesmo começo: o Se que está dentro daquele encontro, e não o de Enquanto estiver rodando |
+| `"Quando personagem encostar em chave abaixo de Quando personagem encostar em chave"` | em qualquer tag de bloco, `abaixo de` diz que é o bloco logo abaixo daquele, na mesma pilha (não o de dentro de um espaço): o encontro novo, que chega com o mesmo texto do que já existe |
+| `"Se valor da variável temChave"`, `"Se não valor da variável ganhou"` | quando o texto do próprio bloco não separa dois blocos (dois Se), o nome segue pelo que está encaixado nele, como a criança lê na tela |
 | `[mostrar blocos "Quando o sprite", "Destruir o sprite"]` | arrasta a área de código até todos esses blocos ficarem bem à vista juntos, perto do meio e longe das bordas: para conferir os blocos que a fala nomeia |
 | `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área ficar perto do meio da altura (não precisa ser o centro exato): a área em que a criança vai trabalhar fica em destaque. Use sempre que a montagem passa para outra área |
 | `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
@@ -378,6 +382,7 @@ Desde 09/11/2026 o vídeo não aponta nem toca controles da experiência (seçã
 | `[apontar abaixo de "Deixar o sprite"]` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
 | `[encaixar "Deixar o sprite" em "Quando clicar ou tocar"]` | leva um bloco da paleta para o espaço ao lado de **fazer**, o único lugar onde ele encaixa |
 | `[encaixar "Somar 1" abaixo de "Deixar o sprite"]` | leva um bloco da paleta para logo abaixo de um bloco da área de trabalho |
+| `[mover "Se valor da variável temChave" para "Se não valor da variável ganhou" no "então"]` | leva um bloco que já está na área de código, com tudo o que tem dentro, para o espaço de outro bloco (sem `no`, o espaço ao lado de **fazer**); a mão pega o bloco pela primeira palavra dele |
 | `[encaixar "Quando o sprite" dentro de "Quando acontecer"]` | leva um bloco da paleta para o espaço vazio de dentro de uma área recém-criada (ou de outro bloco cujo espaço não tem rótulo) |
 | `[apontar lugar sem blocos abaixo de "Ao iniciar"]` | aponta o lugar logo abaixo dessa pilha, alinhado com a borda esquerda dela e com um espaço; sem o `abaixo de`, um lugar sem blocos ao lado das pilhas, fora de onde a paleta abre. Uma área nova vai alinhada embaixo de Ao iniciar, nunca jogada de qualquer jeito |
 | `[soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
@@ -385,6 +390,7 @@ Desde 09/11/2026 o vídeo não aponta nem toca controles da experiência (seçã
 | `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco e, no fim, clica na área de código fora do bloco, para a mudança valer (o `escolher` também): escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
 | `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |
 | `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização; o ponto é do jogo do projeto aberto, pelo tamanho que o bloco **Preparar o jogo** dá à tela (vale também numa aula sem jogo pronto) |
+| `[girar a cena para o outro lado 6 vezes]`, `[girar a cena]` | gira a câmera de um jogo 3D pelos botões da vista no canto da prévia, um pouco a cada toque, todos num gesto só; sem "para o outro lado", gira para um lado. Use quando a câmera do começo esconde o que a fala mostra (a chave atrás da pedra na Ilha); o Rodar de novo volta à vista do começo |
 | `[segurar seta de baixo na prévia por 1 s]`, `[apontar setas na prévia]` | as setas da tela no jogo da pré-visualização (só aparecem com o bloco Ativar controles clássicos) |
 | `[verificar projeto]` | clica em **Verificar projeto** e espera a resposta, acelerada |
 | `[enviar projeto]` | clica em **Enviar meu projeto** (ou **Enviar de novo**) e confirma em **Enviar**; no palco nada é enviado |
@@ -561,6 +567,10 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
   do caminho vai pelas setas do teclado (`[segurar tecla ArrowUp por 0,5 s]`), que acompanham a fala.
 - Trazer o valor para a vista com a paleta aberta: arrastar o fundo fecha a paleta. Traga o bloco
   à vista antes de abrir a categoria (`[arrastar até ...]`).
+- Segurar uma tecla num jogo 3D sem dar o foco a ele: no Estúdio, `[rodar de novo]` vem antes;
+  no jogo pronto, `[tocar jogo]`. E conte os sólidos no caminho: na Ilha do Farol, a pedra fecha a
+  linha do começo, e o caminho até a ponte desce um pouco antes de seguir para a direita (os
+  obstáculos estão em `qa/ilha-do-farol-observacao.ts`).
 
 ### 9.10 Conferência
 

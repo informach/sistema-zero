@@ -1,0 +1,17 @@
+✔ private reader binds identity and reports the motor state without adding a game global (1.7447ms)
+✔ the real orchestrator observes idle before input, uses fresh action initial and disposes once (0.8425ms)
+✔ observer preserves primary and cleanup failures, even an undefined rejection (0.4546ms)
+✔ position admission uses official identity before descriptors, with no authored getter or Proxy traps (1.248ms)
+✔ camera and projected sprites are explicitly unavailable in the first free-motion capability (1.3058ms)
+✔ failed initial observation never sends input and still releases its private handle (0.4772ms)
+✔ native CDP position resolves references and refuses Proxy/getter paths before observation (6.5751ms)
+✔ official destruction rejects a finite-position sprite before any authored descriptor read (1.1101ms)
+✔ destruction between observed samples aborts as unavailable and cannot yield a false or passing coordinate (2.3987ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.5571

@@ -1,5 +1,10 @@
+import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import type { PythonProjectDocument } from '../core/editableProject'
 import { PGZERO_EXTENSION } from '../runtime/python/pgzero/contract'
+import {
+  type PythonPintaScenesCanvas,
+  supportsPythonPintaScenes,
+} from '../runtime/python/pintaScenesContract'
 import { PYGAME_EXTENSION } from '../runtime/python/pygame/contract'
 import { RAYLIB_EXTENSION_IDS } from '../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
@@ -16,9 +21,18 @@ const modules = [
   'pinta',
   'pyray',
   'raylib',
+  'cenario',
   'sz_audio',
 ] as const
-const shadowableModules = ['random', 'math', 'turtle', 'pygame', 'pinta', 'sz_audio'] as const
+const shadowableModules = [
+  'random',
+  'math',
+  'turtle',
+  'pygame',
+  'pinta',
+  'cenario',
+  'sz_audio',
+] as const
 export type PythonOfficialModule = (typeof modules)[number]
 
 /** What decides the official modules: the project's paths, entry point and extensions. */
@@ -26,6 +40,7 @@ export interface PythonModuleContext {
   paths: readonly string[]
   entrypoint: string
   extensionIds: readonly string[]
+  pintaScenesCanvas?: PythonPintaScenesCanvas
 }
 function moduleContext(project: PythonProjectDocument): PythonModuleContext {
   return {
@@ -68,8 +83,14 @@ function shadowedAmong<T extends string>(
 }
 
 /** A project module wins over the bundled module; never label that call as the official API. */
-export function pythonOfficialModules(project: PythonProjectDocument) {
-  return pythonOfficialModulesFor(moduleContext(project))
+export function pythonOfficialModules(
+  project: PythonProjectDocument,
+  features?: readonly StudioPythonRuntimeFeature[],
+) {
+  return pythonOfficialModulesFor({
+    ...moduleContext(project),
+    pintaScenesCanvas: supportsPythonPintaScenes(project.installedExtensions, features),
+  })
 }
 
 /** The same decision from the project's paths (tools that read a game folder, not a document). */
@@ -86,8 +107,10 @@ export function pythonOfficialModulesFor(context: PythonModuleContext) {
         ((module !== 'pgzero' && module !== 'pgzrun') || installed(PGZERO_EXTENSION.id)) &&
         // Pygame Zero draws with pygame.draw; the Pygame-ce extension owns pygame and pinta.
         (module !== 'pygame' || installed(PGZERO_EXTENSION.id) || installed(PYGAME_EXTENSION.id)) &&
-        (module !== 'pinta' || installed(PYGAME_EXTENSION.id)) &&
-        ((module !== 'pyray' && module !== 'raylib') ||
+        (module !== 'pinta' ||
+          installed(PYGAME_EXTENSION.id) ||
+          (context.pintaScenesCanvas !== undefined && installed(context.pintaScenesCanvas))) &&
+        ((module !== 'pyray' && module !== 'raylib' && module !== 'cenario') ||
           RAYLIB_EXTENSION_IDS.some((id) => installed(id))),
     ),
   )

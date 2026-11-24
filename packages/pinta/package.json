@@ -8,13 +8,20 @@
   "exports": {
     ".": "./src/index.ts",
     "./assets": "./src/assets/index.ts",
+    "./assets/causal": "./src/assets/causal.ts",
     "./lesson": "./src/lesson/index.ts",
+    "./workshop-reader": "./src/assets/workshopReader.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
     "./styles.css": "./src/styles/pinta.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "bun test src",
+    "test:scripts": "bun test scripts",
+    "check:phaser": "bun scripts/generate-phaser.ts --check",
+    "check:region-phaser": "bun scripts/generate-region-phaser.ts --check",
+    "check:pygame-gallery": "bun scripts/pygame-gallery/generate.ts --check",
+    "check:homologacao": "bun scripts/homologacao/check.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:vector-fonts": "bun run scripts/gen-vector-fonts.ts",
@@ -27,6 +34,7 @@
     "fflate": "^0.8.2",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.546.0",
+    "pako": "3.0.1",
     "polygon-clipping": "^0.15.7",
     "zustand": "^5.0.0"
   },

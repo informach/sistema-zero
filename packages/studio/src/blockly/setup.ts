@@ -1,4 +1,5 @@
 import { registerFieldColour } from '@blockly/field-colour'
+import { installDrawerOriginShortcut } from './openingRender'
 // Plugin oficial que adiciona uma categoria "Buscar" à toolbox com filtro ao
 // vivo dos blocos pelo texto (auto-registra a categoria `kind: 'search'`).
 import '@blockly/toolbox-search'
@@ -29,6 +30,7 @@ import { registerFieldColourSZ } from './fields/FieldColourSZ'
 import { registerFieldJsonData } from './fields/FieldJsonData'
 import { registerFieldModelClipPicker } from './fields/FieldModelClipPicker'
 import { registerFieldNamePicker } from './fields/FieldNamePicker'
+import { registerFieldSceneRegionPicker } from './fields/FieldSceneRegionPicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
@@ -38,7 +40,6 @@ import { registerMoreBlocksItem } from './moreBlocksItem'
 import { organizeBlocks } from './organize'
 import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
 import { PROJECT_AREA_FRAME_TYPES } from './projectAreas'
-import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
 
@@ -181,7 +182,12 @@ function registerOrganizeContextMenu(): void {
     scopeType: Blockly.ContextMenuRegistry.ScopeType.WORKSPACE,
     displayText: () => 'Organizar blocos',
     preconditionFn: (scope) =>
-      (scope.workspace?.getTopBlocks(false).length ?? 0) > 0 ? 'enabled' : 'disabled',
+      // O editor Python tem o próprio "Organizar blocos" (pelas áreas do projeto Python).
+      (scope.workspace as { __szOrganizePython?: unknown } | undefined)?.__szOrganizePython
+        ? 'hidden'
+        : (scope.workspace?.getTopBlocks(false).length ?? 0) > 0
+          ? 'enabled'
+          : 'disabled',
     callback: (scope) => organizeBlocks(scope.workspace),
   })
 }
@@ -205,14 +211,17 @@ function registerScreenshotContextMenu(): void {
     callback: (scope) => {
       const workspace = scope.workspace
       if (!workspace) return
-      void exportWorkspaceImage(workspace).then((result) => {
-        if (!result.downloaded) {
-          const message =
-            'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.'
-          // O aviso no canto do editor; o alerta do navegador só onde não há editor do Estúdio.
-          if (!notifyWorkspace(workspace, message)) window.alert(message)
-        }
-      })
+      // Sob demanda: a foto dos blocos (~7 KB) não entra no pacote de abertura do modo Blocos.
+      void import('./screenshot').then(({ exportWorkspaceImage }) =>
+        exportWorkspaceImage(workspace).then((result) => {
+          if (!result.downloaded) {
+            const message =
+              'Não consegui gerar a imagem dos blocos. Se algum bloco usa uma imagem da internet, isso pode bloquear a captura.'
+            // O aviso no canto do editor; o alerta do navegador só onde não há editor do Estúdio.
+            if (!notifyWorkspace(workspace, message)) window.alert(message)
+          }
+        }),
+      )
     },
   })
 }
@@ -271,6 +280,8 @@ export function ensureBlocklyInitialized(): void {
   // Traduz a UI nativa do Blockly (menu de contexto: Desfazer, Refazer,
   // "Arrumar Blocos", Recolher/Expandir, Excluir, etc.) para PT-BR.
   Blockly.setLocale(PtBr as unknown as Record<string, string>)
+  // O desenho não sobe o DOM inteiro por bloco para guardar uma posição que ninguém lê.
+  installDrawerOriginShortcut()
   // Blockly 11 removeu FieldColour do core — registramos o plugin oficial
   // para que `field_colour` continue funcionando (usado por extensões) e
   // adicionamos `field_colour_sz` com paleta MakeCode + input HEX.
@@ -296,6 +307,8 @@ export function ensureBlocklyInitialized(): void {
   registerFieldAnimationPicker()
   // Nome da animação de um modelo 3D do Molda (clipes lidos do próprio .glb).
   registerFieldModelClipPicker()
+  // Nome da região de um cenário do Molda (as regiões lidas dos cenários do projeto).
+  registerFieldSceneRegionPicker()
   registerFieldCampaignStage()
   registerFieldJsonData()
   registerFieldSolidTilesPicker()

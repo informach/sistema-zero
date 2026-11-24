@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { ProjectAsset } from '#core'
+import { miniaturasDosModelos } from '../../three/modelThumbnails'
 
 /**
  * Campo Blockly de IMAGEM: mostra o NOME do asset (string) e, ao clicar, abre um
@@ -21,11 +22,12 @@ interface AssetAccessor {
  */
 export function filterAssetsForPicker(
   assets: readonly ProjectAsset[],
-  kind: 'image' | '3d' | 'audio',
+  kind: 'image' | '3d' | 'audio' | 'scene3d',
   filter?: 'tilemap' | 'model3d' | 'environment3d',
 ): ProjectAsset[] {
   return assets.filter((a) => {
     if (!a) return false
+    if (kind === 'scene3d') return a.kind === 'scene3d'
     if (kind === '3d') {
       if (filter === 'model3d') return a.kind === 'model3d'
       if (filter === 'environment3d') return a.kind === 'environment3d'
@@ -235,6 +237,17 @@ function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
   if (theme) content.setAttribute('data-sz-theme', theme)
 }
 
+/** A miniatura de 40 px da grade: pixel art nítida nas imagens, suave no modelo desenhado. */
+function miniaturaEmImagem(src: string, pixelada: boolean): HTMLImageElement {
+  const im = document.createElement('img')
+  im.src = src
+  im.alt = ''
+  im.width = 40
+  im.height = 40
+  im.style.cssText = `width:40px;height:40px;object-fit:contain;${pixelada ? 'image-rendering:pixelated;' : ''}`
+  return im
+}
+
 export class FieldAssetPicker extends Blockly.FieldTextInput {
   /**
    * Filtro opcional da grade: `'tilemap'` só lista assets com metadado de MAPA
@@ -247,12 +260,12 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    * céu .hdr) ou `'audio'` (som). Vem da DEFINIÇÃO do bloco (`kind` no JSON) —
    * estrutural, não serializa. O VALOR do campo continua sendo só o nome (string).
    */
-  private assetKind: 'image' | '3d' | 'audio'
+  private assetKind: 'image' | '3d' | 'audio' | 'scene3d'
 
   constructor(
     text: string,
     filter?: 'tilemap' | 'model3d' | 'environment3d',
-    kind: 'image' | '3d' | 'audio' = 'image',
+    kind: 'image' | '3d' | 'audio' | 'scene3d' = 'image',
   ) {
     super(text)
     this.assetFilter = filter
@@ -264,7 +277,10 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
   ): FieldAssetPicker {
     // `new this(...)` NÃO é garantido na fromJson herdada (algumas hardcodam a
     // classe base) — sobrescrevemos para garantir a instância correta.
-    const kind = options.kind === '3d' || options.kind === 'audio' ? options.kind : 'image'
+    const kind =
+      options.kind === '3d' || options.kind === 'audio' || options.kind === 'scene3d'
+        ? options.kind
+        : 'image'
     return new FieldAssetPicker(
       `${options.text ?? ''}`,
       options.filter === 'tilemap' ||
@@ -273,6 +289,15 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         ? options.filter
         : undefined,
       kind,
+    )
+  }
+
+  protected override getText_(): string | null {
+    if (this.assetKind !== 'scene3d') return super.getText_()
+    const ws = this.getSourceBlock()?.workspace as unknown as AssetAccessor | undefined
+    return (
+      ws?.__szAssets?.().find((a) => a.kind === 'scene3d' && a.id === this.getValue())?.name ??
+      'Escolher cenário'
     )
   }
 
@@ -291,7 +316,13 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     wrap.setAttribute('role', 'group')
     wrap.setAttribute(
       'aria-label',
-      kind === '3d' ? 'Escolher modelo 3D' : kind === 'audio' ? 'Escolher som' : 'Escolher imagem',
+      kind === 'scene3d'
+        ? 'Escolher cenário'
+        : kind === '3d'
+          ? 'Escolher modelo 3D'
+          : kind === 'audio'
+            ? 'Escolher som'
+            : 'Escolher imagem',
     )
     wrap.style.cssText =
       'padding:8px;width:260px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
@@ -299,13 +330,15 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     if (assets.length === 0) {
       const empty = document.createElement('div')
       empty.textContent =
-        kind === '3d'
-          ? 'Nenhum modelo 3D no projeto ainda. Monte um no Molda e toque em "Trazer do Molda", em "Modelos 3D" no menu ⋯ (ou envie um .glb/.hdr por lá).'
-          : kind === 'audio'
-            ? 'Nenhum som no projeto ainda. Abra "Sons" no menu ⋯ da barra de cima e envie um áudio.'
-            : this.assetFilter === 'tilemap'
-              ? 'Nenhum mapa ainda. Desenhe um MAPA no Pinta e toque no foguete "Usar no Estúdio" (ou fatie uma imagem em "Imagens", no menu ⋯).'
-              : 'Nenhuma imagem no projeto ainda. Abra "Imagens" no menu ⋯ da barra de cima para adicionar.'
+        kind === 'scene3d'
+          ? 'Nenhum cenário no projeto ainda. Use “Trazer do Molda” em “Modelos 3D” e escolha Cenários.'
+          : kind === '3d'
+            ? 'Nenhum modelo 3D no projeto ainda. Monte um no Molda e toque em "Trazer do Molda", em "Modelos 3D" no menu ⋯ (ou envie um .glb/.hdr por lá).'
+            : kind === 'audio'
+              ? 'Nenhum som no projeto ainda. Abra "Sons" no menu ⋯ da barra de cima e envie um áudio.'
+              : this.assetFilter === 'tilemap'
+                ? 'Nenhum mapa ainda. Desenhe um MAPA no Pinta e toque no foguete "Usar no Estúdio" (ou fatie uma imagem em "Imagens", no menu ⋯).'
+                : 'Nenhuma imagem no projeto ainda. Abra "Imagens" no menu ⋯ da barra de cima para adicionar.'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px 2px 8px;line-height:1.4;'
       wrap.appendChild(empty)
@@ -321,24 +354,35 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
         btn.setAttribute('aria-label', a.name)
         btn.style.cssText =
           'display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);cursor:pointer;'
-        // Miniatura: imagem real p/ `image`; um emoji p/ 3D/áudio (um .glb/.mp3
-        // não renderiza como <img>). 📦 modelo · 🌅 céu HDR · 🔊 som.
+        // Miniatura: imagem real p/ `image`; o modelo 3D desenhado uma vez pelo three.js
+        // (`three/modelThumbnails.ts`, guardado na memória), com o 📦 enquanto desenha ou se não
+        // der; um emoji p/ céu HDR e som (um .hdr/.mp3 não vira <img>). 🌅 céu · 🔊 som.
+        const pronta = miniaturasDosModelos.pronta(a)
         let thumb: HTMLElement
         if (a.kind === 'image') {
-          const im = document.createElement('img')
-          im.src = a.dataUrl
-          im.alt = ''
-          im.width = 40
-          im.height = 40
-          im.style.cssText = 'width:40px;height:40px;object-fit:contain;image-rendering:pixelated;'
-          thumb = im
+          thumb = miniaturaEmImagem(a.dataUrl, true)
+        } else if (pronta) {
+          thumb = miniaturaEmImagem(pronta, false)
         } else {
           const icon = document.createElement('span')
           icon.setAttribute('aria-hidden', 'true')
-          icon.textContent = a.kind === 'environment3d' ? '🌅' : a.kind === 'audio' ? '🔊' : '📦'
+          icon.textContent =
+            a.kind === 'scene3d'
+              ? '🏞️'
+              : a.kind === 'environment3d'
+                ? '🌅'
+                : a.kind === 'audio'
+                  ? '🔊'
+                  : '📦'
           icon.style.cssText =
             'width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:26px;'
           thumb = icon
+          if (a.kind === 'model3d' && pronta === undefined) {
+            void miniaturasDosModelos.pedir(a).then((url) => {
+              // A grade pode ter fechado (ou reaberto com outra) enquanto o modelo era desenhado.
+              if (url && icon.isConnected) icon.replaceWith(miniaturaEmImagem(url, false))
+            })
+          }
         }
         const label = document.createElement('span')
         label.textContent = a.name
@@ -356,8 +400,8 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
           // sugestão reconhecer o número que ELA MESMA escreveu da outra vez e
           // acompanhar a troca de imagem — sem nunca tocar num valor digitado.
           const previousAssetName = `${this.getValue() ?? ''}`
-          this.setValue(a.name)
-          applySuggestedSize(this, a, previousAssetName)
+          this.setValue(kind === 'scene3d' ? a.id : a.name)
+          if (kind !== 'scene3d') applySuggestedSize(this, a, previousAssetName)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
         grid.appendChild(btn)
@@ -365,6 +409,12 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
       wrap.appendChild(grid)
     }
 
+    // A scene selection stores its immutable ID; children choose the visible name, never type IDs.
+    if (kind === 'scene3d') {
+      content.appendChild(wrap)
+      Blockly.DropDownDiv.showPositionedByField(this, () => {})
+      return
+    }
     // Fallback de texto livre (também serve para digitar um nome ainda não criado).
     const row = document.createElement('div')
     row.style.cssText =

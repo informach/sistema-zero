@@ -236,6 +236,200 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('piso de inventário atravessa a reserva, os erros 409, o commit idempotente e o DELETE', async () => {
+    const ctx = buildWithTools()
+    const pending = await reserve(ctx, 'pinta', 'folha', { kind: 'tileset', formatVersion: 6 })
+    expect(pending.status).toBe(200)
+    const active = await reserve(ctx, 'pinta', 'mapa', {
+      kind: 'tilemap',
+      formatVersion: 7,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(active)).toMatchObject({
+      revision: 1,
+      formatVersion: 7,
+      maxReadFormatVersion: 7,
+      inventoryFloor: 7,
+    })
+    const path = '/members/creations/pinta/folha'
+    for (const response of [
+      await req(ctx.app, 'POST', `${path}/commit`, { revision: 1 }),
+      await reserve(ctx, 'pinta', 'folha', { kind: 'tileset', formatVersion: 6 }),
+      await req(ctx.app, 'DELETE', path, { baseRevision: 0, maxFormatVersion: 6 }),
+    ]) {
+      expect(response.status).toBe(409)
+      expect(await json(response)).toMatchObject({
+        error: { code: 'CREATION_CLIENT_OUTDATED' },
+        details: { requiredVersion: 7 },
+      })
+    }
+    const reader = await reserve(ctx, 'pinta', 'art', {
+      kind: 'sprite',
+      formatVersion: 1,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(reader)).toMatchObject({
+      formatVersion: 1,
+      inventoryFloor: 7,
+      maxReadFormatVersion: 7,
+    })
+    const unknown = await reserve(ctx, 'pinta', 'future', { kind: 'map-set', formatVersion: 99 })
+    expect(await json(unknown)).toMatchObject({ formatVersion: 99, inventoryFloor: 99 })
+    const denied = await reserve(ctx, 'pinta', 'art', {
+      kind: 'sprite',
+      formatVersion: 1,
+      maxReadFormatVersion: 7,
+    })
+    expect(await json(denied)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 99 },
+    })
+    expect(
+      (
+        await reserve(ctx, 'pinta', 'art', {
+          kind: 'sprite',
+          formatVersion: 1,
+          maxReadFormatVersion: 99,
+        })
+      ).status,
+    ).toBe(400)
+  })
+  test('Pinta B6 → leitor A → B6 conserva o confirmado durante reservas, conflitos e recusas antigas', async () => {
+    const ctx = buildWithTools()
+    const id = 'vila-rollout-6'
+    const path = `/members/creations/pinta/${id}`
+    const initial = await saveItem(ctx, 'pinta', id, { kind: 'tilemap', formatVersion: 4 })
+    const promoted = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+      name: 'Vila com colisões autorais',
+    })
+    expect(promoted.status).toBe(200)
+    const ticket = await json(promoted)
+    // Uma reserva não é prova de upload, nem pode mudar o documento visível.
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(initial.item)
+    for (const confirmed of [false, true]) {
+      if (confirmed) expect((await commit(ctx, 'pinta', id, ticket.revision)).status).toBe(200)
+      for (const formatVersion of [1, 2, 3, 4, 5]) {
+        const denied = await reserve(ctx, 'pinta', id, {
+          kind: 'tilemap',
+          formatVersion,
+          baseRevision: confirmed ? ticket.revision : initial.item.revision,
+        })
+        expect(denied.status).toBe(409)
+        expect(await json(denied)).toMatchObject({
+          error: { code: 'CREATION_CLIENT_OUTDATED' },
+          details: { requiredVersion: 6 },
+        })
+      }
+    }
+    const confirmed = (await listOf(ctx, 'pinta'))[0]
+    const before = structuredClone(await ctx.creations.get(USER, 'pinta', id))
+    expect(confirmed).toMatchObject({ formatVersion: 6, revision: ticket.revision })
+    // A lê 6 mas escreve 4: o rollback pode baixar; não pode rebaixar nem apagar.
+    const downloaded = await req(ctx.app, 'GET', `${path}/download`)
+    expect(downloaded.status).toBe(200)
+    expect(await json(downloaded)).toMatchObject({
+      storageKey: ticket.storageKey,
+      revision: ticket.revision,
+      summary: confirmed,
+    })
+    const oldDelete = await req(ctx.app, 'DELETE', path, {
+      baseRevision: ticket.revision,
+      maxFormatVersion: 4,
+    })
+    expect(oldDelete.status).toBe(409)
+    expect(await json(oldDelete)).toMatchObject({ error: { code: 'CREATION_CLIENT_OUTDATED' } })
+    const stale = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+    })
+    expect(stale.status).toBe(409)
+    expect(await json(stale)).toMatchObject({ error: { code: 'CREATION_STALE_BASE' } })
+    expect(await ctx.creations.get(USER, 'pinta', id)).toEqual(before)
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(confirmed)
+    const resumed = await saveItem(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: ticket.revision,
+      name: 'Vila retomada no B6',
+    })
+    expect(resumed.item.revision).toBeGreaterThan(ticket.revision)
+    expect(resumed.item.formatVersion).toBe(6)
+    expect(resumed.previousStorageKey).toBe(ticket.storageKey)
+  })
+
+  test('a confirmação tardia de A4 não confirma a reserva B6 nem apaga o último estado confirmado', async () => {
+    const ctx = buildWithTools()
+    const id = 'vila-reserva-antiga'
+    const initial = await saveItem(ctx, 'pinta', id, { kind: 'tilemap', formatVersion: 4 })
+    const a = await json(
+      await reserve(ctx, 'pinta', id, {
+        kind: 'tilemap',
+        formatVersion: 4,
+        baseRevision: initial.item.revision,
+      }),
+    )
+    const bResponse = await reserve(ctx, 'pinta', id, {
+      kind: 'tilemap',
+      formatVersion: 6,
+      baseRevision: initial.item.revision,
+    })
+    expect(bResponse.status).toBe(200)
+    const b = await json(bResponse)
+    expect(b.revision).toBeGreaterThan(a.revision)
+    const before = structuredClone(await ctx.creations.get(USER, 'pinta', id))
+    const stale = await commit(ctx, 'pinta', id, a.revision)
+    expect(stale.status).toBe(409)
+    expect(await json(stale)).toMatchObject({ error: { code: 'CREATION_REVISION_MISMATCH' } })
+    expect(await ctx.creations.get(USER, 'pinta', id)).toEqual(before)
+    expect((await listOf(ctx, 'pinta'))[0]).toEqual(initial.item)
+    expect((await commit(ctx, 'pinta', id, b.revision)).status).toBe(200)
+    expect((await listOf(ctx, 'pinta'))[0]).toMatchObject({
+      formatVersion: 6,
+      revision: b.revision,
+    })
+  })
+
+  test('Pinta capacidade 4 bloqueia gravador 3 durante a reserva e após o commit', async () => {
+    const ctx = buildWithTools()
+    const first = await saveItem(ctx, 'pinta', 'precisao', { kind: 'tilemap', formatVersion: 3 })
+    const promoted = await json(
+      await reserve(ctx, 'pinta', 'precisao', {
+        kind: 'tilemap',
+        formatVersion: 4,
+        baseRevision: first.item.revision,
+      }),
+    )
+    const old = () =>
+      reserve(ctx, 'pinta', 'precisao', {
+        kind: 'tilemap',
+        formatVersion: 3,
+        baseRevision: first.item.revision,
+      })
+    for (const confirmed of [false, true]) {
+      if (confirmed)
+        expect((await commit(ctx, 'pinta', 'precisao', promoted.revision)).status).toBe(200)
+      const refused = await old()
+      expect(refused.status).toBe(409)
+      expect(await json(refused)).toMatchObject({
+        error: { code: 'CREATION_CLIENT_OUTDATED' },
+        details: { requiredVersion: 4 },
+      })
+    }
+    expect((await listOf(ctx, 'pinta'))[0].formatVersion).toBe(4)
+    const oldDelete = await req(ctx.app, 'DELETE', '/members/creations/pinta/precisao', {
+      baseRevision: promoted.revision,
+      maxFormatVersion: 3,
+    })
+    expect(oldDelete.status).toBe(409)
+    expect(await json(oldDelete)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 4 },
+    })
+  })
   test('a versão verificada do documento precisa coincidir com a reserva em ambos os sentidos', async () => {
     const ctx = buildWithTools()
     for (const [reservedVersion, verifiedVersion] of [

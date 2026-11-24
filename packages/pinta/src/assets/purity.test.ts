@@ -17,7 +17,7 @@ const RAIZ = resolve(import.meta.dir, '..')
 const ENTRADA = resolve(import.meta.dir, 'index.ts')
 
 /** Casa `import ... from '...'` e `export ... from '...'`, incluindo os de tipo. */
-const IMPORT_RE = /(?:^|\n)\s*(?:import|export)\b[^'"\n]*?from\s*['"]([^'"]+)['"]/g
+const IMPORT_RE = /(?:^|\n)\s*(?:import|export)\b(?:\{[^}]*\}|[^'"\n])*?from\s*['"]([^'"]+)['"]/g
 
 function resolverArquivo(base: string, especificador: string): string | null {
   const bruto = resolve(dirname(base), especificador)
@@ -94,4 +94,18 @@ describe('@sistemazero/pinta/assets é puro', () => {
     // E o detector encontra React quando ele existe: o `PintaLesson` é o contra-exemplo vivo.
     expect(externos(resolve(RAIZ, 'lesson/PintaLesson.tsx'))).toContain('react')
   })
+})
+
+const causal = fechamento(resolve(import.meta.dir, 'causal.ts'))
+it('the private causal asset entry reaches the native codecs without a browser renderer', () => {
+  const names = [...causal.keys()].map(curto)
+  expect(names).toContain('export/pintaCausalManifest.ts')
+  expect(names).toContain('export/pintaCausalTransition.ts')
+  for (const [file, trail] of causal) {
+    expect(
+      externos(file).some((item) => item === 'react' || item.startsWith('react/')),
+      trail.map(curto).join(' → '),
+    ).toBe(false)
+    expect(curto(file)).not.toMatch(/^(components|lesson|state)\//)
+  }
 })

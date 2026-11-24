@@ -1,3 +1,19 @@
+import type {
+  PintaPaletteBase,
+  PintaPaletteCommitProof,
+  PintaPaletteHead,
+  PintaPaletteTicket,
+} from '@sistemazero/core/creations/pinta-palette-writer'
+import type {
+  StudioSealedReceipt,
+  StudioSealedRequirements,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+import type {
+  StudioSealedBase,
+  StudioSealedCommitProof,
+  StudioSealedHead,
+  StudioSealedTicket,
+} from '@sistemazero/core/creations/studio-sealed-writer'
 import type { CourseAudience } from '../course/course'
 import type {
   CreationDraftState,
@@ -23,7 +39,7 @@ export interface CreationUploadInput {
    * PARTES que a revisão referencia (hash de conteúdo; `bytes` só precisa vir para as que o
    * item ainda não tem). Ausente/vazio = blob único (Pinta, clientes antigos).
    */
-  parts?: ReadonlyArray<{ hash: string; bytes?: number }>
+  parts?: ReadonlyArray<{ hash: string; bytes?: number; upload?: true }>
   /**
    * A revisão da nuvem que o APARELHO conhece para este item (0 = nunca viu / item novo).
    * Quando vem, a reserva só passa se for a revisão CORRENTE: um aparelho atrasado não
@@ -33,6 +49,10 @@ export interface CreationUploadInput {
   baseRevision?: number
   /** Ausente = formato legado (1); nunca pode rebaixar o formato corrente ou reservado. */
   formatVersion?: number
+  maxReadFormatVersion?: number
+  /** Private writer negotiation, derived by the authenticated palette route. */
+  paletteWrite?: PintaPaletteBase
+  studioSeal?: StudioSealedBase & { requirements: StudioSealedRequirements }
   /** Impressão digital do conteúdo (`v1:<sha256>`), promovida no commit. */
   contentFingerprint?: string | null
   now: Date
@@ -48,7 +68,14 @@ export interface CreationUploadInput {
 /** O que a reserva devolve. */
 export type CreationUploadReservation =
   /** A revisão nova (a chave do R2 é derivada dela) + as partes que FALTAM no R2 (a assinar). */
-  | { ok: true; revision: number; missingParts: CreationPartRef[] }
+  | {
+      ok: true
+      revision: number
+      missingParts: CreationPartRef[]
+      inventoryFloor?: number
+      paletteTicket?: PintaPaletteTicket
+      studioSealTicket?: StudioSealedTicket
+    }
   /** Partes faltantes vieram sem `bytes`: nada reservado; o cliente volta com eles. */
   | { ok: false; reason: 'parts-need-bytes'; hashes: string[] }
   /** Manifesto + partes passam do teto por item. */
@@ -91,9 +118,20 @@ export type CreationCommitResult =
       alreadyCommitted: false
       previousStorageRef: string | null
       releasedPartRefs: CreationPartRef[]
+      paletteHead?: PintaPaletteHead
+      paletteItem?: CreationSummary
+      studioSeal?: StudioSealedCommitResult
     }
   /** A revisão pedida JÁ é a corrente (retry de um 200 perdido): idempotente. */
-  | { ok: true; alreadyCommitted: true; previousStorageRef: null; releasedPartRefs: [] }
+  | {
+      ok: true
+      alreadyCommitted: true
+      previousStorageRef: null
+      releasedPartRefs: []
+      paletteHead?: PintaPaletteHead
+      paletteItem?: CreationSummary
+      studioSeal?: StudioSealedCommitResult
+    }
   /** Não é a revisão reservada (upload velho, outro navegador reservou depois, nada reservado). */
   | {
       ok: false
@@ -110,8 +148,16 @@ export type CreationDeleteResult =
       storageRef: string | null
       partRefs: CreationPartRef[]
       revision: number
+      paletteHead?: PintaPaletteHead
+      studioHead?: StudioSealedHead
     }
   | { ok: false; reason: 'stale-base'; currentRevision: number }
+
+export interface StudioSealedCommitResult {
+  studioHead: StudioSealedHead
+  item: CreationSummary
+  studioSealReceipt: StudioSealedReceipt
+}
 
 export interface CreationsRepository {
   readonly audience?: CourseAudience
@@ -169,6 +215,8 @@ export interface CreationsRepository {
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
+    paletteProof?: PintaPaletteCommitProof & { accountId: string }
+    studioProof?: StudioSealedCommitProof
     now: Date
     /** Revalidados no commit, depois do PUT, sob lock por perfil. */
     limits: CreationUploadInput['limits']
@@ -187,5 +235,7 @@ export interface CreationsRepository {
     baseRevision: number,
     now: Date,
     maxFormatVersion?: number,
+    paletteWrite?: PintaPaletteBase & { accountId: string },
+    studioSeal?: StudioSealedBase & { accountId: string },
   ): Promise<CreationDeleteResult>
 }

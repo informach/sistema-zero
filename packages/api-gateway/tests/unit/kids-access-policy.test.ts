@@ -81,6 +81,10 @@ describe('áreas separadas no servidor', () => {
       '/hub/internal/showcase-thread-studio/prepare',
       '/hub/internal/showcase-thread-studio-standalone',
       '/hub/internal/showcase-thread-studio-standalone/prepare',
+      '/hub/internal/showcase-thread-studio/update',
+      '/hub/internal/showcase-thread-studio-standalone/update',
+      '/hub/internal/showcase-thread-studio/touch',
+      '/hub/internal/showcase-source',
     ]) {
       expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(true)
       expect(kidsMayAccess(student, path, 'DELETE', 'andre')).toBe(false)
@@ -91,6 +95,8 @@ describe('áreas separadas no servidor', () => {
       '/hub/internal/showcase-thread-studio/prepare/retire',
       '/hub/internal/showcase-thread-studio-standalone/prepare/extra',
       '/hub/internal/showcase-thread-studio-standalone/retire',
+      '/hub/internal/showcase-thread-studio/update/extra',
+      '/hub/internal/showcase-source/other',
     ])
       expect(kidsMayAccess(student, path, 'POST', 'andre')).toBe(false)
   })
@@ -136,6 +142,16 @@ describe('áreas separadas no servidor', () => {
     for (const path of ['/members/room', '/members/gamification/me', '/members/coursesx'])
       expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(false)
   })
+  // Retorno da Helena de 21/11/2026: o gateway recusava as duas leituras (KIDS_CONTEXT_FORBIDDEN)
+  // e o Início da área dos pais mostrava "Não foi possível conferir as ofertas agora".
+  test('responsável lê as ofertas do Início e o que a conta já comprou, só lendo', () => {
+    for (const path of ['/catalog/member-promotions', '/members/commerce/access']) {
+      expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(true)
+      expect(kidsMayAccess(parent, path, 'POST', 'pai')).toBe(false)
+    }
+    for (const path of ['/catalog/products', '/catalog/coupons', '/members/commerce/accessx'])
+      expect(kidsMayAccess(parent, path, 'GET', 'pai')).toBe(false)
+  })
 })
 
 describe('Arquipélago Vagalume', () => {
@@ -158,12 +174,25 @@ describe('Arquipélago Vagalume', () => {
       expect(kidsMayAccess(student, path, 'GET', 'aluno')).toBe(false)
     }
   })
+  test('versões publicadas das ilhas: a lista vai ao members (que só responde à equipe na própria conta); voltar uma versão é rota interna', () => {
+    const versoes = '/members/cenarios/publicacoes/perfis/sua-ilha/versoes'
+    // A borda deixa a criança chegar como em toda a oficina; o members recusa a sessão de perfil.
+    expect(kidsMayAccess(student, versoes, 'GET', 'aluno')).toBe(true)
+    expect(kidsMayAccess(parent, versoes, 'GET', 'responsavel')).toBe(false)
+    for (const sessao of [student, parent])
+      for (const method of ['POST', 'GET'])
+        expect(
+          kidsMayAccess(sessao, '/members/internal/cenarios/publicacoes/voltar', method, 'x'),
+        ).toBe(false)
+  })
   test('a seção Jogo do Admin nunca abre para aluno nem responsável', () => {
     for (const path of [
       '/arquipelago/admin/desafios',
       '/arquipelago//admin/desafios',
       '/arquipelago/ADMIN/desafios/x/publicar',
       '/arquipelago/admin/cobertura',
+      '/arquipelago/admin/cenarios/projetos',
+      '/arquipelago/admin/cenarios/catalogos',
     ]) {
       for (const method of ['GET', 'POST', 'PUT']) {
         expect(kidsMayAccess(student, path, method, 'aluno-admin')).toBe(false)

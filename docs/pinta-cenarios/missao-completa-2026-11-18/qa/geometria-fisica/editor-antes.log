@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src\components\editor\mapTools\playtestGeometry.test.ts:
+22 |     const scene=narrowWall(),world=playtestWorldFromScene(scene)
+23 |     const position={x:39,y:30}
+24 |     const {hw,hh}=playtestBody(16,'top')
+25 |     // Reproduction: every sample of the former body grid misses this actual tile.
+26 |     for(const dx of [-hw+.001,0,hw-.001])for(const dy of [-hh+.001,0,hh-.001])expect(sceneSolidAt(scene,position.x+dx,position.y+dy)).toBe(false)
+27 |     expect(playtestFree(world,'top',position.x,position.y)).toBe(false)
+                                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\src\components\editor\mapTools\playtestGeometry.test.ts:27:61)
+(fail) teste com personagem usa a geometria completa do documento > corpo sobre uma peça fina de conjunto não é considerado livre entre as amostras
+29 |   test('andar para a direita para no contorno real, sem atravessar a parede fina',()=>{
+30 |     const world=playtestWorldFromScene(narrowWall())
+31 |     let state={...playtestStart(world),x:20,y:30}
+32 |     for(let i=0;i<80;i++)state=stepPlaytest(state,{x:1,y:0,jump:false},16,world,'top').state
+33 |     const edge=40-playtestBody(16,'top').hw
+34 |     expect(state.x).toBeLessThanOrEqual(edge+.01)
+                         ^
+error: expect(received).toBeLessThanOrEqual(expected)
+
+Expected: <= 35.21
+Received: 59.168000000000035
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-cenarios\packages\pinta\src\components\editor\mapTools\playtestGeometry.test.ts:34:21)
+(fail) teste com personagem usa a geometria completa do documento > andar para a direita para no contorno real, sem atravessar a parede fina
+
+ 0 pass
+ 2 fail
+ 11 expect() calls
+Ran 2 tests across 1 file. [546.00ms]

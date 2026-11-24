@@ -1,0 +1,114 @@
+{
+  "at": "2026-11-19T23:14:48.011Z",
+  "version": "1.12.2",
+  "report": [
+    {
+      "folder": "vila/tiled",
+      "mapCount": 2,
+      "files": [
+        {
+          "map": "mapa-0",
+          "format": "json",
+          "input": "mapa.tmx",
+          "output": "mapa-tiled.json",
+          "bytes": 71918,
+          "sha256": "bf3393a45582c813a53e1630454ecff26c586b5277951278f7ceab1500b03ffc"
+        },
+        {
+          "map": "mapa-0",
+          "format": "tmx",
+          "input": "mapa.json",
+          "output": "mapa-tiled.tmx",
+          "bytes": 40998,
+          "sha256": "37955182d1d893a8d19457f6e8d824f26e3755ec2e49cc083c3b9856b24c13c0"
+        },
+        {
+          "map": "mapa-1",
+          "format": "json",
+          "input": "mapa.tmx",
+          "output": "mapa-tiled.json",
+          "bytes": 3252,
+          "sha256": "c1b9c27f2ac0ddebbb0070093521bbaae4e913b45bdf9971caedf5c2154aabc0"
+        },
+        {
+          "map": "mapa-1",
+          "format": "tmx",
+          "input": "mapa.json",
+          "output": "mapa-tiled.tmx",
+          "bytes": 3738,
+          "sha256": "66b5e5973451b4a1e6a8927f210b194ff58a76416823795ad43b6cb89ec5e84e"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "folder": "resources/tiled",
+      "mapCount": 1,
+      "files": [
+        {
+          "map": "mapa-0",
+          "format": "json",
+          "input": "mapa.tmx",
+          "output": "mapa-tiled.json",
+          "bytes": 4131,
+          "sha256": "d3bf890156a0a832947fcab3cf9f1d0ec2ae88fbe2c3d6e2cd8b28094c0afb70"
+        },
+        {
+          "map": "mapa-0",
+          "format": "tmx",
+          "input": "mapa.json",
+          "output": "mapa-tiled.tmx",
+          "bytes": 5335,
+          "sha256": "5e59d5bf07253f165d149918c7ca60ef84a8e83fbf933ee51373657bb9c62f12"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "folder": "physics/phaser",
+      "mapCount": 1,
+      "files": [
+        {
+          "map": "mapa-0",
+          "format": "json",
+          "input": "mapa.tmx",
+          "output": "mapa-tiled.json",
+          "bytes": 17276,
+          "sha256": "f3415c9c1b1631ee28a252daf630999935bda5e658360ff5fbba928cd3f10c92"
+        },
+        {
+          "map": "mapa-0",
+          "format": "tmx",
+          "input": "mapa.json",
+          "output": "mapa-tiled.tmx",
+          "bytes": 9256,
+          "sha256": "84229185bf55ecfd13f0b69050e1bdd19275c1d84b6fbbae7da1d19e4fc0642f"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "folder": "physics/art-tiled",
+      "mapCount": 1,
+      "files": [
+        {
+          "map": "mapa-0",
+          "format": "json",
+          "input": "mapa.tmx",
+          "output": "mapa-tiled.json",
+          "bytes": 18730,
+          "sha256": "379dc475acbf91dd90f35b6a43592a4b7ed917423fb83704c033cd57da574150"
+        },
+        {
+          "map": "mapa-0",
+          "format": "tmx",
+          "input": "mapa.json",
+          "output": "mapa-tiled.tmx",
+          "bytes": 9884,
+          "sha256": "dcd80ed2eabc5ff2d353ee408fbbbe544dbdcdda4e10932253a79d7b87e0c9f1"
+        }
+      ],
+      "problems": []
+    }
+  ]
+}

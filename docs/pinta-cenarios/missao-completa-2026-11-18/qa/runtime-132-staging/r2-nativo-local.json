@@ -1,0 +1,87 @@
+{
+  "scope": "local workerd with native R2; exact final payload and handler",
+  "miniflare": "4.20260730.0",
+  "workerd": "1.20261119.1",
+  "workerdBinarySha256": "a5068c8654ff47ee601ba1dea704c5ce8833afb7b338cfe3770feb8193a5b205",
+  "frameBytes": 26007007,
+  "sampleCount": 9,
+  "peakObservedBytes": 56578029,
+  "peakObservedMiB": 53.95701313018799,
+  "heapOnly": false,
+  "samples": [
+    {
+      "usedSize": 11925784,
+      "totalSize": 28864512,
+      "embedderHeapUsedSize": 386904,
+      "backingStorageSize": 1120536
+    },
+    {
+      "usedSize": 11925784,
+      "totalSize": 28864512,
+      "embedderHeapUsedSize": 386904,
+      "backingStorageSize": 1120536
+    },
+    {
+      "usedSize": 11522780,
+      "totalSize": 29339648,
+      "embedderHeapUsedSize": 386904,
+      "backingStorageSize": 27129464
+    },
+    {
+      "usedSize": 5855584,
+      "totalSize": 27668480,
+      "embedderHeapUsedSize": 238200,
+      "backingStorageSize": 27391365
+    },
+    {
+      "usedSize": 7778672,
+      "totalSize": 27668480,
+      "embedderHeapUsedSize": 773824,
+      "backingStorageSize": 33240453
+    },
+    {
+      "usedSize": 9566152,
+      "totalSize": 27668480,
+      "embedderHeapUsedSize": 1289680,
+      "backingStorageSize": 38671749
+    },
+    {
+      "usedSize": 11216208,
+      "totalSize": 27668480,
+      "embedderHeapUsedSize": 1676568,
+      "backingStorageSize": 43685253
+    },
+    {
+      "usedSize": 6684820,
+      "totalSize": 26619904,
+      "embedderHeapUsedSize": 371240,
+      "backingStorageSize": 30074245
+    },
+    {
+      "usedSize": 8432100,
+      "totalSize": 26791936,
+      "embedderHeapUsedSize": 877592,
+      "backingStorageSize": 26941682
+    }
+  ],
+  "receipt": {
+    "version": 1,
+    "state": "complete",
+    "planSha256": "cb95614580935dba1a11177421e8ea6b1105a0ccd1b98d4998bab517207fe729",
+    "operationalSha256": "b9414df8edd049cd689671a64da01c245e24abf8a7880c25b5a3e653de6d795d",
+    "distributionSha256": "132db1bdbf9c803d0e58bc76165ddfa8c298a25f816bf35d46366ce16604718e",
+    "releaseManifestSha256": "eec668d098be7605a1534983a588fb05e40da4ca218609c534911d1ad69b52ff",
+    "configurationSha256": "e67e817f6d24b074ad5cf2ddba0da99aef25da4574c1b54d6450f6ab3d57886b",
+    "workerVersion": "acfaa9ba-4aae-4fd2-bacf-45fc2d5edc1f",
+    "nonce": "bd331a2eed67c965cf4cf65ff39a16fd",
+    "files": 126,
+    "verifiedObjects": 128,
+    "bodyCleanupConfirmed": true,
+    "failures": [],
+    "activationPerformed": false
+  },
+  "unauthorizedStatus": 401,
+  "storedObjects": 128,
+  "remoteUploadPerformed": false,
+  "activationPerformed": false
+}

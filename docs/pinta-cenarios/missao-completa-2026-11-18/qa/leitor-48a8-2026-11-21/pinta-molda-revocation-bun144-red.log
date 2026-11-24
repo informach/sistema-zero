@@ -1,0 +1,10 @@
+bun test v1.4.4 (38afee6c8)
+
+src\components\editor\scene\SceneWorkshop.accessRevocation.test.tsx:
+(pass) revoking animation creation closes rename and regranting cannot resurrect its draft [351.30ms]
+
+ 1 pass
+ 6 filtered out
+ 0 fail
+ 6 expect() calls
+Ran 1 test across 1 file. [958.00ms]

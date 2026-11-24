@@ -15,6 +15,7 @@ import {
 } from './desafio-farol-criterios'
 import { montarProjetoFarol, montarProjetoFarolDaParte } from './desafio-farol-projeto'
 import { gravarArquivo } from './gravar-arquivo'
+import { organizarManifestos } from './organizar-projetos'
 import { farol } from './quizzes-cursos-curtos'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
 
@@ -867,3 +868,5 @@ gravarArquivo(
     2,
   )}\n`,
 )
+// Os projetos dos manifestos já organizados, como o "Organizar blocos" do Estúdio (organizar-projetos.ts).
+organizarManifestos([DIR])

@@ -167,6 +167,10 @@ const nextConfig: NextConfig = {
     '@sistemazero/pensa',
     '@sistemazero/pinta',
     '@sistemazero/molda',
+    // Molda Cenários (a oficina de cenários 3D): telas, documento e motor 3D.
+    '@sistemazero/molda-cenarios',
+    '@sistemazero/molda-cenarios-core',
+    '@sistemazero/molda-cenarios-motor',
     'three',
   ],
   turbopack: {

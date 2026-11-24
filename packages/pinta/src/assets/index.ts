@@ -19,6 +19,11 @@
  * ⚠️ Nada aqui pode importar de `components/`, `lesson/` ou `state/` — há um teste que percorre o
  * grafo e reprova se React entrar. Ver `assets/purity.test.ts`.
  */
+
+export { pintaValuesEqual } from '../core/assetEquality'
+export type { PintaMemoryAsset, PintaWorkshopAsset } from '../core/assetMemory'
+export { inheritPintaLocalOrigin, pintaLocalRevisionOf } from '../core/localAssetOrigin'
+export { PintaLocalConflictError, PintaLocalStorageError } from '../core/localStorageErrors'
 export {
   createAsset,
   createLessonAsset,
@@ -26,6 +31,7 @@ export {
   PINTA_LESSON_ASSET_OPTIONS,
   type PintaLessonAssetKind,
 } from '../core/newAsset'
+export type { PaletteAccount, PaletteAccountSnapshot } from '../core/paletteAccount'
 export {
   emptyPaletteLibrary,
   MAX_SAVED_PALETTES,
@@ -33,6 +39,7 @@ export {
   type PaletteLibrary,
   paletteLibraryContentKey,
   type RemovedPaletteMark,
+  readAccountPaletteLibrary,
   type SavedPalette,
   sanitizePaletteLibrary,
 } from '../core/paletteLibrary'
@@ -41,12 +48,19 @@ export {
   isObjectLayer,
   isPintaAssetLike,
   isTileLayer,
+  isTilesetKind,
+  type MapSetAsset,
   OBJECT_PROPERTY_KEY_PATTERN,
   PINTA_ASSET_KINDS,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   type PintaAsset,
   type PintaAssetKind,
+  pintaAssetDependencyIds,
+  pintaAssetSchema,
   sanitizePintaAsset,
+  type TileAnimationFrame,
   type TilemapAsset,
   type TilemapLayer,
   type TilemapObject,
@@ -54,11 +68,16 @@ export {
   type TilemapObjectPropertyValue,
   type TilemapTileLayer,
   type TilesetAsset,
+  type TileTerrain,
   tileLayerTilesetId,
   tilemapTilesetIds,
 } from '../core/project'
+export { PINTA_LESSON_MAP_LIMITS } from '../core/projectConfig'
+export { observePintaReferences } from '../core/sceneMapClosure'
 export { PINTA_TOOL_PRESETS, type PintaToolPreset } from '../core/toolCuration'
+export { isLegacyWorkshopAsset } from '../core/workshopAsset'
 export { type AssetImportResult, assetFromJson, assetToJson } from '../export/assetJson'
+export { MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 export { bitmapFromArt, cellsFromArt } from '../templates/art'
 export {
   buildPixelTileset,

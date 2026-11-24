@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\core\regionDocument.test.ts:
+163 | test('native region metadata preserves fractional rotations without rounding or normalization', () => {
+164 |   const map = example()
+165 |   for (const rotation of [0, 1.1, 359.9]) {
+166 |     const layers = map.layers.map(l => isObjectLayer(l) ? { ...l, objects: l.objects.map(o => ({ ...o, rotation })) } : l)
+167 |     const read = decodeRegionMapDocument({ ...map, layers })
+168 |     expect(read).not.toBeNull()
+                           ^
+error: expect(received).not.toBeNull()
+
+Received: null
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\core\regionDocument.test.ts:168:22)
+(fail) native region metadata preserves fractional rotations without rounding or normalization
+(pass) region document retains self-contained resource versions and refuses unknown resource data
+
+ 1 pass
+ 7 filtered out
+ 1 fail
+ 8 expect() calls
+Ran 2 tests across 1 file. [294.00ms]

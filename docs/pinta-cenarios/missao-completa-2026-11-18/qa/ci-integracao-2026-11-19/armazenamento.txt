@@ -1,0 +1,48 @@
+bun test v1.3.11 (af24e281)
+
+src\project-migrations\localV3.test.ts:
+(pass) v3 partitions migrate atomically, retaining identity, unknown metadata, head and source backup [1844.00ms]
+(pass) an old tab returning after migration creates a copy and cannot overwrite the current document [953.00ms]
+(pass) a deleted v3 identity becomes a v4 tombstone without removing the legacy head [47.00ms]
+(pass) a future legacy head is preserved and cannot create a replacement [78.00ms]
+(pass) Pro applications and budgets remain complete, including the history an old tab can still read [110.00ms]
+(pass) migration never prunes an over-budget application history to manufacture success
+(pass) foreign partition identity is rejected before any source is removed [78.00ms]
+(pass) a legacy write ordered before the promotion invalidates the captured snapshot and is retained [656.00ms]
+(pass) quota on the second promoted put leaves no partial backup or document and preserves the complete source [47.00ms]
+(pass) Python documents retain their portable version, files, runtime selection and dependency lock [266.00ms]
+(pass) project identity constructor does not read an inherited profile-budget entry [15.00ms]
+(pass) a future destination and both of its sources stay intact
+(pass) conflicting fields across source partitions are not silently resolved by spread order [47.00ms]
+(pass) a live legacy head without partitions cannot silently fall through to older formats [31.00ms]
+(pass) a previously promoted legacy head remains a harmless no-op after its partitions retire [485.00ms]
+(pass) orphaned legacy history is preserved instead of permitting an older fallback
+(pass) orphaned legacy thumbnail is preserved instead of permitting an older fallback
+(pass) orphaned legacy marker is preserved instead of permitting an older fallback
+
+src\state\projectJsonGraph.test.ts:
+(pass) the existing exit journal wire stays byte-identical after sharing the graph codec
+(pass) storage may use the established project JSON budget without expanding the exit-copy budget
+(pass) graph callers may tighten structural limits but cannot expand project limits
+
+src\state\projectStorageDocuments.test.ts:
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: the public writer and language reader preserve a complete revision [828.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: the public writer and language reader preserve a complete revision [203.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/classic: the public writer and language reader preserve a complete revision [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > python/pro: the public writer and language reader preserve a complete revision [328.00ms]
+(pass) language-independent project partitions and transaction coordinator > Python classic: pending requirements remain editable after saving and reopening [15.00ms]
+(pass) language-independent project partitions and transaction coordinator > Python pro: pending requirements remain editable after saving and reopening [63.00ms]
+(pass) language-independent project partitions and transaction coordinator > closed Python materials keep their own audio budget during a Pinta synchronization read [219.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/classic: full document, shell, JSON and fingerprint survive storage [78.00ms]
+(pass) language-independent project partitions and transaction coordinator > javascript/pro: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > python/classic: full document, shell, JSON and fingerprint survive storage
+(pass) language-independent project partitions and transaction coordinator > python/pro: full document, shell, JSON and fingerprint survive storage [140.00ms]
+(pass) language-independent project partitions and transaction coordinator > recovery commits Python source and environment together after exit [16.00ms]
+(pass) language-independent project partitions and transaction coordinator > a stale writer cannot overwrite a configuration-only Python change [78.00ms]
+(pass) language-independent project partitions and transaction coordinator > a failed partition write preserves the complete previous Python revision
+(pass) language-independent project partitions and transaction coordinator > listing a Python project reads only lightweight metadata, never the dependency lock
+
+ 36 pass
+ 0 fail
+ 185 expect() calls
+Ran 36 tests across 3 files. [17.74s]

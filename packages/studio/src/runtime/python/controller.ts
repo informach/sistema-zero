@@ -3,13 +3,20 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import type { StudioPythonMissionProbe } from '@sistemazero/core/studio/python-mission-observation'
 import type { PythonProjectDocument } from '../../core/editableProject'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+} from '../../core/pintaRegionalReference'
+import type { ProjectStorageScope } from '../../state/projectStorageRuntime'
 import type { StudioRuntimeEnvironment } from '../environment'
 import { assertStudioRuntimeExecutionAccess, assertStudioRuntimeOperationAccess } from '../registry'
 import type {
   StudioExecutionIdentity,
   StudioRuntimeEvent,
   StudioRuntimeInput,
+  StudioRuntimePerformanceSlice,
   StudioRuntimeSession,
   StudioRuntimeSnapshot,
 } from '../types'
@@ -39,6 +46,7 @@ interface Generation {
   project: PythonProjectDocument
   writerEpoch: number | null
   environment: StudioRuntimeEnvironment
+  regionalScope?: ProjectStorageScope
   session?: StudioRuntimeSession
   unsubscribe?: () => void
   releaseFrame?: () => void
@@ -55,17 +63,27 @@ export function createPythonExecutionController(options: {
   canExecute(): boolean
   writerEpoch?(): number | null
   audioMuted?(): boolean
-  mountFrame(): { frame: HTMLIFrameElement; release(): void }
+  regionalScope?(): ProjectStorageScope | undefined
+  mountFrame(staging?: boolean): { frame: HTMLIFrameElement; release(): void; present?(): void }
   onEvent?(event: StudioRuntimeEvent): void
   /** A dedicated formative generation; absent for ordinary editor/public playback. */
   pythonActivity?: StudioPythonActivity
+  /**
+   * A aba Investigar do editor: a execução começa no modo de observação (o observador das
+   * missões, que lê as variáveis a cada quadro sem mudar o programa). Lido a cada Rodar.
+   */
+  observation?(): boolean
+  /** Keep keyboard ownership in the host while an isolated test runs. */
+  readonly background?: true
 }) {
+  const background = options.background === true
   const activity =
     options.pythonActivity === undefined
       ? undefined
       : StudioPythonActivitySchema.parse(options.pythonActivity)
   let view: PythonExecutionView = { status: 'idle' }
   let generation: Generation | undefined
+  let staged: Generation | undefined
   let disposed = false
   let releasing: Promise<void> = Promise.resolve()
   const listeners = new Set<() => void>()
@@ -86,6 +104,8 @@ export function createPythonExecutionController(options: {
       generation === current &&
       !current.abort.signal.aborted &&
       !current.environment.signal?.aborted &&
+      !current.regionalScope?.signal?.aborted &&
+      (!current.regionalScope || options.regionalScope?.() === current.regionalScope) &&
       options.canExecute() &&
       options.project()?.id === current.project.id &&
       epoch() === current.writerEpoch &&
@@ -93,7 +113,29 @@ export function createPythonExecutionController(options: {
     )
   }
   function requireOwner(current: Generation, preparing = false) {
+    if (staged === current) {
+      if (
+        disposed ||
+        current.abort.signal.aborted ||
+        current.environment.signal?.aborted ||
+        current.regionalScope?.signal?.aborted ||
+        !options.canExecute() ||
+        options.project() !== current.project ||
+        options.environment() !== current.environment ||
+        options.regionalScope?.() !== current.regionalScope ||
+        epoch() !== current.writerEpoch
+      )
+        throw cancelled()
+      return
+    }
     if (!owns(current) || (preparing && options.project() !== current.project)) throw cancelled()
+  }
+  function cancelStaged() {
+    if (!staged) return
+    const pending = staged
+    staged = undefined
+    pending.releaseAuthority?.()
+    pending.abort.abort()
   }
   function retire(): Promise<void> {
     const previous = generation
@@ -141,9 +183,13 @@ export function createPythonExecutionController(options: {
   }
   async function run(): Promise<void> {
     if (disposed) throw new Error('Esta área de execução foi encerrada.')
-    const cleanup = retire()
+    cancelStaged()
     const project = options.project()
     const environment = options.environment()
+    const regionalScope = project?.assets?.some(hasRegionalPintaReference)
+      ? options.regionalScope?.()
+      : undefined
+    const cleanup = regionalScope ? Promise.resolve() : retire()
     if (!project || !environment || !options.canExecute()) {
       const message = !environment
         ? 'O ambiente Python ainda não está disponível nesta página.'
@@ -156,10 +202,17 @@ export function createPythonExecutionController(options: {
       abort: new AbortController(),
       project,
       environment,
+      regionalScope,
       writerEpoch: epoch(),
     }
-    generation = current
+    if (regionalScope) staged = current
+    else generation = current
     const authorityLost = () => {
+      if (staged === current) {
+        cancelStaged()
+        if (!generation) publish({ status: 'stopped' })
+        return
+      }
       if (generation !== current) return
       void retire()
       publish({
@@ -169,12 +222,19 @@ export function createPythonExecutionController(options: {
       })
     }
     environment.signal?.addEventListener('abort', authorityLost, { once: true })
-    current.releaseAuthority = () => environment.signal?.removeEventListener('abort', authorityLost)
-    publish({ status: 'loading', project })
+    regionalScope?.signal?.addEventListener('abort', authorityLost, { once: true })
+    current.releaseAuthority = () => {
+      environment.signal?.removeEventListener('abort', authorityLost)
+      regionalScope?.signal?.removeEventListener('abort', authorityLost)
+    }
+    if (!generation || !regionalScope) publish({ status: 'loading', project })
     try {
       await cleanup
       requireOwner(current, true)
-      const snapshot = await preparePythonExecutionSnapshot(project)
+      const snapshot = await preparePythonExecutionSnapshot(project, {
+        [PRIVATE_REGIONAL_PROJECT]: regionalScope,
+        signal: current.abort.signal,
+      })
       requireOwner(current, true)
       await environment.authorize?.({
         project,
@@ -197,7 +257,7 @@ export function createPythonExecutionController(options: {
         access: environment.access(project),
       })
       requireOwner(current, true)
-      const mounted = options.mountFrame()
+      const mounted = options.mountFrame(Boolean(regionalScope))
       current.releaseFrame = mounted.release
       const identity: StudioExecutionIdentity = Object.freeze({
         projectId: project.id,
@@ -211,6 +271,7 @@ export function createPythonExecutionController(options: {
         project,
         identity,
         signal: current.abort.signal,
+        [PRIVATE_REGIONAL_PROJECT]: regionalScope,
         frame: mounted.frame,
         hostAudio: {
           getMuted() {
@@ -228,9 +289,19 @@ export function createPythonExecutionController(options: {
           },
         },
         ...(activity ? { pythonActivity: activity } : {}),
+        ...(!activity && options.observation?.() ? { pythonMission: true as const } : {}),
+        ...(background ? { pythonBackground: true as const } : {}),
       })
       current.session = session
       requireOwner(current, true)
+      if (staged === current) {
+        staged = undefined
+        const release = retire()
+        generation = current
+        await release
+        requireOwner(current, true)
+        mounted.present?.()
+      }
       current.unsubscribe = session.subscribe((event) => handle(current, event))
       publish({ status: 'ready', project, identity: session.identity })
       requireOwner(current, true)
@@ -243,6 +314,15 @@ export function createPythonExecutionController(options: {
       await session.run()
       requireOwner(current)
     } catch (error) {
+      const failedCandidate = staged === current
+      if (failedCandidate) {
+        cancelStaged()
+        const message =
+          error instanceof Error ? error.message : 'Não foi possível executar o projeto.'
+        publish(
+          generation ? { ...view, error: message } : { status: 'failed', project, error: message },
+        )
+      }
       if (generation === current) {
         const wasCancelled = error instanceof DOMException && error.name === 'AbortError'
         void retire()
@@ -335,6 +415,7 @@ export function createPythonExecutionController(options: {
       return verifyStudioPythonActivityFeedback(feedback, activity)
     },
     stop(): Promise<void> {
+      cancelStaged()
       const cleanup = retire()
       if (!disposed) publish({ status: 'stopped' })
       return cleanup
@@ -357,6 +438,71 @@ export function createPythonExecutionController(options: {
       } finally {
         if (current.capture === pending) current.capture = undefined
       }
+    },
+    /**
+     * A aba Desempenho: liga (com um ouvinte) ou desliga (`null`) a medida da execução da vez. As
+     * fatias de uma execução que já saiu não chegam (o dono é conferido a cada fatia).
+     */
+    async measurePerformance(listener: ((slice: StudioRuntimePerformanceSlice) => void) | null) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.measurePerformance)
+        throw new Error('Este ambiente não mede o desempenho do programa.')
+      await session.measurePerformance(
+        listener
+          ? (slice) => {
+              if (owns(current)) listener(slice)
+            }
+          : null,
+      )
+      requireOwner(current)
+    },
+    /**
+     * A aba Investigar: pausa (`true`) ou continua o programa na troca de quadro; avançar 1 quadro
+     * com `step`. Só numa execução que começou no modo de observação (os valores pausados são
+     * lidos pelo observador das missões). Recusa no programa sem tela e no quadro anterior ao
+     * comando.
+     */
+    async pause(on: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pausePython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.pausePython(on)
+      requireOwner(current)
+      return result
+    },
+    async step() {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.stepPython) throw new Error('Este ambiente não pausa o programa.')
+      const result = await session.stepPython()
+      requireOwner(current)
+      return result
+    },
+    /**
+     * A aba Meus testes: aperta (`down`) ou solta uma tecla no programa da execução da vez, como
+     * o teclado faria. Recusa quando o quadro do Python não conhece o comando.
+     */
+    async pressKey(key: string, down: boolean) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.pressKey) throw new Error('Este ambiente não aperta teclas no programa.')
+      await session.pressKey(key, down)
+      requireOwner(current)
+    },
+    /**
+     * A aba Investigar: lê um valor do programa (uma variável, `a.b.c` no máximo quatro nomes)
+     * no próximo quadro, ou no fim quando o programa já terminou. Só numa execução que começou no
+     * modo de observação; nunca muda o programa.
+     */
+    async observe(probe: StudioPythonMissionProbe) {
+      const { current, session } = await active()
+      requireOwner(current)
+      if (!session.observePythonMission)
+        throw new Error('Esta execução não começou no modo de observação.')
+      const result = await session.observePythonMission(probe)
+      requireOwner(current)
+      return result
     },
     async input(requestId: string, response: StudioRuntimeInput) {
       const { current, session } = await active()
@@ -382,6 +528,7 @@ export function createPythonExecutionController(options: {
     async dispose() {
       if (disposed) return releasing
       disposed = true
+      cancelStaged()
       listeners.clear()
       await retire()
     },

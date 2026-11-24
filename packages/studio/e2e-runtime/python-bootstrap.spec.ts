@@ -412,7 +412,7 @@ test('the pinned loader and asm module download concurrently without invoking as
   }
 })
 
-test('only an installed Turtle preloads its protocol and four sources while CPython data is pending', async ({
+test('only an installed Turtle preloads its protocol and five sources while CPython data is pending', async ({
   page,
   context,
 }) => {
@@ -441,6 +441,8 @@ test('only an installed Turtle preloads its protocol and four sources while CPyt
         '_sz_turtle_backend.py',
         '_sz_turtle_colors.py',
         '_sz_turtle_limits.py',
+        // As formas do Pinta para a tartaruga (contrato do Turtle, frente do Pinta).
+        'formas_do_pinta.py',
         'turtle-protocol.mjs',
         'turtle.py',
       ])

@@ -3,6 +3,82 @@ import * as RealThree from 'three'
 import { installResizeObserverStub } from '../../__tests__/three3d/resizeObserverStub'
 import { gameThreeDRuntime } from '../runtime'
 
+it('recomeça no mesmo canvas sem perder seu contexto WebGL, liberando-o no encerramento', async () => {
+  const { api } = loadRuntime(),
+    partidas: RuntimeWorld[] = [],
+    descartes: number[] = []
+  api.runProject(() => {
+    const world = api.createScene('tela')
+    partidas.push(world)
+    const indice = partidas.length - 1
+    descartes.push(0)
+    api.createBox(world).geometry.addEventListener('dispose', () => {
+      descartes[indice] = (descartes[indice] ?? 0) + 1
+    })
+    api.animate(world, () => {})
+  })
+  const renderer = partidas[0]!.renderer
+  for (let i = 0; i < 3; i++) {
+    api.restart()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(partidas.length).toBe(i + 2)
+    expect(partidas.at(-1)!.renderer).toBe(renderer)
+    expect(partidas.at(-1)!.scene).not.toBe(partidas[i]!.scene)
+    expect(descartes[i]).toBe(1)
+    expect(renderer.loop).not.toBeNull()
+    expect(renderer.contextLosses).toBe(0)
+    expect(renderer.disposals).toBe(0)
+  }
+  api.disposeAll()
+  expect(renderer.contextLosses).toBe(1)
+  expect(renderer.disposals).toBe(1)
+  expect(renderer.loop).toBeNull()
+})
+
+it('o recomeço com o renderer mantido solta o mapa de sombra das luzes da partida anterior', async () => {
+  // Do 88c6dfb50 (frente dos cenários), retirado no 72e091418 só para caber na catraca e
+  // devolvido pela missão do Estúdio: um vazamento de GPU não sai para caber num teto.
+  const { api } = loadRuntime(),
+    partidas: RuntimeWorld[] = [],
+    sombrasSoltas: number[] = []
+  api.runProject(() => {
+    const world = api.createScene('tela')
+    partidas.push(world)
+    const indice = partidas.length - 1
+    sombrasSoltas.push(0)
+    world.scene.traverse((objeto) => {
+      const luz = objeto as RealThree.DirectionalLight
+      if (!luz.isDirectionalLight || !luz.castShadow) return
+      const soltar = luz.shadow.dispose.bind(luz.shadow)
+      luz.shadow.dispose = () => {
+        sombrasSoltas[indice] = (sombrasSoltas[indice] ?? 0) + 1
+        soltar()
+      }
+    })
+  })
+  api.restart()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(partidas).toHaveLength(2)
+  expect(partidas[1]!.renderer).toBe(partidas[0]!.renderer)
+  expect(sombrasSoltas[0]).toBeGreaterThan(0)
+  expect(sombrasSoltas[1]).toBe(0)
+  api.disposeAll()
+})
+
+it('libera o renderer da partida anterior quando o novo início não reutiliza aquele canvas', async () => {
+  const { api } = loadRuntime(),
+    partidas: RuntimeWorld[] = []
+  api.runProject(() => partidas.push(api.createScene(partidas.length ? 'outra' : 'tela')))
+  api.restart()
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(partidas).toHaveLength(2)
+  expect(partidas[1]!.renderer).not.toBe(partidas[0]!.renderer)
+  expect(partidas[0]!.renderer.contextLosses).toBe(1)
+  expect(partidas[0]!.renderer.disposals).toBe(1)
+  api.disposeAll()
+  expect(partidas[1]!.renderer.contextLosses).toBe(1)
+})
+
 const runtimeBody = gameThreeDRuntime.replace(/^import \* as THREE from 'three';\n/, '')
 
 type Listener = (event: Record<string, unknown>) => void
@@ -47,6 +123,8 @@ class FakeCanvas {
 }
 
 class FakeRenderer {
+  disposals = 0
+  contextLosses = 0
   shadowMap = { enabled: false, type: 0 }
   loop: ((time: number) => void) | null = null
   renderCalls = 0
@@ -65,8 +143,12 @@ class FakeRenderer {
   render() {
     this.renderCalls += 1
   }
-  dispose() {}
-  forceContextLoss() {}
+  dispose() {
+    this.disposals++
+  }
+  forceContextLoss() {
+    this.contextLosses++
+  }
 }
 
 interface RuntimeWorld {
@@ -98,6 +180,8 @@ interface RuntimeWorld {
 }
 
 interface RuntimeApi {
+  runProject(factory: () => void): void
+  restart(): void
   createScene(canvasId: string): RuntimeWorld
   createBox(world: RuntimeWorld, options?: { size?: number; color?: string }): RealThree.Mesh
   createModel(world: RuntimeWorld): RealThree.Group

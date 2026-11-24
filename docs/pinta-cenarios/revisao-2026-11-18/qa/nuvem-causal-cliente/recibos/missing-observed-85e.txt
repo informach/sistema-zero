@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\archive-flow-review.test.ts:
+168 |     const reopened = createPintaCausalPersistence({namespace})
+169 |     const docs = await reopened.listAllAssets()
+170 |     const byId = new Map(docs.map(item=>[item.id,item]))
+171 |     const maps = docs.filter(item=>item.kind==='tilemap')
+172 |     const pairs = maps.map(item=>[item.name,byId.get(item.tilesetId)?.tiles[0].data[0]])
+173 |     expect(pairs).toContainEqual([expect.stringContaining('vila-do-aparelho'),3])
+                        ^
+error: expect(received).toContainEqual(expected)
+
+Expected to contain: [
+  StringContaining "vila-do-aparelho", 3
+]
+Received: [
+  [ "vila-do-aparelho-copia", 5 ], [ "vila-conta", 7 ]
+]
+
+      at <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\archive-flow-review.test.ts:173:19)
+(fail) uma folha externa sem a revisão observada exige o grafo completo, writer também altera mapa false [78.00ms]
+225 |     recoverInitial: true as const,
+226 |     ...(recoverDiverged ? { recoverDiverged: true as const } : {}),
+227 |     ...(recovery ? { recoverUnit: recovery } : {}),
+228 |   }
+229 |   const impact = await local.pullImpact(pull)
+230 |   if (impact.needsArchive) throw new PintaCausalRecoveryNeedsFilesError()
+                                       ^
+Error:
+      at pullPintaCausalSnapshot (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\src\lib\pinta-causal-pull.ts:230:34)
+      at async syncPintaCausalAccount (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\src\lib\pinta-causal-sync.ts:89:25)
+      at async <anonymous> (⟨worktree⟩\.cache\pinta-review-20261122\fonte-85e506f85\packages\member-shell\tests\fixtures\archive-flow-review.test.ts:166:27)
+(fail) uma folha externa sem a revisão observada exige o grafo completo, writer também altera mapa true [16.00ms]
+
+ 0 pass
+ 2 fail
+ 8 expect() calls
+Ran 2 tests across 1 file. [268.00ms]

@@ -4,8 +4,19 @@ import { resolve } from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
-import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
+import {
+  PYTHON_BACKGROUND_FOCUS_FEATURE,
+  PYTHON_MOLDA_REGIONS_FEATURE,
+  PYTHON_MOLDA_RELEVO_FEATURE,
+  PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_PHYSICS_FEATURE,
+  PYTHON_PINTA_REGIONS_FEATURE,
+  PYTHON_PINTA_SCENE_MODULE_PATHS,
+  PYTHON_PINTA_WORLD_FEATURE,
+  PYTHON_PROJECT_MISSION_FEATURE,
+} from '@sistemazero/core/studio/python-runtime-features'
 import { PGZERO_MODULE_FILES } from '../src/runtime/python/pgzero/contract'
+import { buildPythonPintaScenesModule } from '../src/runtime/python/pintaScenesModule'
 import { PYGAME_MODULE_FILES } from '../src/runtime/python/pygame/contract'
 import { RAYLIB_MODULE_FILES } from '../src/runtime/python/raylib/contract'
 import { TURTLE_MODULE_FILES, TURTLE_RUNTIME_FEATURES } from '../src/runtime/python/turtle/contract'
@@ -24,6 +35,13 @@ import { buildPythonProvidedModuleArtifacts } from './python/provided-modules'
 const root = resolve(import.meta.dirname, '../../..')
 const digest = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex')
 
+/**
+ * As opções da versão publicada do motor (a versão única de 23/11/2026 leva os cenários do Pinta).
+ * O CI da imagem empacota UMA distribuição: a entrada deste script e os ensaios nativos
+ * (python-mission-smoke, python-playtest-smoke) montam com estas mesmas opções, senão saem duas.
+ */
+export const PYTHON_RELEASE_BUILD_OPTIONS = { pintaScenes: true } as const
+
 /** Produces immutable worker artifacts; qualification/catalog activation is a separate gate. */
 export async function buildPythonRuntimeDistribution(
   options: {
@@ -31,6 +49,8 @@ export async function buildPythonRuntimeDistribution(
     outputDirectory?: string
     /** Build-time qualification input only; never a project or HTTP supplied URL. */
     standardLibrary?: { path: string; sha256: string; recipe: string }
+    /** Private candidate build. Catalog qualification and publication use their own gates. */
+    pintaScenes?: true
   } = {},
 ) {
   await checkPythonAudioMetadata()
@@ -65,6 +85,7 @@ export async function buildPythonRuntimeDistribution(
     // Save only verified vendor bytes; a corrupt cache is an error, not a repin.
     await writeFile(target, bytes)
   }
+  const pintaScenes = options.pintaScenes ? await buildPintaSceneFiles(contents) : null
   for (const [entry, output] of [
     ['worker', 'worker'],
     ['frame', 'frame'],
@@ -88,6 +109,7 @@ export async function buildPythonRuntimeDistribution(
       splitting: false,
       minify: true,
       loader: { '.py': 'text' },
+      define: { __STUDIO_PINTA_SCENE_ARTIFACTS__: JSON.stringify(pintaScenes) },
     })
     if (!build.success || build.outputs.length !== 1)
       throw new AggregateError(build.logs, `Falha ao compilar ${entry} Python.`)
@@ -228,7 +250,17 @@ export async function buildPythonRuntimeDistribution(
     pyodideVersion: vendor.pyodideVersion,
     pythonVersion: vendor.pythonVersion,
     providedModules: provided.modules,
-    features: [...TURTLE_RUNTIME_FEATURES, PYTHON_PROJECT_MISSION_FEATURE],
+    features: [
+      ...TURTLE_RUNTIME_FEATURES,
+      PYTHON_PROJECT_MISSION_FEATURE,
+      PYTHON_PINTA_WORLD_FEATURE,
+      PYTHON_PINTA_PHYSICS_FEATURE,
+      ...(pintaScenes ? [PYTHON_PINTA_REGIONS_FEATURE] : []),
+      PYTHON_MOLDA_SCENE_FEATURE,
+      PYTHON_BACKGROUND_FOCUS_FEATURE,
+      PYTHON_MOLDA_REGIONS_FEATURE,
+      PYTHON_MOLDA_RELEVO_FEATURE,
+    ],
     previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),
     files: [...contents]
@@ -248,8 +280,26 @@ export async function buildPythonRuntimeDistribution(
   return { directory, hash, manifest }
 }
 
+async function buildPintaSceneFiles(contents: Map<string, Uint8Array>) {
+  const legacySource = await readFile(
+    resolve(root, 'packages/studio/src/runtime/python/pygame/py/pinta.py'),
+    'utf8',
+  )
+  const pins = Object.fromEntries(
+    (['python-pygame', 'python-pgzero', 'python-raylib-2d'] as const).map((canvas) => {
+      const source = buildPythonPintaScenesModule(
+        canvas === 'python-pygame' ? { canvas, legacySource } : { canvas, environment: 'browser' },
+      )
+      const bytes = new TextEncoder().encode(source)
+      contents.set(PYTHON_PINTA_SCENE_MODULE_PATHS[canvas], bytes)
+      return [canvas, { bytes: bytes.byteLength, sha256: digest(bytes) }]
+    }),
+  )
+  return pins
+}
+
 if (import.meta.main) {
-  const result = await buildPythonRuntimeDistribution()
+  const result = await buildPythonRuntimeDistribution(PYTHON_RELEASE_BUILD_OPTIONS)
   console.log(
     JSON.stringify({
       directory: result.directory,

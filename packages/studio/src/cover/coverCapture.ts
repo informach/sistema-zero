@@ -6,22 +6,27 @@ import {
   preloadCourseModels,
   soundManifest,
 } from '#core'
-import {
-  type ExtensionPermission,
-  extensionBootstrapContext,
-  loadExtensionBootstrapScripts,
-} from '#extensions'
-import { findExtension } from '#official-extensions'
-import { buildPreviewDoc, withCoreImports } from '#preview'
+import { extensionBootstrapContext } from '#extensions'
 import {
   type StudioPlayerOriginAdapter,
   validateIsolatedPreviewUrl,
 } from '../components/preview/playerOriginAdapter'
 import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
-import { loadGameUiFont } from '../official-extensions/gameUiFont'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+  type PrivateRegionalProjectReadOptions,
+  UNSUPPORTED_PINTA_REGION,
+} from '../core/pintaRegionalReference'
+import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
 import type { StudioRuntimeCapture } from '../runtime/capture'
+import {
+  buildJavaScriptClassicDocument,
+  loadJavaScriptClassicResources,
+} from '../runtime/javascript/classicDocument'
+import type { JavaScriptRegionalMaterials } from '../runtime/javascript/pintaRegionalMaterials'
 
 /**
  * Captura uma CAPA (print PNG) do projeto RODANDO, para a vitrine "Mural dos
@@ -41,7 +46,7 @@ import type { StudioRuntimeCapture } from '../runtime/capture'
  * Canvas "tainted" (imagem cross-origin sem CORS), timeout, ou fora do browser →
  * `null` (o chamador cai na capa do admin / upload). NUNCA lança.
  */
-export interface CaptureCoverOptions {
+export interface CaptureCoverOptions extends PrivateRegionalProjectReadOptions {
   /** Espera (ms) após o `load` antes de fotografar — deixa o jogo desenhar. Default 1500. */
   warmupMs?: number
   /** Teto total da operação (ms). Default `warmupMs + 4000`. */
@@ -58,37 +63,6 @@ export interface CaptureCoverOptions {
 const DEFAULT_WARMUP_MS = 1_500
 /** Teto do data URL aceito (~6 MB) — defesa contra payload absurdo; o BFF re-encoda. */
 const MAX_DATA_URL_BYTES = 6_000_000
-/** Contexto de extensão do projeto (scripts/imports/permissões) p/ o `buildPreviewDoc`. */
-async function extensionContext(project: Project): Promise<{
-  extensionScripts: string[]
-  extensionImports: Record<string, string>
-  permissions: ExtensionPermission[]
-}> {
-  const ids = project.installedExtensions.map((e) => e.id)
-  const extensions = ids.flatMap((id) => {
-    const extension = findExtension(id)
-    return extension ? [extension] : []
-  })
-  // O MESMO contexto do preview e do export: a capa injeta a mesma variante de cada runtime.
-  const extensionScripts = await loadExtensionBootstrapScripts(
-    extensions,
-    extensionBootstrapContext({
-      html: project.files['index.html'],
-      js: project.files['script.js'],
-      extraFiles: project.extraFiles,
-    }),
-  )
-  const extensionImports: Record<string, string> = {}
-  const permissions = new Set<ExtensionPermission>()
-  for (const id of ids) {
-    const ext = findExtension(id)
-    if (!ext) continue
-    if (ext.runtime.esmImports) Object.assign(extensionImports, ext.runtime.esmImports)
-    for (const p of ext.manifest.permissions) permissions.add(p)
-  }
-  return { extensionScripts, extensionImports, permissions: Array.from(permissions) }
-}
-
 /**
  * Roda UMA passada de captura: monta o doc do preview com o `harness` (vai por
  * ÚLTIMO, depois das extensões e do aluno), abre um iframe imperceptível na
@@ -98,36 +72,46 @@ async function runCapture(
   project: Project,
   opts: CaptureCoverOptions,
   harness: string,
+  regional?: JavaScriptRegionalMaterials,
 ): Promise<string | null> {
   if (opts.requireIsolatedPreview && !opts.originAdapter) return null
-  const ctx = await extensionContext(project)
+  const bootstrapContext = extensionBootstrapContext({
+    html: project.files['index.html'],
+    js: project.files['script.js'],
+    extraFiles: project.extraFiles,
+  })
+  const cenas3d = criarTransporteDeCenas3D(project.assets)
+  // O MESMO preparo do preview e do jogador público: a variante de cada runtime, a fonte do jogo
+  // (senão o print sai com outra letra), o carregador dos cenários 3D e, com o cenário regional,
+  // o motor regional no lugar do motor do jogo.
+  const resources = await loadJavaScriptClassicResources(
+    project.installedExtensions.map((e) => e.id),
+    resolveGameUiFontId(project),
+    bootstrapContext,
+    !!cenas3d,
+    regional,
+  )
   await preloadCourseModels(project.assets, project.files['script.js'])
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
   const timeoutMs = opts.timeoutMs ?? warmupMs + 4_000
-  // A capa precisa da MESMA fonte do jogo, senão o print sai com outra letra.
-  const gameUiFont = ctx.extensionScripts.length
-    ? await loadGameUiFont(resolveGameUiFontId(project))
-    : undefined
-  const doc = buildPreviewDoc({
+  const doc = buildJavaScriptClassicDocument({
     html: project.files['index.html'] ?? '',
     css: project.files['style.css'] ?? '',
     js: project.files['script.js'] ?? '',
     // O harness vai POR ÚLTIMO: roda no `load`, depois das extensões e do aluno.
-    extensionScripts: [...ctx.extensionScripts, harness],
+    resources: { ...resources, extensionScripts: [...resources.extensionScripts, harness] },
     extraFiles: project.extraFiles,
     // Sem o manifesto, um jogo com imagem cairia no placeholder fillRect e a capa
-    // sairia sem os sprites — semeamos os assets também na captura.
-    assets: assetManifest(project.assets),
-    assetsMeta: assetMetaManifest(project.assets),
+    // sairia sem os sprites — semeamos os assets também na captura, com a prova regional.
+    assets: assetManifest(project.assets, regional?.proof),
+    assetsMeta: assetMetaManifest(project.assets, bootstrapContext, regional?.proof),
     sounds: soundManifest(project.assets),
     models3d: asset3DManifest(project.assets),
-    gameUiFont,
+    cenas3d,
     parentOrigin,
-    installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     loopBudgetMs: opts.loopBudgetMs,
-    extensionImports: withCoreImports(ctx.extensionImports, project.files['script.js']),
   })
 
   return new Promise<string | null>((resolve) => {
@@ -229,12 +213,32 @@ export async function captureCoverFromProject(
 
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
+  if (opts.requireIsolatedPreview && !opts.originAdapter) return null
+
+  // O cenário regional do Pinta: a mesma prova do preview e do jogador público, preparada uma vez
+  // para as duas passadas. Só no perfil privado deste aparelho (sem ele, recusa); e, como no
+  // preview, o jogo roda aqui (`srcdoc`), nunca na origem isolada que guarda o documento.
+  const regional = project.assets?.some(hasRegionalPintaReference)
+    ? await (async () => {
+        if (opts.requireIsolatedPreview) throw new Error(UNSUPPORTED_PINTA_REGION)
+        const { prepareJavaScriptRegionalMaterials } = await import(
+          '../runtime/javascript/pintaRegionalMaterials'
+        )
+        return prepareJavaScriptRegionalMaterials(
+          project.assets,
+          project.installedExtensions,
+          opts[PRIVATE_REGIONAL_PROJECT],
+        )
+      })()
+    : undefined
+  const runOpts: CaptureCoverOptions = regional ? { ...opts, originAdapter: undefined } : opts
 
   // 1ª passada: canvas (jogos). Pipeline rápido, sem rasterização DOM.
   const canvasUrl = await runCapture(
     project,
-    opts,
+    runOpts,
     buildCanvasHarness({ parentOrigin, warmupMs, maxBytes: MAX_DATA_URL_BYTES }),
+    regional,
   )
   if (canvasUrl) return canvasUrl
 
@@ -244,8 +248,9 @@ export async function captureCoverFromProject(
   const domWarmup = Math.min(warmupMs, 600)
   return runCapture(
     project,
-    { ...opts, warmupMs: domWarmup, timeoutMs: domWarmup + 6_000 },
+    { ...runOpts, warmupMs: domWarmup, timeoutMs: domWarmup + 6_000 },
     buildDomHarness({ parentOrigin, warmupMs: domWarmup, maxBytes: MAX_DATA_URL_BYTES }),
+    regional,
   )
 }
 

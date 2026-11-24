@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-abertura. Gravação pendente."
+      "plannedVideo": "Título: A ponte do laguinho\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E o que acontece quando ele encosta na alavanca?\",\"falaPersonagem\":\"E o que acontece quando ele encosta na alavanca?\",\"ancoraAntes\":\"pode clicar no jogo e usar as setas do teclado. Olha aqui: com a seta da direita, o personagem anda para a direita.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. O farol\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Clique no jogo e use as setas do teclado. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. A tecla R começa outra partida. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: use as setas, descubra o que a alavanca faz e tente atravessar a ponte. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue A ponte apressada",
         "required": true,
-        "instructions": "Clique no jogo e use as setas do teclado. Puxe a alavanca e atravesse a ponte; depois tente chegar atrasado. R começa outra partida. Você pode seguir sem terminar.",
+        "instructions": "Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -2532,19 +2532,19 @@
     },
     {
       "key": "video-material",
-      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-material. Gravação pendente."
+      "plannedVideo": "Título: O seu Passo a passo do projeto\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-material. Gravação pendente."
     },
     {
       "key": "ponte-material",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu Passo a passo do projeto. Se quiser, leia aqui mesmo ou clique em Baixar para guardar. Depois clique em Próxima parte."
+        "text": "Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "video-experiencia",
-      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-experiencia. Gravação pendente."
+      "plannedVideo": "Título: A ponte apressada\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-experiencia. Substituições kids: [{\"id\":\"video-experiencia-K1\",\"clipe\":\"video-experiencia\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E quando é que o relógio da ponte começa a contar?\",\"falaPersonagem\":\"E quando é que o relógio da ponte começa a contar?\",\"ancoraAntes\":\"guarda isso numa variável chamada ponteAberta: verdadeiro quando a ponte está baixada, falso quando ela está levantada.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a ponte enquanto o\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-experiencia",
@@ -2600,38 +2600,38 @@
     },
     {
       "key": "video-alavanca",
-      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-alavanca. Gravação pendente."
+      "plannedVideo": "Título: A alavanca baixa a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-alavanca. Substituições kids: [{\"id\":\"video-alavanca-K1\",\"clipe\":\"video-alavanca\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?\",\"falaPersonagem\":\"Por que aqui fica verdadeiro, se lá em Ao iniciar ficou falso?\",\"ancoraAntes\":\"baixada. Abra Programação e depois Lógica e Se, e pegue outro bloco verdadeiro. Solte em cima do 1 e deixe verdadeiro.\",\"ancoraDepois\":\"Porque cada um vale num momento. Em Ao iniciar, a partida começa com a ponte levantada. Aqui, o personagem acabou de\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-alavanca",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a alavanca baixar a ponte: crie ponteAberta começando em falso e, no encontro com a alavanca, troque as duas imagens, guarde verdadeiro e mude o aviso. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça a alavanca baixar a ponte! Crie ponteAberta com falso no fim de Ao iniciar e monte o encontro com a alavanca: as duas trocas de imagem, ponteAberta verdadeiro e o aviso. Teste no jogo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-sobe",
-      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-sobe. Gravação pendente."
+      "plannedVideo": "Título: A ponte sobe sozinha\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-sobe. Substituições kids: [{\"id\":\"video-sobe-K1\",\"clipe\":\"video-sobe\",\"personagem\":\"Debinha\",\"falaPrincipal\":\"E se eu encostar na alavanca de novo?\",\"falaPersonagem\":\"E se eu encostar na alavanca de novo?\",\"ancoraAntes\":\"nada, e conte comigo: um, dois, três, quatro. Olha só: a ponte sobe sozinha, a alavanca volta para cima e o aviso muda!\",\"ancoraDepois\":\"A ponte baixa outra vez, e o relógio começa a contar de novo, como na experiência. Saia de cima da alavanca e encoste\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-sobe",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a ponte vai saber esperar: dentro do encontro com a alavanca, coloque o depois de 4 segundos e, dentro dele, desfaça o que a alavanca fez. Teste puxando e contando até 4, puxe de novo, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora faça a ponte subir sozinha! Dentro do encontro com a alavanca, logo abaixo do aviso, coloque o depois de 4 segundos e, dentro dele, desfaça o que a alavanca fez. Teste contando até 4 e puxe a alavanca de novo. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-atravessar",
-      "plannedVideo": "Título: Atravesse a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-atravessar. Gravação pendente."
+      "plannedVideo": "Título: Atravesse a ponte\n\nMaster integral da professora. Roteiro: ponte-aula-1.roteiro.md, clipe video-atravessar. Gravação pendente."
     },
     {
       "key": "ponte-atravessar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de atravessar! Se ponteAberta, o personagem vai até a pedra e o sino toca; senão, o aviso diz que a ponte está levantada. Teste sem puxar, a tempo e atrasado, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora de atravessar! Monte o encontro com a ponte e o Se com ponteAberta: no então, o personagem vai para a pedra, o sino toca e o aviso comemora; no senão, o aviso pede para puxar a alavanca. Teste os três casos. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -2639,7 +2639,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de pensar na ponte! As perguntas retomam chegar a tempo, chegar atrasado e o que pode estar errado no \"depois de\". Em cada uma tem uma explicação, e você pode tentar de novo. Nas perguntas com cena, escolha e clique em Ver o que acontece; nas outras, clique em Responder."
+        "text": "Escolha uma resposta e clique em Ver o que acontece ou, nas perguntas sem cena, em Responder. Observe a cena e a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula."
       }
     },
     {
@@ -2731,18 +2731,6 @@
             "explanation": "O relógio só começa quando o bloco roda. No começo do jogo ele roda uma vez só; dentro do evento da alavanca, roda a cada puxada."
           }
         ]
-      }
-    },
-    {
-      "key": "video-entrega",
-      "plannedVideo": "Título: Envie o seu jogo com a ponte\n\nMaster integral da professora: ponte-aula-1.roteiro.md, clipe video-entrega. Gravação pendente."
-    },
-    {
-      "key": "ponte-entrega",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {
@@ -4449,7 +4437,7 @@
                     }
                   },
                   "x": 32,
-                  "y": 392
+                  "y": 32
                 },
                 {
                   "type": "sz_frame_events",
@@ -4617,8 +4605,8 @@
                       }
                     }
                   },
-                  "x": 452,
-                  "y": 392
+                  "x": 957,
+                  "y": 32
                 },
                 {
                   "type": "sz_frame_loops",
@@ -4890,8 +4878,8 @@
                       }
                     }
                   },
-                  "x": 872,
-                  "y": 392
+                  "x": 1810,
+                  "y": 32
                 }
               ]
             }
@@ -14115,10 +14103,6 @@
             "atravessar": {
               "entryExampleId": "fa15ca03-0000-4000-8000-000000000003",
               "solutionExampleId": "fa15ca03-0000-4000-8000-000000000004"
-            },
-            "entrega": {
-              "entryExampleId": "fa15ca03-0000-4000-8000-000000000004",
-              "solutionExampleId": "fa15ca03-0000-4000-8000-000000000004"
             }
           }
         }
@@ -14132,9 +14116,9 @@
         "bookPreview": true,
         "items": [
           {
-            "id": "passos",
+            "id": "texto-ajuda",
             "kind": "text",
-            "markdown": "# Passo a passo do projeto — A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## A experiência: a ponte apressada\n\n**A ideia:** A ponte tem uma alavanca, e o jogo anota num caderninho se ela está aberta (na montagem, esse caderninho vira a variável ponteAberta). Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.\n\n**O que investigar:**\n\n- Ande até a ponte antes de puxar a alavanca.\n- Ande até a alavanca e observe a ponte e o caderninho do jogo.\n- Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.\n- Puxe a alavanca, deixe o relógio chegar a 4 e observe a ponte.\n- Quando a ponte subir sozinha, saia e volte à alavanca.\n- Troque a peça do relógio para \"quando a partida começa\" e compare.\n\nAntes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio. O Zappy te mostra o que testar, e você pode repetir quantas vezes quiser.\n\n## Aula 1 · Jogo 2D: Aberta por um tempo\n\n### A alavanca baixa a ponte\n\n**Relembre:** A variável ponteAberta é o papelzinho em que o jogo anota se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.\n\n1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.\n2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva ponteAberta.\n3. O valor chega com 0. Abra Programação → Lógica e Se, pegue verdadeiro e solte em cima do 0. No menu, escolha falso.\n4. Em Quando acontecer, deixe à vista um espaço vazio depois do último evento, fora do fazer dos outros. Abra Jogo 2D → Colisões → Encostar e bloquear e pegue Quando o sprite começar a encostar no sprite. Clique em jogador e escolha personagem; clique em inimigo e escolha alavanca.\n5. Dentro do fazer, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha alavanca; no segundo, escolha alavanca-baixo.\n6. Logo abaixo, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha ponte; no segundo, escolha ponte-baixada.\n7. Embaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha ponteAberta e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.\n8. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva A ponte baixou! Atravesse antes que ela suba.\n\n**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Toque na tecla R: a ponte volta levantada.\n\n**Se não funcionar:** Se nada acontecer, confira se o encontro usa personagem e alavanca. Não crie ponteAberta dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.\n\n### A ponte sobe sozinha\n\n**Relembre:** O bloco depois de 4 segundos é o relógio da experiência: espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.\n\n1. No encontro com a alavanca, deixe à vista o espaço embaixo do último bloco do fazer, o Alterar aviso.\n2. Abra Programação → Repetições. Pegue depois de 1 segundos, fazer e encaixe embaixo do Alterar aviso, ainda dentro do encontro. Clique no 1, apague e escreva 4.\n3. Dentro do fazer do depois de 4 segundos, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha alavanca; no segundo, escolha alavanca-cima.\n4. Logo abaixo, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha ponte; no segundo, escolha ponte-levantada.\n5. Embaixo, ainda dentro do depois de 4 segundos, encaixe Alterar variável. Escolha ponteAberta, solte verdadeiro em cima do 1 e, no menu, escolha falso.\n6. Por último, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte subiu. Puxe a alavanca de novo.\n\n**Teste:** Puxe a alavanca e conte até 4: a ponte sobe sozinha e o aviso muda. Puxe de novo: a ponte baixa outra vez e sobe de novo depois de 4 segundos.\n\n**Se não funcionar:** Se a ponte nunca subir, confira se o depois de 4 segundos tem os blocos dentro do fazer dele. Se ela subir só uma vez, logo no começo, o depois de está fora do encontro com a alavanca: arraste-o para dentro, embaixo do aviso.\n\n### Atravesse a ponte\n\n**Relembre:** A ponte faz uma condição, uma pergunta de sim ou não: ponteAberta é verdadeiro? O sim escolhe o então, que leva o personagem à pedra e toca o sino; o não escolhe o senão, que avisa.\n\n1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com a alavanca, fora do fazer dos outros. Abra Jogo 2D → Colisões → Encostar e bloquear e pegue Quando o sprite começar a encostar no sprite. Clique em jogador e escolha personagem; clique em inimigo e escolha ponte.\n2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.\n3. Abra Programação → Valores e solte valor da variável no lugar vazio ao lado de Se. Clique no x e escolha ponteAberta.\n4. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.\n5. Dentro do então, encaixe Mudar a posição do sprite, de Jogo 2D → Movimento → Posição e tamanho. Clique em jogador e escolha personagem. Coloque x 96 e y 240.\n6. Logo abaixo, ainda no então, encaixe Trocar imagem do sprite, de Jogo 2D → Sprites → Criar e trocar aparência. Clique no primeiro heroi e escolha sino; no segundo, escolha pedra-do-sino-tocando.\n7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!\n8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.\n\n**Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.\n\n**Se não funcionar:** Se o personagem atravessar sem puxar, confira se a pergunta do Se é ponteAberta e se ponteAberta começa falso. Se ele nunca atravessar, confira se a mudança de lugar está dentro do então e não no senão.\n\n## Aula 2 · Ilha 3D: A ponte da ilha\n\n### A alavanca baixa a ponte\n\n**Relembre:** A variável ponteAberta é o papelzinho em que o jogo anota se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.\n\n1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.\n2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva ponteAberta.\n3. O valor chega com 0. Abra Programação → Lógica e Se, pegue verdadeiro e solte em cima do 0. No menu, escolha falso.\n4. Em Quando acontecer, deixe à vista um espaço vazio depois do último evento, fora do fazer dos outros. Abra Jogo 3D → Encostar → Encostar e pegue Quando personagem encostar em. O primeiro nome já vem personagem; deixe assim. No segundo, escolha alavanca.\n5. Dentro do fazer, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha puxar. Clique em heroi e escolha alavanca. No modo, escolha uma vez.\n6. Logo abaixo, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha baixar. Clique em heroi e escolha ponte. No modo, escolha uma vez.\n7. Embaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha ponteAberta e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.\n8. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva A ponte baixou! Atravesse antes que ela suba.\n\n**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Toque na tecla R: a ponte volta levantada.\n\n**Se não funcionar:** Se nada acontecer, confira se o encontro usa personagem e alavanca. Não crie ponteAberta dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.\n\n### A ponte sobe sozinha\n\n**Relembre:** O bloco depois de 4 segundos é o relógio da experiência: espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.\n\n1. No encontro com a alavanca, deixe à vista o espaço embaixo do último bloco do fazer, o Alterar aviso.\n2. Abra Programação → Repetições. Pegue depois de 1 segundos, fazer e encaixe embaixo do Alterar aviso, ainda dentro do encontro. Clique no 1, apague e escreva 4.\n3. Dentro do fazer do depois de 4 segundos, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha soltar. Clique em heroi e escolha alavanca. No modo, escolha uma vez.\n4. Logo abaixo, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha subir. Clique em heroi e escolha ponte. No modo, escolha uma vez.\n5. Embaixo, ainda dentro do depois de 4 segundos, encaixe Alterar variável. Escolha ponteAberta, solte verdadeiro em cima do 1 e, no menu, escolha falso.\n6. Por último, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte subiu. Puxe a alavanca de novo.\n\n**Teste:** Puxe a alavanca e conte até 4: a ponte sobe sozinha e o aviso muda. Puxe de novo: a ponte baixa outra vez e sobe de novo depois de 4 segundos.\n\n**Se não funcionar:** Se a ponte nunca subir, confira se o depois de 4 segundos tem os blocos dentro do fazer dele. Se ela subir só uma vez, logo no começo, o depois de está fora do encontro com a alavanca: arraste-o para dentro, embaixo do aviso.\n\n### Atravesse a ponte\n\n**Relembre:** A ponte faz uma condição, uma pergunta de sim ou não: ponteAberta é verdadeiro? O sim escolhe o então, que leva o personagem à pedra e toca o sino; o não escolhe o senão, que avisa.\n\n1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com a alavanca, fora do fazer dos outros. Abra Jogo 3D → Encostar → Encostar e pegue Quando personagem encostar em. O primeiro nome já vem personagem; deixe assim. No segundo, escolha ponte.\n2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.\n3. Abra Programação → Valores e solte valor da variável no lugar vazio ao lado de Se. Clique no x e escolha ponteAberta.\n4. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.\n5. Dentro do então, encaixe Colocar o objeto, de Jogo 3D → Objetos → Posição, giro e tamanho. Clique em caixa e escolha personagem. Coloque x -3.9, y 1.42 e z 3.8 (o número negativo começa com o sinal de menos; use ponto no lugar da vírgula).\n6. Logo abaixo, ainda no então, encaixe Tocar a animação, de Jogo 3D → Objetos → Animação do modelo. Clique em Andar e escolha tocar. Clique em heroi e escolha sino. No modo, escolha uma vez.\n7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!\n8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.\n\n**Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.\n\n**Se não funcionar:** Se o personagem atravessar sem puxar, confira se a pergunta do Se é ponteAberta e se ponteAberta começa falso. Se ele nunca atravessar, confira se a mudança de lugar está dentro do então e não no senão.\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n"
+            "markdown": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer."
           },
           {
             "id": "como-estudio",
@@ -14143,7 +14127,25 @@
             "url": "/como-fazer/estudio-achar-e-organizar-blocos"
           },
           {
-            "id": "pedir-ajuda",
+            "id": "plataforma-baixar-materiais",
+            "kind": "link",
+            "label": "Como abrir o Passo a passo do projeto e os materiais",
+            "url": "/como-fazer/plataforma-baixar-materiais"
+          },
+          {
+            "id": "plataforma-abrir-uma-aula",
+            "kind": "link",
+            "label": "Como abrir uma aula e trocar de parte",
+            "url": "/como-fazer/plataforma-abrir-uma-aula"
+          },
+          {
+            "id": "plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "label": "Como dar mais espaço ao jogo e à experiência",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade"
+          },
+          {
+            "id": "plataforma-pedir-ajuda",
             "kind": "link",
             "label": "Como pedir ajuda à equipe",
             "url": "/como-fazer/plataforma-pedir-ajuda"
@@ -14449,276 +14451,15 @@
     {
       "key": "atravessar",
       "title": "Atravesse a ponte",
-      "intent": "application",
-      "objective": "Atravesse a ponte.",
-      "blockKeys": ["video-atravessar", "ponte-atravessar"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-atravessar"],
-        "projectChecks": [
-          {
-            "id": "depois-dentro",
-            "label": "O \"depois de segundos\" fica dentro do encontro com a alavanca.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_overlap",
-              "area": "events",
-              "fieldAlternatives": [
-                {
-                  "A": "personagem",
-                  "B": "alavanca"
-                },
-                {
-                  "A": "alavanca",
-                  "B": "personagem"
-                }
-              ],
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_set_timeout_seconds"
-                }
-              }
-            }
-          },
-          {
-            "id": "a-tempo",
-            "label": "Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 600
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "contains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              }
-            }
-          },
-          {
-            "id": "atrasado",
-            "label": "Chegando depois que a ponte subiu, o personagem não atravessa.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 5800
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowLeft",
-                  "holdMs": 600
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "notContains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.image.url"
-                    },
-                    "compare": "notContains",
-                    "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "fechada",
-            "label": "Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "ponte",
-                  "timeoutMs": 3000,
-                  "avoidPaths": ["alavanca"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "sino.image.url"
-                },
-                "compare": "notContains",
-                "value": "b3VuZCIvPgogIDxwYXRoIGQ9Ik0gNTcgMTUgQyA2MC42IDE5LjYgNjAuNiAyNi40IDU3IDMxIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3NzQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPg=="
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "aviso"
-                    },
-                    "compare": "changed"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "reinicio",
-            "label": "Uma nova partida (tecla R) começa com a ponte levantada.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "alavanca",
-                  "timeoutMs": 3500,
-                  "avoidPaths": ["ponte", "chave"]
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 400
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "ponte.image.url"
-                },
-                "compare": "notContains",
-                "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-              },
-              "checkpoints": [
-                {
-                  "afterStep": 2,
-                  "expect": {
-                    "target": {
-                      "kind": "value",
-                      "path": "ponte.image.url"
-                    },
-                    "compare": "contains",
-                    "value": "eD0iMiIgeT0iMjIiIHdpZHRoPSI2IiBoZWlnaHQ9IjE4IiByeD0iMS41IiBmaWxsPSIjNmE0YTMxIi8+CiAgPHJlY3QgeD0iMiIgeT0iMjAiIHdpZHRoPSI2IiBoZWlnaHQ9IjQiIHJ4PSIxLjUiIGZpbGw9IiM1YTNlMjkiLz4KPC9zdmc+"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "id": "farol",
-            "label": "O farol continua: com a chave, ele acende.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "chave",
-                  "timeoutMs": 2500,
-                  "avoidPaths": ["alavanca", "ponte"]
-                },
-                {
-                  "action": "approachSprite",
-                  "actorPath": "personagem",
-                  "targetPath": "farol",
-                  "timeoutMs": 3500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "farol.image.url"
-                },
-                "compare": "contains",
-                "value": "IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjggNzguNjM2MyAxMzguMjEzKSIvPgogICAgCiAgPGVsbGlwc2UgY3g9Ijc1LjA5NzUiIGN5PSIyLjUxNzUiIHJ4PSIyLjQxMDYyIiByeT0iMi40NDYyNSIgZmlsbD0iI2NmM2YzNiIvPgo8L3N2Zz4="
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "revisao",
-      "title": "Pense na ponte",
-      "intent": "explanation",
-      "objective": "Pense na ponte.",
-      "blockKeys": ["ponte-revisao", "quiz"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["quiz"]
-      }
-    },
-    {
-      "key": "entrega",
-      "title": "Envie o seu jogo com a ponte",
       "intent": "delivery",
-      "objective": "Envie o seu jogo com a ponte.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "objective": "Atravesse a ponte.",
+      "blockKeys": ["video-atravessar", "ponte-atravessar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": ["video-atravessar", "projeto"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -14953,6 +14694,20 @@
           }
         ],
         "submissionUpToDate": true
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Pense na ponte",
+      "intent": "closing",
+      "objective": "Pense na ponte.",
+      "blockKeys": ["ponte-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
       }
     }
   ]

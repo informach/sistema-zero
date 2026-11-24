@@ -1,0 +1,121 @@
+{
+  "evidencias": [
+    {
+      "nome": "renderer e descarregamento",
+      "inicio": {
+        "Altura do avatar": "1,16 m · escala 1",
+        "Andar / correr": "1,5 / 3,4 m/s",
+        "Ponte do Bosque": "232,23 × 5 m",
+        "Posição": "0, 4,54, 150 m",
+        "Quadros": "59 / s",
+        "Distância da câmera": "11.00 m",
+        "Giro da câmera": "0.000 rad",
+        "Nadando": "não",
+        "Setores com física": "24",
+        "Chamadas de desenho": "148",
+        "Triângulos": "376.846",
+        "Geometrias": "163",
+        "Texturas": "38"
+      },
+      "ciclos": [
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "58 / s",
+            "Distância da câmera": "80.89 m",
+            "Giro da câmera": "6.283 rad",
+            "Nadando": "não",
+            "Setores com física": "25",
+            "Chamadas de desenho": "49",
+            "Triângulos": "34.681",
+            "Geometrias": "65",
+            "Texturas": "14"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,54, 137 m",
+            "Quadros": "58 / s",
+            "Distância da câmera": "11.00 m",
+            "Giro da câmera": "6.159 rad",
+            "Nadando": "não",
+            "Setores com física": "24",
+            "Chamadas de desenho": "120",
+            "Triângulos": "346.544",
+            "Geometrias": "164",
+            "Texturas": "38"
+          }
+        },
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "58 / s",
+            "Distância da câmera": "11.72 m",
+            "Giro da câmera": "6.283 rad",
+            "Nadando": "não",
+            "Setores com física": "25",
+            "Chamadas de desenho": "46",
+            "Triângulos": "35.641",
+            "Geometrias": "68",
+            "Texturas": "14"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,54, 137 m",
+            "Quadros": "58 / s",
+            "Distância da câmera": "11.00 m",
+            "Giro da câmera": "6.183 rad",
+            "Nadando": "não",
+            "Setores com física": "24",
+            "Chamadas de desenho": "120",
+            "Triângulos": "346.544",
+            "Geometrias": "164",
+            "Texturas": "38"
+          }
+        },
+        {
+          "longe": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "112, 11,61, -55 m",
+            "Quadros": "55 / s",
+            "Distância da câmera": "11.46 m",
+            "Giro da câmera": "6.283 rad",
+            "Nadando": "não",
+            "Setores com física": "25",
+            "Chamadas de desenho": "46",
+            "Triângulos": "35.641",
+            "Geometrias": "68",
+            "Texturas": "14"
+          },
+          "perto": {
+            "Altura do avatar": "1,16 m · escala 1",
+            "Andar / correr": "1,5 / 3,4 m/s",
+            "Ponte do Bosque": "232,23 × 5 m",
+            "Posição": "-0, 4,54, 137 m",
+            "Quadros": "60 / s",
+            "Distância da câmera": "11.00 m",
+            "Giro da câmera": "6.185 rad",
+            "Nadando": "não",
+            "Setores com física": "24",
+            "Chamadas de desenho": "120",
+            "Triângulos": "346.544",
+            "Geometrias": "164",
+            "Texturas": "38"
+          }
+        }
+      ]
+    }
+  ],
+  "erros": []
+}

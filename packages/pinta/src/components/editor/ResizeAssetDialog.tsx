@@ -10,12 +10,14 @@ import type { JSX } from 'react'
 import { useState } from 'react'
 import { type ResizeTarget, resizeAsset, resizeCuts } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
+import { embeddedTilesetOf } from '../../core/mapResourceVersions'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import { usePintaGallery } from '../appContext'
 import { CustomSizeFields } from '../gallery/CustomSizeFields'
 import { type CustomSizeValues, EMPTY_CUSTOM_VALUES, parseCustomInt } from '../gallery/customSize'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { useToast } from '../ui/Toast'
 
 export function ResizeAssetDialog({
   open,
@@ -28,8 +30,9 @@ export function ResizeAssetDialog({
   onClose: () => void
   asset: PintaAsset
   target: ResizeTarget
-  onResize: (next: PintaAsset) => void
+  onResize: (next: PintaAsset) => boolean
 }): JSX.Element {
+  const { showToast } = useToast()
   const [values, setValues] = useState<CustomSizeValues>(() => ({
     ...EMPTY_CUSTOM_VALUES,
     width: String(target.width),
@@ -45,15 +48,18 @@ export function ResizeAssetDialog({
   // Mapa: o tamanho da peça faz os OBJETOS andarem junto com as células.
   const tileSize = usePintaGallery((state) => {
     if (asset.kind !== 'tilemap') return undefined
-    const tileset = state.assets.find((a) => a.id === asset.tilesetId)
+    const tileset = embeddedTilesetOf(asset) ?? state.assets.find((a) => a.id === asset.tilesetId)
     return tileset && isTilesetKind(tileset) ? tileset.tileSize : undefined
   })
 
   function aplicar(): void {
     if (!mudou || largura === null || altura === null) return
     const proximo = resizeAsset(asset, largura, altura, 'center', { tileSize })
-    if (!proximo || proximo === asset) return
-    onResize(proximo)
+    if (proximo === asset) return
+    if (!proximo || !onResize(proximo)) {
+      showToast(COPY.editor.resize.refused)
+      return
+    }
     onClose()
   }
 

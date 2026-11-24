@@ -1,0 +1,15 @@
+{
+  "base": "dd4f0959c5e3f2a605868ef5a6ad8756559fb643",
+  "frozenSourceSha256": {
+    "packages/pinta/src/core/projectConfig.ts": "f8081ba6305129dd86a4b11165ff2b13c92500a359e3405f1cda19faf6e6d61a",
+    "packages/pinta/src/core/project.ts": "b82b52a82aeff172e2356046d2a71c24a43f15e59cb8b259543334a12b087547",
+    "packages/pinta/src/export/projectJson.ts": "789ffea44296d53eef108df3e5386a69ebc549bf75c18904b70b750e0c18292a",
+    "packages/core/src/creations/pinta-format.ts": "f2e23d50573633b396860ce045fbaf8522fc1d5af01c850d1225bee77873a858"
+  },
+  "oldNativeMax": 6,
+  "oldNativeRefuses": true,
+  "oldBackupRefuses": true,
+  "oldCloudRefuses": true,
+  "forcedOldStampWouldLosePhysics": true,
+  "legacyBytesUnchanged": true
+}

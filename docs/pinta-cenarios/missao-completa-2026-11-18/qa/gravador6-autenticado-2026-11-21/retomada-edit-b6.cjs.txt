@@ -1,0 +1,13 @@
+module.exports=async function(qa){
+ const assert=require('node:assert/strict'),b=qa.retowB6;assert(b?.phase==='editor-open');assert(qa.retowCloudRefusals?.phase==='verified');assert(qa.retowProgramBaseline);
+ const reader=await qa.makeAuthorityPage();
+ async function read(){return reader.evaluate(async({namespace,id})=>{const a=(await window.pinta026.createPintaPersistence({namespace}).listAllAssets()).find(a=>a.id===id),l=a?.layers.find(l=>l.name==='Chão'&&l.cells);if(a?.schema!==7||a.layers.length!==18||!l)throw Error('Owned map mismatch');return{cols:a.cols,rows:a.rows,cells:Array.from(l.cells.slice(0,6))}},{namespace:qa.ownedStorageNamespace,id:qa.ownedVila.mapId})}
+ try{
+  const before=await read();assert.equal(before.cells[3],15);const page=b.page,canvas=page.getByRole('img',{name:'Grade do mapa',exact:true}),box=await canvas.boundingBox();assert(box);b.phase='gesture-started';
+  await page.getByRole('button',{name:'Chão',exact:true}).click();await page.getByRole('button',{name:'Borracha',exact:true}).click();
+  await canvas.click({position:{x:3.5*box.width/before.cols,y:0.5*box.height/before.rows}});
+  let after;for(let n=0;n<60;n++){after=await read();if(after.cells[3]===-1)break;await page.waitForTimeout(100)}assert.equal(after.cells[3],-1);assert.equal(after.cells[4],15);
+  const native=await require('./checkpoint-owned-vila.cjs')(qa),changed=native.assets.filter(a=>b.nativeBefore.assets.find(p=>p.id===a.id)?.sha256!==a.sha256);assert.equal(changed.length,1);assert.equal(changed[0].id,qa.ownedVila.mapId);b.nativeAfterGesture=native;b.phase='gesture-saved';
+  return{realMouseGesture:true,cellEdited:3,before,after,native,otherResourcesUnchanged:5,oldReaderStillHeld:true};
+ }finally{await reader.close()}
+};

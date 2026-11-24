@@ -179,3 +179,45 @@ test('JavaScript v1 remains admissible without a Python host authorizer', async 
   if (admitted?.operation !== 'create') throw new Error('Missing create')
   expect(admitted.base).toEqual(base)
 })
+
+test('a validação do Members não barra um arquivo grande: o teto da criança fica com a revisão', async () => {
+  // A cópia publicada do motor 2D (369–435 mil caracteres) só é reconhecida por
+  // `createStudioProRevision`, pelo sha256 do inventário do core (a prova da aceitação está em
+  // `packages/studio/src/state/proEngineServer.test.ts`). Um teto de 256 mil na validação do
+  // comando recusava todo 2D convertido antes dessa conferência. Aqui, um arquivo da criança acima
+  // do teto passa da validação e é recusado pela revisão, como deve.
+  const base = await createStudioProRevision({
+    projectId: randomUUID(),
+    templateId: 'vanilla-vite',
+    devScript: 'dev',
+    files: { 'index.html': '<main>Play</main>' },
+    directories: [],
+    assets: '{"version":1,"assets":[]}',
+    assetFiles: {},
+  })
+  const repo = repository()
+  const service = new StudioBuilderService(
+    repo.port,
+    () => new Date(),
+    true,
+    false,
+    undefined,
+    async () => {},
+  )
+  const outcome = await service
+    .execute(actor, {
+      operation: 'create',
+      id: randomUUID(),
+      objective: 'Mude o recado',
+      model: 'test/model',
+      parentOrigin: 'https://kids.test',
+      base: { ...base, files: { ...base.files, 'src/grande.js': 'x'.repeat(300_000) } },
+      binaries: {},
+    })
+    .then(
+      () => null,
+      (error: Error) => error.message,
+    )
+  expect(outcome).toBe('A revisão-base é inválida.')
+  expect(repo.commands).toEqual([])
+})

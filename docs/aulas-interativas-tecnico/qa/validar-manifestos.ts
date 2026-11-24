@@ -272,8 +272,20 @@ function diagnosticarNovoModelo(
       const existeEntregaDepois = m.sections
         .slice(indice + 1)
         .some((seguinte) => seguinte.intent === 'delivery')
-      if (!existeEntregaDepois)
-        problemas.push(`seção "${chave}": o quiz deve vir antes da entrega final`)
+      // O quiz também pode fechar a aula depois do envio (decisão da Helena, 23/11/2026, Ilha
+      // Aula 3): é um fechamento, e da última entrega até o fim só há fechamentos. É a mesma
+      // régua do `isFinalProjectSection` do core, que mantém a entrega como a última do projeto.
+      const ultimaEntregaAntes = m.sections.findLastIndex(
+        (anterior, i) => i < indice && anterior.intent === 'delivery',
+      )
+      const quizDeFechamento =
+        section.intent === 'closing' &&
+        ultimaEntregaAntes >= 0 &&
+        m.sections.slice(ultimaEntregaAntes + 1).every((seguinte) => seguinte.intent === 'closing')
+      if (!existeEntregaDepois && !quizDeFechamento)
+        problemas.push(
+          `seção "${chave}": o quiz deve vir antes da entrega final ou fechar a aula depois dela`,
+        )
     }
 
     if (experiencias.length) {

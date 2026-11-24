@@ -1,5 +1,6 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { createRef, StrictMode } from 'react'
 import type { EditableStudioProject } from '../../core/editableProject'
 import { StudioProjectPlayer } from './StudioProjectPlayer'
 
@@ -45,4 +46,28 @@ test('falha na compilação vira recado, sem quadro; artefato estranho também',
   const outra = render(<StudioProjectPlayer project={project} proBuild={estranho} />)
   expect((await screen.findByRole('alert')).textContent).toContain('não devolveu o jogo')
   expect(outra.container.querySelector('iframe')).toBeNull()
+})
+
+test('Pro compilado mantém a referência pública do quadro e a libera ao fechar', async () => {
+  const frame = createRef<HTMLIFrameElement>()
+  const build = async () => artifact
+  const view = render(
+    <StrictMode>
+      <StudioProjectPlayer project={project} proBuild={build} ref={frame} />
+    </StrictMode>,
+  )
+  await waitFor(() => expect(view.container.querySelector('iframe')?.src).toBe(artifact.url))
+  expect(frame.current === view.container.querySelector('iframe')).toBe(true)
+  expect(frame.current?.isConnected).toBe(true)
+  view.unmount()
+  expect(frame.current).toBeNull()
+})
+
+test('atualizar o callback de erro do host não recompila um artefato pronto', async () => {
+  const build = mock(async () => artifact)
+  const view = render(<StudioProjectPlayer project={project} proBuild={build} onError={() => {}} />)
+  await waitFor(() => expect(view.container.querySelector('iframe')?.src).toBe(artifact.url))
+  view.rerender(<StudioProjectPlayer project={project} proBuild={build} onError={() => {}} />)
+  await waitFor(() => expect(view.container.querySelector('iframe')?.src).toBe(artifact.url))
+  expect(build).toHaveBeenCalledTimes(1)
 })

@@ -1,0 +1,530 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tocha\\projects\\sistema-zero-pinta-cenarios\\packages\\studio\\playwright.pinta.config.ts",
+    "rootDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/.cache/pinta-scenes-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["*-scenes.flow.ts"],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/.cache/pinta-scenes-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "touch",
+        "name": "touch",
+        "testDir": "C:/Users/tocha/projects/sistema-zero-pinta-cenarios/packages/studio/e2e",
+        "testIgnore": [],
+        "testMatch": ["*-scenes.flow.ts"],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      ["list", null],
+      [
+        "json",
+        {
+          "outputFile": "./.cache/pinta-scenes-results/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "phaser-scenes.flow.ts",
+      "file": "phaser-scenes.flow.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Phaser portátil anima a versão fixada e conserva o último quadro",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 613,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:05.956Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phaser-resource-frames",
+                      "contentType": "application/json",
+                      "body": "W1syNTUsMCwwLDI1NV0sWzAsMjU1LDAsMjU1XSxbMCwwLDI1NSwyNTVdLFswLDAsMjU1LDI1NV1d"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "854273ece3ef4eace3ef-2c9f15fa1b909d1fd378",
+          "file": "phaser-scenes.flow.ts",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "Phaser portátil renderiza o mapa real, anda, colide e atravessa portas",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3113,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:06.671Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phaser-vila",
+                      "contentType": "image/png",
+                      "path": "desktop-phaser-vila.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "854273ece3ef4eace3ef-73377a1e534447e128dc",
+          "file": "phaser-scenes.flow.ts",
+          "line": 46,
+          "column": 1
+        },
+        {
+          "title": "Phaser portátil anima a versão fixada e conserva o último quadro",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "touch",
+              "projectName": "touch",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 556,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:25.821Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phaser-resource-frames",
+                      "contentType": "application/json",
+                      "body": "W1syNTUsMCwwLDI1NV0sWzAsMjU1LDAsMjU1XSxbMCwwLDI1NSwyNTVdLFswLDAsMjU1LDI1NV1d"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "854273ece3ef4eace3ef-f236497ce18589541699",
+          "file": "phaser-scenes.flow.ts",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "Phaser portátil renderiza o mapa real, anda, colide e atravessa portas",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "touch",
+              "projectName": "touch",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3234,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:26.483Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phaser-vila",
+                      "contentType": "image/png",
+                      "path": "touch-phaser-vila.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "854273ece3ef4eace3ef-5578e5629c7f457239fb",
+          "file": "phaser-scenes.flow.ts",
+          "line": 46,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "pinta-resources-scenes.flow.ts",
+      "file": "pinta-resources-scenes.flow.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6573,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:09.814Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "versao-e-animacao",
+                      "contentType": "image/png",
+                      "path": "desktop-versao-e-animacao.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bd2f88aede4c7f6a889a-10a3c4b428f70a54fb1f",
+          "file": "pinta-resources-scenes.flow.ts",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "recursos: escolher animação, fixar, desfazer/refazer e reabrir com os mesmos pixels",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "touch",
+              "projectName": "touch",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3980,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:29.758Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "versao-e-animacao",
+                      "contentType": "image/png",
+                      "path": "touch-versao-e-animacao.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bd2f88aede4c7f6a889a-3571ad0c7865f5426a1d",
+          "file": "pinta-resources-scenes.flow.ts",
+          "line": 26,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "pinta-scenes.flow.ts",
+      "file": "pinta-scenes.flow.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4214,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:16.77Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "autoria-32-camadas",
+                      "contentType": "image/png",
+                      "path": "desktop-autoria-32-camadas.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "56f5bfb6ef9e2901b5cb-95698dde38542933ca35",
+          "file": "pinta-scenes.flow.ts",
+          "line": 40,
+          "column": 1
+        },
+        {
+          "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3590,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:21.58Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "pinta-vila",
+                      "contentType": "image/png",
+                      "path": "desktop-pinta-vila.png"
+                    },
+                    {
+                      "name": "ambiente",
+                      "contentType": "application/json",
+                      "body": "ewogICJicm93c2VyIjogIjE0OC4wLjc3NzguOTYiLAogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDEyODAsCiAgICAiaGVpZ2h0IjogNzIwCiAgfSwKICAiaXNNb2JpbGUiOiBmYWxzZSwKICAidXNlckFnZW50IjogIk1vemlsbGEvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS8xNDguMC43Nzc4Ljk2IFNhZmFyaS81MzcuMzYiCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "56f5bfb6ef9e2901b5cb-9ba050fe4a21722604ac",
+          "file": "pinta-scenes.flow.ts",
+          "line": 86,
+          "column": 1
+        },
+        {
+          "title": "autoria: criar 32 camadas, desfazer/refazer, salvar e reabrir",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "touch",
+              "projectName": "touch",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "buffer": ""
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:34.108Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "autoria-32-camadas",
+                      "contentType": "image/png",
+                      "path": "touch-autoria-32-camadas.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "56f5bfb6ef9e2901b5cb-b32dd37709ff04c5e29e",
+          "file": "pinta-scenes.flow.ts",
+          "line": 40,
+          "column": 1
+        },
+        {
+          "title": "Vila: importar, editar, desfazer, refazer, reabrir e testar o mapa real",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "touch",
+              "projectName": "touch",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3145,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T22:12:38.943Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "pinta-vila",
+                      "contentType": "image/png",
+                      "path": "touch-pinta-vila.png"
+                    },
+                    {
+                      "name": "ambiente",
+                      "contentType": "application/json",
+                      "body": "ewogICJicm93c2VyIjogIjE0OC4wLjc3NzguOTYiLAogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDQxMiwKICAgICJoZWlnaHQiOiA4MzkKICB9LAogICJpc01vYmlsZSI6IHRydWUsCiAgInVzZXJBZ2VudCI6ICJNb3ppbGxhLzUuMCAoTGludXg7IEFuZHJvaWQgMTQ7IFBpeGVsIDcpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS8xNDguMC43Nzc4Ljk2IE1vYmlsZSBTYWZhcmkvNTM3LjM2Igp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "56f5bfb6ef9e2901b5cb-4208e1a8fde20d647c47",
+          "file": "pinta-scenes.flow.ts",
+          "line": 86,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-18T22:12:02.406Z",
+    "duration": 40272.727999999996,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

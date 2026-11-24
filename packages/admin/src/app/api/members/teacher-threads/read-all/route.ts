@@ -9,7 +9,13 @@ const scopeSchema = z
     workflowStatus: z.enum(['waiting_teacher', 'waiting_student', 'resolved']).optional(),
     audience: z.enum(['kids', 'adult']).optional(),
     context: z
-      .enum(['general', 'studio_submission', 'mural_publication', 'lesson_section'])
+      .enum([
+        'general',
+        'studio_submission',
+        'mural_publication',
+        'lesson_section',
+        'pinta_recovery',
+      ])
       .optional(),
     courseId: z.uuid().optional(),
     userId: z.uuid().optional(),

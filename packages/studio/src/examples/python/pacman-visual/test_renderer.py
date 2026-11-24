@@ -56,13 +56,16 @@ class Renderer(unittest.TestCase):
             play=lambda path, **options: self.audio_events.append(("play", path)),
             stop=lambda: self.audio_events.append(("stop",)))
         tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
-        tree.body = [node for node in tree.body if not isinstance(node, (ast.Import, ast.If))]
+        # Sem imports, sem o que o programa faz ao iniciar e sem a tela dele: a tela é a do teste.
+        tree.body = [node for node in tree.body
+                     if not isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For))
+                     and not (isinstance(node, ast.Assign) and "turtle." in ast.unparse(node.value))]
         self.game = {"turtle": self.turtle, "math": math, "random": random.Random(2026),
                      "time": time, "sz_audio": audio}
         exec(compile(tree, str(SOURCE), "exec"), self.game)
         self.screen = self.turtle.Screen()
         self.screen.tracer(0)
-        self.game["objetos"]["tela"] = self.screen
+        self.game["tela"] = self.screen
         self.game["registrar_formas"]()
         if "criar_desenhistas" in self.game:
             self.game["criar_desenhistas"]()
@@ -111,8 +114,10 @@ class Renderer(unittest.TestCase):
         before = list(self.audio_events)
         self.game["fechar"]()
         self.assertEqual(self.audio_events, before)
-        self.game["quadro"]()
-        self.assertFalse(self.game["estado"]["timer_pendente"])
+        # A volta que já estava marcada não roda nem agenda outra depois de fechar.
+        self.game["a_cada_quadro"]()
+        self.assertEqual(len(self.screen._timers), 0)
+        self.assertEqual(len(self.screen._idle_timers), 0)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,13 @@ execute `python main.py`; não é necessário instalar outro motor gráfico.
 
 ## Explorar e modificar
 
+O código segue as áreas do projeto, na ordem em que o Python o lê:
+📦 Bibliotecas, 🎛️ Configurações (as constantes em MAIÚSCULAS: números, textos e
+listas que ficam iguais enquanto o jogo roda), 🧩 Meus moldes (as funções do
+jogo), ⚙️ Ao iniciar (a janela e as tartarugas), ⚡ Quando acontecer (as teclas)
+e 🔁 Enquanto estiver rodando (o laço `a_cada_quadro`). O comentário no começo de
+cada área só ajuda a ler, e o Estúdio o escreve sozinho.
+
 `MAPA` tem 31 colunas e 25 linhas: `#` é parede, `.` é bolinha e `o` é especial.
 Ao mudar o mapa, mantenha o nascimento `(15, 23)`, os sete `NINHOS` e o túnel na
 linha 12 em passagens abertas. Todas as bolinhas precisam continuar alcançáveis.
@@ -42,14 +49,14 @@ no início de `reiniciar_modelo` e compare as decisões dos inimigos.
 
 Um Turtle carimba o cenário, outro escreve o painel e oito representam o jogador
 e os sete inimigos. São **dez Turtle persistentes**, reutilizadas no reinício.
-Paredes e bolinhas ficam no cenário até serem removidas ou até o reinício.
-Os personagens se movem sem criar e apagar carimbos a cada quadro. As formas
-compostas dos inimigos só são trocadas quando a direção dos olhos muda.
-Uma única cadeia de `ontimer(..., 16)` mede o tempo com `time.monotonic()`:
-a pausa congela os tempos
-da partida, e reiniciar não adiciona outra cadeia. Sons são encerrados no
-reinício e no fechamento. O movimento limita o avanço de um quadro atrasado
-para manter o controle e a colisão; isso não é uma promessa de desempenho.
+Paredes e bolinhas ficam no cenário até serem removidas ou até o reinício. Os
+personagens se movem sem criar e apagar carimbos a cada quadro. As formas
+compostas dos inimigos só são trocadas quando a direção dos olhos muda. O laço
+do jogo, `a_cada_quadro` (em 🔁 Enquanto estiver rodando), mede o tempo com
+`time.monotonic()`: a pausa congela os tempos da partida, e reiniciar não começa
+outro laço. Sons são encerrados no reinício e no fechamento. O movimento limita
+o avanço de um quadro atrasado para manter o controle e a colisão; isso não é
+uma promessa de desempenho.
 
 ## Verificação e limites
 

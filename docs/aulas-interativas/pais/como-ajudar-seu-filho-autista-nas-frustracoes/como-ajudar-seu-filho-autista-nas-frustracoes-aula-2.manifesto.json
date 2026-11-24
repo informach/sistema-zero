@@ -1,0 +1,53 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+  "title": "De onde vem a frustração",
+  "blocks": [
+    {
+      "key": "video-a2-raizes",
+      "plannedVideo": "Título: As quatro raízes da frustração\n\nExplicar autorregulação, comunicação funcional, previsibilidade e sensibilidade sensorial com exemplos da brincadeira e da rotina, sem tratar os quatro fatores como lista exaustiva. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a2-funcao",
+      "plannedVideo": "Título: Função ou julgamento?\n\nLigar fatores internos e externos à situação e explicar função do comportamento com perguntas sobre o antes, o comportamento e o depois. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 2."
+    },
+    {
+      "key": "resumo-a2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Autorregulação:** a criança pode precisar de ajuda para desenvolver recursos para lidar com o que sente e se reorganizar.\n- **Comunicação funcional:** conseguir expressar necessidades de um jeito que o outro compreenda. Uma dificuldade para pedir ajuda pode aumentar a frustração.\n- **Previsibilidade:** saber o que vai acontecer. Uma mudança sem aviso pode ser difícil de acompanhar.\n- **Sensibilidade sensorial:** sons, luzes, cheiros e outros estímulos podem incomodar. Mais de um fator pode estar presente.\n- **Função:** o que o comportamento pode produzir naquela situação. Observe o que aconteceu antes, o que a criança fez e o que aconteceu depois; não adivinhe intenções."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "raizes",
+      "title": "As quatro raízes da frustração",
+      "objective": "Explicar autorregulação, comunicação funcional, previsibilidade e sensibilidade sensorial com exemplos da brincadeira e da rotina, sem tratar os quatro fatores como lista exaustiva.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-raizes"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-raizes"]
+      }
+    },
+    {
+      "key": "funcao",
+      "title": "Função ou julgamento?",
+      "objective": "Ligar fatores internos e externos à situação e explicar função do comportamento com perguntas sobre o antes, o comportamento e o depois.",
+      "intent": "explanation",
+      "blockKeys": ["video-a2-funcao", "resumo-a2"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-funcao"]
+      }
+    }
+  ]
+}

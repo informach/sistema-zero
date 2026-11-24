@@ -1,5 +1,6 @@
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import { isStudioProArtifact, type StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type Ref, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isProConsoleMessage, type ProConsoleMessage } from './proConsoleBridge'
 import type { ProStorageBackend } from './proStorageHost'
 import { createEphemeralProStorage, useProStorageBridge } from './useProStorageBridge'
@@ -13,6 +14,8 @@ export interface ProArtifactPreviewProps {
   /** Omitted means ephemeral; only the current-project renderer supplies durable storage. */
   backend?: ProStorageBackend
   recoveryHint?: string
+  /** Host controls target the same sandboxed frame used by the storage bridge. */
+  frameRef?: Ref<HTMLIFrameElement>
   onStatus?(status: ProArtifactPreviewStatus): void
   onConsole?(message: ProConsoleMessage): void
 }
@@ -50,10 +53,19 @@ function ArtifactSession({
   backend,
   onStatus,
   onConsole,
+  frameRef,
   recoveryHint = 'Recrie a prévia no Zappy Pro para experimentar novamente.',
   valid,
 }: ProArtifactPreviewProps & { valid: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null)
+  const assignFrame = useCallback(
+    (node: HTMLIFrameElement | null) => {
+      frame.current = node
+      if (typeof frameRef === 'function') return frameRef(node)
+      if (frameRef) frameRef.current = node
+    },
+    [frameRef],
+  )
   const [status, setStatus] = useState<ProArtifactPreviewStatus>(() =>
     !valid ? 'unavailable' : artifact.expiresAt <= Date.now() ? 'expired' : 'loading',
   )
@@ -121,11 +133,12 @@ function ArtifactSession({
         </p>
       )}
       <iframe
-        ref={frame}
+        ref={assignFrame}
         name={binding}
         src={artifact.url}
         title={title}
         sandbox="allow-scripts allow-pointer-lock"
+        allow={GAME_FRAME_FOCUS_ALLOW}
         referrerPolicy="no-referrer"
         className="min-h-0 w-full flex-1 border-0 bg-white"
         onError={() => setStatus('unavailable')}

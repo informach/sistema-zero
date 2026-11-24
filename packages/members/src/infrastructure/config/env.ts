@@ -72,6 +72,24 @@ const EnvSchema = z
       .regex(/^[a-f0-9]{64}$/)
       .optional(),
     STUDIO_RUNTIME_HOSTS_JSON: z.string().min(1).max(200_000).optional(),
+    /**
+     * Molda Cenários: para quem a oficina de cenários 3D está aberta neste ambiente.
+     * `desligado` (padrão) fecha para todos; `equipe` abre só para a equipe; `lista` soma as
+     * contas de CENARIOS_LISTA; `aberto` abre para todas as contas.
+     */
+    CENARIOS_MODO: z.enum(['desligado', 'equipe', 'lista', 'aberto']).default('desligado'),
+    /** Ids de conta liberados no modo `lista`, separados por vírgula. */
+    CENARIOS_LISTA: z.string().max(20_000).optional(),
+    /**
+     * As regiões dos cenários 3D (22/11/2026). Desligado (padrão): nenhum lote cria, muda ou
+     * apaga regiões (403 `CENARIO_REGIOES_DESLIGADAS`) e a oficina não mostra a ferramenta. Só
+     * liga depois de os leitores (Estúdio, motor dos cenários e imagem do studio-runtime)
+     * aceitarem o campo `regioes`. Nome novo: criar no Railway antes do `.railway/variables.ts`.
+     */
+    CENARIOS_REGIOES: optionalBool(false),
+    /** A cota de cada conta nos cenários, em MB (padrão 2048). Vale também para os espaços que
+     * já existem. Opcional: só entra no Railway quando a cota mudar. */
+    CENARIOS_COTA_DA_CONTA_MB: z.coerce.number().int().min(100).max(1_000_000).optional(),
     ARQUIPELAGO_COINS_TOKEN: z.string().min(32).optional(),
     /** Leituras do serviço do jogo (jornada, blocos): token próprio, separado do das moedas. */
     ARQUIPELAGO_MEMBERS_TOKEN: z.string().min(32).optional(),

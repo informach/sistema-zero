@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 TAMANHO = 3
@@ -21,6 +23,7 @@ void main() {
 }
 """
 
+# ⚙️ Ao iniciar
 init_window(LARGURA, ALTURA, 'Clarão com Shader')
 set_target_fps(60)
 camera = Camera3D(Vector3(0, 3, 7), Vector3(0, 1.4, 0), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
@@ -47,6 +50,7 @@ tempo = 0
 toques = 0
 giro = 0
 
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     giro += VELOCIDADE_DO_GIRO * dt

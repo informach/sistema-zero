@@ -1,0 +1,40 @@
+
+ ⛅️ wrangler 4.120.1 (update available 4.166.0)
+───────────────────────────────────────────────
+Total Upload: 1110.22 KiB / gzip: 203.94 KiB
+Worker Startup Time: 31 ms
+Your Worker has access to the following bindings:
+Binding                                                  Resource            
+env.PythonLanguageSandbox (PythonLanguageSandbox)        Durable Object      
+env.PythonLanguageSessions (PythonLanguageSessions)      Durable Object      
+env.LANGUAGE_OPEN_LIMIT (10 requests/60s)                Rate Limit          
+env.LANGUAGE_COMMAND_LIMIT (600 requests/60s)            Rate Limit          
+
+The following containers are available:
+- sistemazero-studio-language-staging-pythonlanguagesandbox-staging (registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185@sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5)
+
+Uploaded sistemazero-studio-language-staging (5.79 sec)
+╭ Deploy a container application deploy changes to your application
+│
+│ Container application changes
+│
+├ EDIT sistemazero-studio-language-staging-pythonlanguagesandbox-staging
+│
+│         "configuration": {
+│           "command": [],
+│           "entrypoint": [],
+│ -         "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-language-staging-pythonlanguagesandbox-staging@sha256:9e994d34822e881de22b50bb820fe24417dfbda81a8a800a0ef8c762eb482178",
+│ +         "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-language-85d16fcd9:qualified-44891720185@sha256:9b50aa7dc43293868864ea2146e69bc35e218c58b7d52895b46bc85107194af5",
+│           "instance_type": "standard-2",
+│           "network": {
+│             "assign_ipv4": "none",
+│
+│
+│  SUCCESS  Modified application sistemazero-studio-language-staging-pythonlanguagesandbox-staging (Application ID: a03225c7-85d7-4bd6-9919-a63ba03178af)
+│
+╰ Applied changes 
+
+Deployed sistemazero-studio-language-staging triggers (3.22 sec)
+  https://sistemazero-studio-language-staging.helena-bcc.workers.dev
+Current Version ID: a081b2a9-21f4-4f9b-a0b4-2897825e9ee0
+

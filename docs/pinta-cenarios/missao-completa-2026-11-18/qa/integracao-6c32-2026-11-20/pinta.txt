@@ -1,0 +1,17 @@
+(pass) offsetInsideDoc (a cópia nasce do lado, mas DENTRO do papel) > num cenário grande a régua continua a de sempre
+(pass) offsetInsideDoc (a cópia nasce do lado, mas DENTRO do papel) > no meio de um papel pequeno anda a FOLGA que sobra (nem +12 nem -12 cabem)
+(pass) offsetInsideDoc (a cópia nasce do lado, mas DENTRO do papel) > ninguém nasce EM CIMA de quem já está lá: a segunda cópia vai para o próximo lugar livre
+(pass) offsetInsideDoc (a cópia nasce do lado, mas DENTRO do papel) > fora do papel, união vazia ou papel sem medida: degrada para o +12 de sempre
+(pass) occupiedBoundsOf (as caixas que a cópia evita) > cada forma e, por cima, a UNIÃO de cada grupo
+(pass) occupiedBoundsOf (as caixas que a cópia evita) > a cópia de um grupo não nasce em cima do próprio grupo
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > canto livre: cada eixo pelo seu fator
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > canto com Shift: UM fator, a projeção do ponteiro na diagonal (não a média dos dois)
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > lado livre escala só o eixo dele; com Shift o mesmo fator vai para os dois
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > seleção degenerada num ponto devolve 1 nos dois modos
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > alça de canto numa linha horizontal (dy = 0): livre deixa o eixo morto em 1, Shift projeta em X
+(pass) resizeFactors (as alças, livre e com Shift, 30/09/2026) > projeção negativa sai crua; quem clampa é o scaleShape (nunca vira do avesso)
+
+ 2272 pass
+ 0 fail
+ 27350 expect() calls
+Ran 2272 tests across 194 files. [171.84s]

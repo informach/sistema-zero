@@ -379,11 +379,11 @@ export function buildNarrative(mode: KidsMode, a: CompleteAnswers) {
     attention: differentNeed,
     figureAfter: 4,
     cta: ready ? 'Conhecer o treinamento' : 'Conhecer o formato e os requisitos',
-    // O Desafio Kids tem uma página só desde 13/11/2026; a Comunidade segue com a "criar junto".
+    // Cada produto Kids tem uma oferta única; o acompanhamento é explicado na mesma página.
     href:
       mode === 'desafio'
         ? '/kids/desafio-primeiro-jogo/oferta'
-        : `/kids/comunidade-dos-criadores/oferta${young ? '/criar-junto' : ''}`,
+        : '/kids/comunidade-dos-criadores/oferta',
     fit: ready ? 'explorar-treinamento' : 'conferir-condicoes',
     skill: goal,
     branch,

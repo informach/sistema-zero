@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
+import { deliveredBlocklyEvents } from './__tests__/events'
 import {
   type PythonBlocklyBlock,
   pythonVisualToWorkspace,
@@ -161,7 +162,7 @@ test('argument resizing preserves connections and participates in Blockly undo a
       .getAllBlocks(false)
       .find((block) => block.type === 'sz_py_print') as PythonBlocklyBlock
     const connected = block.getInputTargetBlock('args:0')!
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     workspace.clearUndo()
     block.setPythonOption('args:count', 2)
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
@@ -171,7 +172,7 @@ test('argument resizing preserves connections and participates in Blockly undo a
     expect(added?.isShadow()).toBe(true)
     expect(added?.getFieldValue('TEXT')).toBe('Olá!')
     expect(() => pythonWorkspaceToVisual(workspace, roots)).not.toThrow()
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     workspace.undo(false)
     expect(block.getInput('args:1')).toBeNull()
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
@@ -183,10 +184,10 @@ test('argument resizing preserves connections and participates in Blockly undo a
     expect(() => pythonWorkspaceToVisual(workspace, roots)).not.toThrow()
     // Removing the socket that holds only the default shadow is allowed; a placed block is not.
     block.getInputTargetBlock('args:1')!.setFieldValue('Tchau', 'TEXT')
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     block.setPythonOption('args:count', 1)
     expect(block.getInput('args:1')).toBeNull()
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await deliveredBlocklyEvents(workspace)
     // Undoing the removal brings the shadow back with what the child had typed in it.
     workspace.undo(false)
     expect(block.getInputTargetBlock('args:1')?.getFieldValue('TEXT')).toBe('Tchau')

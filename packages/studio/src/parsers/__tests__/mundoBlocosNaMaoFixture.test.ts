@@ -346,8 +346,9 @@ document.addEventListener("keyup", (event) => {
     direita = false;
   }
 });
-const relogio = new THREE.Clock();
+const relogio = new THREE.Timer();
 function passo() {
+  relogio.update();
   const dt = relogio.getDelta();
   camera.rotation.y = anguloY;
   camera.rotation.x = anguloX;

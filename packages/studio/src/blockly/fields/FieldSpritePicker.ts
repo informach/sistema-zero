@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import type { ProjectAsset } from '#core'
+import { SPRITE_DECL_BLOCKS } from './declaringBlocks'
 
 /**
  * Campo Blockly de SPRITE: mostra o NOME do sprite (string) e, ao clicar, abre um
@@ -17,36 +18,6 @@ import type { ProjectAsset } from '#core'
  */
 interface AssetAccessor {
   __szAssets?: () => ProjectAsset[]
-}
-
-/**
- * Blocos que CRIAM um sprite nomeado (a fonte da lista do dropdown), e em qual
- * campo está a cor/imagem para a miniatura. Inclui os criadores genéricos E os dos
- * KITS (nave, dino, gorila) — senão a criança cria um sprite com "Criar nave" e o
- * seletor diz, ERRADO, que não há sprite nenhum. Quase todos guardam o nome no
- * campo `NAME`; quem usa outro campo informa em `nameField`. ⚠️ Bloco novo que
- * cria sprite nomeado? Adicione aqui.
- */
-const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameField?: string }> = {
-  sz_g2d_create_sprite: { color: 'COLOR' },
-  sz_g2d_create_text_sprite: {},
-  sz_g2d_spawn_text_in_group: {},
-  sz_g2d_create_image_sprite: { image: 'IMAGE' },
-  sz_g2d_create_shape_sprite: { nameField: 'SPRITE' }, // criar sprite com figura (v0.23) — nome no campo SPRITE
-  // Criar NO GRUPO com nome (opcional): o sprite nasce durante o jogo e o nome
-  // é a alça p/ animar/mexer nele em seguida. Campo vazio = `collectSprites`
-  // ignora. ⚠️ a lista é global (sem escopo): usar o nome fora do trecho onde
-  // ele nasce é pego pela validação da IR, com recado claro.
-  sz_g2d_spawn_in_group: { color: 'COLOR' },
-  sz_g2d_spawn_image_in_group: { image: 'IMAGE' },
-  // Soltar um inimigo "chamado ⟨X⟩": mesma régua dos dois de cima. É o que
-  // deixa a barra de vida do chefão apontar para ELE, sem laço.
-  sz_g2d_spawn_enemy: {},
-  sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
-  sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
-  sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)
-  sz_g2d_stickhero_sprite: { color: 'COLOR' }, // criar equilibrista (Kit equilibrista v2)
-  sz_g2d_balloon_sprite: { color: 'BODY' }, // criar balão (Kit balão v2)
 }
 
 interface SpriteOption {
@@ -184,23 +155,28 @@ export function resolveSpriteVisual(
 /** Campos dos DECLARADORES que mudam nome/visual do sprite (invalidam miniaturas). */
 const SPRITE_VISUAL_FIELDS = new Set(['NAME', 'COLOR', 'IMAGE', 'BODY'])
 
-/** Tipos de bloco presentes num JSON serializado (top + inputs/next, recursivo). */
-function jsonBlockTypes(json: unknown, out: string[] = []): string[] {
-  if (!json || typeof json !== 'object') return out
-  const node = json as {
-    type?: unknown
-    inputs?: Record<string, { block?: unknown; shadow?: unknown }>
-    next?: { block?: unknown; shadow?: unknown }
-  }
-  if (typeof node.type === 'string') out.push(node.type)
-  if (node.inputs && typeof node.inputs === 'object') {
-    for (const input of Object.values(node.inputs)) {
-      jsonBlockTypes(input?.block, out)
-      jsonBlockTypes(input?.shadow, out)
+/**
+ * Tipos de bloco presentes num JSON serializado (top + inputs/next), em pré-ordem e sem recursão:
+ * o evento de criar uma cópia longa traz a cauda `next` inteira.
+ */
+function jsonBlockTypes(json: unknown): string[] {
+  const out: string[] = []
+  const pending: unknown[] = [json]
+  while (pending.length > 0) {
+    const current = pending.pop()
+    if (!current || typeof current !== 'object') continue
+    const node = current as {
+      type?: unknown
+      inputs?: Record<string, { block?: unknown; shadow?: unknown }>
+      next?: { block?: unknown; shadow?: unknown }
     }
+    if (typeof node.type === 'string') out.push(node.type)
+    const children: unknown[] = []
+    if (node.inputs && typeof node.inputs === 'object')
+      for (const input of Object.values(node.inputs)) children.push(input?.block, input?.shadow)
+    children.push(node.next?.block, node.next?.shadow)
+    for (let index = children.length - 1; index >= 0; index--) pending.push(children[index])
   }
-  jsonBlockTypes(node.next?.block, out)
-  jsonBlockTypes(node.next?.shadow, out)
   return out
 }
 
@@ -245,7 +221,7 @@ export function refreshSpriteThumbs(ws: Blockly.Workspace): void {
     for (const block of ws.getAllBlocks(false)) {
       for (const input of block.inputList) {
         for (const field of input.fieldRow) {
-          if (field instanceof FieldSpritePicker) field.forceRerender()
+          if (field instanceof FieldSpritePicker) field.refreshThumbnail()
         }
       }
     }
@@ -292,6 +268,18 @@ export class FieldSpritePicker extends Blockly.FieldTextInput {
   private thumbImage_: SVGImageElement | null = null
   /** Visual resolvido no render_ corrente (lido pelo updateSize_). */
   private thumbVisual_: SpriteVisual | null = null
+
+  /** An unrelated art update must not resize blocks or bump neighbouring stacks. */
+  refreshThumbnail(): void {
+    const block = this.getSourceBlock()
+    const visual =
+      block?.rendered && !block.RTL && !this.isFullBlockField()
+        ? resolveSpriteVisual(this.getValue(), block.workspace)
+        : null
+    if (visual?.image === this.thumbVisual_?.image && visual?.color === this.thumbVisual_?.color)
+      return
+    this.forceRerender()
+  }
 
   static override fromJson(options: Blockly.FieldTextInputFromJsonConfig): FieldSpritePicker {
     return new FieldSpritePicker(`${options.text ?? ''}`)

@@ -1,0 +1,145 @@
+{
+  "baseline": "18458d850be9f0c0678e6b39bd2c376d4dbc06a4",
+  "records": [
+    {
+      "file": "pinta-full.log.gz",
+      "bytes": 83873,
+      "sha256": "2d3ef5e2e4cdb9e1d2513eac0387af10cc39c01c9b8704b68d341eb6dbb84e6f",
+      "rawSha256": "c4c35b77055c3f706cf22a0b84efa514026cc44feb7e66eaf9a2742c184bf0c3"
+    },
+    {
+      "file": "focused.log.gz",
+      "bytes": 1063,
+      "sha256": "7b40114346b41a0514727025e9d0850d369e8a7868e3ba0bc72b1d7c4172baa5",
+      "rawSha256": "ba810abdddf9bfa1bda99f8b8f4acee8a40fc80bdffd6458f6abe516b344af6c"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "core-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 64,
+      "sha256": "2bcb25c4b63362c474f4309a0da13c60f3741d5e35a3173537387ea506e6bc58",
+      "rawSha256": "63af3405b4f1c5f108a1cb09b684a55897e31d350e0924918e0bd939f4a361e2"
+    },
+    {
+      "file": "delivered-python.json.gz",
+      "bytes": 136,
+      "sha256": "1e20933ee249e72201cc3688b32acb6c027017c5c699a45cea93287744ff92a7",
+      "rawSha256": "ebf40b441b5bee1df8d5fdf1a7afc6fae4b98eb2e21d619d1361f1e49298bdc6"
+    },
+    {
+      "file": "environment.json.gz",
+      "bytes": 148,
+      "sha256": "5b5451d9d9f1f8196a107fdb5249b04f8b22d270f39e4fd8fb162534531361c0",
+      "rawSha256": "232fd9d666186a58697746be3ece6182a756dc716c53f468b297e5259aa63ada"
+    },
+    {
+      "file": "python-generated.log.gz",
+      "bytes": 86,
+      "sha256": "2c247188b932109b89c108de8ded9ebb3998c3aa13151afd9f91dc9d33ad4d55",
+      "rawSha256": "126e0ae087e7e32875119228fea400f8f8b3e2dfee3ced6d589d74c020b72a55"
+    },
+    {
+      "file": "js-generated.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "first-full.log.gz",
+      "bytes": 84645,
+      "sha256": "5e4708931ea18e0ba92b11dcd9c2c8cc92c68a192eeaef8b55d5361e89ead33a",
+      "rawSha256": "6a142ac4bc0dfc891ae6ff11300275bcdb5537860b6290db66598c635a6478b8"
+    },
+    {
+      "file": "query-before.log.gz",
+      "bytes": 3757,
+      "sha256": "93385686d70dcc8c50aeaade9e8d36499d7e554f270b22720246c2dde7417290",
+      "rawSha256": "2592ba3bf5f8997919f838731936ca262cd73576811128637e90a853ff627a71"
+    },
+    {
+      "file": "browser.log.gz",
+      "bytes": 2946,
+      "sha256": "01612a7635345e064f16fc5050933cc4d0b6cb6ef70127b4e5ef4d4b649a210f",
+      "rawSha256": "afbfe13c6cb725ff775c2e433d00390a2209eee3fa8743351a120c592d54448c"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2114,
+      "sha256": "b0413da191e0ce60a66d955b346ab2fd08d15252b9b0bca526e5974973cc5d2d",
+      "rawSha256": "9abb527e4e400458da0c99681617e0791362e9e4d939ed93c4d41a37252dc0e4"
+    },
+    {
+      "file": "physical-report.json.gz",
+      "bytes": 334876,
+      "sha256": "e0a5a87dfbac3858045e4293d9aa9afc65b5e5aba5d3f9a2770bdbc9465690a4",
+      "rawSha256": "f6cc86e289365b2947119e4748b8e9536cd8d2a76c170e3590545791630d2602"
+    },
+    {
+      "file": "integration-report.json.gz",
+      "bytes": 929342,
+      "sha256": "9cf5680fa4cbe73e278331cfeb6c91e20bed8f3e1aa68ac0a32546a45056e6de",
+      "rawSha256": "c8720bea1c8716ffe7df0dd4eea9b2bb49c9a123e26e0153b0ae2b708bfbccbf"
+    },
+    {
+      "file": "archive-python-common.cjs.gz",
+      "bytes": 1016,
+      "sha256": "64800bb8d1d82d261d18e2231a974798c865fc993df434d07ad2fe6bd5084f4f",
+      "rawSha256": "f13f20297fada606bbed3481a35b149b4143a8c04ad6bc188f5449a22176237c"
+    }
+  ],
+  "sources": [
+    {
+      "file": "packages/pinta/src/export/pygameProject.ts",
+      "bytes": 24376,
+      "sha256": "7aa223b2cb46355f82d1b60b2e986305aea516a88bd442354c9c904b7bf984b6"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.ts",
+      "bytes": 7819,
+      "sha256": "f4b7ac70307cddea17be5fd22971ec60e1026f7e96181a455ab678441c5fc0d1"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneGeometry.test.ts",
+      "bytes": 8020,
+      "sha256": "e224d9a83772bb802b7493ab273c82d68eb04757383fceaa4e543091dacfb5f6"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRegions.ts",
+      "bytes": 7745,
+      "sha256": "fb58b460a5a69b91564eaf3c4c25874b6bcec176bf1d7889d55f9fe6d7a929a0"
+    },
+    {
+      "file": "packages/pinta/src/export/pythonSceneRegions.test.ts",
+      "bytes": 9748,
+      "sha256": "052bceae9d354f0b35e4513ae3931dfbd2045bb849d9cd346c4e4725ae1ab2b8"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "bytes": 8423,
+      "sha256": "e45ad8fa1aca713536a6a30c8679c33e9a93c90c15296782b68a9f505e6e8a1d"
+    }
+  ]
+}

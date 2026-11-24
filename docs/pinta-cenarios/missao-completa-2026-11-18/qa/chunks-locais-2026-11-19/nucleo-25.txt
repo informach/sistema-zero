@@ -1,0 +1,29 @@
+(pass) chunks físicos da autoridade local > conserva todas as células, flags e metadados sem colocar o buffer no cabeçalho
+(pass) chunks físicos da autoridade local > mantém o envelope anterior nos projetos pequenos
+(pass) chunks físicos da autoridade local > recorta as arestas sem criar células ou perder posições
+(pass) chunks físicos da autoridade local > uma casa alterada grava um chunk e o cabeçalho; ler não regrava o documento
+(pass) chunks físicos da autoridade local > uma lápide retira somente os chunks do próprio documento [15.00ms]
+(pass) chunks físicos da autoridade local > não usa o espelho quando falta um chunk
+(pass) chunks físicos da autoridade local > conserva protocolos físicos desconhecidos para a barreira de versão
+(pass) chunks físicos da autoridade local > chunks vazios não ocupam registros; preencher e apagar uma casa muda só aquele chunk
+(pass) chunks físicos da autoridade local > células iguais em um novo buffer só gravam a revisão, sem regravar chunks [16.00ms]
+(pass) chunks físicos da autoridade local > conserva o mapa interno e as referências de um conjunto
+(pass) chunks físicos da autoridade local > encolher abaixo do limiar volta ao envelope denso e libera todos os chunks antigos
+(pass) chunks físicos da autoridade local > reduzir linhas conserva os chunks ainda referenciados e libera os demais
+(pass) chunks físicos da autoridade local > recusa chunk ausente, truncado, com tipo ou célula inválida
+(pass) chunks físicos da autoridade local > recusa chunk ausente, truncado, com tipo ou célula inválida
+(pass) chunks físicos da autoridade local > recusa chunk ausente, truncado, com tipo ou célula inválida [15.00ms]
+(pass) chunks físicos da autoridade local > recusa chunk ausente, truncado, com tipo ou célula inválida
+(pass) chunks físicos da autoridade local > recusa dimensões físicas inválidas antes de reconstruir os buffers
+(pass) chunks físicos da autoridade local > recusa dimensões físicas inválidas antes de reconstruir os buffers
+(pass) chunks físicos da autoridade local > recusa dimensões físicas inválidas antes de reconstruir os buffers
+(pass) chunks físicos da autoridade local > recusa dimensões físicas inválidas antes de reconstruir os buffers
+(pass) chunks físicos da autoridade local > não permite referenciar o chunk de outro documento
+(pass) chunks físicos da autoridade local > preserva identificadores antigos longos usando armazenamento denso
+(pass) chunks físicos da autoridade local > preserva Unicode legado não emparelhado no ID de asset
+(pass) chunks físicos da autoridade local > preserva Unicode legado não emparelhado no ID de layer
+(pass) chunks físicos da autoridade local > preserva grupos, objetos, propriedades e versões de arte no cabeçalho
+ 25 pass
+ 0 fail
+ 121 expect() calls
+Ran 25 tests across 1 file. [531.00ms]

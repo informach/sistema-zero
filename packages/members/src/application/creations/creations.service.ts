@@ -1,4 +1,27 @@
-import { creativeToolAccessRef, isContentFingerprint } from '@sistemazero/core/creations'
+import {
+  creativeToolAccessRef,
+  isContentFingerprint,
+  PINTA_INVENTORY_READER_VERSION,
+} from '@sistemazero/core/creations'
+import {
+  type PintaPaletteBase,
+  type PintaPaletteCommitProof,
+  type PintaPaletteHead,
+  type PintaPaletteTicket,
+  pintaPaletteBlobKey,
+} from '@sistemazero/core/creations/pinta-palette-writer'
+import {
+  canReadStudioSealedStorage,
+  resolveCreationPartKey,
+  type StudioSealedReceipt,
+  studioSealedBlobKey,
+} from '@sistemazero/core/creations/studio-sealed-storage'
+import type {
+  StudioSealedBase,
+  StudioSealedCommitProof,
+  StudioSealedHead,
+  StudioSealedTicket,
+} from '@sistemazero/core/creations/studio-sealed-writer'
 import {
   STUDIO_PROJECT_FORMAT_VERSION,
   STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
@@ -22,7 +45,6 @@ import {
   type CreationPartRef,
   type CreationSummary,
   type CreationTool,
-  creationPartStorageKey,
   creationStorageKey,
   isCreationPartHash,
   isLessonCreationTool,
@@ -38,10 +60,15 @@ import {
   CreationQuotaExceededError,
   CreationRevisionMismatchError,
   CreationStaleBaseError,
+  StudioStorageProtocolError,
 } from '../../domain/creations/creation.errors'
 import { classifyPintaPaletteLibraryCreation } from '../../domain/creations/palette-library'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
+import type {
+  CreationsRepository,
+  CreationUploadInput,
+  StudioSealedCommitResult,
+} from '../../domain/ports/creations-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
@@ -55,20 +82,22 @@ import {
 export { invalidateToolOwnership, resetToolOwnershipCacheForTests } from './tool-ownership-cache'
 
 /** Uma parte a assinar/baixar: hash, bytes e a chave dela no R2. */
-export interface CreationPartTicket extends CreationPartRef {
-  storageKey: string
-}
+export type CreationPartTicket = CreationPartRef & { storageKey: string }
 
 /** O que o `reserve` devolve ao BFF: a revisão, a chave que ele vai assinar e as partes FALTANTES. */
 export interface CreationUploadTicket {
   revision: number
   /** Native format validated and reserved, independent of the upload revision. */
   formatVersion: number
+  maxReadFormatVersion?: number
+  inventoryFloor?: number
   storageKey: string
   /** Eco dos tetos, para o BFF assinar `Content-Length` = bytes e negar o resto. */
   bytes: number
   /** Só as partes que o item ainda não tem (cada uma ganha um PUT assinado). */
   parts: CreationPartTicket[]
+  paletteTicket?: PintaPaletteTicket
+  studioSealTicket?: StudioSealedTicket
 }
 
 /**
@@ -82,6 +111,8 @@ export interface CreationCommitOutcome {
   /** Chave da revisão ANTERIOR no R2 (`null` = primeira revisão, ou retry idempotente). */
   previousStorageKey: string | null
   releasedStorageKeys: string[]
+  paletteHead?: PintaPaletteHead
+  studioSeal?: StudioSealedCommitResult
 }
 
 export interface CreationDownloadTicket {
@@ -91,6 +122,7 @@ export interface CreationDownloadTicket {
   summary: CreationSummary
   /** As partes da revisão corrente, na ordem da linha (o BFF assina um GET para cada). */
   parts: CreationPartTicket[]
+  studioSealReceipt?: StudioSealedReceipt
 }
 
 /**
@@ -208,6 +240,26 @@ export class ReserveCreationUploadService {
     private readonly adultJourney?: Pick<AdultJourneyService, 'assert'>,
   ) {}
 
+  async assertPersonalWrite(
+    tool: ProductCreationTool,
+    userId: string,
+    accountId: string,
+    privileged: boolean,
+  ) {
+    if (this.creations.audience === 'adult') {
+      if (!this.adultJourney) throw new AccessDeniedError('Jornada adulta indisponível.')
+      await this.adultJourney.assert(userId, tool, privileged)
+    }
+    await assertToolOwned(
+      this.accessCheck,
+      accountId,
+      tool,
+      privileged,
+      this.clock().getTime(),
+      this.creations.audience ?? 'kids',
+    )
+  }
+
   async execute(input: {
     userId: string
     accountId: string
@@ -222,8 +274,11 @@ export class ReserveCreationUploadService {
     /** A revisão que o aparelho conhece (0 = nova); ausente = sem conferência. */
     baseRevision?: number
     formatVersion?: number
+    maxReadFormatVersion?: number
+    paletteWrite?: PintaPaletteBase
+    studioSeal?: CreationUploadInput['studioSeal']
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
-    parts?: ReadonlyArray<{ hash: string; bytes?: number }>
+    parts?: CreationUploadInput['parts']
     /** Impressão digital do conteúdo (`v1:<sha256>`), opaca aqui. */
     fingerprint?: string | null
   }): Promise<CreationUploadTicket> {
@@ -238,18 +293,7 @@ export class ReserveCreationUploadService {
         blockId: input.itemId,
       })
     } else {
-      if (this.creations.audience === 'adult') {
-        if (!this.adultJourney) throw new AccessDeniedError('Jornada adulta indisponível.')
-        await this.adultJourney.assert(input.userId, input.tool, input.privileged)
-      }
-      await assertToolOwned(
-        this.accessCheck,
-        input.accountId,
-        input.tool,
-        input.privileged,
-        this.clock().getTime(),
-        this.creations.audience ?? 'kids',
-      )
+      await this.assertPersonalWrite(input.tool, input.userId, input.accountId, input.privileged)
     }
     if (
       input.fingerprint !== undefined &&
@@ -267,6 +311,19 @@ export class ReserveCreationUploadService {
     const formatVersion = input.formatVersion ?? 1
     if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
       throw new ValidationError('Versão de formato inválida')
+    }
+    const reader = input.maxReadFormatVersion
+    if (
+      reader !== undefined &&
+      (input.tool !== 'pinta' ||
+        !Number.isInteger(reader) ||
+        reader < 1 ||
+        reader > PINTA_INVENTORY_READER_VERSION ||
+        reader < formatVersion)
+    ) {
+      throw new ValidationError(
+        'A capacidade de leitura declarada não é compatível com este formato',
+      )
     }
     if (isStudioFormatTool(input.tool) && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
       throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
@@ -334,6 +391,9 @@ export class ReserveCreationUploadService {
       itemUpdatedAt: input.itemUpdatedAt,
       bytes: input.bytes,
       formatVersion,
+      maxReadFormatVersion: reader,
+      ...(input.paletteWrite ? { paletteWrite: input.paletteWrite } : {}),
+      ...(input.studioSeal ? { studioSeal: input.studioSeal } : {}),
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
@@ -372,26 +432,45 @@ export class ReserveCreationUploadService {
           : undefined,
       )
     }
+    const studioTicket = reservation.studioSealTicket
     return {
       revision: reservation.revision,
+      ...(studioTicket ? { studioSealTicket: studioTicket } : {}),
+      ...(reservation.paletteTicket ? { paletteTicket: reservation.paletteTicket } : {}),
+      ...(reservation.inventoryFloor === undefined
+        ? {}
+        : { inventoryFloor: reservation.inventoryFloor }),
       formatVersion,
-      storageKey: creationStorageKey(
-        input.userId,
-        input.tool,
-        input.itemId,
-        reservation.revision,
-        this.creations.audience ?? 'kids',
-      ),
+      ...(reader === undefined ? {} : { maxReadFormatVersion: reader }),
+      storageKey: studioTicket
+        ? studioSealedBlobKey(studioTicket.scope, studioTicket.nonce, 'upload')
+        : reservation.paletteTicket
+          ? pintaPaletteBlobKey(
+              {
+                userId: input.userId,
+                audience: this.creations.audience ?? 'kids',
+              },
+              reservation.paletteTicket,
+              'upload',
+            )
+          : creationStorageKey(
+              input.userId,
+              input.tool,
+              input.itemId,
+              reservation.revision,
+              this.creations.audience ?? 'kids',
+            ),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
         ...part,
-        storageKey: creationPartStorageKey(
-          input.userId,
-          input.tool,
-          input.itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        storageKey: resolveCreationPartKey(
+          {
+            userId: input.userId,
+            tool: input.tool,
+            itemId: input.itemId,
+            audience: this.creations.audience ?? 'kids',
+          },
+          part,
         ),
       })),
     }
@@ -417,6 +496,8 @@ export class CommitCreationUploadService {
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
     verifiedFormatVersion?: number
+    paletteProof?: PintaPaletteCommitProof & { accountId: string }
+    studioProof?: StudioSealedCommitProof
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
@@ -424,6 +505,7 @@ export class CommitCreationUploadService {
     const uploadedParts = input.uploadedParts ?? []
     if (
       isStudioFormatTool(input.tool) &&
+      !input.studioProof &&
       (!input.verifiedPartHashes || input.verifiedFormatVersion === undefined)
     )
       throw new ValidationError(
@@ -459,6 +541,8 @@ export class CommitCreationUploadService {
       ...(input.verifiedFormatVersion !== undefined
         ? { verifiedFormatVersion: input.verifiedFormatVersion }
         : {}),
+      ...(input.paletteProof ? { paletteProof: input.paletteProof } : {}),
+      ...(input.studioProof ? { studioProof: input.studioProof } : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -485,25 +569,32 @@ export class CommitCreationUploadService {
       }
       throw new CreationRevisionMismatchError()
     }
-    const record = await this.creations.get(input.userId, input.tool, input.itemId)
-    if (!record) throw new CreationNotFoundError()
+    const confirmed = result.studioSeal?.item ?? result.paletteItem
+    const record = confirmed
+      ? null
+      : await this.creations.get(input.userId, input.tool, input.itemId)
+    const item = confirmed ?? (record && toCreationSummary(record))
+    if (!item) throw new CreationNotFoundError()
     const releasedStorageKeys = [
       ...(result.previousStorageRef ? [result.previousStorageRef] : []),
       ...result.releasedPartRefs.map((part) =>
-        creationPartStorageKey(
-          input.userId,
-          input.tool,
-          input.itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        resolveCreationPartKey(
+          {
+            userId: input.userId,
+            tool: input.tool,
+            itemId: input.itemId,
+            audience: this.creations.audience ?? 'kids',
+          },
+          part,
         ),
       ),
     ]
     return {
-      item: toCreationSummary(record),
+      item,
       previousStorageKey: result.previousStorageRef,
       releasedStorageKeys,
+      ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
+      ...(result.studioSeal ? { studioSeal: result.studioSeal } : {}),
     }
   }
 }
@@ -515,10 +606,18 @@ export class GetCreationDownloadService {
     userId: string,
     tool: CreationTool,
     itemId: string,
+    studioRead?: { reader: string; accountId: string },
   ): Promise<CreationDownloadTicket> {
     const record = await this.creations.get(userId, tool, itemId)
     if (!record || record.deletedAt !== null || !record.storageRef) {
       throw new CreationNotFoundError()
+    }
+    const receipt = record.studioSealReceipt
+    if (receipt) {
+      if (studioRead && record.accountId !== studioRead.accountId) throw new CreationNotFoundError()
+      if (!canReadStudioSealedStorage(studioRead?.reader, receipt.requirements)) {
+        throw new StudioStorageProtocolError()
+      }
     }
     return {
       storageKey: record.storageRef,
@@ -527,15 +626,12 @@ export class GetCreationDownloadService {
       summary: toCreationSummary(record),
       parts: record.parts.map((part) => ({
         ...part,
-        storageKey: creationPartStorageKey(
-          userId,
-          tool,
-          itemId,
-          part.hash,
-          part.rev,
-          this.creations.audience ?? 'kids',
+        storageKey: resolveCreationPartKey(
+          { userId, tool, itemId, audience: this.creations.audience ?? 'kids' },
+          part,
         ),
       })),
+      ...(receipt ? { studioSealReceipt: receipt } : {}),
     }
   }
 }
@@ -556,12 +652,16 @@ export class DeleteCreationService {
     itemId: string,
     baseRevision: number,
     maxFormatVersion = 1,
+    paletteWrite?: PintaPaletteBase & { accountId: string },
+    studioSeal?: StudioSealedBase & { accountId: string },
   ): Promise<{
     deleted: boolean
     storageKey: string | null
     /** Tudo o que a lixeira soltou no R2 (blob principal + partes). */
     storageKeys: string[]
     revision: number
+    paletteHead?: PintaPaletteHead
+    studioHead?: StudioSealedHead
   }> {
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       throw new ValidationError('Revisão-base inválida')
@@ -576,6 +676,8 @@ export class DeleteCreationService {
       baseRevision,
       this.clock(),
       maxFormatVersion,
+      paletteWrite,
+      studioSeal,
     )
     if (!result.ok && result.reason === 'client-outdated') {
       throw new CreationClientOutdatedError(result.requiredVersion)
@@ -587,17 +689,15 @@ export class DeleteCreationService {
       storageKeys: [
         ...(result.storageRef ? [result.storageRef] : []),
         ...result.partRefs.map((part) =>
-          creationPartStorageKey(
-            userId,
-            tool,
-            itemId,
-            part.hash,
-            part.rev,
-            this.creations.audience ?? 'kids',
+          resolveCreationPartKey(
+            { userId, tool, itemId, audience: this.creations.audience ?? 'kids' },
+            part,
           ),
         ),
       ],
       revision: result.revision,
+      ...(result.paletteHead ? { paletteHead: result.paletteHead } : {}),
+      ...(result.studioHead ? { studioHead: result.studioHead } : {}),
     }
   }
 }

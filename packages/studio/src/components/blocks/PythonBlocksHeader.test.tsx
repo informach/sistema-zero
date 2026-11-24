@@ -66,9 +66,12 @@ describe('PythonBlocksHeader', () => {
     )
     expect(screen.queryByRole('button', { name: 'Fechar as funções' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Ir para: Programa inteiro' }))
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Procurar uma função ou classe' }), {
-      target: { value: 'tempo' },
-    })
+    fireEvent.change(
+      screen.getByRole('searchbox', { name: 'Procurar uma área, função ou classe' }),
+      {
+        target: { value: 'tempo' },
+      },
+    )
     expect(screen.queryByRole('button', { name: 'Função colocar_moeda' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Função contar_tempo' }))
     expect(onNavigate).toHaveBeenLastCalledWith('b')

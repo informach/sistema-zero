@@ -1,0 +1,72 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 1954,
+    "sha256": "687bd6c2c37cb53cdcb00efc28cec8e1b9a3f92f467e7e0745947351fafb7b03"
+  },
+  {
+    "file": "biome.txt",
+    "bytes": 46,
+    "sha256": "8bef7fb481bd79392627ed9392945765cb6912a893e548506adcf8d5cd8ada50"
+  },
+  {
+    "file": "focado-verde.txt",
+    "bytes": 463,
+    "sha256": "06a6ae4af1922420d96268d57ce48992a4107a7a7e83bdb513f1b2682b07c0fd"
+  },
+  {
+    "file": "fontes.json",
+    "bytes": 902,
+    "sha256": "e744bd51d980908156f5ef62379c8ea62cbfd6c8fa7b8fb5f9e67df897d658b4"
+  },
+  {
+    "file": "minimapa-cpu-4x.png",
+    "bytes": 59822,
+    "sha256": "c7cd11599ba959bd9836e19e35fbd19e1d3792a213527338a3c7b934514a889b"
+  },
+  {
+    "file": "minimapa-desktop.png",
+    "bytes": 59822,
+    "sha256": "c7cd11599ba959bd9836e19e35fbd19e1d3792a213527338a3c7b934514a889b"
+  },
+  {
+    "file": "minimapa-touch.png",
+    "bytes": 120419,
+    "sha256": "917720f8ea9f3f06a33199390722bf07f96e8c0bcb7bfefa13fd4f72b5c0830e"
+  },
+  {
+    "file": "navegador.json",
+    "bytes": 705,
+    "sha256": "61540fcf829315fe79dc54cfcbbfd000b9168696d8d26c62a183abcdda2041bd"
+  },
+  {
+    "file": "navegador.txt",
+    "bytes": 475,
+    "sha256": "88b9e0eb158ee0b355a9e273b8a517284fcbd40d663cf5a79634fa955ff246d0"
+  },
+  {
+    "file": "origem.json",
+    "bytes": 1471,
+    "sha256": "367df87010b4d407ff9e40a99a31c3bd8ad57e83d0ecae3c5673aa972198ed46"
+  },
+  {
+    "file": "pinta-completo.txt",
+    "bytes": 247061,
+    "sha256": "671a0d3f01a914d74fd12cf38ea7ebd5d17b8dc94df4bc61e86c5f84685b146c"
+  },
+  {
+    "file": "regressao-vermelho.txt",
+    "bytes": 1933,
+    "sha256": "748e294d12c7535e5711d049d9c1e01a2bcbb7b58c790190ebfce846d4f42884"
+  },
+  {
+    "file": "tipos-harness.txt",
+    "bytes": 34,
+    "sha256": "e6b23d50d411fb35800022d37d59042934b9f2d69ff13542f0bcd3bfa09c794f"
+  },
+  {
+    "file": "tipos-pinta.txt",
+    "bytes": 15,
+    "sha256": "8366207267355d3e3d5bf3bf6e8c94c5f93f6078c34f08973fa2b38cdda6cc92"
+  }
+]

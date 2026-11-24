@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-19T22:05:15.998Z",
+  "exitCode": 0,
+  "sameBundle": true,
+  "stagingOnly": true,
+  "pythonSelectorChanged": false,
+  "previousVersion": "7232eba7-0e8e-4006-8a30-a0d3a900aaa7",
+  "source": "87261f8802255db373a748358c06e234764b0f6a",
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/pinta-staging-runtime-559536442@sha256:3beb9699ff10a93d3ce81df5cd6f05f90b130d761f114a71ca0894664cb7a52b",
+  "profile": "f11aa057992edd156158a56a51b1b0f76969ab90cc8099b828315b26d9b64eb1",
+  "bundleSha256": "7941046fb9bef33bc36fd7ea18af6064340cb29bfaf835ce0f92543614a93529",
+  "configSha256": "7ad0f0b364f544917cce99c844d6b8c9b465c92b70fed7d1bd21ad56dc1952d7"
+}

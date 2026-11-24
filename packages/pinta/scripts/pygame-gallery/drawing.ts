@@ -28,8 +28,9 @@ import {
   spritesheetSelection,
   tilesetSheetSelection,
 } from '../../src/export/portableImageData'
-import type { PintaImageScene } from '../../src/export/portableImageRender'
+import { type PintaImageScene, renderPintaImage } from '../../src/export/portableImageRender'
 import { galleryToPintaJson } from '../../src/export/projectJson'
+import { exportPintaScene } from '../../src/export/scene'
 import { flattenCelsOrBlank } from '../../src/pixel/layers'
 import { bitmapToRGBA } from '../../src/pixel/render'
 import { buildTilemap } from '../../src/templates/builders'
@@ -442,5 +443,55 @@ export async function gamePng(
   const tilesets = documents.slice(0, -1).filter(isTilesetKind)
   const selection = pintaSelection(document, tilesets, scale)
   const png = encodePng(rasterize(selection.scene, selection.width, selection.height))
+  if (document.kind === 'tilemap' && selection.data?.kind === 'map' && selection.data.version === 2)
+    selection.data.scene = await fullScene(document, tilesets)
   return selection.data ? pngWithPintaData(png, selection.data) : png
+}
+
+/** Limites folgados: os desenhos da galeria são pequenos e já validados pelo documento. */
+const SCENE_LIMITS = {
+  dimension: 8192,
+  imagePixels: 16777216,
+  totalImagePixels: 67108864,
+  imageBytes: 67108864,
+  dataUrlChars: 100_000_000,
+}
+
+/**
+ * A cena completa que o Pinta grava nos dados versão 2 de um mapa (`deriveLoadedPintaImage`):
+ * as folhas vão dentro dela como PNG, na escala 1, pelo mesmo `renderPintaImage`. Aqui o canvas
+ * é o nativo (`@napi-rs/canvas`), o mesmo do `derivation.test.ts`; um navegador pode codificar
+ * esses PNG internos com outros bytes, mas com os mesmos pixels.
+ */
+async function fullScene(map: TilemapAsset, tilesets: readonly AnyTilesetAsset[]) {
+  const { createCanvas } = await import('@napi-rs/canvas')
+  const byId = new Map<string, PintaAsset>(tilesets.map((asset) => [asset.id, asset]))
+  return exportPintaScene(
+    map,
+    (id) => byId.get(id) ?? null,
+    async (asset) => {
+      if (!isTilesetKind(asset))
+        throw new Error(`O mapa ${map.name} usa um desenho que a galeria não sabe gravar na cena.`)
+      const sheet = tilesetSheetSelection(asset, 1)
+      const bytes = await renderPintaImage(
+        sheet.scene,
+        sheet.width,
+        sheet.height,
+        SCENE_LIMITS,
+        undefined,
+        {
+          createCanvas: (width, height) =>
+            createCanvas(width, height) as unknown as HTMLCanvasElement,
+          releaseCanvas(canvas) {
+            canvas.width = 1
+            canvas.height = 1
+          },
+          drawSvg() {
+            throw new Error('A galeria só tem desenhos de pixels.')
+          },
+        },
+      )
+      return `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`
+    },
+  )
 }

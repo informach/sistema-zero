@@ -1,0 +1,59 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\cellAccess.test.ts:
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+
+packages\pinta\src\tiles\mapCellBudget.test.ts:
+(pass) cell reference limits are independent of the shared flag representation
+(pass) dense editing cannot create a tile reference the native map reader refuses
+(pass) region editing refuses out-of-format tile references atomically before changing history
+(pass) the last supported tile keeps every transform and survives a native region round trip [16.00ms]
+(pass) explicit region conversion refuses an unsavable source instead of preserving an invalid reference
+
+packages\pinta\src\tiles\mapSelection.test.ts:
+(pass) copyRegion / clearRegion > copia a região (vazios viram buraco -1)
+(pass) copyRegion / clearRegion > região só de grade vazia não conta como pedaço selecionável
+(pass) copyRegion / clearRegion > clearRegion apaga só a região; nada muda = mesma ref
+(pass) extractRegion + stampRegionAt (round-trip) > extrair e colar na MESMA posição reconstrói o original
+(pass) extractRegion + stampRegionAt (round-trip) > cola clipando nas bordas e pulando buraco (-1)
+
+packages\pinta\src\tiles\mapSelectionBudget.test.ts:
+(pass) selection clips logical columns instead of aliasing the following dense row
+(pass) invalid selection extents are refused without clearing or allocating a partial cut
+(pass) a heterogeneous paste refuses all cells if one reference is outside the native format
+(pass) malformed stamps and fractional anchors do not create a partial gesture
+(pass) selection and repeating stamps work at negative origins in a sparse maximum-extent map
+(pass) locked layers and no-op pastes preserve the original map and snapshots
+(pass) picker rectangles clip columns and never alias another tileset row
+(pass) an oversized repeating gesture is refused before applying its valid prefix
+(pass) seeded dense and region selection gestures preserve identical cells and earlier snapshots [15.00ms]
+
+packages\pinta\src\tiles\regionMapEditing.test.ts:
+(pass) existing pencil paints and erases negative region coordinates without changing the snapshot
+(pass) one batch paints across regions, clips outside cells and keeps the previous history value
+(pass) dense pencil and batches cannot alias fractional coordinates into a different valid cell
+(pass) the bucket crosses chunk seams without crossing a wall or changing the previous snapshot [16.00ms]
+(pass) an oversized empty flood is refused as a whole without materializing the world [31.00ms]
+(pass) region editing respects inherited locks and refuses malformed cell values without history
+(pass) the shared bucket still fills the complete maximum dense layer with flags preserved
+(pass) the shared bucket does not join diagonal cells or wrap between rows
+
+packages\pinta\src\tiles\stamp.test.ts:
+(pass) stampFromTileset > recorta um retângulo da grade da folha (columns=8)
+(pass) stampFromTileset > posições além do tileCount viram buraco (-1)
+(pass) stampTileAt (padrão módulo ancorado) > repete o padrão em módulo, inclusive à frente da âncora (módulo negativo)
+(pass) blockCells > o bloco encaixado que contém a célula visitada
+(pass) blockCells > encaixa em direção negativa (célula antes da âncora)
+(pass) stampCells > aplica o padrão, pula buraco (-1) e índice ≥ tileCount
+(pass) stampCells > índice ≥ tileCount é pulado (carimbo obsoleto após remap)
+(pass) stampCells > mesmo conteúdo devolve a mesma ref
+
+ 41 pass
+ 0 fail
+ 4326 expect() calls
+Ran 41 tests across 6 files. [502.00ms]

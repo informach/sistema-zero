@@ -1,0 +1,565 @@
+[WebServer] $ node scripts/serve-e2e.ts
+[WebServer] (node:21852) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [E2E] Iniciando build do playground em C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\.cache\e2e-dist-5396
+[WebServer] vite v8.1.6 building client environment for production...
+[WebServer]
+transforming...[WebServer] ✓ 2915 modules transformed.
+[WebServer] rendering chunks...
+[WebServer] computing gzip size...
+[WebServer] .cache/e2e-dist-5396/index.html                                                                                            0.69 kB │ gzip:     0.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/zip.worker-L9xvFtYr.js                                                                         8.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/format.worker-DddBVCph.js                                                                     12.03 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-700-normal-Dort48En.woff2                                                        16.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-400-normal-r8SDr6Up.woff2                                                        16.31 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-800-normal-Dz8SOQK_.woff2                                                        16.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-600-normal-Br8yIETf.woff2                                                        16.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-700-normal-CqTg7A15.woff2                                                       19.43 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-600-normal-tIfxVoAe.woff2                                                       19.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-500-normal-CmLZ27r7.woff2                                                       19.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-700-normal-OcDqTBcA.woff                                                         19.98 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-400-normal-DKg4f3fz.woff                                                         20.33 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-800-normal-D-J0wlBY.woff                                                         20.36 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-latin-600-normal-Cd0eNu1l.woff                                                         20.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-700-normal-Ld3Zm3l2.woff                                                        23.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-500-normal-BSdEhq8m.woff                                                        23.50 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo-2-latin-600-normal-B4tNaogw.woff                                                        23.54 kB
+[WebServer] .cache/e2e-dist-5396/assets/codicon-DCmgc-ay.ttf                                                                          80.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/editor.worker-DxH8uu9q.js                                                                    259.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/json.worker-CGeX2HV-.js                                                                      389.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/html.worker-I9CK8Ds5.js                                                                      699.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/css.worker-Bi7QMhW1.js                                                                     1,035.16 kB
+[WebServer] .cache/e2e-dist-5396/assets/bridgeReverseParseWorker-Co3wMj18.js                                                       1,205.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/ts.worker-Cdrso5eQ.js                                                                      5,912.20 kB
+[WebServer] .cache/e2e-dist-5396/assets/pro-language.worker-CPU-BbsV.js                                                            6,620.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/ruff_wasm_bg-DvDiM-RN.wasm                                                                10,950.23 kB │ gzip: 3,943.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/Terminal-BrP-ENHg.css                                                                          3.93 kB │ gzip:     1.01 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProMonacoTabs-dXFam9gk.css                                                                     7.36 kB │ gzip:     1.54 kB
+[WebServer] .cache/e2e-dist-5396/assets/workers-9r027QUZ.css                                                                          40.07 kB │ gzip:     6.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/editor-B55U_qvj.css                                                                           68.51 kB │ gzip:    11.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/index-CnKHjXIr.css                                                                           148.20 kB │ gzip:    24.87 kB
+[WebServer] .cache/e2e-dist-5396/assets/encostou.media.generated-jQDOmxsh.js                                                           0.10 kB │ gzip:     0.11 kB
+[WebServer] .cache/e2e-dist-5396/assets/primeiraCena3d.media.generated-gmWEek4e.js                                                     0.11 kB │ gzip:     0.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/cameraQueSegue.media.generated-BbWfqq1J.js                                                     0.11 kB │ gzip:     0.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectJsonGraph-CyF9cUgR.js                                                                   0.12 kB │ gzip:     0.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/searchText-B1T8M-ZU.js                                                                         0.18 kB │ gzip:     0.17 kB
+[WebServer] .cache/e2e-dist-5396/assets/sourceRuntimeCatalog-aHQLMwNr.js                                                               0.19 kB │ gzip:     0.16 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-C8QLHJng.js                                                                            0.22 kB │ gzip:     0.20 kB
+[WebServer] .cache/e2e-dist-5396/assets/canvasExtensionContract-BQtZFBtZ.js                                                            0.30 kB │ gzip:     0.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/caixasQueSeEncostam.media.generated-B9_flghE.js                                                0.34 kB │ gzip:     0.31 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonProProjectValidation-CCIhetge.js                                                         0.36 kB │ gzip:     0.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/types-Gq-VbduN.js                                                                              0.42 kB │ gzip:     0.29 kB
+[WebServer] .cache/e2e-dist-5396/assets/stageSubject-n4cgN4hk.js                                                                       0.48 kB │ gzip:     0.33 kB
+[WebServer] .cache/e2e-dist-5396/assets/stagePill-BNWASMxt.js                                                                          0.50 kB │ gzip:     0.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/referenceGameAssets-wWa4QHrd.js                                                                0.52 kB │ gzip:     0.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/python.contribution-gmviF2bm.js                                                                0.69 kB │ gzip:     0.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/javascript-u7eKFAeM.js                                                                         0.76 kB │ gzip:     0.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/rolldown-runtime-BgaNhQyE.js                                                                   0.78 kB │ gzip:     0.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/naveQueDesliza.media.generated-BB55Q987.js                                                     0.78 kB │ gzip:     0.53 kB
+[WebServer] .cache/e2e-dist-5396/assets/BridgeCodeEditor-D9gu0N3c.js                                                                   0.80 kB │ gzip:     0.50 kB
+[WebServer] .cache/e2e-dist-5396/assets/pro-revision-configuration-C6ywz2Qs.js                                                         0.89 kB │ gzip:     0.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/raylibGameAssets-vGW7IRp_.js                                                                   0.90 kB │ gzip:     0.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/pgzeroGameAssets-Bi3uKPXh.js                                                                   0.91 kB │ gzip:     0.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/olaPgzero.media.generated-BqRvXMvs.js                                                          0.91 kB │ gzip:     0.64 kB
+[WebServer] .cache/e2e-dist-5396/assets/float-HiyDEazu.js                                                                              0.94 kB │ gzip:     0.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/pintaImageModes-DMVRfEic.js                                                                    1.00 kB │ gzip:     0.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/localTransaction-BKGDgRTh.js                                                                   1.08 kB │ gzip:     0.58 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonPromotion-PvFOPZO6.js                                                                    1.10 kB │ gzip:     0.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalogHelpers-BvDmZ2io.js                                                                     1.14 kB │ gzip:     0.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/javaScriptProjectValidation-DETcCUDi.js                                                        1.20 kB │ gzip:     0.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/_.contribution-CoM_3Lja.js                                                                     1.23 kB │ gzip:     0.63 kB
+[WebServer] .cache/e2e-dist-5396/assets/addon-fit-DkW0Tpv0.js                                                                          1.28 kB │ gzip:     0.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/languages-C1Aja55d.js                                                                          1.31 kB │ gzip:     0.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/gameStorage-YtnVkxNE.js                                                                        1.37 kB │ gzip:     0.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleDrawings-D-KyEOUY.js                                                                    1.37 kB │ gzip:     0.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonProRevision-DZOkT2M6.js                                                                  1.44 kB │ gzip:     0.80 kB
+[WebServer] .cache/e2e-dist-5396/assets/raylib-WOjsneVg.js                                                                             1.45 kB │ gzip:     0.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonProjectValidation-tuJt9jI0.js                                                            1.46 kB │ gzip:     0.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/synchronousExitJournalRead-BVQmx_zl.js                                                         1.53 kB │ gzip:     0.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/nodes-DacrOakv.js                                                                              1.57 kB │ gzip:     0.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/pintaImageSync-CRK7xivK.js                                                                     1.68 kB │ gzip:     0.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/pianoMaluco.media.generated-CvHudByD.js                                                        1.69 kB │ gzip:     0.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/ExtensionsPanel-DeQv7CnC.js                                                                    1.72 kB │ gzip:     0.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectStorageTransport-SdcpEsqQ.js                                                            1.76 kB │ gzip:     0.94 kB
+[WebServer] .cache/e2e-dist-5396/assets/pgzeroDesktop-CFr4pC41.js                                                                      1.86 kB │ gzip:     1.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/snapshot-DnJ-2X7e.js                                                                           1.97 kB │ gzip:     0.97 kB
+[WebServer] .cache/e2e-dist-5396/assets/project-json-graph-decode-DKf4z4ds.js                                                          2.02 kB │ gzip:     0.94 kB
+[WebServer] .cache/e2e-dist-5396/assets/python-execution-content-CTn6j1Ov.js                                                           2.13 kB │ gzip:     1.08 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonAssets-BzM0e1Nd.js                                                                       2.14 kB │ gzip:     1.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-ozWK-6Oj.js                                                                            2.17 kB │ gzip:     0.93 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProShortcutsDialog-Q8GyR9iU.js                                                                 2.22 kB │ gzip:     0.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/xml-B0nRXexc.js                                                                                2.38 kB │ gzip:     0.98 kB
+[WebServer] .cache/e2e-dist-5396/assets/PythonSourceEditor-DX9RMVtG.js                                                                 2.43 kB │ gzip:     1.29 kB
+[WebServer] .cache/e2e-dist-5396/assets/mundoDeBlocos.media.generated-D8SzeV9M.js                                                      2.45 kB │ gzip:     1.39 kB
+[WebServer] .cache/e2e-dist-5396/assets/proExamples-BN05SJIa.js                                                                        2.45 kB │ gzip:     1.24 kB
+[WebServer] .cache/e2e-dist-5396/assets/formatter-BorHpFjt.js                                                                          2.53 kB │ gzip:     1.24 kB
+[WebServer] .cache/e2e-dist-5396/assets/pintaPngData-CmNRMemK.js                                                                       2.62 kB │ gzip:     1.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectDownload-BbAGYCPb.js                                                                    2.65 kB │ gzip:     1.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectRecoveryGuards-sjUufX-s.js                                                              2.67 kB │ gzip:     1.09 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectRecoverySources-BuVFtS2h.js                                                             2.78 kB │ gzip:     1.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/lazyModes-OcFEoIFM.js                                                                          2.83 kB │ gzip:     1.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/pygameGames.loaders.generated-C7pDGELj.js                                                      3.05 kB │ gzip:     0.76 kB
+[WebServer] .cache/e2e-dist-5396/assets/skyPanorama-DHtGRpL-.js                                                                        3.12 kB │ gzip:     1.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/extensionsAdapter-CSpBieaS.js                                                                  3.17 kB │ gzip:     1.28 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProStageState-DNkmyBaT.js                                                                      3.39 kB │ gzip:     1.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/threeDFunctions.generated-Zv-43MyF.js                                                          3.42 kB │ gzip:     1.09 kB
+[WebServer] .cache/e2e-dist-5396/assets/cade-todo-mundo-certificado.manifesto-Dut51X8-.js                                              3.43 kB │ gzip:     1.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectFactory-DP5BP2CE.js                                                                     3.46 kB │ gzip:     1.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectStorageRead-D6TynITu.js                                                                 3.46 kB │ gzip:     1.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/addCreationToProject-BfmATl_3.js                                                               3.49 kB │ gzip:     1.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/python-CscVkOLm.js                                                                             3.51 kB │ gzip:     1.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/webContainerClient-CbO2yZaQ.js                                                                 3.55 kB │ gzip:     1.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProRevisionDiff-Cr5A4YB1.js                                                                    3.59 kB │ gzip:     1.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/markdown-D5nszyYO.js                                                                           3.70 kB │ gzip:     1.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/proExamples-B8WSCuB3.js                                                                        3.77 kB │ gzip:     1.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/python-DeULlZys.js                                                                             3.91 kB │ gzip:     1.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/pintaImageTarget-B6G2vMm7.js                                                                   3.97 kB │ gzip:     1.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/olaPgzero.sources.generated-ChWE1pCH.js                                                        3.97 kB │ gzip:     2.11 kB
+[WebServer] .cache/e2e-dist-5396/assets/project-document-CXh5pg19.js                                                                   4.08 kB │ gzip:     1.79 kB
+[WebServer] .cache/e2e-dist-5396/assets/primeiraCena3d.sources.generated-CrSApbc9.js                                                   4.28 kB │ gzip:     2.29 kB
+[WebServer] .cache/e2e-dist-5396/assets/css-Yhvbk-Ly.js                                                                                4.42 kB │ gzip:     1.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/localProjects-CKYQYbe4.js                                                                      4.52 kB │ gzip:     2.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/python-language-D1blJO4U.js                                                                    4.55 kB │ gzip:     1.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/removalReferences-DGbXihVk.js                                                                  4.61 kB │ gzip:     1.95 kB
+[WebServer] .cache/e2e-dist-5396/assets/acerteAMaca.sources.generated-Bt1Ted5V.js                                                      4.74 kB │ gzip:     2.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/modulePaths-ZrAxMgad.js                                                                        4.75 kB │ gzip:     2.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafio-certificado.manifesto-D866pyP0.js                                                      4.80 kB │ gzip:     1.89 kB
+[WebServer] .cache/e2e-dist-5396/assets/snowDescentSource-cds5FiHB.js                                                                  4.82 kB │ gzip:     2.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/html-Bm6DwJOE.js                                                                               4.89 kB │ gzip:     1.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/html-Zwy0UtVy.js                                                                               4.98 kB │ gzip:     1.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/lessonHarness-DLgV3RGH.js                                                                      5.01 kB │ gzip:     1.93 kB
+[WebServer] .cache/e2e-dist-5396/assets/modelosDoMolda.sources.generated-zkIlouSh.js                                                   5.07 kB │ gzip:     2.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/typescript-D3deCZ-l.js                                                                         5.17 kB │ gzip:     2.18 kB
+[WebServer] .cache/e2e-dist-5396/assets/monaco.contribution-DcwpwXM_.js                                                                5.20 kB │ gzip:     1.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/ligueOsPontos.sources.generated-DS0LrXUh.js                                                    5.27 kB │ gzip:     2.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectSynchronousExitRecovery-DU1gcLAS.js                                                     5.30 kB │ gzip:     2.10 kB
+[WebServer] .cache/e2e-dist-5396/assets/raposaMoedas.sources.generated-U_tKu2R6.js                                                     5.40 kB │ gzip:     2.59 kB
+[WebServer] .cache/e2e-dist-5396/assets/createPythonExampleProject-CvdgH-WV.js                                                         5.50 kB │ gzip:     2.23 kB
+[WebServer] .cache/e2e-dist-5396/assets/cameraQueSegue.sources.generated-CZo7eq4I.js                                                   5.50 kB │ gzip:     2.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/estrelaVermelha.sources.generated-CaxuTPF5.js                                                  5.50 kB │ gzip:     2.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/convertToPro-DkdrXrAB.js                                                                       5.74 kB │ gzip:     2.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/PythonExtensionsPanel-DakxHRqq.js                                                              5.77 kB │ gzip:     2.39 kB
+[WebServer] .cache/e2e-dist-5396/assets/projectIndexedRecovery-DpflDjxD.js                                                             5.84 kB │ gzip:     2.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/base-BHiKG4OR.js                                                                               5.93 kB │ gzip:     2.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/saltoNasPlataformas.sources.generated-JZSNhFRp.js                                              6.09 kB │ gzip:     2.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/encostou.sources.generated-BeOFmEJF.js                                                         6.15 kB │ gzip:     2.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/compilar-pUNuyMnc.js                                                                           6.25 kB │ gzip:     2.60 kB
+[WebServer] .cache/e2e-dist-5396/assets/claraoComShader.sources.generated-DR_-RQ1x.js                                                  6.30 kB │ gzip:     3.14 kB
+[WebServer] .cache/e2e-dist-5396/assets/quizRelampago.sources.generated-CkVO6RCj.js                                                    6.33 kB │ gzip:     2.91 kB
+[WebServer] .cache/e2e-dist-5396/assets/caixasQueSeEncostam.sources.generated-D8U9VHwJ.js                                              6.37 kB │ gzip:     3.16 kB
+[WebServer] .cache/e2e-dist-5396/assets/naveQueDesliza.sources.generated-B6yP3xta.js                                                   6.53 kB │ gzip:     2.98 kB
+[WebServer] .cache/e2e-dist-5396/assets/vooDeBalao.sources.generated-DpxOXdm0.js                                                       6.65 kB │ gzip:     2.95 kB
+[WebServer] .cache/e2e-dist-5396/assets/webFiles-C9UcejWp.js                                                                           6.73 kB │ gzip:     2.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafioDaDanca.sources.generated-DgKo1bLM.js                                                   6.80 kB │ gzip:     2.93 kB
+[WebServer] .cache/e2e-dist-5396/assets/importar-Cd1jjdA5.js                                                                           6.83 kB │ gzip:     2.96 kB
+[WebServer] .cache/e2e-dist-5396/assets/dragoesDorminhocos.sources.generated-C9yOk0VF.js                                               7.06 kB │ gzip:     3.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/jardimFeliz.sources.generated-CRqhIvAN.js                                                      7.12 kB │ gzip:     3.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/CodeMode-XMRCJu1S.js                                                                           7.14 kB │ gzip:     3.29 kB
+[WebServer] .cache/e2e-dist-5396/assets/sourceDownload-CEVwBi-H.js                                                                     7.47 kB │ gzip:     3.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/continuar.sources.generated-CNsUUZdI.js                                                        7.51 kB │ gzip:     3.31 kB
+[WebServer] .cache/e2e-dist-5396/assets/coresEBolinha.sources.generated-BSt7zk0o.js                                                    7.60 kB │ gzip:     3.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/canvas-BRu2QPDS.js                                                                             7.71 kB │ gzip:     2.97 kB
+[WebServer] .cache/e2e-dist-5396/assets/session-Cizkd9Mh.js                                                                            7.72 kB │ gzip:     3.27 kB
+[WebServer] .cache/e2e-dist-5396/assets/passarinhoSaltitante.sources.generated-BVaO7gNy.js                                             7.75 kB │ gzip:     3.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/caudaEspacial.sources.generated-CtWdcEqx.js                                                    7.80 kB │ gzip:     3.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/games-DbAJoqoV.js                                                                              7.83 kB │ gzip:     3.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/rastroDeAjudantes.sources.generated-CNMPbDfi.js                                                7.84 kB │ gzip:     3.36 kB
+[WebServer] .cache/e2e-dist-5396/assets/PintaImageSelection-Dw-RZvx1.js                                                                7.86 kB │ gzip:     2.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/cipoSobreOPoco.sources.generated-Bd9w7nr-.js                                                   7.92 kB │ gzip:     3.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/bolinhaRolante.sources.generated--y9qI18g.js                                                   8.04 kB │ gzip:     3.53 kB
+[WebServer] .cache/e2e-dist-5396/assets/patrulhaEmCamadas.sources.generated-D2OEwTSY.js                                                8.04 kB │ gzip:     3.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/pousoLunar.sources.generated-eL5YuMZk.js                                                       8.14 kB │ gzip:     3.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/operations-9QHEyvx8.js                                                                         8.16 kB │ gzip:     2.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/barrisNaRampa.sources.generated-DueXQZsj.js                                                    8.23 kB │ gzip:     3.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/piramideDeCubos.sources.generated-CmWO4O0d.js                                                  8.23 kB │ gzip:     3.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/spinnerVisual.audio.generated-BB7pB4fz.js                                                      8.24 kB │ gzip:     6.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/tiroAoPrato.sources.generated-DHixqdwd.js                                                      8.30 kB │ gzip:     3.43 kB
+[WebServer] .cache/e2e-dist-5396/assets/bichinhosEmFila.sources.generated-CIXec9mV.js                                                  8.41 kB │ gzip:     3.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/Terminal-FTd9FXtL.js                                                                           8.45 kB │ gzip:     3.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/dueloPorTurnos.sources.generated-D6Yp2A6V.js                                                   8.49 kB │ gzip:     3.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/spritesTimerAnimacao.sources.generated-UqWllKk7.js                                             8.49 kB │ gzip:     3.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/placarDosCampeoes.sources.generated-By29SIHt.js                                                8.58 kB │ gzip:     3.63 kB
+[WebServer] .cache/e2e-dist-5396/assets/quebraTijolos.sources.generated-Iy7MQ8Ef.js                                                    8.60 kB │ gzip:     3.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/helicopteroBombardeiro.sources.generated-Lv-KR5I0.js                                           8.61 kB │ gzip:     3.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/naveMae.sources.generated-CUewpdMY.js                                                          8.67 kB │ gzip:     3.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/proWorkspaceOperations-DgzTv-WS.js                                                             8.84 kB │ gzip:     3.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/ExportDialog-rdmUukSD.js                                                                       8.92 kB │ gzip:     3.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/arenaDeDoisComandos.sources.generated-BA_o_bh2.js                                              8.93 kB │ gzip:     3.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/minaQueDesmorona.sources.generated-BnyEhR4a.js                                                 8.96 kB │ gzip:     3.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/mergulhoAlienigena.sources.generated-DsBofNL6.js                                               8.97 kB │ gzip:     3.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/propulsorNoEspaco.sources.generated-C2rF1KWd.js                                                8.98 kB │ gzip:     3.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/minigolfeMaluco.sources.generated-BaYTTBAt.js                                                  9.16 kB │ gzip:     3.82 kB
+[WebServer] .cache/e2e-dist-5396/assets/encanamentoApressado.sources.generated-D4yD1D8C.js                                             9.22 kB │ gzip:     3.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/bolhasQueSeDividem.sources.generated-CKuNSy0F.js                                               9.25 kB │ gzip:     3.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/pianoMaluco.sources.generated-C5PtVDEG.js                                                      9.28 kB │ gzip:     3.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/escudosContraInvasores.sources.generated-CaPcuUCF.js                                           9.43 kB │ gzip:     3.90 kB
+[WebServer] .cache/e2e-dist-5396/assets/PintaImportDialog-Doy6Aka5.js                                                                  9.48 kB │ gzip:     3.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/bussolaMaluca.sources.generated-zoM1klgi.js                                                    9.51 kB │ gzip:     3.90 kB
+[WebServer] .cache/e2e-dist-5396/assets/NewProjectModal-9TytQnfd.js                                                                    9.67 kB │ gzip:     3.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/corridaVistaDeCima.sources.generated-BTT1Mf1w.js                                               9.73 kB │ gzip:     4.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/trocaDeJoias.sources.generated-B4QPVZ_Q.js                                                     9.73 kB │ gzip:     3.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/motosDeLuz.sources.generated-BgaTzqUC.js                                                       9.89 kB │ gzip:     4.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/sapoAtravessa.sources.generated-Bw2rqVlp.js                                                    9.95 kB │ gzip:     4.11 kB
+[WebServer] .cache/e2e-dist-5396/assets/BridgeMode-BQ3jJe8e.js                                                                        10.04 kB │ gzip:     4.11 kB
+[WebServer] .cache/e2e-dist-5396/assets/olaRaylib.sources.generated-a8-MmBnu.js                                                       10.07 kB │ gzip:     4.35 kB
+[WebServer] .cache/e2e-dist-5396/assets/JavaScriptExtensionsPanel-QVJCij8_.js                                                         10.11 kB │ gzip:     3.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/memoriaContraOComputador.sources.generated-Cr92Tl3H.js                                        10.17 kB │ gzip:     3.98 kB
+[WebServer] .cache/e2e-dist-5396/assets/patrulhaEspacial.sources.generated-Cy0pv4uJ.js                                                10.28 kB │ gzip:     4.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/apiCallCodec-PWcipVJf.js                                                                      10.34 kB │ gzip:     3.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/mochilaAJato.sources.generated-DxsDHJjR.js                                                    10.50 kB │ gzip:     4.16 kB
+[WebServer] .cache/e2e-dist-5396/assets/fliperama.sources.generated-5uwFboYS.js                                                       10.56 kB │ gzip:     4.25 kB
+[WebServer] .cache/e2e-dist-5396/assets/ClassicStage-owZMTV2e.js                                                                      10.67 kB │ gzip:     4.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/corredorDoKungFu.sources.generated-Bnm5_YCc.js                                                10.75 kB │ gzip:     4.17 kB
+[WebServer] .cache/e2e-dist-5396/assets/dueloDeTanques.sources.generated-C_Ju8IM-.js                                                  10.75 kB │ gzip:     4.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/spinnerVisual.sources.generated-Cb2IHdO_.js                                                   10.87 kB │ gzip:     4.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/boing.sources.generated-aJQlzIQH.js                                                           10.89 kB │ gzip:     4.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/cavandoPorGemas.sources.generated-Cy5VisAY.js                                                 11.00 kB │ gzip:     4.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/sinuca.sources.generated-ETIOtGgE.js                                                          11.31 kB │ gzip:     4.44 kB
+[WebServer] .cache/e2e-dist-5396/assets/bombasNoLabirinto.sources.generated-DcyBDGtq.js                                               11.42 kB │ gzip:     4.20 kB
+[WebServer] .cache/e2e-dist-5396/assets/corridaInfinita.sources.generated-BY0pzS60.js                                                 11.44 kB │ gzip:     4.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/pong.generated-C0qpIMoW.js                                                                    11.84 kB │ gzip:     3.42 kB
+[WebServer] .cache/e2e-dist-5396/assets/phaser-CxygGVG_.js                                                                            11.95 kB │ gzip:     4.07 kB
+[WebServer] .cache/e2e-dist-5396/assets/mundoDeBlocos.sources.generated-C0oe1_37.js                                                   12.10 kB │ gzip:     4.95 kB
+[WebServer] .cache/e2e-dist-5396/assets/dist-DVnti8LD.js                                                                              12.21 kB │ gzip:     4.93 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-fYMhO3PI.js                                                                           12.30 kB │ gzip:     3.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/raliComMinimapa.sources.generated-DpITda-K.js                                                 12.39 kB │ gzip:     4.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProAssetPaths-BnCwiF-3.js                                                                     12.81 kB │ gzip:     4.42 kB
+[WebServer] .cache/e2e-dist-5396/assets/proRevision-CHeFtOKC.js                                                                       12.85 kB │ gzip:     4.81 kB
+[WebServer] .cache/e2e-dist-5396/assets/flappyVisual.sources.generated-CSCXVwlu.js                                                    12.87 kB │ gzip:     4.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/fortuneVisual.sources.generated-CfsACLEU.js                                                   13.02 kB │ gzip:     5.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/editorDeCavernas.sources.generated-DpHpBu1Y.js                                                13.06 kB │ gzip:     4.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/starryVisual.sources.generated-CiYT679k.js                                                    13.10 kB │ gzip:     5.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonWeb-CxldUmjT.js                                                                         13.15 kB │ gzip:     5.60 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-020050943f037f61630cc8620e1e958afcbfd261410043a09802b00b506633da.generated-ByHxzQD5.js      13.21 kB │ gzip:     3.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa.generated-RQZoGNi5.js      13.23 kB │ gzip:     3.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-bde46f3201e8731466295f26cd2d022bf3a04b1d3b90682b8512c6d72e5525d4.generated-CafRtUor.js      13.23 kB │ gzip:     3.71 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-c47430029006463dacd4067ee4f6db5906a6733614e1027a11c6c776761ca202.generated-B_GMpQqU.js      13.24 kB │ gzip:     3.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-dd04fc28f36a34920e1f9227ac2b0bf00c752cf0af6189778488a555ee3e83e1.generated-BF-EvoEa.js      13.24 kB │ gzip:     3.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23.generated-SIr4n5SK.js      13.24 kB │ gzip:     3.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-9f5606fb490c74835ce0f3f8c9c962367fa70570eb56b565e3618385a991e1ad.generated-IkmqKJVJ.js      13.26 kB │ gzip:     3.71 kB
+[WebServer] .cache/e2e-dist-5396/assets/masmorraParaQuatro.sources.generated-B8x-lQuS.js                                              13.30 kB │ gzip:     4.80 kB
+[WebServer] .cache/e2e-dist-5396/assets/threePostProcessingRuntime-k0j7ce5S.js                                                        13.40 kB │ gzip:     3.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/localV3Projects-C6-vx9HW.js                                                                   13.48 kB │ gzip:     5.27 kB
+[WebServer] .cache/e2e-dist-5396/assets/turtleRacePayload-7jNfMlT4.js                                                                 13.51 kB │ gzip:     4.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/snakeVisual.sources.generated-BiSWwfVX.js                                                     13.51 kB │ gzip:     5.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/coreCatalog-DqMlckzS.js                                                                       13.61 kB │ gzip:     4.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/dinoCorredor.sources.generated-mYSLGaPV.js                                                    13.95 kB │ gzip:     5.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/turtleBetVisual.sources.generated-ChAbbwBl.js                                                 13.98 kB │ gzip:     5.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/centopeia.sources.generated-1CHGysUD.js                                                       14.14 kB │ gzip:     5.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleAssets-Di96Mjkh.js                                                                     14.17 kB │ gzip:     3.92 kB
+[WebServer] .cache/e2e-dist-5396/assets/lifeVisual.sources.generated-BDgu0BDo.js                                                      14.18 kB │ gzip:     5.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/bubblesVisual.sources.generated-C8byLpCv.js                                                   14.20 kB │ gzip:     5.53 kB
+[WebServer] .cache/e2e-dist-5396/assets/batalhaNaval.sources.generated-6jl0K4V6.js                                                    14.26 kB │ gzip:     4.97 kB
+[WebServer] .cache/e2e-dist-5396/assets/three-B4ZdqXCK.js                                                                             14.31 kB │ gzip:     5.04 kB
+[WebServer] .cache/e2e-dist-5396/assets/tronVisual.sources.generated-CvQrBLXu.js                                                      14.40 kB │ gzip:     5.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/eggCatcherVisual.sources.generated-C1vPzuhm.js                                                14.42 kB │ gzip:     5.66 kB
+[WebServer] .cache/e2e-dist-5396/assets/simonVisual.sources.generated-CW7PhEcF.js                                                     14.48 kB │ gzip:     5.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/minify-0eopZDHc.js                                                                            14.55 kB │ gzip:     5.87 kB
+[WebServer] .cache/e2e-dist-5396/assets/connectFourVisual.sources.generated-zwzFkJc7.js                                               14.72 kB │ gzip:     5.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/tilesVisual.sources.generated-Ix14wU2f.js                                                     14.89 kB │ gzip:     5.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/labirintoDosRobos.sources.generated-BqTGb3Qe.js                                               14.90 kB │ gzip:     5.75 kB
+[WebServer] .cache/e2e-dist-5396/assets/MoldaImportDialog-C83k4kKZ.js                                                                 14.90 kB │ gzip:     4.87 kB
+[WebServer] .cache/e2e-dist-5396/assets/glbSummary-C2LbO__G.js                                                                        15.15 kB │ gzip:     5.28 kB
+[WebServer] .cache/e2e-dist-5396/assets/cannonVisual.sources.generated-CD4Q8rG6.js                                                    15.20 kB │ gzip:     5.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProWebContainerProvider-D2uLJZYq.js                                                           15.27 kB │ gzip:     6.28 kB
+[WebServer] .cache/e2e-dist-5396/assets/useFormatIssueLogger-DvZg9Lok.js                                                              15.31 kB │ gzip:     6.01 kB
+[WebServer] .cache/e2e-dist-5396/assets/memoryVisual.sources.generated-CO5nVLmI.js                                                    15.37 kB │ gzip:     5.90 kB
+[WebServer] .cache/e2e-dist-5396/assets/browser-DUEg_VrJ.js                                                                           15.39 kB │ gzip:     7.37 kB
+[WebServer] .cache/e2e-dist-5396/assets/pongVisual.sources.generated-CK7Mxexx.js                                                      15.60 kB │ gzip:     5.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/chuvaDeMeteoros.sources.generated-BP9j98xB.js                                                 15.75 kB │ gzip:     5.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/tictactoeVisual.sources.generated-ChdbbQPE.js                                                 15.78 kB │ gzip:     6.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/ai-Dzc35QCS.js                                                                                15.91 kB │ gzip:     7.05 kB
+[WebServer] .cache/e2e-dist-5396/assets/boing.media.generated-Dg1CZVvY.js                                                             16.35 kB │ gzip:     8.53 kB
+[WebServer] .cache/e2e-dist-5396/assets/monkeyVisual.sources.generated-BfLYlNp_.js                                                    16.69 kB │ gzip:     6.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/pressStart2P-DnvsXu3e.js                                                                      17.02 kB │ gzip:    12.86 kB
+[WebServer] .cache/e2e-dist-5396/assets/atiradorEspacial.sources.generated-71Rghrms.js                                                17.84 kB │ gzip:     6.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/KitGallery-B4VNsA_x.js                                                                        18.28 kB │ gzip:     6.18 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-0d5027e5f37a3b69bdb9781a4981e08a413a808314fc64db32d8d9bfba3be73f.generated-C32DpPeG.js      18.49 kB │ gzip:     5.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022.generated-jO_jAgfv.js      18.50 kB │ gzip:     5.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-60e46e3f118c5be95343173f229f84f46b90c5e7ea79bd37d4565a3ecd0f8175.generated-BWF7K90b.js      18.51 kB │ gzip:     5.59 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-bd01e0eb0b48d08a58d66fab598ff5b5f2824977b4de473d5468ee9bb95f7473.generated-BvP9GsEq.js      18.52 kB │ gzip:     5.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-5e60c96b2e0a5e74b89e7696a13ce9bede46910c28af99f6e82ddf2081b5e404.generated-D2VcsGxd.js      18.53 kB │ gzip:     5.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9.generated-DdIB7JrV.js      18.53 kB │ gzip:     5.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1.generated-BUfkM48K.js      18.56 kB │ gzip:     5.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/batalhaDeMonstrinhos.sources.generated-Dr-sIFBU.js                                            18.89 kB │ gzip:     7.10 kB
+[WebServer] .cache/e2e-dist-5396/assets/bungee-8pQyBYFz.js                                                                            19.45 kB │ gzip:    14.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/LazyPreviewIframe-D93IAt4S.js                                                                 19.75 kB │ gzip:     7.52 kB
+[WebServer] .cache/e2e-dist-5396/assets/scope-C7LrG0Zr.js                                                                             19.97 kB │ gzip:     5.82 kB
+[WebServer] .cache/e2e-dist-5396/assets/conteudo-COuty7SF.js                                                                          20.38 kB │ gzip:     7.45 kB
+[WebServer] .cache/e2e-dist-5396/assets/saltoNasPlataformas.media.generated-CqQOWzKL.js                                               20.50 kB │ gzip:    11.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/trocaDeJoias.media.generated-CDqnT_vo.js                                                      21.31 kB │ gzip:    10.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/aventuraDoHeroi.sources.generated-Bhd1zZtt.js                                                 21.78 kB │ gzip:     7.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/PreviewIframe-vHqkNtLc.js                                                                     21.88 kB │ gzip:     7.79 kB
+[WebServer] .cache/e2e-dist-5396/assets/controller-ChUX0req.js                                                                        21.95 kB │ gzip:     7.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/spaceShooter.drawings.generated-adgcy3x5.js                                                   21.95 kB │ gzip:     5.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/acerteAMaca.media.generated-Cpuy8WG_.js                                                       22.09 kB │ gzip:    12.24 kB
+[WebServer] .cache/e2e-dist-5396/assets/pacmanVisual.sources.generated-C0TY5COl.js                                                    22.14 kB │ gzip:     7.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/motosDeLuz.media.generated-CpTWLyLB.js                                                        22.19 kB │ gzip:     3.94 kB
+[WebServer] .cache/e2e-dist-5396/assets/flappyVisual.audio.generated-BKR-KuVo.js                                                      22.72 kB │ gzip:    15.25 kB
+[WebServer] .cache/e2e-dist-5396/assets/tsMode-CFOcbq7z.js                                                                            22.76 kB │ gzip:     6.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-Dwz5DBI6.js                                                                           22.97 kB │ gzip:     7.14 kB
+[WebServer] .cache/e2e-dist-5396/assets/coresEBolinha.media.generated-BSO8IHjD.js                                                     23.73 kB │ gzip:    13.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-CW_myjez.js                                                                           24.01 kB │ gzip:     7.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/claraoComShader.media.generated-BXd1Td9X.js                                                   24.14 kB │ gzip:     4.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/PythonEditorPreview-BHMxkKIp.js                                                               24.24 kB │ gzip:     8.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-79fffe1f370a10cad0e514eefa28db740429003d74e6b1595a8f32d4a932e53d.generated-_KCqMWLQ.js      24.27 kB │ gzip:    13.28 kB
+[WebServer] .cache/e2e-dist-5396/assets/quizRelampago.media.generated-XK0gmRgZ.js                                                     25.00 kB │ gzip:    13.42 kB
+[WebServer] .cache/e2e-dist-5396/assets/estrelaVermelha.media.generated-DzjXtTkq.js                                                   25.01 kB │ gzip:     9.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/spaceArenaVisual.sources.generated-CsrlcDFp.js                                                25.92 kB │ gzip:     8.71 kB
+[WebServer] .cache/e2e-dist-5396/assets/memoriaContraOComputador.media.generated-DdcIGn7S.js                                          26.75 kB │ gzip:    11.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/spritesTimerAnimacao.media.generated-Bp0_39FX.js                                              27.34 kB │ gzip:    11.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProBuilderPanel-BJ6LS124.js                                                                   28.05 kB │ gzip:     9.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-90c7bea3cff22808a8af04996db2caab82b0b2ec42369fbadaf74b4891367a04.generated-Be4LWHFZ.js      28.82 kB │ gzip:    13.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProPreview-D9fj6Fcq.js                                                                        29.33 kB │ gzip:    10.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-CRGRv74z.js                                                                           29.59 kB │ gzip:     9.28 kB
+[WebServer] .cache/e2e-dist-5396/assets/bichinhosEmFila.media.generated-B7QRmjCz.js                                                   30.38 kB │ gzip:    12.92 kB
+[WebServer] .cache/e2e-dist-5396/assets/examples-lLzTZaDv.js                                                                          30.69 kB │ gzip:     6.31 kB
+[WebServer] .cache/e2e-dist-5396/assets/cssMode-B0jbJRBj.js                                                                           31.24 kB │ gzip:     8.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/htmlMode-VB_cWMi8.js                                                                          31.78 kB │ gzip:     8.18 kB
+[WebServer] .cache/e2e-dist-5396/assets/PythonCodeMode-1jE5XrFg.js                                                                    33.46 kB │ gzip:    12.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/quebraTijolos.media.generated-det5SgX7.js                                                     35.04 kB │ gzip:    19.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/shared-CDmCnHsL.js                                                                            36.01 kB │ gzip:    12.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/vooDeBalao.media.generated-MJuRNuGH.js                                                        36.19 kB │ gzip:    15.14 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-c4bb7135f77fe328024ab433e36b3777287df29e75fbd00e30a9c0fe6af9b8bc.generated-Cq9OnRnj.js      36.74 kB │ gzip:    14.81 kB
+[WebServer] .cache/e2e-dist-5396/assets/raposaMoedas.media.generated-CkdQrIvi.js                                                      37.93 kB │ gzip:    20.91 kB
+[WebServer] .cache/e2e-dist-5396/assets/centopeia.media.generated-BNUg0ktA.js                                                         38.35 kB │ gzip:    23.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/studio-document-validation-mXm2xUWw.js                                                        38.74 kB │ gzip:    12.86 kB
+[WebServer] .cache/e2e-dist-5396/assets/fredoka-DzJSgjQA.js                                                                           39.97 kB │ gzip:    30.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/jsonMode-HFUrlOb0.js                                                                          40.56 kB │ gzip:    11.37 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-801641471a4695578ebd355169eadb10befce579cf362fddec1e0bd0ac187706.generated-DatPAo4C.js      41.15 kB │ gzip:    17.96 kB
+[WebServer] .cache/e2e-dist-5396/assets/dragoesDorminhocos.media.generated-Cqc80MEm.js                                                41.36 kB │ gzip:    21.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-e45c4403e837872060f2a2e1f7872d0e2ae39cb3897bcb6dd0b91ea5d8de784e.generated-D8AOZFEO.js      41.47 kB │ gzip:    15.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-a1e9c04a1271d0d45566b12cdb2286500bbe1be256360d463fb281afb1c9e75c.generated-BO-mpAjN.js      41.67 kB │ gzip:    19.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-2e1bbecbdc653acfa56a8f2125882e49a222d3dbed994afef882f970cffb27d2.generated-CpUNm9tt.js      41.84 kB │ gzip:    12.05 kB
+[WebServer] .cache/e2e-dist-5396/assets/ligueOsPontos.media.generated--yoU5Vuu.js                                                     42.10 kB │ gzip:    22.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-e058ad95d87c2e681e3facc12ce8c9b9810f588ae6b6c92523a1a6acb26b6e98.generated-lCRoqrtz.js      42.15 kB │ gzip:    17.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-8f368b212c38424d142a340078e252879a594a80319a42c1423f02e883f00093.generated-BCSNmXoK.js      42.30 kB │ gzip:    14.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/tiroAoPrato.media.generated-BKs4MdvQ.js                                                       43.39 kB │ gzip:    19.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/lifeVisual.audio.generated-BnrslMYQ.js                                                        43.40 kB │ gzip:    23.08 kB
+[WebServer] .cache/e2e-dist-5396/assets/periodicCodec-BVbA-XCu.js                                                                     43.55 kB │ gzip:    10.33 kB
+[WebServer] .cache/e2e-dist-5396/assets/dueloDeTanques.media.generated-CIQEGkCI.js                                                    43.89 kB │ gzip:    24.60 kB
+[WebServer] .cache/e2e-dist-5396/assets/raliComMinimapa.media.generated-B1VKyxjq.js                                                   44.03 kB │ gzip:    19.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/jardimFeliz.media.generated-aSmkgsk2.js                                                       44.10 kB │ gzip:    17.56 kB
+[WebServer] .cache/e2e-dist-5396/assets/baloo2-BuxUHzS2.js                                                                            44.58 kB │ gzip:    33.59 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-b81892445f52e846b7a91daaa33e5080935806e76195e2d3771b80495d1857bd.generated-DlxTaD6F.js      44.59 kB │ gzip:    15.17 kB
+[WebServer] .cache/e2e-dist-5396/assets/catalog-C5lrOmt5.js                                                                           44.62 kB │ gzip:     7.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/labirintoDosRobos.media.generated-B_lkrVB3.js                                                 44.99 kB │ gzip:    23.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/passarinhoSaltitante.media.generated-CSorNbvB.js                                              45.29 kB │ gzip:    16.13 kB
+[WebServer] .cache/e2e-d[WebServer] ist-5396/assets/batalhaNaval.media.generated-DQyWNG_a.js                                                      45.48 kB │ gzip:    23.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-c61100d76a79a288af54d565825027c3aef9410b506a2eafc242ae667344401e.generated-ED0onqWV.js      45.64 kB │ gzip:    22.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/pongVisual.audio.generated-C7qyv0ge.js                                                        45.77 kB │ gzip:    22.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/bussolaMaluca.media.generated-D8f1l5l5.js                                                     45.78 kB │ gzip:    18.01 kB
+[WebServer] .cache/e2e-dist-5396/assets/ai-BqqYdJB-.js                                                                                46.20 kB │ gzip:    21.17 kB
+[WebServer] .cache/e2e-dist-5396/assets/snowDescentCanvasExample-B16H8lXV.js                                                          46.28 kB │ gzip:     3.97 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-0f5a1e4f196e8a7691e51bb7246e1b62775d1c124763850cf962cd3e97b7e669.generated-DMN0w3h5.js      47.28 kB │ gzip:    16.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/fliperama.media.generated-DJRrNbiS.js                                                         47.40 kB │ gzip:    19.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-041261defe6b98aba436bee2558e6287d79b9d62622691951780344c1a31155f.generated-hjHgDmYL.js      47.99 kB │ gzip:    20.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/spriteHosts-36qucDzm.js                                                                       48.38 kB │ gzip:    13.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/continuar.media.generated-j6XT7qZK.js                                                         48.49 kB │ gzip:    13.37 kB
+[WebServer] .cache/e2e-dist-5396/assets/fortuneVisual.audio.generated-BBxKbowo.js                                                     48.61 kB │ gzip:    24.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-caa4eec50423511c0d09ab0d430a653f374f32aadbb1e9871d01d807bbbd715d.generated-IUwyGLms.js      49.16 kB │ gzip:    20.50 kB
+[WebServer] .cache/e2e-dist-5396/assets/sapoAtravessa.media.generated-BJwvGiNv.js                                                     49.95 kB │ gzip:    20.95 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-2917ea86e1a5f15c9a36ee65ce627bc2f088c97dfe470ce7e5f0df314cc5a485.generated-kNozOvDl.js      50.26 kB │ gzip:    21.59 kB
+[WebServer] .cache/e2e-dist-5396/assets/propulsorNoEspaco.media.generated-CCp0mLKX.js                                                 50.49 kB │ gzip:    28.10 kB
+[WebServer] .cache/e2e-dist-5396/assets/docs-C5BEcqrc.js                                                                              50.90 kB │ gzip:    21.45 kB
+[WebServer] .cache/e2e-dist-5396/assets/gltf-BgBc1mnu.js                                                                              52.28 kB │ gzip:    18.15 kB
+[WebServer] .cache/e2e-dist-5396/assets/bolhasQueSeDividem.media.generated-DGmgyE1n.js                                                52.32 kB │ gzip:    24.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/nunito-BcKkKM5F.js                                                                            52.50 kB │ gzip:    39.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/arenaDeDoisComandos.media.generated-CP0DWt-B.js                                               52.64 kB │ gzip:    29.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/snakeVisual.audio.generated-BhMcYLHQ.js                                                       52.72 kB │ gzip:    21.42 kB
+[WebServer] .cache/e2e-dist-5396/assets/sinuca.media.generated-DeuOVgDW.js                                                            54.40 kB │ gzip:    26.35 kB
+[WebServer] .cache/e2e-dist-5396/assets/monkeyVisual.audio.generated-DgZYVHrz.js                                                      55.16 kB │ gzip:    26.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-b68befbf82d67a6be42c5d970e164093447f4310a09ba12dd11d614aec8d7827.generated-fpdomvvf.js      55.19 kB │ gzip:    27.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/placarDosCampeoes.media.generated-rQhkJ0TL.js                                                 55.38 kB │ gzip:    25.19 kB
+[WebServer] .cache/e2e-dist-5396/assets/rastroDeAjudantes.media.generated-Bc0Cfij1.js                                                 55.76 kB │ gzip:    30.39 kB
+[WebServer] .cache/e2e-dist-5396/assets/olaRaylib.media.generated-kkocCJss.js                                                         55.94 kB │ gzip:    22.63 kB
+[WebServer] .cache/e2e-dist-5396/assets/editorDeCavernas.media.generated-KJoQ6lOm.js                                                  56.21 kB │ gzip:    25.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/cannonVisual.audio.generated-DFmWsfEt.js                                                      57.42 kB │ gzip:    30.01 kB
+[WebServer] .cache/e2e-dist-5396/assets/ai-Ck2TI-Fj.js                                                                                57.49 kB │ gzip:    23.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/helicopteroBombardeiro.media.generated-BvxcXVpR.js                                            57.66 kB │ gzip:    34.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/AssetsPanel-rDTDacra.js                                                                       58.17 kB │ gzip:    17.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/bombasNoLabirinto.media.generated-Ch9sLAYD.js                                                 59.04 kB │ gzip:    31.92 kB
+[WebServer] .cache/e2e-dist-5396/assets/pousoLunar.media.generated-DSXomVjL.js                                                        59.76 kB │ gzip:    31.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-f680266c8ccc489d013a9d38a194e98489eb929a86f5f8c082270a4c1c97d2c0.generated-DG71kpvt.js      60.24 kB │ gzip:    25.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/studio-blockly-presentation-DkysrnMf.js                                                       60.91 kB │ gzip:    15.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/bubblesVisual.audio.generated-BtcRyhH2.js                                                     60.95 kB │ gzip:    26.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/docs-CYMLAsb1.js                                                                              60.96 kB │ gzip:    22.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/tilesVisual.audio.generated-B4BOs9z2.js                                                       61.63 kB │ gzip:    34.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/cipoSobreOPoco.media.generated-D6GWVRVk.js                                                    62.17 kB │ gzip:    25.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/memoryVisual.audio.generated-WmEPRCP4.js                                                      63.40 kB │ gzip:    36.33 kB
+[WebServer] .cache/e2e-dist-5396/assets/tictactoeVisual.audio.generated-CBpCapkJ.js                                                   63.99 kB │ gzip:    25.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/naveMae.media.generated-DkagKZm4.js                                                           65.18 kB │ gzip:    35.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/patrulhaEmCamadas.media.generated-IFlgnXFJ.js                                                 65.89 kB │ gzip:    28.95 kB
+[WebServer] .cache/e2e-dist-5396/assets/examples-DHdLVQpZ.js                                                                          66.04 kB │ gzip:    18.20 kB
+[WebServer] .cache/e2e-dist-5396/assets/cavandoPorGemas.media.generated-D336dNTy.js                                                   66.50 kB │ gzip:    30.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/connectFourVisual.audio.generated-DmIU_z1d.js                                                 66.94 kB │ gzip:    26.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-afae1718423f88549c070e4051f4b4bd8d1e524df80fe9847841807bf5156279.generated-DgZJQoJY.js      67.11 kB │ gzip:    20.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafioDaDanca.media.generated-DbEsAgoD.js                                                    67.18 kB │ gzip:    36.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/masmorraParaQuatro.media.generated-DSG0R1ao.js                                                68.17 kB │ gzip:    24.15 kB
+[WebServer] .cache/e2e-dist-5396/assets/piramideDeCubos.media.generated-CrptfZKG.js                                                   68.26 kB │ gzip:    30.69 kB
+[WebServer] .cache/e2e-dist-5396/assets/pacmanVisual.audio.generated-BgQnlflU.js                                                      68.70 kB │ gzip:    36.39 kB
+[WebServer] .cache/e2e-dist-5396/assets/eggCatcherVisual.audio.generated-B1i6AY0C.js                                                  68.70 kB │ gzip:    35.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/encanamentoApressado.media.generated-CeX32QEs.js                                              69.62 kB │ gzip:    40.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/starryVisual.audio.generated-BJi8xVgM.js                                                      69.87 kB │ gzip:    37.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/escudosContraInvasores.media.generated-DSznuspA.js                                            69.93 kB │ gzip:    40.19 kB
+[WebServer] .cache/e2e-dist-5396/assets/tronVisual.audio.generated-44yv2haK.js                                                        70.75 kB │ gzip:    40.10 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonSource-Bh5XiF2f.js                                                                      70.93 kB │ gzip:    22.84 kB
+[WebServer] .cache/e2e-dist-5396/assets/threeRenderBudgetRuntime-Cth-YQnQ.js                                                          72.40 kB │ gzip:    21.21 kB
+[WebServer] .cache/e2e-dist-5396/assets/turtleBetVisual.audio.generated-Dao3TL_b.js                                                   73.89 kB │ gzip:    33.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-48e7ae10862e3529d57a77dac7849601995534a83939a0060782892581334a50.generated-D4CCoAS4.js      74.50 kB │ gzip:    29.21 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProWorkspace-DRS6d4TR.js                                                                      74.86 kB │ gzip:    23.25 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-3075b03110db60485bcaf2fb8c509bc636a06b31874b9c80e4bc9cd3bf8b0cf8.generated-Bdo2_oYI.js      74.90 kB │ gzip:    35.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/commonCatalog-BLi3Z9i7.js                                                                     75.51 kB │ gzip:    20.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/barrisNaRampa.media.generated-5zQpjPH6.js                                                     77.33 kB │ gzip:    36.53 kB
+[WebServer] .cache/e2e-dist-5396/assets/patrulhaEspacial.media.generated-CIEURtSv.js                                                  78.26 kB │ gzip:    23.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/caudaEspacial.media.generated-CCysaeXq.js                                                     80.77 kB │ gzip:    45.32 kB
+[WebServer] .cache/e2e-dist-5396/assets/bolinhaRolante.media.generated-DPw7cjsj.js                                                    81.31 kB │ gzip:    33.18 kB
+[WebServer] .cache/e2e-dist-5396/assets/minaQueDesmorona.media.generated-DqNII7vd.js                                                  81.65 kB │ gzip:    48.24 kB
+[WebServer] .cache/e2e-dist-5396/assets/corridaVistaDeCima.media.generated-CP6QNONg.js                                                82.12 kB │ gzip:    38.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/atiradorEspacial.media.generated-Bg-z-OGR.js                                                  83.27 kB │ gzip:    32.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-719168486d735f334b911c4f3c2291dc29d2f5d43f82d1737de20d5ee48961d1.generated-CbxkDJMw.js      84.03 kB │ gzip:    36.40 kB
+[WebServer] .cache/e2e-dist-5396/assets/minigolfeMaluco.media.generated-CmQxM8-7.js                                                   84.40 kB │ gzip:    34.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/mergulhoAlienigena.media.generated-d7iHoQXH.js                                                85.17 kB │ gzip:    47.71 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-42d175e834fa3587f6c76a3be64643d05a348e4f005f3cb9bab6f1b4752c53fa.generated-D-Rw3f4b.js      90.00 kB │ gzip:    40.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/mochilaAJato.media.generated-BNjDWYfX.js                                                      90.19 kB │ gzip:    50.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/authoring-Cm5-7EDJ.js                                                                         90.71 kB │ gzip:    27.17 kB
+[WebServer] .cache/e2e-dist-5396/assets/PythonClassicMode-lJ1YyFjp.js                                                                 92.35 kB │ gzip:    31.79 kB
+[WebServer] .cache/e2e-dist-5396/assets/dueloPorTurnos.media.generated-Bn9Qvked.js                                                    95.24 kB │ gzip:    38.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/simonVisual.audio.generated-CYYziCwv.js                                                       97.02 kB │ gzip:    23.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/corredorDoKungFu.media.generated-ULVz0N94.js                                                 100.81 kB │ gzip:    22.47 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-b7dc0a0ba042809569b44d5b56f14aa0ef287e194b922e52257f2808d9700706.generated-Bf2W1WBl.js     101.12 kB │ gzip:    46.96 kB
+[WebServer] .cache/e2e-dist-5396/assets/chuvaDeMeteoros.media.generated-Bq57cNy_.js                                                  102.52 kB │ gzip:    51.05 kB
+[WebServer] .cache/e2e-dist-5396/assets/dinoCorredor.media.generated-BHmaMKv1.js                                                     103.94 kB │ gzip:    52.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/StudioEditor-Cibu90dS.js                                                                     105.65 kB │ gzip:    33.21 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-79c21c120f91d3703c81aed955f630079ac407e2e968220e9685244f467ab345.generated-BsblUzft.js     106.82 kB │ gzip:    53.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/platformer.drawings.generated-DPRYx9kn.js                                                    109.31 kB │ gzip:    15.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/aventuraDoHeroi.media.generated-TJiV7lR7.js                                                  110.52 kB │ gzip:    53.09 kB
+[WebServer] .cache/e2e-dist-5396/assets/canvas-survival-Dbs0Cesk.js                                                                  115.14 kB │ gzip:    37.73 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleCatalog-p6y6ybGs.js                                                                   118.58 kB │ gzip:    16.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-08945a926817a46016a29dff8864b3c809402a93f734bbba7b67b1425eafe2e1.generated-xnmmDCOi.js     134.54 kB │ gzip:    64.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/studio-editor-contracts-DsieVV9e.js                                                          135.36 kB │ gzip:    42.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/batalhaDeMonstrinhos.media.generated-DrEKZ_Rg.js                                             135.39 kB │ gzip:    70.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/grid-DRVZCaZ6.js                                                                             139.97 kB │ gzip:    23.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-66e32d2c65b5d2f57cd295a95c3772a19e7a815e8180ec8d4749a7b0bd62a04d.generated-Hsw81OgY.js     140.69 kB │ gzip:    40.76 kB
+[WebServer] .cache/e2e-dist-5396/assets/ProMonacoTabs-B5ZWJJxd.js                                                                    142.10 kB │ gzip:    36.41 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-d81e6d3b726b4b68776dd152d61bd4a6ec10c54339d5518254490b72be569d38.generated-BGpxHaA1.js     146.82 kB │ gzip:    67.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-748dc008c317705f4532f5c671ad0daece3c295254a356b3fa6a36f1eab7756f.generated--kGWEnlU.js     147.24 kB │ gzip:    64.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/moreBlocksItem-CWfXfvFc.js                                                                   148.44 kB │ gzip:    34.12 kB
+[WebServer] .cache/e2e-dist-5396/assets/corridaInfinita.media.generated-DZCo2PkC.js                                                  157.96 kB │ gzip:    79.93 kB
+[WebServer] .cache/e2e-dist-5396/assets/dist-BwL9pE8G.js                                                                             158.64 kB │ gzip:    48.25 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51.generated-BioyazoN.js     159.73 kB │ gzip:    76.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-dbafa3170b71c6c564ddaa619e675dcaf3e5aa63451467b3a6f77b8dc8f88c92.generated-Dqnvqemd.js     162.19 kB │ gzip:    75.79 kB
+[WebServer] .cache/e2e-dist-5396/assets/pirateMaker.drawings.generated-B6ZGW4gg.js                                                   168.20 kB │ gzip:    20.43 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-b4ebb3a039df0cf4c728a06ba7aaab40de6784ec28445f28c16f11ad21923613.generated-C2d7WYoA.js     170.23 kB │ gzip:    46.23 kB
+[WebServer] .cache/e2e-dist-5396/assets/cade-todo-mundo-aula-2.manifesto-DfzA8_kF.js                                                 171.24 kB │ gzip:    46.33 kB
+[WebServer] .cache/e2e-dist-5396/assets/mazeLightsPayload-BpR2RBqq.js                                                                172.55 kB │ gzip:    80.61 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-7070666ea4aa33af7be5abf954b8f45d99e2b5fb56d4662a72bf005f73248e96.generated-5dQpwHws.js     172.63 kB │ gzip:    76.04 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-9a9cd8727a2361f6e8e996baa1cfa1f4dc29632f3c4d823ecff8fd4ae2c5a27e.generated-o_usHNRQ.js     173.39 kB │ gzip:    82.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-a411540b9f38bd6a659ee425d1c79fcee8e578e977575d8342374a9dc33bae6f.generated-6yBp2-Mq.js     177.28 kB │ gzip:    54.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-a2aa9ace2f2dba275d8f8b7688b3b4196e6caccf6c9404a58d7dc7947e26ce03.generated-DH51IKLZ.js     185.45 kB │ gzip:    82.38 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-0a7901fa620987663c3917cf205780d1e1612da8fcbffe205471e9501b4a9ec9.generated-BNVWhD0D.js     193.23 kB │ gzip:    72.75 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-85a8faeda61c842928b0ab3677e3342661eeabe986d49d7bdacd04a235be0cc7.generated-DeohkbQA.js     194.64 kB │ gzip:    75.31 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-f02bdf32b7cb8d3d6c85baa0e0d1dc6d6678039128c81335b0642330f5255ad9.generated-CkMkCGBZ.js     194.66 kB │ gzip:    74.01 kB
+[WebServer] .cache/e2e-dist-5396/assets/lib-UVWi_f_Z.js                                                                              200.91 kB │ gzip:    60.54 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-fe0453251cf4587f7e7441b3d8abf4eab5da96305a47f0993743edb6c011eb3d.generated-BQ30njQK.js     201.88 kB │ gzip:    89.94 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-f2cec94fcd9acea42c87cc9c079896fcb0440faf0dfa08e713f0329b71f88f43.generated-pBFfP-HP.js     204.12 kB │ gzip:    95.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleCatalog-D5uGig4d.js                                                                   205.99 kB │ gzip:    24.70 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-9db58123e677bc92524c5c8529a51651d5915b51b03e52979262f8ca82d529cf.generated-C8Tz5Q0-.js     211.02 kB │ gzip:    92.43 kB
+[WebServer] .cache/e2e-dist-5396/assets/vampireSurvivor.drawings.generated-R6oNWHtQ.js                                               217.45 kB │ gzip:    29.14 kB
+[WebServer] .cache/e2e-dist-5396/assets/cade-todo-mundo-aula-1.manifesto-B6Fx08-9.js                                                 220.56 kB │ gzip:    59.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/spaceShooter.generated-DC51osxL.js                                                           221.94 kB │ gzip:   160.18 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-CJMwgJD-.js                                                                          226.25 kB │ gzip:    72.46 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-6dc2b91a0472c05826556eb4ded6e1fe71b60846b4300819fb1d8b1bcb172682.generated-BYFXWMYW.js     232.55 kB │ gzip:    79.45 kB
+[WebServer] .cache/e2e-dist-5396/assets/parsers-B3nRgVsw.js                                                                          248.95 kB │ gzip:    49.99 kB
+[WebServer] .cache/e2e-dist-5396/assets/modelosDoMolda.media.generated-o38RGUSU.js                                                   257.06 kB │ gzip:    44.08 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-JxT22gFJ.js                                                                          258.31 kB │ gzip:    73.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonCatalog-CTTmgE5P.js                                                                    272.08 kB │ gzip:    50.36 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-b600862ab9a0bee24aaec6cc10c0917f6eec63db400ecc226b289a86ad348112.generated-Csgi4LGN.js     285.07 kB │ gzip:    83.44 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-36f5d23499800d1baf57d3820f069cdac4f08346e0a7e3d56bb1b21d1fad008c.generated-DADuc6M4.js     286.47 kB │ gzip:    86.39 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-55f6077b90524602de013c823e20e12d76f02210be8dbd6a49608b63bf4e12f0.generated-I4y2eDwA.js     291.40 kB │ gzip:    93.71 kB
+[WebServer] .cache/e2e-dist-5396/assets/spaceArenaVisual.audio.generated-BqVqAjoO.js                                                 291.92 kB │ gzip:   110.22 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-a7abe1ff6d1b9a2a2c0f17c3a1d18ae7afcb92c0d5e8e8f25fd126f00a034ba3.generated-cbszOAln.js     298.09 kB │ gzip:    93.81 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-491036916ee0913af487230a060da5e8f6973624884800dc715802e88a107b3f.generated-BEi9a-4q.js     298.92 kB │ gzip:    88.48 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-ee5c95203cfc99f2a9eae16cec49bba991455f340aa2c13c9fa637cb55151530.generated-BZZV5u4N.js     300.14 kB │ gzip:    90.88 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-ecff8f7cee580caa17e8075826c91e7d47155b29cbe6bdb7798d1af4af29f75b.generated-jREcLVTb.js     305.47 kB │ gzip:    97.14 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-bb6d1f4bd64c0a8b42a203163bf27527008cfd3d558bf89767f7f6cb1d5d10eb.generated-hbBy6v7m.js     315.61 kB │ gzip:   114.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/reinoZeroUltraExample-DdTUqHeE.js                                                            319.72 kB │ gzip:    29.82 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleCatalog-BMQi_DiR.js                                                                   340.19 kB │ gzip:    54.91 kB
+[WebServer] .cache/e2e-dist-5396/assets/xterm-B-w6cB82.js                                                                            340.97 kB │ gzip:    87.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/platformer.generated-CFLFwtqs.js                                                             346.77 kB │ gzip:   237.16 kB
+[WebServer] .cache/e2e-dist-5396/assets/index-BzU2Sfao.js                                                                            366.66 kB │ gzip:   115.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-LZXSJSmX.js                                                                          387.59 kB │ gzip:   113.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/exampleCatalog-CvqMEfX9.js                                                                   402.35 kB │ gzip:    59.43 kB
+[WebServer] .cache/e2e-dist-5396/assets/pydewValley.generated-oyYRe3Wf.js                                                            414.76 kB │ gzip:   276.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/workers-CQxNJ0pn.js                                                                          438.88 kB │ gzip:   114.87 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-ErDTRiyb.js                                                                          480.20 kB │ gzip:   146.78 kB
+[WebServer] .cache/e2e-dist-5396/assets/monsterBattle.drawings.generated-CBwwzVh3.js                                                 482.40 kB │ gzip:   128.30 kB
+[WebServer] .cache/e2e-dist-5396/assets/runtime-Cym5AGgu.js                                                                          498.79 kB │ gzip:   143.10 kB
+[WebServer] .cache/e2e-dist-5396/assets/vampireSurvivor.generated-C_B5whLY.js                                                        499.01 kB │ gzip:   341.49 kB
+[WebServer] .cache/e2e-dist-5396/assets/scene3dRuntime.generated-B1mJ2W-K.js                                                         523.94 kB │ gzip:   147.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/BlocksMode-F3iNLrYl.js                                                                       535.95 kB │ gzip:   137.72 kB
+[WebServer] .cache/e2e-dist-5396/assets/pydewValley.drawings.generated-Bf1O9oeK.js                                                   576.76 kB │ gzip:    31.34 kB
+[WebServer] .cache/e2e-dist-5396/assets/blockly-CKXoWTFV.js                                                                          591.71 kB │ gzip:   163.65 kB
+[WebServer] .cache/e2e-dist-5396/assets/main-D08HesyX.js                                                                             592.89 kB │ gzip:   170.04 kB
+[WebServer] .cache/e2e-dist-5396/assets/monsterBattle.generated-BEgwxOpu.js                                                          604.64 kB │ gzip:   430.26 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafio-dia-3.manifesto-DWaNN2YW.js                                                          665.01 kB │ gzip:   128.36 kB
+[WebServer] .cache/e2e-dist-5396/assets/superPirateWorld.generated-B1R1CY8R.js                                                       682.89 kB │ gzip:   427.06 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-5a204f9bebbd4e4cd8e8cb02c32b99214ed34548d57171b38d50eb262e54189a.generated-BBHKP24Z.js     740.18 kB │ gzip:   298.20 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-5fe10b7da0f6b09cf145728e193720961969422c9903d20861b0595234393c77.generated-DYH1wRAb.js     749.09 kB │ gzip:   302.62 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-7039fffe6df97a17f678e82b11009cba9c792c30971726f3a1f6892305b11e3b.generated-BE9B4NIQ.js     753.61 kB │ gzip:   292.13 kB
+[WebServer] .cache/e2e-dist-5396/assets/pirateMaker.generated-D3157-1d.js                                                            755.34 kB │ gzip:   515.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-eeb5ca402de6d4aa7d00e81511791cf2e59784e0613b5c2b2ec1ff82ea90c1a9.generated-DLO5lhnb.js     757.09 kB │ gzip:   306.77 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-a27425ab03e169154222fc938883102ea5b5f5da02255377508da1cf5e3e928d.generated-Dg0a-JYq.js     769.55 kB │ gzip:   304.63 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-77cbf8dff04160d374ba90488369b8e5f20ee9d48389d19b8090673a7cd757f6.generated-CO-V8Euk.js     769.59 kB │ gzip:   308.02 kB
+[WebServer] .cache/e2e-dist-5396/assets/blockly-BL3Nx2In.js                                                                          779.73 kB │ gzip:   170.67 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-ae50ff44f6aa67be54daae6485cc7af8d7cfcbbbdeea284bd4cfa9627b22aa93.generated-_bueiSzM.js     780.51 kB │ gzip:   314.68 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-bfd874c157492f697126ddf5249e95c921d16095b9e6b5d7cdb1af91a71e3fb0.generated-n8-iVx4F.js     780.63 kB │ gzip:   310.44 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafio-dia-1.manifesto-1paf2zlP.js                                                          807.55 kB │ gzip:   156.83 kB
+[WebServer] .cache/e2e-dist-5396/assets/desafio-dia-2.manifesto-CHe4vbfY.js                                                          808.15 kB │ gzip:   155.94 kB
+[WebServer] .cache/e2e-dist-5396/assets/project-migrations-BhhRiN60.js                                                               816.38 kB │ gzip:    92.76 kB
+[WebServer] .cache/e2e-dist-5396/assets/superPirateWorld.drawings.generated-Csprxt_Y.js                                              884.02 kB │ gzip:    70.85 kB
+[WebServer] .cache/e2e-dist-5396/assets/core-CRnqRlHY.js                                                                             962.19 kB │ gzip:    83.00 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonMonsters.generated-XjQEjkdO.js                                                         968.51 kB │ gzip:   624.74 kB
+[WebServer] .cache/e2e-dist-5396/assets/pygameDesktop-BYQS1kvT.js                                                                    974.50 kB │ gzip:   428.51 kB
+[WebServer] .cache/e2e-dist-5396/assets/m-29fd7c908f344f2ec47ef0cbe37aa41cec207e9a8237182ff36f062aafde3a72.generated-BK45F4LQ.js   1,040.60 kB │ gzip:   530.86 kB
+[WebServer] .cache/e2e-dist-5396/assets/App-CdxwRS4J.js                                                                            1,535.47 kB │ gzip:   552.45 kB
+[WebServer] .cache/e2e-dist-5396/assets/editor.api-Bp3mAwjA.js                                                                     2,306.98 kB │ gzip:   599.55 kB
+[WebServer] .cache/e2e-dist-5396/assets/studio-editor-shared-BQbzcP_D.js                                                           2,362.82 kB │ gzip:   622.57 kB
+[WebServer] .cache/e2e-dist-5396/assets/pythonMonsters.drawings.generated-DiYcM95z.js                                              2,705.55 kB │ gzip:   233.75 kB
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] ../core/src/studio/project-environment.ts is dynamically imported by ../core/src/studio/pro-revision.ts but also statically imported by ../core/src/studio/pro-revision-configuration.ts, ../core/src/studio/project-capabilities.ts, ../core/src/studio/project-document.ts, ../core/src/studio/python-activity-structure.ts, ../core/src/studio/python-activity.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/state/editableProjectValidation.ts is dynamically imported by src/core/projectFactory.ts, src/state/projectIndexedRecovery.ts, src/state/projectValidation.ts but also statically imported by src/project-migrations/localV3.ts, src/project-migrations/localV3Recovery.ts, src/state/editableCloudProject.ts, src/state/projectRecoverySources.ts, src/state/projectStore.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/core/scene3d/referencias.ts is dynamically imported by src/state/proWorkspaceOperations.ts, src/state/projectStore.ts but also statically imported by src/asset-library/personalSync.ts, src/components/assets/MoldaScenesPanel.tsx, src/components/assets/Scene3DAssetRow.tsx, src/core/projectAssets.ts, src/core/raylibMediaPaths.ts, ..., dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] src/cover/coverCapture.ts is dynamically imported by src/cover/thumbCapture.ts but also statically imported by src/components/layout/ShareDialog.tsx, dynamic import will not move module into another chunk.
+[WebServer]
+[WebServer] [PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+[WebServer]   - rolldown:vite-resolve (22%)
+[WebServer]   - vite:css (18%)
+[WebServer]   - vite:css-post (16%)
+[WebServer]   - vite:asset (14%)
+[WebServer]   - vite:build-import-analysis (12%)
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[WebServer]
+[WebServer] ✓ built in 17.44s
+[WebServer] [E2E] Build concluído em 17640 ms; iniciando preview
+[WebServer]   ➜  Local:   http://127.0.0.1:5396/
+
+Running 5 tests using 1 worker
+
+(node:42440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e\preview-hostile-programs.spec.ts:92:3 › programas hostis na prévia › trabalho síncrono longo que não é laço não trava o editor (20.4s)
+  ✓  2 [chromium] › e2e\preview-hostile-programs.spec.ts:106:3 › programas hostis na prévia › recursão sem fim vira erro do jogo, não do editor (9.4s)
+  ✓  3 [chromium] › e2e\preview-hostile-programs.spec.ts:112:3 › programas hostis na prévia › enxurrada de mensagens não trava o editor (9.7s)
+  ✓  4 [chromium] › e2e\preview-hostile-programs.spec.ts:123:3 › programas hostis na prévia › depois de uma execução interrompida, a prévia espera o Rodar (14.1s)
+  ✓  5 [chromium] › e2e\preview-hostile-programs.spec.ts:155:3 › programas hostis na prévia › memória crescendo sem parar não derruba o editor (10.3s)
+
+  5 passed (1.5m)

@@ -1,0 +1,179 @@
+{
+  "baseline": "68121986166388d42b0f931296644862631bad29",
+  "incoming": "69ced6cb3ed9ae3ac2a4b09db68361cb20068b5a",
+  "identity": [
+    {
+      "file": "docs/estudio-evolucao/entrega-final.md",
+      "index": "f387ebca707c059cde7d8f3ded2e476d4a42b886",
+      "incoming": "f387ebca707c059cde7d8f3ded2e476d4a42b886"
+    },
+    {
+      "file": "docs/estudio-evolucao/homologacao-a-h.md",
+      "index": "e0187878acaa5f4c729fee52a4ffb6ddab8cc4b8",
+      "incoming": "e0187878acaa5f4c729fee52a4ffb6ddab8cc4b8"
+    },
+    {
+      "file": "docs/estudio-evolucao/mapa-da-missao.md",
+      "index": "842a7f48cbbe4c699c8faa1698985ee1d26f8ac1",
+      "incoming": "842a7f48cbbe4c699c8faa1698985ee1d26f8ac1"
+    },
+    {
+      "file": "docs/estudio-evolucao/persistencia-matriz.md",
+      "index": "262b2799ad10defbe9c231e40bc5c8d7b1831e9e",
+      "incoming": "262b2799ad10defbe9c231e40bc5c8d7b1831e9e"
+    },
+    {
+      "file": "docs/qa/2026-11-21-studio-lote8-staging.md",
+      "index": "c1c6750400e8f1f1cc676a9f823025f1a579c44b",
+      "incoming": "c1c6750400e8f1f1cc676a9f823025f1a579c44b"
+    },
+    {
+      "file": "packages/studio/e2e/bridge-blocks-race.spec.ts",
+      "index": "130c3bdd266066fc1cdeb33ea8f9a7f6d4364b0c",
+      "incoming": "130c3bdd266066fc1cdeb33ea8f9a7f6d4364b0c"
+    },
+    {
+      "file": "packages/studio/src/components/blocks/BlocklyPanel.tsx",
+      "index": "9593285459f70e7dbec7323076bc470ff7daac4a",
+      "incoming": "9593285459f70e7dbec7323076bc470ff7daac4a"
+    },
+    {
+      "file": "packages/studio/src/components/projects/NewProjectModal.test.tsx",
+      "index": "a7ce948a0e4c16b947664c580459501ab563d600",
+      "incoming": "a7ce948a0e4c16b947664c580459501ab563d600"
+    },
+    {
+      "file": "packages/studio/src/components/projects/NewProjectModal.tsx",
+      "index": "8848cf45b7d3a6654ade961b2ba18104e213f167",
+      "incoming": "8848cf45b7d3a6654ade961b2ba18104e213f167"
+    },
+    {
+      "file": "packages/studio/src/persistence/service.test.ts",
+      "index": "476aeb625dd16447975b070cfca78e2f7425b812",
+      "incoming": "476aeb625dd16447975b070cfca78e2f7425b812"
+    },
+    {
+      "file": "packages/studio/src/persistence/service.ts",
+      "index": "039aaba6fc3b94f5fb637639f6ef6df5c4fb4014",
+      "incoming": "039aaba6fc3b94f5fb637639f6ef6df5c4fb4014"
+    },
+    {
+      "file": "packages/studio/src/persistence/types.ts",
+      "index": "59f4b099602dcf5256192d44dd63a87898c0b607",
+      "incoming": "59f4b099602dcf5256192d44dd63a87898c0b607"
+    },
+    {
+      "file": "packages/studio/src/state/persistence.ts",
+      "index": "48938fad2a308924f07952bd49a3e377b88c2a36",
+      "incoming": "48938fad2a308924f07952bd49a3e377b88c2a36"
+    },
+    {
+      "file": "packages/studio/src/state/projectStorageCoordinator.ts",
+      "index": "bf177a963bf1216b80ba2e943a7794573cfe84da",
+      "incoming": "bf177a963bf1216b80ba2e943a7794573cfe84da"
+    },
+    {
+      "file": "packages/studio/src/state/projectStore.ts",
+      "index": "0395bb67e85923784d30581b3432f9c4c64005bc",
+      "incoming": "0395bb67e85923784d30581b3432f9c4c64005bc"
+    },
+    {
+      "file": "packages/studio/src/state/projectSynchronousRecovery.test.ts",
+      "index": "09aecc3ef3bc4a7b86a7ca41da2f05664740e0c7",
+      "incoming": "09aecc3ef3bc4a7b86a7ca41da2f05664740e0c7"
+    }
+  ],
+  "records": [
+    {
+      "file": "studio-focused.log.gz",
+      "bytes": 3521,
+      "sha256": "77237d492212fa27ce724f7bad9281c94c6b9c97cecf8ae8cd2583e5d615a9a0",
+      "rawBytes": 10823,
+      "rawSha256": "cffaaba5d946229dd3bd6f3e3089f97f2aaa13562bebc5098f96767ac99bf891"
+    },
+    {
+      "file": "integration-browser.log.gz",
+      "bytes": 2115,
+      "sha256": "7df7b26e679e0f138717281bbacb9f1b7551212896556474ad42b41083cad6c7",
+      "rawBytes": 7991,
+      "rawSha256": "2102c83876abd31c761338c5a2cb55cf8ddede3e2ef32b0fae6377915ad009a7"
+    },
+    {
+      "file": "bridge-browser.log.gz",
+      "bytes": 18560,
+      "sha256": "ba5668649d19eb9f3729f6ceaaa453c1925744a8b50be2371d1a7b2cb893fc87",
+      "rawBytes": 97388,
+      "rawSha256": "10dd0494308d131b33bc6f3fad76debb3e2127c171962dd5ebccafdeb9421bf4"
+    },
+    {
+      "file": "pinta-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "studio-types.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "biome.log.gz",
+      "bytes": 65,
+      "sha256": "553ca6d36882a46085610e08a22ccef394cd9fcfefe8448d0d4ad15f5a1d5edc",
+      "rawBytes": 45,
+      "rawSha256": "97454487dea8f04af9ad535f2b4d42029ec0c127f06f19fc80489dae461cd670"
+    },
+    {
+      "file": "diff.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-studio-report.json.gz",
+      "bytes": 929440,
+      "sha256": "56aa0e4e729a91aea9a3b74736826d0aac34b9fdca0c21524d35834eb7728bbc",
+      "rawBytes": 1288174,
+      "rawSha256": "d058cd0b88efc7ced901db2a927b8f0ebd8a4525c21520a6699ff239b4aabd49"
+    },
+    {
+      "file": "bridge-reload-report.json.gz",
+      "bytes": 2081,
+      "sha256": "d5711e8962efc2180ef71a1e017a487c55afc34932dc58d82dff8c68dbe04a53",
+      "rawBytes": 10141,
+      "rawSha256": "def41075c1c7476eeaace4e5ddc9a9b5416bd5d7ab8aa8e98beb474f1ad565af"
+    },
+    {
+      "file": "archive-staging69.cjs.gz",
+      "bytes": 1506,
+      "sha256": "396b90380a8557d1b84872b3aa303432526bd98e0ad85f11bb27baef3d741136",
+      "rawBytes": 3455,
+      "rawSha256": "546848e0b31354ade54fa8d65556e5d9f6541bc3ac8a8668a7bd2d2da4d70e3a"
+    }
+  ],
+  "focused": {
+    "pass": 89,
+    "assertions": 348,
+    "files": 3
+  },
+  "browser": {
+    "pass": 16,
+    "retries": 0,
+    "profiles": ["chromium-desktop"],
+    "integration": 12,
+    "bridgeAndReload": 4
+  },
+  "carriedPintaSuite": {
+    "head": "68121986166388d42b0f931296644862631bad29",
+    "pass": 2713,
+    "files": 249,
+    "unchangedSources": true
+  },
+  "publicNative8": false,
+  "deploy": false,
+  "physicalDevicesAdditional": false
+}

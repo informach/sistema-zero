@@ -34,8 +34,22 @@ importar. O members sobe primeiro.
 
 Os vídeos estão como `plannedVideo`: grave e anexe a mídia real antes de publicar. Na gravação,
 envie o desenho de verdade antes de gravar a parte do Estúdio (é o envio que põe `minha-chave` nos
-materiais). Anexe o PDF ao bloco de materiais da parte 2; a versão textual já está no manifesto.
+materiais). Anexe o PDF ao bloco de materiais da parte 2. O bloco de materiais leva o livro do PDF e os links do Como fazer, sem os passos em texto (desde 22/11/2026: a criança assiste ao vídeo, não lê).
 Gere a voz do Zappy no Admin depois de importar.
+
+## Revisão de 23/11/2026: no padrão do Cadê, da Chave do Farol e da Ilha
+
+Com as mesmas regras da Ilha do Farol (o teste `qa/faisca-padrao.test.ts` confere este curso):
+
+- **Estrutura:** Continua a de antes, que já segue a régua da plataforma: o desenho é entregue numa parte de entrega e o jogo no fechamento.
+- **Falas:** uma ideia por parágrafo, o porquê antes do como, o teste no jogo com "Tá vendo?" e a causa, "É este bloco que…" e cada clique na sua frase. As frases de conferir, verificar e enviar são as comuns (`faisca-comum.ts`). Nenhuma fala espera o "Salvo".
+- **Desenho gravado à mão:** o palco não desenha no Pinta. A parte do desenho tem as deixas da fala no Na tela, sem gestos entre colchetes; a abertura, o material e a troca da imagem seguem os verbos do palco.
+- **Na tela:** cada gesto na sua palavra, nos verbos do palco (ESPEC-ROTEIRO, seção 9). Os tempos das setas são estimativas e se acertam no Verificar plano.
+- **Recados na página:** cada parte tem o seu, no formato da referência.
+- **Debinha e Dedé:** a Debinha (três perguntas), com a tabela de substituições no roteiro, o `.edicao.json` e o arquivo de voz de cada personagem.
+- **Passo a passo:** refeito na [receita do caderno visual](../../../aulas-interativas-tecnico/recursos/caderno-visual/README.md), com 8 páginas e uma capa 2D sobre a arte da Chave do Farol, com a chave desenhada à mão. O texto mora em `caderno-conteudo.json`, e o PDF acompanha a aula revisada (o envio na última construção, o quiz no fim, sem "Salvo").
+
+**Pendências de produção:** gerar a voz nova da professora (`.elevenlabs.txt`) e a de cada personagem (`.debinha.elevenlabs.txt`, `.dede.elevenlabs.txt`); gravar com o palco e acertar os tempos das setas no Verificar plano; reimportar a aula, com o Jogo 3D 0.33.0 já no ambiente (os projetos 3D saem com essa versão); se a importação recusar um exemplo salvo do Estúdio por ter mudado, dar a ele um id novo; anexar o PDF novo no Admin.
 
 ## Regenerar e conferir
 

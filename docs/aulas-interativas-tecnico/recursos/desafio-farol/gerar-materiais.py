@@ -17,6 +17,14 @@ def main():
     outros = {
         'cade-todo-mundo': 'docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf',
         'transformando-o-vilao-em-aliado': 'docs/aulas-interativas/pais/transformando-o-vilao-em-aliado/apostila.pdf',
+        'ilha-farol': 'docs/aulas-interativas/faisca/a-ilha-do-farol/passo-a-passo-do-projeto.pdf',
+        # Os cursos do Faísca refeitos na receita em 23/11/2026.
+        'moedas-no-caminho': 'docs/aulas-interativas/faisca/poder-moedas-no-caminho/passo-a-passo-do-projeto.pdf',
+        'o-segredo-da-cabana': 'docs/aulas-interativas/faisca/poder-o-segredo-da-cabana/passo-a-passo-do-projeto.pdf',
+        'a-ponte-apressada': 'docs/aulas-interativas/faisca/poder-a-ponte-apressada/passo-a-passo-do-projeto.pdf',
+        'meu-primeiro-desenho': 'docs/aulas-interativas/faisca/meu-primeiro-desenho-no-pinta/passo-a-passo-do-projeto.pdf',
+        'o-bau-dos-simbolos': 'docs/aulas-interativas/faisca/poder-o-bau-dos-simbolos/passo-a-passo-do-projeto.pdf',
+        'jardim-secreto': 'docs/aulas-interativas/faisca/o-jardim-secreto/passo-a-passo-do-projeto.pdf',
     }
     if curso != 'desafio-farol' and curso not in outros:
         raise SystemExit(f'Curso desconhecido: {curso}')

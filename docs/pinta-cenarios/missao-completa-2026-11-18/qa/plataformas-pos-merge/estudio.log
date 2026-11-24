@@ -1,0 +1,125 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\personalSync.test.ts:
+Isolated ./src/asset-library/__tests__/personalSync.cases.ts: 86 pass, 0 fail, 407 expect() calls
+(pass) personalSync.test.ts mock cases own an isolated module realm [4391.00ms]
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [16.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted [15.00ms]
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [62.00ms]
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição [109.00ms]
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [63.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo)
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+src\state\pintaImageStore.test.ts:
+(pass) captured Pinta images in the real Python project store > classic: frame identity/path/PNG survive updates, local reopen, duplicate and portable import [47.00ms]
+(pass) captured Pinta images in the real Python project store > pro: frame identity/path/PNG survive updates, local reopen, duplicate and portable import [15.00ms]
+
+src\components\assets\pintaImageImport.test.ts:
+(pass) classic: two selected frames coexist and only the matching recipe updates [16.00ms]
+(pass) pro: two selected frames coexist and only the matching recipe updates
+(pass) review keeps the material identity; edits/removal and a concurrent addition win over late imports
+(pass) classic Pygame Zero: vector arrives as SVG and pixel art as PNG, both in images/
+(pass) classic Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG
+(pass) classic Pygame-ce: Pinta drawings become PNG assets usable by pygame.image.load
+(pass) pro Pygame Zero: vector arrives as SVG and pixel art as PNG, both in images/
+(pass) pro Turtle: a vector drawing arrives as SVG (a turtle shape), pixel art as PNG [16.00ms]
+(pass) pro Pygame-ce: Pinta drawings become PNG assets usable by pygame.image.load
+(pass) the destination decides the format: Pygame Zero or Turtle + a vector drawing asks for SVG
+
+src\core\__tests__\pintaImageAssets.test.ts:
+(pass) Pinta recipe is durable project content, never a request to regenerate > read and materialization copy the supplied recipe before their first asynchronous digest
+(pass) Pinta recipe is durable project content, never a request to regenerate > sanitizer retains a strict recipe and legacy assets keep their exact shape
+(pass) Pinta recipe is durable project content, never a request to regenerate > malformed recipe or incompatible asset is rejected instead of losing the recipe
+(pass) Pinta recipe is durable project content, never a request to regenerate > classic read/snapshot/source export retain the same PNG and explicit path offline [16.00ms]
+(pass) Pinta recipe is durable project content, never a request to regenerate > pro read/snapshot/source export retain the same PNG and explicit path offline
+(pass) Pinta recipe is durable project content, never a request to regenerate > binary/output tampering refuses read and materialization, while provenance-only changes alter metadata hash
+(pass) an SVG recipe (Pygame Zero) is durable content too > reads back unchanged and materializes its exact bytes at images/<name>.svg
+(pass) an SVG recipe (Pygame Zero) is durable content too > format, file extension, root size and bytes must all agree with the recipe
+
+src\core\__tests__\pintaPngReaderContract.test.ts:
+(pass) retirar a exigência de leitor físico dos metadados não permite importar PNG 4
+(pass) a versão declarada precisa corresponder aos bytes comprimidos, não só ao hash
+(pass) receita map antiga não pode disfarçar dados de mundo 3 sem marcador
+(pass) cena física não pode viajar disfarçada em dados 2
+(pass) o mundo anterior não pode carregar um destino físico sem promover sua versão
+(pass) a descompressão recusa a expansão além do orçamento antes de aceitar o documento [704.00ms]
+(pass) os destinos compartilham o orçamento de descompressão do mundo [578.00ms]
+(pass) profundidade excessiva é recusada antes do JSON.parse, sem confundir chaves dentro de textos [15.00ms]
+(pass) cópias históricas e dados físicos corretos conservam bytes e metadados
+(pass) a leitura após carregar o decodificador usa os bytes capturados antes do await
+
+src\core\__tests__\pythonAssets.test.ts:
+(pass) portable Python materialization > preserves a large Python WAV without widening JavaScript limits [2141.00ms]
+(pass) portable Python materialization > preserves bytes, provenance and hashes without adding web files
+(pass) portable Python materialization > uses original root and nested media paths without renaming them
+(pass) portable Python materialization > renaming and metadata updates keep paths and bytes while changing metadata identity
+(pass) portable Python materialization > admitted FLAC media receives a portable default path without changing explicit paths
+(pass) portable Python materialization > captures material and layout before hashing yields
+(pass) portable Python materialization > rejects path aliases and collisions with code or explicit/implicit directories
+(pass) portable Python materialization > never overwrites duplicate identities or drops malformed materials
+(pass) portable Python materialization > keeps revision-manifest limits separate from reading/materializing source [16.00ms]
+
+src\official-extensions\map-2d\runtime.test.ts:
+(pass) scene references resolve inside their map without changing legacy property values
+(pass) g2d: plataforma precisa conserva o piso pequeno, salto e apoio [16.00ms]
+(pass) g2d: cena 3 não atravessa contornos finos e preserva a curva livre [16.00ms]
+(pass) g2d: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs
+(pass) g2d: uma imagem comum não encobre o ID do mapa de destino
+(pass) g2d: portas preferem IDs sem mudar a escolha por nome dos blocos antigos
+(pass) gk: plataforma precisa conserva o piso pequeno, salto e apoio [15.00ms]
+(pass) gk: cena 3 não atravessa contornos finos e preserva a curva livre [16.00ms]
+(pass) gk: destinos antigos mantêm a ordem de busca entre nomes de cena e IDs
+(pass) gk: uma imagem comum não encobre o ID do mapa de destino
+(pass) gk: portas preferem IDs sem mudar a escolha por nome dos blocos antigos [16.00ms]
+(pass) object references inside two instances resolve to the corresponding set child
+(pass) scene 2 animates the selected sequence in both JavaScript game engines
+(pass) tile objects animate in scene 2 while published scene 1 keeps its static behavior
+(pass) a collision set scaled 2 by 2 fills every covered root cell
+(pass) set collision grids agree with sceneSolidAt for aligned scales, quarter turns, reflection and clipped bounds [31.00ms]
+(pass) monta a grade de colisão, os objetos e os eventos sem perder dados
+(pass) confere as áreas a cada quadro do host, sem depender do desenho, e para no reinício
+(pass) caminhos e pontos usam seu contorno, inclusive após rotação
+(pass) compõe camadas, espelho e opacidade nos pixels
+(pass) sem bloco de cenário o motor é o de sempre; com cenário há um teto absoluto [31.00ms]
+
+src\projects\__tests__\initialBundleBudget.test.ts:
+(pass) a lista inicial não pré-carrega o editor nem os catálogos pesados [17469.00ms]
+
+src\official-extensions\map-2d\__tests__\hostVariant.test.ts:
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo sem cenário recebe o motor de sempre, sem um byte do cenário
+(pass) variante do cenário pelo caminho do host > Jogo 2D: jogo com bloco de cenário recebe o motor completo, dentro do teto
+(pass) variante do cenário pelo caminho do host > Jogo 2D: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo sem cenário recebe o motor de sempre, sem um byte do cenário
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: jogo com bloco de cenário recebe o motor completo, dentro do teto [15.00ms]
+(pass) variante do cenário pelo caminho do host > Jogo 2D Avançado: a chave da prévia muda quando o primeiro bloco de cenário entra
+(pass) variante do cenário pelo caminho do host > os números medidos em 18/11/2026
+
+src\python\extensions\pygame\catalog.test.ts:
+(pass) self.image in a sprite is object state: the file keeps its pygame blocks [15.00ms]
+(pass) replacing a module member through the module still gives up the pygame blocks
+(pass) direct writes on self in an instance method are object state, whatever the name [16.00ms]
+(pass) a write on an object proven to come from an official constructor is its state
+(pass) writes that may reach a module still give up the file
+(pass) dunders stay guarded on self; private names only where the class may be official
+(pass) replacing an official method only drops the official block on that receiver
+(pass) a method the child's class defines is not the official block on self or its objects
+(pass) official methods keep their blocks on official receivers
+(pass) the pygame help names the version the runtime pins
+(pass) the first Pygame-ce palette can build a game loop, movement, collisions, score and drawing [125.00ms]
+
+ 94 pass
+ 0 fail
+ 6694 expect() calls
+Ran 94 tests across 12 files. [28.09s]

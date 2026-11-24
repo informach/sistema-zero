@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { creationPartStorageKey } from '@sistemazero/core/creations'
+import type { PintaCausalEntry, PintaCausalViewer } from '@sistemazero/core/creations/pinta-causal'
+import { resolveCreationPartKey } from '@sistemazero/core/creations/studio-sealed-storage'
 import { DomainError, ValidationError } from '@sistemazero/core/errors'
 import { awaitWithSignal } from '@sistemazero/core/http'
 import {
@@ -7,15 +8,26 @@ import {
   GalleryCopyGenerationSchema,
   type GalleryDeliveryInput,
   type GalleryDeliveryPlan,
+  type GallerySelection,
   type GallerySubmission,
+  type GallerySubmissionItem,
   isGalleryBlock,
   isGallerySubmission,
 } from '@sistemazero/core/learning'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import type { CreationPartRef } from '../../domain/creations/creation'
+import { StudioStorageProtocolError } from '../../domain/creations/creation.errors'
+import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
 import { gallerySubmissionReceipt } from '../../domain/learning/gallery-receipt'
-import { GallerySourceUnavailableError } from '../../domain/learning/gallery-source.errors'
+import {
+  GalleryCausalDrawingsUnsupportedError,
+  GalleryPintaDrawingChangedError,
+  GalleryPintaDrawingUncertifiedError,
+  GallerySourceUnavailableError,
+} from '../../domain/learning/gallery-source.errors'
 import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
@@ -35,6 +47,33 @@ import type { StudioGallerySourceService } from './studio-gallery-source.service
  * (14/10/2026). `messageSpoken` acompanha o recado até a entrega; ausente = digitado.
  */
 export type GalleryDeliveryRequest = GalleryDeliveryInput & { messageSpoken?: boolean }
+
+/**
+ * A cabeça confirmada de um desenho no inventário causal do Pinta, pela MESMA leitura das rotas
+ * causais (`DrizzlePintaGraphRepository.galleryItem`): escopo conta + perfil + público.
+ */
+export interface PintaCausalGalleryHeads {
+  galleryItem(
+    viewer: PintaCausalViewer,
+    item: { itemId: string; revision: number },
+  ): Promise<{ entry: PintaCausalEntry; storageRef: string }>
+}
+
+/** A leitura causal da galeria: a mesma das rotas causais, para todo perfil (23/11/2026, sem flag). */
+export interface PintaCausalGallery {
+  heads: PintaCausalGalleryHeads
+}
+
+/** O que a entrega copia de um trabalho escolhido, venha da leitura antiga ou da causal. */
+interface GallerySource {
+  itemId: string
+  revision: number
+  name: string
+  kind: string
+  storageRef: string
+  parts: CreationPartRef[]
+  causalSha256?: string
+}
 
 type CompletedGalleryResult = Extract<GalleryDeliveryPlan, { completed: true }>['result']
 /** Internal control flow: stop an obsolete inspection when another attempt already won. */
@@ -56,6 +95,7 @@ export class GalleryDeliveryService {
     private readonly submit: SubmitStudioProjectService,
     private readonly copies: Pick<GalleryCopyRepository, 'reserve' | 'assertActive'>,
     private readonly studioSource?: Pick<StudioGallerySourceService, 'load'>,
+    private readonly pintaCausal?: PintaCausalGallery,
   ) {}
 
   async prepare(
@@ -111,8 +151,16 @@ export class GalleryDeliveryService {
       isGallerySubmission(previous.project) &&
       previous.project.requestId === input.requestId
     ) {
-      const selected = previous.project.items.map(({ itemId, revision }) => ({ itemId, revision }))
-      if (stableJson(selected) !== stableJson(input.items)) throw new LearningConflictError()
+      // A seleção inclui o hash causal que a criança viu: repetir o mesmo pedido é a mesma entrega.
+      const selection = ({ itemId, revision, causalSha256 }: GallerySelection) => ({
+        itemId,
+        revision,
+        ...(causalSha256 === undefined ? {} : { causalSha256 }),
+      })
+      if (
+        stableJson(previous.project.items.map(selection)) !== stableJson(input.items.map(selection))
+      )
+        throw new LearningConflictError()
       return {
         completed: true,
         result: gallerySubmissionReceipt(previous),
@@ -131,43 +179,31 @@ export class GalleryDeliveryService {
     }
     const copies: { source: string; destination: string }[] = []
     for (const selection of input.items) {
-      const creation = await owned(() =>
-        this.creations.get(actor.userId, tool, selection.itemId, course.audience),
+      const { causalSha256 } = selection
+      const source = await owned(() =>
+        causalSha256 === undefined
+          ? this.readSelection(actor, tool, selection, course.audience)
+          : this.readCausalHead(actor, tool, selection, causalSha256, course.audience),
       )
-      if (
-        !creation ||
-        creation.accountId !== actor.accountId ||
-        creation.deletedAt ||
-        !creation.storageRef ||
-        creation.revision !== selection.revision
-      )
-        throw new ValidationError(
-          'Um trabalho mudou ou ainda não foi guardado na conta. Atualize a galeria e selecione novamente.',
-        )
-      if (creation.tool === 'pinta' && !GALLERY_DRAWING_KINDS.includes(creation.kind))
-        throw new ValidationError('Selecione desenhos, personagens, cenários ou peças do Pinta.')
-      const prefix = `creations/${actor.userId}/lesson-submissions/${blockId}/${input.requestId}/${generation}/${creation.itemId}-${creation.revision}`
-      const item = {
-        itemId: creation.itemId,
-        revision: creation.revision,
-        name: creation.name,
-        kind: creation.kind,
+      const prefix = `creations/${actor.userId}/lesson-submissions/${blockId}/${input.requestId}/${generation}/${source.itemId}-${source.revision}`
+      const item: GallerySubmissionItem = {
+        itemId: source.itemId,
+        revision: source.revision,
+        name: source.name,
+        kind: source.kind,
         storageKey: `${prefix}/project.gz`,
-        parts: creation.parts.map((part) => ({
+        parts: source.parts.map((part) => ({
           hash: part.hash,
           storageKey: `${prefix}/parts/${part.hash}.gz`,
         })),
+        ...(source.causalSha256 ? { causalSha256: source.causalSha256 } : {}),
       }
-      copies.push({ source: creation.storageRef, destination: item.storageKey })
-      for (const part of creation.parts)
+      copies.push({ source: source.storageRef, destination: item.storageKey })
+      for (const part of source.parts)
         copies.push({
-          source: creationPartStorageKey(
-            actor.userId,
-            creation.tool,
-            creation.itemId,
-            part.hash,
-            part.rev,
-            course.audience,
+          source: resolveCreationPartKey(
+            { userId: actor.userId, tool, itemId: source.itemId, audience: course.audience },
+            part,
           ),
           destination: `${prefix}/parts/${part.hash}.gz`,
         })
@@ -180,6 +216,112 @@ export class GalleryDeliveryService {
         : this.copies.reserve(attempt, new Date()),
     )
     return { completed: false, copyGeneration: generation, snapshot, copies }
+  }
+
+  /**
+   * A leitura antiga, a mesma de sempre nos perfis antigos. Num perfil causal o repositório cerca
+   * os desenhos pessoais (`protocol-required`): a lista que a criança viu veio da leitura antiga
+   * e o perfil virou causal depois. Com a leitura causal disponível, ela escolhe de novo (a lista
+   * nova traz os hashes); sem ela, nada pode ser enviado.
+   */
+  private async readSelection(
+    actor: LearningActor,
+    tool: 'studio' | 'pinta',
+    selection: GallerySelection,
+    audience: CourseAudience,
+  ): Promise<GallerySource> {
+    let creation: Awaited<ReturnType<CreationsRepository['get']>>
+    try {
+      creation = await this.creations.get(actor.userId, tool, selection.itemId, audience)
+    } catch (error) {
+      if (
+        tool === 'pinta' &&
+        error instanceof PintaCausalError &&
+        error.reason === 'protocol-required'
+      )
+        throw this.causalHeads(actor, audience)
+          ? new GalleryPintaDrawingChangedError()
+          : new GalleryCausalDrawingsUnsupportedError()
+      throw error
+    }
+    if (
+      !creation ||
+      creation.accountId !== actor.accountId ||
+      creation.deletedAt ||
+      !creation.storageRef ||
+      creation.revision !== selection.revision
+    )
+      throw new ValidationError(
+        'Um trabalho mudou ou ainda não foi guardado na conta. Atualize a galeria e selecione novamente.',
+      )
+    if (creation.tool === 'pinta' && !GALLERY_DRAWING_KINDS.includes(creation.kind))
+      throw new ValidationError('Selecione desenhos, personagens, cenários ou peças do Pinta.')
+    if (creation.studioSealReceipt) throw new StudioStorageProtocolError()
+    return {
+      itemId: creation.itemId,
+      revision: creation.revision,
+      name: creation.name,
+      kind: creation.kind,
+      storageRef: creation.storageRef,
+      parts: creation.parts,
+    }
+  }
+
+  /**
+   * Perfil com o Pinta causal (23/11/2026): a cabeça CONFIRMADA no inventário causal do dono (a
+   * mesma leitura das rotas causais, escopo conta + perfil), conferida pela revisão e pelo hash que
+   * o seletor mostrou. O selo é imutável e o hash cobre o arquivo inteiro: a cópia leva só ele.
+   */
+  private async readCausalHead(
+    actor: LearningActor,
+    tool: 'studio' | 'pinta',
+    selection: GallerySelection,
+    causalSha256: string,
+    audience: CourseAudience,
+  ): Promise<GallerySource> {
+    if (tool !== 'pinta')
+      throw new ValidationError('Só os desenhos do Pinta são conferidos por este caminho.')
+    const heads = this.causalHeads(actor, audience)
+    if (!heads) throw new GalleryCausalDrawingsUnsupportedError()
+    let head: Awaited<ReturnType<PintaCausalGalleryHeads['galleryItem']>>
+    try {
+      head = await heads.galleryItem(
+        { userId: actor.userId, accountId: actor.accountId, audience },
+        { itemId: selection.itemId, revision: selection.revision },
+      )
+    } catch (error) {
+      // Outra revisão, apagado ou um id que não é deste perfil: a mesma recusa, sem revelar qual.
+      if (
+        error instanceof PintaCausalError &&
+        (error.reason === 'stale-base' || error.reason === 'not-found')
+      )
+        throw new GalleryPintaDrawingChangedError()
+      throw error
+    }
+    const { entry, storageRef } = head
+    if (entry.itemId !== selection.itemId || entry.revision !== selection.revision)
+      throw new GalleryPintaDrawingChangedError()
+    if (entry.coverage !== 'certified' || !entry.sha256)
+      throw new GalleryPintaDrawingUncertifiedError()
+    if (entry.sha256 !== causalSha256) throw new GalleryPintaDrawingChangedError()
+    if (!GALLERY_DRAWING_KINDS.includes(entry.kind))
+      throw new ValidationError('Selecione desenhos, personagens, cenários ou peças do Pinta.')
+    return {
+      itemId: entry.itemId,
+      revision: entry.revision,
+      name: entry.name,
+      kind: entry.kind,
+      storageRef,
+      parts: [],
+      causalSha256: entry.sha256,
+    }
+  }
+
+  /** A leitura causal da galeria segue a mesma cerca das rotas causais (conta + perfil dono; adulto = a conta). */
+  private causalHeads(actor: LearningActor, audience: CourseAudience) {
+    const causal = this.pintaCausal
+    if (!causal || (audience === 'adult' && actor.userId !== actor.accountId)) return null
+    return causal.heads
   }
 
   /** Only exposed to the BFF with a signed body, after all storage copies succeed. */

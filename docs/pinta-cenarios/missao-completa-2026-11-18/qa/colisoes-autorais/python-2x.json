@@ -1,0 +1,22 @@
+{
+  "runtime": {
+    "profileId": "python-probe",
+    "releaseId": "probe-1",
+    "manifestSha256": "7d9fa349034c2979b4b36c9018c73af685c9fbe3d2436611628947edce0a6d2b",
+    "features": [
+      "turtle-compound-shapes",
+      "project-missions-v1",
+      "pinta-map-world-v1",
+      "pinta-scene-physics-v1"
+    ]
+  },
+  "facts": {
+    "python": "3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8",
+    "pygame": "2.5.7",
+    "platform": "emscripten",
+    "scale": 2,
+    "probes": 16,
+    "movement": true
+  },
+  "stdout": "pygame-ce 2.5.7 (SDL 2.32.10, Python 3.14.2)\nphysics-proof {\"python\": \"3.14.2 (main, Sep 14 2026, 03:03:51) [Clang 23.0.0git (https:/github.com/llvm/llvm-project e5927fecf8a6ce89e1a4eac5b8\", \"pygame\": \"2.5.7\", \"platform\": \"emscripten\", \"scale\": 2, \"probes\": 16, \"movement\": true}\nphysics-ready 2\n"
+}

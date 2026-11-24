@@ -1,0 +1,7 @@
+{
+  "quadros": 3,
+  "sha256DoMainOriginal": "e5cdbf9dc7b0eb0d742085deb71c061c39791a6b29de3de8865934d1cdaf39e4",
+  "ajustesDoHarness": ["Limite de tr\u00eas quadros", "Sem captura de cursor em janela oculta"],
+  "modo": "Raylib nativo 6.0.1.0",
+  "concluido": true
+}

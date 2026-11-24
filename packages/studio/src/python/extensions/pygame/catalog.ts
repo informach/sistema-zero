@@ -2,6 +2,7 @@ import { type PythonApiParam, pythonApiCallCodec } from '../../blocks/apiCallCod
 import type { PythonBlockCodec } from '../../blocks/contract'
 import { attribute, integer, name, node, text } from '../../blocks/nodes'
 import type { PythonNode } from '../../language/types'
+import { pintaSceneCodecs } from '../pintaScenes'
 
 /** A first game must be drawable and playable before classes, groups and maps are taught. */
 const FIRST_CONCEPTS = new Set([
@@ -284,7 +285,21 @@ export const PYTHON_PYGAME_CODECS: readonly PythonBlockCodec[] = Object.freeze([
   ]),
   method('pinta_layer_tiles', 'peças da camada', PINTA, 'value', 'camada', 'tiles'),
   method('pinta_solids', 'peças sólidas da camada', PINTA, 'value', 'camada', 'solidos'),
+  method(
+    'pinta_body_blocked',
+    'o cenário bloqueia este corpo',
+    PINTA,
+    'value',
+    'mapa',
+    'bloqueado',
+    [param('corpo', 'corpo', value(name('jogador')))],
+  ),
   method('pinta_platforms', 'plataformas da camada', PINTA, 'value', 'camada', 'plataformas'),
+  method('pinta_body_landing', 'corpo apoiado na plataforma', PINTA, 'value', 'mapa', 'pouso', [
+    param('anterior', 'corpo antes de mover', value(name('antes'))),
+    param('atual', 'corpo depois de mover', value(name('jogador'))),
+    optional('gravidade', 'direção da gravidade', n(1)),
+  ]),
   method('pinta_objects', 'objetos do mapa', PINTA, 'value', 'mapa', 'objetos', [
     optional('tipo', 'do tipo', t('inimigo')),
   ]),
@@ -735,3 +750,5 @@ export const PYTHON_PYGAME_CODECS: readonly PythonBlockCodec[] = Object.freeze([
     param('value', 'de 0 a 1', n(1)),
   ]),
 ])
+
+export const PYTHON_PYGAME_PINTA_SCENE_CODECS = pintaSceneCodecs('python-pygame')

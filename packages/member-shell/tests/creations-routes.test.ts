@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import {
+  STUDIO_SEALED_STORAGE_PROTOCOL,
+  STUDIO_SEALED_STORAGE_READER,
+  studioSealedBlobKey,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
@@ -90,6 +95,99 @@ const SUMMARY = {
   thumb: null,
   syncedAt: '2026-08-18T12:00:01.000Z',
 }
+
+const sealedManifest = {
+  protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+  nonce: '70000000-0000-4000-8000-000000000001',
+  requirements: { envelopeVersion: 2, projectFormat: 2, materials: 'legacy' },
+  gzipSha256: HASH_A,
+  jsonSha256: HASH_B,
+  manifestBytes: 100,
+}
+
+describe('Studio sealed download negotiation', () => {
+  const locator = { userId: USER.id, audience: 'kids', itemId: SUMMARY.itemId } as const
+  const olderPart = {
+    protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+    nonce: '70000000-0000-4000-8000-000000000002',
+    gzipSha256: HASH_A,
+    hash: HASH_C,
+    bytes: 200,
+  }
+  const storageKey = studioSealedBlobKey(locator, sealedManifest.nonce, 'sealed')
+  const part = {
+    ...olderPart,
+    storageKey: studioSealedBlobKey(locator, olderPart.nonce, 'sealed', olderPart.hash),
+  }
+  const ticket = {
+    storageKey,
+    revision: SUMMARY.revision,
+    bytes: 300,
+    summary: { ...SUMMARY, formatVersion: 2 },
+    parts: [part],
+    studioSealReceipt: sealedManifest,
+  }
+  const context = { params: Promise.resolve({ tool: 'studio', itemId: SUMMARY.itemId }) }
+  const request = (reader?: string) =>
+    new Request(`https://community.test/api/project${reader ? `?studioReader=${reader}` : ''}`)
+
+  test('signs the exact sealed project and the reused part only for an advertised reader', async () => {
+    const { routes } = buildRoutes({
+      members: { getCreationDownload: async () => ({ status: 200, body: ticket }) },
+    })
+    const old = await routes.creationsDownloadUrl.GET(request(), context)
+    expect(old.status).toBe(409)
+    expect(r2.presignGet).toEqual([])
+    const modern = await routes.creationsDownloadUrl.GET(
+      request(STUDIO_SEALED_STORAGE_READER),
+      context,
+    )
+    expect(modern.status).toBe(200)
+    expect(await modern.json()).toMatchObject({ studioSealReceipt: sealedManifest })
+    expect(r2.presignGet).toEqual([storageKey, part.storageKey])
+  })
+
+  test('refuses future envelopes or parts from another scope before signing anything', async () => {
+    const untrusted = [
+      {
+        ...ticket,
+        studioSealReceipt: {
+          ...sealedManifest,
+          requirements: { ...sealedManifest.requirements, envelopeVersion: 3 },
+        },
+      },
+      { ...ticket, studioSealReceipt: undefined },
+      {
+        ...ticket,
+        parts: [
+          {
+            ...part,
+            storageKey: studioSealedBlobKey(
+              { ...locator, audience: 'adult' },
+              olderPart.nonce,
+              'sealed',
+              olderPart.hash,
+            ),
+          },
+        ],
+      },
+    ]
+    for (const body of untrusted) {
+      const { routes } = buildRoutes({
+        members: { getCreationDownload: async () => ({ status: 200, body }) },
+      })
+      const result = await routes.creationsDownloadUrl.GET(
+        request(STUDIO_SEALED_STORAGE_READER),
+        context,
+      )
+      expect(result.status).toBe(409)
+      expect(await result.json()).toMatchObject({
+        error: { code: 'STUDIO_STORAGE_PROTOCOL_REQUIRED' },
+      })
+      expect(r2.presignGet).toEqual([])
+    }
+  })
+})
 
 function buildRoutes(
   over: {
@@ -213,6 +311,73 @@ describe('protocolo de isolamento adulto durante deploy e rollback', () => {
       'creations/adult/user-1/studio/proj-1/2.json.gz',
     ])
   })
+
+  /** Perfil adulto causal: a listagem do Pinta exige o protocolo causal; a paleta fica fora da cerca. */
+  const causalAdultMembers = (studioBody: unknown) => ({
+    listCreations: async (tool: string) =>
+      tool === 'pinta'
+        ? {
+            status: 409,
+            body: { error: { code: 'PINTA_CAUSAL_CONFLICT' }, reason: 'protocol-required' },
+          }
+        : { status: 200, body: studioBody },
+    reserveCreationUpload: async () => ({
+      status: 200,
+      body: {
+        revision: 3,
+        bytes: 100,
+        storageKey: 'creations/adult/user-1/pinta/sz-pinta-palettes/3.json.gz',
+      },
+    }),
+  })
+  const palette = { params: Promise.resolve({ tool: 'pinta', itemId: 'sz-pinta-palettes' }) }
+  const paletteUpload = () =>
+    post({
+      name: 'Minhas paletas',
+      kind: 'palette-library',
+      itemUpdatedAt: '2026-11-22T12:00:00Z',
+      bytes: 100,
+    })
+
+  test('paleta adulta pelo caminho antigo sobe num perfil causal: a sonda não cruza a cerca', async () => {
+    const { routes, calls } = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ audience: 'adult', items: [] }),
+    })
+    expect((await routes.creationsUploadUrl.POST(paletteUpload(), palette)).status).toBe(200)
+    expect((await routes.creationsCommit.POST(post({ revision: 3 }), palette)).status).toBe(200)
+    expect((await routes.creationsDelete.DELETE(deleteRequest(3), palette)).status).toBe(200)
+    expect(r2.presignPut.map((entry) => entry.key)).toEqual([
+      'creations/adult/user-1/pinta/sz-pinta-palettes/3.json.gz',
+    ])
+    expect(calls.commitCreationUpload).toHaveLength(1)
+    expect(calls.deleteCreation).toHaveLength(1)
+  })
+
+  test('paleta adulta continua recusada por members que ignora audience; desenho causal segue cercado', async () => {
+    const legacy = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ items: [] }),
+    })
+    expect((await legacy.routes.creationsUploadUrl.POST(paletteUpload(), palette)).status).toBe(503)
+    expect((await legacy.routes.creationsCommit.POST(post({ revision: 3 }), palette)).status).toBe(
+      503,
+    )
+    expect((await legacy.routes.creationsDelete.DELETE(deleteRequest(3), palette)).status).toBe(503)
+    expect(legacy.calls.commitCreationUpload).toBeUndefined()
+    expect(legacy.calls.deleteCreation).toBeUndefined()
+    expect(r2.presignPut).toEqual([])
+
+    const drawing = { params: Promise.resolve({ tool: 'pinta', itemId: 'desenho-1' }) }
+    const causal = buildRoutes({
+      audience: 'adult',
+      members: causalAdultMembers({ audience: 'adult', items: [] }),
+    })
+    const fenced = await causal.routes.creationsDelete.DELETE(deleteRequest(3), drawing)
+    expect(fenced.status).toBe(409)
+    expect(await fenced.json()).toMatchObject({ reason: 'protocol-required' })
+    expect(causal.calls.deleteCreation).toBeUndefined()
+  })
 })
 
 beforeEach(() => {
@@ -231,6 +396,73 @@ beforeEach(() => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20))
 
 describe('BFF das criações — reserva', () => {
+  test.each([
+    undefined,
+    null,
+    1,
+    4,
+    5,
+    '6',
+  ])('Pinta B6 não recebe PUT assinado se o backend confirmar capacidade %s', async (formatVersion) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 3, storageKey: 'pinta-reservado', bytes: 100, formatVersion },
+        }),
+      },
+    })
+    const response = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Vila',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-11-21T11:00:00.000Z',
+        bytes: 100,
+        formatVersion: 6,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'qa-vila-b6' }) },
+    )
+    expect(response.status).toBe(503)
+    expect(await response.json()).toMatchObject({ error: { code: 'UPSTREAM_INCOMPATIBLE' } })
+    expect(r2.presignPut).toEqual([])
+  })
+
+  test('Pinta B6 recebe URL somente depois da confirmação exata e conserva a revisão e os bytes', async () => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 3, storageKey: 'pinta-reservado', bytes: 100, formatVersion: 6 },
+        }),
+      },
+    })
+    const response = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Vila',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-11-21T11:00:00.000Z',
+        bytes: 100,
+        formatVersion: 6,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'qa-vila-b6' }) },
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      revision: 3,
+      bytes: 100,
+      formatVersion: 6,
+      method: 'PUT',
+    })
+    expect(r2.presignPut).toEqual([
+      {
+        key: 'pinta-reservado',
+        contentType: 'application/gzip',
+        contentLength: 100,
+        expiresInSeconds: 600,
+      },
+    ])
+  })
+
   test.each([
     undefined,
     null,
@@ -269,6 +501,70 @@ describe('BFF das criações — reserva', () => {
     expect(r2.presignPut).toEqual([])
   })
 
+  test.each([
+    [7, undefined, 503],
+    [7, 99, 503],
+    [99, 7, 503],
+    [99, 99, 200],
+    [7, 7, 200],
+  ] as const)('Pinta só assina após confirmação da barreira real (%i, %s)', async (formatVersion, inventoryFloor, status) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: { revision: 2, storageKey: 'map', bytes: 12, formatVersion, inventoryFloor },
+        }),
+      },
+    })
+    const result = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Mapa',
+        kind: 'tilemap',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 12,
+        formatVersion,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'mapa' }) },
+    )
+    expect(result.status).toBe(status)
+    expect(r2.presignPut).toHaveLength(status === 200 ? 1 : 0)
+    if (status === 200) expect(await result.json()).toMatchObject({ formatVersion, inventoryFloor })
+  })
+  test.each([
+    undefined,
+    7,
+  ])('sprite formato1 exige eco da capacidade 7 quando o leitor a declarou (%s)', async (echo) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async (...args: unknown[]) => {
+          expect(args[2]).toMatchObject({ maxReadFormatVersion: 7 })
+          return {
+            status: 200,
+            body: {
+              revision: 1,
+              formatVersion: 1,
+              inventoryFloor: 7,
+              maxReadFormatVersion: echo,
+              storageKey: 'sprite',
+              bytes: 12,
+            },
+          }
+        },
+      },
+    })
+    const res = await routes.creationsUploadUrl.POST(
+      post({
+        kind: 'sprite',
+        name: 'Sprite',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 12,
+        maxReadFormatVersion: 7,
+      }),
+      { params: Promise.resolve({ tool: 'pinta', itemId: 'sprite' }) },
+    )
+    expect(res.status).toBe(echo === 7 ? 200 : 503)
+    expect(r2.presignPut).toHaveLength(echo === 7 ? 1 : 0)
+  })
   test('ticket legado ausente confirma somente formato 1', async () => {
     const { routes } = buildRoutes()
     const result = await routes.creationsUploadUrl.POST(
@@ -793,7 +1089,11 @@ describe('BFF das criações — commit', () => {
   })
 
   test('409 definitivo do members apaga do R2 a revisão recusada e passa o erro', async () => {
-    for (const code of ['CREATION_REVISION_MISMATCH', 'CREATION_QUOTA_EXCEEDED']) {
+    for (const code of [
+      'CREATION_REVISION_MISMATCH',
+      'CREATION_QUOTA_EXCEEDED',
+      'CREATION_CLIENT_OUTDATED',
+    ]) {
       r2.deleted.length = 0
       const { routes } = buildRoutes({
         members: {
@@ -803,10 +1103,12 @@ describe('BFF das criações — commit', () => {
           }),
         },
       })
-      const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+      const tool = code === 'CREATION_CLIENT_OUTDATED' ? 'pinta' : 'studio'
+      const target = { params: Promise.resolve({ tool, itemId: 'proj-1' }) }
+      const res = await routes.creationsCommit.POST(post({ revision: 2 }), target)
       expect(res.status).toBe(409)
       expect((await res.json()).error.code).toBe(code)
-      expect(r2.deleted).toEqual(['creations/user-1/studio/proj-1/2.json.gz'])
+      expect(r2.deleted).toEqual([`creations/user-1/${tool}/proj-1/2.json.gz`])
     }
   })
 })

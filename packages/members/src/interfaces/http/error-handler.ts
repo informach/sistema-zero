@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/bun'
+import type { PintaPaletteHead } from '@sistemazero/core/creations/pinta-palette-writer'
 import { DomainError } from '@sistemazero/core/errors'
 import type { HelpValidationIssue } from '@sistemazero/core/help'
 import {
@@ -10,6 +11,14 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
+import {
+  CenarioArquivoAusenteError,
+  CenarioArquivoSaindoError,
+  CenarioDesatualizadoError,
+  CenarioFerramentaTrancadaError,
+  CenarioInvalidoError,
+  CenarioRegioesDesligadasError,
+} from '../../domain/cenarios/cenarios.errors'
 import { CourseJourneyLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
   CreationClientOutdatedError,
@@ -17,6 +26,9 @@ import {
   CreationPartsNeedBytesError,
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
+import { PintaCausalError } from '../../domain/creations/pinta-causal-graph'
+import { PintaPaletteWriteError } from '../../domain/creations/pinta-palette-write'
+import { StudioSealedWriteError } from '../../domain/creations/studio-sealed-write'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
 
 export type { ErrorEnvelope }
@@ -24,6 +36,13 @@ export type { ErrorEnvelope }
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
   MORADA_INVALID: 400,
+  CENARIOS_FECHADOS: 403,
+  CENARIOS_INDISPONIVEIS: 424,
+  CENARIO_NAO_ENCONTRADO: 404,
+  CENARIOS_SEM_ESPACO: 409,
+  PUBLICACAO_CENARIO_CONFLITANTE: 409,
+  PUBLICACAO_CENARIO_SEM_ARQUIVOS: 409,
+  BIBLIOTECA_RESTRITA: 403,
   MORADA_CLIENT_OUTDATED: 409,
   COURSE_PUBLICATION_CONFLICT: 409,
   COURSE_PUBLICATION_PEER_UNAVAILABLE: 424,
@@ -37,6 +56,9 @@ const DOMAIN_STATUS: Record<string, number> = {
   STUDIO_AI_UNAVAILABLE: 503,
   STUDIO_PYTHON_PROJECT_CHECK_UNAVAILABLE: 503,
   GALLERY_SOURCE_UNAVAILABLE: 503,
+  GALLERY_PINTA_CAUSAL_UNSUPPORTED: 409,
+  GALLERY_PINTA_DRAWING_CHANGED: 409,
+  GALLERY_PINTA_DRAWING_UNCERTIFIED: 409,
   STUDIO_AI_CONFLICT: 409,
   STUDIO_BUILDER_CONFLICT: 409,
   LIVE_NOT_FOUND: 404,
@@ -137,6 +159,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   CREATION_STALE_BASE: 409,
   CREATION_PARTS_NEED_BYTES: 409,
   CREATION_PART_MISSING: 409,
+  STUDIO_STORAGE_PROTOCOL_REQUIRED: 409,
   // "Como fazer" (biblioteca de ajuda do Kids).
   HELP_TUTORIAL_NOT_FOUND: 404,
   HELP_COLLECTION_NOT_FOUND: 404,
@@ -156,13 +179,19 @@ export function buildErrorResponse(input: {
 }): {
   status: number
   body: ErrorEnvelope & {
+    reason?: string
+    itemId?: string
     retryAvailableAt?: string
     details?:
       | { gate: string; missing: string[] }
       | { hashes: string[] }
-      | { currentRevision: number }
+      | { currentRevision: number; paletteHead?: PintaPaletteHead }
       | { requiredVersion: number }
       | { issues: HelpValidationIssue[] }
+      | { revisaoAtual: number }
+      | { problemas: string[] }
+      | { digests: string[] }
+      | { familias: string[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -223,6 +252,45 @@ export function buildErrorResponse(input: {
   // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
   // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
   // descobrir a revisão (06/09/2026).
+  if (error instanceof PintaPaletteWriteError) {
+    const code =
+      error.reason === 'protocol-required'
+        ? 'PINTA_PALETTE_WRITE_REQUIRED'
+        : error.reason === 'head-changed'
+          ? 'CREATION_STALE_BASE'
+          : error.reason === 'account-deleting'
+            ? 'ACCESS_DENIED'
+            : 'CREATION_REVISION_MISMATCH'
+    return {
+      status: error.reason === 'account-deleting' ? 403 : 409,
+      body: {
+        ...envelope(code, 'A biblioteca de paletas precisa ser conferida antes de guardar.'),
+        ...(error.head
+          ? { details: { currentRevision: error.head.revision, paletteHead: error.head } }
+          : {}),
+      },
+    }
+  }
+  if (error instanceof PintaCausalError) {
+    return {
+      status: error.reason === 'not-found' ? 404 : 409,
+      body: {
+        ...envelope('PINTA_CAUSAL_CONFLICT', error.reason),
+        reason: error.reason,
+        ...(error.itemId ? { itemId: error.itemId } : {}),
+      },
+    }
+  }
+  if (error instanceof StudioSealedWriteError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        reason: error.reason,
+        ...(error.head ? { studioHead: error.head } : {}),
+      },
+    }
+  }
   if (error instanceof CreationClientOutdatedError) {
     return {
       status: 409,
@@ -248,6 +316,47 @@ export function buildErrorResponse(input: {
     return {
       status: 409,
       body: { ...envelope(error.code, error.message), details: { hashes: [...error.hashes] } },
+    }
+  }
+
+  // Molda Cenários: o cliente precisa do dado para reagir (abrir a versão nova, mostrar o
+  // problema do lote, reenviar só os arquivos que faltaram).
+  if (error instanceof CenarioDesatualizadoError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { revisaoAtual: error.revisaoAtual },
+      },
+    }
+  }
+  if (error instanceof CenarioInvalidoError) {
+    return {
+      status: 422,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { problemas: [...error.problemas].slice(0, 20) },
+      },
+    }
+  }
+  if (error instanceof CenarioRegioesDesligadasError) {
+    return { status: 403, body: envelope(error.code, error.message) }
+  }
+  if (error instanceof CenarioFerramentaTrancadaError) {
+    return {
+      status: 403,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { familias: error.familias.map((f) => f.id) },
+      },
+    }
+  }
+  if (error instanceof CenarioArquivoSaindoError)
+    return { status: 409, body: envelope(error.code, error.message) }
+  if (error instanceof CenarioArquivoAusenteError) {
+    return {
+      status: 409,
+      body: { ...envelope(error.code, error.message), details: { digests: [...error.digests] } },
     }
   }
 

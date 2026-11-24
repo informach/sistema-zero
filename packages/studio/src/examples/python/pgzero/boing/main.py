@@ -1,7 +1,9 @@
+# 📦 Bibliotecas
 import math
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 800
 HEIGHT = 480
 TITLE = 'Raquetada'
@@ -16,21 +18,8 @@ VELOCIDADE_DO_COMPUTADOR = 4.5
 TOPO = 40
 FUNDO = HEIGHT - 40
 
-raquetes = [Actor('raquete_azul', (40, HEIGHT / 2)), Actor('raquete_laranja', (WIDTH - 40, HEIGHT / 2))]
-bola = Actor('bola', (WIDTH / 2, HEIGHT / 2))
-pontos = [0, 0]
-jogadores = 1
-estado = 'menu'
-dx = 1
-dy = 0
-velocidade = VELOCIDADE_INICIAL
-espera = 0
-# Onde o computador mira na raquete (muda a cada raquetada, para ele não ser perfeito).
-desvio = 0
-faiscas = []
-brilho = [0, 0]
 
-
+# 🧩 Meus moldes
 def sacar(para):
     # A bola sai do meio, na direção de quem levou o ponto.
     global dx, dy, velocidade, espera
@@ -126,7 +115,35 @@ def marcar_ponto():
         # Saca para quem perdeu o ponto.
         sacar(-1 if quem == 1 else 1)
 
+# ⚙️ Ao iniciar
+raquetes = [Actor('raquete_azul', (40, HEIGHT / 2)), Actor('raquete_laranja', (WIDTH - 40, HEIGHT / 2))]
+bola = Actor('bola', (WIDTH / 2, HEIGHT / 2))
+pontos = [0, 0]
+jogadores = 1
+estado = 'menu'
+dx = 1
+dy = 0
+velocidade = VELOCIDADE_INICIAL
+espera = 0
+# Onde o computador mira na raquete (muda a cada raquetada, para ele não ser perfeito).
+desvio = 0
+faiscas = []
+brilho = [0, 0]
 
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global jogadores, estado
+    if estado == 'menu':
+        if key == keys.UP or key == keys.DOWN:
+            jogadores = 3 - jogadores
+        if key == keys.SPACE:
+            novo_jogo()
+    elif estado == 'fim' and key == keys.SPACE:
+        estado = 'menu'
+
+
+# 🔁 Enquanto estiver rodando
 def update(dt):
     global espera
     for faisca in list(faiscas):
@@ -151,17 +168,6 @@ def update(dt):
         espera = espera - dt
         return
     mover_bola()
-
-
-def on_key_down(key):
-    global jogadores, estado
-    if estado == 'menu':
-        if key == keys.UP or key == keys.DOWN:
-            jogadores = 3 - jogadores
-        if key == keys.SPACE:
-            novo_jogo()
-    elif estado == 'fim' and key == keys.SPACE:
-        estado = 'menu'
 
 
 def draw():

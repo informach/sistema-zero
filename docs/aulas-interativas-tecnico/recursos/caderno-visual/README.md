@@ -7,7 +7,7 @@ Referências prontas para copiar:
 - Gerador mais simples: [`../cade-todo-mundo/gerar-caderno.ts`](../cade-todo-mundo/gerar-caderno.ts), com o conteúdo em [`caderno-conteudo.json`](../cade-todo-mundo/caderno-conteudo.json).
 - Gerador mais completo (galerias, índice, temas por dia): [`../desafio-farol/gerar-caderno.ts`](../desafio-farol/gerar-caderno.ts).
 - Peças comuns: [`visual.ts`](visual.ts). Arte: [`arte/`](arte/).
-- PDFs de referência: `docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf` e `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf`.
+- PDFs de referência: `docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf` e `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf`. Um curso 3D na mesma receita: [`../ilha-farol/gerar-caderno.ts`](../ilha-farol/gerar-caderno.ts) (blocos do Jogo 3D e galerias com miniaturas dos modelos).
 
 ## A ideia
 
@@ -42,6 +42,8 @@ Cada curso define, na classe `capa--<curso>`:
 O título usa o nome do curso dividido em duas linhas de peso parecido. Exemplos: "Cadê / Todo Mundo?" e "A Chave / do Farol".
 
 **Arte da capa.** É a ilustração do curso (a mesma da capa do curso), em JPEG, dentro de `arte/capa-<curso>.jpg`, com pelo menos 1300 px de largura. Os personagens ficam na metade de cima, porque a faixa cobre a altura de 590 a 660 px.
+
+**Curso sem ilustração própria (20/11/2026).** A Ilha do Farol não tem desenho de capa: a arte é a cena do próprio jogo, renderizada no Blender com as peças publicadas do curso (`docs/design/ilha-do-farol-blender/capa.py`), com a ilha, o farol aceso, a chave e o barco na metade de cima. Quando o curso ganhar uma ilustração, ela substitui `arte/capa-ilha-farol.jpg`.
 
 **Curso para pais (15/11/2026).** O material se chama "Apostila do curso", porque não tem projeto. Só o nome muda: `capaHtml({ …, selo: 'Apostila do curso' })` e `rodape(curso, numero, 'Apostila do curso')`. Referência: [`../transformando-o-vilao-em-aliado/gerar-caderno.ts`](../transformando-o-vilao-em-aliado/gerar-caderno.ts), com o cabeçalho simples (curso para pais não tem cena de jogo). Conferência: `python recursos/desafio-farol/gerar-materiais.py transformando-o-vilao-em-aliado`.
 
@@ -121,4 +123,6 @@ Os rótulos dos blocos são os do Estúdio, palavra por palavra. Se o Estúdio m
 
 ## Cursos que ainda estão no visual antigo
 
-Os geradores de `a-ponte-apressada`, `corre-dino`, `ilha-farol`, `jardim-secreto`, `meu-jeito`, `meu-primeiro-desenho`, `moedas-no-caminho`, `nave-contra-asteroides`, `o-bau-dos-simbolos` e `o-segredo-da-cabana` ainda usam o CSS do antigo `cade-todo-mundo/caderno-do-aluno.template.html`. Esse template só continua no repositório por causa deles. Ao refazer um desses cursos, passe-o para esta receita. Quando o último sair, apague o template.
+Os geradores de `corre-dino`, `meu-jeito` e `nave-contra-asteroides` ainda usam o CSS do antigo `cade-todo-mundo/caderno-do-aluno.template.html`.
+
+Em 23/11/2026, os outros cursos do Faísca passaram para esta receita: `moedas-no-caminho`, `o-segredo-da-cabana`, `a-ponte-apressada` e `o-bau-dos-simbolos` (os Poderes, com a Aula 1 em 2D e a Aula 2 em 3D), `jardim-secreto` (a missão) e `meu-primeiro-desenho` (o extra do Pinta, com prints da aula real). As capas dos Poderes e do Jardim são cenas do jogo 3D renderizadas no Blender com as peças publicadas (`docs/design/<curso>-capa/capa.py`, no molde da Ilha); a do Pinta é 2D, sobre a arte da Chave do Farol. Esses cursos vêm depois da trilha: não têm as páginas "Conheça a plataforma". Todos entram no `gerar-materiais.py` e na régua do `guia-da-plataforma.test.ts`. Esse template só continua no repositório por causa deles. Ao refazer um desses cursos, passe-o para esta receita. Quando o último sair, apague o template.

@@ -1,0 +1,6 @@
+  ✓  1 [chromium] › e2e/preview-hostile-programs.spec.ts:97:3 › programas hostis na prévia › trabalho síncrono longo que não é laço não trava o editor (20.7s)
+  ✓  2 [chromium] › e2e/preview-hostile-programs.spec.ts:111:3 › programas hostis na prévia › recursão sem fim vira erro do jogo, não do editor (17.6s)
+  ✓  3 [chromium] › e2e/preview-hostile-programs.spec.ts:117:3 › programas hostis na prévia › enxurrada de mensagens não trava o editor (16.7s)
+  ✓  4 [chromium] › e2e/preview-hostile-programs.spec.ts:128:3 › programas hostis na prévia › depois de uma execução interrompida, a prévia espera o Rodar (24.8s)
+  ✓  5 [chromium] › e2e/preview-hostile-programs.spec.ts:167:3 › programas hostis na prévia › memória crescendo sem parar não derruba o editor (17.0s)
+  5 passed (1.9m)

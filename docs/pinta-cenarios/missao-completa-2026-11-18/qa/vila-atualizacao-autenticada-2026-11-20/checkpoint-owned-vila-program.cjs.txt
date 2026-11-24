@@ -1,0 +1,13 @@
+module.exports=async function(qa){if(!qa.ownedVilaGame?.completeWorld)throw Error('Owned game missing');
+return qa.vilaPage.evaluate(async({namespace,projectId,rootId})=>{
+ const name='sistema-zero-studio-'+namespace;if(!(await indexedDB.databases()).some(d=>d.name===name))throw Error('Owned database missing');
+ const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+ const req=r=>new Promise((resolve,reject)=>{r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
+ try{const store=db.transaction('kv','readonly').objectStore('kv');const meta=await req(store.get('sz:v4:project-meta:'+projectId));if(meta?.name!=='qa-vila-floresta-20261120')throw Error('Owned project mismatch');
+ const [files,state,blocks,assets]=await Promise.all(['files','state','blocks','assets'].map(part=>req(store.get('sz:v4:project-'+part+':'+projectId))));
+ const drawing=assets?.assets?.find(a=>a.libId==='personal:'+rootId);if(drawing?.scene?.layers.length!==18)throw Error('Owned scene incomplete');
+ function canonical(v){if(ArrayBuffer.isView(v))return Array.from(v);if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>[k,canonical(v[k])]));return v}
+ async function sha(value){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(canonical(value)))))).map(v=>v.toString(16).padStart(2,'0')).join('')}
+ return {projectId,programSha256:await sha({files,state,blocks}),filesSha256:await sha(files),irSha256:await sha(state),blocksSha256:await sha(blocks),markerInFiles:JSON.stringify(files).includes('qaVila20261120'),markerInIR:JSON.stringify(state).includes('qaVila20261120'),sceneSha256:await sha(drawing.scene),sceneVersion:drawing.scene.version,layers:drawing.scene.layers.length,tilesets:drawing.scene.tilesets.length,libRevision:drawing.libRevision,linkedMaps:assets.assets.filter(a=>a.scene).length,readOnly:true};
+ }finally{db.close()}
+ },{namespace:qa.ownedStorageNamespace,projectId:qa.ownedVilaGame.projectId,rootId:qa.ownedVila.mapId});};

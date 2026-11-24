@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { arrumacao, sobrepostas } from '../src/lib/arrumacao'
+import { arrumacao, cobreDoLado, sobrepostas } from '../src/lib/arrumacao'
 import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
 import type { PaginaDoPalco } from '../src/lib/pagina'
-import { projetoDaParte } from '../src/lib/projeto-da-parte'
-import { projetoAntes } from '../src/lib/projeto-gravado'
+import { escolherProjeto, projetoDaAula, projetoDaParte } from '../src/lib/projeto-da-parte'
+import { projetoAntes, tomadaAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import {
@@ -49,6 +49,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
   palcoDoJogo: () => null,
   desembolar: () => null,
+  cobreDoLado: () => false,
   posicoes: () => 'parado',
   fundoLivre: () => ({ seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 }),
   rolagemDeVarios: () => 'visivel',
@@ -63,6 +64,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   alternarJogo: async () => false,
   jogoCarregando: () => false,
   zoom: async () => {},
+  categoriaNoCaminho: () => [],
   ...patch,
 })
 
@@ -101,6 +103,12 @@ describe('verbos do palco', () => {
     })
     expect(agir('apontar jogo', jogos)[0]).toMatchObject({ alvo: { u: 0.5, v: 0.5 } })
     expect(() => agir('apontar jogo', [])).toThrow(/jogo pronto/)
+    expect(agir('tocar jogo 480 300', jogos)[0]).toMatchObject({ fazer: 'clicar' })
+    expect(agir('tocar jogo', jogos)[0]).toMatchObject({
+      fazer: 'clicar',
+      alvo: { u: 0.5, v: 0.5 },
+    })
+    expect(() => agir('tocar jogo', [])).toThrow(/jogo pronto/)
   })
 
   test('navegação, ampliação, livro e materiais pelos nomes da tela', () => {
@@ -117,9 +125,41 @@ describe('verbos do palco', () => {
     })
   })
 
+  test('girar a cena toca os botões da vista do jogo 3D, seguidos, num gesto só', () => {
+    // Prévia de 800 × 600: o botão fica a 32 px da direita; "para o outro lado" a 122 px de baixo,
+    // "para um lado" a 168 px (Ilha, Aula 2, Parte 2: a chave atrás da pedra aparece girando).
+    const outro = { seletor: 'iframe[title="Pré-visualização"]', u: 768 / 800, v: 478 / 600 }
+    expect(agir('girar a cena para o outro lado 3 vezes', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: outro },
+      { fazer: 'clicar', alvo: outro },
+      { fazer: 'clicar', alvo: outro },
+    ])
+    expect(agir('girar a cena', jogos, pagina())).toEqual([
+      {
+        fazer: 'clicar',
+        alvo: { seletor: 'iframe[title="Pré-visualização"]', u: 768 / 800, v: 432 / 600 },
+      },
+    ])
+    // Sem a prévia (o Estúdio fechado), o gesto pede para expandir.
+    expect(() => agir('girar a cena 2 vezes', jogos, pagina({ previa: () => null }))).toThrow(
+      /Expanda/,
+    )
+    // O jogo fica à vista para o giro.
+    expect(jogoPara('girar a cena para o outro lado 6 vezes')).toBe(true)
+  })
+
   test('expandir e reduzir o Estúdio só terminam com ele no outro estado', () => {
     // Farol, Parte 6: a seta segurada logo depois de expandir mediu a prévia ainda no lugar antigo.
+    // Ilha, Aula 2, Parte 4: expandido com o projeto ainda abrindo, a área ficava sem os blocos; o
+    // Expandir espera a área de blocos aberta e sem o carregamento por cima.
     expect(agir('expandir estúdio', jogos)).toEqual([
+      { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 30 },
+      {
+        fazer: 'esperar',
+        alvo: { seletor: '[data-sz-blocks-loading]' },
+        estado: 'sumir',
+        maximo: 30,
+      },
       { fazer: 'clicar', alvo: { texto: 'Expandir' } },
       { fazer: 'esperar', alvo: { texto: 'Reduzir' }, estado: 'aparecer', maximo: 10 },
     ])
@@ -179,6 +219,23 @@ describe('verbos do palco', () => {
     )
   })
 
+  test('a área que cresceu por cima da vizinha do lado é organizada depois do gesto', async () => {
+    // Pedido da Helena, 22/11/2026: o bloco encaixado alarga a área por cima da vizinha da direita;
+    // aí a página organiza os blocos, como o botão direito e Organizar blocos.
+    let arrumou = 0
+    const larga = pagina({ cobreDoLado: () => arrumou === 0, organizar: async () => ++arrumou > 0 })
+    await agirNaPagina('afastar de "Alterar variável aviso" clicando', jogos, larga)
+    expect(arrumou).toBe(1)
+    // Sem área por cima da outra, nada é organizado.
+    let mexeu = 0
+    await agirNaPagina(
+      'afastar de "Criar variável"',
+      jogos,
+      pagina({ organizar: async () => ++mexeu > 0 }),
+    )
+    expect(mexeu).toBe(0)
+  })
+
   test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', async () => {
     expect(agir('arrastar até "Quando acontecer"', jogos, pagina())[0]).toMatchObject({
       fazer: 'arrastar',
@@ -214,6 +271,23 @@ describe('verbos do palco', () => {
     expect(() =>
       agir('encaixar "Voar" em "Quando clicar ou tocar"', jogos, pagina({ bloco: () => null })),
     ).toThrow(/Abra a categoria/)
+    // Um bloco da área (com o que tem dentro) vai para o espaço de outro: o então de um Se.
+    expect(
+      agir('mover "Se valor da variável temChave" para "Se não" no "então"', jogos, pagina()),
+    ).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="area:Se valor da variável temChave"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 },
+      },
+      { fazer: 'continuar', acao: 'afastar de "Se valor da variável temChave"' },
+    ])
+    expect(
+      agir('mover "Se não" para "Quando personagem encostar em farol"', jogos, pagina())[0],
+    ).toMatchObject({ fazer: 'arrastar' })
+    expect(() =>
+      agir('mover "Se" para "Quando acontecer"', jogos, pagina({ bloco: () => null })),
+    ).toThrow(/área de código/)
     expect(agir('encaixar "Somar 1" abaixo de "Deixar o sprite"', jogos, pagina())).toEqual([
       {
         fazer: 'arrastar',
@@ -610,6 +684,34 @@ describe('verbos do palco', () => {
     ])
   })
 
+  test('abrir categoria com nome repetido segue o caminho pela linha de cada uma', () => {
+    // Na paleta 3D, a subcategoria Encostar fica dentro da categoria Encostar.
+    const linha = (n: number) => ({ seletor: `[data-palco-alvo="c${n}"]`, u: 0.5, v: 0.5 })
+    const caminho = (...estados: ('aberta' | 'fechada')[]) =>
+      pagina({
+        categoriaNoCaminho: () =>
+          estados.map((estado, i) => ({ estado, alvo: linha(i + 1), repetida: i > 0 })),
+      })
+    const texto = 'abrir categoria Jogo 3D > Encostar > Encostar'
+    // Jogo 3D já aberta, a Encostar de fora fechada: clica nela e pergunta o caminho de novo.
+    expect(agir(texto, jogos, caminho('aberta', 'fechada'))).toEqual([
+      { fazer: 'clicar', alvo: linha(2) },
+      { fazer: 'continuar', acao: texto },
+    ])
+    // A de fora aberta: agora a de dentro, pela linha dela, e o caminho termina.
+    expect(agir(texto, jogos, caminho('aberta', 'aberta', 'fechada'))).toEqual([
+      { fazer: 'clicar', alvo: linha(3) },
+    ])
+    // Tudo aberto: a mão só aponta a última.
+    expect(agir(texto, jogos, caminho('aberta', 'aberta', 'aberta'))).toEqual([
+      { fazer: 'apontar', alvo: linha(3), exato: true },
+    ])
+    // Aberta, mas sem a de dentro com esse nome: o Verificar plano diz qual falta.
+    expect(() => agir(texto, jogos, caminho('aberta', 'aberta'))).toThrow(
+      /Encostar" dentro de "Encostar/,
+    )
+  })
+
   test('setas da tela: segurar e apontar no canto de baixo do jogo pronto e da prévia', () => {
     // Jogo pronto de 960 × 720: a seta da direita tem o centro a 130 px da esquerda e 30 de baixo.
     expect(agir('segurar seta da direita por 1,5 s', jogos, pagina())).toEqual([
@@ -746,6 +848,24 @@ describe('rotas da aula no palco', () => {
     expect(projetoAntes(gravados, 3)).toBeNull()
   })
 
+  test('a tomada antiga não passa na frente do projeto da aula que já tem as partes depois dela', () => {
+    // Ilha do Farol, Aula 2: palco reiniciado, a parte 2 regravada; a parte 6 abria do fim da 2,
+    // sem o encontro que as partes 4 e 5 montam.
+    const da2 = { parte: 2, project: { de: 'tomada da 2' } }
+    const da5 = { parte: 5, project: { de: 'tomada da 5' } }
+    const entradaDa6 = { parte: 5, project: { de: 'entrada da 6' } }
+    expect(escolherProjeto(da2, entradaDa6)).toEqual({ de: 'entrada da 6' })
+    // A tomada da parte logo antes vale (é o que a gravação deixou de verdade).
+    expect(escolherProjeto(da5, entradaDa6)).toEqual({ de: 'tomada da 5' })
+    // Só um dos dois: vale o que houver.
+    expect(escolherProjeto(da2, null)).toEqual({ de: 'tomada da 2' })
+    expect(escolherProjeto(null, entradaDa6)).toEqual({ de: 'entrada da 6' })
+    expect(escolherProjeto(null, null)).toBeNull()
+    // A tomada que a escolha usa diz a parte dela.
+    const g = (parte: number, at: number) => ({ parte, at, project: { de: `${parte}@${at}` } })
+    expect(tomadaAntes([g(2, 9), g(4, 1)], 6)).toEqual(g(4, 1))
+  })
+
   test('sem tomada de antes, a parte abre no projeto de entrada dela ou na solução de antes', () => {
     const aula2 = JSON.parse(
       readFileSync(
@@ -776,6 +896,9 @@ describe('rotas da aula no palco', () => {
     expect(projetoDaParte(publicada, ids, 3)).toEqual(studio.examples[entrada])
     expect(projetoDaParte(publicada, ids, 4)).toEqual(studio.examples[solucao])
     expect(projetoDaParte(publicada, ids, 5)).toEqual(studio.examples[solucao])
+    // De que parte é o estado: a entrada da 3 vale como depois da 2; a solução da 3, depois da 3.
+    expect(projetoDaAula(publicada, ids, 3)?.parte).toBe(2)
+    expect(projetoDaAula(publicada, ids, 4)?.parte).toBe(3)
     expect(projetoDaParte(publicada, ids, 2)).toBeNull()
     expect(projetoDaParte(publicada, ids, ids.length + 1)).toBeNull()
     expect(projetoDaParte(publicada, ids, Number.MAX_SAFE_INTEGER)).toBeNull()
@@ -843,6 +966,17 @@ describe('arrumação de quando o Estúdio abre', () => {
     expect(sobrepostas(juntas)).toBe(true)
     expect(sobrepostas(separadas)).toBe(false)
     expect(sobrepostas([caixa(0, 0), caixa(100, 0)])).toBe(false)
+  })
+
+  test('acha a área que cresceu para o lado por cima da vizinha da direita', () => {
+    // Quando acontecer (400 de largura) alargou e entrou 60 na vizinha que começa em 340.
+    expect(cobreDoLado([caixa(0, 100, 400, 300), caixa(340, 80, 300, 400)])).toBe(true)
+    // Só encostar a borda não conta.
+    expect(cobreDoLado([caixa(0, 100, 345, 300), caixa(340, 80, 300, 400)])).toBe(false)
+    // A de baixo na mesma coluna é do desembolar, não da organização.
+    expect(cobreDoLado([caixa(0, 0, 400, 300), caixa(10, 280, 400, 200)])).toBe(false)
+    // Lado a lado com espaço entre elas.
+    expect(cobreDoLado([caixa(0, 0, 300, 300), caixa(340, 0, 300, 300)])).toBe(false)
   })
 
   test('organiza uma vez quando os blocos pararam de chegar, e a página fica ocupada até lá', async () => {

@@ -1,0 +1,14 @@
+
+Running 3 tests using 1 worker
+
+(node:39264) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › e2e\paste-into-area.spec.ts:106:3 › colar blocos de outro projeto e arrastar para a Área › só o "preparar o jogo" no Ao iniciar já tem que pintar a cor (12.0s)
+(node:30308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › e2e\paste-into-area.spec.ts:106:3 › colar blocos de outro projeto e arrastar para a Área › só o "preparar o jogo" no Ao iniciar já tem que pintar a cor (11.8s)
+(node:30364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [chromium] › e2e\paste-into-area.spec.ts:106:3 › colar blocos de outro projeto e arrastar para a Área › só o "preparar o jogo" no Ao iniciar já tem que pintar a cor (12.0s)
+
+  3 passed (37.8s)

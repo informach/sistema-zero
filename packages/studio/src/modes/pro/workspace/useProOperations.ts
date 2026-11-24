@@ -1,9 +1,11 @@
+import { STUDIO_PRO_REVISION_LIMITS } from '@sistemazero/core/studio'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ProjectTree } from '../../../core/proProject'
+import { updateProEngineCopies } from '../../../state/proEngineUpdate'
 import { projectPersistence } from '../../../state/projectOperations'
 import { useProjectStoreApi } from '../../../state/projectStore'
 import {
-  type applyProEditorChange,
+  applyProEditorChange,
   listProApplications,
   listProSessionApplications,
   type ProApplicationRecord,
@@ -12,6 +14,7 @@ import {
 } from '../../../state/proRevision'
 import {
   applyPreparedProWorkspaceOperation,
+  describeProTreeChange,
   type ProWorkspaceIntent,
   type ProWorkspaceOperation,
   prepareProWorkspaceOperation,
@@ -142,9 +145,65 @@ export function useProOperations(
         )
         receiptNotice(receipt)
       }),
+    /**
+     * Voltar para uma versão do Histórico do projeto (proposta aprovada em 21/11/2026). Passa pelo
+     * mesmo caminho das operações: o ponto comum guarda a versão de agora antes, a volta fica no
+     * registro e pode ser recuperada, e o editor, a análise e a prévia acompanham.
+     */
+    restoreVersion: (tree: ProjectTree, summary: string, restoredFrom: number) =>
+      run(async () => {
+        const project = store.getState().project
+        if (!project || project.id !== projectId || project.kind !== 'pro')
+          throw new Error('O projeto aberto mudou.')
+        const change = await describeProTreeChange(project, tree, summary)
+        const sameDirectories =
+          JSON.stringify(change.directories?.before ?? []) ===
+          JSON.stringify(change.directories?.after ?? [])
+        if (change.patches.length === 0 && sameDirectories) {
+          setNotice('Esta versão é igual ao projeto de agora.')
+          return
+        }
+        if (change.patches.length > STUDIO_PRO_REVISION_LIMITS.maxPatches)
+          throw new Error(
+            `Esta versão tem mais de ${STUDIO_PRO_REVISION_LIMITS.maxPatches} arquivos diferentes de agora, e a volta precisa caber numa recuperação só. Volte antes para uma versão mais recente.`,
+          )
+        const receipt = await applyProEditorChange(
+          store,
+          projectId!,
+          {
+            operationId: `editor:${crypto.randomUUID()}`,
+            change,
+            history: { trigger: 'restore', restoredFrom },
+          },
+          (next) => {
+            language.current?.synchronizeDocument(next, {})
+            onPublish.current(next, {})
+          },
+        )
+        receiptNotice(receipt)
+      }),
     retry: () =>
       run(async () => {
         if (pendingSave) receiptNotice(await retryProApplication(store, projectId!, pendingSave))
+      }),
+    /**
+     * "Atualizar o motor" (decisão de 23/11/2026): troca só as cópias antigas e intactas do motor 2D
+     * pelo motor de agora. O editor, a análise e a prévia acompanham, como nas operações.
+     */
+    updateEngine: () =>
+      run(async () => {
+        setNotice(null)
+        const updated = await updateProEngineCopies(store, {
+          onPublish: (tree) => {
+            language.current?.synchronizeDocument(tree, {})
+            onPublish.current(tree, {})
+          },
+        })
+        setNotice(
+          updated
+            ? 'Pronto! O jogo agora usa o motor novo, e o seu código continua igual.'
+            : 'O motor deste jogo já está em dia.',
+        )
       }),
   }
 }

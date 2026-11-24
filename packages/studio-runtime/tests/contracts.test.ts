@@ -61,10 +61,10 @@ describe('contrato do executor Pro', () => {
       templateId: 'vanilla-js',
       files: {
         ...valid.files,
-        'package.json': JSON.stringify({ dependencies: { three: '0.180.0', phaser: '3.90.0' } }),
+        'package.json': JSON.stringify({ dependencies: { three: '0.184.0', phaser: '3.90.0' } }),
       },
     })
-    expect(parsed.dependencies.dependencies).toEqual({ three: '0.180.0', phaser: '3.90.0' })
+    expect(parsed.dependencies.dependencies).toEqual({ three: '0.184.0', phaser: '3.90.0' })
     expect(JSON.parse(trustedPackageJson('vanilla-js', parsed.dependencies)).dependencies).toEqual(
       parsed.dependencies.dependencies,
     )
@@ -75,7 +75,7 @@ describe('contrato do executor Pro', () => {
       { dependencies: { mitt: '3.0.1' } },
       { devDependencies: { vite: '8.0.16' } },
       { dependencies: { three: '0.179.0' } },
-      { dependencies: { three: '^0.180.0' } },
+      { dependencies: { three: '^0.184.0' } },
       { dependencies: { three: 'https://elsewhere.test/three.tgz' } },
       { workspaces: ['packages/*'] },
       { overrides: { three: '0.179.0' } },
@@ -90,17 +90,17 @@ describe('contrato do executor Pro', () => {
 
   test('accepts a completed npm range lock and rejects stale roots, transitives and integrity', () => {
     const lock = structuredClone(runtimeLock)
-    lock.packages[''].dependencies.three = '^0.180.0'
+    lock.packages[''].dependencies.three = '^0.184.0'
     const parse = (value: unknown) =>
       parseBuildRequest({
         ...valid,
         files: {
           ...valid.files,
-          'package.json': JSON.stringify({ dependencies: { three: '^0.180.0' } }),
+          'package.json': JSON.stringify({ dependencies: { three: '^0.184.0' } }),
           'package-lock.json': JSON.stringify(value),
         },
       })
-    expect(parse(lock).dependencies.dependencies.three).toBe('0.180.0')
+    expect(parse(lock).dependencies.dependencies.three).toBe('0.184.0')
     const redirected = structuredClone(lock)
     redirected.packages['node_modules/three'].resolved = 'https://other.test/three.tgz'
     expect(() => parse(redirected)).toThrow('imagem')
@@ -157,8 +157,13 @@ describe('contrato do executor Pro', () => {
     }
     expect(pkg.scripts).toEqual({ build: 'vite build' })
     expect(pkg.dependencies).toEqual({ react: '19.2.0', 'react-dom': '19.2.0' })
-    expect(trustedViteConfig('react-ts')).toContain('plugins: [react()]')
+    // O plugin do catálogo vem antes de tudo, com a lista do que o projeto declarou (revisão do
+    // lote 4: import sem declarar empacotava o que estava no `node_modules` da imagem).
+    expect(trustedViteConfig('react-ts')).toContain(
+      'plugins: [catalogImports(["react","react-dom","vite","@vitejs/plugin-react","typescript","@types/react","@types/react-dom"]), react()]',
+    )
     expect(trustedViteConfig('vanilla-js')).not.toContain('@vitejs/plugin-react')
+    expect(trustedViteConfig('vanilla-js')).toContain('plugins: [catalogImports([')
   })
 
   test('imagem instala dependências reproduzíveis pelo lockfile', async () => {

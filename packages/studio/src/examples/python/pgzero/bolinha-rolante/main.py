@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 600
 HEIGHT = 600
 TITLE = 'Bolinha Rolante'
@@ -18,21 +20,8 @@ VELOCIDADE_MAXIMA = 4
 TEMPO = 45
 INICIO = (300, 60)
 
-bolinha = Actor('bolinha')
-bandeira = Actor('bandeira', (300, 0), anchor=('center', 'bottom'))
-x = 0
-y = 0
-vx = 0
-vy = 0
-salvo = INICIO
-queda = 0
-# A altura de onde a bolinha caiu (para ela cair dali na tela).
-altura_da_queda = 0
-quadros_restantes = 0
-# 'jogando', 'caindo', 'chegou' ou 'fim'
-estado = 'jogando'
 
-
+# 🧩 Meus moldes
 def cor(px, py):
     if px < 0 or px >= LARGURA_DO_MAPA or py < 0 or py >= ALTURA_DO_MAPA:
         return (0, 0, 0)
@@ -98,7 +87,32 @@ def rolar():
     elif aqui[2] == 255:
         salvo = (x, y)
 
+# ⚙️ Ao iniciar
+bolinha = Actor('bolinha')
+bandeira = Actor('bandeira', (300, 0), anchor=('center', 'bottom'))
+x = 0
+y = 0
+vx = 0
+vy = 0
+salvo = INICIO
+queda = 0
+# A altura de onde a bolinha caiu (para ela cair dali na tela).
+altura_da_queda = 0
+quadros_restantes = 0
+# 'jogando', 'caindo', 'chegou' ou 'fim'
+estado = 'jogando'
 
+
+recomecar()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    if (estado == 'chegou' or estado == 'fim') and key == keys.SPACE:
+        recomecar()
+
+
+# 🔁 Enquanto estiver rodando
 def update():
     global quadros_restantes, estado, queda, x, y, vx, vy
     if estado == 'chegou' or estado == 'fim':
@@ -145,12 +159,4 @@ def draw():
         screen.draw.text('O tempo acabou!', center=(WIDTH / 2, 280), fontsize=64, color='orange', owidth=1, ocolor='black')
     if estado == 'chegou' or estado == 'fim':
         screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, 360), fontsize=34, color='white', owidth=1, ocolor='black')
-
-
-def on_key_down(key):
-    if (estado == 'chegou' or estado == 'fim') and key == keys.SPACE:
-        recomecar()
-
-
-recomecar()
 pgzrun.go()

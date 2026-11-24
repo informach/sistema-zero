@@ -1,0 +1,134 @@
+bun test v1.3.11 (af24e281)
+
+tests\pinta-local-authority.test.ts:
+(pass) a ponte de nuvem preserva a autoridade local em realm isolado [141.00ms]
+
+tests\studio-publication.test.ts:
+(pass) Pro free publication binds the public app origin behind an internal proxy [78.00ms]
+(pass) Pro lesson publication binds the public app origin behind an internal proxy
+(pass) Pro publication validates before creating the Mural post and resolves a permanent revision for play/remix
+(pass) publication mutations reject browser-supplied ownership and oversized envelopes before runtime calls [32.00ms]
+(pass) entitlement and failed validation prevent any post or playable pointer
+(pass) a lost Hub response retries the same permanent publication without compiling again [15.00ms]
+(pass) Pro publication enforces the journey on the server before compiling or creating a post
+(pass) an eligible Pro lesson retains its course authorization before the free Studio Pro tier
+(pass) vanilla-js publishes without a release flag
+(pass) vanilla-vite publishes without a release flag
+(pass) react-ts publishes without a release flag [16.00ms]
+(pass) three-js publishes without a release flag
+(pass) three-ts publishes without a release flag
+(pass) canvas-puzzle publishes without a release flag
+(pass) canvas-survival publishes without a release flag
+(pass) phaser-arcade publishes without a release flag
+(pass) phaser-platformer publishes without a release flag
+(pass) three-exploration publishes without a release flag [15.00ms]
+(pass) canvas-grid-arena publishes without a release flag
+(pass) phaser-tactics publishes without a release flag
+(pass) three-tactics publishes without a release flag
+(pass) three-action publishes without a release flag
+(pass) cleanup cannot acknowledge an intent while its authentication secret is missing
+(pass) the runtime visibility callback requires its bearer, checks the Hub and never counts a play
+(pass) Pro publication follows custom capabilities even at Noob, while a team role cannot bypass missing policy [16.00ms]
+(pass) a Hub schema rejection reaches the author as a sentence, keeping the code for diagnostics
+
+tests\studio-python-publish.test.ts:
+(pass) free: publicação de dados Pinta 2 mapa recusa o leitor anterior [47.00ms]
+(pass) free: revisão de dados Pinta 2 mapa recusa o leitor anterior [15.00ms]
+(pass) free: publicação de dados Pinta 3 mundo recusa o leitor anterior
+(pass) free: revisão de dados Pinta 3 mundo recusa o leitor anterior [16.00ms]
+(pass) free: publicação de dados Pinta 4 mapa recusa o leitor anterior [16.00ms]
+(pass) free: revisão de dados Pinta 4 mapa recusa o leitor anterior
+(pass) free: publicação de dados Pinta 4 mundo recusa o leitor anterior [15.00ms]
+(pass) free: revisão de dados Pinta 4 mundo recusa o leitor anterior
+(pass) free: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior [16.00ms]
+(pass) free: revisão de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior [15.00ms]
+(pass) free: publicação de dados Pinta 2 mapa preserva a privacidade
+(pass) free: revisão de dados Pinta 2 mapa preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 3 mundo preserva a privacidade [16.00ms]
+(pass) free: revisão de dados Pinta 3 mundo preserva a privacidade [15.00ms]
+(pass) free: publicação de dados Pinta 4 mapa preserva a privacidade
+(pass) free: revisão de dados Pinta 4 mapa preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 4 mundo preserva a privacidade
+(pass) free: revisão de dados Pinta 4 mundo preserva a privacidade [16.00ms]
+(pass) free: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) free: revisão de dados Pinta 4 mapa recusa bytes inválidos com leitor novo [15.00ms]
+(pass) lesson: publicação de dados Pinta 2 mapa recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 3 mundo recusa o leitor anterior [16.00ms]
+(pass) lesson: publicação de dados Pinta 4 mapa recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 4 mundo recusa o leitor anterior
+(pass) lesson: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) lesson: publicação de dados Pinta 2 mapa preserva a privacidade [15.00ms]
+(pass) lesson: publicação de dados Pinta 3 mundo preserva a privacidade
+(pass) lesson: publicação de dados Pinta 4 mapa preserva a privacidade [16.00ms]
+(pass) lesson: publicação de dados Pinta 4 mundo preserva a privacidade
+(pass) lesson: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) live: publicação de dados Pinta 2 mapa recusa o leitor anterior [16.00ms]
+(pass) live: publicação de dados Pinta 3 mundo recusa o leitor anterior
+(pass) live: publicação de dados Pinta 4 mapa recusa o leitor anterior [15.00ms]
+(pass) live: publicação de dados Pinta 4 mundo recusa o leitor anterior
+(pass) live: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor anterior
+(pass) live: publicação de dados Pinta 2 mapa preserva a privacidade
+(pass) live: publicação de dados Pinta 3 mundo preserva a privacidade [16.00ms]
+(pass) live: publicação de dados Pinta 4 mapa preserva a privacidade
+(pass) live: publicação de dados Pinta 4 mundo preserva a privacidade [16.00ms]
+(pass) live: publicação de dados Pinta 4 mapa recusa bytes inválidos com leitor novo
+(pass) cenário 3D do Molda recusa o ambiente sem o leitor de cenas [62.00ms]
+(pass) cenário 3D do Molda publica com o leitor de cenas [16.00ms]
+(pass) free Python classic publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) free Python pro publishes retained source with its own scope and opens an anonymous public game [32.00ms]
+(pass) lesson Python classic publishes retained source with its own scope and opens an anonymous public game
+(pass) lesson Python pro publishes retained source with its own scope and opens an anonymous public game [15.00ms]
+(pass) live Python classic publishes retained source with its own scope and opens an anonymous public game
+(pass) live Python pro publishes retained source with its own scope and opens an anonymous public game [16.00ms]
+(pass) adult free Python classic publication authorizes the adult audience [15.00ms]
+(pass) adult free Python pro publication authorizes the adult audience
+(pass) free Python classic deduplication preserves the canonical published bytes
+(pass) free Python pro deduplication preserves the canonical published bytes [16.00ms]
+(pass) lesson Python classic deduplication preserves the canonical published bytes
+(pass) lesson Python pro deduplication preserves the canonical published bytes [16.00ms]
+(pass) live Python classic deduplication preserves the canonical published bytes
+(pass) live Python pro deduplication preserves the canonical published bytes
+(pass) free a finalized legacy post is returned without claiming or rewriting its artifact [15.00ms]
+(pass) lesson a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) live a finalized legacy post is returned without claiming or rewriting its artifact
+(pass) free JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot [16.00ms]
+(pass) lesson JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) live JavaScript Classic deduplication cannot replace or claim an unverified canonical snapshot
+(pass) a missing private snapshot is 404, while a temporary storage failure is retryable
+(pass) revoked Python release cannot publish; retired existing release stays playable [16.00ms]
+(pass) free Python publication requires the exact release to declare publish
+(pass) lesson Python publication requires the exact release to declare publish [15.00ms]
+(pass) live Python publication requires the exact release to declare publish
+(pass) free JavaScript Classic publication is unchanged by release publish declarations
+(pass) lesson JavaScript Classic publication is unchanged by release publish declarations
+(pass) live JavaScript Classic publication is unchanged by release publish declarations [16.00ms]
+(pass) a Python project cannot publish a Turtle extension absent from its approved release
+(pass) free rejects a reservation with snapshot mismatch before any artifact write
+(pass) free rejects a reservation with missing-id mismatch before any artifact write
+(pass) lesson rejects a reservation with snapshot mismatch before any artifact write [15.00ms]
+(pass) lesson rejects a reservation with missing-id mismatch before any artifact write
+(pass) live rejects a reservation with snapshot mismatch before any artifact write
+(pass) live rejects a reservation with missing-id mismatch before any artifact write
+(pass) live rejects a reservation for a different signed workspace publication
+(pass) a lost reservation response writes no artifact and retries the same reserved ID [16.00ms]
+(pass) a lost Hub response retries the exact Python publication without adding a second retained revision
+(pass) replaying a finalized publication preserves its cover without uploading another candidate [16.00ms]
+(pass) replay after moderation cannot restore the original public cover or retained source [15.00ms]
+(pass) JavaScript Classic replay after deleted leaves no candidate snapshot or cover
+(pass) JavaScript Classic replay after rejected leaves no candidate snapshot or cover
+(pass) same author and request in two publication contexts never share a cover object [16.00ms]
+(pass) free Python republication updates the same link, skips an unchanged game, restores and disables [16.00ms]
+(pass) the free-studio finalize carries the project identity and the new-post choice to the hub [15.00ms]
+(pass) a project that changed kind after publishing cannot update the old post
+[studio-play] classic revision unavailable {
+  playId: "fe939f55-1060-4a80-8e4c-6f09a9910a01",
+}
+(pass) a slow versions service does not hold the classic public game [3031.00ms]
+(pass) classic JavaScript keeps versions behind the same link and the status compares the game [32.00ms]
+(pass) "Publicar como jogo novo" skips the existing post and creates another link
+(pass) a large PNG publishes at the 6 MiB project cap and fails clearly one encoded block above it [281.00ms]
+
+ 119 pass
+ 0 fail
+ 894 expect() calls
+Ran 119 tests across 3 files. [5.84s]

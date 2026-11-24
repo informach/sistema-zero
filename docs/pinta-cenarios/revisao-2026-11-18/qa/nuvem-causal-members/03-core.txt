@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+packages\core\src\creations\pinta-causal.test.ts:
+(pass) canonical intent binds every revision, ordered member, read and layout operation [15.00ms]
+(pass) stored manifest distinguishes unknown, empty, implicit tile zero and live external references
+(pass) snapshot pages pin every observed revision and require the cursor to end at a returned id
+
+ 3 pass
+ 0 fail
+ 31 expect() calls
+Ran 3 tests across 1 file. [388.00ms]

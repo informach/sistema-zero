@@ -1,5 +1,7 @@
+# 📦 Bibliotecas
 from pyray import *
 
+# 🎛️ Configurações
 LARGURA = 800
 ALTURA = 450
 VELOCIDADE = 5
@@ -9,24 +11,10 @@ METADE = 0.5
 FOLGA = 1.001
 BORDA = 5
 
-init_window(LARGURA, ALTURA, 'Caixas que se Encostam')
-set_target_fps(60)
-camera = Camera3D(Vector3(0, 10, 8), Vector3(0, 0, 0.5), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
-
-# A textura da caixa veio do Molda; o cubo do jogador e as caixas são malhas prontas.
-textura_caixa = load_texture('images/caixa.png')
-jogador = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
-caixa = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
-set_material_texture(caixa.materials[0], MATERIAL_MAP_ALBEDO, textura_caixa)
-
 LUGARES = [(-3, -2), (-2, -2), (1, 0), (2, 0), (3, 0), (-2, 2), (-2, 3), (1, 2), (2, 2)]
-caixas = [Vector3(x, METADE, z) for x, z in LUGARES]
-MOEDAS = [Vector3(4, METADE, -3), Vector3(-4, METADE, -4), Vector3(3, METADE, 3), Vector3(-1, METADE, 0)]
-pos = Vector3(-4, METADE, 0)
-moeda = 0
-pegou = 0
 
 
+# 🧩 Meus moldes
 def caixa_de(centro):
     return BoundingBox(Vector3(centro.x - METADE, centro.y - METADE, centro.z - METADE),
                        Vector3(centro.x + METADE, centro.y + METADE, centro.z + METADE))
@@ -43,7 +31,24 @@ def resolver(eixo, passo):
             else:
                 pos.z = centro.z - FOLGA if passo > 0 else centro.z + FOLGA
 
+# ⚙️ Ao iniciar
+init_window(LARGURA, ALTURA, 'Caixas que se Encostam')
+set_target_fps(60)
+camera = Camera3D(Vector3(0, 10, 8), Vector3(0, 0, 0.5), Vector3(0, 1, 0), 45, CAMERA_PERSPECTIVE)
 
+# A textura da caixa veio do Molda; o cubo do jogador e as caixas são malhas prontas.
+textura_caixa = load_texture('images/caixa.png')
+jogador = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
+caixa = load_model_from_mesh(gen_mesh_cube(1, 1, 1))
+set_material_texture(caixa.materials[0], MATERIAL_MAP_ALBEDO, textura_caixa)
+caixas = [Vector3(x, METADE, z) for x, z in LUGARES]
+MOEDAS = [Vector3(4, METADE, -3), Vector3(-4, METADE, -4), Vector3(3, METADE, 3), Vector3(-1, METADE, 0)]
+pos = Vector3(-4, METADE, 0)
+moeda = 0
+pegou = 0
+
+
+# 🔁 Enquanto estiver rodando
 while not window_should_close():
     dt = get_frame_time()
     passo_x = (int(is_key_down(KEY_RIGHT)) - int(is_key_down(KEY_LEFT))) * VELOCIDADE * dt

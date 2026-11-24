@@ -1,0 +1,14 @@
+{
+  "base": "6c4b5029928bddf089f0f4c15033190505fe0ec7",
+  "files": [
+    {
+      "file": "packages/studio/src/modes/pro/workspace/ProDock.view.test.tsx",
+      "sha256": "c91ae7565ef804a4ec300d7fbcae4e3ba53de066c6303ddb36fe63ec769b385a"
+    },
+    {
+      "file": "packages/members/src/infrastructure/config/studio-authoring-catalogs/87a8e72812995c056381fcae6a76298fc5ca4c817f70808095c931df3fa94985.json",
+      "sha256": "87a8e72812995c056381fcae6a76298fc5ca4c817f70808095c931df3fa94985"
+    }
+  ],
+  "runtimeClosureUnchangedFromQualifiedImage": true
+}

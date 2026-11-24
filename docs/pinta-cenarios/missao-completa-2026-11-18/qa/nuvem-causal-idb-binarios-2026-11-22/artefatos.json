@@ -1,0 +1,14 @@
+{
+  "checkout": "dcb900ea69a0106bd3797f58107994a9e62c2fc8",
+  "authoritySnapshotHelper": {
+    "path": "packages/pinta/scripts/authority-baseline.ts",
+    "sourceGitBlobSha256": "91517308bdaccba7fb5db595000e45860b0108fc7a44ecd1c2ccf0e143dbcf1c"
+  },
+  "artifactSha256": {
+    "README.md": "d6cbb396e6419daad27be65ba43296d082ac4f11d20d75aa1aee2268ef549f23",
+    "build.ts": "3fe685328475e7ab3e7af38ff5a6c0254002eaf30c134a5ff3088d404d1241f8",
+    "probe.mjs": "2cde512be87152e87a337ce0bd233c6aea387ba86f9fa50485f604fa158e47cb",
+    "resultado.json": "f89b6718d30e90de996a7b146771dc30b63c26ef2a459c41eb1b81d2be5c6e47",
+    "ensaio.log": "f7c6a3c6fef35456311f6668e9efa5fc27c66f5f60c11b5e22482df5a7cd5ea9"
+  }
+}

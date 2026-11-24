@@ -9,6 +9,7 @@ const CONTEXT_LABELS: Record<TeacherThreadContext, string> = {
   studio_submission: 'Entrega',
   mural_publication: 'Comunidade',
   general: 'Recado',
+  pinta_recovery: 'Ajuda do Pinta',
 }
 
 /**

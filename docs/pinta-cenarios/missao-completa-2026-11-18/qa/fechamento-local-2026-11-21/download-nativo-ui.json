@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-21T09:55:44.704Z",
+  "nativeUiDownload": true,
+  "publicSchema": 7,
+  "sourceMapHash": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73",
+  "assets": [
+    {
+      "id": "6c7c2b91-0023-42c4-8252-59d27b202f46",
+      "sha256": "05175ab61e254f2ecb56bae56ea50ae0eb25434f6c66402b6677e6690803cbc3"
+    },
+    {
+      "id": "3d36c552-4ecd-418c-9a1d-72032dcd6e3c",
+      "sha256": "4da663f7aabf86770c129906929e18a355e049a051953c15a213e72789e9fcef"
+    },
+    {
+      "id": "209771ff-621e-41a8-a05d-e454853b5071",
+      "sha256": "70c4ddba0ee2ae8ec829e3947f8547d690445e9363f37e69b08f928f24eb671f"
+    },
+    {
+      "id": "9ab472dd-a61c-4f2b-8092-b413ac1ed6e6",
+      "sha256": "bca5ff876c11f17a8c43f42bee071578285ea14fc349bcb8419fdd5a9a56d88c"
+    },
+    {
+      "id": "fc15aec6-b219-452a-9f85-80c2c2681598",
+      "sha256": "241e873cb86cf56461d2d69bcabfc7c2e4bfb65d4c1159e451b0aaeffa770014"
+    },
+    {
+      "id": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+      "sha256": "7b60d3ea0f48ebcd0f00facc5736a92173ecfb23b9226b1f008beab553b6fc73"
+    }
+  ],
+  "allNativeHashesEqual": true,
+  "linkedCabanaPreserved": true,
+  "stagingReaderSource": "85d16fcd99efe2a72a8350181542cf475a55db37"
+}

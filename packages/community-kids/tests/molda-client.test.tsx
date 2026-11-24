@@ -19,7 +19,7 @@ test('o host Molda e a biblioteca Pinta usam um ambiente de módulos e IndexedDB
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b10 pass\b/)
+    expect(stdout + stderr).toMatch(/\b11 pass\b/)
     expect(stdout + stderr).toMatch(/\b0 fail\b/)
   } finally {
     clearTimeout(deadline)

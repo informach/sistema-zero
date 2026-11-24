@@ -1,0 +1,157 @@
+{
+  "ok": true,
+  "result": {
+    "keys": ["id", "assets"],
+    "scenes": [
+      {
+        "id": "01M7WPNJ5QQDNT1ED2C0RRRS3V",
+        "name": "qa-vila-floresta-20261120",
+        "libId": "personal:fa6cd481-d157-4849-8ea1-f871aedce0e1",
+        "libRevision": 1795254746248,
+        "sceneKeys": [
+          "version",
+          "id",
+          "name",
+          "tileSize",
+          "cols",
+          "rows",
+          "tilesets",
+          "layers",
+          "sets",
+          "art"
+        ],
+        "mapId": "fa6cd481-d157-4849-8ea1-f871aedce0e1",
+        "layers": [
+          {
+            "id": "a814acdb-f00a-4779-b3ae-009cd2364e2c",
+            "name": "Vila",
+            "kind": "group"
+          },
+          {
+            "id": "f09cfe27-3a93-46af-b77e-dcc6486685e4",
+            "name": "Chão",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "a4bd87e3-004f-4a5a-9476-7b092afe5e12",
+            "name": "Caminhos",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "e2b3e484-bada-4caf-8dee-1aa6a46e9da4",
+            "name": "Jardins",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "d18babe5-23c1-47bb-b053-7e80f5e0d7b5",
+            "name": "Água",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "9072898f-1b81-4bf6-a515-a2b15347be31",
+            "name": "Pedras",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "4cc4517a-a916-4c9c-9830-c49e85ee132c",
+            "name": "Cercas",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "ddea6bfc-b3e3-488a-b8bb-3c7bb95994d5",
+            "name": "Telhados",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "fe2eed4a-07ca-4e4d-a289-60a24bbd16fd",
+            "name": "Árvores",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "c91d5842-0782-41df-9f35-f02a78972c77",
+            "name": "Arbustos",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "e1e8a81b-aa16-42b3-a151-c3b5c32dc1d2",
+            "name": "Flores",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "afd42403-d740-4206-836b-288e89971df8",
+            "name": "Lago",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "360aa59b-9a1d-4bf9-a119-37f335799b84",
+            "name": "Pontes",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "333caa0e-548e-4c6b-a700-31df450beb81",
+            "name": "Troncos",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "750cf816-ceea-4ac8-a6b8-4a1f3b2156f0",
+            "name": "Copas",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "8da63334-2ad4-4665-8dba-15d6b6c4a035",
+            "name": "Sombras",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "57584186-614d-462c-bbe3-b0aa44bcc6a5",
+            "name": "Paredes da vila",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "719e7e9e-68ae-4c58-93d3-3b82f6699458",
+            "name": "Lugares",
+            "kind": "objects"
+          }
+        ]
+      },
+      {
+        "id": "01M7WPNJ5Q1AYWRS8G6H406VED",
+        "name": "qa-cabana-20261120",
+        "libId": "personal:fc15aec6-b219-452a-9f85-80c2c2681598",
+        "libRevision": 1795254746248,
+        "sceneKeys": ["version", "id", "name", "tileSize", "cols", "rows", "tilesets", "layers"],
+        "mapId": "fc15aec6-b219-452a-9f85-80c2c2681598",
+        "layers": [
+          {
+            "id": "d5eac7e4-c211-439e-babf-8f243361e944",
+            "name": "Chão",
+            "kind": "tiles",
+            "first": -1
+          },
+          {
+            "id": "f0e795b5-6adc-40c9-8a59-041f96a05b62",
+            "name": "Lugares",
+            "kind": "objects"
+          }
+        ]
+      }
+    ],
+    "childId": "fc15aec6-b219-452a-9f85-80c2c2681598"
+  }
+}

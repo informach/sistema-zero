@@ -17,7 +17,7 @@ describe('identidade reservada da biblioteca de paletas do Pinta', () => {
     ).toBe('palette-library')
   })
 
-  test('qualquer marcador isolado ou combinação incompleta é inválida', () => {
+  test('par incompleto no Pinta ou kind reservado fora dele é inválido', () => {
     expect(
       classifyPintaPaletteLibraryCreation({
         tool: 'pinta',
@@ -49,5 +49,22 @@ describe('identidade reservada da biblioteca de paletas do Pinta', () => {
         kind: 'pixel-sprite',
       }),
     ).toBe('regular')
+  })
+
+  test('o mesmo ID com kind próprio de outra ferramenta é uma criação comum', () => {
+    expect(
+      classifyPintaPaletteLibraryCreation({
+        tool: 'studio',
+        itemId: PINTA_PALETTE_LIBRARY_ITEM_ID,
+        kind: 'classic',
+      }),
+    ).toBe('regular')
+    expect(
+      classifyPintaPaletteLibraryCreation({
+        tool: 'studio',
+        itemId: 'outro-jogo',
+        kind: PINTA_PALETTE_LIBRARY_KIND,
+      }),
+    ).toBe('invalid-partial')
   })
 })

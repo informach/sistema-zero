@@ -1,0 +1,66 @@
+bun test v1.3.11 (af24e281)
+
+src\tiles\cellAccess.test.ts:
+(pass) acesso cru às células do mapa > a varredura leu arquivos de verdade
+(pass) acesso cru às células do mapa > todo arquivo que lê células está na lista dos conferidos
+(pass) acesso cru às células do mapa > a lista não guarda arquivo que já não lê células
+(pass) acesso cru às células do mapa > a varredura pega o acesso sem colchete e a máscara escrita na mão
+(pass) acesso cru às células do mapa > não há pendência: quem decodifica a célula na mão é corrigido, não listado
+(pass) acesso cru às células do mapa > quem lê o índice da peça importa o cell.ts
+
+src\tiles\mapCells.test.ts:
+(pass) same bounded reads preserve indices and transforms: sparse=%s
+(pass) same bounded reads preserve indices and transforms: sparse=%s [15.00ms]
+(pass) viewport clipping visits only occupied cells inside the map: sparse=%s
+(pass) viewport clipping visits only occupied cells inside the map: sparse=%s
+(pass) large sparse extent counts buffers and visits regions without materializing gaps
+(pass) readers hold immutable history snapshots and copy the logical bounds
+(pass) invalid logical extent and inconsistent dense storage fail before a consumer can read
+(pass) the existing map accessor never aliases fractional coordinates to another cell
+
+src\tiles\regionCells.test.ts:
+(pass) lê células negativas e lacunas sem alocar a extensão vazia
+(pass) um lote conserva flags e copia apenas os chunks alterados para o histórico
+(pass) última escrita vence e gesto que volta ao valor original não cria histórico
+(pass) apagar o último conteúdo remove o chunk, sem manter regiões vazias
+(pass) admissão usa o custo final do gesto, independentemente da ordem de apagar e pintar
+(pass) recusa atômica não conserva nem a primeira mudança de um lote inválido
+(pass) limite de trabalho é conferido antes de acessar os pontos do gesto
+(pass) conversão densa respeita origem parcial e conserva todos os valores e flags
+(pass) conversão vazia não materializa chunks e recusa dimensões ou dados inconsistentes
+(pass) gesto espalhado sobre muitas regiões vazias é recusado pelo orçamento ocupado
+(pass) sequência determinística de gestos mantém o resultado das operações densas existentes [16.00ms]
+
+src\tiles\regionMap.test.ts:
+(pass) explicit conversion reuses the same map model and retains layer/object relationships
+(pass) growing left/up shares all buffers and leaves objects and old cell coordinates fixed
+(pass) bounds changes are no-ops or explicit atomic rejections, never implicit crop
+(pass) one gesture edits negative cells with sharing and keeps the previous map usable
+(pass) invalid targets, inherited locks and invalid edits preserve every layer
+(pass) occupied chunk budget is shared across layers, including untouched layers
+(pass) conversion refuses inconsistent or invalid cells before returning any migrated document
+
+src\tiles\regionMapAccess.test.ts:
+(pass) existing map access reads sparse cells and their logical origin
+(pass) point lookup and indexed readers agree even when valid chunks are unordered
+
+src\tiles\tilemapOps.test.ts:
+(pass) setCell / cellAt > carimba e lê; fora dos limites é no-op
+(pass) floodFillCells > preenche a região contígua (conectividade-4)
+(pass) floodFillCells > mapa vazio inteiro é preenchido
+(pass) setCells (lote) > carimba várias células com um índice; mesmo conteúdo = mesma ref
+(pass) growTilemap > cresce um lado preservando o conteúdo com o offset certo
+(pass) growTilemap > cresce TODAS as camadas
+(pass) growTilemap > no teto devolve a mesma ref
+(pass) growTilemap > mapa 128×128 (novo teto) sobrevive ao sanitize
+(pass) camada da frente (F4) > flattenBackground/flattenFront separam pelas camadas marcadas; hasFrontLayer
+(pass) camada da frente (F4) > toggleLayerFront alterna e sanitize preserva o flag
+(pass) camadas > addLayer respeita a quota; removeLayer nunca deixa zero
+(pass) camadas > remove só uma camada mesmo se receber ids duplicados de uma entrada não saneada
+(pass) camadas > flattenLayers: a camada de CIMA vence; invisível não conta
+(pass) camadas > flattenCellAt: a mesma resposta de flattenLayers célula a célula (e -1 fora do mapa)
+
+ 48 pass
+ 0 fail
+ 289 expect() calls
+Ran 48 tests across 6 files. [464.00ms]

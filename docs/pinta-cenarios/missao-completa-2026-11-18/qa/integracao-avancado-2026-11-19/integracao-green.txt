@@ -1,0 +1,30 @@
+bun test v1.3.11 (af24e281)
+
+src\asset-library\pintaImageSync.test.ts:
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > editar só o destino atualiza o PNG do mundo sem mudar ID, nome ou caminho do material [15.00ms]
+(pass) pygame data kinds: the PNG keeps the Pinta chunk > a sheet or map without its data chunk is refused; with it, accepted [16.00ms]
+(pass) sync re-derives the data kinds, a map on ANY tileset change > a changed layer tileset re-derives the map (inspected with selection "map")
+(pass) sync re-derives the data kinds, a map on ANY tileset change > unchanged provenance keeps the material; one inspection per dependency rule
+(pass) one shared tileset copy: painting a piece updates every use > a tileset-only change re-derives the tileset material AND the map that uses it
+
+src\official-extensions\runtimePayloadBudget.test.ts:
+(pass) runtimes 3D: catraca de payload > game-3d cabe em 248700 caracteres e 70150 bytes gzip [31.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d (sem Kit Plataforma) cabe em 214600 caracteres e 60400 bytes gzip
+(pass) runtimes 3D: catraca de payload > world-3d cabe em 357600 caracteres e 107000 bytes gzip [15.00ms]
+(pass) runtimes 3D: catraca de payload > game-3d-advanced cabe em 220700 caracteres e 65000 bytes gzip [16.00ms]
+
+src\projects\tilemapGame.test.ts:
+(pass) assembleTilemapGameProject > cena 3 com plataforma num conjunto cria jogo lateral e respeita a visibilidade [109.00ms]
+(pass) assembleTilemapGameProject > cenário completo nasce no início, traz os mapas das portas e conserva os vínculos de edição [141.00ms]
+(pass) assembleTilemapGameProject > mudar o início no cenário muda onde o jogo começa, sem gerar o programa de novo [94.00ms]
+(pass) assembleTilemapGameProject > monta um projeto jogável: asset do mapa + IR do game-2d + blocos + arquivos
+(pass) assembleTilemapGameProject > mapa SEM plataforma → mecânica TOP-DOWN
+(pass) assembleTilemapGameProject > mapa que COLOCA peça plataforma na grade → mecânica PLATAFORMA (gravidade + pulo) [15.00ms]
+(pass) assembleTilemapGameProject > tileset DECLARA plataforma mas a grade não COLOCA → segue TOP-DOWN
+(pass) assembleTilemapGameProject > com camada da frente: 2º tilemap desenhado DEPOIS do jogador
+(pass) assembleTilemapGameProject > mapa inválido (sem grade/folha) → null
+
+ 18 pass
+ 0 fail
+ 79 expect() calls
+Ran 18 tests across 3 files. [2.38s]

@@ -13,6 +13,8 @@ import {
   createVectorTilesetAsset,
   isObjectLayer,
   PINTA_LIMITS,
+  PINTA_MAP_FORMAT_LIMITS,
+  PINTA_MAX_SCHEMA,
   remapTilemapTilesetIds,
   sanitizePintaAsset,
   type TilemapAsset,
@@ -118,7 +120,8 @@ describe('sanitize: camadas de objetos', () => {
       x: 2,
       y: 0,
       width: 0,
-      height: PINTA_LIMITS.maxObjectCoord,
+      // O documento lê até o teto do FORMATO; o editor segue cortando no teto dele.
+      height: PINTA_MAP_FORMAT_LIMITS.maxObjectCoord,
     })
   })
 
@@ -179,7 +182,7 @@ describe('sanitize: camadas de objetos', () => {
       properties: {},
     }))
     ;(raw.layers[1] as { objects: unknown }).objects = objects
-    const extra = Array.from({ length: 12 }, (_, i) => ({
+    const extra = Array.from({ length: 40 }, (_, i) => ({
       kind: 'objects',
       id: `l${i}`,
       name: `L${i}`,
@@ -188,7 +191,9 @@ describe('sanitize: camadas de objetos', () => {
     }))
     raw.layers.push(...extra)
     const back = sanitizePintaAsset(raw) as TilemapAsset
-    expect(back.layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers)
+    // O documento guarda até o teto do FORMATO (o editor ainda cria até `maxTilemapLayers`).
+    expect(back.layers).toHaveLength(PINTA_MAP_FORMAT_LIMITS.maxLayers)
+    expect(PINTA_MAP_FORMAT_LIMITS.maxLayers).toBeGreaterThanOrEqual(PINTA_LIMITS.maxTilemapLayers)
     expect(objectLayerOf(back).objects).toHaveLength(PINTA_LIMITS.maxTilemapObjects)
   })
 
@@ -303,9 +308,10 @@ describe('ops: peças por camada', () => {
     expect(removeLayer(map, objectLayerOf(map).id).layers).toHaveLength(1)
   })
 
-  it('o teto de 8 camadas vale para peças e objetos somados', () => {
+  it('o teto de camadas vale para peças, grupos e objetos somados', () => {
     let map = createTilemapAsset({ name: 'fase', tilesetId: 't', cols: 1, rows: 1 })
-    for (let i = 0; i < 10; i += 1) map = i % 2 ? addLayer(map, `p${i}`) : addObjectLayer(map, '')
+    for (let i = 0; i < PINTA_LIMITS.maxTilemapLayers + 2; i += 1)
+      map = i % 2 ? addLayer(map, `p${i}`) : addObjectLayer(map, '')
     expect(map.layers).toHaveLength(PINTA_LIMITS.maxTilemapLayers)
   })
 })
@@ -388,7 +394,7 @@ describe('fronteiras: wire, .pinta.json e .pinta-tilemap.json', () => {
 
     // Versão futura: recusa com o recado, não lê pela metade.
     const future = JSON.parse(v2)
-    future.version = 3
+    future.version = PINTA_MAX_SCHEMA + 1
     expect(importPintaJson(JSON.stringify(future)).assets).toEqual([])
   })
 

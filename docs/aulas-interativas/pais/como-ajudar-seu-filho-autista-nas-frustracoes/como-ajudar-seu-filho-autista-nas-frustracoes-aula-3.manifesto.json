@@ -1,0 +1,71 @@
+{
+  "version": 5,
+  "courseSlug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessonSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+  "title": "Antes da crise: de pais reativos a pais estrategistas",
+  "blocks": [
+    {
+      "key": "video-a3-rotina",
+      "plannedVideo": "Título: Rotina visual e clareza do que vai acontecer\n\nExplicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 1."
+    },
+    {
+      "key": "video-a3-treino",
+      "plannedVideo": "Título: Treino de pequenas frustrações\n\nDesenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 2."
+    },
+    {
+      "key": "video-a3-pedir",
+      "plannedVideo": "Título: Ensinar um jeito de pedir\n\nLigar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 3."
+    },
+    {
+      "key": "resumo-a3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "## Para consultar\n\n- **Rotina visual:** use quadros, agendas ou cartões para mostrar o que está acontecendo e o que vem depois.\n- **Transições:** avise e mostre antes da mudança. Exemplo: \"Faltam cinco minutos para parar de brincar e jantar.\" Adapte o aviso e o tempo à criança.\n- **Pequenas frustrações:** pratique uma espera breve e possível numa situação tranquila. Dez segundos são um exemplo; o tempo pode ser menor. Reconheça o que a criança conseguiu e aumente aos poucos, conforme ela participa.\n- **Comunicação:** ensine mensagens como \"preciso de ajuda\", \"estou nervoso\" e \"posso esperar\", usando fala, figuras ou sinais. PECS é um sistema estruturado de comunicação por troca de figuras.\n- Pratique os pedidos em momentos tranquilos e responda quando a criança os usar. A equipe ajuda a escolher e ensinar recursos adequados."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "rotina",
+      "title": "Rotina visual e clareza do que vai acontecer",
+      "objective": "Explicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-rotina"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-rotina"]
+      }
+    },
+    {
+      "key": "treino",
+      "title": "Treino de pequenas frustrações",
+      "objective": "Desenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-treino"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-treino"]
+      }
+    },
+    {
+      "key": "pedir",
+      "title": "Ensinar um jeito de pedir",
+      "objective": "Ligar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo.",
+      "intent": "explanation",
+      "blockKeys": ["video-a3-pedir", "resumo-a3"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a3-pedir"]
+      }
+    }
+  ]
+}

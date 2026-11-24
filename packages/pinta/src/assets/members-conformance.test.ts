@@ -19,8 +19,8 @@ describe('conformidade pinta × members', () => {
   })
 
   it('a leitura é de verdade (anti-vácuo: os 7 chegaram dos dois lados)', () => {
-    expect(PINTA_ASSET_KINDS).toHaveLength(7)
-    expect(MEMBERS_KINDS).toHaveLength(7)
+    expect(PINTA_ASSET_KINDS).toHaveLength(8)
+    expect(MEMBERS_KINDS).toHaveLength(8)
   })
 
   it('🚨 mudança no Pinta também dispara deploy do consumidor Members', () => {

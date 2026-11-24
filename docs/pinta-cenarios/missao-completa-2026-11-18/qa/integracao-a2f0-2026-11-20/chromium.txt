@@ -1,0 +1,27 @@
+
+Running 18 tests using 1 worker
+
+(node:37568) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e\offscreen-lifecycle.spec.ts:47:1 › demand rendering releases workspace methods and preserves later integrations (252ms)
+  ✓   2 [chromium] › e2e\offscreen-lifecycle.spec.ts:108:1 › centerOnBlock puts a far body back on the page (Mostrar o bloco, code cursor, Zappy) (178ms)
+  ✓   3 [chromium] › e2e\offscreen-lifecycle.spec.ts:412:1 › cauda adiada: o que está longe fica fora da página, o modelo inteiro e a geometria exata (1.0s)
+  ✓   4 [chromium] › e2e\offscreen-lifecycle.spec.ts:434:1 › cauda adiada com chamadas de função: abrir não desenha a cauda, e nada adiado vai ao banco (1.4s)
+  ✓   5 [chromium] › e2e\offscreen-lifecycle.spec.ts:452:1 › cauda adiada: um espaço novo num "chamar" adiado não vai ao banco quando a área se redesenha (1.4s)
+  ✓   6 [chromium] › e2e\offscreen-lifecycle.spec.ts:470:1 › cauda adiada: rolar desenha as próximas unidades, com a geometria do caminho normal (1.7s)
+  ✓   7 [chromium] › e2e\offscreen-lifecycle.spec.ts:493:1 › cauda adiada: "Mostrar o bloco" e o cursor do código chegam a um bloco ainda não desenhado (1.4s)
+  ✓   8 [chromium] › e2e\offscreen-lifecycle.spec.ts:516:1 › cauda adiada: desfazer e refazer uma mudança num bloco ainda não desenhado (1.9s)
+  ✓   9 [chromium] › e2e\offscreen-lifecycle.spec.ts:547:1 › cauda adiada: arrastar uma unidade leva a cauda no modelo, sem desenhá-la, e nada encaixa no fim invisível (1.6s)
+  ✓  10 [chromium] › e2e\offscreen-lifecycle.spec.ts:587:1 › cauda adiada: apagar a última unidade desenhada sobe a cauda, que continua fora da página (1.2s)
+  ✓  11 [chromium] › e2e\offscreen-lifecycle.spec.ts:613:1 › cauda adiada: encaixar um bloco na fronteira deixa a cauda embaixo dele, o resto fora da página (1.4s)
+  ✓  12 [chromium] › e2e\offscreen-lifecycle.spec.ts:637:1 › cauda adiada: um bloco adiado levado por programa para baixo de um desenhado continua fora da página (1.2s)
+  ✓  13 [chromium] › e2e\offscreen-lifecycle.spec.ts:659:1 › cauda adiada: abaixo de 1 500 blocos nada muda (1.3s)
+  ✓  14 [chromium] › e2e\preview-focus-policy.spec.ts:5:3 › o jogo recebe foco sem ativação e devolve o teclado à Ponte (direto) (4.1s)
+  ✓  15 [chromium] › e2e\preview-focus-policy.spec.ts:5:3 › o jogo recebe foco sem ativação e devolve o teclado à Ponte (casca) (4.3s)
+  ✓  16 [chromium] › e2e\reino-zero-performance.spec.ts:16:1 › Reino Zero abre, programa e joga dentro dos orçamentos de desempenho (3.7s)
+(node:38320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  17 [chromium] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (5.9s)
+  ✓  18 [chromium] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (4.7s)
+
+  18 passed (41.2s)

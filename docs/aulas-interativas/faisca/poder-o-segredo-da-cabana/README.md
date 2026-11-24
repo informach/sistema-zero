@@ -11,9 +11,7 @@ produção.
 
 A aula 1 ensina o conceito novo: vídeo da bicicleta e do capacete, a experiência **A porta com duas
 peças** (cena `two-pieces`) e duas montagens guiadas por completo no vídeo (guardar o emblema, como
-a chave do Farol, e a pergunta da cabana com o bloco **e**), um quiz de quatro perguntas e a
-entrega. A aula 2 é a transferência: o vídeo lembra a regra e a montagem completa da ilha fica no
-Passo a passo do projeto; duas montagens, um quiz de duas perguntas e a entrega.
+a chave do Farol, e a pergunta da cabana com o bloco **e**), a última delas envia o projeto, e um quiz de quatro perguntas fecha a aula. A aula 2 leva a regra para a ilha 3D: o vídeo lembra a Aula 1 e monta tudo de novo, com duas montagens (a última envia) e um quiz de duas perguntas no fim.
 
 Nenhum bloco novo: a pergunta usa o bloco **e / ou** (`sz_val_logic`, Programação → Lógica e Se),
 que já é do iniciante nos dois jogos.
@@ -55,11 +53,25 @@ que já existe e não muda o nome dele: troque o título de `jornada-faisca-pode
 para **O segredo da cabana** no Admin, antes de publicar.
 
 Os vídeos estão como `plannedVideo`: grave e anexe a mídia real antes de publicar. Anexe o PDF ao
-bloco de materiais da parte 2 da aula 1; a versão textual já está no manifesto. Gere a voz do Zappy
+bloco de materiais da parte 2 da aula 1. O bloco de materiais leva o livro do PDF e os links do Como fazer, sem os passos em texto (desde 22/11/2026: a criança assiste ao vídeo, não lê). Gere a voz do Zappy
 no Admin depois de importar. Publicar na comunidade é opcional e não entra nos objetivos.
 
 ⚠️ Ordem dos serviços: a cena `two-pieces` e as cenas do quiz (`cabana-so-chave`, `cabana-ou`,
 `cabana-ordem`) precisam do members, do kids e do admin já com esta versão antes de importar.
+
+## Revisão de 23/11/2026: no padrão do Cadê, da Chave do Farol e da Ilha
+
+Com as mesmas regras da Ilha do Farol (o teste `qa/faisca-padrao.test.ts` confere este curso):
+
+- **Estrutura:** A porta, a última construção, monta e envia; a parte só de envio (`entrega`) saiu das duas aulas. O quiz vem por último, como fechamento (`closing`).
+- **Falas:** uma ideia por parágrafo, o porquê antes do como, o teste no jogo com "Tá vendo?" e a causa, "É este bloco que…" e cada clique na sua frase. As frases de conferir, verificar e enviar são as comuns (`faisca-comum.ts`). Nenhuma fala espera o "Salvo".
+- **Montagem no vídeo:** a Aula 2 (3D) mandava abrir o Passo a passo; agora monta as construções inteiras no vídeo, lembrando a Aula 1.
+- **Na tela:** cada gesto na sua palavra, nos verbos do palco (ESPEC-ROTEIRO, seção 9). Os tempos das setas são estimativas e se acertam no Verificar plano.
+- **Recados na página:** cada parte tem o seu, no formato da referência.
+- **Debinha e Dedé:** a Debinha na Aula 1 (quatro perguntas) e o Dedé na Aula 2 (três), com a tabela de substituições no roteiro, o `.edicao.json` e o arquivo de voz de cada personagem.
+- **Passo a passo:** refeito na [receita do caderno visual](../../../aulas-interativas-tecnico/recursos/caderno-visual/README.md), com 20 páginas e a capa feita com uma cena do jogo 3D do curso, renderizada no Blender com as peças publicadas. O texto mora em `caderno-conteudo.json`, e o PDF acompanha a aula revisada (o envio na última construção, o quiz no fim, sem "Salvo").
+
+**Pendências de produção:** gerar a voz nova da professora (`.elevenlabs.txt`) e a de cada personagem (`.debinha.elevenlabs.txt`, `.dede.elevenlabs.txt`); gravar com o palco e acertar os tempos das setas no Verificar plano; reimportar as duas aulas (a seção `entrega` saiu das duas), com o Jogo 3D 0.33.0 já no ambiente (os projetos 3D saem com essa versão); se a importação recusar um exemplo salvo do Estúdio por ter mudado, dar a ele um id novo; anexar o PDF novo no Admin.
 
 ## Regenerar e conferir
 

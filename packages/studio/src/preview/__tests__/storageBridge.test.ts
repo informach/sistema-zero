@@ -4,6 +4,8 @@ import {
   PREVIEW_STORAGE_MAX_KEY_CHARS,
   PREVIEW_STORAGE_MAX_KEYS,
   PREVIEW_STORAGE_MAX_TOTAL_CHARS,
+  PREVIEW_STORAGE_MAX_VALUE_CHARS,
+  sanitizePreviewStorageData,
 } from '../types'
 
 interface CapturedMessage {
@@ -177,28 +179,77 @@ describe('buildStorageBridgeRuntime', () => {
     expect(win.localStorage.getItem('k0')).toBe('novo')
   })
 
+  // Enche o total com valores no limite de cada um: nove chaves de 100 mil (900.018 caracteres).
+  const encherQuaseTudo = (storage: Storage) => {
+    for (let i = 0; i < 9; i++)
+      storage.setItem(`k${i}`, 'a'.repeat(PREVIEW_STORAGE_MAX_VALUE_CHARS))
+    return PREVIEW_STORAGE_MAX_TOTAL_CHARS - 9 * (2 + PREVIEW_STORAGE_MAX_VALUE_CHARS)
+  }
+
   it('setItem lança QuotaExceededError ao estourar o total de caracteres', () => {
     const { win } = runBridge(buildStorageBridgeRuntime())
-    // Um valor único maior que o orçamento total → estoura na hora.
-    const huge = 'a'.repeat(PREVIEW_STORAGE_MAX_TOTAL_CHARS + 1)
+    const sobra = encherQuaseTudo(win.localStorage)
     let thrown: unknown
     try {
-      win.localStorage.setItem('grande', huge)
+      win.localStorage.setItem('k9', 'a'.repeat(sobra - 2 + 1))
     } catch (e) {
       thrown = e
     }
     expect((thrown as { name?: string })?.name).toBe('QuotaExceededError')
-    expect(win.localStorage.getItem('grande')).toBeNull()
+    expect((thrown as { message?: string })?.message).toBe('Cota do armazenamento excedida.')
+    expect(win.localStorage.getItem('k9')).toBeNull()
   })
 
   it('o cap de total desconta o valor antigo ao substituir (troca por valor menor cabe)', () => {
     const { win } = runBridge(buildStorageBridgeRuntime())
-    // Enche perto do teto com uma chave só.
-    const big = 'a'.repeat(PREVIEW_STORAGE_MAX_TOTAL_CHARS - 10)
-    win.localStorage.setItem('grande', big)
-    // Substituir por algo MENOR não pode estourar (o valor antigo sai da conta).
-    expect(() => win.localStorage.setItem('grande', 'pequeno')).not.toThrow()
-    expect(win.localStorage.getItem('grande')).toBe('pequeno')
+    const sobra = encherQuaseTudo(win.localStorage)
+    win.localStorage.setItem('k9', 'a'.repeat(sobra - 2 - 10))
+    // Substituir por algo do mesmo tamanho só cabe porque o valor antigo sai da conta.
+    expect(() =>
+      win.localStorage.setItem('k0', 'b'.repeat(PREVIEW_STORAGE_MAX_VALUE_CHARS)),
+    ).not.toThrow()
+    expect(() => win.localStorage.setItem('k9', 'pequeno')).not.toThrow()
+    expect(win.localStorage.getItem('k9')).toBe('pequeno')
+  })
+
+  it('valor acima do limite é recusado na hora, com a frase, em vez de ser cortado ao guardar', () => {
+    const { win, posted } = runBridge(
+      buildStorageBridgeRuntime({ parentOrigin: 'https://app.test' }),
+    )
+    let thrown: unknown
+    try {
+      win.localStorage.setItem('jogo', 'a'.repeat(PREVIEW_STORAGE_MAX_VALUE_CHARS + 1))
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as { name?: string })?.name).toBe('QuotaExceededError')
+    expect((thrown as { message?: string })?.message).toBe(
+      'Isso é grande demais para guardar de uma vez (até 100.000 caracteres).',
+    )
+    expect(win.localStorage.getItem('jogo')).toBeNull()
+    expect(posted).toHaveLength(0)
+  })
+
+  it('nome de chave acima do limite é recusado na hora, com a frase', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    let thrown: unknown
+    try {
+      win.localStorage.setItem('n'.repeat(PREVIEW_STORAGE_MAX_KEY_CHARS + 1), 'x')
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as { message?: string })?.message).toBe(
+      'Esse nome é grande demais para guardar (até 256 letras).',
+    )
+    expect(win.localStorage.length).toBe(0)
+  })
+
+  it('o que a ponte aceita volta igual depois de guardado (nada é cortado)', () => {
+    const { win } = runBridge(buildStorageBridgeRuntime())
+    const nome = 'n'.repeat(PREVIEW_STORAGE_MAX_KEY_CHARS)
+    const valor = 'v'.repeat(PREVIEW_STORAGE_MAX_VALUE_CHARS)
+    win.localStorage.setItem(nome, valor)
+    expect(sanitizePreviewStorageData({ [nome]: win.localStorage.getItem(nome) })[nome]).toBe(valor)
   })
 
   it('preserva uma chave literal "__proto__" no seed e no espelho', () => {

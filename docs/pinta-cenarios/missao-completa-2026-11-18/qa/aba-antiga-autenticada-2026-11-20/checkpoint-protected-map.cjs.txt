@@ -1,0 +1,18 @@
+module.exports=async function(qa){
+ const id='1cb291ea-b512-4e46-b3cd-e5d783454c3a';
+ const result=await qa.modern.evaluate(async({namespace,id})=>{
+  const name=namespace?'sistema-zero-pinta-'+namespace:'sistema-zero-pinta';
+  const db=await new Promise((resolve,reject)=>{const r=indexedDB.open(name);r.onupgradeneeded=()=>{r.transaction.abort();reject(Error('Authority DB missing'))};r.onerror=()=>reject(Error('Authority DB unavailable'));r.onsuccess=()=>resolve(r.result)});
+  try{
+   const raw=await new Promise((resolve,reject)=>{const r=db.transaction('kv','readonly').objectStore('kv').get('pinta:local:document:'+id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(Error('Authority missing'))});
+   const asset=raw?.asset,object=asset?.layers?.find(l=>l.kind==='objects')?.objects?.[0];
+   if(raw?.version!==1||raw.capability!==7||asset?.schema!==7||asset.physics!=='precise'||asset.layers.length!==2||object?.name!=='Protegido 026'||object.collision!==true||object.properties?.verificacao?.type!=='int'||object.properties.verificacao.value!==26)throw Error('Protected fixture not committed');
+   function canonical(value){if(ArrayBuffer.isView(value))return Array.from(value);if(Array.isArray(value))return value.map(canonical);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().filter(k=>value[k]!==undefined).map(k=>[k,canonical(value[k])]));return value}
+   const bytes=new TextEncoder().encode(JSON.stringify(canonical(asset)));
+   const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');
+   return {schema:asset.schema,capability:raw.capability,physics:asset.physics,layers:asset.layers.length,objectId:object.id,objectName:object.name,objectCollision:object.collision,property:object.properties.verificacao,firstCell:asset.layers[0].cells[0],sha256};
+  }finally{db.close()}
+ },{namespace:qa.ownedStorageNamespace,id});
+ qa.protectedCheckpoint=result;
+ return {...result,readOnly:true,completeAuthoringDocumentRetained:false};
+};

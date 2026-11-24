@@ -38,6 +38,24 @@ export function kidsJourneyTestTarget(raw: string): URL {
   return target
 }
 
+/**
+ * The opt-in disposable database of one proof file. A skip is never silent: it warns, and a CI
+ * database step (the one that sets TEST_DATABASE_URL) that forgot to declare it fails. The
+ * general package step runs these same files without any database and only warns.
+ */
+export function optInKidsJourneyDatabase(variable: string): string | undefined {
+  const raw = process.env[variable]
+  if (raw) {
+    kidsJourneyTestTarget(raw)
+    return raw
+  }
+  const skipped = `[tests/db] ${variable} ausente: as provas deste arquivo foram PULADAS.`
+  if (process.env.CI && process.env.TEST_DATABASE_URL)
+    throw new Error(`${skipped} Declare a variável no passo "Testes DB members" do CI.`)
+  console.warn(skipped)
+  return undefined
+}
+
 /** Additive real migration history, one transaction per historical enum boundary. No reset/drop. */
 export async function openKidsJourneyTestDatabase(raw: string) {
   const target = kidsJourneyTestTarget(raw)

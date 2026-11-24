@@ -1,0 +1,41 @@
+bun test v1.3.11 (af24e281)
+
+src\core\mapFormat7.test.ts:
+(pass) formato 7: colisão autoral de objeto > adoção explícita da física precisa protege também mapas sem paredes de objeto
+(pass) formato 7: colisão autoral de objeto > carimbo e envelope recusam leitores que descartam a marca de colisão
+(pass) formato 7: colisão autoral de objeto > definição reutilizável protege o mapa interno e o conjunto externo
+(pass) formato 7: colisão autoral de objeto > ligar, desligar e copiar a marca passa pelas mesmas operações e sanitizador
+(pass) formato 7: colisão autoral de objeto > sem marca nova, o documento anterior permanece no formato anterior
+(pass) formato 7: colisão autoral de objeto > rollout do leitor não permite enviar documento 7 com declaração antiga
+
+src\state\localAuthority.test.ts:
+(pass) 026: escrita legada preserva a autoridade5 e recupera RAM4 como cópia [15.00ms]
+(pass) a capacidade mínima conserva clientes 5 em documentos compatíveis e protege conteúdo 6
+(pass) 026: uma aba anterior não retira colisões do documento 7 e sua edição é recuperada offline
+(pass) rebaixamento deliberado na instância que observou5 continua permitido
+(pass) duas instâncias atuais não substituem a revisão que outra confirmou
+(pass) relógios iguais não confundem edição antiga com confirmação atual
+(pass) lápide impede ressurreição por gravador antigo, preservando sua edição [16.00ms]
+(pass) restaurar deliberadamente depois da própria exclusão respeita a revisão
+(pass) exclusão antiga por ID não apaga uma autoridade já promovida
+(pass) falha de put pinta:asset: aborta autoridade e espelho
+(pass) falha de put pinta:local: aborta autoridade e espelho
+(pass) falha durante recuperação mantém tanto o checkpoint5 como o espelho antigo
+(pass) envelope futuro {"version":2} permanece intocado
+(pass) envelope futuro {"capability":8} permanece intocado
+(pass) checkpoint inválido não é trocado silenciosamente pelo espelho
+(pass) captura usa a autoridade e suas dependências, sem preferir o espelho legado
+(pass) outra instância/perfil não recebe documentos nem recuperação deste banco
+(pass) primeira leitura protege o legado antes de receber uma edição de outra aba
+(pass) releitura parcial conserva avisos de outros documentos futuros [16.00ms]
+(pass) listagem não autentica RAM antiga de mapas ligados a outro editor
+(pass) cada autosave avança apenas a linhagem que gravou; desfazer próprio continua possível
+(pass) reinício observa lápide e pode restaurar deliberadamente a sua revisão
+(pass) lote com formato futuro aborta todos os outros membros
+(pass) cópias contam nos32MiB; recusa conserva ambas e apagar libera espaço atomicamente [375.00ms]
+(pass) ler lápide em outra instância não autentica RAM com origem anterior à exclusão
+
+ 31 pass
+ 0 fail
+ 111 expect() calls
+Ran 31 tests across 2 files. [953.00ms]

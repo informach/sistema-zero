@@ -86,12 +86,71 @@ export const NO_EMPURRAR = {
 } as const
 
 /**
+ * Empurrando objeto baixo (`empurrar_baixo`, agachada, a cabeça passando por cima): a face fica isto
+ * à frente da origem, e o objeto não pode passar de `objetoAte` de altura (a cabeça bateria).
+ */
+export const NO_EMPURRAR_BAIXO = {
+  aFrente: medidaDoLugar('empurrar_baixo', 'plano_a_frente_m', 0.3),
+  objetoAte: medidaDoLugar('empurrar_baixo', 'objeto_ate_m', 0.25),
+} as const
+
+/**
+ * O que se empurra diz ao jogo como é (no `userData` do corpo dinâmico): a altura dele e, num objeto
+ * redondo, quanto a face fica mais perto para os dedos encostarem (a arte, 15/11/2026: no tronco do
+ * lago, 0,02 m do clipe, já na escala do mundo aqui).
+ */
+export type ComoSeEmpurra = { altura: number; encostaMais?: number }
+
+/**
+ * Empurrando objeto de meia altura (`empurrar_meio`, o caixote): mãos a 0,31 m do clipe. Serve até
+ * `objetoAte`; acima disso, o `empurrar` de pé.
+ */
+export const NO_EMPURRAR_MEIO = {
+  aFrente: medidaDoLugar('empurrar_meio', 'plano_a_frente_m', 0.3),
+  objetoAte: medidaDoLugar('empurrar_meio', 'objeto_ate_m', 0.45),
+} as const
+
+/** De que jeito se empurra: agachada (`baixo`), de meia altura (`meio`) ou de pé (`alto`). */
+export type JeitoDeEmpurrar = 'baixo' | 'meio' | 'alto'
+
+/**
+ * O jeito pela altura do objeto (`objeto_ate_m` de cada variação da arte). Entre o teto do baixo e
+ * o começo do meio (0,25 a 0,34 m do clipe) nenhuma serve bem; o jogo não tem objeto nessa faixa e
+ * fica com o meio (as mãos perto do alto do objeto, a cabeça longe dele). Objeto que não diz a
+ * altura: de pé, como sempre.
+ */
+export function jeitoDeEmpurrar(objeto: ComoSeEmpurra | null | undefined): JeitoDeEmpurrar {
+  if (!objeto) return 'alto'
+  if (objeto.altura <= NO_EMPURRAR_BAIXO.objetoAte) return 'baixo'
+  if (objeto.altura <= NO_EMPURRAR_MEIO.objetoAte) return 'meio'
+  return 'alto'
+}
+
+/**
  * Quanto o desenho anda para a frente empurrando: no jogo a face encosta na cápsula, a `daFace` do
- * meio do corpo; no clipe, a `NO_EMPURRAR.aFrente` da origem. Negativo: recua (mais perto, a
+ * meio do corpo; no clipe, a face fica `aFrente` da origem (a da variação do jeito, menos o
+ * `encostaMais` de um objeto redondo nas variações de mão baixa). Negativo: recua (mais perto, a
  * cabeça entraria no objeto; a arte avisou que essa distância quase não pode mudar).
  */
-export function avancoNoEmpurrao(daFace: number): number {
-  return daFace - NO_EMPURRAR.aFrente
+export function avancoNoEmpurrao(daFace: number, objeto?: ComoSeEmpurra | null): number {
+  const jeito = jeitoDeEmpurrar(objeto)
+  const aFrente =
+    jeito === 'baixo'
+      ? NO_EMPURRAR_BAIXO.aFrente - (objeto?.encostaMais ?? 0)
+      : jeito === 'meio'
+        ? NO_EMPURRAR_MEIO.aFrente - (objeto?.encostaMais ?? 0)
+        : NO_EMPURRAR.aFrente
+  return daFace - aFrente
+}
+
+/** Lê o `ComoSeEmpurra` do `userData` de um corpo (qualquer outra coisa: `null`). */
+export function comoSeEmpurra(userData: unknown): ComoSeEmpurra | null {
+  const dado = (userData as { empurrao?: unknown } | null | undefined)?.empurrao as
+    | Partial<ComoSeEmpurra>
+    | undefined
+  if (!dado || typeof dado.altura !== 'number' || !Number.isFinite(dado.altura)) return null
+  const encostaMais = typeof dado.encostaMais === 'number' ? dado.encostaMais : undefined
+  return encostaMais === undefined ? { altura: dado.altura } : { altura: dado.altura, encostaMais }
 }
 
 /**

@@ -1,0 +1,17 @@
+{
+  "ref": {
+    "caminho": "modelos/objeto.glb",
+    "digest": "0362e04e858d19653bb7a3f78ad694d109447a57a6ce75142e568840f7f50848",
+    "bytes": 1136,
+    "mime": "model/gltf-binary",
+    "papel": "modelo",
+    "malhas": 1,
+    "triangulos": 2,
+    "verticesMaximos": 4
+  },
+  "erroMedio": 3.7084538069668183,
+  "erroMaximo": 43,
+  "amostras": 14526,
+  "facetado": true,
+  "normaisPorFace": false
+}

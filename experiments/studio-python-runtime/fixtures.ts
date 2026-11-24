@@ -125,6 +125,11 @@ export async function runtimeFixtureProject(
       'classic-turtleImage',
       'classic-portableAudio',
       'classic-portableAudioNamespace',
+      'classic-pgzeroGame',
+      'classic-pgzeroCasos',
+      'classic-pgzeroErroDeEscrita',
+      'classic-pgzeroTrava',
+      'classic-pinta-world-1x',
     ].includes(name)
   ) {
     const pro = await runtimeFixtureProject(name.slice('classic-'.length))
@@ -135,6 +140,10 @@ export async function runtimeFixtureProject(
       kind: 'classic',
       mode: 'bridge',
       python: { ...pro.python, entrypoint: 'main.py' },
+      // O programa sai de src/ para a raiz; suas artes relativas acompanham a mudança.
+      assets: common.assets.map((asset) =>
+        asset.proPath?.startsWith('src/') ? { ...asset, proPath: asset.proPath.slice(4) } : asset,
+      ),
       files: Object.fromEntries(
         Object.entries(tree).flatMap(([path, node]) =>
           node.kind === 'file'
@@ -167,6 +176,22 @@ export async function runtimeFixtureProject(
   if (isRaylibExampleFixture(name)) return raylibExampleProject(name)
   const { isPygameExampleFixture, pygameExampleProject } = await import('./pygameFixtures')
   if (isPygameExampleFixture(name)) return pygameExampleProject(name)
+  const { isPintaBrowser2dFixture, pintaBrowser2dProject } = await import(
+    './pintaBrowser2dFixtures'
+  )
+  if (isPintaBrowser2dFixture(name)) return pintaBrowser2dProject(name)
+  const { isPintaWorldFixture, pintaWorldProject } = await import('./pintaWorldFixtures')
+  if (isPintaWorldFixture(name)) return pintaWorldProject(name)
+  const { isPintaRegionalFixture, pintaRegionalProject } = await import('./pintaRegionalFixtures')
+  if (isPintaRegionalFixture(name)) return pintaRegionalProject(name)
+  const { isRaylibRegionsFixture, raylibRegionsProject } = await import('./raylibRegionFixtures')
+  if (isRaylibRegionsFixture(name)) return raylibRegionsProject(name)
+  const { isRaylibRelevoFixture, raylibRelevoProject } = await import('./raylibRelevoFixtures')
+  if (isRaylibRelevoFixture(name)) return raylibRelevoProject(name)
+  const { isPintaPhysicsFixture, pintaPhysicsProject } = await import('./pintaPhysicsFixtures')
+  if (isPintaPhysicsFixture(name)) return pintaPhysicsProject(name)
+  const { isPintaPlatformFixture, pintaPlatformProject } = await import('./pintaPlatformFixtures')
+  if (isPintaPlatformFixture(name)) return pintaPlatformProject(name)
   const { isGameFixture, gameFixtureProject } = await import('./gameFixtures')
   if (isGameFixture(name)) return gameFixtureProject(name)
   const source = cases[name]

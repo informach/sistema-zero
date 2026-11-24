@@ -99,3 +99,34 @@ it('checks complete and fragmented LSP frames before upstream allocation', async
     expect(await failed).toBeInstanceOf(Error)
   }
 })
+
+it('preserves the complete Python symbol index beyond 300 entries', () => {
+  // Revisão completa da missão (Pro, item 1): o 4d3643ebe tirou o corte de 300 símbolos só do
+  // TypeScript. No Python o mapa do arquivo parava no 300º e o "Mostrar mais" sumia ali.
+  const root = resolve('language-fixture')
+  const lines = Array.from({ length: 450 }, (_, n) => `v${n} = ${n}`)
+  const mapper = languageResultMapper(
+    root,
+    { revision: 1, files: { 'main.py': { version: 1, source: `${lines.join('\n')}\n` } } },
+    'main.py',
+  )
+  const symbols = lines.map((line, n) => {
+    const name = `v${n}`
+    const range = {
+      start: { line: n, character: 0 },
+      end: { line: n, character: line.length },
+    }
+    return {
+      name,
+      kind: 13,
+      range,
+      selectionRange: {
+        start: { line: n, character: 0 },
+        end: { line: n, character: name.length },
+      },
+    }
+  })
+  const result = mapper('symbols', symbols)
+  expect(result).toHaveLength(450)
+  expect(result.at(-1)?.name).toBe('v449')
+})

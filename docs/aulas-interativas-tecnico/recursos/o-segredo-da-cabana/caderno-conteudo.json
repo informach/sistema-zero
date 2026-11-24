@@ -1,0 +1,676 @@
+{
+  "curso": "O segredo da cabana",
+  "capa": {
+    "linha1": "O segredo",
+    "linha2": "da cabana",
+    "frase": "Todos os passos para ensinar a cabana a pedir duas peças, em 2D e em 3D.",
+    "fraseBaixo": "Do emblema guardado à porta que só abre com as duas peças."
+  },
+  "cenas": {
+    "2d": "A praia do Farol no jogo 2D, com a cabana fechada, a chave e o emblema",
+    "2d-aberta": "A praia do Farol no jogo 2D, com a cabana aberta",
+    "3d": "A Ilha do Farol em três dimensões, com a cabana, o emblema e a chave"
+  },
+  "paginas": [
+    {
+      "id": "p1",
+      "kicker": "Passo a passo do projeto",
+      "title": "O segredo da cabana",
+      "subtitle": "A cabana do faroleiro tem a porta trancada e pede duas peças para abrir.",
+      "items": [
+        {
+          "kind": "views",
+          "images": [
+            {
+              "scene": "2d",
+              "caption": "Aula 1: no jogo 2D da Chave do Farol"
+            },
+            {
+              "scene": "3d",
+              "caption": "Aula 2: na ilha, em três dimensões"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "No jogo do Farol apareceu a cabana do faroleiro, com a porta trancada, e um emblema novo. A cabana vai fazer uma pergunta que fala das duas peças. O farol continua pedindo só a chave."
+        },
+        {
+          "kind": "box",
+          "title": "Use quando precisar",
+          "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nas duas aulas, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
+          "tone": "note"
+        },
+        {
+          "kind": "index",
+          "title": "O que você vai fazer",
+          "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+          "days": [
+            {
+              "kicker": "Aula 1 · Jogo 2D",
+              "title": "Duas peças para abrir",
+              "text": "Investigue a porta com duas peças, guarde o emblema e ensine a cabana a perguntar.",
+              "pages": "Páginas {{pagina:experiencia}} a {{pagina:revisao-1}}"
+            },
+            {
+              "kicker": "Aula 2 · Ilha 3D",
+              "title": "Duas peças na ilha",
+              "text": "Leve o emblema e a pergunta da cabana para a ilha em três dimensões.",
+              "pages": "Páginas {{pagina:emblema-3d}} a {{pagina:revisao-2}}"
+            }
+          ],
+          "extras": [
+            {
+              "icon": "olho",
+              "title": "A experiência",
+              "text": "Página {{pagina:experiencia}}"
+            },
+            {
+              "icon": "brilho",
+              "title": "O que você descobriu",
+              "text": "Página {{pagina:descobriu}}"
+            },
+            {
+              "icon": "certo",
+              "title": "Verificar e enviar",
+              "text": "Páginas {{pagina:porta-2d-envio}} e {{pagina:porta-3d-envio}}"
+            },
+            {
+              "icon": "ajuda",
+              "title": "Se precisar de ajuda",
+              "text": "Página {{pagina:revisao-2}}"
+            }
+          ]
+        },
+        {
+          "kind": "box",
+          "title": "Antes de montar",
+          "text": "No começo de cada aula, jogue a versão pronta até a cabana abrir. No jogo 2D, use as setas no canto de baixo do jogo; no computador, você também pode clicar dentro do jogo e usar as setas do teclado. Na ilha, clique dentro do jogo e segure uma seta do teclado ou as letras W, A, S e D. A tecla R começa outra partida. Quando terminar, clique em <b>Próxima parte</b>.",
+          "tone": "experience"
+        }
+      ]
+    },
+    {
+      "id": "experiencia",
+      "secao": "experiencia",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 3 · Experiência",
+      "title": "A porta com duas peças",
+      "subtitle": "Às vezes, o jogo precisa conferir duas coisas antes de decidir o que acontece.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "Para decidir, o jogo faz uma pergunta, e uma pergunta que ajuda o jogo a decidir se chama <b>condição</b>. Sabe quando alguém pergunta, antes de você sair de casa: pegou o casaco e a garrafinha? É uma pergunta só, mas ela fala de duas coisas.<br/>No seu jogo, a cabana do faroleiro também faz uma pergunta que fala de duas coisas: a chave e o emblema. Para saber o que o personagem já pegou, o jogo guarda duas informações em duas variáveis: <b>temChave</b> e <b>temEmblema</b>. Cada uma vale verdadeiro ou falso. E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças."
+        },
+        {
+          "kind": "investigate",
+          "title": "O que investigar",
+          "text": "Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. E a ordem em que o personagem pega as peças importa?",
+          "goals": [
+            "Vá até a cabana sem nenhuma peça e observe.",
+            "Vá até a cabana com uma peça só e observe.",
+            "Vá até a cabana com as duas peças e observe.",
+            "Compare começando pela chave e começando pelo emblema.",
+            "Troque o \"e\" pelo \"ou\" na pergunta da cabana e teste com uma peça só."
+          ]
+        },
+        {
+          "kind": "box",
+          "title": "Você escolhe a ordem",
+          "text": "Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
+          "tone": "note"
+        }
+      ]
+    },
+    {
+      "id": "descobriu",
+      "secao": "emblema",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 4 · O que você descobriu",
+      "title": "Uma pergunta, duas peças",
+      "subtitle": "A cabana confere duas informações guardadas no jogo: temChave e temEmblema.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "Na experiência, quando o personagem chegava à cabana, ela fazia uma pergunta só, que falava das duas peças. A resposta dependia do jeito de perguntar."
+        },
+        {
+          "kind": "figure",
+          "name": "respostas",
+          "title": "O que a cabana fez em cada teste",
+          "columns": ["Nenhuma peça", "Só a chave", "Só o emblema", "As duas"],
+          "rows": [
+            {
+              "op": "e",
+              "label": "Pedindo as duas peças",
+              "word": "com e"
+            },
+            {
+              "op": "ou",
+              "label": "Pedindo uma das peças",
+              "word": "com ou"
+            }
+          ],
+          "open": "abre",
+          "closed": "fechada"
+        },
+        {
+          "kind": "box",
+          "title": "Os dois jeitos de perguntar",
+          "text": "Com o <b>e</b>, a cabana pede as duas peças: ela só abre quando temChave e temEmblema são verdadeiros ao mesmo tempo.<br/>Com o <b>ou</b>, ela pede uma das peças: uma só já basta."
+        },
+        {
+          "kind": "box",
+          "title": "E a ordem das peças?",
+          "text": "Começando pela chave ou pelo emblema, a resposta é a mesma. A cabana olha o que está guardado agora em temChave e temEmblema, e não a ordem em que as peças foram pegas.",
+          "tone": "experience"
+        },
+        {
+          "kind": "note",
+          "text": "No seu jogo, a cabana vai pedir as duas peças, com o bloco que tem a palavra <b>e</b> no meio. Antes, o jogo precisa guardar o emblema, como já guarda a chave."
+        }
+      ]
+    },
+    {
+      "id": "emblema-2d",
+      "secao": "emblema",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 4 · Montagem",
+      "title": "Guarde o emblema",
+      "subtitle": "Clique em Rodar de novo e leve o personagem até o emblema: ele passa por cima, e o emblema continua no chão.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "O seu jogo já faz isso com a chave: no encontro com a chave, ela sai do chão, e <b>temChave</b> guarda que ela foi pega. O emblema vai funcionar do mesmo jeito. Primeiro, a variável <b>temEmblema</b>."
+        },
+        {
+          "kind": "step",
+          "title": "1. Encontre o fim de Ao iniciar",
+          "text": "temEmblema precisa existir desde o começo da partida. Por isso, ela vai na área <b>Ao iniciar</b>, que tem o que o jogo prepara quando a partida começa.<br/>Encontre o fim dela, logo abaixo do bloco que cria o sprite <b>cabana</b>. Se esse lugar não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer."
+        },
+        {
+          "kind": "step",
+          "title": "2. Crie a variável",
+          "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo do bloco que cria o sprite cabana.<br/>Ele chega com o nome <b>contador</b>: clique e escreva <b>temEmblema</b>, tudo junto e com o E maiúsculo. É este bloco que cria a variável temEmblema."
+        },
+        {
+          "kind": "step",
+          "title": "3. Comece em falso",
+          "text": "O valor chega com o número <b>0</b>, mas temEmblema guarda sim ou não: verdadeiro ou falso.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>verdadeiro</b> e solte em cima do 0. Depois clique em verdadeiro e escolha <b>falso</b>.<br/>Por que falso? Porque, quando a partida começa, o personagem ainda não pegou o emblema."
+        },
+        {
+          "kind": "drawing",
+          "name": "variavel-2d",
+          "title": "Confira se ficou assim: temEmblema no fim de Ao iniciar"
+        }
+      ]
+    },
+    {
+      "id": "emblema-2d-encontro",
+      "secao": "emblema",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 4 · Montagem",
+      "title": "O encontro com o emblema",
+      "subtitle": "Agora o jogo precisa perceber quando o personagem encosta no emblema e tirar o emblema do chão.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "4. Crie o encontro",
+          "text": "Os encontros ficam na área <b>Quando acontecer</b>. Lá dentro, o último é o evento da tecla R, que começa outra partida. Deixe à vista o espaço logo abaixo dele, fora do fazer dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.<br/>Ele chega com <b>jogador</b> e <b>inimigo</b>: clique em jogador e escolha <b>personagem</b>; clique em inimigo e escolha <b>emblema</b>. É este bloco que percebe quando o personagem encosta no emblema."
+        },
+        {
+          "kind": "step",
+          "title": "5. Tire o emblema do chão",
+          "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>. Deixe esse espaço à vista.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Destruir o sprite</b> e solte ali. Ele chega com <b>resposta</b>: clique e escolha <b>emblema</b>. É este bloco que tira o emblema do chão."
+        },
+        {
+          "kind": "drawing",
+          "name": "encontro-2d",
+          "title": "Confira se ficou assim: o encontro com o emblema"
+        }
+      ]
+    },
+    {
+      "id": "emblema-2d-guardar",
+      "secao": "emblema",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 4 · Montagem e verificação",
+      "title": "Guarde e avise",
+      "subtitle": "No encontro, o jogo guarda que o emblema foi pego, e o aviso conta o que aconteceu.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "6. Guarde que o emblema foi pego",
+          "text": "O próximo bloco vai logo abaixo de <b>Destruir o sprite emblema</b>. Deixe esse lugar à vista.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: clique e escolha <b>temEmblema</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue outro <b>verdadeiro</b>, solte em cima do <b>1</b> e deixe verdadeiro, porque o personagem acabou de pegar o emblema."
+        },
+        {
+          "kind": "step",
+          "title": "7. Mude o aviso",
+          "text": "Logo abaixo do bloco de temEmblema, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. O aviso é uma mensagem, e não um número: em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número. Ele chega com <b>Olá</b>: clique, apague e escreva <b>Você pegou o emblema!</b>"
+        },
+        {
+          "kind": "drawing",
+          "name": "emblema-2d",
+          "title": "Confira se ficou assim: três ações no encontro com o emblema"
+        },
+        {
+          "kind": "step",
+          "title": "Teste no seu jogo",
+          "text": "Clique em <b>Rodar de novo</b> mais uma vez e leve o personagem até o emblema: o emblema sai do chão, e o aviso muda para a sua mensagem. A cabana ainda não abre: ela aprende a fazer a pergunta na próxima parte. Se algo não funcionou, compare os seus blocos com o desenho acima e teste de novo."
+        },
+        {
+          "kind": "box",
+          "tone": "test",
+          "title": "Verificar e continuar",
+          "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        }
+      ]
+    },
+    {
+      "id": "porta-2d",
+      "secao": "porta",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
+      "title": "A cabana pede as duas",
+      "subtitle": "Pegue a chave e o emblema e vá até a cabana: nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega lá.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "Lembra da experiência? Quando a cabana pedia as duas peças, ela só abria com a chave e o emblema, em qualquer ordem. Agora você vai montar essa pergunta no seu jogo."
+        },
+        {
+          "kind": "step",
+          "title": "1. Crie o encontro com a cabana",
+          "text": "Chegar à cabana é um encontro, como pegar o emblema. Em <b>Quando acontecer</b>, o último é o encontro com o emblema. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte ali. Não coloque um encontro dentro do outro.<br/>Clique em <b>jogador</b> e escolha <b>personagem</b>; clique em <b>inimigo</b> e escolha <b>cabana</b>. É este bloco que percebe quando o personagem chega à cabana."
+        },
+        {
+          "kind": "step",
+          "title": "2. Ponha o Se",
+          "text": "Dentro desse encontro, a cabana faz uma pergunta. Para perguntar, o jogo usa o bloco <b>Se</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>. O Se chega com a pergunta <b>x maior que 0</b>, que não é a da cabana: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+        },
+        {
+          "kind": "drawing",
+          "name": "se-2d",
+          "title": "Confira se ficou assim: o Se esperando a pergunta"
+        }
+      ]
+    },
+    {
+      "id": "porta-2d-pergunta",
+      "secao": "porta",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
+      "title": "A pergunta da cabana",
+      "subtitle": "A cabana pergunta duas coisas de uma vez: se o personagem tem a chave e se ele tem o emblema.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "3. Junte as duas perguntas",
+          "text": "Para juntar duas perguntas numa só, o jogo usa o bloco que tem a palavra <b>e</b> no meio.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
+        },
+        {
+          "kind": "step",
+          "title": "4. Escolha as duas variáveis",
+          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>.<br/>Agora a pergunta é: o personagem tem a chave e tem o emblema? Com a palavra e, a resposta só é sim quando as duas perguntas dão sim."
+        },
+        {
+          "kind": "step",
+          "title": "5. Abra o senão",
+          "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>, que o Se ainda não mostra. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>. Clique no segundo. Não clique no primeiro."
+        },
+        {
+          "kind": "drawing",
+          "name": "pergunta-2d",
+          "title": "Confira se ficou assim: a pergunta e os dois espaços"
+        }
+      ]
+    },
+    {
+      "id": "porta-2d-respostas",
+      "secao": "porta",
+      "scene": "2d",
+      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
+      "title": "As respostas da cabana",
+      "subtitle": "A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "6. A cabana abre",
+          "text": "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do <b>então</b>. Ele chega com <b>heroi</b> duas vezes: clique no primeiro e escolha <b>cabana</b>; clique no outro e escolha <b>cabana-aberta</b>.<br/>É este bloco que abre a cabana: ele troca a imagem da cabana fechada pela imagem da cabana aberta."
+        },
+        {
+          "kind": "step",
+          "title": "7. Conte que a cabana abriu",
+          "text": "Logo abaixo de Trocar imagem do sprite, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
+        },
+        {
+          "kind": "step",
+          "title": "8. A resposta do não",
+          "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. Em cima do número, solte outro <b>texto</b> e escreva <b>A cabana pede a chave e o emblema.</b>"
+        },
+        {
+          "kind": "drawing",
+          "name": "porta-2d",
+          "title": "Confira se ficou assim: o então e o senão"
+        }
+      ]
+    },
+    {
+      "id": "porta-2d-envio",
+      "secao": "porta",
+      "scene": "2d-aberta",
+      "kicker": "Aula 1 · Parte 5 · Teste e envio",
+      "title": "Teste todos os casos e envie",
+      "subtitle": "Teste sem nenhuma peça, com uma de cada vez e com as duas.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "Teste no seu jogo",
+          "text": "Clique em <b>Rodar de novo</b> e vá direto à cabana, sem pegar nenhuma peça: ela continua fechada, e o aviso diz que ela pede a chave e o emblema.<br/>Toque na tecla R, pegue só a chave e vá até a cabana: continua fechada. Toque na tecla R mais uma vez, pegue só o emblema e vá até a cabana: continua fechada do mesmo jeito.<br/>Por último, toque na tecla R, pegue a chave e o emblema e vá até a cabana: ela abre, e o aviso conta que você tinha as duas peças."
+        },
+        {
+          "kind": "box",
+          "title": "Por que não abre só com a chave?",
+          "text": "Com a palavra <b>e</b>, a cabana pede as duas peças. Só com a chave, temChave é verdadeiro, mas temEmblema ainda é falso, e por isso a resposta é não."
+        },
+        {
+          "kind": "step",
+          "title": "Se algo não funcionou",
+          "text": "Confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e cabana; dentro dele está o Se com <b>temChave e temEmblema</b>; dentro do então estão a troca de imagem e o aviso de que a cabana abriu; e dentro do senão está o aviso de que a cabana pede as duas peças.<br/>Se a cabana abrir com uma peça só, a pergunta usa ou no lugar de e, ou falta uma das variáveis. Depois de corrigir, teste de novo."
+        },
+        {
+          "kind": "delivery",
+          "title": "Verificar e enviar",
+          "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+        }
+      ]
+    },
+    {
+      "id": "revisao-1",
+      "secao": "revisao",
+      "scene": "2d-aberta",
+      "kicker": "Aula 1 · Parte 6 · Revisão",
+      "title": "Pense na cabana",
+      "subtitle": "Depois do envio, a aula termina com quatro perguntas sobre a cabana.",
+      "items": [
+        {
+          "kind": "activity",
+          "pill": "Na aula, depois do envio",
+          "text": "Aqui não tem vídeo. Duas perguntas mostram uma cena, uma pergunta procura um problema na regra da cabana e uma pergunta escolhe os testes."
+        },
+        {
+          "kind": "step",
+          "title": "Escolha e veja acontecendo",
+          "text": "Em cada pergunta, escolha uma resposta. Nas perguntas com cena, clique em <b>Ver o que acontece</b>; nas perguntas sem cena, clique em <b>Responder</b>. Observe a cena e leia a explicação."
+        },
+        {
+          "kind": "step",
+          "title": "Se errar, tente de novo",
+          "text": "Se errar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+        },
+        {
+          "kind": "note",
+          "text": "Se quiser rever uma descoberta, volte à experiência e à página O que você descobriu ({{pagina:descobriu}})."
+        },
+        {
+          "kind": "note",
+          "text": "Na próxima aula, a cabana chega à Ilha do Farol, em três dimensões, e você monta a mesma pergunta lá."
+        }
+      ]
+    },
+    {
+      "id": "emblema-3d",
+      "secao": "emblema",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 2 · Montagem",
+      "title": "Guarde o emblema da ilha",
+      "subtitle": "Clique em Rodar de novo e leve o personagem até o emblema, no gramado da frente: ele passa pelo emblema, e o emblema continua ali.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "Na Aula 1, você ensinou o seu jogo 2D a guardar o emblema. Agora a ilha vai aprender a mesma coisa. Primeiro, a variável <b>temEmblema</b>."
+        },
+        {
+          "kind": "step",
+          "title": "1. Encontre o lugar do bloco",
+          "text": "Como no jogo 2D, temEmblema precisa existir desde o começo da partida. Por isso, ela vai na área <b>Ao iniciar</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>Lá dentro, deixe à vista o bloco <b>Colocar o objeto cabana</b>. O bloco novo vai logo abaixo dele."
+        },
+        {
+          "kind": "step",
+          "title": "2. Crie a variável",
+          "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte logo abaixo de Colocar o objeto cabana.<br/>Ele chega com o nome <b>contador</b>: clique e escreva <b>temEmblema</b>, tudo junto e com o E maiúsculo."
+        },
+        {
+          "kind": "step",
+          "title": "3. Comece em falso",
+          "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>verdadeiro</b> e solte em cima do <b>0</b>. Depois clique em verdadeiro e escolha <b>falso</b>, porque a partida começa sem o emblema."
+        },
+        {
+          "kind": "drawing",
+          "name": "variavel-3d",
+          "title": "Confira se ficou assim: temEmblema logo abaixo de Colocar o objeto cabana"
+        }
+      ]
+    },
+    {
+      "id": "emblema-3d-encontro",
+      "secao": "emblema",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 2 · Montagem",
+      "title": "O encontro com o emblema",
+      "subtitle": "Agora a ilha precisa perceber quando o personagem encosta no emblema e fazer o emblema sumir.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "4. Crie o encontro",
+          "text": "Os encontros ficam na área <b>Quando acontecer</b>. Lá dentro, o último é o encontro com o farol. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte logo abaixo do encontro com o farol. Não coloque um encontro dentro do outro.<br/>Ele chega com <b>chave</b> no segundo nome: clique em chave e escolha <b>emblema</b>. É este bloco que percebe quando o personagem encosta no emblema."
+        },
+        {
+          "kind": "box",
+          "title": "Mas esse bloco não é o da chave?",
+          "text": "É o mesmo bloco de encontro da chave. Ele só chega com chave no segundo nome, e você troca esse nome pelo emblema."
+        },
+        {
+          "kind": "step",
+          "title": "5. Esconda o emblema",
+          "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Objetos &gt; Aparência.</b> Pegue <b>Mostrar o objeto</b> e solte ali. Ele chega com <b>Mostrar</b>: clique e escolha <b>Esconder</b>. Depois clique em <b>objeto</b> e escolha <b>emblema</b>. É este bloco que tira o emblema da ilha quando o personagem encosta nele."
+        },
+        {
+          "kind": "drawing",
+          "name": "encontro-3d",
+          "title": "Confira se ficou assim: o encontro com o emblema"
+        }
+      ]
+    },
+    {
+      "id": "emblema-3d-guardar",
+      "secao": "emblema",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 2 · Montagem e verificação",
+      "title": "Guarde e avise",
+      "subtitle": "No encontro, o jogo guarda que o emblema foi pego, e o aviso conta o que aconteceu.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "6. Guarde que o emblema foi pego",
+          "text": "O próximo bloco vai logo abaixo de <b>Esconder o objeto emblema</b>. Deixe esse lugar à vista.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: clique e escolha <b>temEmblema</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue outro <b>verdadeiro</b>, solte em cima do <b>1</b> e deixe verdadeiro, porque o personagem acabou de pegar o emblema."
+        },
+        {
+          "kind": "step",
+          "title": "7. Mude o aviso",
+          "text": "Logo abaixo do bloco de temEmblema, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. O aviso é uma mensagem, e não um número: em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número. Ele chega com <b>Olá</b>: clique, apague e escreva <b>Você pegou o emblema!</b>"
+        },
+        {
+          "kind": "drawing",
+          "name": "emblema-3d",
+          "title": "Confira se ficou assim: três ações no encontro com o emblema"
+        },
+        {
+          "kind": "step",
+          "title": "Teste no seu jogo",
+          "text": "Clique em <b>Rodar de novo</b> mais uma vez e leve o personagem até o emblema: o emblema some, e o aviso lá em cima muda para a sua mensagem. Se algo não funcionou, compare os seus blocos com o desenho acima e teste de novo."
+        },
+        {
+          "kind": "box",
+          "tone": "test",
+          "title": "Verificar e continuar",
+          "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        }
+      ]
+    },
+    {
+      "id": "porta-3d",
+      "secao": "porta",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
+      "title": "A cabana da ilha abre",
+      "subtitle": "Pegue a chave e o emblema e leve o personagem até a cabana: nada acontece, porque o jogo ainda não sabe o que fazer quando ele chega lá.",
+      "items": [
+        {
+          "kind": "text",
+          "text": "Na Aula 1, você montou a pergunta da cabana no jogo 2D: temChave e temEmblema. Agora você vai montar essa mesma pergunta na ilha."
+        },
+        {
+          "kind": "step",
+          "title": "1. Crie o encontro com a cabana",
+          "text": "Chegar à cabana é um encontro, como pegar o emblema. Em <b>Quando acontecer</b>, o último é o encontro com o emblema. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte ali. Não coloque um encontro dentro do outro.<br/>Ele chega com <b>chave</b> no segundo nome: clique em chave e escolha <b>cabana</b>. É este bloco que percebe quando o personagem chega à cabana."
+        },
+        {
+          "kind": "step",
+          "title": "2. Ponha o Se",
+          "text": "Dentro desse encontro, a cabana faz uma pergunta. Para perguntar, o jogo usa o bloco <b>Se</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>. O Se chega com a pergunta <b>x maior que 0</b>, que não é a da cabana: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos."
+        },
+        {
+          "kind": "drawing",
+          "name": "se-3d",
+          "title": "Confira se ficou assim: o Se esperando a pergunta"
+        }
+      ]
+    },
+    {
+      "id": "porta-3d-pergunta",
+      "secao": "porta",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
+      "title": "A pergunta da cabana",
+      "subtitle": "A cabana pergunta duas coisas de uma vez: se o personagem tem a chave e se ele tem o emblema.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "3. Junte as duas perguntas",
+          "text": "Como no jogo 2D, a cabana junta duas perguntas com o bloco que tem a palavra <b>e</b> no meio.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
+        },
+        {
+          "kind": "step",
+          "title": "4. Escolha as duas variáveis",
+          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>.<br/>Agora a pergunta é temChave e temEmblema, igual à do jogo 2D."
+        },
+        {
+          "kind": "step",
+          "title": "5. Abra o senão",
+          "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>, que o Se ainda não mostra. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>. Clique no segundo. Não clique no primeiro."
+        },
+        {
+          "kind": "drawing",
+          "name": "pergunta-3d",
+          "title": "Confira se ficou assim: a pergunta e os dois espaços"
+        }
+      ]
+    },
+    {
+      "id": "porta-3d-respostas",
+      "secao": "porta",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
+      "title": "As respostas da cabana",
+      "subtitle": "No 3D, a cabana abre com uma animação que já vem no modelo dela: a porta gira e as janelas acendem.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "6. A cabana abre",
+          "text": "<b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do <b>então</b>. Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>.<br/>Primeiro diga quem vai tocar a animação: clique em heroi e escolha <b>cabana</b>. Depois clique em Andar e escolha <b>abrir</b>. Por último, clique em repetindo e escolha <b>uma vez</b>."
+        },
+        {
+          "kind": "step",
+          "title": "7. Conte que a cabana abriu",
+          "text": "Logo abaixo de Tocar a animação, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
+        },
+        {
+          "kind": "step",
+          "title": "8. A resposta do não",
+          "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b>, escolha <b>aviso</b>, solte outro <b>texto</b> em cima do número e escreva <b>A cabana pede a chave e o emblema.</b>"
+        },
+        {
+          "kind": "drawing",
+          "name": "porta-3d",
+          "title": "Confira se ficou assim: o então e o senão"
+        }
+      ]
+    },
+    {
+      "id": "porta-3d-envio",
+      "secao": "porta",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 3 · Teste e envio",
+      "title": "Teste todos os casos e envie",
+      "subtitle": "Teste sem nenhuma peça, com uma de cada vez e com as duas, como no jogo 2D.",
+      "items": [
+        {
+          "kind": "step",
+          "title": "Teste no seu jogo",
+          "text": "Clique em <b>Rodar de novo</b> e vá direto à cabana, sem pegar nenhuma peça: ela continua fechada, e o aviso diz que ela pede a chave e o emblema.<br/>Toque na tecla R, pegue só a chave e vá até a cabana: continua fechada. Toque na tecla R mais uma vez, pegue só o emblema e vá até a cabana: continua fechada do mesmo jeito.<br/>Por último, toque na tecla R, pegue a chave e o emblema e vá até a cabana: a porta gira, as janelas acendem, e o aviso conta que você tinha as duas peças."
+        },
+        {
+          "kind": "box",
+          "title": "Como a cabana sabe a hora de abrir?",
+          "text": "Ela toca a animação quando a resposta da pergunta é sim, porque o bloco está dentro do então."
+        },
+        {
+          "kind": "step",
+          "title": "Se algo não funcionou",
+          "text": "Confira se ficou assim: dentro de Quando acontecer está o encontro do personagem com a cabana; dentro dele está o Se com <b>temChave e temEmblema</b>; dentro do então estão a animação abrir e o aviso de que a cabana abriu; e dentro do senão está o aviso de que a cabana pede as duas peças.<br/>Se ela não abrir com as duas, confira se temEmblema muda para verdadeiro no encontro com o emblema e se a animação está dentro do então. Depois de corrigir, teste de novo."
+        },
+        {
+          "kind": "delivery",
+          "title": "Verificar e enviar",
+          "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
+        }
+      ]
+    },
+    {
+      "id": "revisao-2",
+      "secao": "revisao",
+      "scene": "3d",
+      "kicker": "Aula 2 · Parte 4 · Revisão",
+      "title": "Pense na cabana da ilha",
+      "subtitle": "Depois do envio, a aula termina com duas perguntas sobre a cabana da ilha.",
+      "items": [
+        {
+          "kind": "activity",
+          "pill": "Na aula, depois do envio",
+          "text": "Aqui não tem vídeo. Uma pergunta mostra uma cena da ilha, e a outra pergunta onde fica o bloco que abre a cabana."
+        },
+        {
+          "kind": "step",
+          "title": "Escolha e veja acontecendo",
+          "text": "Escolha uma resposta e clique em <b>Ver o que acontece</b> ou, na pergunta sem cena, em <b>Responder</b>. Observe a cena e leia a explicação. Se errar, clique em <b>Tentar de novo</b>. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Concluir aula</b>."
+        },
+        {
+          "kind": "box",
+          "title": "Comemore o seu Poder",
+          "text": "O Poder conta na sua jornada quando as duas aulas estão concluídas: a do jogo 2D e a da ilha em 3D. Jogue de novo e mostre para a sua família a cabana que só abre com as duas peças.",
+          "tone": "test"
+        },
+        {
+          "kind": "box",
+          "title": "Preciso de ajuda",
+          "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou na Aula 2. Peguei a chave e o emblema, mas a cabana continua fechada. Conferi o Se temChave e temEmblema.</b><br/>Isso ajuda a equipe a entender em que ponto você está."
+        },
+        {
+          "kind": "note",
+          "text": "Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+        }
+      ]
+    }
+  ]
+}

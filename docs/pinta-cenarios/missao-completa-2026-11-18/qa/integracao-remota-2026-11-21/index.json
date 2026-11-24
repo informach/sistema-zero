@@ -1,0 +1,290 @@
+{
+  "at": "2026-11-21T18:43:09.284Z",
+  "sourceParents": [
+    "2fb2f58de1bcaf2afa365b4fc95ed845ef3220ee",
+    "33cd419d8592fc2d2ba19c32e82d7912f932a8ef"
+  ],
+  "native8Public": false,
+  "physical3Public": false,
+  "verified": {
+    "before": {
+      "passed": 69,
+      "failed": 0,
+      "assertions": 6424
+    },
+    "after": {
+      "passed": 84,
+      "failed": 0,
+      "assertions": 6452
+    },
+    "qaTypeFixtures": {
+      "passed": 92,
+      "failed": 0,
+      "assertions": 771
+    },
+    "browser": {
+      "passed": 12,
+      "failed": 0,
+      "retries": 0,
+      "profiles": ["desktop"],
+      "apiRoutesAborted": true,
+      "authenticated": false,
+      "pythonGameExecuted": false
+    },
+    "studioTypecheck": {
+      "initialDiagnostics": 7,
+      "finalExitCode": 0
+    },
+    "pintaSourceUnchanged": true,
+    "coreSourceUnchanged": true,
+    "remoteProducerPathsUnchanged": [
+      "packages/molda",
+      "packages/molda-cenarios",
+      "packages/molda-cenarios-core",
+      "packages/molda-cenarios-agente",
+      "packages/molda-cenarios-motor",
+      "packages/studio/src/three",
+      "packages/studio-runtime",
+      "packages/studio/src/official-extensions/game-3d-advanced/runtime.ts",
+      "packages/studio/src/official-extensions/game-3d-advanced/runtimePhysics.ts"
+    ],
+    "physicalDevices": 1,
+    "children": false,
+    "latencyQualified": false,
+    "runtimeSize": {
+      "before": {
+        "bun": "1.3.11",
+        "platform": "win32",
+        "results": [
+          {
+            "target": "g2d",
+            "scene": false,
+            "chars": 420769,
+            "utf8": 422476,
+            "gzip": 120628,
+            "compileMs": {
+              "median": 0.06759999999999877,
+              "p95": 0.2779999999999916,
+              "max": 8.034099999999995
+            }
+          },
+          {
+            "target": "g2d",
+            "scene": true,
+            "chars": 447179,
+            "utf8": 448888,
+            "gzip": 129370,
+            "compileMs": {
+              "median": 0.07450000000000045,
+              "p95": 0.33490000000000464,
+              "max": 7.687399999999997
+            }
+          },
+          {
+            "target": "gk",
+            "scene": false,
+            "chars": 409632,
+            "utf8": 411125,
+            "gzip": 122593,
+            "compileMs": {
+              "median": 0.069500000000005,
+              "p95": 0.2843000000000018,
+              "max": 8.2834
+            }
+          },
+          {
+            "target": "gk",
+            "scene": true,
+            "chars": 436038,
+            "utf8": 437533,
+            "gzip": 131393,
+            "compileMs": {
+              "median": 0.06340000000000146,
+              "p95": 0.38419999999999277,
+              "max": 7.043099999999981
+            }
+          }
+        ]
+      },
+      "after": {
+        "bun": "1.3.11",
+        "platform": "win32",
+        "results": [
+          {
+            "target": "g2d",
+            "scene": false,
+            "chars": 368046,
+            "utf8": 368597,
+            "gzip": 95223,
+            "compileMs": {
+              "median": 0.10650000000001114,
+              "p95": 1.127299999999991,
+              "max": 10.9709
+            }
+          },
+          {
+            "target": "g2d",
+            "scene": true,
+            "chars": 394456,
+            "utf8": 395009,
+            "gzip": 103961,
+            "compileMs": {
+              "median": 0.09610000000000696,
+              "p95": 0.2937999999999761,
+              "max": 10.52419999999998
+            }
+          },
+          {
+            "target": "gk",
+            "scene": false,
+            "chars": 409777,
+            "utf8": 411273,
+            "gzip": 122646,
+            "compileMs": {
+              "median": 0.06120000000001369,
+              "p95": 0.25240000000002283,
+              "max": 7.602800000000002
+            }
+          },
+          {
+            "target": "gk",
+            "scene": true,
+            "chars": 436183,
+            "utf8": 437681,
+            "gzip": 131452,
+            "compileMs": {
+              "median": 0.09109999999998308,
+              "p95": 0.23510000000001696,
+              "max": 7.410000000000025
+            }
+          }
+        ]
+      }
+    },
+    "whitespace": {
+      "rawEvidenceCheckExitCode": 2,
+      "codeCheckExitCode": 0,
+      "remote": "33cd419d8592fc2d2ba19c32e82d7912f932a8ef"
+    }
+  },
+  "sources": [
+    {
+      "file": "packages/studio/src/official-extensions/game-3d-advanced/__tests__/kitHarness.ts",
+      "sha256": "fc1f25bb8c15556469cf8884cd632f928a1e2a41848526a75d28f64bdadc3dbd",
+      "remoteSha256": "40489249f60bda51034cfa209db35951dd6dde032f0e5637a3d71375e46d4403"
+    },
+    {
+      "file": "packages/studio/src/testing/contracts/contracts.test.ts",
+      "sha256": "c40d317fd8f147ed61c430050b9129ce17749502c8c3140af0ccdae2dd1ae2d4",
+      "remoteSha256": "d4b4b2d67ab29d11a83801e4195d3a12a732e90e625bfb23dbdfe5d784fecba9"
+    }
+  ],
+  "records": [
+    {
+      "file": "plataforma-jogar-imagem.png",
+      "bytes": 30808,
+      "sha256": "d402ee7aa601fce28955436f23098e971183aba9ed0d0b54a75a7e334fef61ca"
+    },
+    {
+      "file": "python-world-selection.png",
+      "bytes": 91166,
+      "sha256": "fef6772f328eb73b74cb6c3af965b0d6166c9ac05e2338531cd66e01f8edf86a"
+    },
+    {
+      "file": "studio-updated.png",
+      "bytes": 186335,
+      "sha256": "dcb7b807c03cafb1fe37f2542466e992eb2ea23ceeae3cb293ecd85f4d03d6ef"
+    },
+    {
+      "file": "playwright-integration-report.json.gz",
+      "bytes": 929297,
+      "sha256": "dd1978e8b43f9145b0b0763e5b4c1c3f0aed5fd36a1d03ff21cf802340e771eb",
+      "rawBytes": 1287837,
+      "rawSha256": "f751838b4e2e9735230f4ad1c297afe31cbeb5d442b9c493aa3a93ec682ca5be"
+    },
+    {
+      "file": "pinta-remote-integration-before-runtime.log.gz",
+      "bytes": 344,
+      "sha256": "33a91e1fd5f47db61dc590596feea44059522d538dfbf8d79c1ca8762db90fe1",
+      "rawBytes": 1147,
+      "rawSha256": "b8b389c2e0278fd3ffd498879630576a359f069df85e661032f5431c10f84f71"
+    },
+    {
+      "file": "pinta-remote-integration-after-runtime.log.gz",
+      "bytes": 354,
+      "sha256": "4474d17f5721b2101a39ed3cfd0d16fdcfcc5dcc39e840a058d1b1072c99066b",
+      "rawBytes": 1148,
+      "rawSha256": "963b620a78dfbee43f3b1b7c6fd3cbbd77bdd3515c2a92767b201bf0349307e2"
+    },
+    {
+      "file": "pinta-remote-integration-before-tests.log.gz",
+      "bytes": 2598,
+      "sha256": "c3fba3c1ca3302827f9a4d65f1c88c9ffadf4a313cbce7f5c43d57d337cc2974",
+      "rawBytes": 8278,
+      "rawSha256": "9165c23cadbec5cbb8f546facfb26d34e274380a0adf7d39c6255d9fe0909f7b"
+    },
+    {
+      "file": "pinta-remote-integration-after-tests.log.gz",
+      "bytes": 3254,
+      "sha256": "96b76539fb1e1cdb0ee34741ef1fe448ad3381b4daf15bc2f23ed46bbaf64809",
+      "rawBytes": 10495,
+      "rawSha256": "e94a87756b666ef82f7dac93e29a4864d01f93c60d82268863ed3d25f3f39ac3"
+    },
+    {
+      "file": "pinta-remote-integration-qa-types-tests.log.gz",
+      "bytes": 3786,
+      "sha256": "a0a751c1e911700d4ac2a0019114e90a001ae76f8f0ddbdb3622b1da714799d0",
+      "rawBytes": 12299,
+      "rawSha256": "d23a3da67a654ee7a5ea5a9f520a8dd2933d27b72df7873d34b9f479263676f2"
+    },
+    {
+      "file": "pinta-remote-integration-qa-biome.log.gz",
+      "bytes": 64,
+      "sha256": "435c37c369909501a435cd591bea357a991147365c30797528e60c4141753a9a",
+      "rawBytes": 44,
+      "rawSha256": "4ec91d8380c0a5ccd17f6a449f012f5600f1c3c8b51dd6682403caed32948eba"
+    },
+    {
+      "file": "pinta-remote-integration-studio-types.log.gz",
+      "bytes": 257,
+      "sha256": "68a80194a8324d80f999655313a35a29879c473269c77f0f0f87fb78cd0c0f17",
+      "rawBytes": 1078,
+      "rawSha256": "b1b856838a3e94b7e01d374d712a90270e0fa073428450e1171f195700b25f0b"
+    },
+    {
+      "file": "pinta-remote-integration-studio-types-final.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-remote-integration-browser.log.gz",
+      "bytes": 2067,
+      "sha256": "4995291b8df367c60fd16d9c13f7b6a5fc90adfc8bf347dfc708148462555366",
+      "rawBytes": 7625,
+      "rawSha256": "68f807704b6528a8b878a4016c435659cd11e212026f4eec433951fd6783ee69"
+    },
+    {
+      "file": "pinta-remote-integration-whitespace.log.gz",
+      "bytes": 152,
+      "sha256": "2865011f47bd554a1f4c7d9adf253c233572904d86f79ec4aa5a7f8ab8fdf5d4",
+      "rawBytes": 281,
+      "rawSha256": "b8a3bb5cfa1759c49b2d9730b056b30431cc59d6b2b8c20928dad811fc6e2a76"
+    },
+    {
+      "file": "pinta-remote-integration-code-whitespace.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-remote-integration-checks.json.gz",
+      "bytes": 118,
+      "sha256": "fbf8b5e5cd0b6dd5612e3a2289a2fe276ccc2b4745b1988c67f7bd67e4f51467",
+      "rawBytes": 123,
+      "rawSha256": "4b6d06b9cc294df0637ac7209c537865937909b1275753c72186886099c89a8a"
+    }
+  ]
+}

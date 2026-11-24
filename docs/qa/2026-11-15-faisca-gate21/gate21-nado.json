@@ -1,0 +1,83 @@
+{
+  "evidencias": [
+    {
+      "nome": "lago-nado-l1",
+      "segundos": 40,
+      "dados": {
+        "entrada": {
+          "x": 54.51,
+          "y": 3.82,
+          "z": 127.01,
+          "giro": 0
+        },
+        "nado": {
+          "x": 55.18,
+          "y": 3.82,
+          "z": 127.01,
+          "giro": 0
+        },
+        "nadando": "sim",
+        "parado": {
+          "x": 55.18,
+          "y": 3.82,
+          "z": 127.01,
+          "giro": 0
+        },
+        "saida": {
+          "x": 48.04,
+          "y": 4.51,
+          "z": 129.21,
+          "giro": 0
+        },
+        "retomada": {
+          "x": 48.05,
+          "y": 4.51,
+          "z": 129.21,
+          "giro": -0.075
+        },
+        "distanciaMinimaCamera": 3.67,
+        "amostrasDaCamera": 243
+      }
+    },
+    {
+      "nome": "lago-nado-l2",
+      "segundos": 40,
+      "dados": {
+        "entrada": {
+          "x": 54.99,
+          "y": 4.15,
+          "z": 126.97,
+          "giro": -0.148
+        },
+        "nado": {
+          "x": 55.18,
+          "y": 4.02,
+          "z": 129.4,
+          "giro": -0.148
+        },
+        "nadando": "sim",
+        "parado": {
+          "x": 55.18,
+          "y": 4.02,
+          "z": 129.4,
+          "giro": -0.148
+        },
+        "saida": {
+          "x": 48.04,
+          "y": 4.52,
+          "z": 129.07,
+          "giro": -0.148
+        },
+        "retomada": {
+          "x": 48.04,
+          "y": 4.52,
+          "z": 129.07,
+          "giro": -0.106
+        },
+        "distanciaMinimaCamera": 3.64,
+        "amostrasDaCamera": 248
+      }
+    }
+  ],
+  "erros": []
+}

@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\core\mapDocumentBoundary.test.ts:
+(pass) native map metadata preserves zero, false, signed fractions and JSON optional values
+(pass) native metadata compares wire arrays and bitmap buffers without changing their values
+(pass) unknown fields and accessors cannot run code during metadata comparison
+(pass) metadata budgets reject before visiting oversized binary payloads and bound cycles
+
+packages\pinta\src\core\regionDocument.test.ts:
+(pass) region native round trip preserves global signed fractional metadata and explicit defaults [15.00ms]
+(pass) region native reader refuses unknown metadata at every level instead of dropping it
+(pass) region native reader refuses invalid metadata atomically without repairing ids or tree
+(pass) region native reader rejects malformed cells and references without touching the source
+(pass) region native document stays sparse at the maximum extent and retains old formats unchanged
+(pass) unknown metadata is rejected before decoding any chunk payload
+(pass) native object geometry is bounded and duplicate object ids across layers are refused
+(pass) native region metadata preserves fractional rotations without rounding or normalization
+(pass) region document retains self-contained resource versions and refuses unknown resource data
+(pass) region documents preserve groups, layer properties and precise collision opt-in
+
+ 14 pass
+ 0 fail
+ 65 expect() calls
+Ran 14 tests across 2 files. [317.00ms]

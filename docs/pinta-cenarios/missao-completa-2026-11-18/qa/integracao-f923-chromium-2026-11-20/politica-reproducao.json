@@ -1,0 +1,51 @@
+{
+  "browser": "159.0.8154.6",
+  "results": [
+    {
+      "nested": false,
+      "allow": "",
+      "done": true,
+      "focused": "",
+      "errors": [
+        "Permissions policy violation: focus-without-user-activation is not allowed in this document."
+      ]
+    },
+    {
+      "nested": false,
+      "allow": "focus-without-user-activation",
+      "done": true,
+      "focused": "game",
+      "errors": []
+    },
+    {
+      "nested": false,
+      "allow": "focus-without-user-activation *",
+      "done": true,
+      "focused": "game",
+      "errors": []
+    },
+    {
+      "nested": true,
+      "allow": "",
+      "done": true,
+      "focused": "",
+      "errors": [
+        "Permissions policy violation: focus-without-user-activation is not allowed in this document."
+      ]
+    },
+    {
+      "nested": true,
+      "allow": "focus-without-user-activation",
+      "done": true,
+      "focused": "game",
+      "errors": []
+    },
+    {
+      "nested": true,
+      "allow": "focus-without-user-activation *",
+      "done": true,
+      "focused": "game",
+      "errors": []
+    }
+  ]
+}

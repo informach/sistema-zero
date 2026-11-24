@@ -67,6 +67,8 @@ export interface ThreadView {
   challengeKey: string | null
   /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix; `null` = post antigo. */
   studioMeta: ThreadStudioMeta | null
+  /** Última atualização do jogo publicado (selo "Atualizado"); `null` = nunca atualizado. */
+  gameUpdatedAt: string | null
   reactions: ReactionSummaryItem[]
   attachments: AttachmentView[]
   lastActivityAt: string
@@ -125,6 +127,7 @@ export function toThreadView(
     playsCount: t.playsCount,
     challengeKey: t.challengeKey,
     studioMeta: t.studioMeta,
+    gameUpdatedAt: t.gameUpdatedAt ? t.gameUpdatedAt.toISOString() : null,
     reactions,
     attachments,
     lastActivityAt: t.lastActivityAt.toISOString(),

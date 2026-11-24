@@ -1,0 +1,29 @@
+/* Entry CSS do playground: o que o globals.css de um app faz ao hospedar a oficina. */
+@import "tailwindcss";
+@import "../../../ui/src/styles/theme-kids.css";
+@import "../../../ui/src/styles/tool-chrome.css";
+@import "../../src/oficina/oficina.css";
+
+:root {
+  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-baloo: "Baloo 2";
+  --font-nunito: "Nunito";
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

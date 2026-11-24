@@ -1,3 +1,4 @@
+# 📦 Bibliotecas
 from settings import *
 from support import keyed
 from sprites import Sprite, MovingSprite, AnimatedSprite, Spike, Item, ParticleEffectSprite
@@ -7,6 +8,7 @@ from enemies import Tooth, Shell, Pearl
 
 from random import uniform
 
+# 🧩 Meus moldes
 class Level:
 	def __init__(self, tmx_map, level_frames, audio_files, data, switch_stage):
 		self.display_surface = pygame.display.get_surface()

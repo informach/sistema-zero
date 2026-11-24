@@ -1,0 +1,105 @@
+{
+  "at": "2026-11-19T12:48:25.567Z",
+  "baseCommit": "72b2e8ab2f6fd634cfe59c119bbf5c749637332e",
+  "sourceFingerprint": "abc4db1230b8069c7d71f611e9faaa33e2dedd5da97420936fa9006046091879",
+  "studio": {
+    "pass": 11543,
+    "fail": 0,
+    "conditional": 4,
+    "files": 866,
+    "groups": 162
+  },
+  "conditionalCasesRerun": {
+    "pass": 4,
+    "fail": 0,
+    "chromium": "Chrome instalado nesta máquina"
+  },
+  "integration": {
+    "pass": 12,
+    "fail": 0
+  },
+  "publication": {
+    "pass": 85,
+    "fail": 0
+  },
+  "export": {
+    "pass": 26,
+    "fail": 0
+  },
+  "types": {
+    "exitCode": 0,
+    "session": 3540
+  },
+  "globalCi": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 303,
+    "infos": 245
+  },
+  "limitations": [
+    "Homologação local; não conclui o ciclo autenticado de implantação, rollout nem a missão completa.",
+    "Rodadas intermediárias canceladas ou mal configuradas não contam como gates."
+  ],
+  "files": {
+    "ci.log": {
+      "bytes": 582286,
+      "sha256": "304b6ec868dd88698b3e0131a086796d9974cdae0acd21aa86ef1c287c6b1c17"
+    },
+    "diagnostico-inicial.log": {
+      "bytes": 1796211,
+      "sha256": "39ce4aa5d40d34997b3ecb462865ae9c9ff564f288e082f2e88d3d679bae11fc"
+    },
+    "estudio-completo.json": {
+      "bytes": 729,
+      "sha256": "6624dcaec87765e3ee634ef67dbb5c83960dca2a451326c2173243939714bd92"
+    },
+    "estudio-completo.log": {
+      "bytes": 1671172,
+      "sha256": "3f02afd2b5c196ed11181069f8c582a6ce5db2a0583c638b758fc1982466ca22"
+    },
+    "executor-real.log": {
+      "bytes": 648,
+      "sha256": "b0b161c84437c2fc93710fe998a00fe955b5c8bc9f7fd53822fa899eda9c3bc6"
+    },
+    "exportacao-vila.log": {
+      "bytes": 3087,
+      "sha256": "46c9c6920cfe4ee26358d8ff308ec0866c2732d4b0dc468f9cf7ea2f7f6dc271"
+    },
+    "fontes.json": {
+      "bytes": 2091,
+      "sha256": "c641129909a07ee98c88603c92289a87beb78a7ba8914982f5d0ea13d39d80b2"
+    },
+    "interface.json": {
+      "bytes": 1261215,
+      "sha256": "bb70996559ec6c3bf95a58f970cded1f1fc2451e4a6b874846eddb6f68c5a20c"
+    },
+    "interface.log": {
+      "bytes": 9295,
+      "sha256": "ac77dce2df172632e3f623c256e981c82c57b2657852f6de013b14a5ca31d2f4"
+    },
+    "manual.json": {
+      "bytes": 170,
+      "sha256": "26b4e078b1fe34b398517a4968cc007f0620206addd3a680c7f4b07132ec6a2c"
+    },
+    "manual.log": {
+      "bytes": 852,
+      "sha256": "1a798e2d815c159a846e9a20f490051a429f4c23620a0664763188181421ad1f"
+    },
+    "preservacao-vila.json": {
+      "bytes": 669,
+      "sha256": "32ff2356fdb2285b4640358845982157b6dfacfc3e8bdb1fd8a93735c89ea3cc"
+    },
+    "publicacao.log": {
+      "bytes": 7669,
+      "sha256": "59e86b3863381d8853999bb3202fc361d5c3a7aef243a58d3822719b73aec565"
+    },
+    "README.md": {
+      "bytes": 3153,
+      "sha256": "c9ffb4741cb775cad200641394e729e2e676a099c3c8057188117c0766ef5dba"
+    },
+    "tipos-estudio.log": {
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    }
+  }
+}

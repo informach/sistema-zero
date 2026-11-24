@@ -143,3 +143,20 @@ test('o módulo do card não carrega runtime; só o clique do remix importa o Es
     'member-shell/src/lib/import-creator-remix.ts -> @sistemazero/studio',
   ])
 })
+
+test('o card do jogo atualizado mostra o selo "Atualizado" com a data; o novo não', () => {
+  const updated = renderToStaticMarkup(
+    <ShowcaseCard
+      thread={{ ...thread(1), gameUpdatedAt: '2026-07-02T15:00:00.000Z' }}
+      viewerId="viewer"
+      capability={null}
+      onOpen={() => {}}
+    />,
+  )
+  expect(updated).toContain('Atualizado')
+  expect(updated).toContain('Atualizado em 02/07/2026')
+  const fresh = renderToStaticMarkup(
+    <ShowcaseCard thread={thread(2)} viewerId="viewer" capability={null} onOpen={() => {}} />,
+  )
+  expect(fresh).not.toContain('Atualizado')
+})

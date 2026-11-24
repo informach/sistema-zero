@@ -1,5 +1,12 @@
 import { DomainError } from '../shared/errors'
 
+export class StudioStorageProtocolError extends DomainError {
+  readonly code = 'STUDIO_STORAGE_PROTOCOL_REQUIRED'
+  constructor() {
+    super('Esta operação precisa de um leitor compatível com o armazenamento do Estúdio.')
+  }
+}
+
 /** O editor não entende o formato já guardado/reservado. Não deve refazer o upload. */
 export class CreationClientOutdatedError extends DomainError {
   readonly code = 'CREATION_CLIENT_OUTDATED'

@@ -38,11 +38,13 @@ import { requestPythonStartingExtension } from '../python/extensions/startingExt
 import {
   listAllProjects,
   loadProjectSummariesByIds,
+  type ProjectSummary,
+} from '../state/projectListStorage'
+import {
   PROJECT_CHANGED_EVENT,
   PROJECT_THUMB_UPDATED_EVENT,
   type ProjectChangedDetail,
-  type ProjectSummary,
-} from '../state/persistence'
+} from '../state/projectPersistenceEvents'
 import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'
@@ -108,6 +110,11 @@ export interface ProjectListProps {
    * mantém o "criar do zero".
    */
   showExamples?: boolean
+  /**
+   * Onde a galeria busca os arquivos dos exemplos GRANDES que moram fora do pacote (o jogo E, 20
+   * MB): uma rota do próprio host, no mesmo domínio. Sem ela, esses cards não aparecem.
+   */
+  exampleFilesBaseUrl?: string
   /**
    * Seções da galeria definidas pelo HOST (15/10/2026): os projetos que `includes` aceita saem da
    * grade principal e ganham uma faixa própria, com título, frase e um atalho. O Estúdio não sabe
@@ -186,6 +193,7 @@ export function ProjectList({
   allowedExtensions,
   theme: themeProp,
   showExamples = false,
+  exampleFilesBaseUrl,
   sections,
 }: ProjectListProps): JSX.Element {
   const t = useSharedT()
@@ -394,6 +402,11 @@ export function ProjectList({
   // biome-ignore lint/correctness/useExhaustiveDependencies: `namesKey` é a chave derivada de `projects`.
   const existingNames = useMemo(() => (projects ?? []).map((p) => p.name), [namesKey])
   const takenNames = useMemo(() => new Set(existingNames), [existingNames])
+  // O nome de cada projeto pelo id: o cartão do Pro convertido diz de qual cópia em blocos veio.
+  const nameById = useMemo(
+    () => new Map((projects ?? []).map((project) => [project.id, project.name])),
+    [projects],
+  )
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
   // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
@@ -723,6 +736,7 @@ export function ProjectList({
                         onOpenProject={onOpenProject}
                         javascriptAvailable={javascriptAvailable}
                         authorizeJavaScript={authorizeJavaScript}
+                        exampleFilesBaseUrl={exampleFilesBaseUrl}
                         professional={professional}
                         pythonCreation={
                           pythonCreation?.authorizeExample
@@ -769,6 +783,7 @@ export function ProjectList({
                             onOpenProject={onOpenProject}
                             javascriptAvailable={javascriptAvailable}
                             authorizeJavaScript={authorizeJavaScript}
+                            exampleFilesBaseUrl={exampleFilesBaseUrl}
                             professional={professional}
                             pythonCreation={
                               pythonCreation?.authorizeExample
@@ -810,6 +825,11 @@ export function ProjectList({
                             key={summary.id}
                             summary={summary}
                             takenNames={takenNames}
+                            originName={
+                              summary.originProjectId
+                                ? nameById.get(summary.originProjectId)
+                                : undefined
+                            }
                             onChanged={refreshProject}
                             onOpen={onOpenProject}
                           />
@@ -842,6 +862,11 @@ export function ProjectList({
                               key={summary.id}
                               summary={summary}
                               takenNames={takenNames}
+                              originName={
+                                summary.originProjectId
+                                  ? nameById.get(summary.originProjectId)
+                                  : undefined
+                              }
                               onChanged={refreshProject}
                               onOpen={onOpenProject}
                             />

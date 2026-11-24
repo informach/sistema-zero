@@ -1,0 +1,255 @@
+{
+  "upload": true,
+  "retomada": true,
+  "espacoEquipe": true,
+  "revisao": 1,
+  "pedidos": [
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/fb469a41-da07-4d6a-8be2-68ef2b714175/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/fb469a41-da07-4d6a-8be2-68ef2b714175/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos/reservar",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://testes-ugc.bcc0f2d44140e05b69152cba326132f8.r2.cloudflarestorage.com",
+      "caminho": "/cenarios/5a725031-cf89-4208-b640-8b9173747574/blobs/3e86619892b3bd464d0101d11d7fce345c4b51c7583c2ab92d9ba3991143a618",
+      "metodo": "PUT",
+      "status": 200
+    },
+    {
+      "origem": "https://testes-ugc.bcc0f2d44140e05b69152cba326132f8.r2.cloudflarestorage.com",
+      "caminho": "/cenarios/5a725031-cf89-4208-b640-8b9173747574/blobs/9cf3fb4a0b307f7af8a3824a027cda0257e85fb86c6ac518db350337047a8b16",
+      "metodo": "PUT",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/arquivos/9cf3fb4a0b307f7af8a3824a027cda0257e85fb86c6ac518db350337047a8b16",
+      "metodo": "GET",
+      "status": 302
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/mundos/f6397c5a-e915-4b28-861f-673f7ef7b1c8/cenarios",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/mundos/f6397c5a-e915-4b28-861f-673f7ef7b1c8",
+      "metodo": "PATCH",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/mundos/f6397c5a-e915-4b28-861f-673f7ef7b1c8/cenarios",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/mundos/f6397c5a-e915-4b28-861f-673f7ef7b1c8/cenarios",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/cenarios/1307adc8-bbe0-4893-9cfa-89f55e414626",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/arquivos/3e86619892b3bd464d0101d11d7fce345c4b51c7583c2ab92d9ba3991143a618",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/cenarios/1307adc8-bbe0-4893-9cfa-89f55e414626/lotes",
+      "metodo": "POST",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/bibliotecas",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/mundos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/cenarios/1307adc8-bbe0-4893-9cfa-89f55e414626",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/arquivos/3e86619892b3bd464d0101d11d7fce345c4b51c7583c2ab92d9ba3991143a618",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/bibliotecas/763b12a1-b67e-4aa0-bb2f-fdddcbcce997/modelos",
+      "metodo": "GET",
+      "status": 200
+    },
+    {
+      "origem": "https://community-staging-66f2.up.railway.app",
+      "caminho": "/api/cenarios/espacos/5a725031-cf89-4208-b640-8b9173747574/arquivos/9cf3fb4a0b307f7af8a3824a027cda0257e85fb86c6ac518db350337047a8b16",
+      "metodo": "GET",
+      "status": 302
+    }
+  ],
+  "erros": []
+}

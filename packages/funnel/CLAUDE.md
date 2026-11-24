@@ -1,5 +1,47 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
+
+A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.
+
+`/oferta/criar-junto` é endereço antigo: 301 à principal, com a query intacta (cupom e atribuição). Saiu do sitemap, do despacho de corpos e dos novos destinos dos quizzes. O corpo, a copy tipada e o CSS separados foram retirados; o espelho anterior está em `docs/marketing/kids/comunidade-dos-criadores/copy/historico/2026-11-19-criar-junto/`. Os dois espelhos ativos são gerados por `bun scripts/espelho-copy-comunidade.ts`.
+
+Preços, seleção de plano, garantia, créditos, dois perfis e requisitos da Jornada continuam iguais. A FAQ explica acompanhamento abaixo de 9, apoio em qualquer idade e como acolher a frustração. Verificação: contratos de oferta e quiz, tipo/build e browser `tests/browser/comunidade-oferta.ts`, incluindo HTTP 301 com cupom/UTMs, planos e larguras de 320 a 1440.
+
+## Página do minicurso gratuito para pais (18/11/2026)
+
+`/kids/vilao-em-aliado` é a página pública e indexável do curso para pais "Transformando o vilão em
+aliado" (7 aulas, slug `transformando-o-vilao-em-aliado`). É avulsa, fora do registry (curso
+gratuito não tem oferta de checkout nem env `FUNNEL_OFFER_*`), no molde de `/kids/embaixadores`.
+
+- **Cadastro = fluxo do presente.** `cursoPaisVilaoView` (`server/curso-pais-vilao.ts`) lê a campanha
+  fixa `CODIGO_DA_CAMPANHA` (`vilao-em-aliado`) com `resolveReferralGiftPage` e só abre o formulário
+  (`BolsaResgate`, variante `pais`) quando a campanha é Kids, está ativa e entrega exatamente este
+  curso para pais. Em qualquer outro caso (campanha ainda não criada, agendada, referrals fora do
+  ar, oferta de outro curso) a página continua no ar com 200 e o estado "Em breve" no lugar do
+  formulário; pausada ou encerrada mostra "Inscrições fechadas" com a retomada. Nenhuma rota de API
+  nova: o envio é o `/api/bolsa/resgatar` de sempre.
+- **Peças:** copy em `content/curso-pais-vilao.ts`, corpo em
+  `components/referrals/CursoPaisOferta.astro`, dentro do `PresenteLayout` (que ganhou as props
+  `links`, `cta`, `indexavel` e `ogImage`; o padrão segue sendo o do presente, fora dos buscadores).
+  Veste o layout `.c917`; as peças próprias ficam em `styles/curso-pais.css` (`.cpv-*`, só tokens).
+  O tema do curso (roxo, rosa e amarelo da ilustração) entra pelas classes de cor que o layout já
+  tem. Imagens em `public/img/transformando-o-vilao-em-aliado/`.
+- **O presente do fim do curso é surpresa.** A página só diz que há um presente no final. Nada de
+  Cadê Todo Mundo, "7 dias" ou segunda oferta (o teste reprova).
+- **Depoimentos:** `DEPOIMENTOS_DE_PAIS` nasce vazio e a seção só aparece quando houver ao menos
+  um, com nome e autorização da família para a página pública.
+- **Mesmo e-mail, dois presentes:** quem pega o curso aqui ainda resgata o presente da criança na
+  Aula 7. Isso depende da vaga do presente no referrals (`gift_slot`, ver o CLAUDE.md de lá):
+  **referrals antes do funil no deploy**.
+- **Pontos de extensão tocados:** `rate-limit-paths.ts` (cada visita chama o gateway), sitemap
+  (`astro.config.mjs`) e métricas (`analyticsPage`, `kind: 'curso-pais'`).
+- **Fora do código, no Admin:** publicar o curso, criar a oferta sem prazo dele no catálogo e a
+  campanha Kids com o código `vilao-em-aliado` (data final distante), e preencher o `salesPageUrl`
+  do curso com o endereço da página.
+- **Testes:** `tests/unit/curso-pais-vilao.test.tsx` e, depois do build,
+  `node --import tsx tests/browser/curso-pais-vilao.ts` (4 larguras, cadastro e estados).
+
 ## Presente pela oferta do catálogo (15/11/2026)
 
 O curso, o prazo e o Mural do presente vêm do `gift` da leitura pública do referrals

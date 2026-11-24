@@ -1,12 +1,33 @@
 import { expect, test } from 'bun:test'
+import { resolve } from 'node:path'
 import ts from 'typescript'
 import { gameThreeDRuntime } from '../runtime'
 
 const RUNTIME_FILE = 'game-3d-runtime.generated.js'
-const HOST_CONTRACT_FILE = 'game-3d-runtime-host.d.ts'
+const HOST_CONTRACT_FILE = resolve(import.meta.dir, 'game-3d-runtime-host.d.ts').replaceAll(
+  '\\',
+  '/',
+)
 const HOST_CONTRACT = `
+interface PontoDoSDK { x: number; y: number; z: number }
+interface CenaDoSDK {
+  raiz: unknown
+  dados: { nos: { volume: { max: { y: number } } }[] }
+  colisoes: {
+    limiteInferior: number | null
+    rastrear(de: unknown, ate: unknown): { ponto: PontoDoSDK; normal: PontoDoSDK; distancia: number } | null
+  }
+  fisica: {
+    active(): boolean
+    resolve(pes: PontoDoSDK, altura: number, raio: number): { position: PontoDoSDK; normals: PontoDoSDK[] }
+  }
+  atualizar(dt: number): void
+  quadro(camera: unknown, alvo: unknown): void
+  descartar(): void
+}
 interface Window {
   SZGame3D: unknown
+  SZScene3D?: import('../../../three/scene3dProtocol').Scene3DProtocol<unknown, {maxTextura?: number}, CenaDoSDK, CenaDoSDK, {posicao: PontoDoSDK; giro: number}>
   __SZGAME_ASSETS?: Record<string, string>
   // Semeado pelo mesmo bridge das imagens, e ausente quando o projeto não tem
   // áudio nenhum — daí ser opcional (o runtime lê com \`|| {}\`).
@@ -38,6 +59,8 @@ test('o runtime base injetado não contém referências ou propriedades semantic
     noImplicitAny: false,
     skipLibCheck: true,
     target: ts.ScriptTarget.ES2022,
+    // The injected program runs in a browser, with this explicit host ABI.
+    types: [],
   }
   const defaultHost = ts.createCompilerHost(options)
   const virtualSources = new Map([

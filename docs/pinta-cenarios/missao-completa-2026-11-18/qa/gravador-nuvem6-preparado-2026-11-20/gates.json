@@ -1,0 +1,44 @@
+[
+  {
+    "name": "core",
+    "exit": 0,
+    "started": "2026-11-21T01:08:31.779Z",
+    "finished": "2026-11-21T01:08:42.810Z",
+    "log": ".cache/pinta-writer-final-core.log"
+  },
+  {
+    "name": "core-types",
+    "exit": 0,
+    "started": "2026-11-21T01:08:42.914Z",
+    "finished": "2026-11-21T01:08:50.869Z",
+    "log": ".cache/pinta-writer-final-core-types.log"
+  },
+  {
+    "name": "shell",
+    "exit": 0,
+    "started": "2026-11-21T01:08:50.974Z",
+    "finished": "2026-11-21T01:08:52.898Z",
+    "log": ".cache/pinta-writer-final-shell.log"
+  },
+  {
+    "name": "shell-types",
+    "exit": 0,
+    "started": "2026-11-21T01:08:53.003Z",
+    "finished": "2026-11-21T01:09:03.829Z",
+    "log": ".cache/pinta-writer-final-shell-types.log"
+  },
+  {
+    "name": "profile",
+    "exit": 0,
+    "started": "2026-11-21T01:09:03.954Z",
+    "finished": "2026-11-21T01:09:04.259Z",
+    "log": ".cache/pinta-writer-final-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "started": "2026-11-21T01:09:04.370Z",
+    "finished": "2026-11-21T01:09:34.006Z",
+    "log": ".cache/pinta-writer-final-biome.log"
+  }
+]

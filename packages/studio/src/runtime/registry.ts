@@ -1,3 +1,4 @@
+import { PintaImageDerivationSchema } from '@sistemazero/core/studio/pinta-image'
 import {
   resolveStudioProjectCapabilities,
   type StudioCapabilityResolutionInput,
@@ -15,6 +16,8 @@ import {
   type StudioRuntimeCatalog,
   selectStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
+import { PINTA_SCENE_RUNTIME_MESSAGE, pintaImageRuntimeCompatible } from './pintaImageCompatibility'
+import { MOLDA_SCENE_RUNTIME_MESSAGE, scene3DRuntimeCompatible } from './scene3dCompatibility'
 import { type StudioRuntimeProvider, StudioRuntimeUnavailableError } from './types'
 
 export interface StudioRuntimeRegistration {
@@ -63,6 +66,33 @@ export function assertStudioRuntimeOperationAccess(
         ? 'O console Python não está disponível neste ambiente.'
         : 'A execução não está disponível neste ambiente.',
     )
+  if (
+    (capability === 'execute' || capability === 'python-repl') &&
+    project.programmingLanguage === 'python'
+  ) {
+    for (const asset of project.assets ?? []) {
+      if (
+        asset &&
+        typeof asset === 'object' &&
+        'kind' in asset &&
+        asset.kind === 'scene3d' &&
+        !scene3DRuntimeCompatible(project.runtime, catalog)
+      )
+        throw new StudioRuntimeUnavailableError(
+          'molda-scene-unavailable',
+          MOLDA_SCENE_RUNTIME_MESSAGE,
+        )
+      if (!asset || typeof asset !== 'object' || !('pintaImage' in asset)) continue
+      const image = PintaImageDerivationSchema.safeParse(asset.pintaImage).data
+      if (image && !pintaImageRuntimeCompatible(image, project.runtime, catalog))
+        throw new StudioRuntimeUnavailableError(
+          image.recipe.selection.kind === 'map-world'
+            ? 'pinta-world-unavailable'
+            : 'pinta-scene-unavailable',
+          PINTA_SCENE_RUNTIME_MESSAGE,
+        )
+    }
+  }
 }
 
 export function assertStudioRuntimeExecutionAccess(

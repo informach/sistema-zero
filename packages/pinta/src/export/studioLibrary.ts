@@ -15,6 +15,7 @@ import type {
   PintaImageSelectionSummary,
   PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
   assetRole,
   assetStyle,
@@ -22,12 +23,14 @@ import {
   type PintaAsset,
   type PintaAssetRole,
   type PintaAssetStyle,
+  pintaAssetDependencyIds,
   remapTilemapTilesetIds,
   resolveAssetPalette,
   sanitizeSourceRef,
   tilemapTilesetIds,
   type VectorFrame,
 } from '../core/project'
+import { SceneMapClosureError } from '../core/sceneMapClosure'
 import type { PintaExportedAsset } from '../core/types'
 import { flattenCels } from '../pixel/layers'
 import { planImport } from '../state/importPlan'
@@ -46,13 +49,14 @@ import { svgToPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { mapAtlasSourceSize, spritesheetSourceSize, tilesetSourceSize } from './portableImageData'
 import { importPintaJson } from './projectJson'
-import { buildStudioPayload, validateStudioPayloadSize } from './studioBridge'
+import { buildStudioMapBundle, StudioMapBundleError } from './studioMapBundle'
 
 export { capturePintaAssetForImage, setPintaStorageNamespace } from '../state/persistence'
 export type { PintaPortableImage } from './portableImage'
 export type { PintaExportedAsset }
 
-/** Native fingerprints only. No canvas, export or personal-library write. `selection` is the
+/** Native fingerprints only. No canvas, export or imported artwork. Local authority may
+ * migrate/recover existing records atomically. `selection` is the
  * kind being checked: a `map` depends on every tileset of the map, the flat `tilemap` only on
  * the default one (absent = the historical answer, the default tileset for a map). */
 export async function inspectImageForStudio(
@@ -117,7 +121,19 @@ export async function exportImageAndSourceForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  const captured = await capturePintaAssetForImage(recipe.drawingId, { namespace, signal })
+  let captured: Awaited<ReturnType<typeof capturePintaAssetForImage>>
+  try {
+    captured = await capturePintaAssetForImage(recipe.drawingId, {
+      namespace,
+      signal,
+      includeSceneMaps: recipe.selection.kind === 'map-world',
+    })
+  } catch (error) {
+    signal?.throwIfAborted()
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    throw error
+  }
   signal?.throwIfAborted()
   if (!captured.ok)
     return captured.reason === 'needs-tileset'
@@ -127,12 +143,17 @@ export async function exportImageAndSourceForStudio(
   signal?.throwIfAborted()
   const image = await deriveLoadedPintaImage(captured.source, recipe, limits, {
     tilesets: captured.tilesets,
+    assets: captured.assets,
     signal,
   })
   signal?.throwIfAborted()
   // Todas as peças do mapa, como no caminho da galeria (`exportAssetForStudio`): o registro da
   // biblioteca pessoal é o mesmo, venha o desenho pela imagem ou pela ponte.
-  const canonical = await exportResolvedForStudio(captured.source, captured.tilesets)
+  const canonical = await exportResolvedForStudio(
+    captured.source,
+    captured.assets ?? captured.tilesets,
+    { includeSceneMaps: recipe.selection.kind === 'map-world' },
+  )
   signal?.throwIfAborted()
   return canonical.ok ? { ...canonical, image } : canonical
 }
@@ -216,7 +237,7 @@ function reusable(copy: PintaAsset, source: PintaAsset, gallery: Map<string, Pin
   if (copy.kind !== source.kind) return false
   if (isTilesetKind(copy) && isTilesetKind(source)) return copy.tileSize === source.tileSize
   if (copy.kind === 'tilemap') {
-    const tileset = gallery.get(copy.tilesetId)
+    const tileset = embeddedTilesetOf(copy) ?? gallery.get(copy.tilesetId)
     return !!tileset && isTilesetKind(tileset)
   }
   return true
@@ -280,7 +301,14 @@ async function importDrawingsNow(
     (a, b) => (a.kind === 'tilemap' ? 1 : 0) - (b.kind === 'tilemap' ? 1 : 0),
   )
   const chosenTilesetIds = new Set(ordered.filter(isTilesetKind).map((asset) => asset.id))
-  if (ordered.some((asset) => asset.kind === 'tilemap' && !chosenTilesetIds.has(asset.tilesetId)))
+  if (
+    ordered.some(
+      (asset) =>
+        asset.kind === 'tilemap' &&
+        !chosenTilesetIds.has(asset.tilesetId) &&
+        !embeddedTilesetOf(asset),
+    )
+  )
     return {
       ok: false,
       reason: 'invalid',
@@ -396,6 +424,7 @@ export type ExportForStudioResult =
   | { ok: false; reason: 'not-found' | 'raster-failed' | 'asset-too-big' | 'sheet-too-big' }
   /** Só do `exportLoadedAssetForStudio`: o mapa chegou SEM o conjunto de peças dele. */
   | { ok: false; reason: 'needs-tileset'; message: string }
+  | { ok: false; reason: 'map-links-invalid'; message: string }
 
 /**
  * A frase do mapa que chegou sozinho (o "Trazer da equipe" baixa UM desenho por vez, e o
@@ -421,6 +450,8 @@ async function thumbFor(
   findAsset: (id: string) => PintaAsset | null,
 ): Promise<string | null> {
   switch (asset.kind) {
+    case 'map-set':
+      return thumbFor(asset.map, findAsset)
     case 'pixel-sprite': {
       const frame = asset.animations[0]?.frames[0]
       const flat = frame ? flattenCels(frame, asset.layers) : null
@@ -560,6 +591,8 @@ function imageSelectionSummary(
   // Only true is reported, so pixel facts keep the exact shape they always had.
   const vector = { vector: true } as const
   switch (asset.kind) {
+    case 'map-set':
+      return imageSelectionSummary(asset.map, findAsset)
     case 'pixel-sprite':
     case 'vector-sprite':
       return {
@@ -603,7 +636,7 @@ function imageSelectionSummary(
         ...(asset.kind === 'vector-tileset' ? { ...vector, ...turtleShapeFacts(asset.tiles) } : {}),
       }
     case 'tilemap': {
-      const tileset = findAsset(asset.tilesetId)
+      const tileset = embeddedTilesetOf(asset) ?? findAsset(asset.tilesetId)
       if (!tileset || !isTilesetKind(tileset))
         return { kind: 'unavailable', reason: 'needs-tileset' }
       return {
@@ -620,10 +653,9 @@ function imageSelectionSummary(
 }
 
 /**
- * Exporta UM desenho no formato da ponte (PNG achatado + metadados), já
- * validado pelos tetos do Estúdio — o mesmo payload do foguete "Usar no
- * Estúdio". `tilemapFront` fica de fora de propósito: a biblioteca pessoal do
- * Estúdio não o guarda (só o "Jogar meu mapa" o usa, e aquele caminho é outro).
+ * Exporta o desenho e os mapas ligados pelas portas. O PNG é a miniatura;
+ * cena, camadas e mapas de destino são a representação estruturada.
+ * Usa os mesmos exportadores e tetos do envio manual e do jogo pronto.
  */
 export async function exportAssetForStudio(
   id: string,
@@ -632,20 +664,25 @@ export async function exportAssetForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  const persistence = createPintaPersistence({ namespace })
-  const asset = await persistence.loadAssetById(id)
-  signal?.throwIfAborted()
-  if (!asset) return { ok: false, reason: 'not-found' }
-  // buildStudioPayload só resolve OUTRO asset no caso tilemap→tileset; carregar
-  // a galeria inteira aqui seria desperdício.
-  const linked: PintaAsset[] = []
-  if (asset.kind === 'tilemap') {
-    for (const tilesetId of tilemapTilesetIds(asset)) {
-      const tileset = await persistence.loadAssetById(tilesetId)
-      if (tileset) linked.push(tileset)
-    }
+  let captured: Awaited<ReturnType<typeof capturePintaAssetForImage>>
+  try {
+    captured = await capturePintaAssetForImage(id, { namespace, signal, includeSceneMaps: true })
+  } catch (error) {
+    signal?.throwIfAborted()
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    throw error
   }
   signal?.throwIfAborted()
+  if (!captured.ok)
+    return captured.reason === 'needs-tileset'
+      ? { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
+      : { ok: false, reason: captured.reason }
+  const asset = captured.source
+  const linked = captured.assets ?? captured.tilesets
+  const present = new Set([asset.id, ...linked.map((a) => a.id)])
+  if ([asset, ...linked].some((a) => pintaAssetDependencyIds(a).some((id) => !present.has(id))))
+    return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
   const result = await exportResolvedForStudio(asset, linked)
   signal?.throwIfAborted()
   return result
@@ -661,7 +698,7 @@ export async function exportAssetForStudio(
 export async function exportLoadedAssetForStudio(
   asset: PintaAsset,
 ): Promise<ExportForStudioResult> {
-  if (asset.kind === 'tilemap') {
+  if (asset.kind === 'tilemap' && pintaAssetDependencyIds(asset).length) {
     return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
   }
   return exportResolvedForStudio(asset, [])
@@ -670,26 +707,15 @@ export async function exportLoadedAssetForStudio(
 async function exportResolvedForStudio(
   asset: PintaAsset,
   linked: readonly PintaAsset[],
+  options: { includeSceneMaps?: boolean } = {},
 ): Promise<ExportForStudioResult> {
-  const payload = await buildStudioPayload(
-    asset,
-    (assetId) => linked.find((candidate) => candidate.id === assetId) ?? null,
-    { animationId: null, frameIndex: 0 },
-  ).catch(() => null)
-  if (!payload) return { ok: false, reason: 'raster-failed' }
-  const size = validateStudioPayloadSize(payload)
-  if (size !== 'ok') return { ok: false, reason: size }
-  return {
-    ok: true,
-    asset: {
-      id: asset.id,
-      name: asset.name,
-      dataUrl: payload.dataUrl,
-      width: payload.width,
-      height: payload.height,
-      ...(payload.sprite ? { sprite: payload.sprite } : {}),
-      ...(payload.tileset ? { tileset: payload.tileset } : {}),
-      ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
-    },
+  try {
+    const payload = await buildStudioMapBundle(asset, [asset, ...linked], undefined, options)
+    return payload ? { ok: true, asset: payload } : { ok: false, reason: 'raster-failed' }
+  } catch (error) {
+    if (error instanceof SceneMapClosureError)
+      return { ok: false, reason: 'map-links-invalid', message: error.message }
+    if (error instanceof StudioMapBundleError) return { ok: false, reason: error.reason }
+    return { ok: false, reason: 'raster-failed' }
   }
 }

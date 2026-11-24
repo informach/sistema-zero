@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-profile-switch-probe.cases.tsx:
+209 |
+210 | test('troca de perfil antes do idle não aplica a biblioteca nova ao projeto anterior',async()=>{
+211 |  await mount();const before=program();await save(2);signal();
+212 |  setStorageNamespace('outro-perfil-antes-do-idle');setPersonalAssetsNamespace('outro-perfil-antes-do-idle');await save(3);
+213 |  await flushIdle();await act(async()=>{await new Promise(resolve=>setTimeout(resolve,0))});
+214 |  expect(pixels()).toBe(PNG[1]);expect(program()).toBe(before);
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: "data:image/png;base64,BBBB"
+Received: "data:image/png;base64,DDDD"
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\.cache\pinta-profile-switch-probe.cases.tsx:214:19)
+(fail) troca de perfil antes do idle não aplica a biblioteca nova ao projeto anterior [78.00ms]
+217 | test('voltar ao perfil não reativa o observador da sessão anterior',async()=>{
+218 |  await mount();const before=program();await save(2);signal();
+219 |  setStorageNamespace('outro-perfil-intermediario');setPersonalAssetsNamespace('outro-perfil-intermediario');
+220 |  setStorageNamespace(namespace);setPersonalAssetsNamespace(namespace);
+221 |  await flushIdle();await act(async()=>{await new Promise(resolve=>setTimeout(resolve,0))});
+222 |  expect(pixels()).toBe(PNG[1]);expect(program()).toBe(before);
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: "data:image/png;base64,BBBB"
+Received: "data:image/png;base64,CCCC"
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\.cache\pinta-profile-switch-probe.cases.tsx:222:19)
+(fail) voltar ao perfil não reativa o observador da sessão anterior [63.00ms]
+
+ 0 pass
+ 4 filtered out
+ 2 fail
+ 9 expect() calls
+Ran 2 tests across 1 file. [850.00ms]

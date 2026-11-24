@@ -35,6 +35,10 @@ import {
   gameKit3DModelStatementToCode,
 } from '../official-extensions/game-3d-advanced/modelCodec'
 import {
+  collectSceneGameKit3DIdentifiers,
+  sceneGameKit3DStatementToCode,
+} from '../official-extensions/game-3d-advanced/sceneCodec'
+import {
   collectGameRulesExpressionIdentifiers,
   collectGameRulesIdentifiers,
   gameRulesStatementToCode,
@@ -165,15 +169,25 @@ const GRASS_FRAGMENT_SHADER = [
   '}',
 ].join('\n')
 
-/** Anda a árvore de statements (corpos aninhados inclusos) procurando um tipo. */
-function treeHasStatementType(statements: JSStatement[], type: JSStatement['type']): boolean {
-  for (const s of statements) {
-    if (s.type === type) return true
-    for (const body of jsChildBodies(s)) {
-      if (treeHasStatementType(body, type)) return true
+/**
+ * Todos os tipos de statement da árvore (corpos aninhados inclusos), numa varredura só.
+ *
+ * Antes cada pergunta ("tem `bloomSetup`?", "tem `physicsLiteSetup`?") andava a árvore inteira
+ * de novo, e a geração fazia dezenas delas por edição: no perfil de 17/11/2026 isso era 79% do
+ * tempo de gerar um projeto de 5 mil blocos. Com pilha explícita: árvore funda não estoura.
+ */
+function statementTypesIn(statements: JSStatement[]): ReadonlySet<JSStatement['type']> {
+  const types = new Set<JSStatement['type']>()
+  const pending: JSStatement[][] = [statements]
+  while (pending.length > 0) {
+    const list = pending.pop()
+    if (!list) continue
+    for (const statement of list) {
+      types.add(statement.type)
+      for (const body of jsChildBodies(statement)) pending.push(body)
     }
   }
-  return false
+  return types
 }
 
 /** Fontes de imagem usadas por blocos Canvas, em ordem e sem duplicatas. */
@@ -277,16 +291,17 @@ function treeUsesThreeNamespace(value: unknown): boolean {
 }
 
 /** Imports que os facilitadores Canvas 3D exigem, deduplicados contra os explícitos. */
-function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
+function injectedCanvas3DImports(
+  statements: JSStatement[],
+  types: ReadonlySet<JSStatement['type']> = statementTypesIn(statements),
+): JSStatement[] {
   const existingNamedModules = new Set(
     statements.filter((statement) => statement.type === 'importNamed').map((s) => s.module),
   )
   const injected: JSStatement[] = []
   const needsCore =
     treeUsesThreeNamespace(statements) ||
-    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) =>
-      treeHasStatementType(statements, type as JSStatement['type']),
-    )
+    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) => types.has(type as JSStatement['type']))
   const hasCore = statements.some(
     (statement) =>
       statement.type === 'importStar' && statement.module === 'three' && statement.name === 'THREE',
@@ -297,7 +312,7 @@ function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
 
   const seenModules = new Set<string>()
   for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
-    if (!needed || !treeHasStatementType(statements, macroType as JSStatement['type'])) continue
+    if (!needed || !types.has(macroType as JSStatement['type'])) continue
     for (const entry of needed) {
       if (existingNamedModules.has(entry.module) || seenModules.has(entry.module)) continue
       seenModules.add(entry.module)
@@ -344,7 +359,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // Statements começam após o header (1-indexed).
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
-  const needsPhysicsLite = treeHasStatementType(statements, 'physicsLiteSetup')
+  const needsPhysicsLite = statementTypesIn(statements).has('physicsLiteSetup')
   let physicsLiteInserted = false
   let canvasImagesOpened = false
   for (const stmt of statements) {
@@ -432,7 +447,7 @@ function generateBehaviorJSWithMap(
     currentLine += countLines(piece)
   }
 
-  const needsPhysicsLite = treeHasStatementType(ordered, 'physicsLiteSetup')
+  const needsPhysicsLite = statementTypesIn(ordered).has('physicsLiteSetup')
   if (needsPhysicsLite) {
     const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
     pieces.push(runtime)
@@ -881,6 +896,48 @@ function compileStatementCode(
     case 'mountRenderer':
       return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
 
+    case 'threeSceneLoad': {
+      const context = identifiers.getProjectRunContextIdentifier()
+      const controller = identifiers.reserveInternal(`${stmt.param}Cancelamento`)
+      const prefix = context ? [] : [`${pad}const ${controller} = new AbortController();`]
+      const signal = context ? `${context}.signal` : `${controller}.signal`
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, base + prefix.length + 1),
+      )
+      const errorBody = compileStatements(
+        stmt.errorBody ?? [],
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, base + prefix.length + Math.max(1, countLines(body)) + 2),
+      )
+      const errorParam = identifiers.get(stmt.errorParam ?? 'erro')
+      const good = lifecycleCallback(identifiers, identifiers.get(stmt.param), body, pad)
+      const bad = lifecycleCallback(
+        identifiers,
+        errorParam,
+        errorBody || `${'  '.repeat(indent + 1)}console.log(${errorParam});`,
+        pad,
+      )
+      const load = `window.SZScene3D.instalar(${JSON.stringify(stmt.asset)}, ${identifiers.get(stmt.scene)}, ${signal}, { maxTextura: ${identifiers.get(stmt.renderer)}.capabilities.maxTextureSize })`
+      const missing =
+        'Promise.reject(new Error("Traga um cenário do Molda para este projeto antes de carregar."))'
+      return [
+        ...prefix,
+        `${pad}(window.SZScene3D ? ${load} : ${missing}).then(${good}, ${bad});`,
+      ].join('\n')
+    }
+    case 'threeSceneUpdate': {
+      const handle = identifiers.reserveInternal('cenarioAtual'),
+        focus = identifiers.get(stmt.focus)
+      return `${pad}const ${handle} = window.SZScene3D?.instalado(${identifiers.get(stmt.scene)});\n${pad}if (${handle}) {\n${pad}  ${handle}.atualizar(${compileExpr(stmt.dt, 0, identifiers, recAt(base + 2))});\n${pad}  ${handle}.quadro(${identifiers.get(stmt.camera)}, ${focus}.getWorldPosition(${focus}.position.clone()));\n${pad}}`
+    }
+    case 'physicsLiteScene': {
+      const handle = identifiers.reserveInternal('cenarioFisico')
+      return `${pad}const ${handle} = window.SZScene3D?.instalado(${identifiers.get(stmt.scene)});\n${pad}if (!${handle}) throw new Error("Ligue a física depois que o cenário carregar.");\n${pad}${identifiers.get(stmt.world)}.setScene(${JSON.stringify(stmt.id)}, ${handle}.fisica);`
+    }
     case 'loaderLoad': {
       const body = compileStatements(
         stmt.body,
@@ -1575,10 +1632,12 @@ function compileStatementCode(
     }
     case 'physicsLiteSetup': {
       const world = identifiers.get(stmt.world)
-      const heightFunction = identifiers.get(stmt.heightFunction)
+      const ground = stmt.heightFunction
+        ? `groundHeight: ${identifiers.get(stmt.heightFunction)}, `
+        : ''
       const gravity = compileExpr(stmt.gravity, 0, identifiers, recAt(base))
       const maxSubSteps = compileExpr(stmt.maxSubSteps, 0, identifiers, recAt(base))
-      return `${pad}const ${world} = createSZPhysicsLite({ groundHeight: ${heightFunction}, gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
+      return `${pad}const ${world} = createSZPhysicsLite({ ${ground}gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
     }
     case 'physicsLiteStaticBox': {
       const world = identifiers.get(stmt.world)
@@ -2647,6 +2706,10 @@ ${pad}});`
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createModelFile(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
       case 'g3d:skyPhoto':
         return `${pad}SZGame3D.skyPhoto(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)});`
+      case 'g3d:loadScene':
+        return `${pad}SZGame3D.loadScene(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)});`
+      case 'g3d:sceneStart':
+        return `${pad}SZGame3D.sceneStart(${identifiers.get(stmt.objVar)});`
       case 'g3d:setColor':
         return `${pad}SZGame3D.setColor(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.color)});`
       case 'g3d:setOpacity':
@@ -3554,6 +3617,7 @@ ${pad}});`
         compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
     }
     const model =
+      sceneGameKit3DStatementToCode(stmt, codecTools) ??
       gameKit3DModelStatementToCode(stmt, codecTools) ??
       gameKit3DGameplayStatementToCode(stmt, codecTools)
     if (model !== undefined) return model
@@ -4856,6 +4920,24 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       if (stmt.param) names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
+    case 'threeSceneLoad':
+      names.add(stmt.scene)
+      names.add(stmt.renderer)
+      names.add(stmt.param)
+      names.add(stmt.errorParam ?? 'erro')
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.errorBody ?? []) collectStatementIdentifiers(child, names)
+      return
+    case 'threeSceneUpdate':
+      names.add(stmt.scene)
+      names.add(stmt.camera)
+      names.add(stmt.focus)
+      collectExprIdentifiers(stmt.dt, names)
+      return
+    case 'physicsLiteScene':
+      names.add(stmt.world)
+      names.add(stmt.scene)
+      return
     case 'loaderLoad':
       names.add(stmt.loaderVar)
       names.add(stmt.param)
@@ -5012,7 +5094,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'physicsLiteSetup':
       names.add(stmt.world)
-      names.add(stmt.heightFunction)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
       collectExprIdentifiers(stmt.gravity, names)
       collectExprIdentifiers(stmt.maxSubSteps, names)
       return
@@ -6300,12 +6382,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.size), names)
         return
       case 'g3d:skyPhoto':
+      case 'g3d:loadScene':
         names.add(stmt.worldVar)
         return
       case 'g3d:setColor':
       case 'g3d:setMaterial':
       case 'g3d:setVisible':
       case 'g3d:modelAnimation':
+      case 'g3d:sceneStart':
         names.add(stmt.objVar)
         return
       case 'g3d:setTexture':
@@ -7320,6 +7404,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 
   function gameKitThreeDStatementIdentifiers(): void {
     if (
+      collectSceneGameKit3DIdentifiers(stmt, names) ||
       collectGameKit3DModelIdentifiers(
         stmt,
         names,

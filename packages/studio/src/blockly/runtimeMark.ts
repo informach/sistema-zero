@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { expandForShowing, withShowingScope } from './transientExpansion'
 
 /**
  * O sinal vermelho no bloco onde o jogo parou (redesenho do clássico, 11/2026): o aviso do
@@ -51,6 +52,25 @@ export function runtimeErrorBlockId(workspace: Blockly.Workspace): string | null
 }
 
 /**
+ * Abre os blocos fechados que ENVOLVEM `block` (o "Se" ou a função em que ele está, e os de fora
+ * deles), e só eles. Pelo `getSurroundParent`, não pelo `getParent`: numa pilha, o pai de um bloco
+ * é o bloco de CIMA, e subir por ele abria toda função recolhida acima do alvo na mesma área. No
+ * Reino Zero Ultra, "Mostrar o bloco" abria 78 funções e mudava o projeto salvo, que subia de novo
+ * para a conta (achado na conferência do staging, 21/11/2026).
+ */
+export function expandAroundBlock(
+  block: Blockly.Block,
+  options: { transient?: boolean } = {},
+): void {
+  for (let parent = block.getSurroundParent(); parent; parent = parent.getSurroundParent()) {
+    if (!parent.isCollapsed()) continue
+    // Só para mostrar (22/11/2026): sem evento, sem desfazer, e o projeto salvo segue recolhido.
+    if (options.transient && parent instanceof Blockly.BlockSvg) expandForShowing(parent)
+    else parent.setCollapsed(false)
+  }
+}
+
+/**
  * "Mostrar o bloco": abre os blocos fechados em volta, rola até ele, seleciona e, com
  * `openBubble`, abre o balão do aviso (o balão só aceita texto; os botões ficam no cartão).
  */
@@ -58,15 +78,19 @@ export function revealBlockInWorkspace(
   workspace: Blockly.WorkspaceSvg,
   blockId: string,
   openBubble: boolean,
+  options: { transient?: boolean } = {},
 ): boolean {
   const block = liveBlock(workspace, blockId)
   if (!block) return false
-  for (let parent = block.getParent(); parent; parent = parent.getParent()) {
-    if (parent.isCollapsed()) parent.setCollapsed(false)
+  const show = () => {
+    expandAroundBlock(block, options)
+    // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
+    workspace.centerOnBlock(block.id, true)
+    block.select()
   }
-  // `blockOnly`: centraliza no PRÓPRIO bloco, não na pilha que vem embaixo dele.
-  workspace.centerOnBlock(block.id, true)
-  block.select()
+  // Só para mostrar: o gesto inteiro num grupo próprio, sem desfazer (`withShowingScope`).
+  if (options.transient) withShowingScope(workspace, show)
+  else show()
   if (openBubble) {
     void block.getIcon(Blockly.icons.IconType.WARNING)?.setBubbleVisible(true)
   }

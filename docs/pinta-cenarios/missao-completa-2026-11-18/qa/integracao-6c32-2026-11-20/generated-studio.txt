@@ -1,0 +1,17 @@
+(pass) export clássico conserva IDs/bytes e instala o carregador antes do motor e do programa [453.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) conversão Pro preserva o módulo e materializa os mesmos canais sem base64 na árvore autoral [687.00ms]
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) um cenário importado em projeto ainda sem programa pode virar Pro sem aviso de script inexistente [516.00ms]
+
+src\preview\__tests__\scene3dDocument.test.ts:
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) o documento clássico instala o módulo compartilhado antes do motor, com imports pinados e canais por ID [672.00ms]
+(pass) documento comum não baixa nem injeta o módulo de cenários
+THREE.GLTFExporter: Creating normalized normal attribute from the non-normalized one.
+(pass) nome hostil do material permanece texto e não fecha a tag de script do documento [359.00ms]
+
+ 10 pass
+ 0 fail
+ 54 expect() calls
+Ran 10 tests across 3 files. [10.06s]

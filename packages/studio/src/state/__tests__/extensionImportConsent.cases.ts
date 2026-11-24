@@ -115,3 +115,38 @@ describe('import: consentimento de permissões de extensão', () => {
     ).rejects.toThrow('Nenhuma cópia foi gravada')
   })
 })
+
+// Full review final (21/11/2026): a origem de um Pro importado de outra conta fazia o menu dizer
+// "A versão em blocos foi apagada" de uma cópia que a criança nunca teve.
+describe('import: a origem de um Pro convertido', () => {
+  it('fica só quando a cópia em blocos existe neste aparelho', async () => {
+    const { createProProject } = await import('../../components/code/pro-templates')
+    const { projectMetaKey } = await import('../projectStorageKeys')
+    const keyval = (await import('idb-keyval')) as unknown as {
+      get: { mockImplementation: (impl: (key: unknown) => Promise<unknown>) => void }
+    }
+    const base = await createProProject('pro-origem', 'Convertido', 'vanilla-js')
+    const comOrigem = (projectId: string) =>
+      JSON.parse(
+        JSON.stringify({
+          ...base,
+          proMeta: { ...base.proMeta, origin: { projectId, revision: 1 } },
+        }),
+      )
+    keyval.get.mockImplementation(async (key) =>
+      key === projectMetaKey('blocos-aqui')
+        ? { id: 'blocos-aqui', name: 'Blocos', kind: 'classic', createdAt: 1, updatedAt: 1 }
+        : undefined,
+    )
+    try {
+      const fora = await useProjectStore
+        .getState()
+        .importProjectFromJSON(comOrigem('de-outra-conta'))
+      expect(fora.project.proMeta?.origin).toBeUndefined()
+      const aqui = await useProjectStore.getState().importProjectFromJSON(comOrigem('blocos-aqui'))
+      expect(aqui.project.proMeta?.origin).toEqual({ projectId: 'blocos-aqui', revision: 1 })
+    } finally {
+      keyval.get.mockImplementation(async () => undefined)
+    }
+  })
+})

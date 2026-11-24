@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+.cache\pinta-review-20261122\fonte-f1667cfaf\packages\member-shell\tests\fixtures\physical-pins-review.test.ts:
+(pass) duas operações que leram a mesma folha mantêm uma cópia de seus bytes até o último recibo [93.00ms]
+
+.cache\pinta-review-20261122\fonte-f1667cfaf\packages\member-shell\tests\fixtures\pins-cas-review.test.ts:
+(pass) a escrita do mapa e da folha observada reverte por different-revision [47.00ms]
+(pass) a escrita do mapa e da folha observada reverte por last-physical-put
+
+.cache\pinta-review-20261122\fonte-f1667cfaf\packages\member-shell\tests\fixtures\pins-quota-review.test.ts:
+(pass) cota local inclui bytes da folha apenas lida junto ao PUT do mapa [781.00ms]
+
+.cache\pinta-review-20261122\fonte-f1667cfaf\packages\member-shell\tests\fixtures\transitive-pins-review.test.ts:
+(pass) a porta do mapa editado conserva a folha transitiva que só a cabana observa [47.00ms]
+
+.cache\pinta-review-20261122\fonte-f1667cfaf\packages\member-shell\tests\fixtures\fence-v4-review.test.ts:
+(pass) o gravador causal v3 recusa um estoque v4 e o escritor atual continua a edição [62.00ms]
+
+ 6 pass
+ 0 fail
+ 61 expect() calls
+Ran 6 tests across 5 files. [1177.00ms]

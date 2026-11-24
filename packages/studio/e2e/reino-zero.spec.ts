@@ -6,8 +6,15 @@ import {
   type GameKitKnownApi,
 } from '../src/official-extensions/game-2d-advanced/runtimeContract'
 
+// DPR 1, não 3: o Chromium 159 completo (Playwright 1.65.1, o da homologação) aplica o
+// `deviceScaleFactor` emulado DUAS vezes num iframe de outra origem (a prévia isolada): com 3, a
+// janela do jogo mede 130×207 dentro de um iframe de 390×622. Reprodução mínima (21/11/2026):
+// iframe `sandbox="allow-scripts"` com `srcdoc`, DPR 3 → `innerWidth` 130; o mesmo iframe da mesma
+// origem → 390; DPR 1 → 390 nos dois. O headless shell e o Chromium 156 não têm o defeito. Nada
+// aqui confere o DPR: o que este teste mede é o layout em pixels CSS de um celular de 390×844.
+// Quando o Playwright trouxer um Chromium sem o defeito, volte a 3.
 test.use({
-  deviceScaleFactor: 3,
+  deviceScaleFactor: 1,
   hasTouch: true,
   viewport: { width: 390, height: 844 },
 })

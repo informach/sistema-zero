@@ -1,0 +1,11 @@
+(pass) gk — a porta da aba Investigar > só pausa no "jogando": no menu e no fim a aba não oferece Pausar
+(pass) gk — a porta da aba Investigar > Avançar 1 quadro roda o "A cada quadro" UMA vez e pausa de novo
+(pass) gk — a porta da aba Investigar > com o relógio fixo, Avançar anda um passo mesmo num quadro de tela que daria dois
+(pass) gk — a porta da aba Investigar > com o relógio fixo, um quadro de tela curto demais não perde o Avançar [15.00ms]
+(pass) gk — a porta da aba Investigar > Continuar desfaz um Avançar pendente (o jogo segue rodando)
+(pass) gk — a porta da aba Investigar > conta os personagens desenhados no último quadro, depois do recorte da câmera
+
+ 17 pass
+ 0 fail
+ 52 expect() calls
+Ran 17 tests across 3 files. [1191.00ms]

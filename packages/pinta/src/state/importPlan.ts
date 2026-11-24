@@ -4,14 +4,12 @@
  * restauro de backup e o pacote) e pela biblioteca do Estúdio (`importDrawingsForStudio`, os
  * desenhos de um jogo de exemplo), que precisa saber QUAL id novo cada desenho ganhou.
  */
+
+import type { PintaWorkshopAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
-import {
-  isTilesetKind,
-  PINTA_LIMITS,
-  type PintaAsset,
-  remapTilemapTilesetIds,
-} from '../core/project'
+import { cloneMapIds, mapPropertyRefs, remapMapAssets } from '../core/mapClone'
+import { isTilesetKind, PINTA_LIMITS, type PintaAsset } from '../core/project'
 
 /** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
 export function uniqueName(base: string, taken: Set<string>): string | null {
@@ -27,7 +25,10 @@ export function uniqueName(base: string, taken: Set<string>): string | null {
 }
 
 /** Clona um asset com ids NOVOS (asset + animações + camadas) p/ o Duplicar e a importação. */
-export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
+export function cloneWithNewIds<Asset extends PintaWorkshopAsset>(
+  asset: Asset,
+  name: string,
+): Asset {
   const now = Date.now()
   const copy = structuredClone(asset)
   copy.id = newId()
@@ -41,14 +42,16 @@ export function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
   } else if (copy.kind === 'vector-sprite') {
     copy.animations = copy.animations.map((a) => ({ ...a, id: newId() }))
   } else if (copy.kind === 'tilemap') {
-    copy.layers = copy.layers.map((l) => ({ ...l, id: newId() }))
+    return cloneMapIds(copy, copy.id) as Asset
+  } else if (copy.kind === 'map-set') {
+    copy.map = cloneMapIds(copy.map)
   }
   return copy
 }
 
-export interface ImportPlan {
+export interface ImportPlan<Asset extends PintaWorkshopAsset = PintaAsset> {
   /** O desenho como veio e o que vai ao disco (id novo, nome único, peças religadas). */
-  pairs: Array<{ source: PintaAsset; restored: PintaAsset }>
+  pairs: Array<{ source: Asset; restored: Asset }>
   /** id de origem → id novo. */
   idMap: Map<string, string>
   skipped: number
@@ -60,13 +63,16 @@ export interface ImportPlan {
  * `taken`. Um mapa cujas peças vieram junto mas não entraram no plano é pulado (ficaria órfão).
  * A peça de camada que não veio segue apontando para o id de antes.
  */
-export function planImport(
-  eligible: readonly PintaAsset[],
+export function planImport<Asset extends PintaWorkshopAsset>(
+  eligible: readonly Asset[],
   incomingTilesetIds: ReadonlySet<string>,
   taken: Set<string>,
-): ImportPlan {
+  nameForCopy: (asset: Asset) => string = (asset) => asset.name,
+): ImportPlan<Asset> {
   const idMap = new Map<string, string>()
-  const prepared: PintaAsset[] = []
+  const names = new Map<string, string>()
+  const animations = new Map<string, ReadonlyMap<string, string>>()
+  const prepared: Asset[] = []
   const preparedTilesetIds = new Set<string>()
   let skipped = 0
   let error: string | null = null
@@ -80,14 +86,28 @@ export function planImport(
       error ??= COPY.gallery.restoreMissingTileset
       continue
     }
-    const name = uniqueName(asset.name, taken)
+    const name = uniqueName(nameForCopy(asset), taken)
     if (!name) {
       skipped += 1
       error ??= COPY.newAsset.nameTaken
       continue
     }
     const clone = cloneWithNewIds(asset, name)
+    if (
+      (asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite') &&
+      (clone.kind === 'pixel-sprite' || clone.kind === 'vector-sprite')
+    )
+      animations.set(
+        asset.id,
+        new Map(
+          asset.animations.flatMap((animation, index) => {
+            const next = clone.animations[index]
+            return next ? [[animation.id, next.id] as const] : []
+          }),
+        ),
+      )
     idMap.set(asset.id, clone.id)
+    if (asset.kind === 'tilemap') names.set(asset.name, clone.name)
     if (isTilesetKind(asset)) preparedTilesetIds.add(asset.id)
     prepared.push(clone)
     taken.add(name)
@@ -96,8 +116,21 @@ export function planImport(
     source,
     restored:
       source.kind === 'tilemap'
-        ? remapTilemapTilesetIds(source, (id) => idMap.get(id) ?? id)
-        : source,
+        ? remapMapAssets(source, idMap, names, animations)
+        : source.kind === 'map-set'
+          ? { ...source, map: remapMapAssets(source.map, idMap, names, animations) }
+          : isTilesetKind(source) && source.tileProperties
+            ? {
+                ...source,
+                tileProperties: Object.fromEntries(
+                  Object.entries(source.tileProperties).map(([tile, properties]) => [
+                    tile,
+                    mapPropertyRefs(properties, idMap, 'asset'),
+                  ]),
+                ),
+              }
+            : source,
   }))
-  return { pairs, idMap, skipped, error }
+  // The shared cloner changes references and IDs, never the asset kind or cell representation.
+  return { pairs: pairs as ImportPlan<Asset>['pairs'], idMap, skipped, error }
 }

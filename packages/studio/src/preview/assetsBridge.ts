@@ -1,3 +1,7 @@
+import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
+import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
+import { sanitizeSceneMeta } from '../core/projectAssets'
+import { resolverAssetsDoTransporte3D, type TransporteDeCenas3D } from '../core/scene3d/transporte'
 /**
  * Runtime injetado no `<head>` do iframe (ANTES dos runtimes de extensão e do
  * código do aluno) que semeia o MANIFESTO de assets do projeto em
@@ -90,6 +94,9 @@ function clampManifest(entries: Record<string, string>, prefix: string): Record<
 
 /** Entrada de metadado de preview de UM asset: mapa e/ou caixa de colisão. */
 export interface AssetPreviewMeta {
+  scene?: PintaScene
+  /** A cena existe mas não viajou (o jogo não usa bloco de cenário): só o sinal. */
+  hasScene?: true
   tilemap?: ProjectTilemapMeta
   /** Caixa MEDIDA no desenho (fração do quadro) — o runtime aplica sozinho. */
   hitbox?: ProjectSpriteHitbox
@@ -112,20 +119,27 @@ function safeMetaManifest(
   let totalChars = 0
   for (const [name, entry] of Object.entries(meta)) {
     if (!Object.hasOwn(safeAssets, name)) continue
+    if (hasRegionalPintaReference(entry)) throw new Error(UNSUPPORTED_PINTA_REGION)
     const tilemap = safeTilemapEntry(entry?.tilemap)
+    // `tilemapFront` não passa daqui: nenhum motor o lê (a frente do cenário vem da cena).
+    const scene = sanitizeSceneMeta(entry?.scene)
+    const hasScene = !scene && entry?.hasScene === true
     const hitbox = safeHitboxEntry(entry?.hitbox)
     const sprite = sanitizeSpriteMeta(entry?.sprite)
     // Entrada vazia não entra: meta sem conteúdo só inflaria o srcdoc.
-    if (!tilemap && !hitbox && !sprite) continue
+    if (!tilemap && !scene && !hasScene && !hitbox && !sprite) continue
     // Mapas e animações compartilham o orçamento de metadados do preview.
     const size =
       name.length +
+      (scene ? JSON.stringify(scene).length : 0) +
       (sprite ? JSON.stringify(sprite).length : 0) +
       (tilemap ? tilemap.tileset.dataUrl.length + tilemap.grid.length : 0)
     if (totalChars + size > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
     totalChars += size
     out[name] = {
       ...(tilemap ? { tilemap } : {}),
+      ...(scene ? { scene } : {}),
+      ...(hasScene ? { hasScene } : {}),
       ...(hitbox ? { hitbox } : {}),
       ...(sprite ? { sprite } : {}),
     }
@@ -188,6 +202,7 @@ export function buildAssetsRuntime(
   meta: Record<string, AssetPreviewMeta> = {},
   sounds: Record<string, string> = {},
   models3d: Record<string, Asset3DManifestEntry> = {},
+  cenas3d?: TransporteDeCenas3D,
 ): string {
   const safe = clampManifest(assets, ASSET_DATA_URL_PREFIX)
   // Doubly-encoded: o seed entra como STRING JSON + JSON.parse em runtime (não como
@@ -224,6 +239,12 @@ export function buildAssetsRuntime(
   // runtime escolhe o loader (GLTFLoader × RGBELoader) e carrega por `.parse()`
   // de um ArrayBuffer — NUNCA por fetch (a rede é bloqueada no preview).
   const safe3D = clamp3DManifest(models3d)
+  if (cenas3d) resolverAssetsDoTransporte3D(cenas3d, safe, safe3D)
+  const cenas3dBlock = cenas3d
+    ? `
+  var CENAS3D = JSON.parse(${JSON.stringify(JSON.stringify(cenas3d))});
+  Object.defineProperty(window, '__SZGAME_CENAS_3D', { value: CENAS3D, writable: false, configurable: true });`
+    : ''
   const models3dBlock =
     Object.keys(safe3D).length > 0
       ? `
@@ -351,6 +372,6 @@ export function buildAssetsRuntime(
     Object.defineProperty(window, '__SZGAME_ASSETS', { value: ASSETS, writable: false, configurable: true });
   } catch (e) {
     try { window.__SZGAME_ASSETS = ASSETS; } catch (e2) {}
-  }${metaBlock}${soundsBlock}${models3dBlock}${assetFetchBlock}${imageSrcBlock}
+  }${metaBlock}${soundsBlock}${models3dBlock}${cenas3dBlock}${assetFetchBlock}${imageSrcBlock}
 })();`
 }

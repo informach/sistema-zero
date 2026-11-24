@@ -1,5 +1,107 @@
 # CLAUDE.md — @sistemazero/core
 
+## Restrições compartilhadas com Python (22/11/2026)
+
+`scripts/pinta-scene-python-schema.ts` deriva a tabela estrutural do cabeçalho
+regional para o leitor Python privado. Preserva explicitamente refinamentos de
+propriedades e flags dos padrões registrados; novos tipos/palavras-chave não
+suportados interrompem a geração. O gerador oficial do Estúdio grava/confere a
+tabela junto do compositor. Não confundir `PintaRegionSceneHeaderSchema` com
+admissão: semântica, orçamento, cabeçalhos e payloads continuam obrigatórios.
+Limites/padrões nomeados em `pinta-scene.ts` conservaram os valores anteriores.
+Provas e alcance: `qa/admissao-python-de-cenas-regionais-2026-11-22/`, no
+diretório da missão. Não ativa formato, receita ou extensão Python.
+
+## Admissão de metadados regionais em duas fases (22/11/2026)
+
+`preparePintaRegionScene` e `preparePintaRegionImageData` conferem cabeçalhos,
+referências e orçamento sem decodificar células. Retornam planos congelados,
+com fonte JSON privada e uma única tentativa de `decode`. Os leitores existentes
+continuam preparando/decodificando em uma chamada; resultados e contratos
+publicados não mudaram. Outra tentativa exige preparar novamente o texto.
+
+`readPintaRegionImageWorldMetadata` confere todos os destinos antes do primeiro
+chunk: IDs/nomes/escala, ausência de mundo aninhado, 16 MiB cumulativos de texto
+descomprimido e 4 MiB de índices. O resolvedor recebe o PNG capturado e o saldo
+de descompressão. Só devolve o registro se todas as cenas forem decodificadas.
+É admissão de metadados/índices, não parser PNG, orçamento de pixels ou loader
+de runtime: essas fronteiras ainda precisam ser integradas. Não usar a extração
+simples das fixtures como descompressor de arquivos desconhecidos. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/admissao-de-mundos-regionais-2026-11-22/`.
+
+## Contexto de consultas regionais (22/11/2026)
+
+`studio/pinta-scene-query.ts` cria uma visão em memória de cena 4 admitida e
+imutável. Cada contexto possui índices fracos por grade e reutiliza o leitor
+compartilhado. As funções de objetos, início, consulta pontual, geometria e
+movimento continuam nos núcleos existentes; conjuntos descontam sua origem
+antes da transformação e a broad phase visita somente células armazenadas.
+Criar outro contexto quando o snapshot mudar. A visão contém funções e não é
+DTO/JSON. Não passar uma cena 4 bruta às funções geométricas que pedem essa visão.
+
+O início padrão conserva a casa zero se ela ainda estiver dentro do mundo;
+somente o fallback sem marcador é limitado aos bounds assinados. Métodos de
+geometria não escolhem física: o player deve respeitar `physics` explicitamente.
+O player público segue aceitando cenas 1–3; isto não resolve seu raster legado
+de colisões, host, loader PNG 5 ou capacidades de nuvem.
+
+O gerador de geometria captura as funções antes do build e encurta somente
+identificadores locais numa closure controlada, mantendo aliases da API. Rodar
+`gen-pinta-scene-transform.ts --check` e os testes dos tetos dos dois motores;
+não aumentar o orçamento para acomodar fontes não compactadas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/consultas-de-cena-regional-2026-11-22/`.
+
+## Leitura de células regionais compartilhada (22/11/2026)
+
+`creations/pinta-region-reader.ts` recebe o leitor anterior do Pinta: consulta
+pontual, índice por contexto e visita esparsa por chunks/ordem global. O editor
+reexporta as mesmas funções. Grades são imutáveis e já admitidas pelo codec;
+não substituir guards de documento/conta por este acesso em memória. Helpers
+de chaves/ordem/índice também atendem aos mutadores, sem chaves físicas ou cache
+global. Provas e 512 comparações históricas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitura-regional-compartilhada-2026-11-22/`.
+Ainda não é integração de jogo/regiões no host ou capacidade publicada.
+
+## Leitor interno de cenas regionais (22/11/2026)
+
+`studio/pinta-region-image.ts` prepara metadados Pinta 5 em PNG: entrada JSON
+descomprimida até 16 MiB UTF-8, cena 4 pelo leitor compartilhado e seu teto de
+8 MiB, nome/raiz coerentes, escala com peça integral e física explícita. Conserva
+o teto anterior de 4 MiB de índices por destino: `maxIndexBytes` só pode reduzi-lo,
+permitindo ao loader descontar o que já admitiu. O leitor genérico de cena também
+aceita somente redução do próprio teto, antes do primeiro payload. Mundo aqui
+é descritor; o loader precisa validar/capturar seus PNGs filhos e orçamentos
+acumulados. Não inclui dataVersion 5 nas receitas/capacidades públicas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/envelope-png-regional-2026-11-22/`.
+
+O emissor privado do Pinta agora declara `physics: 'legacy' | 'precise'` na
+cena 4: formato de armazenamento não decide o modo de colisão. O leitor mantém
+o campo opcional para os primeiros documentos privados, recusando física legada
+explícita com colisões autorais de objetos. Os consumidores futuros devem honrar
+esse modo sem mudar os jogos de cenas 1–3. Recibos do emissor em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/emissor-de-cena-regional-2026-11-22/`.
+
+`studio/pinta-region-scene.ts` prepara leitura de cena 4, sem incluí-la na API
+ativa `readPintaScene` (1–3). JSON de até 8 MiB UTF-8; origem/chunks do codec
+compartilhado, cabeçalhos de todas as definições antes de qualquer decodificação.
+Cada mapa mantém 32 camadas/2.048 chunks/4 MiB. O teto agregado deriva do tamanho
+base64 e do arquivo, sem ampliar os formatos publicados. O retorno contém
+`Int16Array`; não é o DTO serializável. Não ativar PNG 5/runtimes por essa leitura.
+`PintaSceneBaseSchema` é apenas a estrutura reutilizável; a validação semântica
+completa continua obrigatória. `validatePintaSceneCells` reúne essas regras para
+as duas representações, conservando as cenas antigas. Provas em
+`docs/pinta-cenarios/missao-completa-2026-11-18/qa/leitor-de-cena-regional-2026-11-22/`.
+
+## Publicação clássica com versões (20/11/2026)
+
+`studio/classic-publication.ts`: `StudioClassicPublication` (`publicationVersion: 1`,
+`programmingLanguage: 'javascript'`, `kind: 'classic'`, revisões `{id, sourceHash, artifactHash,
+createdAt, classic: true}`), `isStudioClassicPublication` e `studioClassicPublicationReceiptText`.
+Entrou na união `StudioPublication`/`isStudioPublication` (em `python-publication.ts`);
+`isStudioProPublication` continua recusando (a revisão clássica não tem `validation`). O serviço
+de versões (`studio-runtime`, `promote-classic`) e o BFF usam. Teste:
+`tests/studio-classic-publication.test.ts`.
+
 ## Respostas em percursos alternativos do Faísca (08/11/2026)
 
 - `try-cabin` recalcula a porta em cada comparação de `freeExploration`: trocar de “ou” para “e”

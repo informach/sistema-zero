@@ -1,0 +1,84 @@
+$ biome check .
+playground\pista-da-arte.tsx:7:16 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+
+    5 │ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+    6 │ import { createRoot } from 'react-dom/client'
+  > 7 │ import { Box3, Vector3 } from 'three'
+      │                ^^^^^^^
+    8 │ import { Contexto, type ContextoDoJogo } from '../src/estado/contexto'
+    9 │ import { criarLoja } from '../src/estado/loja'
+
+  i Unused imports might be the result of an incomplete refactoring.
+
+  i Unsafe fix: Remove the unused imports.
+
+    7 │ import·{·Box3,·Vector3·}·from·'three'
+      │                --------
+
+playground\verificar-segredos-browser.ts:35:5 lint/complexity/useOptionalChain  FIXABLE  ━━━━━━━━━━━
+
+  ! Change to an optional chain.
+
+    34 │ const segredo = SEGREDOS[0]
+  > 35 │ if (!segredo || segredo.ilha !== 'sua-ilha') throw new Error('o primeiro segredo é o da sua ilha')
+       │     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    36 │ const pe = peDoSegredo(segredo)
+    37 │ const { corrente, bau } = ventoDoSegredo(segredo, pe)
+
+  i Unsafe fix: Change to an optional chain.
+
+     33  33 │
+     34  34 │   const segredo = SEGREDOS[0]
+     35     │ - if·(!segredo·||·segredo.ilha·!==·'sua-ilha')·throw·new·Error('o·primeiro·segredo·é·o·da·sua·ilha')
+         35 │ + if·(segredo?.ilha·!==·'sua-ilha')·throw·new·Error('o·primeiro·segredo·é·o·da·sua·ilha')
+     36  36 │   const pe = peDoSegredo(segredo)
+     37  37 │   const { corrente, bau } = ventoDoSegredo(segredo, pe)
+
+
+src\mundo\quarto-na-obra.ts:25:9 lint/complexity/useOptionalChain  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Change to an optional chain.
+
+    23 │   for (const p of quarto.placedItems) {
+    24 │     const info = ROOM_ITEM_INFO[p.itemId]
+  > 25 │     if (!info || info.mount !== 'wall' || p.on) continue
+       │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    26 │     // Sem `wall`, o item fica na parede da direita (como em `FurniturePiece`).
+    27 │     lista.push({ parede: PAREDE_DO_LADO[p.wall ?? 'right'], u: p.x, largura: info.w })
+
+  i Unsafe fix: Change to an optional chain.
+
+    23 23 │     for (const p of quarto.placedItems) {
+    24 24 │       const info = ROOM_ITEM_INFO[p.itemId]
+    25    │ - ····if·(!info·||·info.mount·!==·'wall'·||·p.on)·continue
+       25 │ + ····if·(info?.mount·!==·'wall'·||·p.on)·continue
+    26 26 │       // Sem `wall`, o item fica na parede da direita (como em `FurniturePiece`).
+    27 27 │       lista.push({ parede: PAREDE_DO_LADO[p.wall ?? 'right'], u: p.x, largura: info.w })
+
+
+Checked 909 files in 1600ms. No fixes applied.
+Found 4 warnings.
+src\mundo\rotina-dos-lumis.tsx:4:3 lint/correctness/noUnusedImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Several of these imports are unused.
+
+    2 │ import {
+    3 │   CATALOGO_DE_OBJETOS,
+  > 4 │   type LumiId,
+      │   ^^^^^^^^^^^
+    5 │   PERFIS_DOS_LUMIS,
+    6 │   type Salvamento,
+
+  i Unused imports might be the result of an incomplete refactoring.
+
+  i Unsafe fix: Remove the unused imports.
+
+      2   2 │   import {
+      3   3 │     CATALOGO_DE_OBJETOS,
+      4     │ - ··type·LumiId,
+      5   4 │     PERFIS_DOS_LUMIS,
+      6   5 │     type Salvamento,
+
+

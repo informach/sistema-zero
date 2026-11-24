@@ -1,4 +1,5 @@
 import { expect, type FrameLocator, type Page, test } from '@playwright/test'
+import { GAME_FRAME_FOCUS_ALLOW } from '@sistemazero/core/studio/frame-permissions'
 import type { Project } from '../src/core/project'
 import {
   EXAMPLE_QA_CONTRACTS,
@@ -14,12 +15,19 @@ import {
 import { MEU_HEROI_MOLDA_SOURCE } from '../src/official-extensions/game-3d/__gen_primeirosJogos'
 import { HEROI_DO_MOLDA_GLB } from '../src/official-extensions/game-3d/exampleAssets'
 import { renderProjectToPreviewDocAsync } from '../src/preview/renderProject'
+import {
+  configurePreviewInputDiagnostics,
+  pressObservedPreviewKey,
+} from './helpers/previewInputDiagnostics'
+import { unexpected3DAssetDiagnostics } from './helpers/threeAssetDiagnostics'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
   demo: 'Demonstração',
   exploration: 'Exploração',
 } as const
+
+configurePreviewInputDiagnostics()
 
 function kitCard(page: Page, contract: ExampleQAContract) {
   return page
@@ -232,7 +240,19 @@ async function applyInteraction(
     'place-c': ['c'],
     'remove-x': ['x'],
   }
-  for (const key of keys[interaction]) await page.keyboard.press(key)
+  for (const key of keys[interaction]) await pressObservedPreviewKey(page, key)
+}
+
+/**
+ * Avisos esperados, que não vêm de defeito do projeto:
+ * - o do driver ANGLE quando o Playwright tira foto ou lê pixels;
+ * - o do modo leve do Jogo 3D Avançado: o orçamento de desenho mede os quadros e, numa máquina
+ *   lenta (o Windows do CI, sem placa de vídeo), reduz sombra e efeitos e avisa a criança. No
+ *   diagnóstico de entrada de 21/11/2026 (rodada 44910663160), 1 das 4 falhas do Windows era ele.
+ */
+function isExpectedNotice(text: string): boolean {
+  if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return true
+  return text.startsWith('SZGameKit3D: modo leve ligado:')
 }
 
 async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<FrameLocator> {
@@ -245,9 +265,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
       const text = message.text()
-      // Diagnóstico emitido pelo driver ANGLE ao Playwright fazer screenshots/
-      // readback. Não vem do projeto nem do runtime do Estúdio.
-      if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+      if (isExpectedNotice(text)) return
       const location = message.location()
       const source = location.url ? ` (${location.url}:${location.lineNumber ?? 0})` : ''
       diagnostics.push(`${message.type()}: ${text}${source}`)
@@ -289,6 +307,15 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   await card.click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 
+  // On the narrow layout the child is still looking at Blocks. Open the actual
+  // game panel before requiring visible pixels or delivering keyboard controls.
+  const gameTab = page.getByRole('tab', { name: 'Jogo', exact: true })
+  if (await gameTab.isVisible()) {
+    await gameTab.click()
+    await expect(gameTab).toHaveAttribute('aria-selected', 'true')
+    await expect(page.locator('iframe[title="Pré-visualização"]')).toBeVisible()
+  }
+
   let preview: FrameLocator
   try {
     preview = await expectFirstFrame(page, contract.slowMountMs)
@@ -316,6 +343,8 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
           }
         }
         return {
+          url: location.href,
+          readyState: document.readyState,
           bodyChildren: document.body.children.length,
           bodyTags: Array.from(document.body.children, (child) => child.tagName),
           canvases: Array.from(document.querySelectorAll('canvas'), (canvas) => ({
@@ -336,11 +365,25 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         }
       })
       .catch(() => null)
+    const hostDebug = await page
+      .locator('iframe[title="Pré-visualização"]')
+      .evaluate((iframe) => {
+        const source = iframe.getAttribute('srcdoc') ?? ''
+        return {
+          documentChars: source.length,
+          pausedDocument: source === '<!doctype html><html lang="pt-BR"><body></body></html>',
+          sandbox: iframe.getAttribute('sandbox'),
+          preparing: iframe.getAttribute('aria-busy'),
+          visible: iframe.getBoundingClientRect().height > 0,
+        }
+      })
+      .catch(() => null)
     throw new Error(
       [
         detail,
         ...currentDiagnostics(),
         frameDebug ? JSON.stringify(frameDebug) : 'iframe indisponível',
+        hostDebug ? JSON.stringify({ host: hostDebug }) : 'host indisponível',
       ]
         .filter(Boolean)
         .join('\n'),
@@ -432,7 +475,7 @@ test('game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram tea
   page.on('console', (message) => {
     if (message.type() !== 'warning' && message.type() !== 'error') return
     const text = message.text()
-    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    if (isExpectedNotice(text)) return
     diagnostics.push(`${message.type()}: ${text}`)
   })
 
@@ -485,16 +528,20 @@ SZGameKit3D.start();
   const srcdoc = await renderProjectToPreviewDocAsync(project)
 
   await page.goto('/')
-  await page.evaluate((documentSource) => {
-    document.body.replaceChildren()
-    const iframe = document.createElement('iframe')
-    iframe.id = 'asset-preview'
-    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
-    iframe.style.width = '800px'
-    iframe.style.height = '500px'
-    iframe.srcdoc = documentSource
-    document.body.appendChild(iframe)
-  }, srcdoc)
+  await page.evaluate(
+    ([documentSource, allow]) => {
+      document.body.replaceChildren()
+      const iframe = document.createElement('iframe')
+      iframe.id = 'asset-preview'
+      iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
+      iframe.style.width = '800px'
+      iframe.style.height = '500px'
+      iframe.srcdoc = documentSource
+      document.body.appendChild(iframe)
+    },
+    [srcdoc, GAME_FRAME_FOCUS_ALLOW] as const,
+  )
 
   const preview = page.frameLocator('#asset-preview')
   const canvas = preview.locator('canvas').first()
@@ -576,20 +623,29 @@ SZGameKit3D.start();
   // Segunda instância: remove o iframe assim que o canvas nasce, enquanto os
   // addons/assets ainda podem estar concluindo. O navegador real não deve emitir
   // pageerror nem deixar o runtime tardio religar um loop fora do documento.
-  await page.evaluate((documentSource) => {
-    const iframe = document.createElement('iframe')
-    iframe.id = 'pending-assets-preview'
-    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
-    iframe.srcdoc = documentSource
-    document.body.appendChild(iframe)
-  }, srcdoc)
+  await page.evaluate(
+    ([documentSource, allow]) => {
+      const iframe = document.createElement('iframe')
+      iframe.id = 'pending-assets-preview'
+      iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
+      iframe.srcdoc = documentSource
+      document.body.appendChild(iframe)
+    },
+    [srcdoc, GAME_FRAME_FOCUS_ALLOW] as const,
+  )
   await expect(page.frameLocator('#pending-assets-preview').locator('canvas')).toBeAttached({
     timeout: 20_000,
   })
   await page.locator('#pending-assets-preview').evaluate((iframe) => iframe.remove())
   await page.waitForTimeout(300)
 
-  expect(diagnostics, diagnostics.join('\n')).toEqual([])
+  await test.info().attach('raw-3d-asset-diagnostics', {
+    body: JSON.stringify(diagnostics, null, 2),
+    contentType: 'application/json',
+  })
+  const unexpected = unexpected3DAssetDiagnostics(diagnostics)
+  expect(unexpected, unexpected.join('\n')).toEqual([])
 })
 
 /**
@@ -604,7 +660,7 @@ function collect3DDiagnostics(page: Page): string[] {
   page.on('console', (message) => {
     if (message.type() !== 'warning' && message.type() !== 'error') return
     const text = message.text()
-    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    if (isExpectedNotice(text)) return
     diagnostics.push(`${message.type()}: ${text}`)
   })
   return diagnostics
@@ -653,16 +709,17 @@ function moldaAssetsProject(
 
 async function mountAssetPreview(page: Page, srcdoc: string, id: string): Promise<FrameLocator> {
   await page.evaluate(
-    ([documentSource, frameId]) => {
+    ([documentSource, frameId, allow]) => {
       const iframe = document.createElement('iframe')
       iframe.id = frameId
       iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+      iframe.allow = allow
       iframe.style.width = '800px'
       iframe.style.height = '500px'
       iframe.srcdoc = documentSource
       document.body.appendChild(iframe)
     },
-    [srcdoc, id] as const,
+    [srcdoc, id, GAME_FRAME_FOCUS_ALLOW] as const,
   )
   return page.frameLocator(`#${id}`)
 }
@@ -827,19 +884,35 @@ const GAME_TWO_D_DPR_SAMPLES = ['game-2d:Sala com paredes', 'game-2d:Equilibrist
 
 for (const dpr of [1, 2, 3]) {
   test.describe(`KitGallery — geometria lógica do Jogo 2D em DPR ${dpr}`, () => {
-    test.use({ deviceScaleFactor: dpr })
+    // Full Chromium places the opaque sandbox in another renderer. Context-only CDP
+    // emulation changes the parent's DPR but leaves that renderer at the native DPR.
+    // Set the browser's actual scale too, preserving full Chromium and every assertion.
 
     for (const key of GAME_TWO_D_DPR_SAMPLES) {
       const contract = EXAMPLE_QA_CONTRACTS.find((item) => item.key === key)
       if (!contract) throw new Error(`amostra DPR sem contrato: ${key}`)
 
       test(`${contract.key}: primeiro frame e controles preservam o tamanho lógico`, async ({
-        page,
+        playwright,
+        baseURL,
       }) => {
         // Mesmo harness, mesmo orçamento: soma ainda a checagem de DPR abaixo.
         test.setTimeout(exampleQaTestTimeoutMs(contract) + EXAMPLE_QA_TIMEOUTS.firstFrameMs)
-        await openAndExercise(page, contract)
-        await expectLogicalCanvasAtDpr(page, dpr)
+        const browser = await playwright.chromium.launch({
+          ...(process.env.PW_CHROMIUM
+            ? { executablePath: process.env.PW_CHROMIUM }
+            : { channel: 'chromium' }),
+          args: [`--force-device-scale-factor=${dpr}`],
+        })
+        try {
+          const context = await browser.newContext({ baseURL, deviceScaleFactor: dpr })
+          const page = await context.newPage()
+          expect(await page.evaluate(() => window.devicePixelRatio)).toBe(dpr)
+          await openAndExercise(page, contract)
+          await expectLogicalCanvasAtDpr(page, dpr)
+        } finally {
+          await browser.close()
+        }
       })
     }
   })
@@ -1021,7 +1094,7 @@ test('game-2d-advanced: Vila do Dragão — fluxo visual completo no Chromium', 
   page.on('console', (message) => {
     if (message.type() === 'warning' || message.type() === 'error') {
       const text = message.text()
-      if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+      if (isExpectedNotice(text)) return
       diagnostics.push(`${message.type()}: ${text}`)
     }
   })

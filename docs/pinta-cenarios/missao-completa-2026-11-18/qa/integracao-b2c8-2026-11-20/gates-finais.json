@@ -1,0 +1,32 @@
+[
+  {
+    "name": "motion-wrapper",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-motion-wrapper.log"
+  },
+  {
+    "name": "startup",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-startup.log"
+  },
+  {
+    "name": "studio-types",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-studio-types.log"
+  },
+  {
+    "name": "members-types",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-members-types.log"
+  },
+  {
+    "name": "runtime-profile",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-runtime-profile.log"
+  },
+  {
+    "name": "biome",
+    "exit": 0,
+    "log": ".cache/pinta-final-qa-biome.log"
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-21T03:29:02.448Z",
+  "base": "8d5573f97562c401fe85ea44b27b34c8f14c4acf",
+  "reader": "24226bb3f0ab10e96174d80dcbbcafe1f37653ff",
+  "writerDelta": [
+    "packages/core/src/creations/pinta-format.test.ts",
+    "packages/core/src/creations/pinta-format.ts",
+    "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+    "packages/member-shell/tests/pinta-local-authority.test.ts"
+  ],
+  "files": [
+    {
+      "file": "packages/core/src/creations/pinta-format.test.ts",
+      "sha256": "59997f34aaa645b80461ba04ad883c13b0b8b4bd61a13d836a1276eb7840e3c6"
+    },
+    {
+      "file": "packages/core/src/creations/pinta-format.ts",
+      "sha256": "c03ae67523343498193a8b0d8ec869e031c62bb9d9666fb1c58dd73866bb15b2"
+    },
+    {
+      "file": "packages/member-shell/tests/fixtures/pinta-local-authority.fixture.ts",
+      "sha256": "f11d50f89de28b830635ca0ce586de674dcccce2e8d8ed0c5d0038d6b568292e"
+    },
+    {
+      "file": "packages/member-shell/tests/pinta-local-authority.test.ts",
+      "sha256": "28e86f353d4be4e7b4c63874ba3070a90c305ebc44f46c1d48f7bdab3e884ad7"
+    },
+    {
+      "file": "packages/members/src/infrastructure/config/studio-authoring-catalogs/12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37.json",
+      "sha256": "12220f13fea768bd3dd77a386170a292aed1067bc8d7583d4c4a3c4d2e9c0a37"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/main.tsx",
+      "sha256": "6308c7def6964e11306423dea50b3355c9735213dc5248fba0925f023f44fc8d"
+    },
+    {
+      "file": "packages/studio/e2e/fixtures/pro-workspace/modularProject.ts",
+      "sha256": "a318b0f0e76bbf92754a94fd8d806f7ab4c1553bb6f33185143120d6f7f06946"
+    },
+    {
+      "file": "packages/studio/e2e/pro-workspace-performance.spec.ts",
+      "sha256": "c1fde0671036a89932fb6ecc4fa7cfdc7768f582678c5301e877ce379ccac761"
+    },
+    {
+      "file": "packages/studio/src/ir/symbolNames.ts",
+      "sha256": "667a0c238dc6f0995ddde59ca792edf6e2977107b46a1b642dfb4ea1aef827a2"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+module.exports=async function(qa){const expected=qa.ownedVilaProgramBeforeUpdate;if(!expected?.markerInFiles||!expected.markerInIR)throw Error('Owned custom program missing');
+ const before=await require('./checkpoint-owned-vila.cjs')(qa),page=qa.vilaEditorPage,reader=await qa.makeAuthorityPage();let first;
+ const cell=()=>reader.evaluate(async({namespace,id})=>{const assets=await window.pinta026.createPintaPersistence({namespace}).listAllAssets();const map=assets.find(a=>a.id===id);if(map?.schema!==7||map.layers.length!==18)throw Error('Native Vila missing');return map.layers.find(l=>'cells' in l&&l.name==='Chão')?.cells[0];},{namespace:qa.ownedStorageNamespace,id:qa.ownedVila.mapId});
+ try{
+  if(await cell()!==15)throw Error('Expected original Vila first cell');
+  await page.getByRole('button',{name:'Chão',exact:true}).click();await page.getByRole('button',{name:'Borracha',exact:true}).click();await page.getByRole('img',{name:'Grade do mapa',exact:true}).click({position:{x:16,y:16}});
+  for(let i=0;i<30;i++){await page.waitForTimeout(200);first=await cell();if(first===-1)break}if(first!==-1)throw Error('Vila gesture not committed');
+ }finally{await reader.close()}
+ const changed=await require('./checkpoint-owned-vila.cjs')(qa);qa.ownedVilaNativeAfterEdit=changed;
+ const altered=changed.assets.filter(a=>before.assets.find(b=>b.id===a.id)?.sha256!==a.sha256);if(altered.length!==1||altered[0].id!==qa.ownedVila.mapId)throw Error('Unexpected native cohort change');
+ await qa.vilaPage.bringToFront();await qa.vilaPage.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ let after;for(let i=0;i<80;i++){await qa.vilaPage.waitForTimeout(250);after=await require('./checkpoint-owned-vila-program.cjs')(qa);if(after.sceneSha256!==expected.sceneSha256&&after.libRevision>expected.libRevision)break}
+ if(after?.sceneSha256===expected.sceneSha256||after.libRevision<=expected.libRevision)return {failed:true,phase:'scene-not-updated',after};
+ if(after.programSha256!==expected.programSha256||!after.markerInFiles||!after.markerInIR)throw Error('Custom Vila program changed');
+ qa.ownedVilaUpdate={projectId:after.projectId,mapBefore:before.assets.find(a=>a.id===qa.ownedVila.mapId).sha256,mapAfter:altered[0].sha256,programBefore:expected.programSha256,programAfter:after.programSha256,sceneBefore:expected.sceneSha256,sceneAfter:after.sceneSha256,libRevisionBefore:expected.libRevision,libRevisionAfter:after.libRevision,linkedMaps:after.linkedMaps,layers:after.layers,tilesets:after.tilesets,firstCell:first,unchangedNativeResources:5,customProgramPreserved:true,focusEventEmulated:true,keyboardProgramAndMouseMap:true,authenticatedHost:true,cloudWriter6Activated:false,oldPagePreserved:!qa.old.isClosed()};
+ return qa.ownedVilaUpdate;};

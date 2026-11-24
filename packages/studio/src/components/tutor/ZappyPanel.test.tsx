@@ -11,6 +11,7 @@ import {
   setProjectStorageNamespace,
 } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRun } from '../../state/proRun'
 import type { StudioLayout } from '../../studio/layoutContext'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
 import type {
@@ -1191,5 +1192,43 @@ describe('ZappyPanel sob rede ruim', () => {
     fireEvent.submit(form)
 
     await waitFor(() => expect(view.getByText('Tente novamente com este bloco.')).toBeTruthy())
+  })
+
+  // Full review final (21/11/2026): no Pro, o erro de uma página anterior (o jogo já consertado e
+  // recarregado) não vai mais ao Zappy, como já não contava na aba Problemas.
+  it('does not send an error from before the game page restarted', async () => {
+    const asked: StudioTutorAskInput[] = []
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      feedback: async () => {},
+      ask: async (input) => {
+        asked.push(input)
+        return answer()
+      },
+    }
+    useLogsStore.getState().push({
+      source: 'sz-preview',
+      kind: 'runtimeError',
+      parts: ['TypeError: nanoid is not a function'],
+      error: { message: 'TypeError: nanoid is not a function' },
+      timestamp: 1_000,
+    })
+    useProRun.getState().markPageLoaded(2_000)
+    try {
+      const ui = render(renderPanel(adapter))
+      const question = await ui.findByLabelText('Sua dúvida para o Zappy')
+      fireEvent.change(question, { target: { value: 'Por que o jogo parou?' } })
+      await waitFor(() =>
+        expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+          false,
+        ),
+      )
+      fireEvent.submit(question.closest('form') as HTMLFormElement)
+      await ui.findByText('Tente novamente com este bloco.')
+      expect(asked[0]?.context.lastError ?? null).toBeNull()
+    } finally {
+      useProRun.setState({ pageLoadedAt: 0 })
+    }
   })
 })

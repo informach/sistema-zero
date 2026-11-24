@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "result": {
+    "waterRegion": {
+      "x": 80,
+      "y": 208,
+      "width": 32,
+      "height": 32
+    },
+    "waterBefore": "cc696542bd9c10e44f8e9022c9c9a2181f43794d0ee449314058069b70b1bcf8",
+    "waterAfter": "0e3dc10c4d4390c2f7f146a893c86b5dd9419b348378dfe407213e4d1aaa254a",
+    "animatedPixelsChanged": true,
+    "playerBefore": {
+      "count": 144,
+      "minY": 32,
+      "maxY": 43
+    },
+    "playerUnderForeground": {
+      "count": 139,
+      "minY": 134,
+      "maxY": 145
+    },
+    "foregroundOcclusionObserved": true,
+    "keyboardOnlyMovement": true,
+    "realPublishedGame": true
+  }
+}

@@ -1,37 +1,15 @@
+# 📦 Bibliotecas
 import random
 import pgzrun
 
+# 🎛️ Configurações
 WIDTH = 500
 HEIGHT = 500
 TITLE = 'Pirâmide de Cubos'
 ANDARES = 7
 
-# Cada cubo mora numa linha (0 é o topo) e numa coluna (de 0 até o número da linha).
-# cubos[linha] é a fileira daquela linha; todos_os_cubos tem todos juntos, para desenhar.
-cubos = []
-todos_os_cubos = []
-for linha in range(ANDARES):
-    fileira = []
-    for coluna in range(linha + 1):
-        cubo = Actor('cubo')
-        cubo.pos = (250 - linha * 32 + coluna * 64, 110 + linha * 48)
-        fileira.append(cubo)
-        todos_os_cubos.append(cubo)
-    cubos.append(fileira)
 
-pulador = Actor('pulador')
-bolinha = Actor('bolinha')
-linha_atual = 0
-coluna_atual = 0
-pulando = False
-caiu = False
-vidas = 3
-pintados = 0
-venceu = False
-bola_linha = -1
-bola_coluna = 0
-
-
+# 🧩 Meus moldes
 def lugar(linha, coluna):
     # O pulador fica em pé sobre o topo do cubo.
     return (250 - linha * 32 + coluna * 64, 110 + linha * 48 - 34)
@@ -107,7 +85,51 @@ def descer_bolinha():
     bola_coluna = bola_coluna + random.randint(0, 1)
     animate(bolinha, tween='bounce_end', duration=0.3, pos=lugar(bola_linha, bola_coluna))
 
+# ⚙️ Ao iniciar
+# Cada cubo mora numa linha (0 é o topo) e numa coluna (de 0 até o número da linha).
+# cubos[linha] é a fileira daquela linha; todos_os_cubos tem todos juntos, para desenhar.
+cubos = []
+todos_os_cubos = []
+for linha in range(ANDARES):
+    fileira = []
+    for coluna in range(linha + 1):
+        cubo = Actor('cubo')
+        cubo.pos = (250 - linha * 32 + coluna * 64, 110 + linha * 48)
+        fileira.append(cubo)
+        todos_os_cubos.append(cubo)
+    cubos.append(fileira)
 
+pulador = Actor('pulador')
+bolinha = Actor('bolinha')
+linha_atual = 0
+coluna_atual = 0
+pulando = False
+caiu = False
+vidas = 3
+pintados = 0
+venceu = False
+bola_linha = -1
+bola_coluna = 0
+
+
+colocar_no_topo()
+pintar_cubo()
+
+
+# ⚡ Quando acontecer
+def on_key_down(key):
+    global vidas, pintados, venceu
+    if key == keys.SPACE and (vidas == 0 or venceu):
+        for cubo in todos_os_cubos:
+            cubo.image = 'cubo'
+        vidas = 3
+        pintados = 0
+        venceu = False
+        colocar_no_topo()
+        pintar_cubo()
+
+
+# 🔁 Enquanto estiver rodando
 def draw():
     screen.blit('fundo', (0, 0))
     for cubo in todos_os_cubos:
@@ -145,22 +167,6 @@ def update():
         pular(-1, -1)
     elif keyboard.right:
         pular(-1, 0)
-
-
-def on_key_down(key):
-    global vidas, pintados, venceu
-    if key == keys.SPACE and (vidas == 0 or venceu):
-        for cubo in todos_os_cubos:
-            cubo.image = 'cubo'
-        vidas = 3
-        pintados = 0
-        venceu = False
-        colocar_no_topo()
-        pintar_cubo()
-
-
-colocar_no_topo()
-pintar_cubo()
 clock.schedule_interval(soltar_bolinha, 5)
 clock.schedule_interval(descer_bolinha, 0.7)
 pgzrun.go()

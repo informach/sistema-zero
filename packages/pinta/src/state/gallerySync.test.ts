@@ -80,3 +80,38 @@ describe('galeria × armazenamento que sincroniza por fora', () => {
     expect(store.getState().syncing).toBe(false)
   })
 })
+
+describe('desenhos da conta em formato mais novo que este código', () => {
+  it('a galeria relê os avisos a cada evento do armazenamento, sem pôr esses desenhos na lista', async () => {
+    const { persistence, emit } = syncingPersistence()
+    let issues: ReturnType<NonNullable<PintaPersistence['getReadIssues']>> = []
+    persistence.getReadIssues = () => issues
+    const store = createGalleryStore(persistence)
+    store.getState().attachPersistence()
+    await store.getState().load()
+    expect(store.getState().readIssues).toEqual([])
+
+    issues = [{ id: 'mapa-1', name: 'vila', status: 'unsupported', version: 9 }]
+    emit({ type: 'changed' })
+    expect(store.getState().readIssues).toEqual(issues)
+    // Mesma lista: o estado não é trocado (o aviso chega a cada desenho que desce).
+    const before = store.getState().readIssues
+    issues = [{ id: 'mapa-1', name: 'vila', status: 'unsupported', version: 9 }]
+    emit({ type: 'changed' })
+    expect(store.getState().readIssues).toBe(before)
+    await tick(300)
+    expect(store.getState().assets.map((a) => a.name)).toEqual(['local'])
+
+    issues = []
+    emit({ type: 'sync-end' })
+    expect(store.getState().readIssues).toEqual([])
+  })
+
+  it('armazenamento sem `getReadIssues` (o IndexedDB puro, a aula) nunca tem aviso', async () => {
+    const { persistence, emit } = syncingPersistence()
+    const store = createGalleryStore(persistence)
+    store.getState().attachPersistence()
+    emit({ type: 'changed' })
+    expect(store.getState().readIssues).toEqual([])
+  })
+})

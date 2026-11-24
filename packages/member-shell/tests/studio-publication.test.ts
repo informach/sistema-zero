@@ -11,10 +11,27 @@ const env = await import('../src/lib/env')
 const storage = await import('../src/server/r2')
 const optimizer = await import('../src/server/image-optimizer')
 const { createStudioRoutes } = await import('../src/routes/studio')
+const { studioPublicProject } = await import('../src/server/studio-publication')
 const originalFetch = globalThis.fetch
 afterEach(() => {
   mock.restore()
   globalThis.fetch = originalFetch
+})
+
+test('a projeção de publicação recusa o marcador regional antes de retirar dados autorais', () => {
+  const project = createBlankProjectSnapshot('publication-region', 'Vila')
+  const marker = { regional: { dataVersion: 5 } }
+  const asset = {
+    id: 'cover',
+    kind: 'image' as const,
+    source: 'upload' as const,
+    name: 'Vila',
+    dataUrl: 'data:image/png;base64,YQ==',
+    ...marker,
+  }
+  expect(() => studioPublicProject({ ...project, assets: [asset] })).toThrow(
+    'O original foi preservado',
+  )
 })
 
 function fixture(
@@ -330,11 +347,13 @@ test('publication mutations reject browser-supplied ownership and oversized enve
     (
       await f.routes.studioPublication.POST(
         request({
-          operation: 'update',
-          playId: crypto.randomUUID(),
-          requestId: crypto.randomUUID(),
-          expectedVersion: 1,
-          project: { content: 'x'.repeat(6 * 1024 * 1024 + 32768) },
+          operation: 'status',
+          compare: true,
+          context: {
+            kind: 'free',
+            projectId: 'meu-jogo',
+            project: { content: 'x'.repeat(6 * 1024 * 1024 + 32768) },
+          },
         }),
       )
     ).status,

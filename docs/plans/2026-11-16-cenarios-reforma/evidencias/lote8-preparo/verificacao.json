@@ -1,0 +1,680 @@
+{
+  "data": "2026-11-19",
+  "base": "d25ab3981",
+  "escopo": "Preparo autorizado da exportação, 8.3 permanece aberto",
+  "regressao": {
+    "aprovados": 802,
+    "falhas": 0,
+    "verificacoes": 17303
+  },
+  "postgres": {
+    "aprovados": 42,
+    "falhas": 0,
+    "verificacoes": 378
+  },
+  "tipagem": {
+    "resultadoObservado": "Seis comandos sequenciais terminaram com código zero; oficina conferida novamente após a revisão",
+    "pacotes": [
+      "molda-cenarios-core",
+      "molda-cenarios-motor",
+      "molda-cenarios",
+      "member-shell",
+      "api-gateway",
+      "members"
+    ],
+    "nodeOptions": "--max-old-space-size=6144"
+  },
+  "runtime": {
+    "digest": "0a9ed85ce3544ef030d28d9847c70bda3320b0f2c69fd41ed59d6f8c2f4a7b65",
+    "caracteres": 1106050,
+    "dependencias": ["three@0.184.0", "three-mesh-bvh@0.9.2", "zod@4.3.6"]
+  },
+  "build": {
+    "vite": "8.3.4",
+    "resultadoObservado": "Código zero, aviso existente de chunks acima de 500 kB"
+  },
+  "compilacao": [
+    {
+      "nome": "lote8-integracao",
+      "autoriaIntacta": true,
+      "ciclos": [
+        {
+          "inventario": "62a2fa7ecfe02a7c3fbfe807dbb29774a87db5884e5545596208e0cf3f687617",
+          "arquivos": 6,
+          "bytes": 12208,
+          "nos": 5,
+          "colisoes": 3,
+          "malhas": 5,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 5,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "62a2fa7ecfe02a7c3fbfe807dbb29774a87db5884e5545596208e0cf3f687617",
+          "arquivos": 6,
+          "bytes": 12208,
+          "nos": 5,
+          "colisoes": 3,
+          "malhas": 5,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 5,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "62a2fa7ecfe02a7c3fbfe807dbb29774a87db5884e5545596208e0cf3f687617",
+          "arquivos": 6,
+          "bytes": 12208,
+          "nos": 5,
+          "colisoes": 3,
+          "malhas": 5,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 5,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        }
+      ],
+      "comparativos": [
+        {
+          "nome": "geral",
+          "erroMedio": 0.00012261284722222223,
+          "maximo": 22,
+          "canaisAcima16": 2
+        },
+        {
+          "nome": "aproximacao",
+          "erroMedio": 0.00009765625,
+          "maximo": 22,
+          "canaisAcima16": 2
+        },
+        {
+          "nome": "rasante",
+          "erroMedio": 0.00020833333333333335,
+          "maximo": 22,
+          "canaisAcima16": 4
+        }
+      ],
+      "provas": [
+        {
+          "x": 0,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": 6,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": -10,
+          "z": 0,
+          "altura": 0
+        },
+        {
+          "x": 12,
+          "z": 6,
+          "altura": -1.3322676295501878e-15
+        },
+        {
+          "x": 15,
+          "z": 15,
+          "altura": -3.3306690738754696e-15
+        }
+      ]
+    },
+    {
+      "nome": "lote8-integracao-juncao",
+      "autoriaIntacta": true,
+      "ciclos": [
+        {
+          "inventario": "78157484dd5e0e76a04996c30d655154bde09f9e4f65bc52bd9041390ce9a06d",
+          "arquivos": 6,
+          "bytes": 13516,
+          "nos": 4,
+          "colisoes": 3,
+          "malhas": 4,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 4,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "78157484dd5e0e76a04996c30d655154bde09f9e4f65bc52bd9041390ce9a06d",
+          "arquivos": 6,
+          "bytes": 13516,
+          "nos": 4,
+          "colisoes": 3,
+          "malhas": 4,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 4,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "78157484dd5e0e76a04996c30d655154bde09f9e4f65bc52bd9041390ce9a06d",
+          "arquivos": 6,
+          "bytes": 13516,
+          "nos": 4,
+          "colisoes": 3,
+          "malhas": 4,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 4,
+              "textures": 1
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        }
+      ],
+      "comparativos": [
+        {
+          "nome": "geral",
+          "erroMedio": 0.00013780381944444444,
+          "maximo": 22,
+          "canaisAcima16": 2
+        },
+        {
+          "nome": "aproximacao",
+          "erroMedio": 0.00009765625,
+          "maximo": 22,
+          "canaisAcima16": 2
+        },
+        {
+          "nome": "rasante",
+          "erroMedio": 0.00020833333333333335,
+          "maximo": 22,
+          "canaisAcima16": 4
+        }
+      ],
+      "provas": [
+        {
+          "x": 0,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": 6,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": -10,
+          "z": 0,
+          "altura": 0
+        },
+        {
+          "x": 12,
+          "z": 6,
+          "altura": -1.3322676295501878e-15
+        },
+        {
+          "x": 15,
+          "z": 15,
+          "altura": -3.3306690738754696e-15
+        }
+      ]
+    },
+    {
+      "nome": "lote8-integracao-terreno",
+      "autoriaIntacta": true,
+      "ciclos": [
+        {
+          "inventario": "7dbd137d2b2f6d49c95bea1d1bf792acae72bdba1149af44f183264802150559",
+          "arquivos": 27,
+          "bytes": 8692217,
+          "nos": 20,
+          "colisoes": 9,
+          "malhas": 25,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 24,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "7dbd137d2b2f6d49c95bea1d1bf792acae72bdba1149af44f183264802150559",
+          "arquivos": 27,
+          "bytes": 8692217,
+          "nos": 20,
+          "colisoes": 9,
+          "malhas": 25,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 24,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "7dbd137d2b2f6d49c95bea1d1bf792acae72bdba1149af44f183264802150559",
+          "arquivos": 27,
+          "bytes": 8692217,
+          "nos": 20,
+          "colisoes": 9,
+          "malhas": 25,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 24,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        }
+      ],
+      "comparativos": [
+        {
+          "nome": "geral",
+          "erroMedio": 0.08674045138888889,
+          "maximo": 40,
+          "canaisAcima16": 5
+        },
+        {
+          "nome": "aproximacao",
+          "erroMedio": 0.13055989583333333,
+          "maximo": 39,
+          "canaisAcima16": 83
+        },
+        {
+          "nome": "rasante",
+          "erroMedio": 0.11243272569444444,
+          "maximo": 29,
+          "canaisAcima16": 1
+        }
+      ],
+      "provas": [
+        {
+          "x": 0,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": 6,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": -6,
+          "z": 0,
+          "altura": -1.8750286102294922
+        },
+        {
+          "x": 16,
+          "z": -4,
+          "altura": -0.49988555908203125
+        },
+        {
+          "x": 20,
+          "z": 20,
+          "altura": -0.24994277954101562
+        },
+        {
+          "x": 4,
+          "z": -3,
+          "altura": -1.1301716566085815,
+          "alturaNativa": -1.1301716566085815
+        },
+        {
+          "x": 10,
+          "z": -2,
+          "altura": -0.7547997236251813,
+          "alturaNativa": -0.7547997236251813
+        },
+        {
+          "x": 8,
+          "z": 5,
+          "altura": -0.9997711181640625,
+          "alturaNativa": -0.9997711181640625
+        },
+        {
+          "x": 8,
+          "z": 10,
+          "altura": 1.2641122772195357,
+          "alturaNativa": 1.2641122772195357
+        },
+        {
+          "x": 8,
+          "z": 16,
+          "altura": -0.9997711181640625,
+          "alturaNativa": -0.9997711181640625
+        }
+      ]
+    },
+    {
+      "nome": "lote8-integracao-terreno-juncao",
+      "autoriaIntacta": true,
+      "ciclos": [
+        {
+          "inventario": "a20cc791005aeb7a90f83b0a06ff004913f4c41cad036b33499df30a567d27db",
+          "arquivos": 28,
+          "bytes": 8697193,
+          "nos": 18,
+          "colisoes": 9,
+          "malhas": 23,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 23,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "a20cc791005aeb7a90f83b0a06ff004913f4c41cad036b33499df30a567d27db",
+          "arquivos": 28,
+          "bytes": 8697193,
+          "nos": 18,
+          "colisoes": 9,
+          "malhas": 23,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 23,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        },
+        {
+          "inventario": "a20cc791005aeb7a90f83b0a06ff004913f4c41cad036b33499df30a567d27db",
+          "arquivos": 28,
+          "bytes": 8697193,
+          "nos": 18,
+          "colisoes": 9,
+          "malhas": 23,
+          "gpu": {
+            "base": {
+              "geometries": 0,
+              "textures": 1
+            },
+            "alocados": {
+              "geometries": 23,
+              "textures": 18
+            },
+            "depois": {
+              "geometries": 0,
+              "textures": 1
+            }
+          }
+        }
+      ],
+      "comparativos": [
+        {
+          "nome": "geral",
+          "erroMedio": 0.0875119357638889,
+          "maximo": 42,
+          "canaisAcima16": 12
+        },
+        {
+          "nome": "aproximacao",
+          "erroMedio": 0.13053819444444445,
+          "maximo": 39,
+          "canaisAcima16": 83
+        },
+        {
+          "nome": "rasante",
+          "erroMedio": 0.11250868055555556,
+          "maximo": 29,
+          "canaisAcima16": 3
+        }
+      ],
+      "provas": [
+        {
+          "x": 0,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": 6,
+          "z": -6,
+          "altura": 1
+        },
+        {
+          "x": -6,
+          "z": 0,
+          "altura": -1.8750286102294922
+        },
+        {
+          "x": 16,
+          "z": -4,
+          "altura": -0.49988555908203125
+        },
+        {
+          "x": 20,
+          "z": 20,
+          "altura": -0.24994277954101562
+        },
+        {
+          "x": 4,
+          "z": -3,
+          "altura": -1.1301716566085815,
+          "alturaNativa": -1.1301716566085815
+        },
+        {
+          "x": 10,
+          "z": -2,
+          "altura": -0.7547997236251813,
+          "alturaNativa": -0.7547997236251813
+        },
+        {
+          "x": 8,
+          "z": 5,
+          "altura": -0.9997711181640625,
+          "alturaNativa": -0.9997711181640625
+        },
+        {
+          "x": 8,
+          "z": 10,
+          "altura": 1.2641122772195357,
+          "alturaNativa": 1.2641122772195357
+        },
+        {
+          "x": 8,
+          "z": 16,
+          "altura": -0.9997711181640625,
+          "alturaNativa": -0.9997711181640625
+        }
+      ]
+    }
+  ],
+  "pacote": {
+    "movimento": {
+      "antes": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 8.005233827223703,
+          "y": 0.28662434143525173,
+          "z": 7.994550244116535
+        },
+        "altura": 1.16,
+        "velocidade": 0,
+        "clipes": [],
+        "percurso": {
+          "estado": "parado",
+          "inicio": null,
+          "fim": null,
+          "direta": 0,
+          "caminhada": 0,
+          "segundos": 0
+        }
+      },
+      "depois": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 8.00224721781984,
+          "y": 0.2593658756941324,
+          "z": 6.295885898050442
+        },
+        "altura": 1.16,
+        "velocidade": 1.5,
+        "clipes": [],
+        "percurso": {
+          "estado": "parado",
+          "inicio": null,
+          "fim": null,
+          "direta": 0,
+          "caminhada": 0,
+          "segundos": 0
+        }
+      },
+      "pausado": true,
+      "retomado": {
+        "modo": "terceira",
+        "pausado": false,
+        "caiu": false,
+        "noChao": true,
+        "nadando": false,
+        "posicao": {
+          "x": 8.005313976481638,
+          "y": 0.28596391613226174,
+          "z": 7.991662426152535
+        },
+        "altura": 1.16,
+        "velocidade": 0,
+        "clipes": [],
+        "percurso": {
+          "estado": "parado",
+          "inicio": null,
+          "fim": null,
+          "direta": 0,
+          "caminhada": 0,
+          "segundos": 0
+        }
+      },
+      "falhas": [],
+      "distancia": 1.6986669716079954
+    },
+    "recursosSemSessao": 87,
+    "origensExternas": [],
+    "erros": [],
+    "pacote": {
+      "arquivos": 36,
+      "bytesZip": 6153443,
+      "bytesExtraidos": 9852659,
+      "fonte": {
+        "cenario": "integracao",
+        "revisao": 7,
+        "digest": "fb877b2a291cccc65e3f55df031fa258285cfea88cbccd4c22c3ee2ef58b7dde"
+      },
+      "temposMs": {
+        "preparacao": 170.6076,
+        "exportacao": 1213.4863,
+        "reabertura": 337.9058
+      }
+    }
+  },
+  "reprodutorMatcher": {
+    "bun": "1.3.11",
+    "postgres": "3.4.9",
+    "frio": "Três consultas e recusa passaram",
+    "aquecidoRejects": "Timeout de 1500 ms reproduzido",
+    "aquecidoAwaitCatch": {
+      "aprovados": 1,
+      "falhas": 0,
+      "verificacoes": 1
+    },
+    "alterouServico": false
+  }
+}

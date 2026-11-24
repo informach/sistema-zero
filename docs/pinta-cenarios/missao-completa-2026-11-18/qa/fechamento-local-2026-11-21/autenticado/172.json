@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "result": {
+    "projectId": "01M7YP97QX67GR9EKRST0EZJW8",
+    "freshApp": true,
+    "allFilesExact": true,
+    "allAssetsExact": true,
+    "analysisRetryAbsent": true,
+    "status": [
+      "",
+      "Preparando a oficina",
+      "Preparando a oficina1Buscando o Python (agora)2Preparando o programa3Abrindo o programaA primeira vez demora um pouco mais."
+    ],
+    "historicalTabPreserved": true
+  }
+}

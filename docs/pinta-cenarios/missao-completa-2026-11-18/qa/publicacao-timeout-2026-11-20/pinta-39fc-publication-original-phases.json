@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-21T01:30:47.176Z",
+  "exit": null,
+  "error": "ETIMEDOUT",
+  "signal": "SIGTERM",
+  "sourceRestoredExactly": true,
+  "originalSha256": "766954a0a999761a9a30d591da17350aca17a95dc2ce62ab54afb38042d13ec5",
+  "diagnosticUsedHashesToAvoidLargeStringDiffOnly": true,
+  "log": ".cache/pinta-39fc-publication-original-phases.log"
+}

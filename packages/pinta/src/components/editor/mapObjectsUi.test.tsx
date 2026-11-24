@@ -8,7 +8,7 @@
  * ⚠️ O "Salvo" não prova nada (o autosave é debounced): quem diz a verdade é o
  * disco, relido num `waitFor`.
  */
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { isObjectLayer, type TilemapAsset } from '../../core/project'
@@ -17,6 +17,12 @@ import { clearIdbMock } from '../../testing/idbMock'
 const { PintaApp } = await import('../PintaApp')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
+
+// Estes testes usam o editor de mapa INTEIRO: o nível "Avançado" é posto de propósito (perfil
+// novo abre em "Começar", com menos ferramentas e painéis) e tirado no fim.
+const { writeMapLevel } = await import('./mapTools/mapLevels')
+beforeEach(() => writeMapLevel('', 'advanced'))
+afterEach(() => localStorage.removeItem('pinta:map-level'))
 
 beforeEach(() => {
   clearIdbMock()
@@ -72,7 +78,7 @@ async function mapaDoDisco(): Promise<TilemapAsset> {
   const conferir = createGalleryStore()
   await conferir.getState().load()
   const map = conferir.getState().assets.find((a) => a.kind === 'tilemap')
-  if (map?.kind !== 'tilemap') throw new Error('mapa esperado no disco')
+  if (map?.kind !== 'tilemap' || 'origin' in map) throw new Error('mapa esperado no disco')
   return map
 }
 
@@ -82,6 +88,28 @@ async function objetosNoDisco() {
 }
 
 describe('camada de objetos no editor de mapa', () => {
+  it('cria um marcador pelos controles e conserva edição e desfazer no disco', async () => {
+    await abrirMapa()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tiles.addObjectLayer }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pôr um marcador' }))
+    const name = screen.getByLabelText(COPY.tiles.objectName)
+    fireEvent.change(name, { target: { value: 'Inicio pelo teclado' } })
+    fireEvent.blur(name)
+    await waitFor(
+      async () => expect((await objetosNoDisco())[0]?.name).toBe('Inicio pelo teclado'),
+      { timeout: 5000 },
+    )
+    expect((await objetosNoDisco())[0]).toMatchObject({ x: 40, y: 24, width: 0, height: 0 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect((screen.getByLabelText(COPY.tiles.objectName) as HTMLInputElement).value).toBe(
+      'Objeto 1',
+    )
+    await waitFor(async () => expect((await objetosNoDisco())[0]?.name).toBe('Objeto 1'), {
+      timeout: 5000,
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(async () => expect(await objetosNoDisco()).toHaveLength(0), { timeout: 5000 })
+  })
   it('cria a camada, marca um ponto e edita nome, tipo e propriedades', async () => {
     const { container } = await abrirMapa()
 
@@ -229,7 +257,7 @@ describe('camada de objetos no editor de mapa', () => {
     fireEvent.change(campoNome(), { target: { value: 'saida' } })
     fireEvent.pointerDown(svg, at(40, 20, 4))
     fireEvent.pointerUp(svg, at(40, 20, 4))
-    await waitFor(() => expect(screen.queryByLabelText(COPY.tiles.objectName)).toBeNull())
+    await waitFor(() => expect(screen.queryByLabelText(COPY.tiles.objectName) === null).toBe(true))
     await waitFor(
       async () => {
         const objects = await objetosNoDisco()
@@ -251,7 +279,9 @@ describe('camada de objetos no editor de mapa', () => {
     // O último desfazer ainda é o "Objeto 2" nascendo, não uma edição que não houve.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') })).toBeNull(),
+      expect(
+        screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') }) === null,
+      ).toBe(true),
     )
     expect(screen.getByRole('button', { name: COPY.tiles.pickObject('Objeto 1') })).toBeTruthy()
   })
@@ -272,7 +302,9 @@ describe('camada de objetos no editor de mapa', () => {
     }
     fireEvent.keyDown(window, { key: 'Delete' })
     await waitFor(() =>
-      expect(screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') })).toBeNull(),
+      expect(
+        screen.queryByRole('button', { name: COPY.tiles.pickObject('Objeto 2') }) === null,
+      ).toBe(true),
     )
   })
 

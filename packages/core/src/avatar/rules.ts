@@ -175,6 +175,73 @@ export function withMountedVariants(catalog: AvatarCatalog, slots: AvatarSlots):
   return trocou ? montado : slots
 }
 
+/**
+ * Põe a peça de baixo fixa (o short azul-marinho, `rules.baseBottom`) quando nada cobre: nenhuma
+ * peça dos grupos que cobrem (calça, saia, bermuda, roupa inteira) nem fantasia. Tira quando algo
+ * cobre. Só no desenho: o avatar guardado nunca leva essa peça.
+ */
+export function withBaseBottom(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+  const regra = catalog.rules.baseBottom
+  if (!regra || !catalog.parts[regra.part]) return slots
+  const { [regra.slot]: noEncaixe, ...resto } = slots
+  const semAFixa = noEncaixe === regra.part ? resto : slots
+  const cobre = new Set(regra.coveringGroups)
+  const coberto =
+    wornSet(catalog, semAFixa) !== null ||
+    Object.values(semAFixa).some((id) => {
+      const grupo = partOf(catalog, id)?.group
+      return grupo !== undefined && cobre.has(grupo)
+    })
+  if (coberto) return semAFixa
+  // O encaixe dela ocupado por outra peça que não cobre não acontece pelas regras; se acontecer, a
+  // peça que a pessoa escolheu fica.
+  if (semAFixa[regra.slot]) return semAFixa
+  return { ...semAFixa, [regra.slot]: regra.part }
+}
+
+/**
+ * O arquivo de uma peça com situações (o planador dobrado nas costas) para este avatar: pela peça de
+ * costas vestida (sem ela, `none`), com a alça alta se a roupa pede; `null` quando a peça não
+ * aparece (um cabelo comprido, uma capa ou uma roupa da lista a cobrem, o cabelo que bate nela atrás
+ * daquela bolsa, ou a peça de costas não tem situação).
+ */
+export function situationFor(
+  catalog: AvatarCatalog,
+  partId: string,
+  slots: AvatarSlots,
+  backSlot = 'costas',
+): string | null {
+  const s = partOf(catalog, partId)?.situations
+  if (!s) return null
+  const vestidas = new Set(Object.values(slots))
+  if (s.hiddenWith?.some((id) => vestidas.has(id))) return null
+  const chave = slots[backSlot] ?? 'none'
+  if (s.hiddenWithByBack?.[chave]?.some((id) => vestidas.has(id))) return null
+  const alta = s.highStrapWith?.some((id) => vestidas.has(id)) ?? false
+  const id = (alta ? s.highStrap?.[chave] : undefined) ?? s.byBack[chave]
+  return id && catalog.parts[id] ? id : null
+}
+
+/**
+ * O desenho troca a peça do pack substituída pela nossa (`rules.replacements`: o vestido com o
+ * shortinho), se a nossa está no catálogo e não saiu da arte. O avatar guardado não muda.
+ */
+export function withReplacements(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
+  const trocas = catalog.rules.replacements
+  if (!trocas) return slots
+  let trocou = false
+  const novo: AvatarSlots = {}
+  for (const [slot, id] of Object.entries(slots)) {
+    const nossa = trocas[id]
+    const entrada = nossa ? catalog.parts[nossa] : undefined
+    if (nossa && entrada && !entrada.retired && entrada.slot === slot) {
+      novo[slot] = nossa
+      trocou = true
+    } else novo[slot] = id
+  }
+  return trocou ? novo : slots
+}
+
 /** Põe as orelhas da cor do corpo, ou tira, quando um capuz ou a fantasia cobrem a cabeça. */
 export function withEars(catalog: AvatarCatalog, slots: AvatarSlots): AvatarSlots {
   const { [SLOT_DAS_ORELHAS]: _orelhas, ...resto } = slots
@@ -247,7 +314,23 @@ export function isAvatarOwned(
   if (catalog.sets[id]) return owned.has(id)
   if (!catalog.parts[id]) return false
   const chave = ownershipOf(catalog, id)
-  return chave === null || owned.has(chave)
+  return chave === null || ownsKey(catalog, chave, owned)
+}
+
+/**
+ * O inventário tem esta chave de posse (`ownershipOf`), contando as equivalentes: a peça do pack
+ * substituída e a nossa que entrou no lugar dela (`rules.replacements`) valem uma pela outra, para
+ * quem comprou o vestido antes do shortinho continuar com ele.
+ */
+export function ownsKey(catalog: AvatarCatalog, key: string, owned: ReadonlySet<string>): boolean {
+  if (owned.has(key)) return true
+  const trocas = catalog.rules.replacements
+  if (!trocas) return false
+  const nossa = trocas[key]
+  if (nossa && owned.has(nossa)) return true
+  for (const [doPack, emVez] of Object.entries(trocas))
+    if (emVez === key && owned.has(doPack)) return true
+  return false
 }
 
 /** O encaixe da fantasia (a parte principal do conjunto mora nele). */

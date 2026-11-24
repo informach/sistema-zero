@@ -22,6 +22,12 @@ import json
 import os
 import struct
 import zlib
+import base64
+import io
+import copy
+import math
+import sys
+import tempfile
 
 import pygame
 
@@ -30,6 +36,18 @@ __all__ = ['carregar_imagem', 'fonte', 'FONTES', 'carregar_sprite', 'carregar_pe
 
 PASTA = 'assets'
 _PNG = b'\x89PNG\r\n\x1a\n'
+
+# BEGIN GENERATED PINTA WORLD LIMITS — scripts/gen-pinta-scene-python.ts
+MUNDO_MAX_MAPAS = 16
+MUNDO_MAX_CELULAS = 2097152
+MUNDO_MAX_CARACTERES = 4194304
+MUNDO_MAX_DADOS = 16777216
+MUNDO_MAX_DIMENSAO = 4096
+MUNDO_MAX_PIXELS_IMAGEM = 4194304
+MUNDO_MAX_PIXELS_TOTAL = 16777216
+# END GENERATED PINTA WORLD LIMITS
+
+MAXIMO_DE_DADOS = MUNDO_MAX_DADOS
 
 
 def _caminho(nome):
@@ -44,11 +62,17 @@ def ler_dados(nome):
     """Os dados do Pinta guardados no PNG (um dicionário), ou ``None`` numa imagem comum."""
     with open(_caminho(nome), 'rb') as arquivo:
         bytes_ = arquivo.read()
+    return _ler_dados_png(bytes_, _caminho(nome))
+
+
+def _ler_dados_png(bytes_, caminho, limite=MAXIMO_DE_DADOS, orcamento=None):
     if bytes_[:8] != _PNG:
-        raise ValueError(f'{_caminho(nome)} não é um PNG.')
+        raise ValueError(f'{caminho} não é um PNG.')
     posicao = 8
     while posicao + 8 <= len(bytes_):
         tamanho, tipo = struct.unpack_from('>I4s', bytes_, posicao)
+        if tamanho > len(bytes_) - posicao - 12:
+            raise ValueError(f'Os dados do Pinta em {caminho} estão estragados.')
         conteudo = bytes_[posicao + 8:posicao + 8 + tamanho]
         posicao += 12 + tamanho
         if tipo == b'IEND':
@@ -61,31 +85,32 @@ def ler_dados(nome):
         comprimido, resto = resto[0], resto[2:]
         _idioma, _, resto = resto.partition(b'\0')
         _traduzida, _, texto = resto.partition(b'\0')
-        dados = _ler_json(texto, comprimido, _caminho(nome))
-        if dados.get('format') != 'pinta' or dados.get('version') != 1:
-            raise ValueError(f'{_caminho(nome)} foi feito por um Pinta mais novo.')
+        dados = _ler_json(texto, comprimido, caminho, limite, orcamento)
+        if (dados.get('format') != 'pinta' or dados.get('version') not in (1, 2, 3, 4)
+                or (dados.get('version') in (3, 4) and dados.get('kind') != 'map')):
+            raise ValueError(f'{caminho} foi feito por um Pinta mais novo.')
         return dados
     return None
 
 
-#: Os dados de um desenho do Pinta cabem com folga nisto; um PNG que diz ter mais está estragado.
-MAXIMO_DE_DADOS = 16 * 1024 * 1024
-
-
-def _ler_json(texto, comprimido, caminho):
+def _ler_json(texto, comprimido, caminho, limite=MAXIMO_DE_DADOS, orcamento=None):
     """O JSON do bloco ``pinta``: o arquivo pode ter sido trocado, então tudo é conferido."""
     estragado = f'Os dados do Pinta em {caminho} estão estragados. Traga o desenho do Pinta de novo.'
     try:
         if comprimido:
             descompressor = zlib.decompressobj()
             # Com teto: um bloco pequeno pode se abrir em gigabytes.
-            texto = descompressor.decompress(texto, MAXIMO_DE_DADOS)
-            if descompressor.unconsumed_tail:
+            texto = descompressor.decompress(texto, limite + 1)
+            if descompressor.unconsumed_tail or len(texto) > limite:
                 raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
-            if not descompressor.eof:
+            if not descompressor.eof or descompressor.unused_data:
                 raise ValueError(estragado)
-        elif len(texto) > MAXIMO_DE_DADOS:
+        elif len(texto) > limite:
             raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
+        if orcamento is not None:
+            orcamento[0] -= len(texto)
+            if orcamento[0] < 0:
+                raise ValueError(f'Os dados do Pinta em {caminho} são grandes demais.')
         dados = json.loads(texto.decode('utf-8'))
     except (zlib.error, UnicodeDecodeError, json.JSONDecodeError, RecursionError):
         raise ValueError(estragado) from None
@@ -95,7 +120,23 @@ def _ler_json(texto, comprimido, caminho):
 
 
 def _carregar(nome):
-    imagem = pygame.image.load(_caminho(nome))
+    return _adequar_imagem(pygame.image.load(_caminho(nome)))
+
+
+def _imagem_em_memoria(bytes_):
+    # pygame-ce's Emscripten RWops accepts paths, not Python file-like callbacks.
+    # The bytes remain the captured authority: use a private MEMFS file, never a
+    # name from the map or project. Remove it even when SDL rejects the image.
+    if sys.platform == 'emscripten':
+        with tempfile.TemporaryDirectory(prefix='pinta-image-') as directory:
+            caminho = os.path.join(directory, 'image.png')
+            with open(caminho, 'wb') as arquivo:
+                arquivo.write(bytes_)
+            return _adequar_imagem(pygame.image.load(caminho))
+    return _adequar_imagem(pygame.image.load(io.BytesIO(bytes_)))
+
+
+def _adequar_imagem(imagem):
     if pygame.display.get_init() and pygame.display.get_surface() is not None:
         return imagem.convert_alpha()
     if imagem.get_bitsize() == 8:
@@ -243,6 +284,10 @@ class Pecas:
     def __init__(self, folha, tamanho, colunas, quantidade, solidas, plataformas, nome, y=0):
         self.nome = nome
         self.tamanho = int(tamanho)
+        self.animacoes = {}
+        self.propriedades = {}
+        self.terrenos = []
+        self._viradas = {}
         self.solidas = frozenset(int(indice) for indice in solidas)
         self.plataformas = frozenset(int(indice) for indice in plataformas)
         self.pecas = [_opaca_se_puder(folha.subsurface(((indice % colunas) * self.tamanho,
@@ -252,6 +297,31 @@ class Pecas:
 
     def peca(self, indice):
         return self.pecas[int(indice)]
+
+    def imagem(self, celula, tempo=None):
+        """A peça com espelhos, giro e animação; os oito giros são os do Tiled."""
+        celula = int(celula)
+        indice, flags = celula & 4095, celula & 28672
+        quadros = self.animacoes.get(str(indice), ())
+        total = sum(quadro['duration'] for quadro in quadros)
+        # Animação sem duração (dados feitos à mão) fica parada na própria peça.
+        if quadros and total > 0:
+            atual = (pygame.time.get_ticks() if tempo is None else tempo) % total
+            for quadro in quadros:
+                atual -= quadro['duration']
+                if atual < 0:
+                    indice = quadro['tile']
+                    break
+        if not flags:
+            return self.pecas[indice]
+        chave = (indice, flags)
+        if chave not in self._viradas:
+            imagem = self.pecas[indice]
+            if flags & 16384:
+                imagem = pygame.transform.flip(pygame.transform.rotate(imagem, 90), False, True)
+            imagem = pygame.transform.flip(imagem, bool(flags & 4096), bool(flags & 8192))
+            self._viradas[chave] = imagem
+        return self._viradas[chave]
 
     def solida(self, indice):
         return int(indice) in self.solidas
@@ -292,7 +362,17 @@ class Objeto:
         self.y = dados.get('y', 0)
         self.largura = dados.get('width', 0)
         self.altura = dados.get('height', 0)
-        self.propriedades = dict(dados.get('properties', {}))
+        self.forma = dados.get('shape', 'point' if not self.largura and not self.altura else 'rect')
+        self.pontos = [pygame.Vector2(p['x'], p['y']) for p in dados.get('points', ())]
+        self.giro = dados.get('rotation', 0)
+        self.virar_x, self.virar_y = bool(dados.get('flipX')), bool(dados.get('flipY'))
+        self.papel = dados.get('role', '')
+        self.colisao = dados.get('collision') is True
+        self.arte = dados.get('art')
+        self.conjunto = dados.get('setId')
+        propriedades = dict(dados.get('properties', {}))
+        self.tipos_das_propriedades = {chave: valor['type'] for chave, valor in propriedades.items() if isinstance(valor, dict) and 'type' in valor}
+        self.propriedades = {chave: valor.get('value') if isinstance(valor, dict) else valor for chave, valor in propriedades.items()}
 
     # Os mesmos nomes do Tiled/pytmx, para código que já usava mapas assim.
     name = property(lambda self: self.nome)
@@ -321,7 +401,10 @@ class CamadaDeObjetos:
     def __init__(self, dados):
         self.nome = dados['name']
         self.visivel = bool(dados.get('visible', True))
-        self.objetos = [Objeto(item) for item in dados.get('objects', ())]
+        self.opacidade = dados.get('opacity', 1)
+        self.deslocamento = (dados.get('offsetX', 0), dados.get('offsetY', 0))
+        self.propriedades = dict(dados.get('properties', {}))
+        self.objetos = [Objeto(dict(item, x=item.get('x', 0) + self.deslocamento[0], y=item.get('y', 0) + self.deslocamento[1])) for item in dados.get('objects', ())]
 
     def do_tipo(self, tipo):
         return [objeto for objeto in self.objetos if objeto.tipo == tipo]
@@ -355,6 +438,15 @@ class CamadaDePecas:
         self.visivel = bool(dados.get('visible', True))
         #: Desenhada na frente do jogador (marcada como "frente" no Pinta).
         self.frente = bool(dados.get('front', False))
+        self.colisao = bool(dados.get('collision', False))
+        self.opacidade = dados.get('opacity', 1)
+        self.deslocamento = (dados.get('offsetX', 0), dados.get('offsetY', 0))
+        self.parallax = (dados.get('parallaxX', 1), dados.get('parallaxY', 1))
+        self.propriedades = dict(dados.get('properties', {}))
+        self._opacas = {}
+        #: A versão dos dados do mapa. Na 1, ``desenhar`` chamado direto desenha também a camada
+        #: escondida, como sempre fez; quem pula a escondida é ``Mapa.desenhar``.
+        self._versao = getattr(mapa, 'versao', 1)
         self.pecas = pecas
         self.colunas = mapa.colunas
         self.linhas = mapa.linhas
@@ -364,24 +456,24 @@ class CamadaDePecas:
         """O número da peça na casa (x, y), ou -1 quando a casa está vazia."""
         if not (0 <= x < self.colunas and 0 <= y < self.linhas):
             return -1
-        return self.celulas[y * self.colunas + x]
+        valor = self.celulas[y * self.colunas + x]
+        return valor & 4095 if valor >= 0 else -1
 
     def tiles(self):
         """``(x, y, imagem)`` de cada casa preenchida, em casas (não em pixels)."""
-        pecas = self.pecas.pecas
         for indice, valor in enumerate(self.celulas):
             if valor >= 0:
-                yield indice % self.colunas, indice // self.colunas, pecas[valor]
+                yield indice % self.colunas, indice // self.colunas, self.pecas.imagem(valor)
 
     def _retangulos(self, aceitar):
         tamanho = self.pecas.tamanho
-        return [pygame.Rect(x * tamanho, y * tamanho, tamanho, tamanho)
-                for indice, valor in enumerate(self.celulas) if valor >= 0 and aceitar(valor)
+        return [pygame.Rect(x * tamanho + self.deslocamento[0], y * tamanho + self.deslocamento[1], tamanho, tamanho)
+                for indice, valor in enumerate(self.celulas) if valor >= 0 and aceitar(valor & 4095)
                 for x, y in [(indice % self.colunas, indice // self.colunas)]]
 
     def solidos(self):
         """Um Rect (em pixels) para cada peça marcada como sólida."""
-        return self._retangulos(self.pecas.solida)
+        return self._retangulos(lambda indice: self.colisao or self.pecas.solida(indice))
 
     def plataformas(self):
         """Um Rect (em pixels) para cada peça marcada como plataforma (só o topo segura)."""
@@ -393,27 +485,283 @@ class CamadaDePecas:
         Só as casas que aparecem na superfície são desenhadas.
         """
         tamanho = self.pecas.tamanho
-        dx, dy = int(deslocamento[0]), int(deslocamento[1])
+        if self._versao >= 2 and (self.colisao or not self.visivel or self.opacidade <= 0):
+            return
+        dx = int(deslocamento[0] * self.parallax[0] + self.deslocamento[0])
+        dy = int(deslocamento[1] * self.parallax[1] + self.deslocamento[1])
         largura, altura = superficie.get_size()
         x0, y0 = max(0, -dx // tamanho), max(0, -dy // tamanho)
         x1 = min(self.colunas, (largura - dx) // tamanho + 1)
         y1 = min(self.linhas, (altura - dy) // tamanho + 1)
-        pecas, celulas, colunas = self.pecas.pecas, self.celulas, self.colunas
-        superficie.fblits([(pecas[valor], (x * tamanho + dx, y * tamanho + dy))
+        celulas, colunas = self.celulas, self.colunas
+        superficie.fblits([(self._imagem(valor), (x * tamanho + dx, y * tamanho + dy))
                            for y in range(y0, y1) for x in range(x0, x1)
                            for valor in (celulas[y * colunas + x],) if valor >= 0])
+
+    def _imagem(self, valor):
+        imagem = self.pecas.imagem(valor)
+        if self.opacidade >= 1:
+            return imagem
+        chave = (id(imagem), self.opacidade)
+        if chave not in self._opacas:
+            copia = pygame.Surface(imagem.get_size(), pygame.SRCALPHA, 32)
+            copia.blit(imagem, (0, 0))
+            copia.set_alpha(round(255 * self.opacidade))
+            self._opacas[chave] = copia
+        return self._opacas[chave]
 
     def __repr__(self):
         return f'<pinta.CamadaDePecas {self.nome!r} {self.colunas}x{self.linhas}>'
 
 
+class GrupoDeCamadas:
+    tipo = 'grupo'
+
+    def __init__(self, dados):
+        self.nome = dados['name']
+        self.visivel = dados.get('visible', True)
+        self.opacidade = dados.get('opacity', 1)
+        self.propriedades = dict(dados.get('properties', {}))
+
+
+def _dimensoes_png(bytes_, escala=1):
+    if (len(bytes_) < 33 or bytes_[:8] != _PNG
+            or bytes_[8:16] != b'\x00\x00\x00\rIHDR'):
+        raise ValueError('Uma imagem deste cenário está estragada.')
+    largura, altura = struct.unpack_from('>II', bytes_, 16)
+    if (not largura or not altura or max(largura, altura) > MUNDO_MAX_DIMENSAO
+            or largura * altura > MUNDO_MAX_PIXELS_IMAGEM):
+        raise ValueError('Uma imagem deste cenário é grande demais.')
+    w, h = round(largura * escala), round(altura * escala)
+    if not w or not h or max(w, h) > MUNDO_MAX_DIMENSAO or w * h > MUNDO_MAX_PIXELS_IMAGEM:
+        raise ValueError('Uma imagem deste cenário é grande demais nesta escala.')
+    return w, h
+
+
+class _MundoPNG:
+    """Bounded immutable source records and encoded images; no retained map surfaces."""
+
+    def __init__(self, dados, png, orcamento):
+        mundo = dados.get('world')
+        if not isinstance(mundo, dict) or mundo.get('version') != 1:
+            raise ValueError('Este cenário não contém seus outros lugares. Traga o cenário de novo.')
+        raiz, destinos = mundo.get('rootId'), mundo.get('maps')
+        if (not isinstance(raiz, str) or not raiz or len(raiz) > 200
+                or not isinstance(destinos, list) or len(destinos) >= MUNDO_MAX_MAPAS):
+            raise ValueError('A lista de lugares deste cenário está estragada.')
+        self.escala = dados.get('scale', 1)
+        if (not isinstance(self.escala, (int, float)) or isinstance(self.escala, bool)
+                or not math.isfinite(self.escala) or self.escala <= 0
+                or self.escala > MUNDO_MAX_DIMENSAO):
+            raise ValueError('A escala deste cenário está estragada.')
+        self.imagens, self.entradas = {}, {}
+        self.pixels, self.celulas = 0, 0
+        self._adicionar(raiz, dados.get('name'), {k: v for k, v in dados.items() if k != 'world'}, png)
+        caracteres = 0
+        for destino in destinos:
+            if not isinstance(destino, dict):
+                raise ValueError('Um dos lugares deste cenário está estragado.')
+            identificador, nome, imagem = destino.get('id'), destino.get('name'), destino.get('png')
+            if not isinstance(imagem, str) or not imagem.startswith('data:image/png;base64,'):
+                raise ValueError('Falta a imagem de um dos lugares deste cenário.')
+            caracteres += len(imagem)
+            if caracteres > MUNDO_MAX_CARACTERES or orcamento[0] <= 0:
+                raise ValueError('Os outros lugares deste cenário são grandes demais.')
+            try:
+                bytes_ = base64.b64decode(imagem.split(',', 1)[1], validate=True)
+            except (ValueError, TypeError):
+                raise ValueError('A imagem de um dos lugares está estragada.') from None
+            info = _ler_dados_png(bytes_, str(nome), orcamento[0], orcamento)
+            if (not info or info.get('version') not in (2, 4) or info.get('kind') != 'map'
+                    or (info.get('version') == 4 and dados.get('version') != 4)
+                    or 'world' in info or info.get('scale') != self.escala):
+                raise ValueError('Um dos lugares deste cenário está incompleto.')
+            self._adicionar(identificador, nome, info, bytes_)
+
+    @staticmethod
+    def _inteiro(valor, teto):
+        return isinstance(valor, int) and not isinstance(valor, bool) and 1 <= valor <= teto
+
+    def _adicionar(self, identificador, nome, dados, png):
+        if (not isinstance(identificador, str) or not identificador or len(identificador) > 200
+                or identificador in self.entradas or not isinstance(nome, str) or not nome or len(nome) > 48):
+            raise ValueError('Os nomes ou IDs dos lugares estão estragados.')
+        cena = dados.get('scene')
+        if (not isinstance(cena, dict) or cena.get('version') not in (1, 2, 3)
+                or (dados.get('version') != 4 and cena.get('version') == 3)
+                or cena.get('id') != identificador or dados.get('name') != nome):
+            raise ValueError('Os dados não correspondem ao lugar deste cenário.')
+        w, h = _dimensoes_png(png)
+        self.pixels += w * h
+        tamanho, folhas, camadas = dados.get('tileSize'), dados.get('tilesets'), dados.get('layers')
+        if (not self._inteiro(tamanho, MUNDO_MAX_DIMENSAO) or not isinstance(folhas, list)
+                or not 1 <= len(folhas) <= 32 or not isinstance(camadas, list) or len(camadas) > 32
+                or not self._inteiro(dados.get('cols'), 256) or not self._inteiro(dados.get('rows'), 256)):
+            raise ValueError('As camadas deste cenário estão estragadas.')
+        faixas = []
+        for folha in folhas:
+            cols, quantidade, y = folha.get('columns'), folha.get('count'), folha.get('y')
+            if (not self._inteiro(cols, 256) or not self._inteiro(quantidade, 256)
+                    or not isinstance(y, int) or isinstance(y, bool) or y < 0):
+                raise ValueError('As peças deste cenário estão estragadas.')
+            fim = y + math.ceil(quantidade / cols) * tamanho
+            if (min(cols, quantidade) * tamanho > w or fim > h
+                    or any(y < outro_fim and fim > inicio for inicio, outro_fim in faixas)):
+                raise ValueError('As peças não cabem na imagem deste cenário.')
+            faixas.append((y, fim))
+        self._conferir_cena(cena)
+        if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+            raise ValueError('As imagens deste cenário são grandes demais juntas.')
+        self.entradas[identificador] = (nome, dados, png)
+
+    def _conferir_cena(self, cena):
+        conjuntos = cena.get('sets', [])
+        if not isinstance(conjuntos, list) or len(conjuntos) > 64:
+            raise ValueError('Os conjuntos deste cenário estão estragados.')
+        objetos = 0
+        for parte in [cena] + conjuntos:
+            cols, rows, camadas = parte.get('cols'), parte.get('rows'), parte.get('layers')
+            if (not self._inteiro(cols, 256) or not self._inteiro(rows, 256)
+                    or not isinstance(camadas, list) or len(camadas) > 32):
+                raise ValueError('As regiões deste cenário estão estragadas.')
+            for camada in camadas:
+                if camada.get('kind') == 'tiles':
+                    cells = camada.get('cells')
+                    if not isinstance(cells, list) or len(cells) != cols * rows:
+                        raise ValueError('Faltam peças em uma camada deste cenário.')
+                    self.celulas += len(cells)
+                elif camada.get('kind') == 'objects':
+                    items = camada.get('objects')
+                    if not isinstance(items, list):
+                        raise ValueError('Os objetos deste cenário estão estragados.')
+                    objetos += len(items)
+                    for objeto in items:
+                        if cena.get('version') == 3:
+                            self._conferir_objeto_fisico(objeto)
+                        elif 'collision' in objeto:
+                            raise ValueError('A colisão deste objeto precisa de um Pinta mais novo.')
+                        self._superficies_temporarias(objeto, cena, conjuntos)
+        if self.celulas > MUNDO_MAX_CELULAS or objetos > 512:
+            raise ValueError('Este cenário tem peças ou objetos demais.')
+        for chave, teto in [('tilesets', 32), ('art', 128)]:
+            recursos = cena.get(chave, [])
+            if not isinstance(recursos, list) or len(recursos) > teto:
+                raise ValueError('Os desenhos deste cenário estão estragados.')
+            for recurso in recursos:
+                imagem = recurso.get('image')
+                if not isinstance(imagem, str) or not imagem.startswith('data:image/png;base64,'):
+                    raise ValueError('Falta um desenho deste cenário.')
+                if imagem in self.imagens:
+                    continue
+                try:
+                    bytes_ = base64.b64decode(imagem.split(',', 1)[1], validate=True)
+                except (ValueError, TypeError):
+                    raise ValueError('Um desenho deste cenário está estragado.') from None
+                w, h = _dimensoes_png(bytes_, self.escala)
+                self.pixels += w * h
+                if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+                    raise ValueError('Os desenhos deste cenário são grandes demais juntos.')
+                self.imagens[imagem] = bytes_
+
+    @staticmethod
+    def _conferir_objeto_fisico(objeto):
+        if not isinstance(objeto, dict) or ('collision' in objeto and objeto['collision'] is not True):
+            raise ValueError('A colisão de um objeto está estragada.')
+        for chave in ('x', 'y', 'width', 'height', 'rotation'):
+            value = objeto.get(chave, 0)
+            if (not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value)
+                    or (chave in ('width', 'height') and value < 0)):
+                raise ValueError('A geometria de um objeto está estragada.')
+        points = objeto.get('points', [])
+        if not isinstance(points, list) or len(points) > 256:
+            raise ValueError('O contorno de um objeto tem pontos demais.')
+        for point in points:
+            if not isinstance(point, dict) or any(not isinstance(point.get(k), (int, float)) or isinstance(point[k], bool) or not math.isfinite(point[k]) for k in ('x', 'y')):
+                raise ValueError('O contorno de um objeto está estragado.')
+
+    def _superficies_temporarias(self, objeto, cena, conjuntos):
+        if not objeto.get('setId') and not objeto.get('art'):
+            return
+        w, h = objeto.get('width'), objeto.get('height')
+        rotation = objeto.get('rotation', 0)
+        if any(not isinstance(n, (int, float)) or isinstance(n, bool) or not math.isfinite(n)
+               for n in (w, h, rotation)) or min(w, h) < 0:
+            raise ValueError('O tamanho ou giro de um desenho está estragado.')
+        if not objeto.get('setId') and (not w or not h):
+            return
+        def area(width, height):
+            width, height = max(1, math.ceil(width)), max(1, math.ceil(height))
+            if max(width, height) > MUNDO_MAX_DIMENSAO or width * height > MUNDO_MAX_PIXELS_IMAGEM:
+                raise ValueError('Um desenho ampliado deste cenário é grande demais.')
+            return width * height
+        conjunto = next((s for s in conjuntos if s.get('id') == objeto.get('setId')), None)
+        if conjunto:
+            self.pixels += area(conjunto['cols'] * cena['tileSize'] * self.escala,
+                                conjunto['rows'] * cena['tileSize'] * self.escala)
+        w, h = max(1, math.ceil(w * self.escala)), max(1, math.ceil(h * self.escala))
+        self.pixels += 2 * area(w, h)
+        if rotation % 360:
+            a = math.radians(rotation)
+            c, s = abs(math.cos(a)), abs(math.sin(a))
+            c, s = 0 if c < 1e-12 else c, 0 if s < 1e-12 else s
+            padding = 2 if rotation % 90 else 0
+            self.pixels += area(w * c + h * s + padding, w * s + h * c + padding)
+        if self.pixels > MUNDO_MAX_PIXELS_TOTAL:
+            raise ValueError('Os desenhos ampliados deste cenário são grandes demais juntos.')
+
+    def lugar(self, referencia, por_id=False):
+        if not isinstance(referencia, str):
+            raise ValueError('Esta porta não tem um destino válido.')
+        if por_id and referencia in self.entradas:
+            return self.entradas[referencia]
+        nomes = [entrada for entrada in self.entradas.values() if entrada[0] == referencia]
+        if len(nomes) > 1:
+            raise ValueError('Há mais de um lugar com esse nome. Use o ID do lugar.')
+        if nomes:
+            return nomes[0]
+        if referencia in self.entradas:
+            return self.entradas[referencia]
+        raise KeyError(f'O lugar {referencia!r} não está neste cenário.')
+
+
 class Mapa:
     """Um mapa do Pinta: camadas de peças e de objetos, com as peças de cada camada."""
 
-    def __init__(self, nome):
-        dados = _dados(nome, 'map')
-        atlas = _carregar(nome)
+    def __init__(self, nome, *, _fonte=None, _mundo=None):
+        orcamento = [MUNDO_MAX_DADOS]
+        if _fonte is None:
+            with open(_caminho(nome), 'rb') as arquivo:
+                png = arquivo.read()
+            dados = _ler_dados_png(png, _caminho(nome), orcamento=orcamento)
+            if not dados or dados.get('kind') != 'map':
+                raise ValueError(f'{_caminho(nome)} não é um mapa trazido do Pinta como "Mapa com camadas e objetos".')
+            if dados.get('version') == 3 or (dados.get('version') == 4 and 'world' in dados):
+                try:
+                    _mundo = _MundoPNG(dados, png, orcamento)
+                except (AttributeError, TypeError, IndexError, KeyError, OverflowError) as error:
+                    raise ValueError('Os dados dos lugares deste cenário estão estragados.') from error
+        else:
+            dados, png = _fonte
+        scene_header = dados.get('scene')
+        if scene_header is not None and (not isinstance(scene_header, dict) or scene_header.get('version') not in (1, 2, 3)
+                or (scene_header.get('version') == 3 and dados.get('version') != 4)):
+            raise ValueError('A versão dos contornos deste cenário não corresponde aos dados da imagem.')
+        if dados.get('version') == 4 and not isinstance(scene_header, dict):
+            raise ValueError('Faltam dados deste cenário. Traga o mapa de novo.')
+        verified_images = _mundo.imagens if _mundo else None
+        if not _mundo and isinstance(scene_header, dict):
+            # The same preflight also protects a single advanced map. Retain only
+            # encoded images, not a duplicate of the authored map, and no door registry.
+            source = dict(dados, world={'version': 1, 'rootId': scene_header.get('id'), 'maps': []})
+            try:
+                verified_images = _MundoPNG(source, png, orcamento).imagens
+            except (AttributeError, TypeError, IndexError, KeyError, OverflowError) as error:
+                raise ValueError('Os dados deste cenário estão estragados.') from error
+        atlas = _imagem_em_memoria(png)
+        self._mundo = _mundo
         self.nome = dados['name']
+        #: 1 para os mapas de antes; 2 para os que trazem grupos, opacidade, giros e a cena.
+        self.versao = int(dados.get('version', 1))
         self.tamanho_peca = int(dados['tileSize'])
         self.colunas = int(dados['cols'])
         self.linhas = int(dados['rows'])
@@ -421,9 +769,66 @@ class Mapa:
                                 item.get('solid', ()), item.get('platform', ()), item['name'],
                                 item.get('y', 0))
                           for item in dados['tilesets']]
+        for pecas, item in zip(self.conjuntos, dados['tilesets']):
+            pecas.animacoes = item.get('animations', {})
+            pecas.propriedades = item.get('tileProperties', {})
+            pecas.terrenos = item.get('terrains', [])
         self.camadas = []
-        for item in dados['layers']:
-            if item.get('type') == 'objects':
+        self.cena = copy.deepcopy(dados.get('scene'))
+        self._cena = None
+        self._objetos_da_cena = None
+        if self.cena:
+            escala = dados.get('scale', 1)
+            self.cena['tileSize'] *= escala
+            for arte in self.cena.get('art', []):
+                arte['width'] *= escala
+                arte['height'] *= escala
+                if arte.get('sprite'):
+                    arte['sprite']['frameWidth'] *= escala
+                    arte['sprite']['frameHeight'] *= escala
+            for grupo in [self.cena] + self.cena.get('sets', []):
+                for layer in grupo['layers']:
+                    for key in ('offsetX', 'offsetY'):
+                        if key in layer:
+                            layer[key] *= escala
+                    for obj in layer.get('objects', []):
+                        for key in ('x', 'y', 'width', 'height'):
+                            obj[key] *= escala
+                        for point in obj.get('points', []):
+                            point['x'] *= escala
+                            point['y'] *= escala
+            cena = _CenaCompleta.__new__(_CenaCompleta)
+            cena.mapas = {self.cena['name']: self.cena}
+            cena.imagens, cena.pecas = {}, {}
+            def imagem(caminho):
+                if caminho not in cena.imagens:
+                    raw = (verified_images[caminho] if verified_images is not None
+                           else base64.b64decode(caminho.split(',', 1)[1]))
+                    source = _imagem_em_memoria(raw).convert_alpha()
+                    cena.imagens[caminho] = pygame.transform.scale(source, (round(source.get_width() * escala), round(source.get_height() * escala)))
+                return cena.imagens[caminho]
+            cena.imagem = imagem
+            cena.carregar(self.cena['name'])
+            self._cena = cena
+            # O compositor já resolveu grupos, escala, conjuntos e referências entre objetos.
+            # Conserva as instâncias públicas entre consultas, como nas camadas legadas.
+            self._objetos_da_cena = [Objeto(objeto) for objeto in cena.objetos]
+        resolvidas = {}
+        for original in dados['layers']:
+            item = dict(original)
+            pai = resolvidas.get(item.get('parentId'))
+            if pai:
+                item['visible'] = item.get('visible', True) and pai.get('visible', True)
+                item['opacity'] = item.get('opacity', 1) * pai.get('opacity', 1)
+                for chave in ('offsetX', 'offsetY'):
+                    item[chave] = item.get(chave, 0) + pai.get(chave, 0)
+                for chave in ('parallaxX', 'parallaxY'):
+                    item[chave] = item.get(chave, 1) * pai.get(chave, 1)
+            if 'id' in item:
+                resolvidas[item['id']] = item
+            if item.get('type') == 'group':
+                self.camadas.append(GrupoDeCamadas(item))
+            elif item.get('type') == 'objects':
                 self.camadas.append(CamadaDeObjetos(item))
             else:
                 self.camadas.append(CamadaDePecas(item, self, self.conjuntos[int(item['tileset'])]))
@@ -461,16 +866,97 @@ class Mapa:
         return [camada for camada in self.camadas if isinstance(camada, CamadaDeObjetos)]
 
     def objetos(self, tipo=None):
-        """Os objetos de todas as camadas (só os de um tipo, se ``tipo`` for dado)."""
+        """Os objetos do mapa, incluindo conjuntos (só os de um tipo, se ``tipo`` for dado)."""
+        if self._objetos_da_cena is not None:
+            return [objeto for objeto in self._objetos_da_cena if tipo is None or objeto.tipo == tipo]
         return [objeto for camada in self.camadas_de_objetos for objeto in camada
                 if tipo is None or objeto.tipo == tipo]
 
     def solidos(self):
         """Os Rect das peças sólidas de todas as camadas de peças."""
+        if self._cena:
+            return [pygame.Rect(r) for r in self._cena.solidos]
         return [rect for camada in self.camadas_de_pecas for rect in camada.solidos()]
+
+    def bloqueado(self, corpo):
+        """O corpo toca uma parede real, incluindo os contornos autorais do cenário."""
+        rect = pygame.FRect(corpo)
+        if rect.left < 0 or rect.top < 0 or rect.right > self.colunas * self.tamanho_peca or rect.bottom > self.linhas * self.tamanho_peca:
+            return True
+        if self._cena:
+            return self._cena.bloqueado(rect)
+        return any(rect.colliderect(other) for other in self.solidos())
+
+    def pouso(self, anterior, atual, gravidade=1):
+        """Corpo FRect apoiado numa plataforma, ou None. Não altera os corpos recebidos.
+
+        Use depois das paredes; gravidade zero ignora plataformas na vista de cima.
+        Para descer por uma plataforma, o jogo omite esta consulta durante a queda.
+        """
+        if self._cena:
+            return self._cena.pouso(anterior, atual, gravidade)
+        return _pouso_de_mao_unica(anterior, atual, gravidade, self._plataformas_planas, self.bloqueado)
+
+    def _plataformas_planas(self, consulta):
+        # Mapa de antes, sem cena: só as camadas visíveis seguram, como no compositor e no JS.
+        # A peça sólida é parede mesmo marcada também como plataforma.
+        for camada in self.camadas_de_pecas:
+            if not camada.visivel or camada.colisao:
+                continue
+            so_plataforma = camada.pecas.plataformas - camada.pecas.solidas
+            for rect in camada._retangulos(so_plataforma.__contains__):
+                if consulta.colliderect(rect):
+                    yield [pygame.Vector2(ponto) for ponto in
+                           (rect.topleft, rect.topright, rect.bottomright, rect.bottomleft)]
+
+    def objeto_por_id(self, referencia):
+        """O objeto de uma propriedade de referência, ou None se ele não existe."""
+        return next((objeto for objeto in self.objetos() if objeto.id == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        """A Surface da arte referenciada neste mapa, inclusive uma versão guardada."""
+        caminho = self._cena.recurso_imagem(referencia) if self._cena else None
+        return self._cena.imagem(caminho) if caminho else None
+
+    def propriedade_camada(self, referencia, chave):
+        """Lê uma propriedade pelo ID da camada, conservando seu valor tipado."""
+        return self._cena.propriedade_camada(referencia, chave) if self._cena else None
+
+    def propriedade_peca(self, referencia, peca, chave):
+        """Lê uma propriedade pela referência do conjunto e pelo índice da peça."""
+        return self._cena.propriedade_peca(referencia, peca, chave) if self._cena else None
+
+    def ponto_inicial(self):
+        """A posição marcada como início do jogador, em pixels do jogo."""
+        inicio = next((objeto for objeto in self.objetos()
+                       if objeto.papel == 'start' or objeto.tipo == 'inicio'), None)
+        return (inicio.x, inicio.y) if inicio else (self.tamanho_peca / 2, self.tamanho_peca / 2)
+
+    def abrir_lugar(self, referencia):
+        """Abre um ID de mapa deste cenário. Não procura arquivos pelo nome da porta."""
+        if not self._mundo:
+            raise ValueError('Traga este mapa como Cenário com outros lugares para abrir suas portas.')
+        nome, dados, png = self._mundo.lugar(referencia, por_id=True)
+        return Mapa(nome, _fonte=(dados, png), _mundo=self._mundo)
+
+    def abrir_destino(self, porta):
+        """Abre o lugar de uma porta; o programa decide quando e onde mover o jogador."""
+        if not isinstance(porta, Objeto):
+            raise TypeError('Escolha um objeto porta deste cenário.')
+        chave = 'destino' if porta.propriedades.get('destino') else 'destination'
+        referencia = porta.propriedades.get(chave)
+        if not referencia:
+            return None
+        if not self._mundo:
+            raise ValueError('Traga este mapa como Cenário com outros lugares para abrir suas portas.')
+        nome, dados, png = self._mundo.lugar(referencia, porta.tipos_das_propriedades.get(chave) == 'asset')
+        return Mapa(nome, _fonte=(dados, png), _mundo=self._mundo)
 
     def desenhar(self, superficie, deslocamento=(0, 0), frente=False):
         """Desenha as camadas de peças visíveis (as de trás, ou só as da frente)."""
+        if self._cena:
+            self._cena.desenhar(superficie, frente, camera=(-deslocamento[0], -deslocamento[1]), personagem=False)
+            return
         for camada in self.camadas_de_pecas:
             if camada.visivel and camada.frente == frente:
                 camada.desenhar(superficie, deslocamento)
@@ -483,3 +969,492 @@ class Mapa:
 def carregar_mapa(nome):
     """Um mapa do Pinta com as suas camadas de peças e de objetos."""
     return Mapa(nome)
+# BEGIN GENERATED PINTA SCENE — scripts/gen-pinta-scene-python.ts
+"""Cenários do Pinta: dados editáveis em maps.json; imagens locais, sem rede."""
+import json
+import math
+from pathlib import Path
+import pygame
+
+def objeto_intersecta_corpo(objeto, rect):
+    """Authored outline versus the body's interior; art flips do not change geometry."""
+    values = [rect.x, rect.y, rect.width, rect.height, objeto.get('x'), objeto.get('y'), objeto.get('width'), objeto.get('height'), objeto.get('rotation', 0)]
+    if any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) for v in values) or rect.width <= 0 or rect.height <= 0:
+        return False
+    angle = -math.radians(objeto.get('rotation', 0))
+    cosine, sine = math.cos(angle), math.sin(angle)
+    inset = min(rect.width, rect.height, 1) * 1e-9
+    def local(x, y):
+        dx, dy = x - objeto['x'], y - objeto['y']
+        return (dx * cosine - dy * sine, dx * sine + dy * cosine)
+    query = [local(rect.left + inset, rect.top + inset), local(rect.right - inset, rect.top + inset), local(rect.right - inset, rect.bottom - inset), local(rect.left + inset, rect.bottom - inset)]
+    def cross(a, b, p):
+        return (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+    def inside(p, points):
+        result = False
+        for a, b in zip(points, points[1:] + points[:1]):
+            if (a[1] > p[1]) != (b[1] > p[1]) and p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]:
+                result = not result
+        return result
+    def on(a, b, p):
+        return cross(a, b, p) == 0 and min(a[0], b[0]) <= p[0] <= max(a[0], b[0]) and min(a[1], b[1]) <= p[1] <= max(a[1], b[1])
+    def segment_crosses(a, b, c, d):
+        x, y, u, v = cross(a, b, c), cross(a, b, d), cross(c, d, a), cross(c, d, b)
+        return (((x > 0 and y < 0) or (x < 0 and y > 0)) and ((u > 0 and v < 0) or (u < 0 and v > 0))) or on(a, b, c) or on(a, b, d) or on(c, d, a) or on(c, d, b)
+    width, height = objeto['width'], objeto['height']
+    shape = objeto.get('shape', 'point' if width == height == 0 else 'rect')
+    if shape == 'point':
+        return inside((0, 0), query)
+    if shape == 'ellipse':
+        if width <= 0 or height <= 0:
+            return False
+        rx, ry = width / 2, height / 2
+        # A positive subnormal radius can underflow to zero. JavaScript's
+        # normalized query is non-finite there and has no intersecting edge.
+        if rx == 0 or ry == 0:
+            return False
+        circle = [((p[0] - rx) / rx, (p[1] - ry) / ry) for p in query]
+        if inside((0, 0), circle):
+            return True
+        for a, b in zip(circle, circle[1:] + circle[:1]):
+            dx, dy = b[0] - a[0], b[1] - a[1]
+            t = max(0, min(1, -(a[0] * dx + a[1] * dy) / (dx * dx + dy * dy or 1)))
+            ex, ey = a[0] + t * dx, a[1] + t * dy
+            # Multiplication follows JS overflow to infinity; **2 can raise.
+            if ex * ex + ey * ey < 1:
+                return True
+        return False
+    points = [(p['x'], p['y']) for p in objeto.get('points', [])] if shape in ('polygon', 'polyline') else [(0, 0), (width, 0), (width, height), (0, height)]
+    if not points or any(not math.isfinite(x) or not math.isfinite(y) for x, y in points):
+        return False
+    opened = shape == 'polyline'
+    second = next((p for p in points if p != points[0]), None)
+    if not opened and (len(points) < 3 or second is None or not any(cross(points[0], second, p) != 0 for p in points)):
+        return False
+    if any(inside(p, query) for p in points) or (not opened and any(inside(p, points) for p in query)):
+        return True
+    segments = zip(points, points[1:] if opened else points[1:] + points[:1])
+    return any(segment_crosses(a, b, c, d) for a, b in segments for c, d in zip(query, query[1:] + query[:1]))
+
+def quadro_arte(arte, animation_id, tempo):
+    sprite = arte.get('sprite')
+    if not sprite:
+        return (0, 0, arte['width'], arte['height'])
+    animation = next((a for a in sprite['animations'] if a['id'] == animation_id), None)
+    tile = sprite['animations'][0]['frames'][0]['tile']
+    if animation:
+        frames = animation['frames']
+        total = sum(f['duration'] for f in frames)
+        at = max(0, tempo) % total if animation['loop'] else min(max(0, tempo), total)
+        tile = frames[-1]['tile']
+        for frame in frames:
+            at -= frame['duration']
+            if at < 0:
+                tile = frame['tile']
+                break
+    w, h = sprite['frameWidth'], sprite['frameHeight']
+    return (tile % sprite['columns'] * w, tile // sprite['columns'] * h, w, h)
+
+def transformar_objeto_conjunto(parent, child, largura, altura, ids):
+    """A mesma base afim de transformSceneSetObject; a geometria não usa flips da arte."""
+    sx, sy = parent['width'] / largura, parent['height'] / altura
+    a, b = math.radians(parent.get('rotation', 0)), math.radians(child.get('rotation', 0))
+    mx, my = -sx if parent.get('flipX') else sx, -sy if parent.get('flipY') else sy
+    def vector(x, y):
+        return (x * mx * math.cos(a) - y * my * math.sin(a), x * mx * math.sin(a) + y * my * math.cos(a))
+    u, v = vector(math.cos(b), math.sin(b)), vector(-math.sin(b), math.cos(b))
+    ux, vy = math.hypot(*u), math.hypot(*v)
+    reflected = u[0] * v[1] - u[1] * v[0] < 0
+    p, origin = vector(child['x'], child['y']), vector(-largura if parent.get('flipX') else 0, -altura if parent.get('flipY') else 0)
+    result = dict(child, id=parent['id'] + '/' + child['id'] if child['id'] in ids else child['id'],
+                  x=parent['x'] + p[0] + origin[0] + (v[0] * child['height'] if reflected else 0),
+                  y=parent['y'] + p[1] + origin[1] + (v[1] * child['height'] if reflected else 0),
+                  width=child['width'] * ux, height=child['height'] * vy,
+                  rotation=math.degrees(math.atan2(u[1], u[0])), flipX=bool(child.get('flipX')), flipY=bool(child.get('flipY')) != reflected)
+    result['properties'] = {key: dict(value, value=parent['id'] + '/' + str(value['value'])) if isinstance(value, dict) and value.get('type') == 'object' and str(value['value']) in ids else value for key, value in child.get('properties', {}).items()}
+    if 'points' in child:
+        result['points'] = [{'x': point['x'] * ux, 'y': (child['height'] - point['y'] if reflected else point['y']) * vy} for point in child['points']]
+    if abs(u[0] * v[0] + u[1] * v[1]) <= 1e-8 * ux * vy:
+        return result
+    def world(x, y):
+        return (parent['x'] + p[0] + origin[0] + u[0] * x + v[0] * y, parent['y'] + p[1] + origin[1] + u[1] * x + v[1] * y)
+    if child.get('shape') == 'ellipse':
+        bx, by, cx, cy = u[0] * child['width'] / 2, u[1] * child['width'] / 2, v[0] * child['height'] / 2, v[1] * child['height'] / 2
+        xx, yy, xy = bx * bx + cx * cx, by * by + cy * cy, bx * by + cx * cy
+        delta = math.hypot(xx - yy, 2 * xy)
+        rx, ry = math.sqrt(max(0, (xx + yy + delta) / 2)), math.sqrt(max(0, (xx + yy - delta) / 2))
+        theta, center = math.atan2(2 * xy, xx - yy) / 2, world(child['width'] / 2, child['height'] / 2)
+        result.update(x=center[0] - rx * math.cos(theta) + ry * math.sin(theta), y=center[1] - rx * math.sin(theta) - ry * math.cos(theta), width=rx * 2, height=ry * 2, rotation=math.degrees(theta), flipX=False, flipY=False)
+    else:
+        at = world(0, 0)
+        points = child.get('points', [{'x': 0, 'y': 0}, {'x': child['width'], 'y': 0}, {'x': child['width'], 'y': child['height']}, {'x': 0, 'y': child['height']}])
+        result.update(x=at[0], y=at[1], rotation=0, shape=child.get('shape') if child.get('shape') in ('polyline', 'point') else 'polygon',
+                      points=[{'x': u[0] * point['x'] + v[0] * point['y'], 'y': u[1] * point['x'] + v[1] * point['y']} for point in points], flipX=bool(child.get('flipX')), flipY=bool(child.get('flipY')))
+    return result
+
+def _pouso_de_mao_unica(anterior, atual, gravidade, plataformas, bloqueado):
+    """FRect on a one-way floor, or None. Gravity zero keeps top-down motion free.
+
+    plataformas(consulta) yields the platform polygons near the query and bloqueado(corpo)
+    tests walls. Platform tiles hold in both authored physics, like the JavaScript players.
+    """
+    anterior, atual = pygame.FRect(anterior), pygame.FRect(atual)
+    values = [*anterior, *atual, gravidade]
+    if not all(isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) for v in values) or not gravidade or min(anterior.width,anterior.height,atual.width,atual.height) <= 0:
+        return None
+    direction = 1 if gravidade > 0 else -1
+    # FRect stores float32; admit its coordinate rounding, not a whole pixel.
+    epsilon = max(1e-6, max(abs(v) for v in [*anterior,*atual]) * 2**-23)
+    if (atual.y - anterior.y) * direction < -epsilon:
+        return None
+    selected, was_supported = None, False
+    for polygon in plataformas(anterior.union(atual).inflate(epsilon * 2, epsilon * 2)):
+        def surface(body):
+            left, right = max(body.left,min(p.x for p in polygon)), min(body.right,max(p.x for p in polygon))
+            if right - left <= 1e-9:
+                return None
+            heights = []
+            for a,b in zip(polygon,polygon[1:] + polygon[:1]):
+                if left <= a.x <= right:
+                    heights.append(a.y)
+                if a.x != b.x:
+                    for x in (left,right):
+                        if min(a.x,b.x) <= x <= max(a.x,b.x):
+                            heights.append(a.y + (b.y - a.y) * (x - a.x) / (b.x - a.x))
+            return (min(heights) if direction > 0 else max(heights)) if heights else None
+        floor = surface(atual)
+        if floor is None:
+            continue
+        old_floor = surface(anterior)
+        if old_floor is None:
+            old_floor = floor
+        old_feet, feet = (anterior.bottom,atual.bottom) if direction > 0 else (anterior.top,atual.top)
+        if (old_feet - old_floor) * direction > epsilon or (feet - floor) * direction < -epsilon:
+            continue
+        candidate = atual.copy()
+        candidate.y = floor - (atual.height if direction > 0 else 0)
+        if selected is None or (candidate.y - selected.y) * direction < 0:
+            selected, was_supported = candidate, abs(old_feet - old_floor) <= epsilon
+    if selected is not None and bloqueado(selected):
+        return anterior.copy() if was_supported and not bloqueado(anterior) else None
+    return selected
+
+
+class _CenaCompleta:
+    def __init__(self, raiz, nome):
+        self.raiz = Path(raiz)
+        self.mapas = json.loads((self.raiz / 'maps.json').read_text(encoding='utf-8'))
+        self.imagens, self.pecas = {}, {}
+        self.carregar(nome)
+
+    def carregar(self, nome):
+        self.nome, self.dados = nome, self.mapas[nome]
+        self.inicio_animacao = pygame.time.get_ticks()
+        self.tamanho = self.dados['tileSize']
+        self.objetos = []
+        self.solidos, self.plataformas = [], []
+        self.solidos_transformados = []
+        for camada in self.dados['layers']:
+            e = self.efetiva(self.dados['layers'], camada)
+            if not e['visible']:
+                continue
+            if camada['kind'] == 'objects':
+                self.objetos.extend(dict(o, x=o['x'] + e['x'], y=o['y'] + e['y']) for o in camada['objects'])
+            if camada['kind'] != 'tiles':
+                continue
+            ts = next(t for t in self.dados['tilesets'] if t['id'] == camada['tilesetId'])
+            for i, celula in enumerate(camada['cells']):
+                if celula < 0:
+                    continue
+                tile = celula & 4095
+                rect = pygame.FRect(i % self.dados['cols'] * self.tamanho + e['x'], i // self.dados['cols'] * self.tamanho + e['y'], self.tamanho, self.tamanho)
+                if camada.get('collision') or tile in ts['solid']:
+                    self.solidos.append(rect)
+                elif tile in ts['platform']:
+                    self.plataformas.append(rect)
+        self._solidos_planos = list(self.solidos)
+        for instancia in list(self.objetos):
+            conjunto = next((s for s in self.dados.get('sets', []) if s['id'] == instancia.get('setId')), None)
+            if not conjunto:
+                continue
+            def ponto(x, y):
+                sx = instancia['width'] / (conjunto['cols'] * self.tamanho)
+                sy = instancia['height'] / (conjunto['rows'] * self.tamanho)
+                x = (conjunto['cols'] * self.tamanho - x if instancia.get('flipX') else x) * sx
+                y = (conjunto['rows'] * self.tamanho - y if instancia.get('flipY') else y) * sy
+                p = pygame.Vector2(x, y).rotate(instancia.get('rotation', 0))
+                return p.x + instancia['x'], p.y + instancia['y']
+            for camada in conjunto['layers']:
+                e = self.efetiva(conjunto['layers'], camada)
+                if not e['visible']:
+                    continue
+                if camada['kind'] == 'objects':
+                    for objeto in camada['objects']:
+                        ids = [o['id'] for l in conjunto['layers'] for o in l.get('objects', [])]
+                        self.objetos.append(transformar_objeto_conjunto(instancia, dict(objeto, x=objeto['x'] + e['x'], y=objeto['y'] + e['y']), conjunto['cols'] * self.tamanho, conjunto['rows'] * self.tamanho, ids))
+                elif camada['kind'] == 'tiles':
+                    ts = next(t for t in self.dados['tilesets'] if t['id'] == camada['tilesetId'])
+                    for i, celula in enumerate(camada['cells']):
+                        if celula < 0:
+                            continue
+                        tile = celula & 4095
+                        if not (camada.get('collision') or tile in ts['solid'] or tile in ts['platform']):
+                            continue
+                        x = i % conjunto['cols'] * self.tamanho + e['x']
+                        y = i // conjunto['cols'] * self.tamanho + e['y']
+                        corners = [ponto(x + dx, y + dy) for dx, dy in [(0, 0), (self.tamanho, 0), (self.tamanho, self.tamanho), (0, self.tamanho)]]
+                        xs, ys = [p[0] for p in corners], [p[1] for p in corners]
+                        rect = pygame.FRect(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
+                        (self.solidos if camada.get('collision') or tile in ts['solid'] else self.plataformas).append(rect)
+                        if camada.get('collision') or tile in ts['solid']:
+                            self.solidos_transformados.append(corners)
+        inicio = next((o for o in self.objetos if o.get('role') == 'start'), {'x': self.tamanho / 2, 'y': self.tamanho / 2})
+        self.jogador = pygame.FRect(inicio['x'], inicio['y'], self.tamanho * 0.65, self.tamanho * 0.65)
+
+    @staticmethod
+    def efetiva(camadas, camada):
+        e = {'visible': camada.get('visible', True), 'opacity': camada.get('opacity', 1), 'x': camada.get('offsetX', 0), 'y': camada.get('offsetY', 0), 'px': camada.get('parallaxX', 1), 'py': camada.get('parallaxY', 1)}
+        pai = camada.get('parentId')
+        for _ in range(32):
+            if not pai:
+                break
+            grupo = next((c for c in camadas if c['id'] == pai), None)
+            if not grupo:
+                break
+            e['visible'] = e['visible'] and grupo.get('visible', True)
+            e['opacity'] *= grupo.get('opacity', 1)
+            e['x'] += grupo.get('offsetX', 0)
+            e['y'] += grupo.get('offsetY', 0)
+            e['px'] *= grupo.get('parallaxX', 1)
+            e['py'] *= grupo.get('parallaxY', 1)
+            pai = grupo.get('parentId')
+        return e
+
+    def imagem(self, caminho):
+        if caminho not in self.imagens:
+            self.imagens[caminho] = pygame.image.load(str(self.raiz / caminho)).convert_alpha()
+        return self.imagens[caminho]
+
+    def peca(self, ts, celula, tempo):
+        tile, flags = celula & 4095, celula & 28672
+        quadros = ts.get('animations', {}).get(str(tile), [])
+        total = sum(q['duration'] for q in quadros)
+        if quadros and total > 0:
+            atual = tempo % total
+            for q in quadros:
+                atual -= q['duration']
+                if atual < 0:
+                    tile = q['tile']
+                    break
+        chave = ts['id'], tile, flags
+        if chave not in self.pecas:
+            t = self.tamanho
+            imagem = self.imagem(ts['image']).subsurface((tile % ts['columns'] * t, tile // ts['columns'] * t, t, t))
+            if flags & 16384:
+                imagem = pygame.transform.flip(pygame.transform.rotate(imagem, 90), False, True)
+            self.pecas[chave] = pygame.transform.flip(imagem, bool(flags & 4096), bool(flags & 8192))
+        return self.pecas[chave]
+
+    def desenhar(self, tela, frente=False, camadas=None, cols=None, deslocamento=(0, 0), profundidade=0, camera=None, personagem=True):
+        if profundidade > 1:
+            return
+        camadas = self.dados['layers'] if camadas is None else camadas
+        cols = self.dados['cols'] if cols is None else cols
+        if camera is None:
+            camera = (max(0, self.jogador.centerx - tela.get_width() / 2), max(0, self.jogador.centery - tela.get_height() / 2)) if not profundidade else (0, 0)
+        tempo = pygame.time.get_ticks() - self.inicio_animacao if self.dados.get('version', 1) >= 2 else pygame.time.get_ticks()
+        for camada in camadas:
+            e = self.efetiva(camadas, camada)
+            if not e['visible'] or not e['opacity']:
+                continue
+            dx = e['x'] + deslocamento[0] - camera[0] * e['px']
+            dy = e['y'] + deslocamento[1] - camera[1] * e['py']
+            if camada['kind'] == 'tiles' and not camada.get('collision') and bool(camada.get('front')) == frente:
+                ts = next(t for t in self.dados['tilesets'] if t['id'] == camada['tilesetId'])
+                for i, celula in enumerate(camada['cells']):
+                    x, y = i % cols * self.tamanho + dx, i // cols * self.tamanho + dy
+                    if celula < 0 or x < -self.tamanho or y < -self.tamanho or x > tela.get_width() or y > tela.get_height():
+                        continue
+                    imagem = self.peca(ts, celula, tempo)
+                    if e['opacity'] < 1:
+                        imagem = imagem.copy()
+                        imagem.set_alpha(round(e['opacity'] * 255))
+                    tela.blit(imagem, (x, y))
+            elif camada['kind'] == 'objects':
+                for o in camada['objects']:
+                    if o.get('setId'):
+                        conjunto = next((s for s in self.dados.get('sets', []) if s['id'] == o['setId']), None)
+                        if conjunto:
+                            superficie = pygame.Surface((conjunto['cols'] * self.tamanho, conjunto['rows'] * self.tamanho), pygame.SRCALPHA)
+                            self.desenhar(superficie, frente, conjunto['layers'], conjunto['cols'], (0, 0), profundidade + 1)
+                            superficie = pygame.transform.scale(superficie, (max(1, round(o['width'])), max(1, round(o['height']))))
+                            superficie = pygame.transform.flip(superficie, bool(o.get('flipX')), bool(o.get('flipY')))
+                            pivot = pygame.Vector2(superficie.get_width() / 2, superficie.get_height() / 2).rotate(o.get('rotation', 0))
+                            if o.get('rotation'):
+                                superficie = pygame.transform.rotate(superficie, -o['rotation'])
+                            superficie.set_alpha(round(e['opacity'] * 255))
+                            tela.blit(superficie, (o['x'] + dx + pivot.x - superficie.get_width() / 2, o['y'] + dy + pivot.y - superficie.get_height() / 2))
+                    elif o.get('art') and not frente:
+                        arte = next((a for a in self.dados.get('art', []) if a['id'] == o['art']['assetId']), None)
+                        ts = next((t for t in self.dados['tilesets'] if t['id'] == o['art']['assetId']), None)
+                        imagem = self.imagem(arte['image']).subsurface(quadro_arte(arte, o['art'].get('animationId'), tempo)) if arte else self.peca(ts, o['art'].get('tile', 0), tempo) if ts else None
+                        if imagem and o['width'] > 0 and o['height'] > 0:
+                            imagem = pygame.transform.scale(imagem, (round(o['width']), round(o['height'])))
+                            imagem = pygame.transform.flip(imagem, bool(o.get('flipX')), bool(o.get('flipY')))
+                            pivot = pygame.Vector2(imagem.get_width() / 2, imagem.get_height() / 2).rotate(o.get('rotation', 0))
+                            if o.get('rotation'):
+                                imagem = pygame.transform.rotate(imagem, -o['rotation'])
+                            imagem.set_alpha(round(e['opacity'] * 255))
+                            tela.blit(imagem, (o['x'] + dx + pivot.x - imagem.get_width() / 2, o['y'] + dy + pivot.y - imagem.get_height() / 2))
+        if personagem and not frente and not profundidade:
+            pygame.draw.rect(tela, '#4ade80', self.jogador.move(-camera[0], -camera[1]))
+
+    @staticmethod
+    def propriedade(objeto, chave):
+        valor = (objeto or {}).get('properties', {}).get(chave)
+        return valor.get('value') if isinstance(valor, dict) else valor
+
+    def objeto_por_id(self, referencia):
+        return next((o for o in self.objetos if o['id'] == referencia), None)
+
+    def recurso_imagem(self, referencia):
+        recurso = next((a for a in self.dados.get('art', []) + self.dados['tilesets'] if a['id'] == referencia), None)
+        return recurso['image'] if recurso else None
+
+    def propriedade_camada(self, referencia, chave):
+        return self.propriedade(next((l for l in self.dados['layers'] if l['id'] == referencia), None), chave)
+
+    def propriedade_peca(self, referencia, peca, chave):
+        ts = next((t for t in self.dados['tilesets'] if t['id'] == referencia), None)
+        if not ts or isinstance(peca, bool) or not isinstance(peca, (int, float)) or not math.isfinite(peca) or peca != int(peca) or not 0 <= peca < ts['count']:
+            return None
+        return self.propriedade({'properties': ts.get('tileProperties', {}).get(str(int(peca)), {})}, chave)
+
+    @staticmethod
+    def contem(objeto, x, y):
+        p = pygame.Vector2(x - objeto['x'], y - objeto['y']).rotate(-objeto.get('rotation', 0))
+        if objeto.get('shape') == 'ellipse':
+            return ((p.x - objeto['width'] / 2) / max(.001, objeto['width'] / 2)) ** 2 + ((p.y - objeto['height'] / 2) / max(.001, objeto['height'] / 2)) ** 2 <= 1
+        points = objeto.get('points', [])
+        if objeto.get('shape') == 'polygon' and points:
+            inside = False
+            for a, b in zip(points, points[1:] + points[:1]):
+                if (a['y'] > p.y) != (b['y'] > p.y) and p.x < (b['x'] - a['x']) * (p.y - a['y']) / (b['y'] - a['y']) + a['x']:
+                    inside = not inside
+            return inside
+        return pygame.FRect(0, 0, objeto['width'], objeto['height']).collidepoint(p)
+
+    def _pecas_plataforma(self, query):
+        """Visit only covered cells, keeping the native document authoritative."""
+        contexts = [(None, self.dados)]
+        for instance in self.objetos:
+            definition = next((s for s in self.dados.get('sets', []) if s['id'] == instance.get('setId')), None)
+            if definition and instance['width'] > 0 and instance['height'] > 0:
+                contexts.append((instance, definition))
+        for parent, definition in contexts:
+            cols, rows = definition['cols'], definition['rows']
+            def local(point):
+                if parent is None:
+                    return point
+                p = (pygame.Vector2(point) - (parent['x'], parent['y'])).rotate(-parent.get('rotation', 0))
+                return ((parent['width'] - p.x if parent.get('flipX') else p.x) / parent['width'] * cols * self.tamanho,
+                        (parent['height'] - p.y if parent.get('flipY') else p.y) / parent['height'] * rows * self.tamanho)
+            corners = [local(p) for p in (query.topleft, query.topright, query.bottomright, query.bottomleft)]
+            left, right = min(p[0] for p in corners), max(p[0] for p in corners)
+            top, bottom = min(p[1] for p in corners), max(p[1] for p in corners)
+            for layer in definition['layers']:
+                if layer['kind'] != 'tiles' or layer.get('collision'):
+                    continue
+                state = self.efetiva(definition['layers'], layer)
+                if not state['visible']:
+                    continue
+                ts = next(t for t in self.dados['tilesets'] if t['id'] == layer['tilesetId'])
+                if not ts['platform']:
+                    continue
+                for row in range(max(0, math.floor((top - state['y'] - 1e-7) / self.tamanho)), min(rows, math.ceil((bottom - state['y'] + 1e-7) / self.tamanho))):
+                    for col in range(max(0, math.floor((left - state['x'] - 1e-7) / self.tamanho)), min(cols, math.ceil((right - state['x'] + 1e-7) / self.tamanho))):
+                        cell = layer['cells'][row * cols + col]
+                        if cell < 0 or (cell & 4095) not in ts['platform'] or (cell & 4095) in ts['solid']:
+                            continue
+                        tile = dict(id='', x=col * self.tamanho + state['x'], y=row * self.tamanho + state['y'], width=self.tamanho, height=self.tamanho, properties={})
+                        if parent is not None:
+                            tile = transformar_objeto_conjunto(parent, tile, cols * self.tamanho, rows * self.tamanho, [])
+                        points = tile.get('points', [{'x':0,'y':0},{'x':tile['width'],'y':0},{'x':tile['width'],'y':tile['height']},{'x':0,'y':tile['height']}])
+                        yield [(pygame.Vector2(p['x'],p['y']).rotate(tile.get('rotation',0)) + (tile['x'],tile['y'])) for p in points]
+
+    def pouso(self, anterior, atual, gravidade=1):
+        """FRect on a one-way floor, or None. Gravity zero keeps top-down motion free."""
+        return _pouso_de_mao_unica(anterior, atual, gravidade, self._pecas_plataforma, self.bloqueado)
+
+    def mover(self, dx, dy, *, gravidade=0):
+        if not all(math.isfinite(value) for value in (dx, dy)):
+            return
+        anterior = self.jogador.copy()
+        if self.dados.get('version', 1) >= 3:
+            for eixo, delta, limite, tamanho in [('x', dx, self.dados['cols'] * self.tamanho, 'width'), ('y', dy, self.dados['rows'] * self.tamanho, 'height')]:
+                delta = max(-limite, min(limite, delta))
+                if not delta:
+                    continue
+                antes = self.jogador.copy()
+                def varrido(fracao):
+                    rect = antes.copy()
+                    setattr(rect, eixo, getattr(antes, eixo) + min(0, delta * fracao))
+                    setattr(rect, tamanho, getattr(antes, tamanho) + abs(delta * fracao))
+                    return rect
+                if self.bloqueado(antes):
+                    fim = antes.copy()
+                    setattr(fim, eixo, getattr(fim, eixo) + delta)
+                    if not self.bloqueado(fim):
+                        self.jogador = fim
+                    continue
+                livre, ocupado = 0.0, 1.0
+                if not self.bloqueado(varrido(1)):
+                    livre = 1.0
+                else:
+                    for _ in range(38):
+                        meio = (livre + ocupado) / 2
+                        if self.bloqueado(varrido(meio)):
+                            ocupado = meio
+                        else:
+                            livre = meio
+                setattr(self.jogador, eixo, getattr(antes, eixo) + delta * livre)
+        else:
+            passos = max(1, math.ceil(max(abs(dx), abs(dy)) / max(1, self.tamanho / 4)))
+            for _ in range(passos):
+                for eixo, delta in [('x', dx / passos), ('y', dy / passos)]:
+                    antes = self.jogador.copy()
+                    setattr(self.jogador, eixo, getattr(self.jogador, eixo) + delta)
+                    if self.bloqueado(self.jogador):
+                        self.jogador = antes
+        self.jogador.clamp_ip(pygame.FRect(0, 0, self.dados['cols'] * self.tamanho, self.dados['rows'] * self.tamanho))
+        if gravidade:
+            support = self.pouso(anterior, self.jogador, gravidade)
+            if support is not None:
+                self.jogador = support
+        for porta in self.objetos:
+            if porta.get('role') == 'door' and self.contem(porta, *self.jogador.center):
+                destino = self.propriedade(porta, 'destino') or self.propriedade(porta, 'destination')
+                destino = next((k for k, v in self.mapas.items() if k == destino or v['id'] == destino), destino)
+                if destino in self.mapas:
+                    self.carregar(destino)
+                    break
+
+    def bloqueado(self, rect):
+        if self.dados.get('version', 1) >= 3 and (rect.left < 0 or rect.top < 0 or rect.right > self.dados['cols'] * self.tamanho or rect.bottom > self.dados['rows'] * self.tamanho):
+            return True
+        if self.dados.get('version', 1) >= 3 and any(o.get('collision') is True and objeto_intersecta_corpo(o, rect) for o in self.objetos):
+            return True
+        if any(rect.colliderect(other) for other in self._solidos_planos):
+            return True
+        # Separating axes of the player rectangle and the actual transformed tile.
+        # A rotated tile's bounding Rect is kept in solidos for the legacy API only.
+        box = [rect.topleft, rect.topright, rect.bottomright, rect.bottomleft]
+        for polygon in self.solidos_transformados:
+            axes = [(1, 0), (0, 1)] + [(b[1] - a[1], a[0] - b[0]) for a, b in zip(polygon, polygon[1:] + polygon[:1])]
+            def separated(axis):
+                first = [x * axis[0] + y * axis[1] for x, y in box]
+                second = [x * axis[0] + y * axis[1] for x, y in polygon]
+                return max(first) <= min(second) or max(second) <= min(first)
+            if not any(separated(axis) for axis in axes):
+                return True
+        return False

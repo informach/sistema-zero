@@ -1,0 +1,37 @@
+{
+  "gestos": 2,
+  "transformacao": {
+    "posicao": {
+      "x": 3,
+      "z": 0,
+      "y": 0
+    },
+    "rotacao": {
+      "x": 0,
+      "z": 0,
+      "y": 0
+    },
+    "escala": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  },
+  "origem": {
+    "posicao": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotacao": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "escala": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  }
+}

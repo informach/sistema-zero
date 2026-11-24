@@ -5,6 +5,7 @@ import { documentFixture } from './fixtures/projectDocuments'
 import {
   prepareProjectForHost,
   sanitizeCoverAssetName,
+  sanitizeStoredBlocksState,
   sanitizeStoredProject,
   validateEditableStudioCreationSnapshot,
   validateStudioCreationSnapshot,
@@ -138,5 +139,74 @@ describe('coverAssetName (a capa escolhida) é saneada por FORMA, não pela exis
       assets: ['a'.repeat(64)],
     }
     expect(validateStudioCreationSnapshot(manifest, project.id).coverAssetName).toBe('tela-inicial')
+  })
+})
+
+describe('studentTests ("Meus testes") viajam no projeto clássico em JavaScript', () => {
+  const teste = {
+    id: 'moeda-ponto',
+    name: 'Encostar na moeda dá ponto',
+    rule: {
+      type: 'behavior' as const,
+      steps: [{ action: 'press' as const, key: 'Enter' as const }],
+      expect: { target: { kind: 'value' as const, path: 'pontos' }, compare: 'increased' as const },
+    },
+  }
+
+  it('sanitizeStoredProject guarda os testes na forma e OMITE a chave sem nenhum', () => {
+    // Teste fora da forma (de uma versão mais nova, ou mexido à mão) sai sem impedir a abertura do
+    // projeto: os testes não são o conteúdo do jogo.
+    const project = createEmptyProject('01J0000000000000000000TEST', 'Moedas')
+    const com = sanitizeStoredProject({ ...project, studentTests: [teste] }, project.id)
+    expect(com?.studentTests).toEqual([teste])
+    const ruins = sanitizeStoredProject(
+      { ...project, studentTests: [{ ...teste, name: '' }, { nada: 1 }] },
+      project.id,
+    )
+    expect(ruins && 'studentTests' in ruins).toBe(false)
+    const sem = sanitizeStoredProject(project, project.id)
+    expect(sem && 'studentTests' in sem).toBe(false)
+  })
+
+  it('o programa do manifesto da nuvem e o documento do projeto PRESERVAM os testes', async () => {
+    const project = createEmptyProject('manifesto-testes', 'Moedas')
+    const manifest = {
+      format: 'sz-studio-parts',
+      version: 1,
+      program: { ...project, assets: [], studentTests: [teste] },
+      assets: ['a'.repeat(64)],
+    }
+    expect(validateStudioCreationSnapshot(manifest, project.id).studentTests).toEqual([teste])
+    // O documento v3 de teste, sem materiais (o assunto aqui são os testes).
+    const documento = {
+      ...documentFixture('javascript', 'classic'),
+      assets: [],
+      studentTests: [teste],
+    }
+    const lido = await validateEditableStudioCreationSnapshot(documento, documento.id)
+    expect('studentTests' in lido ? lido.studentTests : undefined).toEqual([teste])
+  })
+})
+
+describe('a explicação de uma recusa numa cadeia longa', () => {
+  it('aponta o bloco desconhecido no fim de 20 mil blocos, sem estourar a pilha', () => {
+    type Node = { type: string; id: string; next?: { block: Node } }
+    const root: Node = { type: 'sz_som_stop', id: 'b0' }
+    let tail = root
+    for (let index = 1; index < 20_000; index++) {
+      const block: Node = { type: 'sz_som_stop', id: `b${index}` }
+      tail.next = { block }
+      tail = block
+    }
+    tail.type = 'tipo_que_nao_existe'
+    const state = { blocks: { languageVersion: 0, blocks: [root] }, szBehaviorAreasVersion: 7 }
+    let message = ''
+    try {
+      sanitizeStoredBlocksState(state, [])
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error)
+    }
+    expect(message).toContain('tipo "tipo_que_nao_existe" fora da allowlist')
+    expect(message).toContain('(sz_som_stop).next[0]')
   })
 })

@@ -15,10 +15,12 @@ import {
   aiUsageReservations,
   avatarConfigs,
   avatarInventory,
+  cenarioEspacos,
   certificatesIssued,
   coinEvents,
   courseRatings,
   creationCleanupJobs,
+  creationInventoryFloors,
   creations,
   creatorJourneyCourseGrants,
   entitlements,
@@ -45,6 +47,8 @@ import {
   pensaProjectRoles,
   pensaProjects,
   pensaProviderUsage,
+  pintaCausalObjects,
+  pintaCausalUnits,
   privateNarrations,
   profilePreferences,
   quizAttempts,
@@ -56,6 +60,8 @@ import {
   studioBuilderJobs,
   studioBuilderProjectDeletions,
   studioLessonBindings,
+  studioSealedHeads,
+  studioSealedObjects,
   studioSubmissions,
   teacherBroadcastRecipients,
   teacherThreads,
@@ -381,6 +387,11 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(missionClaims).where(inArray(missionClaims.userId, userIds))
       await tx.delete(roomInventory).where(inArray(roomInventory.userId, userIds))
       await tx.delete(moradaHouses).where(inArray(moradaHouses.userId, userIds))
+      // Molda Cenários: o espaço da conta leva bibliotecas, modelos, mundos, cenários e o registro
+      // dos arquivos (FK em cascata). Os arquivos em si saem pelo prefixo `cenarios/<conta>/` do job.
+      await tx
+        .delete(cenarioEspacos)
+        .where(and(eq(cenarioEspacos.tipo, 'conta'), eq(cenarioEspacos.contaId, accountId)))
       await tx
         .delete(profilePreferences)
         .where(
@@ -497,6 +508,43 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           or(
             inArray(studioSubmissions.userId, userIds),
             eq(studioSubmissions.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(pintaCausalObjects)
+        .where(
+          or(
+            inArray(pintaCausalObjects.userId, userIds),
+            eq(pintaCausalObjects.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(pintaCausalUnits)
+        .where(
+          or(inArray(pintaCausalUnits.userId, userIds), eq(pintaCausalUnits.accountId, accountId)),
+        )
+      await tx
+        .delete(studioSealedObjects)
+        .where(
+          or(
+            inArray(studioSealedObjects.userId, userIds),
+            eq(studioSealedObjects.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(studioSealedHeads)
+        .where(
+          or(
+            inArray(studioSealedHeads.userId, userIds),
+            eq(studioSealedHeads.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(creationInventoryFloors)
+        .where(
+          or(
+            inArray(creationInventoryFloors.userId, userIds),
+            eq(creationInventoryFloors.accountId, accountId),
           ),
         )
       // Índice das criações "guardadas na conta" (Estúdio Completo/Pinta). ⚠️ Só o

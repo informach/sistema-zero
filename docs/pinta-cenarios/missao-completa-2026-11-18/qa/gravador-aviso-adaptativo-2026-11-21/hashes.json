@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "file": "README.md",
+      "bytes": 1549,
+      "sha256": "fa58ce1a880bac0005b93047dd984515879c77af6689e815477e92836b76d2cd"
+    },
+    {
+      "file": "ci-failed-excerpt.log",
+      "bytes": 2339,
+      "sha256": "6980380886fc6347711915fe2fe4b344bb4416bc720952129e52f507094ea958"
+    },
+    {
+      "file": "pinta-writer-asset-diagnostics-baseline.json",
+      "bytes": 211,
+      "sha256": "945f569efd317d30a2a03fe3c048f8f3393009153c2c6c846017f52afc9eaac2"
+    },
+    {
+      "file": "pinta-writer-asset-diagnostics-baseline.log",
+      "bytes": 108451,
+      "sha256": "352d129750fd60b206a10453653df9428fd7faa2a2847538b7698d355885b579"
+    },
+    {
+      "file": "pinta-writer-asset-diagnostics-green-report.json",
+      "bytes": 8000,
+      "sha256": "818148ee84ce43e8f6cccdf215142a6434079c69cca73c779e135f8521b1dcb8"
+    },
+    {
+      "file": "pinta-writer-asset-diagnostics-green.json",
+      "bytes": 205,
+      "sha256": "280b3eb138cda4dbe81bee70606629ea3e93551bc2f8cc362df922bad3ecad26"
+    },
+    {
+      "file": "pinta-writer-asset-diagnostics-green.log",
+      "bytes": 107444,
+      "sha256": "ee17ca4179cb8c42df04f2b26b257bcc77e71c413d2257e0967bbcbf1efec67a"
+    },
+    {
+      "file": "source.json",
+      "bytes": 938,
+      "sha256": "2a3eed0160de78db9d43cb9d77a43d40ccf04d0580e5654d3daf1e1a0dbffa39"
+    }
+  ]
+}

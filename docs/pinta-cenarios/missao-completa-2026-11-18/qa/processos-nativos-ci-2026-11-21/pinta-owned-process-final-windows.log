@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+tests\native-process-state.test.ts:
+(pass) Linux terminal state is distinct from a live or stopped PID, including names with parentheses
+(pass) an actual running process is never accepted as retired
+(pass) invalid process ids are refused before any process probe
+(skip) a controlled Linux zombie is retired while its stopped owner is still alive
+
+tests\owned-node-process.test.ts:
+(pass) owned native process collects output and exit acknowledgement [63.00ms]
+(pass) parent deadline retires a noncooperative native child and its grandchild before input removal [4312.00ms]
+(pass) output overflow is bounded and retires the owned native process [282.00ms]
+
+ 6 pass
+ 1 skip
+ 0 fail
+ 29 expect() calls
+Ran 7 tests across 2 files. [4.71s]

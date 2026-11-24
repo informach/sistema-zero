@@ -1,0 +1,11 @@
+{
+  "reentrada": true,
+  "altura": 5,
+  "estados": ["carregando", "pronto", "carregando", "pronto"],
+  "erroExplicito": {
+    "estado": "erro",
+    "mensagem": "O conteúdo recebido não corresponde à peça de terreno"
+  },
+  "descarte": true,
+  "erros": []
+}

@@ -1,10 +1,16 @@
 import type { ExtensionDefinition } from '#extensions'
-import { defineExtensionExamples, GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import {
+  defineExtensionDocumentation,
+  defineExtensionExamples,
+  GAME_3D_ADVANCED_LIFECYCLE,
+  validateManifest,
+} from '#extensions'
 import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
-import { gameKit3DPromptContext } from './ai'
+import { gameKit3DPromptSummary } from './aiSummary'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
+import { gameKit3DRuntimeVariant } from './sceneVariant'
 
 // Valida o manifest em tempo de inicialização do módulo — falha CEDO.
 validateManifest(gameKit3DManifest)
@@ -36,6 +42,7 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
+  documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameKit3DDocs),
   examples: defineExtensionExamples(
     20,
     async () => (await import('./exampleCatalog')).gameKit3DExamples,
@@ -51,7 +58,11 @@ export const gameKit3DExtension: ExtensionDefinition = {
     toolboxCategory: gameKit3DToolboxCategory,
   },
   runtime: {
-    loadBootstrapScript: async () => (await import('./runtime')).gameKit3DRuntime,
+    // O cenário do Molda só entra quando o código usa um método dele (`sceneVariant.ts`);
+    // sem contexto, o runtime completo.
+    loadBootstrapScript: async (context) =>
+      (await import('./runtime')).gameKit3DRuntimeForVariant(gameKit3DRuntimeVariant(context)),
+    bootstrapVariant: gameKit3DRuntimeVariant,
     lifecycle: GAME_3D_ADVANCED_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
@@ -61,7 +72,8 @@ export const gameKit3DExtension: ExtensionDefinition = {
     },
   },
   ai: {
-    promptContext: gameKit3DPromptContext,
+    promptSummary: gameKit3DPromptSummary,
+    loadPromptContext: async () => (await import('./ai')).gameKit3DPromptContext,
   },
 }
 

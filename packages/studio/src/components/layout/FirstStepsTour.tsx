@@ -14,7 +14,8 @@ import { useT } from '../../studio/i18n'
  */
 const STEPS = [
   { key: 'tour.palette', anchors: ['.blocklyToolbox'] },
-  { key: 'tour.areas', anchors: ['.sz_frame_start', '.blocklySvg'] },
+  // No Python, a área ⚙️ Ao iniciar (`sz_py_area_start`); num projeto em branco, o espaço dos blocos.
+  { key: 'tour.areas', anchors: ['.sz_frame_start', '.sz_py_area_start', '.blocklySvg'] },
   { key: 'tour.run', anchors: ['[data-live-target="studio-run"]'] },
   { key: 'tour.problems', anchors: ['.sz-classic-dock'] },
 ] as const

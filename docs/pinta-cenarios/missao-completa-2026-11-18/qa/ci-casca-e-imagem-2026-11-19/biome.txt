@@ -1,0 +1,416 @@
+docs\arquipelago-manual\index.html:2185:14 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    2183 │     if (s.dataset.sub) li.className = 'sub';
+    2184 │     var a = document.createElement('a');
+  > 2185 │     a.href = '#' + s.id;
+         │              ^^^^^^^^^^
+    2186 │     a.style.setProperty('--cor', getComputedStyle(s).getPropertyValue('--cor') || '');
+    2187 │     a.innerHTML = '<span class="bola"></span><span></span>';
+
+  i Unsafe fix: Use a template literal.
+
+     9  9 │       if (s.dataset.sub) li.className = 'sub';
+    10 10 │       var a = document.createElement('a');
+    11    │ - ····a.href·=·'#'·+·s.id;
+       11 │ + ····a.href·=·`#${s.id}`;
+    12 12 │       a.style.setProperty('--cor', getComputedStyle(s).getPropertyValue('--cor') || '');
+    13 13 │       a.innerHTML = '<span class="bola"></span><span></span>';
+
+
+docs\arquipelago-manual\index.html:2193:15 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    2191 │     var li2 = document.createElement('li');
+    2192 │     var a2 = document.createElement('a');
+  > 2193 │     a2.href = '#' + s.id;
+         │               ^^^^^^^^^^
+    2194 │     a2.textContent = s.dataset.titulo;
+    2195 │     li2.appendChild(a2);
+
+  i Unsafe fix: Use a template literal.
+
+    17 17 │       var li2 = document.createElement('li');
+    18 18 │       var a2 = document.createElement('a');
+    19    │ - ····a2.href·=·'#'·+·s.id;
+       19 │ + ····a2.href·=·`#${s.id}`;
+    20 20 │       a2.textContent = s.dataset.titulo;
+    21 21 │       li2.appendChild(a2);
+
+
+docs\arquipelago-manual\index.html:2203:93 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    2201 │       es.forEach(function (e) {
+    2202 │         if (!e.isIntersecting) return;
+  > 2203 │         links.forEach(function (l) { l.classList.toggle('atual', l.getAttribute('href') === '#' + e.target.id); });
+         │                                                                                             ^^^^^^^^^^^^^^^^^
+    2204 │       });
+    2205 │     }, { rootMargin: '-20% 0px -70% 0px' });
+
+  i Unsafe fix: Use a template literal.
+
+    27 27 │         es.forEach(function (e) {
+    28 28 │           if (!e.isIntersecting) return;
+    29    │ - ········links.forEach(function·(l)·{·l.classList.toggle('atual',·l.getAttribute('href')·===·'#'·+·e.target.id);·});
+       29 │ + ········links.forEach(function·(l)·{·l.classList.toggle('atual',·l.getAttribute('href')·===·`#${e.target.id}`);·});
+    30 30 │         });
+    31 31 │       }, { rootMargin: '-20% 0px -70% 0px' });
+
+
+scripts\tui-release\install.ts:50:37 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    48 │       child.exited,
+    49 │     ])
+  > 50 │     if (code !== 0) throw new Error('Release verification failed: ' + errors.slice(-4000))
+       │                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    51 │     return output
+    52 │   } finally {
+
+  i Unsafe fix: Use a template literal.
+
+     48  48 │         child.exited,
+     49  49 │       ])
+     50     │ - ····if·(code·!==·0)·throw·new·Error('Release·verification·failed:·'·+·errors.slice(-4000))
+         50 │ + ····if·(code·!==·0)·throw·new·Error(`Release·verification·failed:·${errors.slice(-4000)}`)
+     51  51 │       return output
+     52  52 │     } finally {
+
+
+scripts\tui-release\install.ts:95:51 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    93 │   const target = join(destination, 'releases', integrity.digest)
+    94 │   if (!rollback) {
+  > 95 │     const staging = join(destination, 'releases', 'preparing-' + crypto.randomUUID())
+       │                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    96 │     await mkdir(staging)
+    97 │     // Copy only manifested, flat assets. Never import node_modules or links from a source tree.
+
+  i Unsafe fix: Use a template literal.
+
+     93  93 │     const target = join(destination, 'releases', integrity.digest)
+     94  94 │     if (!rollback) {
+     95     │ - ····const·staging·=·join(destination,·'releases',·'preparing-'·+·crypto.randomUUID())
+         95 │ + ····const·staging·=·join(destination,·'releases',·`preparing-${crypto.randomUUID()}`)
+     96  96 │       await mkdir(staging)
+     97  97 │       // Copy only manifested, flat assets. Never import node_modules or links from a source tree.
+
+
+scripts\tui-release\manifest.ts:47:23 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    45 │       info = await lstat(path)
+    46 │     if (!info.isFile() || info.isSymbolicLink() || info.size > 32_000_000)
+  > 47 │       throw new Error('Unexpected release asset: ' + name)
+       │                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    48 │     files[name] = { bytes: info.size, sha256: sha256(await readFile(path)) }
+    49 │   }
+
+  i Unsafe fix: Use a template literal.
+
+     45  45 │         info = await lstat(path)
+     46  46 │       if (!info.isFile() || info.isSymbolicLink() || info.size > 32_000_000)
+     47     │ - ······throw·new·Error('Unexpected·release·asset:·'·+·name)
+         47 │ + ······throw·new·Error(`Unexpected·release·asset:·${name}`)
+     48  48 │       files[name] = { bytes: info.size, sha256: sha256(await readFile(path)) }
+     49  49 │     }
+
+
+scripts\tui-release\manifest.ts:85:49 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    83 │     'launcher.js',
+    84 │   ])
+  > 85 │     if (!value.files[required]) throw new Error('Missing release asset: ' + required)
+       │                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    86 │   for (const [name, expected] of Object.entries(value.files)) {
+    87 │     const path = resolve(root, name)
+
+  i Unsafe fix: Use a template literal.
+
+     83  83 │       'launcher.js',
+     84  84 │     ])
+     85     │ - ····if·(!value.files[required])·throw·new·Error('Missing·release·asset:·'·+·required)
+         85 │ + ····if·(!value.files[required])·throw·new·Error(`Missing·release·asset:·${required}`)
+     86  86 │     for (const [name, expected] of Object.entries(value.files)) {
+     87  87 │       const path = resolve(root, name)
+
+
+scripts\tui-release\manifest.ts:96:23 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    94 │       sha256(await boundedFile(path, expected.bytes)) !== expected.sha256
+    95 │     )
+  > 96 │       throw new Error('Release integrity failed: ' + name)
+       │                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    97 │   }
+    98 │   return { value, digest: sha256(raw) }
+
+  i Unsafe fix: Use a template literal.
+
+     94  94 │         sha256(await boundedFile(path, expected.bytes)) !== expected.sha256
+     95  95 │       )
+     96     │ - ······throw·new·Error('Release·integrity·failed:·'·+·name)
+         96 │ + ······throw·new·Error(`Release·integrity·failed:·${name}`)
+     97  97 │     }
+     98  98 │     return { value, digest: sha256(raw) }
+
+
+scripts\tui-release\package.ts:12:35 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    10 │   )
+    11 │ const final = resolve(root, 'packages/tui/dist')
+  > 12 │ const destination = resolve(root, 'packages/tui/.dist-preparing-' + crypto.randomUUID())
+       │                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    13 │ await mkdir(destination, { recursive: true })
+    14 │ const result = await Bun.build({
+
+  i Unsafe fix: Use a template literal.
+
+     10  10 │     )
+     11  11 │   const final = resolve(root, 'packages/tui/dist')
+     12     │ - const·destination·=·resolve(root,·'packages/tui/.dist-preparing-'·+·crypto.randomUUID())
+         12 │ + const·destination·=·resolve(root,·`packages/tui/.dist-preparing-${crypto.randomUUID()}`)
+     13  13 │   await mkdir(destination, { recursive: true })
+     14  14 │   const result = await Bun.build({
+
+
+scripts\tui-release\package.ts:113:19 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    111 │ ])
+    112 │ if (lockCode !== 0)
+  > 113 │   throw new Error('Release lockfile generation failed: ' + lockOutput + lockErrors)
+        │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    114 │ await writeFile(
+    115 │   join(destination, 'manifest.json'),
+
+  i Unsafe fix: Use a template literal.
+
+    111 111 │   ])
+    112 112 │   if (lockCode !== 0)
+    113     │ - ··throw·new·Error('Release·lockfile·generation·failed:·'·+·lockOutput·+·lockErrors)
+        113 │ + ··throw·new·Error(`Release·lockfile·generation·failed:·${lockOutput}${lockErrors}`)
+    114 114 │   await writeFile(
+    115 115 │     join(destination, 'manifest.json'),
+
+
+scripts\tui-release\package.ts:119:32 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    117 │ )
+    118 │ await verify(destination)
+  > 119 │ const previous = resolve(root, 'packages/tui/.dist-previous-' + crypto.randomUUID())
+        │                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    120 │ const existed = await stat(final).then(
+    121 │   () => true,
+
+  i Unsafe fix: Use a template literal.
+
+    117 117 │   )
+    118 118 │   await verify(destination)
+    119     │ - const·previous·=·resolve(root,·'packages/tui/.dist-previous-'·+·crypto.randomUUID())
+        119 │ + const·previous·=·resolve(root,·`packages/tui/.dist-previous-${crypto.randomUUID()}`)
+    120 120 │   const existed = await stat(final).then(
+    121 121 │     () => true,
+
+
+scripts\tui-release\smoke.ts:66:21 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    64 │   )
+    65 │   if (terminal.code !== 0 || !terminal.output.includes('READY=true'))
+  > 66 │     throw new Error('Packaged ConPTY helper failed: ' + terminal.output)
+       │                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    67 │   checks.push('windows-job-conpty')
+    68 │   const owned = await startBrowserWorker(processes, directory, AbortSignal.timeout(30000))
+
+  i Unsafe fix: Use a template literal.
+
+    64 64 │     )
+    65 65 │     if (terminal.code !== 0 || !terminal.output.includes('READY=true'))
+    66    │ - ····throw·new·Error('Packaged·ConPTY·helper·failed:·'·+·terminal.output)
+       66 │ + ····throw·new·Error(`Packaged·ConPTY·helper·failed:·${terminal.output}`)
+    67 67 │     checks.push('windows-job-conpty')
+    68 68 │     const owned = await startBrowserWorker(processes, directory, AbortSignal.timeout(30000))
+
+
+scripts\tui-release\upgrade.ts:45:23 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    43 │   ) {
+    44 │     if (Date.now() > deadline)
+  > 45 │       throw new Error('Installer did not reach preparation boundary: ' + diagnostic)
+       │                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    46 │     await Bun.sleep(10)
+    47 │   }
+
+  i Unsafe fix: Use a template literal.
+
+    43 43 │     ) {
+    44 44 │       if (Date.now() > deadline)
+    45    │ - ······throw·new·Error('Installer·did·not·reach·preparation·boundary:·'·+·diagnostic)
+       45 │ + ······throw·new·Error(`Installer·did·not·reach·preparation·boundary:·${diagnostic}`)
+    46 46 │       await Bun.sleep(10)
+    47 47 │     }
+
+
+scripts\tui-release\upgrade.ts:77:19 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    75 │ ])
+    76 │ if (code !== 0 || !output.includes('Sistema Zero'))
+  > 77 │   throw new Error('Installed launcher failed: ' + errors)
+       │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    78 │ const report = {
+    79 │   at: new Date().toISOString(),
+
+  i Unsafe fix: Use a template literal.
+
+    75 75 │   ])
+    76 76 │   if (code !== 0 || !output.includes('Sistema Zero'))
+    77    │ - ··throw·new·Error('Installed·launcher·failed:·'·+·errors)
+       77 │ + ··throw·new·Error(`Installed·launcher·failed:·${errors}`)
+    78 78 │   const report = {
+    79 79 │     at: new Date().toISOString(),
+
+
+scripts\tui-release\verify.ts:32:38 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    30 │   smoke.exited,
+    31 │ ])
+  > 32 │ if (smokeCode !== 0) throw new Error('Installed worker/renderer smoke failed: ' + smokeErrors)
+       │                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    33 │ const help = Bun.spawn([process.execPath, 'cli.js', '--help'], {
+    34 │   cwd: directory,
+
+  i Unsafe fix: Use a template literal.
+
+    30 30 │     smoke.exited,
+    31 31 │   ])
+    32    │ - if·(smokeCode·!==·0)·throw·new·Error('Installed·worker/renderer·smoke·failed:·'·+·smokeErrors)
+       32 │ + if·(smokeCode·!==·0)·throw·new·Error(`Installed·worker/renderer·smoke·failed:·${smokeErrors}`)
+    33 33 │   const help = Bun.spawn([process.execPath, 'cli.js', '--help'], {
+    34 34 │     cwd: directory,
+
+
+docs\arquipelago-manual\index.html:92:12 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    90 │ .cap h4 { font-size: 17px; font-weight: 800; }
+    91 │ .bloco { display: grid; gap: 10px; max-width: 48em; }
+  > 92 │ .bloco ul, .bloco ol { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+       │            ^^^^^^^^^
+    93 │ .bloco li::marker { color: var(--cor, var(--suave)); font-weight: 800; }
+    94 │ .fala { font-style: italic; }
+
+  i This selector specificity is (0, 1, 2)
+
+    71 │ nav.indice { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); align-self: start; max-height: calc(100vh - 32px); overflow: auto; font-size: 14.5px; }
+    72 │ nav.indice h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); margin-bottom: 10px; }
+  > 73 │ nav.indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+       │ ^^^^^^^^^^^^^
+    74 │ nav.indice a { display: flex; gap: 9px; align-items: center; text-decoration: none; padding: 6px 10px; border-radius: 10px; color: var(--tinta); font-weight: 700; }
+    75 │ nav.indice a:hover { background: var(--papel); }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+docs\arquipelago-manual\index.html:144:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    142 │ .ilha-cartao { display: grid; gap: 4px; padding: 12px 14px; border-radius: 14px; background: var(--papel); border: 2px solid var(--linha); border-top: 6px solid var(--cor); text-decoration: none; }
+    143 │ .ilha-cartao b { font: 800 18px var(--titulo); }
+  > 144 │ .ilha-cartao span { font-size: 14px; color: var(--suave); }
+        │ ^^^^^^^^^^^^^^^^^
+    145 │
+    146 │ /* missões e desafios, ilha por ilha */
+
+  i This selector specificity is (0, 1, 2)
+
+    59 │ .selo { justify-self: start; font: 800 12px/1 var(--titulo); letter-spacing: .1em; text-transform: uppercase; color: var(--sol); }
+    60 │ .capa h1 { font-size: clamp(38px, 6vw, 64px); font-weight: 800; color: #fff; }
+  > 61 │ .capa h1 span { color: var(--sol); }
+       │ ^^^^^^^^^^^^^
+    62 │ .capa p { color: #c9d1ee; font-size: 18px; max-width: 34em; }
+    63 │ .pontos { display: flex; gap: 7px; align-items: center; }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+docs\arquipelago-manual\index.html:165:14 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    163 │ .desafio .conta, .desafio .extra { font-size: 14px; display: grid; gap: 4px; }
+    164 │ .desafio .conta b, .desafio .extra b { font: 800 12.5px var(--titulo); letter-spacing: .05em; text-transform: uppercase; color: var(--suave); }
+  > 165 │ .desafio ul, .desafio ol { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; }
+        │              ^^^^^^^^^^^
+    166 │ .desafio .extra { padding: 8px 10px; border-radius: 10px; background: color-mix(in oklab, var(--sol) 14%, var(--papel)); }
+    167 │ .desafio details { font-size: 14px; color: var(--suave); }
+
+  i This selector specificity is (0, 1, 2)
+
+    71 │ nav.indice { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); align-self: start; max-height: calc(100vh - 32px); overflow: auto; font-size: 14.5px; }
+    72 │ nav.indice h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); margin-bottom: 10px; }
+  > 73 │ nav.indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+       │ ^^^^^^^^^^^^^
+    74 │ nav.indice a { display: flex; gap: 9px; align-items: center; text-decoration: none; padding: 6px 10px; border-radius: 10px; color: var(--tinta); font-weight: 700; }
+    75 │ nav.indice a:hover { background: var(--papel); }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+docs\arquipelago-manual\index.html:186:3 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    184 │   .indice-celular { display: block; background: var(--papel); border: 2px solid var(--linha); border-radius: 14px; padding: 10px 14px; }
+    185 │   .indice-celular summary { font: 800 16px var(--titulo); cursor: pointer; }
+  > 186 │   .indice-celular ol { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
+        │   ^^^^^^^^^^^^^^^^^^
+    187 │   .capa-dentro { grid-template-columns: minmax(0, 1fr); }
+    188 │   .capa-texto { padding-bottom: 0; }
+
+  i This selector specificity is (0, 1, 2)
+
+    71 │ nav.indice { position: sticky; top: calc(16px + env(safe-area-inset-top, 0px)); align-self: start; max-height: calc(100vh - 32px); overflow: auto; font-size: 14.5px; }
+    72 │ nav.indice h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--suave); margin-bottom: 10px; }
+  > 73 │ nav.indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+       │ ^^^^^^^^^^^^^
+    74 │ nav.indice a { display: flex; gap: 9px; align-items: center; text-decoration: none; padding: 6px 10px; border-radius: 10px; color: var(--tinta); font-weight: 700; }
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 528.
+Checked 16279 files in 40s. No fixes applied.
+Found 303 warnings.
+Found 245 infos.
+    75 │ nav.indice a:hover { background: var(--papel); }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+docs\aulas-interativas\faisca\a-ilha-do-farol\ilha-do-farol.szproject.json check ━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 5.9 MiB, which exceeds the configured maximum of 2.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.

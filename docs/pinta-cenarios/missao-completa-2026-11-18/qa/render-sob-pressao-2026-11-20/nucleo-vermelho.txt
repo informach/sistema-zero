@@ -1,0 +1,181 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\tiles\chunksPressure.test.ts:
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=0 [531.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=100 [610.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.25, t=250 [593.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=0 [250.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=100 [235.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 0.5, t=250 [219.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=0 [109.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=100 [109.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 1, t=250 [125.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=0 [125.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=100 [141.00ms]
+66 |     test(`pressão: pixels e animação iguais sem canvas intermediário, escala ${scale}, t=${time}`, () => {
+67 |       const data = fixture()
+68 |       const reference = paint(data, 128 * 1024 * 1024, scale, time)
+69 |       const direct = paint(data, 1, scale, time)
+70 |       expect(direct.pixels).toEqual(reference.pixels)
+71 |       expect(direct.allocations).toBe(0)
+                                      ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\tiles\chunksPressure.test.ts:71:34)
+(fail) pressão: pixels e animação iguais sem canvas intermediário, escala 2, t=250 [141.00ms]
+(pass) preserva o renderer geral com suavização [250.00ms]
+(pass) preserva o renderer geral com translação fracionária [250.00ms]
+(pass) preserva o renderer geral com rotação [250.00ms]
+(pass) preserva o renderer geral com composição [250.00ms]
+(pass) preserva o renderer geral com sombra [250.00ms]
+
+ 5 pass
+ 12 fail
+ 102 expect() calls
+Ran 17 tests across 1 file. [5.10s]

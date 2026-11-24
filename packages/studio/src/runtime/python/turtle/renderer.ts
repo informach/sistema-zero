@@ -3,6 +3,7 @@ import type { StudioPythonPlaytestRecipe } from '@sistemazero/core/studio/python
 import { STUDIO_SNAPSHOT_LIMITS } from '../../snapshotImage'
 import type { StudioRuntimeImage } from '../../types'
 import { createPythonMissionPoseTracker } from '../missionPose'
+import { createPythonRendererFocus, type PythonRendererFocusOptions } from '../rendererFocus'
 import {
   TURTLE_GRAPHICS_LIMITS as LIMITS,
   readTurtleGraphicsRequest,
@@ -99,14 +100,17 @@ export interface TurtleRenderer {
   exchange(raw: string, images: { id: number; bytes: Uint8Array<ArrayBuffer> }[]): Promise<string>
   dispose(): void
   capture(): Promise<StudioRuntimeImage | null>
+  /** Quantos quadros já pintou (a aba Desempenho conta por aqui; não toca no programa). */
+  paintedFrames(): number
   missionPose(objectId: number): ExecutionMotionSample | null
 }
 
 /** One instance per frame generation. Never exposes learner objects or callback code to DOM APIs. */
 export function createTurtleRenderer(
   container: HTMLElement,
-  options: { activityPresentation?: boolean } = {},
+  options: PythonRendererFocusOptions & { activityPresentation?: boolean } = {},
 ): TurtleRenderer {
+  const focusCanvas = createPythonRendererFocus(options)
   const scene = new Map<number, SceneItem>()
   const mission = createPythonMissionPoseTracker(LIMITS.turtles)
   const actorItems = new Map<number, number[]>()
@@ -292,7 +296,7 @@ export function createTurtleRenderer(
     if (!button) return
     const item = type === 'click' ? hit(x, y) : drag?.item
     if (type === 'click') {
-      canvas.focus({ preventScroll: true })
+      focusCanvas(canvas)
       if (item !== undefined) drag = { item, button }
       canvas.setPointerCapture(event.pointerId)
     }
@@ -623,7 +627,7 @@ export function createTurtleRenderer(
         break
       case 'focus':
         ensureCanvas()
-        canvas!.focus({ preventScroll: true })
+        focusCanvas(canvas!)
         break
       case 'bind': {
         const binding = `${operation.event}:${operation.button}`
@@ -709,6 +713,9 @@ export function createTurtleRenderer(
       active()
       checkpointPending = !pendingWait
       wake()
+    },
+    paintedFrames() {
+      return frameSequence
     },
     async capture() {
       active()

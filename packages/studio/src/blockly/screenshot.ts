@@ -17,6 +17,7 @@
  */
 import type * as Blockly from 'blockly/core'
 import { triggerDownload } from '../export/download'
+import { mountAllOffscreenBodies } from './offscreenBodies'
 
 const SVG_NS = 'http://www.w3.org/2000/svg'
 /** Fundo creme do tema claro quando não dá p/ ler a cor do tema do workspace. */
@@ -204,6 +205,8 @@ export function buildBlocksSvg(
   /** CSS extra (ex.: `@font-face` embutidas) injetado ANTES das folhas do Blockly. */
   extraCss = '',
 ): { svg: string; width: number; height: number } | null {
+  // Montagem sob demanda: os corpos longe da vista voltam à página antes do clone.
+  mountAllOffscreenBodies(workspace)
   const box = workspace.getBlocksBoundingBox()
   const width = box.right - box.left
   const height = box.bottom - box.top

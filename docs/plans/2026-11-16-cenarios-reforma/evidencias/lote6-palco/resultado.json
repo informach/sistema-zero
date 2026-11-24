@@ -1,0 +1,124 @@
+{
+  "nativo": {
+    "estado": {
+      "carregando": 0,
+      "falhas": [],
+      "avisos": []
+    },
+    "medidas": {
+      "objetos": 0,
+      "triangulos": 1638,
+      "desenhos": 11,
+      "carregando": 0,
+      "geometrias": 12,
+      "texturas": 13
+    }
+  },
+  "avatar": {
+    "modo": "terceira",
+    "pausado": false,
+    "caiu": false,
+    "noChao": true,
+    "nadando": false,
+    "posicao": {
+      "x": 7.9945081181594055,
+      "y": 2.1669025820869194,
+      "z": -14.000000000000002
+    },
+    "altura": 1.16,
+    "velocidade": 0,
+    "clipes": [],
+    "percurso": {
+      "estado": "parado",
+      "inicio": null,
+      "fim": null,
+      "direta": 0,
+      "caminhada": 0,
+      "segundos": 0
+    }
+  },
+  "ciclos": [
+    {
+      "vazio": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "cheio": {
+        "objetos": 0,
+        "triangulos": 1638,
+        "desenhos": 11,
+        "carregando": 0,
+        "geometrias": 12,
+        "texturas": 13
+      }
+    },
+    {
+      "vazio": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "cheio": {
+        "objetos": 0,
+        "triangulos": 1638,
+        "desenhos": 11,
+        "carregando": 0,
+        "geometrias": 12,
+        "texturas": 13
+      }
+    },
+    {
+      "vazio": {
+        "objetos": 0,
+        "triangulos": 964,
+        "desenhos": 3,
+        "carregando": 0,
+        "geometrias": 4,
+        "texturas": 3
+      },
+      "cheio": {
+        "objetos": 0,
+        "triangulos": 1638,
+        "desenhos": 11,
+        "carregando": 0,
+        "geometrias": 12,
+        "texturas": 13
+      }
+    }
+  ],
+  "catalogo": {
+    "estado": {
+      "carregando": 0,
+      "falhas": [],
+      "avisos": []
+    },
+    "medidas": {
+      "objetos": 0,
+      "triangulos": 1808,
+      "desenhos": 4,
+      "carregando": 0,
+      "geometrias": 5,
+      "texturas": 4
+    },
+    "volume": {
+      "min": {
+        "x": -3.5,
+        "y": 0,
+        "z": -1.2999999523162842
+      },
+      "max": {
+        "x": 3.5,
+        "y": 0.15200001001358032,
+        "z": 1.2999999523162842
+      }
+    }
+  },
+  "erros": []
+}

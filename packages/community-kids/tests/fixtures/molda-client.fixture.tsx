@@ -1,4 +1,5 @@
 import { afterAll, afterEach, expect, mock, test } from 'bun:test'
+import { PintaAccountScope } from '@sistemazero/member-shell/components/creator/pinta-account-scope'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -7,11 +8,14 @@ import { type ReactNode, useState } from 'react'
 import { handoffFixture, PROFILE_ID } from '../../../pensa/src/components/pensa.fixture'
 import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 
-const actualNavigation = await import('next/navigation')
-const actualMolda = await import('@sistemazero/molda')
-const actualPinta = await import('@sistemazero/pinta')
+// CÓPIAS das exportações, não os namespaces: o `mock.module` do Bun reescreve as exportações
+// vivas, e restaurar com o namespace guardado devolveria o falso aos arquivos seguintes (ver o
+// `pinta-client.test.tsx`).
+const actualNavigation = { ...(await import('next/navigation')) }
+const actualMolda = { ...(await import('@sistemazero/molda')) }
+const actualPinta = { ...(await import('@sistemazero/pinta')) }
 const originalCreatePaletteLibraryStore = actualPinta.createPaletteLibraryStore
-const actualPersonal = await import('@sistemazero/studio/personal-assets')
+const actualPersonal = { ...(await import('@sistemazero/studio/personal-assets')) }
 const namespaces: string[] = []
 const originalFetch = globalThis.fetch
 let query = new URLSearchParams()
@@ -399,4 +403,69 @@ test('missão ocupada mostra a frase autorizada e volta ao plano sem montar o Mo
   router.push.mockClear()
   fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
   expect(router.push).toHaveBeenCalledWith(`/pensa?plano=${handoff.project.id}`)
+})
+
+test('a biblioteca Pinta no editor negocia no perfil eleito e trocar a política não reinicia o modelo', async () => {
+  const viewer = { userId: PROFILE_ID, accountId: 'account-owner', audience: 'kids' } as const
+  const originalIdb = globalThis.indexedDB
+  globalThis.indexedDB = new IDBFactory()
+  const reads: string[] = []
+  // Quem leu sem o protocolo novo: no CI esta conferência falhou uma vez (23/11/2026) e não
+  // reproduziu aqui. Se voltar a falhar, o recado mostra o caminho e o perfil de cada leitura.
+  const legadas: string[] = []
+  const localSlots = () => namespaces.length
+  globalThis.fetch = Object.assign(
+    async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input)
+      if (path.includes('sz-pinta-palettes')) {
+        reads.push(path)
+        if (!path.endsWith('?paletteWrite=palette-cas-v1'))
+          legadas.push(`${path} (perfil ${new Headers(init?.headers).get('x-sz-viewer') ?? '?'})`)
+        return Response.json(
+          path.includes('paletteWrite=')
+            ? {
+                paletteHead: {
+                  protocol: 'palette-cas-v1',
+                  exists: false,
+                  revision: 0,
+                  generation: null,
+                  adopted: false,
+                },
+              }
+            : {},
+          { status: 404 },
+        )
+      }
+      return Response.json({}, { status: 404 })
+    },
+    { preconnect: originalFetch.preconnect },
+  )
+  const renderHost = (scope: typeof viewer | null) => (
+    <PintaAccountScope viewer={scope}>
+      <MoldaClient viewerId={PROFILE_ID} studioAvailable={false} />
+    </PintaAccountScope>
+  )
+  const view = render(renderHost(viewer))
+  try {
+    await screen.findByTestId('molda-opened')
+    await waitFor(() =>
+      expect(reads.some((path) => path.endsWith('?paletteWrite=palette-cas-v1'))).toBe(true),
+    )
+    const mountedSlots = localSlots(),
+      priorStore = lastAdapter?.paletteLibrary
+    view.rerender(renderHost(null))
+    await waitFor(() => expect(lastAdapter?.paletteLibrary).not.toBe(priorStore))
+    const after = lastAdapter?.paletteLibrary
+    const color = await after?.getState().savePalette({
+      name: 'Offline após a troca',
+      colors: ['', '#abcdef', ...Array<string>(14).fill('')],
+    })
+    expect(color?.name).toBe('Offline após a troca')
+    expect(localSlots()).toBe(mountedSlots)
+    expect(reads.length).toBeGreaterThan(0)
+    expect(legadas).toEqual([])
+  } finally {
+    view.unmount()
+    globalThis.indexedDB = originalIdb
+  }
 })

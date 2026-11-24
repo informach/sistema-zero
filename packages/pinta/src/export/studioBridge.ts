@@ -1,3 +1,9 @@
+import { PINTA_STUDIO_LEGACY_LIMITS } from '@sistemazero/core/studio/pinta-limits'
+import { readPintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
+import { sceneFitsStudio } from '@sistemazero/core/studio/pinta-scene'
+import { tilemapNeedsV3 } from '../core/project'
+import { exportPintaScene } from './scene'
+import { scenePng } from './sceneDrawing'
 /** A ponte "Usar no Estúdio": conserva SVG vetorial quando cabe no projeto. */
 
 import type { ActiveFrameRef } from '../core/assetEdit'
@@ -29,6 +35,7 @@ import { tilemapToStudioGrid } from './studioGrid'
 import { packVectorSpritesheet, vectorSheetPngDataUrl, vectorSheetPortableSvg } from './vectorSheet'
 
 export interface StudioPayload {
+  scene?: import('../core/types').PintaSceneWire
   dataUrl: string
   width: number
   height: number
@@ -125,12 +132,12 @@ export function tilemapMetaFrom(
 // Teto de UM asset no Studio — manter em sincronia com
 // MAX_ASSET_DATA_URL_CHARS de packages/studio/src/core/project.ts (o
 // EditorScreen valida de novo antes de enviar, com a mensagem gentil).
-export const STUDIO_MAX_ASSET_CHARS = 800_000
+export const STUDIO_MAX_ASSET_CHARS = PINTA_STUDIO_LEGACY_LIMITS.imageChars
 
 // Teto da FOLHA de peças embutida no metadado de MAPA — manter em sincronia com
 // MAX_TILEMAP_SHEET_CHARS de packages/studio/src/core/project.ts (o sanitizador
 // de lá descartaria o metadado em silêncio).
-export const STUDIO_MAX_TILEMAP_SHEET_CHARS = 180_000
+export const STUDIO_MAX_TILEMAP_SHEET_CHARS = PINTA_STUDIO_LEGACY_LIMITS.sheetChars
 
 function svgDataUrlWithinLimit(svg: string, limit: number): string | null {
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
@@ -145,6 +152,13 @@ export function validateStudioPayloadSize(
   payload: StudioPayload,
 ): 'ok' | 'asset-too-big' | 'sheet-too-big' {
   if (payload.dataUrl.length > STUDIO_MAX_ASSET_CHARS) return 'asset-too-big'
+  if (
+    payload.scene &&
+    (payload.scene.version === 4
+      ? !readPintaRegionScene(JSON.stringify(payload.scene))
+      : !sceneFitsStudio(payload.scene))
+  )
+    return 'asset-too-big'
   if (payload.tilemap && payload.tilemap.tileset.dataUrl.length > STUDIO_MAX_TILEMAP_SHEET_CHARS) {
     return 'sheet-too-big'
   }
@@ -197,6 +211,8 @@ export async function buildStudioPayload(
         tileset: tilesetMetaFrom(asset.tileSize, asset.solid, asset.platform),
       }
     }
+    case 'map-set':
+      return buildStudioPayload(asset.map, findAsset, frameRef)
     case 'tilemap': {
       // A miniatura desenha TODAS as peças do mapa; o meta jogável é das padrão.
       const tilesets = collectMapTilesets(asset, findAsset)
@@ -208,8 +224,10 @@ export async function buildStudioPayload(
       const nativeMax = Math.max(asset.cols, asset.rows) * tileset.tileSize
       const thumbScale =
         nativeMax > STUDIO_TILEMAP_THUMB_PX ? STUDIO_TILEMAP_THUMB_PX / nativeMax : 1
-      const thumb =
-        tileset.kind === 'tileset'
+      let scene = tilemapNeedsV3(asset) ? await exportPintaScene(asset, findAsset) : null
+      const thumb = scene
+        ? await scenePng(scene, 1, STUDIO_TILEMAP_THUMB_PX)
+        : tileset.kind === 'tileset'
           ? tilemapThumbnail(asset, tilesets, STUDIO_TILEMAP_THUMB_PX)
           : await vectorTilemapPngDataUrl(asset, tilesets, thumbScale).then((url) =>
               url
@@ -239,18 +257,21 @@ export async function buildStudioPayload(
         width: sheetPack.columns * tileset.tileSize,
         height: sheetPack.rows * tileset.tileSize,
       }
+      scene ??= await exportPintaScene(asset, findAsset)
       // `tilemap` = mapa COMPLETO (todas as camadas visíveis) — é o que a ponte
       // "Usar no Estúdio" grava em "Meus desenhos" e o que o "Jogar meu mapa"
       // desenha como base. A frente (se houver) vira um 2º meta SÓ com as
       // camadas "da frente", que o jogo redesenha DEPOIS do jogador (as peças
       // de frente aparecem nos dois passes = oclusão por cima do herói; sem
       // filtrar o `tilemap` aqui a decoração NÃO some no caminho "Meus desenhos").
-      const front = hasFrontLayer(asset, usesMapTileset(asset))
+      const legacy = !tilemapNeedsV3(asset) && tileset.tiles.length <= 64
+      const front = legacy && hasFrontLayer(asset, usesMapTileset(asset))
       return {
         dataUrl,
         width: thumb.width,
         height: thumb.height,
-        tilemap: tilemapMetaFrom(asset, tileset, sheet),
+        scene,
+        ...(legacy ? { tilemap: tilemapMetaFrom(asset, tileset, sheet) } : {}),
         ...(front
           ? { tilemapFront: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front === true) }
           : {}),

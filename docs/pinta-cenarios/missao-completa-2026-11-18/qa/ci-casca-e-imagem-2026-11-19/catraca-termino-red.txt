@@ -1,0 +1,84 @@
+  -  6 [webkit] › e2e\preview-shell.spec.ts:186:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor
+
+
+  1) [chromium] › e2e\preview-shell.spec.ts:186:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: 'Problemas e saída do jogo' }).getByText('carga-casca-terminou', { exact: true })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: 'Problemas e saída do jogo' }).getByText('carga-casca-terminou', { exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Problemas e saída do jogo' }).getByText('carga-casca-terminou', { exact: true })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      228 |         .getByRole('region', { name: 'Problemas e saída do jogo' })
+      229 |         .getByText('carga-casca-terminou', { exact: true }),
+    > 230 |     ).toHaveCount(0)
+          |       ^
+      231 |     await parar(page).click()
+      232 |     await expect(rodar(page)).toHaveText(/^\s*Rodar\s*$/, { timeout: 5_000 })
+      233 |     await replaceBridgeScript(page, CONSERTADO)
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:230:7
+
+    attachment #2: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+    .cache\pinta-shell-final\preview-shell-prévia-dentr-256ac--do-jogo-não-trava-o-editor-chromium\attachments\diagnostico-da-casca-239a16d51ee454d1a17972cef12738e407714fab.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-shell-final\preview-shell-prévia-dentr-256ac--do-jogo-não-trava-o-editor-chromium\error-context.md
+
+  2) [webkit] › e2e\preview-shell.spec.ts:147:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator: locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+    Timeout: 5000ms
+    Expected: ""
+    Received: "// Gerado pelo Sistema Zero Studio·
+    (function __szProjectRun() {
+      // Ao iniciar
+      // Quando acontecer
+      // Enquanto estiver rodando
+    })();
+    "
+
+    Call log:
+      - Expect "toHaveValue" locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' }) with timeout 5000ms
+      - waiting for locator('.monaco-editor').first().getByRole('textbox', { name: 'Editor content' })
+        14 × locator resolved to <textarea wrap="on" tabindex="0" data-mprt="7" role="textbox" autocorrect="off" autocomplete="off" spellcheck="false" autocapitalize="off" aria-required="false" aria-multiline="true" aria-autocomplete="both" aria-label="Editor content" aria-roledescription="editor" class="inputarea monaco-mouse-cursor-text"></textarea>
+           - unexpected value "// Gerado pelo Sistema Zero Studio
+
+    (function __szProjectRun() {
+      // Ao iniciar
+      // Quando acontecer
+      // Enquanto estiver rodando
+    })();
+    "
+
+
+      81 |   await page.keyboard.press('ControlOrMeta+A')
+      82 |   await page.keyboard.press('Backspace')
+    > 83 |   await expect(input).toHaveValue('')
+         |                       ^
+      84 |   // A inserção artificial multilinha altera o texto no Monaco/Firefox; use a
+      85 |   // mesma colagem nativa dos ensaios de segurança, conferindo o programa inteiro.
+      86 |   await page.evaluate((text) => navigator.clipboard.writeText(text), code)
+        at replaceBridgeScript (C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:83:23)
+        at C:\Users\tocha\projects\sistema-zero-pinta-retomada-20261119\packages\studio\e2e\preview-shell.spec.ts:156:5
+
+    attachment #1: diagnostico-da-casca (application/json) ─────────────────────────────────────────
+    .cache\pinta-shell-final\preview-shell-prévia-dentr-e33b7-lta-a-rodar-depois-do-Parar-webkit\attachments\diagnostico-da-casca-73ba8cb8ba6832aaf052261037d35b26df59ff8d.json
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .cache\pinta-shell-final\preview-shell-prévia-dentr-e33b7-lta-a-rodar-depois-do-Parar-webkit\error-context.md
+
+  2 failed
+    [chromium] › e2e\preview-shell.spec.ts:186:3 › prévia dentro da casca em outro site › trabalho síncrono longo do jogo não trava o editor
+    [webkit] › e2e\preview-shell.spec.ts:147:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar
+  1 skipped
+  3 passed (1.9m)

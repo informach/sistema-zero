@@ -1,0 +1,852 @@
+[
+  {
+    "id": "p1",
+    "kicker": "Passo a passo do projeto",
+    "title": "A Ilha do Farol",
+    "subtitle": "A Chave do Farol ganhou profundidade. Você vai programar as regras deste jogo em três dimensões.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O desafio continua o mesmo: o personagem precisa encontrar a chave e levar até o farol. Com o farol aceso, o barco consegue chegar. A novidade é a ilha em três dimensões: as coisas podem ficar mais perto ou mais longe, e uma pedra pode esconder o que está atrás dela. No fim do curso tem uma surpresa: o jogo vai ficar com a sua cara."
+      },
+      {
+        "kind": "box",
+        "title": "Use quando precisar",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nas três aulas, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
+        "tone": "note"
+      },
+      {
+        "kind": "index",
+        "title": "Encontre seu passo",
+        "text": "No alto de cada página estão a aula e a parte, como na tela da aula.",
+        "days": [
+          {
+            "kicker": "Aula 1",
+            "title": "Uma ilha com profundidade",
+            "text": "A câmera muda de lugar, e o personagem anda pela ilha.",
+            "pages": "Páginas {{pagina:guia-jogo-3d}} a {{pagina:movimento-teste}}"
+          },
+          {
+            "kicker": "Aula 2",
+            "title": "A chave está ao seu alcance",
+            "text": "A chave ganha um lugar novo, e o personagem pega a chave.",
+            "pages": "Páginas {{pagina:posicao-3d}} a {{pagina:aviso-teste}}"
+          },
+          {
+            "kicker": "Aula 3",
+            "title": "A luz volta ao farol",
+            "text": "O farol confere a chave, acende e o jogo fica do seu jeito.",
+            "pages": "Páginas {{pagina:sem-chave}} a {{pagina:fim}}"
+          }
+        ],
+        "extras": [
+          {
+            "icon": "presente",
+            "title": "A surpresa do final",
+            "text": "Escolhas e galerias, páginas {{pagina:aparencia}} a {{pagina:galeria-farois}}"
+          },
+          {
+            "icon": "mapa",
+            "title": "O seu esconderijo",
+            "text": "Lugar da chave e envio, página {{pagina:personalizar}}"
+          },
+          {
+            "icon": "mundo",
+            "title": "Publique no Mural",
+            "text": "Página {{pagina:publicar}}"
+          },
+          {
+            "icon": "ajuda",
+            "title": "Se precisar de ajuda",
+            "text": "Página {{pagina:fim}}"
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Antes de montar",
+        "text": "No começo da Aula 1, jogue a versão pronta. Clique dentro do jogo e segure uma seta do teclado para andar. As letras W, A, S e D também funcionam. A tecla R começa outra partida. Explore a ilha e, quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "experience"
+      }
+    ]
+  },
+  {
+    "id": "guia-jogo-3d",
+    "guia": true
+  },
+  {
+    "id": "ponto-de-vista",
+    "kicker": "Aula 1 · Parte 3 · Experiência antes da montagem",
+    "title": "O que aparece quando você muda de lugar?",
+    "subtitle": "No 3D, o que você vê depende de onde você olha.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O lugar de onde o jogo olha a ilha se chama <b>câmera</b>. Ela funciona como os seus olhos dentro do jogo. Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você muda de lugar e consegue olhar. Na ilha, a câmera também pode mudar de lugar, e perto de uma pedra tem uma chave escondida. Se a câmera mudar de lugar, a chave também muda de lugar?"
+      },
+      {
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Procure a chave e repare na pedra em cada vista.",
+        "tone": "experience"
+      },
+      {
+        "kind": "box",
+        "title": "Você escolhe a ordem",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "camera",
+    "kicker": "Aula 1 · Parte 4 · O que você descobriu",
+    "title": "A câmera muda, a ilha fica",
+    "subtitle": "O que você vê depende de onde a câmera está.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, você olhou a ilha de lugares diferentes. A chave, a pedra e o farol ficaram onde estavam: quem mudou de lugar foi a câmera. Por isso a imagem muda. De um lado, a pedra fica na frente da chave e esconde a chave. Do outro, a chave aparece."
+      },
+      {
+        "kind": "views",
+        "images": [
+          {
+            "image": "vista-do-comeco",
+            "caption": "Na vista do começo, a pedra esconde a chave."
+          },
+          {
+            "image": "vista-girada",
+            "caption": "Com a cena girada, a chave aparece ao lado da pedra."
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Use os botões da vista",
+        "text": "No seu jogo também dá para mudar a câmera, com os botões do canto do jogo (página {{pagina:guia-jogo-3d}}). Girar a cena ajuda a achar o que está escondido e a conferir se cada coisa ficou no lugar certo.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "movimento",
+    "kicker": "Aula 1 · Parte 4 · Montagem",
+    "title": "Faça o personagem andar",
+    "subtitle": "Clique em Rodar de novo e segure uma seta: o personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O jogo desenha a cena muitas vezes por segundo, e cada desenho é um <b>quadro</b>. No 3D é igual ao jogo 2D. Para o personagem andar, o jogo precisa olhar as setas em todo quadro."
+      },
+      {
+        "kind": "step",
+        "title": "1. Encontre o lugar do bloco",
+        "text": "Por isso, o bloco novo vai dentro de <b>A cada quadro da cena</b>, na área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>Dentro de A cada quadro da cena já tem o bloco <b>Escrever na tela</b>. O bloco novo vai no começo, no espaço ao lado da palavra <b>fazer</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Programe o movimento",
+        "text": "<b>Jogo 3D &gt; Movimento &gt; Andar com o teclado.</b> Pegue <b>Fazer personagem andar com as setas (ou WASD)</b> e solte no espaço ao lado de fazer. Escrever na tela desce e fica logo abaixo do bloco novo.<br/>É este bloco que faz o personagem andar: em todo quadro, ele olha qual seta você está segurando e leva o personagem para aquele lado.<br/>O nome no bloco já é <b>personagem</b>. O número é a velocidade: clique no <b>3</b> e troque por <b>4</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "movimento",
+        "title": "O movimento vem primeiro, dentro de A cada quadro da cena"
+      }
+    ]
+  },
+  {
+    "id": "movimento-teste",
+    "kicker": "Aula 1 · Parte 4 · Teste e envio",
+    "title": "Teste o movimento e envie",
+    "subtitle": "O personagem anda enquanto você segura a seta e para quando você solta.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b>, no alto do Estúdio. Segure a seta da direita por um tempo e solte: o personagem anda e para. Andando, ele mexe as pernas e os braços. Parado, ele respira.<br/>Faça o mesmo com as outras três setas. Depois leve o personagem até a ponte e até a beirada da ilha: ele não cai na água."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Confira se ficou assim: dentro de A cada quadro da cena, primeiro vem <b>Fazer personagem andar com as setas</b>, com a velocidade <b>4</b>, e logo abaixo dele está <b>Escrever na tela</b>. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Concluir aula"
+      },
+      {
+        "kind": "note",
+        "text": "Na próxima aula, você vai escolher um lugar para a chave e ensinar o personagem a pegar a chave."
+      }
+    ]
+  },
+  {
+    "id": "posicao-3d",
+    "kicker": "Aula 2 · Parte 1 · Experiência antes da montagem",
+    "title": "Para onde vai a chave?",
+    "subtitle": "No 3D, o lugar de cada objeto tem três números: x, y e z.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. No 3D, o mundo tem profundidade. Imagine procurar um livro numa estante: você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. E o y, será que continua fazendo o que fazia no jogo 2D?"
+      },
+      {
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue para onde a chave vai quando cada um dos três números aumenta e quando diminui. Mude um número de cada vez e compare com a marca dourada do lugar inicial.",
+        "tone": "experience"
+      },
+      {
+        "kind": "box",
+        "title": "Você escolhe a ordem",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "eixos",
+    "kicker": "Aula 2 · Parte 2 · O que você descobriu",
+    "title": "Três números, três direções",
+    "subtitle": "No 3D, o lugar de cada objeto tem um x, um y e um z.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, cada número levava a chave para uma direção. O x e o z levam a chave pelo chão, e o y muda a altura dela."
+      },
+      {
+        "kind": "figure",
+        "name": "eixos",
+        "title": "O x, o y e o z da chave, na vista do começo"
+      },
+      {
+        "kind": "box",
+        "title": "Cada número, uma direção",
+        "text": "<b>x</b>: para os lados. Aumentando, a chave vai para a direita; diminuindo, vai para a esquerda.<br/><b>y</b>: a altura. Aumentando, a chave sobe; diminuindo, ela desce.<br/><b>z</b>: para a frente e para trás. Aumentando, a chave vem para perto de quem olha; diminuindo, vai para o fundo."
+      },
+      {
+        "kind": "note",
+        "text": "No jogo 2D, o y mudava o lugar na tela. No 3D, o y é a altura, e quem leva para perto ou para longe é o z. O desenho mostra a vista do começo: se você girar a cena, as direções giram junto com a ilha."
+      }
+    ]
+  },
+  {
+    "id": "posicao",
+    "kicker": "Aula 2 · Parte 2 · Montagem",
+    "title": "Coloque a chave na ilha",
+    "subtitle": "Na experiência, o x e o z levavam a chave pelo chão, e o y mudava a altura dela.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Encontre o bloco da chave",
+        "text": "O lugar da chave fica na área <b>Ao iniciar</b>. Encontre o bloco <b>Colocar o objeto chave</b>. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.<br/>É este bloco que coloca a chave na ilha. Repare nos três números dele: x <b>−2</b>, y <b>1</b> e z <b>−3</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Mude o z",
+        "text": "Clique no <b>−3</b>, que fica depois de z, e troque por <b>−2</b>. Clique em <b>Rodar de novo</b> e observe: a chave vem um pouco para a frente, mais perto de quem está olhando."
+      },
+      {
+        "kind": "step",
+        "title": "3. Mude o x",
+        "text": "Clique no <b>−2</b>, que fica depois de x, e troque por <b>−3</b>. Deixe o y em <b>1</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "posicao",
+        "title": "A chave no lugar novo"
+      },
+      {
+        "kind": "step",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> mais uma vez e leve o personagem até perto da chave. Ela foi um pouco para a esquerda e continuou na mesma altura, porque você não mexeu no y. Por enquanto, encostar nela não faz nada.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "contato-3d",
+    "kicker": "Aula 2 · Parte 3 · Experiência antes da montagem",
+    "title": "Parece junto, mas está encostando?",
+    "subtitle": "Encostar é quando duas coisas do jogo se tocam de verdade.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Para o personagem pegar a chave, o jogo precisa perceber quando os dois se encostam. Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. Será que eles estão encostando?"
+      },
+      {
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Compare a câmera de cima com a de lado.",
+        "tone": "experience"
+      },
+      {
+        "kind": "box",
+        "title": "Você escolhe a ordem",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "encostar",
+    "kicker": "Aula 2 · Parte 4 · O que você descobriu",
+    "title": "Encostar é se tocar de verdade",
+    "subtitle": "Na imagem, duas coisas podem parecer juntas sem estar encostando.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Na experiência, olhando de cima, a chave parecia estar em cima do personagem. Olhando de lado, dava para ver que ela estava mais alta, no ar. No 3D, uma coisa pode estar na frente, atrás ou acima da outra e, mesmo assim, as duas parecem juntas na imagem."
+      },
+      {
+        "kind": "views",
+        "images": [
+          {
+            "image": "encostar-de-cima",
+            "caption": "De cima, a chave parece estar em cima do personagem."
+          },
+          {
+            "image": "encostar-de-lado",
+            "caption": "De lado, dá para ver: a chave está no ar, bem acima dele."
+          }
+        ]
+      },
+      {
+        "kind": "box",
+        "title": "Como o jogo confere",
+        "text": "O jogo não olha a imagem: ele confere o lugar de cada um, nas três direções. O bloco <b>Quando personagem encostar em chave</b> só percebe o encontro quando os dois se tocam de verdade, no chão e na altura."
+      }
+    ]
+  },
+  {
+    "id": "recolher",
+    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "title": "Recolha a chave",
+    "subtitle": "Clique em Rodar de novo e leve o personagem até a chave: ela continua ali, porque o jogo ainda não tem reação para esse encontro.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Programe o encontro",
+        "text": "Os encontros ficam na área <b>Quando acontecer</b>. Lá dentro já tem o evento da tecla R, que recomeça a partida. O encontro novo vai logo abaixo dele, fora do fazer dele. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte logo abaixo do evento da tecla R. Não coloque um evento dentro do outro.<br/>Ele já chega com os nomes certos: personagem e chave. É este bloco que percebe o encontro, no chão e na altura."
+      },
+      {
+        "kind": "step",
+        "title": "2. Faça a chave sumir",
+        "text": "A reação vai no espaço ao lado da palavra <b>fazer</b>, dentro do encontro novo. Deixe esse espaço à vista.<br/><b>Jogo 3D &gt; Objetos &gt; Aparência.</b> Pegue <b>Mostrar o objeto</b> e solte ali.<br/>Ele chega com <b>Mostrar</b>: clique e escolha <b>Esconder</b>. Depois clique em <b>objeto</b> e escolha <b>chave</b>."
+      },
+      {
+        "kind": "drawing",
+        "name": "recolher",
+        "title": "A chave some dentro do encontro"
+      },
+      {
+        "kind": "step",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até a chave: ela some quando ele encosta. Toque na tecla R: a chave volta, e você pode pegar de novo por outro caminho.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "memoria",
+    "kicker": "Aula 2 · Parte 5 · Montagem",
+    "title": "Guarde que você pegou a chave",
+    "subtitle": "A chave já some. Mas sumir não é a mesma coisa que guardar que o personagem pegou a chave.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Comece sem a chave",
+        "text": "Para guardar, a gente usa de novo <b>temChave</b>, a variável que responde se o personagem tem a chave. Em <b>Ao iniciar</b>, deixe à vista o bloco que cria <b>aviso</b>.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável</b> e solte logo abaixo dele. Ele chega com <b>contador</b>: clique e escreva <b>temChave</b> (C maiúsculo).<br/>temChave guarda sim ou não: em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima do <b>0</b>. Clique em verdadeiro e escolha <b>falso</b>, porque a partida começa sem a chave."
+      },
+      {
+        "kind": "step",
+        "title": "2. Guarde verdadeiro no encontro",
+        "text": "No encontro com a chave, deixe à vista o lugar logo abaixo de <b>Esconder o objeto chave</b>.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: escolha <b>temChave</b>.<br/>Em <b>Programação &gt; Lógica &amp; Se</b>, pegue outro <b>verdadeiro</b> e solte em cima do <b>1</b>. Deixe verdadeiro: o personagem acabou de pegar a chave."
+      }
+    ]
+  },
+  {
+    "id": "memoria-blocos",
+    "kicker": "Aula 2 · Parte 5 · Confira e verifique",
+    "title": "Os dois lugares de temChave",
+    "subtitle": "Ao começar, falso. Ao pegar a chave, verdadeiro.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "memoria",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "text",
+        "text": "Esse valor não aparece na ilha: o farol vai consultar essa informação na próxima aula. Por isso, clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "aviso",
+    "kicker": "Aula 2 · Parte 6 · Montagem",
+    "title": "Conte que a chave foi recolhida",
+    "subtitle": "Clique em Rodar de novo e pegue a chave: ela some, mas o aviso lá em cima continua o mesmo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O aviso mostra o texto guardado na variável <b>aviso</b>. Por isso, para mudar o aviso, basta mudar esse texto no encontro com a chave."
+      },
+      {
+        "kind": "step",
+        "title": "1. Mude o aviso no encontro",
+        "text": "No encontro com a chave, deixe à vista o lugar logo abaixo do bloco que muda <b>temChave</b>.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: escolha <b>aviso</b>.<br/>O aviso é uma mensagem, e não um número. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número. Ele chega com <b>Olá</b>: clique, apague e escreva <b>Você pegou a chave! Agora vá ao farol.</b>"
+      },
+      {
+        "kind": "drawing",
+        "name": "aviso",
+        "title": "Três ações dentro do encontro com a chave"
+      }
+    ]
+  },
+  {
+    "id": "aviso-teste",
+    "kicker": "Aula 2 · Parte 6 · Teste e envio",
+    "title": "Teste a chave e envie",
+    "subtitle": "A chave some, o jogo guarda que você pegou e o aviso conta o que aconteceu.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b> e pegue a chave: ela some, e o aviso novo aparece lá em cima. Toque na tecla R: a chave e o aviso do começo voltam."
+      },
+      {
+        "kind": "step",
+        "title": "Se algo não funcionou",
+        "text": "Confira se ficou assim: dentro do encontro com a chave estão <b>Esconder o objeto chave</b>, <b>temChave verdadeiro</b> e o aviso com o texto novo. Depois de corrigir, teste de novo."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Concluir aula"
+      },
+      {
+        "kind": "note",
+        "text": "Na próxima aula, o farol vai conferir se o personagem está com a chave."
+      }
+    ]
+  },
+  {
+    "id": "sem-chave",
+    "kicker": "Aula 3 · Parte 1 · Resposta sem chave",
+    "title": "O farol precisa conferir a chave",
+    "subtitle": "Clique em Rodar de novo e vá ao farol sem passar pela chave: nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega lá.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Lembra da porta do jogo 2D? Ela perguntava: o personagem está com a chave? Com a resposta sim, o farol acendia. Com a resposta não, o aviso dizia que falta a chave. Agora você vai montar essa pergunta no farol da ilha, começando pelo aviso."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie o encontro com o farol",
+        "text": "Chegar ao farol é um encontro, como pegar a chave. Em <b>Quando acontecer</b>, deixe à vista o espaço logo abaixo do encontro com a chave, fora do fazer dele.<br/><b>Jogo 3D &gt; Encostar &gt; Encostar.</b> Pegue <b>Quando personagem encostar em chave</b> e solte nesse espaço. Não coloque um encontro dentro do outro.<br/>Ele chega com <b>chave</b> no segundo nome: clique em chave e escolha <b>farol</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Faça a pergunta",
+        "text": "Quem faz uma pergunta no jogo é o bloco <b>Se</b>. <b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer do encontro com o farol.<br/>O Se chega com a pergunta <b>x maior que 0</b>. Segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos.<br/><b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se. Clique no <b>x</b> e escolha <b>temChave</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. Prepare a resposta do não",
+        "text": "A resposta do sim fica no espaço do <b>então</b>. A do não fica no espaço do <b>senão</b>, que o Se ainda não mostra. Na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte dentro do senão e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>Falta a chave. Procure na ilha antes de voltar.</b><br/>O então fica vazio nesta parte."
+      }
+    ]
+  },
+  {
+    "id": "sem-chave-blocos",
+    "kicker": "Aula 3 · Parte 1 · Confira e verifique",
+    "title": "A resposta sem chave",
+    "subtitle": "O farol pergunta se temChave é verdadeiro. Por enquanto, só a resposta do não está montada.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "sem-chave",
+        "title": "O aviso de que falta a chave fica no senão"
+      },
+      {
+        "kind": "step",
+        "title": "Teste antes de continuar",
+        "text": "Clique em <b>Rodar de novo</b> e vá direto ao farol, sem passar pela chave: ele continua apagado, e o aviso pede a chave. Se algo não funcionou, confira o desenho e teste de novo."
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "decisao",
+    "kicker": "Aula 3 · Parte 2 · Resposta com chave",
+    "title": "Acenda o farol com a chave",
+    "subtitle": "Clique em Rodar de novo, pegue a chave e vá ao farol: a luz não acende, porque o espaço do então ainda está vazio.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "A resposta do sim tem três blocos, um embaixo do outro: um que acende a luz, um que guarda que a partida foi ganha e um aviso. No jogo 2D, você trocava a imagem do farol. Aqui o farol é um modelo 3D, e ele sabe acender: o modelo tem uma <b>animação</b> de acender."
+      },
+      {
+        "kind": "step",
+        "title": "1. Acenda a luz",
+        "text": "No Se do encontro com o farol, deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do então.<br/>Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>. Clique em heroi e escolha <b>farol</b>. Clique em Andar e escolha <b>acender</b>. Clique em repetindo e escolha <b>uma vez</b>: a luz acende e fica acesa no fim."
+      },
+      {
+        "kind": "step",
+        "title": "2. Guarde que a partida foi ganha",
+        "text": "A variável <b>ganhou</b> começa falso. Em Enquanto estiver rodando, uma regra pronta olha ganhou: quando ele é verdadeiro, ela deixa o farol aceso, com o feixe girando, e traz o barco.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte logo abaixo de Tocar a animação. Escolha <b>ganhou</b>. Em cima do número, solte <b>verdadeiro</b>, de <b>Programação &gt; Lógica &amp; Se</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. Conte o que aconteceu",
+        "text": "Logo abaixo do bloco de ganhou, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>Você acendeu o farol! O barco pode chegar.</b>"
+      },
+      {
+        "kind": "box",
+        "title": "Teste 1 · Sem a chave",
+        "text": "Clique em <b>Rodar de novo</b> e vá ao farol sem a chave. A luz continua apagada, e o aviso pede a chave.",
+        "tone": "note"
+      },
+      {
+        "kind": "box",
+        "title": "Teste 2 · Busque e volte",
+        "text": "Na mesma partida, busque a chave e volte ao farol. A luz acende, o feixe começa a girar, o aviso muda e o barco vem chegando.",
+        "tone": "test"
+      }
+    ]
+  },
+  {
+    "id": "decisao-blocos",
+    "kicker": "Aula 3 · Parte 2 · Confira e verifique",
+    "title": "Duas respostas para a mesma pergunta",
+    "subtitle": "O farol pergunta se temChave é verdadeiro e tem uma resposta para o sim e outra para o não.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "decisao",
+        "title": "Confira se ficou assim"
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Se algo não funcionou, confira o desenho e teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "pergunta-com-nao",
+    "kicker": "Aula 3 · Parte 3 · Experiência antes da montagem",
+    "title": "O que muda com o não?",
+    "subtitle": "Uma pergunta também pode ter a palavra não.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. Imagine uma porta que pergunta: a porta está trancada? E que abre quando a resposta é sim. Com o não na pergunta, o que a porta faz?"
+      },
+      {
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave.",
+        "tone": "experience"
+      },
+      {
+        "kind": "box",
+        "title": "Da experiência para o seu jogo",
+        "text": "O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em <b>Próxima parte</b>. Na próxima parte, o farol do seu jogo vai usar o não.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "uma-vez",
+    "kicker": "Aula 3 · Parte 4 · Montagem",
+    "title": "O farol acende uma vez só",
+    "subtitle": "Pegue a chave, acenda o farol, ande para trás pelo cais e volte: a luz apaga e acende tudo de novo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez. Sabe o apito final de um jogo de futebol? Depois dele, o gol não vale mais. No seu jogo, o apito final é <b>ganhou</b> ficar verdadeiro. Por isso, o encontro vai perguntar antes de tudo: a partida ainda <b>não</b> foi ganha?"
+      },
+      {
+        "kind": "step",
+        "title": "1. Ponha um Se novo no encontro",
+        "text": "Em <b>Quando acontecer</b>, deixe à vista o encontro com o farol.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer do encontro com o farol, em cima do Se que já está lá. O Se novo entra no lugar, e o Se temChave desce e fica logo abaixo dele."
+      },
+      {
+        "kind": "step",
+        "title": "2. Pergunte não ganhou",
+        "text": "Arraste a pergunta <b>x maior que 0</b> do Se novo até a lixeira.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>não</b> e solte no lugar vazio ao lado do Se novo.<br/>O <b>não</b> também chega com a pergunta <b>x maior que 0</b>: segure essa pergunta pelo sinal de maior e arraste até a lixeira.<br/><b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte no espaço do não. Clique no <b>x</b> e escolha <b>ganhou</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. Leve a pergunta da chave para dentro",
+        "text": "Segure o <b>Se temChave</b> pela palavra Se e arraste até o espaço do <b>então</b> do Se novo. Tudo o que está dentro dele vai junto. Agora o encontro primeiro pergunta se a partida ainda não foi ganha, e só depois confere a chave."
+      },
+      {
+        "kind": "step",
+        "title": "Teste no seu jogo",
+        "text": "Clique em <b>Rodar de novo</b>, pegue a chave e acenda o farol. Ande para trás pelo cais e volte: a luz continua acesa, o feixe segue girando e o barco continua chegando. Toque na tecla R e vá ao farol sem a chave: ele continua pedindo a chave."
+      }
+    ]
+  },
+  {
+    "id": "uma-vez-blocos",
+    "kicker": "Aula 3 · Parte 4 · Confira e verifique",
+    "title": "Uma vez só",
+    "subtitle": "Enquanto ganhou é falso, o farol responde. Quando ganhou vira verdadeiro, ele para de responder.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "uma-vez",
+        "title": "A pergunta da chave mora dentro de não ganhou"
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "revisao",
+    "kicker": "Aula 3 · Parte 5 · Revisão",
+    "title": "O que você descobriu no 3D",
+    "subtitle": "Antes da surpresa, lembre o que você descobriu sobre a ilha em três dimensões.",
+    "items": [
+      {
+        "kind": "activity",
+        "pill": "Na aula, antes da surpresa",
+        "text": "Aqui não tem vídeo. Você vai lembrar o ponto de vista da câmera, os três números do lugar e o encontro de verdade."
+      },
+      {
+        "kind": "step",
+        "title": "Escolha e veja acontecendo",
+        "text": "Em cada pergunta, escolha uma resposta e clique em <b>Ver o que acontece</b>. A cena mostra o resultado, e a explicação conta o porquê."
+      },
+      {
+        "kind": "step",
+        "title": "Se errar, tente de novo",
+        "text": "Se errar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>. Depois clique em <b>Próxima parte</b>."
+      },
+      {
+        "kind": "note",
+        "text": "Se quiser rever uma descoberta, volte às experiências e às páginas deste Passo a passo do projeto."
+      }
+    ]
+  },
+  {
+    "id": "aparencia",
+    "kicker": "Aula 3 · Parte 6 · A surpresa do final",
+    "title": "Deixe o jogo com a sua cara",
+    "subtitle": "O seu jogo pode ter outro personagem, outro barco, outra chave, outro farol e até outro cenário.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "São as mesmas opções da Chave do Farol, com os mesmos nomes, agora em três dimensões. Você escolhe o que quiser, e o que você gostou pode ficar como está. Troque só o modelo: deixe o nome do objeto, a cena e o tamanho como estão, porque os outros blocos usam esses nomes."
+      },
+      {
+        "kind": "step",
+        "title": "1. Escolha o personagem",
+        "text": "Em <b>Ao iniciar</b>, encontre <b>Criar o objeto personagem com o modelo <span class='nome'>aventureiro</span></b>. Clique em <b>aventureiro</b> para abrir a lista e escolha outro. Todos os personagens têm a mesma medida e também andam e respiram."
+      },
+      {
+        "kind": "step",
+        "title": "2. Escolha o barco, a chave e o farol",
+        "text": "Os blocos <b>Criar o objeto barco</b>, <b>chave</b> e <b>farol</b> funcionam do mesmo jeito: clique no nome do modelo e escolha outro. No 3D, cada farol é um modelo só, e todos sabem acender."
+      },
+      {
+        "kind": "step",
+        "title": "3. Escolha o cenário",
+        "text": "O primeiro Criar o objeto, o <b>cenario</b>, é a ilha inteira: o mar, o chão, a ponte, as árvores e o céu. Clique em <b class='nome'>praia-tropical</b> e escolha outro. O caminho, a ponte e o lugar do farol continuam os mesmos."
+      },
+      {
+        "kind": "step",
+        "title": "Teste e verifique",
+        "text": "Clique em <b>Rodar de novo</b>, pegue a chave e vá até o farol: ele acende, e o barco vem chegando.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "galeria-personagens",
+    "kicker": "Aula 3 · Parte 6 · A surpresa do final",
+    "title": "Quem vive na ilha?",
+    "subtitle": "Em Criar o objeto personagem, escolha o modelo pelo nome que aparece aqui. Na lista do Estúdio, o nome é o mesmo.",
+    "items": [
+      {
+        "kind": "gallery",
+        "category": "personagens"
+      },
+      {
+        "kind": "box",
+        "title": "O nome que os blocos usam",
+        "text": "O objeto continua se chamando <b>personagem</b>, mesmo que você escolha pirata, mergulhador ou robo. Assim, as regras de andar e de pegar a chave continuam funcionando.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "galeria-cenarios",
+    "kicker": "Aula 3 · Parte 6 · A surpresa do final",
+    "title": "Onde a história acontece?",
+    "subtitle": "Em Criar o objeto cenario, troque praia-tropical por um destes.",
+    "items": [
+      {
+        "kind": "gallery",
+        "category": "cenarios"
+      },
+      {
+        "kind": "box",
+        "title": "Um novo ambiente",
+        "text": "Todo cenário tem o mesmo caminho, a mesma ponte e o mesmo lugar para o farol. Por isso, a chave e o farol continuam onde estavam.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "galeria-objetos",
+    "kicker": "Aula 3 · Parte 6 · A surpresa do final",
+    "title": "Qual barco? Qual chave?",
+    "subtitle": "Escolha pelo nome, no bloco do mesmo tipo: o barco no barco, a chave na chave.",
+    "items": [
+      {
+        "kind": "gallery",
+        "title": "Barcos · em Criar o objeto barco",
+        "category": "barcos"
+      },
+      {
+        "kind": "gallery",
+        "title": "Chaves · em Criar o objeto chave",
+        "category": "chaves"
+      },
+      {
+        "kind": "box",
+        "title": "O barco aparece no fim",
+        "text": "O barco vem chegando quando o farol acende. Para ver o barco que você escolheu, pegue a chave e acenda o farol.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "galeria-farois",
+    "kicker": "Aula 3 · Parte 6 · A surpresa do final",
+    "title": "Qual farol?",
+    "subtitle": "Em Criar o objeto farol, escolha um destes. Todos sabem acender.",
+    "items": [
+      {
+        "kind": "gallery",
+        "category": "farois"
+      },
+      {
+        "kind": "box",
+        "title": "Um modelo só",
+        "text": "No 2D, o farol tinha duas imagens, apagada e acesa. No 3D, cada farol é um modelo só, com a animação de acender. Por isso, basta trocar num lugar.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "personalizar",
+    "kicker": "Aula 3 · Parte 7 · Escolha e envio",
+    "title": "Escolha seu esconderijo e teste de verdade",
+    "subtitle": "A chave vai para o lugar que você escolher. Ver a chave não basta: o personagem precisa conseguir pegar.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Escolha o lugar",
+        "text": "Em <b>Ao iniciar</b>, encontre de novo <b>Colocar o objeto chave</b>. O x e o z levam a chave pelo chão, e o y muda a altura. Mude o x e o z para um lugar no chão da ilha e deixe o y em <b>1</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Um lugar para experimentar",
+        "text": "Experimente x <b>−8</b> e z <b>3</b>, perto da praia. Depois escolha o seu próprio esconderijo.",
+        "tone": "experience"
+      },
+      {
+        "kind": "step",
+        "title": "2. Teste se dá para pegar",
+        "text": "Clique em <b>Rodar de novo</b> e vá até o lugar que você escolheu. A chave pode estar alta demais ou do outro lado da água, e aí o personagem não alcança. Se não conseguir pegar, mude um número de cada vez e teste novamente."
+      },
+      {
+        "kind": "step",
+        "title": "3. Escreva seus avisos, se quiser",
+        "text": "Você pode escrever os seus próprios avisos nos blocos que mudam <b>aviso</b>. Só conserve o papel de cada mensagem: começo, chave pega, falta a chave e vitória."
+      },
+      {
+        "kind": "step",
+        "title": "4. Faça uma partida completa",
+        "text": "Toque na tecla R e vá ao farol sem pegar a chave: ele fica apagado e pede a chave. Depois pegue a chave no esconderijo novo e volte: a luz acende e o barco vem chegando."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Próxima parte"
+      }
+    ]
+  },
+  {
+    "id": "publicar",
+    "kicker": "Aula 3 · Parte 8 · Publicação",
+    "title": "Publique seu jogo",
+    "subtitle": "Seu jogo está pronto! Se quiser, publique no Mural, o lugar da plataforma onde ficam os jogos publicados. Se não quiser, clique em Concluir aula.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Abra Compartilhar",
+        "text": "Continue no mesmo Estúdio da aula. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima.<br/>Abre uma janela. O resumo do projeto já vem preenchido, por isso pode deixar como está."
+      },
+      {
+        "kind": "step",
+        "title": "2. Prepare a capa",
+        "text": "O seu jogo precisa de uma capa, a imagem que apresenta o jogo no Mural. Clique em <b>Gerar capa</b> e espere a imagem aparecer. Confira se a capa ficou boa."
+      },
+      {
+        "kind": "step",
+        "title": "3. Publique e comemore",
+        "text": "Clique em <b>Publicar</b> e espere a publicação terminar: <b>Seu jogo está no Mural!</b> Para mandar o jogo para a sua família e os seus amigos, clique em <b>Copiar link de jogar</b> e mande o link, com a ajuda de um adulto se precisar. Quem receber o link pode jogar direto, no computador, com o teclado. Depois clique em <b>Fechar</b> e, por fim, em <b>Concluir aula</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Se Compartilhar não estiver disponível",
+        "text": "Confira se terminou o envio do seu projeto na parte Escolha seu esconderijo e teste de verdade. Se continuar sem conseguir, clique em <b>Preciso de ajuda</b> e conte o que aparece.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "fim",
+    "kicker": "Seu jogo em três dimensões",
+    "title": "Guarde o que você criou",
+    "subtitle": "Você programou o movimento, o lugar da chave, a coleta e o farol que acende uma vez só.",
+    "lit": true,
+    "items": [
+      {
+        "kind": "box",
+        "title": "Comemore sua criação",
+        "text": "Parabéns! Você transformou a ideia da Chave do Farol em um jogo em três dimensões e ainda deixou o jogo com a sua cara. Jogue de novo, mostre para a sua família e invente novos esconderijos para a chave.",
+        "tone": "test"
+      },
+      {
+        "kind": "step",
+        "title": "Se travar em alguma parte",
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página daquela parte neste Passo a passo do projeto: no alto de cada página estão a aula e a parte."
+      },
+      {
+        "kind": "box",
+        "title": "Preciso de ajuda",
+        "text": "No rodapé da aula, clique em <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou na Aula 3. Peguei a chave, mas o farol continua apagado. Conferi o Se temChave.</b><br/>Isso ajuda a equipe a entender em que ponto você está.",
+        "tone": "experience"
+      },
+      {
+        "kind": "step",
+        "title": "Para guardar e para enviar",
+        "text": "O Estúdio salva automaticamente enquanto você monta.<br/><b>Verificar projeto</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da aula. Depois aparece <b>Projeto enviado!</b><br/>Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+      }
+    ]
+  }
+]

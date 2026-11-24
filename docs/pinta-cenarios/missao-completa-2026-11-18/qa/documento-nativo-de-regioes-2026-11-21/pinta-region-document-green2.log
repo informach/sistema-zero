@@ -1,0 +1,59 @@
+bun test v1.3.11 (af24e281)
+
+packages\pinta\src\core\mapDocumentBoundary.test.ts:
+(pass) native map metadata preserves zero, false, signed fractions and JSON optional values
+(pass) native metadata compares wire arrays and bitmap buffers without changing their values
+(pass) unknown fields and accessors cannot run code during metadata comparison
+(pass) metadata budgets reject before visiting oversized binary payloads and bound cycles
+
+packages\pinta\src\core\regionDocument.test.ts:
+(pass) region native round trip preserves global signed fractional metadata and explicit defaults [16.00ms]
+(pass) region native reader refuses unknown metadata at every level instead of dropping it
+(pass) region native reader refuses invalid metadata atomically without repairing ids or tree
+(pass) region native reader rejects malformed cells and references without touching the source
+105 |   const wire = encodeRegionMapDocument(map)
+106 |   expect(JSON.stringify(wire).length).toBeLessThan(6000)
+107 |   expect(decodeRegionMapDocument(wire)!.cols).toBe(10000)
+108 |   const dense = createTilemapAsset({ name: 'Bosque', tilesetId: 'ground', cols: 3, rows: 2 })
+109 |   expect(decodeRegionMapDocument(dense)).toBeNull()
+110 |   expect(sanitizePintaAsset(dense)).toEqual(dense)
+                                          ^
+error: expect(received).toEqual(expected)
+
+  {
+    "cols": 3,
+    "createdAt": 1795245491217,
+    "id": "4424b609-3583-4c54-9c05-1e0f2801a4f6",
+    "kind": "tilemap",
+    "layers": [
+      {
+        "cells": Int16Array [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+        ],
+        "id": "cfe8c067-002f-4bb0-9c45-a00b71918f3b",
+        "name": "Chão",
+        "visible": true,
+      },
+    ],
+-   "name": "Bosque",
++   "name": "bosque",
+    "rows": 2,
+    "tilesetId": "ground",
+    "updatedAt": 1795245491217,
+  }
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero-pinta-externos-20261119\packages\pinta\src\core\regionDocument.test.ts:110:37)
+(fail) region native document stays sparse at the maximum extent and retains old formats unchanged
+
+ 8 pass
+ 1 fail
+ 44 expect() calls
+Ran 9 tests across 2 files. [307.00ms]

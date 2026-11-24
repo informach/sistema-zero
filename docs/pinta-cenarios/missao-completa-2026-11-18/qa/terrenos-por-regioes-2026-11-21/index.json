@@ -1,0 +1,116 @@
+{
+  "at": "2026-11-21T12:22:30.003Z",
+  "native8Public": false,
+  "physical3Public": false,
+  "sourceBase": "8f5808e193458537555c8ff9ccc7aae3bbf69a71",
+  "verified": {
+    "focused": {
+      "passed": 36,
+      "failed": 0
+    },
+    "pinta": {
+      "passed": 2343,
+      "skipped": 3,
+      "failed": 0
+    },
+    "nativeControls": {
+      "passed": 3,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 6,
+      "failed": 0,
+      "projects": ["desktop", "touch-emulated", "cpu-4x"]
+    },
+    "pintaTypecheck": {
+      "exitCode": 0
+    },
+    "physicalDevices": 1
+  },
+  "sources": [
+    {
+      "file": "packages/pinta/src/tiles/terrain.ts",
+      "sha256": "3e19b27b4912bc06a5087fb378b4ec695bae8589d308a0bea928cfd4494c8dfa"
+    },
+    {
+      "file": "packages/pinta/src/tiles/terrainRegions.test.ts",
+      "sha256": "d128a14b179c32b12fa8cc54903fa0a0d8361b16febe36049bc7d1c1c76e4b8a"
+    },
+    {
+      "file": "packages/pinta/src/tiles/cellAccess.test.ts",
+      "sha256": "bd3a8894183eb7ad859022971095b63579775a5c1ba54a0df9d9c2da90e62e1b"
+    }
+  ],
+  "records": [
+    {
+      "file": "pinta-terrain-regions-red.log.gz",
+      "bytes": 842,
+      "sha256": "c74910c86738f3b78c7d2e401279b4f0dcb0c4222cd5876feabddc2993402d29",
+      "rawBytes": 5760,
+      "rawSha256": "9db76c5442fceb85630c64b08c7b7cb5bbaf2189c878763712b2fa0daa96e107"
+    },
+    {
+      "file": "pinta-terrain-regions-red-bounded.log.gz",
+      "bytes": 621,
+      "sha256": "8e66e689d6aa760a49af989b94aaf6bdc2bf99997ea3cf1842d03a1e9656e475",
+      "rawBytes": 4193,
+      "rawSha256": "26348583e7fabf48cb54ccebb66551a289ea3163339aa92d06e4cb4fd190e178"
+    },
+    {
+      "file": "pinta-terrain-regions-focused-r3.log.gz",
+      "bytes": 950,
+      "sha256": "0307007f48c664d578ad0c299b1938d5aac591b1cae0e9c2279a336fa7b40202",
+      "rawBytes": 3933,
+      "rawSha256": "defc95fb4f24c0da655112d08f9579af3c2954fd077e8e8c3c08d9ae776e0e4d"
+    },
+    {
+      "file": "pinta-terrain-regions-full.log.gz",
+      "bytes": 106707,
+      "sha256": "89a0aec6f28e4f813927d5b9adf8cf5ac2d85fd1bcffcd97a6480c6db27eeaa3",
+      "rawBytes": 763104,
+      "rawSha256": "7259e0c407dff5f2934eefbaefd3b3ad6ab0f33abd26809ef01e990f3479f0ce"
+    },
+    {
+      "file": "pinta-terrain-regions-full-r2.log.gz",
+      "bytes": 60515,
+      "sha256": "319f234c379f94b6c8b16e6548f4c737d1eac7b804773009aa58ad37180343df",
+      "rawBytes": 222414,
+      "rawSha256": "4b0cdf6b51d5e21a73dcf87a29fbd5071e8166d7a16831079bcfe3d69662b86a"
+    },
+    {
+      "file": "pinta-terrain-regions-full-r3.log.gz",
+      "bytes": 72170,
+      "sha256": "41f79aa454e5e087f7436eece1aea4272de0e90044849e2ef4bcb743de15e955",
+      "rawBytes": 266649,
+      "rawSha256": "e98ce6999adb94d9421516ed261abffac8eae534c5dd97eccb03acf8ec130ab6"
+    },
+    {
+      "file": "pinta-terrain-regions-types-r2.log.gz",
+      "bytes": 20,
+      "sha256": "9e72928e7a01615b4cf090daa617b4ca9d68531748f887f323f695eb4ca3ef63",
+      "rawBytes": 0,
+      "rawSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "pinta-terrain-regions-native.log.gz",
+      "bytes": 330,
+      "sha256": "0aef1bb1cd9623da48a6a3c5874c0cc774d3bd6592f536c544437a59bf4c94e7",
+      "rawBytes": 507,
+      "rawSha256": "d49b1e1b8dd5fa45500a2c50ca379e9b8f3a5954322ae7a513413dba6734eef9"
+    },
+    {
+      "file": "pinta-terrain-regions-browser.log.gz",
+      "bytes": 664,
+      "sha256": "8f3bfd0e79f8d2dfce286c7b3cfd6cafd5397ae1336f1f387e0dd4177ef628f6",
+      "rawBytes": 2092,
+      "rawSha256": "3378bdd1134bc516171f7d4e068beaa8d13ce110949b8c0248d03147e3992624"
+    },
+    {
+      "file": "playwright-report.json.gz",
+      "bytes": 308236,
+      "sha256": "8a46b9105534b6dc6afcaf3ee1150d99a7eb66139ab808e5bf9fb25a4d60ccbd",
+      "rawBytes": 659934,
+      "rawSha256": "be5cf3251bc1ef8296659a5daa60533093efb4ff78b5d1092054619acb0bc871"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { STUDIO_PYTHON_MATERIAL_DATA_LIMITS } from '@sistemazero/core/studio/python-material-policy'
-import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { type JSX, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
@@ -41,6 +41,7 @@ import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { useStudioTeamLibrary } from '../../studio/team-library'
 import { uniqueAssetName } from './assetNames'
 import {
@@ -143,6 +144,8 @@ export function AssetsPanel({
   captureThumb,
 }: AssetsPanelProps): JSX.Element {
   const runtimeCapture = useStudioRuntimeCapture()
+  const environment = useStudioRuntimeEnvironment()
+  const runtimeCatalog = useCallback(() => environment?.catalog ?? null, [environment])
   const t = useT()
   const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
@@ -232,13 +235,13 @@ export function AssetsPanel({
   // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
-  const images = assets.filter(
-    (a) =>
-      a.kind !== 'audio' && a.kind !== 'model3d' && a.kind !== 'environment3d' && a.kind !== 'font',
-  )
+  const images = assets.filter((a) => a.kind === 'image')
   const fonts = assets.filter((a) => a.kind === 'font')
   const sounds = assets.filter((a) => a.kind === 'audio')
-  const models3d = assets.filter((a) => a.kind === 'model3d' || a.kind === 'environment3d')
+  const models3d = assets.filter(
+    (a) => a.kind === 'model3d' || a.kind === 'environment3d' || a.kind === 'scene3d',
+  )
+  const dadosDeCenario = assets.filter((a) => a.kind === 'scene3d-data')
   // "Usar como peças" / "Usar como mapa (fatiar)" — upload vira tileset/mapa sem Pinta.
   const [tileConfig, setTileConfig] = useState<Pick<
     TileConfigDialogProps,
@@ -299,6 +302,7 @@ export function AssetsPanel({
       void syncDrawingsIntoProjects(storeApi, {
         pintaLibrary,
         signal: syncLifetime.signal,
+        runtimeCatalog,
       })
         .then(() => listPersonalAssets({ namespace: personalNamespace }))
         .then((assets) => {
@@ -331,7 +335,7 @@ export function AssetsPanel({
       syncLifetime.abort()
       window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary])
+  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary, runtimeCatalog])
 
   // Só as IMAGENS do PINTA na biblioteca pessoal são "desenhos" (a lista e o "editar no
   // Pinta"): um .glb/.hdr trazido do Molda vive lá com o `kind` dele e cairia no
@@ -554,6 +558,8 @@ export function AssetsPanel({
         sprite: asset.sprite,
         tileset: asset.tileset,
         tilemap: asset.tilemap,
+        scene: asset.scene,
+        tilemapFront: asset.tilemapFront,
         updatedAt: asset.libRevision,
       },
       { namespace: personalNamespace },
@@ -585,6 +591,8 @@ export function AssetsPanel({
       sprite: drawing.sprite,
       tileset: drawing.tileset,
       tilemap: drawing.tilemap,
+      scene: drawing.scene,
+      tilemapFront: drawing.tilemapFront,
     })
     if (err) setError(err)
   }
@@ -602,14 +610,20 @@ export function AssetsPanel({
           setMaterialNotice(
             receipt.status === 'pending'
               ? 'Material removido; falta guardar neste aparelho. A recuperação continua disponível nesta sessão.'
-              : 'Material removido. Use Ferramentas → Recuperar arquivos e materiais no editor para desfazer.',
+              : 'Material removido. Para desfazer, abra o Histórico do projeto (menu Mais do editor).',
           )
           setPendingMaterialSave(
             receipt.status === 'pending'
               ? { projectId: pendingDeletion.operation.projectId, id: receipt.operationId }
               : null,
           )
-        } else removeAsset(pendingDeletion.id)
+        } else {
+          const issue = removeAsset(pendingDeletion.id)
+          if (issue) {
+            setError(issue)
+            return
+          }
+        }
         setPendingDeletion(null)
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : 'Não foi possível remover o material.')
@@ -1097,6 +1111,7 @@ export function AssetsPanel({
             ) : null}
             {activeTab === 'models3d' ? (
               <Models3DTab
+                dadosDeCenario={dadosDeCenario}
                 models3d={models3d}
                 allowUpload={allowUpload}
                 busy={busy}

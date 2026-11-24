@@ -1,4 +1,5 @@
 import { isToneRequest } from '../audio/tone'
+import { PINTA_AFFINE_ARITY, PINTA_RELEASE_ARITY } from '../pintaRegionProtocol'
 /**
  * Wire contract between the Pygame Zero module running in the Python worker and the canvas
  * renderer in the execution frame. One exchange per game frame:
@@ -77,6 +78,8 @@ export const PGZERO_OP = Object.freeze({
   CIRCLE_PART: 12,
   /** Pygame-ce: the whole screen (width, height); its RGBA bytes are PGZERO_PIXELS_ATTACHMENT. */
   PIXELS: 13,
+  PINTA_AFFINE: 14,
+  PINTA_RELEASE: 15,
 })
 /** Points one polygon may have (kept with _sz.py MAX_POLY_POINTS). */
 export const PGZERO_MAX_POLY_POINTS = 4096
@@ -95,6 +98,8 @@ export const PGZERO_OP_ARITY: Readonly<Record<number, number>> = Object.freeze({
   11: 14,
   12: 12,
   13: 2,
+  14: PINTA_AFFINE_ARITY,
+  15: PINTA_RELEASE_ARITY,
 })
 
 export interface PgzeroTextStyle {

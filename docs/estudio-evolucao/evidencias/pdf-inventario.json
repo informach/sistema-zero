@@ -1,0 +1,33 @@
+{
+  "readOnly": true,
+  "sources": [
+    {
+      "course": "cade-todo-mundo",
+      "source": "docs/aulas-interativas/faisca/cade-todo-mundo/passo-a-passo-do-projeto.pdf",
+      "sha256": "d138930ed7c8365bfb78f390659201eb0b5868d990e21fe1f6f45c4c8e00c03a",
+      "pages": 13,
+      "visuallyReviewedPages": [7, 9],
+      "textIndexedPages": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    },
+    {
+      "course": "desafio-primeiro-jogo",
+      "source": "docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-passo-do-projeto.pdf",
+      "sha256": "493c13e7070cefb5f60a106ee5edb5eeaf972fa40d4ca8ff11a8901d30a5c762",
+      "pages": 35,
+      "visuallyReviewedPages": [8, 10, 32],
+      "textIndexedPages": [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+        26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+      ]
+    }
+  ],
+  "confirmedRunLabel": "Rodar de novo",
+  "appVerifyAndSubmitExercised": false,
+  "recordedVideosAccessed": false,
+  "representativePathsNormalized": [
+    "Jogo 2D > Sprites > Aparencia",
+    "Jogo 2D > Controles > Teclado, acoes e toque",
+    "Jogo 2D > Movimento > Movimentos prontos"
+  ],
+  "textReviewScope": "Full text indexed across 48 pages; directed reading and visual review of the five listed pages."
+}

@@ -1,0 +1,25 @@
+{
+  "resultados": [
+    {
+      "tema": "light",
+      "revisao": 6,
+      "reabertura": true,
+      "desfazer": true,
+      "refazer": true,
+      "restaurar": true,
+      "desfazerRestauracao": true,
+      "saidaPreservaEdicaoNaoGravada": true
+    },
+    {
+      "tema": "dark",
+      "revisao": 6,
+      "reabertura": true,
+      "desfazer": true,
+      "refazer": true,
+      "restaurar": true,
+      "desfazerRestauracao": true,
+      "saidaPreservaEdicaoNaoGravada": true
+    }
+  ],
+  "erros": []
+}

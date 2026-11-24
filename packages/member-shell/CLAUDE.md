@@ -1,5 +1,80 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A medida dos mundos grandes no staging (23/11/2026)
+
+Plano "Mundos de 2 km", lote 8. `/estudio/medida-mundos` (nos dois apps, só a equipe: 404 para os
+outros e sem `STUDIO_EXAMPLES_ORIGIN`) monta `components/creator/world-measurement-client.tsx`:
+baixa o projeto de medida pela rota dos exemplos grandes (`estudio-exemplos/medida-mundos/<sha256>.json`,
+conferido por tamanho e hash; o resumo é `world-measurement-file.generated.ts`, gerado por
+`studio/scripts/gen-medida-mundos.ts`), roda no `StudioProjectPlayer` em tela inteira e recebe a
+medida por `postMessage` (só da janela do próprio player). Os números de aceite moram em
+`lib/world-measurement.ts` (`aceiteDaMedida`). `routes/studio-world-measurement.ts`
+(`POST /api/studio/world-measurement`, `studioWorldMeasurement`): só a equipe, corpo até 64 KB,
+medida conferida campo a campo, grava `qa/medidas-mundos/<dia>/<hora>-<motor>-<id>.json` no R2
+PRIVADO com o commit do deploy (`RAILWAY_GIT_COMMIT_SHA`), o navegador e o id da conta (nunca o
+e-mail); com o R2 fora, o registro inteiro vai ao log com o prefixo `[medida-mundos]` (202). Testes:
+`tests/studio-world-measurement.test.ts`.
+
+## Arquivos dos exemplos grandes do Estúdio (22/11/2026)
+
+`routes/studio-example-files.ts` (`createStudioExampleFilesRoute`, montada no `createStudioRoutes`
+como `studioExampleFiles`; nos dois apps `app/api/studio/example-files/[...caminho]/route.ts`):
+entrega do mesmo domínio o arquivo do jogo E da galeria (`estudio-exemplos/<pasta>/<sha256>.json`
+no R2 público do ambiente, ligado por `STUDIO_EXAMPLES_ORIGIN`; sem ela, 404 e o card nem aparece).
+Só um formato de caminho passa e o nome é o hash do conteúdo (o Estúdio confere tamanho e hash ao
+abrir). Desde o full review final: só a EQUIPE recebe o arquivo (`media.requireUploadSession` +
+`isPrivilegedRole`, a mesma régua da página do Estúdio, porque a galeria é só dela nos dois apps;
+quem não é da equipe vê 404), o cache é `private` e o pedido ao R2 leva o `request.signal`.
+Testes: `tests/studio-example-files.test.ts`.
+
+## Versões das ilhas do Molda Cenários (21/11/2026)
+
+`routes/cenarios-publicacoes.ts`: `GET /api/cenarios/publicacoes/perfis/:ilha/versoes` repassa com a
+sessão (ou o token do agente) e confere a lista (`lerVersoesPublicadas`); `POST
+/api/cenarios/publicacoes/voltar` recebe só `PedidoDeVoltaSchema` (16 KB), segue por HMAC com o ator
+da sessão para `/members/internal/cenarios/publicacoes/voltar` e confere a resposta
+(`lerResultadoDaVolta`). Nada lê o armazenamento: os arquivos já estão no espaço. Suporte só de
+leitura e `x-sz-viewer` trocado são recusados como nas outras escritas. Testes no fim de
+`tests/cenarios-publicacoes-routes.test.ts`.
+
+## Compartilhar de novo atualiza o jogo no Mural (20/11/2026)
+
+Pedido dela: compartilhar o mesmo projeto não cria mais outro post no Mural; ATUALIZA o que ele já
+tem (mesmo link `/jogar`, comentários, jogadas, data e lugar na ordem), só quando o jogo mudou.
+Vale para a aula gravada, a oficina ao vivo e o Estúdio Completo. Regras do hub no CLAUDE.md de lá.
+
+- **`routes/studio.ts`**: os dois publish viram publicar-ou-atualizar. O `prepare` manda
+  `sourceProjectId` (o `project.id`, no Estúdio livre), `adoptPlayId` e `asNewPost` (form
+  `asNewPost=1`, a opção escondida) e, com `state: 'existing'`, segue `updateExistingPublication`:
+  `publishedGame` (a revisão ativa do serviço de versões ou, num post clássico de antes, o
+  primeiro retrato do R2) → impressão igual (`studioGameFingerprint`: o projeto público sem nome,
+  datas e `coverAssetName`) responde **409 `SHOWCASE_UNCHANGED`** → `publishRevision` com
+  `expectedVersion` da revisão atual → capa nova só se a criança escolheu (sem capa = mantém) →
+  `hub.updateShowcaseThreadStudio[Standalone]` → a capa antiga sai depois que a nova vira a do
+  recibo (`readStudioCoverReceipt` + `retireStudioPublicationCover`). Resposta `{…, updated: true}`.
+  Sem serviço de versões configurado, atualizar responde 503 (o retrato do R2 é imutável).
+- **Jogo clássico com versões**: `retained()` inclui o clássico JavaScript quando
+  `STUDIO_PRO_RUNTIME_URL` e `_TOKEN` existem (`isStudioClassicHistoryProject`; o id precisa ser do
+  formato `^[A-Za-z0-9_-]{1,128}$`), e `publishRevision` despacha `publishStudioClassicRevision`
+  (`promote-classic`, revisão só de fonte). O `/jogar` clássico pede `resolve` ao serviço e serve a
+  versão ativa; sem registro serve o retrato do R2; link desativado (`resolve-status`) = 404; serviço
+  fora do ar = retrato do R2 (aviso no log).
+- **`studioPublication` POST**: operação nova `status` (`{compare?, context: lesson | free | live}`)
+  → `{published, playId, muralUrl, playUrl, title, description, coverUrl, hidden, gameUpdatedAt,
+  history, unchanged?}`; com `compare` lê a entrega (aula) ou recebe o projeto (livre). A operação
+  `update` SAIU (atualizar é sempre pelo Compartilhar, post e versão juntos); `activate` (restaurar ou
+  desativar) chama `hub.touchShowcase`.
+- **Adaptadores** (`lib/studio-publication-adapter.ts`): `createStudioShareStatus(contextFor)`; a
+  aula passa `{kind:'lesson'}` e `unchangedMessage` (`copy.estudio.compartilharIgual`: na aula o Mural
+  mostra o ENVIO), o Estúdio Completo `{kind:'free', projectId, adoptPlayId}` e `allowNewPost`, a
+  oficina `{kind:'live', workspaceId}`. ⚠️ A trava de "compartilhar uma vez só" da aula
+  (`readSharedFlag`/`alreadyShared`, `localStorage`) SAIU. Uma atualização mostra a tela do
+  `ShareDialog` ("Seu jogo foi atualizado!"); a `MuralCelebration` fica para a 1ª publicação.
+- **Selo** `lib/showcase-updated.ts` (`showcaseUpdatedLabel`) e `HubThreadView.gameUpdatedAt`.
+- Testes: `tests/studio-python-publish.test.ts` (republicar igual = 409, alterado = mesmo link e
+  versão 2, clássico com versões e status, jogo novo) e `tests/showcase-updated.test.ts`.
+
+## Pinta: item da conta em formato mais novo não é lido (17/11/2026)
 ## Periodicidade do mini checkout (full review da Aula 7, 19/11/2026)
 
 O catálogo permite intervalos positivos em meses além de 1 e 12. `PurchaseForm` apresenta
@@ -8,6 +83,149 @@ rótulo recorrente. Não mudar cobrança/valor para contornar o texto. Teste de 
 `tests/commerce-purchase-form.test.tsx` (1, 3, 6 e 12 meses, mais avulsa).
 
 
+## Pinta: janela focal pela conta (23/11/2026)
+
+`createCloudMirroredPintaPersistence` só oferece `openRegionSession` (e `listGalleryIndex`, a
+galeria focal) com a fila causal e um local que a tenha. Desde a etapa 1 das regiões, o host monta
+a oficina sempre que a fila causal existe (ver a seção seguinte). Ao abrir, congela as unidades mutáveis, abre a sessão do pacote com a
+`LocalRegionCausalBinding` e fixa uma vez o gzip dos recursos lidos (`encodePintaObservedResources`).
+Cada gesto monta a unidade em `pintaRegionCausalUnit` DENTRO da transação do CAS focal: mapa como
+membro único (coalesce na mesma unidade mutável), arestas `predecessor`/`snapshot` e bases dos pins
+com a marca lida ali. Sem época (`unbased`) ou com recuperação pendente, devolve `null` (editor
+inteiro). Desenho: `docs/superpowers/plans/2026-11-23-pinta-focal-na-conta.md`; provas em
+`tests/fixtures/pinta-focal-account.fixture.ts` (mock do IndexedDB no modo físico, `setIdbMockCodec`).
+
+## Pinta: a conta sem flag (23/11/2026)
+
+Decisão da dona: "Não precisa ter flag de nada." A fila causal, as paletas negociadas e o gravador
+selado do Estúdio valem para todo perfil. Inventário e variáveis remotas sem uso em
+`docs/superpowers/plans/2026-11-23-pinta-sem-flags.md` (raiz).
+- **Quem recebe a conta do Pinta:** `pintaAccountViewer(session, audience)`
+  (`server/pinta-causal-eligibility.ts`), entregue pelo `PintaAccountSession` dos layouts e do
+  Arquipélago. Todo aluno ativo (perfil kids com a conta responsável; adulto = a própria conta).
+  Pais, suporte em modo leitura e sessão sem aluno ficam no armazenamento de sempre.
+- **O host não recebe prop:** o `PintaClient` e o `MoldaClient` leem `usePintaAccount(viewerId,
+  audience)`. O Pinta do Arquipélago entra na fila causal pelo mesmo escopo; antes ele ficava no
+  caminho antigo, que um perfil causal recusa.
+- **O que sobrou é infraestrutura:** `pintaAccountStorageReady()` (segredo HMAC + R2 privado). Sem
+  ela, as rotas `/api/pinta/causal/*` e `/api/pinta/palette/*` respondem 404 e o escopo é nulo.
+- **Members:** o inventário causal, a paleta negociada e o gravador selado são montados sempre; as
+  rotas internas exigem o token interno e o consumidor `member-shell`. O ator é o par conta + perfil
+  do envelope HMAC; o repositório confere a conta guardada e recusa um par trocado.
+- **O worker de limpeza** declara sempre os escopos `pinta` e `studio-seal`, e só apaga chaves exatas.
+- **Guarda:** `scripts/ci/pinta-sem-flags.test.ts` falha se alguma das variáveis antigas voltar ao
+  código, a um Dockerfile ou ao CI.
+
+## Pinta: regiões ligadas, sem flag (23/11/2026)
+
+O `PintaClient` escolhe o armazenamento assim:
+- **sem conta:** a oficina só no aparelho;
+- **com a fila causal** (`cloud.pintaCausal`): a oficina, com `pintaCausalReader: 7` e o espelho com
+  `reader`/`writer` 7;
+- **sem a fila causal:** o caminho antigo, que declararia nuvem 6 para um nativo 8, então a conta
+  fica no `createPintaPersistence` de sempre.
+
+O nativo 9 / nuvem 8 não é anunciado: a oficina do host tem `nativeCeiling: 8`. O BFF admite o
+documento regional para todo perfil (`allowRegions`); o `allowWorkshop` é a constante de capacidade
+`WORKSHOP_BODY_READABLE` (`server/pinta-causal-proof.ts`), que só liga quando o core anunciar o leitor
+8 (`PINTA_INVENTORY_READER_VERSION`), na etapa 8. Não há variável de ambiente.
+
+Cliente antigo e dado regional:
+- o piso do inventário (7) fecha a conta para o leitor 6;
+- uma unidade selada com leitor 6 antes do piso subir é encerrada e recuperada
+  (`syncPintaCausalAccount`, `outgrown`), sem travar a fila.
+
+O `PintaApp` só recebe `onCompletionControlChange` quando há uma missão por cima; sem isso, a galeria
+focal aparece. Desenho: `docs/superpowers/plans/2026-11-23-pinta-etapa-1-regioes.md`. Provas em
+`tests/fixtures/pinta-regions-{account,host}.fixture.ts*`, `tests/pinta-causal-regions-routes.test.ts`
+e `tests/pinta-regions-studio-library.test.ts`.
+
+## Pinta: proteção de formato e proveniência (18/11/2026)
+
+A versão de nuvem é 4 para mapas/peças/conjuntos; o documento nativo preciso é 5.
+Conferir tanto a versão listada como a efetivamente baixada. Sob quota, a memória de formato
+abandona o storage indisponível e mantém o floor em memória. Após reinício, uma revisão
+sincronizada sem proveniência conhecida precisa conferir o remoto no produtor antes do upload;
+o autosave continua local. Assinar uma edição não comprova que o cache inicial estava íntegro.
+Floor e assinatura pertencem à revisão que foi realmente observada. `writtenAt` sozinho
+também é escrito pelo cliente antigo: não autentica a gravação. Manter revisão causal e
+capacidade do assinante; uma marca nova compartilhada não pode retaggar RAM antiga.
+Recuperar o canônico e conservar a edição cortada em cópia. Ver issues 001/004/022/023/025 em
+`.compozy/tasks/pinta-full-review-20261118/reviews-001/` e os testes de nuvem do community-kids.
+Essas regras protegem o canônico na conta. A issue 026 acrescenta autoridade transacional
+offline ao Pinta; o espelho de nuvem herda a origem do snapshot substituído, conserva
+`localRevision` nativa realmente sincronizada e enfileira cópias confirmadas em conflitos.
+Uma checagem posterior por horário não autentica RAM antiga. O hook `hasLocalChanges`
+é opcional no reconciliador compartilhado; consumidores legados conservam suas regras.
+Provas e custos: `docs/pinta-cenarios/revisao-2026-11-18/qa/autoridade-local-026.md`.
+
+### Proteção de leitura existente desde 17/11/2026
+
+`lib/pinta-cloud-persistence.ts` baixava e passava pelo `sanitizePintaAsset` em TRÊS caminhos: a
+reconciliação, a base vencida na subida (`resolveStale`) e o DELETE recusado
+(`resolveStaleRemove`). O sanitizador reconstrói o registro e descarta o que não conhece, então
+um mapa de formato novo era gravado cortado no aparelho e depois subia por cima do inteiro.
+
+- Os três param em `noteUnreadable(summary)` (`pintaCanReadFormatVersion` do core) ANTES de ler o
+  conteúdo. O item não desce, não vira `-copia` e não é restaurado; a cópia local, se houver, não
+  sobe (o produtor devolve `null`); a marca não avança. Nenhum dos dois lados entra na
+  reconciliação por carimbo de tempo (o mesmo desenho do filtro do Molda).
+- `getReadIssues()` devolve esses itens e a galeria do Pinta avisa. O aviso é refeito a cada passe.
+- `createCreationsCloud({ tool: 'pinta', maxFormatVersion })` no `pinta-client`, no espelho de
+  paletas do `molda-client` e no canal `lesson-pinta`: sem o teto, apagar um desenho de formato
+  novo seria recusado. O rascunho da aula declara `pintaWriteFormatVersion(kind)` no lugar do 1 fixo.
+- A subida só põe `formatVersion` no corpo acima de 1: enquanto a escrita declara 1, o pedido é
+  byte a byte o de antes.
+- Testes: o bloco "formato mais novo que este código" de
+  `community-kids/tests/pinta-cloud-persistence.test.ts`.
+
+## Molda Cenários: faixas na tela e atalho no Molda (20/11/2026, lote 10)
+
+`lib/cenarios-tool-access.ts` traduz as faixas em famílias da oficina (`cenariosToolAccessFromBands`,
+`adultCenariosToolAccess` com a régua de `adult-molda-tool-access`, e `cenariosBasicToolAccess`
+quando a jornada não chegou). `CenariosClient` recebe `ferramentas` e passa à oficina; ausente =
+todas (a equipe). O Kids traduz com `cenariosToolAccessFor` (mesma régua do Molda). O `MoldaClient`
+ganhou `cenariosAvailable`: com ele, a galeria do Molda mostra o atalho "Cenários"; as páginas do
+Molda perguntam ao members (`checkCenariosAccessReadonly`). O Members confere as faixas no lote:
+a tela só decide o que aparece.
+
+## Importação do relevo no Molda Cenários (17/11/2026)
+
+`cenarios/:id/recursos/reservar` reutiliza assinatura condicional e cota. Um POST de lote com `recursos: {espacoId, digests}` primeiro autoriza o cenário, lê cada peça de 8.474 bytes, confere SHA/cabeçalho e só então encaminha a prova para `/members/internal/cenarios/lotes` por HMAC. A prova não vem do navegador. Lotes sem recursos mantêm a porta JWT existente. Erro ou falta de arquivo impede a confirmação; o Members confirma e grava atomicamente. DELETE de cenário ou mundo usa a mesma limpeza posterior de arquivos sem referências das bibliotecas. A DDL é `0157_tiresome_shen`.
+
+## Molda Cenários: o BFF da oficina de cenários 3D (16/11/2026)
+
+`routes/cenarios.ts` (`createCenariosRoutes({ gateway, session })`, espalhado no `createShell` como
+`routes.cenarios`): UM handler para `app/api/cenarios/[...caminho]/route.ts` (GET, POST, PATCH,
+DELETE). O cliente é o `criarHostHttp` de `@sistemazero/molda-cenarios/oficina`.
+
+- **Repasse** ao members pelo gateway (`/members/cenarios/*`) só dos caminhos da lista `REPASSES`
+  (método e formato do caminho conferidos; a consulta da busca de modelos leva só `busca`, `pasta`,
+  `cursor` e `limite`). Quem pode usar e de quem é cada espaço é o members que decide.
+- **Envio direto ao armazenamento.** `…/modelos/reservar` e `…/capa/reservar` voltam com um endereço
+  assinado por arquivo (`r2PresignPutUgc`, tamanho, tipo e `If-None-Match: *` presos, 15 min); a chave do
+  members só é assinada se for `cenarios/<espaço>/blobs/<digest>` daquela reserva.
+- **Só este servidor afirma que o arquivo chegou**: `POST bibliotecas/:id/modelos` e
+  `POST cenarios/:id/capa` conferem SHA-256, tamanho e formato em stream (`r2GetObjectUgc`,
+  `server/cenarios-conteudo.ts`, duas leituras por pedido, prefixo GLB limitado a 8 MB) e chamam as rotas internas
+  HMAC do members com o ator lido da SESSÃO (`usuarioId` = o perfil no Kids, `contaId`, `equipe`
+  pelo papel e conta ativa, `suporte` com qualquer `act`) e o espaço em que procurou. Armazenamento
+  fora do ar responde 503 e nada é afirmado; conteúdo inválido responde 422. O Members compara
+  a prova `{digest, bytes, tipoDoConteudo}` com a reserva ainda válida. MIME PNG/WebP é preservado
+  na DDL 0155. O PUT condicional impede sobrescrever um arquivo por uma assinatura ainda válida.
+- **Apagar** biblioteca ou modelos: o members devolve as chaves que ficaram sem dono e elas saem do
+  armazenamento depois da resposta (`after`), só as que são arquivo de cenário. A tela recebe `{ok}`.
+- **Ler** (`GET espacos/:espacoId/arquivos/:digest[?tipo=modelo]`): confere que o espaço é da
+  pessoa (uma consulta a `/members/cenarios/espacos`, lembrada por 60 s por pessoa e espaço: a
+  gaveta pede centenas de retratos) e redireciona para um endereço assinado igual dentro da janela
+  de 6 horas (`avatarLinkWindow`), com cache longo. Os metadados confirmados de cada hash também
+  são consultados no Members e lembrados por 60 s; o MIME nunca vem da consulta do navegador.
+  `r2PresignGetUgc` ganhou `signingDate` e
+  `responseCacheControl` (opcionais).
+- Sessão de suporte que só olha não escreve; `x-sz-viewer` diferente da sessão responde 409.
+- ⚠️ O navegador baixa o `.glb` do armazenamento por `fetch` (redirecionado): o bucket UGC precisa
+  aceitar GET e PUT das origens dos dois apps, inclusive o cabeçalho `if-none-match` (CORS).
+- Testes: `tests/cenarios-routes.test.ts`.
 
 ## "Meu avatar" com o pack Cute Characters (13/11/2026)
 
@@ -276,7 +494,11 @@ aprovada no Canvas "Experiências do Cadê e do Farol" virou a moldura de TODAS 
     pega no chão por proximidade, o caderninho, o balão da porta com a largura medida pelo texto)
     e `Position` (− e +, réguas, aviso de borda, o palpite grande do y, teclado com setas, WASD, +,
     −, X e Y, e o desafio do alvo depois das 4 descobertas). `proximoGestoDaMemoria` decide o que
-    pulsa na memória.
+    pulsa na memória. ⚠️ O lugar anterior da chave (quadrado pontilhado e seta até a chave) é
+    desenhado só pelo palco, `MarcaDoLugarAnterior` em `scene-lighthouse-position.tsx`; as réguas
+    não repetem a marca, o alvo tem borda contínua e o número vai para o lado depois de subir ou
+    descer (20/11/2026: uma criança achou confusa a linha pontilhada, que não diz para onde a chave
+    foi, e as duas marcas sobrepostas).
   - As falas vêm do motor (`discoveryGuidance`, as que o Admin grava com voz); a ideia, a ponte e os
     momentos que só a tela conhece (o palpite e o alvo da posição) vêm de `discoverySpeech(id,
     cenario)` do core.
@@ -1371,10 +1593,27 @@ incidente é o editor semeado do TEMPLATE (passo 4 da ordem acima, num soluço d
 → parágrafo `text-destructive` no Dialog apontando o "Sincronizar com o enviado". NÃO bloqueia
 (reenviar o template pode ser recomeço intencional). A régua é PURA em
 **`lib/studio-template.ts`** (`isInitialTemplateProject`, testada em `tests/studio-template.test.ts`):
-compara byte a byte os 3 arquivos canônicos (ausente = `''`); **`kind:'pro'` em qualquer lado →
-false** (no Pro os 3 são `''` — falso positivo garantido); contagem de `assets` diferente → false;
-entrada torta → false (aviso errado ensina a ignorar avisos). O members guarda a versão
+no JavaScript, compara os 3 arquivos canônicos (ausente = `''`), e **`kind:'pro'` em qualquer
+lado → false** (no Pro os 3 são `''`, falso positivo garantido); no **Python** a régua é outra:
+ambiente diferente (`studioProjectContinuityIssue`: linguagem, tipo, runtime ou modelo) → false, e
+senão compara a `tree` (no Pro) ou os `files`, os `assets`, o `python` e as
+`installedExtensions` inteiros, então um Pro em Python igual ao inicial AVISA; `assets` diferentes
+→ false; entrada torta → false (aviso errado ensina a ignorar avisos). O members guarda a versão
 sobrescrita (migração 0066) e o professor restaura pelo admin — este aviso é a 1ª linha de defesa.
+⚠️⚠️ **Desde 22/11/2026, duas exceções que tinham deixado o aviso MORTO** (provadas no e2e
+`community-kids/e2e-art-slots`, segundo caso): (1) projeto de BLOCOS compara os BLOCOS sem o que o
+editor põe sozinho ao abrir (id e posição de cada bloco, `szBehaviorAreasVersion`), mais a página e o
+estilo; o `script.js` não entra. O projeto inicial dos manifestos guarda os blocos SEM id e o código
+com nomes de evento escritos à mão; ao abrir, o Blockly sorteia os ids e o código regerado os leva,
+então os arquivos nunca batiam em nenhuma aula montada por manifesto. O `extraState` de cada bloco
+também é comparado sem as chaves `id` (os parâmetros de função e método, `paramsMutator`, são
+gravados `{name, id}` e o id é sorteado ao abrir; o nome continua contando; revisão `6367eb39b`).
+Com `bridgeCodeAhead` não há aviso; blocos com variável do Blockly (campo com objeto, referência
+por id) ou sem `blocks` seguem a régua dos arquivos. (2) O desenho da vaga de arte
+(`source: 'lesson-art'`) não conta, junto com a imagem do projeto inicial que ele troca (vaga `replace`, mesmo nome): é o host que o põe a cada
+abertura, como a impressão do conteúdo do core já tratava. E o **"Recomeçar"** (e a troca para a
+"outra versão") passou a pôr de novo os desenhos das vagas lidos nesta abertura (`lessonArtRef` +
+`withLessonArt`): antes o desenho sumia dos materiais até a próxima abertura.
 
 ⭐ **`navigator.storage.persist()` (08/2026 — rascunho não é mais despejável):**
 **`lib/persistent-storage.ts`** (`requestPersistentStorage` — best-effort, guard de módulo
@@ -1605,7 +1844,7 @@ montado no `createShell` como `routes.studio*`) expõe três rotas consumidas pe
   capa: o campo `cover` (print OU upload da criança) → R2 **PÚBLICO** (`r2PutObject`, WebP); OU, quando vem
   `useDefaultCover=1` (a criança escolheu "usar a capa do curso"), `coverImageUrl = payload.defaultCoverUrl`
   (URL AUTORITATIVA do `getShowcasePayload` do members — NÃO confia no cliente). Projeto inteiro (JSON auto-suficiente, assets data URLs)
-  passa por parse + `sanitizePlayableProject` ANTES de persistir (contrato mínimo: `files` canônicos
+  passa por `prepareEditableStudioProject` + `studioPublicProject` ANTES de persistir (contrato mínimo: `files` canônicos
   obrigatórios; `extraFiles`/`assets`/`installedExtensions` sempre arrays seguros; limites de tamanho
   rechecados após normalização; JSON inválido → 400, excedente → 413) →
   R2 **PRIVADO** `studio/play/<uuid>.json` (`r2PutObjectPrivate`); chama
@@ -1786,7 +2025,7 @@ não solta o jogo antes de terminar). Isso **substituiu o antigo "Publicar no Mu
 (`PublishToMural` REMOVIDO — mesma ação, e o Compartilhar ainda dá descrição editável + link público de
 jogar; `LessonCompleteResult.showcase` segue vindo do members mas o kids não o consome mais). A
 elegibilidade real é do backend (publish 409 `SHOWCASE_NOT_ELIGIBLE` quando o bloco não é de vitrine). O
-post publicado é um **snapshot IMUTÁVEL e INDEPENDENTE** do rascunho que a criança continua editando.
+post publicado é um **snapshot INDEPENDENTE** do rascunho que a criança continua editando (desde 20/11/2026 compartilhar de novo publica uma versão nova atrás do mesmo link; ver a seção do topo).
 **Sincronizar com o enviado (28/06):** o `StudioBlockView` passa **`onCloudSync`** ao `<StudioLesson>` (item
 ⋯ → "Sincronizar com o enviado", só na aula) → abre um Dialog de confirmação (substitui o editor) → no OK,
 `apiGet` da entrega (`…/studio-submission` GET) e `handleRef.current.replaceProject({...project, id: projectId})`
@@ -1946,7 +2185,10 @@ members) + **`avatarSnapshot`** (multipart, FORA do matcher — sobe o PNG p/ o 
 /members/gamification/activity`; o members dá 10 XP/dia que MOVE o streak, gated por posse do Estúdio,
 1×/dia — âncora de quem já terminou os cursos e só cria) e `childrenStats` (área dos pais: junta
 identidade dos perfis do auth com os stats por perfil do members; gateado por
-`requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
+`requireParentGateAccountOnly` no shim do KIDS) e `familyAvatars` (21/11/2026: a foto do avatar 3D
+de cada filho da conta, `{ avatars: { [profileId]: photoUrl | null } }`, para o menu da área dos
+pais; os ids saem de `profiles.list()`, nunca do pedido; mesmo portão no shim
+`/api/parents/avatares`). Toda escrita passa por `requireWritableSession`
 (`readonly` bloqueia; `write` libera o fluxo normal); ids de path validados como UUID na borda.
 
 **Privacidade — `authorProfileId` (perfil público, 06/2026):** o `redactAuthors` (`lib/hub-redact`)

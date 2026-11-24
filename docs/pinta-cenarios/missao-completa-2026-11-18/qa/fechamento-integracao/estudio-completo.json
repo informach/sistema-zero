@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-19T12:21:40.286Z",
+  "command": "bun run test",
+  "cwd": "packages/studio",
+  "exitCode": 0,
+  "files": 866,
+  "groups": 162,
+  "pass": 11543,
+  "skip": 4,
+  "fail": 0,
+  "assertions": 267247,
+  "nestedWrappersCountedAgain": false,
+  "skipped": [
+    "o executor roda o jogo e confere > jogo de código: variável, tecla, texto, console e função",
+    "o executor roda o jogo e confere > regra em JavaScript: lê o jogo depois dos passos, sob a CSP da prévia",
+    "o executor roda o jogo e confere > o jogo que troca eval, then e innerText não forja o resultado (review da etapa 4)",
+    "o executor roda o jogo e confere > jogo de blocos do Jogo 2D: o herói anda com a seta e fica parado sem ela"
+  ]
+}

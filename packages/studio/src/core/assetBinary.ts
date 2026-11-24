@@ -47,6 +47,8 @@ export function projectAssetFileExtension(
 ): string {
   if (kind === 'model3d') return 'glb'
   if (kind === 'environment3d') return 'hdr'
+  if (kind === 'scene3d') return 'json'
+  if (kind === 'scene3d-data') return 'bin'
   return MIME_EXTENSIONS[mime] ?? fallback
 }
 

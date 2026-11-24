@@ -22,6 +22,7 @@ import {
   DISTANCIA_MINIMA_DA_CAMERA,
   FOLGA_DA_CAMERA,
   GRUA_DA_CAMERA,
+  NIVEL_DA_AGUA,
   RAIO_DA_SONDA_DA_CAMERA,
   VOLTA_DA_CAMERA,
 } from '../mundo/medidas'
@@ -45,6 +46,7 @@ import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
 import { CAMERA_DA_GALERIA, cameraDaGaleria, galeriaAberta } from '../sistemas/galeria-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
+import { superficieDaAgua } from '../sistemas/modos/chao'
 import {
   criarPesos,
   type Enquadramento,
@@ -114,7 +116,13 @@ function gravarDica() {
  * Fora de casa, um raio do avatar até ela contra o que é sólido (troncos, paredes, chão) a traz
  * para perto quando bate, e lá no alto (deques e pontes) ela desce o ângulo para mostrar o caminho.
  */
-export function Camera() {
+export function Camera({
+  chaoDoCenario = alturaDaIlha,
+  baseDoCenario = () => ALTURA_DA_TERRA,
+}: {
+  chaoDoCenario?: (x: number, z: number) => number
+  baseDoCenario?: (x: number, z: number) => number
+} = {}) {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
   const farol = lojaDoFarol(loja)
   const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' && s.etapa !== 'carregando')
@@ -538,6 +546,15 @@ export function Camera() {
     const k = 1 - Math.exp(-dt * (6 - SEGUIR_NO_CIPO * Math.min(1, f / FOCO_NO_CIPO)))
     let ax = rastro.x + (movimento.foco.x - rastro.x) * f
     const mergulhando = movimento.modo === 'mergulho'
+    const pesNaAgua =
+      superficieDaAgua(
+        movimento.aguas,
+        NIVEL_DA_AGUA,
+        rastro.x,
+        rastro.z,
+        RAIO_DA_SONDA_DA_CAMERA,
+      ) >
+      rastro.y - CORPO.doCentroAoPe
     // No porão o teto fica perto. O foco acompanha o corpo, não a cabeça em pé.
     const alturaDoFoco = mergulhando ? MERGULHO.focoDaCamera : ALTURA_DO_OLHAR
     let ay = rastro.y + alturaDoFoco + (movimento.foco.y - rastro.y - alturaDoFoco) * f
@@ -567,7 +584,7 @@ export function Camera() {
     alvo.current.z += (az - alvo.current.z) * k
     // Lá no alto, o ângulo desce e a câmera chega perto (passa por baixo das copas).
     const alto = pesoNoAlto(
-      rastro.y - CORPO.doCentroAoPe - ALTURA_DA_TERRA,
+      rastro.y - CORPO.doCentroAoPe - baseDoCenario(rastro.x, rastro.z),
       CAMERA_NO_ALTO.acimaDoChao,
     )
     noAlto.current += (alto - noAlto.current) * k
@@ -592,9 +609,13 @@ export function Camera() {
         y: Math.sin(incl),
         z: Math.cos(giro) * Math.cos(incl),
       }
-      // Da cabeça e do peito: um tronco que esconde só o corpo também conta.
+      // Em terra, um tronco que esconde o peito também conta. Na água (inclusive o raso),
+      // a margem junto ao peito não deve comprimir a câmera no rosto.
+      // A sonda da cabeça continua ativa; no mergulho as duas sondas continuam próprias do modo.
+      const sondas =
+        pesNaAgua && !mergulhando ? [0] : [0, mergulhando ? MERGULHO.sondaAbaixo : ALTURA_DO_PEITO]
       let livre = comprimento
-      for (const abaixo of [0, mergulhando ? MERGULHO.sondaAbaixo : ALTURA_DO_PEITO]) {
+      for (const abaixo of sondas) {
         const de = { x: alvo.current.x, y: alvo.current.y - abaixo, z: alvo.current.z }
         const bateu = world.castShape(
           de,
@@ -694,7 +715,7 @@ export function Camera() {
       alvo.current.z + dz * atual.current,
     )
     // Não entra no chão.
-    const chao = alturaDaIlha(desejada.current.x, desejada.current.z) + 0.6
+    const chao = chaoDoCenario(desejada.current.x, desejada.current.z) + 0.6
     if (desejada.current.y < chao) desejada.current.y = chao
     // Encostando numa parede, vai direto (seguir devagar passaria por dentro dela).
     if (atual.current < antes - 0.01) camera.position.copy(desejada.current)

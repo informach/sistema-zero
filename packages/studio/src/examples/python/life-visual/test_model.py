@@ -57,11 +57,11 @@ class AudioRecorder:
 
 
 def load(game):
-    """Executa main.py sem imports, sem o entrypoint e sem criar tartarugas reais."""
+    """Executa main.py sem imports, sem o que ele faz ao iniciar e sem criar tartarugas reais."""
     tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
     kept = []
     for node in tree.body:
-        if isinstance(node, (ast.Import, ast.If)):
+        if isinstance(node, (ast.Import, ast.If, ast.Expr, ast.For)):
             continue
         if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
                 and isinstance(node.value.func, ast.Attribute)
@@ -179,8 +179,7 @@ class Rules(unittest.TestCase):
 
     def test_restart_and_close_never_add_timers(self):
         screen = self.game["tela"]
-        self.game["agendar"]()
-        self.game["agendar"]()
+        self.game["a_cada_quadro"]()
         self.assertEqual(len(screen.timers), 1)
         self.clock[0] = 1
         screen.timers.pop()()

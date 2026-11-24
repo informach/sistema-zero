@@ -30,6 +30,9 @@ export const STUDIO_MENU_LAYOUT = [
       { id: 'save', labelKey: 'topbar.save' },
       { id: 'sync', labelKey: 'topbar.cloudSync', hintKey: 'topbar.hint.cloudSync' },
       { id: 'extensions', labelKey: 'topbar.extensions' },
+      // Só no Pro que veio de "Virar profissional" e com o host sabendo abrir outro projeto
+      // (proposta aprovada em 21/11/2026).
+      { id: 'blocksVersion', labelKey: 'topbar.blocksVersion' },
       // ⚠️ "Virar profissional" mora AQUI, e não com os três "Baixar": ele não leva o
       // jogo a lugar nenhum — transforma este projeto e APAGA os blocos para sempre.
       // No grupo das saídas, o agrupamento ensinava que os quatro são a mesma coisa.

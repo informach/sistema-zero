@@ -12,6 +12,24 @@ const libraries = Object.fromEntries(
 )
 
 describe('serviço TS isolado por projeto', () => {
+  it('preserva símbolos após os primeiros 300, com suas posições reais', () => {
+    const service = createProLanguageService(libraries)
+    const code = [
+      ...Array.from({ length: 350 }, (_, index) => `export const item${index} = ${index};`),
+      'export function zzUpdate() { return item349; }',
+    ].join('\n')
+    try {
+      service.update({ 'main.ts': code })
+      const symbols = service.symbols('main.ts')
+      expect(symbols.length).toBe(351)
+      const last = symbols.find((symbol) => symbol.name === 'zzUpdate')
+      expect(last).toBeDefined()
+      expect(code.slice(last?.start, (last?.start ?? 0) + (last?.length ?? 0))).toBe('zzUpdate')
+    } finally {
+      service.dispose()
+    }
+  })
+
   it('attributes compiler configuration errors to the actual jsconfig file', () => {
     const service = createProLanguageService(libraries)
     service.update({
@@ -140,5 +158,115 @@ describe('serviço TS isolado por projeto', () => {
     service.update({ ...snapshot, 'tsconfig.json': JSON.stringify({ include: ['src'] }) })
     expect(service.diagnostics('src/main.ts').some((entry) => entry.code === 2307)).toBe(true)
     service.dispose()
+  })
+})
+
+// Lote 6 da missão (seção 7.2, "organização de imports", 21/11/2026).
+describe('organizar as importações', () => {
+  const aplicar = (
+    source: string,
+    edits: { span: { start: number; length: number }; newText: string }[],
+  ) =>
+    [...edits]
+      .sort((a, b) => b.span.start - a.span.start)
+      .reduce(
+        (text, edit) =>
+          text.slice(0, edit.span.start) +
+          edit.newText +
+          text.slice(edit.span.start + edit.span.length),
+        source,
+      )
+
+  it('tira o que não é usado e põe em ordem, só no arquivo pedido', () => {
+    const service = createProLanguageService(libraries)
+    const main = [
+      "import { zeta } from './zeta'",
+      "import { alfa, nuncaUsado } from './alfa'",
+      "import { beta } from './beta'",
+      '',
+      'export const total = alfa + beta + zeta',
+      '',
+    ].join('\n')
+    const outro =
+      "import { beta } from './beta'\nimport { alfa } from './alfa'\nexport const x = alfa + beta\n"
+    try {
+      service.update({
+        'main.ts': main,
+        'outro.ts': outro,
+        'alfa.ts': 'export const alfa = 1\nexport const nuncaUsado = 2\n',
+        'beta.ts': 'export const beta = 2\n',
+        'zeta.ts': 'export const zeta = 3\n',
+      })
+      const resultado = aplicar(main, service.organizeImports('main.ts'))
+      expect(resultado).toBe(
+        [
+          "import { alfa } from './alfa'",
+          "import { beta } from './beta'",
+          "import { zeta } from './zeta'",
+          '',
+          'export const total = alfa + beta + zeta',
+          '',
+        ].join('\n'),
+      )
+      // O outro arquivo também está fora de ordem: pedido à parte, ele se organiza sozinho.
+      expect(aplicar(outro, service.organizeImports('outro.ts'))).toBe(
+        "import { alfa } from './alfa'\nimport { beta } from './beta'\nexport const x = alfa + beta\n",
+      )
+    } finally {
+      service.dispose()
+    }
+  })
+
+  // Achado da medida do lote 6 (21/11/2026): as opções iam incompletas, e opção que falta conta
+  // como desligada no TypeScript. "Arrumar código" tirava os espaços em volta do `=` e dos
+  // operadores (`this.position=this.position.add(...)`).
+  it('"Arrumar código" mantém os espaços do jeito comum e arruma os que sobram', () => {
+    const service = createProLanguageService(libraries)
+    const arrumado = [
+      'export function total(alfa: number, beta: number): number {',
+      '  const soma = alfa + beta * 2',
+      '  if (soma > 10) return soma - 1',
+      '  return soma',
+      '}',
+      '',
+    ].join('\n')
+    try {
+      service.update({ 'main.ts': arrumado })
+      expect(aplicar(arrumado, service.format('main.ts'))).toBe(arrumado)
+      const baguncado = 'export const   x   =   1+2\n'
+      service.update({ 'main.ts': baguncado })
+      expect(aplicar(baguncado, service.format('main.ts'))).toBe('export const x = 1 + 2\n')
+    } finally {
+      service.dispose()
+    }
+  })
+
+  // Revisão do lote 6: fora do programa TypeScript o serviço lançava "Could not find source file".
+  it('num arquivo fora do programa (CSS, HTML, configuração), não há o que organizar', () => {
+    const service = createProLanguageService(libraries)
+    try {
+      service.update({
+        'src/main.ts': "import { a } from './a'\nexport const b = a\n",
+        'src/a.ts': 'export const a = 1\n',
+        'src/style.css': 'body { color: red }\n',
+        'index.html': '<p>oi</p>\n',
+        'tsconfig.json': '{"include":["src"]}',
+      })
+      for (const path of ['src/style.css', 'index.html', 'tsconfig.json'])
+        expect(service.organizeImports(path)).toEqual([])
+    } finally {
+      service.dispose()
+    }
+  })
+
+  it('um arquivo já organizado não muda', () => {
+    const service = createProLanguageService(libraries)
+    const main = "import { alfa } from './alfa'\n\nexport const total = alfa\n"
+    try {
+      service.update({ 'main.ts': main, 'alfa.ts': 'export const alfa = 1\n' })
+      expect(aplicar(main, service.organizeImports('main.ts'))).toBe(main)
+    } finally {
+      service.dispose()
+    }
   })
 })

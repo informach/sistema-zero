@@ -1,15 +1,11 @@
+# 📦 Bibliotecas
 from settings import *
 from os.path import join
 from os import walk
 import pinta
 
-# import functions
-# The art comes from the Pinta drawings in assets/ (module pinta); the original read loose PNG
-# files, folders of frames and Tiled maps. Each importer returns the same dictionaries as before.
 
-drawings = {}
-
-
+# 🧩 Meus moldes
 def import_sprite(name):
     if name not in drawings:
         drawings[name] = pinta.carregar_sprite(name)
@@ -198,3 +194,10 @@ def check_connections(radius, entity, target, tolerance = 30):
            entity.facing_direction == 'up' and relation.y < 0 and abs(relation.x) < tolerance or\
            entity.facing_direction == 'down' and relation.y > 0 and abs(relation.x) < tolerance:
             return True
+
+# import functions
+# The art comes from the Pinta drawings in assets/ (module pinta); the original read loose PNG
+# files, folders of frames and Tiled maps. Each importer returns the same dictionaries as before.
+
+# ⚙️ Ao iniciar
+drawings = {}

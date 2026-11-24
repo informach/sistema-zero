@@ -19,11 +19,13 @@ COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs ./
 COPY runtime/check-click-target.mjs runtime/check-javascript-modules.mjs runtime/check-approach.mjs runtime/check-approach-3d.mjs ./
 COPY runtime/check-models-ready.mjs ./
 COPY runtime/execution-observation.generated.mjs ./
+COPY runtime/click-target.generated.mjs ./
 COPY runtime/python-inspect.mjs ./
 COPY runtime/python-playtest.mjs runtime/python-playtest.generated.mjs ./
 COPY runtime/python-mission.mjs ./
 COPY runtime/python-browser-resources.mjs ./
 COPY runtime/portable-path.generated.mjs ./
+COPY runtime/scene3d-pro.generated.mjs runtime/scene3d-pro-canonical.mjs ./
 
 RUN mkdir -p /workspace/builds \
   && chown -R node:node /workspace \

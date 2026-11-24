@@ -150,6 +150,206 @@ describe('isInitialTemplateProject', () => {
     expect(isInitialTemplateProject(atual, template)).toBe(true)
   })
 
+  // O desenho da vaga de arte é posto pelo HOST a cada abertura (`applyLessonArt`), como a
+  // impressão do conteúdo do core já trata (`isCourseLibraryAsset`). Contá-lo calava o aviso em
+  // toda aula com vaga: o projeto inicial + o desenho nunca era "o projeto inicial".
+  const desenho = (id: string, name: string) => ({
+    id,
+    name,
+    kind: 'image',
+    dataUrl: 'data:image/png;base64,DESENHO-DA-CRIANCA',
+    source: 'lesson-art',
+  })
+  const chaveDoCurso = {
+    id: 'chave',
+    name: 'chave-dourada',
+    kind: 'image',
+    dataUrl: 'data:image/png;base64,CURSO',
+    source: 'library',
+  }
+
+  test('vaga "add": o projeto inicial com o desenho da aula ainda é o projeto inicial', () => {
+    const template = projeto({ 'script.js': 'let x = 1' }, { assets: [chaveDoCurso] })
+    const recomecado = projeto(
+      { 'script.js': 'let x = 1' },
+      { assets: [chaveDoCurso, desenho('lesson-art-minha-chave', 'minha-chave')] },
+    )
+    expect(isInitialTemplateProject(recomecado, template)).toBe(true)
+  })
+
+  test('vaga "replace": a imagem trocada pelo desenho ainda é a do projeto inicial', () => {
+    const template = projeto({ 'script.js': 'let x = 1' }, { assets: [chaveDoCurso] })
+    const recomecado = projeto(
+      { 'script.js': 'let x = 1' },
+      { assets: [desenho('chave', 'chave-dourada')] },
+    )
+    expect(isInitialTemplateProject(recomecado, template)).toBe(true)
+  })
+
+  test('com o desenho da aula, uma imagem a mais da criança continua sendo trabalho', () => {
+    const template = projeto({ 'script.js': 'let x = 1' }, { assets: [chaveDoCurso] })
+    const trabalhado = projeto(
+      { 'script.js': 'let x = 1' },
+      {
+        assets: [
+          chaveDoCurso,
+          desenho('lesson-art-minha-chave', 'minha-chave'),
+          { id: 'gato', name: 'gato', kind: 'image', dataUrl: 'data:,x', source: 'upload' },
+        ],
+      },
+    )
+    expect(isInitialTemplateProject(trabalhado, template)).toBe(false)
+  })
+
+  test('com o desenho da aula, o código mudado continua sendo trabalho', () => {
+    const template = projeto({ 'script.js': 'let x = 1' }, { assets: [chaveDoCurso] })
+    const trabalhado = projeto(
+      { 'script.js': 'let x = 2' },
+      { assets: [chaveDoCurso, desenho('lesson-art-minha-chave', 'minha-chave')] },
+    )
+    expect(isInitialTemplateProject(trabalhado, template)).toBe(false)
+  })
+
+  test('o projeto inicial não pode esconder imagens dizendo que são desenho da aula', () => {
+    // Só o lado da CRIANÇA tira os desenhos: um template com `lesson-art` não é dado de aula.
+    const template = projeto(
+      { 'script.js': 'let x = 1' },
+      { assets: [chaveDoCurso, desenho('lesson-art-minha-chave', 'minha-chave')] },
+    )
+    const semDesenho = projeto({ 'script.js': 'let x = 1' }, { assets: [chaveDoCurso] })
+    expect(isInitialTemplateProject(semDesenho, template)).toBe(false)
+  })
+
+  // O projeto inicial dos manifestos guarda os blocos SEM id, e o código dele usa nomes de evento
+  // escritos à mão. Ao abrir, o Blockly sorteia os ids, e o código regerado leva esses ids: os
+  // arquivos nunca batiam, e o aviso não aparecia em nenhuma aula montada por manifesto.
+  const blocosDoModelo = {
+    blocks: {
+      languageVersion: 0,
+      blocks: [
+        {
+          type: 'sz_frame_events',
+          inputs: {
+            CHILDREN: {
+              block: {
+                type: 'sz_g2d_on_overlap',
+                fields: { A: 'personagem', B: 'chave' },
+                inputs: { DO: { block: { type: 'sz_set_var', fields: { NAME: 'temChave' } } } },
+              },
+            },
+          },
+        },
+      ],
+    },
+  }
+  const blocosAbertos = (opcoes: { x?: number; alvo?: string } = {}) => ({
+    szBehaviorAreasVersion: 7,
+    blocks: {
+      languageVersion: 0,
+      blocks: [
+        {
+          type: 'sz_frame_events',
+          id: 'b]Q-w8)*eX;|',
+          ...(opcoes.x === undefined ? {} : { x: opcoes.x, y: 40 }),
+          inputs: {
+            CHILDREN: {
+              block: {
+                type: 'sz_g2d_on_overlap',
+                id: '+2-)v%WJ)T|*',
+                fields: { A: 'personagem', B: opcoes.alvo ?? 'chave' },
+                inputs: {
+                  DO: {
+                    block: { type: 'sz_set_var', id: 'B;*q;s7X', fields: { NAME: 'temChave' } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  })
+  const modeloComBlocos = () =>
+    projeto(
+      {
+        'index.html': '<canvas></canvas>',
+        'script.js': 'SZGame2D.onOverlap(a, b, () => {}, "eventoDeContato");',
+      },
+      { blocksState: blocosDoModelo },
+    )
+  const abertoComBlocos = (opcoes: { x?: number; alvo?: string; html?: string } = {}) =>
+    projeto(
+      {
+        'index.html': opcoes.html ?? '<canvas></canvas>',
+        'script.js': 'SZGame2D.onOverlap(a, b, () => {}, "+2-)v%WJ)T|*");',
+      },
+      { blocksState: blocosAbertos(opcoes) },
+    )
+
+  test('blocos: os ids que o editor sorteia ao abrir não fazem o projeto inicial virar trabalho', () => {
+    expect(isInitialTemplateProject(abertoComBlocos(), modeloComBlocos())).toBe(true)
+  })
+
+  test('blocos: arrastar um bloco não é trabalho', () => {
+    expect(isInitialTemplateProject(abertoComBlocos({ x: 220 }), modeloComBlocos())).toBe(true)
+  })
+
+  test('blocos: mudar um campo de um bloco é trabalho', () => {
+    expect(isInitialTemplateProject(abertoComBlocos({ alvo: 'farol' }), modeloComBlocos())).toBe(
+      false,
+    )
+  })
+
+  test('blocos: a página mudada é trabalho, mesmo com os mesmos blocos', () => {
+    expect(
+      isInitialTemplateProject(
+        abertoComBlocos({ html: '<canvas id="x"></canvas>' }),
+        modeloComBlocos(),
+      ),
+    ).toBe(false)
+  })
+
+  test('blocos: código ainda sendo lido pela Ponte não passa por projeto inicial', () => {
+    const aberto = { ...abertoComBlocos(), bridgeCodeAhead: true }
+    expect(isInitialTemplateProject(aberto, modeloComBlocos())).toBe(false)
+  })
+
+  test('blocos: o id sorteado dos parâmetros de um método não é trabalho, o nome é', () => {
+    const metodo = (params: Array<Record<string, string>>) => ({
+      blocks: {
+        languageVersion: 0,
+        blocks: [{ type: 'sz_class_method', extraState: { params }, fields: { NAME: 'andar' } }],
+      },
+    })
+    const modelo = projeto(
+      { 'script.js': 'class A { andar(passo) {} }' },
+      { blocksState: metodo([{ name: 'passo' }]) },
+    )
+    const aberto = projeto(
+      { 'script.js': 'class A { andar(passo) {} } // regerado' },
+      { blocksState: metodo([{ name: 'passo', id: 'sorteado-ao-abrir' }]) },
+    )
+    const renomeado = projeto(
+      { 'script.js': 'class A { andar(salto) {} }' },
+      { blocksState: metodo([{ name: 'salto', id: 'sorteado-ao-abrir' }]) },
+    )
+    expect(isInitialTemplateProject(aberto, modelo)).toBe(true)
+    expect(isInitialTemplateProject(renomeado, modelo)).toBe(false)
+  })
+
+  test('blocos com variável do Blockly (referência por id) seguem a régua dos arquivos', () => {
+    const comVariavel = (blocks: object) => ({ ...blocks, variables: [{ name: 'v', id: 'v1' }] })
+    const modelo = projeto(
+      { 'script.js': 'let v = 1 // "eventoDeContato"' },
+      { blocksState: comVariavel(blocosDoModelo) },
+    )
+    const aberto = projeto(
+      { 'script.js': 'let v = 1 // "+2-)v%WJ)T|*"' },
+      { blocksState: comVariavel(blocosAbertos()) },
+    )
+    expect(isInitialTemplateProject(aberto, modelo)).toBe(false)
+  })
+
   test('assets ausentes contam como zero (compat com projeto sem o campo)', () => {
     const template = { files: { 'script.js': 'a' } }
     const atual = { files: { 'script.js': 'a' }, assets: [] }

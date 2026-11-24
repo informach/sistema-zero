@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { GAME_3D_LIFECYCLE } from '#extensions'
 import { installResizeObserverStub } from '../../__tests__/three3d/resizeObserverStub'
 import { gameThreeDRuntime } from '../runtime'
@@ -140,6 +140,9 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
+    },
+    removeEventListener(name: string, fn: Listener) {
+      listeners[name] = (listeners[name] ?? []).filter((listener) => listener !== fn)
     },
     SZGame3D: undefined,
   } as unknown as Record<string, unknown>
@@ -356,6 +359,23 @@ describe('gameThreeDRuntime — teto de objetos (anti-vazamento de GPU)', () => 
     const overflow = api.createBox(world)
     expect(overflow).toBeNull()
     expect(world._objects).toHaveLength(300)
+  })
+
+  it('no teto, avisa uma vez o que aconteceu e o que fazer', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    for (let i = 0; i < 300; i++) api.createBox(world)
+    const aviso = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      api.createBox(world)
+      api.createBox(world)
+      expect(aviso).toHaveBeenCalledTimes(1)
+      const texto = String(aviso.mock.calls[0]?.[0])
+      expect(texto).toContain('300 objetos e os novos não aparecem')
+      expect(texto).toContain('Apague os que saíram da tela')
+    } finally {
+      aviso.mockRestore()
+    }
   })
 
   it('descarta a geometria órfã criada acima do teto (não vaza GPU)', () => {

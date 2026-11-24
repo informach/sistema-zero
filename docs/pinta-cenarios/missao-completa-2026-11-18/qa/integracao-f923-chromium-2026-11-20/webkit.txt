@@ -1,0 +1,20 @@
+
+Running 8 tests using 1 worker
+
+(node:12132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [webkit] › e2e\blockly-media.spec.ts:29:1 › zoom e lixeira usam o desenho em vetor do SDK, servido pelo host (4.7s)
+  ✓  2 [webkit] › e2e\blockly-media.spec.ts:56:1 › a lixeira fica por cima dos blocos e a tampa abre e fecha com o bloco (5.1s)
+  ✓  3 [webkit] › e2e\reload-flush.spec.ts:231:1 › enviar um céu de 1,5 MB e recarregar NA HORA: o arquivo sobrevive (8.6s)
+  ✓  4 [webkit] › e2e\reload-flush.spec.ts:250:1 › trazer os três arquivos do Molda e recarregar NA HORA, com a modal aberta: os três sobrevivem (10.3s)
+  ✓  5 [webkit] › e2e\reload-flush.spec.ts:280:1 › esconder a aba grava NA HORA, sem esperar o autosave (8.7s)
+(node:5436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  6 [webkit] › e2e\preview-shell-performance.spec.ts:23:3 › prévia isolada: resposta durante CPU ocupada › trabalho síncrono longo do jogo não trava o editor
+(node:32900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 [webkit] › e2e\preview-shell.spec.ts:20:3 › prévia dentro da casca em outro site › o jogo roda na casca, fala com o console e volta a rodar depois do Parar (7.6s)
+  ✓  8 [webkit] › e2e\preview-shell.spec.ts:59:3 › prévia dentro da casca em outro site › depois de Rodar, as setas chegam ao jogo sem clicar no palco (7.9s)
+
+  1 skipped
+  7 passed (54.8s)

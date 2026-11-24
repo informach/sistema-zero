@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+tests\db\pinta-causal-http.test.ts:
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P06",
+  message: "schema \"drizzle\" already exists, skipping",
+  file: "schemacmds.c",
+  line: "132",
+  routine: "CreateSchemaCommand",
+}
+{
+  severity_local: "NOTICE",
+  severity: "NOTICE",
+  code: "42P07",
+  message: "relation \"members_migrations\" already exists, skipping",
+  file: "parse_utilcmd.c",
+  line: "207",
+  routine: "transformCreateStmt",
+}
+[INFO] http.listening {"port":54561,"host":"127.0.0.1"}
+[INFO] adult_journey_seed.applied {"version":1,"stages":["Aprendiz (0)","Construtor(a) (0)","Inventor(a) (0)","Explorador(a) de Mundos (0)","Mestre dos Jogos (0)","Arquiteto(a) de Mundos (0)","Gênio da Criação (0)"],"pendingStages":["primeiros-passos-2d","iniciante-2d","iniciante-3d","intermediario-2d","intermediario-3d","avancado-2d","avancado-3d"],"excluded":[]}
+[INFO] app.stopped
+[INFO] http.listening {"port":63711,"host":"127.0.0.1"}
+[INFO] adult_journey_seed.skipped {"reason":"already-configured","detail":"política já configurada, seed ignorado"}
+[INFO] app.stopped
+[INFO] http.listening {"port":63715,"host":"127.0.0.1"}
+[INFO] adult_journey_seed.skipped {"reason":"already-configured","detail":"política já configurada, seed ignorado"}
+[INFO] app.stopped
+82 |       expect(await opaque.json()).toMatchObject({archive:{storageRef:'old/map.gz'}})
+83 |       expect((await post(base,'graph/item',{...pin,reader:6})).status).toBe(409)
+84 |       const ticket = await post(base,'backfill/ticket',{...pin,reader:6})
+85 |       const {binding} = await ticket.json()
+86 |       const backfill = {purpose:'pinta-backfill-content-v1',binding,sha256:'a'.repeat(64),manifest}
+87 |       expect((await post(base,'backfill/attest', backfill)).status).toBe(200)
+                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: 200
+Received: 413
+
+      at <anonymous> (<worktree>\packages\members\tests\db\pinta-causal-http.test.ts:87:69)
+      at async serving (<worktree>\packages\members\tests\db\pinta-causal-http.test.ts:35:15)
+      at async <anonymous> (<worktree>\packages\members\tests\db\pinta-causal-http.test.ts:69:11)
+(fail) Pinta causal through the full Members HTTP server and PostgreSQL > private flags, authenticated reservations, large proof, publication, archive and protected rollback [1485.00ms]
+
+ 0 pass
+ 1 fail
+ 13 expect() calls
+Ran 1 test across 1 file. [10.11s]

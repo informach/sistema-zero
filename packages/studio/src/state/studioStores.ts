@@ -7,12 +7,15 @@ import {
   createPythonEditorConsole,
   type PythonEditorConsole,
 } from '../runtime/python/editorConsole'
+import type { StudioStudentTestsServer } from '../studio/student-tests-server'
 import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
+import { createPreviewSlot, type PreviewDocumentSource } from './previewDocumentFactory'
+import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
 import {
   createLocalPersistenceAdapter,
   createProjectStore,
@@ -20,6 +23,7 @@ import {
   useProjectStore,
 } from './projectStore'
 import { createProRunStore } from './proRun'
+import type { PythonTestHostSource } from './pythonTestHost'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
@@ -49,6 +53,12 @@ export interface StudioStores {
   editorHistory: EditorHistory
   /** O estado de execução do projeto Pro (o Rodar/Parar da barra lê daqui; a prévia publica). */
   proRun: ReturnType<typeof createProRunStore>
+  /** O documento do jogo como a prévia o monta (a aba "Meus testes" pede a ela). */
+  previewDocument: PreviewDocumentSource
+  /** O ambiente e o projeto do Python como a prévia os tem (a aba "Meus testes" pede a ela). */
+  pythonTestHost: PythonTestHostSource
+  /** O executor dos testes do Pro no servidor (a aba "Meus testes" no Pro); `null` sem ele. */
+  studentTestsServer: StudioStudentTestsServer | null
   persistence: PersistenceService
   workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
@@ -61,6 +71,8 @@ export interface CreateStudioStoresOptions {
   limits?: StudioLimits
   /** Cotas do compilador Pro remoto, quando o host usa um runtime remoto. */
   proBuildLimits?: StudioProBuildLimits
+  /** O executor dos testes do Pro no servidor, quando o host o entrega (estático por instância). */
+  studentTestsServer?: StudioStudentTestsServer
   /** Locale estático usado também por mensagens produzidas fora do React. */
   locale?: Locale
 }
@@ -88,6 +100,9 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     pythonConsole: createPythonEditorConsole(),
     editorHistory: createEditorHistory(),
     proRun: createProRunStore(),
+    previewDocument: createPreviewSlot(),
+    pythonTestHost: createPreviewSlot(),
+    studentTestsServer: options.studentTestsServer ?? null,
     workspacePreferences:
       options.workspacePreferences ??
       ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),
@@ -99,17 +114,52 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
 
 // Fallback fora de um <Studio> (lista de projetos/testes): serviço sobre a
 // store default + IndexedDB, espelhando o comportamento do app standalone.
-let defaultPersistenceService: PersistenceService | null = null
+// Returning to the same namespace creates a new lifetime/signal, so the string alone is not a key.
+/** Id do projeto que ficou na store default depois de uma troca de perfil. */
+let carriedOverProjectId: string | null = null
+let defaultPersistence: { scope: ProjectStorageScope; service: PersistenceService } | null = null
 
 /** Serviço de persistência da instância atual (Salvar explícito, flush). */
 export function useStudioPersistence(): PersistenceService {
   const stores = useContext(StudioStoresContext)
   if (stores) return stores.persistence
-  defaultPersistenceService ??= createPersistenceService(
-    useProjectStore,
-    createLocalPersistenceAdapter(),
-  )
-  return defaultPersistenceService
+  const scope = captureProjectStorageScope()
+  if (defaultPersistence?.scope !== scope) {
+    const local = createLocalPersistenceAdapter()
+    const service = createPersistenceService(useProjectStore, {
+      ...local,
+      // Projeto que veio do perfil anterior e continua na store default (ver abaixo): não é
+      // deste banco e não é gravado nele.
+      save: async (snapshot) => {
+        if (carriedOverProjectId === snapshot.id) return
+        await local.save(snapshot)
+      },
+    })
+    defaultPersistence = { scope, service }
+    // A troca de perfil aborta este sinal NA HORA, antes de qualquer rerender. É o único ponto em
+    // que o projeto ainda é com certeza do perfil antigo: o que falta gravar vai para o banco DELE.
+    // O projeto continua na store (a tela aberta ainda o mostra), marcado como "veio de outro
+    // perfil" até a store receber outro projeto; enquanto isso o serviço do perfil novo não o grava.
+    scope.signal?.addEventListener(
+      'abort',
+      () => {
+        const state = useProjectStore.getState()
+        if (!state.project) return
+        if (state.isDirty) void service.save().catch(() => {})
+        const carried = state.project
+        carriedOverProjectId = carried.id
+        // Vale enquanto a store guarda o MESMO objeto: qualquer troca (abrir, hidratar, editar)
+        // já é um ato feito no perfil novo.
+        const stop = useProjectStore.subscribe((next) => {
+          if (next.project === carried) return
+          if (carriedOverProjectId === carried.id) carriedOverProjectId = null
+          stop()
+        })
+      },
+      { once: true },
+    )
+  }
+  return defaultPersistence.service
 }
 
 /** Buffers de edição que devem ser materializados antes de expor um snapshot. */
@@ -131,4 +181,20 @@ export function usePythonEditorConsole(): PythonEditorConsole | null {
  */
 export function useEditorHistory(): EditorHistory | null {
   return useContext(StudioStoresContext)?.editorHistory ?? null
+}
+
+/**
+ * A fábrica do documento do jogo desta instância (a prévia registra; a aba "Meus testes" pede).
+ * `null` fora de um <Studio>.
+ */
+export function usePreviewDocumentSource(): PreviewDocumentSource | null {
+  return useContext(StudioStoresContext)?.previewDocument ?? null
+}
+
+/**
+ * O anfitrião dos testes no Python desta instância (a prévia Python registra; a aba "Meus testes"
+ * pede). `null` fora de um <Studio>.
+ */
+export function usePythonTestHostSource(): PythonTestHostSource | null {
+  return useContext(StudioStoresContext)?.pythonTestHost ?? null
 }
