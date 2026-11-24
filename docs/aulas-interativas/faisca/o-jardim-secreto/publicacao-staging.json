@@ -31,5 +31,6 @@
   "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 5 da Aula 1, sem a marca de caderno do Zappy",
   "pendente": ["vídeos finais no lugar dos provisórios"],
   "observacao": "A comparação da publicação de cursos (course-sync.ts, authoringComparable) trata zappyStudentNotebook: false no rascunho como diferente do campo ausente na versão publicada; o anexo foi gravado sem o campo para a cópia não acusar edição pendente.",
-  "vozesDoZappy": "24/11/2026: as 10 pontes das duas aulas com voz (5 por aula), geradas pelo prepare do sincronizador (sem alterar curso nenhum) e publicadas; os 10 áudios conferidos (200, audio/mpeg)"
+  "vozesDoZappy": "24/11/2026: as 10 pontes das duas aulas com voz (5 por aula), geradas pelo prepare do sincronizador (sem alterar curso nenhum) e publicadas; os 10 áudios conferidos (200, audio/mpeg)",
+  "blocosLiberados": "24/11/2026: studioUnlockBlocks do curso Kids de staging com 41 blocos, a união do 2D e do 3D do blocos.json; estava vazio"
 }
