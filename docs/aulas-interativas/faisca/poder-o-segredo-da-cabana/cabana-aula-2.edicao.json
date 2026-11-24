@@ -16,8 +16,8 @@
       "ocorrencia": 1,
       "ancoraAntes": "seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede.",
       "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana",
-      "falaPrincipal": "Será que a chave está atrás da pedra de novo?",
-      "falaPersonagem": "Será que a chave está atrás da pedra de novo?",
+      "falaPrincipal": "E onde será que estão a chave e o emblema na ilha?",
+      "falaPersonagem": "E onde será que estão a chave e o emblema na ilha?",
       "tags": ["[curious]"]
     },
     {

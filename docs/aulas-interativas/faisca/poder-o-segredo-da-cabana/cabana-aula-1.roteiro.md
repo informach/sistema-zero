@@ -351,7 +351,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [pleased, lively voice] Pronto, você programou a pergunta da cabana: agora ela só abre com a chave e o emblema!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na cabana. Quando aparecer Projeto enviado!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**

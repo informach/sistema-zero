@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A cabana chegou à ilha\n\nMaster integral da professora. Roteiro: cabana-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que a chave está atrás da pedra de novo?\",\"falaPersonagem\":\"Será que a chave está atrás da pedra de novo?\",\"ancoraAntes\":\"seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: A cabana chegou à ilha\n\nMaster integral da professora. Roteiro: cabana-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"E onde será que estão a chave e o emblema na ilha?\",\"falaPersonagem\":\"E onde será que estão a chave e o emblema na ilha?\",\"ancoraAntes\":\"seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",

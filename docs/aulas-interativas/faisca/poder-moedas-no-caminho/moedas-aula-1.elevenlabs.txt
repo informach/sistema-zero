@@ -26,7 +26,7 @@
 
 [engaging, energetic, conversational voice] Para saber quantas moedas o personagem já pegou, o jogo precisa contar.
 
-[confident, clear, unhurried voice] Ele guarda essa conta numa variável: um número que o jogo guarda e que pode mudar durante a partida.
+[confident, clear, unhurried voice] Ele anota essa conta numa variável: um número que o jogo guarda e que pode mudar durante a partida.
 
 [engaging, energetic, conversational voice] Sabe quando você guarda moedas num cofrinho? Cada moeda que cai lá dentro faz o total crescer um pouco.
 
@@ -310,4 +310,4 @@
 
 [pleased, lively voice] Pronto, você programou as moedas do caminho: cada moeda conta uma vez só, o número aparece na tela e o baú decide pela quantidade!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar nas moedas. Quando aparecer Projeto enviado!, clique em Próxima parte.

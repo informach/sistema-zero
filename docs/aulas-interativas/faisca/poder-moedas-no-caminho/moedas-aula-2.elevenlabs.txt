@@ -68,7 +68,7 @@
 
 [engaging, energetic, conversational voice] É este bloco que tira a moeda da ilha. Fora da ilha, ela não conta de novo.
 
-[confident, clear, unhurried voice] Repare: ele chega com objeto. Clique em objeto e escolha moeda. A cena já vem cena; deixe assim.
+[confident, clear, unhurried voice] Repare: ele chega com objeto. Clique em objeto e escolha moeda. O último campo já vem com cena; deixe assim.
 
 [engaging, energetic, conversational voice] Agora a moeda soma um no cofrinho. Esse bloco vai logo abaixo de Remover moeda da cena, ainda dentro do encontro. Deixe esse lugar à vista.
 
@@ -200,9 +200,9 @@
 
 [engaging, energetic, conversational voice] É este bloco que toca uma animação de um modelo.
 
-[confident, clear, unhurried voice] Repare: ele chega com Andar. Clique em Andar e escolha abrir.
+[confident, clear, unhurried voice] Repare: ele chega com Andar, heroi e repetindo. Primeiro diga quem vai tocar a animação: clique em heroi e escolha bau, o modelo do baú.
 
-[confident, clear, unhurried voice] Depois clique em heroi e escolha bau, o modelo do baú.
+[confident, clear, unhurried voice] Depois clique em Andar e escolha abrir.
 
 [confident, clear, unhurried voice] Por último, clique em repetindo e escolha uma vez, para o baú abrir uma vez só.
 
@@ -258,4 +258,4 @@
 
 [pleased, lively voice] Pronto, você levou as moedas para a ilha: cada moeda conta uma vez só, o número aparece na tela e o baú abre com pelo menos cinco!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar nas moedas da ilha. Quando aparecer Projeto enviado!, clique em Próxima parte.

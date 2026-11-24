@@ -69,7 +69,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Para saber quantas moedas o personagem já pegou, o jogo precisa contar.
 
-[confident, clear, unhurried voice] Ele guarda essa conta numa variável: um número que o jogo guarda e que pode mudar durante a partida.
+[confident, clear, unhurried voice] Ele anota essa conta numa variável: um número que o jogo guarda e que pode mudar durante a partida.
 
 [engaging, energetic, conversational voice] Sabe quando você guarda moedas num cofrinho? Cada moeda que cai lá dentro faz o total crescer um pouco.
 
@@ -102,7 +102,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-contador`
 
-**Na tela:** A parte começa com o Estúdio expandido e o projeto do começo da aula [expandir estúdio]. Não há teste no jogo nesta parte: o número moedas ainda não aparece na tela. No "Por isso, ele nasce na área Ao iniciar", apontar a área [apontar bloco "Ao iniciar"]. No "Encontre o fim da área Ao iniciar", trazer à vista o fim da área [arrastar até "Criar sprite iconeMoeda"]. No "logo abaixo do bloco que cria o ícone da moeda", apontar o lugar logo abaixo [apontar abaixo de "Criar sprite iconeMoeda"]. No "Abra Programação", abrir **Programação** [abrir categoria Programação]. No "e depois Variáveis", abrir **Variáveis** [abrir categoria Programação > Variáveis]. No "Arraste e solte logo abaixo do bloco", encaixar **Criar variável** [encaixar "Criar variável" abaixo de "Criar sprite iconeMoeda"]. No "É este bloco que cria o cofrinho", apontar o bloco novo [apontar bloco "Criar variável contador"]. No "Clique em contador", clicar no nome [abrir campo "contador" em "Criar variável contador"]. No "e escreva moedas", escrever moedas e clicar fora do bloco [escolher "moedas" em "Criar variável moedas"]. No "O valor já vem 0", apontar o bloco pronto [apontar bloco "Criar variável moedas"]. No "Por que o cofrinho começa em zero", manter o bloco à vista. No "Confira se ficou assim", trazer o bloco para perto do meio [arrastar até "Criar variável moedas"]. No "está Criar variável moedas", apontar o bloco [apontar bloco "Criar variável moedas"]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Nenhum mostrador de variável inventado: o resultado aparece pelos objetivos.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto do começo da aula [expandir estúdio]. Não há teste no jogo nesta parte: o número moedas ainda não aparece na tela. No "Por isso, ele nasce na área Ao iniciar", apontar a área [apontar bloco "Ao iniciar"]. No "Encontre o fim da área Ao iniciar", trazer à vista o fim da área [arrastar até "Criar sprite iconeMoeda"]. No "logo abaixo do bloco que cria o ícone da moeda", apontar o lugar logo abaixo [apontar abaixo de "Criar sprite iconeMoeda"]. No "Abra Programação", abrir **Programação** [abrir categoria Programação]. No "e depois Variáveis", abrir **Variáveis** [abrir categoria Programação > Variáveis]. No "Arraste e solte logo abaixo do bloco", encaixar **Criar variável** [encaixar "Criar variável" abaixo de "Criar sprite iconeMoeda"]. No "É este bloco que cria o cofrinho", apontar o bloco novo [apontar bloco "Criar variável contador"]. No "Clique em contador", clicar no nome [abrir campo "contador" em "Criar variável contador"]. No "e escreva moedas", escrever moedas e clicar fora do bloco [escolher "moedas" em "Criar variável moedas"]. No "O valor já vem 0", apontar o bloco pronto [apontar bloco "Criar variável moedas"]. No "Por que o cofrinho começa em zero", manter o bloco à vista. No "Confira se ficou assim", trazer o bloco para perto do meio [arrastar até "Criar variável moedas"]. No "está Criar variável moedas", apontar o bloco [apontar bloco "Criar variável moedas"]. No "Agora clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Nenhum mostrador de variável inventado: o resultado aparece pelos objetivos.
 
 **Fala para ElevenLabs:**
 
@@ -411,7 +411,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [pleased, lively voice] Pronto, você programou as moedas do caminho: cada moeda conta uma vez só, o número aparece na tela e o baú decide pela quantidade!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar nas moedas. Quando aparecer Projeto enviado!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**

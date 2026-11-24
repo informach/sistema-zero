@@ -8,7 +8,7 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 **Clipe:** `video-abertura`
 
-**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título O segredo da cabana sobre a cena inicial do jogo pronto [na edição: título O segredo da cabana]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: quando eu seguro a seta da esquerda", segurar a seta da esquerda do teclado até o personagem encostar na cabana, sem pegar nenhuma peça [segurar tecla ArrowLeft por 0,5 s]. No "Repare no aviso aqui em cima", apontar o aviso, que agora diz o que a cabana pede [apontar jogo 480 24]. No "Será que a chave está atrás da pedra", manter a cena parada, sem procurar as peças. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não pegar as peças nem abrir a cabana: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
+**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título O segredo da cabana sobre a cena inicial do jogo pronto [na edição: título O segredo da cabana]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: quando eu seguro a seta da esquerda", segurar a seta da esquerda do teclado até o personagem encostar na cabana, sem pegar nenhuma peça [segurar tecla ArrowLeft por 0,5 s]. No "Repare no aviso aqui em cima", apontar o aviso, que agora diz o que a cabana pede [apontar jogo 480 24]. No "E onde será que estão a chave e o emblema", manter a cena parada, sem procurar as peças. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não pegar as peças nem abrir a cabana: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
 
 **Fala para ElevenLabs:**
 
@@ -23,7 +23,7 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [interested, animated voice] Repare no aviso aqui em cima: ele diz o que a cabana pede.
 
-[curious] Será que a chave está atrás da pedra de novo?
+[curious] E onde será que estão a chave e o emblema na ilha?
 
 [engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
 
@@ -36,7 +36,7 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-abertura-K1 | Dedé | 1 | seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede. | Será que a chave está atrás da pedra de novo? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana | [curious] |
+| video-abertura-K1 | Dedé | 1 | seguro a seta da esquerda, o personagem anda até a cabana. Repare no aviso aqui em cima: ele diz o que a cabana pede. | E onde será que estão a chave e o emblema na ilha? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: jogue até a cabana | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -289,7 +289,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [pleased, lively voice] Pronto, você levou a pergunta da cabana para a ilha: em três dimensões, ela também só abre com a chave e o emblema!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na cabana da ilha. Quando aparecer Projeto enviado!, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**

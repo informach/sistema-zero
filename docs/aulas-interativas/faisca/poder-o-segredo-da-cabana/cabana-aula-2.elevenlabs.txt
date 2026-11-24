@@ -8,7 +8,7 @@
 
 [interested, animated voice] Repare no aviso aqui em cima: ele diz o que a cabana pede.
 
-[curious] Será que a chave está atrás da pedra de novo?
+[curious] E onde será que estão a chave e o emblema na ilha?
 
 [engaging, energetic, conversational voice] Isso eu deixo para você descobrir.
 
@@ -238,4 +238,4 @@
 
 [pleased, lively voice] Pronto, você levou a pergunta da cabana para a ilha: em três dimensões, ela também só abre com a chave e o emblema!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na cabana da ilha. Quando aparecer Projeto enviado!, clique em Próxima parte.
