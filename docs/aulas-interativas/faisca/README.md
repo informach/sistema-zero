@@ -18,6 +18,8 @@ Depois dos dois cursos da trilha, missão, Poderes e extras abrem juntos. Promo�
 
 **Revisão de 23/11/2026:** a missão, o extra do Pinta e os quatro Poderes seguem o padrão do Cadê, da Chave do Farol e da Ilha (falas, estrutura com o envio na última construção, Na tela com os verbos do palco, recados, Debinha e Dedé). O gerador comum dos Poderes e do Jardim é `qa/poder-gerador.ts`; as peças comuns dos roteiros estão em `qa/faisca-comum.ts`; o teste `qa/faisca-padrao.test.ts` confere todos.
 
+**Partes longas divididas (24/11/2026):** antes da gravação dos Poderes, as partes com mais de 900 palavras de fala viraram duas (a pergunta com o então; o senão, os avisos e o envio). Nenhuma parte dos quatro Poderes passa de 870 palavras. Detalhes em cada README.
+
 **Blocos (regra da dona, 29/10/2026):** antes de pedir um bloco novo, conferir o catálogo INTEIRO
 da extensão (todos os `blockCatalog*.ts`, a paleta e os degraus em `blockly/blockLevels.ts`). Se o
 bloco existe num degrau acima, a proposta é descê-lo para o iniciante; bloco novo só quando ele
