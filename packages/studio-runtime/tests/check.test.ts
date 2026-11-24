@@ -1,5 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
 import { memoryArtifactBucket } from './artifact-bucket'
+import { checkPoolNamespace } from './check-pool-sqlite'
 
 mock.module('@cloudflare/sandbox', () => ({
   getSandbox: () => {
@@ -12,7 +13,7 @@ const { createStudioRuntimeHandler } = await import('../src/index')
 const { parseCheckRequest, proCheckEntry, proCheckModules, withCheckEntry, CHECK_ENTRY_PATH } =
   await import('../src/check')
 type Env = import('../src/index').Env
-type SandboxFactory = Parameters<typeof createStudioRuntimeHandler>[0]
+type SandboxFactory = NonNullable<Parameters<typeof createStudioRuntimeHandler>[0]>
 
 const TOKEN = 'runtime-test-token-with-32-characters'
 const SCOPE = '__sz0123456789abcdef01234567'
@@ -71,6 +72,7 @@ function setup(
     threeDConfigured?: boolean
     cleanupFails?: boolean
     warmFails?: boolean
+    sandboxFactory?: NonNullable<SandboxFactory>
   } = {},
 ) {
   const written = new Map<string, string>()
@@ -124,6 +126,8 @@ function setup(
     return sandbox
   }) as unknown as SandboxFactory
   const env = {
+    CheckSandboxPools: checkPoolNamespace(),
+    STUDIO_CHECK_WARMING_ENABLED: '1',
     ProBuildSandbox: {} as Env['ProBuildSandbox'],
     ...(options.threeDConfigured === false
       ? {}
@@ -137,7 +141,7 @@ function setup(
     INTERNAL_TOKEN: TOKEN,
     PRO_ARTIFACTS: memoryArtifactBucket().bucket,
   } satisfies Env
-  const handler = createStudioRuntimeHandler(factory)
+  const handler = createStudioRuntimeHandler(options.sandboxFactory ?? factory)
   const call = async (body: unknown, token = TOKEN, path = '/v1/check') => {
     type WorkerRequest = Parameters<NonNullable<typeof handler.fetch>>[0]
     return handler.fetch!(
@@ -152,6 +156,7 @@ function setup(
   }
   const warm = (body: unknown, token = TOKEN) => call(body, token, '/v1/check/warm')
   return {
+    factory,
     call,
     warm,
     written,
@@ -166,6 +171,124 @@ function setup(
 }
 
 describe('POST /v1/check', () => {
+  test('the interruption switch preserves a successful exclusive check and skips warming', async () => {
+    const context = setup({
+      observations: [
+        {
+          id: 'anda',
+          type: 'behavior',
+          initial: { found: true, value: 0 },
+          final: { found: true, value: 1 },
+        },
+      ],
+    })
+    context.env.STUDIO_CHECK_WARMING_ENABLED = '0'
+    const response = await context.call(classicBody)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      results: [{ id: 'anda', passed: true }],
+    })
+    expect(context.destroyed()).toBe(1)
+    expect(
+      await (await context.warm({ executionId: classicBody.executionId, threeD: false })).json(),
+    ).toMatchObject({ ok: true, skipped: true, disabled: true })
+    expect(context.env.CheckSandboxPools.allocations).toHaveLength(0)
+  })
+  test.each([
+    'execution',
+    'cleanup',
+  ])('R12: a %s failure cannot kill another tab of the same profile', async (failure) => {
+    const reserved = Promise.withResolvers<void>()
+    const validStarted = Promise.withResolvers<void>()
+    const failedFinished = Promise.withResolvers<void>()
+    const ports = new Map<string, ReturnType<NonNullable<SandboxFactory>>>()
+    const files = new Map<string, string>()
+    const factory = new Proxy(setup().factory, {
+      apply(_targetFactory, receiver, args) {
+        const [namespace, id, options] = args
+        const existing = ports.get(id)
+        if (existing) return existing
+        const context = setup({
+          observations: [
+            {
+              id: 'anda',
+              type: 'behavior',
+              initial: { found: true, value: 0 },
+              final: { found: true, value: 1 },
+            },
+          ],
+        })
+        const target = Reflect.apply(context.factory, receiver, [namespace, id, options])
+        let destroyed = false
+        const port = new Proxy(target, {
+          get(target, property, receiver) {
+            if (property === 'writeFile')
+              return async (path: string, content: string) => {
+                files.set(path, content)
+                return target.writeFile(path, content)
+              }
+            if (property === 'destroy')
+              return async () => {
+                destroyed = true
+                await target.destroy()
+                failedFinished.resolve()
+              }
+            if (property === 'exec')
+              return async (command: string, opts: { cwd?: string; timeout?: number }) => {
+                if (command.includes('check-objectives.mjs')) {
+                  const bad = files.get(`${opts.cwd}/game.html`)?.includes('bad-operation')
+                  if (bad) {
+                    await validStarted.promise
+                    if (failure === 'execution')
+                      return { success: false, stdout: '', stderr: 'expected failure' }
+                  } else {
+                    validStarted.resolve()
+                    await failedFinished.promise
+                    if (destroyed) throw new Error('Another tab destroyed the active container')
+                  }
+                }
+                if (
+                  failure === 'cleanup' &&
+                  command.startsWith('rm -rf') &&
+                  [...files.entries()].some(
+                    ([path, body]) =>
+                      body.includes('bad-operation') &&
+                      command.includes(path.replace('/game.html', '')),
+                  )
+                )
+                  return { success: false, stdout: '', stderr: 'expected cleanup failure' }
+                return target.exec(command, opts)
+              }
+            return Reflect.get(target, property, receiver)
+          },
+        })
+        ports.set(id, port)
+        reserved.resolve()
+        return port
+      },
+    })
+    const context = setup({ sandboxFactory: factory })
+    const bad = context.call({ ...classicBody, document: '<!doctype html><p>bad-operation</p>' })
+    await reserved.promise
+    const valid = context.call({
+      ...classicBody,
+      document: '<!doctype html><p>valid-operation</p>',
+    })
+    const [badResponse, validResponse] = await Promise.all([bad, valid])
+    expect(badResponse.status).toBe(failure === 'execution' ? 500 : 200)
+    expect(validResponse.status).toBe(200)
+    expect(await validResponse.json()).toMatchObject({
+      ok: true,
+      results: [{ id: 'anda', passed: true }],
+    })
+    expect(
+      context.env.CheckSandboxPools.allocations.map(
+        (lease) => lease.kind === 'lease' && lease.pooled,
+      ),
+    ).toEqual([true, false])
+  })
+
   test('o Pro convertido verifica uma cópia publicada do motor 2D antes de aplicar o teto do autor', async () => {
     const {
       currentProEngineCopies,
@@ -343,8 +466,9 @@ describe('POST /v1/check', () => {
       screenshots: true,
     })
     expect(context.commands.some((command) => command.includes('vite'))).toBe(false)
-    // O contêiner é o de quem pediu, e fica: só a pasta do teste sai.
-    expect(context.identities).toEqual(['objetivos-check-1234567890abcdef'])
+    // A clean, exclusively reserved generation stays reusable; only its request directory leaves.
+    expect(context.identities).toHaveLength(1)
+    expect(context.identities[0]).toMatch(/^check-[a-f0-9]{32}$/)
     expect(context.commands.at(-1)).toMatch(/^rm -rf -- '\/workspace\/builds\/[a-f0-9]{32}'$/)
     expect(context.destroyed()).toBe(0)
   })
@@ -461,11 +585,9 @@ describe('POST /v1/check', () => {
       'check-fedcba0987654321',
     ])
       expect((await context.call({ ...classicBody, executionId })).status).toBe(200)
-    expect(context.identities).toEqual([
-      'objetivos-check-1234567890abcdef',
-      'objetivos-check-1234567890abcdef',
-      'objetivos-check-fedcba0987654321',
-    ])
+    expect(context.identities).toHaveLength(3)
+    expect(context.identities[0]).toBe(context.identities[1])
+    expect(context.identities[2]).not.toBe(context.identities[0])
     // O contêiner dorme sozinho depois de parado; nunca fica ligado para sempre.
     expect(context.sandboxOptions[0]).toEqual({
       enableDefaultSession: false,
@@ -505,16 +627,34 @@ describe('POST /v1/check', () => {
 
 describe('POST /v1/check/warm', () => {
   test('liga o mesmo contêiner da verificação e abre o Chromium', async () => {
-    const context = setup()
+    const context = setup({
+      observations: [
+        {
+          id: 'anda',
+          type: 'behavior',
+          initial: { found: true, value: 0 },
+          final: { found: true, value: 1 },
+        },
+      ],
+    })
     const response = await context.warm({ executionId: classicBody.executionId, threeD: false })
     expect(response.status).toBe(200)
     expect(await response.json()).toMatchObject({ ok: true })
-    expect(context.identities).toEqual(['objetivos-check-1234567890abcdef'])
+    expect(context.identities).toHaveLength(1)
+    expect(context.identities[0]).toMatch(/^check-[a-f0-9]{32}$/)
     expect(context.namespaces).toEqual([context.env.ProBuildSandbox])
     expect(context.sandboxOptions[0]).toMatchObject({ sleepAfter: '5m' })
     expect(context.commands).toEqual(['node /opt/sz-runtime/check-warm.mjs'])
     expect(context.rateKeys).toEqual(['warm-check-1234567890abcdef'])
     expect(context.destroyed()).toBe(0)
+    const checked = await context.call(classicBody)
+    expect(checked.status).toBe(200)
+    expect(await checked.json()).toMatchObject({
+      ok: true,
+      results: [{ id: 'anda', passed: true }],
+    })
+    expect(context.identities).toHaveLength(2)
+    expect(context.identities[1]).toBe(context.identities[0])
   })
 
   test('o 3D aquece o contêiner maior', async () => {

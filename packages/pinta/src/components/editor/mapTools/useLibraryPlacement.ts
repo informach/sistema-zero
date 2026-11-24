@@ -21,6 +21,8 @@ type Gesture = {
   pointerId: number
   x: number
   y: number
+  lastPointer: { x: number; y: number }
+  preview: Preview | null
   moved: boolean
   map: TilemapAsset
   layerId: string
@@ -141,7 +143,9 @@ export function useLibraryPlacement(deps: {
       current.moved = true
       suppressClick.current = true
       event.preventDefault()
-      setPreview(at(event, current))
+      current.lastPointer = { x: event.clientX, y: event.clientY }
+      current.preview = at(event, current)
+      setPreview(current.preview)
       setMessage(COPY.scene.libraryDropHint)
     }
     function up(event: globalThis.PointerEvent): void {
@@ -151,7 +155,15 @@ export function useLibraryPlacement(deps: {
       setPreview(null)
       if (!current.moved) return
       event.preventDefault()
-      const placed = at(event, current)
+      const final = at(event, current)
+      // Um reflow sem nova entrada não muda a posição que a criança viu.
+      const placed =
+        final &&
+        current.preview &&
+        current.lastPointer.x === event.clientX &&
+        current.lastPointer.y === event.clientY
+          ? current.preview
+          : final
       if (placed) commit(current.source, placed, true)
       else setMessage(COPY.scene.libraryCancelled)
     }
@@ -214,6 +226,8 @@ export function useLibraryPlacement(deps: {
         pointerId: event.pointerId,
         x: event.clientX,
         y: event.clientY,
+        lastPointer: { x: event.clientX, y: event.clientY },
+        preview: null,
         moved: false,
         map: d.map,
         layerId: d.layerId,

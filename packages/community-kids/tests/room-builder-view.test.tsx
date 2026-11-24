@@ -54,4 +54,22 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
     expect(panel.contains(save)).toBe(false)
     expect(save.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
+  test('os roláveis internos contêm os sr-only (a página não rola por causa deles)', () => {
+    // 24/11/2026: sem `relative` no rolável, os `sr-only` (absolute) dos cartões se
+    // posicionavam pela seção de fora, escapavam do recorte e esticavam a página. O happy-dom
+    // não mede layout: a classe é o guarda (o mecanismo foi medido no Chromium).
+    render(
+      <RoomBuilderView
+        {...viewProps()}
+        tray={<span className="sr-only">moedas da bandeja</span>}
+        pieces={<span className="sr-only">peça colocada</span>}
+      />,
+    )
+    for (const text of ['moedas da bandeja', 'peça colocada']) {
+      let el = screen.getByText(text).parentElement
+      while (el && !/overflow-y-auto/.test(el.className)) el = el.parentElement
+      expect(el).not.toBeNull()
+      expect((el as HTMLElement).classList.contains('relative')).toBe(true)
+    }
+  })
 })

@@ -45,10 +45,11 @@ import {
   CHECK_SANDBOX_OPTIONS,
   CHECK_WARM_COMMAND,
   CHECK_WARM_TIMEOUT_MS,
-  checkSandboxId,
   finishCheckSandbox,
   readCheckWarmRequest,
+  reserveCheckSandbox,
 } from './check-container'
+import { type CheckSandboxPools, freshCheckSandboxLease } from './check-sandbox-pool-store'
 import { serveClassicShell } from './classic-shell'
 import {
   hasStudioProScene3DFiles,
@@ -118,6 +119,9 @@ export interface PythonInspectionJobNamespace {
 }
 
 export interface Env {
+  CheckSandboxPools?: CheckSandboxPools
+  /** Turning this off restores exclusive per-request execution without reverting a DO migration. */
+  STUDIO_CHECK_WARMING_ENABLED?: string
   ProBuildSandbox: DurableObjectNamespace<ProBuildSandbox>
   ThreeDCheckSandbox?: DurableObjectNamespace<ThreeDCheckSandbox>
   BUILD_RATE_LIMITER: RateLimitBinding
@@ -962,11 +966,12 @@ async function runProjectCheck(
   const threeD = executionNeeds3dNavigation(input.objectives)
   const namespace = threeD ? env.ThreeDCheckSandbox : env.ProBuildSandbox
   if (!namespace) return checkFailed()
-  const sandbox = sandboxFactory(
-    namespace,
-    checkSandboxId(input.executionId),
-    CHECK_SANDBOX_OPTIONS,
-  )
+  const reservation =
+    env.STUDIO_CHECK_WARMING_ENABLED === '1'
+      ? await reserveCheckSandbox(env.CheckSandboxPools, input.executionId, threeD, 'check')
+      : { lease: freshCheckSandboxLease(false) }
+  if (!reservation) return checkFailed()
+  const sandbox = sandboxFactory(namespace, reservation.lease.sandboxId, CHECK_SANDBOX_OPTIONS)
   const cwd = `${BUILD_ROOT}/${buildId}`
   // Só o teste que terminou com resposta deixa o contêiner para o próximo.
   let reusable = false
@@ -1113,7 +1118,7 @@ async function runProjectCheck(
       ...(Object.keys(screenshots).length ? { screenshots } : {}),
     })
   } finally {
-    await finishCheckSandbox(sandbox, cwd, reusable)
+    await finishCheckSandbox(sandbox, cwd, reusable, reservation)
   }
 }
 
@@ -1134,6 +1139,11 @@ async function warmProjectCheck(
   )
   if (!input)
     return checkJson({ ok: false, code: 'INVALID_REQUEST', message: 'Pedido inválido.' }, 400)
+  if (env.STUDIO_CHECK_WARMING_ENABLED !== '1')
+    return Response.json(
+      { ok: true, skipped: true, disabled: true },
+      { headers: { 'Cache-Control': 'no-store' } },
+    )
   if (!(await env.BUILD_RATE_LIMITER.limit({ key: `warm-${input.executionId}` })).success)
     return checkJson(
       { ok: false, code: 'RATE_LIMITED', message: 'Muitos pedidos em pouco tempo.' },
@@ -1141,21 +1151,31 @@ async function warmProjectCheck(
     )
   const namespace = input.threeD ? env.ThreeDCheckSandbox : env.ProBuildSandbox
   if (!namespace) return checkFailed()
-  const sandbox = sandboxFactory(
-    namespace,
-    checkSandboxId(input.executionId),
-    CHECK_SANDBOX_OPTIONS,
+  const reservation = await reserveCheckSandbox(
+    env.CheckSandboxPools,
+    input.executionId,
+    input.threeD,
+    'warm',
   )
+  if (!reservation)
+    return Response.json(
+      { ok: true, skipped: true, ms: Date.now() - started },
+      { headers: { 'Cache-Control': 'no-store' } },
+    )
+  const sandbox = sandboxFactory(namespace, reservation.lease.sandboxId, CHECK_SANDBOX_OPTIONS)
+  let reusable = false
   try {
     const warmed = await sandbox.exec(CHECK_WARM_COMMAND, { timeout: CHECK_WARM_TIMEOUT_MS })
     if (!warmed.success) throw new Error('o Chromium não abriu')
+    reusable = true
     const ms = Date.now() - started
     console.log('studio-runtime check warm', { threeD: input.threeD, ms })
     return Response.json({ ok: true, ms }, { headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
     console.error('studio-runtime check warm failed', String(error))
-    await sandbox.destroy().catch(() => undefined)
     return checkFailed()
+  } finally {
+    await finishCheckSandbox(sandbox, undefined, reusable, reservation)
   }
 }
 

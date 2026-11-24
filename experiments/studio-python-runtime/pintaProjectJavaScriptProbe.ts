@@ -2,19 +2,13 @@ import {
   type PintaRegionalMarker,
   pintaRegionalMarkerOf,
 } from '../../packages/studio/src/core/pintaRegionalMaterial'
-import {
-  PRIVATE_REGIONAL_PROJECT,
-  type PrivateRegionalProjectReadOptions,
-} from '../../packages/studio/src/core/pintaRegionalReference'
 import type { Project, ProjectAsset } from '../../packages/studio/src/core/project'
 import { createPintaRegionalProRuntime } from '../../packages/studio/src/modes/pro/pintaRegionalProRuntime'
 import { renderProjectToPreviewDocAsync } from '../../packages/studio/src/preview/renderProject'
 import { convertClassicToProTree } from '../../packages/studio/src/state/convertToPro'
 import { persistProject } from '../../packages/studio/src/state/persistence'
-import {
-  privateRegionalProjectScope,
-  refreshPrivateRegionalProjectAsset,
-} from '../../packages/studio/src/state/pintaRegionalProjectRefresh'
+import { refreshPrivateRegionalProjectAsset } from '../../packages/studio/src/state/pintaRegionalProjectRefresh'
+import { createProjectStorageScope } from '../../packages/studio/src/state/projectStorageRuntime'
 import { loadSanitizedProjectById } from '../../packages/studio/src/state/projectStore'
 
 type Capture = { dataUrl: string; width: number; height: number; regional: PintaRegionalMarker }
@@ -25,19 +19,10 @@ export async function showPintaJavaScriptProject(
   project: Project,
   options: { seed?: boolean; pro?: boolean; replace?: { id: string; capture: Capture } } = {},
 ) {
-  const scope = privateRegionalProjectScope('js-player-probe')
-  const access: PrivateRegionalProjectReadOptions = { [PRIVATE_REGIONAL_PROJECT]: scope }
+  const scope = createProjectStorageScope('js-player-public-probe')
   if (options.seed) {
-    const { assets } = project
     if (options.pro) {
-      const tree = await convertClassicToProTree({
-        ...project,
-        assets: assets?.map((asset) => {
-          if (!('regional' in asset)) return asset
-          const { regional: _marker, ...ordinary } = asset
-          return ordinary
-        }),
-      })
+      const tree = await convertClassicToProTree(project)
       project = {
         ...project,
         mode: 'code',
@@ -68,10 +53,10 @@ export async function showPintaJavaScriptProject(
   const html =
     reopened.kind === 'pro'
       ? (await createPintaRegionalProRuntime(scope).build({ project: reopened })).html
-      : await renderProjectToPreviewDocAsync(reopened, access)
+      : await renderProjectToPreviewDocAsync(reopened)
   if (!html) throw new Error('A fixture não produziu um documento local.')
   const frame = document.createElement('iframe')
-  frame.title = 'Projeto PNG5 privado'
+  frame.title = 'Projeto PNG5 público'
   frame.sandbox.add('allow-scripts')
   frame.style.cssText = 'width:640px;height:480px'
   frame.srcdoc = html

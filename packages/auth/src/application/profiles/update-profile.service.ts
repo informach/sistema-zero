@@ -54,10 +54,10 @@ export class UpdateProfileDetailsService {
   async execute(cmd: UpdateProfileDetailsCommand): Promise<ProfileView> {
     // Capture caller-owned values before any asynchronous lock acquisition.
     const input = { ...cmd }
-    if (input.profileSession && (input.name !== undefined || input.publicNickname !== undefined))
-      throw new ForbiddenError(
-        'O nome completo e o apelido público só podem ser alterados pelo responsável',
-      )
+    // A criança muda o próprio apelido (24/11/2026); o nome completo segue só com os pais.
+    // Apelido sozinho não mexe em `identityConfirmedAt` (ver `updateDetails`).
+    if (input.profileSession && input.name !== undefined)
+      throw new ForbiddenError('O nome completo só pode ser alterado pelo responsável')
     const now = new Date(this.clock().getTime())
     const profile = await this.profiles.editDetails(
       { profileId: input.profileId, accountUserId: input.accountUserId },

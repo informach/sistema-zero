@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Trocar o apelido renova a sessão de perfil (24/11/2026)
+
+`profileUpdate.PATCH` (`routes/index.ts`): com resposta 200, `publicNickname` no corpo e a sessão
+sendo o PRÓPRIO perfil (`activeProfile` e `id` igual ao do caminho), chama
+`gateway.refreshSession()`. O menu do Kids lê o apelido da claim `pfl` do access token (até 15
+min); o refresh do Auth re-deriva o apelido do perfil. Falha só adia; a resposta não muda. O pai
+editando (sessão da conta) não renova nada. Teste: `tests/profile-nickname-refresh.test.ts`.
+
 ## O cartão dos objetivos aquece o executor (23/11/2026)
 
 O `ObjectivesCard` (`components/studio/section-project-check.tsx`), com objetivo que roda o jogo

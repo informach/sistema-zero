@@ -1,0 +1,1374 @@
+{
+  "source": "a365206598c9175e8f999801eba5a6fb74d613db",
+  "tree": "e6b63426127831235dc98d34820fe1869a85b74c",
+  "worker": "sz-runtime-staging-lg02-qa-4de18539",
+  "workerVersion": "f561039e-c33c-41fa-a3d2-8f89b1901d12",
+  "image": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+  "fingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c",
+  "limits": {
+    "cachePerClass": 1,
+    "instancesPerClass": 2
+  },
+  "scope": "Synthetic profiles and small projects; private authenticated QA entrypoint; two actual Chrome pages via local relay. Capacity waits excluded from latency samples. Not a production load or p95 test.",
+  "phases": [
+    {
+      "phase": "basic",
+      "testedAt": "2026-11-24T10:54:29.470Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "warm-first",
+          "status": 200,
+          "durationMs": 3715,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-2990882ed17f4c379eec14ef8e5566e5",
+              "threeD": false,
+              "durableObjectId": "6ab6eff1aafeb7bb715ef651e141e158cf17b8b1df4a7a0fe2fcc1b0b482c9c8"
+            }
+          ]
+        },
+        {
+          "label": "check-after-warm",
+          "status": 200,
+          "durationMs": 3245,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-2990882ed17f4c379eec14ef8e5566e5",
+              "threeD": false,
+              "durableObjectId": "6ab6eff1aafeb7bb715ef651e141e158cf17b8b1df4a7a0fe2fcc1b0b482c9c8"
+            }
+          ]
+        },
+        {
+          "label": "check-repeated",
+          "status": 200,
+          "durationMs": 3272,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-2990882ed17f4c379eec14ef8e5566e5",
+              "threeD": false,
+              "durableObjectId": "6ab6eff1aafeb7bb715ef651e141e158cf17b8b1df4a7a0fe2fcc1b0b482c9c8"
+            }
+          ]
+        },
+        {
+          "label": "invalid-warm",
+          "status": 400,
+          "durationMs": 48,
+          "ok": false,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "warm-failure-seed",
+          "status": 200,
+          "durationMs": 1343,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-2990882ed17f4c379eec14ef8e5566e5",
+              "threeD": false,
+              "durableObjectId": "6ab6eff1aafeb7bb715ef651e141e158cf17b8b1df4a7a0fe2fcc1b0b482c9c8"
+            }
+          ]
+        },
+        {
+          "label": "warm-failure",
+          "status": 500,
+          "durationMs": 1330,
+          "ok": false,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-2990882ed17f4c379eec14ef8e5566e5",
+              "threeD": false,
+              "durableObjectId": "6ab6eff1aafeb7bb715ef651e141e158cf17b8b1df4a7a0fe2fcc1b0b482c9c8"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 50301,
+          "active": 0,
+          "assigned": 0,
+          "occupied": 0,
+          "maximum": 0
+        },
+        {
+          "label": "warm-recovery",
+          "status": 200,
+          "durationMs": 4580,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-56b39bd9d2ae4ded840acd30ee75d65c",
+              "threeD": false,
+              "durableObjectId": "d4826a137e6fb1136988b6d4ee9242c551f872cc77b77d87991218a26563d9b0"
+            }
+          ]
+        },
+        {
+          "label": "warm-3d",
+          "status": 200,
+          "durationMs": 3725,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-37e129eb1f1744c9be842c78c46537d3",
+              "threeD": true,
+              "durableObjectId": "54f765e6752075e8e69b3a808773d6e6ce81ceb346ff0f229a22654dcadfdcfd"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "overlap",
+      "testedAt": "2026-11-24T10:56:34.622Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1828,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "overlap-seed",
+          "status": 200,
+          "durationMs": 1633,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-56b39bd9d2ae4ded840acd30ee75d65c",
+              "threeD": false,
+              "durableObjectId": "d4826a137e6fb1136988b6d4ee9242c551f872cc77b77d87991218a26563d9b0"
+            }
+          ]
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 690,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 176,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 165,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 159,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 163,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "warm-during-two-checks",
+          "status": 200,
+          "durationMs": 241,
+          "ok": true,
+          "skipped": true,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "valid-b",
+          "status": 200,
+          "durationMs": 15318,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-56b39bd9d2ae4ded840acd30ee75d65c",
+              "threeD": false,
+              "durableObjectId": "d4826a137e6fb1136988b6d4ee9242c551f872cc77b77d87991218a26563d9b0"
+            }
+          ]
+        },
+        {
+          "label": "valid-a",
+          "status": 200,
+          "durationMs": 18952,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-d8a9502e05534763a25a32f11410ac79",
+              "threeD": false,
+              "durableObjectId": "ff9413c179f96b4022d1cd5ebe636aa54ebe397af97f0319f3e47ae6517d8469"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 17664,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "execution-failure-seed",
+          "status": 200,
+          "durationMs": 1587,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-56b39bd9d2ae4ded840acd30ee75d65c",
+              "threeD": false,
+              "durableObjectId": "d4826a137e6fb1136988b6d4ee9242c551f872cc77b77d87991218a26563d9b0"
+            }
+          ]
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 747,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 159,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "execution-failure",
+          "status": 500,
+          "durationMs": 5574,
+          "ok": false,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-56b39bd9d2ae4ded840acd30ee75d65c",
+              "threeD": false,
+              "durableObjectId": "d4826a137e6fb1136988b6d4ee9242c551f872cc77b77d87991218a26563d9b0"
+            }
+          ]
+        },
+        {
+          "label": "execution-failure-other-tab",
+          "status": 200,
+          "durationMs": 10951,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-12b9717bc77242c39a9f6f93ebd34ca8",
+              "threeD": false,
+              "durableObjectId": "e963b76c66a0199cdd9a3b468696642e91820223b04b5ba883be257600f04207"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 12436,
+          "active": 0,
+          "assigned": 0,
+          "occupied": 0,
+          "maximum": 0
+        },
+        {
+          "label": "execution-failure-recovery",
+          "status": 200,
+          "durationMs": 6548,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-2c22de4107db4c20b57af26461591629",
+              "threeD": false,
+              "durableObjectId": "e2e248325af6461c4cd6892ebe2e58ce874f0858bde0fd13d418de87d568694b"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1753,
+          "active": 0,
+          "assigned": 0,
+          "occupied": 0,
+          "maximum": 1
+        },
+        {
+          "label": "cleanup-failure-seed",
+          "status": 200,
+          "durationMs": 1591,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-2c22de4107db4c20b57af26461591629",
+              "threeD": false,
+              "durableObjectId": "e2e248325af6461c4cd6892ebe2e58ce874f0858bde0fd13d418de87d568694b"
+            }
+          ]
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 345,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 280,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "overlap-barrier-state",
+          "status": 200,
+          "durationMs": 164,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "cleanup-failure",
+          "status": 200,
+          "durationMs": 7962,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-2c22de4107db4c20b57af26461591629",
+              "threeD": false,
+              "durableObjectId": "e2e248325af6461c4cd6892ebe2e58ce874f0858bde0fd13d418de87d568694b"
+            }
+          ]
+        },
+        {
+          "label": "cleanup-failure-other-tab",
+          "status": 200,
+          "durationMs": 9219,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b191192b80a749e39ae501919d560f89",
+              "threeD": false,
+              "durableObjectId": "0f859d143d3065dd96ceb076e09b68071bcad4d513407171c09c9b4d834c8d09"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 12398,
+          "active": 0,
+          "assigned": 0,
+          "occupied": 0,
+          "maximum": 0
+        },
+        {
+          "label": "cleanup-failure-recovery",
+          "status": 200,
+          "durationMs": 5926,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "capacity",
+      "testedAt": "2026-11-24T10:57:22.623Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1668,
+          "active": 0,
+          "assigned": 0,
+          "occupied": 0,
+          "maximum": 1
+        },
+        {
+          "label": "capacity-a",
+          "status": 200,
+          "durationMs": 1536,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "capacity-b",
+          "status": 200,
+          "durationMs": 254,
+          "ok": true,
+          "skipped": true,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "capacity-c",
+          "status": 200,
+          "durationMs": 238,
+          "ok": true,
+          "skipped": true,
+          "successorSurvived": null,
+          "resources": []
+        },
+        {
+          "label": "capacity-newcomer-with-idle-warm",
+          "status": 200,
+          "durationMs": 6694,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-66fd0a9a681a4981b2a94dd0d005a124",
+              "threeD": false,
+              "durableObjectId": "afed0823cba08676b7418caea3111f6a2b98e1da001ccad84452789536fe75d6"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1576,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "capacity-existing-a",
+          "status": 200,
+          "durationMs": 3375,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "capacity-existing-b",
+          "status": 200,
+          "durationMs": 11673,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-5fa1774228024d799bc9273948ebaa87",
+              "threeD": false,
+              "durableObjectId": "96b4f6aee34f2b61372a6b73eae91610321583ee29443521501febb9039d6b01"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1918,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "capacity-recovered",
+          "status": 200,
+          "durationMs": 12605,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-c57431aca0424c1cadda15f527ec41f7",
+              "threeD": false,
+              "durableObjectId": "d02250f4a2730948e5df6c7eba246490bb82b7620a1daba1f61f9c7a53a66914"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "pro",
+      "testedAt": "2026-11-24T10:58:34.061Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1649,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "pro-seed",
+          "status": 200,
+          "durationMs": 1654,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "pro-first",
+          "status": 200,
+          "durationMs": 4458,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "pro-marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "pro-repeat",
+          "status": 200,
+          "durationMs": 4372,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "pro-marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "pro-syntax-invalid",
+          "status": 200,
+          "durationMs": 2129,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "pro-marker",
+              "passed": false
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "pro-recovery",
+          "status": 200,
+          "durationMs": 4340,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "pro-marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "performance",
+      "testedAt": "2026-11-24T11:01:09.291Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "performance-seed",
+          "status": 200,
+          "durationMs": 1529,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1702,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-0",
+          "status": 200,
+          "durationMs": 7339,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-4962a0f292d947a79ac9e67e19689d46",
+              "threeD": false,
+              "durableObjectId": "04db703aa1f643d4a81ae8702b900ec2a8b35c3aa2354d9ffe36b64925596dbc"
+            }
+          ]
+        },
+        {
+          "label": "pooled-0",
+          "status": 200,
+          "durationMs": 3392,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1737,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-1",
+          "status": 200,
+          "durationMs": 8269,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-aeb31f7218ce411d912567b6ca429943",
+              "threeD": false,
+              "durableObjectId": "a88704e49a5e658be4d8a800d243bb09c32d6e505e07d28a208395ed0101ac90"
+            }
+          ]
+        },
+        {
+          "label": "pooled-1",
+          "status": 200,
+          "durationMs": 3450,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 12201,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-2",
+          "status": 200,
+          "durationMs": 6129,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-c7ce96bbaf634134ad8485de0bf72286",
+              "threeD": false,
+              "durableObjectId": "3f9602743597e285b501693e3f85e683c7758c585579a223432913b2f66b21ba"
+            }
+          ]
+        },
+        {
+          "label": "pooled-2",
+          "status": 200,
+          "durationMs": 3428,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1776,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-3",
+          "status": 200,
+          "durationMs": 8822,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-6a18c7a0d8cd44839f62a9f25da0f45d",
+              "threeD": false,
+              "durableObjectId": "4c8821fdbc772f0726e6bf5a3aa3cdb39aa805d7f0df88985c69ad6f70279a04"
+            }
+          ]
+        },
+        {
+          "label": "pooled-3",
+          "status": 200,
+          "durationMs": 3489,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1604,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-4",
+          "status": 200,
+          "durationMs": 8004,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-cc5f354d7d9c4e38bdf4a53e5222a76f",
+              "threeD": false,
+              "durableObjectId": "b260ba8b30fdef8b700321ff0447cd2c344e3cbbfcddfeb79ac9e0d56169e48f"
+            }
+          ]
+        },
+        {
+          "label": "pooled-4",
+          "status": 200,
+          "durationMs": 3514,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 7614,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-5",
+          "status": 200,
+          "durationMs": 6111,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-9b92b8cc5b1343d3a5d56cd5ac51829b",
+              "threeD": false,
+              "durableObjectId": "93bde3c22c03ed523906dd4f79e108e6f7883534e5c95a44a0452e04e9ce56d7"
+            }
+          ]
+        },
+        {
+          "label": "pooled-5",
+          "status": 200,
+          "durationMs": 3498,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1986,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-6",
+          "status": 200,
+          "durationMs": 9125,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-8d85210b605e41f4b8520d9ba5503fcc",
+              "threeD": false,
+              "durableObjectId": "0e5e15d1673f7470c44670db0847842e2414bb554625250d2e16b423e210c9b7"
+            }
+          ]
+        },
+        {
+          "label": "pooled-6",
+          "status": 200,
+          "durationMs": 3516,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1710,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-7",
+          "status": 200,
+          "durationMs": 7361,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-339e0fd3097743adb3229a8de617a108",
+              "threeD": false,
+              "durableObjectId": "d3167125e57bbad8ed42846704ed719d4e686f1ec6b5304dcccf485d4016c16f"
+            }
+          ]
+        },
+        {
+          "label": "pooled-7",
+          "status": 200,
+          "durationMs": 3508,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 11024,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-8",
+          "status": 200,
+          "durationMs": 5845,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-5e50460a5cc545f5b278889cdbade54d",
+              "threeD": false,
+              "durableObjectId": "fc6336a749fccbad6576736b06d949e6a5bc99fe0b5f84083bf19cafbbf2b913"
+            }
+          ]
+        },
+        {
+          "label": "pooled-8",
+          "status": 200,
+          "durationMs": 3496,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "provider-capacity-ready",
+          "waitMs": 1595,
+          "active": 1,
+          "assigned": 0,
+          "occupied": 1,
+          "maximum": 1
+        },
+        {
+          "label": "cold-9",
+          "status": 200,
+          "durationMs": 8809,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-34099bcbff334043b28a7f33c870a604",
+              "threeD": false,
+              "durableObjectId": "d027bf471fb3fd11d0d9af1bf07a62eae30aad108d273ee020c42a66d3f32682"
+            }
+          ]
+        },
+        {
+          "label": "pooled-9",
+          "status": 200,
+          "durationMs": 3503,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "sleep",
+      "testedAt": "2026-11-24T11:07:09.632Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "sleep-seed",
+          "status": 200,
+          "durationMs": 1651,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-b15ad9a164e0431f89c75123059f5314",
+              "threeD": false,
+              "durableObjectId": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e"
+            }
+          ]
+        },
+        {
+          "label": "check-after-sleep",
+          "status": 200,
+          "durationMs": 7202,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-81768a778c644f85a9bd704fcf5e103f",
+              "threeD": false,
+              "durableObjectId": "27724b1911d900b82336f3ad091b9cbdc92dca644ee862075cdbc0a78c3aed78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "ack",
+      "testedAt": "2026-11-24T11:07:34.384Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "release-ack-loss",
+          "status": 200,
+          "durationMs": 4097,
+          "ok": true,
+          "successorSurvived": "true",
+          "results": [
+            {
+              "id": "marker",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-81768a778c644f85a9bd704fcf5e103f",
+              "threeD": false,
+              "durableObjectId": "27724b1911d900b82336f3ad091b9cbdc92dca644ee862075cdbc0a78c3aed78"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "phase": "three",
+      "testedAt": "2026-11-24T11:11:23.722Z",
+      "transport": "local-QA-relay",
+      "verified": true,
+      "observations": [
+        {
+          "label": "navigation-3d-seed",
+          "status": 200,
+          "durationMs": 1635,
+          "ok": true,
+          "successorSurvived": null,
+          "resources": [
+            {
+              "id": "check-b23030badd8d4ecebd99f1fb3b7dd18a",
+              "threeD": true,
+              "durableObjectId": "0fe59390bb7aa94bbc1a9a81cb54d6b8e42471662ea9a6817e8554b8545acf64"
+            }
+          ]
+        },
+        {
+          "label": "navigation-3d-first",
+          "status": 200,
+          "durationMs": 6666,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "navigation-3d",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b23030badd8d4ecebd99f1fb3b7dd18a",
+              "threeD": true,
+              "durableObjectId": "0fe59390bb7aa94bbc1a9a81cb54d6b8e42471662ea9a6817e8554b8545acf64"
+            }
+          ]
+        },
+        {
+          "label": "navigation-3d-repeat",
+          "status": 200,
+          "durationMs": 6452,
+          "ok": true,
+          "successorSurvived": null,
+          "results": [
+            {
+              "id": "navigation-3d",
+              "passed": true
+            }
+          ],
+          "resources": [
+            {
+              "id": "check-b23030badd8d4ecebd99f1fb3b7dd18a",
+              "threeD": true,
+              "durableObjectId": "0fe59390bb7aa94bbc1a9a81cb54d6b8e42471662ea9a6817e8554b8545acf64"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sleepWitness": {
+    "observedAt": "2026-11-24T11:06:52.793Z",
+    "seedCompletedAt": "2026-11-24T11:01:32.415Z",
+    "idleMs": 320378,
+    "instance": {
+      "id": "9fde24939607e39d1988e41aac4f0ddbae11cfc472ed3a64be7f55da8084957e",
+      "name": "check-b15ad9a164e0431f89c75123059f5314",
+      "state": "inactive",
+      "location": null,
+      "version": null,
+      "created": "2026-11-24T11:06:44Z"
+    },
+    "verified": true
+  }
+}

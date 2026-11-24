@@ -79,6 +79,7 @@ export function Menu({
   const [open, setOpen] = useState(false)
   const portalContainer = useStudioPortalContainer()
   const [pos, setPos] = useState<PanelPos | null>(null)
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
   // No Pro do celular o MESMO painel vira folha que sobe de baixo (sem as coordenadas do gatilho).
   const sheet = useStudioSheets()
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -95,21 +96,36 @@ export function Menu({
     const update = () => {
       const r = triggerRef.current?.getBoundingClientRect()
       if (!r) return
-      const top = r.bottom + 4
-      setPos(
+      const height = sheet ? 0 : (panel?.getBoundingClientRect().height ?? 0)
+      const below = r.bottom + 4
+      // O editor pode estar no fim da página da aula. Mede o painel já montado
+      // para abrir acima quando não cabe abaixo; o max-height conserva a rolagem.
+      const top =
+        height > 0 && below + height > window.innerHeight - 8
+          ? Math.max(8, r.top - height - 4)
+          : below
+      const next: PanelPos =
         align === 'right'
           ? { top, right: Math.max(8, window.innerWidth - r.right) }
-          : { top, left: Math.max(8, r.left) },
+          : { top, left: Math.max(8, r.left) }
+      setPos((previous) =>
+        previous?.top === next.top && previous.left === next.left && previous.right === next.right
+          ? previous
+          : next,
       )
     }
     update()
+    const observer =
+      !sheet && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    if (panel) observer?.observe(panel)
     window.addEventListener('resize', update)
     window.addEventListener('scroll', update, true)
     return () => {
+      observer?.disconnect()
       window.removeEventListener('resize', update)
       window.removeEventListener('scroll', update, true)
     }
-  }, [open, align])
+  }, [open, align, panel, sheet])
 
   // Foca o 1º item habilitado ao abrir (após posicionar = painel já no DOM).
   useEffect(() => {
@@ -210,6 +226,7 @@ export function Menu({
               }}
             />
             <div
+              ref={setPanel}
               role="menu"
               aria-label={label}
               data-sz-sheet={sheet ? '' : undefined}

@@ -24,6 +24,7 @@ import { createStudioBuilderRoutes } from './routes/studio-builder'
 import { createStudioBuilderExecutorRoutes } from './routes/studio-builder-executor'
 import { createStudioOpenRouterRoutes } from './routes/studio-openrouter'
 import { createStudioPythonLanguageRoutes } from './routes/studio-python-language'
+import { createStudioSealedWrites } from './routes/studio-sealed-writes'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
 import { createVoiceRoutes } from './routes/voice'
@@ -116,6 +117,7 @@ export function createShell(cfg: ShellConfig) {
       palette: createPintaPaletteWrites({ gateway, session }),
     }),
     ...createPintaCausalRoutes({ gateway, session }),
+    ...createStudioSealedWrites({ gateway, session }),
     ...createPintaRecoveryHelpRoutes({ gateway, session }),
     ...createCenariosRoutes({ gateway, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),

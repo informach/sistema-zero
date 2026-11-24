@@ -14,13 +14,20 @@ export async function savePintaStudioBundle(
   const inputs = [input, ...(input.maps ?? [])]
   const result = await library.savePersonalAssetBundle(inputs, {
     namespace,
+    signal,
   })
   if (!result.ok) return result
   const savedById = new Map(result.assets.map((asset) => [asset.id, asset]))
   const withRevision = (source: PintaStudioAssetInput) => {
     const saved = savedById.get(source.id)
     if (!saved) throw new Error('A biblioteca não devolveu um dos mapas solicitados.')
-    return { ...source, name: saved.name, libRevision: saved.updatedAt }
+    const { regional: _untrusted, ...fields } = source
+    return {
+      ...fields,
+      ...(saved.regional ? { regional: saved.regional } : {}),
+      name: saved.name,
+      libRevision: saved.updatedAt,
+    }
   }
   const { maps, ...source } = input
   return {

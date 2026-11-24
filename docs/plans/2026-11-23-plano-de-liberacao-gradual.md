@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-Registrado em 23/11/2026 para execução aos poucos. A LG01 foi concluída em produção em 24/11; as demais etapas seguem os estados do quadro. Este registro permite retomar cada frente separadamente.
+Registrado em 23/11/2026 para execução aos poucos. LG01 e LG02 foram concluídas em produção em 24/11; as demais etapas seguem os estados do quadro. Este registro permite retomar cada frente separadamente.
 
 A prioridade é entregar à criança fluxos completos: criar, guardar, voltar depois e continuar usando o projeto nos destinos oferecidos. As melhorias prontas e a publicação de aulas podem avançar enquanto as integrações maiores são concluídas.
 
@@ -18,9 +18,9 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Concluída em produção em 24/11: sete serviços saudáveis, runtime/imagem qualificados, CI e provas finais aprovados. Aquecimento excluído |
-| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
+| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Concluída em produção em 24/11: sete serviços em `0180e39fd`, Worker/imagem qualificados, CI, staging e aceite infantil aprovados. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
-| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
+| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Em execução por autorização de 24/11: integração e provas locais; aceite infantil e entrega ainda pendentes. [Plano](2026-11-24-lg04-pinta-estudio-conta-mural.md) |
 | LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
 | LG07 | Habilitação da prévia isolada do Studio | 3 | Runtime e origens permitidas configurados | Pendente |
@@ -43,20 +43,28 @@ Resultado: `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sete serviços saudáveis
 **LG02** qualifica o aquecimento e a reutilização do contêiner em staging com o executor real.
 
 - [x] Medir a primeira verificação e as seguintes no executor real, com jogos sintéticos; [resultados e limites da prova](../qa/2026-11-23-lg02-executor-real.md).
-- [ ] Concluir as provas de duas abas do perfil, aquecimento, execução e limpeza após corrigir a destruição compartilhada. A sobreposição com falha já reproduziu R12; o caminho seguro por pedido passou a contraprova.
-- [ ] Conferir isolamento entre perfis, limites de capacidade e comportamento quando o contêiner dorme.
-- [x] Decisão desta rodada: excluir aquecimento e reutilização da LG01. Reabrir a decisão após corrigir e qualificar os pontos pendentes.
+- [x] Concluir as provas de duas abas do perfil, aquecimento, execução e limpeza após corrigir a destruição compartilhada. A reserva SQLite com posse exclusiva passou os casos de falha na máquina reutilizável e preservou a outra aba.
+- [x] Conferir isolamento entre perfis, limites de capacidade e comportamento quando o contêiner dorme.
+- [x] Decisão de 23/11: excluir aquecimento e reutilização da LG01. Os pontos foram corrigidos e a qualificação hospedada passou em 24/11.
+- [x] Concluir o CI da fonte final, repetir aquecimento/verificação e recusas nos aplicativos atualizados de staging e promover pelo fluxo canônico.
+
+Resultado: PR #286, fonte `0180e39fd`, onda `45409371184`, sete serviços saudáveis e Worker `99386c58`. A imagem exata passou 66 cenários; a matriz hospedada cobriu falhas entre abas, capacidade, suspensão, Pro e navegação 3D. Duas abas autenticadas aprovaram 6/6 e 5/5 objetivos, sem prêmio duplicado. Main foi integrado normalmente em staging, preservando Jardim, vozes, apelido e quarto. Permanecem os limites de capacidade, cache de cinco minutos e duração dos objetivos; Python fica fora do aquecimento. [Fechamento e provas](../qa/2026-11-24-lg02-aquecimento-seguro.md).
+
+Entradas posteriores ao plano: o apelido infantil editável e a correção de rolagem do quarto estão em staging, com revisão, tipos e aceite visual aprovados. A promoção será feita em versão própria, preservando os limites de identidade e as permissões do responsável; esses itens não entraram na LG02 de produção.
 
 ## Publicação das aulas
 
 **LG03** começa por **Meu primeiro desenho no Pinta** e **Moedas no caminho**, assim que seus materiais estiverem finais. Depois seguem os demais cursos conforme a sequência pedagógica e sua prontidão.
 
 - [ ] Conferir vídeo, instruções, atividade e material de cada aula contra a interface atual.
+- [ ] Promover separadamente os materiais/cadastro do Jardim e o ajuste de concorrência da geração de voz já presentes em staging, conferindo retomada e respostas 429 do provedor.
 - [ ] Conferir o papel do curso, o acesso e a apresentação na Jornada.
 - [ ] Publicar individualmente e percorrer a aula com um perfil elegível.
 - [ ] Reconciliar os títulos dos materiais com os registros do Admin antes de criar ou importar cursos.
 
 Na primeira consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. Uma nova leitura de produção às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo) confirmou **A Ilha do Farol publicada com 3/3 aulas em Kids e Adultos**, por outra frente. Members, Admin e Kids receberam o ajuste de 32 falas em `8d87bbff8`, já incorporado à LG01. Jardim, Pinta e Moedas continuam em rascunho. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não é uma publicação nova desta etapa.
+
+A proposta posterior do Construtor está no PR #287, em rascunho, com seis protótipos nativos e apoio de telas/reinício preparado. Sua receita Windows foi corrigida em `61de040ee`, preservando os projetos. Esse currículo segue revisão própria: importar e avaliar na interface/WebGL, concluir artes 3D e avaliação de aparelhos, fechar a matriz pedagógica e só então reescrever/publicar roteiros, manifestos e materiais. A prioridade dos cursos já listados na LG03 permanece. [Revisão e limites dos protótipos](../qa/2026-11-24-lg02-aquecimento-seguro.md).
 
 ## Integrações regionais do Pinta
 
@@ -111,6 +119,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
+| 24/11/2026 | LG02 | Concluída: PR #286, CI com 13 jobs, plano zero e onda canônica `45409371184` aprovados. Sete serviços em `0180e39fd`, Worker `99386c58`, duas aplicações saudáveis na imagem qualificada. Staging teve 20 serviços e aceite infantil aprovados; main integrado sem mudar seu conteúdo concorrente. Runtime, rotas públicas, catálogo, cursos e controles conferidos após o deploy. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | 24/11/2026 | LG01 | Concluída: PRs #283/#285 integrados, CI com 13 jobs e plano aprovados, onda canônica `45315948453` concluída. Sete serviços em `538ae843b`, dois contêineres ready, HTTP 200 nas rotas públicas e no executor após o deploy. Cursos preservados; aquecimento permanece na LG02 |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
 | 23/11/2026 | LG01 | Push reexecutado com 13 checks aprovados e PR #283 integrado normalmente. R15: índice vazio do GitHub impede o controlador de localizar o PR válido; correção isolada no PR #285, com 113 testes e prova readonly real aprovados, em qualificação remota |

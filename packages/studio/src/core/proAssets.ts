@@ -8,7 +8,10 @@ import {
   assertRegionalProjectAssetProof,
   type PintaRegionalProjectAdmissions,
 } from './pintaRegionalProjectAdmission'
-import { assertLegacyStudioProjectMaterials } from './pintaRegionalReference'
+import {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+} from './pintaRegionalReference'
 import { PRO_ASSET_DIRECTORY, PRO_ASSET_MANIFEST, validProMaterialPath } from './proAssetPaths'
 import {
   asset3DManifest,
@@ -25,6 +28,7 @@ import { criarTransporteDeCenas3D } from './scene3d/transporte'
 import { assertScene3DAssets } from './scene3d/validacao'
 
 export interface ProAssetManifestEntry {
+  regional?: ProjectAsset['regional']
   id: string
   name: string
   kind: ProjectAsset['kind']
@@ -85,6 +89,7 @@ function materialize(asset: ProjectAsset) {
       bytes: bytes.length,
       sha256: await digest(bytes),
       source: asset.source,
+      ...(asset.regional ? { regional: asset.regional } : {}),
       ...(asset.libOrigin ? { origin: asset.libOrigin } : {}),
       ...(asset.libId ? { libraryId: asset.libId } : {}),
       ...(asset.license ? { license: asset.license } : {}),
@@ -127,7 +132,12 @@ export async function buildProAssetBundle(
   tree?: ProjectTree,
   options: { legacyRuntime?: boolean; regionalMaterials?: PintaRegionalProjectAdmissions } = {},
 ): Promise<ProAssetBundle> {
-  const proof = options.regionalMaterials
+  const regionalData = assets.some(hasRegionalPintaReference)
+    ? await (
+        await import('../runtime/javascript/pintaRegionalMaterials')
+      ).prepareRegionalMaterialData(assets)
+    : undefined
+  const proof = regionalData?.proof ?? options.regionalMaterials
   if (proof) assertRegionalProjectAssetProof(assets, proof)
   else assertLegacyStudioProjectMaterials({ assets })
   if (
@@ -158,15 +168,20 @@ export async function buildProAssetBundle(
   if (options.legacyRuntime) {
     let runtime = proof ? undefined : legacyCache.get(assets)
     if (!runtime) {
-      runtime = import('../preview/assetsBridge').then(({ buildAssetsRuntime }) =>
+      runtime = import('../preview/assetsBridge').then(async ({ buildAssetsRuntime }) =>
         new TextEncoder().encode(
-          buildAssetsRuntime(
-            assetManifest(assets, proof),
-            assetMetaManifest(assets, undefined, proof),
-            soundManifest(assets),
-            asset3DManifest(assets),
-            criarTransporteDeCenas3D(assets),
-          ),
+          (regionalData
+            ? (
+                await import('../official-extensions/map-2d/regionBootstrap')
+              ).regionalWorldsDataScript(regionalData.worldsJson)
+            : '') +
+            buildAssetsRuntime(
+              assetManifest(assets, proof),
+              assetMetaManifest(assets, undefined, proof),
+              soundManifest(assets),
+              asset3DManifest(assets),
+              criarTransporteDeCenas3D(assets),
+            ),
         ),
       )
       if (!proof) legacyCache.set(assets, runtime)

@@ -37,3 +37,15 @@ test('responsável confirma nome completo e apelido separados; alterações pess
   expect(restored.displayName).toBe('Fada Azul')
   expect(() => restored.updateDetails({ publicNickname: '  ' })).toThrow()
 })
+test('trocar só o apelido (a criança, 24/11/2026) preserva a identidade confirmada pelos pais', () => {
+  const profile = create()
+  const confirmedAt = new Date('2026-11-19T12:00:00Z')
+  profile.updateDetails({ name: 'Maria Silva Santos', publicNickname: 'Fada Azul' }, confirmedAt)
+  profile.updateDetails({ publicNickname: 'Raio Verde' }, new Date('2026-11-24T12:00:00Z'))
+  expect(profile.name).toBe('Maria Silva Santos')
+  expect(profile.displayName).toBe('Raio Verde')
+  expect(profile.identityConfirmedAt).toEqual(confirmedAt)
+  // Mudar o nome completo sozinho continua pedindo nova confirmação dos pais.
+  profile.updateDetails({ name: 'Maria Santos' })
+  expect(profile.identityConfirmedAt).toBeNull()
+})

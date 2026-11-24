@@ -4,6 +4,7 @@ import type { StudioRuntimeCapture } from '../runtime/capture'
 import { MAX_PROJECT_THUMB_CHARS, writeProjectThumb } from '../state/persistence'
 import {
   captureProjectStorageScope,
+  getProjectStorageScope,
   type ProjectStorageScope,
   regionalProjectReadOptions,
 } from '../state/projectStorageRuntime'
@@ -131,7 +132,8 @@ async function captureAndStoreUnmeasured(
   project: Project,
   runtimeCapture?: StudioRuntimeCapture | null,
 ): Promise<boolean> {
-  const storageScope = captureProjectStorageScope()
+  // A photo may finish after focus/profile changes, only in its captured database.
+  const storageScope = getProjectStorageScope(captureProjectStorageScope().namespace)
   try {
     const thumb = await resolveThumb(project, storageScope, runtimeCapture)
     if (!thumb) return false
@@ -156,7 +158,8 @@ export async function storeChosenCoverThumb(
   project: Project,
   options: { storageScope?: ProjectStorageScope } = {},
 ): Promise<boolean> {
-  const storageScope = options.storageScope ?? captureProjectStorageScope()
+  const storageScope =
+    options.storageScope ?? getProjectStorageScope(captureProjectStorageScope().namespace)
   try {
     const chosen = resolveCoverAsset(project)
     if (!chosen) return false

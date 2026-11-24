@@ -58,6 +58,7 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       '988646c60a2ed55607ff4fe4b54cc39bc3ca70da5b799ab1c622be9630c4a68f',
       'b0a9f6314b0f4dc454078e1daf0c09acf73404836f8f799ca27cd3282b4f27c4',
       '1cc95094f076a5bf9ac89bfa98e6e1a3e151769bdb98bcf7a467a05dba2adf05',
+      'bf283b136662d5618b6ec41a0b77619677c90fb622847b79dc4b9147d551ff18',
     ],
     'sem-cenario-pinta': [
       'c359a40c6b02bb98a72ed8173cd3e084954f71440b76e93c1900255e175d2830',
@@ -107,6 +108,7 @@ export const STUDIO_PRO_ENGINE_COPIES: StudioProEngineInventory = {
       'd41524b4d3a7fa4ec4a2a581e8edef3c467e5c9f6ac31b53e2748ea7b998fd49',
       'a6265fc143d8d1551a7d00fbed4a4d5be003802ef893d42b8caafbab6fbc409f',
       '2e1f4bca8c6898f2a97712da87d17a898ec6ade1d7204ed35d5747c140a636b3',
+      '0c32835c6c72d18968b90b282b40506c59e898a6b4cce3188bdae7738a086b1d',
     ],
     'sem-cenario-pinta': [
       '2a50090c9f289bf3f780f814042ea60bf2681ea0d0f2af76b8a53e943aec8c4d',

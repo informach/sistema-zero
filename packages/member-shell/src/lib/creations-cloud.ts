@@ -57,6 +57,7 @@ import {
 } from '@sistemazero/core/creations/studio-sealed-storage'
 import { perfSpanAsync } from './perf'
 import { createPintaCausalCloud, type PintaCausalCloud } from './pinta-causal-cloud'
+import { createStudioSealedCloud } from './studio-sealed-cloud'
 
 export { canonicalJson, sha256Hex }
 
@@ -366,7 +367,9 @@ export const CLOUD_MESSAGES = {
   // v2) e este aparelho ainda tinha a versão de antes aberta. Conflito comum entre dois
   // aparelhos NÃO cai aqui (ver `resolveStale` em `studio-cloud.ts`).
   reopenRequired:
-    'Seu jogo voltou para uma versão guardada. Volte à lista do Estúdio e abra o jogo de novo. O que você fez neste aparelho ficará guardado em uma cópia.',
+    'Seu jogo mudou em outro aparelho. Volte à lista do Estúdio para conferir e abrir de novo. O que você fez continua guardado neste aparelho.',
+  invalidStudio:
+    'Não consegui conferir todos os arquivos do jogo. Ele continua guardado neste aparelho. Abra o Estúdio de novo para conferir.',
   unsupported: 'Este navegador não consegue guardar na conta.',
 } as const
 
@@ -426,6 +429,8 @@ export function messageForError(error: unknown): string {
   if (err?.code === 'VIEWER_MISMATCH') return CLOUD_MESSAGES.viewer
   if (err?.code === 'CREATION_STALE_BASE') return CLOUD_MESSAGES.staleFailed
   if (err?.code === 'CREATION_CLIENT_OUTDATED') return CLOUD_MESSAGES.clientOutdated
+  if (err?.code === 'CREATION_REOPEN_REQUIRED') return CLOUD_MESSAGES.reopenRequired
+  if (err?.code === 'STUDIO_SEALED_CONTENT_INVALID') return CLOUD_MESSAGES.invalidStudio
   // O PUT no R2 falhou (URL vencida numa conexão lenta, relógio…): não é "sem posse".
   if (err?.code === 'STORAGE_PUT_FAILED') return CLOUD_MESSAGES.generic
   if (err?.status === 403) return CLOUD_MESSAGES.forbidden
@@ -510,6 +515,7 @@ export function createCreationsCloud(options: {
   pintaCausalEnabled?: boolean
   pintaPaletteWriteEnabled?: boolean
   studioSealedReader?: boolean
+  studioSealedWriter?: boolean
   /** Negotiated only on the authenticated causal endpoints. */
   pintaCausalReader?: number
   /** Injetável (testes). Default: o `fetch` global. */
@@ -622,6 +628,19 @@ export function createCreationsCloud(options: {
           reader: options.pintaCausalReader ?? maxFormatVersion ?? 1,
           signal: causalSession.signal,
           fetch: doFetch,
+        })
+      : undefined
+  const studioWriter =
+    tool === 'studio' &&
+    options.studioSealedWriter &&
+    options.viewerId &&
+    supported &&
+    hashSupported()
+      ? createStudioSealedCloud({
+          viewerId: options.viewerId,
+          api: api<unknown>,
+          put: putBlob,
+          gzip: gzipText,
         })
       : undefined
   // "Acorda" a espera do backoff (rede voltou / flush): promessa trocada a cada espera.
@@ -824,6 +843,7 @@ export function createCreationsCloud(options: {
     parts: CloudPart[] = [],
   ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }> {
     if (!supported) throw new Error(CLOUD_MESSAGES.unsupported)
+    if (studioWriter) return studioWriter.upload(meta, json, parts)
     if (meta.paletteHead)
       meta = { ...meta, paletteHead: PintaPaletteHeadSchema.parse(meta.paletteHead) }
     const reservedPalette = tool === 'pinta' && meta.itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
@@ -1153,6 +1173,7 @@ export function createCreationsCloud(options: {
     baseRevision: number,
     requested?: PintaPaletteHead,
   ): Promise<{ revision: number; paletteHead?: PintaPaletteHead }> {
+    if (studioWriter) return studioWriter.remove(itemId, baseRevision)
     const isPalette = tool === 'pinta' && itemId === PINTA_PALETTE_LIBRARY_ITEM_ID
     const head = requested ? PintaPaletteHeadSchema.parse(requested) : null
     if (

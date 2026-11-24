@@ -1,13 +1,13 @@
-/**
- * O contêiner da verificação dos objetivos (23/11/2026). Antes, cada "Verificar projeto" ligava um
- * contêiner novo com nome sorteado e o destruía no fim: a criança pagava a subida a cada clique.
- * Agora cada quem pede (o `executionId`, que o Members tira do perfil da criança) tem o seu, que
- * dorme sozinho depois de `CHECK_SANDBOX_SLEEP_AFTER` parado. O aquecimento (`/v1/check/warm`) liga
- * o MESMO contêiner quando a criança abre a parte.
- *
- * Teste que deu certo apaga só a própria pasta; qualquer falha destrói o contêiner, como antes:
- * um Chromium preso nunca fica para o próximo teste da criança.
- */
+import { awaitWithSignal } from '@sistemazero/core/http'
+import {
+  type CheckSandboxLease,
+  type CheckSandboxOperation,
+  type CheckSandboxPoolPort,
+  type CheckSandboxPools,
+  freshCheckSandboxLease,
+} from './check-sandbox-pool-store'
+
+/** A warmed slot is exclusively owned until cleanup finishes. Concurrent checks get their own VM. */
 
 export const CHECK_SANDBOX_SLEEP_AFTER = '5m'
 
@@ -25,6 +25,38 @@ export function checkSandboxId(executionId: string): string {
 /** Abre e fecha o Chromium da imagem uma vez, para o primeiro teste não pagar a leitura a frio. */
 export const CHECK_WARM_COMMAND = 'node /opt/sz-runtime/check-warm.mjs'
 export const CHECK_WARM_TIMEOUT_MS = 45_000
+const CHECK_POOL_RPC_BUDGET_MS = 3_000
+
+export interface CheckSandboxReservation {
+  lease: CheckSandboxLease
+  pool?: CheckSandboxPoolPort
+}
+
+export async function reserveCheckSandbox(
+  pools: CheckSandboxPools | undefined,
+  executionId: string,
+  threeD: boolean,
+  operation: CheckSandboxOperation,
+): Promise<CheckSandboxReservation | null> {
+  try {
+    if (!pools) throw new Error('Sandbox pool binding unavailable')
+    const pool = pools.getByName(`objetivos-cache-${threeD ? '3d' : '2d'}`)
+    const lease = await awaitWithSignal(
+      () => pool.acquire(operation, executionId, threeD),
+      AbortSignal.timeout(CHECK_POOL_RPC_BUDGET_MS),
+    )
+    if (lease.kind === 'skipped') {
+      if (operation !== 'warm') throw new Error('Check acquisition was skipped')
+      return null
+    }
+    return { lease, pool }
+  } catch {
+    console.warn('studio-runtime check reservation unavailable', { operation, threeD })
+    if (operation === 'warm') throw new Error('Warming coordinator unavailable')
+    // The LG01 path stays functional without ever touching a possibly leased warm resource.
+    return { lease: freshCheckSandboxLease(false) }
+  }
+}
 
 interface CheckSandbox {
   exec(command: string, options: { timeout: number }): Promise<{ success: boolean }>
@@ -33,17 +65,38 @@ interface CheckSandbox {
 
 export async function finishCheckSandbox(
   sandbox: CheckSandbox,
-  cwd: string,
+  cwd: string | undefined,
   reusable: boolean,
+  reservation: CheckSandboxReservation,
 ): Promise<void> {
-  if (reusable) {
-    const cleaned = await sandbox
+  let cleaned = reusable && reservation.lease.pooled
+  if (cleaned && cwd) {
+    cleaned = await sandbox
       .exec(`rm -rf -- '${cwd}'`, { timeout: 5_000 })
       .then((result) => result.success)
       .catch(() => false)
-    if (cleaned) return
   }
-  await sandbox.destroy().catch(() => undefined)
+  let destructionConfirmed = false
+  if (!cleaned) {
+    try {
+      await sandbox.destroy()
+      destructionConfirmed = true
+    } catch {
+      console.warn('studio-runtime owned check destruction unconfirmed')
+    }
+  }
+  // Never destroy after this RPC: its acknowledgement may be lost after a successor acquires.
+  const pool = reservation.pool
+  if (pool) {
+    try {
+      await awaitWithSignal(
+        () => pool.release(reservation.lease, cleaned, destructionConfirmed),
+        AbortSignal.timeout(CHECK_POOL_RPC_BUDGET_MS),
+      )
+    } catch {
+      console.warn('studio-runtime check reservation release unconfirmed')
+    }
+  }
 }
 
 /** Corpo do aquecimento: `{executionId, threeD}`. O nome segue a régua do pedido de verificação. */

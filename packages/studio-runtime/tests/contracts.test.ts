@@ -177,4 +177,19 @@ describe('contrato do executor Pro', () => {
     expect(versionAtLeast(lockfile.packages['node_modules/nanoid'].version, '3.3.17')).toBe(true)
     expect(versionAtLeast(lockfile.packages['node_modules/postcss'].version, '8.5.23')).toBe(true)
   })
+
+  test('Worker, binário do sandbox e prova Linux usam a mesma versão fixada do SDK', async () => {
+    const pkg = await Bun.file(new URL('../package.json', import.meta.url)).json()
+    const version = pkg.dependencies['@cloudflare/sandbox']
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/)
+    const dockerfile = await Bun.file(new URL('../Dockerfile', import.meta.url)).text()
+    const imageVersion = dockerfile.match(
+      /COPY --from=docker\.io\/cloudflare\/sandbox:([^ ]+)/,
+    )?.[1]
+    expect(imageVersion).toBe(version)
+    const fixture = await Bun.file(
+      new URL('fixtures/prepare-python-sdk-linux.ts', import.meta.url),
+    ).text()
+    expect(fixture.match(/'@cloudflare\/sandbox': '([^']+)'/)?.[1]).toBe(version)
+  })
 })

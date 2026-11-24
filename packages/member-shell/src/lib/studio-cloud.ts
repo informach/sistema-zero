@@ -40,11 +40,22 @@
  */
 import {
   canReadStudioSealedStorage,
+  STUDIO_SEALED_PARTS_VERSION,
   STUDIO_SEALED_STORAGE_READER,
   StudioSealedManifestSchema,
 } from '@sistemazero/core/creations/studio-sealed-storage'
-import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
-import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
+import {
+  STUDIO_PARTS_FORMAT,
+  STUDIO_PARTS_VERSION,
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio'
+import {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+} from '@sistemazero/core/studio/pinta-regional-reference'
+import { studioProjectIndexName } from '@sistemazero/core/studio/project-index-name'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 
 export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
 
@@ -192,9 +203,30 @@ const PART_FETCH_CONCURRENCY = 3
 export async function buildStudioCloudSnapshot(
   project: StudioProjectLike,
 ): Promise<{ json: string; parts?: CloudPart[] }> {
-  assertLegacyStudioProjectMaterials(project)
-  const assets = Array.isArray(project.assets) ? project.assets : []
-  if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(project) }
+  // A producer can outlive an editor change while the digest yields. Capture the
+  // complete authored input once so hashes and lazy part text describe one revision.
+  const captured = copyStudioProjectJson(project)
+  if (!captured || typeof captured !== 'object' || Array.isArray(captured))
+    throw new Error('O projeto não é um documento válido.')
+  const assets: unknown[] =
+    'assets' in captured && Array.isArray(captured.assets) ? captured.assets : []
+  const regional = assets.some(hasRegionalPintaReference)
+  const projectFormat = 'formatVersion' in captured ? captured.formatVersion : undefined
+  if (regional) {
+    if (
+      !hashSupported() ||
+      (projectFormat !== STUDIO_PROJECT_FORMAT_VERSION &&
+        projectFormat !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+    )
+      throw new Error(
+        'Esta versão não consegue guardar o cenário na conta. O original foi preservado.',
+      )
+    const { admitRegionalProjectAssets } = await import(
+      '@sistemazero/studio/pinta-regional-admission'
+    )
+    await admitRegionalProjectAssets(assets)
+  } else assertLegacyStudioProjectMaterials(captured)
+  if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(captured) }
   // Um asset por vez: o pico de memória é UM JSON canônico (um cenário pode ter MB), não
   // todos de uma vez — e o digest já roda fora da main thread.
   const hashes = await perfSpanAsync(
@@ -206,17 +238,32 @@ export async function buildStudioCloudSnapshot(
     },
     { assets: assets.length },
   )
-  const manifest: StudioPartsManifest = {
-    format: STUDIO_PARTS_FORMAT,
-    version: STUDIO_PARTS_VERSION,
-    program: { ...(project as unknown as Record<string, unknown>), assets: [] },
-    assets: hashes,
-  }
+  const manifest = regional
+    ? StudioSealedManifestSchema.parse({
+        format: STUDIO_PARTS_FORMAT,
+        version: STUDIO_SEALED_PARTS_VERSION,
+        requirements: {
+          envelopeVersion: STUDIO_SEALED_PARTS_VERSION,
+          projectFormat,
+          materials: 'pinta-region-5',
+          ...('programmingLanguage' in captured && captured.programmingLanguage === 'python'
+            ? { programmingLanguage: 'python' }
+            : {}),
+        },
+        program: { ...captured, assets: [] },
+        assets: hashes,
+      })
+    : {
+        format: STUDIO_PARTS_FORMAT,
+        version: STUDIO_PARTS_VERSION,
+        program: { ...captured, assets: [] },
+        assets: hashes,
+      }
   return {
     json: JSON.stringify(manifest),
-    parts: assets.map((asset, index) => ({
-      hash: hashes[index] as string,
-      text: () => canonicalJson(asset),
+    parts: hashes.map((hash, index) => ({
+      hash,
+      text: () => canonicalJson(assets[index]),
     })),
   }
 }
@@ -248,8 +295,7 @@ export async function resolveStudioCloudDocument(
       !hashSupported() ||
       !canReadStudioSealedStorage(STUDIO_SEALED_STORAGE_READER, receipt.requirements) ||
       !parsed.success ||
-      parsed.data.requirements.projectFormat !== receipt.requirements.projectFormat ||
-      parsed.data.requirements.materials !== receipt.requirements.materials ||
+      canonicalJson(parsed.data.requirements) !== canonicalJson(receipt.requirements) ||
       parsed.data.program.id !== downloaded.summary.itemId ||
       parsed.data.assets.length !== downloaded.parts.length ||
       parsed.data.assets.some((hash, index) => hash !== downloaded.parts[index]?.hash) ||
@@ -309,8 +355,6 @@ const LIST_TIMEOUT_MS = 4000
 /** O que não coube no orçamento (`deferred`) volta em passes seguidos, com esta folga, até este teto. */
 const DEFERRED_PASS_DELAY_MS = 2000
 const MAX_DEFERRED_PASSES = 5
-/** Teto do nome no índice (`CREATION_LIMITS.maxNameChars`); o BFF também corta. */
-const MAX_CLOUD_NAME = 120
 /**
  * Teto da miniatura no índice (`CREATION_LIMITS.maxThumbChars` do members e `MAX_THUMB_CHARS`
  * do BFF): acima disso o servidor DESCARTA em silêncio. O pacote reduz até caber
@@ -458,7 +502,7 @@ export function createStudioCloudSync(options: {
         return {
           ...(await buildStudioCloudSnapshot(project)),
           meta: {
-            name: Array.from(project.name).slice(0, MAX_CLOUD_NAME).join(''),
+            name: studioProjectIndexName(project.name),
             kind: project.kind === 'pro' ? 'pro' : 'classic',
             updatedAt: project.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
@@ -532,7 +576,7 @@ export function createStudioCloudSync(options: {
       // Cópia = jogo NOVO (id novo) — o import minta ulid, sanitiza e sobe pelo espelho. Nasce
       // com a capa que a nuvem listou (senão o card da cópia ficava em branco até ser aberto).
       await studio.importProjectSnapshot(raw, {
-        name: Array.from(`${name} (de outro aparelho)`).slice(0, MAX_CLOUD_NAME).join(''),
+        name: studioProjectIndexName(`${name} (de outro aparelho)`),
         namespace: options.localNamespace ?? options.viewerId,
         thumb: downloaded.summary.thumb,
       })
@@ -817,9 +861,7 @@ export function createStudioCloudSync(options: {
           }
           // Cópia = projeto NOVO (id novo) — o import já minta ulid e sobe pelo espelho.
           const imported = await studio.importProjectSnapshot(project, {
-            name: Array.from(`${project.name} (deste computador)`)
-              .slice(0, MAX_CLOUD_NAME)
-              .join(''),
+            name: studioProjectIndexName(`${project.name} (deste computador)`),
             namespace: options.localNamespace ?? options.viewerId,
             silent: true,
           })

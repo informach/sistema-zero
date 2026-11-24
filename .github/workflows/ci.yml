@@ -118,6 +118,11 @@ jobs:
           bun tests/validation-smoke.ts
           bun tests/templates-smoke.ts
 
+      - name: Compilar o cenário regional Pro sem rede e preservar seu PNG
+        env:
+          STUDIO_REGIONAL_TEST_IMAGE: sistemazero-studio-runtime:verify
+        run: bun --no-env-file test ./packages/member-shell/tests/studio-regional-build.test.ts
+
       - name: Lint (biome ci)
         run: bun run ci
 
@@ -755,6 +760,12 @@ jobs:
         shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v5
+        with:
+          # O Playwright lê a base do PR para os metadados. Com só o merge raso, ele
+          # inicia um fetch que pode expirar e deixar shallow.lock para o fetch dos
+          # leitores históricos. Os dois pais do merge já incluem a base, sem fetch
+          # automático durante a suíte nem remoção de locks de outro processo.
+          fetch-depth: 2
 
       - uses: oven-sh/setup-bun@v2
         with:

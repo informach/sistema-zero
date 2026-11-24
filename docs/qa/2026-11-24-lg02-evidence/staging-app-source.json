@@ -1,0 +1,32 @@
+{
+  "testedAt": "2026-11-24T13:34:19.891Z",
+  "environment": "staging",
+  "expectedSha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "results": [
+    {
+      "service": "members",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "deploymentId": "9450cef0-83e4-45ee-b92a-94187aca789e",
+      "passed": true
+    },
+    {
+      "service": "auth",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "deploymentId": "7ad13979-e31f-403f-af19-759fc4e11211",
+      "passed": true
+    },
+    {
+      "service": "gateway",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "deploymentId": "65ccb79f-a2f8-4edd-8b84-116c001be5ab",
+      "passed": true
+    },
+    {
+      "service": "kids",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "deploymentId": "85b6dc74-7744-4f06-9a15-6b47390b53ac",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

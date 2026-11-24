@@ -23,23 +23,35 @@ function requestFor(label) {
     return { path: '/v1/check/warm', body: { executionId, threeD: 'invalid' } }
   const mark = `LG02-${label}`
   const wait = label === 'tab-b' || label === 'during-failure' ? 3000 : 100
-  const longOverlap = ['overlap-failure', 'isolated-failure', 'long-control'].includes(process.env.LG02_SCENARIO) && label === 'during-failure'
-  const objective = (index) => ({ id: `texto-${index}`, rule: {
-    type: 'behavior', steps: longOverlap
-      ? [{ action: 'wait', ms: 10000 }, { action: 'wait', ms: 5000 }]
-      : [{ action: 'wait', ms: wait }],
-    expect: { target: { kind: 'text' }, compare: 'contains', value: mark },
-  } })
+  const longOverlap =
+    ['overlap-failure', 'isolated-failure', 'long-control'].includes(process.env.LG02_SCENARIO) &&
+    label === 'during-failure'
+  const objective = (index) => ({
+    id: `texto-${index}`,
+    rule: {
+      type: 'behavior',
+      steps: longOverlap
+        ? [
+            { action: 'wait', ms: 10000 },
+            { action: 'wait', ms: 5000 },
+          ]
+        : [{ action: 'wait', ms: wait }],
+      expect: { target: { kind: 'text' }, compare: 'contains', value: mark },
+    },
+  })
   return {
     path: '/v1/check',
     body: {
       mode: 'classic',
-      executionId: process.env.LG02_SCENARIO === 'isolated-failure' && label === 'during-failure'
-        ? `${executionId}-b` : executionId,
+      executionId:
+        process.env.LG02_SCENARIO === 'isolated-failure' && label === 'during-failure'
+          ? `${executionId}-b`
+          : executionId,
       scope,
-      document: label === 'execution-failure'
-        ? '<!doctype html><body><script>while(true){}</script>'
-        : `<!doctype html><body><p>${mark}</p>`,
+      document:
+        label === 'execution-failure'
+          ? '<!doctype html><body><script>while(true){}</script>'
+          : `<!doctype html><body><p>${mark}</p>`,
       objectives: longOverlap ? [objective(1), objective(2)] : [objective(1)],
     },
   }
@@ -61,9 +73,17 @@ async function actualRequest(label) {
   const command = `bun -e 'eval(Buffer.from("${encoded}","base64").toString())'`
   const { stdout } = await runFile(
     'C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe',
-    ['ssh', '-p', '415d5a1c-5f75-432c-8445-b395d0977ce3',
-      '-e', 'f634cff6-aafb-4804-8b69-172fad4e946e',
-      '-s', 'aa282801-ffba-477c-af6d-394b2f4f9af9', '--', command],
+    [
+      'ssh',
+      '-p',
+      '415d5a1c-5f75-432c-8445-b395d0977ce3',
+      '-e',
+      'f634cff6-aafb-4804-8b69-172fad4e946e',
+      '-s',
+      'aa282801-ffba-477c-af6d-394b2f4f9af9',
+      '--',
+      command,
+    ],
     { timeout: 180000, windowsHide: true, maxBuffer: 2 * 1024 * 1024 },
   )
   const line = stdout.split(/\r?\n/).find((line) => line.startsWith('{'))
@@ -71,12 +91,25 @@ async function actualRequest(label) {
   return JSON.parse(line)
 }
 
-const labels = new Set(['first', 'warm', 'repeat', 'tab-a', 'tab-b', 'invalid-warm',
-  'after-invalid', 'execution-failure', 'during-failure', 'recovery'])
+const labels = new Set([
+  'first',
+  'warm',
+  'repeat',
+  'tab-a',
+  'tab-b',
+  'invalid-warm',
+  'after-invalid',
+  'execution-failure',
+  'during-failure',
+  'recovery',
+])
 const server = createServer(async (request, response) => {
   const url = new URL(request.url, 'http://127.0.0.1')
   const label = url.searchParams.get('case')
-  if (!labels.has(label)) { response.writeHead(404).end(); return }
+  if (!labels.has(label)) {
+    response.writeHead(404).end()
+    return
+  }
   if (request.method === 'GET' && url.pathname === '/') {
     response.setHeader('content-type', 'text/html; charset=utf-8')
     response.end(`<!doctype html><html lang="pt-BR"><title>QA LG02</title><h1>Verificação QA: ${label}</h1><button>Verificar</button><pre id="result"></pre><script>
@@ -88,7 +121,8 @@ const server = createServer(async (request, response) => {
     return
   }
   if (request.method !== 'POST' || url.pathname !== '/run') {
-    response.writeHead(405).end(); return
+    response.writeHead(405).end()
+    return
   }
   try {
     const observation = await actualRequest(label)
@@ -105,17 +139,21 @@ const server = createServer(async (request, response) => {
 })
 await new Promise((done) => server.listen(0, '127.0.0.1', done))
 const origin = `http://127.0.0.1:${server.address().port}`
-const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' })
+const browser = await chromium.launch({
+  executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+})
 try {
   const context = await browser.newContext()
-  const a = await context.newPage(), b = await context.newPage()
+  const a = await context.newPage(),
+    b = await context.newPage()
   async function check(page, label) {
     await page.goto(`${origin}/?case=${label}`)
     await page.getByRole('button', { name: 'Verificar' }).click()
     await page.locator('#result[data-complete=true]').waitFor({ timeout: 190000 })
     return JSON.parse(await page.locator('#result').textContent())
   }
-  if (['overlap-failure', 'isolated-failure', 'long-control'].includes(process.env.LG02_SCENARIO)) await check(a, 'warm')
+  if (['overlap-failure', 'isolated-failure', 'long-control'].includes(process.env.LG02_SCENARIO))
+    await check(a, 'warm')
   else {
     for (const label of ['first', 'warm', 'repeat']) await check(a, label)
     await Promise.all([check(a, 'tab-a'), check(b, 'tab-b')])
@@ -131,12 +169,26 @@ try {
   await browser.close()
   server.closeAllConnections()
   await new Promise((done) => server.close(done))
-  await writeFile(resolve(directory, `${process.env.LG02_SCENARIO ?? 'baseline'}-results.json`), JSON.stringify({
-    testedAt: new Date().toISOString(), environment: 'staging', executionId,
-    scope: 'QA sintética; duas abas reais com a mesma identidade do executor',
-    activationQualified: false,
-    missing: ['falha de limpeza injetada no contêiner real', 'suspensão', 'capacidade',
-      'perfis distintos', 'percurso autenticado completo do Members'],
-    observations,
-  }, null, 2) + '\n')
+  await writeFile(
+    resolve(directory, `${process.env.LG02_SCENARIO ?? 'baseline'}-results.json`),
+    JSON.stringify(
+      {
+        testedAt: new Date().toISOString(),
+        environment: 'staging',
+        executionId,
+        scope: 'QA sintética; duas abas reais com a mesma identidade do executor',
+        activationQualified: false,
+        missing: [
+          'falha de limpeza injetada no contêiner real',
+          'suspensão',
+          'capacidade',
+          'perfis distintos',
+          'percurso autenticado completo do Members',
+        ],
+        observations,
+      },
+      null,
+      2,
+    ) + '\n',
+  )
 }

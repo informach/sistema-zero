@@ -15,7 +15,7 @@ import {
 import type { StoredProjectRecord } from './projectStorageRecords'
 import {
   captureProjectStorageScope,
-  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
   type ProjectStorageScope,
 } from './projectStorageRuntime'
 import { type ProjectSummary, toProjectSummary } from './projectSummary'
@@ -72,7 +72,7 @@ export async function loadProjectSummaryById(
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectSummary | null> {
   const scope = storageScope ?? captureProjectStorageScope()
-  if (isPrivateRegionalProjectScope(scope)) {
+  if (isRegionalProjectScope(scope)) {
     const { readRetainedSummary } = await import('./retainedProjectList')
     const retained = await readRetainedSummary(scope, id, true)
     if (retained !== undefined) return retained
@@ -102,7 +102,7 @@ export async function loadProjectSummariesByIds(
   if (ids.length === 0) return []
   const scope = storageScope ?? captureProjectStorageScope()
   const retained = new Map<string, ProjectSummary | null>()
-  if (isPrivateRegionalProjectScope(scope)) {
+  if (isRegionalProjectScope(scope)) {
     const { readRetainedSummary } = await import('./retainedProjectList')
     for (const id of new Set(ids)) {
       const card = await readRetainedSummary(scope, id, true)
@@ -164,7 +164,7 @@ async function listAllProjectsInternal(
     notifyRecoveredProjects(scope, prepared.changed)
   }
   const retainedIds = new Set(
-    isPrivateRegionalProjectScope(scope)
+    isRegionalProjectScope(scope)
       ? allKeys.flatMap((key) =>
           typeof key === 'string' && key.startsWith(RETAINED_PROJECT_PREFIX)
             ? [key.slice(RETAINED_PROJECT_PREFIX.length)]

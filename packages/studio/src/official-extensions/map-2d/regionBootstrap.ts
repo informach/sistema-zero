@@ -34,9 +34,20 @@ export function mapTwoDRegionalMaterialsBootstrap(target: MapTarget, worlds: rea
   return composeRegionBootstrap(target, `[${worlds.join(',')}]`)
 }
 
-async function composeRegionBootstrap(target: MapTarget, data: string) {
+/** Stable engine bytes for converted Pro builds; authored worlds travel in sz-assets.js. */
+export function mapTwoDRegionalEngineBootstrap(target: MapTarget) {
+  return composeRegionBootstrap(target, null)
+}
+export function regionalWorldsDataScript(worldsJson: string): string {
+  return `globalThis.__SZ_PINTA_REGIONAL_WORLDS__=${JSON.stringify(worldsJson).replaceAll('<', '\\u003c')};\n`
+}
+
+async function composeRegionBootstrap(target: MapTarget, data: string | null) {
   // An admitted scene can still contain HTML-sensitive text in its properties.
-  const literal = JSON.stringify(data).replaceAll('<', '\\u003c')
+  const literal =
+    data === null
+      ? `(function(){var data=globalThis.__SZ_PINTA_REGIONAL_WORLDS__;if(typeof data!=="string")throw new Error("Os dados do cenário não foram carregados.");return data;})()`
+      : JSON.stringify(data).replaceAll('<', '\\u003c')
   const source = await composeMapTwoDBootstrap(target, true, {
     fragment: `
 function createPrivateMap2D(host,_pintaSharedSceneGeometry){${factorySlot}return _pintaRegionFactory(host,createMap2D(host),${regionWorldData});}

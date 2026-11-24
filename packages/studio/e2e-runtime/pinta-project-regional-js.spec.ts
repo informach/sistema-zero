@@ -42,7 +42,7 @@ async function material(
 
 for (const extension of [gameTwoDManifest, gameKitManifest]) {
   for (const pro of [false, true]) {
-    test(`${extension.id} ${pro ? 'Pro' : 'Classic'} reads stored PNG5 worlds and updates the same program`, async ({
+    test(`public ${extension.id} ${pro ? 'Pro' : 'Classic'} reads stored PNG5 worlds and updates the same program`, async ({
       page,
     }) => {
       const errors: string[] = []
@@ -98,7 +98,7 @@ for (const extension of [gameTwoDManifest, gameKitManifest]) {
           globalThis.providerProbe.showPintaJavaScriptProject(project, { seed: true, pro }),
         { project, pro },
       )
-      const proof = page.frameLocator('iframe[title="Projeto PNG5 privado"]').locator('body')
+      const proof = page.frameLocator('iframe[title="Projeto PNG5 público"]').locator('body')
       await expect(proof).toHaveAttribute('data-prova', /"primeira":-474,"segunda":-466/)
       const marker = edited.regional
       if (!marker || !edited.width || !edited.height) throw new Error('PNG editado sem identidade.')

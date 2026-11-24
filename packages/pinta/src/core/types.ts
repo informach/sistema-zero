@@ -75,6 +75,7 @@ export type PintaSceneWire =
   | import('@sistemazero/core/studio/pinta-region-scene').PintaRegionSceneWire
 
 export interface PintaExportedAsset {
+  regional?: import('@sistemazero/core/studio/pinta-regional-marker').PintaRegionalMarker
   maps?: Array<Omit<PintaExportedAsset, 'maps'>>
   scene?: PintaSceneWire
   /** Id do desenho no Pinta — reenvio do mesmo desenho = upsert no destino. */

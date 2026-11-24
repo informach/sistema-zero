@@ -143,7 +143,19 @@ test('espalhar pixel, vetor e conjunto: prévia determinística, cancelamento, h
   await page.getByLabel('Tamanho do pincel (casas)', { exact: true }).selectOption('1')
   const beforeSet = objects(await backup(page)),
     setIds = await begin(4)
+  // Um aviso de sincronização pode deslocar o papel durante o gesto. Sem novo
+  // movimento do ponteiro, soltar deve confirmar os objetos da prévia já vista.
+  const paperTransform = await page.locator('.pin-paper').evaluate((paper) => {
+    if (!(paper instanceof HTMLElement)) throw new Error('Papel esperado')
+    const previous = paper.style.transform
+    paper.style.transform = 'translateY(32px)'
+    return previous
+  })
   await finish()
+  await page.locator('.pin-paper').evaluate((paper, transform) => {
+    if (!(paper instanceof HTMLElement)) throw new Error('Papel esperado')
+    paper.style.transform = transform
+  }, paperTransform)
   const setAssets = await backup(page),
     set = setAssets.find((a) => a.kind === 'map-set')!
   const newSets = objects(setAssets).slice(beforeSet.length)

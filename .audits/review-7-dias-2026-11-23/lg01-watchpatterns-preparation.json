@@ -207,88 +207,64 @@
   "before": [
     {
       "service": "community-kids",
-      "deployments": [
-        "47b84d0c-89e0-49fc-b3de-52e9573fa6ce"
-      ],
+      "deployments": ["47b84d0c-89e0-49fc-b3de-52e9573fa6ce"],
       "state": "online"
     },
     {
       "service": "community",
-      "deployments": [
-        "778aee1a-e2e9-4816-8cbb-0385e5723d45"
-      ],
+      "deployments": ["778aee1a-e2e9-4816-8cbb-0385e5723d45"],
       "state": "online"
     },
     {
       "service": "admin",
-      "deployments": [
-        "5e10b8b4-bc51-4ba4-8602-9d7315512764"
-      ],
+      "deployments": ["5e10b8b4-bc51-4ba4-8602-9d7315512764"],
       "state": "online"
     },
     {
       "service": "members",
-      "deployments": [
-        "12c91907-5bc1-410d-9fae-e2b51b44fd43"
-      ],
+      "deployments": ["12c91907-5bc1-410d-9fae-e2b51b44fd43"],
       "state": "online"
     },
     {
       "service": "api-gateway",
-      "deployments": [
-        "d3988e33-3c73-4ce9-917c-dff7029aed65"
-      ],
+      "deployments": ["d3988e33-3c73-4ce9-917c-dff7029aed65"],
       "state": "online"
     },
     {
       "service": "arquipelago-api",
-      "deployments": [
-        "47c779a9-cb21-4567-a4a4-fe4e143f120e"
-      ],
+      "deployments": ["47c779a9-cb21-4567-a4a4-fe4e143f120e"],
       "state": "online"
     }
   ],
   "after": [
     {
       "service": "community-kids",
-      "deployments": [
-        "47b84d0c-89e0-49fc-b3de-52e9573fa6ce"
-      ],
+      "deployments": ["47b84d0c-89e0-49fc-b3de-52e9573fa6ce"],
       "state": "online"
     },
     {
       "service": "community",
-      "deployments": [
-        "778aee1a-e2e9-4816-8cbb-0385e5723d45"
-      ],
+      "deployments": ["778aee1a-e2e9-4816-8cbb-0385e5723d45"],
       "state": "online"
     },
     {
       "service": "admin",
-      "deployments": [
-        "5e10b8b4-bc51-4ba4-8602-9d7315512764"
-      ],
+      "deployments": ["5e10b8b4-bc51-4ba4-8602-9d7315512764"],
       "state": "online"
     },
     {
       "service": "members",
-      "deployments": [
-        "12c91907-5bc1-410d-9fae-e2b51b44fd43"
-      ],
+      "deployments": ["12c91907-5bc1-410d-9fae-e2b51b44fd43"],
       "state": "online"
     },
     {
       "service": "api-gateway",
-      "deployments": [
-        "d3988e33-3c73-4ce9-917c-dff7029aed65"
-      ],
+      "deployments": ["d3988e33-3c73-4ce9-917c-dff7029aed65"],
       "state": "online"
     },
     {
       "service": "arquipelago-api",
-      "deployments": [
-        "47c779a9-cb21-4567-a4a4-fe4e143f120e"
-      ],
+      "deployments": ["47c779a9-cb21-4567-a4a4-fe4e143f120e"],
       "state": "online"
     }
   ],

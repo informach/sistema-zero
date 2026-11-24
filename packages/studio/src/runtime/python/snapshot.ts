@@ -14,7 +14,7 @@ import {
 import { isDocumentRecord } from '../../core/projectDocument'
 import { buildPythonAssetBundle } from '../../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../../python/blocks/workspaceDraft'
-import { isPrivateRegionalProjectScope } from '../../state/projectStorageRuntime'
+import { isRegionalProjectScope } from '../../state/projectStorageRuntime'
 import {
   type PythonProjectDocument,
   pythonFilesToTree,
@@ -48,7 +48,7 @@ export async function preparePythonExecutionSnapshot(
     return snapshotFromDocument(await refinePythonProjectDocument(raw))
 
   const scope = options[PRIVATE_REGIONAL_PROJECT]
-  if (!scope || !isPrivateRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (!scope || !isRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
   const { signal } = options
   const lifetime =
     signal && scope.signal ? AbortSignal.any([signal, scope.signal]) : (signal ?? scope.signal)

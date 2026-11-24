@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import {
   STUDIO_SEALED_STORAGE_PROTOCOL,
   STUDIO_SEALED_STORAGE_READER,
@@ -21,21 +22,45 @@ test('material regional privado não gera manifesto multipart para o espelho', a
 for (const formatVersion of [2, 3]) {
   test(`o cliente atual exclui revisão conhecida de formato ${formatVersion}`, async () => {
     let sent: unknown
+    const generation = randomUUID()
     const cloud = createStudioCloudTransport({
       viewerId: 'test-viewer',
-      fetch: async (_url, init) => {
-        expect(init?.method).toBe('DELETE')
+      fetch: async (url, init) => {
+        expect(init?.method).toBe('POST')
         expect(new Headers(init?.headers).get('x-sz-viewer')).toBe('test-viewer')
+        if (String(url).endsWith('/head'))
+          return Response.json({
+            studioHead: {
+              protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+              generation,
+              revision: 7,
+              exists: true,
+              adopted: true,
+            },
+          })
         const body = JSON.parse(String(init?.body))
         sent = body
-        return body.maxFormatVersion >= formatVersion
-          ? Response.json({ deleted: true, revision: 8 })
-          : Response.json({ error: { code: 'CREATION_CLIENT_OUTDATED' } }, { status: 409 })
+        return Response.json({
+          deleted: true,
+          revision: 0,
+          studioHead: {
+            protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+            generation: randomUUID(),
+            revision: 0,
+            exists: false,
+            adopted: true,
+          },
+        })
       },
     })
     try {
-      await expect(cloud.remove('test-project', 7)).resolves.toEqual({ revision: 8 })
-      expect(sent).toEqual({ baseRevision: 7, maxFormatVersion: 3 })
+      await expect(cloud.remove('test-project', 7)).resolves.toEqual({ revision: 0 })
+      expect(sent).toEqual({
+        itemId: 'test-project',
+        protocol: STUDIO_SEALED_STORAGE_PROTOCOL,
+        baseRevision: 7,
+        baseGeneration: generation,
+      })
     } finally {
       cloud.dispose()
     }

@@ -131,11 +131,30 @@ test('biblioteca: arrastar arte real e conjunto, cancelar, desfazer e reabrir', 
   await page.getByRole('button', { name: 'Refazer', exact: true }).click()
   expect(objects(await backup(page))).toEqual(placed)
   await start('jardim-vinculado')
+  const expectedPlacement = await preview
+    .locator('rect')
+    .last()
+    .evaluate((outline) => ({
+      x: Number(outline.getAttribute('x')),
+      y: Number(outline.getAttribute('y')),
+    }))
+  const paperTransform = await page.locator('.pin-paper').evaluate((paper) => {
+    if (!(paper instanceof HTMLElement)) throw new Error('Papel esperado')
+    const previous = paper.style.transform
+    paper.style.transform = 'translateY(32px)'
+    return previous
+  })
   await finish()
+  await page.locator('.pin-paper').evaluate((paper, transform) => {
+    if (!(paper instanceof HTMLElement)) throw new Error('Papel esperado')
+    paper.style.transform = transform
+  }, paperTransform)
   const withSet = await backup(page)
   const garden = withSet.find((a) => a.kind === 'map-set')!
   expect(objects(withSet)).toHaveLength(2)
   expect(objects(withSet)[1]!.setId).toBe(garden.id)
+  const setObject = objects(withSet)[1]!
+  expect({ x: setObject.x, y: setObject.y }).toEqual(expectedPlacement)
   await start('fantasma-da-vila')
   await info.attach('previa-vetorial', { body: await page.screenshot(), contentType: 'image/png' })
   await finish()

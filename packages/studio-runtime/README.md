@@ -36,14 +36,32 @@ programa. `ThreeDCheckSandbox` mantém `standard-4` e o limite de 50 instâncias
 executor geral permanece. Na validação remota de 15/10/2026, `lite` falhou ao
 descompactar a imagem no disco de 2 GB.
 
-**Contêiner da verificação dos objetivos (23/11/2026).** O `/v1/check` usa o contêiner de quem
-pediu (`objetivos-<executionId>`, `src/check-container.ts`), que dorme sozinho depois de 5 minutos
-parado (`sleepAfter`). Teste que termina com resposta apaga só a pasta dele; qualquer falha destrói
-o contêiner. O `/v1/check/warm` (`{executionId, threeD}`) liga o mesmo contêiner e abre o Chromium
-uma vez (`runtime/check-warm.mjs`), quando a criança abre uma parte com objetivos que rodam o jogo.
-Como cada criança nessa parte ocupa uma vaga, o `ThreeDCheckSandbox` passou de 10 para 25
-instâncias. O log `studio-runtime check timing` mostra o tempo de cada fase (subida, compilação,
-execução e total).
+**Contêiner da verificação dos objetivos (LG02, 24/11/2026).** Um Durable Object por classe
+2D/3D limita o cache a 10 máquinas gerais e 2 máquinas 3D. Cada vaga pertence a um perfil.
+Verificações sucessivas do mesmo perfil reutilizam
+a máquina apenas depois de uma limpeza confirmada; abas sobrepostas recebem máquinas diferentes.
+Falha só destrói a máquina da própria operação. Reservas expiradas trocam o nome do recurso e
+liberações antigas não alteram um sucessor. A posse fica no SQLite do `CheckSandboxPool`, e não
+na memória de uma réplica do Members. Não destruir a máquina após tentar devolver uma reserva
+limpa: a confirmação RPC pode se perder depois de outro dono adquiri-la.
+
+O cache deixa capacidade para verificações novas. Uma vaga expirada só é substituída depois de
+marcar sua retirada no SQLite e confirmar a destruição do contêiner. Descarte sem confirmação
+mantém a vaga contabilizada. Com o cache cheio, o aquecimento é dispensado e a
+verificação segue em máquina exclusiva descartável. Perfis diferentes nunca reutilizam a
+mesma máquina. As reservas ociosas expiram após 5 minutos; a próxima aquisição descarta o
+nome antigo antes de admitir outro. `STUDIO_CHECK_CACHE_SLOTS` permite somente reduzir o
+limite para a qualificação privada, sem ampliar os tetos do produto.
+
+O `/v1/check/warm` (`{executionId, threeD}`) abre e fecha o Chromium (`runtime/check-warm.mjs`)
+na máquina reservada; se ela já está em uso, dispensa o aquecimento. As máquinas dormem após
+5 minutos sem atividade (`sleepAfter`). Os tetos continuam 50 instâncias gerais e 10 3D, sem
+aumento nesta etapa. O log `studio-runtime check timing` mede subida, compilação, execução e total.
+Qualificação e estado de liberação: `docs/plans/2026-11-24-lg02-aquecimento-seguro.md`.
+
+Interrupção: `STUDIO_CHECK_WARMING_ENABLED=0` dispensa o aquecimento e usa contêiner exclusivo
+por pedido, preservando a migração do coordenador. Não tentar desfazer a migração SQLite para
+interromper o recurso. A ausência dessa opção também mantém o caminho exclusivo.
 
 A regra existente expira `previews/` após dois dias. Antes de ativar os inputs
 Python, configure também as duas regras de um dia descritas abaixo. `published/`,

@@ -19,6 +19,7 @@ import { pintaImageRequiredRuntimeFeature } from '@sistemazero/core/studio/pinta
 import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
 import {
   PYTHON_MOLDA_SCENE_FEATURE,
+  PYTHON_PINTA_REGIONS_FEATURE,
   PYTHON_PINTA_WORLD_FEATURE,
 } from '@sistemazero/core/studio/python-runtime-features'
 import type {
@@ -30,6 +31,11 @@ import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import type { EditableStudioProject, Project, PythonProjectDocument } from '@sistemazero/studio'
 import { isCourseModelLibId } from '@sistemazero/studio/course-models'
 import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
+import {
+  admitRegionalProjectAssets,
+  assertRegionalProjectAssetProof,
+  type PintaRegionalProjectAdmissions,
+} from '@sistemazero/studio/pinta-regional-admission'
 import { withoutProjectPublication } from '@sistemazero/studio/project-publication'
 import { preparePythonExecutionSnapshot } from '@sistemazero/studio/python-snapshot'
 import { getEnv } from '../lib/env'
@@ -56,13 +62,16 @@ export class StudioPublicationError extends Error {
 }
 
 /** Capture this requirement before stripping private recipe/provenance for publication. */
-type PintaRuntimeFeature = NonNullable<ReturnType<typeof pintaImageRequiredRuntimeFeature>>
+type PintaRuntimeFeature =
+  | NonNullable<ReturnType<typeof pintaImageRequiredRuntimeFeature>>
+  | typeof PYTHON_PINTA_REGIONS_FEATURE
 export function studioRequiredPintaRuntimeFeatures(
   project: EditableStudioProject,
 ): PintaRuntimeFeature[] {
   if (project.programmingLanguage !== 'python') return []
   const required = new Set<PintaRuntimeFeature>()
   for (const asset of project.assets ?? []) {
+    if (asset.regional) required.add(PYTHON_PINTA_REGIONS_FEATURE)
     const feature = asset.pintaImage && pintaImageRequiredRuntimeFeature(asset.pintaImage)
     if (feature) required.add(feature)
   }
@@ -73,11 +82,24 @@ export function studioRequiresPintaSceneReader(project: EditableStudioProject): 
 }
 
 /** Publish game content, never private tutoring notes or links to the author's workspace. */
-export function studioPublicProject(project: Project): Project
-export function studioPublicProject(project: PythonProjectDocument): PythonProjectDocument
-export function studioPublicProject(project: EditableStudioProject): EditableStudioProject
-export function studioPublicProject(project: EditableStudioProject): EditableStudioProject {
-  assertLegacyStudioProjectMaterials(project)
+export function studioPublicProject(
+  project: Project,
+  proof?: PintaRegionalProjectAdmissions,
+): Project
+export function studioPublicProject(
+  project: PythonProjectDocument,
+  proof?: PintaRegionalProjectAdmissions,
+): PythonProjectDocument
+export function studioPublicProject(
+  project: EditableStudioProject,
+  proof?: PintaRegionalProjectAdmissions,
+): EditableStudioProject
+export function studioPublicProject(
+  project: EditableStudioProject,
+  proof?: PintaRegionalProjectAdmissions,
+): EditableStudioProject {
+  if (proof) assertRegionalProjectAssetProof(project.assets, proof)
+  else assertLegacyStudioProjectMaterials(project)
   const assets = project.assets?.map(
     // The published image is detached from the author's private Pinta recipe/provenance.
     // A course model keeps its library reference: it is public course art, and without it
@@ -95,6 +117,13 @@ export function studioPublicProject(project: EditableStudioProject): EditableStu
     proMeta: { templateId: project.proMeta.templateId, devScript: project.proMeta.devScript },
     assets,
   }
+}
+
+export async function prepareStudioPublicProject(raw: unknown): Promise<EditableStudioProject> {
+  const project = await prepareEditableStudioProject(raw)
+  if (!project) throw new StudioPublicationError(400, 'Projeto inválido.')
+  const proof = await admitRegionalProjectAssets(project.assets)
+  return studioPublicProject(project, proof)
 }
 
 export function studioPublicationOwner(userId: string, accountId: string): string {
@@ -442,7 +471,7 @@ export async function publishStudioClassicRevision(options: {
   parentOrigin: string
   signal?: AbortSignal
 }): Promise<StudioClassicPublication> {
-  assertLegacyStudioProjectMaterials(options.project)
+  await prepareStudioPublicProject(options.project)
   if (!isStudioPublicationId(options.playId))
     throw new StudioPublicationError(400, 'Publicação inválida.')
   const sourceHash = createHash('sha256').update(options.source).digest('hex')

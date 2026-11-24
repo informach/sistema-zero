@@ -7,7 +7,8 @@
 a mesma conferência da verificação (`requireLesson`, parte aberta fora da equipe, revisão de agora)
 e, se a parte tem objetivo de execução JavaScript, `ProjectExecutionChecker.warm` (opcional na
 porta). O adaptador manda `POST /v1/check/warm` com o MESMO `executionId` do `check`
-(`check-<sha256(requester)>`; o executor usa esse nome para o contêiner da criança), sem esperar,
+(`check-<sha256(requester)>`; o executor coordena uma vaga por perfil/classe com posse exclusiva;
+abas sobrepostas usam máquinas diferentes), sem esperar,
 e no máximo uma vez por criança a cada 3 min (`warmIntervalMs`); falha só vai ao log e libera a
 próxima tentativa. O 3D sai de `executionNeeds3dNavigation` (core), a mesma conta do Worker.
 Python não aquece. Testes: o fim de `tests/integration/section-objectives-execution.test.ts` e de
