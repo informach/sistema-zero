@@ -23,6 +23,13 @@ const env = {
 }
 const ids = productionApplicationIds(env)
 const plan = { environmentId: target.environment, changeSet: { changes: [] } }
+const promotedPr = {
+  number: 42,
+  merged_at: '2026-10-22T00:00:00Z',
+  merge_commit_sha: sha,
+  base: { ref: 'main' },
+  head: { sha: headSha, ref: 'staging', repo: { full_name: 'informach/sistema-zero' } },
+}
 
 function github(
   options: {
@@ -35,6 +42,9 @@ function github(
     headRepository?: string | null
     headBranch?: string | null
     associatedPr?: number
+    emptyCommitAssociation?: boolean
+    closedPullRequests?: Record<string, unknown>[]
+    commitPullRequests?: Record<string, unknown>[]
   } = {},
 ) {
   const calls: string[] = []
@@ -45,15 +55,9 @@ function github(
     if (path === `/commits/${headSha}`)
       return { sha: headSha, commit: { tree: { sha: options.differentTree ? sha : tree } } }
     if (path.startsWith(`/commits/${sha}/pulls?`))
-      return [
-        {
-          number: 42,
-          merged_at: '2026-10-22T00:00:00Z',
-          merge_commit_sha: sha,
-          base: { ref: 'main' },
-          head: { sha: headSha, ref: 'staging', repo: { full_name: 'informach/sistema-zero' } },
-        },
-      ]
+      return options.commitPullRequests ?? (options.emptyCommitAssociation ? [] : [promotedPr])
+    if (path.startsWith('/pulls?state=closed&base=main&sort=updated&direction=desc&'))
+      return options.closedPullRequests ?? [promotedPr]
     if (path.startsWith('/actions/workflows/ci.yml/runs?'))
       return {
         total_count: 1,
@@ -114,6 +118,78 @@ function github(
 }
 
 describe('approved promoted source, before provider access', () => {
+  test('qualifies the exact merged PR while the commit association index is empty', async () => {
+    const fixture = github({ emptyCommitAssociation: true })
+    const result = await resolveProductionSource(sha, fixture.get)
+    expect(result).toMatchObject({
+      sha,
+      approvedHead: headSha,
+      tree,
+      ci: { run: 10, attempt: 2, passedJobs: 9 },
+      planArtifact: { id: 20, run: 30 },
+    })
+    expect(fixture.calls).toContain(
+      '/pulls?state=closed&base=main&sort=updated&direction=desc&per_page=100&page=1',
+    )
+  })
+  test.each(
+    [
+      [],
+      [{ ...promotedPr, merged_at: null }],
+      [{ ...promotedPr, merge_commit_sha: headSha }],
+      [{ ...promotedPr, base: { ref: 'staging' } }],
+      [{ ...promotedPr, head: { ...promotedPr.head, repo: { full_name: 'foreign/repository' } } }],
+      [{ ...promotedPr, head: { ...promotedPr.head, sha: 'invalid' } }],
+      [{ ...promotedPr, number: 0 }],
+      [promotedPr, { ...promotedPr, number: 43 }],
+    ].map((closedPullRequests) => ({ closedPullRequests })),
+  )('closed-list discovery refuses invalid or ambiguous metadata %j', async ({
+    closedPullRequests,
+  }) => {
+    const fixture = github({ emptyCommitAssociation: true, closedPullRequests })
+    await expect(resolveProductionSource(sha, fixture.get)).rejects.toThrow('PR interno')
+    expect(fixture.calls.some((path) => path.startsWith('/actions/'))).toBe(false)
+  })
+  test.each([
+    { differentTree: true },
+    { failedJob: 'ci' },
+    { failedLatest: true },
+    { wrongPlan: true },
+  ])('closed-list discovery keeps all tree/CI/plan gates %j', async (options) => {
+    await expect(
+      resolveProductionSource(sha, github({ ...options, emptyCommitAssociation: true }).get),
+    ).rejects.toThrow()
+  })
+  test('a conflicting nonempty association does not fall through to another source', async () => {
+    const fixture = github({
+      commitPullRequests: [{ ...promotedPr, merge_commit_sha: headSha }],
+    })
+    await expect(resolveProductionSource(sha, fixture.get)).rejects.toThrow('PR interno')
+    expect(fixture.calls.some((path) => path.startsWith('/pulls?'))).toBe(false)
+  })
+  test('closed-list discovery reads the next page and rejects unbounded pagination', async () => {
+    const fixture = github({ emptyCommitAssociation: true })
+    const fullPage = Array.from({ length: 100 }, (_, index) => ({
+      ...promotedPr,
+      number: 100 + index,
+      merge_commit_sha: headSha,
+    }))
+    const requests: string[] = []
+    const get = async (path: string) => {
+      requests.push(path)
+      if (path.startsWith('/pulls?') && path.endsWith('&page=1')) return fullPage
+      return fixture.get(path)
+    }
+    expect(await resolveProductionSource(sha, get)).toMatchObject({ approvedHead: headSha })
+    expect(requests).toContain(
+      '/pulls?state=closed&base=main&sort=updated&direction=desc&per_page=100&page=2',
+    )
+    await expect(
+      resolveProductionSource(sha, (path: string) =>
+        path.startsWith('/pulls?') ? Promise.resolve(fullPage) : fixture.get(path),
+      ),
+    ).rejects.toThrow('Limite de paginação')
+  })
   test('binds all nine jobs to one successful CI attempt and the plan to the same internal PR', async () => {
     const fixture = github()
     const result = await resolveProductionSource(sha, fixture.get)
