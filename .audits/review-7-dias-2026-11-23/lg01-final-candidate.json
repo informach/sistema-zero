@@ -30,19 +30,23 @@
     "railwaySourceTree": "0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13",
     "tenThousandBlocksStatus": "success",
     "stagingQualificationStatus": "success",
-    "status": "pending",
+    "status": "success",
     "stagingServicesHealthy": 8,
     "pushCiRun": 45281870815,
     "pushCiAttempt": 2,
-    "pushCiStatus": "ci_checks_passed",
-    "mergeBlocker": "R15: commit association index empty; operational fix PR 285 in CI"
+    "pushCiStatus": "success",
+    "mergeBlocker": null
   },
   "warmingIncluded": false,
   "warmingBlocker": "R12: failed shared-container check interrupts another tab of the same identity",
   "stagingWorkerVersion": "6406c751-d850-4e2c-b433-7f75a2b5337d",
   "stagingPythonCatalog": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
   "productionPythonCatalogToPreserve": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
-  "productionDeployedByThisExecution": false,
+  "productionDeployedByThisExecution": true,
+  "productionSha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+  "productionReleaseReceipt": "lg01-production-release.json",
+  "productionApplicationWaveComplete": true,
+  "productionWorkerVersion": "b16ce538-86cd-4abd-adaa-10d8bededcf4",
   "productMerge": "93c9a15a248138586f1635f5035f5647926ed474",
   "operationalFix": {
     "pullRequest": 285,
@@ -53,6 +57,10 @@
     "localExpectations": 368,
     "realSourceQualifiedReadOnly": true,
     "packagesAndRailwayUnchanged": true,
-    "status": "in_progress"
+    "status": "merged_and_qualified",
+    "merge": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+    "ciJobsPassed": 13,
+    "mainCheckRun": 45315617170,
+    "mainCheckConclusion": "success"
   }
 }

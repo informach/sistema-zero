@@ -2,11 +2,11 @@
 
 **Liberação posterior confirmada:** a outra frente publicou **A Ilha do Farol**, com 3/3 aulas em Kids e Adultos. A consulta somente de leitura de produção foi feita às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo), no Members `8d87bbff8`. Esse ajuste de 32 falas já integra a LG01. Jardim, Pinta e Moedas seguem em rascunho. A publicação do curso não foi executada por esta revisão.
 
-**Produto final da LG01 homologado:** `9a8a1a9f2`, com R13 e R14 corrigidos, já integrado em main pelo PR #283. R14 preserva a prévia dos gestos de espalhamento e biblioteca do Pinta quando o layout muda sem mover o ponteiro. Os quatro percursos desktop/toque, 76 testes UI, tipos, CI completo e onda canônica de homologação passaram. O aceite manual confirmou as 24 miniaturas e o menu corrigido. A produção aguarda a correção operacional R15 no PR #285, que mantém as barreiras de publicação e segue seu próprio CI/plano.
+**LG01 entregue em produção em 24/11/2026:** sete serviços saudáveis em `538ae843b`, runtime e imagem qualificados, CI e onda canônica concluídos. Miniaturas, tela cheia, ajuda na recuperação do Pinta, atualização do Mural e correções R13/R14/R15 estão na versão publicada. Os quatro percursos desktop/toque, 76 testes UI, tipos e aceite de menu/24 miniaturas passaram; os limites do aceite manual estão documentados. Aquecimento continua excluído por R12. [Recibo da entrega](lg01-production-release.json).
 
-Atualização de 23/11/2026, incluindo o que entrou depois do início da auditoria.
+Levantamento de 23/11/2026, atualizado após a implantação de 24/11, incluindo o que entrou depois do início da auditoria.
 
-**Execução da primeira etapa:** a LG01 inclui a main concorrente e as correções R13/R14. As miniaturas dos 24 modelos foram conferidas na prévia Admin; criação e reabertura passaram no perfil infantil. Aquecimento e reutilização por perfil ficam **fora da entrega**: a prova real reproduziu interferência entre duas abas quando uma execução falha (R12). Exigem correção de propriedade/limpeza do contêiner e nova qualificação, não apenas liberação de acesso. Os estados de produção das tabelas abaixo são históricos da coleta; [registro operacional atual](../../docs/qa/2026-11-23-lg01-melhorias-prontas.md) e [provas do executor](../../docs/qa/2026-11-23-lg02-executor-real.md).
+**Resultado da primeira etapa:** a LG01 inclui a main concorrente e as correções R13/R14/R15. As miniaturas dos 24 modelos foram conferidas na prévia Admin; criação e reabertura passaram no perfil infantil. Aquecimento e reutilização por perfil ficam **fora da entrega**: a prova real reproduziu interferência entre duas abas quando uma execução falha (R12). Exigem correção de propriedade/limpeza do contêiner e nova qualificação, não apenas liberação de acesso. Os estados de produção e de publicação abaixo foram atualizados após a LG01; os inventários iniciais permanecem preservados. [Registro operacional atual](../../docs/qa/2026-11-23-lg01-melhorias-prontas.md) e [provas do executor](../../docs/qa/2026-11-23-lg02-executor-real.md).
 
 ## Escopo ampliado
 
@@ -24,9 +24,9 @@ As condições abaixo foram conferidas no código atual. A configuração de pro
 | --- | --- | --- |
 | Miniaturas dos modelos 3D no seletor dos blocos e na aba Modelos 3D | Escolher o personagem/objeto pela imagem em vez de só pelo nome e pelo ícone | Exige WebGL 2 e arquivo que o leitor consiga abrir; a imagem é estática, de 96 px. Há fallback para o ícone e cache de até 64 miniaturas |
 | Pedido de ajuda na recuperação do Pinta, ligado ao host, gateway, Members, recados e Admin | Tocar em **Preciso de ajuda**, receber confirmação e continuar a conversa com a equipe nos recados, sem depender de uma aula | É pedido de atendimento, não restauração automática. Os desenhos não são anexados automaticamente; permanecem no aparelho. Exige migração 0176 e deploy compatível dos serviços |
-| Aquecimento da verificação dos objetivos | Ao abrir uma parte com objetivos que executam o jogo, o servidor prepara o contêiner antes de a criança clicar em Verificar | Aplicado ao executor JavaScript/Pro, não ao Python. O contêiner dorme após cinco minutos parado; falha, suspensão ou falta de capacidade ainda podem gerar execução a frio |
-| Reutilização do contêiner de verificação por criança | Evitar uma nova subida completa do contêiner em cada clique | Cada verificação usa sua própria pasta. A limpeza ou execução que falha destrói o contêiner. Não é navegador/jogo mantido aberto entre verificações; o navegador é reaberto |
-| Aquecimento ligado ao cartão da aula e às rotas dos apps | Preparação automática enquanto a criança trabalha na parte | A tela aquece ao abrir e, nas edições, no máximo a cada três minutos, com a aba visível. O servidor limita e valida sessão, acesso à parte e revisão. Não concede conclusão nem XP |
+| Aquecimento da verificação dos objetivos | Prepara o executor JavaScript/Pro antes do clique em Verificar | **Não liberado.** Excluído da LG01 após R12: falha de uma aba interrompe a outra. Depende de correção e qualificação da LG02; Python tem executor próprio |
+| Reutilização do contêiner de verificação por criança | Evita uma nova subida completa do contêiner em cada clique | **Não liberada.** Pastas separadas não bastaram para isolar a destruição do contêiner compartilhado. Produção mantém um contêiner exclusivo por pedido |
+| Aquecimento ligado ao cartão da aula e às rotas dos apps | Preparação automática enquanto a criança trabalha na parte | **Não liberado.** As integrações de aquecimento também foram excluídas da LG01. Reavaliar os limites de atualização, sessão e capacidade após corrigir R12 |
 | Versão única do runtime Python: distribuição no R2 e catálogo do Worker de staging | Prepara uma versão coerente das bibliotecas e leitores novos | Upload/qualificação local não equivalem a ativação em produção. O recibo declara `activationQualified: false`; a promoção é uma etapa própria |
 | Ajustes dos roteiros de A Ilha do Farol e O Jardim Secreto | Instrução explícita para retirar a pergunta inicial que já vem dentro do bloco **não**, evitando um passo confuso | A revisão do roteiro só chega ao aluno quando o conteúdo correspondente for publicado |
 | Botão do palco entra e sai da tela cheia | O mesmo botão permite voltar ao editor; sair pelo Esc também atualiza seu ícone e rótulo. Vale no clássico e na prévia Python | Depende da API de tela cheia do navegador. É correção de interface, sem flag ou lista especial de alunos |
@@ -37,9 +37,9 @@ As condições abaixo foram conferidas no código atual. A configuração de pro
 
 | Funcionalidade | Situação confirmada | O que falta para o aluno ter acesso |
 | --- | --- | --- |
-| **Molda Cenários 3D** | O serviço Members de produção não tem `CENARIOS_MODO`. Na versão nova, o padrão é `desligado`; o código da oficina também não está no commit atualmente implantado nos apps consultados | Deploy da frente de cenários. `equipe` abre somente para o time; para crianças é preciso definir `lista` ou `aberto`. Fora da equipe, a pessoa ainda precisa ter acesso ao produto Molda |
+| **Molda Cenários 3D** | O código acompanha a versão implantada da LG01, mas Members continua sem `CENARIOS_MODO`, cujo padrão é `desligado` | Qualificar e abrir gradualmente na LG06. `equipe` abre somente para o time; crianças exigem `lista` ou `aberto`, acesso ao produto Molda e faixas adequadas da Jornada |
 | **Ferramenta Regiões do Molda Cenários** | `CENARIOS_REGIOES` está ausente no Members de produção; o padrão do código é falso | Além de abrir a oficina, habilitar esse controle. A faixa de ferramentas da Jornada também precisa permitir `jogo.regioes` |
-| **Prévia clássica isolada do Studio** | `STUDIO_CLASSIC_SHELL_ENABLED` está ausente em Community Kids e Community de produção | Implantar runtime/hosts compatíveis, configurar as origens permitidas no Worker e habilitar `STUDIO_CLASSIC_SHELL_ENABLED=1`. Não é necessário desativar o Studio existente: a prévia atual continua sendo o caminho sem essa opção |
+| **Prévia clássica isolada do Studio** | `STUDIO_CLASSIC_SHELL_ENABLED` continua ausente em Community Kids e Community de produção após a LG01 | Qualificar runtime/hosts e origens permitidas na LG07 antes de habilitar `STUDIO_CLASSIC_SHELL_ENABLED=1`. A prévia atual continua sendo o caminho sem essa opção |
 | **Galeria de exemplos grandes e página de medida** | A tela exige papel privilegiado por código; `STUDIO_EXAMPLES_ORIGIN` está ausente nos dois apps de produção | Para a equipe: publicar artefatos e configurar a origem. Para crianças: uma decisão de produto e mudança deliberada da regra de autorização. Definir a origem, sozinho, não abre a galeria ao aluno |
 | **Nova distribuição Python e capacidades que dependem dela** | O novo catálogo foi apontado em staging; os recibos não certificam ativação em produção. Há serviço Python já configurado em produção, portanto não se deve descrever todo Python como indisponível | Promover e conferir a distribuição exata, catálogo e autorizações do Members, Worker/serviços e CSP/origens dos aplicativos, conforme o plano de promoção |
 | **Arquipélago V2 / nova Faísca no jogo integrado** | O relatório da frente e o ponto de entrada do jogo distinguem o mundo integrado V1 da demonstração V2 em `/macro` | Concluir a integração/estreia do V2 no jogo usado pela criança. Não é uma simples flag de acesso do Molda |
@@ -93,23 +93,27 @@ Fontes complementares: [histórico](../../packages/studio/src/state/proProjectHi
 
 ## Situação observada em produção
 
-Na consulta desta ampliação, os três serviços estavam online, sem operação de deploy pendente:
+Após a LG01, os sete serviços estão saudáveis no commit `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sem operação de deploy pendente. Os IDs completos e as provas de saúde estão no [recibo de produção](lg01-production-release.json).
 
-| Serviço | Commit implantado | Data do deployment |
+| Serviço | Deployment (prefixo) | Estado |
 | --- | --- | --- |
-| Members | `3d7c532535a5474ce358709d00b78d6a7f23ce1a` (`main`) | 22/11/2026 |
-| Community Kids | `3d7c532535a5474ce358709d00b78d6a7f23ce1a` (`main`) | 22/11/2026 |
-| Hub | `5440aa0ddf9180476eb59a006b375e9b394879fc` (`main`) | 20/11/2026 |
+| Members | `f5ec1e52` | Saudável |
+| Auth | `00960558` | Saudável |
+| Hub | `562ce470` | Saudável |
+| Gateway | `7670213d` | Saudável |
+| Admin | `46fd8878` | Saudável |
+| Community | `8a7762c7` | Saudável |
+| Kids | `940cf0c2` | Saudável |
 
-O commit implantado de Kids/Members não contém os arquivos novos de Devtools, histórico do Pro, janela focal regional, oficina Molda Cenários, selo de atualização do Mural, pedido de ajuda do Pinta ou miniaturas. Isso confirma uma pendência ampla de **deploy dessas novidades**, além dos controles especiais descritos acima. O release de 22/11, por outro lado, já trata da retomada de progresso e da identificação dos pais; não deve ser anunciado novamente como se todo esse trabalho ainda estivesse fora de produção.
+A pendência ampla de deploy identificada na coleta inicial foi atendida pela LG01. Isso não habilita automaticamente os controles especiais nem conclui as integrações regionais descritas acima. O Worker está em `b16ce538`, os dois contêineres estão prontos na imagem qualificada e o catálogo Python anterior `2c53c74…` foi preservado. O aquecimento e a nova distribuição Python continuam nas suas etapas próprias.
 
 ### Publicação dos cursos confirmada no banco
 
-Consulta de 23/11/2026 às 15:10 de São Paulo, por título/slug nas modalidades gravadas dos dois públicos. A tabela abaixo filtra os resultados Kids relevantes; a busca também encontrou cópias adultas em rascunho. [Evidência completa](production-course-status.json).
+Consulta após a implantação às 03:16 UTC de 24/11 (00:16 de São Paulo), por título/slug nos dois públicos. O estado de publicação dos cursos não arquivados permaneceu igual ao observado antes da onda. A tabela abaixo resume os resultados; [evidência atual](lg01-production-content-after.json) e [fotografia inicial preservada](production-course-status.json).
 
 | Curso em produção | Estado do curso | Aulas publicadas/total | O que falta |
 | --- | --- | --- | --- |
-| A Ilha do Farol | Rascunho | 0/3 | Finalizar/conferir conteúdo e publicar |
+| A Ilha do Farol | **Publicada em Kids e Adultos** | **3/3 em cada público** | Já publicada por outra frente; acesso segue as regras normais da Jornada |
 | O Jardim Secreto | Rascunho | 0/2 | Finalizar/conferir conteúdo e publicar |
 | Meu primeiro desenho no Pinta | Rascunho | 0/1 | Finalizar/conferir conteúdo e publicar |
 | Moedas no caminho | Rascunho | 0/1 | Finalizar/conferir conteúdo e publicar |

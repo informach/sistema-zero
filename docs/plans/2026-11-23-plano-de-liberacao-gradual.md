@@ -1,6 +1,6 @@
 # Plano de liberação gradual das novidades
 
-Registrado em 23/11/2026 para execução aos poucos. A LG01 está em execução; as demais etapas seguem os estados do quadro. Este registro permite retomar cada frente separadamente.
+Registrado em 23/11/2026 para execução aos poucos. A LG01 foi concluída em produção em 24/11; as demais etapas seguem os estados do quadro. Este registro permite retomar cada frente separadamente.
 
 A prioridade é entregar à criança fluxos completos: criar, guardar, voltar depois e continuar usando o projeto nos destinos oferecidos. As melhorias prontas e a publicação de aulas podem avançar enquanto as integrações maiores são concluídas.
 
@@ -17,7 +17,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
-| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Produto homologado e PR #283 integrado. Correção operacional R15 no PR #285 em CI antes da promoção de produção |
+| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Concluída em produção em 24/11: sete serviços saudáveis, runtime/imagem qualificados, CI e provas finais aprovados. Aquecimento excluído |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
@@ -35,8 +35,10 @@ LG01 e LG03 podem avançar sem esperar LG04, LG05 ou LG10. LG02 só entra na ver
 **LG01** reúne as correções da revisão, miniaturas dos modelos 3D, botão que entra e sai da tela cheia, pedido de ajuda na recuperação do Pinta e atualização da publicação do mesmo jogo no Mural.
 
 - [x] Conferir os commits, contratos e migrações que precisam acompanhar cada entrega.
-- [ ] Validar os percursos afetados com o perfil real da criança, incluindo falhas e mensagens de recuperação.
-- [ ] Implantar a versão compatível e registrar o resultado observado em produção.
+- [x] Validar criação e reabertura no perfil infantil indicado, menu e miniaturas na prévia Admin e demais percursos/falhas nas provas automatizadas, com os limites descritos no recibo de aceite.
+- [x] Implantar a versão compatível e registrar o resultado observado em produção.
+
+Resultado: `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sete serviços saudáveis, Worker e imagem qualificados, catálogo Python anterior preservado. O CI passou nos 13 jobs; rotas públicas, executor e preservação dos cursos passaram após a implantação. [Entrega e escopo do aceite](../qa/2026-11-23-lg01-melhorias-prontas.md), [recibo de produção](../../.audits/review-7-dias-2026-11-23/lg01-production-release.json). Na sessão compartilhada, fullscreen foi recusado pelo próprio navegador e passou nos testes reais de Chrome/CI; ajuda e Mural positivos foram verificados com PostgreSQL de teste, sem enviar recados ou posts reais.
 
 **LG02** qualifica o aquecimento e a reutilização do contêiner em staging com o executor real.
 
@@ -109,6 +111,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
+| 24/11/2026 | LG01 | Concluída: PRs #283/#285 integrados, CI com 13 jobs e plano aprovados, onda canônica `45315948453` concluída. Sete serviços em `538ae843b`, dois contêineres ready, HTTP 200 nas rotas públicas e no executor após o deploy. Cursos preservados; aquecimento permanece na LG02 |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
 | 23/11/2026 | LG01 | Push reexecutado com 13 checks aprovados e PR #283 integrado normalmente. R15: índice vazio do GitHub impede o controlador de localizar o PR válido; correção isolada no PR #285, com 113 testes e prova readonly real aprovados, em qualificação remota |
 | 23/11/2026 | LG01 | CI do PR, plano vazio e onda canônica aprovados; oito serviços no SHA final, menu e 24 miniaturas conferidos, projeto infantil reaberto salvo. O cancelamento da rodada automática deixou sete checks obrigatórios cancelados; reexecução integral solicitada, sem alterar proteção |

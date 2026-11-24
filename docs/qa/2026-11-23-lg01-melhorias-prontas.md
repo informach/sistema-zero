@@ -1,8 +1,8 @@
-# LG01 — candidata às melhorias prontas
+# LG01 — melhorias prontas em produção
 
-**Estado atual da execução:** produto qualificado em `9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e`, incluindo R13/R14; PR #283 integrado em `93c9a15a248138586f1635f5035f5647926ed474`. Os dois CIs exigidos passaram nos 13 jobs e a onda explícita de homologação passou com oito serviços saudáveis; menu, 24 miniaturas e reabertura do projeto infantil foram conferidos nesse deployment. O controlador identificou R15, dependência do índice vazio de associação do GitHub, e recusou a promoção antes de alterar provedores. Correção operacional isolada em [PR #285](https://github.com/informach/sistema-zero/pull/285), head `fa53d34c210222a16eaff88577f77db98067079f`: 113 testes locais e prova readonly real aprovados; CI `45308187261` em execução e plano `45308187264` aprovado. Produção ainda não implantada pela LG01. As seções abaixo preservam a sequência e os resultados de cada corte anterior.
+**Estado atual: LG01 concluída em produção em 24/11/2026.** Os sete serviços estão saudáveis no SHA `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sem implantações pendentes. A onda canônica `45315948453`, os 13 jobs do CI e a conferência de main passaram. Worker `b16ce538-86cd-4abd-adaa-10d8bededcf4` e os dois contêineres estão na versão qualificada; o catálogo Python anterior foi preservado. Quatro rotas públicas e o executor responderam 200 após a implantação; a consulta readonly confirmou a preservação dos cursos publicados. O produto homologado em `9a8a1a9f2` inclui R13/R14; a correção operacional R15 do PR #285 também está entregue. **Aquecimento e reutilização compartilhada continuam excluídos, por R12.** [Recibo de produção](../../.audits/review-7-dias-2026-11-23/lg01-production-release.json). As seções abaixo preservam a sequência e os resultados de cada corte anterior.
 
-Execução autorizada em 23/11/2026. A candidata parte de `f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e`, em um checkout próprio na branch `release/lg01-melhorias-prontas-20261123`. Produção consultada nesta execução: Members e Kids em `3d7c532535a5474ce358709d00b78d6a7f23ce1a`.
+Execução autorizada em 23/11/2026. A candidata partiu de `f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e`, em um checkout próprio na branch `release/lg01-melhorias-prontas-20261123`. Na primeira consulta, Members e Kids de produção estavam em `3d7c532535a5474ce358709d00b78d6a7f23ce1a`; os deployments finais estão no recibo acima.
 
 ## Entrega e dependências
 
@@ -198,3 +198,35 @@ A correção `fa53d34c2` compartilha um resolvedor leve entre o controlador e o 
 A regressão mínima falhou antes da correção com o mesmo erro da promoção. Depois passaram **113 testes, 368 expectativas**, incluindo o script real do workflow, metadados inválidos/ambíguos, CI/árvore/plano divergentes, paginação e limite de leitura. Node conferiu os módulos e Biome não apontou erros. Em consulta somente de leitura à API real, a implementação corrigida qualificou o merge existente, os nove jobs da tentativa 1 do run `45281893853` e o plano `14871085472`; o índice permanecia vazio e foram lidas três páginas da lista de PRs. Essa prova não alterou provedores. [Recibo da descoberta](../../.audits/review-7-dias-2026-11-23/lg01-promoted-source-discovery.json).
 
 O PR #285 contém somente cinco arquivos de operação/testes. `packages/` e `.railway/` são idênticos à candidata já homologada. Ele segue o CI e o plano normais, sem push adicional de seu head para staging. A rodada automática retomada do push anterior segue seu rollout próprio, sem cancelamento durante a onda. A promoção de produção usará o controlador corrigido depois que essa correção estiver qualificada e integrada.
+
+### Promoção operacional e runtime de produção
+
+O CI `45308187261`, tentativa 1, concluiu os **13 jobs com sucesso**, incluindo a checagem global de tipos e as provas de navegador. O plano `45308187264` tem zero mudanças. O PR #285 foi integrado normalmente às 02:53:20 UTC de 24/11, merge `538ae843b7534239a715a1d0a6c2a9d32d54604d`. Sua árvore `c055e354f938a4db925462a829ed4e05c655f8cd` é idêntica à do head aprovado `fa53d34c2`. O controlador real qualificou os nove jobs exigidos da mesma tentativa e o artefato `14882076835`; a conferência de main `45315617170` também passou sem aplicar configuração. R15 está corrigido e verificado no fluxo hospedado.
+
+O Worker foi publicado em produção às 02:55:08 UTC, versão `b16ce538-86cd-4abd-adaa-10d8bededcf4`, tag `lg01-538ae843b`. O catálogo `2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d`, as origens e as variáveis existentes foram preservados. A imagem solicitada é `a03816c637e1600f24f36aeeff4117b564f0ddcd48e4a19d3b7f20085dd6c7ed`. Após o rollout gradual, ProBuildSandbox versão 13 e ThreeDCheckSandbox versão 6 ficaram **ready** nessa imagem.
+
+O primeiro smoke sintético, a partir do Members anterior `8d87bbff8`, retornou HTTP 200, objetivo aprovado, em 7.240 ms. Uma nova tentativa ainda vinculada ao SHA anterior foi recusada pela guarda quando o Members já havia mudado de versão; a leitura mínima de identidade confirmou o novo deployment. Com o SHA atual `538ae843b` e a imagem já ativa, o smoke passou às 03:00:34 UTC, HTTP 200, em 6.909 ms. Os testes usam somente documento e objetivo sintéticos, com credencial mantida dentro do processo do Members, sem ler ou gravar trabalhos infantis.
+
+A onda canônica [45315948453](https://github.com/informach/sistema-zero/actions/runs/45315948453) foi solicitada uma única vez, com `expected_sha` exato e os sete serviços explícitos. Members `f5ec1e52-7e59-4ac0-8af3-985d70b80df8` e Auth `00960558-c101-4438-8434-93ac78c057bd` ficaram saudáveis antes de iniciar os cinco aplicativos, entre 03:02:58 e 03:03:04 UTC. A conclusão depende da saúde dos aplicativos e das provas finais registradas abaixo; este início da onda não constitui conclusão da LG01.
+
+### Resultado final de produção
+
+O run concluiu com sucesso e manifestou `PRODUCTION_WAVE_PASSED`, versão publicada da Jornada 4. Os sete deployments foram conferidos individualmente na API Railway: todos `SUCCESS`, no mesmo SHA aprovado `538ae843b`, sem falhas ou operações pendentes.
+
+| Serviço | Deployment saudável |
+| --- | --- |
+| Members | `f5ec1e52-7e59-4ac0-8af3-985d70b80df8` |
+| Auth | `00960558-c101-4438-8434-93ac78c057bd` |
+| Hub | `562ce470-d55f-43c5-b3f0-f6980745f65d` |
+| Gateway | `7670213d-082e-4bb5-809b-20e6e8310882` |
+| Admin | `46fd8878-533c-434f-bc96-243748a39ab2` |
+| Community | `8a7762c7-5c03-4429-acfc-5d0b12e0c2b1` |
+| Kids | `940cf0c2-fc1f-4fc7-be09-3f66b95eafac` |
+
+Às **03:16 UTC de 24/11 (00:16 em São Paulo)**, as quatro rotas públicas de prontidão de Gateway, Admin, Community e Kids responderam 200. O objetivo sintético no executor, chamado do Members novo, passou com HTTP 200 em **5.341 ms**. Os quatro metadados públicos de runtime anterior/atual de produção/staging também responderam 200. O histórico do Worker foi ordenado por data para confirmar `b16ce538` como versão ativa a 100%; os dois contêineres estão ready na imagem `a03816c6…`. O catálogo Python continua `2c53c74…`.
+
+A consulta PostgreSQL somente de leitura confirmou que o estado de publicação de todos os cursos não arquivados foi preservado durante a onda. **A Ilha do Farol permanece publicada, 3/3 aulas em Kids e Adultos**; os demais rascunhos não foram publicados pela LG01. A conferência final dos controles também encontrou Cenários, Regiões, prévia isolada e origem dos exemplos sem habilitação adicional. [Cursos após a implantação](../../.audits/review-7-dias-2026-11-23/lg01-production-content-after.json).
+
+O aceite manual em homologação e os testes de contrato/serviços/navegador permanecem descritos acima, com seus limites explícitos: fullscreen recusado pelo Chrome compartilhado, miniaturas inspecionadas na prévia Admin, ajuda/Mural positivos em PostgreSQL de teste e nenhum recado ou post real enviado. As provas de produção verificam implantação, saúde, executor e preservação de conteúdo; não representam uma repetição manual de todos os fluxos em uma conta infantil de produção.
+
+**LG01 concluída.** A retomada do aquecimento exige corrigir R12 e repetir as provas de duas abas, falhas, limpeza, suspensão e capacidade na LG02. As outras liberações continuam nas etapas próprias do plano.

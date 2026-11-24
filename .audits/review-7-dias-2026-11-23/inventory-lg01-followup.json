@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-24T02:14:36.668Z",
+  "generatedAt": "2026-11-24T02:55:16.492Z",
   "previousHead": "f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e",
-  "head": "fa53d34c210222a16eaff88577f77db98067079f",
+  "head": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
   "note": "Complemento da janela original: commits incorporados durante a execução da LG01, preservando os inventários anteriores. Merge não equivale a funcionalidade nova. Não inclui branches ou alterações locais de outras frentes.",
-  "commitCount": 13,
+  "commitCount": 14,
   "nonMergeCommitCount": 8,
   "changedFileCount": 60,
   "history": [
@@ -115,6 +115,15 @@
         "93c9a15a248138586f1635f5035f5647926ed474"
       ],
       "subject": "fix(ci): resolve promoted PR when commit association is empty"
+    },
+    {
+      "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+      "at": "2026-11-23T23:53:19-03:00",
+      "parents": [
+        "93c9a15a248138586f1635f5035f5647926ed474",
+        "fa53d34c210222a16eaff88577f77db98067079f"
+      ],
+      "subject": "Merge pull request #285 from informach/fix/lg01-promoted-pr-discovery-20261124"
     }
   ],
   "files": [
