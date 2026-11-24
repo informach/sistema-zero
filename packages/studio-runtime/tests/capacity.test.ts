@@ -20,5 +20,19 @@ test('o sandbox de execução oferece a CPU usada na qualificação dos programa
     expect(sandbox).toBeDefined()
     expect(cpu[sandbox.instance_type]).toBeGreaterThanOrEqual(1)
     expect(sandbox.max_instances).toBe(50)
+    // LG02 qualifies the existing capacity; warming does not silently raise production limits.
+    const threeD = deployment.containers.find(
+      (item: { class_name: string }) => item.class_name === 'ThreeDCheckSandbox',
+    )
+    expect(threeD.instance_type).toBe('standard-4')
+    expect(threeD.max_instances).toBe(10)
+    expect(deployment.durable_objects.bindings).toContainEqual({
+      class_name: 'CheckSandboxPool',
+      name: 'CheckSandboxPools',
+    })
   }
+  expect(config.migrations).toContainEqual({
+    new_sqlite_classes: ['CheckSandboxPool'],
+    tag: 'v4-exclusive-check-sandbox-pool',
+  })
 })

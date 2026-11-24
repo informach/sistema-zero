@@ -332,3 +332,122 @@ describe('objetivos que rodam o jogo, no servidor', () => {
     expect(JSON.stringify(await equipe.json())).toContain('não confere variáveis')
   })
 })
+
+describe('o aquecimento do contêiner ao abrir a parte (23/11/2026)', () => {
+  function warmingExecutor() {
+    const warmed: { requester: string; threeD: boolean }[] = []
+    const executor: ProjectExecutionChecker = {
+      async check(input) {
+        return { results: input.objectives.map((o) => ({ id: o.id, passed: true })) }
+      },
+      warm(input) {
+        warmed.push(input)
+      },
+    }
+    return { executor, warmed }
+  }
+  const sectionOf = (ctx: ReturnType<typeof setup>) => {
+    const structure = ctx.learningRepository.structures.get(ctx.lessonId)
+    if (!structure) throw new Error('sem estrutura')
+    return structure
+  }
+  const warm = (ctx: ReturnType<typeof setup>, sectionId: string, revision?: string) =>
+    ctx.request(`/lessons/${ctx.lessonId}/sections/${sectionId}/project-check/warm`, 'POST', {
+      revision: revision ?? sectionOf(ctx).revision,
+    })
+
+  test('a parte com objetivo que roda o jogo liga o contêiner da criança', async () => {
+    const fake = warmingExecutor()
+    const ctx = setup(fake.executor)
+    const section = sectionOf(ctx).sections[0]!
+    const response = await warm(ctx, section.id)
+    expect(response.status).toBe(202)
+    expect(await response.json()).toEqual({ warming: true })
+    expect(fake.warmed).toEqual([{ requester: USER, threeD: false }])
+  })
+
+  test('a ida até um objeto 3D aquece o contêiner maior', async () => {
+    const fake = warmingExecutor()
+    const ctx = setup(fake.executor)
+    const structure = sectionOf(ctx)
+    const section = structure.sections[0]!
+    const ida3d = {
+      ...anda,
+      steps: [
+        {
+          action: 'approachObject3d' as const,
+          actorPath: 'personagem',
+          targetPath: 'chave',
+          timeoutMs: 7000,
+          walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }],
+        },
+      ],
+    }
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      ...structure,
+      sections: [
+        {
+          ...section,
+          completion: {
+            version: 1,
+            blockIds: [],
+            projectChecks: [{ id: 'chave', label: 'Ande até a chave', rule: ida3d }],
+          },
+        },
+      ],
+    })
+    expect((await warm(ctx, section.id)).status).toBe(202)
+    expect(fake.warmed).toEqual([{ requester: USER, threeD: true }])
+  })
+
+  test('sem objetivo que roda o jogo, ou só Python, nada liga', async () => {
+    const fake = warmingExecutor()
+    const ctx = setup(fake.executor)
+    const structure = sectionOf(ctx)
+    const section = structure.sections[0]!
+    for (const projectChecks of [
+      [{ id: 'laco', label: 'Use um laço', rule: { type: 'usesLoop' as const } }],
+      [{ id: 'py', label: 'Faça andar', programmingLanguage: 'python' as const, rule: anda }],
+    ]) {
+      ctx.learningRepository.structures.set(ctx.lessonId, {
+        ...structure,
+        sections: [{ ...section, completion: { version: 1, blockIds: [], projectChecks } }],
+      } as typeof structure)
+      const response = await warm(ctx, section.id)
+      expect(response.status).toBe(202)
+      expect(await response.json()).toEqual({ warming: false })
+    }
+    expect(fake.warmed).toEqual([])
+  })
+
+  test('revisão velha, parte trancada e quem não tem o curso não ligam nada', async () => {
+    const fake = warmingExecutor()
+    const ctx = setup(fake.executor)
+    const structure = sectionOf(ctx)
+    const first = structure.sections[0]!
+    expect((await warm(ctx, first.id, randomUUID())).status).toBe(409)
+    const later: LessonSection = {
+      ...first,
+      id: randomUUID(),
+      title: 'Depois',
+      completion: {
+        version: 1,
+        blockIds: [],
+        projectChecks: [{ id: 'anda2', label: 'Ande de novo', rule: anda }],
+      },
+    }
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      ...structure,
+      sections: [first, later],
+    })
+    expect((await warm(ctx, later.id)).status).not.toBe(202)
+    const stranger = await ctx.request(
+      `/lessons/${ctx.lessonId}/sections/${first.id}/project-check/warm`,
+      'POST',
+      { revision: structure.revision },
+      { 'x-auth-user-id': '33333333-3333-4333-8333-333333333333' },
+    )
+    expect(stranger.status).not.toBe(202)
+    expect(fake.warmed).toEqual([])
+  })
+})

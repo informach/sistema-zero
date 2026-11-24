@@ -24,6 +24,8 @@ Uma execução só deixa a máquina disponível depois de remover sua pasta com 
 
 Falha de coordenação impede acesso ao recurso reutilizável. Uma verificação pode manter o caminho exclusivo por pedido da LG01, com motivo registrado; aquecimento falho não bloqueia a criança. Limites de capacidade e suspensão continuam aplicados pelo Sandbox SDK; não haverá aumento de tetos nesta etapa.
 
+`STUDIO_CHECK_WARMING_ENABLED=0` permite interromper o aquecimento e voltar ao caminho exclusivo da LG01, conservando a nova classe e sua migração SQLite. Isso evita depender de rollback para uma versão anterior à criação do Durable Object. A ausência da opção também conserva o caminho exclusivo. Leituras/escritas RPC da reserva têm orçamento próprio de 3 s; uma resposta perdida nunca permite destruir uma máquina já devolvida.
+
 ## Integração e limites
 
 Restaurar somente os caminhos de aquecimento retirados na LG01, preservando R10/R13/R14/R15, o teto de 32 falas, os catálogos Python de produção/staging e as liberações de outras etapas. Aquecer ao abrir/editar uma parte elegível, com aba visível, respeitando o intervalo já definido e sem conceder conclusão ou XP. O palco continua respondendo que não aquece.
