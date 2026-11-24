@@ -1,0 +1,329 @@
+{
+  "verifiedAt": "2026-11-24T14:27:18.116Z",
+  "source": {
+    "kind": "production-promoted-source",
+    "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "approvedHead": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+    "tree": "d610b8646d64819a15d1e0ba7107866017c908ac",
+    "ci": {
+      "run": 45387995897,
+      "attempt": 1,
+      "passedJobs": 9
+    },
+    "planArtifact": {
+      "id": 14917971273,
+      "run": 45387995836
+    }
+  },
+  "workflow": {
+    "id": 45409371184,
+    "attempt": 1,
+    "conclusion": "success",
+    "headSha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "status": "completed"
+  },
+  "canonical": {
+    "state": "PRODUCTION_WAVE_PASSED",
+    "publishedVersion": 4,
+    "initialApplications": [],
+    "manifestSha256": "30e8c43d5696737638ced51f3cea43ffef0ff893f354290770d826897db88285"
+  },
+  "runtime": {
+    "checkedAt": "2026-11-24T14:24:41.623Z",
+    "environment": "production",
+    "source": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "workerVersion": "99386c58-3bca-4964-b11d-ae8ac5239bca",
+    "deployment": "5423d440-8a58-430c-8c5d-99e6473f0b6b",
+    "trafficPercentage": 100,
+    "warmingEnabled": true,
+    "pythonCatalog": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
+    "applications": [
+      {
+        "class": "general",
+        "id": "a03f07be-3a1a-4bb8-82bc-5d2c3c01c057",
+        "version": 14,
+        "maxInstances": 50,
+        "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-probuildsandbox@sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+        "health": {
+          "errors": [],
+          "instances": {
+            "active": 1,
+            "assigned": 0,
+            "healthy": 4,
+            "stopped": 0,
+            "failed": 0,
+            "scheduling": 0,
+            "starting": 0
+          }
+        },
+        "vcpu": 1,
+        "memoryMiB": 6144
+      },
+      {
+        "class": "3d",
+        "id": "a038f0a1-9723-4c1e-9fe4-1ff277a748e6",
+        "version": 7,
+        "maxInstances": 10,
+        "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-threedchecksandbox@sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+        "health": {
+          "errors": [],
+          "instances": {
+            "active": 0,
+            "assigned": 0,
+            "healthy": 5,
+            "stopped": 0,
+            "failed": 0,
+            "scheduling": 0,
+            "starting": 0
+          }
+        },
+        "vcpu": 4,
+        "memoryMiB": 12288
+      }
+    ],
+    "verified": true
+  },
+  "wave": {
+    "checkedAt": "2026-11-24T14:26:28.128Z",
+    "environment": "production",
+    "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "runId": 45409371184,
+    "deployments": [
+      {
+        "service": "community-kids",
+        "id": "c03e1a34-1a13-451e-a1b9-ff2c2bd35137",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "community",
+        "id": "dbe025ff-2416-4faf-88af-fbb8d7be7498",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "admin",
+        "id": "0536f12a-dfdf-452d-b5b3-4925166215bc",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "api-gateway",
+        "id": "1595a381-3eff-4b04-a2ce-4ff6369b56b0",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "hub",
+        "id": "5c08d963-975a-4aed-bd9a-ecaeda29b652",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "auth",
+        "id": "856e30f2-318f-4211-986b-ccc85081e750",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      },
+      {
+        "service": "members",
+        "id": "7f3db7d8-7331-4830-942c-ae97fe3c7b13",
+        "status": "SUCCESS",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd"
+      }
+    ],
+    "verified": true
+  },
+  "services": {
+    "testedAt": "2026-11-24T14:22:15.015Z",
+    "environment": "production",
+    "expectedSha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "results": [
+      {
+        "service": "members",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "7f3db7d8-7331-4830-942c-ae97fe3c7b13",
+        "flags": {
+          "cenariosMode": "desligado",
+          "cenariosRegionsEnabled": false,
+          "cenariosListConfigured": false
+        },
+        "passed": true
+      },
+      {
+        "service": "auth",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "856e30f2-318f-4211-986b-ccc85081e750",
+        "flags": {},
+        "passed": true
+      },
+      {
+        "service": "hub",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "5c08d963-975a-4aed-bd9a-ecaeda29b652",
+        "flags": {},
+        "passed": true
+      },
+      {
+        "service": "api-gateway",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "1595a381-3eff-4b04-a2ce-4ff6369b56b0",
+        "flags": {},
+        "passed": true
+      },
+      {
+        "service": "admin",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "0536f12a-dfdf-452d-b5b3-4925166215bc",
+        "flags": {
+          "classicShellEnabled": false,
+          "examplesOriginConfigured": false
+        },
+        "passed": true
+      },
+      {
+        "service": "community",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "dbe025ff-2416-4faf-88af-fbb8d7be7498",
+        "flags": {
+          "classicShellEnabled": false,
+          "examplesOriginConfigured": false
+        },
+        "passed": true
+      },
+      {
+        "service": "community-kids",
+        "sha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+        "deploymentId": "c03e1a34-1a13-451e-a1b9-ff2c2bd35137",
+        "flags": {
+          "classicShellEnabled": false,
+          "examplesOriginConfigured": false
+        },
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "publicHealth": {
+    "testedAt": "2026-11-24T14:22:14.227Z",
+    "environment": "production",
+    "method": "GET readonly",
+    "results": [
+      {
+        "name": "api-gateway",
+        "url": "https://api-gateway-production-592a.up.railway.app/readyz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "admin",
+        "url": "https://admin.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "community",
+        "url": "https://comunidade.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "community-kids",
+        "url": "https://kids.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "previousRuntimeManifests": {
+    "testedAt": "2026-11-24T14:22:11.589Z",
+    "method": "HEAD readonly",
+    "observations": [
+      {
+        "name": "production-previous",
+        "status": 200
+      },
+      {
+        "name": "production-members-current",
+        "status": 200
+      },
+      {
+        "name": "staging-previous",
+        "status": 200
+      },
+      {
+        "name": "staging-members-current",
+        "status": 200
+      }
+    ]
+  },
+  "coursePreservation": {
+    "beforeAt": "2026-11-24T13:44:12.272Z",
+    "afterAt": "2026-11-24T14:22:14.616Z",
+    "rows": 16,
+    "unchanged": true,
+    "readOnly": true
+  },
+  "smokeBefore": {
+    "testedAt": "2026-11-24T14:00:05.371Z",
+    "environment": "production",
+    "membersSha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+    "results": [
+      {
+        "path": "/v1/build",
+        "status": 200,
+        "durationMs": 13646,
+        "passed": true,
+        "validation": {
+          "profileVersion": 1,
+          "runtimeFingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c"
+        }
+      },
+      {
+        "path": "/v1/check/warm",
+        "status": 200,
+        "durationMs": 4604,
+        "passed": true
+      },
+      {
+        "path": "/v1/check",
+        "status": 200,
+        "durationMs": 2016,
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "smokeAfter": {
+    "testedAt": "2026-11-24T14:22:41.043Z",
+    "environment": "production",
+    "membersSha": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+    "results": [
+      {
+        "path": "/v1/build",
+        "status": 200,
+        "durationMs": 19285,
+        "passed": true,
+        "validation": {
+          "profileVersion": 1,
+          "runtimeFingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c"
+        }
+      },
+      {
+        "path": "/v1/check/warm",
+        "status": 200,
+        "durationMs": 4635,
+        "passed": true
+      },
+      {
+        "path": "/v1/check",
+        "status": 200,
+        "durationMs": 2279,
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "verified": true
+}

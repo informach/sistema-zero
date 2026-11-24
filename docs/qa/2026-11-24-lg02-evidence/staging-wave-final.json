@@ -1,0 +1,130 @@
+{
+  "checkedAt": "2026-11-24T13:40:58.114Z",
+  "source": "Railway deployment API",
+  "environment": "staging",
+  "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "ciRun": 45388063256,
+  "deployments": [
+    {
+      "service": "community",
+      "id": "2621a720-aa96-4728-bc2f-7a83c4dab7e5",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "admin",
+      "id": "350c468c-91e4-4f53-a21e-793dcb16851c",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "fiscal",
+      "id": "bc41cdbd-fa38-40d1-a818-64266ae8f42b",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "marketing-app",
+      "id": "c2e214cb-59b6-4adf-9b3e-36f3c678bd57",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "messaging",
+      "id": "165d42cd-f0ce-40e4-be49-9253e0e9a13b",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "funnel",
+      "id": "3045e595-450b-45c2-acee-7f572fb63619",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "helpdesk-app",
+      "id": "94625256-8323-4f0b-b46e-ea29154abddc",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "community-kids",
+      "id": "85b6dc74-7744-4f06-9a15-6b47390b53ac",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "live-recorder",
+      "id": "9ccd6ad5-5bb1-4db2-9fa7-d0f2e089fb06",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "helpdesk",
+      "id": "239fdeb9-5630-482b-a4d9-32c7f261716a",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "marketing",
+      "id": "55d83485-1413-4599-9770-e86851f1234f",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "api-gateway",
+      "id": "65ccb79f-a2f8-4edd-8b84-116c001be5ab",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "palco-gravacao",
+      "id": "96878477-8485-49c2-845f-cd82f46bf9c0",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "hub",
+      "id": "31b6f5a7-c31e-4616-baee-877ef65fee22",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "referrals",
+      "id": "372487a5-9c8b-4dff-bc03-b9e7500daaa5",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "payments",
+      "id": "b2fefbdc-1510-4f2d-a1b5-85187a435fef",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "catalog",
+      "id": "b8232ba5-62b2-4b9b-87e4-fb96c386e221",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "arquipelago-api",
+      "id": "8fb08e37-03c4-4f16-9584-9549f452f645",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "auth",
+      "id": "7ad13979-e31f-403f-af19-759fc4e11211",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    },
+    {
+      "service": "members",
+      "id": "9450cef0-83e4-45ee-b92a-94187aca789e",
+      "status": "SUCCESS",
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7"
+    }
+  ],
+  "verified": true
+}

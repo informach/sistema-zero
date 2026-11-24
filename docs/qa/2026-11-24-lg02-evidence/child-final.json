@@ -1,0 +1,150 @@
+{
+  "testedAt": "2026-11-24T13:38:15.618Z",
+  "stagingSource": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "runtimeVersion": "382058b9-3175-4bb2-b6f0-d312b8fcaf46",
+  "sameProfile": true,
+  "requestsOverlapped": true,
+  "verified": true,
+  "teacherSubmissionSent": false,
+  "courses": [
+    {
+      "viewerFingerprint": "b931665c9db92d1d5023c98b5202463887972fcddfd0bacf45dce06a21c0f17c",
+      "course": "desafio-primeiro-jogo",
+      "autoWarming": [
+        {
+          "startedAt": "2026-11-24T13:34:32.337Z",
+          "completedAt": "2026-11-24T13:34:32.679Z",
+          "status": 202,
+          "warming": true
+        }
+      ],
+      "checks": [
+        {
+          "startedAt": "2026-11-24T13:36:17.862Z",
+          "completedAt": "2026-11-24T13:36:24.221Z",
+          "status": 200,
+          "durationMs": 6358.800000011921,
+          "passed": true,
+          "results": [
+            {
+              "id": "direcional",
+              "passed": true
+            },
+            {
+              "id": "andar",
+              "passed": true
+            },
+            {
+              "id": "andar-cima",
+              "passed": true
+            },
+            {
+              "id": "andar-baixo",
+              "passed": true
+            },
+            {
+              "id": "andar-esquerda",
+              "passed": true
+            },
+            {
+              "id": "andar-direita",
+              "passed": true
+            }
+          ],
+          "reward": {
+            "xpAwarded": 0,
+            "totalXp": 1020,
+            "coinsAwarded": 0,
+            "coinBalance": 535
+          }
+        }
+      ],
+      "authorization": {
+        "testedAt": "2026-11-24T13:35:04.427Z",
+        "verified": true,
+        "scope": "Authenticated test child; denies do not change session, permissions or lesson state",
+        "results": [
+          {
+            "label": "unauthenticated",
+            "status": 401,
+            "code": "UNAUTHORIZED"
+          },
+          {
+            "label": "wrong-viewer",
+            "status": 409,
+            "code": "VIEWER_CHANGED"
+          },
+          {
+            "label": "stale-revision",
+            "status": 409,
+            "code": "LEARNING_CONFLICT"
+          },
+          {
+            "label": "locked-section",
+            "status": 423,
+            "code": "SECTION_LOCKED"
+          },
+          {
+            "label": "authorized-warm",
+            "status": 202,
+            "warming": true
+          },
+          {
+            "label": "authorized-repeat",
+            "status": 202,
+            "warming": true
+          }
+        ]
+      }
+    },
+    {
+      "viewerFingerprint": "b931665c9db92d1d5023c98b5202463887972fcddfd0bacf45dce06a21c0f17c",
+      "course": "jornada-faisca-base-3d",
+      "autoWarming": [
+        {
+          "startedAt": "2026-11-24T13:34:47.445Z",
+          "completedAt": "2026-11-24T13:34:47.763Z",
+          "status": 202,
+          "warming": true
+        }
+      ],
+      "checks": [
+        {
+          "startedAt": "2026-11-24T13:36:17.722Z",
+          "completedAt": "2026-11-24T13:36:54.120Z",
+          "status": 200,
+          "durationMs": 36398.10000002384,
+          "passed": true,
+          "results": [
+            {
+              "id": "movimento-no-quadro",
+              "passed": true
+            },
+            {
+              "id": "andar-0",
+              "passed": true
+            },
+            {
+              "id": "andar-1",
+              "passed": true
+            },
+            {
+              "id": "andar-2",
+              "passed": true
+            },
+            {
+              "id": "andar-3",
+              "passed": true
+            }
+          ],
+          "reward": {
+            "xpAwarded": 0,
+            "totalXp": 1020,
+            "coinsAwarded": 0,
+            "coinBalance": 535
+          }
+        }
+      ]
+    }
+  ]
+}
