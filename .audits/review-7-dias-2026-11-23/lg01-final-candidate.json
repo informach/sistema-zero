@@ -34,13 +34,25 @@
     "stagingServicesHealthy": 8,
     "pushCiRun": 45281870815,
     "pushCiAttempt": 2,
-    "pushCiStatus": "in_progress",
-    "mergeBlocker": "Seven required checks from cancelled push suite; full rerun requested"
+    "pushCiStatus": "ci_checks_passed",
+    "mergeBlocker": "R15: commit association index empty; operational fix PR 285 in CI"
   },
   "warmingIncluded": false,
   "warmingBlocker": "R12: failed shared-container check interrupts another tab of the same identity",
   "stagingWorkerVersion": "6406c751-d850-4e2c-b433-7f75a2b5337d",
   "stagingPythonCatalog": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
   "productionPythonCatalogToPreserve": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
-  "productionDeployedByThisExecution": false
+  "productionDeployedByThisExecution": false,
+  "productMerge": "93c9a15a248138586f1635f5035f5647926ed474",
+  "operationalFix": {
+    "pullRequest": 285,
+    "head": "fa53d34c210222a16eaff88577f77db98067079f",
+    "ciRun": 45308187261,
+    "planRun": 45308187264,
+    "localTestsPassed": 113,
+    "localExpectations": 368,
+    "realSourceQualifiedReadOnly": true,
+    "packagesAndRailwayUnchanged": true,
+    "status": "in_progress"
+  }
 }
