@@ -168,3 +168,13 @@ Os tipos finais do Pinta e do Studio concluíram com saída 0 após as duas corr
 O run `45281893853`, tentativa 1, terminou com sucesso às 23:42:26 UTC de 23/11: os 13 jobs passaram no SHA final `9a8a1a9f2`, incluindo os nove exigidos pelo controlador, na mesma tentativa. Também passaram `ten-thousand-blocks`, o preflight SSH somente de leitura e o plano Railway final `45281894080`, com zero mudanças, ambiente de produção correto e árvore `.railway/` `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`. Na conferência às 23:58 UTC, main continuava em `8d87bbff8` e staging em `9a8a1a9f2`.
 
 A onda `45281918669` tem seus 12 jobs complementares aprovados e ainda executa a checagem global de tipos, iniciada às 23:28:39 UTC. Nenhum job de implantação começou nessa consulta. O PR não foi integrado e produção não recebeu esta versão até esse registro.
+
+### Nova onda e publicação concorrente da Ilha
+
+O CI canônico de staging concluiu os 13 jobs com sucesso e iniciou o job `138109872500` às 00:04 UTC de 24/11 (21:04 de 23/11 em São Paulo). A onda começou pelo Members `c639c887-8591-43e9-bbaa-cc38dd7ad458` e passou para Auth `3e914ffa-8ac9-43bd-ab65-8bcc72d38166`. A consulta prévia encontrou deployments concorrentes de Members/Admin no SHA `b1220ea67`, com as duas mudanças já revistas e incorporadas; o fluxo canônico captura esses predecessores sem reverter código necessário.
+
+Uma guarda de identidade da consulta de cursos recusou o SHA antigo de produção antes de acessar o banco. A leitura mínima seguinte confirmou que outra execução já havia implantado Members `8d87bbff8`, deployment `365d0e34-97e1-4fa0-9af3-0cd76281ee18`, às 23:21 UTC. Admin `c92745cd-8803-47c3-a045-8e4aa640d7e4` e Kids `06fa9bb4-20b7-4527-9794-85e2670aabca` também receberam deployments saudáveis nessa frente. Produção estava sem operações pendentes na conferência.
+
+Repetida com a identidade atual correta, a transação somente de leitura confirmou **A Ilha do Farol publicada, 3/3 aulas**, tanto no slug Kids `jornada-faisca-base-3d` quanto no adulto `jornada-faisca-base-3d-adulto`. As atualizações registradas são 23:35:44 e 23:37:26 UTC de 23/11. Jardim permanece 0/2; Pinta e Moedas, 0/1. Não houve execução do publicador ou alteração de aulas por esta LG01. O estado inicial de cursos em rascunho fica preservado como histórico, e o plano/matriz passam a distinguir essa publicação já realizada das restantes.
+
+O predecessor real de Members para o próximo smoke de produção passa a ser `8d87bbff8`, não `3d7c53253`. A candidata `9a8a1a9f2` já incorpora essa main e preserva o ajuste de 32 falas. O Arquipélago API anterior está saudável, deployment `47c779a9-cb21-4567-a4a4-fe4e143f120e`; sua estreia V2 continua fora da seleção LG01.

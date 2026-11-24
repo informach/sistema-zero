@@ -19,7 +19,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | --- | --- | --- | --- | --- |
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Em execução: candidata `9a8a1a9f2`, incluindo R13/R14; qualificação remota e implantação final pendentes |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
-| LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Pendente |
+| LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
 | LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
@@ -54,7 +54,7 @@ LG01 e LG03 podem avançar sem esperar LG04, LG05 ou LG10. LG02 só entra na ver
 - [ ] Publicar individualmente e percorrer a aula com um perfil elegível.
 - [ ] Reconciliar os títulos dos materiais com os registros do Admin antes de criar ou importar cursos.
 
-Na consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não deve ser tratado como uma publicação nova pendente.
+Na primeira consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. Uma nova leitura de produção às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo) confirmou **A Ilha do Farol publicada com 3/3 aulas em Kids e Adultos**, por outra frente. Members, Admin e Kids receberam o ajuste de 32 falas em `8d87bbff8`, já incorporado à LG01. Jardim, Pinta e Moedas continuam em rascunho. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não é uma publicação nova desta etapa.
 
 ## Integrações regionais do Pinta
 
@@ -110,6 +110,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
+| 23/11/2026 | LG03 | Confirmada publicação concorrente de A Ilha do Farol: 3/3 aulas em Kids e Adultos. Leitura de produção, sem executar o publicador nem alterar conteúdo pela LG01. Os demais minicursos seguem em rascunho |
 | 23/11/2026 | LG01 | R14 reproduzido e corrigido: gestos do Pinta conservam a prévia após deslocamento do papel. 76 testes UI e quatro percursos desktop/toque aprovados, tipos Pinta/Studio sem erros. Nova candidata `9a8a1a9f2` em CI e homologação |
 | 23/11/2026 | LG01 | Miniaturas dos 24 modelos conferidas na prévia Admin autenticada. Defeito R13 no menu incorporado corrigido em `a5d684728`, com testes de regressão e navegador. Nova rodada final de CI, plano e staging em andamento; produção ainda pendente |
 | 23/11/2026 | LG01 | Candidata em `release/lg01-melhorias-prontas-20261123`, baseada em `f8910ee05`, com aquecimento removido. [Escopo, dependências, provas e sequência de implantação](../qa/2026-11-23-lg01-melhorias-prontas.md) |
