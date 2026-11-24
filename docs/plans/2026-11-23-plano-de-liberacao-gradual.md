@@ -18,7 +18,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Concluída em produção em 24/11: sete serviços saudáveis, runtime/imagem qualificados, CI e provas finais aprovados. Aquecimento excluído |
-| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
+| LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Implementada e qualificada no executor real; CI final, aplicativos de staging e promoção ainda pendentes. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
 | LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
@@ -43,9 +43,10 @@ Resultado: `538ae843b7534239a715a1d0a6c2a9d32d54604d`, sete serviços saudáveis
 **LG02** qualifica o aquecimento e a reutilização do contêiner em staging com o executor real.
 
 - [x] Medir a primeira verificação e as seguintes no executor real, com jogos sintéticos; [resultados e limites da prova](../qa/2026-11-23-lg02-executor-real.md).
-- [ ] Concluir as provas de duas abas do perfil, aquecimento, execução e limpeza após corrigir a destruição compartilhada. A sobreposição com falha já reproduziu R12; o caminho seguro por pedido passou a contraprova.
-- [ ] Conferir isolamento entre perfis, limites de capacidade e comportamento quando o contêiner dorme.
-- [x] Decisão desta rodada: excluir aquecimento e reutilização da LG01. Reabrir a decisão após corrigir e qualificar os pontos pendentes.
+- [x] Concluir as provas de duas abas do perfil, aquecimento, execução e limpeza após corrigir a destruição compartilhada. A reserva SQLite com posse exclusiva passou os casos de falha na máquina reutilizável e preservou a outra aba.
+- [x] Conferir isolamento entre perfis, limites de capacidade e comportamento quando o contêiner dorme.
+- [x] Decisão de 23/11: excluir aquecimento e reutilização da LG01. Os pontos foram corrigidos e a qualificação hospedada passou em 24/11.
+- [ ] Concluir o CI da fonte final, repetir aquecimento/verificação e recusas nos aplicativos atualizados de staging e promover pelo fluxo canônico.
 
 ## Publicação das aulas
 
@@ -111,6 +112,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
+| 24/11/2026 | LG02 | Runtime qualificado: posse exclusiva, falhas entre abas, cache limitado, capacidade, suspensão, Pro e navegação 3D. Imagem exata passou 66 cenários, além dos 440 testes locais. A fonte final corrige os cenários tipados do core, com typecheck e 16 testes aprovados; CI completo reaberto. Correções integradas em staging `9ca0696ae`, com apelido/quarto concorrentes preservados. [Acompanhamento](../qa/2026-11-24-lg02-aquecimento-seguro.md); produção continua na LG01 |
 | 24/11/2026 | LG01 | Concluída: PRs #283/#285 integrados, CI com 13 jobs e plano aprovados, onda canônica `45315948453` concluída. Sete serviços em `538ae843b`, dois contêineres ready, HTTP 200 nas rotas públicas e no executor após o deploy. Cursos preservados; aquecimento permanece na LG02 |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
 | 23/11/2026 | LG01 | Push reexecutado com 13 checks aprovados e PR #283 integrado normalmente. R15: índice vazio do GitHub impede o controlador de localizar o PR válido; correção isolada no PR #285, com 113 testes e prova readonly real aprovados, em qualificação remota |
