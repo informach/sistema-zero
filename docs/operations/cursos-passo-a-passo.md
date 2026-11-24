@@ -102,6 +102,22 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
    - Em "Ferramentas que este curso libera no Estúdio", marcar os blocos do `blocos.json`.
 2. **Módulos e aulas.** No editor do curso, um módulo por linha do `modulos.md`, com o resumo, e as
    aulas na ordem.
+   - **Animação do módulo (ediSVG):** todo módulo tem a sua animação, mostrada na página do curso
+     no Kids (a comunidade adulta ainda não mostra).
+     - **Arte:** feita no ediSVG (`informach-apps/apps/edisvg`) com as artes vetoriais do projeto
+       do curso: os SVGs dos `.szproject.json`, ou as figuras do Estúdio desenhadas por código, que
+       viram SVG pelo `PincelSvg`. Num curso 3D, monte uma versão 2D parecida com os "gêmeos" em
+       SVG dos modelos (a mesma cena, com os mesmos nomes).
+     - **Exportar:** `node --import tsx scripts/qualify-web-assets.mts <pasta com .edisvg> <pasta nova>`,
+       na pasta do ediSVG. Ele gera `<arquivo>-b1-a1.edi-animation.json` com o pôster e um recibo.
+     - **Guardar no repositório:** `bun scripts/edisvg/import-artifacts.ts <pasta> derived` (a fonte
+       fica em `art/edisvg/`).
+     - **Cadastrar:** no Admin, "Editar módulo" → enviar o `.edi-animation.json` (só esse formato,
+       com pôster, até 10 MB).
+     - Os arquivos atuais estão em `art/edisvg/` (Cadê Todo Mundo e Desafio do Primeiro Jogo).
+     - A cópia para o adulto e a promoção levam a animação junto.
+     - O script que monta, exporta e cadastra a animação a partir das artes do curso é o próximo
+       passo (`scripts/cursos/animacao-do-modulo.ts`, ainda não existe).
 3. **Manifesto de cada aula.** Editor da aula → Dados da aula → "Importar roteiro com partes", com
    o `aula-N.manifesto.json`, no modo "Atualizar pelo manifesto". A importação cria as partes, os
    blocos e os vídeos planejados.
