@@ -168,14 +168,6 @@
 
 [engaging, energetic, conversational voice] É este bloco que faz a pergunta do baú, como no jogo 2D.
 
-[engaging, energetic, conversational voice] A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
-
-[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
-
-[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
-
 [confident, clear, unhurried voice] Agora a pergunta. O Se já vem com uma, x maior que 0. Desta vez ela serve, só que com outras partes.
 
 [confident, clear, unhurried voice] Clique no x e escolha moedas.
@@ -206,7 +198,33 @@
 
 [confident, clear, unhurried voice] Por último, clique em repetindo e escolha uma vez, para o baú abrir uma vez só.
 
-[engaging, energetic, conversational voice] O aviso também conta que o baú abriu. Esse bloco vai logo abaixo de Tocar a animação, ainda dentro do então. Deixe esse lugar à vista.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e vá direto ao baú, sem pegar moedas.
+
+[interested, animated voice] Repare: o baú continua fechado.
+
+[upbeat, encouraging voice] Agora toque na tecla R.
+
+[upbeat, encouraging voice] Depois caminhe pela trilha até o farol, pegando as cinco moedas, e volte ao baú.
+
+[interested, animated voice] Olha só: o baú toca a animação e abre!
+
+[engaging, energetic, conversational voice] Só que o aviso ainda não conta nada, nem quando faltam moedas. Isso fica para a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com o baú está o Se com moedas maior ou igual a 5, e no então está Tocar a animação abrir em bau, uma vez.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e vá direto ao baú, sem pegar moedas. Tá vendo? O baú fica fechado, mas o aviso continua igual, porque a pergunta do baú ainda não tem a resposta do não. E, quando o baú abre, o aviso também não conta nada. Agora o aviso vai contar as duas respostas!
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com o baú e o Se que está dentro dele.
+
+[engaging, energetic, conversational voice] Primeiro, o aviso do sim. Ele vai logo abaixo de Tocar a animação, ainda dentro do então. Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
@@ -221,6 +239,14 @@
 [confident, clear, unhurried voice] Solte em cima do 1, dentro do então.
 
 [confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: O baú abriu! Você juntou moedas suficientes.
+
+[engaging, energetic, conversational voice] Para a resposta do não, o Se tem outro espaço, o senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
 
 [engaging, energetic, conversational voice] Agora a resposta do não: o aviso diz o que falta. Ela vai dentro do senão. Deixe esse espaço à vista.
 

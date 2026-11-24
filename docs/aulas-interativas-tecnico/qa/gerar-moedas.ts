@@ -2,7 +2,7 @@
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
 import { moedasAjuda, moedasAulas, moedasExperiencia } from './moedas-conteudo'
 import { moedasChecks } from './moedas-criterios'
-import { MOEDAS_CURSO, MOEDAS_ETAPAS, montarProjetoMoedas } from './moedas-projeto'
+import { MOEDAS_CURSO, MOEDAS_ETAPAS, MOEDAS_IDS, montarProjetoMoedas } from './moedas-projeto'
 import { moedasQuiz2d, moedasQuiz3d } from './moedas-quiz'
 import { gerarPoder } from './poder-gerador'
 
@@ -28,6 +28,7 @@ await gerarPoder({
   prefixo: 'moedas',
   curso: MOEDAS_CURSO,
   etapas: MOEDAS_ETAPAS,
+  idEtapas: MOEDAS_IDS,
   etapaFinal: 'bau',
   montarProjeto: montarProjetoMoedas,
   checks: moedasChecks,

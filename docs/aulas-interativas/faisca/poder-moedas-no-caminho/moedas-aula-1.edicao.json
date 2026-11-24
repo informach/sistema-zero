@@ -14,6 +14,7 @@
     "video-contador",
     "video-coleta",
     "video-placar",
+    "video-abre",
     "video-bau"
   ],
   "intervencoes": [
@@ -51,8 +52,8 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-bau-K1",
-      "clipe": "video-bau",
+      "id": "video-abre-K1",
+      "clipe": "video-abre",
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "Pronto: agora o Se pergunta se moedas é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas.",

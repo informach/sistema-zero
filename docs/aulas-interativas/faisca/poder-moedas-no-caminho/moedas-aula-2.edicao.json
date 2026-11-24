@@ -7,7 +7,7 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-coleta", "video-placar", "video-bau"],
+  "clipes": ["video-abertura", "video-coleta", "video-placar", "video-abre", "video-bau"],
   "intervencoes": [
     {
       "id": "video-coleta-K1",
@@ -32,8 +32,8 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-bau-K1",
-      "clipe": "video-bau",
+      "id": "video-abre-K1",
+      "clipe": "video-abre",
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "é maior ou igual a cinco, ou seja, se o personagem tem pelo menos cinco moedas. Agora a resposta do sim: o baú abre.",

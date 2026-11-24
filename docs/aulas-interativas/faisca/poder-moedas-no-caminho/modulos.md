@@ -12,8 +12,9 @@ Identificador: aula-1. Dimensão: 2D.
 4. Crie o contador.
 5. Cada moeda soma um.
 6. Mostre as moedas na tela.
-7. O baú pede pelo menos 5.
-8. Pense nas moedas.
+7. O baú abre com pelo menos 5.
+8. Os avisos do baú.
+9. Pense nas moedas.
 
 [Manifesto](moedas-aula-1.manifesto.json) · [Roteiro](moedas-aula-1.roteiro.md).
 
@@ -24,8 +25,9 @@ Identificador: aula-2. Dimensão: 3D.
 1. As moedas chegaram à ilha.
 2. Conte as moedas da ilha.
 3. O número na tela da ilha.
-4. O baú da ilha abre.
-5. Pense nas moedas da ilha.
+4. O baú da ilha abre com pelo menos 5.
+5. Os avisos do baú da ilha.
+6. Pense nas moedas da ilha.
 
 [Manifesto](moedas-aula-2.manifesto.json) · [Roteiro](moedas-aula-2.roteiro.md).
 

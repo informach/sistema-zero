@@ -307,8 +307,8 @@
       },
       {
         "kind": "step",
-        "title": "2. Ponha o Se e abra o senão",
-        "text": "Uma pergunta de sim ou não, que ajuda o jogo a decidir, se chama <b>condição</b>. Quem faz uma condição no jogo é o bloco <b>Se</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú.<br/>A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
+        "title": "2. Ponha o Se",
+        "text": "Uma pergunta de sim ou não, que ajuda o jogo a decidir, se chama <b>condição</b>. Quem faz uma condição no jogo é o bloco <b>Se</b>.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú."
       },
       {
         "kind": "step",
@@ -325,9 +325,9 @@
   },
   {
     "id": "bau-respostas",
-    "kicker": "Aula 1 · Parte 7 · Montagem",
-    "title": "As duas respostas do baú",
-    "subtitle": "No então, o baú abre e o aviso conta. No senão, o aviso diz o que falta.",
+    "kicker": "Aula 1 · Parte 7 · Montagem e verificação",
+    "title": "O baú abre com pelo menos 5",
+    "subtitle": "Com pelo menos 5 moedas, a resposta é sim, e o baú abre.",
     "items": [
       {
         "kind": "step",
@@ -335,20 +335,45 @@
         "text": "Deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do então.<br/>É este bloco que troca o desenho do baú fechado pelo do baú aberto. Ele chega com <b>heroi</b> duas vezes. Clique no primeiro heroi e escolha <b>bau</b>, o sprite do baú. Depois clique no outro heroi e escolha o desenho <b>bau-aberto</b>."
       },
       {
+        "kind": "drawing",
+        "name": "abre-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando moedas é 5 ou mais"]
+      },
+      {
+        "kind": "step",
+        "title": "Teste e verifique",
+        "text": "Sem moedas, o baú fica fechado; com as cinco moedas do caminho, ele abre. Depois clique em <b>Verificar projeto</b>."
+      }
+    ]
+  },
+  {
+    "id": "bau-avisos",
+    "kicker": "Aula 1 · Parte 8 · Montagem",
+    "title": "Os avisos do baú",
+    "subtitle": "No então, o aviso conta que o baú abriu. No senão, ele diz o que falta.",
+    "items": [
+      {
         "kind": "step",
         "title": "5. O aviso conta que o baú abriu",
         "text": "Logo abaixo de Trocar imagem do sprite, ainda dentro do então: <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: clique e escolha <b>aviso</b>.<br/>O aviso é uma mensagem, e não um número. <b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do <b>1</b>. Clique em <b>Olá</b>, apague e escreva <b>O baú abriu! Você juntou moedas suficientes.</b>"
       },
       {
         "kind": "step",
-        "title": "6. A resposta do não: o aviso diz o que falta",
+        "title": "6. Abra o senão",
+        "text": "O Se ainda não mostra o espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "7. A resposta do não: o aviso diz o que falta",
         "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do 1, solte outro <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique nesse Olá, apague e escreva <b>O baú pede pelo menos 5 moedas.</b>"
       }
     ]
   },
   {
     "id": "bau-teste",
-    "kicker": "Aula 1 · Parte 7 · Teste e confira",
+    "kicker": "Aula 1 · Parte 8 · Teste e confira",
     "title": "Teste os dois casos",
     "subtitle": "Sem moedas, o baú continua fechado. Com pelo menos 5, ele abre.",
     "items": [
@@ -368,7 +393,7 @@
   },
   {
     "id": "bau-envio",
-    "kicker": "Aula 1 · Parte 7 · Envio",
+    "kicker": "Aula 1 · Parte 8 · Envio",
     "title": "Envie o seu jogo",
     "subtitle": "O baú foi a última montagem da aula. Agora é verificar e enviar o projeto.",
     "items": [
@@ -396,7 +421,7 @@
   },
   {
     "id": "revisao-2d",
-    "kicker": "Aula 1 · Parte 8 · Revisão",
+    "kicker": "Aula 1 · Parte 9 · Revisão",
     "title": "Pense nas moedas",
     "subtitle": "Antes de concluir a aula, lembre o que você descobriu sobre o cofrinho e o baú.",
     "items": [
@@ -550,8 +575,8 @@
       },
       {
         "kind": "step",
-        "title": "2. Ponha o Se e abra o senão",
-        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú.<br/>A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
+        "title": "2. Ponha o Se",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de fazer, dentro do encontro com o baú."
       },
       {
         "kind": "step",
@@ -562,9 +587,9 @@
   },
   {
     "id": "bau-3d-respostas",
-    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "kicker": "Aula 2 · Parte 4 · Montagem e verificação",
     "title": "O baú da ilha abre",
-    "subtitle": "No então, o baú toca a animação abrir e o aviso conta. No senão, o aviso diz o que falta.",
+    "subtitle": "Com pelo menos 5 moedas, a resposta é sim, e o baú abre.",
     "items": [
       {
         "kind": "step",
@@ -572,20 +597,45 @@
         "text": "Quem faz o baú abrir de verdade é a animação <b>abrir</b>, que já vem pronta no modelo do baú. Você só escolhe quando ela toca. Deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do então.<br/>Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>. Clique em Andar e escolha <b>abrir</b>. Clique em heroi e escolha <b>bau</b>. Clique em repetindo e escolha <b>uma vez</b>, para o baú abrir uma vez só."
       },
       {
+        "kind": "drawing",
+        "name": "abre-3d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando moedas é 5 ou mais"]
+      },
+      {
+        "kind": "step",
+        "title": "Teste e verifique",
+        "text": "Sem moedas, o baú fica fechado; com as cinco moedas da trilha, ele abre. Depois clique em <b>Verificar projeto</b>."
+      }
+    ]
+  },
+  {
+    "id": "bau-3d-avisos",
+    "kicker": "Aula 2 · Parte 5 · Montagem",
+    "title": "Os avisos do baú da ilha",
+    "subtitle": "No então, o aviso conta que o baú abriu. No senão, ele diz o que falta.",
+    "items": [
+      {
         "kind": "step",
         "title": "5. O aviso conta que o baú abriu",
         "text": "Logo abaixo de Tocar a animação, ainda dentro do então: <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Escolha <b>aviso</b>. Em cima do 1, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>O baú abriu! Você juntou moedas suficientes.</b>"
       },
       {
         "kind": "step",
-        "title": "6. A resposta do não: o aviso diz o que falta",
+        "title": "6. Abra o senão",
+        "text": "O Se ainda não mostra o espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão. Não clique no primeiro."
+      },
+      {
+        "kind": "step",
+        "title": "7. A resposta do não: o aviso diz o que falta",
         "text": "Dentro do <b>senão</b>, solte outro <b>Alterar variável para</b> e escolha <b>aviso</b>. Em cima do 1, solte outro <b>texto</b> e escreva <b>O baú pede pelo menos 5 moedas.</b>"
       }
     ]
   },
   {
     "id": "bau-3d-teste",
-    "kicker": "Aula 2 · Parte 4 · Teste e confira",
+    "kicker": "Aula 2 · Parte 5 · Teste e confira",
     "title": "Teste os dois casos na ilha",
     "subtitle": "Sem moedas, o baú continua fechado. Com pelo menos 5, ele toca a animação e abre.",
     "items": [
@@ -605,7 +655,7 @@
   },
   {
     "id": "bau-3d-envio",
-    "kicker": "Aula 2 · Parte 4 · Envio",
+    "kicker": "Aula 2 · Parte 5 · Envio",
     "title": "Envie o seu jogo da ilha",
     "subtitle": "O baú foi a última montagem da aula. Agora é verificar e enviar o projeto.",
     "items": [
@@ -633,7 +683,7 @@
   },
   {
     "id": "revisao-3d",
-    "kicker": "Aula 2 · Parte 5 · Revisão",
+    "kicker": "Aula 2 · Parte 6 · Revisão",
     "title": "Pense nas moedas da ilha",
     "subtitle": "Antes de concluir a aula, lembre o que muda e o que continua igual na ilha.",
     "items": [

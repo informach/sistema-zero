@@ -44,7 +44,8 @@ for (const f of readdirSync(runtime))
       )
     writeFileSync(resolve(dir, f), s)
   }
-const p = montarProjetoMoedas(d, 'bau'),
+// O cenário sem-senao é o projeto da parte em que o baú abre (sem os avisos), que a última parte reprova.
+const p = montarProjetoMoedas(d, scenario === 'sem-senao' ? 'abre' : 'bau'),
   scope = '__sz0123456789abcdef01234567'
 let js = p.files['script.js']
 // Os erros plausíveis da criança (a tabela da proposta).
@@ -57,7 +58,7 @@ if (scenario === 'igual-a-5') js = js.replace('moedas >= 5', 'moedas === 5')
 if (scenario === 'maior-que-5') js = js.replace('moedas >= 5', 'moedas > 5')
 if (scenario === 'sem-somar') js = js.replace('moedas = moedas + 1;', '')
 if (scenario === 'sem-zerar') js = js.replace('let moedas = 0;', 'let moedas = 0; moedas = 2;')
-if (scenario !== 'correto' && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js']) throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -119,6 +120,7 @@ const REPROVA: Record<string, string[]> =
         'maior-que-5': ['cinco'],
         'sem-somar': ['cinco'],
         'sem-zerar': ['meta', 'cinco', 'reinicio'],
+        'sem-senao': etapa === 'bau' ? ['meta'] : [],
       }
     : {
         correto: [],
@@ -127,8 +129,10 @@ const REPROVA: Record<string, string[]> =
         'maior-que-5': ['cinco'],
         'sem-somar': ['contar', 'uma-vez', 'meta', 'cinco', 'seis'],
         'sem-zerar': ['zero', 'contar', 'uma-vez', 'meta', 'cinco', 'seis', 'reinicio'],
+        // Sem o senão, só o aviso do que falta reprova.
+        'sem-senao': etapa === 'bau' ? ['meta'] : [],
       }
 if (!REPROVA[scenario]) throw Error(`Cenário desconhecido: ${scenario}`)
-if (etapa !== 'bau' && scenario !== 'correto') throw Error('Erros só na última etapa')
+if (etapa !== 'bau' && !['correto', 'sem-senao'].includes(scenario)) throw Error('Erros só na última etapa')
 const expected = (id: string) => !REPROVA[scenario]!.includes(id)
 if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)
