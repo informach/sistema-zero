@@ -94,7 +94,7 @@ Antes e depois de cada teste, observe o número de moedas, as moedas do caminho 
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 3D → Encostar. Pegue Quando encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em heroi e escolha personagem. No grupo, clique em estrelas e escolha moedasDoCaminho. No último nome, clique em item e escreva moeda.
-3. Deixe à vista o espaço ao lado de fazer, dentro desse encontro. Abra Jogo 3D → Objetos → Sumir. Pegue Remover da cena e encaixe ali. Clique em objeto e escolha moeda. A cena já vem cena; deixe assim.
+3. Deixe à vista o espaço ao lado de fazer, dentro desse encontro. Abra Jogo 3D → Objetos → Sumir. Pegue Remover da cena e encaixe ali. Clique em objeto e escolha moeda. O último campo já vem com cena; deixe assim.
 4. Embaixo de Remover da cena, ainda dentro do fazer, encaixe Somar em variável, de Programação → Variáveis. Clique em contador e escolha moedas. O número já vem em 1; deixe assim.
 
 **Teste:** Caminhe pela trilha até o farol. As cinco moedas do caminho devem sumir uma a uma. Volte pelo caminho: nada acontece nos lugares vazios.

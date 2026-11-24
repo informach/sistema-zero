@@ -1,4 +1,4 @@
-[upbeat, welcoming voice] Oi! O farol da Chave do Farol ganhou um laguinho! No meio da água tem uma pedra com um sino, e para chegar lá existe uma ponte levadiça, ao lado de uma alavanca. Só que essa ponte é apressada.
+[upbeat, welcoming voice] Oi! O jogo da Chave do Farol ganhou um laguinho! No meio da água tem uma pedra com um sino, e para chegar lá existe uma ponte levadiça, ao lado de uma alavanca. Só que essa ponte é apressada.
 
 [engaging, energetic, conversational voice] Para andar, segure uma das setas do canto de baixo do jogo. No computador, você também pode clicar no jogo e usar as setas do teclado.
 
@@ -34,7 +34,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que acontece com a ponte enquanto o relógio conta, com o relógio começando na alavanca e junto com a partida. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a ponte enquanto o relógio conta, quando ele começa na alavanca e quando começa junto com a partida. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -96,7 +96,7 @@
 
 [confident, clear, unhurried voice] Depois clique no segundo heroi e escolha a imagem ponte baixada.
 
-[engaging, energetic, conversational voice] Agora o papelzinho: ponteAberta vira verdadeiro. Ele vai logo abaixo da troca da ponte.
+[engaging, energetic, conversational voice] Agora o papelzinho: ponteAberta vira verdadeiro. Esse bloco vai logo abaixo da troca da ponte.
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
@@ -154,7 +154,7 @@
 
 [confident, clear, unhurried voice] Encontre esse encontro na área Quando acontecer e deixe à vista o lugar logo abaixo do último bloco dele, o bloco que muda o aviso.
 
-[confident, clear, unhurried voice] Abra Programação e depois Repetições, e pegue o bloco depois de 1 segundos.
+[confident, clear, unhurried voice] Abra Programação e depois Repetições, e pegue o bloco depois de segundos.
 
 [confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que muda o aviso, ainda dentro do encontro com a alavanca.
 
@@ -364,4 +364,4 @@
 
 [pleased, lively voice] Pronto, você programou uma ponte com relógio: ela baixa com a alavanca, espera 4 segundos, sobe sozinha e só deixa atravessar a tempo!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na ponte. Quando aparecer Projeto enviado!, clique em Próxima parte.

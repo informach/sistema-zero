@@ -108,7 +108,7 @@
 
 [engaging, energetic, conversational voice] Agora o relógio, igual ao da Aula 1: o bloco depois de 4 segundos, dentro do encontro com a alavanca, logo abaixo do aviso.
 
-[confident, clear, unhurried voice] Abra Programação e depois Repetições, e pegue o bloco depois de 1 segundos.
+[confident, clear, unhurried voice] Abra Programação e depois Repetições, e pegue o bloco depois de segundos.
 
 [confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco que muda o aviso, ainda dentro do encontro.
 
@@ -318,4 +318,4 @@
 
 [pleased, lively voice] Pronto, você programou a ponte apressada na ilha: ela baixa com a alavanca, sobe sozinha 4 segundos depois e só deixa atravessar a tempo!
 
-[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Depois do envio, ainda tem algumas perguntas para você pensar na ponte da ilha. Quando aparecer Projeto enviado!, clique em Próxima parte.
