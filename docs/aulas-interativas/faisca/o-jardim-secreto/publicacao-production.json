@@ -1,0 +1,28 @@
+{
+  "environment": "production",
+  "purpose": "O Jardim Secreto em produção, no Kids e no adulto, com os vídeos finais (24/11/2026)",
+  "course": {
+    "slug": "jornada-faisca-missao",
+    "id": "8183249d-3e2b-5105-a5da-8b8653f2d84a",
+    "title": "O Jardim Secreto",
+    "status": "published"
+  },
+  "adulto": {
+    "slug": "jornada-faisca-missao-adulto",
+    "id": "ab60dccb-ee4f-5f2f-a5e9-f146a981fe77",
+    "status": "published"
+  },
+  "promocao": {
+    "como": "scripts/cursos/publicar-curso.ts --operacao producao --ambiente staging (promote-kids pelo operador publish-course.ts)",
+    "trabalho": "f0c7c5b7-fca4-4000-a19a-6f82fffad5c6, completed com 63 de 63 tarefas",
+    "videos": "10 vídeos próprios da produção (nenhum id de staging), na pasta e na lista de domínios de produção",
+    "pdf": "copiado para admin/course-publication/ no R2 privado de produção, mesmo tamanho do arquivo da pasta (1.910.366 bytes)"
+  },
+  "copiaAdulto": {
+    "como": "scripts/cursos/publicar-curso.ts --operacao adulto --ambiente production (copy-adult)",
+    "trabalho": "27b76c1a-e252-44b0-8f77-941f70bf933c, completed com 41 de 41 tarefas",
+    "videos": "os mesmos 10 vídeos do Kids de produção"
+  },
+  "conferido": "scripts/cursos/conferir-curso.ts nos dois cursos de produção: aulas e partes dos manifestos, PDF marcado como caderno do aluno para o Zappy, 41 blocos liberados, vídeos finais; base do Zappy do Kids de produção em dia (base-do-zappy.ts conferir)",
+  "naoConferido": "um vídeo tocando em kids.sistemazero.com.br e a página do curso adulto no navegador"
+}

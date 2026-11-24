@@ -81,5 +81,13 @@
     },
     "observacao": "A Parte 5 da Aula 1 travou no processamento do Vimeo (mais de 1 h); a versão travada foi descartada e o arquivo reenviado."
   },
-  "baseDoZappy": "24/11/2026, sem navegador (scripts/cursos/base-do-zappy.ts atualizar): transcrições dos 10 vídeos e o texto do caderno (34.666 caracteres) na base; relatório sem pendências"
+  "baseDoZappy": "24/11/2026, sem navegador (scripts/cursos/base-do-zappy.ts atualizar): transcrições dos 10 vídeos e o texto do caderno (34.666 caracteres) na base; relatório sem pendências",
+  "adulto": {
+    "data": "2026-11-24",
+    "curso": "jornada-faisca-missao-adulto (ab60dccb-ee4f-5f2f-a5e9-f146a981fe77)",
+    "como": "scripts/cursos/publicar-curso.ts --operacao adulto --ambiente staging (copy-adult pelo operador publish-course.ts)",
+    "trabalho": "2173d338-6cf0-42f4-baf2-f245e763e3a3, concluído com 41 de 41 tarefas",
+    "conferido": "2 aulas publicadas com os 10 vídeos finais e as durações, 41 blocos liberados, PDF marcado como caderno do aluno para o Zappy",
+    "anterior": "o trabalho d1a62abf-a6f2-47b1-b273-3f7fdf1df151 (vídeos provisórios) tinha falhado na preparação das mídias"
+  }
 }
