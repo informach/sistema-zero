@@ -2,7 +2,7 @@
 // A estrutura das aulas, o roteiro e os derivados saem do gerador comum dos Poderes (poder-gerador.ts).
 import { cabanaAjuda, cabanaAulas, cabanaExperiencia } from './cabana-conteudo'
 import { cabanaChecks } from './cabana-criterios'
-import { CABANA_CURSO, CABANA_ETAPAS, montarProjetoCabana } from './cabana-projeto'
+import { CABANA_CURSO, CABANA_ETAPAS, CABANA_IDS, montarProjetoCabana } from './cabana-projeto'
 import { cabanaQuiz2d, cabanaQuiz3d } from './cabana-quiz'
 import { gerarPoder } from './poder-gerador'
 
@@ -28,6 +28,7 @@ await gerarPoder({
   prefixo: 'cabana',
   curso: CABANA_CURSO,
   etapas: CABANA_ETAPAS,
+  idEtapas: CABANA_IDS,
   etapaFinal: 'porta',
   montarProjeto: montarProjetoCabana,
   checks: cabanaChecks,

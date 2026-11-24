@@ -41,7 +41,7 @@ const ACESO_2D = CABANA_ASSETS_2D.find((a) => a.name === 'farol-listrado-aceso')
 
 export function cabanaChecks(d: CabanaDimensao, etapa: CabanaEtapa): SectionProjectCheck[] {
   const three = d === '3d'
-  const n = ['inicio', 'emblema', 'porta'].indexOf(etapa)
+  const n = ['inicio', 'emblema', 'abre', 'porta'].indexOf(etapa)
   const approach = (
     targetPath: string,
     timeoutMs: number,
@@ -170,7 +170,10 @@ export function cabanaChecks(d: CabanaDimensao, etapa: CabanaEtapa): SectionProj
   // A última etapa confere o jogo inteiro; o "guardar" já ficou na anterior (e o "duas" o cobre).
   // No 3D o robô anda mais devagar e as cinco viagens não cabem no prazo da parte: o
   // "reinicio" já abre a cabana com as duas peças (na outra ordem), então o "duas" fica no 2D.
-  if (n >= 2)
+  // A cabana que abre só com as duas peças (o Se só com o então): fechada só com a chave, aberta com as duas.
+  if (n === 2) lista.push(soChave, duas)
+  // O aviso de que a cabana pede as duas peças (o senão) é o que separa esta etapa da anterior.
+  if (n >= 3)
     lista.push(recolher, semPecas, soChave, soEmblema, three ? null : duas, reinicio, farol)
   return lista.filter((c): c is SectionProjectCheck => c !== null)
 }

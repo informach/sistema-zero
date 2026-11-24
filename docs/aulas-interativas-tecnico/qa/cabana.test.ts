@@ -156,8 +156,8 @@ describe('manifestos da Cabana', () => {
       expect(m.lessonSlug).toBe(`aula-${i + 1}`)
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'emblema', 'porta', 'revisao']
-          : ['abertura', 'emblema', 'porta', 'revisao'],
+          ? ['abertura', 'material', 'experiencia', 'emblema', 'abre', 'porta', 'revisao']
+          : ['abertura', 'emblema', 'abre', 'porta', 'revisao'],
       )
       // O envio fecha a última construção (a pergunta da cabana), e o quiz fecha a aula depois dele.
       expect(

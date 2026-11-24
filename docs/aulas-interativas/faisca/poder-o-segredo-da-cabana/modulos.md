@@ -10,8 +10,9 @@ Identificador: aula-1. Dimensão: 2D.
 2. O seu Passo a passo do projeto.
 3. A porta com duas peças.
 4. Guarde o emblema.
-5. A cabana pede as duas.
-6. Pense na cabana.
+5. A cabana abre com as duas peças.
+6. Os avisos da cabana.
+7. Pense na cabana.
 
 [Manifesto](cabana-aula-1.manifesto.json) · [Roteiro](cabana-aula-1.roteiro.md).
 
@@ -21,8 +22,9 @@ Identificador: aula-2. Dimensão: 3D.
 
 1. A cabana chegou à ilha.
 2. Guarde o emblema da ilha.
-3. A cabana da ilha abre.
-4. Pense na cabana da ilha.
+3. A cabana da ilha abre com as duas peças.
+4. Os avisos da cabana da ilha.
+5. Pense na cabana da ilha.
 
 [Manifesto](cabana-aula-2.manifesto.json) · [Roteiro](cabana-aula-2.roteiro.md).
 
