@@ -1,0 +1,236 @@
+{
+  "status": "complete",
+  "productionSha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+  "productHead": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+  "productPullRequest": 283,
+  "operationalHead": "fa53d34c210222a16eaff88577f77db98067079f",
+  "operationalPullRequest": 285,
+  "approvedTree": "c055e354f938a4db925462a829ed4e05c655f8cd",
+  "ci": {
+    "run": 45308187261,
+    "attempt": 1,
+    "passedJobs": 13,
+    "conclusion": "success"
+  },
+  "plan": {
+    "run": 45308187264,
+    "artifact": 14882076835,
+    "changes": 0,
+    "mainCheckRun": 45315617170,
+    "mainCheckConclusion": "success"
+  },
+  "runtime": {
+    "previousWorkerVersion": "3e1f67fb-f26a-4188-aa87-47d7a6dc80c5",
+    "workerVersion": "b16ce538-86cd-4abd-adaa-10d8bededcf4",
+    "deployedAt": "2026-11-24T02:55:08.298197Z",
+    "pythonCatalog": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
+    "pythonCatalogPreserved": true,
+    "requestedImageSha256": "a03816c637e1600f24f36aeeff4117b564f0ddcd48e4a19d3b7f20085dd6c7ed",
+    "containerRolloutComplete": true,
+    "containers": [
+      {
+        "name": "ProBuildSandbox",
+        "state": "ready",
+        "version": 13
+      },
+      {
+        "name": "ThreeDCheckSandbox",
+        "state": "ready",
+        "version": 6
+      }
+    ],
+    "containerRollout": "gradual",
+    "beforeAppsSmoke": {
+      "testedAt": "2026-11-24T02:55:55.190Z",
+      "membersSha": "8d87bbff854b94b18be51793aa00ff6022fa7613",
+      "status": 200,
+      "durationMs": 7240,
+      "passed": true
+    },
+    "afterImageRolloutSmoke": {
+      "testedAt": "2026-11-24T03:00:34.257Z",
+      "membersSha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+      "status": 200,
+      "durationMs": 6909,
+      "passed": true
+    },
+    "staleMembersShaProbeRefusedDuringRollout": true,
+    "afterAppsSmoke": {
+      "testedAt": "2026-11-24T03:16:10.173Z",
+      "environment": "production",
+      "membersSha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+      "status": 200,
+      "durationMs": 5341,
+      "passed": true
+    },
+    "deploymentId": "95d6162f-0b32-44fc-810a-a3ad8da7eb63"
+  },
+  "applicationWave": {
+    "run": 45315948453,
+    "services": [
+      "auth",
+      "members",
+      "hub",
+      "api-gateway",
+      "admin",
+      "community",
+      "community-kids"
+    ],
+    "status": "success",
+    "state": "PRODUCTION_WAVE_PASSED",
+    "publishedJourneyVersion": 4,
+    "deployments": [
+      {
+        "name": "auth",
+        "id": "00960558-c101-4438-8434-93ac78c057bd",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T02:59:59.995Z",
+        "updatedAt": "2026-11-24T03:02:33.209Z"
+      },
+      {
+        "name": "members",
+        "id": "f5ec1e52-7e59-4ac0-8af3-985d70b80df8",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T02:57:29.760Z",
+        "updatedAt": "2026-11-24T02:59:43.516Z"
+      },
+      {
+        "name": "hub",
+        "id": "562ce470-d55f-43c5-b3f0-f6980745f65d",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T03:02:58.185Z",
+        "updatedAt": "2026-11-24T03:09:32.684Z"
+      },
+      {
+        "name": "api-gateway",
+        "id": "7670213d-082e-4bb5-809b-20e6e8310882",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T03:02:59.712Z",
+        "updatedAt": "2026-11-24T03:10:06.438Z"
+      },
+      {
+        "name": "admin",
+        "id": "46fd8878-533c-434f-bc96-243748a39ab2",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T03:03:01.455Z",
+        "updatedAt": "2026-11-24T03:13:22.469Z"
+      },
+      {
+        "name": "community",
+        "id": "8a7762c7-5c03-4429-acfc-5d0b12e0c2b1",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T03:03:03.093Z",
+        "updatedAt": "2026-11-24T03:14:15.216Z"
+      },
+      {
+        "name": "community-kids",
+        "id": "940cf0c2-fc1f-4fc7-be09-3f66b95eafac",
+        "status": "SUCCESS",
+        "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+        "createdAt": "2026-11-24T03:03:04.489Z",
+        "updatedAt": "2026-11-24T03:15:17.558Z"
+      }
+    ]
+  },
+  "warmingIncluded": false,
+  "warmingBlocker": "R12: failed shared-container execution interrupts another tab of the same identity",
+  "newPythonDistributionActivated": false,
+  "arquipelagoV2Activated": false,
+  "productionDeployedByThisExecution": true,
+  "applicationWaveComplete": true,
+  "completedAt": "2026-11-24T03:18:28.951Z",
+  "health": {
+    "totalServices": 7,
+    "servicesWithIssues": 0,
+    "totalFailures": 0,
+    "pendingWork": 0
+  },
+  "publicHealth": {
+    "testedAt": "2026-11-24T03:16:06.878Z",
+    "environment": "production",
+    "method": "GET readonly",
+    "results": [
+      {
+        "name": "api-gateway",
+        "url": "https://api-gateway-production-592a.up.railway.app/readyz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "admin",
+        "url": "https://admin.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "community",
+        "url": "https://comunidade.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "name": "community-kids",
+        "url": "https://kids.sistemazero.com.br/api/healthz",
+        "status": 200,
+        "passed": true
+      }
+    ],
+    "passed": true
+  },
+  "publicRuntimeMetadata": {
+    "testedAt": "2026-11-24T03:16:04.325Z",
+    "method": "HEAD readonly",
+    "observations": [
+      {
+        "name": "production-previous",
+        "status": 200
+      },
+      {
+        "name": "production-members-current",
+        "status": 200
+      },
+      {
+        "name": "staging-previous",
+        "status": 200
+      },
+      {
+        "name": "staging-members-current",
+        "status": 200
+      }
+    ]
+  },
+  "releaseControls": [
+    {
+      "name": "members",
+      "state": "live",
+      "staged": null,
+      "controlledFlags": []
+    },
+    {
+      "name": "community-kids",
+      "state": "live",
+      "staged": null,
+      "controlledFlags": []
+    },
+    {
+      "name": "community",
+      "state": "live",
+      "staged": null,
+      "controlledFlags": []
+    }
+  ],
+  "courseVerification": {
+    "queriedAt": "2026-11-24T03:16:05.234Z",
+    "readOnly": true,
+    "publicationStatePreserved": true,
+    "farolKidsAndAdultsPublished": true,
+    "farolLessonsPerAudience": 3,
+    "publishedByThisExecution": false
+  }
+}

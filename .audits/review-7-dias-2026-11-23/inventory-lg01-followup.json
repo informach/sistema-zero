@@ -1,0 +1,431 @@
+{
+  "generatedAt": "2026-11-24T02:55:16.492Z",
+  "previousHead": "f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e",
+  "head": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+  "note": "Complemento da janela original: commits incorporados durante a execução da LG01, preservando os inventários anteriores. Merge não equivale a funcionalidade nova. Não inclui branches ou alterações locais de outras frentes.",
+  "commitCount": 14,
+  "nonMergeCommitCount": 8,
+  "changedFileCount": 60,
+  "history": [
+    {
+      "sha": "e134033029055f62f8fdfe5f8442b2e4bf403585",
+      "at": "2026-11-23T15:51:25-03:00",
+      "parents": [
+        "f8910ee0547cba79a8dc38cc45ffa2a6efb66e5e"
+      ],
+      "subject": "fix(studio): atualiza miniatura ao trocar o conteúdo do modelo"
+    },
+    {
+      "sha": "8c09f525e3c6df7afed432f8036eb8abac721249",
+      "at": "2026-11-23T15:51:26-03:00",
+      "parents": [
+        "e134033029055f62f8fdfe5f8442b2e4bf403585"
+      ],
+      "subject": "release(lg01): prepara melhorias e exclui aquecimento sem qualificação"
+    },
+    {
+      "sha": "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
+      "at": "2026-11-23T16:03:57-03:00",
+      "parents": [
+        "8c09f525e3c6df7afed432f8036eb8abac721249"
+      ],
+      "subject": "fix(ci): prepara a base do PR antes das provas históricas do Pinta"
+    },
+    {
+      "sha": "143640eb4d4d62bb904e5ea896bd60764aee2dad",
+      "at": "2026-11-23T17:02:29-03:00",
+      "parents": [
+        "3d7c532535a5474ce358709d00b78d6a7f23ce1a"
+      ],
+      "subject": "fix(members): o operador de publicação espera a operação antes de fechar o banco"
+    },
+    {
+      "sha": "a4beb38726744c5fd771f4a6b97620dd7292ea86",
+      "at": "2026-11-23T17:02:41-03:00",
+      "parents": [
+        "143640eb4d4d62bb904e5ea896bd60764aee2dad"
+      ],
+      "subject": "fix(core): a cena aceita até 32 vozes do Zappy, e a Ilha do Farol publica"
+    },
+    {
+      "sha": "b1220ea676b94b2f0cd476be3a069d9947861f1d",
+      "at": "2026-11-23T17:03:15-03:00",
+      "parents": [
+        "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
+        "a4beb38726744c5fd771f4a6b97620dd7292ea86"
+      ],
+      "subject": "merge: o teto de 32 vozes do Zappy e o operador de publicação (release/ilha-vozes-zappy-20261124) na staging"
+    },
+    {
+      "sha": "8d87bbff854b94b18be51793aa00ff6022fa7613",
+      "at": "2026-11-23T17:51:50-03:00",
+      "parents": [
+        "3d7c532535a5474ce358709d00b78d6a7f23ce1a",
+        "a4beb38726744c5fd771f4a6b97620dd7292ea86"
+      ],
+      "subject": "Merge pull request #284 from informach/release/ilha-vozes-zappy-20261124"
+    },
+    {
+      "sha": "68b51fd600b4d57241bd92d88ddd701bf920eb2f",
+      "at": "2026-11-23T18:08:16-03:00",
+      "parents": [
+        "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
+        "8d87bbff854b94b18be51793aa00ff6022fa7613"
+      ],
+      "subject": "Merge remote-tracking branch 'origin/main' into release/lg01-melhorias-prontas-20261123"
+    },
+    {
+      "sha": "40dd49db7265c33d36b6f82ce9130382f46bef28",
+      "at": "2026-11-23T18:09:10-03:00",
+      "parents": [
+        "68b51fd600b4d57241bd92d88ddd701bf920eb2f",
+        "b1220ea676b94b2f0cd476be3a069d9947861f1d"
+      ],
+      "subject": "Merge remote-tracking branch 'origin/staging' into release/lg01-melhorias-prontas-20261123"
+    },
+    {
+      "sha": "a5d684728a511f6e8c45f877f572166b1e1453f1",
+      "at": "2026-11-23T19:22:05-03:00",
+      "parents": [
+        "40dd49db7265c33d36b6f82ce9130382f46bef28"
+      ],
+      "subject": "fix(studio): keep embedded menus inside the viewport"
+    },
+    {
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+      "at": "2026-11-23T19:40:05-03:00",
+      "parents": [
+        "a5d684728a511f6e8c45f877f572166b1e1453f1"
+      ],
+      "subject": "fix(pinta): preserve gesture previews across layout shifts"
+    },
+    {
+      "sha": "93c9a15a248138586f1635f5035f5647926ed474",
+      "at": "2026-11-23T22:29:06-03:00",
+      "parents": [
+        "8d87bbff854b94b18be51793aa00ff6022fa7613",
+        "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+      ],
+      "subject": "Merge pull request #283 from informach/release/lg01-melhorias-prontas-20261123"
+    },
+    {
+      "sha": "fa53d34c210222a16eaff88577f77db98067079f",
+      "at": "2026-11-23T22:51:34-03:00",
+      "parents": [
+        "93c9a15a248138586f1635f5035f5647926ed474"
+      ],
+      "subject": "fix(ci): resolve promoted PR when commit association is empty"
+    },
+    {
+      "sha": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+      "at": "2026-11-23T23:53:19-03:00",
+      "parents": [
+        "93c9a15a248138586f1635f5035f5647926ed474",
+        "fa53d34c210222a16eaff88577f77db98067079f"
+      ],
+      "subject": "Merge pull request #285 from informach/fix/lg01-promoted-pr-discovery-20261124"
+    }
+  ],
+  "files": [
+    {
+      "path": ".audits/review-7-dias-2026-11-23/expanded-verification.json",
+      "added": 79,
+      "removed": 0
+    },
+    {
+      "path": ".audits/review-7-dias-2026-11-23/limitacoes-e-liberacoes.md",
+      "added": 145,
+      "removed": 0
+    },
+    {
+      "path": ".audits/review-7-dias-2026-11-23/production-course-status.json",
+      "added": 230,
+      "removed": 0
+    },
+    {
+      "path": ".audits/review-7-dias-2026-11-23/release-access-evidence.json",
+      "added": 242,
+      "removed": 0
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "added": 6,
+      "removed": 0
+    },
+    {
+      "path": ".github/workflows/railway-config.yml",
+      "added": 6,
+      "removed": 3
+    },
+    {
+      "path": "docs/plans/2026-11-23-plano-de-liberacao-gradual.md",
+      "added": 114,
+      "removed": 0
+    },
+    {
+      "path": "docs/qa/2026-11-23-lg01-melhorias-prontas.md",
+      "added": 58,
+      "removed": 0
+    },
+    {
+      "path": "docs/qa/lg01-20261123/executor-readiness.json",
+      "added": 11,
+      "removed": 0
+    },
+    {
+      "path": "docs/qa/lg01-20261123/miniatura-modelo.png",
+      "added": null,
+      "removed": null
+    },
+    {
+      "path": "packages/api-gateway/gateway.config.ts",
+      "added": 0,
+      "removed": 13
+    },
+    {
+      "path": "packages/api-gateway/tests/unit/config.test.ts",
+      "added": 0,
+      "removed": 15
+    },
+    {
+      "path": "packages/community-kids/src/app/api/members/lessons/[lessonId]/sections/[sectionId]/project-check/warm/route.ts",
+      "added": 0,
+      "removed": 3
+    },
+    {
+      "path": "packages/community/src/app/api/members/lessons/[lessonId]/sections/[sectionId]/project-check/warm/route.ts",
+      "added": 0,
+      "removed": 3
+    },
+    {
+      "path": "packages/core/src/learning/project-execution.ts",
+      "added": 0,
+      "removed": 22
+    },
+    {
+      "path": "packages/core/src/learning/scene/voz.ts",
+      "added": 6,
+      "removed": 1
+    },
+    {
+      "path": "packages/core/tests/project-execution.test.ts",
+      "added": 0,
+      "removed": 28
+    },
+    {
+      "path": "packages/member-shell/CLAUDE.md",
+      "added": 0,
+      "removed": 12
+    },
+    {
+      "path": "packages/member-shell/src/components/studio/section-project-check.tsx",
+      "added": 0,
+      "removed": 29
+    },
+    {
+      "path": "packages/member-shell/src/routes/index.ts",
+      "added": 0,
+      "removed": 2
+    },
+    {
+      "path": "packages/member-shell/src/routes/learning.ts",
+      "added": 2,
+      "removed": 10
+    },
+    {
+      "path": "packages/member-shell/tests/fixtures/section-project-check.fixture.tsx",
+      "added": 0,
+      "removed": 100
+    },
+    {
+      "path": "packages/member-shell/tests/learning-routes.test.ts",
+      "added": 0,
+      "removed": 28
+    },
+    {
+      "path": "packages/members/CLAUDE.md",
+      "added": 0,
+      "removed": 13
+    },
+    {
+      "path": "packages/members/scripts/publish-course.ts",
+      "added": 4,
+      "removed": 3
+    },
+    {
+      "path": "packages/members/src/application/learning/learning.service.ts",
+      "added": 0,
+      "removed": 23
+    },
+    {
+      "path": "packages/members/src/application/learning/section-progression.service.ts",
+      "added": 0,
+      "removed": 32
+    },
+    {
+      "path": "packages/members/src/domain/ports/project-execution-checker.port.ts",
+      "added": 0,
+      "removed": 12
+    },
+    {
+      "path": "packages/members/src/infrastructure/gateways/studio-runtime-checker.ts",
+      "added": 1,
+      "removed": 52
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/learning.routes.ts",
+      "added": 0,
+      "removed": 19
+    },
+    {
+      "path": "packages/members/tests/integration/section-objectives-execution.test.ts",
+      "added": 0,
+      "removed": 119
+    },
+    {
+      "path": "packages/members/tests/unit/studio-runtime-checker.test.ts",
+      "added": 0,
+      "removed": 51
+    },
+    {
+      "path": "packages/palco-gravacao/src/lib/bff.ts",
+      "added": 1,
+      "removed": 4
+    },
+    {
+      "path": "packages/palco-gravacao/tests/palco.test.ts",
+      "added": 0,
+      "removed": 5
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/useLibraryPlacement.ts",
+      "added": 16,
+      "removed": 2
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/useObjectScatter.test.tsx",
+      "added": 115,
+      "removed": 0
+    },
+    {
+      "path": "packages/pinta/src/components/editor/mapTools/useObjectScatter.ts",
+      "added": 13,
+      "removed": 1
+    },
+    {
+      "path": "packages/studio-runtime/Dockerfile",
+      "added": 1,
+      "removed": 1
+    },
+    {
+      "path": "packages/studio-runtime/README.md",
+      "added": 0,
+      "removed": 9
+    },
+    {
+      "path": "packages/studio-runtime/runtime/check-warm.mjs",
+      "added": 0,
+      "removed": 18
+    },
+    {
+      "path": "packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "added": 15,
+      "removed": 15
+    },
+    {
+      "path": "packages/studio-runtime/runtime/validation-profile.json",
+      "added": 1,
+      "removed": 1
+    },
+    {
+      "path": "packages/studio-runtime/src/check-container.ts",
+      "added": 0,
+      "removed": 59
+    },
+    {
+      "path": "packages/studio-runtime/src/check.ts",
+      "added": 0,
+      "removed": 3
+    },
+    {
+      "path": "packages/studio-runtime/src/index.ts",
+      "added": 11,
+      "removed": 83
+    },
+    {
+      "path": "packages/studio-runtime/tests/capacity.test.ts",
+      "added": 0,
+      "removed": 6
+    },
+    {
+      "path": "packages/studio-runtime/tests/check.test.ts",
+      "added": 10,
+      "removed": 135
+    },
+    {
+      "path": "packages/studio-runtime/tests/contracts.test.ts",
+      "added": 1,
+      "removed": 1
+    },
+    {
+      "path": "packages/studio-runtime/wrangler.jsonc",
+      "added": 2,
+      "removed": 2
+    },
+    {
+      "path": "packages/studio/e2e/lg01-ready-improvements.spec.ts",
+      "added": 116,
+      "removed": 0
+    },
+    {
+      "path": "packages/studio/e2e/pinta-library-scenes.flow.ts",
+      "added": 19,
+      "removed": 0
+    },
+    {
+      "path": "packages/studio/e2e/pinta-object-scatter-scenes.flow.ts",
+      "added": 12,
+      "removed": 0
+    },
+    {
+      "path": "packages/studio/src/three/__tests__/modelThumbnails.test.ts",
+      "added": 15,
+      "removed": 0
+    },
+    {
+      "path": "packages/studio/src/three/modelThumbnails.ts",
+      "added": 3,
+      "removed": 2
+    },
+    {
+      "path": "packages/studio/src/ui-internal/Menu.portal.test.tsx",
+      "added": 23,
+      "removed": 1
+    },
+    {
+      "path": "packages/studio/src/ui-internal/Menu.tsx",
+      "added": 21,
+      "removed": 4
+    },
+    {
+      "path": "scripts/ci/github-promoted-pr.mjs",
+      "added": 45,
+      "removed": 0
+    },
+    {
+      "path": "scripts/ci/github-promoted-pr.test.ts",
+      "added": 108,
+      "removed": 0
+    },
+    {
+      "path": "scripts/ci/production-release.mjs",
+      "added": 2,
+      "removed": 28
+    },
+    {
+      "path": "scripts/ci/production-release.test.ts",
+      "added": 85,
+      "removed": 9
+    }
+  ]
+}

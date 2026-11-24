@@ -1,0 +1,13 @@
+{
+  "branch": "work/lg02-aquecimento-20261123",
+  "commit": "e10542acb",
+  "finding": "R11",
+  "change": "A ausencia do aluno passa de undefined para null, conforme o contrato da fixture.",
+  "verification": {
+    "sectionProjectCheckUiWrapper": { "passed": 1, "failed": 0, "exitCode": 0 },
+    "memberShellTypecheckExitCode": 0,
+    "biomeFixtureExitCode": 0
+  },
+  "warmingActivationQualified": false,
+  "remainingFinding": "R12: a limpeza de uma execucao nao pode destruir o conteiner usado por outra."
+}
