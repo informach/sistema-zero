@@ -216,8 +216,8 @@ export async function captureCoverFromProject(
   if (opts.requireIsolatedPreview && !opts.originAdapter) return null
 
   // O cenário regional do Pinta: a mesma prova do preview e do jogador público, preparada uma vez
-  // para as duas passadas. Só no perfil privado deste aparelho (sem ele, recusa); e, como no
-  // preview, o jogo roda aqui (`srcdoc`), nunca na origem isolada que guarda o documento.
+  // para as duas passadas. Como no preview, o jogo roda aqui (`srcdoc`); a prévia isolada
+  // precisa de seu próprio leitor e continua recusada enquanto ele não estiver disponível.
   const regional = project.assets?.some(hasRegionalPintaReference)
     ? await (async () => {
         if (opts.requireIsolatedPreview) throw new Error(UNSUPPORTED_PINTA_REGION)

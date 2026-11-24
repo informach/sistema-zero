@@ -9,7 +9,7 @@ export const PERSONAL_ASSET_LIMITS = {
 } as const
 
 export const ASSET_KEY_PREFIX = 'asset:'
-const REGIONAL_KEY_PREFIX = 'region-map:'
+export const REGIONAL_KEY_PREFIX = 'region-map:'
 export const assetKey = (id: string) => ASSET_KEY_PREFIX + id
 export const regionalKey = (id: string) => REGIONAL_KEY_PREFIX + id
 

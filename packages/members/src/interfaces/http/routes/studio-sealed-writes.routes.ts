@@ -29,7 +29,7 @@ export function studioSealedWriteRoutes(deps: CreationsRoutesDeps) {
       payload: z.output<S>
       privileged: boolean
       now: () => Date
-      authorize: (kind: 'classic' | 'pro') => Promise<void>
+      authorize: (kind: 'classic' | 'pro', language: 'javascript' | 'python') => Promise<void>
     }) => Promise<unknown>,
   ) {
     return async ({
@@ -63,11 +63,11 @@ export function studioSealedWriteRoutes(deps: CreationsRoutesDeps) {
         privileged,
         repository: config.repository[audience],
         now: config.clock,
-        authorize: async (kind) => {
+        authorize: async (kind, language) => {
           const access = await config.authoring.execute(
             { ...actor, privileged, readOnly: false },
             kind === 'pro' ? 'existing-pro' : 'creation',
-            'javascript',
+            language,
           )
           if (kind === 'pro' && !access.pro)
             throw new AccessDeniedError('Seu nível ainda não libera projetos Pro.')
@@ -88,9 +88,7 @@ export function studioSealedWriteRoutes(deps: CreationsRoutesDeps) {
       handle(
         StudioSealedReserveSchema,
         async ({ actor, payload, privileged, services, authorize }) => {
-          if (payload.requirements.materials !== 'legacy')
-            throw new StudioSealedWriteError('ticket-invalid')
-          await authorize(payload.kind)
+          await authorize(payload.kind, payload.requirements.programmingLanguage ?? 'javascript')
           const { baseGeneration, protocol, requirements, itemUpdatedAt, ...reservation } = payload
           const result = await services.reserveUpload.execute({
             ...reservation,
@@ -127,7 +125,7 @@ export function studioSealedWriteRoutes(deps: CreationsRoutesDeps) {
           scope.audience !== actor.audience
         )
           throw new StudioSealedWriteError('ticket-invalid')
-        await authorize(kind)
+        await authorize(kind, payload.ticket.requirements.programmingLanguage ?? 'javascript')
         const result = await services.commitUpload.execute({
           userId: actor.userId,
           tool: 'studio',

@@ -54,6 +54,7 @@ import {
   assertLegacyStudioProjectMaterials,
   hasRegionalPintaReference,
 } from '@sistemazero/core/studio/pinta-regional-reference'
+import { studioProjectIndexName } from '@sistemazero/core/studio/project-index-name'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 
 export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
@@ -245,6 +246,9 @@ export async function buildStudioCloudSnapshot(
           envelopeVersion: STUDIO_SEALED_PARTS_VERSION,
           projectFormat,
           materials: 'pinta-region-5',
+          ...('programmingLanguage' in captured && captured.programmingLanguage === 'python'
+            ? { programmingLanguage: 'python' }
+            : {}),
         },
         program: { ...captured, assets: [] },
         assets: hashes,
@@ -291,8 +295,7 @@ export async function resolveStudioCloudDocument(
       !hashSupported() ||
       !canReadStudioSealedStorage(STUDIO_SEALED_STORAGE_READER, receipt.requirements) ||
       !parsed.success ||
-      parsed.data.requirements.projectFormat !== receipt.requirements.projectFormat ||
-      parsed.data.requirements.materials !== receipt.requirements.materials ||
+      canonicalJson(parsed.data.requirements) !== canonicalJson(receipt.requirements) ||
       parsed.data.program.id !== downloaded.summary.itemId ||
       parsed.data.assets.length !== downloaded.parts.length ||
       parsed.data.assets.some((hash, index) => hash !== downloaded.parts[index]?.hash) ||
@@ -352,8 +355,6 @@ const LIST_TIMEOUT_MS = 4000
 /** O que não coube no orçamento (`deferred`) volta em passes seguidos, com esta folga, até este teto. */
 const DEFERRED_PASS_DELAY_MS = 2000
 const MAX_DEFERRED_PASSES = 5
-/** Teto do nome no índice (`CREATION_LIMITS.maxNameChars`); o BFF também corta. */
-const MAX_CLOUD_NAME = 120
 /**
  * Teto da miniatura no índice (`CREATION_LIMITS.maxThumbChars` do members e `MAX_THUMB_CHARS`
  * do BFF): acima disso o servidor DESCARTA em silêncio. O pacote reduz até caber
@@ -501,7 +502,7 @@ export function createStudioCloudSync(options: {
         return {
           ...(await buildStudioCloudSnapshot(project)),
           meta: {
-            name: Array.from(project.name).slice(0, MAX_CLOUD_NAME).join(''),
+            name: studioProjectIndexName(project.name),
             kind: project.kind === 'pro' ? 'pro' : 'classic',
             updatedAt: project.updatedAt,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
@@ -575,7 +576,7 @@ export function createStudioCloudSync(options: {
       // Cópia = jogo NOVO (id novo) — o import minta ulid, sanitiza e sobe pelo espelho. Nasce
       // com a capa que a nuvem listou (senão o card da cópia ficava em branco até ser aberto).
       await studio.importProjectSnapshot(raw, {
-        name: Array.from(`${name} (de outro aparelho)`).slice(0, MAX_CLOUD_NAME).join(''),
+        name: studioProjectIndexName(`${name} (de outro aparelho)`),
         namespace: options.localNamespace ?? options.viewerId,
         thumb: downloaded.summary.thumb,
       })
@@ -860,9 +861,7 @@ export function createStudioCloudSync(options: {
           }
           // Cópia = projeto NOVO (id novo) — o import já minta ulid e sobe pelo espelho.
           const imported = await studio.importProjectSnapshot(project, {
-            name: Array.from(`${project.name} (deste computador)`)
-              .slice(0, MAX_CLOUD_NAME)
-              .join(''),
+            name: studioProjectIndexName(`${project.name} (deste computador)`),
             namespace: options.localNamespace ?? options.viewerId,
             silent: true,
           })

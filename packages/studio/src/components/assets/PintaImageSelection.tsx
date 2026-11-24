@@ -160,7 +160,9 @@ export default function PintaImageSelection({
         phase: 'error',
         message: t(
           facts?.kind === 'unavailable'
-            ? 'pintaImport.image.needsTileset'
+            ? facts.reason === 'regional-runtime-required'
+              ? 'pintaImport.image.sceneRuntimeUnavailable'
+              : 'pintaImport.image.needsTileset'
             : !recipe
               ? 'pintaImport.image.selectionMissing'
               : 'pintaImport.image.unavailable',

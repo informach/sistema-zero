@@ -10,10 +10,12 @@ import {
   readValue,
   readValues,
 } from './idbTransaction'
+import { proBuilderDeletionKey } from './proBuilderDeletion'
 import { BACKUP_KEY_SUFFIX, backupPrefixes } from './projectBackupKeys'
-import { RETAINED_PROJECT_PREFIX } from './projectStorageKeys'
+import { applicationBudgetKey, RETAINED_PROJECT_PREFIX } from './projectStorageKeys'
 import { ProjectWriteConflict } from './projectStorageRevision'
-import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import type { RetainedApplicationBudget } from './retainedProjectApplications'
 import { legacyProjectKeys } from './retainedProjectKeys'
 import {
   capturedRetainedBody,
@@ -88,9 +90,16 @@ function readManifest(value: unknown, id: string): RetainedManifest | undefined 
   return { version: 1, id, token: raw.token, origin: raw.origin, deleted: raw.deleted, parts }
 }
 function assertScope(scope: ProjectStorageScope) {
-  if (!isPrivateRegionalProjectScope(scope))
-    throw Error('A retenção regional requer um perfil local de teste.')
+  if (!isRegionalProjectScope(scope))
+    throw Error('O perfil do projeto mudou. Abra o Estúdio novamente.')
   scope.signal?.throwIfAborted()
+}
+/** Synchronous admission for a head read inside a history transaction. */
+export function parseRetainedProjectManifest(
+  raw: unknown,
+  id: string,
+): RetainedManifest | undefined {
+  return readManifest(raw, id)
 }
 
 export async function readRetainedManifest(scope: ProjectStorageScope, id: string) {
@@ -131,6 +140,8 @@ export async function commitRetainedProject(
     retire?: readonly IDBValidKey[]
     absent?: readonly IDBKeyRange[]
     ready?: () => boolean
+    applicationBudget?: RetainedApplicationBudget
+    builderDeletion?: boolean
   },
 ): Promise<RetainedManifest> {
   assertScope(scope)
@@ -165,13 +176,23 @@ export async function commitRetainedProject(
   const source = (options.source ?? []).map(
     ([key, value]) => [key, copyStudioProjectJson(value)] as const,
   )
+  const budget = options.applicationBudget && {
+    previous: copyStudioProjectJson(options.applicationBudget.previous),
+    next: { ...options.applicationBudget.next },
+  }
+  if (budget) {
+    const existing = source.find(([key]) => key === applicationBudgetKey())
+    if (existing && !localSnapshotsEqual(existing[1], budget.previous))
+      throw new ProjectWriteConflict()
+    if (!existing) source.push([applicationBudgetKey(), budget.previous])
+  }
   const retiredLegacy = options.retireLegacy ? legacyProjectKeys(id) : undefined
   const keyChecks = {
     ranges: [...(options.absent ?? [])],
     conflict: () => new ProjectWriteConflict(),
     retire: retiredLegacy
       ? backupPrefixes(id).map((prefix) => ({
-          range: IDBKeyRange.bound(prefix, prefix + '\uffff'),
+          range: IDBKeyRange.bound(prefix, `${prefix}\uffff`),
           owns: (key: IDBValidKey) =>
             typeof key === 'string' && BACKUP_KEY_SUFFIX.test(key.slice(prefix.length)),
         }))
@@ -231,6 +252,11 @@ export async function commitRetainedProject(
       if (!used) used = keySize(LEDGER, counter(0))
       used += keySize(headKey, nextText) - (typeof raw === 'string' ? keySize(headKey, raw) : 0)
       const puts: NonNullable<IdbWrite['puts']>[number][] = [[headKey, nextText]]
+      if (budget) puts.push([applicationBudgetKey(), budget.next])
+      if (options.builderDeletion) {
+        if (candidate !== null || !options.retireLegacy) invalidRetention()
+        puts.push([proBuilderDeletionKey(id), { version: 1, projectId: id, createdAt: Date.now() }])
+      }
       const deletes: IDBValidKey[] = []
       for (const [index, hash] of touched.entries()) {
         const position = 2 + source.length + index * 2

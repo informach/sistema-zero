@@ -1741,6 +1741,7 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
         ],
       },
       undefined,
+      { id: 'jogo-p', storageVersion: 4, formatVersion: 2 },
     ])
     const assets = await loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' })
     // A leitura leve conserva todos os materiais válidos e usa o DB do perfil.
@@ -1752,7 +1753,10 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
       'sz:v4:project-head:jogo-p',
       'sz:v4:project-meta:jogo-p',
     ])
-    expect(idb.get).not.toHaveBeenCalled()
+    // A autoridade regional é consultada antes das partições legadas; nenhum
+    // arquivo, bloco ou documento completo é carregado nesta leitura leve.
+    expect(idb.get).toHaveBeenCalledTimes(1)
+    expect(idb.get).toHaveBeenCalledWith('sz:v5:project-authority:jogo-p', expect.anything())
     // Sem partição (legado) → lista vazia, sem lançar.
     idb.getMany.mockResolvedValueOnce([undefined, undefined])
     expect(await loadProjectAssetsSnapshotForCloud('legado', { namespace: 'perfil-Z' })).toEqual([])

@@ -2,10 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, spyOn, test } from 'b
 import 'fake-indexeddb/auto'
 import { createEmptyProject, type Project, type ProjectAsset } from '#core'
 import type { PintaRegionalMarker } from '../../core/pintaRegionalMaterial'
-import {
-  PRIVATE_REGIONAL_PROJECT,
-  UNSUPPORTED_PINTA_REGION,
-} from '../../core/pintaRegionalReference'
+import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
 import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
 import { gameKitManifest } from '../../official-extensions/game-2d-advanced/manifest'
 import {
@@ -22,7 +19,7 @@ import { captureAndStoreProjectThumb } from '../thumbCapture'
 /**
  * A capa de reserva (`captureCoverFromProject`) roda o jogo num iframe próprio quando a prévia não
  * deixou foto. Com um cenário regional do Pinta ela monta o documento com a mesma prova regional da
- * prévia e do jogador público: só no perfil privado deste aparelho. Sem ele, recusa como antes.
+ * prévia e do jogador público, admitindo o PNG completo antes da execução.
  */
 let material: ProjectAsset & { regional: PintaRegionalMarker }
 let uninstallImageBitmap = () => {}
@@ -97,16 +94,17 @@ describe('capa de reserva de um jogo com cenário regional do Pinta', () => {
       expect(documents[0]).toContain(material.dataUrl)
     })
 
-  test('sem o perfil privado a captura recusa o cenário regional, como antes, sem rodar nada', async () => {
-    const { documents } = await photographed(async () => {
-      await expect(captureCoverFromProject(regionalProject(gameTwoDManifest))).rejects.toThrow(
-        UNSUPPORTED_PINTA_REGION,
-      )
-    })
-    expect(documents).toEqual([])
+  test('a captura pública admite o mesmo cenário regional completo', async () => {
+    const { result, documents } = await photographed(() =>
+      captureCoverFromProject(regionalProject(gameTwoDManifest)),
+    )
+    expect(result).toBe(PHOTO)
+    expect(documents).toHaveLength(1)
+    expect(documents[0]).toContain('_pintaRegionFactory')
+    expect(documents[0]).toContain(material.dataUrl)
   })
 
-  test('a miniatura do card usa o perfil aberto: o privado roda o cenário, o comum não', async () => {
+  test('a miniatura admite o cenário nos leitores público e privado', async () => {
     const project = regionalProject(gameKitManifest)
     const scope = privateRegionalProjectScope('capa-miniatura')
     setProjectStorageNamespace(scope.namespace)
@@ -118,6 +116,7 @@ describe('capa de reserva de um jogo com cenário regional do Pinta', () => {
     setProjectStorageNamespace('')
     const commonRun = await photographed(() => captureAndStoreProjectThumb(project))
     expect(commonRun.result).toBe(false)
-    expect(commonRun.documents).toEqual([])
+    expect(commonRun.documents).toHaveLength(1)
+    expect(commonRun.documents[0]).toContain('_pintaRegionFactory')
   })
 })

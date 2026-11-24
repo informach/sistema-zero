@@ -110,3 +110,36 @@ export const StudioSealedCommitProofSchema = z.strictObject({
   parts: StudioSealedPartRefSchema.array().max(128).refine(uniqueHashes),
 })
 export type StudioSealedCommitProof = z.infer<typeof StudioSealedCommitProofSchema>
+
+/** Shared reply validation: a transport acknowledgment must name the committed revision. */
+export const StudioSealedCommitResultSchema = z
+  .object({
+    studioHead: StudioSealedHeadSchema,
+    studioSealReceipt: StudioSealedReceiptSchema,
+    item: z.object({
+      itemId,
+      revision: revision.min(1),
+      kind: z.enum(['classic', 'pro']),
+      formatVersion: StudioSealedRequirementsSchema.shape.projectFormat,
+      itemUpdatedAt: isoDate,
+    }),
+  })
+  .refine(
+    ({ studioHead, studioSealReceipt, item }) =>
+      studioHead.exists &&
+      studioHead.adopted &&
+      studioHead.revision === item.revision &&
+      studioSealReceipt.requirements.projectFormat === item.formatVersion,
+  )
+
+export type StudioSealedCommitResult = z.infer<typeof StudioSealedCommitResultSchema>
+export const StudioSealedHeadResultSchema = z.object({ studioHead: StudioSealedHeadSchema })
+export const StudioSealedTicketResultSchema = z.discriminatedUnion('committed', [
+  StudioSealedCommitResultSchema.safeExtend({ committed: z.literal(true) }),
+  z.strictObject({ committed: z.literal(false), ticket: StudioSealedTicketSchema }),
+])
+export const StudioSealedDeleteResultSchema = z.object({
+  deleted: z.boolean(),
+  revision,
+  studioHead: StudioSealedHeadSchema,
+})

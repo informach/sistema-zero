@@ -1,5 +1,10 @@
 import type { EditableStudioProject } from '../core/editableProject'
-import { projectFormatVersion, SUPPORTED_PROJECT_FORMAT_VERSION } from '../core/projectDocument'
+import { hasRegionalPintaReference } from '../core/pintaRegionalReference'
+import {
+  isDocumentRecord,
+  projectFormatVersion,
+  SUPPORTED_PROJECT_FORMAT_VERSION,
+} from '../core/projectDocument'
 import { prepareEditableStudioProject } from './editableProjectValidation'
 import { sanitizeCloudProjectSnapshot } from './projectValidation'
 
@@ -8,7 +13,14 @@ export async function prepareEditableCloudProject(
   options: { expectedId?: string } = {},
 ): Promise<{ project: EditableStudioProject; warnings: string[] }> {
   const expectedId = options.expectedId
-  if (projectFormatVersion(raw) !== SUPPORTED_PROJECT_FORMAT_VERSION)
+  if (
+    projectFormatVersion(raw) !== SUPPORTED_PROJECT_FORMAT_VERSION &&
+    !(
+      isDocumentRecord(raw) &&
+      Array.isArray(raw.assets) &&
+      raw.assets.some(hasRegionalPintaReference)
+    )
+  )
     return sanitizeCloudProjectSnapshot(raw, { expectedId })
   const project = await prepareEditableStudioProject(raw)
   if (!project || (expectedId !== undefined && project.id !== expectedId))

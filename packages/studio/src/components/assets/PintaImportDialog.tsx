@@ -287,6 +287,7 @@ export function PintaImportDialog({
       // Já no projeto, este botão é o "Atualizar vetor": só faz sentido se o Pinta mandou SVG.
       if (
         !recipe &&
+        !result.asset.regional &&
         projectAssetFromCreation(state, result.asset.id) &&
         !result.asset.dataUrl.startsWith('data:image/svg+xml')
       ) {
@@ -294,7 +295,9 @@ export function PintaImportDialog({
         return
       }
       // O MESMO "adicionar ao projeto" do Molda e da equipe (atualiza se já estiver lá).
-      const err = addPintaCreationToProject(state, result.asset, expectedTarget)
+      const err = result.asset.regional
+        ? await state.importRegionalPintaMaterial(result.asset, signal)
+        : addPintaCreationToProject(state, result.asset, expectedTarget)
       if (err) {
         setError(err)
         return

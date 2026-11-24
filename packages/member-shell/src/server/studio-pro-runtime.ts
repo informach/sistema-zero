@@ -18,10 +18,13 @@ import {
   verifyStudioProPlatformFiles,
 } from '@sistemazero/core/studio'
 import type { Project } from '@sistemazero/studio'
+import { admitRegionalProjectAssets } from '@sistemazero/studio/pinta-regional-admission'
+import { regionalProBuildFiles } from '@sistemazero/studio/pinta-regional-pro-build'
 import { buildProAssetBundle } from '@sistemazero/studio/pro-assets'
 import { updateLegacyProToolchainManifest } from '@sistemazero/studio/pro-toolchain'
 import { sanitizeProjectAssets } from '@sistemazero/studio/project'
 import { assertProjectContentPreserved } from '@sistemazero/studio/project-document'
+import { projectStudioRegionalBuild } from './studio-regional-build'
 
 interface RuntimeFailure {
   ok?: false
@@ -238,14 +241,18 @@ export async function buildStudioProProject(options: {
     try {
       if (options.project.assets !== undefined && !Array.isArray(options.project.assets))
         throw new Error('Invalid assets')
-      const assets = sanitizeProjectAssets(options.project.assets)
+      const admission = await admitRegionalProjectAssets(options.project.assets)
+      const assets = sanitizeProjectAssets(options.project.assets, { regionalMaterials: admission })
       assertProjectContentPreserved(
         { assets: options.project.assets },
         { ...options.project, assets },
       )
       const bundle = await buildProAssetBundle(assets, options.project.tree, {
         legacyRuntime: Boolean(options.project.proMeta?.origin),
+        regionalMaterials: admission,
       })
+      const regional = await regionalProBuildFiles(options.project)
+      if (regional) files[regional.path] = regional.script
       for (const [path, bytes] of bundle.files) {
         const hash = await crypto.subtle.digest('SHA-256', new Uint8Array(bytes))
         binaries[path] = {
@@ -264,8 +271,8 @@ export async function buildStudioProProject(options: {
 }
 
 /** The builder submits its hashed working revision directly, without reconstructing a live Project. */
-function runtimeRequestBody(input: StudioProBuildEnvelope): string {
-  const body = serializeStudioProBuildEnvelope(input)
+async function runtimeRequestBody(input: StudioProBuildEnvelope): Promise<string> {
+  let body = serializeStudioProBuildEnvelope(input)
   if (new TextEncoder().encode(body).byteLength > STUDIO_PRO_BUILD_LIMITS.maxRequestBytes)
     throw new StudioProRuntimeInputError(
       413,
@@ -273,6 +280,19 @@ function runtimeRequestBody(input: StudioProBuildEnvelope): string {
     )
   const issue = studioProBuildEnvelopeIssue(input)
   if (issue) throw new StudioProRuntimeInputError(400, issue)
+  try {
+    const files = await projectStudioRegionalBuild(input)
+    const projected = { ...input, files }
+    const projectedIssue = studioProBuildEnvelopeIssue(projected)
+    if (projectedIssue) throw new StudioProRuntimeInputError(413, projectedIssue)
+    body = serializeStudioProBuildEnvelope(projected)
+  } catch (error) {
+    if (error instanceof StudioProRuntimeInputError) throw error
+    throw new StudioProRuntimeInputError(
+      400,
+      'Não consegui conferir os cenários e o motor desta revisão. O projeto foi preservado.',
+    )
+  }
   return body
 }
 
@@ -280,7 +300,7 @@ function runtimeRequestBody(input: StudioProBuildEnvelope): string {
 export async function preflightStudioProBuild(
   options: Parameters<typeof requestStudioProBuild>[0],
 ): Promise<void> {
-  const body = runtimeRequestBody(options)
+  const body = await runtimeRequestBody(options)
   const response = await (options.fetchImpl ?? fetch)(
     `${options.runtimeUrl.trim().replace(/\/$/, '')}/v1/preflight`,
     {
@@ -328,7 +348,7 @@ export async function requestStudioProBuild(options: {
   fetchImpl?: FetchImpl
 }): Promise<StudioProRemoteBuildResult> {
   const runtimeUrl = options.runtimeUrl.trim().replace(/\/$/, '')
-  const body = runtimeRequestBody(options)
+  const body = await runtimeRequestBody(options)
   const upstream = await (options.fetchImpl ?? fetch)(`${runtimeUrl}/v1/build`, {
     method: 'POST',
     headers: {

@@ -12,7 +12,11 @@ import {
 
 export const STUDIO_SEALED_PARTS_VERSION = 2
 export const STUDIO_SEALED_STORAGE_PROTOCOL = 'studio-sealed-v1'
-export const STUDIO_SEALED_STORAGE_READER = 'studio-parts-v2'
+export const STUDIO_SEALED_LEGACY_READER = 'studio-parts-v2'
+export const STUDIO_SEALED_STORAGE_READER = 'studio-parts-v2-pinta5'
+export function isStudioSealedStorageReader(reader: unknown): boolean {
+  return reader === STUDIO_SEALED_STORAGE_READER || reader === STUDIO_SEALED_LEGACY_READER
+}
 
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/)
 const compressedBytes = z
@@ -25,11 +29,19 @@ const projectFormat = z.union([
   z.literal(STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION),
 ])
 
-export const StudioSealedRequirementsSchema = z.strictObject({
-  envelopeVersion: z.literal(STUDIO_SEALED_PARTS_VERSION),
-  projectFormat,
-  materials: z.enum(['legacy', 'pinta-region-5']),
-})
+export const StudioSealedRequirementsSchema = z
+  .strictObject({
+    envelopeVersion: z.literal(STUDIO_SEALED_PARTS_VERSION),
+    projectFormat,
+    materials: z.enum(['legacy', 'pinta-region-5']),
+    /** Existing sealed JavaScript documents omit this field. Python must be explicit. */
+    programmingLanguage: z.enum(['javascript', 'python']).optional(),
+  })
+  .refine(
+    (requirements) =>
+      requirements.programmingLanguage !== 'python' ||
+      requirements.projectFormat === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+  )
 
 export type StudioSealedRequirements = z.infer<typeof StudioSealedRequirementsSchema>
 
@@ -50,6 +62,8 @@ export const StudioSealedManifestSchema = z
       Array.isArray(program.assets) &&
       program.assets.length === 0 &&
       program.formatVersion === requirements.projectFormat &&
+      (program.programmingLanguage ?? 'javascript') ===
+        (requirements.programmingLanguage ?? 'javascript') &&
       new Set(assets).size === assets.length,
     'O manifesto e os requisitos do programa não conferem.',
   )
@@ -119,5 +133,12 @@ export function canReadStudioSealedStorage(
   reader: unknown,
   requirements: StudioSealedRequirements,
 ): boolean {
-  return reader === STUDIO_SEALED_STORAGE_READER && requirements.materials === 'legacy'
+  const parsed = StudioSealedRequirementsSchema.safeParse(requirements)
+  return (
+    parsed.success &&
+    (reader === STUDIO_SEALED_STORAGE_READER ||
+      (reader === STUDIO_SEALED_LEGACY_READER &&
+        requirements.materials === 'legacy' &&
+        requirements.programmingLanguage === undefined))
+  )
 }

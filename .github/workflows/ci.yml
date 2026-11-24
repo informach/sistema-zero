@@ -118,6 +118,11 @@ jobs:
           bun tests/validation-smoke.ts
           bun tests/templates-smoke.ts
 
+      - name: Compilar o cenário regional Pro sem rede e preservar seu PNG
+        env:
+          STUDIO_REGIONAL_TEST_IMAGE: sistemazero-studio-runtime:verify
+        run: bun --no-env-file test ./packages/member-shell/tests/studio-regional-build.test.ts
+
       - name: Lint (biome ci)
         run: bun run ci
 

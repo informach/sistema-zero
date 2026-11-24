@@ -5,7 +5,7 @@ import { createCreationsCloud } from './creations-cloud'
 export function createStudioCloudTransport(
   options: Omit<
     Parameters<typeof createCreationsCloud>[0],
-    'tool' | 'maxFormatVersion' | 'studioSealedReader'
+    'tool' | 'maxFormatVersion' | 'studioSealedReader' | 'studioSealedWriter'
   >,
 ) {
   return createCreationsCloud({
@@ -13,5 +13,6 @@ export function createStudioCloudTransport(
     tool: 'studio',
     maxFormatVersion: STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
     studioSealedReader: true,
+    studioSealedWriter: true,
   })
 }

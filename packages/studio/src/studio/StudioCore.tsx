@@ -17,6 +17,7 @@ import { inheritLocalRevision } from '../state/projectStorageRevision'
 import {
   captureProjectStorageScope,
   isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
 } from '../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
@@ -279,7 +280,8 @@ function StudioCoreBody({
   const isObserver = editingAccess === 'observer' || handoffFrozen
   const sourceProject = replacedProject ?? initialProject
   const storageScope = captureProjectStorageScope()
-  const regionalScope = isPrivateRegionalProjectScope(storageScope) ? storageScope : undefined
+  const privateRegional = isPrivateRegionalProjectScope(storageScope)
+  const regionalScope = isRegionalProjectScope(storageScope) ? storageScope : undefined
   const projectStoreApi = useProjectStoreApi()
   const persistence = useStudioPersistence()
   const preparationGeneration = useRef(0)
@@ -654,14 +656,14 @@ function StudioCoreBody({
   }, [blockUnloadWhenDirty, isDirty])
 
   return (
-    <StudioTutorProvider value={regionalScope ? null : tutorValue}>
+    <StudioTutorProvider value={privateRegional ? null : tutorValue}>
       <ProBuilderDeletionReconciler />
       <StudioProRuntimeProvider
-        value={regionalScope ? null : proRuntimeValue}
-        prepareDependencies={regionalScope ? undefined : prepareProDependencies}
+        value={privateRegional ? null : proRuntimeValue}
+        prepareDependencies={privateRegional ? undefined : prepareProDependencies}
       >
-        <StudioShareProvider value={regionalScope ? null : shareValue}>
-          <StudioCloudSyncProvider value={regionalScope ? null : cloudSyncValue}>
+        <StudioShareProvider value={privateRegional ? null : shareValue}>
+          <StudioCloudSyncProvider value={privateRegional ? null : cloudSyncValue}>
             <StudioOpenProjectProvider value={openProjectValue}>
               <StudioEditDrawingProvider value={editDrawingValue}>
                 <StudioEditCreationProvider value={editCreationValue}>

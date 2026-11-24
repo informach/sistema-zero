@@ -183,7 +183,7 @@ export type PintaImageSelectionSummary =
        */
       turtleShape?: boolean
     })
-  | { kind: 'unavailable'; reason: 'needs-tileset' }
+  | { kind: 'unavailable'; reason: 'needs-tileset' | 'regional-runtime-required' }
 
 /** Source-pixel size of a whole sheet/atlas, before the recipe scale. */
 export interface PintaImageSheetSize {

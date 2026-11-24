@@ -5,7 +5,9 @@ import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocumentG
 import { sanitizePreviewStorageData } from '../preview/types'
 import { prepareEditableStudioProject } from '../state/editableProjectValidation'
 import { readValues } from '../state/idbTransaction'
+import { applicationBudget, journal } from '../state/projectStorageCoordinator'
 import { applicationBudgetKey, projectRecoveryKey } from '../state/projectStorageKeys'
+import { retainedApplications } from '../state/retainedProjectApplications'
 import { legacyProjectKeys } from '../state/retainedProjectKeys'
 
 export { legacyProjectKeys } from '../state/retainedProjectKeys'
@@ -13,10 +15,7 @@ export { legacyProjectKeys } from '../state/retainedProjectKeys'
 import { assertCurrentProjectParts } from '../state/projectStorageRead'
 import { assembleProjectRecord } from '../state/projectStorageRecords'
 import { isLocalHead, ProjectWriteConflict } from '../state/projectStorageRevision'
-import {
-  isPrivateRegionalProjectScope,
-  type ProjectStorageScope,
-} from '../state/projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from '../state/projectStorageRuntime'
 import { projectEnvironmentSummary } from '../state/projectSummary'
 import { thumbDataUrlOf } from '../state/projectThumbData'
 import {
@@ -47,17 +46,13 @@ export async function readLegacyRegionalSource(scope: ProjectStorageScope, id: s
     applicationBudgetKey(),
   ])
   const oldBudget = raw[RETAINED_PARTS.length]
-  if (
-    oldBudget !== undefined &&
-    (!isDocumentRecord(oldBudget) || (Object.hasOwn(oldBudget, id) && oldBudget[id] !== 0))
-  )
-    pending()
+  applicationBudget(oldBudget)
   const values: SourceValues = {}
   const guards = RETAINED_PARTS.map((part, i) => {
     if (raw[i] !== undefined) values[part] = raw[i]
     return [keys[part], raw[i]] as const
   })
-  return { values, guards: [...guards, [applicationBudgetKey(), oldBudget] as const] }
+  return { values, guards: [...guards, [applicationBudgetKey(), oldBudget] as const], oldBudget }
 }
 function classicSource(id: string, v: SourceValues) {
   assertCurrentProjectParts(id, v.meta, v.files, v.state, v.blocks, v.assets)
@@ -74,11 +69,14 @@ function classicSource(id: string, v: SourceValues) {
   )
     pending()
   const environment = projectEnvironmentSummary(v.meta)
-  if (environment.programmingLanguage !== 'javascript' || environment.kind !== 'classic') pending()
   if (
-    v.source !== undefined ||
-    (v.applications !== undefined &&
-      (!Array.isArray(v.applications) || v.applications.length !== 0))
+    !['javascript', 'python'].includes(environment.programmingLanguage) ||
+    !['classic', 'pro'].includes(environment.kind ?? '')
+  )
+    pending()
+  if (
+    (v.source !== undefined && (!isDocumentRecord(v.source) || v.source.deleted === true)) ||
+    journal(v.applications).some((record) => record.projectId !== id)
   )
     pending()
   if (
@@ -111,10 +109,10 @@ export async function promoteLocalRegionalProject(options: {
   ready?: () => boolean
 }) {
   const { scope, id, expectedV4Token, ready } = options
-  if (!isPrivateRegionalProjectScope(scope))
-    throw Error('A promoção regional requer um perfil local de teste.')
+  if (!isRegionalProjectScope(scope))
+    throw Error('O perfil do projeto mudou. Abra o Estúdio novamente.')
   const replacement = copyStudioProjectJson(options.assets)
-  const { values, guards } = await readLegacyRegionalSource(scope, id)
+  const { values, guards, oldBudget } = await readLegacyRegionalSource(scope, id)
   const raw = classicSource(id, values)
   if (!isLocalHead(values.head) || values.head.token !== expectedV4Token)
     throw new ProjectWriteConflict()
@@ -137,6 +135,9 @@ export async function promoteLocalRegionalProject(options: {
     pending()
   const next = await prepareRetainedParts(values)
   const origin = await authoredOrigin(next.parts)
+  const pinnedHead = await prepareRetainedParts({ head: { physicalVersion: 5, head: values.head } })
+  next.parts.head = pinnedHead.parts.head
+  for (const [hash, body] of pinnedHead.bodies) next.bodies.set(hash, body)
   if (replacement !== undefined) {
     const updated = await prepareRetainedParts({ assets: candidate.assets })
     next.parts.assets = updated.parts.assets!
@@ -148,13 +149,18 @@ export async function promoteLocalRegionalProject(options: {
   next.parts.source = observed.parts.source!
   for (const [hash, body] of observed.bodies) next.bodies.set(hash, body)
   const prefix = projectRecoveryKey(id, '')
+  const applications = journal(values.applications)
+  const history = applications.length
+    ? retainedApplications(id, undefined, oldBudget, applications)
+    : undefined
   return commitRetainedProject(scope, {
     id,
     origin,
     candidate: next,
     expectedToken: null,
     source: guards,
-    absent: [IDBKeyRange.bound(prefix, prefix + '\uffff')],
+    applicationBudget: history?.budget,
+    absent: [IDBKeyRange.bound(prefix, `${prefix}\uffff`)],
     ready: () =>
       ready?.() !== false &&
       !hasSynchronousExitJournal(scope.exitJournalStorage, scope.identity, id),
@@ -174,7 +180,7 @@ export async function preserveLegacyRegionalEdit(
   const expectedParent = JSON.stringify(parent)
   const observed = await readRetainedManifest(scope, id)
   if (!observed || JSON.stringify(observed) !== expectedParent) throw new ProjectWriteConflict()
-  const { values, guards } = await readLegacyRegionalSource(scope, id)
+  const { values, guards, oldBudget } = await readLegacyRegionalSource(scope, id)
   const dataParts = [
     'meta',
     'files',
@@ -215,10 +221,18 @@ export async function preserveLegacyRegionalEdit(
   if (!isDocumentRecord(fork.meta)) pending()
   fork.meta.name = `${recovered.name.slice(0, 175)} (edição recuperada)`
   delete fork.meta.publication
+  const applications = journal(fork.applications).map((record) => ({
+    ...record,
+    projectId: targetId,
+  }))
+  if (applications.length) fork.applications = applications
+  const history = applications.length
+    ? retainedApplications(targetId, undefined, oldBudget, applications)
+    : undefined
   const target = await prepareRetainedParts(fork)
   const noDraft = (projectId: string) => {
     const prefix = projectRecoveryKey(projectId, '')
-    return IDBKeyRange.bound(prefix, prefix + '\uffff')
+    return IDBKeyRange.bound(prefix, `${prefix}\uffff`)
   }
   try {
     await commitRetainedProject(scope, {
@@ -226,6 +240,7 @@ export async function preserveLegacyRegionalEdit(
       expectedToken: null,
       origin: scopeMarker,
       candidate: target,
+      applicationBudget: history?.budget,
       source: [...guards, ...dest.guards, [retainedProjectKey(id), expectedParent]],
       absent: [noDraft(id), noDraft(targetId)],
       ready: () =>

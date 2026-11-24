@@ -110,7 +110,13 @@ const EMPTY_ASSETS: ProjectAsset[] = []
 
 type PendingDeletion =
   | { scope: 'project'; id: string; name: string; operation?: ProWorkspaceOperation }
-  | { scope: 'personal'; id: string; name: string }
+  | {
+      scope: 'personal'
+      namespace: string
+      id: string
+      name: string
+      regional?: { sha256: string; updatedAt: number }
+    }
 
 /**
  * Uma aba em branco com "Preparando o desenho…", aberta no gesto do clique. Sem `noopener`
@@ -574,8 +580,21 @@ export function AssetsPanel({
     )
   }
 
-  const addFromPersonal = (drawing: PersonalAsset) => {
+  const addFromPersonal = async (drawing: PersonalAsset) => {
     setError(null)
+    if (drawing.regional) {
+      const issue = await storeApi.getState().importRegionalPintaMaterial({
+        id: drawing.id,
+        name: drawing.name,
+        dataUrl: drawing.dataUrl,
+        width: drawing.width ?? 0,
+        height: drawing.height ?? 0,
+        libRevision: drawing.updatedAt,
+        regional: drawing.regional,
+      })
+      if (issue) setError(issue)
+      return
+    }
     const taken = new Set(assets.map((a) => a.name))
     const err = addAsset({
       name: uniqueAssetName(drawing.name, taken),
@@ -633,9 +652,16 @@ export function AssetsPanel({
       return
     }
 
+    if (pendingDeletion.namespace !== personalNamespace) {
+      setPendingDeletion(null)
+      return
+    }
     setDeleting(true)
-    // O namespace capturado no render: o perfil que a criança está vendo, não o singleton.
-    const result = await removePersonalAsset(pendingDeletion.id, { namespace: personalNamespace })
+    // The confirmation owns the profile and revision that were shown when it opened.
+    const result = await removePersonalAsset(pendingDeletion.id, {
+      namespace: pendingDeletion.namespace,
+      regional: pendingDeletion.regional,
+    })
     if (result.ok) {
       setPersonal((current) => current.filter((asset) => asset.id !== pendingDeletion.id))
     } else {
@@ -1076,7 +1102,16 @@ export function AssetsPanel({
                 coverAssetName={coverAssetName}
                 onSetCover={handleSetCover}
                 onDeletePersonal={(drawing) =>
-                  setPendingDeletion({ scope: 'personal', id: drawing.id, name: drawing.name })
+                  setPendingDeletion({
+                    scope: 'personal',
+                    namespace: personalNamespace,
+                    id: drawing.id,
+                    name: drawing.name,
+                    regional: drawing.regional && {
+                      sha256: drawing.regional.sha256,
+                      updatedAt: drawing.updatedAt,
+                    },
+                  })
                 }
                 // The library pictures are SVG, which the desktop raylib does not open.
                 onAddFromLibrary={usesRaylib ? null : addFromLibrary}

@@ -11,10 +11,7 @@ import {
   projectRecoveryKey,
   projectRecoveryPrefix,
 } from '../state/projectStorageKeys'
-import {
-  isPrivateRegionalProjectScope,
-  type ProjectStorageScope,
-} from '../state/projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSummary, toProjectSummary } from '../state/projectSummary'
 import { hasSynchronousExitJournal } from '../state/synchronousExitJournalProbe'
 import { synchronousExitProjectIds } from '../state/synchronousExitJournalRead'
@@ -132,7 +129,7 @@ export async function prepareLocalV4ProjectReads(
     if (blocked.has(id)) continue
     // A live retained project adopts or retires its own lineage's exit copies in its editor.
     if (
-      isPrivateRegionalProjectScope(scope) &&
+      isRegionalProjectScope(scope) &&
       (await (await import('../state/retainedProjectEditor')).retainedOwnsDrafts(scope, id))
     )
       continue

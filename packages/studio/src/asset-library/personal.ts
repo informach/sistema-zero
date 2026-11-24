@@ -1,3 +1,4 @@
+import type { PintaRegionalMarker } from '@sistemazero/core/studio/pinta-regional-marker'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 /**
  * Biblioteca PESSOAL de imagens ("Meus desenhos") — a ponte Pinta → Estúdio.
@@ -26,7 +27,8 @@ import {
   sanitizeTilesetMeta,
 } from '#core'
 import { isUnusablePintaRegionalAsset } from '../core/pintaAuthoredPngVersion'
-import { UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
+import { admitPintaRegionalMaterial } from '../core/pintaRegionalMaterial'
+import { hasRegionalPintaReference, UNSUPPORTED_PINTA_REGION } from '../core/pintaRegionalReference'
 import { sanitizeSceneMeta } from '../core/projectAssets'
 import {
   ASSET_KEY_PREFIX,
@@ -37,6 +39,7 @@ import {
   PERSONAL_ASSET_LIMITS,
   type PersonalStorageInventory,
   personalAssetChars,
+  REGIONAL_KEY_PREFIX,
   regionalKey,
   regionalQuota,
   withPersonalAssetUpdate,
@@ -85,6 +88,7 @@ export interface PersonalAsset {
   /** Metadados do Pinta (MAPA de tiles: grade + folha embutida). */
   tilemapFront?: ProjectTilemapMeta
   scene?: PintaScene
+  regional?: PintaRegionalMarker
   tilemap?: ProjectTilemapMeta
   updatedAt: number
 }
@@ -179,11 +183,20 @@ async function readPersonalAssets(
   kvStore: ReturnType<typeof getStoreHandle>,
 ): Promise<PersonalAsset[]> {
   const allKeys = await keys(kvStore)
-  const assetKeys = allKeys.filter(
-    (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
-  )
-  if (assetKeys.length === 0) return []
-  const refs = assetKeys.map((key) => key.slice(ASSET_KEY_PREFIX.length))
+  const refs = [
+    ...new Set(
+      allKeys.flatMap((key) =>
+        typeof key !== 'string'
+          ? []
+          : key.startsWith(ASSET_KEY_PREFIX)
+            ? [key.slice(ASSET_KEY_PREFIX.length)]
+            : key.startsWith(REGIONAL_KEY_PREFIX)
+              ? [key.slice(REGIONAL_KEY_PREFIX.length)]
+              : [],
+      ),
+    ),
+  ]
+  if (refs.length === 0) return []
   const values = await readPersonalAssetCopies(refs, kvStore)
   const assets = values.filter((asset): asset is PersonalAsset => asset !== null)
   assets.sort((a, b) => b.updatedAt - a.updatedAt)
@@ -198,12 +211,40 @@ async function readPersonalAssetCopies(
     ids.flatMap((id) => [regionalKey(id), assetKey(id)]),
     store,
   )
-  return ids.map((_, i) => {
-    const legacy = values[i * 2 + 1]
-    return values[i * 2] === undefined && !isUnusablePintaRegionalAsset(legacy)
-      ? sanitizePersonalAsset(legacy)
-      : null
-  })
+  return Promise.all(
+    ids.map(async (id, i) => {
+      const regional = values[i * 2]
+      if (regional !== undefined) {
+        if (
+          !regional ||
+          typeof regional !== 'object' ||
+          !('format' in regional) ||
+          regional.format !== 'pinta-regional-personal' ||
+          !('version' in regional) ||
+          regional.version !== 1 ||
+          !('dataVersion' in regional) ||
+          regional.dataVersion !== 5
+        )
+          return null
+        const { admitPersonalRegionalRecord } = await import('./personalRegional')
+        const record = await admitPersonalRegionalRecord(regional, id)
+        return {
+          id,
+          name: record.name,
+          kind: 'image' as const,
+          dataUrl: record.dataUrl,
+          width: record.width,
+          height: record.height,
+          updatedAt: record.updatedAt ?? 0,
+          regional: { dataVersion: 5 as const, sourceId: id, sha256: record.sha256 },
+        }
+      }
+      const legacy = values[i * 2 + 1]
+      return values[i * 2] === undefined && !isUnusablePintaRegionalAsset(legacy)
+        ? sanitizePersonalAsset(legacy)
+        : null
+    }),
+  )
 }
 
 function splitInventory({ legacy, regional }: PersonalStorageInventory) {
@@ -250,6 +291,7 @@ export interface PersonalAssetInput {
   tileset?: unknown
   tilemapFront?: unknown
   scene?: unknown
+  regional?: unknown
   tilemap?: unknown
   /** Usado por restauros da nuvem para preservar a revisão autoritativa da origem. */
   updatedAt?: number
@@ -359,7 +401,7 @@ export async function savePersonalAsset(
   // Capture the account before the first asynchronous read.
   const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   try {
-    const result = await writePersonalAssets([input], namespace)
+    const result = await savePersonalAssetBundle([input], { namespace })
     if (!result.ok) return result
     markPersonalAssetsChanged(namespace)
     const record = result.assets[0]!
@@ -376,7 +418,7 @@ export type SavePersonalAssetBundleResult =
 /** Preflight the entire world, then commit all records in one IDB transaction. */
 export async function savePersonalAssetBundle(
   inputs: readonly PersonalAssetInput[],
-  options?: { namespace?: string },
+  options?: { namespace?: string; signal?: AbortSignal },
 ): Promise<SavePersonalAssetBundleResult> {
   const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   if (
@@ -386,7 +428,46 @@ export async function savePersonalAssetBundle(
   )
     return { ok: false, error: 'Este conjunto de mapas é inválido ou grande demais.' }
   try {
-    const result = await writePersonalAssets(inputs, namespace)
+    options?.signal?.throwIfAborted()
+    if (inputs.some(hasRegionalPintaReference)) {
+      const input = inputs[0]
+      if (
+        inputs.length !== 1 ||
+        !input ||
+        input.origin === 'molda' ||
+        (input.kind !== undefined && input.kind !== 'image') ||
+        typeof input.width !== 'number' ||
+        typeof input.height !== 'number'
+      )
+        return { ok: false, error: UNSUPPORTED_PINTA_REGION }
+      await admitPintaRegionalMaterial(
+        { ...input, sourceId: input.id, width: input.width, height: input.height },
+        options?.signal,
+      )
+      const { readPersonalRegionalMap, savePersonalRegionalMap, PINTA_REGIONAL_PERSONAL_CAPTURE } =
+        await import('./personalRegional')
+      const scope = { namespace, capability: PINTA_REGIONAL_PERSONAL_CAPTURE } satisfies Parameters<
+        typeof readPersonalRegionalMap
+      >[1]
+      const previous = await readPersonalRegionalMap(input.id, scope)
+      const saved = await savePersonalRegionalMap(
+        {
+          id: input.id,
+          name: input.name,
+          dataUrl: input.dataUrl,
+          width: input.width,
+          height: input.height,
+        },
+        { ...scope, signal: options?.signal, expectedRevision: previous?.revision ?? null },
+      )
+      if (!saved.ok) return saved
+      const records = await getPersonalAssets([input.id], { namespace })
+      const record = records.get(input.id)
+      if (!record || record.updatedAt !== saved.updatedAt)
+        return { ok: false, error: 'O desenho mudou em outra aba. Confira antes de continuar.' }
+      return { ok: true, assets: [record] }
+    }
+    const result = await writePersonalAssets(inputs, namespace, options?.signal)
     if (result.ok) markPersonalAssetsChanged(namespace)
     return result
   } catch {
@@ -397,8 +478,10 @@ export async function savePersonalAssetBundle(
 function writePersonalAssets(
   inputs: readonly PersonalAssetInput[],
   namespace: string,
+  signal?: AbortSignal,
 ): Promise<SavePersonalAssetBundleResult> {
   return withPersonalAssetUpdate<SavePersonalAssetBundleResult>(namespace, (stored) => {
+    signal?.throwIfAborted()
     const { assets: previous, protectedRecords, shadowChars } = splitInventory(stored)
     const reserved = regionalQuota(protectedRecords)
     if (!reserved || inputs.some(({ id }) => protectedRecords.has(id)))
@@ -433,10 +516,20 @@ export type RemovePersonalAssetResult = { ok: true } | { ok: false; error: strin
  */
 export async function removePersonalAsset(
   id: string,
-  options?: { namespace?: string },
+  options?: { namespace?: string; regional?: { sha256: string; updatedAt: number } },
 ): Promise<RemovePersonalAssetResult> {
   const namespace = options?.namespace ?? getPersonalAssetsNamespace()
   try {
+    if (options?.regional) {
+      const { removePersonalRegionalMap, PINTA_REGIONAL_PERSONAL_CAPTURE } = await import(
+        './personalRegional'
+      )
+      return removePersonalRegionalMap(id, {
+        namespace,
+        capability: PINTA_REGIONAL_PERSONAL_CAPTURE,
+        expected: options.regional,
+      })
+    }
     const result = await withPersonalAssetUpdate<RemovePersonalAssetResult>(
       namespace,
       ({ legacy, regional }) => {

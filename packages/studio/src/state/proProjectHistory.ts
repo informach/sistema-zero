@@ -9,6 +9,7 @@ import {
 } from './idbTransaction'
 import { projectHeadKey } from './projectStorageKeys'
 import type { ProjectStorageScope } from './projectStorageRuntime'
+import { parseRetainedProjectManifest, retainedProjectKey } from './retainedProjectStore'
 
 /**
  * O Histórico do projeto do Pro (proposta aprovada em 21/11/2026): versões automáticas dos
@@ -184,11 +185,13 @@ export function recordProHistoryVersion(
       scope.store,
       scope.identity,
       conditionalGeneration(scope.identity),
-      [proHistoryIndexKey(projectId), projectHeadKey(projectId)],
-      ([storedIndex, head]) => {
+      [proHistoryIndexKey(projectId), projectHeadKey(projectId), retainedProjectKey(projectId)],
+      ([storedIndex, head, retainedValue]) => {
         const nothing = { write: {}, result: null }
-        const tombstone =
-          !!head && typeof head === 'object' && (head as { deleted?: unknown }).deleted === true
+        const retained = parseRetainedProjectManifest(retainedValue, projectId)
+        const tombstone = retained
+          ? retained.deleted
+          : !!head && typeof head === 'object' && (head as { deleted?: unknown }).deleted === true
         const read = readIndex(storedIndex)
         if (tombstone || !read.known) return nothing
         const version = nextVersion(read.index, {

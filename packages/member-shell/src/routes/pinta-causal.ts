@@ -121,6 +121,17 @@ function wrongReply(): never {
 
 const invalid = () => error(400, 'invalid-request')
 
+/** HTTP adapters may expose a stream for a zero-byte POST. Only actual bytes
+ * make this bodyless operation invalid; never trust Content-Length alone. */
+async function hasEmptyBody(req: Request): Promise<boolean> {
+  if (!req.body) return true
+  try {
+    return (await bufferFromStream(req.body, 0)).byteLength === 0
+  } catch {
+    return false
+  }
+}
+
 function query<T>(req: Request, schema: z.ZodType<T>): T | null {
   const params = new URL(req.url).searchParams
   const input = Object.fromEntries(params)
@@ -417,7 +428,7 @@ export function createPintaCausalRoutes({
       POST: (req: Request, ctx: UnitContext) =>
         authorized(req, true, async (actor) => {
           const unit = ActorUnit.safeParse(await ctx.params)
-          if (!unit.success || req.body) return invalid()
+          if (!unit.success || !(await hasEmptyBody(req))) return invalid()
           return statusReply(
             actor,
             unit.data.opId,
@@ -429,7 +440,7 @@ export function createPintaCausalRoutes({
       POST: (req: Request, ctx: UnitContext) =>
         authorized(req, true, async (actor) => {
           const unit = ActorUnit.safeParse(await ctx.params)
-          if (!unit.success || req.body) return invalid()
+          if (!unit.success || !(await hasEmptyBody(req))) return invalid()
           return statusReply(actor, unit.data.opId, await internal(actor, 'units/abort', unit.data))
         }),
     },

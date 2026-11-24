@@ -1,3 +1,4 @@
+import { isLessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import { type EditableStudioProject, isPythonProject } from '../core/editableProject'
 import { type PintaRegionalMarker, pintaRegionalMarkerOf } from '../core/pintaRegionalMaterial'
 import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
@@ -14,7 +15,11 @@ import {
 } from './persistence'
 import { projectPersistence } from './projectOperations'
 import { advanceLocalRevision, readLocalRevision } from './projectStorageRevision'
-import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import {
+  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
+  type ProjectStorageScope,
+} from './projectStorageRuntime'
 import type { ProjectStoreApi } from './projectStore'
 
 export { privateRegionalProjectScope } from './projectStorageRuntime'
@@ -32,7 +37,7 @@ async function runsRegionalMaterial(
   installedExtensions: unknown,
 ): Promise<boolean> {
   if (environment.programmingLanguage !== 'javascript' || (open && isPythonProject(open)))
-    return true
+    return isPrivateRegionalProjectScope(scope)
   const engine = regionalJavaScriptEngine(open ? open.installedExtensions : installedExtensions)
   if (!engine) return false
   if ((open ? open.kind : environment.kind) !== 'pro') return true
@@ -45,7 +50,7 @@ async function runsRegionalMaterial(
 }
 
 /**
- * Private local-only refresh. No program, project ID, source path or block is rewritten.
+ * Refreshes an already-linked regional material. No program, project ID, source path or block is rewritten.
  * `true` wrote the capture; `false` the write was refused (the next sweep tries again); `'kept'`
  * the project cannot run regional material, so it keeps its old drawing.
  */
@@ -60,12 +65,13 @@ export async function refreshPrivateRegionalProjectAsset(options: {
   stillCurrent?: () => boolean
 }): Promise<boolean | 'kept'> {
   const { scope, projectId, assetId, store, stillCurrent } = options
+  if (isLessonStudioProjectId(projectId)) return 'kept'
   const signal =
     scope.signal && options.signal
       ? AbortSignal.any([scope.signal, options.signal])
       : (scope.signal ?? options.signal)
-  if (!isPrivateRegionalProjectScope(scope))
-    throw new Error('A captura regional requer um perfil de teste local.')
+  if (!isRegionalProjectScope(scope))
+    throw new Error('O perfil do projeto mudou. Abra o Estúdio novamente.')
   const capture = {
     dataUrl: options.capture.dataUrl,
     width: options.capture.width,

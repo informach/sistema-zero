@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
+  STUDIO_SEALED_LEGACY_READER as legacyReader,
   STUDIO_SEALED_STORAGE_PROTOCOL as protocol,
-  STUDIO_SEALED_STORAGE_READER as reader,
   studioSealedBlobKey,
 } from '@sistemazero/core/creations/studio-sealed-storage'
 import {
@@ -272,7 +272,7 @@ describe.skipIf(!target)('Studio sealed writer authority', () => {
         expect(stored.status).toBe(200)
         const before = (await stored.json()).studioHead
         expect((await old.outer('/download')).status).toBe(409)
-        const legacyRead = await old.outer(`/download?studioReader=${reader}`)
+        const legacyRead = await old.outer(`/download?studioReader=${legacyReader}`)
         expect(legacyRead.status).toBe(200)
         expect(await legacyRead.json()).toMatchObject({
           storageKey: studioSealedBlobKey({ ...owner, itemId }, first.nonce, 'sealed'),

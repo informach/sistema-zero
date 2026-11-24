@@ -13,10 +13,7 @@ import { isDocumentRecord } from '../../core/projectDocument'
 import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
 import { gameKitManifest } from '../../official-extensions/game-2d-advanced/manifest'
 import type { MapTarget } from '../../official-extensions/map-2d/regionHostSource'
-import {
-  isPrivateRegionalProjectScope,
-  type ProjectStorageScope,
-} from '../../state/projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from '../../state/projectStorageRuntime'
 
 /**
  * The single 2D engine that composes the regional material. Chosen by ID, like the Classic
@@ -39,15 +36,29 @@ export async function prepareJavaScriptRegionalMaterials(
   signal?: AbortSignal,
 ) {
   if (!Array.isArray(assets) || !assets.some(hasRegionalPintaReference)) return undefined
-  if (!scope || !isPrivateRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (scope && !isRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
   const lifetime =
-    signal && scope.signal ? AbortSignal.any([signal, scope.signal]) : (signal ?? scope.signal)
+    signal && scope?.signal ? AbortSignal.any([signal, scope.signal]) : (signal ?? scope?.signal)
   lifetime?.throwIfAborted()
   const match = regionalJavaScriptEngine(installed)
   if (!match)
     throw new Error('Este cenário precisa de um só motor de jogo: o Jogo 2D ou o Jogo 2D Avançado.')
   const target: MapTarget = match === gameTwoDManifest ? 'g2d' : 'gk'
-  const extensionId = match.id
+  const data = await prepareRegionalMaterialData(assets, lifetime)
+  for (const world of data.worlds) await checkRegionalProjectPixels(world, lifetime)
+  const { mapTwoDRegionalMaterialsBootstrap } = await import(
+    '../../official-extensions/map-2d/regionBootstrap'
+  )
+  const script = await mapTwoDRegionalMaterialsBootstrap(target, data.wire)
+  lifetime?.throwIfAborted()
+  assertRegionalProjectAssetProof(assets, data.proof)
+  return { ...data, extensionId: match.id, script }
+}
+
+/** Shared, bounded capture for Classic and the Pro material bundle. */
+export async function prepareRegionalMaterialData(assets: unknown, lifetime?: AbortSignal) {
+  if (!Array.isArray(assets) || !assets.some(hasRegionalPintaReference))
+    throw new Error(UNSUPPORTED_PINTA_REGION)
   const sourceChars = assets.reduce(
     (sum, row) =>
       sum + (isDocumentRecord(row) && typeof row.dataUrl === 'string' ? row.dataUrl.length : 0),
@@ -68,15 +79,10 @@ export async function prepareJavaScriptRegionalMaterials(
     worlds.push(world)
     wire.push(data)
   })
-  for (const world of worlds) await checkRegionalProjectPixels(world, lifetime)
-  const { mapTwoDRegionalMaterialsBootstrap } = await import(
-    '../../official-extensions/map-2d/regionBootstrap'
-  )
   if (!wire.length) throw new Error(UNSUPPORTED_PINTA_REGION)
-  const script = await mapTwoDRegionalMaterialsBootstrap(target, wire)
   lifetime?.throwIfAborted()
   assertRegionalProjectAssetProof(assets, proof)
-  return { proof, extensionId, script, wireChars }
+  return { proof, wire, wireChars, worldsJson: `[${wire.join(',')}]`, worlds }
 }
 
 export type JavaScriptRegionalMaterials = NonNullable<
