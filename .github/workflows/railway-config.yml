@@ -49,9 +49,12 @@ jobs:
         with:
           script: |
             const repo = context.repo;
-            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ ...repo, commit_sha: context.sha });
-            const pr = prs.find(p => p.merged_at && p.merge_commit_sha === context.sha && p.base.ref === 'main' && p.head.repo?.full_name === process.env.GITHUB_REPOSITORY);
-            if (!pr) throw new Error('O commit de main precisa vir de um PR com plano aprovado');
+            const { pathToFileURL } = require('node:url');
+            const { join } = require('node:path');
+            const moduleUrl = pathToFileURL(join(process.env.GITHUB_WORKSPACE, 'scripts/ci/github-promoted-pr.mjs'));
+            const { findPromotedPullRequest } = await import(moduleUrl.href);
+            const get = async path => (await github.request(`GET /repos/${repo.owner}/${repo.repo}${path}`)).data;
+            const pr = await findPromotedPullRequest(context.sha, get);
             const name = `railway-production-plan-${pr.head.sha}`;
             const { data } = await github.rest.actions.listArtifactsForRepo({ ...repo, name, per_page: 100 });
             const candidates = data.artifacts.filter(a => !a.expired && a.workflow_run?.head_sha === pr.head.sha);
