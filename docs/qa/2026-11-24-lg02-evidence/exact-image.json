@@ -1,0 +1,761 @@
+{
+  "testedAt": "2026-11-24T11:42:09.063Z",
+  "source": "a365206598c9175e8f999801eba5a6fb74d613db",
+  "image": "sistemazero-studio-runtime:lg02-sdk01212-20261124",
+  "imageId": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+  "manifest": "sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a",
+  "fingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c",
+  "scope": "Exact locally built image deployed to hosted QA and staging. Suites ran sequentially without external container network; intentional rejection cases are asserted by the scripts. No Python catalog promotion.",
+  "suites": [
+    {
+      "script": "packages/studio-runtime/tests/validation-smoke.ts",
+      "args": [
+        "sistemazero-studio-runtime:lg02-sdk01212-20261124"
+      ],
+      "exitCode": 0,
+      "logSha256": "907873eeeb227563cdb0a8188e3cb7f2f0f13612bd9adf648a0d5b5d4b50079e",
+      "cases": [
+        {
+          "name": "canvas-puzzle",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 12318
+        },
+        {
+          "name": "canvas-survival",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 28504
+        },
+        {
+          "name": "three-exploration",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 38510
+        },
+        {
+          "name": "canvas-grid-arena",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 13150
+        },
+        {
+          "name": "phaser-tactics",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 30074
+        },
+        {
+          "name": "three-tactics",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 12888
+        }
+      ]
+    },
+    {
+      "script": "packages/studio-runtime/tests/templates-smoke.ts",
+      "args": [
+        "sistemazero-studio-runtime:lg02-sdk01212-20261124"
+      ],
+      "exitCode": 0,
+      "logSha256": "6d103dc8ca518ae940b24919d81c8526d31932d15fda8c79a84071b3f45c481e",
+      "cases": [
+        {
+          "name": "three-ts",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 483
+        },
+        {
+          "name": "react-ts",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 436
+        },
+        {
+          "name": "phaser",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 1027
+        },
+        {
+          "name": "three-ts com ^ e trava",
+          "ok": true,
+          "uid": 1000,
+          "durationMs": 480
+        },
+        {
+          "name": "three-ts com import sem declarar",
+          "ok": true
+        },
+        {
+          "name": "three-ts com erro de sintaxe",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "script": "packages/studio-runtime/tests/python-mission-smoke.ts",
+      "args": [],
+      "exitCode": 0,
+      "logSha256": "01e7480c917d1a866effedf9746faadd7b504a6b4b938272488e5282a18822ed",
+      "cases": [
+        {
+          "name": "function-input",
+          "expected": true,
+          "results": [
+            {
+              "id": "input-function",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "four-input-lines",
+          "expected": true,
+          "results": [
+            {
+              "id": "input",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "unused-input",
+          "expected": false,
+          "results": [
+            {
+              "id": "input",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "extra-input",
+          "expected": false,
+          "results": [
+            {
+              "id": "input",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "stdout-limit",
+          "expected": false,
+          "results": [
+            {
+              "id": "output",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "network-denied",
+          "expected": false,
+          "results": [
+            {
+              "id": "network",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "host-file-denied",
+          "expected": false,
+          "results": [
+            {
+              "id": "host-file",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "console-correct",
+          "expected": true,
+          "results": [
+            {
+              "id": "console",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "console-wrong",
+          "expected": false,
+          "results": [
+            {
+              "id": "console",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "dead-branch",
+          "expected": false,
+          "results": [
+            {
+              "id": "console",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "input",
+          "expected": true,
+          "results": [
+            {
+              "id": "console",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "exception",
+          "expected": false,
+          "results": [
+            {
+              "id": "console",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "function",
+          "expected": true,
+          "results": [
+            {
+              "id": "function",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "function-wrong",
+          "expected": false,
+          "results": [
+            {
+              "id": "function",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "async-function",
+          "expected": true,
+          "results": [
+            {
+              "id": "function",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "cpu-loop",
+          "expected": false,
+          "results": [
+            {
+              "id": "value",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "turtle-3",
+          "expected": true,
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "turtle-9",
+          "expected": true,
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "turtle--3",
+          "expected": false,
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "turtle-0",
+          "expected": false,
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "turtle-click-score",
+          "expected": true,
+          "results": [
+            {
+              "id": "score",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "turtle-autonomous",
+          "expected": false,
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "raylib-2d-3",
+          "expected": true,
+          "results": [
+            {
+              "id": "right",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "raylib-2d--3",
+          "expected": false,
+          "results": [
+            {
+              "id": "right",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "raylib-2d-0",
+          "expected": false,
+          "results": [
+            {
+              "id": "right",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "raylib-3d-3",
+          "expected": true,
+          "results": [
+            {
+              "id": "right",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "raylib-3d--3",
+          "expected": false,
+          "results": [
+            {
+              "id": "right",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "raylib-3d-0",
+          "expected": false,
+          "results": [
+            {
+              "id": "right",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "raylib-click",
+          "expected": true,
+          "results": [
+            {
+              "id": "click",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "raylib-other-module",
+          "expected": true,
+          "results": [
+            {
+              "id": "function",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pgzero--3",
+          "expected": true,
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pgzero-3",
+          "expected": false,
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "pgzero-0",
+          "expected": false,
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "script": "packages/studio-runtime/tests/python-playtest-smoke.ts",
+      "args": [
+        "--docker",
+        "--health"
+      ],
+      "exitCode": 0,
+      "logSha256": "69bffbafa59408fe32d5622357396cc23c96427311cdc3faff472b47d2ea758a",
+      "cases": [
+        {
+          "name": "health-correct",
+          "expected": "passed",
+          "exitCode": 0
+        },
+        {
+          "name": "health-import-error",
+          "expected": "failed",
+          "exitCode": 0
+        },
+        {
+          "name": "health-cpu-loop",
+          "expected": "failed",
+          "exitCode": 0
+        },
+        {
+          "name": "health-input",
+          "expected": "failed",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "script": "packages/studio-runtime/tests/three-objectives-smoke.ts",
+      "args": [],
+      "exitCode": 0,
+      "logSha256": "7e1af07cadf98e5b4292eba211d17177fff3de781cfbd9d907e674da136496d6",
+      "cases": [
+        {
+          "name": "blocks",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic-3",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic-9",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic--3",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic-0",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-3",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-9",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro--3",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-0",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-no-export",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic-x",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "classic-y",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-x",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-y",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-wrong-return",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": false
+            },
+            {
+              "id": "resources",
+              "passed": true
+            }
+          ]
+        },
+        {
+          "name": "pro-error",
+          "results": [
+            {
+              "id": "move",
+              "passed": false
+            },
+            {
+              "id": "draw",
+              "passed": false
+            },
+            {
+              "id": "resources",
+              "passed": false
+            }
+          ]
+        },
+        {
+          "name": "pro-network",
+          "results": [
+            {
+              "id": "move",
+              "passed": true
+            },
+            {
+              "id": "draw",
+              "passed": true
+            },
+            {
+              "id": "network",
+              "passed": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

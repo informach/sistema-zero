@@ -28,7 +28,7 @@ Runtime: **440 testes aprovados, 56 condicionais pulados, zero falhas**, 4.683 e
 
 A prova nativa usa SQLite/workerd reais: 12 aquisições concorrentes, reinício do coordenador, limite entre perfis, expiração, retirada, liberação antiga e confirmação perdida. A regressão de encaminhamento RPC integra essa prova.
 
-Imagem `sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a`, fingerprint `b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c`: smoke com UID 1000, dependências protegidas, rede desabilitada, aquecimento e inicialização do binário `/sandbox` com TCP 3000 pronto. O CI de imagem executou os contratos, kits, Python e Three sem rede.
+Imagem `sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a`, fingerprint `b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c`: smoke com UID 1000, dependências protegidas, rede desabilitada, aquecimento e inicialização do binário `/sandbox` com TCP 3000 pronto. A [imagem exata implantada](2026-11-24-lg02-evidence/exact-image.json) passou 66 cenários: seis kits, seis modelos, 33 missões Python, quatro verificações de saúde Python e 17 casos Three, incluindo recusas esperadas. Os scripts terminaram com código zero e rede externa desabilitada. O CI também aprovou sua construção independente da mesma fonte/perfil; não se presume identidade dos bytes entre as duas construções.
 
 ## Executor hospedado
 
@@ -58,7 +58,9 @@ Runtime normal de staging implantado: versão `382058b9-3175-4bb2-b6f0-d312b8fca
 
 O perfil infantil autorizado abriu a primeira aula de A Ilha do Farol e percorreu vídeos, jogo e experiência pelas ações normais. O projeto inicial respondeu indisponibilidade na primeira tentativa (424, 75.135 ms); essa ocorrência permanece registrada sem causa confirmada. A repetição respondeu 200 em 36.539 ms, reprovando corretamente os cinco objetivos e sem prêmio.
 
-Para preparar o projeto válido de homologação, foi inserido pelo Blockly o comando de movimento com velocidade 4, no início do laço, preservando o restante do projeto. A verificação pela interface passou os cinco objetivos em 30.843 ms e concedeu o prêmio normal: +30 XP/+15 moedas (960→990 XP; 505→520 moedas). Nenhum prêmio foi atribuído manualmente. Ainda falta repetir o aquecimento e a verificação após atualizar os aplicativos para a fonte final, incluindo recusas de sessão/acesso/revisão. Nenhum recado, post ou envio ao professor foi feito.
+Para preparar o projeto válido de homologação, foi inserido pelo Blockly o comando de movimento com velocidade 4, no início do laço, preservando o restante do projeto. A verificação pela interface passou os cinco objetivos em 30.843 ms e concedeu o prêmio normal: +30 XP/+15 moedas (960→990 XP; 505→520 moedas). Após mais de cinco minutos sem usar o executor, o descarte do recurso expirado apareceu no log; uma nova máquina aprovou novamente os cinco objetivos em 32.198 ms, sem repetir XP ou moedas. A indisponibilidade inicial não se repetiu nesse caso.
+
+No curso 2D A Chave do Farol, foram percorridos vídeo e experiência da parte disponível. O projeto inicial reprovou os seis objetivos em 5.668 ms, sem prêmio. Após inserir pelo Blockly os controles direcionais e o movimento do personagem, a interface aprovou os seis objetivos em 10.152 ms e concedeu o prêmio normal de +30 XP/+15 moedas. O perfil ficou com 1.020 XP/535 moedas e recebeu a conquista automática `studio-master-3`. Nenhum prêmio foi atribuído manualmente. Ainda falta repetir aquecimento e verificações após atualizar os aplicativos para a fonte final, incluindo recusas de sessão/acesso/revisão. Nenhum recado, post ou envio ao professor foi feito.
 
 ## Efeito e limitações para a criança
 
