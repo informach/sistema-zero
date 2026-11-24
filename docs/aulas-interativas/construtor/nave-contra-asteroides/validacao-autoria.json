@@ -1,0 +1,767 @@
+{
+  "version": 1,
+  "course": "nave-contra-asteroides",
+  "status": "contratos-editoriais-validados",
+  "lessons": [
+    {
+      "lessonSlug": "primeira-nave",
+      "title": "Prepare o voo da sua nave",
+      "entryStage": "inicial",
+      "finalStage": "instrucoes",
+      "sections": 8,
+      "plannedVideos": 8,
+      "importBytes": 407838,
+      "exampleBytes": 263984,
+      "examples": 5,
+      "parts": [
+        {
+          "key": "escolher-nave",
+          "entryStage": "inicial",
+          "solutionStage": "aparencia-inicial",
+          "structuralChecks": 2,
+          "newStructuralChecks": [],
+          "executionChecks": [],
+          "entryMayPass": "Escolher outra aparência é opcional. A entrada já tem nave e cenário válidos; conservar a combinação de que a criança gostou também cumpre a proposta."
+        },
+        {
+          "key": "setas",
+          "entryStage": "aparencia-inicial",
+          "solutionStage": "movimento",
+          "structuralChecks": 3,
+          "newStructuralChecks": ["movimento-na-partida"],
+          "executionChecks": ["voar-direita", "voar-esquerda"],
+          "entryMayPass": null
+        },
+        {
+          "key": "borda",
+          "entryStage": "movimento",
+          "solutionStage": "limite",
+          "structuralChecks": 3,
+          "newStructuralChecks": ["movimento-na-partida"],
+          "executionChecks": ["voar-direita", "voar-esquerda"],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "limite",
+          "solutionStage": "instrucoes",
+          "structuralChecks": 3,
+          "newStructuralChecks": ["desenho-preservado"],
+          "executionChecks": ["voar-direita", "voar-esquerda"],
+          "entryMayPass": null
+        }
+      ]
+    },
+    {
+      "lessonSlug": "dia-1",
+      "title": "Faça o laser nascer na nave",
+      "entryStage": "instrucoes",
+      "finalStage": "origem-tiro",
+      "sections": 7,
+      "plannedVideos": 7,
+      "importBytes": 305837,
+      "exampleBytes": 221538,
+      "examples": 4,
+      "parts": [
+        {
+          "key": "criar-tiro",
+          "entryStage": "instrucoes",
+          "solutionStage": "evento-tiro",
+          "structuralChecks": 4,
+          "newStructuralChecks": ["evento-protegido"],
+          "executionChecks": ["voar-direita", "voar-esquerda", "abertura-protegida"],
+          "entryMayPass": null
+        },
+        {
+          "key": "grupo-tiros",
+          "entryStage": "evento-tiro",
+          "solutionStage": "grupo-tiros",
+          "structuralChecks": 4,
+          "newStructuralChecks": ["nave-preservada", "desenho-preservado", "evento-protegido"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "abertura-protegida"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "tiro-da-nave",
+          "entryStage": "grupo-tiros",
+          "solutionStage": "origem-tiro",
+          "structuralChecks": 4,
+          "newStructuralChecks": ["evento-protegido"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "abertura-protegida"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "origem-tiro",
+          "solutionStage": "origem-tiro",
+          "structuralChecks": 4,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "abertura-protegida"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "dia-2",
+      "title": "Faça os lasers voar e sair do jogo",
+      "entryStage": "origem-tiro",
+      "finalStage": "limpeza-tiros",
+      "sections": 4,
+      "plannedVideos": 4,
+      "importBytes": 251732,
+      "exampleBytes": 171603,
+      "examples": 3,
+      "parts": [
+        {
+          "key": "tiros-voam",
+          "entryStage": "origem-tiro",
+          "solutionStage": "voo-tiros",
+          "structuralChecks": 5,
+          "newStructuralChecks": ["evento-protegido", "transporte-e-limpeza"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "abertura-protegida"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "faxina",
+          "entryStage": "voo-tiros",
+          "solutionStage": "limpeza-tiros",
+          "structuralChecks": 5,
+          "newStructuralChecks": ["transporte-e-limpeza"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "abertura-protegida"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "limpeza-tiros",
+          "solutionStage": "limpeza-tiros",
+          "structuralChecks": 5,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "abertura-protegida"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "chuva-de-asteroides",
+      "title": "Faça os asteroides cair",
+      "entryStage": "limpeza-tiros",
+      "finalStage": "limpeza-asteroides",
+      "sections": 7,
+      "plannedVideos": 6,
+      "importBytes": 336897,
+      "exampleBytes": 237169,
+      "examples": 4,
+      "parts": [
+        {
+          "key": "relogio",
+          "entryStage": "limpeza-tiros",
+          "solutionStage": "relogio-asteroides",
+          "structuralChecks": 6,
+          "newStructuralChecks": ["nave-preservada", "intervalo-asteroides"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "abertura-protegida"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "asteroide",
+          "entryStage": "relogio-asteroides",
+          "solutionStage": "asteroides",
+          "structuralChecks": 6,
+          "newStructuralChecks": [
+            "desenho-preservado",
+            "transporte-e-limpeza",
+            "intervalo-asteroides"
+          ],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "retirada",
+          "entryStage": "asteroides",
+          "solutionStage": "limpeza-asteroides",
+          "structuralChecks": 6,
+          "newStructuralChecks": ["transporte-e-limpeza"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "limpeza-asteroides",
+          "solutionStage": "limpeza-asteroides",
+          "structuralChecks": 6,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "dia-3",
+      "title": "Faça o tiro acertar o asteroide",
+      "entryStage": "limpeza-asteroides",
+      "finalStage": "efeitos-acerto",
+      "sections": 4,
+      "plannedVideos": 4,
+      "importBytes": 277523,
+      "exampleBytes": 184836,
+      "examples": 3,
+      "parts": [
+        {
+          "key": "colisao",
+          "entryStage": "limpeza-asteroides",
+          "solutionStage": "colisao-tiros",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["retirar-o-par"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "efeitos",
+          "entryStage": "colisao-tiros",
+          "solutionStage": "efeitos-acerto",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["retirar-o-par"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "efeitos-acerto",
+          "solutionStage": "efeitos-acerto",
+          "structuralChecks": 7,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "pontos",
+      "title": "Conte os acertos",
+      "entryStage": "efeitos-acerto",
+      "finalStage": "pontos",
+      "sections": 5,
+      "plannedVideos": 4,
+      "importBytes": 287397,
+      "exampleBytes": 189373,
+      "examples": 3,
+      "parts": [
+        {
+          "key": "placar",
+          "entryStage": "efeitos-acerto",
+          "solutionStage": "placar",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["nave-preservada", "desenho-preservado"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "somar-acerto",
+          "entryStage": "placar",
+          "solutionStage": "pontos",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["retirar-o-par"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "pontos",
+          "solutionStage": "pontos",
+          "structuralChecks": 7,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "dia-4",
+      "title": "Dê três vidas à nave",
+      "entryStage": "pontos",
+      "finalStage": "dano",
+      "sections": 6,
+      "plannedVideos": 6,
+      "importBytes": 374119,
+      "exampleBytes": 260571,
+      "examples": 4,
+      "parts": [
+        {
+          "key": "vidas",
+          "entryStage": "pontos",
+          "solutionStage": "vidas",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["nave-preservada", "desenho-preservado"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "batida",
+          "entryStage": "vidas",
+          "solutionStage": "colisao-nave",
+          "structuralChecks": 8,
+          "newStructuralChecks": ["dano-e-protecao"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "dano",
+          "entryStage": "colisao-nave",
+          "solutionStage": "dano",
+          "structuralChecks": 8,
+          "newStructuralChecks": ["dano-e-protecao"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "dano",
+          "solutionStage": "dano",
+          "structuralChecks": 8,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "comecar-partida",
+      "title": "Confira o início e escolha o visual",
+      "entryStage": "dano",
+      "finalStage": "aparencias",
+      "sections": 4,
+      "plannedVideos": 4,
+      "importBytes": 302563,
+      "exampleBytes": 198917,
+      "examples": 3,
+      "parts": [
+        {
+          "key": "teste-inicio",
+          "entryStage": "dano",
+          "solutionStage": "inicio-conferido",
+          "structuralChecks": 8,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "Esta parte retoma e testa as guardas que já foram aplicadas no movimento, no evento e no relógio. Não pede a construção das telas nem de uma nova regra."
+        },
+        {
+          "key": "aparencias",
+          "entryStage": "inicio-conferido",
+          "solutionStage": "aparencias",
+          "structuralChecks": 8,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A personalização é opcional e muda somente imagens. Os critérios preservam o funcionamento e não exigem uma imagem diferente da entrada."
+        },
+        {
+          "key": "entrega",
+          "entryStage": "aparencias",
+          "solutionStage": "aparencias",
+          "structuralChecks": 8,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A personalização é opcional e muda somente imagens. Os critérios preservam o funcionamento e não exigem uma imagem diferente da entrada."
+        }
+      ]
+    },
+    {
+      "lessonSlug": "dia-5",
+      "title": "Termine e recomece a partida",
+      "entryStage": "aparencias",
+      "finalStage": "final",
+      "sections": 8,
+      "plannedVideos": 7,
+      "importBytes": 468852,
+      "exampleBytes": 343268,
+      "examples": 5,
+      "parts": [
+        {
+          "key": "meta",
+          "entryStage": "aparencias",
+          "solutionStage": "meta",
+          "structuralChecks": 8,
+          "newStructuralChecks": ["nave-preservada", "desenho-preservado"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "finais",
+          "entryStage": "meta",
+          "solutionStage": "vitoria",
+          "structuralChecks": 9,
+          "newStructuralChecks": ["condicao-vitoria"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "derrota",
+          "entryStage": "vitoria",
+          "solutionStage": "derrota",
+          "structuralChecks": 10,
+          "newStructuralChecks": ["resultado-na-partida", "resultado-unico"],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "entrega",
+          "entryStage": "derrota",
+          "solutionStage": "final",
+          "structuralChecks": 10,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "voar-direita",
+            "voar-esquerda",
+            "um-tiro-por-toque",
+            "tiro-retirado",
+            "pedra-criada",
+            "abertura-protegida",
+            "valores-iniciais",
+            "abertura-sem-pedras"
+          ],
+          "entryMayPass": "A entrega reúne os testes da conquista já construída nas partes anteriores. A criança confere o jogo e envia a própria versão; não há uma nova regra artificial para destravar o envio."
+        }
+      ]
+    }
+  ],
+  "stages": 26,
+  "blockTypes": 48,
+  "snapshots": [
+    {
+      "stage": "inicial",
+      "file": "projetos/inicial.szproject.json",
+      "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f"
+    },
+    {
+      "stage": "aparencia-inicial",
+      "file": "projetos/aparencia-inicial.szproject.json",
+      "sha256": "13ccfe90f3a5d081be3219105a727764e106f8a16ad0f5a275798149175f9361"
+    },
+    {
+      "stage": "movimento",
+      "file": "projetos/movimento.szproject.json",
+      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394"
+    },
+    {
+      "stage": "limite",
+      "file": "projetos/limite.szproject.json",
+      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b"
+    },
+    {
+      "stage": "instrucoes",
+      "file": "projetos/instrucoes.szproject.json",
+      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15"
+    },
+    {
+      "stage": "evento-tiro",
+      "file": "projetos/evento-tiro.szproject.json",
+      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed"
+    },
+    {
+      "stage": "grupo-tiros",
+      "file": "projetos/grupo-tiros.szproject.json",
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d"
+    },
+    {
+      "stage": "origem-tiro",
+      "file": "projetos/origem-tiro.szproject.json",
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa"
+    },
+    {
+      "stage": "voo-tiros",
+      "file": "projetos/voo-tiros.szproject.json",
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8"
+    },
+    {
+      "stage": "limpeza-tiros",
+      "file": "projetos/limpeza-tiros.szproject.json",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43"
+    },
+    {
+      "stage": "relogio-asteroides",
+      "file": "projetos/relogio-asteroides.szproject.json",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6"
+    },
+    {
+      "stage": "asteroides",
+      "file": "projetos/asteroides.szproject.json",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc"
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "file": "projetos/limpeza-asteroides.szproject.json",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a"
+    },
+    {
+      "stage": "colisao-tiros",
+      "file": "projetos/colisao-tiros.szproject.json",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b"
+    },
+    {
+      "stage": "efeitos-acerto",
+      "file": "projetos/efeitos-acerto.szproject.json",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552"
+    },
+    {
+      "stage": "placar",
+      "file": "projetos/placar.szproject.json",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8"
+    },
+    {
+      "stage": "pontos",
+      "file": "projetos/pontos.szproject.json",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4"
+    },
+    {
+      "stage": "vidas",
+      "file": "projetos/vidas.szproject.json",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9"
+    },
+    {
+      "stage": "colisao-nave",
+      "file": "projetos/colisao-nave.szproject.json",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f"
+    },
+    {
+      "stage": "dano",
+      "file": "projetos/dano.szproject.json",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530"
+    },
+    {
+      "stage": "inicio-conferido",
+      "file": "projetos/inicio-conferido.szproject.json",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8"
+    },
+    {
+      "stage": "aparencias",
+      "file": "projetos/aparencias.szproject.json",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce"
+    },
+    {
+      "stage": "meta",
+      "file": "projetos/meta.szproject.json",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077"
+    },
+    {
+      "stage": "vitoria",
+      "file": "projetos/vitoria.szproject.json",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5"
+    },
+    {
+      "stage": "derrota",
+      "file": "projetos/derrota.szproject.json",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46"
+    },
+    {
+      "stage": "final",
+      "file": "projetos/final.szproject.json",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2"
+    }
+  ],
+  "limits": {
+    "importBodyBytes": 2097152,
+    "sourceBytes": 16777216
+  },
+  "scope": "Schema oficial, continuidade, exemplos, orçamento de importação, critérios estruturais e sincronização de voz. Critérios de execução exigem QA de runtime separado; nenhuma publicação executada."
+}

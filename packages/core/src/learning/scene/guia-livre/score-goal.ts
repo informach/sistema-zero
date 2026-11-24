@@ -36,6 +36,20 @@ export const SCORE_GOAL_SPEECH = {
 
 export type FalaDaMeta = keyof typeof SCORE_GOAL_SPEECH
 
+/** O inventário de gravação e o player leem os mesmos números do caso. */
+export function scoreGoalSpeech(goal = 26): Readonly<Record<FalaDaMeta, string>> {
+  if (goal === 26) return SCORE_GOAL_SPEECH
+  return {
+    ...SCORE_GOAL_SPEECH,
+    'score-goal-start': `A partida está quase no fim: o placar está em ${goal - 3}, e a placa da meta diz ${goal}. Escolha o sinal da vitória e clique em Acertar uma pedra, um acerto de cada vez. Em que acerto você acha que o jogo vai dar a vitória?`,
+    'score-goal-try': `A partida recomeçou no ${goal - 3}. Com este sinal, em que acerto você acha que a vitória vem? Clique em Acertar uma pedra, um de cada vez, e compare.`,
+    'score-goal-placa-seen': `A placa continuou ${goal}: durante a partida, a meta não muda. Continue clicando em Acertar uma pedra: em que acerto vem a vitória?`,
+    'score-goal-equal': `Com maior ou igual, quando o placar chegou a ${goal}, o jogo já deu a vitória: igual à meta também vale. E com maior que, em que acerto a vitória vem? Clique em Maior que (>) e jogue de novo.`,
+    'score-goal-greater': `Com maior que, o ${goal} não deu a vitória: o placar precisou passar da meta, e ela veio no ${goal + 1}. E com maior ou igual, o que muda? Clique em Maior ou igual (≥) e jogue de novo.`,
+    'score-goal-complete': `Com maior ou igual, chegar a ${goal} já vale; com maior que, é preciso passar de ${goal}. E a placa da meta é escolhida antes do jogo e não muda durante a partida. Pode jogar de novo quando quiser.`,
+  }
+}
+
 const METAS = ['igual-conta', 'maior-pula', 'placa-fixa'] as const
 
 /**

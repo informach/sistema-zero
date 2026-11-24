@@ -93,7 +93,7 @@ export function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): Cen
     sessionId: sceneSessionId,
     segmentId: sceneSegmentId,
   }
-  const session = readExperimentSession(cena.start.scene, sceneCheckpoint)
+  const session = readExperimentSession(cena.start.scene, sceneCheckpoint, cena.start.setup)
   return session ? { checkpoint: { ...comum, session } } : null
 }
 

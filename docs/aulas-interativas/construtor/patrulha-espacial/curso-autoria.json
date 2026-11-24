@@ -1,0 +1,960 @@
+{
+  "version": 1,
+  "curso": "jornada-construtor-base-3d",
+  "prefixo": "patrulha-espacial",
+  "nome": "Patrulha Espacial",
+  "dimensao": "3d",
+  "chain": "construtor-patrulha-espacial",
+  "etapas": [
+    "inicio",
+    "disparo",
+    "origem",
+    "trajeto-tiro",
+    "limite-tiro",
+    "relogio",
+    "entrada",
+    "trajeto-asteroide",
+    "limite-asteroide",
+    "contato",
+    "contador",
+    "soma",
+    "placar",
+    "vidas",
+    "dano",
+    "retirada-batida",
+    "derrota",
+    "vitoria",
+    "completo"
+  ],
+  "etapaFinal": "completo",
+  "aulas": [
+    {
+      "slug": "aula-1",
+      "title": "Da tela ao espaço",
+      "entryStage": "inicio",
+      "entry": "A nave já se move para os lados depois de Enter. Cena, câmera, três modelos, grupos vazios, percursos, abertura, estado e telas finais estão preparados. As velocidades dos grupos ainda são zero.",
+      "outcome": "Cada aperto de Espaço cria um laser na posição lateral da nave; ele viaja pelo Z negativo e sai do grupo ao ultrapassar o limite.",
+      "trechos": [
+        {
+          "key": "abertura",
+          "title": "Conheça a Patrulha Espacial",
+          "kind": "intro",
+          "objective": "Experimentar o jogo completo e reconhecer a nova rota em três dimensões.",
+          "ponte": "Sua vez de pilotar! Clique no jogo, pressione Enter, mova com as setas e toque em Espaço para atirar. Tente acertar vinte asteroides com suas três vidas. Quando terminar, clique em Próxima parte.",
+          "text": "[upbeat, welcoming voice] Oi! Sua nave já abriu uma rota em duas dimensões. Agora você vai construir a Patrulha Espacial, com uma rota que vem lá do fundo até a nave. [curious] A missão continua sendo acertar vinte asteroides? [engaging, energetic, conversational voice] Continua! Cada asteroide acertado vale um ponto. Você tem três vidas, e uma pedra que passa sem bater na nave não tira vida. Olha como essa rota aparece no espaço. [upbeat, encouraging voice] Eu clico no jogo e pressiono Enter para começar. Seguro a seta da direita um pouquinho e solto. Agora toco uma vez em Espaço: o laser sai da nave e segue para o fundo. [engaging, energetic, conversational voice] Depois de uma vitória ou de uma derrota, o botão Voltar ao início prepara uma nova partida. Você volta à abertura e pressiona Enter para jogar de novo. [interested, animated voice] Na construção, vamos reaplicar ideias que você usou na nave em duas dimensões: acontecimentos, grupos, acertos, pontos e vidas. E vamos descobrir como escolher o lugar e o caminho das coisas nesse espaço em três dimensões. [upbeat, encouraging voice] Agora experimente você! Clique no jogo, pressione Enter e pilote. Jogue o quanto quiser. Quando terminar, clique em Próxima parte.",
+          "kids": ["A missão continua sendo acertar vinte asteroides?"],
+          "screen": "Na edição, apresentar o título sobre uma imagem do projeto completo. No \"Olha como essa rota\", ampliar o jogo [ampliar jogo]. No \"Eu clico no jogo\", dar foco [tocar jogo]. No \"pressiono Enter\", começar [tecla Enter]. No \"Seguro a seta da direita um pouquinho e solto\", mover [segurar tecla ArrowRight por 0,4 s]. No \"toco uma vez em Espaço\", disparar uma vez [tecla Space]. Na explicação do resultado, usar na edição uma imagem real da tela nativa com o botão Voltar ao início, sem uma partida inteira. No \"Agora experimente você\", voltar à aula [voltar à aula]. No \"clique em Próxima parte\", avançar [próxima parte].",
+          "steps": [
+            "Clique no jogo e pressione Enter.",
+            "Use as setas esquerda e direita para mover a nave. Cada aperto de Espaço dispara um laser.",
+            "Acerte 20 asteroides antes de perder as três vidas. Uma pedra que passa sem bater não tira vida.",
+            "No resultado, clique em Voltar ao início. Na abertura, Enter começa outra partida."
+          ],
+          "tests": ["Experimente a versão completa; não é preciso vencer para seguir."],
+          "blockLabels": [],
+          "blockTypes": []
+        },
+        {
+          "key": "seu-passo-a-passo",
+          "title": "Seu passo a passo do projeto",
+          "kind": "material",
+          "objective": "Conhecer o caderno de consulta e os caminhos de ajuda da plataforma.",
+          "ponte": "Aqui está seu Passo a passo do projeto. Você pode consultar o livro ou clicar em Baixar para guardar o PDF. Quando quiser continuar, clique em Próxima parte.",
+          "text": "[engaging, energetic, conversational voice] Este é o seu Passo a passo da Patrulha Espacial. Ele acompanha as montagens, com os blocos, os lugares de encaixar e os testes de cada parte. [upbeat, encouraging voice] Se esquecer um campo ou um encaixe, pode voltar aqui e consultar. Você pode abrir o livro na aula. Se quiser guardar o material, clique em Baixar. [engaging, energetic, conversational voice] Os links do Como fazer ajudam a usar a plataforma. Para uma dúvida sobre o seu jogo, você encontra Preciso de ajuda no fim da aula. [confident, clear, unhurried voice] Quando quiser começar a construção, clique em Próxima parte.",
+          "screen": "No \"Este é o seu Passo a passo\", apontar o livro [apontar livro]. No \"os blocos, os lugares de encaixar e os testes\", abrir e folhear uma montagem [livro tela cheia] [livro próxima]. No \"pode voltar aqui e consultar\", sair da tela cheia [livro sair da tela cheia]. No \"clique em Baixar\", baixar [baixar]. No \"Os links do Como fazer\", apontar a área de materiais [apontar \"Como usar o Estúdio\"]. No \"Preciso de ajuda\", apontar o rótulo sem enviar nada [apontar \"Preciso de ajuda\"]. No \"clique em Próxima parte\", avançar [próxima parte].",
+          "steps": [
+            "Consulte o Passo a passo do projeto quando precisar de um bloco, de um encaixe ou de um teste.",
+            "Se quiser guardar o PDF, clique em Baixar.",
+            "Use os links do Como fazer para dúvidas sobre a plataforma e Preciso de ajuda para pedir orientação sobre o jogo."
+          ],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        },
+        {
+          "key": "tres-direcoes",
+          "title": "Investigue as três direções",
+          "kind": "experience",
+          "objective": "Relacionar x, y e z ao lado, à altura e à profundidade antes de posicionar o laser.",
+          "ponte": "Volte à Ilha para investigar as três direções. O Zappy te mostra o que testar; depois você vai levar essa descoberta para o laser da Patrulha. Quando terminar, clique em Próxima parte.",
+          "text": "[engaging, energetic, conversational voice] Na nave em duas dimensões, você usou os lugares da tela para mover e disparar. Agora nossa rota tem profundidade. Pense numa caixa: uma peça pode ficar mais para um lado, mais para o fundo ou mais alta. [interested, animated voice] Na Ilha do Farol, você já encontrou esse espaço em três dimensões. Vamos voltar à ilha por um instante e investigar uma coisa de cada vez: qual número muda o lado, qual muda a altura e qual muda a profundidade? [curious] Se eu mudar a altura da nave, o tiro ainda vai encontrar o asteroide? [engaging, energetic, conversational voice] Depende de onde o tiro e o asteroide estiverem. Na nossa patrulha, eles vão viajar na mesma altura. Primeiro, vamos descobrir como reconhecer cada direção. Isso você vai testar na experiência. [upbeat, encouraging voice] O Zappy vai te mostrando o que investigar na ilha. Você pode repetir e comparar o que acontece. Depois, vamos usar essa descoberta para escolher o lugar do laser na patrulha. Quando terminar, clique em Próxima parte.",
+          "screen": "Na edição, mostrar uma caixa simples e três deslocamentos separados, sem números, botões nem resolução das descobertas. No \"Isso você vai testar na experiência\", ampliar a experiência [ampliar experiência] e deixar a cena parada, com a chave e o personagem da Ilha do Farol; não trocar a cena por uma nave. No \"O Zappy vai te mostrando\", apontar o Zappy ao lado da fala dele [apontar zappy]. No \"Quando terminar\", voltar ao tamanho da aula [voltar à aula]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Se eu mudar a altura da nave, o tiro ainda vai encontrar o asteroide?"],
+          "experience": {
+            "kind": "interactive",
+            "title": "Três direções na Ilha",
+            "required": true,
+            "instructions": "Investigue uma direção de cada vez. Mude os lugares, observe a chave e compare o que acontece. Depois, leve a descoberta para a Patrulha Espacial.",
+            "hints": [
+              "Observe o caminho da chave quando você muda apenas um número.",
+              "Compare a mesma direção para um lado e para o lado contrário.",
+              "Investigue x, y e z separadamente, aumentando e diminuindo cada um."
+            ],
+            "semPerguntaFinal": true,
+            "activity": {
+              "type": "experimentation",
+              "scene": "island-3d",
+              "setup": {
+                "goals": ["axis-x", "axis-y", "axis-z"],
+                "freeExploration": true,
+                "goalCopy": {
+                  "axis-x": {
+                    "pedido": "Investigue o x para os dois lados. O que muda no lugar da chave?"
+                  },
+                  "axis-y": {
+                    "pedido": "Investigue o y para os dois lados. O que muda no lugar da chave?"
+                  },
+                  "axis-z": {
+                    "pedido": "Investigue o z para os dois lados. O que muda no lugar da chave?"
+                  }
+                }
+              }
+            }
+          },
+          "steps": [
+            "Investigue as três direções na Ilha com o Zappy.",
+            "Compare cada mudança separadamente e pense em qual direção o laser da Patrulha vai viajar."
+          ],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        },
+        {
+          "key": "um-aperto-um-laser",
+          "title": "Um aperto, um laser",
+          "etapa": "disparo",
+          "objective": "Criar uma cópia do laser ao apertar Espaço, somente durante a partida.",
+          "kind": "build",
+          "ponte": "Programe o acontecimento do disparo. Nesta parte, o laser nasce parado no centro; o caminho vem logo depois. Teste antes e depois de Enter e clique em Verificar projeto.",
+          "text": "[upbeat, encouraging voice] Clique em Rodar de novo, no alto do Estúdio. Pressione Enter e toque em Espaço. Tá vendo? Ainda não aparece laser, porque esse acontecimento está por construir. [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Você investigou x para os lados, y para a altura e z para a profundidade. Agora vamos criar um laser parado e usar essas direções para escolher onde ele nasce. [confident, clear, unhurried voice] Encontre a área Quando acontecer. Se precisar, arraste um espaço vazio entre os blocos até ela aparecer. [confident, clear, unhurried voice] Deixe à vista um espaço livre dentro de Quando acontecer, ao lado do acontecimento de Enter. [confident, clear, unhurried voice] Abra Jogo 3D e depois Controles. Pegue Quando apertar a tecla e coloque nesse espaço. [confident, clear, unhurried voice] No campo da tecla, escolha espaço, que aparece com pular entre parênteses. O que ele vai fazer aqui depende dos blocos que você colocar dentro. [confident, clear, unhurried voice] Dentro de o acontecimento de Espaço, deixe à vista o espaço ao lado de fazer. [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. [confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer. [engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida. [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado. [confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto. [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta. [confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto. [confident, clear, unhurried voice] Solte o bloco texto em cima desse zero. [confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas. [engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta. [engaging, energetic, conversational voice] Essa pergunta usa o começo que já está no seu jogo: Enter muda o estado para jogando. Assim, Espaço só dispara depois que a partida começou. [confident, clear, unhurried voice] Deixe à vista o espaço então desse Se. [confident, clear, unhurried voice] Abra Jogo 3D e depois Grupos. Pegue Criar uma cópia e encaixe no então. [confident, clear, unhurried voice] No primeiro campo, escolha moldeTiro. No campo do grupo, escolha tiros. [confident, clear, unhurried voice] Conserve x em zero. Mude y para um e z para menos um vírgula seis. [interested, animated voice] O y deixa o laser na altura da nave. O z coloca o laser um pouco à frente dela, na direção do fundo. Ainda vamos fazer o x acompanhar a nave. [confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo de Criar uma cópia, ainda dentro do então. [confident, clear, unhurried voice] Abra Jogo 3D, depois Som. Encaixe Tocar nota abaixo da cópia. Mude a frequência para oitocentos e oitenta e a duração para sessenta. [upbeat, encouraging voice] Clique em Rodar de novo. Toque em Espaço antes de Enter: nada de laser. Agora pressione Enter e toque em Espaço uma vez. O laser aparece parado perto da frente da nave, com um som curtinho. [upbeat, encouraging voice] Segure a seta da direita um pouquinho. A nave sai do centro, e você consegue ver que o laser ficou no lugar onde nasceu. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o acontecimento usa espaço, o Se pergunta estado igual a jogando, a cópia usa moldeTiro no grupo tiros com x zero, y um e z menos um vírgula seis, e a nota está abaixo da cópia. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Clique em Rodar de novo, no alto do Estúdio. Pressione Enter e toque em Espaço. Tá vendo? Ainda não aparece laser, porque esse acontecimento está por construir.\", [rodar de novo] [tecla Enter] [tecla Space]. No \"Encontre a área Quando acontecer. Se precisar, arraste um espaço vazio entre os blocos até ela aparecer.\", [arrastar até \"Quando acontecer\"]. No \"Deixe à vista um espaço livre dentro de Quando acontecer, ao lado do acontecimento de Enter.\", [apontar abaixo de \"Quando apertar a tecla Enter\"]. No \"Abra Jogo 3D e depois Controles. Pegue Quando apertar a tecla e coloque nesse espaço.\", [abrir categoria Jogo 3D > Controles] [encaixar \"Quando apertar a tecla\" abaixo de \"Quando apertar a tecla Enter\"]. No \"No campo da tecla, escolha espaço, que aparece com pular entre parênteses. O que ele vai fazer aqui depende dos blocos que você colocar dentro.\", [trocar \"W (frente)\" por \"espaço (pular)\" em \"Quando apertar a tecla W (frente)\"]. No \"Dentro de o acontecimento de Espaço, deixe à vista o espaço ao lado de fazer.\", [apontar encaixe em \"Quando apertar a tecla espaço\"]. No \"Abra Programação e depois Lógica e Se.\", [abrir categoria Programação > Lógica & Se]. No \"Pegue o bloco Se e solte nesse espaço ao lado de fazer.\", [encaixar \"Se\" em \"Quando apertar a tecla espaço\"]. No \"Clique no x da pergunta e escolha estado.\", [trocar \"x\" por \"estado\" em \"Se valor da variável x > 0 dentro de Quando apertar a tecla espaço\"]. No \"Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.\", [trocar \">\" por \"=\" em \"Se valor da variável estado > 0 dentro de Quando apertar a tecla espaço\"]. No \"Deixe à vista o zero que está do lado direito da pergunta.\", [apontar bloco \"Se valor da variável estado = 0 dentro de Quando apertar a tecla espaço\"]. No \"Abra Programação, depois Valores, e pegue o bloco texto.\", [abrir categoria Programação > Valores]. No \"Solte o bloco texto em cima desse zero.\", [soltar \"texto\" em cima do \"0\" em \"Se valor da variável estado = 0 dentro de Quando apertar a tecla espaço\"]. No \"Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.\", [trocar \"Olá\" por \"jogando\" em \"Se valor da variável estado = texto Olá dentro de Quando apertar a tecla espaço\"]. No \"Deixe à vista o espaço então desse Se.\", [apontar encaixe em \"Se dentro de Quando apertar a tecla espaço\" no \"então\"]. No \"Abra Jogo 3D e depois Grupos. Pegue Criar uma cópia e encaixe no então.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"Criar uma cópia\" em \"Se dentro de Quando apertar a tecla espaço\" no \"então\"]. No \"No primeiro campo, escolha moldeTiro. No campo do grupo, escolha tiros.\", [trocar \"molde\" por \"moldeTiro\" em \"Criar uma cópia\"] [trocar \"inimigos\" por \"tiros\" em \"Criar uma cópia\"]. No \"Conserve x em zero. Mude y para um e z para menos um vírgula seis.\", nota de gravação manual: no bloco Criar uma cópia de moldeTiro, mudar apenas y de 0 para 1 e z de 0 para -1.6; conservar x em 0. Os três zeros não são distinguíveis pelo nome do campo no resolvedor atual.. No \"Deixe à vista o encaixe logo abaixo de Criar uma cópia, ainda dentro do então.\", [apontar abaixo de \"Criar uma cópia\"]. No \"Abra Jogo 3D, depois Som. Encaixe Tocar nota abaixo da cópia. Mude a frequência para oitocentos e oitenta e a duração para sessenta.\", [abrir categoria Jogo 3D > Som] [encaixar \"Tocar nota\" abaixo de \"Criar uma cópia\"] [trocar \"440\" por \"880\" em \"Tocar nota\"] [trocar \"200\" por \"60\" em \"Tocar nota\"]. No \"Clique em Rodar de novo. Toque em Espaço antes de Enter: nada de laser. Agora pressione Enter e toque em Espaço uma vez. O laser aparece parado perto da frente da nave, com um som curtinho.\", [rodar de novo] [tecla Space] [tecla Enter] [tecla Space] [apontar prévia]. No \"Segure a seta da direita um pouquinho. A nave sai do centro, e você consegue ver que o laser ficou no lugar onde nasceu.\", [segurar tecla ArrowRight por 0,4 s] [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Quando apertar a tecla espaço\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Quando acontecer, deixe um espaço livre visível. Em Jogo 3D → Controles, pegue Quando apertar a tecla e coloque dentro da área.",
+            "No campo da tecla, escolha espaço (pular).",
+            "Dentro de Quando apertar a tecla espaço, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.",
+            "Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.",
+            "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.",
+            "Deixe o então do Se visível. Em Jogo 3D → Grupos, encaixe Criar uma cópia de no grupo em x y z nesse então.",
+            "Escolha moldeTiro e tiros. Deixe X = 0, Y = 1 e Z = -1.6.",
+            "Deixe o encaixe abaixo da cópia visível. Em Jogo 3D → Som, encaixe Tocar nota abaixo dela. Use frequência 880 Hz e duração 60 ms."
+          ],
+          "tests": [
+            "Rodar de novo. Antes de Enter, Espaço não cria laser.",
+            "Depois de Enter, um aperto de Espaço cria um laser parado e toca uma nota curta.",
+            "Mova a nave para o lado; o primeiro laser permanece perto do centro."
+          ],
+          "blockLabels": [
+            "Quando apertar a tecla espaço (pular)",
+            "Se estado = jogando",
+            "Criar uma cópia de moldeTiro no grupo tiros em x 0 y 1 z -1.6",
+            "Tocar nota 880 Hz por 60 ms"
+          ],
+          "blockTypes": [
+            "sz_g3d_on_key",
+            "sz_js_if_else",
+            "sz_val_compare",
+            "sz_val_variable",
+            "sz_val_text",
+            "sz_g3d_spawn_copy",
+            "sz_g3d_play_note"
+          ]
+        },
+        {
+          "key": "laser-segue-a-nave",
+          "title": "O laser nasce na nave",
+          "etapa": "origem",
+          "objective": "Usar a posição X atual da nave como origem lateral de cada disparo.",
+          "kind": "build",
+          "ponte": "Troque o X fixo pela posição X da nave. Mova para um lado, dispare e compare. Depois, clique em Verificar projeto.",
+          "text": "[engaging, energetic, conversational voice] Seu laser já nasce quando você aperta Espaço. Só que ele sempre nasce no centro, mesmo quando a nave está ao lado. Vamos usar a posição da nave para escolher o lugar de cada novo laser. [curious] Ele precisa acompanhar a nave mesmo depois de sair? [engaging, energetic, conversational voice] Ele pega o lugar da nave no momento do disparo. Depois, segue o próprio caminho. É como soltar uma bolinha: ela sai de onde sua mão está naquele momento. [confident, clear, unhurried voice] Em Quando acontecer, encontre Criar uma cópia de moldeTiro dentro do acontecimento de Espaço. Deixe o zero do x à vista. [confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e Posição, giro e tamanho. Pegue posição x do objeto. [confident, clear, unhurried voice] Solte esse bloco em cima do zero do x da cópia. [confident, clear, unhurried voice] Conserve o eixo em x. No objeto, escolha nave. [interested, animated voice] Agora o x da cópia lê o x da nave. O y continua um, e o z continua menos um vírgula seis. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Segure a seta da direita um pouquinho, solte e toque em Espaço. O laser nasce na nova posição lateral da nave. [upbeat, encouraging voice] Mova a nave para a esquerda e dispare de novo. Você criou lasers em dois lugares diferentes. Eles ainda ficam parados; a próxima parte cuida do caminho. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco posição x do objeto nave ocupa o x da cópia de moldeTiro, e y e z continuam um e menos um vírgula seis. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Quando acontecer, encontre Criar uma cópia de moldeTiro dentro do acontecimento de Espaço. Deixe o zero do x à vista.\", [arrastar até \"Quando apertar a tecla espaço\"] [apontar bloco \"Criar uma cópia de moldeTiro\"]. No \"Abra Jogo 3D, depois Objetos e Posição, giro e tamanho. Pegue posição x do objeto.\", [abrir categoria Jogo 3D > Objetos > Posição, giro e tamanho]. No \"Solte esse bloco em cima do zero do x da cópia.\", [soltar \"posição x do objeto\" em cima do \"0\" em \"Criar uma cópia de moldeTiro\"]. No \"Conserve o eixo em x. No objeto, escolha nave.\", [trocar \"jogador\" por \"nave\" em \"posição x do objeto dentro de Criar uma cópia de moldeTiro\"]. No \"Clique em Rodar de novo e pressione Enter. Segure a seta da direita um pouquinho, solte e toque em Espaço. O laser nasce na nova posição lateral da nave.\", [rodar de novo] [tecla Enter] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia]. No \"Mova a nave para a esquerda e dispare de novo. Você criou lasers em dois lugares diferentes. Eles ainda ficam parados; a próxima parte cuida do caminho.\", [segurar tecla ArrowLeft por 0,7 s] [tecla Space] [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Criar uma cópia de moldeTiro\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Ele precisa acompanhar a nave mesmo depois de sair?"],
+          "steps": [
+            "Em Quando acontecer, encontre a cópia do moldeTiro no evento Espaço e deixe o campo X visível.",
+            "Em Jogo 3D → Objetos → Posição, giro e tamanho, pegue posição x do objeto e solte sobre o 0 do X dessa cópia.",
+            "No bloco de posição, use eixo x e objeto nave. Conserve Y = 1 e Z = -1.6 na cópia."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Mova para a direita, solte e aperte Espaço: o laser nasce no X atual da nave.",
+            "Mova para a esquerda e aperte Espaço outra vez: o novo laser nasce no novo X. Os lasers anteriores não acompanham a nave."
+          ],
+          "blockLabels": [
+            "posição x do objeto nave",
+            "Criar uma cópia de moldeTiro no grupo tiros"
+          ],
+          "blockTypes": ["sz_g3d_get_pos"]
+        },
+        {
+          "key": "laser-em-profundidade",
+          "title": "O laser segue para o fundo",
+          "etapa": "trajeto-tiro",
+          "objective": "Escolher a velocidade negativa em Z para o grupo de tiros.",
+          "kind": "build",
+          "ponte": "Mude a velocidade preparada dos tiros para -22. Teste um disparo depois de mover a nave e observe o caminho pelo fundo da cena.",
+          "text": "[engaging, energetic, conversational voice] O laser já nasce na nave. Agora ele precisa percorrer a rota. Na investigação da Ilha, você viu que z muda a profundidade. Neste jogo, seguir da nave para o fundo é diminuir o z. [confident, clear, unhurried voice] Encontre Ao iniciar e procure Criar variável velocidadeTiros com valor zero. [confident, clear, unhurried voice] No valor dessa variável, troque zero por menos vinte e dois. [interested, animated voice] O percurso preparado lê esse valor para movimentar cada tiro no eixo z. O sinal de menos escolhe a direção do fundo. O tamanho do número escolhe a rapidez. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Mova a nave um pouquinho e toque em Espaço. O laser nasce na frente dela e viaja para o fundo. [upbeat, encouraging voice] Aperte e solte Espaço algumas vezes. Cada aperto cria seu próprio laser, e todos seguem a mesma direção. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: velocidadeTiros começa com menos vinte e dois em Ao iniciar, e o disparo continua usando a posição x da nave. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Ao iniciar e procure Criar variável velocidadeTiros com valor zero.\", [arrastar até \"Ao iniciar\"] [apontar bloco \"Criar variável velocidadeTiros\"]. No \"No valor dessa variável, troque zero por menos vinte e dois.\", [trocar \"0\" por \"-22\" em \"Criar variável velocidadeTiros\"]. No \"Clique em Rodar de novo e pressione Enter. Mova a nave um pouquinho e toque em Espaço. O laser nasce na frente dela e viaja para o fundo.\", [rodar de novo] [tecla Enter] [segurar tecla ArrowRight por 0,3 s] [tecla Space] [apontar prévia]. No \"Aperte e solte Espaço algumas vezes. Cada aperto cria seu próprio laser, e todos seguem a mesma direção.\", [tecla Space] [tecla Space] [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Criar variável velocidadeTiros\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Ao iniciar, encontre Criar variável velocidadeTiros com valor 0.",
+            "Troque apenas o valor 0 por -22. Conserve o nome velocidadeTiros."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Mova a nave e aperte Espaço: o laser viaja para o fundo, pelo Z negativo.",
+            "Aperte e solte Espaço mais de uma vez. Cada aperto cria um novo laser."
+          ],
+          "blockLabels": ["Criar variável velocidadeTiros com valor -22"],
+          "blockTypes": ["sz_js_var_create"]
+        },
+        {
+          "key": "fim-do-caminho-do-laser",
+          "title": "O laser tem um fim de caminho",
+          "etapa": "limite-tiro",
+          "objective": "Retirar do grupo os lasers que ultrapassaram os limites de profundidade.",
+          "kind": "delivery",
+          "ponte": "Defina o intervalo de profundidade do grupo tiros. Teste a sequência de disparo e envie a primeira versão da sua patrulha.",
+          "text": "[engaging, energetic, conversational voice] O laser já vai para o fundo. Só sair da nossa vista não retira o objeto do jogo. Vamos dar um fim ao caminho dele, como você fez com os objetos que saíam da tela no jogo em duas dimensões. [confident, clear, unhurried voice] Encontre Enquanto estiver rodando e o bloco A cada quadro da cena. Dentro dele, procure o Se que pergunta estado igual a jogando. [confident, clear, unhurried voice] Desça até o final das ações desse Se. Deixe à vista o encaixe depois dos percursos dos grupos, ainda dentro do então. [confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue No grupo inimigos, tirar quem saiu e encaixe nesse lugar. [confident, clear, unhurried voice] Escolha o grupo tiros. No primeiro limite, escreva menos trinta e seis. No segundo, escreva três. No eixo, escolha Z. [interested, animated voice] O tiro nasce em z menos um vírgula seis. Ele continua no grupo enquanto fica entre menos trinta e seis e três. Depois que passa do limite lá do fundo, o bloco o retira. [upbeat, encouraging voice] Clique em Rodar de novo. Antes de Enter, toque em Espaço: não deve sair laser. Depois de Enter, mova a nave, solte a seta e dispare. [upbeat, encouraging voice] Veja o laser nascer na nave e seguir até o fundo. Espere um pouquinho e dispare outra vez. O novo laser funciona normalmente. A imagem mostra o caminho; o botão Verificar projeto também confere se o laser antigo foi retirado do grupo. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o limite do grupo tiros está dentro do Se de jogando, no fim do quadro, com menos trinta e seis, três e eixo Z. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] Você construiu o disparo da patrulha: cada laser nasce na nave, viaja pelo espaço e termina o caminho! [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Enquanto estiver rodando e o bloco A cada quadro da cena. Dentro dele, procure o Se que pergunta estado igual a jogando.\", [arrastar até \"Enquanto estiver rodando\"] [apontar bloco \"A cada quadro da cena\"]. No \"Desça até o final das ações desse Se. Deixe à vista o encaixe depois dos percursos dos grupos, ainda dentro do então.\", [apontar abaixo de \"Para cada objeto asteroide do grupo asteroides abaixo de Mover o grupo asteroides\"]. No \"Abra Jogo 3D e Grupos. Pegue No grupo inimigos, tirar quem saiu e encaixe nesse lugar.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"No grupo inimigos, tirar quem saiu\" abaixo de \"Para cada objeto asteroide do grupo asteroides abaixo de Mover o grupo asteroides\"]. No \"Escolha o grupo tiros. No primeiro limite, escreva menos trinta e seis. No segundo, escreva três. No eixo, escolha Z.\", [trocar \"inimigos\" por \"tiros\" em \"No grupo inimigos, tirar quem saiu\"] [trocar \"-20\" por \"-36\" em \"No grupo tiros, tirar quem saiu\"] [trocar \"20\" por \"3\" em \"No grupo tiros, tirar quem saiu\"] [trocar \"↔ X\" por \"↗ Z\" em \"No grupo tiros, tirar quem saiu\"]. No \"Clique em Rodar de novo. Antes de Enter, toque em Espaço: não deve sair laser. Depois de Enter, mova a nave, solte a seta e dispare.\", [rodar de novo] [tecla Space] [tecla Enter] [segurar tecla ArrowRight por 0,3 s] [tecla Space]. No \"Veja o laser nascer na nave e seguir até o fundo. Espere um pouquinho e dispare outra vez. O novo laser funciona normalmente. A imagem mostra o caminho; o botão Verificar projeto também confere se o laser antigo foi retirado do grupo.\", [apontar prévia] nota de edição: manter a prévia por três segundos [tecla Space]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"No grupo tiros, tirar quem saiu\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto\", clicar em **Enviar meu projeto** [clicar \"Enviar meu projeto\"]. No \"e confirme em Enviar\", confirmar em **Enviar**, na janela que abriu [clicar \"Enviar\"]. No \"Você construiu o disparo da patrulha: cada laser nasce na nave, viaja pelo espaço e termina o caminho!\", voltar ao tamanho da aula [reduzir estúdio]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", clicar em **Concluir aula** [concluir aula].",
+          "kids": [],
+          "steps": [
+            "Em Enquanto estiver rodando → A cada quadro da cena → Se estado = jogando, deixe visível o último encaixe do então, depois dos percursos.",
+            "Em Jogo 3D → Grupos, pegue No grupo inimigos, tirar quem saiu e encaixe no final desse então.",
+            "Escolha grupo tiros, limites -36 e 3 e eixo Z."
+          ],
+          "tests": [
+            "Antes de Enter, Espaço não dispara.",
+            "Depois de Enter, mova e dispare. O laser nasce no X da nave e segue para o fundo.",
+            "Espere pelo menos dois segundos. Verificar projeto também confere que o laser saiu do grupo; ele não apenas ficou fora da imagem."
+          ],
+          "blockLabels": ["No grupo tiros, tirar quem saiu de -36 a 3 no eixo Z"],
+          "blockTypes": ["sz_g3d_prune_area"]
+        }
+      ]
+    },
+    {
+      "slug": "aula-2",
+      "title": "Asteroides na rota",
+      "entryStage": "limite-tiro",
+      "entry": "Os lasers nascem no X da nave, viajam com velocidade Z -22 e são retirados depois do limite. O grupo asteroides ainda está vazio.",
+      "outcome": "Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.",
+      "trechos": [
+        {
+          "key": "relogio-dos-asteroides",
+          "title": "Um asteroide a cada intervalo",
+          "etapa": "relogio",
+          "objective": "Usar um intervalo para criar asteroides somente durante a partida.",
+          "kind": "build",
+          "ponte": "Monte o relógio dos asteroides. Primeiro a pedra vai nascer parada lá no fundo. Confira que o relógio espera o começo da partida.",
+          "text": "[engaging, energetic, conversational voice] Seu laser já atravessa o espaço. Agora vamos colocar asteroides na rota. Você já usou um intervalo para isso no jogo em duas dimensões. Aqui o relógio também vai criar uma cópia de cada vez. [curious] Se eu colocar a cópia em cada quadro, não aparece mais rápido? [engaging, energetic, conversational voice] Aparece muitas vezes em um segundo, e a rota fica cheia de uma vez. Nosso intervalo deixa um tempo entre uma pedra e outra. Vamos começar com uma pedra parada, para conferir o lugar onde ela nasce. [confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Deixe à vista um espaço dentro dela, depois de A cada quadro da cena e fora de tudo que está dentro desse bloco. [confident, clear, unhurried voice] Abra Jogo 3D, depois Tempo e sorteio e Tempo. Pegue A cada 2 segundos e coloque nesse espaço. [confident, clear, unhurried voice] Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio. [confident, clear, unhurried voice] Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer. [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. [confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer. [engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida. [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado. [confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto. [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta. [confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto. [confident, clear, unhurried voice] Solte o bloco texto em cima desse zero. [confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas. [engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta. [confident, clear, unhurried voice] Deixe o espaço então desse Se à vista. [confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Encaixe Criar uma cópia no então. [confident, clear, unhurried voice] Escolha moldeAsteroide no primeiro campo e asteroides no grupo. Deixe x em zero. Mude y para um e z para menos vinte e oito. [interested, animated voice] A pedra nasce bem mais ao fundo que o laser. O y é um nos dois: eles vão passar pela mesma altura. Por enquanto, as cópias ficam paradas no mesmo lugar. [upbeat, encouraging voice] Clique em Rodar de novo e espere um pouco na abertura. Nenhuma pedra deve aparecer. Pressione Enter e espere dois segundos. Um asteroide aparece no centro, lá no fundo. [engaging, energetic, conversational voice] As próximas cópias ficam sobrepostas nesse mesmo lugar. Na próxima parte, você vai espalhar os lugares de entrada para conseguir distinguir as pedras. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o relógio está fora de A cada quadro, usa um vírgula cinco segundos, pergunta se está jogando e cria moldeAsteroide no grupo asteroides com x zero, y um e z menos vinte e oito. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre a área Enquanto estiver rodando. Deixe à vista um espaço dentro dela, depois de A cada quadro da cena e fora de tudo que está dentro desse bloco.\", [arrastar até \"Enquanto estiver rodando\"] [apontar abaixo de \"A cada quadro da cena\"]. No \"Abra Jogo 3D, depois Tempo e sorteio e Tempo. Pegue A cada 2 segundos e coloque nesse espaço.\", [abrir categoria Jogo 3D > Tempo e sorteio > Tempo] [encaixar \"A cada 2 segundos\" abaixo de \"A cada quadro da cena\"]. No \"Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio.\", [trocar \"2\" por \"1.5\" em \"A cada 2 segundos\"]. No \"Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer.\", [apontar encaixe em \"A cada 1.5 segundos\"]. No \"Abra Programação e depois Lógica e Se.\", [abrir categoria Programação > Lógica & Se]. No \"Pegue o bloco Se e solte nesse espaço ao lado de fazer.\", [encaixar \"Se\" em \"A cada 1.5 segundos\"]. No \"Clique no x da pergunta e escolha estado.\", [trocar \"x\" por \"estado\" em \"Se valor da variável x > 0 dentro de A cada 1.5 segundos\"]. No \"Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.\", [trocar \">\" por \"=\" em \"Se valor da variável estado > 0 dentro de A cada 1.5 segundos\"]. No \"Deixe à vista o zero que está do lado direito da pergunta.\", [apontar bloco \"Se valor da variável estado = 0 dentro de A cada 1.5 segundos\"]. No \"Abra Programação, depois Valores, e pegue o bloco texto.\", [abrir categoria Programação > Valores]. No \"Solte o bloco texto em cima desse zero.\", [soltar \"texto\" em cima do \"0\" em \"Se valor da variável estado = 0 dentro de A cada 1.5 segundos\"]. No \"Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.\", [trocar \"Olá\" por \"jogando\" em \"Se valor da variável estado = texto Olá dentro de A cada 1.5 segundos\"]. No \"Deixe o espaço então desse Se à vista.\", [apontar encaixe em \"Se dentro de A cada 1.5 segundos\" no \"então\"]. No \"Abra Jogo 3D e Grupos. Encaixe Criar uma cópia no então.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"Criar uma cópia\" em \"Se dentro de A cada 1.5 segundos\" no \"então\"]. No \"Escolha moldeAsteroide no primeiro campo e asteroides no grupo. Deixe x em zero. Mude y para um e z para menos vinte e oito.\", [trocar \"molde\" por \"moldeAsteroide\" em \"Criar uma cópia dentro de A cada 1.5 segundos\"] [trocar \"inimigos\" por \"asteroides\" em \"Criar uma cópia dentro de A cada 1.5 segundos\"] nota de gravação manual: trocar \"0\" por \"1\" em \"y de Criar uma cópia de moldeAsteroide\"; escolher visualmente o campo nomeado, conservando x nota de gravação manual: trocar \"0\" por \"-28\" em \"z de Criar uma cópia de moldeAsteroide\"; escolher visualmente o campo nomeado, conservando x. No \"Clique em Rodar de novo e espere um pouco na abertura. Nenhuma pedra deve aparecer. Pressione Enter e espere dois segundos. Um asteroide aparece no centro, lá no fundo.\", [rodar de novo] nota de edição: aguardar dois segundos na abertura [tecla Enter] nota de edição: aguardar dois segundos [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"A cada 1.5 segundos\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Se eu colocar a cópia em cada quadro, não aparece mais rápido?"],
+          "steps": [
+            "Em Enquanto estiver rodando, deixe visível o encaixe depois de A cada quadro da cena, fora do fazer desse bloco.",
+            "Em Jogo 3D → Tempo e sorteio → Tempo, pegue A cada 2 segundos e encaixe nesse lugar. Troque 2 por 1.5.",
+            "Dentro de A cada 1.5 segundos, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.",
+            "Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.",
+            "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.",
+            "Deixe o então do Se visível. Em Jogo 3D → Grupos, encaixe Criar uma cópia nesse então.",
+            "Escolha moldeAsteroide e grupo asteroides. Use x = 0, y = 1 e z = -28."
+          ],
+          "tests": [
+            "Rodar de novo. Espere dois segundos antes de Enter: não deve surgir asteroide.",
+            "Pressione Enter e espere dois segundos. Aparece uma pedra parada no centro do fundo.",
+            "As cópias seguintes ainda se sobrepõem; isso é esperado nesta etapa."
+          ],
+          "blockLabels": [
+            "A cada 1.5 segundos",
+            "Se estado = jogando",
+            "Criar uma cópia de moldeAsteroide no grupo asteroides em x 0 y 1 z -28"
+          ],
+          "blockTypes": [
+            "sz_g3d_every_seconds",
+            "sz_js_if_else",
+            "sz_val_compare",
+            "sz_val_variable",
+            "sz_val_text",
+            "sz_g3d_spawn_copy"
+          ]
+        },
+        {
+          "key": "lugares-de-entrada",
+          "title": "Uma faixa para as entradas",
+          "etapa": "entrada",
+          "objective": "Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulha.",
+          "kind": "build",
+          "ponte": "Use a receita de posição: número aleatório × 10.4 − 5.2. Ela escolhe o X das novas pedras dentro da rota. Conserve Y = 1 e Z = -28.",
+          "text": "[engaging, energetic, conversational voice] As pedras estão nascendo todas no centro. Vamos escolher lugares diferentes dentro da faixa que a nave consegue alcançar. Para isso, você vai usar uma receita de posição que já vem definida para esta rota. [interested, animated voice] A receita pega um número sorteado, multiplica por dez vírgula quatro e tira cinco vírgula dois. Ela entrega um lugar entre a borda esquerda e a borda direita. Você vai montá-la no x da cópia. [confident, clear, unhurried voice] No relógio de um segundo e meio, encontre Criar uma cópia de moldeAsteroide. Deixe o zero do x à vista. [confident, clear, unhurried voice] Abra Programação e Matemática. Pegue o bloco de conta que aparece com zero mais zero e solte em cima do zero do x. [confident, clear, unhurried voice] Nesse bloco de conta, mude o sinal de mais para menos. No número da direita, escreva cinco vírgula dois. [confident, clear, unhurried voice] Deixe visível o zero que ficou à esquerda do sinal de menos. Pegue outro bloco zero mais zero em Matemática e solte em cima desse zero da esquerda. [confident, clear, unhurried voice] No bloco que você acabou de colocar, troque o mais pelo sinal de multiplicar. No número à direita desse sinal, escreva dez vírgula quatro. [confident, clear, unhurried voice] Deixe visível o zero à esquerda da multiplicação. Abra Programação e Valores. Pegue número aleatório, de zero a um, e solte em cima desse zero. [engaging, energetic, conversational voice] Leia de dentro para fora: número aleatório vezes dez vírgula quatro, menos cinco vírgula dois. Tudo isso está no x. O y continua um, e o z continua menos vinte e oito. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Espere surgirem algumas pedras. Elas continuam paradas lá no fundo, mas agora aparecem em lugares diferentes da faixa. [engaging, energetic, conversational voice] Sorteios podem dar lugares próximos. Não precisa aparecer uma pedra exatamente em cada borda. Na próxima parte, todas vão começar a se aproximar. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o x da cópia tem número aleatório vezes dez vírgula quatro, menos cinco vírgula dois, e os campos y e z continuam um e menos vinte e oito. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"No relógio de um segundo e meio, encontre Criar uma cópia de moldeAsteroide. Deixe o zero do x à vista.\", [arrastar até \"Criar uma cópia de moldeAsteroide\"] [apontar bloco \"Criar uma cópia de moldeAsteroide\"]. No \"Abra Programação e Matemática. Pegue o bloco de conta que aparece com zero mais zero e solte em cima do zero do x.\", [abrir categoria Programação > Matemática] [soltar \"0 + 0\" em cima do \"0\" em \"Criar uma cópia de moldeAsteroide\"]. No \"Nesse bloco de conta, mude o sinal de mais para menos. No número da direita, escreva cinco vírgula dois.\", [trocar \"+\" por \"−\" em \"Criar uma cópia de moldeAsteroide\"] nota de gravação manual: trocar \"0\" por \"5.2\" em \"lado direito da conta do x\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Deixe visível o zero que ficou à esquerda do sinal de menos. Pegue outro bloco zero mais zero em Matemática e solte em cima desse zero da esquerda.\", [apontar bloco \"Criar uma cópia de moldeAsteroide\"] [abrir categoria Programação > Matemática] nota de gravação manual: soltar \"0 + 0\" em cima do \"0\" em \"lado esquerdo da conta do x\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"No bloco que você acabou de colocar, troque o mais pelo sinal de multiplicar. No número à direita desse sinal, escreva dez vírgula quatro.\", [trocar \"+\" por \"×\" em \"Criar uma cópia de moldeAsteroide\"] nota de gravação manual: trocar \"0\" por \"10.4\" em \"lado direito da multiplicação\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Deixe visível o zero à esquerda da multiplicação. Abra Programação e Valores. Pegue número aleatório, de zero a um, e solte em cima desse zero.\", [apontar bloco \"Criar uma cópia de moldeAsteroide\"] [abrir categoria Programação > Valores] nota de gravação manual: soltar \"número aleatório (0 a 1)\" em cima do \"0\" em \"lado esquerdo da multiplicação\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Clique em Rodar de novo e pressione Enter. Espere surgirem algumas pedras. Elas continuam paradas lá no fundo, mas agora aparecem em lugares diferentes da faixa.\", [rodar de novo] [tecla Enter] nota de edição: aguardar sete segundos [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Criar uma cópia de moldeAsteroide\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "No relógio A cada 1.5 segundos, deixe visível o X da cópia de moldeAsteroide.",
+            "Em Programação → Matemática, pegue 0 + 0 e solte sobre o 0 do X. Mude + para − e o número direito para 5.2.",
+            "Deixe visível o 0 à esquerda da subtração. Pegue outro 0 + 0 e solte sobre esse 0.",
+            "No bloco de dentro, mude + para × e o número direito para 10.4.",
+            "Deixe visível o 0 à esquerda da multiplicação. Em Programação → Valores, pegue número aleatório (0 a 1) e solte sobre esse 0.",
+            "Confira X = (número aleatório × 10.4) − 5.2, Y = 1 e Z = -28."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Espere sete segundos para observar algumas entradas.",
+            "Os asteroides surgem parados em lugares diferentes dentro da faixa lateral. Lugares próximos também são possíveis."
+          ],
+          "blockLabels": [
+            "número aleatório (0 a 1)",
+            "número aleatório × 10.4 − 5.2",
+            "Criar uma cópia de moldeAsteroide no grupo asteroides"
+          ],
+          "blockTypes": ["sz_math_arithmetic", "sz_val_random_float"]
+        },
+        {
+          "key": "asteroides-se-aproximam",
+          "title": "Os asteroides vêm até a nave",
+          "etapa": "trajeto-asteroide",
+          "objective": "Definir a velocidade positiva em Z para aproximar os asteroides.",
+          "kind": "build",
+          "ponte": "Defina velocidadeAsteroides como 7. Compare o caminho das pedras com o caminho dos lasers e confira o que muda.",
+          "text": "[engaging, energetic, conversational voice] Os asteroides já entram em lugares diferentes, mas continuam parados. O laser vai da nave para o fundo diminuindo z. A pedra vai fazer o caminho contrário, do fundo para perto da nave. [curious] O z da pedra precisa aumentar? [engaging, energetic, conversational voice] Isso! Ela começa em menos vinte e oito e se aproxima de zero, onde está a nave. Vamos escolher uma velocidade positiva para esse caminho. [confident, clear, unhurried voice] Encontre Ao iniciar e o bloco Criar variável velocidadeAsteroides com valor zero. [confident, clear, unhurried voice] Troque o valor zero por sete. Conserve o nome da variável. [interested, animated voice] O percurso preparado aplica essa velocidade a cada asteroide. O sinal positivo faz a pedra seguir em direção à nave. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Espere uma pedra aparecer lá no fundo e aperte Espaço uma vez. Agora ela vem para perto, enquanto o laser vai para longe. [upbeat, encouraging voice] Mova a nave para um lado e deixe uma pedra passar. Ela continua o caminho depois da nave. Vamos definir o fim desse caminho na próxima parte. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: velocidadeAsteroides começa com sete em Ao iniciar, e velocidadeTiros continua menos vinte e dois. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Ao iniciar e o bloco Criar variável velocidadeAsteroides com valor zero.\", [arrastar até \"Ao iniciar\"] [apontar bloco \"Criar variável velocidadeAsteroides\"]. No \"Troque o valor zero por sete. Conserve o nome da variável.\", [trocar \"0\" por \"7\" em \"Criar variável velocidadeAsteroides\"]. No \"Clique em Rodar de novo e pressione Enter. Espere uma pedra aparecer lá no fundo e aperte Espaço uma vez. Agora ela vem para perto, enquanto o laser vai para longe.\", [rodar de novo] [tecla Enter] nota de edição: aguardar três segundos [tecla Space] [apontar prévia]. No \"Mova a nave para um lado e deixe uma pedra passar. Ela continua o caminho depois da nave. Vamos definir o fim desse caminho na próxima parte.\", [segurar tecla ArrowRight por 0,6 s] nota de edição: aguardar três segundos [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Criar variável velocidadeAsteroides\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["O z da pedra precisa aumentar?"],
+          "steps": [
+            "Em Ao iniciar, encontre Criar variável velocidadeAsteroides com valor 0.",
+            "Troque 0 por 7. Não mude velocidadeTiros, que continua -22."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. As pedras aparecem no fundo e se aproximam da nave pelo Z positivo.",
+            "Dispare: o laser e o asteroide viajam em direções opostas.",
+            "Afaste a nave e deixe uma pedra passar. Nesta etapa, ela ainda continua além da rota."
+          ],
+          "blockLabels": ["Criar variável velocidadeAsteroides com valor 7"],
+          "blockTypes": ["sz_js_var_create"]
+        },
+        {
+          "key": "fim-da-rota",
+          "title": "A pedra sai depois de passar",
+          "etapa": "limite-asteroide",
+          "objective": "Retirar asteroides que ultrapassam o fim da rota, conservando o intervalo dos tiros.",
+          "kind": "delivery",
+          "ponte": "Defina o limite dos asteroides no eixo Z. Teste as duas direções e envie sua rota com lasers e pedras em movimento.",
+          "text": "[engaging, energetic, conversational voice] Agora a rota tem movimento nos dois sentidos. A pedra que passou pela nave também precisa sair do grupo. Seu limite vai ficar um pouco depois da nave. [confident, clear, unhurried voice] Em Enquanto estiver rodando, encontre No grupo tiros, tirar quem saiu. Esse bloco está no final do Se de jogando, dentro de A cada quadro da cena. [confident, clear, unhurried voice] Deixe visível o encaixe logo abaixo dele, ainda dentro do mesmo então. [confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue outro No grupo inimigos, tirar quem saiu e encaixe nesse lugar. [confident, clear, unhurried voice] No novo bloco, escolha asteroides. Mude o primeiro limite para menos trinta e seis e o segundo para seis. Escolha o eixo Z. [interested, animated voice] A pedra nasce em z menos vinte e oito, passa perto de zero e sai quando ultrapassa seis. A regra só retira a pedra. Passar pela rota não tira vida. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Observe alguns asteroides se aproximarem e deixe um passar, movendo a nave para o lado. Ele termina o caminho depois da nave. [upbeat, encouraging voice] Dispare também. Os lasers continuam indo para o fundo e terminando o próprio caminho. Ainda falta programar o que acontece quando um laser encosta numa pedra; essa será sua próxima construção. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois limites ficam dentro do Se de jogando no fim do quadro: tiros de menos trinta e seis a três, asteroides de menos trinta e seis a seis, ambos no eixo Z. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] Você construiu a rota: asteroides entram no tempo certo, vêm do fundo e saem depois de passar! [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Enquanto estiver rodando, encontre No grupo tiros, tirar quem saiu. Esse bloco está no final do Se de jogando, dentro de A cada quadro da cena.\", [arrastar até \"No grupo tiros, tirar quem saiu\"]. No \"Deixe visível o encaixe logo abaixo dele, ainda dentro do mesmo então.\", [apontar abaixo de \"No grupo tiros, tirar quem saiu\"]. No \"Abra Jogo 3D e Grupos. Pegue outro No grupo inimigos, tirar quem saiu e encaixe nesse lugar.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"No grupo inimigos, tirar quem saiu\" abaixo de \"No grupo tiros, tirar quem saiu\"]. No \"No novo bloco, escolha asteroides. Mude o primeiro limite para menos trinta e seis e o segundo para seis. Escolha o eixo Z.\", [trocar \"inimigos\" por \"asteroides\" em \"No grupo inimigos, tirar quem saiu abaixo de No grupo tiros\"] [trocar \"-20\" por \"-36\" em \"No grupo asteroides, tirar quem saiu\"] [trocar \"20\" por \"6\" em \"No grupo asteroides, tirar quem saiu\"] [trocar \"↔ X\" por \"↗ Z\" em \"No grupo asteroides, tirar quem saiu\"]. No \"Clique em Rodar de novo e pressione Enter. Observe alguns asteroides se aproximarem e deixe um passar, movendo a nave para o lado. Ele termina o caminho depois da nave.\", [rodar de novo] [tecla Enter] [segurar tecla ArrowRight por 0,6 s] nota de edição: observar a rota por seis segundos [apontar prévia]. No \"Dispare também. Os lasers continuam indo para o fundo e terminando o próprio caminho. Ainda falta programar o que acontece quando um laser encosta numa pedra; essa será sua próxima construção.\", [tecla Space] [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"No grupo tiros, tirar quem saiu\", \"No grupo asteroides, tirar quem saiu\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto\", clicar em **Enviar meu projeto** [clicar \"Enviar meu projeto\"]. No \"e confirme em Enviar\", confirmar em **Enviar**, na janela que abriu [clicar \"Enviar\"]. No \"Você construiu a rota: asteroides entram no tempo certo, vêm do fundo e saem depois de passar!\", voltar ao tamanho da aula [reduzir estúdio]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", clicar em **Concluir aula** [concluir aula].",
+          "kids": [],
+          "steps": [
+            "No final de A cada quadro da cena → Se estado = jogando, encontre o limite do grupo tiros.",
+            "Deixe o encaixe abaixo dele visível. Em Jogo 3D → Grupos, encaixe outro No grupo inimigos, tirar quem saiu.",
+            "No novo bloco, escolha grupo asteroides, limites -36 e 6 e eixo Z. Conserve o limite dos tiros em -36 a 3."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. As pedras surgem na faixa, aproximam-se e saem depois de passar pela nave.",
+            "Dispare; os lasers seguem no sentido contrário e também terminam o caminho.",
+            "Um laser ainda pode atravessar a pedra sem removê-la. O contato será construído na aula seguinte."
+          ],
+          "blockLabels": ["No grupo asteroides, tirar quem saiu de -36 a 6 no eixo Z"],
+          "blockTypes": ["sz_g3d_prune_area"]
+        }
+      ]
+    },
+    {
+      "slug": "aula-3",
+      "title": "Acertar no espaço",
+      "entryStage": "limite-asteroide",
+      "entry": "Tiros e asteroides percorrem a rota e saem dos grupos ao passar dos limites. Ainda não há resposta ao contato nem contador de pontos.",
+      "outcome": "Um contato real retira o par envolvido, consome o alvo uma única vez e soma um ponto. O placar começa em zero e mostra cada acerto.",
+      "trechos": [
+        {
+          "key": "encontro-no-espaco",
+          "title": "Parecer junto ou encostar?",
+          "kind": "experience",
+          "objective": "Distinguir sobreposição da imagem e contato real entre objetos em três dimensões.",
+          "ponte": "Observe o encontro da chave com o personagem na Ilha. Descubra quando eles só parecem juntos e quando realmente encostam. Depois você vai levar essa ideia para o laser e o asteroide.",
+          "text": "[engaging, energetic, conversational voice] Imagine olhar uma ponte de cima. Um carrinho na ponte pode parecer em cima de outro carrinho que está na rua lá embaixo. Mas existe um espaço entre eles. Eles não bateram. [interested, animated voice] No jogo em três dimensões, uma imagem também pode dar essa impressão. Para acertar um asteroide, o laser precisa encontrar o asteroide no espaço. Parecer que os desenhos se cruzaram na tela não basta. [curious] Então duas coisas podem parecer juntas e ainda estar separadas? [engaging, energetic, conversational voice] Podem! Vamos voltar à Ilha do Farol e observar a chave e o personagem de outro lugar. Isso você vai testar na experiência. [upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Compare a separação e o encontro de verdade. Depois, você vai usar essa diferença para programar o acerto do laser na patrulha. Quando terminar, clique em Próxima parte.",
+          "screen": "Na edição, ilustrar os dois carrinhos em alturas diferentes, sem mostrar a solução da experiência. No \"Isso você vai testar na experiência\", ampliar a experiência [ampliar experiência] e deixar a cena parada, com a chave e o personagem da Ilha; a fala de Zappy continua sendo a investigação original do encontro da chave. No \"O Zappy vai te mostrando\", apontar o Zappy ao lado da fala dele [apontar zappy]. No \"Quando terminar\", voltar ao tamanho da aula [voltar à aula]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Então duas coisas podem parecer juntas e ainda estar separadas?"],
+          "experience": {
+            "kind": "interactive",
+            "title": "O encontro de verdade",
+            "required": true,
+            "instructions": "Investigue a chave e o personagem na Ilha. Compare quando eles parecem juntos e quando encostam de verdade. Essa diferença também vale para o laser e o asteroide da Patrulha.",
+            "hints": [
+              "Uma imagem pode esconder um espaço entre os objetos.",
+              "Observe de outro lugar e compare a altura da chave com a do personagem.",
+              "Depois de observar os objetos separados, aproxime a chave até acontecer o contato."
+            ],
+            "semPerguntaFinal": true,
+            "activity": {
+              "type": "experimentation",
+              "scene": "island-3d",
+              "setup": {
+                "goals": ["contact-apart", "contact-touch"],
+                "freeExploration": true,
+                "goalCopy": {
+                  "contact-apart": {
+                    "pedido": "Investigue por que os objetos parecem juntos, mas não encostam."
+                  },
+                  "contact-touch": {
+                    "pedido": "Descubra o que precisa mudar para o encontro realmente acontecer."
+                  }
+                }
+              }
+            }
+          },
+          "steps": [
+            "Investigue o encontro da chave e do personagem com o Zappy.",
+            "Compare a altura e a separação dos objetos antes de concluir que encostaram."
+          ],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        },
+        {
+          "key": "acerto-do-laser",
+          "title": "Um encontro que acerta",
+          "etapa": "contato",
+          "objective": "Responder ao contato entre um tiro e um asteroide, retirando os dois e consumindo o alvo.",
+          "kind": "build",
+          "ponte": "Use a investigação da Ilha para programar um contato real. Dentro do par preparado, retire o tiro e a pedra envolvidos e marque esse alvo como consumido.",
+          "text": "[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Alinhe a nave com uma pedra e dispare. O laser atravessa a pedra, porque o encontro ainda não tem uma resposta. [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na Ilha, parecer junto na imagem não bastava: os objetos precisavam encostar de verdade. Vamos usar essa pergunta no laser e na pedra e programar o que acontece no acerto. [confident, clear, unhurried voice] Encontre Enquanto estiver rodando e A cada quadro da cena. Dentro do Se de jogando, procure Para cada objeto asteroide do grupo asteroides. Dentro dele, há Para cada objeto tiro do grupo tiros. [engaging, energetic, conversational voice] Esse percurso preparado apresenta um par de cada vez: um asteroide e um tiro. O Se valor da variável alvoAtivo pergunta se essa pedra ainda pode ser acertada. Você vai colocar a pergunta do contato dentro dele. [confident, clear, unhurried voice] Deixe visível o espaço então do Se valor da variável alvoAtivo. [confident, clear, unhurried voice] Abra Programação e Lógica e Se. Pegue um Se e encaixe nesse então. [confident, clear, unhurried voice] O Se novo chega com x maior que zero. Segure essa pergunta pelo sinal de maior e leve até a lixeira. [confident, clear, unhurried voice] Deixe visível o espaço que ficou ao lado do Se novo. Abra Jogo 3D, Encostar e Encostar de novo. Pegue o objeto jogador está encostando em e coloque nesse espaço. [confident, clear, unhurried voice] No primeiro objeto da pergunta, escolha tiro. No segundo, escolha asteroide. [confident, clear, unhurried voice] Deixe à vista o então dessa pergunta de contato. [confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue Tirar o objeto inimigo do grupo e coloque nesse então. Escolha asteroide no objeto e asteroides no grupo. [confident, clear, unhurried voice] Deixe o encaixe abaixo dessa retirada visível. Pegue outro Tirar o objeto inimigo do grupo e encaixe logo abaixo. Desta vez, escolha tiro no objeto e tiros no grupo. [engaging, energetic, conversational voice] Você está retirando só os dois objetos desse encontro. As outras pedras e os outros lasers continuam na rota. [confident, clear, unhurried voice] Deixe visível o encaixe abaixo da retirada do tiro. Abra Programação e Variáveis. Pegue Alterar variável contador para e encaixe ali. No nome, escolha alvoAtivo. [confident, clear, unhurried voice] Deixe o número um desse bloco à vista. Abra Programação e Lógica e Se. Pegue verdadeiro, solte em cima do um e escolha falso. [interested, animated voice] A pedra que já foi acertada deixa de ser um alvo ativo. Assim, dois lasers muito próximos não contam a mesma pedra duas vezes. O percurso prepara a próxima pedra separadamente. [confident, clear, unhurried voice] Deixe o encaixe abaixo de Alterar variável alvoAtivo visível. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e conserve a opção moeda. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Espere uma pedra se aproximar. Mova a nave para ficar na direção dela e dispare. Quando o laser encosta, os dois desaparecem e você ouve o som do acerto. [upbeat, encouraging voice] Atire também numa faixa sem pedra. Esse laser continua o caminho normalmente. O acerto só acontece quando os objetos encostam. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a pergunta de contato fica dentro de Se alvoAtivo, usa tiro e asteroide, retira os dois objetos dos grupos certos, muda alvoAtivo para falso e toca moeda. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Clique em Rodar de novo e pressione Enter. Alinhe a nave com uma pedra e dispare. O laser atravessa a pedra, porque o encontro ainda não tem uma resposta.\", [rodar de novo] [tecla Enter] nota de gravação manual: alinhar a nave com uma pedra e disparar para mostrar a passagem sem retirada na etapa de entrada. No \"Encontre Enquanto estiver rodando e A cada quadro da cena. Dentro do Se de jogando, procure Para cada objeto asteroide do grupo asteroides. Dentro dele, há Para cada objeto tiro do grupo tiros.\", [arrastar até \"Para cada objeto asteroide do grupo asteroides abaixo de Mover o grupo asteroides\"] [apontar bloco \"Para cada objeto tiro do grupo tiros\"]. No \"Deixe visível o espaço então do Se valor da variável alvoAtivo.\", [apontar encaixe em \"Se valor da variável alvoAtivo\" no \"então\"]. No \"Abra Programação e Lógica e Se. Pegue um Se e encaixe nesse então.\", [abrir categoria Programação > Lógica & Se] [encaixar \"Se\" em \"Se valor da variável alvoAtivo\" no \"então\"]. No \"O Se novo chega com x maior que zero. Segure essa pergunta pelo sinal de maior e leve até a lixeira.\", [jogar na lixeira \">\" em \"Se dentro de Se valor da variável alvoAtivo\"]. No \"Deixe visível o espaço que ficou ao lado do Se novo. Abra Jogo 3D, Encostar e Encostar de novo. Pegue o objeto jogador está encostando em e coloque nesse espaço.\", [apontar encaixe em \"Se dentro de Se valor da variável alvoAtivo\" no \"Se\"] [abrir categoria Jogo 3D > Encostar > Encostar] [encaixar \"o objeto jogador está encostando em\" em \"Se dentro de Se valor da variável alvoAtivo\" no \"Se\"]. No \"No primeiro objeto da pergunta, escolha tiro. No segundo, escolha asteroide.\", [trocar \"jogador\" por \"tiro\" em \"o objeto jogador está encostando em\"] [trocar \"chao\" por \"asteroide\" em \"o objeto tiro está encostando em\"]. No \"Deixe à vista o então dessa pergunta de contato.\", [apontar encaixe em \"Se o objeto tiro está encostando em asteroide\" no \"então\"]. No \"Abra Jogo 3D e Grupos. Pegue Tirar o objeto inimigo do grupo e coloque nesse então. Escolha asteroide no objeto e asteroides no grupo.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"Tirar o objeto inimigo do grupo\" em \"Se o objeto tiro está encostando em asteroide\" no \"então\"] [trocar \"inimigo\" por \"asteroide\" em \"Tirar o objeto inimigo do grupo\"] [trocar \"inimigos\" por \"asteroides\" em \"Tirar o objeto asteroide do grupo\"]. No \"Deixe o encaixe abaixo dessa retirada visível. Pegue outro Tirar o objeto inimigo do grupo e encaixe logo abaixo. Desta vez, escolha tiro no objeto e tiros no grupo.\", [apontar abaixo de \"Tirar o objeto asteroide do grupo asteroides\"] [abrir categoria Jogo 3D > Grupos] [encaixar \"Tirar o objeto inimigo do grupo\" abaixo de \"Tirar o objeto asteroide do grupo asteroides\"] [trocar \"inimigo\" por \"tiro\" em \"Tirar o objeto inimigo do grupo abaixo de Tirar o objeto asteroide\"] [trocar \"inimigos\" por \"tiros\" em \"Tirar o objeto tiro do grupo\"]. No \"Deixe visível o encaixe abaixo da retirada do tiro. Abra Programação e Variáveis. Pegue Alterar variável contador para e encaixe ali. No nome, escolha alvoAtivo.\", [apontar abaixo de \"Tirar o objeto tiro do grupo tiros\"] [abrir categoria Programação > Variáveis] [encaixar \"Alterar variável contador para\" abaixo de \"Tirar o objeto tiro do grupo tiros\"] [trocar \"contador\" por \"alvoAtivo\" em \"Alterar variável contador para\"]. No \"Deixe o número um desse bloco à vista. Abra Programação e Lógica e Se. Pegue verdadeiro, solte em cima do um e escolha falso.\", [apontar bloco \"Alterar variável alvoAtivo\"] [abrir categoria Programação > Lógica & Se] [soltar \"verdadeiro\" em cima do \"1\" em \"Alterar variável alvoAtivo\"] [trocar \"verdadeiro\" por \"falso\" em \"Alterar variável alvoAtivo\"]. No \"Deixe o encaixe abaixo de Alterar variável alvoAtivo visível. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e conserve a opção moeda.\", [apontar abaixo de \"Alterar variável alvoAtivo\"] [abrir categoria Jogo 3D > Som] [encaixar \"Tocar o som pronto\" abaixo de \"Alterar variável alvoAtivo\"]. No \"Clique em Rodar de novo e pressione Enter. Espere uma pedra se aproximar. Mova a nave para ficar na direção dela e dispare. Quando o laser encosta, os dois desaparecem e você ouve o som do acerto.\", [rodar de novo] [tecla Enter] nota de edição: alinhar a nave com uma pedra usando as setas e disparar um laser; marcar o momento do contato no Verificar plano. No \"Atire também numa faixa sem pedra. Esse laser continua o caminho normalmente. O acerto só acontece quando os objetos encostam.\", nota de edição: mover para uma faixa vazia com as setas e disparar [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Se valor da variável alvoAtivo\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em A cada quadro da cena → Se estado = jogando, encontre Para cada asteroide → Para cada tiro → Se valor da variável alvoAtivo. Deixe o então desse último Se visível.",
+            "Em Programação → Lógica & Se, encaixe um novo Se nesse então. Retire a pergunta x > 0 pela lixeira.",
+            "Deixe o lugar da pergunta visível. Em Jogo 3D → Encostar → Encostar, encaixe o objeto jogador está encostando em. Escolha tiro no primeiro objeto e asteroide no segundo.",
+            "No então do contato, encaixe Jogo 3D → Grupos → Tirar o objeto inimigo do grupo. Escolha objeto asteroide e grupo asteroides.",
+            "Logo abaixo, encaixe outro Tirar o objeto inimigo do grupo. Escolha objeto tiro e grupo tiros.",
+            "Abaixo da retirada do tiro, encaixe Programação → Variáveis → Alterar variável contador para. Escolha alvoAtivo.",
+            "Troque o 1 por Programação → Lógica & Se → verdadeiro/falso e escolha falso.",
+            "Abaixo de Alterar variável alvoAtivo, encaixe Jogo 3D → Som → Tocar o som pronto. Conserve moeda."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Alinhe a nave com uma pedra e dispare. No contato real, só esse tiro e essa pedra saem dos grupos.",
+            "Dispare numa faixa vazia. Sem contato, o laser continua o caminho.",
+            "Ainda não existe placar; o som e o desaparecimento do par são o resultado visível desta parte."
+          ],
+          "blockLabels": [
+            "Se o objeto tiro está encostando em asteroide",
+            "Tirar o objeto asteroide do grupo asteroides",
+            "Tirar o objeto tiro do grupo tiros",
+            "Alterar variável alvoAtivo para falso",
+            "Tocar o som pronto moeda"
+          ],
+          "blockTypes": [
+            "sz_js_if_else",
+            "sz_g3d_collides",
+            "sz_g3d_remove_from_group",
+            "sz_js_var_assign",
+            "sz_val_bool",
+            "sz_g3d_play_effect"
+          ]
+        },
+        {
+          "key": "contador-da-patrulha",
+          "title": "Um lugar para guardar os pontos",
+          "etapa": "contador",
+          "objective": "Criar o contador pontos com valor zero no início de cada jogo.",
+          "kind": "build",
+          "ponte": "Crie pontos com valor 0 em Ao iniciar. O mostrador vem depois; nesta parte, confira onde o contador começa.",
+          "text": "[engaging, energetic, conversational voice] O laser já acerta as pedras. Para saber quantas você acertou, vamos guardar uma contagem, como na sua nave em duas dimensões. Ela começa sem acertos: zero. [confident, clear, unhurried voice] Encontre Ao iniciar e Criar variável velocidadeAsteroides. Deixe o encaixe logo abaixo dele à vista, antes da variável estado. [confident, clear, unhurried voice] Abra Programação e Variáveis. Pegue Criar variável contador com valor e encaixe nesse lugar. [confident, clear, unhurried voice] No nome contador, escreva pontos, tudo em letras minúsculas. Conserve o valor zero. [interested, animated voice] Toda vez que o jogo começa do início, pontos recebe zero. Esse bloco prepara a contagem. Ele ainda não escreve nada na tela e ainda não soma no acerto. [reassuring, encouraging voice] Confira se ficou assim: Criar variável pontos com valor zero está em Ao iniciar, depois de velocidadeAsteroides. [engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Ao iniciar e Criar variável velocidadeAsteroides. Deixe o encaixe logo abaixo dele à vista, antes da variável estado.\", [arrastar até \"Criar variável velocidadeAsteroides\"] [apontar abaixo de \"Criar variável velocidadeAsteroides\"]. No \"Abra Programação e Variáveis. Pegue Criar variável contador com valor e encaixe nesse lugar.\", [abrir categoria Programação > Variáveis] [encaixar \"Criar variável contador com valor\" abaixo de \"Criar variável velocidadeAsteroides\"]. No \"No nome contador, escreva pontos, tudo em letras minúsculas. Conserve o valor zero.\", [trocar \"contador\" por \"pontos\" em \"Criar variável contador com valor\"]. No \"Confira se ficou assim\", deixar o trecho à vista [mostrar blocos \"Criar variável pontos\"]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Ao iniciar, deixe visível o encaixe abaixo de Criar variável velocidadeAsteroides e antes de estado.",
+            "Em Programação → Variáveis, pegue Criar variável contador com valor e encaixe nesse lugar.",
+            "Troque o nome contador por pontos e conserve o valor 0."
+          ],
+          "tests": [
+            "Confira o nome pontos e o valor 0 em Ao iniciar.",
+            "Nenhum placar novo aparece nesta etapa. O efeito é preparar a variável."
+          ],
+          "blockLabels": ["Criar variável pontos com valor 0"],
+          "blockTypes": ["sz_js_var_create"]
+        },
+        {
+          "key": "um-ponto-por-acerto",
+          "title": "Cada acerto soma um",
+          "etapa": "soma",
+          "objective": "Somar um ponto dentro da mesma resposta que consome o par acertado.",
+          "kind": "build",
+          "ponte": "Coloque a soma dentro do acerto real. Um tiro que passa no vazio não soma. Depois vamos ligar o mostrador à contagem.",
+          "text": "[engaging, energetic, conversational voice] Você criou o lugar que guarda a contagem. Agora ela precisa mudar no acontecimento certo: o contato que acerta uma pedra. Disparar sozinho não vale ponto. [curious] E uma pedra que passa pela nave sem bater, conta como acerto? [engaging, energetic, conversational voice] Não. O ponto pertence ao encontro do laser com a pedra. Vamos colocar a soma dentro dessa resposta. [confident, clear, unhurried voice] Em Enquanto estiver rodando, encontre Se o objeto tiro está encostando em asteroide. Dentro dele, deixe visível o encaixe depois de Tirar o objeto tiro e antes de Alterar variável alvoAtivo. [confident, clear, unhurried voice] Abra Programação e Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar. [confident, clear, unhurried voice] Conserve a quantidade um. No nome contador, escolha pontos. [interested, animated voice] O encontro retira o par, soma um ponto e marca a pedra como consumida. Sem esse encontro, a soma não roda. O número ainda está guardado na variável; a próxima parte vai mostrá-lo na tela. [reassuring, encouraging voice] Confira se ficou assim: Somar um em variável pontos está dentro do acerto, depois de tirar o tiro e antes de mudar alvoAtivo para falso. [engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Enquanto estiver rodando, encontre Se o objeto tiro está encostando em asteroide. Dentro dele, deixe visível o encaixe depois de Tirar o objeto tiro e antes de Alterar variável alvoAtivo.\", [arrastar até \"Se o objeto tiro está encostando em asteroide\"] [apontar abaixo de \"Tirar o objeto tiro do grupo tiros\"]. No \"Abra Programação e Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar.\", [abrir categoria Programação > Variáveis] [encaixar \"Somar 1 em variável\" abaixo de \"Tirar o objeto tiro do grupo tiros\"]. No \"Conserve a quantidade um. No nome contador, escolha pontos.\", [trocar \"contador\" por \"pontos\" em \"Somar 1 em variável\"]. No \"Confira se ficou assim\", deixar o trecho à vista [mostrar blocos \"Se o objeto tiro está encostando em asteroide\"]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["E uma pedra que passa pela nave sem bater, conta como acerto?"],
+          "steps": [
+            "No então do contato tiro–asteroide, deixe visível o encaixe depois de Tirar o objeto tiro do grupo tiros e antes de Alterar variável alvoAtivo.",
+            "Em Programação → Variáveis, encaixe Somar 1 em variável nesse lugar.",
+            "Conserve a quantidade 1 e escolha a variável pontos."
+          ],
+          "tests": [
+            "Confira a soma dentro do então do contato, entre a retirada do tiro e alvoAtivo = falso.",
+            "Não espere um placar visível ainda: esta etapa muda o valor guardado."
+          ],
+          "blockLabels": ["Somar 1 em variável pontos"],
+          "blockTypes": ["sz_js_var_increment"]
+        },
+        {
+          "key": "placar-da-patrulha",
+          "title": "Veja a contagem na tela",
+          "etapa": "placar",
+          "objective": "Mostrar o zero inicial e atualizar o placar com a variável pontos em cada acerto.",
+          "kind": "delivery",
+          "ponte": "Ligue a contagem ao aviso da tela. Confira o zero inicial, um acerto e um disparo no vazio. Depois envie sua patrulha com placar.",
+          "text": "[engaging, energetic, conversational voice] A contagem já começa em zero e soma no acerto. Agora o piloto precisa enxergar esse número. Vamos preparar o aviso inicial e atualizar o mesmo lugar depois de cada acerto. [confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com o título Patrulha Espacial e Projeto inicial. Deixe o encaixe logo abaixo dele visível. [confident, clear, unhurried voice] Abra Jogo 3D, Placar, vida e telas e Na tela. Pegue Escrever na tela e coloque nesse lugar. [confident, clear, unhurried voice] No lugar da tela, escolha em cima, à direita. No texto Pegue as estrelas, escreva Acertos, dois-pontos, espaço, zero, espaço, barra, espaço, vinte. [engaging, energetic, conversational voice] Esse é o aviso do começo. Agora vamos montar o aviso que acompanha os acertos. [confident, clear, unhurried voice] Volte ao contato do tiro com o asteroide. Deixe à vista o encaixe depois de Tocar o som pronto moeda, ainda dentro do então. [confident, clear, unhurried voice] Abra de novo Jogo 3D, Placar, vida e telas e Na tela. Encaixe outro Escrever na tela nesse lugar. Escolha em cima, à direita. [confident, clear, unhurried voice] Deixe visível o texto Pegue as estrelas desse novo bloco. Abra Programação e Matemática. Pegue zero mais zero e solte em cima desse texto. [engaging, energetic, conversational voice] Quando uma das partes é texto, o mais junta as partes da mensagem. Vamos juntar Acertos, o valor de pontos e a meta vinte. [confident, clear, unhurried voice] Deixe visível o zero da esquerda. Pegue outro zero mais zero em Matemática e solte em cima desse zero. [confident, clear, unhurried voice] No bloco de dentro, deixe visível o zero da esquerda. Abra Programação e Valores. Pegue texto e solte sobre esse zero. No lugar de Olá, escreva Acertos com dois-pontos e deixe um espaço depois. [confident, clear, unhurried voice] Deixe visível o zero à direita desse mesmo mais, o de dentro. Em Valores, pegue valor da variável e solte sobre esse zero. No x, escolha pontos. [confident, clear, unhurried voice] Falta o zero à direita do mais de fora. Deixe esse zero à vista. Em Valores, pegue outro texto e solte sobre ele. No lugar de Olá, escreva um espaço, barra, outro espaço e vinte. [interested, animated voice] A mensagem junta Acertos, o número guardado em pontos e a meta vinte. Como esse aviso vem depois da soma, ele mostra a contagem já atualizada. [upbeat, encouraging voice] Clique em Rodar de novo. O canto de cima, à direita, começa em Acertos zero de vinte. Pressione Enter, alinhe a nave com uma pedra e acerte. O número passa para um. [upbeat, encouraging voice] Dispare numa faixa vazia. A contagem não muda. Acerte outra pedra: agora o placar soma mais um. Ele não deve subir sem um novo acerto. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o aviso inicial fica em Ao iniciar, o aviso com pontos fica dentro do acerto depois da soma, e os dois escrevem em cima, à direita. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] Você fez cada acerto valer um ponto e aparecer no placar da sua patrulha! [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com o título Patrulha Espacial e Projeto inicial. Deixe o encaixe logo abaixo dele visível.\", [arrastar até \"Escrever na tela ↑ em cima, no meio\"] [apontar abaixo de \"Escrever na tela ↑ em cima, no meio\"]. No \"Abra Jogo 3D, Placar, vida e telas e Na tela. Pegue Escrever na tela e coloque nesse lugar.\", [abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar \"Escrever na tela\" abaixo de \"Escrever na tela ↑ em cima, no meio\"]. No \"No lugar da tela, escolha em cima, à direita. No texto Pegue as estrelas, escreva Acertos, dois-pontos, espaço, zero, espaço, barra, espaço, vinte.\", [trocar \"↖ em cima, à esquerda\" por \"↗ em cima, à direita\" em \"Escrever na tela abaixo de Escrever na tela ↑ em cima, no meio\"] [trocar \"Pegue as estrelas!\" por \"Acertos: 0 / 20\" em \"Escrever na tela em cima, à direita\"]. No \"Volte ao contato do tiro com o asteroide. Deixe à vista o encaixe depois de Tocar o som pronto moeda, ainda dentro do então.\", [arrastar até \"Se o objeto tiro está encostando em asteroide\"] [apontar abaixo de \"Tocar o som pronto moeda\"]. No \"Abra de novo Jogo 3D, Placar, vida e telas e Na tela. Encaixe outro Escrever na tela nesse lugar. Escolha em cima, à direita.\", [abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar \"Escrever na tela\" abaixo de \"Tocar o som pronto moeda\"] [trocar \"↖ em cima, à esquerda\" por \"↗ em cima, à direita\" em \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"]. No \"Deixe visível o texto Pegue as estrelas desse novo bloco. Abra Programação e Matemática. Pegue zero mais zero e solte em cima desse texto.\", [apontar bloco \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"] [abrir categoria Programação > Matemática] [soltar \"0 + 0\" em cima do \"Pegue as estrelas!\" em \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"]. No \"Deixe visível o zero da esquerda. Pegue outro zero mais zero em Matemática e solte em cima desse zero.\", [apontar bloco \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"] [abrir categoria Programação > Matemática] nota de gravação manual: soltar \"0 + 0\" em cima do \"0\" em \"lado esquerdo da conta do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"No bloco de dentro, deixe visível o zero da esquerda. Abra Programação e Valores. Pegue texto e solte sobre esse zero. No lugar de Olá, escreva Acertos com dois-pontos e deixe um espaço depois.\", [abrir categoria Programação > Valores] nota de gravação manual: soltar \"texto\" em cima do \"0\" em \"lado esquerdo da conta interna do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno nota de gravação manual: trocar \"Olá\" por \"Acertos: \" em \"texto da conta interna do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Deixe visível o zero à direita desse mesmo mais, o de dentro. Em Valores, pegue valor da variável e solte sobre esse zero. No x, escolha pontos.\", [apontar bloco \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"] [abrir categoria Programação > Valores] nota de gravação manual: soltar \"valor da variável\" em cima do \"0\" em \"lado direito da conta interna do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno nota de gravação manual: trocar \"x\" por \"pontos\" em \"valor da variável dentro do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Falta o zero à direita do mais de fora. Deixe esse zero à vista. Em Valores, pegue outro texto e solte sobre ele. No lugar de Olá, escreva um espaço, barra, outro espaço e vinte.\", [apontar bloco \"Escrever na tela dentro de Se o objeto tiro está encostando em asteroide\"] [abrir categoria Programação > Valores] nota de gravação manual: soltar \"texto\" em cima do \"0\" em \"lado direito da conta externa do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno nota de gravação manual: trocar \"Olá\" por \" / 20\" em \"texto à direita do placar\"; seguir o operando indicado na fala e conferir a expressão no desenho do caderno. No \"Clique em Rodar de novo. O canto de cima, à direita, começa em Acertos zero de vinte. Pressione Enter, alinhe a nave com uma pedra e acerte. O número passa para um.\", [rodar de novo] [apontar prévia] [tecla Enter] nota de edição: alinhar e acertar uma pedra; conferir o placar real. No \"Dispare numa faixa vazia. A contagem não muda. Acerte outra pedra: agora o placar soma mais um. Ele não deve subir sem um novo acerto.\", nota de edição: mostrar um disparo no vazio e depois um novo acerto, sem alterar o projeto [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Escrever na tela em cima, à direita\", \"Se o objeto tiro está encostando em asteroide\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto\", clicar em **Enviar meu projeto** [clicar \"Enviar meu projeto\"]. No \"e confirme em Enviar\", confirmar em **Enviar**, na janela que abriu [clicar \"Enviar\"]. No \"Você fez cada acerto valer um ponto e aparecer no placar da sua patrulha!\", voltar ao tamanho da aula [reduzir estúdio]. No \"Quando aparecer Projeto enviado!, clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Ao iniciar, deixe visível o encaixe abaixo do título em cima, no meio. Em Jogo 3D → Placar, vida e telas → Na tela, encaixe Escrever na tela.",
+            "Escolha em cima, à direita e escreva o texto Acertos: 0 / 20.",
+            "No então do contato tiro–asteroide, deixe visível o encaixe depois de Tocar o som pronto moeda. Encaixe outro Escrever na tela e escolha em cima, à direita.",
+            "Deixe o texto do segundo aviso visível. Em Programação → Matemática, solte 0 + 0 sobre esse texto.",
+            "No 0 da esquerda, encaixe outro 0 + 0.",
+            "No 0 à esquerda do mais interno, encaixe Programação → Valores → texto. Escreva Acertos: com um espaço no fim.",
+            "No 0 à direita do mais interno, encaixe valor da variável e escolha pontos.",
+            "No 0 à direita do mais externo, encaixe outro texto. Escreva espaço, /, espaço, 20. A expressão fica (\"Acertos: \" + pontos) + \" / 20\"."
+          ],
+          "tests": [
+            "Rodar de novo: o placar começa em Acertos: 0 / 20.",
+            "Depois de Enter, acerte uma pedra: o placar soma exatamente um.",
+            "Um disparo no vazio e uma pedra que passa não alteram o placar.",
+            "Acerte outra pedra e confirme a próxima soma."
+          ],
+          "blockLabels": [
+            "Escrever na tela em cima, à direita: Acertos: 0 / 20",
+            "Escrever na tela em cima, à direita: Acertos: + pontos + / 20",
+            "valor da variável pontos",
+            "texto",
+            "0 + 0"
+          ],
+          "blockTypes": ["sz_g3d_hud_text", "sz_math_arithmetic", "sz_val_text", "sz_val_variable"]
+        },
+        {
+          "key": "conferir-acertos",
+          "title": "O que faz o ponto valer?",
+          "kind": "quiz",
+          "text": "",
+          "screen": "",
+          "objective": "Explicar as regras usando os testes do próprio jogo.",
+          "ponte": "Pense nos testes que você acabou de fazer. Escolha uma resposta e leia a explicação. Você pode corrigir e tentar de novo. Quando terminar, clique em Concluir aula.",
+          "quiz": {
+            "kind": "quiz",
+            "passingScore": 100,
+            "questions": [
+              {
+                "id": "contato-3d",
+                "prompt": "Vendo de cima, um laser parece passar sobre uma pedra, mas está bem mais alto. O que confirma um acerto?",
+                "choices": [
+                  {
+                    "id": "contato-3d-1",
+                    "label": "Apenas os desenhos parecerem juntos na imagem."
+                  },
+                  {
+                    "id": "contato-3d-2",
+                    "label": "Os objetos encostarem de verdade no espaço."
+                  },
+                  {
+                    "id": "contato-3d-3",
+                    "label": "A tecla Espaço ter sido apertada."
+                  }
+                ],
+                "correctChoiceIds": ["contato-3d-2"],
+                "explanation": "A imagem pode esconder uma diferença de altura. A regra de acerto confere o contato real entre tiro e asteroide."
+              },
+              {
+                "id": "um-ponto",
+                "prompt": "Você dispara três vezes e só um laser acerta uma pedra. Quantos pontos essa jogada deve somar?",
+                "choices": [
+                  {
+                    "id": "um-ponto-1",
+                    "label": "Três, porque saíram três lasers."
+                  },
+                  {
+                    "id": "um-ponto-2",
+                    "label": "Zero, porque dois lasers erraram."
+                  },
+                  {
+                    "id": "um-ponto-3",
+                    "label": "Um, porque houve um acerto."
+                  }
+                ],
+                "correctChoiceIds": ["um-ponto-3"],
+                "explanation": "A soma fica dentro do contato que retira o par. Criar um laser, sozinho, não soma ponto."
+              },
+              {
+                "id": "mostrar-pontos",
+                "prompt": "A variável pontos chegou a dois. Por que o aviso usa o valor da variável, em vez de um texto fixo com zero?",
+                "choices": [
+                  {
+                    "id": "mostrar-pontos-1",
+                    "label": "Para mostrar a contagem atual depois de cada acerto."
+                  },
+                  {
+                    "id": "mostrar-pontos-2",
+                    "label": "Para criar mais asteroides."
+                  },
+                  {
+                    "id": "mostrar-pontos-3",
+                    "label": "Para mudar a altura do laser."
+                  }
+                ],
+                "correctChoiceIds": ["mostrar-pontos-1"],
+                "explanation": "O valor guardado muda nos acertos. A mensagem lê esse valor para mostrar a contagem atual."
+              }
+            ]
+          },
+          "steps": [],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        }
+      ]
+    },
+    {
+      "slug": "aula-4",
+      "title": "Três chances na patrulha",
+      "entryStage": "placar",
+      "entry": "O laser consome um asteroide por acerto, soma pontos e atualiza o placar. A nave ainda não recebe dano.",
+      "outcome": "A nave começa com três vidas. No contato com uma pedra, o jogo retira apenas essa pedra e desconta uma vida, respeitando a breve proteção nativa.",
+      "trechos": [
+        {
+          "key": "tres-vidas",
+          "title": "Três chances para a nave",
+          "etapa": "vidas",
+          "objective": "Dar três vidas à nave no começo e observar os corações nativos.",
+          "kind": "build",
+          "ponte": "Dê três vidas à nave em Ao iniciar. Veja os corações no começo. A regra da batida será a próxima montagem.",
+          "text": "[engaging, energetic, conversational voice] Você já consegue acertar as pedras e contar os pontos. Agora a nave vai ter três chances. A cada batida, ela vai perder uma vida. Primeiro vamos preparar as três vidas do começo. [confident, clear, unhurried voice] Encontre Ao iniciar e Criar variável estado com valor início. Deixe o encaixe logo abaixo dessa variável à vista, antes dos textos das telas finais. [confident, clear, unhurried voice] Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Dar 3 de vida a e encaixe nesse lugar. [confident, clear, unhurried voice] Conserve a quantidade três. No nome do objeto, escolha nave. [interested, animated voice] Esse bloco dá as vidas no começo. Os corações aparecem na tela para mostrar quantas restam. Se a gente devolvesse três vidas a cada quadro, uma batida nunca teria efeito por muito tempo. [upbeat, encouraging voice] Clique em Rodar de novo. Veja os três corações no alto, à esquerda. Pressione Enter e pilote. A contagem de vidas começa em três. [engaging, energetic, conversational voice] Uma pedra ainda não desconta vida, porque essa resposta será sua próxima construção. Agora você tem as três chances preparadas para usar. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Dar três de vida a nave está em Ao iniciar, e não dentro de A cada quadro. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Ao iniciar e Criar variável estado com valor início. Deixe o encaixe logo abaixo dessa variável à vista, antes dos textos das telas finais.\", [arrastar até \"Criar variável estado\"] [apontar abaixo de \"Criar variável estado\"]. No \"Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Dar 3 de vida a e encaixe nesse lugar.\", [abrir categoria Jogo 3D > Placar, vida e telas > Vida] [encaixar \"Dar 3 de vida a\" abaixo de \"Criar variável estado\"]. No \"Conserve a quantidade três. No nome do objeto, escolha nave.\", [trocar \"heroi\" por \"nave\" em \"Dar 3 de vida a\"]. No \"Clique em Rodar de novo. Veja os três corações no alto, à esquerda. Pressione Enter e pilote. A contagem de vidas começa em três.\", [rodar de novo] [apontar prévia] [tecla Enter]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Dar 3 de vida a nave\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Ao iniciar, deixe visível o encaixe depois de Criar variável estado e antes dos textos das telas finais.",
+            "Em Jogo 3D → Placar, vida e telas → Vida, pegue Dar 3 de vida a e encaixe nesse lugar.",
+            "Conserve a quantidade 3 e escolha o objeto nave."
+          ],
+          "tests": [
+            "Rodar de novo: aparecem três corações no alto, à esquerda.",
+            "Enter começa a partida. O jogo ainda não desconta vida no contato; essa regra vem na próxima parte."
+          ],
+          "blockLabels": ["Dar 3 de vida a nave"],
+          "blockTypes": ["sz_g3d_set_life"]
+        },
+        {
+          "key": "vida-na-batida",
+          "title": "A batida tira uma vida",
+          "etapa": "dano",
+          "objective": "Usar o encontro da nave com um grupo para descontar uma vida durante a partida.",
+          "kind": "build",
+          "ponte": "Monte a resposta à batida na nave. Identifique a pedra envolvida, confira o estado da partida e desconte uma vida.",
+          "text": "[engaging, energetic, conversational voice] Os corações já mostram as três chances. Vamos retomar o encontro que você usou na nave em duas dimensões: quando a nave encosta em uma pedra do grupo, acontece uma batida. [confident, clear, unhurried voice] Encontre Quando acontecer. Deixe à vista um espaço depois do acontecimento de Espaço, fora do fazer dele. [confident, clear, unhurried voice] Abra Jogo 3D, Encostar e Encostar de novo. Pegue Quando heroi encostar em algum do grupo e encaixe nesse espaço. [confident, clear, unhurried voice] No primeiro nome, escolha nave. No grupo, escolha asteroides. [confident, clear, unhurried voice] No campo chamando de, troque item por asteroideQueBateu, tudo junto, com Q e B maiúsculos. [interested, animated voice] Esse nome identifica a pedra que participou desta batida. Na próxima parte, você vai usar esse nome para retirar só ela. [confident, clear, unhurried voice] Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer. [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. [confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer. [engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida. [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado. [confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto. [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta. [confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto. [confident, clear, unhurried voice] Solte o bloco texto em cima desse zero. [confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas. [engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta. [confident, clear, unhurried voice] Deixe à vista o então desse Se. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Machucar heroi tirando 1 de vida e encaixe nesse então. [confident, clear, unhurried voice] No objeto, escolha nave. Conserve a quantidade um. [confident, clear, unhurried voice] Deixe visível o encaixe logo abaixo de Machucar. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e troque moeda por acerto. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante. [curious] Enquanto a nave pisca, outra batida já tira mais um coração? [engaging, energetic, conversational voice] Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova batida pode tirar outra vida. [engaging, energetic, conversational voice] Repare também na pedra da batida: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro usa nave e asteroides, chama a pedra de asteroideQueBateu, pergunta estado igual a jogando, machuca nave tirando um e toca acerto. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Quando acontecer. Deixe à vista um espaço depois do acontecimento de Espaço, fora do fazer dele.\", [arrastar até \"Quando acontecer\"] [apontar abaixo de \"Quando apertar a tecla espaço\"]. No \"Abra Jogo 3D, Encostar e Encostar de novo. Pegue Quando heroi encostar em algum do grupo e encaixe nesse espaço.\", [abrir categoria Jogo 3D > Encostar > Encostar] [encaixar \"Quando heroi encostar em algum do grupo\" abaixo de \"Quando apertar a tecla espaço\"]. No \"No primeiro nome, escolha nave. No grupo, escolha asteroides.\", [trocar \"heroi\" por \"nave\" em \"Quando heroi encostar em algum do grupo\"] [trocar \"estrelas\" por \"asteroides\" em \"Quando nave encostar em algum do grupo\"]. No \"No campo chamando de, troque item por asteroideQueBateu, tudo junto, com Q e B maiúsculos.\", [trocar \"item\" por \"asteroideQueBateu\" em \"Quando nave encostar em algum do grupo asteroides\"]. No \"Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer.\", [apontar encaixe em \"Quando nave encostar em algum do grupo asteroides\"]. No \"Abra Programação e depois Lógica e Se.\", [abrir categoria Programação > Lógica & Se]. No \"Pegue o bloco Se e solte nesse espaço ao lado de fazer.\", [encaixar \"Se\" em \"Quando nave encostar em algum do grupo asteroides\"]. No \"Clique no x da pergunta e escolha estado.\", [trocar \"x\" por \"estado\" em \"Se valor da variável x > 0 dentro de Quando nave encostar em algum do grupo asteroides\"]. No \"Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.\", [trocar \">\" por \"=\" em \"Se valor da variável estado > 0 dentro de Quando nave encostar em algum do grupo asteroides\"]. No \"Deixe à vista o zero que está do lado direito da pergunta.\", [apontar bloco \"Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides\"]. No \"Abra Programação, depois Valores, e pegue o bloco texto.\", [abrir categoria Programação > Valores]. No \"Solte o bloco texto em cima desse zero.\", [soltar \"texto\" em cima do \"0\" em \"Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides\"]. No \"Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.\", [trocar \"Olá\" por \"jogando\" em \"Se valor da variável estado = texto Olá dentro de Quando nave encostar em algum do grupo asteroides\"]. No \"Deixe à vista o então desse Se. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Machucar heroi tirando 1 de vida e encaixe nesse então.\", [apontar encaixe em \"Se dentro de Quando nave encostar em algum do grupo asteroides\" no \"então\"] [abrir categoria Jogo 3D > Placar, vida e telas > Vida] [encaixar \"Machucar heroi tirando 1 de vida\" em \"Se dentro de Quando nave encostar em algum do grupo asteroides\" no \"então\"]. No \"No objeto, escolha nave. Conserve a quantidade um.\", [trocar \"heroi\" por \"nave\" em \"Machucar heroi tirando 1 de vida\"]. No \"Deixe visível o encaixe logo abaixo de Machucar. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e troque moeda por acerto.\", [apontar abaixo de \"Machucar nave tirando 1 de vida\"] [abrir categoria Jogo 3D > Som] [encaixar \"Tocar o som pronto\" abaixo de \"Machucar nave tirando 1 de vida\"] [trocar \"moeda\" por \"acerto\" em \"Tocar o som pronto abaixo de Machucar\"]. No \"Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.\", [rodar de novo] [tecla Enter] nota de edição: alinhar a nave com uma pedra em aproximação sem atirar; observar a primeira batida real [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Quando nave encostar em algum do grupo asteroides\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Enquanto a nave pisca, outra batida já tira mais um coração?"],
+          "steps": [
+            "Em Quando acontecer, deixe visível o encaixe depois de Quando apertar a tecla espaço, fora do fazer dele.",
+            "Em Jogo 3D → Encostar → Encostar, encaixe Quando heroi encostar em algum do grupo nesse lugar.",
+            "Escolha objeto nave e grupo asteroides. No campo chamando de, escreva asteroideQueBateu, com Q e B maiúsculos.",
+            "Dentro de Quando nave encostar em algum do grupo asteroides, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.",
+            "Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.",
+            "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.",
+            "Deixe o então da guarda visível. Em Jogo 3D → Placar, vida e telas → Vida, encaixe Machucar heroi tirando 1 de vida. Escolha nave e conserve a quantidade 1.",
+            "Deixe o encaixe abaixo de Machucar visível. Em Jogo 3D → Som, encaixe Tocar o som pronto e escolha acerto."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Sem disparar, alinhe a nave com uma pedra que se aproxima.",
+            "No contato, a vida cai de três para dois e a nave pisca brevemente.",
+            "A pedra ainda segue o caminho nesta etapa. A proteção nativa evita novo desconto durante um segundo."
+          ],
+          "blockLabels": [
+            "Quando nave encostar em algum do grupo asteroides, chamando de asteroideQueBateu",
+            "Se estado = jogando",
+            "Machucar nave tirando 1 de vida",
+            "Tocar o som pronto acerto"
+          ],
+          "blockTypes": [
+            "sz_g3d_on_touch_group",
+            "sz_js_if_else",
+            "sz_val_compare",
+            "sz_val_variable",
+            "sz_val_text",
+            "sz_g3d_hurt",
+            "sz_g3d_play_effect"
+          ]
+        },
+        {
+          "key": "retirar-a-pedra-da-batida",
+          "title": "Só a pedra da batida sai",
+          "etapa": "retirada-batida",
+          "objective": "Consumir o asteroide identificado pelo encontro antes de descontar a vida.",
+          "kind": "delivery",
+          "ponte": "Retire asteroideQueBateu do grupo asteroides antes de Machucar. Compare uma batida, uma pedra que passa e um acerto do laser. Depois envie.",
+          "text": "[engaging, energetic, conversational voice] A batida já tira uma vida. Agora a pedra que bateu vai sair da rota. Você guardou o nome dessa pedra no próprio acontecimento, então pode retirar só ela. [confident, clear, unhurried voice] Em Quando acontecer, encontre Quando nave encostar em algum do grupo asteroides. Dentro do Se de jogando, deixe visível o começo do então, onde está Machucar nave. [confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue Tirar o objeto inimigo do grupo e coloque no começo do então, antes de Machucar. [confident, clear, unhurried voice] No objeto, escolha asteroideQueBateu. No grupo, escolha asteroides. Confira que Machucar e o som continuam logo abaixo, dentro do mesmo então. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Deixe uma pedra bater na nave, sem disparar. Essa pedra desaparece, um coração sai e a nave pisca. [upbeat, encouraging voice] Agora mova a nave para um lado e deixe outra pedra passar sem bater. Seus corações continuam iguais. A pedra que apenas sai da rota não usa a regra da batida. [upbeat, encouraging voice] Acerte também uma pedra com o laser. Nesse caso, sobe um ponto, e a vida não diminui. São dois encontros diferentes, com respostas diferentes. [engaging, energetic, conversational voice] Se as vidas chegarem a zero durante seus testes, a partida ainda continua nesta versão. Na próxima aula, você vai usar esse zero para chamar a tela de derrota. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Tirar asteroideQueBateu do grupo asteroides está no começo do então da batida, antes de Machucar nave e do som. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] Você fez a nave usar suas três chances: acertar soma, bater tira vida e desviar conserva a nave! [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Quando acontecer, encontre Quando nave encostar em algum do grupo asteroides. Dentro do Se de jogando, deixe visível o começo do então, onde está Machucar nave.\", [arrastar até \"Quando nave encostar em algum do grupo asteroides\"] [apontar encaixe em \"Se dentro de Quando nave encostar em algum do grupo asteroides\" no \"então\"]. No \"Abra Jogo 3D e Grupos. Pegue Tirar o objeto inimigo do grupo e coloque no começo do então, antes de Machucar.\", [abrir categoria Jogo 3D > Grupos] [encaixar \"Tirar o objeto inimigo do grupo\" em \"Se dentro de Quando nave encostar em algum do grupo asteroides\" no \"então\"]. No \"No objeto, escolha asteroideQueBateu. No grupo, escolha asteroides. Confira que Machucar e o som continuam logo abaixo, dentro do mesmo então.\", [trocar \"inimigo\" por \"asteroideQueBateu\" em \"Tirar o objeto inimigo do grupo dentro de Quando nave encostar em algum do grupo asteroides\"] [trocar \"inimigos\" por \"asteroides\" em \"Tirar o objeto asteroideQueBateu do grupo\"] [mostrar blocos \"Quando nave encostar em algum do grupo asteroides\"]. No \"Clique em Rodar de novo e pressione Enter. Deixe uma pedra bater na nave, sem disparar. Essa pedra desaparece, um coração sai e a nave pisca.\", [rodar de novo] [tecla Enter] nota de edição: alinhar com uma pedra e observar a batida real sem disparar [apontar prévia]. No \"Agora mova a nave para um lado e deixe outra pedra passar sem bater. Seus corações continuam iguais. A pedra que apenas sai da rota não usa a regra da batida.\", nota de edição: desviar de uma pedra em aproximação com as setas e observar o placar de vida [apontar prévia]. No \"Acerte também uma pedra com o laser. Nesse caso, sobe um ponto, e a vida não diminui. São dois encontros diferentes, com respostas diferentes.\", nota de edição: alinhar e acertar uma pedra com um laser antes de ela chegar à nave [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Quando nave encostar em algum do grupo asteroides\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto\", clicar em **Enviar meu projeto** [clicar \"Enviar meu projeto\"]. No \"e confirme em Enviar\", confirmar em **Enviar**, na janela que abriu [clicar \"Enviar\"]. No \"Você fez a nave usar suas três chances: acertar soma, bater tira vida e desviar conserva a nave!\", voltar ao tamanho da aula [reduzir estúdio]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", clicar em **Concluir aula** [concluir aula].",
+          "kids": [],
+          "steps": [
+            "No encontro da nave com o grupo asteroides, deixe visível o começo do então de Se estado = jogando.",
+            "Em Jogo 3D → Grupos, encaixe Tirar o objeto inimigo do grupo antes de Machucar nave.",
+            "Escolha objeto asteroideQueBateu e grupo asteroides. Conserve Machucar nave tirando 1 de vida e Tocar o som pronto acerto logo abaixo."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Uma batida retira a pedra envolvida e desconta uma vida.",
+            "Desvie de outra pedra e deixe-a passar: ela não tira vida.",
+            "Acerte uma pedra com um laser: o ponto sobe e a vida permanece igual.",
+            "Se chegar a zero, esta versão ainda não mostra derrota; a regra será construída na aula seguinte."
+          ],
+          "blockLabels": ["Tirar o objeto asteroideQueBateu do grupo asteroides"],
+          "blockTypes": ["sz_g3d_remove_from_group"]
+        }
+      ]
+    },
+    {
+      "slug": "aula-5",
+      "title": "Uma patrulha completa",
+      "entryStage": "retirada-batida",
+      "entry": "Disparos, surgimento, percursos, retirada, acertos, placar e dano funcionam. A abertura, o estado, Enter, os textos das telas finais e o botão de retorno estão preparados; ainda não existem condições que acionem os resultados.",
+      "outcome": "Vida zero aciona a derrota; se houver vida, vinte pontos acionam a vitória. O jogo encerra uma vez e o botão nativo prepara outra partida com zero pontos e três vidas.",
+      "trechos": [
+        {
+          "key": "quando-as-vidas-acabam",
+          "title": "Quando as vidas acabam",
+          "etapa": "derrota",
+          "objective": "Conferir vida zero no começo do quadro e acionar estado de derrota e fim de jogo.",
+          "kind": "build",
+          "ponte": "Crie a condição de derrota no começo do quadro, antes do movimento. Ela usa a tela final que já está preparada no projeto.",
+          "text": "[engaging, energetic, conversational voice] A nave já perde vida nas batidas. Mas, quando os corações acabam, a versão anterior ainda continua rodando. Vamos usar a vida zero para encerrar a partida e chamar a tela de derrota. [confident, clear, unhurried voice] Encontre Enquanto estiver rodando e A cada quadro da cena. Deixe visível o começo do fazer, onde está o Se de jogando que movimenta a nave e os grupos. [engaging, energetic, conversational voice] A nova conferência vai entrar antes desse Se. Assim, se a partida acabou, o jogo decide o resultado antes de continuar o movimento. [confident, clear, unhurried voice] Dentro de A cada quadro da cena, no começo do fazer, deixe à vista o espaço ao lado de fazer. [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se. [confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer. [engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida. [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado. [confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto. [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta. [confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto. [confident, clear, unhurried voice] Solte o bloco texto em cima desse zero. [confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas. [engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta. [confident, clear, unhurried voice] Confira que o Se anterior desceu e continua logo abaixo do novo, fora do então dele. Deixe visível o então vazio do Se novo. [confident, clear, unhurried voice] Abra Programação e Lógica e Se. Encaixe outro Se dentro desse então. [confident, clear, unhurried voice] Na pergunta x maior que zero do Se de dentro, deixe o x à vista. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue a vida de e solte em cima desse x. [confident, clear, unhurried voice] No nome do objeto, escolha nave. Troque o sinal de maior pelo sinal de menor ou igual. Conserve o zero à direita. [engaging, energetic, conversational voice] A pergunta agora é: a vida da nave é menor ou igual a zero? Se for, vamos guardar o resultado e terminar a partida. [confident, clear, unhurried voice] Deixe o então dessa pergunta à vista. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então. No nome contador, escolha estado. [confident, clear, unhurried voice] Deixe o número um do valor visível. Abra Programação e Valores. Solte texto sobre esse número e escreva derrota no lugar de Olá, tudo em letras minúsculas. [confident, clear, unhurried voice] Deixe visível o encaixe abaixo dessa mudança de estado. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela nesse lugar. [confident, clear, unhurried voice] Escolha embaixo, no meio. Apague o texto Pegue as estrelas e deixe o texto vazio. Isso limpa o aviso dos controles antes da tela final. [confident, clear, unhurried voice] Deixe o encaixe abaixo desse aviso visível. Em Jogo 3D, Placar, vida e telas, abra Telas e fim. Encaixe Fim de jogo e conserve você perdeu. [interested, animated voice] O estado deixa de ser jogando, e o bloco Fim de jogo abre a tela de derrota que já está preparada. O movimento, os disparos e o relógio param junto com a partida. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Neste teste, deixe pedras baterem na nave, esperando a proteção acabar entre as batidas. Quando a vida chega a zero, aparece o resultado de derrota. [upbeat, encouraging voice] Clique em Voltar ao início. Você volta à abertura, com zero pontos e três vidas. Pressione Enter para começar outra partida. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a conferência nova fica antes do movimento, pergunta se está jogando e se a vida da nave chegou a zero; então muda estado para derrota, limpa o aviso de baixo e chama você perdeu. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre Enquanto estiver rodando e A cada quadro da cena. Deixe visível o começo do fazer, onde está o Se de jogando que movimenta a nave e os grupos.\", [arrastar até \"A cada quadro da cena\"] [apontar encaixe em \"A cada quadro da cena\"]. No \"Dentro de A cada quadro da cena, no começo do fazer, deixe à vista o espaço ao lado de fazer.\", [apontar encaixe em \"A cada quadro da cena\"]. No \"Abra Programação e depois Lógica e Se.\", [abrir categoria Programação > Lógica & Se]. No \"Pegue o bloco Se e solte nesse espaço ao lado de fazer.\", [encaixar \"Se\" em \"A cada quadro da cena\"]. No \"Clique no x da pergunta e escolha estado.\", [trocar \"x\" por \"estado\" em \"Se valor da variável x > 0 dentro de A cada quadro da cena\"]. No \"Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.\", [trocar \">\" por \"=\" em \"Se valor da variável estado > 0 dentro de A cada quadro da cena\"]. No \"Deixe à vista o zero que está do lado direito da pergunta.\", [apontar bloco \"Se valor da variável estado = 0 dentro de A cada quadro da cena\"]. No \"Abra Programação, depois Valores, e pegue o bloco texto.\", [abrir categoria Programação > Valores]. No \"Solte o bloco texto em cima desse zero.\", [soltar \"texto\" em cima do \"0\" em \"Se valor da variável estado = 0 dentro de A cada quadro da cena\"]. No \"Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.\", [trocar \"Olá\" por \"jogando\" em \"Se valor da variável estado = texto Olá dentro de A cada quadro da cena\"]. No \"Confira que o Se anterior desceu e continua logo abaixo do novo, fora do então dele. Deixe visível o então vazio do Se novo.\", [mostrar blocos \"A cada quadro da cena\"] [apontar encaixe em \"Se valor da variável estado dentro de A cada quadro da cena\" no \"então\"]. No \"Abra Programação e Lógica e Se. Encaixe outro Se dentro desse então.\", [abrir categoria Programação > Lógica & Se] [encaixar \"Se\" em \"Se valor da variável estado dentro de A cada quadro da cena\" no \"então\"]. No \"Na pergunta x maior que zero do Se de dentro, deixe o x à vista. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue a vida de e solte em cima desse x.\", [apontar bloco \"Se valor da variável x dentro de Se valor da variável estado dentro de A cada quadro da cena\"] [abrir categoria Jogo 3D > Placar, vida e telas > Vida] [soltar \"a vida de\" em cima do \"x\" em \"Se valor da variável x dentro de Se valor da variável estado dentro de A cada quadro da cena\"]. No \"No nome do objeto, escolha nave. Troque o sinal de maior pelo sinal de menor ou igual. Conserve o zero à direita.\", [trocar \"heroi\" por \"nave\" em \"a vida de\"] [trocar \">\" por \"≤\" em \"Se a vida de nave\"]. No \"Deixe o então dessa pergunta à vista. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então. No nome contador, escolha estado.\", [apontar encaixe em \"Se a vida de nave\" no \"então\"] [abrir categoria Programação > Variáveis] [encaixar \"Alterar variável contador para\" em \"Se a vida de nave\" no \"então\"] [trocar \"contador\" por \"estado\" em \"Alterar variável dentro de Se a vida de nave\"]. No \"Deixe o número um do valor visível. Abra Programação e Valores. Solte texto sobre esse número e escreva derrota no lugar de Olá, tudo em letras minúsculas.\", [apontar bloco \"Alterar variável estado dentro de Se a vida de nave\"] [abrir categoria Programação > Valores] [soltar \"texto\" em cima do \"1\" em \"Alterar variável estado dentro de Se a vida de nave\"] [trocar \"Olá\" por \"derrota\" em \"Alterar variável estado dentro de Se a vida de nave\"]. No \"Deixe visível o encaixe abaixo dessa mudança de estado. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela nesse lugar.\", [apontar abaixo de \"Alterar variável estado para texto derrota\"] [abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar \"Escrever na tela\" abaixo de \"Alterar variável estado para texto derrota\"]. No \"Escolha embaixo, no meio. Apague o texto Pegue as estrelas e deixe o texto vazio. Isso limpa o aviso dos controles antes da tela final.\", [trocar \"↖ em cima, à esquerda\" por \"↓ embaixo, no meio\" em \"Escrever na tela abaixo de Alterar variável estado para texto derrota\"] [trocar \"Pegue as estrelas!\" por \"\" em \"Escrever na tela abaixo de Alterar variável estado para texto derrota\"]. No \"Deixe o encaixe abaixo desse aviso visível. Em Jogo 3D, Placar, vida e telas, abra Telas e fim. Encaixe Fim de jogo e conserve você perdeu.\", [apontar abaixo de \"Escrever na tela abaixo de Alterar variável estado para texto derrota\"] [abrir categoria Jogo 3D > Placar, vida e telas > Telas e fim] [encaixar \"Fim de jogo\" abaixo de \"Escrever na tela abaixo de Alterar variável estado para texto derrota\"]. No \"Clique em Rodar de novo e pressione Enter. Neste teste, deixe pedras baterem na nave, esperando a proteção acabar entre as batidas. Quando a vida chega a zero, aparece o resultado de derrota.\", [rodar de novo] [tecla Enter] nota de edição: capturar três batidas válidas, separadas por mais de um segundo, até a tela de derrota. No \"Clique em Voltar ao início. Você volta à abertura, com zero pontos e três vidas. Pressione Enter para começar outra partida.\", [clicar \"Voltar ao início\"] [apontar prévia] [tecla Enter]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Se a vida de nave\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Enquanto estiver rodando → A cada quadro da cena, deixe visível o começo do fazer, antes do Se que movimenta o jogo.",
+            "Dentro de A cada quadro da cena, antes do Se de movimento, deixe visível o espaço fazer. Em Programação → Lógica & Se, pegue Se e encaixe nesse espaço.",
+            "Na pergunta x > 0, escolha estado no lugar de x e = no lugar de >. Use o sinal = sem a palavra solto.",
+            "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá.",
+            "Confira que o Se de movimento continua depois do novo, fora do então. Deixe o então do novo Se estado = jogando visível.",
+            "Em Programação → Lógica & Se, encaixe outro Se nesse então.",
+            "No x da pergunta nova, encaixe Jogo 3D → Placar, vida e telas → Vida → a vida de. Escolha nave, use ≤ e conserve 0 à direita.",
+            "No então da vida, encaixe Programação → Variáveis → Alterar variável contador para. Escolha estado.",
+            "Deixe o valor 1 visível. Em Programação → Valores, solte texto sobre ele e escreva derrota.",
+            "Abaixo da mudança de estado, encaixe Jogo 3D → Placar, vida e telas → Na tela → Escrever na tela. Escolha embaixo, no meio e deixe o texto vazio.",
+            "Abaixo do aviso vazio, encaixe Jogo 3D → Placar, vida e telas → Telas e fim → Fim de jogo. Conserve você perdeu."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Deixe acontecerem três batidas válidas, com tempo para acabar a proteção entre elas.",
+            "Quando a vida chega a zero, a tela de derrota aparece e a partida para.",
+            "Clique em Voltar ao início. Confira abertura, pontos zero e três vidas. Enter inicia uma nova partida."
+          ],
+          "blockLabels": [
+            "Se estado = jogando",
+            "Se a vida de nave ≤ 0",
+            "Alterar variável estado para derrota",
+            "Escrever na tela ↓ embaixo, no meio: texto vazio",
+            "Fim de jogo: você perdeu"
+          ],
+          "blockTypes": [
+            "sz_js_if_else",
+            "sz_val_compare",
+            "sz_val_variable",
+            "sz_val_text",
+            "sz_g3d_life_of",
+            "sz_js_var_assign",
+            "sz_g3d_hud_text",
+            "sz_g3d_end_game"
+          ]
+        },
+        {
+          "key": "meta-da-patrulha",
+          "title": "Vinte acertos abrem a rota",
+          "etapa": "vitoria",
+          "objective": "Conferir a meta no senão da derrota e acionar a vitória uma única vez.",
+          "kind": "build",
+          "ponte": "No senão da vida zero, confira pontos maior ou igual a 20. Programe a vitória usando a tela pronta e teste o resultado.",
+          "text": "[engaging, energetic, conversational voice] Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida. [confident, clear, unhurried voice] Encontre a pergunta Se a vida de nave é menor ou igual a zero, no começo de A cada quadro da cena. [confident, clear, unhurried voice] Clique no segundo mais desse Se, o que fica logo antes de senão, para abrir esse espaço. Deixe visível o espaço do senão que apareceu. [engaging, energetic, conversational voice] Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta. [confident, clear, unhurried voice] Abra Programação e Lógica e Se. Pegue um Se e encaixe no senão. [confident, clear, unhurried voice] Na pergunta x maior que zero, escolha pontos no lugar de x. Troque o sinal de maior por maior ou igual. Troque o zero por vinte. [confident, clear, unhurried voice] Deixe visível o então da pergunta dos pontos. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então e escolha estado no nome. [confident, clear, unhurried voice] Deixe visível o número um do valor. Abra Programação e Valores. Solte texto sobre esse um e escreva vitoria, sem acento e com letras minúsculas. [confident, clear, unhurried voice] Deixe o encaixe abaixo dessa mudança à vista. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela abaixo. [confident, clear, unhurried voice] Escolha embaixo, no meio, e deixe o texto vazio, apagando Pegue as estrelas. [confident, clear, unhurried voice] Deixe visível o encaixe abaixo do aviso vazio. Abra Jogo 3D e Som. Encaixe Tocar o som pronto e conserve moeda. [confident, clear, unhurried voice] Deixe o encaixe abaixo do som visível. Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou. [curious] Se eu chegar a vinte e a vida também acabar, qual resultado vale? [engaging, energetic, conversational voice] Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida para completar a rota. [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Pilote, desvie e acerte as pedras. Quando o placar chega a vinte e você ainda tem vida, aparece a tela de vitória. [upbeat, encouraging voice] Depois do resultado, tente mover e disparar: a partida está encerrada. Clique em Voltar ao início. O começo volta com pontos zero e três vidas. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o Se dos vinte pontos fica no senão da vida zero, muda estado para vitoria, limpa o aviso de baixo, toca moeda e chama você ganhou. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Encontre a pergunta Se a vida de nave é menor ou igual a zero, no começo de A cada quadro da cena.\", [arrastar até \"Se a vida de nave\"]. No \"Clique no segundo mais desse Se, o que fica logo antes de senão, para abrir esse espaço. Deixe visível o espaço do senão que apareceu.\", [abrir \"senão\" em \"Se a vida de nave\"] [apontar encaixe em \"Se a vida de nave\" no \"senão\"]. No \"Abra Programação e Lógica e Se. Pegue um Se e encaixe no senão.\", [abrir categoria Programação > Lógica & Se] [encaixar \"Se\" em \"Se a vida de nave\" no \"senão\"]. No \"Na pergunta x maior que zero, escolha pontos no lugar de x. Troque o sinal de maior por maior ou igual. Troque o zero por vinte.\", [trocar \"x\" por \"pontos\" em \"Se valor da variável x dentro de Se a vida de nave\"] [trocar \">\" por \"≥\" em \"Se valor da variável pontos dentro de Se a vida de nave\"] [trocar \"0\" por \"20\" em \"Se valor da variável pontos dentro de Se a vida de nave\"]. No \"Deixe visível o então da pergunta dos pontos. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então e escolha estado no nome.\", [apontar encaixe em \"Se valor da variável pontos dentro de Se a vida de nave\" no \"então\"] [abrir categoria Programação > Variáveis] [encaixar \"Alterar variável contador para\" em \"Se valor da variável pontos dentro de Se a vida de nave\" no \"então\"] [trocar \"contador\" por \"estado\" em \"Alterar variável dentro de Se valor da variável pontos\"]. No \"Deixe visível o número um do valor. Abra Programação e Valores. Solte texto sobre esse um e escreva vitoria, sem acento e com letras minúsculas.\", [apontar bloco \"Alterar variável estado dentro de Se valor da variável pontos\"] [abrir categoria Programação > Valores] [soltar \"texto\" em cima do \"1\" em \"Alterar variável estado dentro de Se valor da variável pontos\"] [trocar \"Olá\" por \"vitoria\" em \"Alterar variável estado dentro de Se valor da variável pontos\"]. No \"Deixe o encaixe abaixo dessa mudança à vista. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela abaixo.\", [apontar abaixo de \"Alterar variável estado para texto vitoria\"] [abrir categoria Jogo 3D > Placar, vida e telas > Na tela] [encaixar \"Escrever na tela\" abaixo de \"Alterar variável estado para texto vitoria\"]. No \"Escolha embaixo, no meio, e deixe o texto vazio, apagando Pegue as estrelas.\", [trocar \"↖ em cima, à esquerda\" por \"↓ embaixo, no meio\" em \"Escrever na tela abaixo de Alterar variável estado para texto vitoria\"] [trocar \"Pegue as estrelas!\" por \"\" em \"Escrever na tela abaixo de Alterar variável estado para texto vitoria\"]. No \"Deixe visível o encaixe abaixo do aviso vazio. Abra Jogo 3D e Som. Encaixe Tocar o som pronto e conserve moeda.\", [apontar abaixo de \"Escrever na tela abaixo de Alterar variável estado para texto vitoria\"] [abrir categoria Jogo 3D > Som] [encaixar \"Tocar o som pronto\" abaixo de \"Escrever na tela abaixo de Alterar variável estado para texto vitoria\"]. No \"Deixe o encaixe abaixo do som visível. Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.\", [apontar abaixo de \"Tocar o som pronto dentro de Se valor da variável pontos\"] [abrir categoria Jogo 3D > Placar, vida e telas > Telas e fim] [encaixar \"Fim de jogo\" abaixo de \"Tocar o som pronto dentro de Se valor da variável pontos\"] [trocar \"você perdeu\" por \"você ganhou\" em \"Fim de jogo dentro de Se valor da variável pontos\"]. No \"Clique em Rodar de novo e pressione Enter. Pilote, desvie e acerte as pedras. Quando o placar chega a vinte e você ainda tem vida, aparece a tela de vitória.\", [rodar de novo] [tecla Enter] nota de edição: capturar uma partida real até vinte acertos com vida restante; usar corte de edição na repetição, sem mudar valores do projeto. No \"Depois do resultado, tente mover e disparar: a partida está encerrada. Clique em Voltar ao início. O começo volta com pontos zero e três vidas.\", [tecla ArrowRight] [tecla Space] [clicar \"Voltar ao início\"] [apontar prévia]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Se a vida de nave\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido\", voltar ao tamanho da aula [reduzir estúdio]. No \"clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": ["Se eu chegar a vinte e a vida também acabar, qual resultado vale?"],
+          "steps": [
+            "No primeiro Se de jogando de A cada quadro, encontre Se a vida de nave ≤ 0. Clique no segundo +, imediatamente antes de senão, para abrir esse ramo.",
+            "Deixe o senão visível. Em Programação → Lógica & Se, encaixe um Se nesse ramo.",
+            "Na pergunta nova, use pontos no lugar de x, ≥ no lugar de > e 20 no lugar de 0.",
+            "No então dos pontos, encaixe Programação → Variáveis → Alterar variável contador para. Escolha estado.",
+            "No valor, troque 1 por Programação → Valores → texto e escreva vitoria, sem acento.",
+            "Abaixo, encaixe Jogo 3D → Placar, vida e telas → Na tela → Escrever na tela. Use embaixo, no meio e texto vazio.",
+            "Abaixo do aviso, encaixe Jogo 3D → Som → Tocar o som pronto e conserve moeda.",
+            "Abaixo do som, encaixe Jogo 3D → Placar, vida e telas → Telas e fim → Fim de jogo. Escolha você ganhou."
+          ],
+          "tests": [
+            "Rodar de novo → Enter. Alcance vinte pontos mantendo alguma vida: aparece a vitória.",
+            "Depois do resultado, movimento e disparos não continuam.",
+            "Voltar ao início restaura a abertura, zero pontos e três vidas.",
+            "Confira nos blocos: a vitória está no senão da vida zero, nunca em uma conferência independente."
+          ],
+          "blockLabels": [
+            "Se a vida de nave ≤ 0, senão",
+            "Se pontos ≥ 20",
+            "Alterar variável estado para vitoria",
+            "Escrever na tela ↓ embaixo, no meio: texto vazio",
+            "Tocar o som pronto moeda",
+            "Fim de jogo: você ganhou"
+          ],
+          "blockTypes": [
+            "sz_js_if_else",
+            "sz_val_compare",
+            "sz_val_variable",
+            "sz_js_var_assign",
+            "sz_val_text",
+            "sz_g3d_hud_text",
+            "sz_g3d_play_effect",
+            "sz_g3d_end_game"
+          ]
+        },
+        {
+          "key": "patrulha-pronta",
+          "title": "Confira a patrulha completa",
+          "etapa": "completo",
+          "objective": "Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.",
+          "kind": "delivery",
+          "ponte": "Atualize os avisos fornecidos e teste começo, acerto, batida, vitória, derrota e uma nova partida. Depois envie sua Patrulha Espacial completa.",
+          "text": "[engaging, energetic, conversational voice] Sua patrulha já tem as regras completas. Falta trocar os avisos de projeto inicial pelos avisos da versão pronta. Esses textos estão no seu passo a passo para você copiar exatamente. Depois vamos conferir o conjunto. [confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com Patrulha Espacial e Projeto inicial. Troque o texto inteiro por: PATRULHA ESPACIAL, barra em pé, Abra uma rota entre os asteroides. [confident, clear, unhurried voice] Ainda em Ao iniciar, encontre o aviso de baixo com Enter e as setas. Troque o texto pelo aviso completo: ENTER, começar; SETAS, mover; ESPAÇO, um tiro por aperto. Use os dois-pontos e as barras como estão no passo a passo. [confident, clear, unhurried voice] Em Quando acontecer, encontre o acontecimento de Enter. Dentro dele, o aviso de cima diz Conheça a nave. Troque o texto inteiro por: Abra a rota, dois-pontos, acerte vinte asteroides e proteja sua nave. [confident, clear, unhurried voice] Logo abaixo está o aviso de que as regras serão construídas nas aulas. Troque pelo aviso pronto: SETAS, mover; ESPAÇO, atirar; Asteroide que passa não tira vida. Copie os separadores do passo a passo. [upbeat, encouraging voice] Clique em Rodar de novo. Confira a abertura, os três corações e o zero no placar. Toque em Espaço antes de Enter: não deve sair laser. [upbeat, encouraging voice] Pressione Enter. Confira o novo aviso, mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois. [upbeat, encouraging voice] Confira as duas formas de terminar em partidas diferentes: acabar a vida mostra derrota; chegar a vinte acertos com vida mostra vitória. Depois de cada resultado, use Voltar ao início. [upbeat, encouraging voice] Veja o começo voltar: nave no centro, nenhum tiro ou asteroide, três vidas e zero pontos. Pressione Enter e confira se a nova partida funciona como a primeira. [interested, animated voice] Você levou a ideia da nave para um espaço com profundidade e construiu as regras que fazem a patrulha acontecer. Agora seu jogo está pronto para ser jogado do começo ao fim. [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os quatro avisos usam os textos fornecidos, a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas. [reassuring, encouraging voice] Depois de corrigir, teste de novo. [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. [pleased, lively voice] Você concluiu a Patrulha Espacial, com acertos, pontos, vidas e duas formas de terminar a partida! [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.",
+          "screen": "A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No \"Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com Patrulha Espacial e Projeto inicial. Troque o texto inteiro por: PATRULHA ESPACIAL, barra em pé, Abra uma rota entre os asteroides.\", [arrastar até \"Escrever na tela ↑ em cima, no meio\"] [trocar \"PATRULHA ESPACIAL | Projeto inicial\" por \"PATRULHA ESPACIAL | Abra uma rota entre os asteroides\" em \"Escrever na tela ↑ em cima, no meio dentro de Ao iniciar\"]. No \"Ainda em Ao iniciar, encontre o aviso de baixo com Enter e as setas. Troque o texto pelo aviso completo: ENTER, começar; SETAS, mover; ESPAÇO, um tiro por aperto. Use os dois-pontos e as barras como estão no passo a passo.\", [arrastar até \"Escrever na tela ↓ embaixo, no meio dentro de Ao iniciar\"] [trocar \"ENTER: começar | SETAS: mover\" por \"ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto\" em \"Escrever na tela ↓ embaixo, no meio dentro de Ao iniciar\"]. No \"Em Quando acontecer, encontre o acontecimento de Enter. Dentro dele, o aviso de cima diz Conheça a nave. Troque o texto inteiro por: Abra a rota, dois-pontos, acerte vinte asteroides e proteja sua nave.\", [arrastar até \"Quando apertar a tecla Enter\"] [trocar \"PATRULHA ESPACIAL | Conheça a nave\" por \"Abra a rota: acerte 20 asteroides e proteja sua nave\" em \"Escrever na tela ↑ em cima, no meio dentro de Quando apertar a tecla Enter\"]. No \"Logo abaixo está o aviso de que as regras serão construídas nas aulas. Troque pelo aviso pronto: SETAS, mover; ESPAÇO, atirar; Asteroide que passa não tira vida. Copie os separadores do passo a passo.\", [apontar bloco \"Escrever na tela ↓ embaixo, no meio dentro de Quando apertar a tecla Enter\"] [trocar \"SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas.\" por \"SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida\" em \"Escrever na tela ↓ embaixo, no meio dentro de Quando apertar a tecla Enter\"]. No \"Clique em Rodar de novo. Confira a abertura, os três corações e o zero no placar. Toque em Espaço antes de Enter: não deve sair laser.\", [rodar de novo] [apontar prévia] [tecla Space]. No \"Pressione Enter. Confira o novo aviso, mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.\", [tecla Enter] nota de edição: capturar um acerto, uma batida válida e uma pedra passando, apontando o placar correspondente. No \"Confira as duas formas de terminar em partidas diferentes: acabar a vida mostra derrota; chegar a vinte acertos com vida mostra vitória. Depois de cada resultado, use Voltar ao início.\", nota de edição: retomar capturas reais dos dois resultados desta aula, sem alterar os blocos nem simular pontuação [clicar \"Voltar ao início\"]. No \"Veja o começo voltar: nave no centro, nenhum tiro ou asteroide, três vidas e zero pontos. Pressione Enter e confira se a nova partida funciona como a primeira.\", [apontar prévia] [tecla Enter] [tecla Space]. No \"volte aos blocos e confira se ficou assim\", deixar bem à vista os blocos conferidos [mostrar blocos \"Escrever na tela em cima, no meio\", \"Quando apertar a tecla Enter\", \"Se a vida de nave\"].  No \"Depois de corrigir, teste de novo\", voltar a mão para o jogo [apontar prévia]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto\", clicar em **Enviar meu projeto** [clicar \"Enviar meu projeto\"]. No \"e confirme em Enviar\", confirmar em **Enviar**, na janela que abriu [clicar \"Enviar\"]. No \"Você concluiu a Patrulha Espacial, com acertos, pontos, vidas e duas formas de terminar a partida!\", voltar ao tamanho da aula [reduzir estúdio]. No \"Quando aparecer Projeto enviado!, clique em Próxima parte\", clicar em **Próxima parte** [próxima parte].",
+          "kids": [],
+          "steps": [
+            "Em Ao iniciar, troque o título em cima, no meio por: PATRULHA ESPACIAL | Abra uma rota entre os asteroides.",
+            "Em Ao iniciar, troque o aviso embaixo, no meio por: ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto.",
+            "No acontecimento Enter, troque o aviso em cima, no meio por: Abra a rota: acerte 20 asteroides e proteja sua nave.",
+            "No acontecimento Enter, troque o aviso embaixo, no meio por: SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida."
+          ],
+          "tests": [
+            "Rodar de novo: nave no centro, grupos vazios, pontos zero e três vidas. Espaço antes de Enter não dispara.",
+            "Depois de Enter, movimento, disparos e relógio funcionam. Confira os novos avisos.",
+            "Um acerto soma um ponto; uma batida válida tira uma vida; uma pedra que passa sem bater não altera pontos ou vida.",
+            "Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.",
+            "Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo."
+          ],
+          "blockLabels": [
+            "Escrever na tela ↑ em cima, no meio",
+            "Escrever na tela ↓ embaixo, no meio",
+            "Quando apertar a tecla Enter"
+          ],
+          "blockTypes": ["sz_g3d_hud_text"]
+        },
+        {
+          "key": "conferir-a-patrulha",
+          "title": "Por que o jogo termina?",
+          "kind": "quiz",
+          "text": "",
+          "screen": "",
+          "objective": "Explicar as regras usando os testes do próprio jogo.",
+          "ponte": "Pense nos testes que você acabou de fazer. Escolha uma resposta e leia a explicação. Você pode corrigir e tentar de novo. Quando terminar, clique em Próxima parte.",
+          "quiz": {
+            "kind": "quiz",
+            "passingScore": 100,
+            "questions": [
+              {
+                "id": "guardas",
+                "prompt": "Por que o disparo e o relógio perguntam se estado é igual a jogando?",
+                "choices": [
+                  {
+                    "id": "guardas-1",
+                    "label": "Para escolher a aparência da nave."
+                  },
+                  {
+                    "id": "guardas-2",
+                    "label": "Para agir apenas durante a partida, depois do começo."
+                  },
+                  {
+                    "id": "guardas-3",
+                    "label": "Para fazer todo asteroide valer vinte pontos."
+                  }
+                ],
+                "correctChoiceIds": ["guardas-2"],
+                "explanation": "A abertura mantém estado como inicio. Enter muda para jogando. Os novos acontecimentos usam essa pergunta para respeitar o momento da partida."
+              },
+              {
+                "id": "prioridade",
+                "prompt": "No começo de um quadro, pontos está em vinte e a vida está em zero. O que esta patrulha faz?",
+                "choices": [
+                  {
+                    "id": "prioridade-1",
+                    "label": "Mostra vitória e derrota ao mesmo tempo."
+                  },
+                  {
+                    "id": "prioridade-2",
+                    "label": "Mostra vitória, porque vinte é maior que zero."
+                  },
+                  {
+                    "id": "prioridade-3",
+                    "label": "Mostra derrota, porque confere vida zero antes da meta."
+                  }
+                ],
+                "correctChoiceIds": ["prioridade-3"],
+                "explanation": "A pergunta da vida vem primeiro. A meta fica no senão, então só é conferida quando a nave ainda tem vida."
+              },
+              {
+                "id": "novo-comeco",
+                "prompt": "Depois do resultado, você clica em Voltar ao início. O que deve conferir?",
+                "choices": [
+                  {
+                    "id": "novo-comeco-1",
+                    "label": "Abertura, nave no centro, grupos vazios, zero pontos e três vidas."
+                  },
+                  {
+                    "id": "novo-comeco-2",
+                    "label": "Só a mudança do título; os pontos anteriores ficam."
+                  },
+                  {
+                    "id": "novo-comeco-3",
+                    "label": "Uma nova pedra já batendo na nave."
+                  }
+                ],
+                "correctChoiceIds": ["novo-comeco-1"],
+                "explanation": "O botão nativo prepara o jogo desde o começo. Enter inicia uma nova partida, sem carregar os tiros, as pedras ou a pontuação da anterior."
+              }
+            ]
+          },
+          "steps": [],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        },
+        {
+          "key": "sua-patrulha",
+          "title": "Sua patrulha está pronta",
+          "kind": "fecho",
+          "objective": "Reconhecer a construção concluída e conhecer a publicação opcional no Mural.",
+          "ponte": "Sua Patrulha Espacial está pronta! Se quiser, publique no Mural e copie o link de jogar para mostrar à família. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.",
+          "text": "[interested, animated voice] Você construiu uma rota em três dimensões. Fez o laser nascer na nave, criou o intervalo dos asteroides, reconheceu os contatos, contou os acertos e cuidou das vidas. Depois, escolheu quando a partida termina. [engaging, energetic, conversational voice] Seu jogo está pronto! Se quiser, você pode publicar a Patrulha no Mural dos Criadores. É o lugar da plataforma onde sua família e seus amigos podem jogar os jogos publicados. Você também pode clicar em Concluir aula e continuar a jornada sem publicar. [confident, clear, unhurried voice] Para publicar, clique em Compartilhar, no alto do Estúdio. Ele pode aparecer como uma setinha para cima. [engaging, energetic, conversational voice] Abre uma janela, e o resumo do projeto já vem preenchido. Pode deixar como está. [confident, clear, unhurried voice] Clique em Gerar capa e espere a imagem aparecer. Confira a capa do seu jogo. Depois clique em Publicar e espere a publicação terminar. [interested, animated voice] Quando aparecer Seu jogo está no Mural, sua patrulha já pode ser jogada pelo link. [curious] Como eu mostro minha patrulha para a família? [engaging, energetic, conversational voice] Clique em Copiar link de jogar. Depois envie esse link, com a ajuda de um adulto se precisar. Quem receber pode jogar no computador com o teclado. [confident, clear, unhurried voice] Clique em Fechar e, por fim, em Concluir aula.",
+          "kids": ["Como eu mostro minha patrulha para a família?"],
+          "screen": "A parte usa o projeto completo já enviado, com Estúdio expandido [expandir estúdio]. Durante a retomada, usar capturas reais da Patrulha pronta nota de edição: nave, disparo, acerto, vida e resultados. No \"Para publicar, clique em Compartilhar\", abrir a janela [compartilhar]. No \"o resumo do projeto já vem preenchido\", apontar o resumo [apontar \"Resumo do projeto\"]. No \"Clique em Gerar capa\", gerar a capa nativa [clicar \"Gerar capa\"]. No \"Depois clique em Publicar\", demonstrar a publicação apenas na sessão de gravação autorizada [clicar \"Publicar\"]. No \"Clique em Copiar link de jogar\", copiar [clicar \"Copiar link de jogar\"]. No \"Clique em Fechar\", fechar [clicar \"Fechar\"]. No \"em Concluir aula\", reduzir o Estúdio e concluir [reduzir estúdio] [concluir aula]. A publicação é opcional para o aluno; esta autoria não publica projetos nem envia mensagens.",
+          "steps": [
+            "Você pode concluir a aula sem publicar.",
+            "Se quiser publicar: Compartilhar → Gerar capa → conferir a capa → Publicar.",
+            "Depois de Seu jogo está no Mural!, use Copiar link de jogar. Feche a janela e clique em Concluir aula."
+          ],
+          "tests": [],
+          "blockLabels": [],
+          "blockTypes": []
+        }
+      ]
+    }
+  ],
+  "jogoPronto": {
+    "title": "Experimente a Patrulha Espacial",
+    "instrucoes": "Clique no jogo e pressione Enter. Mova a nave com as setas esquerda e direita; cada aperto de Espaço dispara um laser. Acerte 20 asteroides antes de perder as três vidas. Asteroides que passam sem bater não tiram vida. Depois de um resultado, clique em Voltar ao início; Enter começa outra partida. Experimente o quanto quiser. Não é preciso vencer para seguir."
+  },
+  "introducaoPassoAPasso": "Depois de Nave Contra Asteroides, você vai levar a mesma ideia para uma rota com profundidade. Monte os disparos, o surgimento dos asteroides, os limites, os acertos, os pontos, as vidas e as decisões de resultado. As investigações da Ilha vão ajudar a entender as três direções e o contato de verdade. Este guia mostra onde procurar os blocos, onde encaixar e como testar cada conquista. Consulte a parte que precisar e volte ao seu jogo.",
+  "status": "autoria-para-revisao",
+  "limiteDeAutoria": "Telas de início e resultado, estado, Enter e reinício vêm preparados; o aluno constrói as regras da partida. As escolhas de arte não mudam a dificuldade.",
+  "projetos": {
+    "inicio": "projetos/inicio.szproject.json",
+    "disparo": "projetos/disparo.szproject.json",
+    "origem": "projetos/origem.szproject.json",
+    "trajeto-tiro": "projetos/trajeto-tiro.szproject.json",
+    "limite-tiro": "projetos/limite-tiro.szproject.json",
+    "relogio": "projetos/relogio.szproject.json",
+    "entrada": "projetos/entrada.szproject.json",
+    "trajeto-asteroide": "projetos/trajeto-asteroide.szproject.json",
+    "limite-asteroide": "projetos/limite-asteroide.szproject.json",
+    "contato": "projetos/contato.szproject.json",
+    "contador": "projetos/contador.szproject.json",
+    "soma": "projetos/soma.szproject.json",
+    "placar": "projetos/placar.szproject.json",
+    "vidas": "projetos/vidas.szproject.json",
+    "dano": "projetos/dano.szproject.json",
+    "retirada-batida": "projetos/retirada-batida.szproject.json",
+    "derrota": "projetos/derrota.szproject.json",
+    "vitoria": "projetos/vitoria.szproject.json",
+    "completo": "projetos/completo.szproject.json"
+  }
+}

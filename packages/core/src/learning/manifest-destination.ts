@@ -5,6 +5,7 @@ export const COMMON_COURSE_SLUGS = [
   'cade-todo-mundo',
   'desafio-primeiro-jogo',
   'nave-contra-asteroides',
+  'jornada-construtor-base-3d',
   'corre-dino',
   'o-jogo-do-meu-jeito',
   'jornada-faisca-base-3d',

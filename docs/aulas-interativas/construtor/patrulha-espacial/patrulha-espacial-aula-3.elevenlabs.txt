@@ -1,0 +1,143 @@
+[engaging, energetic, conversational voice] Imagine olhar uma ponte de cima. Um carrinho na ponte pode parecer em cima de outro carrinho que está na rua lá embaixo. Mas existe um espaço entre eles. Eles não bateram.
+
+[interested, animated voice] No jogo em três dimensões, uma imagem também pode dar essa impressão. Para acertar um asteroide, o laser precisa encontrar o asteroide no espaço. Parecer que os desenhos se cruzaram na tela não basta.
+
+[curious] Então duas coisas podem parecer juntas e ainda estar separadas?
+
+[engaging, energetic, conversational voice] Podem! Vamos voltar à Ilha do Farol e observar a chave e o personagem de outro lugar. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Compare a separação e o encontro de verdade. Depois, você vai usar essa diferença para programar o acerto do laser na patrulha. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Alinhe a nave com uma pedra e dispare. O laser atravessa a pedra, porque o encontro ainda não tem uma resposta.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na Ilha, parecer junto na imagem não bastava: os objetos precisavam encostar de verdade. Vamos usar essa pergunta no laser e na pedra e programar o que acontece no acerto.
+
+[confident, clear, unhurried voice] Encontre Enquanto estiver rodando e A cada quadro da cena. Dentro do Se de jogando, procure Para cada objeto asteroide do grupo asteroides. Dentro dele, há Para cada objeto tiro do grupo tiros.
+
+[engaging, energetic, conversational voice] Esse percurso preparado apresenta um par de cada vez: um asteroide e um tiro. O Se valor da variável alvoAtivo pergunta se essa pedra ainda pode ser acertada. Você vai colocar a pergunta do contato dentro dele.
+
+[confident, clear, unhurried voice] Deixe visível o espaço então do Se valor da variável alvoAtivo.
+
+[confident, clear, unhurried voice] Abra Programação e Lógica e Se. Pegue um Se e encaixe nesse então.
+
+[confident, clear, unhurried voice] O Se novo chega com x maior que zero. Segure essa pergunta pelo sinal de maior e leve até a lixeira.
+
+[confident, clear, unhurried voice] Deixe visível o espaço que ficou ao lado do Se novo. Abra Jogo 3D, Encostar e Encostar de novo. Pegue o objeto jogador está encostando em e coloque nesse espaço.
+
+[confident, clear, unhurried voice] No primeiro objeto da pergunta, escolha tiro. No segundo, escolha asteroide.
+
+[confident, clear, unhurried voice] Deixe à vista o então dessa pergunta de contato.
+
+[confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue Tirar o objeto inimigo do grupo e coloque nesse então. Escolha asteroide no objeto e asteroides no grupo.
+
+[confident, clear, unhurried voice] Deixe o encaixe abaixo dessa retirada visível. Pegue outro Tirar o objeto inimigo do grupo e encaixe logo abaixo. Desta vez, escolha tiro no objeto e tiros no grupo.
+
+[engaging, energetic, conversational voice] Você está retirando só os dois objetos desse encontro. As outras pedras e os outros lasers continuam na rota.
+
+[confident, clear, unhurried voice] Deixe visível o encaixe abaixo da retirada do tiro. Abra Programação e Variáveis. Pegue Alterar variável contador para e encaixe ali. No nome, escolha alvoAtivo.
+
+[confident, clear, unhurried voice] Deixe o número um desse bloco à vista. Abra Programação e Lógica e Se. Pegue verdadeiro, solte em cima do um e escolha falso.
+
+[interested, animated voice] A pedra que já foi acertada deixa de ser um alvo ativo. Assim, dois lasers muito próximos não contam a mesma pedra duas vezes. O percurso prepara a próxima pedra separadamente.
+
+[confident, clear, unhurried voice] Deixe o encaixe abaixo de Alterar variável alvoAtivo visível. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e conserve a opção moeda.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Espere uma pedra se aproximar. Mova a nave para ficar na direção dela e dispare. Quando o laser encosta, os dois desaparecem e você ouve o som do acerto.
+
+[upbeat, encouraging voice] Atire também numa faixa sem pedra. Esse laser continua o caminho normalmente. O acerto só acontece quando os objetos encostam.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a pergunta de contato fica dentro de Se alvoAtivo, usa tiro e asteroide, retira os dois objetos dos grupos certos, muda alvoAtivo para falso e toca moeda.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O laser já acerta as pedras. Para saber quantas você acertou, vamos guardar uma contagem, como na sua nave em duas dimensões. Ela começa sem acertos: zero.
+
+[confident, clear, unhurried voice] Encontre Ao iniciar e Criar variável velocidadeAsteroides. Deixe o encaixe logo abaixo dele à vista, antes da variável estado.
+
+[confident, clear, unhurried voice] Abra Programação e Variáveis. Pegue Criar variável contador com valor e encaixe nesse lugar.
+
+[confident, clear, unhurried voice] No nome contador, escreva pontos, tudo em letras minúsculas. Conserve o valor zero.
+
+[interested, animated voice] Toda vez que o jogo começa do início, pontos recebe zero. Esse bloco prepara a contagem. Ele ainda não escreve nada na tela e ainda não soma no acerto.
+
+[reassuring, encouraging voice] Confira se ficou assim: Criar variável pontos com valor zero está em Ao iniciar, depois de velocidadeAsteroides.
+
+[engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Você criou o lugar que guarda a contagem. Agora ela precisa mudar no acontecimento certo: o contato que acerta uma pedra. Disparar sozinho não vale ponto.
+
+[curious] E uma pedra que passa pela nave sem bater, conta como acerto?
+
+[engaging, energetic, conversational voice] Não. O ponto pertence ao encontro do laser com a pedra. Vamos colocar a soma dentro dessa resposta.
+
+[confident, clear, unhurried voice] Em Enquanto estiver rodando, encontre Se o objeto tiro está encostando em asteroide. Dentro dele, deixe visível o encaixe depois de Tirar o objeto tiro e antes de Alterar variável alvoAtivo.
+
+[confident, clear, unhurried voice] Abra Programação e Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar.
+
+[confident, clear, unhurried voice] Conserve a quantidade um. No nome contador, escolha pontos.
+
+[interested, animated voice] O encontro retira o par, soma um ponto e marca a pedra como consumida. Sem esse encontro, a soma não roda. O número ainda está guardado na variável; a próxima parte vai mostrá-lo na tela.
+
+[reassuring, encouraging voice] Confira se ficou assim: Somar um em variável pontos está dentro do acerto, depois de tirar o tiro e antes de mudar alvoAtivo para falso.
+
+[engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A contagem já começa em zero e soma no acerto. Agora o piloto precisa enxergar esse número. Vamos preparar o aviso inicial e atualizar o mesmo lugar depois de cada acerto.
+
+[confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com o título Patrulha Espacial e Projeto inicial. Deixe o encaixe logo abaixo dele visível.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, Placar, vida e telas e Na tela. Pegue Escrever na tela e coloque nesse lugar.
+
+[confident, clear, unhurried voice] No lugar da tela, escolha em cima, à direita. No texto Pegue as estrelas, escreva Acertos, dois-pontos, espaço, zero, espaço, barra, espaço, vinte.
+
+[engaging, energetic, conversational voice] Esse é o aviso do começo. Agora vamos montar o aviso que acompanha os acertos.
+
+[confident, clear, unhurried voice] Volte ao contato do tiro com o asteroide. Deixe à vista o encaixe depois de Tocar o som pronto moeda, ainda dentro do então.
+
+[confident, clear, unhurried voice] Abra de novo Jogo 3D, Placar, vida e telas e Na tela. Encaixe outro Escrever na tela nesse lugar. Escolha em cima, à direita.
+
+[confident, clear, unhurried voice] Deixe visível o texto Pegue as estrelas desse novo bloco. Abra Programação e Matemática. Pegue zero mais zero e solte em cima desse texto.
+
+[engaging, energetic, conversational voice] Quando uma das partes é texto, o mais junta as partes da mensagem. Vamos juntar Acertos, o valor de pontos e a meta vinte.
+
+[confident, clear, unhurried voice] Deixe visível o zero da esquerda. Pegue outro zero mais zero em Matemática e solte em cima desse zero.
+
+[confident, clear, unhurried voice] No bloco de dentro, deixe visível o zero da esquerda. Abra Programação e Valores. Pegue texto e solte sobre esse zero. No lugar de Olá, escreva Acertos com dois-pontos e deixe um espaço depois.
+
+[confident, clear, unhurried voice] Deixe visível o zero à direita desse mesmo mais, o de dentro. Em Valores, pegue valor da variável e solte sobre esse zero. No x, escolha pontos.
+
+[confident, clear, unhurried voice] Falta o zero à direita do mais de fora. Deixe esse zero à vista. Em Valores, pegue outro texto e solte sobre ele. No lugar de Olá, escreva um espaço, barra, outro espaço e vinte.
+
+[interested, animated voice] A mensagem junta Acertos, o número guardado em pontos e a meta vinte. Como esse aviso vem depois da soma, ele mostra a contagem já atualizada.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. O canto de cima, à direita, começa em Acertos zero de vinte. Pressione Enter, alinhe a nave com uma pedra e acerte. O número passa para um.
+
+[upbeat, encouraging voice] Dispare numa faixa vazia. A contagem não muda. Acerte outra pedra: agora o placar soma mais um. Ele não deve subir sem um novo acerto.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o aviso inicial fica em Ao iniciar, o aviso com pontos fica dentro do acerto depois da soma, e os dois escrevem em cima, à direita.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você fez cada acerto valer um ponto e aparecer no placar da sua patrulha!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.

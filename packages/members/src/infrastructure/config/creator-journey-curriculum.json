@@ -152,18 +152,19 @@
       "genre": "Tiro espacial",
       "language": "Blocos",
       "environment": "Jogo 2D + Jogo 3D",
-      "phase": "Construir uma partida",
+      "phase": "Construir as regras de uma partida",
       "color": "amber",
-      "promise": "Eu junto várias regras em uma partida que começa, termina e recomeça.",
+      "promise": "Eu junto várias regras em uma partida que usa começo, telas e reinício preparados.",
       "entry": "Faísca concluído. Conhece evento, condição, estado simples e os eixos do chão 3D. Não pressupor nenhum Poder específico do Faísca.",
-      "rationale": "A nave é uma boa base para grupos, criação de objetos e colisões. As conquistas intermediárias precisam ser jogáveis: mover, atirar, acertar e fechar uma partida.",
+      "rationale": "A nave é uma boa base para grupos, criação de objetos, colisões, pontos e vidas. As conquistas intermediárias precisam ser jogáveis. A apresentação e o fluxo de telas chegam preparados para concentrar a autoria nas regras que os acionam.",
       "concepts": [
         "Grupos de objetos",
         "Relógio de criação",
         "Colisão e retirada",
         "Pontos e vidas",
-        "Início / jogando / fim",
-        "Reinício completo"
+        "Regras que respeitam início / jogando / fim",
+        "Condições de vitória e derrota",
+        "Testar a restauração no reinício preparado"
       ],
       "math": "Somar e subtrair, posições, intervalos e sinais de velocidade. A trajetória inicial é reta; ângulos ficam nos Poderes que os ensinarem.",
       "courses": [
@@ -172,7 +173,7 @@
           "dimension": "2D",
           "environment": "Blocos · Jogo 2D",
           "origin": "Curso existente com 9 aulas. Conservar a precisão e inserir pequenas decisões entre módulos.",
-          "status": "Revisão do curso existente",
+          "status": "Reautoria local em produção; mídia e publicação pendentes",
           "lessons": [
             "Faça a nave aparecer — preparar e executar o primeiro estado jogável.",
             "Mova a nave — entrada, velocidade e limite de movimento.",
@@ -183,21 +184,43 @@
             "Dê vidas à nave — dano e condição de fim.",
             "Comece a partida — estados, entrada e regra que só roda durante o jogo.",
             "Termine e recomece — vitória, derrota, reset e uma decisão de dificuldade testada."
-          ]
+          ],
+          "authoredSource": {
+            "courseSlug": "nave-contra-asteroides",
+            "directory": "docs/aulas-interativas/construtor/nave-contra-asteroides",
+            "lessons": [
+              "primeira-nave",
+              "dia-1",
+              "dia-2",
+              "chuva-de-asteroides",
+              "dia-3",
+              "pontos",
+              "dia-4",
+              "comecar-partida",
+              "dia-5"
+            ],
+            "note": "O array lessons acima conserva o outline legado e seu hash de identidade do seed; não descreve a divisão atual de autoria. Títulos, sequência detalhada e critérios estão nos manifestos desta fonte. Telas e reinício chegam preparados; personalização somente visual. Importar nas aulas existentes/reservadas preservando IDs. Mídia e publicação pendentes."
+          }
         },
         {
           "title": "Patrulha Espacial",
           "dimension": "3D",
           "environment": "Blocos · Jogo 3D",
           "origin": "Patrulha Espacial existe como exemplo; separar o núcleo das melhorias avançadas.",
-          "status": "Novo curso · 5 aulas propostas",
+          "status": "Reautoria local em produção; mídia e publicação pendentes",
           "lessons": [
             "Da tela ao espaço — reconhecer nave, eixos e câmera preparada.",
             "Tiros e meteoros — reconstruir grupos e relógio com ajuda menor.",
             "Acertos no espaço — colisão e retirada; observar tamanho e profundidade.",
             "Pontos e vidas — transportar os estados da partida e explicar uma condição.",
             "Uma patrulha completa — testar vitória, derrota e reinício; ajustar uma regra conhecida."
-          ]
+          ],
+          "authoredSource": {
+            "courseSlug": "jornada-construtor-base-3d",
+            "directory": "docs/aulas-interativas/construtor/patrulha-espacial",
+            "lessons": ["aula-1", "aula-2", "aula-3", "aula-4", "aula-5"],
+            "note": "O array lessons acima conserva o outline legado e seu hash de identidade do seed; não descreve a divisão atual de autoria. Títulos, sequência detalhada e critérios estão nos manifestos desta fonte. Telas e reinício chegam preparados; personalização somente visual. Importar nas aulas existentes/reservadas preservando IDs. Mídia e publicação pendentes."
+          }
         }
       ],
       "mission": {
@@ -291,7 +314,8 @@
       ],
       "evidence": "Uma partida íntegra em dois contextos novos, dois Poderes diferentes aplicados e uma explicação curta de estado ou colisão.",
       "motivation": "Antes de terminar o posto, a nave já passa por versões jogáveis. Depois do par, a pessoa escolhe como quer fortalecê-la e pode voltar para testar outros Poderes.",
-      "recovery": "Tratar separadamente falhas de colisão, contagem e estado. A ajuda abre a parte relevante da Nave, preservando o jogo da missão."
+      "recovery": "Tratar separadamente falhas de colisão, contagem e estado. A ajuda abre a parte relevante da Nave, preservando o jogo da missão.",
+      "authoringBoundary": "Direção aprovada para as bases: telas de abertura/vitória/derrota, estado inicial, Enter e reinício preparados; a criança constrói as regras da partida e as condições de resultado. Personalização somente de aparência, com regras e áreas de colisão preservadas. O 3D retoma o 2D com montagem completa e apoios espaciais explícitos, sem exigir Poder específico do Faísca."
     },
     {
       "id": "inventor",
@@ -303,8 +327,8 @@
       "phase": "Dominar movimento e desafio",
       "color": "green",
       "promise": "Eu controlo o movimento e construo um desafio que pode ser aprendido.",
-      "entry": "Partida completa, grupos, relógio, colisão, estados e reset do Construtor. Pulo e gravidade ainda serão ensinados; nenhum Poder anterior é pré-requisito.",
-      "rationale": "O gênero traz uma novidade concreta: movimento com gravidade e ritmo. Reaprender telas, pontos e limpeza do zero faria o aluno repetir muito da Nave.",
+      "entry": "Concluiu a partida do Construtor: grupos, relógio, colisões, pontos, vidas e condições de resultado, usando telas, estado inicial e reinício preparados. No Inventor passará a construir essa arquitetura desde um projeto sem blocos; pulo e gravidade ainda serão ensinados. Nenhum Poder específico anterior é pré-requisito.",
+      "rationale": "A reautoria futura combina gravidade e ritmo com autoria completa da organização do jogo: cena, atores, câmera quando necessária, telas, estados, transições e reinício a partir de um projeto sem blocos. Retoma as regras já construídas no Construtor, usando os comandos do motor gráfico. Esta direção ainda é proposta de produção, não um curso implementado.",
       "concepts": [
         "Velocidade e gravidade",
         "Pulo e contato com o chão",
@@ -437,7 +461,8 @@
       ],
       "evidence": "Movimento e dificuldade funcionam em 2D/3D. O aluno aplica dois Poderes e registra uma melhoria feita depois de testar.",
       "motivation": "O aluno já altera a sensação do jogo. Testar duas versões e escolher uma produz autoria antes de começar a linguagem textual.",
-      "recovery": "Se o pulo falha, isolar impulso, queda e contato em uma cena curta. Se a partida é impossível, testar espaçamento e velocidade separadamente."
+      "recovery": "Se o pulo falha, isolar impulso, queda e contato em uma cena curta. Se a partida é impossível, testar espaçamento e velocidade separadamente.",
+      "authoringBoundary": "Direção futura aprovada: começar sem blocos e construir a arquitetura completa, incluindo telas e reinício. Os arrays lessons dos cursos abaixo conservam o outline legado e os hashes do seed; serão conciliados com a autoria detalhada antes da produção, sem recriar as identidades reservadas. Missão e Poderes não foram reautorados nesta etapa."
     },
     {
       "id": "explorador",

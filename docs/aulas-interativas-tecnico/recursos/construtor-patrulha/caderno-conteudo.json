@@ -1,0 +1,1344 @@
+[
+  {
+    "id": "encontre-1",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "As regras que você construiu na Nave agora ganham profundidade.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "No alto de cada página estão a aula e a parte. Use este caderno para lembrar um encaixe, conferir um valor ou repetir um teste. Você pode voltar às experiências e rever os vídeos quantas vezes quiser."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Da tela ao espaço",
+        "text": "Cada aperto de Espaço cria um laser na posição lateral da nave; ele viaja pelo Z negativo e sai do grupo ao ultrapassar o limite.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-fim-do-caminho-do-laser}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. Asteroides na rota",
+        "text": "Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.",
+        "pages": "Páginas {{pagina:aula-2-relogio-dos-asteroides}} a {{ultima-pagina:aula-2-fim-da-rota}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 3. Acertar no espaço",
+        "text": "Um contato real retira o par envolvido, consome o alvo uma única vez e soma um ponto. O placar começa em zero e mostra cada acerto.",
+        "pages": "Páginas {{pagina:aula-3-encontro-no-espaco}} a {{ultima-pagina:aula-3-conferir-acertos}}"
+      },
+      {
+        "kind": "note",
+        "text": "As telas e o caminho para jogar outra vez já vêm preparados. A cada parte, você acrescenta uma regra ao jogo e testa o resultado."
+      }
+    ]
+  },
+  {
+    "id": "encontre-2",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Continue sua missão",
+    "subtitle": "As regras que você construiu na Nave agora ganham profundidade.",
+    "items": [
+      {
+        "kind": "index",
+        "title": "Aula 4. Três chances na patrulha",
+        "text": "A nave começa com três vidas. No contato com uma pedra, o jogo retira apenas essa pedra e desconta uma vida, respeitando a breve proteção nativa.",
+        "pages": "Páginas {{pagina:aula-4-tres-vidas}} a {{ultima-pagina:aula-4-retirar-a-pedra-da-batida}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 5. Uma patrulha completa",
+        "text": "Vida zero aciona a derrota; se houver vida, vinte pontos acionam a vitória. O jogo encerra uma vez e o botão nativo prepara outra partida com zero pontos e três vidas.",
+        "pages": "Páginas {{pagina:aula-5-quando-as-vidas-acabam}} a {{ultima-pagina:aula-5-sua-patrulha}}"
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Conheça a Patrulha Espacial",
+    "subtitle": "Experimente a missão antes de construir suas regras.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo. Aperte Enter. Mova a nave com as setas e toque em Espaço para disparar. Compare a posição da nave com a posição de onde sai o laser. Observe o caminho que entra no espaço."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique no jogo e pressione Enter."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Use as setas esquerda e direita para mover a nave. Cada aperto de Espaço dispara um laser."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Acerte 20 asteroides antes de perder as três vidas. Uma pedra que passa sem bater não tira vida."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No resultado, clique em Voltar ao início. Na abertura, Enter começa outra partida."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Experimente a versão completa; não é preciso vencer para seguir."]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-seu-passo-a-passo",
+    "lesson": "aula-1",
+    "part": 2,
+    "kicker": "Aula 1 · Parte 2",
+    "title": "Seu passo a passo do projeto",
+    "subtitle": "Os mesmos passos da aula, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Seu apoio durante a construção",
+        "text": "Este caderno acompanha o mesmo projeto da aula. Primeiro veja a explicação e experimente. Na montagem, procure a aula e a parte no alto da página para consultar os passos. Os links de Como Fazer ficam disponíveis na aula para ajudar quando você precisar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Consulte o Passo a passo do projeto quando precisar de um bloco, de um encaixe ou de um teste."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Se quiser guardar o PDF, clique em Baixar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Use os links do Como fazer para dúvidas sobre a plataforma e Preciso de ajuda para pedir orientação sobre o jogo."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-tres-direcoes",
+    "lesson": "aula-1",
+    "part": 3,
+    "kicker": "Aula 1 · Parte 3",
+    "title": "Investigue as três direções",
+    "subtitle": "Relacionar x, y e z ao lado, à altura e à profundidade antes de posicionar o laser.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Relacionar x, y e z ao lado, à altura e à profundidade antes de posicionar o laser."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Investigue as três direções na Ilha com o Zappy."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Compare cada mudança separadamente e pense em qual direção o laser da Patrulha vai viajar."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-um-aperto-um-laser",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "Um aperto, um laser",
+    "subtitle": "Criar uma cópia do laser ao apertar Espaço, somente durante a partida.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, deixe um espaço livre visível. Em Jogo 3D → Controles, pegue Quando apertar a tecla e coloque dentro da área."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No campo da tecla, escolha espaço (pular)."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro de Quando apertar a tecla espaço, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Deixe o então do Se visível. Em Jogo 3D → Grupos, encaixe Criar uma cópia de no grupo em x y z nesse então."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Escolha moldeTiro e tiros. Deixe X = 0, Y = 1 e Z = -1.6."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Deixe o encaixe abaixo da cópia visível. Em Jogo 3D → Som, encaixe Tocar nota abaixo dela. Use frequência 880 Hz e duração 60 ms."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "inicio",
+        "after": "disparo",
+        "focus": [
+          "sz_g3d_on_key",
+          "sz_js_if_else",
+          "sz_val_compare",
+          "sz_val_variable",
+          "sz_val_text",
+          "sz_g3d_spawn_copy",
+          "sz_g3d_play_note"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo. Antes de Enter, Espaço não cria laser.",
+          "Depois de Enter, um aperto de Espaço cria um laser parado e toca uma nota curta.",
+          "Mova a nave para o lado; o primeiro laser permanece perto do centro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-laser-segue-a-nave",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "O laser nasce na nave",
+    "subtitle": "Usar a posição X atual da nave como origem lateral de cada disparo.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, encontre a cópia do moldeTiro no evento Espaço e deixe o campo X visível."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Objetos → Posição, giro e tamanho, pegue posição x do objeto e solte sobre o 0 do X dessa cópia."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No bloco de posição, use eixo x e objeto nave. Conserve Y = 1 e Z = -1.6 na cópia."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "disparo",
+        "after": "origem",
+        "focus": ["sz_g3d_get_pos"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Mova para a direita, solte e aperte Espaço: o laser nasce no X atual da nave.",
+          "Mova para a esquerda e aperte Espaço outra vez: o novo laser nasce no novo X. Os lasers anteriores não acompanham a nave."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-laser-em-profundidade",
+    "lesson": "aula-1",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "O laser segue para o fundo",
+    "subtitle": "Escolher a velocidade negativa em Z para o grupo de tiros.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, encontre Criar variável velocidadeTiros com valor 0."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Troque apenas o valor 0 por -22. Conserve o nome velocidadeTiros."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "origem",
+        "after": "trajeto-tiro",
+        "focus": ["sz_js_var_create"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Mova a nave e aperte Espaço: o laser viaja para o fundo, pelo Z negativo.",
+          "Aperte e solte Espaço mais de uma vez. Cada aperto cria um novo laser."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-fim-do-caminho-do-laser",
+    "lesson": "aula-1",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "O laser tem um fim de caminho",
+    "subtitle": "Retirar do grupo os lasers que ultrapassaram os limites de profundidade.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando → A cada quadro da cena → Se estado = jogando, deixe visível o último encaixe do então, depois dos percursos."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Grupos, pegue No grupo inimigos, tirar quem saiu e encaixe no final desse então."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Escolha grupo tiros, limites -36 e 3 e eixo Z."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "trajeto-tiro",
+        "after": "limite-tiro",
+        "focus": ["sz_g3d_prune_area"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes de Enter, Espaço não dispara.",
+          "Depois de Enter, mova e dispare. O laser nasce no X da nave e segue para o fundo.",
+          "Espere pelo menos dois segundos. Verificar projeto também confere que o laser saiu do grupo; ele não apenas ficou fora da imagem."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-relogio-dos-asteroides",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "Um asteroide a cada intervalo",
+    "subtitle": "Usar um intervalo para criar asteroides somente durante a partida.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando, deixe visível o encaixe depois de A cada quadro da cena, fora do fazer desse bloco."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Tempo e sorteio → Tempo, pegue A cada 2 segundos e encaixe nesse lugar. Troque 2 por 1.5."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Dentro de A cada 1.5 segundos, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Deixe o então do Se visível. Em Jogo 3D → Grupos, encaixe Criar uma cópia nesse então."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Escolha moldeAsteroide e grupo asteroides. Use x = 0, y = 1 e z = -28."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "limite-tiro",
+        "after": "relogio",
+        "focus": [
+          "sz_g3d_every_seconds",
+          "sz_js_if_else",
+          "sz_val_compare",
+          "sz_val_variable",
+          "sz_val_text",
+          "sz_g3d_spawn_copy"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo. Espere dois segundos antes de Enter: não deve surgir asteroide.",
+          "Pressione Enter e espere dois segundos. Aparece uma pedra parada no centro do fundo.",
+          "As cópias seguintes ainda se sobrepõem; isso é esperado nesta etapa."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-lugares-de-entrada",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "Uma faixa para as entradas",
+    "subtitle": "Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulha.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No relógio A cada 1.5 segundos, deixe visível o X da cópia de moldeAsteroide."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Matemática, pegue 0 + 0 e solte sobre o 0 do X. Mude + para − e o número direito para 5.2."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Deixe visível o 0 à esquerda da subtração. Pegue outro 0 + 0 e solte sobre esse 0."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No bloco de dentro, mude + para × e o número direito para 10.4."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe visível o 0 à esquerda da multiplicação. Em Programação → Valores, pegue número aleatório (0 a 1) e solte sobre esse 0."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Confira X = (número aleatório × 10.4) − 5.2, Y = 1 e Z = -28."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "relogio",
+        "after": "entrada",
+        "focus": ["sz_math_arithmetic", "sz_val_random_float"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Espere sete segundos para observar algumas entradas.",
+          "Os asteroides surgem parados em lugares diferentes dentro da faixa lateral. Lugares próximos também são possíveis."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-asteroides-se-aproximam",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Os asteroides vêm até a nave",
+    "subtitle": "Definir a velocidade positiva em Z para aproximar os asteroides.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, encontre Criar variável velocidadeAsteroides com valor 0."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Troque 0 por 7. Não mude velocidadeTiros, que continua -22."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "entrada",
+        "after": "trajeto-asteroide",
+        "focus": ["sz_js_var_create"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. As pedras aparecem no fundo e se aproximam da nave pelo Z positivo.",
+          "Dispare: o laser e o asteroide viajam em direções opostas.",
+          "Afaste a nave e deixe uma pedra passar. Nesta etapa, ela ainda continua além da rota."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-fim-da-rota",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "A pedra sai depois de passar",
+    "subtitle": "Retirar asteroides que ultrapassam o fim da rota, conservando o intervalo dos tiros.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No final de A cada quadro da cena → Se estado = jogando, encontre o limite do grupo tiros."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe o encaixe abaixo dele visível. Em Jogo 3D → Grupos, encaixe outro No grupo inimigos, tirar quem saiu."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No novo bloco, escolha grupo asteroides, limites -36 e 6 e eixo Z. Conserve o limite dos tiros em -36 a 3."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "trajeto-asteroide",
+        "after": "limite-asteroide",
+        "focus": ["sz_g3d_prune_area"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. As pedras surgem na faixa, aproximam-se e saem depois de passar pela nave.",
+          "Dispare; os lasers seguem no sentido contrário e também terminam o caminho.",
+          "Um laser ainda pode atravessar a pedra sem removê-la. O contato será construído na aula seguinte."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "aula-3-encontro-no-espaco",
+    "lesson": "aula-3",
+    "part": 1,
+    "kicker": "Aula 3 · Parte 1",
+    "title": "Parecer junto ou encostar?",
+    "subtitle": "Distinguir sobreposição da imagem e contato real entre objetos em três dimensões.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Distinguir sobreposição da imagem e contato real entre objetos em três dimensões."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Investigue o encontro da chave e do personagem com o Zappy."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Compare a altura e a separação dos objetos antes de concluir que encostaram."
+      }
+    ]
+  },
+  {
+    "id": "aula-3-acerto-do-laser",
+    "lesson": "aula-3",
+    "part": 2,
+    "kicker": "Aula 3 · Parte 2",
+    "title": "Um encontro que acerta",
+    "subtitle": "Responder ao contato entre um tiro e um asteroide, retirando os dois e consumindo o alvo.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em A cada quadro da cena → Se estado = jogando, encontre Para cada asteroide → Para cada tiro → Se valor da variável alvoAtivo. Deixe o então desse último Se visível."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Lógica &amp; Se, encaixe um novo Se nesse então. Retire a pergunta x &gt; 0 pela lixeira."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Deixe o lugar da pergunta visível. Em Jogo 3D → Encostar → Encostar, encaixe o objeto jogador está encostando em. Escolha tiro no primeiro objeto e asteroide no segundo."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então do contato, encaixe Jogo 3D → Grupos → Tirar o objeto inimigo do grupo. Escolha objeto asteroide e grupo asteroides."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Logo abaixo, encaixe outro Tirar o objeto inimigo do grupo. Escolha objeto tiro e grupo tiros."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Abaixo da retirada do tiro, encaixe Programação → Variáveis → Alterar variável contador para. Escolha alvoAtivo."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Troque o 1 por Programação → Lógica &amp; Se → verdadeiro/falso e escolha falso."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Abaixo de Alterar variável alvoAtivo, encaixe Jogo 3D → Som → Tocar o som pronto. Conserve moeda."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "limite-asteroide",
+        "after": "contato",
+        "focus": [
+          "sz_js_if_else",
+          "sz_g3d_collides",
+          "sz_g3d_remove_from_group",
+          "sz_js_var_assign",
+          "sz_val_bool",
+          "sz_g3d_play_effect"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Alinhe a nave com uma pedra e dispare. No contato real, só esse tiro e essa pedra saem dos grupos.",
+          "Dispare numa faixa vazia. Sem contato, o laser continua o caminho.",
+          "Ainda não existe placar; o som e o desaparecimento do par são o resultado visível desta parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-3-contador-da-patrulha",
+    "lesson": "aula-3",
+    "part": 3,
+    "kicker": "Aula 3 · Parte 3",
+    "title": "Um lugar para guardar os pontos",
+    "subtitle": "Criar o contador pontos com valor zero no início de cada jogo.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, deixe visível o encaixe abaixo de Criar variável velocidadeAsteroides e antes de estado."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Variáveis, pegue Criar variável contador com valor e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Troque o nome contador por pontos e conserve o valor 0."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "contato",
+        "after": "contador",
+        "focus": ["sz_js_var_create"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Confira o nome pontos e o valor 0 em Ao iniciar.",
+          "Nenhum placar novo aparece nesta etapa. O efeito é preparar a variável."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-3-um-ponto-por-acerto",
+    "lesson": "aula-3",
+    "part": 4,
+    "kicker": "Aula 3 · Parte 4",
+    "title": "Cada acerto soma um",
+    "subtitle": "Somar um ponto dentro da mesma resposta que consome o par acertado.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No então do contato tiro–asteroide, deixe visível o encaixe depois de Tirar o objeto tiro do grupo tiros e antes de Alterar variável alvoAtivo."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Programação → Variáveis, encaixe Somar 1 em variável nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Conserve a quantidade 1 e escolha a variável pontos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "contador",
+        "after": "soma",
+        "focus": ["sz_js_var_increment"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Confira a soma dentro do então do contato, entre a retirada do tiro e alvoAtivo = falso.",
+          "Não espere um placar visível ainda: esta etapa muda o valor guardado."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-3-placar-da-patrulha",
+    "lesson": "aula-3",
+    "part": 5,
+    "kicker": "Aula 3 · Parte 5",
+    "title": "Veja a contagem na tela",
+    "subtitle": "Mostrar o zero inicial e atualizar o placar com a variável pontos em cada acerto.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, deixe visível o encaixe abaixo do título em cima, no meio. Em Jogo 3D → Placar, vida e telas → Na tela, encaixe Escrever na tela."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Escolha em cima, à direita e escreva o texto Acertos: 0 / 20."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No então do contato tiro–asteroide, deixe visível o encaixe depois de Tocar o som pronto moeda. Encaixe outro Escrever na tela e escolha em cima, à direita."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o texto do segundo aviso visível. Em Programação → Matemática, solte 0 + 0 sobre esse texto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No 0 da esquerda, encaixe outro 0 + 0."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No 0 à esquerda do mais interno, encaixe Programação → Valores → texto. Escreva Acertos: com um espaço no fim."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No 0 à direita do mais interno, encaixe valor da variável e escolha pontos."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "No 0 à direita do mais externo, encaixe outro texto. Escreva espaço, /, espaço, 20. A expressão fica (\"Acertos: \" + pontos) + \" / 20\"."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "soma",
+        "after": "placar",
+        "focus": ["sz_g3d_hud_text", "sz_math_arithmetic", "sz_val_text", "sz_val_variable"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo: o placar começa em Acertos: 0 / 20.",
+          "Depois de Enter, acerte uma pedra: o placar soma exatamente um.",
+          "Um disparo no vazio e uma pedra que passa não alteram o placar.",
+          "Acerte outra pedra e confirme a próxima soma."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "aula-3-conferir-acertos",
+    "lesson": "aula-3",
+    "part": 6,
+    "kicker": "Aula 3 · Parte 6",
+    "title": "O que faz o ponto valer?",
+    "subtitle": "Relembre o que aconteceu e explique as regras do seu jogo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Confira o que você descobriu",
+        "text": "Responda à revisão na aula. Antes de escolher, imagine o que aconteceria no jogo. Se uma resposta não combinar com o resultado, leia a explicação e tente outra vez."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Vendo de cima, um laser parece passar sobre uma pedra, mas está bem mais alto. O que confirma um acerto?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Você dispara três vezes e só um laser acerta uma pedra. Quantos pontos essa jogada deve somar?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "A variável pontos chegou a dois. Por que o aviso usa o valor da variável, em vez de um texto fixo com zero?"
+      }
+    ]
+  },
+  {
+    "id": "aula-4-tres-vidas",
+    "lesson": "aula-4",
+    "part": 1,
+    "kicker": "Aula 4 · Parte 1",
+    "title": "Três chances para a nave",
+    "subtitle": "Dar três vidas à nave no começo e observar os corações nativos.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, deixe visível o encaixe depois de Criar variável estado e antes dos textos das telas finais."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Placar, vida e telas → Vida, pegue Dar 3 de vida a e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Conserve a quantidade 3 e escolha o objeto nave."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "placar",
+        "after": "vidas",
+        "focus": ["sz_g3d_set_life"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo: aparecem três corações no alto, à esquerda.",
+          "Enter começa a partida. O jogo ainda não desconta vida no contato; essa regra vem na próxima parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-4-vida-na-batida",
+    "lesson": "aula-4",
+    "part": 2,
+    "kicker": "Aula 4 · Parte 2",
+    "title": "A batida tira uma vida",
+    "subtitle": "Usar o encontro da nave com um grupo para descontar uma vida durante a partida.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Quando acontecer, deixe visível o encaixe depois de Quando apertar a tecla espaço, fora do fazer dele."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Encostar → Encostar, encaixe Quando heroi encostar em algum do grupo nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Escolha objeto nave e grupo asteroides. No campo chamando de, escreva asteroideQueBateu, com Q e B maiúsculos."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Dentro de Quando nave encostar em algum do grupo asteroides, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Deixe o então da guarda visível. Em Jogo 3D → Placar, vida e telas → Vida, encaixe Machucar heroi tirando 1 de vida. Escolha nave e conserve a quantidade 1."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Deixe o encaixe abaixo de Machucar visível. Em Jogo 3D → Som, encaixe Tocar o som pronto e escolha acerto."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "vidas",
+        "after": "dano",
+        "focus": [
+          "sz_g3d_on_touch_group",
+          "sz_js_if_else",
+          "sz_val_compare",
+          "sz_val_variable",
+          "sz_val_text",
+          "sz_g3d_hurt",
+          "sz_g3d_play_effect"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Sem disparar, alinhe a nave com uma pedra que se aproxima.",
+          "No contato, a vida cai de três para dois e a nave pisca brevemente.",
+          "A pedra ainda segue o caminho nesta etapa. A proteção nativa evita novo desconto durante um segundo."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-4-retirar-a-pedra-da-batida",
+    "lesson": "aula-4",
+    "part": 3,
+    "kicker": "Aula 4 · Parte 3",
+    "title": "Só a pedra da batida sai",
+    "subtitle": "Consumir o asteroide identificado pelo encontro antes de descontar a vida.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No encontro da nave com o grupo asteroides, deixe visível o começo do então de Se estado = jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Jogo 3D → Grupos, encaixe Tirar o objeto inimigo do grupo antes de Machucar nave."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Escolha objeto asteroideQueBateu e grupo asteroides. Conserve Machucar nave tirando 1 de vida e Tocar o som pronto acerto logo abaixo."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "dano",
+        "after": "retirada-batida",
+        "focus": ["sz_g3d_remove_from_group"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Uma batida retira a pedra envolvida e desconta uma vida.",
+          "Desvie de outra pedra e deixe-a passar: ela não tira vida.",
+          "Acerte uma pedra com um laser: o ponto sobe e a vida permanece igual.",
+          "Se chegar a zero, esta versão ainda não mostra derrota; a regra será construída na aula seguinte."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "aula-5-quando-as-vidas-acabam",
+    "lesson": "aula-5",
+    "part": 1,
+    "kicker": "Aula 5 · Parte 1",
+    "title": "Quando as vidas acabam",
+    "subtitle": "Conferir vida zero no começo do quadro e acionar estado de derrota e fim de jogo.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Enquanto estiver rodando → A cada quadro da cena, deixe visível o começo do fazer, antes do Se que movimenta o jogo."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro da cena, antes do Se de movimento, deixe visível o espaço fazer. Em Programação → Lógica &amp; Se, pegue Se e encaixe nesse espaço."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta x &gt; 0, escolha estado no lugar de x e = no lugar de &gt;. Use o sinal = sem a palavra solto."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o 0 da direita visível. Em Programação → Valores, pegue texto, solte sobre esse 0 e escreva jogando no lugar de Olá."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Confira que o Se de movimento continua depois do novo, fora do então. Deixe o então do novo Se estado = jogando visível."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Em Programação → Lógica &amp; Se, encaixe outro Se nesse então."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No x da pergunta nova, encaixe Jogo 3D → Placar, vida e telas → Vida → a vida de. Escolha nave, use ≤ e conserve 0 à direita."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "No então da vida, encaixe Programação → Variáveis → Alterar variável contador para. Escolha estado."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Deixe o valor 1 visível. Em Programação → Valores, solte texto sobre ele e escreva derrota."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Abaixo da mudança de estado, encaixe Jogo 3D → Placar, vida e telas → Na tela → Escrever na tela. Escolha embaixo, no meio e deixe o texto vazio."
+      },
+      {
+        "kind": "step",
+        "number": 11,
+        "text": "Abaixo do aviso vazio, encaixe Jogo 3D → Placar, vida e telas → Telas e fim → Fim de jogo. Conserve você perdeu."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "retirada-batida",
+        "after": "derrota",
+        "focus": [
+          "sz_js_if_else",
+          "sz_val_compare",
+          "sz_val_variable",
+          "sz_val_text",
+          "sz_g3d_life_of",
+          "sz_js_var_assign",
+          "sz_g3d_hud_text",
+          "sz_g3d_end_game"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Deixe acontecerem três batidas válidas, com tempo para acabar a proteção entre elas.",
+          "Quando a vida chega a zero, a tela de derrota aparece e a partida para.",
+          "Clique em Voltar ao início. Confira abertura, pontos zero e três vidas. Enter inicia uma nova partida."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-5-meta-da-patrulha",
+    "lesson": "aula-5",
+    "part": 2,
+    "kicker": "Aula 5 · Parte 2",
+    "title": "Vinte acertos abrem a rota",
+    "subtitle": "Conferir a meta no senão da derrota e acionar a vitória uma única vez.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No primeiro Se de jogando de A cada quadro, encontre Se a vida de nave ≤ 0. Clique no segundo +, imediatamente antes de senão, para abrir esse ramo."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe o senão visível. Em Programação → Lógica &amp; Se, encaixe um Se nesse ramo."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Na pergunta nova, use pontos no lugar de x, ≥ no lugar de &gt; e 20 no lugar de 0."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então dos pontos, encaixe Programação → Variáveis → Alterar variável contador para. Escolha estado."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No valor, troque 1 por Programação → Valores → texto e escreva vitoria, sem acento."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Abaixo, encaixe Jogo 3D → Placar, vida e telas → Na tela → Escrever na tela. Use embaixo, no meio e texto vazio."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Abaixo do aviso, encaixe Jogo 3D → Som → Tocar o som pronto e conserve moeda."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Abaixo do som, encaixe Jogo 3D → Placar, vida e telas → Telas e fim → Fim de jogo. Escolha você ganhou."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "derrota",
+        "after": "vitoria",
+        "focus": [
+          "sz_js_if_else",
+          "sz_val_compare",
+          "sz_val_variable",
+          "sz_js_var_assign",
+          "sz_val_text",
+          "sz_g3d_hud_text",
+          "sz_g3d_play_effect",
+          "sz_g3d_end_game"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo → Enter. Alcance vinte pontos mantendo alguma vida: aparece a vitória.",
+          "Depois do resultado, movimento e disparos não continuam.",
+          "Voltar ao início restaura a abertura, zero pontos e três vidas.",
+          "Confira nos blocos: a vitória está no senão da vida zero, nunca em uma conferência independente."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-5-patrulha-pronta",
+    "lesson": "aula-5",
+    "part": 3,
+    "kicker": "Aula 5 · Parte 3",
+    "title": "Confira a patrulha completa",
+    "subtitle": "Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, troque o título em cima, no meio por: PATRULHA ESPACIAL | Abra uma rota entre os asteroides."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Em Ao iniciar, troque o aviso embaixo, no meio por: ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No acontecimento Enter, troque o aviso em cima, no meio por: Abra a rota: acerte 20 asteroides e proteja sua nave."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No acontecimento Enter, troque o aviso embaixo, no meio por: SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "vitoria",
+        "after": "completo",
+        "focus": ["sz_g3d_hud_text"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rodar de novo: nave no centro, grupos vazios, pontos zero e três vidas. Espaço antes de Enter não dispara.",
+          "Depois de Enter, movimento, disparos e relógio funcionam. Confira os novos avisos.",
+          "Um acerto soma um ponto; uma batida válida tira uma vida; uma pedra que passa sem bater não altera pontos ou vida.",
+          "Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.",
+          "Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "aula-5-conferir-a-patrulha",
+    "lesson": "aula-5",
+    "part": 4,
+    "kicker": "Aula 5 · Parte 4",
+    "title": "Por que o jogo termina?",
+    "subtitle": "Relembre o que aconteceu e explique as regras do seu jogo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Confira o que você descobriu",
+        "text": "Responda à revisão na aula. Antes de escolher, imagine o que aconteceria no jogo. Se uma resposta não combinar com o resultado, leia a explicação e tente outra vez."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Por que o disparo e o relógio perguntam se estado é igual a jogando?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "No começo de um quadro, pontos está em vinte e a vida está em zero. O que esta patrulha faz?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Depois do resultado, você clica em Voltar ao início. O que deve conferir?"
+      }
+    ]
+  },
+  {
+    "id": "aula-5-sua-patrulha",
+    "lesson": "aula-5",
+    "part": 5,
+    "kicker": "Aula 5 · Parte 5",
+    "title": "Sua patrulha está pronta",
+    "subtitle": "Reconhecer a construção concluída e conhecer a publicação opcional no Mural.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Você pode concluir a aula sem publicar."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Se quiser publicar: Compartilhar → Gerar capa → conferir a capa → Publicar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Depois de Seu jogo está no Mural!, use Copiar link de jogar. Feche a janela e clique em Concluir aula."
+      }
+    ]
+  },
+  {
+    "id": "galeria-modelos",
+    "kicker": "Os modelos do seu projeto",
+    "title": "As peças da Patrulha",
+    "subtitle": "Os três modelos já estão no projeto inicial.",
+    "items": [
+      {
+        "kind": "gallery3d",
+        "names": [
+          "patrulha-nave-provisoria",
+          "patrulha-asteroide-provisorio",
+          "patrulha-laser-provisorio"
+        ]
+      },
+      {
+        "kind": "note",
+        "text": "A nave, o asteroide e o laser são modelos prontos. Nesta versão, construa e teste as regras com estas peças. O curso não pede que você desenhe ou monte um modelo."
+      }
+    ]
+  },
+  {
+    "id": "revisao-ajuda",
+    "kicker": "Seu jogo completo",
+    "title": "Volte ao teste certo",
+    "subtitle": "Você pode investigar uma regra por vez.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O tiro não acompanha a nave?",
+        "text": "Volte à parte que faz o laser nascer na nave. Confira a posição lida e faça um disparo em cada lado."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "O acerto conta mais de uma vez?",
+        "text": "Volte ao encontro do tiro com o asteroide. Confira quais objetos saem e em que lugar o ponto é somado."
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "title": "A partida não termina?",
+        "text": "Confira as condições da vitória e da derrota. Observe os pontos e as vidas antes de testar cada resultado."
+      },
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "Quer mostrar sua criação?",
+        "text": "A publicação no Mural é uma escolha sua. A última parte da aula mostra o caminho. Você também pode concluir o curso e guardar seu projeto sem publicar."
+      }
+    ]
+  }
+]

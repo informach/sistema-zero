@@ -1,0 +1,6975 @@
+{
+  "engine": "Runtime oficial Jogo 3D, GLTFLoader oficial, geometria Three.js e Canvas2D reais; renderer WebGL sem desenho. Passos de teclado/espera adaptados para relógio determinístico, incluindo 80 ms padrão de tecla e checkpoints desde afterStep 0; observações escalares passam pelo codec oficial, e os vereditos usam judgeExecutionObservation oficial.",
+  "limitation": "Não é importação no Estúdio publicado, inspeção visual WebGL, gravação de aula nem execução pelo navegador do aluno.",
+  "reports": [
+    {
+      "stage": "inicio",
+      "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "disparo",
+      "sha256": "b9485bddea89b566d3d96029cd729cc82c553555255fecb19a020554f008bd9a",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "origem",
+      "sha256": "6ba791c16dbb7bd1faba4a8f20c08a29926a7cb6d28a55ef60b212108687fbaa",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "trajeto-tiro",
+      "sha256": "692bceacd136421ca85886ba17923a416d7f2721f7f0a3d5c6cccbe04bb4b6e9",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "limite-tiro",
+      "sha256": "4811829bbf18cddc3f02fdef2de5e191c4adb54e886065e624cbe0c8469821aa",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "relogio",
+      "sha256": "8f941c73ac4a5c3133b25506c2b1ff1b4bec00c50e8b2beecfe0eedc3cccaf46",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "entrada",
+      "sha256": "b1a55b79ed5b5dff3a396210e5c0a8b9d211fe4c7ad152ee845ec67226d7ab2a",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "sha256": "a4165e2e7da2ad2062aec562a49404f786f8caf3868176fd409b9e6aef4c3475",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "limite-asteroide",
+      "sha256": "29a82e89d5ce4d7bf487832a1c52aba08279ada05b9da84571aa82adcdfef7c2",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "contato",
+      "sha256": "107e50a19f1dcc2c206542e586b7711186d86c010b912f7b6993522fcb86348b",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "contador",
+      "sha256": "6daca576456688b372b020c59d3a450cd38cf9b421f9b0e89d7a289b27fc724f",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "soma",
+      "sha256": "332f6b85d55052e7905995d9e4cebe475165f540fd94c45cbfd24acef6f0ebf8",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "placar",
+      "sha256": "72bd323a72fb16df5947a05fc2af4b7bfce5eded271701ce933a34fe142aadac",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "vidas",
+      "sha256": "ad17e991f124ce273b7db9d26b42bdac622f0acdff5e2c2300980956cf945ce6",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "dano",
+      "sha256": "783205440ede1a429bb60c39d3072934ba602ed176e3f87d7ed55996ce7836e9",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "retirada-batida",
+      "sha256": "646a83d5d4acfc43b17f929fd84e73486c9686ec2f4030973d2c1ad7ad2136eb",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "derrota",
+      "sha256": "f503ca8bda4ed4f7bf6f562a7f7f901f010cce1176295a64c13b8a2bd7e78385",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "vitoria",
+      "sha256": "63c228ca4f0a0c0528f9ee3ae183871eda9c2a1aee1b5786ed2c97b70e6ef881",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "stage": "completo",
+      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2",
+      "checks": [
+        "Três GLBs reais carregados; pontos e vida existem somente nas etapas em que foram construídos",
+        "Abertura preservada: sem movimento, tiros ou asteroides antes de Enter",
+        "Progressão do laser: inexistente → cópia parada central → origem na nave → Z negativo → retirada no limite",
+        "Progressão do asteroide: sem relógio → cópia parada → faixa X → aproximação em Z → retirada, sem dano ao escapar",
+        "Contato consome apenas o par; contador não soma antes da etapa soma; dois lasers não duplicam ponto; placar aparece só na sua etapa",
+        "Vida começa em três; dano surge somente no encontro ensinado; retirada da pedra só na etapa seguinte; proteção nativa preservada",
+        "Resultados só surgem na etapa ensinada; quando presentes, botão nativo reinicia e derrota precede vitória simultânea"
+      ],
+      "consoleMessages": []
+    }
+  ],
+  "objectives": [
+    {
+      "stage": "disparo",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "disparo",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "disparo",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-tiro",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-tiro",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-tiro",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-tiro",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-tiro",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-tiro",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-tiro",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "entrada",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "entrada",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "entrada",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "entrada",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "entrada",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-asteroide",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-asteroide",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-asteroide",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-asteroide",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite-asteroide",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contato",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contato",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contato",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contato",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contato",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contador",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contador",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contador",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contador",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "contador",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "soma",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "soma",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "soma",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "soma",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "soma",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "retirada-batida",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "retirada-batida",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "retirada-batida",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "retirada-batida",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "retirada-batida",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Projeto inicialAcertos: 0 / 20ENTER: começar | SETAS: mover"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "valores-do-comeco",
+      "observation": {
+        "id": "valores-do-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, "inicio"]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -22]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 7]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "um-aperto-um-tiro",
+      "observation": {
+        "id": "um-aperto-um-tiro",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "pilotar-so-na-partida",
+      "observation": {
+        "id": "pilotar-so-na-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, -5.2]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, -5.2]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "tiro-sai-do-grupo",
+      "observation": {
+        "id": "tiro-sai-do-grupo",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "relogio-respeita-comeco",
+      "observation": {
+        "id": "relogio-respeita-comeco",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "completo",
+      "id": "avisos-da-partida",
+      "observation": {
+        "id": "avisos-da-partida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [
+              0,
+              "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+            ]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [
+              0,
+              "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️Abra a rota: acerte 20 asteroides e proteja sua naveAcertos: 0 / 20SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida"
+            ]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️PATRULHA ESPACIAL | Abra uma rota entre os asteroidesAcertos: 0 / 20ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto"
+                ]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [
+                  0,
+                  "Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️❤️❤️Abra a rota: acerte 20 asteroides e proteja sua naveAcertos: 0 / 20SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "verdict": {
+        "passed": true
+      }
+    }
+  ],
+  "regressions": [
+    {
+      "mutation": "contador-nunca-comeca-em-zero",
+      "objective": "valores-do-comeco",
+      "rejected": true,
+      "verdict": {
+        "passed": false,
+        "detail": "Após o passo 0: Esperava pontos igual a 0; o jogo mostrou 5."
+      }
+    },
+    {
+      "mutation": "vida-inicial-alterada",
+      "objective": "valores-do-comeco",
+      "rejected": true,
+      "verdict": {
+        "passed": false,
+        "detail": "Após o passo 0: Esperava nave._szLife.hp igual a 3; o jogo mostrou 2."
+      }
+    },
+    {
+      "mutation": "movimento-preparado-removido",
+      "objective": "pilotar-so-na-partida",
+      "rejected": true,
+      "verdict": {
+        "passed": false,
+        "detail": "Após o passo 3: Esperava nave.position.x maior que 0; o jogo mostrou 0."
+      }
+    },
+    {
+      "mutation": "transporte-dos-tiros-removido",
+      "objective": "tiro-sai-do-grupo",
+      "rejected": true,
+      "verdict": {
+        "passed": false,
+        "detail": "Esperava tiros.length igual a 0; o jogo mostrou 1."
+      }
+    },
+    {
+      "mutation": "aviso-de-controles-incompleto",
+      "objective": "avisos-da-partida",
+      "rejected": true,
+      "verdict": {
+        "passed": false,
+        "detail": "Esperava o texto da página contendo \"SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida\"; o jogo mostrou \"Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.❤️...."
+      }
+    }
+  ]
+}

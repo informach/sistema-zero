@@ -1,0 +1,961 @@
+{
+  "recordedAt": "2026-11-24T14:29:45.703Z",
+  "baseline": "538ae843b7534239a715a1d0a6c2a9d32d54604d",
+  "productionSource": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+  "stagingSource": "e085f7456a0ca76e139c4420fd38a7698191e688",
+  "note": "Incremental repository inventory after LG01. Reachability and files are not counts of new features; staging-only history can contain equivalent patches already delivered elsewhere.",
+  "productionCommits": [
+    {
+      "sha": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+      "committedAt": "2026-11-24T08:51:09-03:00",
+      "subject": "test(core): use valid typed rules in 3D selection scenarios"
+    },
+    {
+      "sha": "a365206598c9175e8f999801eba5a6fb74d613db",
+      "committedAt": "2026-11-24T07:50:09-03:00",
+      "subject": "fix(studio): preserve pending sandbox RPC during provisioning"
+    },
+    {
+      "sha": "4a1a1b095d7aec385a18ff30fb43dd7d5bc4bc5d",
+      "committedAt": "2026-11-24T07:00:02-03:00",
+      "subject": "test(studio-runtime): forward native RPC in hosted probes"
+    },
+    {
+      "sha": "73ca20fc90986c0ba5e2e403eb27f22f397443f9",
+      "committedAt": "2026-11-24T06:42:43-03:00",
+      "subject": "fix(studio-runtime): skip warming when the bounded cache is full"
+    },
+    {
+      "sha": "91faab0573672a3abfcda47462b473b4b3a42399",
+      "committedAt": "2026-11-24T06:05:42-03:00",
+      "subject": "fix(studio-runtime): bound warmed capacity across profiles"
+    },
+    {
+      "sha": "62553c6d4721fe39cab85fafdf8f5fe418d9b835",
+      "committedAt": "2026-11-24T05:34:03-03:00",
+      "subject": "fix(runtime): give warmed checks exclusive persistent sandbox leases"
+    },
+    {
+      "sha": "75a9782cea3af7f10a8896a714a415332fffe5c3",
+      "committedAt": "2026-11-24T04:38:30-03:00",
+      "subject": "docs(lg02): define exclusive warmed sandbox ownership and qualification"
+    },
+    {
+      "sha": "f40e953547498880982351268cc96ba6db522602",
+      "committedAt": "2026-11-24T00:24:51-03:00",
+      "subject": "docs(lg01): registra entrega em produção e limitações restantes"
+    },
+    {
+      "sha": "8768b4190eba692c4d1161464f103af205381aca",
+      "committedAt": "2026-11-23T23:39:24-03:00",
+      "subject": "docs(lg01): complementa inventário e aceite de homologação"
+    },
+    {
+      "sha": "68fd00429a59ad1be38eace3c93ea2b2367b6116",
+      "committedAt": "2026-11-23T22:57:06-03:00",
+      "subject": "docs(release): record promoted LG01 and strict discovery fix R15"
+    },
+    {
+      "sha": "331cb6bf21c8fc9d54fcadb172c78478c90eea7a",
+      "committedAt": "2026-11-23T21:34:05-03:00",
+      "subject": "docs(qa): record final staging acceptance and required push rerun"
+    },
+    {
+      "sha": "cf880eb91477a2c05ac78cd348a11c674a0b17d2",
+      "committedAt": "2026-11-23T21:10:25-03:00",
+      "subject": "docs(release): record concurrent Farol production publication"
+    },
+    {
+      "sha": "f0a102bb57440ba80fbb467e3ce07d1831391a65",
+      "committedAt": "2026-11-23T20:58:55-03:00",
+      "subject": "docs(qa): record approved final LG01 CI and empty production plan"
+    },
+    {
+      "sha": "6a998f509933b2a0d210f1a6d6cadc4d53640f80",
+      "committedAt": "2026-11-23T19:42:08-03:00",
+      "subject": "docs(qa): record Pinta layout-shift fixes and final candidate"
+    },
+    {
+      "sha": "8e49dd744359ef85f688cf7263a2a06d2bb67592",
+      "committedAt": "2026-11-23T19:27:15-03:00",
+      "subject": "docs(qa): record 3D acceptance and embedded menu regression"
+    },
+    {
+      "sha": "0ac72541c153e67a54588460ecd234e4be3d7612",
+      "committedAt": "2026-11-23T18:28:41-03:00",
+      "subject": "docs(qa): registra a correcao de tipos preservada na LG02"
+    },
+    {
+      "sha": "9a09e1652d4bb20ad91fc12ae8a4684b9ce4f05a",
+      "committedAt": "2026-11-23T18:19:21-03:00",
+      "subject": "docs(qa): registra o aceite infantil e a candidata conciliada com main"
+    },
+    {
+      "sha": "41d180b06bf6abf1f01862df9f082ef646919104",
+      "committedAt": "2026-11-23T17:49:20-03:00",
+      "subject": "docs(qa): corrige a leitura cronologica dos Workers e confere catalogos"
+    },
+    {
+      "sha": "7d27292ce0ee4c70af5b41f9c8869ee18b21ea60",
+      "committedAt": "2026-11-23T17:35:37-03:00",
+      "subject": "docs(qa): registra a qualificacao LG01 e a falha entre abas da LG02"
+    }
+  ],
+  "productionFiles": [
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/commits-expanded.tsv"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/inventory-expanded.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/inventory-expanded.mjs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/inventory-lg01-followup.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/inventory-lg01-followup.mjs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-child-session-qa.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-final-candidate.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-final-staging-release.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-production-content-after.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-production-content-followup.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-production-release.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-promoted-source-discovery.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-runtime-effective-config.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg01-watchpatterns-preparation.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-fixture-verification.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real-executor.mjs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/isolated-failure-results.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/lg01-isolated-overlap-results.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/results.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/reuse-overlap-failure-results.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/tab-a.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/lg02-real/tab-b.png"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/limitacoes-e-liberacoes.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        ".audits/review-7-dias-2026-11-23/relatorio.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "bun.lock"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/plans/2026-11-23-plano-de-liberacao-gradual.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/plans/2026-11-24-lg02-aquecimento-seguro-design.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/plans/2026-11-24-lg02-aquecimento-seguro.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/qa/2026-11-23-lg01-melhorias-prontas.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/qa/2026-11-23-lg02-executor-real.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/api-gateway/gateway.config.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/api-gateway/tests/unit/config.test.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/community-kids/src/app/api/members/lessons/[lessonId]/sections/[sectionId]/project-check/warm/route.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/community/src/app/api/members/lessons/[lessonId]/sections/[sectionId]/project-check/warm/route.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/core/src/learning/project-execution.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/core/tests/project-execution.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/CLAUDE.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/src/components/studio/section-project-check.tsx"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/src/routes/index.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/src/routes/learning.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/tests/fixtures/section-project-check.fixture.tsx"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/tests/learning-routes.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/CLAUDE.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/src/application/learning/learning.service.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/src/application/learning/section-progression.service.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/src/domain/ports/project-execution-checker.port.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/src/infrastructure/gateways/studio-runtime-checker.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/src/interfaces/http/routes/learning.routes.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/tests/integration/section-objectives-execution.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/tests/unit/studio-runtime-checker.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/palco-gravacao/src/lib/bff.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/palco-gravacao/tests/palco.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/Dockerfile"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/README.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/package.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/runtime/check-warm.mjs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/runtime/python-playtest.generated.mjs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/runtime/validation-profile.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/src/check-container.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/src/check-sandbox-pool-store.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/src/check-sandbox-pool.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/src/check.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/src/index.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/src/worker.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/tests/capacity.test.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/check-pool-sqlite.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/check-sandbox-pool.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/tests/check.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/tests/contracts.test.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/fixtures/check-sandbox-pool-worker.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/fixtures/check-sandbox-pool-workerd.cjs"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/fixtures/lg02-runtime-probe-rpc.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/studio-runtime/tests/fixtures/lg02-runtime-probe-worker.mjs"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/tests/fixtures/prepare-python-sdk-linux.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/studio-runtime/wrangler.jsonc"
+      ]
+    }
+  ],
+  "stagingOnlyCommits": [
+    {
+      "sha": "53fc303297e5fc9f4e81feb6fc25851111e00fb5",
+      "committedAt": "2026-11-24T11:37:46Z",
+      "subject": "fix(kids): quarto sem rolagem externa da página"
+    },
+    {
+      "sha": "3372f2498fc9c05abf845551e87c5f382aec1dbf",
+      "committedAt": "2026-11-24T11:33:23Z",
+      "subject": "feat(kids): criança edita o próprio apelido em \"Meu perfil\""
+    },
+    {
+      "sha": "84112d04d85a648de9bc5f52ca87788cc7526d91",
+      "committedAt": "2026-11-24T06:32:55-03:00",
+      "subject": "test(members): preserve current Jardim objectives on reimport"
+    },
+    {
+      "sha": "fa4e48254ce9332904215880b2332706679d0898",
+      "committedAt": "2026-11-24T05:46:11-03:00",
+      "subject": "docs(ilha): os blocos liberados também no adulto e na produção"
+    },
+    {
+      "sha": "422195b95d07aa5f4bc4871790eca8db14c2106f",
+      "committedAt": "2026-11-24T05:46:11-03:00",
+      "subject": "docs(faisca): os blocos que a Ilha e o Jardim liberam no Kids de staging"
+    },
+    {
+      "sha": "d50ef3bdcc9e407733d8cb4d29702a0f700cb944",
+      "committedAt": "2026-11-24T05:39:49-03:00",
+      "subject": "docs(jardim): as vozes do Zappy no Kids de staging"
+    },
+    {
+      "sha": "b16928a4d10ffe49b31e506e3a18a52ba19c5f9a",
+      "committedAt": "2026-11-24T05:39:49-03:00",
+      "subject": "fix(admin): a voz do Zappy gera 4 frases por vez, dentro do limite do ElevenLabs"
+    },
+    {
+      "sha": "7658c91c7bfd4ac77a76dbaf3b294590c25c97ee",
+      "committedAt": "2026-11-24T05:32:04-03:00",
+      "subject": "fix(jardim): na Aula 2, Parte 3, o robô toca no jogo antes das setas"
+    },
+    {
+      "sha": "f14f5ebe3615db86987faf31ec6c825289a94bba",
+      "committedAt": "2026-11-24T05:32:04-03:00",
+      "subject": "feat(jardim): capas das dez partes e o cadastro no Kids de staging"
+    },
+    {
+      "sha": "523388657c320e100638d84fa9f1971c852e2c3d",
+      "committedAt": "2026-11-24T05:32:03-03:00",
+      "subject": "docs(ilha): A Ilha do Farol publicada no Kids e no adulto de produção"
+    },
+    {
+      "sha": "50d5e057e6f9d823a364c20735478b6b0a3181a3",
+      "committedAt": "2026-11-24T05:32:03-03:00",
+      "subject": "docs(ilha): o adulto e as vozes do Zappy na staging; a produção espera o deploy"
+    },
+    {
+      "sha": "33f95f81ce0611133fe022a29d486b0df5a38335",
+      "committedAt": "2026-11-24T05:32:03-03:00",
+      "subject": "docs(ilha): os vídeos finais no Kids de staging e a promoção bloqueada"
+    },
+    {
+      "sha": "9476a2431dc9ab3b62ba48dde8c90292cde28e4d",
+      "committedAt": "2026-11-24T05:32:03-03:00",
+      "subject": "feat(faisca): o Passo a passo do Jardim aparece uma vez só, no fim da Aula 1"
+    },
+    {
+      "sha": "bd0c38d642a80a1349181ad3d8ae5358a7696c94",
+      "committedAt": "2026-11-24T05:32:02-03:00",
+      "subject": "feat(faisca): O Jardim Secreto vira missão do posto, sem montar no vídeo"
+    }
+  ],
+  "stagingOnlyFiles": [
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/faisca-padrao.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/gerar-jardim-secreto.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/jardim-conteudo.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/jardim-secreto.test.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/missao-padrao.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/qa/poder-gerador.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas-tecnico/recursos/jardim-secreto/caderno-conteudo.json"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas-tecnico/recursos/jardim-secreto/capas-das-aulas/gerar-capas.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas-tecnico/recursos/jardim-secreto/capas-das-aulas/renderizar-capas.py"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/a-ilha-do-farol/publicacao-staging.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/README.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.debinha.elevenlabs.txt"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.edicao.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.elevenlabs.txt"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.manifesto.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-1.roteiro.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.dede.elevenlabs.txt"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.edicao.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.elevenlabs.txt"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.manifesto.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/aula-2.roteiro.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-01-parte-01.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-01-parte-02.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-01-parte-03.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-01-parte-04.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-01-parte-05.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-02-parte-01.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-02-parte-02.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-02-parte-03.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-02-parte-04.png"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/capas-das-aulas/aula-02-parte-05.png"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/modulos.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/passo-a-passo-do-projeto.pdf"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/passo-a-passo.md"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "docs/aulas-interativas/faisca/o-jardim-secreto/publicacao-staging.json"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "docs/plans/2026-11-19-identidade-infantil-nome-apelido-design.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/admin/src/server/voz-zappy.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/auth/CLAUDE.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/auth/src/application/profiles/update-profile.service.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/auth/src/interfaces/http/routes/profiles.routes.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/auth/tests/integration/http-server.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/auth/tests/unit/profile-public-identity.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/community-kids/CLAUDE.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/community-kids/src/app/(app)/perfil/profile-client.tsx"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/community-kids/tests/profile-nickname-edit.test.tsx"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/community-kids/tests/room-builder-view.test.tsx"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/CLAUDE.md"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/src/components/cosmetics/room/room-builder-view.tsx"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/member-shell/src/routes/index.ts"
+      ]
+    },
+    {
+      "status": "A",
+      "paths": [
+        "packages/member-shell/tests/profile-nickname-refresh.test.ts"
+      ]
+    },
+    {
+      "status": "M",
+      "paths": [
+        "packages/members/tests/integration/jardim-missao-import.test.ts"
+      ]
+    }
+  ],
+  "unmergedPullRequestsReviewed": [
+    {
+      "number": 287,
+      "base": "staging",
+      "reviewedBase": "3a7fb2c2edda8d461e1d8fdc64bfd80bc6138795",
+      "headIncludingFix": "61de040eeb7bb21b7733418ae4d976261fd150ce",
+      "files": 43,
+      "state": "draft",
+      "scope": "Construtor proposal, native prototypes, artwork and generators; not a production feature",
+      "finding": "R17: Windows CLI entrypoint and Python output encoding",
+      "proof": "docs/qa/2026-11-24-lg02-evidence/construtor-pr287-review.json"
+    }
+  ]
+}

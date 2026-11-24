@@ -1,77 +1,66 @@
 import { expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import type { LearningManifest } from '../../../packages/core/src/learning'
-import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
-import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
-import type { SZIRV2 } from '../../../packages/studio/src/ir/schema'
-import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
-import { asteroidsExample } from '../../../packages/studio/src/official-extensions/game-2d/examples/arcade'
-import { caminhoAula } from './caminhos'
-import { projetoNave } from './nave-contra-asteroides-etapas'
+import { evaluateProjectStructure } from '../../../packages/core/src/learning/project-structure'
+import { boot } from '../recursos/construtor-base/runtime-2d'
+import { criterios2D } from './construtor-2d-criterios'
+import { projeto2D } from './construtor-2d-projetos'
+import { exportFromIR } from './construtor-base-projetos'
 
-function finalProgram(order: 'original' | 'inverted' | 'inverted-extra' | 'original-extra') {
-  const ir = structuredClone(projetoNave(9).ir) as SZIRV2
-  const loop = ir.behavior.loops.find((node) => node.type === 'g2d:updateEachFrame')
-  if (loop?.type !== 'g2d:updateEachFrame') throw new Error('Authored loop missing')
-  const game = loop.body.find((node) => node.type === 'if')
-  if (game?.type !== 'if') throw new Error('Authored game guard missing')
-  const victory = game.then.at(-2)!
-  const defeat = game.then.at(-1)!
-  const unrelated = structuredClone(victory)
-  if (unrelated.type !== 'if') throw new Error('Authored victory condition missing')
-  unrelated.cond = { type: 'bool', value: false }
-  unrelated.then.length = 0
-  const last =
-    order === 'original'
-      ? [victory, defeat]
-      : order === 'original-extra'
-        ? [victory, unrelated, defeat]
-        : order === 'inverted-extra'
-          ? [defeat, victory, unrelated]
-          : [defeat, victory]
-  game.then.splice(-2, 2, ...last)
-  return ir
-}
-
-function accepted(ir: SZIRV2) {
-  const manifest = JSON.parse(
-    readFileSync(caminhoAula('nave-contra-asteroides-dia-5.manifesto.json'), 'utf8'),
-  ) as LearningManifest
-  const checks = manifest.sections.find((section) => section.key === 'entrega')!.completion!
-    .projectChecks!
-  return evaluateStudioSectionProject(checks, {
-    ...projetoNave(9),
+type Order = 'correta' | 'correta-com-outro-se' | 'duas-perguntas-soltas' | 'vitoria-primeiro'
+function projectWithOrder(order: Order) {
+  const project = projeto2D('final')
+  const ir = structuredClone(project.ir)
+  const frame = ir.behavior.loops.find(
+    (node: { type: string }) => node.type === 'g2d:updateEachFrame',
+  )
+  const playing = frame.body[0]
+  const result = playing.then.find(
+    (node: any) => node.type === 'if' && node.cond.type === 'g2d:healthDepleted',
+  )
+  if (!result) throw new Error('Condição de resultado da fonte não encontrada')
+  const victory = structuredClone(result.else[0])
+  const defeat = { ...structuredClone(result), else: [] }
+  const at = playing.then.indexOf(result)
+  if (order === 'correta-com-outro-se')
+    playing.then.splice(at, 0, {
+      type: 'if',
+      cond: { type: 'bool', value: false },
+      // biome-ignore lint/suspicious/noThenProperty: campo canônico do nó if da IR do Estúdio.
+      then: [],
+      else: [],
+    })
+  if (order === 'duas-perguntas-soltas') playing.then.splice(at, 1, defeat, victory)
+  if (order === 'vitoria-primeiro') playing.then.splice(at, 1, { ...victory, else: [defeat] })
+  return exportFromIR({
+    projectId: `qa-resultado-${order}`,
+    name: 'QA de prioridade',
     ir,
-    blocksState: buildWorkspaceStateFromIR(ir),
-  }).every((row) => row.passed)
-}
-
-function simultaneousEnd(ir: SZIRV2) {
-  const sample = structuredClone(ir)
-  const score = sample.behavior.start.find((node) => node.type === 'var' && node.name === 'pontos')
-  if (score?.type !== 'var') throw new Error('Authored score missing')
-  score.value = { type: 'num', value: 26 }
-  const game = exampleHarness({ ...asteroidsExample, ir: sample })
-  game.fireKey('Enter')
-  game.fireKey('Enter', 'keyup')
-  game.sprites[0]!.hp = 0
-  game.nextFrame()
-  expect(game.errors).toEqual([])
-  return { defeat: game.api.sceneIs('fim'), victory: game.api.sceneIs('vitoria') }
-}
-
-for (const order of ['original', 'original-extra'] as const) {
-  test(`${order}: aceita a prioridade ensinada, mesmo com um Se alheio entre os finais`, () => {
-    const ir = finalProgram(order)
-    expect(simultaneousEnd(ir)).toEqual({ defeat: true, victory: false })
-    expect(accepted(ir)).toBe(true)
+    assets: project.assets,
   })
 }
 
-for (const order of ['inverted', 'inverted-extra'] as const) {
-  test(`${order}: recusa vitória sobrescrevendo derrota, mesmo com outro Se depois`, () => {
-    const ir = finalProgram(order)
-    expect(simultaneousEnd(ir)).toEqual({ defeat: false, victory: true })
-    expect(accepted(ir)).toBe(false)
+for (const order of [
+  'correta',
+  'correta-com-outro-se',
+  'duas-perguntas-soltas',
+  'vitoria-primeiro',
+] as const) {
+  test(`${order}: a conquista e o motor concordam quando meta e última vida chegam juntas`, async () => {
+    const project = projectWithOrder(order)
+    const check = criterios2D('final').find((check) => check.id === 'resultado-unico')!
+    const correct = order === 'correta' || order === 'correta-com-outro-se'
+    expect(evaluateProjectStructure(check.rule as never, project)).toBe(correct)
+    const game = await boot(project, project.files)
+    try {
+      game.press('Enter')
+      game.state().pontos = 20
+      game.api.setHealth(game.state().nave, 0)
+      game.tick()
+      expect(game.api.sceneIs('derrota')).toBe(correct)
+      expect(game.api.sceneIs('vitoria')).toBe(!correct)
+      expect(game.errors).toEqual([])
+      expect(game.warnings).toEqual([])
+    } finally {
+      game.dispose()
+    }
   })
 }

@@ -1,149 +1,193 @@
-[upbeat, welcoming voice] Oi! Você vai construir um jogo chamado Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço, e cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem. Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.
+[upbeat, welcoming voice] Oi! Você vai construir Nave Contra Asteroides. Sua nave precisa abrir uma rota pelo espaço, acertando os asteroides que vêm pela frente.
 
-[interested, animated voice] Olha aqui: eu clico na área do jogo e toco em Enter, e a partida começa. Quando eu toco na barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
+[curious] E qual é a missão da nave?
 
-[upbeat, encouraging voice] Agora é a sua vez: jogue até conhecer os controles. Este jogo usa o teclado: as setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Você pode continuar mesmo sem ganhar. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Acertar vinte asteroides antes de perder suas três vidas. Uma pedra que passa sem bater na nave não tira vida. Cada acerto vale um ponto.
+
+[interested, animated voice] Olha aqui: eu clico no jogo e pressiono Enter para começar. Segurando a seta da direita, eu levo a nave para a direita. Ao soltar, ela para. Agora eu toco uma vez em Espaço, e sai um laser.
+
+[engaging, energetic, conversational voice] Depois da vitória ou da derrota, Enter volta ao começo. Com outro Enter, você começa uma nova partida.
+
+[upbeat, encouraging voice] Agora é a sua vez de conhecer a rota. Clique no jogo, pressione Enter e experimente mover e disparar. Jogue o quanto quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar e testar o seu jogo, com os blocos que você vai usar e o lugar de cada um, e o que investigar em cada experiência. Por isso, se você esquecer um encaixe ou um valor, é só voltar aqui e abrir o material.
+[engaging, energetic, conversational voice] Olha aqui: este é o seu Passo a passo do projeto! Ele acompanha a construção da nave, com os blocos, os encaixes e os testes de cada parte. A galeria também mostra as imagens que você pode escolher.
 
-[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+[upbeat, encouraging voice] Se esquecer um passo, você pode voltar aqui e consultar. Se quiser, leia na própria aula. E, se preferir, clique em Baixar para guardar o material e consultar onde quiser.
+
+[engaging, energetic, conversational voice] Os links do Como fazer ajudam com a plataforma. Para uma dúvida sobre o seu jogo, você também encontra Preciso de ajuda no fim da aula.
 
 [confident, clear, unhurried voice] Agora clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Você já reparou como um desenho animado parece se mexer? Na verdade, são vários desenhos parados, passando bem rápido, um depois do outro. Cada desenho desses se chama quadro.
+[engaging, energetic, conversational voice] Agora escolha a aparência da sua nave e do espaço. As imagens ficam na biblioteca do projeto, e você pode combinar as opções do seu jeito.
 
-[engaging, energetic, conversational voice] O seu jogo também é feito de quadros: enquanto a partida acontece, ele mostra um quadro atrás do outro. E tem coisa que o jogo faz uma vez só, no começo, e coisa que ele faz sempre, em todo quadro.
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] É como sair para andar de bicicleta: tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.
+[short pause]
 
-[curious] E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?
+[confident, clear, unhurried voice] Procure o bloco que cria o sprite chamado nave. Deixe esse bloco à vista.
+
+[short pause]
+
+[confident, clear, unhurried voice] Clique no campo da imagem, onde aparece um nome como nave-falcao-azul. Escolha a nave que você quiser entre as três imagens de nave.
+
+[short pause]
+
+[confident, clear, unhurried voice] Conserve a largura em 56, a altura em 64 e os outros números. Assim, a troca muda o desenho e mantém o espaço ocupado pela nave.
+
+[short pause]
+
+[confident, clear, unhurried voice] Ainda em Ao iniciar, procure Pôr o cenário atrás de tudo.
+
+[short pause]
+
+[confident, clear, unhurried voice] Clique na imagem do cenário, como cenario-aurora, e escolha o espaço que quiser. Você pode trocar só uma imagem, as duas ou manter as que gostou.
+
+[short pause]
+
+[upbeat, encouraging voice] Clique no jogo e pressione Enter. A abertura dá lugar ao espaço, com a nave que você escolheu. Ela ainda fica parada, porque o movimento será sua próxima construção.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o sprite continua chamado nave, sua caixa continua 56 por 64 e o bloco do cenário continua em Ao iniciar. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A sua nave vai se mover de um lado para o outro. Para enxergar como esse voo acontece, pense num desenho animado: uma imagem muda um pouquinho em relação à anterior, e as imagens passam uma depois da outra.
+
+[engaging, energetic, conversational voice] Cada imagem é um quadro. No jogo, o movimento também acontece em pequenos passos, um em cada quadro. A seta que você segura indica o lado para o qual a nave deve ir.
+
+[curious] E quando eu solto a seta?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar o que muda na nave quando ela anda uma vez só e quando ela anda o tempo todo. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Olhe a prévia do seu jogo. Tá vendo? Não aparece nada, porque ele ainda não tem nenhum bloco.
+[engaging, energetic, conversational voice] Clique no jogo, pressione Enter e segure uma seta. A nave continua parada, porque ainda falta dizer como ela se move.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A nave andava uma vez, no começo, ou sempre, em todo quadro. Agora a gente vai preparar esses dois momentos no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O voo acontece em passinhos a cada quadro. Agora coloque esse movimento dentro da partida.
 
-[engaging, energetic, conversational voice] Para dizer ao jogo o que ele deve fazer, a gente usa blocos. Cada bloco é uma ordem para o jogo.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, ficam todos os blocos que você pode usar.
+[short pause]
 
-[engaging, energetic, conversational voice] Para começar, deixe à vista um lugar vazio do espaço dos blocos. Abra Áreas do projeto, pegue Ao iniciar e solte nesse lugar.
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre o Se com a pergunta o estado do jogo é jogando. Deixe à vista o espaço vazio do então.
 
-[engaging, energetic, conversational voice] É esta área que faz o que está dentro dela uma vez, no começo, quando o jogo abre.
+[short pause]
 
-[confident, clear, unhurried voice] Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Movimento e depois Movimentos prontos.
 
-[engaging, energetic, conversational voice] E é esta área que cuida do que continua acontecendo, sempre, enquanto o jogo roda.
+[short pause]
 
-[engaging, energetic, conversational voice] A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, o bloco da tela vai dentro de Ao iniciar.
+[confident, clear, unhurried voice] Pegue Mover o sprite nave com as setas esquerda e direita e solte dentro do então desse Se.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.
+[short pause]
 
-[confident, clear, unhurried voice] Repare nos dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: deixe assim.
+[confident, clear, unhurried voice] O nome já é nave. No campo velocidade, troque 6 por 5.
 
-[engaging, energetic, conversational voice] O fundo já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.
+[short pause]
 
-[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: a tela do jogo aparece lisa, na cor do fundo, porque ainda não tem nada desenhado nela.
+[confident, clear, unhurried voice] Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[short pause]
 
-[engaging, energetic, conversational voice] O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula.
+[upbeat, encouraging voice] Clique no jogo e pressione Enter se a abertura estiver aparecendo. Segure a seta da direita por um instante, solte e faça o mesmo com a esquerda. A nave acompanha as setas e para quando você solta.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o movimento está dentro do então de Se jogando, o sprite é nave e a velocidade é 5. Depois de corrigir, teste de novo.
 
-[long pause]
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[engaging, energetic, conversational voice] Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.
-
-[engaging, energetic, conversational voice] No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.
-
-[engaging, energetic, conversational voice] E para que lado cada número leva a nave? O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar para que lado a nave vai quando cada número muda, e onde ela fica quando os dois são zero. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe o teatro? Tem os bastidores, atrás da cortina, e tem o palco, que a plateia vê.
+[engaging, energetic, conversational voice] A nave precisa continuar visível para você conseguir pilotar. Pense numa janela: ela mostra só uma parte do que existe do lado de fora.
 
-[engaging, energetic, conversational voice] No seu jogo também existem esses dois lugares. Existir no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.
+[engaging, energetic, conversational voice] A tela do jogo também tem beiradas. O passinho pode levar a nave além dessa janela. O limite confere onde ela ficou e mantém sua caixa dentro da área de jogo.
 
-[curious] E quando a nave passa a existir, ela já aparece na tela?
+[curious] Se eu continuar segurando a seta, a nave pode desaparecer?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar a diferença entre a nave existir nos bastidores e aparecer na tela. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra das duas experiências antes desta parte? A nave passava a existir nos bastidores sem aparecer na tela, e o x e o y diziam onde ela fica. Agora a gente vai criar a nave do seu jogo!
+[engaging, energetic, conversational voice] Comece a partida e segure uma seta até chegar à beirada. A nave pode sair da área visível porque seu movimento ainda não tem limite.
 
-[engaging, energetic, conversational voice] A nave é criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar, logo abaixo do bloco que prepara a tela.
+[engaging, energetic, conversational voice] Na experiência da parte anterior, o limite conferia a posição depois do passinho. Coloque essa conferência depois do movimento da sua nave.
 
-[confident, clear, unhurried voice] Deixe à vista o bloco Preparar o jogo em tela cheia, dentro de Ao iniciar. Se ele não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que faz a nave existir no jogo, nos bastidores.
+[confident, clear, unhurried voice] Encontre o movimento dentro de Se jogando e deixe o encaixe logo abaixo dele à vista.
 
-[curious] Para que servem todos esses campos?
+[short pause]
 
-[engaging, energetic, conversational voice] Cada campo diz uma coisa da nave: o nome, o endereço na tela e o tamanho. [confident, clear, unhurried voice] Repare: o bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso deixe assim.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Movimento e depois Bordas e rebatidas.
 
-[engaging, energetic, conversational voice] O x e o y são o endereço da nave, como na experiência. A nave vai ficar no meio, de um lado ao outro, e perto da parte de baixo da tela.
+[short pause]
 
-[confident, clear, unhurried voice] Clique no 180 do x, troque por 400 e clique fora do campo.
+[confident, clear, unhurried voice] Pegue Manter o sprite dentro da tela e solte logo abaixo do movimento, ainda dentro do então.
 
-[confident, clear, unhurried voice] Agora clique no 250 do y, troque por 410 e clique fora do campo.
+[short pause]
 
-[engaging, energetic, conversational voice] A largura 54 e a altura 62 são o tamanho da nave e já vêm certas: deixe assim. Se quiser, escolha as cores do corpo e das asas nos quadradinhos do bloco.
+[confident, clear, unhurried voice] O bloco chega com heroi. Clique nesse nome e escolha nave.
 
-[confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, logo abaixo de Preparar o jogo em tela cheia, está Criar nave, com o nome nave, x 400, y 410, largura 54 e altura 62.
+[short pause]
 
-[engaging, energetic, conversational voice] Olhe a tela do jogo: ela continua vazia, e é isso mesmo, porque a nave já existe nos bastidores, mas ainda não foi desenhada. Ela aparece no fim desta aula.
+[upbeat, encouraging voice] Clique no jogo e pressione Enter se estiver na abertura. Segure a seta da esquerda até a borda e depois a da direita. A nave deve permanecer inteira na tela, mesmo enquanto você segura a seta.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o movimento vem antes do limite, os dois usam nave e os dois estão dentro de Se jogando. Depois de corrigir, teste de novo.
 
-[long pause]
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Desenhar a nave é pintar a nave na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.
-
-[curious] E se a nave for desenhada em todo quadro, sem apagar a tela?
-
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra quando a nave é desenhada em momentos diferentes, com e sem apagar a tela. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela existe nos bastidores, mas ainda não é desenhada.
+[engaging, energetic, conversational voice] Sua nave já responde às setas e fica dentro da tela. Agora deixe uma legenda dos controles para quem for jogar.
 
-[engaging, energetic, conversational voice] Lembra do que você viu na experiência da parte anterior? Desenhada em todo quadro, a nave aparecia no lugar de agora. Agora a gente vai desenhar a nave do seu jogo!
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] O desenho precisa acontecer de novo em todo quadro, enquanto o jogo roda. Por isso, ele vai num bloco que repete, dentro de Enquanto estiver rodando.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Enquanto estiver rodando.
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe logo abaixo dele à vista, antes das perguntas que desenham as telas.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que faz tudo o que fica dentro dele acontecer de novo, em todo quadro.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Escrever e encaixe nesse lugar.
 
-[engaging, energetic, conversational voice] No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.
+[confident, clear, unhurried voice] No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo.
 
-[confident, clear, unhurried voice] No nome do sprite, escolha nave. É este bloco que desenha a nave na tela.
+[short pause]
 
-[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: a nave aparece perto da parte de baixo da tela! Ela fica parada, porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.
+[confident, clear, unhurried voice] Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[short pause]
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito.
+
+[short pause]
+
+[upbeat, encouraging voice] Comece a partida e teste as duas setas até as bordas. Confira também a legenda. O disparo ainda será construído na próxima aula; agora, o movimento já funciona.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a nave se move, o limite vem depois do movimento e a legenda está no desenho de cada quadro. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você programou o voo lateral e manteve a nave dentro da rota!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

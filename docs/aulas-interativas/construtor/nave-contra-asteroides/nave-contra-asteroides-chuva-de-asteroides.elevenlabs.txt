@@ -1,109 +1,189 @@
-[engaging, energetic, conversational voice] Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.
+[engaging, energetic, conversational voice] Os asteroides vão chegar um depois do outro. Pense em soltar bolhas de sabão: o espaço de tempo entre os sopros muda a distância entre as bolhas.
 
-[engaging, energetic, conversational voice] No seu jogo, as pedras vão nascer lá em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.
+[engaging, energetic, conversational voice] No jogo, o intervalo também separa o nascimento dos asteroides. Ele indica quanto tempo esperar antes de criar outro, enquanto os que já nasceram continuam seu caminho.
 
-[curious] E se nascer uma pedra em todo quadro?
-
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar o que muda na chuva de pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e espere um pouco. Tá vendo? Nenhuma pedra aparece, porque o jogo ainda não cria pedras.
-
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Esperando 40 quadros entre uma pedra e outra, sobrava espaço. Agora a gente vai preparar as pedras e essa espera no seu jogo!
-
-[engaging, energetic, conversational voice] As pedras também vão ser muitas. Por isso, elas ficam num grupo, criado uma vez, quando o jogo começa, no fim de Ao iniciar.
-
-[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites tiros.
-
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte logo abaixo de Criar grupo de sprites tiros.
-
-[confident, clear, unhurried voice] Repare: o nome já vem asteroides, que é o nome certo para este grupo. Deixe assim.
-
-[engaging, energetic, conversational voice] É este bloco que cria a lista das pedras, ainda vazia.
-
-[curious] E quando vai nascer cada pedra?
-
-[engaging, energetic, conversational voice] De 40 em 40 quadros, como na experiência. A pedra não nasce em todo quadro, e sim de tempos em tempos. Por isso, ela não fica dentro de A cada quadro do jogo: a espera tem um bloco próprio, que fica logo abaixo de A cada quadro do jogo, fora dele, como vizinho.
-
-[confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo do bloco inteiro A cada quadro do jogo, ainda dentro de Enquanto estiver rodando.
-
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadros. Arraste e solte logo abaixo de A cada quadro do jogo, mas fora dele, ainda dentro de Enquanto estiver rodando. Os dois blocos ficam como vizinhos, um embaixo do outro.
-
-[engaging, energetic, conversational voice] O número do intervalo chega em 30. Clique no 30, troque por 40 e clique fora do campo.
-
-[engaging, energetic, conversational voice] É este bloco que, de 40 em 40 quadros, faz o que estiver dentro dele. Enquanto isso, A cada quadro do jogo continua cuidando de cada desenho da partida.
-
-[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele.
-
-[engaging, energetic, conversational voice] Por enquanto, nenhuma pedra cai, porque o bloco da espera ainda está vazio. A pedra entra nele depois da próxima experiência.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente. Isso é um sorteio.
-
-[engaging, energetic, conversational voice] No seu jogo, se todas as pedras nascessem no mesmo lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.
-
-[curious] E a pedra aparece de repente, no meio da tela?
+[curious] E se nascer um asteroide em todo quadro?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar onde cada pedra nova nasce quando o jogo sorteia o lugar, e de onde ela entra na tela. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e espere um pouco. Tá vendo? Ainda não cai nenhuma pedra, porque o bloco da espera está vazio.
+[engaging, energetic, conversational voice] Seu jogo já dispara, mas ainda não cria asteroides. Na experiência da parte anterior, uma espera separava os nascimentos. Prepare o grupo que vai reunir as pedras e um relógio de um segundo e meio.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada pedra nascia num lugar sorteado, acima da tela. Agora a gente vai pôr a pedra na espera do seu jogo!
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de A cada 40 quadros.
+[short pause]
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco No grupo criar um asteroide. Arraste para dentro de A cada 40 quadros e solte quando aparecer o encaixe.
+[confident, clear, unhurried voice] Deixe à vista o encaixe depois de Criar grupo de sprites tiros. Abra Jogo 2D, depois Grupos e depois Criar e percorrer.
 
-[engaging, energetic, conversational voice] É este bloco que cria uma pedra nova, cada vez que a espera termina.
+[short pause]
 
-[confident, clear, unhurried voice] Repare: o grupo já vem asteroides. Deixe assim.
+[confident, clear, unhurried voice] Pegue outro Criar grupo de sprites e encaixe depois do grupo tiros. O nome já é asteroides; conserve esse nome.
 
-[engaging, energetic, conversational voice] Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, como na experiência.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o 100 do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima do 100.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] É este bloco que sorteia um lugar novo, de um lado ao outro da tela, para cada pedra.
+[short pause]
 
-[confident, clear, unhurried voice] Agora clique no 100 do y, troque por -30 e clique fora do campo. Assim, a pedra nasce acima da tela e entra caindo.
+[confident, clear, unhurried voice] Encontre A cada quadro do jogo e siga até o fim desse bloco. Deixe o encaixe de baixo à vista, fora do fazer. O relógio vai ficar depois dele, como outro bloco da área.
 
-[engaging, energetic, conversational voice] O tamanho já vem em 40, e o vx já vem em 0, por isso a pedra não anda para os lados: deixe os dois assim.
+[short pause]
 
-[confident, clear, unhurried voice] Clique no 2 do vy, troque por 3 e clique fora do campo. Sem o sinal de menos, a pedra desce. Se quiser, escolha uma cor que apareça bem no fundo.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos. Pegue A cada segundos e encaixe fora do laço de quadros, nesse lugar.
 
-[engaging, energetic, conversational voice] Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro, como os tiros. Por isso, os três blocos que cuidam delas, Mover os sprites do grupo, Tirar do grupo quem sair da tela e Desenhar o grupo, vão no fim de A cada quadro do jogo.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar.
+[confident, clear, unhurried voice] Troque o 2 pelo valor 1.5, com ponto entre o um e o cinco. Isso significa um segundo e meio.
 
-[confident, clear, unhurried voice] Repare: o grupo já vem asteroides, e nos dois próximos blocos também. Deixe assim.
+[short pause]
 
-[curious] E como tira as pedras que saem da tela?
+[confident, clear, unhurried voice] Deixe o fazer do relógio à vista. Abra Programação e depois Lógica e Se. Encaixe um Se dentro desse fazer.
 
-[engaging, energetic, conversational voice] Do mesmo jeito que os tiros. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte nesse encaixe. [confident, clear, unhurried voice] Repare que o bloco também tem a palavra chamado, seguida de sprite: deixe assim. E deixe vazio o encaixe de fazer, na linha de baixo do bloco.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.
+[confident, clear, unhurried voice] Leve a pergunta x maior que zero do Se para a lixeira. Com o espaço da pergunta à vista, abra Jogo 2D, Jogo e telas, Telas e partida, e encaixe o estado do jogo é.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e espere. [interested, animated voice] Olha só: as pedras entram pela parte de cima, cada uma num lugar, e caem!
+[short pause]
 
-[engaging, energetic, conversational voice] Atire numa delas. Por enquanto, o tiro atravessa a pedra, porque o acerto ainda não foi programado. Ele vem na próxima aula.
+[confident, clear, unhurried voice] Escolha jogando no estado e deixe o então vazio por enquanto. Assim, os futuros nascimentos também vão esperar a partida começar.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[short pause]
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[reassuring, encouraging voice] Confira se ficou assim: há um grupo asteroides em Ao iniciar, o relógio usa 1.5 segundos, fica fora de A cada quadro e contém Se jogando.
+
+[engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[upbeat, encouraging voice] Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, cada uma num lugar sorteado, e caem sempre no mesmo ritmo.
+[engaging, energetic, conversational voice] Se todos os asteroides chegassem pelo mesmo lugar, bastaria deixar a nave apontada para aquela coluna. O sorteio permite variar o lugar de cada nova pedra.
 
-[engaging, energetic, conversational voice] Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto, o tiro atravessa as pedras: o acerto vem na próxima aula.
+[engaging, energetic, conversational voice] É como tirar um número de um saquinho. Você escolhe quais números podem participar, mas não escolhe antecipadamente qual deles vai sair em cada vez. Na tela, o número sorteado vai indicar a posição horizontal do novo asteroide.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] A pedra também pode nascer um pouco acima da parte visível e entrar caindo. Isso deixa a chegada acontecer pela beirada, em vez de aparecer no meio do caminho.
+
+[curious] O sorteio precisa dar um lugar diferente todas as vezes?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O relógio já espera um segundo e meio, mas seu então ainda está vazio. A experiência mostrou que um sorteio pode escolher o lugar de cada nova pedra. Agora coloque a criação dentro do relógio e faça o grupo cair e aparecer.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[short pause]
+
+[confident, clear, unhurried voice] Encontre A cada 1.5 segundos. Dentro dele, deixe o então de Se jogando à vista.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Criar e percorrer. Pegue No grupo criar um sprite com imagem e encaixe nesse então.
+
+[short pause]
+
+[confident, clear, unhurried voice] Troque o grupo inimigos por asteroides. Deixe vazio o nome opcional depois de chamado.
+
+[short pause]
+
+[confident, clear, unhurried voice] Deixe o número do x à vista. Abra Programação e depois Valores. Pegue número aleatório de até e solte sobre esse número.
+
+[short pause]
+
+[confident, clear, unhurried voice] No sorteio, coloque 24 no primeiro número e 728 no segundo. Essa faixa deixa espaço para a largura do asteroide, nas duas beiradas.
+
+[short pause]
+
+[confident, clear, unhurried voice] No y da criação, coloque menos 52. Na largura e na altura, coloque 48.
+
+[short pause]
+
+[confident, clear, unhurried voice] Escolha a imagem asteroide-rocha-lunar. Deixe vx em zero. No último número, logo depois de vy, coloque 2, para a pedra seguir para baixo.
+
+[short pause]
+
+[confident, clear, unhurried voice] Agora encontre A cada quadro do jogo. Dentro de Se jogando, deixe à vista o encaixe depois de Mover os sprites do grupo tiros e antes da retirada dos tiros.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Movimento. Encaixe Mover os sprites do grupo usando suas velocidades nesse lugar. O grupo já é asteroides; conserve.
+
+[short pause]
+
+[confident, clear, unhurried voice] Mais abaixo no laço de quadros, deixe à vista o encaixe depois de Limpar a tela e antes de Desenhar o grupo tiros, fora do Se.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Desenho e ordem. Encaixe Desenhar o grupo nesse lugar e conserve o nome asteroides.
+
+[short pause]
+
+[upbeat, encouraging voice] Clique no jogo e pressione Enter. Espere alguns segundos: novas pedras entram por cima, em lugares sorteados, e caem. Dispare também. Por enquanto, os lasers atravessam os asteroides, porque o acerto ainda será programado.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a criação está no relógio com a guarda jogando, usa asteroides, sorteia o x, começa acima e tem vy positivo; o mesmo grupo é movido e desenhado no laço de quadros. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] As pedras já entram e atravessam a tela. Você usou a retirada nos lasers para encerrar o caminho deles; agora faça o mesmo com os asteroides que passam por baixo.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[short pause]
+
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo e de Se jogando, deixe à vista o encaixe depois de Tirar do grupo tiros quem sair da tela.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Encaixe outro Tirar do grupo quem sair da tela nesse lugar.
+
+[short pause]
+
+[confident, clear, unhurried voice] O grupo já é asteroides. Conserve esse nome e escreva foraDaTela no nome depois de chamado.
+
+[short pause]
+
+[confident, clear, unhurried voice] Deixe o fazer vazio. Neste jogo, um asteroide que escapa não tira vida e não dá ponto.
+
+[short pause]
+
+[upbeat, encouraging voice] Comece a partida e deixe algumas pedras atravessarem a tela. Elas continuam entrando por cima e saindo por baixo. A retirada é conferida nos blocos; ver uma pedra desaparecer da janela não mostra sozinho o que ficou no grupo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a retirada usa asteroides, vem depois do movimento dos grupos, está dentro de Se jogando e tem o fazer vazio. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Sua rota agora recebe asteroides. Confira como eles chegam antes de enviar esta versão.
+
+[confident, clear, unhurried voice] Clique em Rodar de novo e observe a abertura por alguns segundos.
+
+[short pause]
+
+[upbeat, encouraging voice] Nenhuma pedra deve nascer na abertura. Clique no jogo, pressione Enter e espere a chegada dos asteroides.
+
+[upbeat, encouraging voice] Observe o espaço de tempo entre os nascimentos e os lugares de entrada. O sorteio pode repetir um lugar; ele não precisa alternar entre esquerda e direita.
+
+[upbeat, encouraging voice] Dispare e acompanhe uma pedra até ela sair por baixo. Nesta versão, o tiro ainda atravessa a pedra, e a saída da tela não tem outra reação.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o grupo e o relógio estão nos lugares certos, as pedras nascem somente em jogando, descem e têm a retirada fora da tela. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você construiu a chegada dos asteroides, com ritmo e posições sorteadas!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

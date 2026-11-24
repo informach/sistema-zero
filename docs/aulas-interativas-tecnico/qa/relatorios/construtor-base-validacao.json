@@ -1,0 +1,181 @@
+{
+  "version": 2,
+  "status": "autoria-e-gates-locais-aprovados-navegador-pendente",
+  "referenceCommit": "e085f7456a0ca76e139c4420fd38a7698191e688",
+  "approvedPrototypeCommit": "3a7fb2c2edda8d461e1d8fdc64bfd80bc6138795",
+  "courses": [
+    {
+      "course": "nave-contra-asteroides",
+      "directory": "docs/aulas-interativas/construtor/nave-contra-asteroides",
+      "lessons": 9,
+      "parts": 53,
+      "plannedClips": 50,
+      "quizzes": 3,
+      "experiments": 15,
+      "stages": 26,
+      "nativeBlockTypes": 48,
+      "maximumImportBodyBytes": 468852,
+      "maximumExampleBytes": 343268,
+      "authoredSourceSha256": "8ac081332dcb513a4e726ac8cf6a006f81bc00be376dfed4feeec4433254dc9a",
+      "manifestSha256": {
+        "nave-contra-asteroides-chuva-de-asteroides.manifesto.json": "9e3e3adcf4fe14e58b87c322e12c0588477c0b62ad5d4b60009bfffda9095e78",
+        "nave-contra-asteroides-comecar-partida.manifesto.json": "32be519578eee73c262809ce917b119860cff45651ba89c56a293c477cbe5917",
+        "nave-contra-asteroides-dia-1.manifesto.json": "318c473091fe7b007a29ea0b9c46334ab7d1c3574d768e88763d283aac051d44",
+        "nave-contra-asteroides-dia-2.manifesto.json": "d1a6a892037e07a1356fe0fc60d4d7beb66478fca5c4a171a2d70419a098dc88",
+        "nave-contra-asteroides-dia-3.manifesto.json": "4b718c4e2e0e04dde6185da0dd1a968e84f2029eb59bd516d69042b63d6161aa",
+        "nave-contra-asteroides-dia-4.manifesto.json": "06324aa0f2dfc892845c93da65f8e9d4e06fad41f7758505b5aa9e69bc51bf93",
+        "nave-contra-asteroides-dia-5.manifesto.json": "cb264291142dae8ce5b7ae7e3b4cab9ff7543132b8065e062ce8c0e2cf8b86b8",
+        "nave-contra-asteroides-pontos.manifesto.json": "4c24b4d7a683bcd3d6547d1636a0d256960fa291b8975146648de69b384770eb",
+        "nave-contra-asteroides-primeira-nave.manifesto.json": "233c4e006eaec3a2833a87cc23c02bd6a811bae8537f88006081e38fb07eb41c"
+      }
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "directory": "docs/aulas-interativas/construtor/patrulha-espacial",
+      "lessons": 5,
+      "parts": 25,
+      "plannedClips": 23,
+      "quizzes": 2,
+      "experiments": 2,
+      "stages": 19,
+      "nativeBlockTypes": 46,
+      "maximumImportBodyBytes": 534022,
+      "maximumExampleBytes": 377984,
+      "authoredSourceSha256": "2b0e6dff610e14353c58ef40e6e2c0f58ab2c2706807a741172e13bc75129886",
+      "manifestSha256": {
+        "patrulha-espacial-aula-1.manifesto.json": "42f3110988f48a55d4872305209358666dbd54d5f633acb2a662489019f1d55e",
+        "patrulha-espacial-aula-2.manifesto.json": "0e3f24b08a9390f9fbaf06a9d2a773d6d0b5c741e86cf90b6acc8c3ec24fadd2",
+        "patrulha-espacial-aula-3.manifesto.json": "d5598dd2a1efe980d2132f8e0c013758ee2a367f312d858793040ad520624f67",
+        "patrulha-espacial-aula-4.manifesto.json": "38ec1d54f8624d3f3c56d6ed7fc916c23461de1e9d91cd8ca8e353f3daa80fe9",
+        "patrulha-espacial-aula-5.manifesto.json": "01cfa438de699fcd039557a7c5190106b931e78bc95b2126daa0882113227198"
+      }
+    }
+  ],
+  "validation": {
+    "manifests": {
+      "tested": 56,
+      "valid": 56,
+      "construtorManifests": 14,
+      "pendingScenes": 0,
+      "warnings": 0,
+      "method": "validar-manifestos.ts sem filtros no checkout completo; inventário integral do acervo"
+    },
+    "scripts": {
+      "lessons": 68,
+      "clips": 332,
+      "construtorLessons": 14,
+      "construtorClips": 73,
+      "errors": 0,
+      "voiceGenerationCheckPassed": true,
+      "method": "validar-roteiros.py sem filtros e gerar-falas-elevenlabs.ts --check no checkout completo; âncoras, tags vocais, texto integral e arquivos de voz"
+    },
+    "sceneRegression": {
+      "tests": 186,
+      "passed": 186,
+      "failed": 0,
+      "assertions": 725,
+      "files": [
+        "construtor-presets.test.ts",
+        "session.test.ts",
+        "livre-nave-b.test.ts",
+        "livre-nave-meta.test.ts"
+      ],
+      "scope": "Meta 20 e legado 26; intervalo de 1,5 s e legado de 40 quadros; catálogo/voz/TTS usam o preset; restauração exige a meta da atividade e conserva a altura dos asteroides"
+    },
+    "blockly": {
+      "projects": 45,
+      "passed": true,
+      "deliveredHashesStillMatch": true,
+      "report": "construtor-base-roundtrip.json"
+    },
+    "runtime2D": {
+      "stages": 26,
+      "checkGroups": 176,
+      "executionObjectives": 147,
+      "passed": true,
+      "reports": ["construtor-base-runtime-2d.json", "construtor-base-objetivos-2d.json"],
+      "negativeCriteriaRegressions": 14
+    },
+    "runtime3D": {
+      "stages": 19,
+      "executionObjectives": 84,
+      "passed": true,
+      "deliveredHashesStillMatch": true,
+      "report": "../../../aulas-interativas/construtor/patrulha-espacial/qa-runtime-progressao.json",
+      "negativeCriteriaRegressions": 5
+    },
+    "experiments": {
+      "twoD": {
+        "scenes": 15,
+        "goals": 39,
+        "passed": true
+      },
+      "threeD": {
+        "scenes": 2,
+        "goals": 5,
+        "passed": true
+      },
+      "scope": "Atividades editoriais exatas abrem sem descobertas nem conclusão; ações públicas atingem os objetivos pelo motor oficial"
+    },
+    "gestures": {
+      "recognized": 1276,
+      "unknown": 0,
+      "report": "construtor-base-gestos.json",
+      "scope": "Sintaxe dos gestos, parser oficial do Palco e verbos de página da ESPEC. Alvos dinâmicos, foco, tempos, enquadramento e execução exigem Verificar plano no Estúdio; não foram declarados executados por este gate."
+    },
+    "biomeInfra": {
+      "files": 186,
+      "errors": 0,
+      "warnings": 68,
+      "infos": 9,
+      "passed": true,
+      "scope": "Fontes, testes, configuração e JSONs relevantes da entrega. Os 55 snapshots (45 etapas, quatro aliases e seis protótipos) preservam bytes/hashes e continuam sujeitos ao parser/lint; somente seu formatter foi desativado por serem saídas compactas do exportador nativo."
+    },
+    "editorialQa": {
+      "tests": 872,
+      "passed": 872,
+      "failed": 0,
+      "assertions": 181052,
+      "files": 42,
+      "command": "bun test docs/aulas-interativas-tecnico/qa",
+      "scope": "Toda a pasta QA editorial: contratos, progressão, critérios cumulativos, 81 combinações de aparência, casos negativos, inventário, materiais, vozes, projeção Kids/adulto e regressões dos demais cursos."
+    },
+    "httpImportIntegration": {
+      "tests": 20,
+      "passed": 20,
+      "failed": 0,
+      "assertions": 374,
+      "kidsNaveLessons": 9,
+      "kidsPatrulhaLessons": 5,
+      "adultPatrulhaLessons": 5,
+      "farolRegression": 1,
+      "command": "bun test packages/members/tests/integration/nave-e-desafio-import.test.ts",
+      "scope": "Aplicação HTTP real e repositórios em memória: projeção pelo contrato do Admin, importação/reimportação, identidade do Estúdio, exemplos por parte, continuidade, entrega final e preservação da fonte e do publicado. Nenhuma escrita no banco da plataforma."
+    },
+    "nativeBrowser": {
+      "status": "browserNotExecuted",
+      "passed": null,
+      "finalObjectivesPrepared": 14,
+      "negativeCasesPrepared": 2,
+      "report": "construtor-base-executor-nativo.json",
+      "reason": "Chromium bloqueado antes de abrir a página: socket() failed: Operation not permitted; elevação de permissões rejeitada automaticamente."
+    }
+  },
+  "compatibility": {
+    "outlineArraysPreserved": 14,
+    "seedOutlineHashesPreserved": true,
+    "missionPowersExtrasUnchanged": true,
+    "formerNaveGeneratorDelegatesToCurrentSource": true,
+    "historicalFixtureForMeuJeitoRetained": true,
+    "membersImportTestUpdatedForLessons": 19,
+    "adultPatrulhaCommonAuthoringRecognized": true
+  },
+  "notExecuted": [
+    "Suíte de todo o monorepo; a QA editorial completa, a regressão selecionada do core e a integração HTTP das aulas foram executadas.",
+    "Importação manual no Estúdio com conta de aluno, execução em navegador real, desenho WebGL da prévia 3D e Verificar plano no palco de gravação.",
+    "Gravação ou síntese de voz, upload de mídia, importação para o banco e publicação de aulas."
+  ],
+  "runtimeScope": "Motores oficiais, Canvas2D real, geometria e GLTFLoader oficiais; relógio/teclado de QA e DOM de teste. Observações escalares, checkpoints, codec e julgador oficiais. O renderer WebGL 3D não desenha; o adaptador textual usa textContent, enquanto o executor usa innerText, portanto não comprova visibilidade CSS.",
+  "integrationBaseCommit": "fe72efb63ff6c32fec22f2174db0f3258957171c",
+  "reviewDate": "2026-11-24"
+}

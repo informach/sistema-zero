@@ -1,4 +1,9 @@
 // Programas de Nave Contra Asteroides, montados dos passos gravados e não dos critérios.
+/**
+ * Fixture histórica: Meu Jeito, Desafio e testes de compatibilidade ainda dependem
+ * destes programas. A base Nave atual é construtor-2d-projetos.ts; este módulo não
+ * é fonte de regeneração de suas aulas nem de seus critérios.
+ */
 import type { Block } from './corre-dino-projetos-qa'
 
 export type { Block }

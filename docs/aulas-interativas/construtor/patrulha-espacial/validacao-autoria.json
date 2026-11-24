@@ -1,0 +1,428 @@
+{
+  "version": 1,
+  "course": "jornada-construtor-base-3d",
+  "status": "contratos-editoriais-validados",
+  "lessons": [
+    {
+      "lessonSlug": "aula-1",
+      "title": "Da tela ao espaço",
+      "entryStage": "inicio",
+      "finalStage": "limite-tiro",
+      "sections": 7,
+      "plannedVideos": 7,
+      "importBytes": 534022,
+      "exampleBytes": 357029,
+      "examples": 5,
+      "parts": [
+        {
+          "key": "um-aperto-um-laser",
+          "entryStage": "inicio",
+          "solutionStage": "disparo",
+          "structuralChecks": 1,
+          "newStructuralChecks": ["disparo-protegido"],
+          "executionChecks": ["valores-do-comeco", "um-aperto-um-tiro", "pilotar-so-na-partida"],
+          "entryMayPass": null
+        },
+        {
+          "key": "laser-segue-a-nave",
+          "entryStage": "disparo",
+          "solutionStage": "origem",
+          "structuralChecks": 1,
+          "newStructuralChecks": ["disparo-protegido"],
+          "executionChecks": ["valores-do-comeco", "um-aperto-um-tiro", "pilotar-so-na-partida"],
+          "entryMayPass": null
+        },
+        {
+          "key": "laser-em-profundidade",
+          "entryStage": "origem",
+          "solutionStage": "trajeto-tiro",
+          "structuralChecks": 1,
+          "newStructuralChecks": [],
+          "executionChecks": ["valores-do-comeco", "um-aperto-um-tiro", "pilotar-so-na-partida"],
+          "entryMayPass": null
+        },
+        {
+          "key": "fim-do-caminho-do-laser",
+          "entryStage": "trajeto-tiro",
+          "solutionStage": "limite-tiro",
+          "structuralChecks": 2,
+          "newStructuralChecks": ["limites-dos-grupos"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo"
+          ],
+          "entryMayPass": null
+        }
+      ]
+    },
+    {
+      "lessonSlug": "aula-2",
+      "title": "Asteroides na rota",
+      "entryStage": "limite-tiro",
+      "finalStage": "limite-asteroide",
+      "sections": 4,
+      "plannedVideos": 4,
+      "importBytes": 467641,
+      "exampleBytes": 367051,
+      "examples": 5,
+      "parts": [
+        {
+          "key": "relogio-dos-asteroides",
+          "entryStage": "limite-tiro",
+          "solutionStage": "relogio",
+          "structuralChecks": 3,
+          "newStructuralChecks": ["surgimento-protegido"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "lugares-de-entrada",
+          "entryStage": "relogio",
+          "solutionStage": "entrada",
+          "structuralChecks": 4,
+          "newStructuralChecks": ["faixa-de-entrada"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "asteroides-se-aproximam",
+          "entryStage": "entrada",
+          "solutionStage": "trajeto-asteroide",
+          "structuralChecks": 4,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "fim-da-rota",
+          "entryStage": "trajeto-asteroide",
+          "solutionStage": "limite-asteroide",
+          "structuralChecks": 4,
+          "newStructuralChecks": ["limites-dos-grupos"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        }
+      ]
+    },
+    {
+      "lessonSlug": "aula-3",
+      "title": "Acertar no espaço",
+      "entryStage": "limite-asteroide",
+      "finalStage": "placar",
+      "sections": 6,
+      "plannedVideos": 5,
+      "importBytes": 492724,
+      "exampleBytes": 377984,
+      "examples": 5,
+      "parts": [
+        {
+          "key": "acerto-do-laser",
+          "entryStage": "limite-asteroide",
+          "solutionStage": "contato",
+          "structuralChecks": 6,
+          "newStructuralChecks": ["par-e-alvo-ativo", "acerto-do-par"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "contador-da-patrulha",
+          "entryStage": "contato",
+          "solutionStage": "contador",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["contador-inicial"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "um-ponto-por-acerto",
+          "entryStage": "contador",
+          "solutionStage": "soma",
+          "structuralChecks": 7,
+          "newStructuralChecks": ["acerto-do-par"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "placar-da-patrulha",
+          "entryStage": "soma",
+          "solutionStage": "placar",
+          "structuralChecks": 8,
+          "newStructuralChecks": ["acerto-do-par", "placar-inicial"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        }
+      ]
+    },
+    {
+      "lessonSlug": "aula-4",
+      "title": "Três chances na patrulha",
+      "entryStage": "placar",
+      "finalStage": "retirada-batida",
+      "sections": 3,
+      "plannedVideos": 3,
+      "importBytes": 419836,
+      "exampleBytes": 311311,
+      "examples": 4,
+      "parts": [
+        {
+          "key": "tres-vidas",
+          "entryStage": "placar",
+          "solutionStage": "vidas",
+          "structuralChecks": 9,
+          "newStructuralChecks": ["vida-inicial"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "vida-na-batida",
+          "entryStage": "vidas",
+          "solutionStage": "dano",
+          "structuralChecks": 10,
+          "newStructuralChecks": ["batida-na-nave"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "retirar-a-pedra-da-batida",
+          "entryStage": "dano",
+          "solutionStage": "retirada-batida",
+          "structuralChecks": 10,
+          "newStructuralChecks": ["batida-na-nave"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        }
+      ]
+    },
+    {
+      "lessonSlug": "aula-5",
+      "title": "Uma patrulha completa",
+      "entryStage": "retirada-batida",
+      "finalStage": "completo",
+      "sections": 5,
+      "plannedVideos": 4,
+      "importBytes": 443185,
+      "exampleBytes": 322636,
+      "examples": 4,
+      "parts": [
+        {
+          "key": "quando-as-vidas-acabam",
+          "entryStage": "retirada-batida",
+          "solutionStage": "derrota",
+          "structuralChecks": 11,
+          "newStructuralChecks": ["decisao-do-resultado"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "meta-da-patrulha",
+          "entryStage": "derrota",
+          "solutionStage": "vitoria",
+          "structuralChecks": 11,
+          "newStructuralChecks": ["decisao-do-resultado"],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco"
+          ],
+          "entryMayPass": null
+        },
+        {
+          "key": "patrulha-pronta",
+          "entryStage": "vitoria",
+          "solutionStage": "completo",
+          "structuralChecks": 11,
+          "newStructuralChecks": [],
+          "executionChecks": [
+            "valores-do-comeco",
+            "um-aperto-um-tiro",
+            "pilotar-so-na-partida",
+            "tiro-sai-do-grupo",
+            "relogio-respeita-comeco",
+            "avisos-da-partida"
+          ],
+          "entryMayPass": null
+        }
+      ]
+    }
+  ],
+  "stages": 19,
+  "blockTypes": 46,
+  "snapshots": [
+    {
+      "stage": "inicio",
+      "file": "projetos/inicio.szproject.json",
+      "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5"
+    },
+    {
+      "stage": "disparo",
+      "file": "projetos/disparo.szproject.json",
+      "sha256": "b9485bddea89b566d3d96029cd729cc82c553555255fecb19a020554f008bd9a"
+    },
+    {
+      "stage": "origem",
+      "file": "projetos/origem.szproject.json",
+      "sha256": "6ba791c16dbb7bd1faba4a8f20c08a29926a7cb6d28a55ef60b212108687fbaa"
+    },
+    {
+      "stage": "trajeto-tiro",
+      "file": "projetos/trajeto-tiro.szproject.json",
+      "sha256": "692bceacd136421ca85886ba17923a416d7f2721f7f0a3d5c6cccbe04bb4b6e9"
+    },
+    {
+      "stage": "limite-tiro",
+      "file": "projetos/limite-tiro.szproject.json",
+      "sha256": "4811829bbf18cddc3f02fdef2de5e191c4adb54e886065e624cbe0c8469821aa"
+    },
+    {
+      "stage": "relogio",
+      "file": "projetos/relogio.szproject.json",
+      "sha256": "8f941c73ac4a5c3133b25506c2b1ff1b4bec00c50e8b2beecfe0eedc3cccaf46"
+    },
+    {
+      "stage": "entrada",
+      "file": "projetos/entrada.szproject.json",
+      "sha256": "b1a55b79ed5b5dff3a396210e5c0a8b9d211fe4c7ad152ee845ec67226d7ab2a"
+    },
+    {
+      "stage": "trajeto-asteroide",
+      "file": "projetos/trajeto-asteroide.szproject.json",
+      "sha256": "a4165e2e7da2ad2062aec562a49404f786f8caf3868176fd409b9e6aef4c3475"
+    },
+    {
+      "stage": "limite-asteroide",
+      "file": "projetos/limite-asteroide.szproject.json",
+      "sha256": "29a82e89d5ce4d7bf487832a1c52aba08279ada05b9da84571aa82adcdfef7c2"
+    },
+    {
+      "stage": "contato",
+      "file": "projetos/contato.szproject.json",
+      "sha256": "107e50a19f1dcc2c206542e586b7711186d86c010b912f7b6993522fcb86348b"
+    },
+    {
+      "stage": "contador",
+      "file": "projetos/contador.szproject.json",
+      "sha256": "6daca576456688b372b020c59d3a450cd38cf9b421f9b0e89d7a289b27fc724f"
+    },
+    {
+      "stage": "soma",
+      "file": "projetos/soma.szproject.json",
+      "sha256": "332f6b85d55052e7905995d9e4cebe475165f540fd94c45cbfd24acef6f0ebf8"
+    },
+    {
+      "stage": "placar",
+      "file": "projetos/placar.szproject.json",
+      "sha256": "72bd323a72fb16df5947a05fc2af4b7bfce5eded271701ce933a34fe142aadac"
+    },
+    {
+      "stage": "vidas",
+      "file": "projetos/vidas.szproject.json",
+      "sha256": "ad17e991f124ce273b7db9d26b42bdac622f0acdff5e2c2300980956cf945ce6"
+    },
+    {
+      "stage": "dano",
+      "file": "projetos/dano.szproject.json",
+      "sha256": "783205440ede1a429bb60c39d3072934ba602ed176e3f87d7ed55996ce7836e9"
+    },
+    {
+      "stage": "retirada-batida",
+      "file": "projetos/retirada-batida.szproject.json",
+      "sha256": "646a83d5d4acfc43b17f929fd84e73486c9686ec2f4030973d2c1ad7ad2136eb"
+    },
+    {
+      "stage": "derrota",
+      "file": "projetos/derrota.szproject.json",
+      "sha256": "f503ca8bda4ed4f7bf6f562a7f7f901f010cce1176295a64c13b8a2bd7e78385"
+    },
+    {
+      "stage": "vitoria",
+      "file": "projetos/vitoria.szproject.json",
+      "sha256": "63c228ca4f0a0c0528f9ee3ae183871eda9c2a1aee1b5786ed2c97b70e6ef881"
+    },
+    {
+      "stage": "completo",
+      "file": "projetos/completo.szproject.json",
+      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2"
+    }
+  ],
+  "limits": {
+    "importBodyBytes": 2097152,
+    "sourceBytes": 16777216
+  },
+  "scope": "Schema oficial, continuidade, exemplos, orçamento de importação, critérios estruturais e sincronização de voz. Critérios de execução exigem QA de runtime separado; nenhuma publicação executada."
+}

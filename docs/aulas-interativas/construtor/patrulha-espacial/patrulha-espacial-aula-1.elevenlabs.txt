@@ -1,0 +1,181 @@
+[upbeat, welcoming voice] Oi! Sua nave já abriu uma rota em duas dimensões. Agora você vai construir a Patrulha Espacial, com uma rota que vem lá do fundo até a nave.
+
+[curious] A missão continua sendo acertar vinte asteroides?
+
+[engaging, energetic, conversational voice] Continua! Cada asteroide acertado vale um ponto. Você tem três vidas, e uma pedra que passa sem bater na nave não tira vida. Olha como essa rota aparece no espaço.
+
+[upbeat, encouraging voice] Eu clico no jogo e pressiono Enter para começar. Seguro a seta da direita um pouquinho e solto. Agora toco uma vez em Espaço: o laser sai da nave e segue para o fundo.
+
+[engaging, energetic, conversational voice] Depois de uma vitória ou de uma derrota, o botão Voltar ao início prepara uma nova partida. Você volta à abertura e pressiona Enter para jogar de novo.
+
+[interested, animated voice] Na construção, vamos reaplicar ideias que você usou na nave em duas dimensões: acontecimentos, grupos, acertos, pontos e vidas. E vamos descobrir como escolher o lugar e o caminho das coisas nesse espaço em três dimensões.
+
+[upbeat, encouraging voice] Agora experimente você! Clique no jogo, pressione Enter e pilote. Jogue o quanto quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Este é o seu Passo a passo da Patrulha Espacial. Ele acompanha as montagens, com os blocos, os lugares de encaixar e os testes de cada parte.
+
+[upbeat, encouraging voice] Se esquecer um campo ou um encaixe, pode voltar aqui e consultar. Você pode abrir o livro na aula. Se quiser guardar o material, clique em Baixar.
+
+[engaging, energetic, conversational voice] Os links do Como fazer ajudam a usar a plataforma. Para uma dúvida sobre o seu jogo, você encontra Preciso de ajuda no fim da aula.
+
+[confident, clear, unhurried voice] Quando quiser começar a construção, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Na nave em duas dimensões, você usou os lugares da tela para mover e disparar. Agora nossa rota tem profundidade. Pense numa caixa: uma peça pode ficar mais para um lado, mais para o fundo ou mais alta.
+
+[interested, animated voice] Na Ilha do Farol, você já encontrou esse espaço em três dimensões. Vamos voltar à ilha por um instante e investigar uma coisa de cada vez: qual número muda o lado, qual muda a altura e qual muda a profundidade?
+
+[curious] Se eu mudar a altura da nave, o tiro ainda vai encontrar o asteroide?
+
+[engaging, energetic, conversational voice] Depende de onde o tiro e o asteroide estiverem. Na nossa patrulha, eles vão viajar na mesma altura. Primeiro, vamos descobrir como reconhecer cada direção. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar na ilha. Você pode repetir e comparar o que acontece. Depois, vamos usar essa descoberta para escolher o lugar do laser na patrulha. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[upbeat, encouraging voice] Clique em Rodar de novo, no alto do Estúdio. Pressione Enter e toque em Espaço. Tá vendo? Ainda não aparece laser, porque esse acontecimento está por construir.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Você investigou x para os lados, y para a altura e z para a profundidade. Agora vamos criar um laser parado e usar essas direções para escolher onde ele nasce.
+
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se precisar, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço livre dentro de Quando acontecer, ao lado do acontecimento de Enter.
+
+[confident, clear, unhurried voice] Abra Jogo 3D e depois Controles. Pegue Quando apertar a tecla e coloque nesse espaço.
+
+[confident, clear, unhurried voice] No campo da tecla, escolha espaço, que aparece com pular entre parênteses. O que ele vai fazer aqui depende dos blocos que você colocar dentro.
+
+[confident, clear, unhurried voice] Dentro de o acontecimento de Espaço, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[engaging, energetic, conversational voice] Essa pergunta usa o começo que já está no seu jogo: Enter muda o estado para jogando. Assim, Espaço só dispara depois que a partida começou.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço então desse Se.
+
+[confident, clear, unhurried voice] Abra Jogo 3D e depois Grupos. Pegue Criar uma cópia e encaixe no então.
+
+[confident, clear, unhurried voice] No primeiro campo, escolha moldeTiro. No campo do grupo, escolha tiros.
+
+[confident, clear, unhurried voice] Conserve x em zero. Mude y para um e z para menos um vírgula seis.
+
+[interested, animated voice] O y deixa o laser na altura da nave. O z coloca o laser um pouco à frente dela, na direção do fundo. Ainda vamos fazer o x acompanhar a nave.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo de Criar uma cópia, ainda dentro do então.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Som. Encaixe Tocar nota abaixo da cópia. Mude a frequência para oitocentos e oitenta e a duração para sessenta.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. Toque em Espaço antes de Enter: nada de laser. Agora pressione Enter e toque em Espaço uma vez. O laser aparece parado perto da frente da nave, com um som curtinho.
+
+[upbeat, encouraging voice] Segure a seta da direita um pouquinho. A nave sai do centro, e você consegue ver que o laser ficou no lugar onde nasceu.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o acontecimento usa espaço, o Se pergunta estado igual a jogando, a cópia usa moldeTiro no grupo tiros com x zero, y um e z menos um vírgula seis, e a nota está abaixo da cópia.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Seu laser já nasce quando você aperta Espaço. Só que ele sempre nasce no centro, mesmo quando a nave está ao lado. Vamos usar a posição da nave para escolher o lugar de cada novo laser.
+
+[curious] Ele precisa acompanhar a nave mesmo depois de sair?
+
+[engaging, energetic, conversational voice] Ele pega o lugar da nave no momento do disparo. Depois, segue o próprio caminho. É como soltar uma bolinha: ela sai de onde sua mão está naquele momento.
+
+[confident, clear, unhurried voice] Em Quando acontecer, encontre Criar uma cópia de moldeTiro dentro do acontecimento de Espaço. Deixe o zero do x à vista.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e Posição, giro e tamanho. Pegue posição x do objeto.
+
+[confident, clear, unhurried voice] Solte esse bloco em cima do zero do x da cópia.
+
+[confident, clear, unhurried voice] Conserve o eixo em x. No objeto, escolha nave.
+
+[interested, animated voice] Agora o x da cópia lê o x da nave. O y continua um, e o z continua menos um vírgula seis.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Segure a seta da direita um pouquinho, solte e toque em Espaço. O laser nasce na nova posição lateral da nave.
+
+[upbeat, encouraging voice] Mova a nave para a esquerda e dispare de novo. Você criou lasers em dois lugares diferentes. Eles ainda ficam parados; a próxima parte cuida do caminho.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco posição x do objeto nave ocupa o x da cópia de moldeTiro, e y e z continuam um e menos um vírgula seis.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O laser já nasce na nave. Agora ele precisa percorrer a rota. Na investigação da Ilha, você viu que z muda a profundidade. Neste jogo, seguir da nave para o fundo é diminuir o z.
+
+[confident, clear, unhurried voice] Encontre Ao iniciar e procure Criar variável velocidadeTiros com valor zero.
+
+[confident, clear, unhurried voice] No valor dessa variável, troque zero por menos vinte e dois.
+
+[interested, animated voice] O percurso preparado lê esse valor para movimentar cada tiro no eixo z. O sinal de menos escolhe a direção do fundo. O tamanho do número escolhe a rapidez.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Mova a nave um pouquinho e toque em Espaço. O laser nasce na frente dela e viaja para o fundo.
+
+[upbeat, encouraging voice] Aperte e solte Espaço algumas vezes. Cada aperto cria seu próprio laser, e todos seguem a mesma direção.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: velocidadeTiros começa com menos vinte e dois em Ao iniciar, e o disparo continua usando a posição x da nave.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] O laser já vai para o fundo. Só sair da nossa vista não retira o objeto do jogo. Vamos dar um fim ao caminho dele, como você fez com os objetos que saíam da tela no jogo em duas dimensões.
+
+[confident, clear, unhurried voice] Encontre Enquanto estiver rodando e o bloco A cada quadro da cena. Dentro dele, procure o Se que pergunta estado igual a jogando.
+
+[confident, clear, unhurried voice] Desça até o final das ações desse Se. Deixe à vista o encaixe depois dos percursos dos grupos, ainda dentro do então.
+
+[confident, clear, unhurried voice] Abra Jogo 3D e Grupos. Pegue No grupo inimigos, tirar quem saiu e encaixe nesse lugar.
+
+[confident, clear, unhurried voice] Escolha o grupo tiros. No primeiro limite, escreva menos trinta e seis. No segundo, escreva três. No eixo, escolha Z.
+
+[interested, animated voice] O tiro nasce em z menos um vírgula seis. Ele continua no grupo enquanto fica entre menos trinta e seis e três. Depois que passa do limite lá do fundo, o bloco o retira.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. Antes de Enter, toque em Espaço: não deve sair laser. Depois de Enter, mova a nave, solte a seta e dispare.
+
+[upbeat, encouraging voice] Veja o laser nascer na nave e seguir até o fundo. Espere um pouquinho e dispare outra vez. O novo laser funciona normalmente. A imagem mostra o caminho; o botão Verificar projeto também confere se o laser antigo foi retirado do grupo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o limite do grupo tiros está dentro do Se de jogando, no fim do quadro, com menos trinta e seis, três e eixo Z.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você construiu o disparo da patrulha: cada laser nasce na nave, viaja pelo espaço e termina o caminho!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

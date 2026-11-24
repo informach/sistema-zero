@@ -1,123 +1,179 @@
 # Roteiro de produção · Conte os acertos
 
-**Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
+A professora grava o master integral. Na edição kids, Dedé substitui somente os parágrafos das tabelas de substituição, sem voz sobreposta. A edição adulta conserva o master. As falas prontas e o índice de edição são derivados desta fonte.
 
-## Seção 1. Guardar e mostrar um número
+Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visível antes de pegar a peça. As telas e o reinício são infraestrutura preparada; as partes ensinam as regras da partida. A personalização muda a aparência.
 
-### Clipe `video-variavel` · Guardar e mostrar um número
+**Antes de gravar:** use uma sessão de ensaio sem envio anterior, carregue a entrada da parte e dê foco ao jogo antes das teclas. Mostre Objetivo cumprido! e Projeto enviado! somente quando aparecerem. Os tempos de tecla são estimativas a confirmar no Verificar plano. Gravação e publicação pendentes.
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+## Parte 1. Guardar e mostrar um número
 
-**Clipe:** `video-variavel`
+**Clipe:** `video-caixa-de-pontos`
 
-**Na tela:** No "Sabe quando alguém vai contando os gols", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy vai te mostrando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
+[engaging, energetic, conversational voice] Você já consegue acertar os asteroides. Agora o jogo precisa lembrar quantos acertos aconteceram. Pense no placar de uma partida: ele guarda a contagem para ninguém depender só da memória.
 
-[engaging, energetic, conversational voice] No seu jogo, o número guardado vai se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.
+[engaging, energetic, conversational voice] No seu jogo, os pontos também podem ser guardados. Mudar a contagem e mostrar essa contagem na tela são coisas diferentes, como anotar um resultado e levantar uma placa para todo mundo enxergar.
 
-[curious] E se o número não estiver na tela, ele continua mudando?
+[curious] Se o número mudou nos bastidores, ele aparece sozinho no placar?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar a diferença entre o número que o jogo guarda e o número que aparece na tela, quando a nave acerta um asteroide. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-variavel-K1 | Dedé | 1 | se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela. | E se o número não estiver na tela, ele continua mudando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre o número que o jogo | [curious] |
+| video-caixa-de-pontos-K1 | Dedé | 1 | essa contagem na tela são coisas diferentes, como anotar um resultado e levantar uma placa para todo mundo enxergar. | Se o número mudou nos bastidores, ele aparece sozinho no placar? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Imagem nas substituições kids (não gravar):**
+**Falas da experiência:** consulte `zappy-etapas.json`. O vídeo convida; os controles e as comparações continuam livres na bancada.
 
-- `video-variavel-K1`: entrada — Manter o meme dos gols contados de cabeça até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem clicar em nada.
+**Recado na página (não gravar):** Sua vez! Compare o número guardado com o número mostrado na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
+## Parte 2. Prepare o placar
 
-**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/variable.ts`, na tela `packages/member-shell/src/components/scene-livre/variable.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+**Clipe:** `video-placar`
 
-**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
-
-## Seção 2. Some um ponto a cada acerto
-
-### Clipe `video-pontos-e-placar` · Some um ponto a cada acerto
-
-**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
-
-**Clipe:** `video-pontos-e-placar`
-
-**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "clique na área do jogo e acerte uma pedra", clicar no jogo [tocar prévia 400 240] e atirar [tecla Space] até acertar uma pedra. No "Deixe à vista o fim de Ao iniciar", apontar o lugar [apontar abaixo de "Criar grupo de sprites"]. No "Agora abra Programação e depois Variáveis", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco no fim de Ao iniciar. No "Clique em contador, troque por pontos", trocar o nome [trocar "contador" por "pontos" em "Criar variável"]. No "É este bloco que cria a caixa pontos", apontar o bloco [apontar bloco "Criar variável"]. No "pegue o bloco Somar em variável e solte", encaixar o bloco [encaixar "Somar em variável" abaixo de "Tocar efeito"] e escolher pontos. No "Abra Jogo 2D, depois Vida e placar", abrir as categorias [categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] e encaixar **Mostrar placar** logo depois da colisão. No "É este bloco que mostra um número na tela", apontar o placar [apontar bloco "Mostrar placar"]. No "Deixe à vista o 0 do campo valor do placar", abrir as categorias [categoria Programação > Valores], levar **valor da variável** com a mão até o 0 do placar, soltar e escolher pontos. No "É este bloco que lê o número guardado em pontos", apontar o valor da variável pontos dentro do placar. No "Agora teste: clique na área do jogo", clicar no jogo [tocar prévia 400 240] e atirar longe das pedras [tecla Space]. No "Depois, acerte uma pedra", atirar [tecla Space] até acertar e apontar o placar [apontar prévia 60 30]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!, clique em Concluir aula", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Seu jogo já reconhece acertos, mas ainda não guarda uma contagem. Na experiência da parte anterior, guardar e mostrar eram ações diferentes. Faça as duas, começando com zero.", [apontar prévia]. No "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Ao iniciar"]. No "Deixe à vista o encaixe depois dos dois grupos, antes de Mudar o estado do jogo para inicio.", [apontar abaixo de "Criar grupo de sprites asteroides"]. No "Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe nesse lugar.", [abrir categoria Programação > Variáveis] [encaixar "Criar variável contador com valor" abaixo de "Criar grupo de sprites asteroides"]. No "Troque o nome contador por pontos. O valor já é zero; deixe assim.", [trocar "contador" por "pontos" em "Criar variável contador"] [apontar bloco "Criar variável pontos"]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe depois dele à vista, antes da legenda e das telas.", [apontar abaixo de "Desenhar o sprite nave"]. No "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Mostrar placar e encaixe nesse lugar.", [abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Mostrar placar" abaixo de "Desenhar o sprite nave"]. No "No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho.", [trocar "Pontos:" por "Acertos:" em "Mostrar placar"] [trocar "12" por "22" em "Mostrar placar Acertos:"] [trocar "30" por "32" em "Mostrar placar Acertos:"] [trocar "24" por "23" em "Mostrar placar Acertos:"]. No "Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista.", [apontar bloco "Mostrar placar Acertos:"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#f3f8ff" em "Cor em hexadecimal"] [clicar "OK"] [apontar bloco "Mostrar placar Acertos:"]. No "Abra Programação e depois Valores. Pegue o valor de variável, que chega com x, e encaixe sobre o número do placar. Clique nesse x e escolha pontos.", [abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Mostrar placar Acertos:"] [trocar "x" por "pontos" em "valor da variável dentro de Mostrar placar Acertos:"]. No "Comece a partida e olhe o canto superior esquerdo. Acertos deve mostrar zero. Mesmo acertando uma pedra, o zero ainda fica, porque a soma será construída na próxima parte.", [tocar prévia 400 300] [tecla Enter] [apontar prévia 85 25] jogar com as setas até alinhar a nave sob uma pedra; a gravação acompanha a pedra que nasceu [tecla Space]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Criar variável pontos", "Mostrar placar Acertos:"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e acerte uma pedra. Tá vendo? Nenhum ponto aparece, porque o jogo ainda não guarda nem mostra os acertos.
+[engaging, energetic, conversational voice] Seu jogo já reconhece acertos, mas ainda não guarda uma contagem. Na experiência da parte anterior, guardar e mostrar eram ações diferentes. Faça as duas, começando com zero.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A caixa pontos guardava o número, e a tela só mostrava. Agora a gente vai contar os pontos no seu jogo!
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] Uma caixa que guarda um número se chama variável. A variável pontos nasce uma vez, quando o jogo começa. Por isso, ela vai no fim de Ao iniciar.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites asteroides.
+[confident, clear, unhurried voice] Deixe à vista o encaixe depois dos dois grupos, antes de Mudar o estado do jogo para inicio.
 
-[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor. Arraste e solte logo abaixo de Criar grupo de sprites asteroides.
+[short pause]
 
-[confident, clear, unhurried voice] Repare: o nome chega como contador. Clique em contador, troque por pontos e clique fora do campo.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe nesse lugar.
 
-[engaging, energetic, conversational voice] O valor já vem em 0: deixe assim, porque cada partida começa sem pontos.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que cria a caixa pontos, guardando 0.
+[confident, clear, unhurried voice] Troque o nome contador por pontos. O valor já é zero; deixe assim.
 
-[curious] Onde eu coloco o bloco que soma?
+[short pause]
 
-[engaging, energetic, conversational voice] O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e asteroides, no fim, logo depois de Tocar efeito explosão.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] Deixe esse lugar à vista. Ainda em Programação e Variáveis, pegue o bloco Somar em variável e solte logo depois de Tocar efeito explosão, dentro da colisão.
+[short pause]
 
-[engaging, energetic, conversational voice] Escolha pontos. O número já vem em 1: deixe assim, porque cada acerto vale um ponto.
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe depois dele à vista, antes da legenda e das telas.
 
-[engaging, energetic, conversational voice] É este bloco que muda o número guardado em pontos, a cada acerto.
+[short pause]
 
-[engaging, energetic, conversational voice] Agora o placar. Ele precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão, logo depois dela, ainda dentro de A cada quadro do jogo.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Mostrar placar e encaixe nesse lugar.
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo depois do bloco inteiro da colisão. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que mostra um número na tela, para quem joga.
+[confident, clear, unhurried voice] No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho.
 
-[engaging, energetic, conversational voice] O texto já vem Pontos:, que é o que aparece antes do número: deixe assim.
+[short pause]
 
-[engaging, energetic, conversational voice] O número do placar precisa ler o que está guardado em pontos, e não mostrar sempre o mesmo número.
+[confident, clear, unhurried voice] Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista.
 
-[confident, clear, unhurried voice] Deixe à vista o 0 do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do 0 e escolha pontos.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que lê o número guardado em pontos. Agora o placar mostra esse número.
+[confident, clear, unhurried voice] Abra Programação e depois Valores. Pegue o valor de variável, que chega com x, e encaixe sobre o número do placar. Clique nesse x e escolha pontos.
 
-[engaging, energetic, conversational voice] O placar já vem em x 12, y 30 e tamanho 24: deixe assim. Escolha a cor branca, para aparecer no fundo escuro.
+[short pause]
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. [confident, clear, unhurried voice] Repare: o placar fica igual, porque nenhum tiro acertou.
+[upbeat, encouraging voice] Comece a partida e olhe o canto superior esquerdo. Acertos deve mostrar zero. Mesmo acertando uma pedra, o zero ainda fica, porque a soma será construída na próxima parte.
 
-[engaging, energetic, conversational voice] Depois, acerte uma pedra. [interested, animated voice] Olha só: Pontos vai para 1! E, se você acertar outra, o placar soma mais 1.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: pontos começa em zero em Ao iniciar e o valor do placar lê pontos dentro do desenho de cada quadro. Depois de corrigir, teste de novo.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
-**Substituições na edição kids:**
+**Recado na página (não gravar):** Sua vez! Prepare o placar. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
-| --- | --- | --- | --- | --- | --- | --- |
-| video-pontos-e-placar-K1 | Dedé | 1 | já vem em 0: deixe assim, porque cada partida começa sem pontos. É este bloco que cria a caixa pontos, guardando 0. | Onde eu coloco o bloco que soma? | O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e | [curious] |
+## Parte 3. Some no lugar do acerto
 
-No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+**Clipe:** `video-somar-acerto`
 
-**Imagem nas substituições kids (não gravar):**
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Comece o jogo e acerte uma pedra. O par some, mas Acertos continua em zero. A contagem já tem onde ficar e onde aparecer; agora ligue a soma ao mesmo encontro do acerto.", [tocar prévia 400 300] [tecla Enter] jogar com as setas até alinhar a nave sob uma pedra; a gravação acompanha a pedra que nasceu [tecla Space] [apontar prévia 85 25]. No "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.", [arrastar até "Enquanto estiver rodando"]. No "Dentro de Se jogando, encontre o encontro entre tiros e asteroides. Deixe à vista o encaixe no fim do fazer, depois do som da explosão.", [apontar abaixo de "Tocar efeito explosão"]. No "Abra Programação e depois Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar.", [abrir categoria Programação > Variáveis] [encaixar "Somar 1 em variável" abaixo de "Tocar efeito explosão"]. No "Deixe o número em 1. Clique no nome que chega como contador e escolha pontos.", [trocar "contador" por "pontos" em "Somar 1 em variável"]. No "Comece o jogo e acerte uma pedra. Acertos passa de zero para um. Acerte outra: passa para dois.", [tocar prévia 400 300] [tecla Enter] jogar com as setas até alinhar a nave sob uma pedra; a gravação acompanha a pedra que nasceu [tecla Space] [apontar prévia 85 25] registrar o próximo acerto real de laser na mesma partida. No "Dispare sem alvo e deixe uma pedra passar sem acertar. A contagem deve ficar igual nesses dois casos.", usar uma seta para levar a nave a uma coluna sem pedra; a captura acompanha as pedras desta rodada [tecla Space] deixar uma pedra atravessar a tela sem atirar nela [apontar prévia 85 25]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Somar 1 em variável pontos"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", sair da parte [próxima parte].
 
-- `video-pontos-e-placar-K1`: entrada — Manter à vista Criar variável pontos com valor 0, em Ao iniciar. Saída — Depois da saída, mostrar o fim da colisão entre tiros e asteroides.
+**Fala para ElevenLabs:**
 
+```text
+[engaging, energetic, conversational voice] Comece o jogo e acerte uma pedra. O par some, mas Acertos continua em zero. A contagem já tem onde ficar e onde aparecer; agora ligue a soma ao mesmo encontro do acerto.
 
-**Recado na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[short pause]
+
+[confident, clear, unhurried voice] Dentro de Se jogando, encontre o encontro entre tiros e asteroides. Deixe à vista o encaixe no fim do fazer, depois do som da explosão.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar.
+
+[short pause]
+
+[confident, clear, unhurried voice] Deixe o número em 1. Clique no nome que chega como contador e escolha pontos.
+
+[short pause]
+
+[upbeat, encouraging voice] Comece o jogo e acerte uma pedra. Acertos passa de zero para um. Acerte outra: passa para dois.
+
+[upbeat, encouraging voice] Dispare sem alvo e deixe uma pedra passar sem acertar. A contagem deve ficar igual nesses dois casos.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Somar 1 usa pontos e fica dentro do encontro de tiros e asteroides, junto da retirada do par. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+```
+
+**Recado na página (não gravar):** Sua vez! Some no lugar do acerto. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+## Parte 4. Confira a contagem
+
+Quiz sem vídeo, com resposta corrigida no servidor, explicação e nova tentativa.
+
+**Recado na página (não gravar):** Confira o que ficou claro no seu jogo. Escolha uma resposta em cada pergunta e veja a explicação. Você pode corrigir e tentar de novo. Quando terminar, clique em Próxima parte.
+
+## Parte 5. Teste e envie seu placar
+
+**Clipe:** `video-entrega`
+
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "Agora o placar acompanha seus acertos. Confira o que conta e o que mantém o número antes de enviar.", [apontar prévia 85 25]. No "Clique em Rodar de novo e comece a partida com Enter. Confira Acertos em zero.", [rodar de novo] [tocar prévia 400 300] [tecla Enter] [apontar prévia 85 25]. No "Acerte dois asteroides, um de cada vez, e acompanhe o placar. Ele deve somar um em cada acerto.", jogar até o primeiro acerto desta rodada [apontar prévia 85 25] jogar até o segundo acerto desta rodada [apontar prévia 85 25]. No "Deixe um laser passar sem alvo e uma pedra escapar. O número deve continuar igual. Quando o par já saiu, esperar mais alguns quadros também não soma outro ponto pelo mesmo acerto.", disparar uma vez em uma coluna sem pedra [tecla Space] deixar uma pedra atravessar a tela sem atirar nela [apontar prévia 85 25]. No "confira se ficou assim", mostrar os blocos usados nesta parte [mostrar blocos "Somar 1 em variável pontos"]. No "clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", iniciar o envio e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Concluir aula", sair da parte [concluir aula].
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Agora o placar acompanha seus acertos. Confira o que conta e o que mantém o número antes de enviar.
+
+[confident, clear, unhurried voice] Clique em Rodar de novo e comece a partida com Enter. Confira Acertos em zero.
+
+[short pause]
+
+[upbeat, encouraging voice] Acerte dois asteroides, um de cada vez, e acompanhe o placar. Ele deve somar um em cada acerto.
+
+[upbeat, encouraging voice] Deixe um laser passar sem alvo e uma pedra escapar. O número deve continuar igual. Quando o par já saiu, esperar mais alguns quadros também não soma outro ponto pelo mesmo acerto.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: pontos começa em zero, o placar lê pontos e a soma de 1 pertence ao encontro que retira o par. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você fez o seu jogo lembrar e mostrar cada acerto!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.
+```
+
+**Recado na página (não gravar):** Hora de conferir e enviar! Teste e envie seu placar. Teste no seu jogo e clique em Verificar projeto. Depois, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

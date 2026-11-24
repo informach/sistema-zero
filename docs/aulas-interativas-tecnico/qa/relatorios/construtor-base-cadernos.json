@@ -1,0 +1,1066 @@
+{
+  "version": 2,
+  "status": "passed",
+  "method": "Medição sem fragmentação em papel virtual alto, entrega A4, inspeção visual de todas as páginas renderizadas e ampliação dos encaixes densos.",
+  "courses": [
+    {
+      "course": "nave-contra-asteroides",
+      "pdf": "docs/aulas-interativas/construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf",
+      "pages": 94,
+      "bytes": 1103455,
+      "sha256": "c99dabab07a2fee077475071d2c6245ddbe6f01d69241b4c09018f0a0edb1530",
+      "layout": {
+        "engine": "WeasyPrint 70; HTML/CSS da receita visual comum",
+        "pages": 94,
+        "blocks": 201,
+        "blockTypes": 40,
+        "pageChecks": [
+          {
+            "number": 1,
+            "id": "capa",
+            "cover": true
+          },
+          {
+            "number": 2,
+            "id": "encontre-1",
+            "bottom": 866.44,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 3,
+            "id": "encontre-2",
+            "bottom": 610.6,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 4,
+            "id": "encontre-3",
+            "bottom": 652.36,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 5,
+            "id": "primeira-nave-abertura",
+            "bottom": 620.3,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 6,
+            "id": "primeira-nave-seu-caderno-do-aluno",
+            "bottom": 503.33,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 7,
+            "id": "primeira-nave-escolher-nave",
+            "bottom": 1020.65,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 8,
+            "id": "primeira-nave-seta-e-velocidade",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 9,
+            "id": "primeira-nave-setas",
+            "bottom": 932.64,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 10,
+            "id": "primeira-nave-setas-continua-1",
+            "bottom": 356.26,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 11,
+            "id": "primeira-nave-limite-da-tela",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 12,
+            "id": "primeira-nave-borda",
+            "bottom": 1035.38,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 13,
+            "id": "primeira-nave-entrega",
+            "bottom": 954.47,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 14,
+            "id": "primeira-nave-entrega-continua-1",
+            "bottom": 474.64,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 15,
+            "id": "dia-1-tecla-e-repeticao",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 16,
+            "id": "dia-1-criar-tiro",
+            "bottom": 711.34,
+            "safeBottom": 1055.04,
+            "items": 9
+          },
+          {
+            "number": 17,
+            "id": "dia-1-criar-tiro-continua-1",
+            "bottom": 741.62,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 18,
+            "id": "dia-1-objetos-no-grupo",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 19,
+            "id": "dia-1-grupo-tiros",
+            "bottom": 891.44,
+            "safeBottom": 1055.04,
+            "items": 12
+          },
+          {
+            "number": 20,
+            "id": "dia-1-grupo-tiros-continua-1",
+            "bottom": 995.75,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 21,
+            "id": "dia-1-grupo-tiros-continua-2",
+            "bottom": 692.23,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 22,
+            "id": "dia-1-escrito-e-lido",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 23,
+            "id": "dia-1-tiro-da-nave",
+            "bottom": 717.81,
+            "safeBottom": 1055.04,
+            "items": 9
+          },
+          {
+            "number": 24,
+            "id": "dia-1-tiro-da-nave-continua-1",
+            "bottom": 886.46,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 25,
+            "id": "dia-1-entrega",
+            "bottom": 616.09,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 26,
+            "id": "dia-2-direcao-do-tiro",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 27,
+            "id": "dia-2-tiros-voam",
+            "bottom": 550.66,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 28,
+            "id": "dia-2-tiros-voam-continua-1",
+            "bottom": 767.29,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 29,
+            "id": "dia-2-tiros-voam-continua-2",
+            "bottom": 751.66,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 30,
+            "id": "dia-2-faxina",
+            "bottom": 989.94,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 31,
+            "id": "dia-2-faxina-continua-1",
+            "bottom": 336.01,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 32,
+            "id": "dia-2-entrega",
+            "bottom": 616.09,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 33,
+            "id": "chuva-de-asteroides-intervalo-das-pedras",
+            "bottom": 564.46,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 34,
+            "id": "chuva-de-asteroides-relogio",
+            "bottom": 782.16,
+            "safeBottom": 1055.04,
+            "items": 10
+          },
+          {
+            "number": 35,
+            "id": "chuva-de-asteroides-relogio-continua-1",
+            "bottom": 910.08,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 36,
+            "id": "chuva-de-asteroides-posicao-sorteada",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 37,
+            "id": "chuva-de-asteroides-asteroide",
+            "bottom": 884.97,
+            "safeBottom": 1055.04,
+            "items": 12
+          },
+          {
+            "number": 38,
+            "id": "chuva-de-asteroides-asteroide-continua-1",
+            "bottom": 815.15,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 39,
+            "id": "chuva-de-asteroides-asteroide-continua-2",
+            "bottom": 825.24,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 40,
+            "id": "chuva-de-asteroides-retirada",
+            "bottom": 1025.52,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 41,
+            "id": "chuva-de-asteroides-retirada-continua-1",
+            "bottom": 356.26,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 42,
+            "id": "chuva-de-asteroides-quiz-final",
+            "bottom": 691.55,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 43,
+            "id": "chuva-de-asteroides-entrega",
+            "bottom": 616.09,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 44,
+            "id": "dia-3-trombada",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 45,
+            "id": "dia-3-colisao",
+            "bottom": 672.89,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 46,
+            "id": "dia-3-colisao-continua-1",
+            "bottom": 878.45,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 47,
+            "id": "dia-3-efeitos",
+            "bottom": 499.26,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 48,
+            "id": "dia-3-efeitos-continua-1",
+            "bottom": 936.96,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 49,
+            "id": "dia-3-entrega",
+            "bottom": 571.07,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 50,
+            "id": "pontos-caixa-de-pontos",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 51,
+            "id": "pontos-placar",
+            "bottom": 789.46,
+            "safeBottom": 1055.04,
+            "items": 10
+          },
+          {
+            "number": 52,
+            "id": "pontos-placar-continua-1",
+            "bottom": 1044.51,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 53,
+            "id": "pontos-somar-acerto",
+            "bottom": 984.52,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 54,
+            "id": "pontos-quiz-final",
+            "bottom": 639.75,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 55,
+            "id": "pontos-entrega",
+            "bottom": 591.31,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 56,
+            "id": "dia-4-vidas-no-comeco",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 57,
+            "id": "dia-4-vidas",
+            "bottom": 1014.3,
+            "safeBottom": 1055.04,
+            "items": 10
+          },
+          {
+            "number": 58,
+            "id": "dia-4-vidas-continua-1",
+            "bottom": 733.01,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 59,
+            "id": "dia-4-batida",
+            "bottom": 730.76,
+            "safeBottom": 1055.04,
+            "items": 9
+          },
+          {
+            "number": 60,
+            "id": "dia-4-batida-continua-1",
+            "bottom": 1005.54,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 61,
+            "id": "dia-4-respiro",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 62,
+            "id": "dia-4-dano",
+            "bottom": 1001.79,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 63,
+            "id": "dia-4-entrega",
+            "bottom": 571.07,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 64,
+            "id": "comecar-partida-estado-do-jogo",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 65,
+            "id": "comecar-partida-teste-inicio",
+            "bottom": 608.53,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 66,
+            "id": "comecar-partida-teste-inicio-continua-1",
+            "bottom": 858.03,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 67,
+            "id": "comecar-partida-teste-inicio-continua-2",
+            "bottom": 1033.14,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 68,
+            "id": "comecar-partida-teste-inicio-continua-3",
+            "bottom": 685.84,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 69,
+            "id": "comecar-partida-teste-inicio-continua-4",
+            "bottom": 685.84,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 70,
+            "id": "comecar-partida-teste-inicio-continua-5",
+            "bottom": 1034.4,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 71,
+            "id": "comecar-partida-teste-inicio-continua-6",
+            "bottom": 360.79,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 72,
+            "id": "comecar-partida-aparencias",
+            "bottom": 577.38,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 73,
+            "id": "comecar-partida-aparencias-continua-1",
+            "bottom": 767.29,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 74,
+            "id": "comecar-partida-aparencias-continua-2",
+            "bottom": 805.0,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 75,
+            "id": "comecar-partida-entrega",
+            "bottom": 526.04,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 76,
+            "id": "dia-5-meta-do-jogo",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 77,
+            "id": "dia-5-meta",
+            "bottom": 911.69,
+            "safeBottom": 1055.04,
+            "items": 12
+          },
+          {
+            "number": 78,
+            "id": "dia-5-meta-continua-1",
+            "bottom": 1039.6,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 79,
+            "id": "dia-5-meta-continua-2",
+            "bottom": 336.01,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 80,
+            "id": "dia-5-finais",
+            "bottom": 615.01,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 81,
+            "id": "dia-5-finais-continua-1",
+            "bottom": 947.33,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 82,
+            "id": "dia-5-derrota",
+            "bottom": 672.89,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 83,
+            "id": "dia-5-derrota-continua-1",
+            "bottom": 949.66,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 84,
+            "id": "dia-5-derrota-continua-2",
+            "bottom": 381.04,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 85,
+            "id": "dia-5-reiniciar",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 86,
+            "id": "dia-5-quiz-final",
+            "bottom": 599.26,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 87,
+            "id": "dia-5-entrega",
+            "bottom": 994.97,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 88,
+            "id": "dia-5-entrega-continua-1",
+            "bottom": 375.71,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 89,
+            "id": "dia-5-compartilhar",
+            "bottom": 528.01,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 90,
+            "id": "galeria-nave-falcao-azul",
+            "bottom": 864.25,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 91,
+            "id": "galeria-cenario-aurora",
+            "bottom": 864.25,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 92,
+            "id": "galeria-asteroide-rocha-lunar",
+            "bottom": 864.25,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 93,
+            "id": "galeria-laser-ciano",
+            "bottom": 864.25,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 94,
+            "id": "revisao-ajuda",
+            "bottom": 660.0,
+            "safeBottom": 1055.04,
+            "items": 4
+          }
+        ],
+        "errors": [],
+        "fonts": [
+          "/DTQSBE+Nunito-Semi-Bold",
+          "/GDAMAJ+Nunito-Ultra-Bold",
+          "/LCYFSC+Nunito-Bold",
+          "/NZDDWO+Liberation-Sans-Bold",
+          "/RLQBFV+Nunito-Ultra-Bold-Oblique",
+          "/TEQKCX+Nunito-Semi-Bold-Oblique",
+          "/UCDFUK+Nunito",
+          "/VRMYHF+Liberation-Sans",
+          "/WANQGH+Nunito-Bold-Oblique",
+          "/XCUNID+Baloo-2-Ultra-Bold"
+        ],
+        "bytes": 1103455,
+        "output": "docs/aulas-interativas/construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf"
+      },
+      "visualReview": {
+        "allPagesInspected": true,
+        "densePagesInspectedAtLargerScale": true,
+        "noClippingOrOverlapObserved": true,
+        "indexMatchesFinalContinuation": true,
+        "statementBlocksStackVertically": true,
+        "densePages": [7, 12, 20, 24, 40, 42, 52, 60, 67, 70, 78, 83, 87],
+        "reviewedPdfSha256": "c99dabab07a2fee077475071d2c6245ddbe6f01d69241b4c09018f0a0edb1530",
+        "lessonSequenceVerified": "Aula 1:8 partes, nave pilotável e limite; Aula 2:nascimento/origem; Aula 3:voo/retirada; quiz de intervalo depois dos asteroides, Aula 4, Parte 6, página 42."
+      },
+      "contentSourceSha256": "1847153a70d9991739e1660c3578cd07c0229b0a01640dfe50eea427e1c375d9"
+    },
+    {
+      "course": "patrulha-espacial",
+      "pdf": "docs/aulas-interativas/construtor/patrulha-espacial/passo-a-passo-do-projeto.pdf",
+      "pages": 45,
+      "bytes": 532175,
+      "sha256": "b2e8ba05a4335afcc059bd17625cf0848acc2f7ce3da52f8e2d55c157e72b64b",
+      "layout": {
+        "engine": "WeasyPrint 70; HTML/CSS da receita visual comum",
+        "pages": 45,
+        "blocks": 144,
+        "blockTypes": 29,
+        "pageChecks": [
+          {
+            "number": 1,
+            "id": "capa",
+            "cover": true
+          },
+          {
+            "number": 2,
+            "id": "encontre-1",
+            "bottom": 866.44,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 3,
+            "id": "encontre-2",
+            "bottom": 504.86,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 4,
+            "id": "aula-1-abertura",
+            "bottom": 640.54,
+            "safeBottom": 1055.04,
+            "items": 6
+          },
+          {
+            "number": 5,
+            "id": "aula-1-seu-passo-a-passo",
+            "bottom": 503.33,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 6,
+            "id": "aula-1-tres-direcoes",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 7,
+            "id": "aula-1-um-aperto-um-laser",
+            "bottom": 659.94,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 8,
+            "id": "aula-1-um-aperto-um-laser-continua-1",
+            "bottom": 825.24,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 9,
+            "id": "aula-1-laser-segue-a-nave",
+            "bottom": 1005.19,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 10,
+            "id": "aula-1-laser-em-profundidade",
+            "bottom": 752.95,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 11,
+            "id": "aula-1-fim-do-caminho-do-laser",
+            "bottom": 965.6,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 12,
+            "id": "aula-1-fim-do-caminho-do-laser-continua-1",
+            "bottom": 375.71,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 13,
+            "id": "aula-2-relogio-dos-asteroides",
+            "bottom": 1036.27,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 14,
+            "id": "aula-2-relogio-dos-asteroides-continua-1",
+            "bottom": 365.33,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 15,
+            "id": "aula-2-lugares-de-entrada",
+            "bottom": 1030.14,
+            "safeBottom": 1055.04,
+            "items": 7
+          },
+          {
+            "number": 16,
+            "id": "aula-2-lugares-de-entrada-continua-1",
+            "bottom": 360.79,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 17,
+            "id": "aula-2-asteroides-se-aproximam",
+            "bottom": 777.73,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 18,
+            "id": "aula-2-fim-da-rota",
+            "bottom": 1027.9,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 19,
+            "id": "aula-2-fim-da-rota-continua-1",
+            "bottom": 375.71,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 20,
+            "id": "aula-3-encontro-no-espaco",
+            "bottom": 537.74,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 21,
+            "id": "aula-3-acerto-do-laser",
+            "bottom": 659.94,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 22,
+            "id": "aula-3-acerto-do-laser-continua-1",
+            "bottom": 1001.78,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 23,
+            "id": "aula-3-contador-da-patrulha",
+            "bottom": 790.58,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 24,
+            "id": "aula-3-um-ponto-por-acerto",
+            "bottom": 983.71,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 25,
+            "id": "aula-3-placar-da-patrulha",
+            "bottom": 964.96,
+            "safeBottom": 1055.04,
+            "items": 9
+          },
+          {
+            "number": 26,
+            "id": "aula-3-placar-da-patrulha-continua-1",
+            "bottom": 920.83,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 27,
+            "id": "aula-3-placar-da-patrulha-continua-2",
+            "bottom": 375.71,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 28,
+            "id": "aula-3-conferir-acertos",
+            "bottom": 660.0,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 29,
+            "id": "aula-4-tres-vidas",
+            "bottom": 810.82,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 30,
+            "id": "aula-4-vida-na-batida",
+            "bottom": 672.89,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 31,
+            "id": "aula-4-vida-na-batida-continua-1",
+            "bottom": 842.97,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 32,
+            "id": "aula-4-retirar-a-pedra-da-batida",
+            "bottom": 1031.18,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 33,
+            "id": "aula-4-retirar-a-pedra-da-batida-continua-1",
+            "bottom": 375.71,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 34,
+            "id": "aula-5-quando-as-vidas-acabam",
+            "bottom": 833.57,
+            "safeBottom": 1055.04,
+            "items": 11
+          },
+          {
+            "number": 35,
+            "id": "aula-5-quando-as-vidas-acabam-continua-1",
+            "bottom": 847.72,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 36,
+            "id": "aula-5-quando-as-vidas-acabam-continua-2",
+            "bottom": 834.08,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 37,
+            "id": "aula-5-meta-da-patrulha",
+            "bottom": 646.99,
+            "safeBottom": 1055.04,
+            "items": 8
+          },
+          {
+            "number": 38,
+            "id": "aula-5-meta-da-patrulha-continua-1",
+            "bottom": 1052.06,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 39,
+            "id": "aula-5-patrulha-pronta",
+            "bottom": 846.6,
+            "safeBottom": 1055.04,
+            "items": 5
+          },
+          {
+            "number": 40,
+            "id": "aula-5-patrulha-pronta-continua-1",
+            "bottom": 806.62,
+            "safeBottom": 1055.04,
+            "items": 1
+          },
+          {
+            "number": 41,
+            "id": "aula-5-patrulha-pronta-continua-2",
+            "bottom": 634.5,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 42,
+            "id": "aula-5-conferir-a-patrulha",
+            "bottom": 599.26,
+            "safeBottom": 1055.04,
+            "items": 4
+          },
+          {
+            "number": 43,
+            "id": "aula-5-sua-patrulha",
+            "bottom": 370.55,
+            "safeBottom": 1055.04,
+            "items": 3
+          },
+          {
+            "number": 44,
+            "id": "galeria-modelos",
+            "bottom": 818.89,
+            "safeBottom": 1055.04,
+            "items": 2
+          },
+          {
+            "number": 45,
+            "id": "revisao-ajuda",
+            "bottom": 660.0,
+            "safeBottom": 1055.04,
+            "items": 4
+          }
+        ],
+        "errors": [],
+        "fonts": [
+          "/DTQSBE+Nunito-Semi-Bold",
+          "/GDAMAJ+Nunito-Ultra-Bold",
+          "/LCYFSC+Nunito-Bold",
+          "/NZDDWO+Liberation-Sans-Bold",
+          "/RLQBFV+Nunito-Ultra-Bold-Oblique",
+          "/TEQKCX+Nunito-Semi-Bold-Oblique",
+          "/UCDFUK+Nunito",
+          "/UCHPBF+Noto-Color-Emoji-Bold",
+          "/VRMYHF+Liberation-Sans",
+          "/WANQGH+Nunito-Bold-Oblique",
+          "/XCUNID+Baloo-2-Ultra-Bold"
+        ],
+        "bytes": 532175,
+        "output": "docs/aulas-interativas/construtor/patrulha-espacial/passo-a-passo-do-projeto.pdf"
+      },
+      "visualReview": {
+        "allPagesInspected": true,
+        "densePagesInspectedAtLargerScale": true,
+        "noClippingOrOverlapObserved": true,
+        "indexMatchesFinalContinuation": true,
+        "statementBlocksStackVertically": true,
+        "densePages": [1, 9, 13, 15, 18, 22, 24, 25, 26, 27, 32, 34, 35, 36, 37, 38, 39, 40, 41],
+        "reviewedPdfSha256": "b2e8ba05a4335afcc059bd17625cf0848acc2f7ce3da52f8e2d55c157e72b64b",
+        "notes": [
+          "Continuações breves nas páginas 12, 14, 16, 19, 27 e 33 mantêm espaço em branco, sem perda de conteúdo.",
+          "A página 38 preserva a caixa de teste completa e a separação do rodapé."
+        ]
+      },
+      "contentSourceSha256": "ae744400b5c1d2455c1bf1885ef9857573eec04591e9ca4bf526d4d858a48b9c"
+    }
+  ],
+  "limitations": [
+    "Os desenhos são esquemas derivados dos snapshots e das definições oficiais, não capturas da interface.",
+    "As ilustrações 3D usam as malhas reais; não são uma validação visual WebGL do jogo."
+  ]
+}

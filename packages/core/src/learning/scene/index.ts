@@ -17,6 +17,7 @@ import {
   isGameStatePreset,
   isOnceVsAlwaysPreset,
   isRandomPreset,
+  isScoreGoalPreset,
   isSpawnPreset,
   ONCE_GOALS_BY_PRESET,
   oncePreset,
@@ -220,7 +221,8 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
       (scene === 'random' && isRandomPreset(preset)) ||
       (scene === 'spawn' && isSpawnPreset(preset)) ||
       (scene === 'cleanup' && isCleanupPreset(preset)) ||
-      (scene === 'game-state' && isGameStatePreset(preset))
+      (scene === 'game-state' && isGameStatePreset(preset)) ||
+      (scene === 'score-goal' && isScoreGoalPreset(preset))
     )
   )
     return false
@@ -381,7 +383,24 @@ export function sceneActivityForReading(value: unknown): unknown {
  * cru: ele é o conteúdo de fábrica, e é contra ele que o professor escolhe a cena no admin.
  */
 export function sceneModelFor(activity: SceneActivity) {
-  const m = sceneModel(activity.scene)
+  const original = sceneModel(activity.scene)
+  const preset = activity.setup?.preset
+  const m =
+    activity.scene === 'score-goal' && isScoreGoalPreset(preset)
+      ? {
+          ...original,
+          success: `A placa da meta é fixa durante a partida. Com maior ou igual, chegar a ${preset.goal} já vale; com maior que, é preciso passar de ${preset.goal}.`,
+          goals: original.goals.map((g) => ({
+            ...g,
+            label:
+              g.id === 'igual-conta'
+                ? `Com maior ou igual, chegar a ${preset.goal} já deu a vitória`
+                : g.id === 'maior-pula'
+                  ? `Com maior que, o ${preset.goal} não deu a vitória; só o ${preset.goal + 1}`
+                  : g.label,
+          })),
+        }
+      : original
   if (!activity.cast)
     return activity.pilha === 'camadas'
       ? { ...m, hints: sceneHintsFor(activity) as unknown as SceneModel['hints'] }

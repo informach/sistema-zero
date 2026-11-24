@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "date": "2026-11-24",
+  "courses": [
+    {
+      "course": "nave-contra-asteroides",
+      "lessons": 9,
+      "parts": 53,
+      "stages": 26
+    },
+    {
+      "course": "patrulha-espacial",
+      "lessons": 5,
+      "parts": 25,
+      "stages": 19
+    }
+  ],
+  "archives": [
+    {
+      "file": "cursos-base-construtor-2026-11-24.zip",
+      "bytes": 4156055,
+      "sha256": "f2b2220235b235afe89dfbadf9674859eec837c2bd68b17ce38f92beb2a95034",
+      "entries": 223
+    },
+    {
+      "file": "projetos-progressivos-construtor-2026-11-24.zip",
+      "bytes": 677730,
+      "sha256": "7bd1818f9bd9ed2f90a21d91712bfe149e12513ff8c0a940803a6f5d0278048f",
+      "entries": 47
+    }
+  ],
+  "zipIntegrity": "passed",
+  "allJsonParsed": true
+}

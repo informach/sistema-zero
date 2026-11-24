@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-relogio-dos-asteroides",
+    "video-lugares-de-entrada",
+    "video-asteroides-se-aproximam",
+    "video-fim-da-rota"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-relogio-dos-asteroides-K1",
+      "clipe": "video-relogio-dos-asteroides",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "Você já usou um intervalo para isso no jogo em duas dimensões. Aqui o relógio também vai criar uma cópia de cada vez.",
+      "ancoraDepois": "Aparece muitas vezes em um segundo, e a rota fica cheia de uma vez. Nosso intervalo deixa um tempo entre uma pedra e",
+      "falaPrincipal": "Se eu colocar a cópia em cada quadro, não aparece mais rápido?",
+      "falaPersonagem": "Se eu colocar a cópia em cada quadro, não aparece mais rápido?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-asteroides-se-aproximam-K1",
+      "clipe": "video-asteroides-se-aproximam",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "O laser vai da nave para o fundo diminuindo z. A pedra vai fazer o caminho contrário, do fundo para perto da nave.",
+      "ancoraDepois": "Isso! Ela começa em menos vinte e oito e se aproxima de zero, onde está a nave. Vamos escolher uma velocidade positiva",
+      "falaPrincipal": "O z da pedra precisa aumentar?",
+      "falaPersonagem": "O z da pedra precisa aumentar?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

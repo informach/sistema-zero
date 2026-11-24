@@ -1,0 +1,366 @@
+{
+  "engine": "Motor Jogo 2D oficial e script gerado oficial; happy-dom com Canvas2D nativo real. Sem importação pela interface do Estúdio.",
+  "stages": 26,
+  "checkGroups": 176,
+  "passed": true,
+  "report": [
+    {
+      "etapa": "inicial",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento ainda não foi entregue",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "aparencia-inicial",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento ainda não foi entregue",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "movimento",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "limite",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "instrucoes",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "evento-tiro",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "O grupo de tiros não aparece antes da sua montagem"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "grupo-tiros",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Sem a retirada, o tiro continua no grupo mesmo fora da tela"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "origem-tiro",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Sem a retirada, o tiro continua no grupo mesmo fora da tela"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "voo-tiros",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Sem a retirada, o tiro continua no grupo mesmo fora da tela"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "limpeza-tiros",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "relogio-asteroides",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "As duas bordas mantêm toda a nave na tela",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio intermediário funciona sem antecipar a criação"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "asteroides",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "limpeza-asteroides",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "colisao-tiros",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "efeitos-acerto",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "placar",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "pontos",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "vidas",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "colisao-nave",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "dano",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "inicio-conferido",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "aparencias",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "meta",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Pontos não encerram o jogo antes da condição da vitória"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "vitoria",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Vitória funciona antes da montagem da derrota; o reinício já preparado restaura os dados"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "derrota",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Resultado único: derrota tem prioridade; final bloqueia ações; reinício restaura os dados"
+      ],
+      "warnings": []
+    },
+    {
+      "etapa": "final",
+      "passed": true,
+      "checks": [
+        "Abertura conserva nave, tiro e relógio protegidos",
+        "Movimento lateral funciona após Enter",
+        "Um tiro por toque; posição e velocidade correspondem à conquista atual",
+        "Tiro que saiu é retirado do grupo",
+        "Relógio cria na faixa aprovada, com tamanho e velocidade constantes",
+        "Saída do asteroide corresponde à etapa, sem ponto nem dano",
+        "Contato retira somente o par, consome uma vez e não antecipa pontos",
+        "Vidas, contato e dano entram somente quando ensinados",
+        "Proteção impede dano repetido e permite nova perda depois do intervalo",
+        "Resultado único: derrota tem prioridade; final bloqueia ações; reinício restaura os dados"
+      ],
+      "warnings": []
+    }
+  ]
+}

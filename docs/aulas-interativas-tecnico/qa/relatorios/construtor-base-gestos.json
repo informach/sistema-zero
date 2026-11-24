@@ -1,0 +1,19 @@
+{
+  "scope": "Sintaxe dos gestos, parser oficial do Palco e verbos de página da ESPEC. Alvos dinâmicos, foco, tempos, enquadramento e execução exigem Verificar plano no Estúdio; não foram declarados executados por este gate.",
+  "courses": [
+    {
+      "course": "nave-contra-asteroides",
+      "count": 786,
+      "pageGestures": 126,
+      "nativeGestures": 660,
+      "unknown": []
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "count": 490,
+      "pageGestures": 67,
+      "nativeGestures": 423,
+      "unknown": []
+    }
+  ]
+}

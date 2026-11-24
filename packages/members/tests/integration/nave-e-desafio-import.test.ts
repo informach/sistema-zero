@@ -1,25 +1,67 @@
 import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
-import { isLearningManifest } from '@sistemazero/core/learning'
-import { studioSettings } from '../../../../docs/aulas-interativas-tecnico/qa/nave-contra-asteroides-configuracao'
+import {
+  isLearningManifest,
+  manifestoParaDestino,
+  readManifestStudioProjectExamples,
+  remapStudioExampleSections,
+} from '@sistemazero/core/learning'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
-test.each([
-  1, 2, 3, 4, 5,
-])('Day %i imports and reimports in its course with the manifest project', async (day) => {
+const construtorLessons = [
+  ...[
+    'primeira-nave',
+    'dia-1',
+    'dia-2',
+    'chuva-de-asteroides',
+    'dia-3',
+    'pontos',
+    'dia-4',
+    'comecar-partida',
+    'dia-5',
+  ].map((slug) => ({
+    course: 'nave-contra-asteroides',
+    audience: 'kids' as const,
+    folder: 'nave-contra-asteroides',
+    prefix: 'nave-contra-asteroides',
+    slug,
+  })),
+  ...['aula-1', 'aula-2', 'aula-3', 'aula-4', 'aula-5'].flatMap((slug) =>
+    (['kids', 'adult'] as const).map((audience) => ({
+      course: `jornada-construtor-base-3d${audience === 'adult' ? '-adulto' : ''}`,
+      audience,
+      folder: 'patrulha-espacial',
+      prefix: 'patrulha-espacial',
+      slug,
+    })),
+  ),
+]
+
+test.each(
+  construtorLessons,
+)('$course/$slug imports and reimports its current project and per-section examples', async (lesson) => {
   const env = buildApp({ requireAdmin: true })
-  const course = seedSampleCourse(env.courses, 'nave-contra-asteroides', 'published', 'kids')
+  const course = seedSampleCourse(env.courses, lesson.course, 'published', lesson.audience)
   const lessonId = course.lessonIds[0]!
-  const document: unknown = await Bun.file(
+  const source: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
+      `../../../../docs/aulas-interativas/construtor/${lesson.folder}/${lesson.prefix}-${lesson.slug}.manifesto.json`,
     ),
   ).json()
-  if (!isLearningManifest(document)) throw new Error('Invalid manifest')
+  if (!isLearningManifest(source)) throw new Error('Invalid manifest')
+  const sourceBefore = JSON.stringify(source)
+  // O Admin projeta a mesma autoria na oferta escolhida antes de chamar o HTTP.
+  const document = manifestoParaDestino(source, {
+    courseSlug: lesson.course,
+    lessonSlug: source.lessonSlug,
+  })
+  expect(document.courseSlug).toBe(lesson.course)
+  expect(document.blocks).toEqual(source.blocks)
+  expect(document.sections).toEqual(source.sections)
   // A pasta editorial pode ter outro nome que o slug da aula publicada.
   env.courses.lessons.find((l) => l.id === lessonId)!.slug = document.lessonSlug
   const request = (action: string, body: unknown) =>
@@ -36,16 +78,14 @@ test.each([
       }),
     )
   const id = randomUUID()
-  const content = {
-    ...studioSettings(day),
-    purpose: 'submission' as const,
-    initialProject: {
-      formatVersion: 2,
-      name: 'Nave contra Asteroides',
-      files: {},
-      installedExtensions: [{ id: 'game-2d', version: '1.0.0', installedAt: 0 }],
-    },
-  }
+  const authored = document.blocks.find(
+    (block) => 'content' in block && block.content.kind === 'studio',
+  )
+  if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
+    throw new Error('Estúdio ausente')
+  // Reutiliza um Estúdio existente da mesma cadeia, ainda sem o registro por parte.
+  // A importação deve conservar sua identidade e mapear as chaves editoriais para UUIDs.
+  const { projectExamples: _examples, ...content } = authored.content
   expect((await request('import-preview', { document })).status).toBe(200)
   expect(
     (await changeDraft(env.app, lessonId, { type: 'block', block: { id, content } })).status,
@@ -71,10 +111,14 @@ test.each([
   expect(first.document.plannedVideos).toHaveLength(
     document.blocks.filter((b) => 'plannedVideo' in b).length,
   )
-  const authored = document.blocks.find((b) => 'content' in b && b.content.kind === 'studio')
-  if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
-    throw new Error('Estúdio ausente')
-  expect(first.document.blocks.find((b) => b.id === id)?.content).toEqual(authored.content)
+  const examples = readManifestStudioProjectExamples(authored.content.projectExamples)
+  if (examples.kind !== 'valid') throw new Error('Exemplos do manifesto ausentes')
+  expect(first.document.blocks.find((block) => block.id === id)?.content).toEqual({
+    ...authored.content,
+    projectExamples: remapStudioExampleSections(examples.value, (key) =>
+      importedLearningId(lessonId, 'section', key),
+    ),
+  })
   expect(
     new Set(
       first.document.sections.filter((s) => s.workspaceBlockId).map((s) => s.workspaceBlockId),
@@ -88,6 +132,7 @@ test.each([
   expect(delivery.completion?.projectChecks?.length).toBeGreaterThan(0)
   expect((await apply()).document).toEqual(first.document)
   expect(await env.courses.findLessonWithContent(lessonId)).toEqual(published)
+  expect(JSON.stringify(source)).toBe(sourceBefore)
 })
 
 // A aula de introdução do Desafio saiu em 05/10/2026: o jogo pronto e o caderno abrem o Dia 1.

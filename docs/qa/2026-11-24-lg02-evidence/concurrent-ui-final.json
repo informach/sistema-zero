@@ -1,0 +1,66 @@
+{
+  "testedAt": "2026-11-24T13:39:18.296Z",
+  "scope": "Concurrent staging features; outside LG02 production candidate; read-only acceptance",
+  "room": {
+    "before": {
+      "testedAt": "2026-11-24 12:04:12 UTC",
+      "kidsSource": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+      "page": "/quarto",
+      "viewport": {
+        "width": 1278,
+        "height": 936
+      },
+      "documentScrollHeight": 1746,
+      "documentClientHeight": 936,
+      "externalOverflow": 810,
+      "scope": "Read-only baseline before the concurrent CSS correction reaches the app; no purchase, room change or save"
+    },
+    "after": {
+      "testedAt": "2026-11-24T13:39:18.062Z",
+      "kidsSource": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "page": "/quarto",
+      "viewport": {
+        "width": 1278,
+        "height": 936
+      },
+      "documentScrollHeight": 936,
+      "documentClientHeight": 936,
+      "externalOverflow": 0,
+      "rendered": true,
+      "internalScrollAreas": [
+        {
+          "clientHeight": 670,
+          "scrollHeight": 1600
+        }
+      ],
+      "saved": false
+    }
+  },
+  "profile": {
+    "before": {
+      "testedAt": "2026-11-24 12:06:49 UTC",
+      "kidsSource": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+      "page": "/perfil",
+      "nicknameEditable": false,
+      "phoneEditable": true,
+      "fullNameEditable": false,
+      "birthDateEditable": false,
+      "parentGuidance": true,
+      "saved": false
+    },
+    "after": {
+      "testedAt": "2026-11-24T13:39:18.177Z",
+      "kidsSource": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "page": "/perfil",
+      "dialogOpen": true,
+      "nicknameEditable": true,
+      "nicknameMaxLength": 40,
+      "phoneEditable": true,
+      "fullNameEditable": false,
+      "birthDateEditable": false,
+      "parentGuidance": true,
+      "saved": false
+    }
+  },
+  "verified": true
+}

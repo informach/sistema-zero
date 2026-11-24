@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "experiences": {
+    "aula-1/tres-direcoes": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "island-3d",
+        "setup": {
+          "goals": ["axis-x", "axis-y", "axis-z"],
+          "freeExploration": true,
+          "goalCopy": {
+            "axis-x": {
+              "pedido": "Investigue o x para os dois lados. O que muda no lugar da chave?"
+            },
+            "axis-y": {
+              "pedido": "Investigue o y para os dois lados. O que muda no lugar da chave?"
+            },
+            "axis-z": {
+              "pedido": "Investigue o z para os dois lados. O que muda no lugar da chave?"
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "island-view-start",
+          "text": "A chave está atrás da pedra. Mude a câmera!"
+        },
+        {
+          "id": "island-view-compare",
+          "text": "Apareceu! O que mudou: a câmera ou a chave?"
+        },
+        {
+          "id": "island-view-wrong",
+          "text": "Volte para a frente: a chave saiu do lugar?"
+        },
+        {
+          "id": "island-view-idea",
+          "text": "No 3D, a câmera é o lugar de onde a gente olha. Mudar a câmera muda a imagem, mas as coisas continuam no mesmo lugar."
+        },
+        {
+          "id": "island-view-bridge",
+          "text": "No seu jogo: a câmera já está pronta; o que você vai mudar é o lugar das coisas."
+        },
+        {
+          "id": "island-view-complete",
+          "text": "Mudou a câmera. A chave ficou no mesmo lugar."
+        },
+        {
+          "id": "island-position-start",
+          "text": "A chave tem três números. Mude um para mais e para menos!"
+        },
+        {
+          "id": "island-position-other-side",
+          "text": "Agora o mesmo número para o outro lado."
+        },
+        {
+          "id": "island-position-next",
+          "text": "E os outros números? Teste um de cada vez."
+        },
+        {
+          "id": "island-position-idea",
+          "text": "No 3D, o lugar tem três números: x e z andam pelo chão, e o y é a altura."
+        },
+        {
+          "id": "island-position-bridge",
+          "text": "No seu jogo: você vai escolher os três números do lugar das coisas."
+        },
+        {
+          "id": "island-position-complete",
+          "text": "x e z andam no chão. O y é a altura."
+        },
+        {
+          "id": "island-contact-start",
+          "text": "De cima, parece junto. Será que encostou? Olhe de lado!"
+        },
+        {
+          "id": "island-contact-top",
+          "text": "Não encostou! Olhe de lado: por quê?"
+        },
+        {
+          "id": "island-contact-space",
+          "text": "Tem um espaço! Baixe a chave até encostar."
+        },
+        {
+          "id": "island-contact-idea",
+          "text": "A imagem pode enganar: de cima, parece junto. O jogo só conta o encontro quando os dois se tocam de verdade, inclusive na altura."
+        },
+        {
+          "id": "island-contact-bridge",
+          "text": "No seu jogo: o encontro do personagem com a chave vai acontecer só quando eles encostarem."
+        },
+        {
+          "id": "island-contact-complete",
+          "text": "Parecer junto não basta: precisa encostar."
+        }
+      ]
+    },
+    "aula-3/encontro-no-espaco": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "island-3d",
+        "setup": {
+          "goals": ["contact-apart", "contact-touch"],
+          "freeExploration": true,
+          "goalCopy": {
+            "contact-apart": {
+              "pedido": "Investigue por que os objetos parecem juntos, mas não encostam."
+            },
+            "contact-touch": {
+              "pedido": "Descubra o que precisa mudar para o encontro realmente acontecer."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "island-view-start",
+          "text": "A chave está atrás da pedra. Mude a câmera!"
+        },
+        {
+          "id": "island-view-compare",
+          "text": "Apareceu! O que mudou: a câmera ou a chave?"
+        },
+        {
+          "id": "island-view-wrong",
+          "text": "Volte para a frente: a chave saiu do lugar?"
+        },
+        {
+          "id": "island-view-idea",
+          "text": "No 3D, a câmera é o lugar de onde a gente olha. Mudar a câmera muda a imagem, mas as coisas continuam no mesmo lugar."
+        },
+        {
+          "id": "island-view-bridge",
+          "text": "No seu jogo: a câmera já está pronta; o que você vai mudar é o lugar das coisas."
+        },
+        {
+          "id": "island-view-complete",
+          "text": "Mudou a câmera. A chave ficou no mesmo lugar."
+        },
+        {
+          "id": "island-position-start",
+          "text": "A chave tem três números. Mude um para mais e para menos!"
+        },
+        {
+          "id": "island-position-other-side",
+          "text": "Agora o mesmo número para o outro lado."
+        },
+        {
+          "id": "island-position-next",
+          "text": "E os outros números? Teste um de cada vez."
+        },
+        {
+          "id": "island-position-idea",
+          "text": "No 3D, o lugar tem três números: x e z andam pelo chão, e o y é a altura."
+        },
+        {
+          "id": "island-position-bridge",
+          "text": "No seu jogo: você vai escolher os três números do lugar das coisas."
+        },
+        {
+          "id": "island-position-complete",
+          "text": "x e z andam no chão. O y é a altura."
+        },
+        {
+          "id": "island-contact-start",
+          "text": "De cima, parece junto. Será que encostou? Olhe de lado!"
+        },
+        {
+          "id": "island-contact-top",
+          "text": "Não encostou! Olhe de lado: por quê?"
+        },
+        {
+          "id": "island-contact-space",
+          "text": "Tem um espaço! Baixe a chave até encostar."
+        },
+        {
+          "id": "island-contact-idea",
+          "text": "A imagem pode enganar: de cima, parece junto. O jogo só conta o encontro quando os dois se tocam de verdade, inclusive na altura."
+        },
+        {
+          "id": "island-contact-bridge",
+          "text": "No seu jogo: o encontro do personagem com a chave vai acontecer só quando eles encostarem."
+        },
+        {
+          "id": "island-contact-complete",
+          "text": "Parecer junto não basta: precisa encostar."
+        }
+      ]
+    }
+  }
+}

@@ -1,15 +1,17 @@
 # Apoio técnico das aulas interativas
 
-As 42 aulas dos sete cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
+Os cursos têm uma única fonte editorial em [Aulas interativas](../aulas-interativas/README.md). Não há geração separada por público.
 
 Desde 28/10/2026, os materiais ficam em `docs/aulas-interativas/<posto>/<curso>/`.
 O posto vem do currículo da jornada; não é deduzido do nível técnico antigo do curso.
-Cadê e os dois Faróis ficam em Faísca; Nave e Meu Jeito, em Construtor; Dino, em Inventor.
+Cadê e os dois Faróis ficam em Faísca; Nave, Patrulha e Meu Jeito, em Construtor; Dino, em Inventor.
 As demais pastas de posto têm índices de planejamento. O Jardim Secreto acrescenta duas aulas de missão, com autoria local e publicação pendente. Geradores e fontes comuns continuam nesta árvore
 técnica; `qa/caminhos.ts` resolve os nomes preservados das aulas para os novos diretórios.
 Os slugs, IDs e contratos de publicação não mudaram com a organização.
 
-- [A Ilha do Farol](modulos-a-ilha-do-farol.md): curso 3D do Faísca, três aulas sem certificado, comandos e contrato de troca das artes do Molda.
+- [Bases do Construtor](../aulas-interativas/construtor/producao-cursos-base-2026-11-24.md): autoria completa de Nave Contra Asteroides e Patrulha Espacial, cadastros, projetos progressivos e produção.
+- [Cadastro do Nave](modulos-nave-contra-asteroides.md) e [da Patrulha](modulos-patrulha-espacial.md).
+- [A Ilha do Farol](modulos-a-ilha-do-farol.md): curso 3D do Faísca, três aulas sem certificado, comandos e contrato de troca das artes do Blender.
 - [Conceito, investigação e construção](DESCOBERTA-GUIADA.md): vídeo conceitual, Zappy por etapa, previsão e objetivos observáveis.
 - [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): clareza, instrução completa e linguagem comum.
 - [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md). O **Na tela** e todas as tags da gravação automática pelo EdiAula estão na seção 9 do formato do roteiro; o padrão de referência é o Cadê Todo Mundo.
@@ -21,12 +23,12 @@ Os slugs, IDs e contratos de publicação não mudaram com a organização.
 
 ## Gerar e verificar
 
-Execute da raiz do repositório. Cadê e Farol têm roteiro de produção como fonte da fala. Nave, Dino e Meu Jeito usam `qa/*.conteudo.json`; edite a fonte e regenere, sem corrigir só a saída.
+Execute da raiz do repositório. Cadê e Farol têm roteiro de produção como fonte da fala. As bases do Construtor usam `qa/construtor-2d*.ts` e `qa/patrulha-espacial-*.ts`, unificadas por `construtor-base-gerador.ts`. Dino e Meu Jeito conservam `qa/*.conteudo.json`. Edite a fonte e regenere, sem corrigir só a saída. O antigo conteúdo JSON do Nave é histórico e não deve sobrescrever esta reautoria.
 
 ```powershell
 bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-desafio-farol.ts
-bun docs/aulas-interativas-tecnico/qa/gerar-nave-contra-asteroides.ts
+bun docs/aulas-interativas-tecnico/qa/gerar-construtor-bases.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-corre-dino.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-meu-jeito.ts
 bun docs/aulas-interativas-tecnico/qa/gerar-falas-elevenlabs.ts
@@ -52,7 +54,7 @@ python docs/aulas-interativas-tecnico/recursos/meu-jeito/gerar-materiais.py
 
 **Visual:** todo Passo a passo do projeto, novo ou refeito, segue a [receita do Passo a passo](recursos/caderno-visual/README.md), aprovada em 14/11/2026 no Cadê Todo Mundo? e no A Chave do Farol. Ela define a capa, as cores, os cards, os passos e os blocos desenhados como no Estúdio, e o texto fica num `caderno-conteudo.json`.
 
-As saídas são `docs/aulas-interativas/<posto>/<curso>/passo-a-passo-do-projeto.pdf`. Requerem Bun, Python/Playwright e Chrome ou Edge. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
+As saídas são `docs/aulas-interativas/<posto>/<curso>/passo-a-passo-do-projeto.pdf`. Os pipelines anteriores usam Bun, Python/Playwright e Chrome ou Edge; os dois novos cadernos do Construtor têm também o [pipeline WeasyPrint](recursos/construtor-base/README.md), com as mesmas fontes e receita visual. Os pipelines verificam fontes, imagens, cores e limites; revise visualmente os PDFs renderizados após mudanças. Não use os antigos argumentos `--adulto` ou o fluxo de traduções por trecho.
 
 Na Aula 1 do Cadê Todo Mundo? e do A Chave do Farol, o passo a passo também mostra a plataforma: páginas "Conheça a plataforma" com prints reais da área das crianças, marcas numeradas e a legenda de cada controle, junto da parte em que a tela aparece. Fontes, captura e conferência em [recursos/guia-da-plataforma](recursos/guia-da-plataforma/README.md).
 

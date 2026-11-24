@@ -7,81 +7,17 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": [
-    "video-tecla-e-repeticao",
-    "video-criar-tiro",
-    "video-escrito-e-lido",
-    "video-direcao-do-tiro",
-    "video-tiro-da-nave",
-    "video-tiros-voam",
-    "video-tiro-fora-da-tela",
-    "video-faxina"
-  ],
+  "clipes": ["video-direcao-do-tiro", "video-tiros-voam", "video-faxina", "video-entrega"],
   "intervencoes": [
-    {
-      "id": "video-tecla-e-repeticao-K1",
-      "clipe": "video-tecla-e-repeticao",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que momento o tiro sai em cada um",
-      "falaPrincipal": "E se o tiro sair sempre, em todo quadro?",
-      "falaPersonagem": "E se o tiro sair sempre, em todo quadro?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-escrito-e-lido-K1",
-      "clipe": "video-escrito-e-lido",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde o tiro nasce quando a nave muda de",
-      "falaPrincipal": "E se a nave mudar de lugar, o tiro vai junto?",
-      "falaPersonagem": "E se a nave mudar de lugar, o tiro vai junto?",
-      "tags": ["[curious]"]
-    },
     {
       "id": "video-direcao-do-tiro-K1",
       "clipe": "video-direcao-do-tiro",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o tiro anda, e o que",
-      "falaPrincipal": "E com um número negativo, o tiro vai para onde?",
-      "falaPersonagem": "E com um número negativo, o tiro vai para onde?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-tiro-da-nave-K1",
-      "clipe": "video-tiro-da-nave",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "lugar do número. Nesse bloco, escolha nave. É este bloco que lê, na hora do tiro, o meio da nave, de um lado ao outro.",
-      "ancoraDepois": "O y também vai ler a nave. Deixe à vista o 100 do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco",
-      "falaPrincipal": "E a altura de onde sai o tiro?",
-      "falaPersonagem": "E a altura de onde sai o tiro?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-tiro-fora-da-tela-K1",
-      "clipe": "video-tiro-fora-da-tela",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o grupo de tiros quando o jogo tira do",
-      "falaPrincipal": "E quando o tiro some da tela, ele sai do grupo também?",
-      "falaPersonagem": "E quando o tiro some da tela, ele sai do grupo também?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-faxina-K1",
-      "clipe": "video-faxina",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "do grupo quem sair da tela. Arraste e solte logo abaixo de Mover os sprites do grupo tiros, quando aparecer o encaixe.",
-      "ancoraDepois": "O grupo de quem sai da tela: os tiros. No grupo, escolha tiros. Repare que o bloco também tem a palavra chamado,",
-      "falaPrincipal": "Qual grupo eu escolho aqui?",
-      "falaPersonagem": "Qual grupo eu escolho aqui?",
+      "ancoraAntes": "para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "falaPrincipal": "Um número negativo deixa o laser mais fraco?",
+      "falaPersonagem": "Um número negativo deixa o laser mais fraco?",
       "tags": ["[curious]"]
     }
   ]

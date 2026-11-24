@@ -7,28 +7,17 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-apelidos", "video-colisao", "video-fecho"],
+  "clipes": ["video-trombada", "video-colisao", "video-efeitos", "video-entrega"],
   "intervencoes": [
     {
-      "id": "video-apelidos-K1",
-      "clipe": "video-apelidos",
+      "id": "video-trombada-K1",
+      "clipe": "video-trombada",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o",
-      "falaPrincipal": "E se o jogo tirar o grupo inteiro?",
-      "falaPersonagem": "E se o jogo tirar o grupo inteiro?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-colisao-K1",
-      "clipe": "video-colisao",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada.",
-      "ancoraDepois": "Pelos apelidos que o bloco dá aos dois. Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses",
-      "falaPrincipal": "Como ele sabe qual tiro acertou qual pedra?",
-      "falaPersonagem": "Como ele sabe qual tiro acertou qual pedra?",
+      "ancoraAntes": "um tiro e um asteroide. Para responder ao acerto, o jogo precisa distinguir esse par dos outros sprites dos grupos.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "falaPrincipal": "Um acerto deve fazer todos os asteroides sumirem?",
+      "falaPersonagem": "Um acerto deve fazer todos os asteroides sumirem?",
       "tags": ["[curious]"]
     }
   ]

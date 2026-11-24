@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "status": "passed",
+  "scope": "Blockly headless real, schema e equivalência dos arquivos gerados; não é ensaio do editor com conta de aluno.",
+  "projects": [
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "inicial",
+      "blocks": 97,
+      "topBlocks": 3,
+      "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "aparencia-inicial",
+      "blocks": 97,
+      "topBlocks": 3,
+      "sha256": "13ccfe90f3a5d081be3219105a727764e106f8a16ad0f5a275798149175f9361"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "movimento",
+      "blocks": 99,
+      "topBlocks": 3,
+      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "limite",
+      "blocks": 100,
+      "topBlocks": 3,
+      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "instrucoes",
+      "blocks": 105,
+      "topBlocks": 3,
+      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "evento-tiro",
+      "blocks": 109,
+      "topBlocks": 3,
+      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "grupo-tiros",
+      "blocks": 118,
+      "topBlocks": 3,
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "origem-tiro",
+      "blocks": 122,
+      "topBlocks": 3,
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "voo-tiros",
+      "blocks": 123,
+      "topBlocks": 3,
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "limpeza-tiros",
+      "blocks": 124,
+      "topBlocks": 3,
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "relogio-asteroides",
+      "blocks": 129,
+      "topBlocks": 3,
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "asteroides",
+      "blocks": 140,
+      "topBlocks": 3,
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "limpeza-asteroides",
+      "blocks": 141,
+      "topBlocks": 3,
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "colisao-tiros",
+      "blocks": 144,
+      "topBlocks": 3,
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "efeitos-acerto",
+      "blocks": 146,
+      "topBlocks": 3,
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "placar",
+      "blocks": 153,
+      "topBlocks": 3,
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "pontos",
+      "blocks": 154,
+      "topBlocks": 3,
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "vidas",
+      "blocks": 160,
+      "topBlocks": 3,
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "colisao-nave",
+      "blocks": 164,
+      "topBlocks": 3,
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "dano",
+      "blocks": 167,
+      "topBlocks": 3,
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "inicio-conferido",
+      "blocks": 167,
+      "topBlocks": 3,
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "aparencias",
+      "blocks": 167,
+      "topBlocks": 3,
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "meta",
+      "blocks": 181,
+      "topBlocks": 3,
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "vitoria",
+      "blocks": 186,
+      "topBlocks": 3,
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "derrota",
+      "blocks": 189,
+      "topBlocks": 3,
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46"
+    },
+    {
+      "course": "nave-contra-asteroides",
+      "stage": "final",
+      "blocks": 189,
+      "topBlocks": 3,
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "inicio",
+      "blocks": 114,
+      "topBlocks": 3,
+      "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "disparo",
+      "blocks": 126,
+      "topBlocks": 3,
+      "sha256": "b9485bddea89b566d3d96029cd729cc82c553555255fecb19a020554f008bd9a"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "origem",
+      "blocks": 126,
+      "topBlocks": 3,
+      "sha256": "6ba791c16dbb7bd1faba4a8f20c08a29926a7cb6d28a55ef60b212108687fbaa"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "trajeto-tiro",
+      "blocks": 126,
+      "topBlocks": 3,
+      "sha256": "692bceacd136421ca85886ba17923a416d7f2721f7f0a3d5c6cccbe04bb4b6e9"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "limite-tiro",
+      "blocks": 129,
+      "topBlocks": 3,
+      "sha256": "4811829bbf18cddc3f02fdef2de5e191c4adb54e886065e624cbe0c8469821aa"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "relogio",
+      "blocks": 139,
+      "topBlocks": 3,
+      "sha256": "8f941c73ac4a5c3133b25506c2b1ff1b4bec00c50e8b2beecfe0eedc3cccaf46"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "entrada",
+      "blocks": 143,
+      "topBlocks": 3,
+      "sha256": "b1a55b79ed5b5dff3a396210e5c0a8b9d211fe4c7ad152ee845ec67226d7ab2a"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "trajeto-asteroide",
+      "blocks": 143,
+      "topBlocks": 3,
+      "sha256": "a4165e2e7da2ad2062aec562a49404f786f8caf3868176fd409b9e6aef4c3475"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "limite-asteroide",
+      "blocks": 146,
+      "topBlocks": 3,
+      "sha256": "29a82e89d5ce4d7bf487832a1c52aba08279ada05b9da84571aa82adcdfef7c2"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "contato",
+      "blocks": 153,
+      "topBlocks": 3,
+      "sha256": "107e50a19f1dcc2c206542e586b7711186d86c010b912f7b6993522fcb86348b"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "contador",
+      "blocks": 155,
+      "topBlocks": 3,
+      "sha256": "6daca576456688b372b020c59d3a450cd38cf9b421f9b0e89d7a289b27fc724f"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "soma",
+      "blocks": 156,
+      "topBlocks": 3,
+      "sha256": "332f6b85d55052e7905995d9e4cebe475165f540fd94c45cbfd24acef6f0ebf8"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "placar",
+      "blocks": 164,
+      "topBlocks": 3,
+      "sha256": "72bd323a72fb16df5947a05fc2af4b7bfce5eded271701ce933a34fe142aadac"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "vidas",
+      "blocks": 166,
+      "topBlocks": 3,
+      "sha256": "ad17e991f124ce273b7db9d26b42bdac622f0acdff5e2c2300980956cf945ce6"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "dano",
+      "blocks": 174,
+      "topBlocks": 3,
+      "sha256": "783205440ede1a429bb60c39d3072934ba602ed176e3f87d7ed55996ce7836e9"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "retirada-batida",
+      "blocks": 175,
+      "topBlocks": 3,
+      "sha256": "646a83d5d4acfc43b17f929fd84e73486c9686ec2f4030973d2c1ad7ad2136eb"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "derrota",
+      "blocks": 188,
+      "topBlocks": 3,
+      "sha256": "f503ca8bda4ed4f7bf6f562a7f7f901f010cce1176295a64c13b8a2bd7e78385"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "vitoria",
+      "blocks": 198,
+      "topBlocks": 3,
+      "sha256": "63c228ca4f0a0c0528f9ee3ae183871eda9c2a1aee1b5786ed2c97b70e6ef881"
+    },
+    {
+      "course": "jornada-construtor-base-3d",
+      "stage": "completo",
+      "blocks": 198,
+      "topBlocks": 3,
+      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "course": "patrulha-espacial",
+  "resource": "construtor-patrulha",
+  "dimension": "3d",
+  "title": "Patrulha Espacial",
+  "cover": "capa-construtor-patrulha.jpg",
+  "line1": "Patrulha",
+  "line2": "Espacial",
+  "phrase": "Todos os passos para construir as regras da sua patrulha.",
+  "promise": "Do primeiro tiro à partida completa",
+  "ui": {
+    "drawingTitle": "Confira os encaixes desta parte",
+    "testsTitle": "Teste e observe",
+    "continuation": "continuação",
+    "earlierBlocks": "Blocos anteriores",
+    "drawingContinuation": "Confira os encaixes",
+    "galleryTitle": "Escolha a aparência",
+    "pageLabel": "Passo a passo do projeto"
+  }
+}

@@ -3,11 +3,13 @@ import {
   isSceneAction,
   type SceneAction,
   type SceneId,
+  type SceneSetup,
   sceneFrameRate,
   sceneLongFrame,
 } from './actions'
 
 import { openScene, stepScene } from './engine'
+import { isScoreGoalPreset } from './presets'
 import {
   cloneScene,
   hydrateSceneState,
@@ -281,13 +283,25 @@ function chunks(json: string): string[] {
  */
 const pack = (s: SceneState) => ({
   ...semGruposNoPadrao(s),
-  crowd: { ...s.crowd, cacti: s.crowd.cacti.map((c) => [c.id, c.x, c.velocity]) },
+  crowd: {
+    ...s.crowd,
+    cacti: s.crowd.cacti.map((c) =>
+      c.y === undefined ? [c.id, c.x, c.velocity] : [c.id, c.x, c.velocity, c.y],
+    ),
+  },
 })
 const unpack = (key: string, value: unknown) =>
   key === 'cacti' &&
   Array.isArray(value) &&
-  value.every((c) => Array.isArray(c) && c.length === 3 && c.every(Number.isFinite))
-    ? value.map((c) => ({ id: c[0], x: c[1], velocity: c[2] }))
+  value.every(
+    (c) => Array.isArray(c) && (c.length === 3 || c.length === 4) && c.every(Number.isFinite),
+  )
+    ? value.map((c) => ({
+        id: c[0],
+        x: c[1],
+        velocity: c[2],
+        ...(c.length === 4 ? { y: c[3] } : {}),
+      }))
     : value
 
 /**
@@ -323,7 +337,11 @@ function hydrateSceneStateForScene(scene: SceneId, value: unknown): unknown {
   return state
 }
 
-export function readExperimentSession(scene: SceneId, parts: unknown): ExperimentSession | null {
+export function readExperimentSession(
+  scene: SceneId,
+  parts: unknown,
+  setup?: SceneSetup,
+): ExperimentSession | null {
   const raw = parseChunks(parts)
   // ⚠️ Hidrata ANTES de validar: retrato gravado antes de a cena ganhar um grupo novo de
   // estado continua válido, e recusá-lo apagaria o trabalho da criança (ver `hydrateSceneState`).
@@ -334,6 +352,11 @@ export function readExperimentSession(scene: SceneId, parts: unknown): Experimen
   if (!Array.isArray(raw.past) || raw.past.length > SESSION_LIMITS.past) return null
   const past = raw.past.map((snapshot: unknown) => hydrateSceneStateForScene(scene, snapshot))
   if (!past.every(isSceneState)) return null
+  // A placa é parte do caso. Um retrato da meta antiga não vira uma descoberta da nova.
+  if (scene === 'score-goal') {
+    const goal = isScoreGoalPreset(setup?.preset) ? setup.preset.goal : 26
+    if (state.scoreGoal.goal !== goal || past.some((s) => s.scoreGoal.goal !== goal)) return null
+  }
   if (scene === 'island-3d' && past.some((s) => !s.island3d)) return null
   if (!Array.isArray(raw.trials) || raw.trials.length > SESSION_LIMITS.trials) return null
   if (!raw.trials.every(isSceneTrial)) return null

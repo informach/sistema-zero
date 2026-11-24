@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-tres-vidas", "video-vida-na-batida", "video-retirar-a-pedra-da-batida"],
+  "intervencoes": [
+    {
+      "id": "video-vida-na-batida-K1",
+      "clipe": "video-vida-na-batida",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.",
+      "ancoraDepois": "Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova",
+      "falaPrincipal": "Enquanto a nave pisca, outra batida já tira mais um coração?",
+      "falaPersonagem": "Enquanto a nave pisca, outra batida já tira mais um coração?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

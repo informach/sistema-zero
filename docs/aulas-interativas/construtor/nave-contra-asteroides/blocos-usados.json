@@ -1,0 +1,1335 @@
+{
+  "version": 1,
+  "course": "nave-contra-asteroides",
+  "source": "Definições e paletas oficiais; curso-autoria.json; todos os projetos progressivos.",
+  "interpretation": "Tipos liberados não equivalem a conceitos novos. Um tipo pode apoiar a infraestrutura inicial e também ser usado na montagem da criança. As contagens incluem valores e sombras de encaixe.",
+  "summary": {
+    "types": 48,
+    "inInitial": 21,
+    "appliedInLessons": 36,
+    "initialInstances": 97,
+    "finalInstances": 189
+  },
+  "blocks": [
+    {
+      "type": "sz_frame_events",
+      "label": "⚡ Quando acontecer · espera acontecer",
+      "category": "Áreas do projeto",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_frame_loops",
+      "label": "🔁 Enquanto estiver rodando · repete sem parar",
+      "category": "Áreas do projeto",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_frame_start",
+      "label": "⚙️ Ao iniciar · roda uma vez",
+      "category": "Áreas do projeto",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_set_backdrop",
+      "label": "Pôr o cenário cenario-aurora atrás de tudo",
+      "category": "Jogo 2D > Cenários > Fundos",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 3,
+        "title": "Escolha a nave e o cenário",
+        "slug": "primeira-nave",
+        "beforeStage": "inicial",
+        "afterStage": "aparencia-inicial"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 3,
+          "title": "Escolha a nave e o cenário",
+          "slug": "primeira-nave",
+          "beforeStage": "inicial",
+          "afterStage": "aparencia-inicial"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_set_hitbox_scale",
+      "label": "Usar área de colisão de 75 % do tamanho para o sprite nave",
+      "category": "Jogo 2D > Colisões > Área de contato",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_on_group_overlap",
+      "label": "Para cada colisão entre os grupos tiros e asteroides",
+      "category": "Jogo 2D > Colisões > Encostar e bloquear",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "colisao-tiros",
+      "firstConstruction": {
+        "lesson": 5,
+        "part": 2,
+        "title": "Retire o par que se encontrou",
+        "slug": "dia-3",
+        "beforeStage": "limpeza-asteroides",
+        "afterStage": "colisao-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 5,
+          "part": 2,
+          "title": "Retire o par que se encontrou",
+          "slug": "dia-3",
+          "beforeStage": "limpeza-asteroides",
+          "afterStage": "colisao-tiros"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_on_sprite_group_overlap",
+      "label": "Para cada sprite do grupo asteroides que colidir com o sprite nave",
+      "category": "Jogo 2D > Colisões > Encostar e bloquear",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "colisao-nave",
+      "firstConstruction": {
+        "lesson": 7,
+        "part": 3,
+        "title": "Encontre a pedra que bateu na nave",
+        "slug": "dia-4",
+        "beforeStage": "vidas",
+        "afterStage": "colisao-nave"
+      },
+      "parts": [
+        {
+          "lesson": 7,
+          "part": 3,
+          "title": "Encontre a pedra que bateu na nave",
+          "slug": "dia-4",
+          "beforeStage": "vidas",
+          "afterStage": "colisao-nave"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_on_key",
+      "label": "Quando apertar a tecla barra de espaço",
+      "category": "Jogo 2D > Controles > Teclado, ações e toque",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 2,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 2,
+        "title": "Faça Espaço responder",
+        "slug": "dia-1",
+        "beforeStage": "instrucoes",
+        "afterStage": "evento-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 2,
+          "title": "Faça Espaço responder",
+          "slug": "dia-1",
+          "beforeStage": "instrucoes",
+          "afterStage": "evento-tiro"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_clear",
+      "label": "Limpar a tela",
+      "category": "Jogo 2D > Desenho e efeitos > Efeitos",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_explode",
+      "label": "Soltar explosão no sprite asteroide cor #ffce69",
+      "category": "Jogo 2D > Desenho e efeitos > Partículas",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "efeitos-acerto",
+      "firstConstruction": {
+        "lesson": 5,
+        "part": 3,
+        "title": "Mostre o acerto",
+        "slug": "dia-3",
+        "beforeStage": "colisao-tiros",
+        "afterStage": "efeitos-acerto"
+      },
+      "parts": [
+        {
+          "lesson": 5,
+          "part": 3,
+          "title": "Mostre o acerto",
+          "slug": "dia-3",
+          "beforeStage": "colisao-tiros",
+          "afterStage": "efeitos-acerto"
+        },
+        {
+          "lesson": 7,
+          "part": 3,
+          "title": "Encontre a pedra que bateu na nave",
+          "slug": "dia-4",
+          "beforeStage": "vidas",
+          "afterStage": "colisao-nave"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_create_group",
+      "label": "Criar grupo de sprites tiros",
+      "category": "Jogo 2D > Grupos > Criar e percorrer",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "grupo-tiros",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 4,
+        "title": "Crie e mostre os lasers",
+        "slug": "dia-1",
+        "beforeStage": "evento-tiro",
+        "afterStage": "grupo-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 4,
+          "title": "Crie e mostre os lasers",
+          "slug": "dia-1",
+          "beforeStage": "evento-tiro",
+          "afterStage": "grupo-tiros"
+        },
+        {
+          "lesson": 4,
+          "part": 2,
+          "title": "Prepare o grupo e o relógio",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "limpeza-tiros",
+          "afterStage": "relogio-asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_spawn_image_in_group",
+      "label": "No grupo tiros criar um sprite chamado em x 395 y 372 largura 10 altura 28 com imagem laser-ciano vx 0 vy 0",
+      "category": "Jogo 2D > Grupos > Criar e percorrer",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "grupo-tiros",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 4,
+        "title": "Crie e mostre os lasers",
+        "slug": "dia-1",
+        "beforeStage": "evento-tiro",
+        "afterStage": "grupo-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 4,
+          "title": "Crie e mostre os lasers",
+          "slug": "dia-1",
+          "beforeStage": "evento-tiro",
+          "afterStage": "grupo-tiros"
+        },
+        {
+          "lesson": 4,
+          "part": 4,
+          "title": "Crie os asteroides caindo",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "relogio-asteroides",
+          "afterStage": "asteroides"
+        },
+        {
+          "lesson": 8,
+          "part": 3,
+          "title": "Escolha a aparência das pedras e dos lasers",
+          "slug": "comecar-partida",
+          "beforeStage": "inicio-conferido",
+          "afterStage": "aparencias"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_draw_group",
+      "label": "Desenhar o grupo tiros",
+      "category": "Jogo 2D > Grupos > Desenho e ordem",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "grupo-tiros",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 4,
+        "title": "Crie e mostre os lasers",
+        "slug": "dia-1",
+        "beforeStage": "evento-tiro",
+        "afterStage": "grupo-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 4,
+          "title": "Crie e mostre os lasers",
+          "slug": "dia-1",
+          "beforeStage": "evento-tiro",
+          "afterStage": "grupo-tiros"
+        },
+        {
+          "lesson": 4,
+          "part": 4,
+          "title": "Crie os asteroides caindo",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "relogio-asteroides",
+          "afterStage": "asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_update_group",
+      "label": "Mover os sprites do grupo tiros usando suas velocidades",
+      "category": "Jogo 2D > Grupos > Movimento",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "voo-tiros",
+      "firstConstruction": {
+        "lesson": 3,
+        "part": 2,
+        "title": "Faça os lasers voar",
+        "slug": "dia-2",
+        "beforeStage": "origem-tiro",
+        "afterStage": "voo-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 3,
+          "part": 2,
+          "title": "Faça os lasers voar",
+          "slug": "dia-2",
+          "beforeStage": "origem-tiro",
+          "afterStage": "voo-tiros"
+        },
+        {
+          "lesson": 4,
+          "part": 4,
+          "title": "Crie os asteroides caindo",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "relogio-asteroides",
+          "afterStage": "asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_prune_offscreen",
+      "label": "Tirar do grupo tiros quem sair da tela, para cada um (chamado foraDaTela)",
+      "category": "Jogo 2D > Grupos > Participação e limpeza",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "limpeza-tiros",
+      "firstConstruction": {
+        "lesson": 3,
+        "part": 3,
+        "title": "Retire os lasers que saíram",
+        "slug": "dia-2",
+        "beforeStage": "voo-tiros",
+        "afterStage": "limpeza-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 3,
+          "part": 3,
+          "title": "Retire os lasers que saíram",
+          "slug": "dia-2",
+          "beforeStage": "voo-tiros",
+          "afterStage": "limpeza-tiros"
+        },
+        {
+          "lesson": 4,
+          "part": 5,
+          "title": "Retire os asteroides que escapam",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "asteroides",
+          "afterStage": "limpeza-asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_remove_from_group",
+      "label": "Tirar o sprite tiro do grupo tiros",
+      "category": "Jogo 2D > Grupos > Participação e limpeza",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 3,
+      "firstStage": "colisao-tiros",
+      "firstConstruction": {
+        "lesson": 5,
+        "part": 2,
+        "title": "Retire o par que se encontrou",
+        "slug": "dia-3",
+        "beforeStage": "limpeza-asteroides",
+        "afterStage": "colisao-tiros"
+      },
+      "parts": [
+        {
+          "lesson": 5,
+          "part": 2,
+          "title": "Retire o par que se encontrou",
+          "slug": "dia-3",
+          "beforeStage": "limpeza-asteroides",
+          "afterStage": "colisao-tiros"
+        },
+        {
+          "lesson": 7,
+          "part": 3,
+          "title": "Encontre a pedra que bateu na nave",
+          "slug": "dia-4",
+          "beforeStage": "vidas",
+          "afterStage": "colisao-nave"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_fit_screen",
+      "label": "Fazer a tela preencher 100% da janela (mantendo a proporção)",
+      "category": "Jogo 2D > Jogo e telas > Preparar a área do jogo",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_setup_stage",
+      "label": "Preparar o jogo em tela cheia, tela 800 × 480, fundo #07152b",
+      "category": "Jogo 2D > Jogo e telas > Preparar a área do jogo",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_restart",
+      "label": "Reiniciar o jogo",
+      "category": "Jogo 2D > Jogo e telas > Telas e partida",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 2,
+      "finalCount": 2,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "label": "o estado do jogo é jogando ?",
+      "category": "Jogo 2D > Jogo e telas > Telas e partida",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 7,
+      "finalCount": 9,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 2,
+        "title": "Faça Espaço responder",
+        "slug": "dia-1",
+        "beforeStage": "instrucoes",
+        "afterStage": "evento-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 2,
+          "title": "Faça Espaço responder",
+          "slug": "dia-1",
+          "beforeStage": "instrucoes",
+          "afterStage": "evento-tiro"
+        },
+        {
+          "lesson": 4,
+          "part": 2,
+          "title": "Prepare o grupo e o relógio",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "limpeza-tiros",
+          "afterStage": "relogio-asteroides"
+        },
+        {
+          "lesson": 8,
+          "part": 2,
+          "title": "Confira as três guardas da partida",
+          "slug": "comecar-partida",
+          "beforeStage": "dano",
+          "afterStage": "inicio-conferido"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_set_scene",
+      "label": "Mudar o estado do jogo para vitoria",
+      "category": "Jogo 2D > Jogo e telas > Telas e partida",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 2,
+      "finalCount": 4,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 9,
+        "part": 3,
+        "title": "Chame a vitória ao completar a meta",
+        "slug": "dia-5",
+        "beforeStage": "meta",
+        "afterStage": "vitoria"
+      },
+      "parts": [
+        {
+          "lesson": 9,
+          "part": 3,
+          "title": "Chame a vitória ao completar a meta",
+          "slug": "dia-5",
+          "beforeStage": "meta",
+          "afterStage": "vitoria"
+        },
+        {
+          "lesson": 9,
+          "part": 4,
+          "title": "Escolha um único resultado",
+          "slug": "dia-5",
+          "beforeStage": "vitoria",
+          "afterStage": "derrota"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_set_stage_description",
+      "label": "Descrever o jogo para leitor de tela Nave Contra Asteroides. Enter começa. Setas esquerda e direita movem a nave. Cada aperto de Espaço dispara um laser. Acerte 20 asteroides antes de perder as três vidas. Asteroides que passam sem bater não tiram vida. Enter, depois do resultado, volta ao início.",
+      "category": "Jogo 2D > Jogo e telas > Telas e partida",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 9,
+        "part": 7,
+        "title": "Teste a missão completa e envie",
+        "slug": "dia-5",
+        "beforeStage": "derrota",
+        "afterStage": "final"
+      },
+      "parts": [
+        {
+          "lesson": 9,
+          "part": 7,
+          "title": "Teste a missão completa e envie",
+          "slug": "dia-5",
+          "beforeStage": "derrota",
+          "afterStage": "final"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_clamp_to_screen",
+      "label": "Manter o sprite nave dentro da tela",
+      "category": "Jogo 2D > Movimento > Bordas e rebatidas",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "limite",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 7,
+        "title": "Mantenha a nave na tela",
+        "slug": "primeira-nave",
+        "beforeStage": "movimento",
+        "afterStage": "limite"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 7,
+          "title": "Mantenha a nave na tela",
+          "slug": "primeira-nave",
+          "beforeStage": "movimento",
+          "afterStage": "limite"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_arrows_x",
+      "label": "Mover o sprite nave com as setas <- -> (velocidade 5)",
+      "category": "Jogo 2D > Movimento > Movimentos prontos",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "movimento",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 5,
+        "title": "Faça a nave responder às setas",
+        "slug": "primeira-nave",
+        "beforeStage": "aparencia-inicial",
+        "afterStage": "movimento"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 5,
+          "title": "Faça a nave responder às setas",
+          "slug": "primeira-nave",
+          "beforeStage": "aparencia-inicial",
+          "afterStage": "movimento"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_center_x",
+      "label": "o centro x do sprite nave",
+      "category": "Jogo 2D > Movimento > Posição e tamanho",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "origem-tiro",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 6,
+        "title": "Faça o laser nascer na nave",
+        "slug": "dia-1",
+        "beforeStage": "grupo-tiros",
+        "afterStage": "origem-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 6,
+          "title": "Faça o laser nascer na nave",
+          "slug": "dia-1",
+          "beforeStage": "grupo-tiros",
+          "afterStage": "origem-tiro"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_sprite_y",
+      "label": "a posição y do sprite nave",
+      "category": "Jogo 2D > Movimento > Posição e tamanho",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "origem-tiro",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 6,
+        "title": "Faça o laser nascer na nave",
+        "slug": "dia-1",
+        "beforeStage": "grupo-tiros",
+        "afterStage": "origem-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 6,
+          "title": "Faça o laser nascer na nave",
+          "slug": "dia-1",
+          "beforeStage": "grupo-tiros",
+          "afterStage": "origem-tiro"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_play_fx",
+      "label": "Tocar efeito tiro grande",
+      "category": "Jogo 2D > Som > Efeitos prontos",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 3,
+      "firstStage": "evento-tiro",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 2,
+        "title": "Faça Espaço responder",
+        "slug": "dia-1",
+        "beforeStage": "instrucoes",
+        "afterStage": "evento-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 2,
+          "title": "Faça Espaço responder",
+          "slug": "dia-1",
+          "beforeStage": "instrucoes",
+          "afterStage": "evento-tiro"
+        },
+        {
+          "lesson": 5,
+          "part": 3,
+          "title": "Mostre o acerto",
+          "slug": "dia-3",
+          "beforeStage": "colisao-tiros",
+          "afterStage": "efeitos-acerto"
+        },
+        {
+          "lesson": 7,
+          "part": 3,
+          "title": "Encontre a pedra que bateu na nave",
+          "slug": "dia-4",
+          "beforeStage": "vidas",
+          "afterStage": "colisao-nave"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_create_image_sprite",
+      "label": "Criar sprite nave em x 372 y 396 largura 56 altura 64 com imagem nave-falcao-azul",
+      "category": "Jogo 2D > Sprites > Criar e trocar aparência",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 3,
+        "title": "Escolha a nave e o cenário",
+        "slug": "primeira-nave",
+        "beforeStage": "inicial",
+        "afterStage": "aparencia-inicial"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 3,
+          "title": "Escolha a nave e o cenário",
+          "slug": "primeira-nave",
+          "beforeStage": "inicial",
+          "afterStage": "aparencia-inicial"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_create_sprite",
+      "label": "Criar sprite painelMensagem em x 48 y 140 largura 704 altura 176 cor #0c1a34",
+      "category": "Jogo 2D > Sprites > Criar e trocar aparência",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_draw_sprite",
+      "label": "Desenhar o sprite painelMensagem",
+      "category": "Jogo 2D > Sprites > Criar e trocar aparência",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 4,
+      "finalCount": 4,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_every_seconds",
+      "label": "A cada 1.5 segundos",
+      "category": "Jogo 2D > Tempo > Quadros e intervalos",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "relogio-asteroides",
+      "firstConstruction": {
+        "lesson": 4,
+        "part": 2,
+        "title": "Prepare o grupo e o relógio",
+        "slug": "chuva-de-asteroides",
+        "beforeStage": "limpeza-tiros",
+        "afterStage": "relogio-asteroides"
+      },
+      "parts": [
+        {
+          "lesson": 4,
+          "part": 2,
+          "title": "Prepare o grupo e o relógio",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "limpeza-tiros",
+          "afterStage": "relogio-asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_update_each_frame",
+      "label": "A cada quadro do jogo",
+      "category": "Jogo 2D > Tempo > Quadros e intervalos",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 1,
+      "finalCount": 1,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_g2d_draw_bar",
+      "label": "Barra de valor da variável pontos / valor da variável meta em x 280 y 23 largura 240 altura 11 cor #65dfcf",
+      "category": "Jogo 2D > Vida e placar > Indicadores e texto na tela",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "meta",
+      "firstConstruction": {
+        "lesson": 9,
+        "part": 2,
+        "title": "Prepare a meta e mostre o progresso",
+        "slug": "dia-5",
+        "beforeStage": "aparencias",
+        "afterStage": "meta"
+      },
+      "parts": [
+        {
+          "lesson": 9,
+          "part": 2,
+          "title": "Prepare a meta e mostre o progresso",
+          "slug": "dia-5",
+          "beforeStage": "aparencias",
+          "afterStage": "meta"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_draw_label",
+      "label": "Escrever texto SETAS: mover · ESPAÇO: disparar em x 780 y 462 cor #d8e6f8 tamanho 15 alinhado à direita",
+      "category": "Jogo 2D > Vida e placar > Indicadores e texto na tela",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 10,
+      "finalCount": 11,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 8,
+        "title": "Mostre os controles e envie",
+        "slug": "primeira-nave",
+        "beforeStage": "limite",
+        "afterStage": "instrucoes"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 8,
+          "title": "Mostre os controles e envie",
+          "slug": "primeira-nave",
+          "beforeStage": "limite",
+          "afterStage": "instrucoes"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_draw_score",
+      "label": "Mostrar placar Acertos: valor valor da variável pontos em x 22 y 32 cor #f3f8ff tamanho 23",
+      "category": "Jogo 2D > Vida e placar > Indicadores e texto na tela",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "placar",
+      "firstConstruction": {
+        "lesson": 6,
+        "part": 2,
+        "title": "Prepare o placar",
+        "slug": "pontos",
+        "beforeStage": "efeitos-acerto",
+        "afterStage": "placar"
+      },
+      "parts": [
+        {
+          "lesson": 6,
+          "part": 2,
+          "title": "Prepare o placar",
+          "slug": "pontos",
+          "beforeStage": "efeitos-acerto",
+          "afterStage": "placar"
+        },
+        {
+          "lesson": 9,
+          "part": 2,
+          "title": "Prepare a meta e mostre o progresso",
+          "slug": "dia-5",
+          "beforeStage": "aparencias",
+          "afterStage": "meta"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_damage_sprite",
+      "label": "Machucar o sprite nave em 1 e deixá-lo invencível por 60 quadros",
+      "category": "Jogo 2D > Vida e placar > Vida",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "dano",
+      "firstConstruction": {
+        "lesson": 7,
+        "part": 5,
+        "title": "Tire uma vida e dê um respiro",
+        "slug": "dia-4",
+        "beforeStage": "colisao-nave",
+        "afterStage": "dano"
+      },
+      "parts": [
+        {
+          "lesson": 7,
+          "part": 5,
+          "title": "Tire uma vida e dê um respiro",
+          "slug": "dia-4",
+          "beforeStage": "colisao-nave",
+          "afterStage": "dano"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_draw_sprite_health",
+      "label": "Desenhar as vidas do sprite nave como corações em x 22 y 52 tamanho 21 cor #ff9bae",
+      "category": "Jogo 2D > Vida e placar > Vida",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "vidas",
+      "firstConstruction": {
+        "lesson": 7,
+        "part": 2,
+        "title": "Prepare e mostre as três vidas",
+        "slug": "dia-4",
+        "beforeStage": "pontos",
+        "afterStage": "vidas"
+      },
+      "parts": [
+        {
+          "lesson": 7,
+          "part": 2,
+          "title": "Prepare e mostre as três vidas",
+          "slug": "dia-4",
+          "beforeStage": "pontos",
+          "afterStage": "vidas"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_health_depleted",
+      "label": "as vidas do sprite nave acabaram?",
+      "category": "Jogo 2D > Vida e placar > Vida",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "derrota",
+      "firstConstruction": {
+        "lesson": 9,
+        "part": 4,
+        "title": "Escolha um único resultado",
+        "slug": "dia-5",
+        "beforeStage": "vitoria",
+        "afterStage": "derrota"
+      },
+      "parts": [
+        {
+          "lesson": 9,
+          "part": 4,
+          "title": "Escolha um único resultado",
+          "slug": "dia-5",
+          "beforeStage": "vitoria",
+          "afterStage": "derrota"
+        }
+      ]
+    },
+    {
+      "type": "sz_g2d_set_health",
+      "label": "Dar ao sprite nave 3 de vida",
+      "category": "Jogo 2D > Vida e placar > Vida",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "vidas",
+      "firstConstruction": {
+        "lesson": 7,
+        "part": 2,
+        "title": "Prepare e mostre as três vidas",
+        "slug": "dia-4",
+        "beforeStage": "pontos",
+        "afterStage": "vidas"
+      },
+      "parts": [
+        {
+          "lesson": 7,
+          "part": 2,
+          "title": "Prepare e mostre as três vidas",
+          "slug": "dia-4",
+          "beforeStage": "pontos",
+          "afterStage": "vidas"
+        }
+      ]
+    },
+    {
+      "type": "sz_js_if_else",
+      "label": "Se o estado do jogo é jogando ?",
+      "category": "Programação > Lógica & Se",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 7,
+      "finalCount": 11,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 2,
+        "title": "Faça Espaço responder",
+        "slug": "dia-1",
+        "beforeStage": "instrucoes",
+        "afterStage": "evento-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 2,
+          "title": "Faça Espaço responder",
+          "slug": "dia-1",
+          "beforeStage": "instrucoes",
+          "afterStage": "evento-tiro"
+        },
+        {
+          "lesson": 4,
+          "part": 2,
+          "title": "Prepare o grupo e o relógio",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "limpeza-tiros",
+          "afterStage": "relogio-asteroides"
+        },
+        {
+          "lesson": 8,
+          "part": 2,
+          "title": "Confira as três guardas da partida",
+          "slug": "comecar-partida",
+          "beforeStage": "dano",
+          "afterStage": "inicio-conferido"
+        },
+        {
+          "lesson": 9,
+          "part": 3,
+          "title": "Chame a vitória ao completar a meta",
+          "slug": "dia-5",
+          "beforeStage": "meta",
+          "afterStage": "vitoria"
+        },
+        {
+          "lesson": 9,
+          "part": 4,
+          "title": "Escolha um único resultado",
+          "slug": "dia-5",
+          "beforeStage": "vitoria",
+          "afterStage": "derrota"
+        }
+      ]
+    },
+    {
+      "type": "sz_math_arithmetic",
+      "label": "o centro x do sprite nave − 5",
+      "category": "Programação > Matemática",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "origem-tiro",
+      "firstConstruction": {
+        "lesson": 2,
+        "part": 6,
+        "title": "Faça o laser nascer na nave",
+        "slug": "dia-1",
+        "beforeStage": "grupo-tiros",
+        "afterStage": "origem-tiro"
+      },
+      "parts": [
+        {
+          "lesson": 2,
+          "part": 6,
+          "title": "Faça o laser nascer na nave",
+          "slug": "dia-1",
+          "beforeStage": "grupo-tiros",
+          "afterStage": "origem-tiro"
+        }
+      ]
+    },
+    {
+      "type": "sz_val_compare",
+      "label": "valor da variável pontos ≥ valor da variável meta",
+      "category": "Programação > Valores",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "vitoria",
+      "firstConstruction": {
+        "lesson": 9,
+        "part": 3,
+        "title": "Chame a vitória ao completar a meta",
+        "slug": "dia-5",
+        "beforeStage": "meta",
+        "afterStage": "vitoria"
+      },
+      "parts": [
+        {
+          "lesson": 9,
+          "part": 3,
+          "title": "Chame a vitória ao completar a meta",
+          "slug": "dia-5",
+          "beforeStage": "meta",
+          "afterStage": "vitoria"
+        }
+      ]
+    },
+    {
+      "type": "sz_val_number",
+      "label": "1.5",
+      "category": "Programação > Valores",
+      "role": "Apoio fornecido no projeto inicial",
+      "inInitial": true,
+      "initialCount": 42,
+      "finalCount": 78,
+      "firstStage": "inicial",
+      "firstConstruction": null,
+      "parts": []
+    },
+    {
+      "type": "sz_val_random",
+      "label": "número aleatório de 24 até 728",
+      "category": "Programação > Valores",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "asteroides",
+      "firstConstruction": {
+        "lesson": 4,
+        "part": 4,
+        "title": "Crie os asteroides caindo",
+        "slug": "chuva-de-asteroides",
+        "beforeStage": "relogio-asteroides",
+        "afterStage": "asteroides"
+      },
+      "parts": [
+        {
+          "lesson": 4,
+          "part": 4,
+          "title": "Crie os asteroides caindo",
+          "slug": "chuva-de-asteroides",
+          "beforeStage": "relogio-asteroides",
+          "afterStage": "asteroides"
+        }
+      ]
+    },
+    {
+      "type": "sz_val_text",
+      "label": "texto SETAS: mover · ESPAÇO: disparar",
+      "category": "Programação > Valores",
+      "role": "Retomado ou aplicado na montagem",
+      "inInitial": true,
+      "initialCount": 10,
+      "finalCount": 11,
+      "firstStage": "inicial",
+      "firstConstruction": {
+        "lesson": 1,
+        "part": 8,
+        "title": "Mostre os controles e envie",
+        "slug": "primeira-nave",
+        "beforeStage": "limite",
+        "afterStage": "instrucoes"
+      },
+      "parts": [
+        {
+          "lesson": 1,
+          "part": 8,
+          "title": "Mostre os controles e envie",
+          "slug": "primeira-nave",
+          "beforeStage": "limite",
+          "afterStage": "instrucoes"
+        }
+      ]
+    },
+    {
+      "type": "sz_val_variable",
+      "label": "valor da variável pontos",
+      "category": "Programação > Valores",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 6,
+      "firstStage": "placar",
+      "firstConstruction": {
+        "lesson": 6,
+        "part": 2,
+        "title": "Prepare o placar",
+        "slug": "pontos",
+        "beforeStage": "efeitos-acerto",
+        "afterStage": "placar"
+      },
+      "parts": [
+        {
+          "lesson": 6,
+          "part": 2,
+          "title": "Prepare o placar",
+          "slug": "pontos",
+          "beforeStage": "efeitos-acerto",
+          "afterStage": "placar"
+        },
+        {
+          "lesson": 9,
+          "part": 2,
+          "title": "Prepare a meta e mostre o progresso",
+          "slug": "dia-5",
+          "beforeStage": "aparencias",
+          "afterStage": "meta"
+        },
+        {
+          "lesson": 9,
+          "part": 3,
+          "title": "Chame a vitória ao completar a meta",
+          "slug": "dia-5",
+          "beforeStage": "meta",
+          "afterStage": "vitoria"
+        }
+      ]
+    },
+    {
+      "type": "sz_js_var_create",
+      "label": "Criar variável pontos com valor 0",
+      "category": "Programação > Variáveis",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 2,
+      "firstStage": "placar",
+      "firstConstruction": {
+        "lesson": 6,
+        "part": 2,
+        "title": "Prepare o placar",
+        "slug": "pontos",
+        "beforeStage": "efeitos-acerto",
+        "afterStage": "placar"
+      },
+      "parts": [
+        {
+          "lesson": 6,
+          "part": 2,
+          "title": "Prepare o placar",
+          "slug": "pontos",
+          "beforeStage": "efeitos-acerto",
+          "afterStage": "placar"
+        },
+        {
+          "lesson": 9,
+          "part": 2,
+          "title": "Prepare a meta e mostre o progresso",
+          "slug": "dia-5",
+          "beforeStage": "aparencias",
+          "afterStage": "meta"
+        }
+      ]
+    },
+    {
+      "type": "sz_js_var_increment",
+      "label": "Somar 1 em variável pontos",
+      "category": "Programação > Variáveis",
+      "role": "Construído no curso",
+      "inInitial": false,
+      "initialCount": 0,
+      "finalCount": 1,
+      "firstStage": "pontos",
+      "firstConstruction": {
+        "lesson": 6,
+        "part": 3,
+        "title": "Some no lugar do acerto",
+        "slug": "pontos",
+        "beforeStage": "placar",
+        "afterStage": "pontos"
+      },
+      "parts": [
+        {
+          "lesson": 6,
+          "part": 3,
+          "title": "Some no lugar do acerto",
+          "slug": "pontos",
+          "beforeStage": "placar",
+          "afterStage": "pontos"
+        }
+      ]
+    }
+  ]
+}

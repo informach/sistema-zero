@@ -4,7 +4,7 @@
 
 Data: 24/11/2026. Referência estudada: `informach/sistema-zero`, branch `staging`, commit `9ca0696aef5a536846525704b9d01261e2bd0da7`.
 
-**Estado: proposta e protótipos para revisão de Helena.** Este documento registra o estudo do Faísca, o enquadramento na Jornada, as decisões propostas para os dois jogos e os projetos importáveis já preparados. Os roteiros de gravação, os manifestos das aulas e a atualização da política publicada pertencem às próximas etapas.
+**Estado: jogos aprovados por Helena; referência da autoria dos cursos.** Este documento conserva o estudo do Faísca, o enquadramento na Jornada, as decisões aprovadas para os dois jogos e os protótipos importáveis. Os roteiros, manifestos e materiais completos estão descritos na [produção das bases](producao-cursos-base-2026-11-24.md). Os encaminhamentos e as tabelas de sequência abaixo registram o planejamento que orientou essa autoria; o [mapa 2D](nave-contra-asteroides/mapa-de-aulas.md) e o [mapa 3D](patrulha-espacial/mapa-de-aulas.md) mostram sua distribuição final por parte. A política publicada, a gravação e a disponibilização das aulas continuam sendo etapas posteriores.
 
 **Divisão de autoria aprovada em 24/11/2026:** telas de início, vitória e derrota, estado inicial, comando para começar e mecanismo de reinício chegam preparados no Construtor. A criança programa os sistemas da partida, as condições de vitória e derrota e o acionamento do resultado; aprende a usar a guarda conhecida **Se jogando** nas regras que acrescenta e testa o reinício. Construir toda a estrutura das telas e transições fica para o Inventor. Esta decisão já está aplicada aos projetos iniciais e à sequência abaixo.
 
@@ -603,4 +603,3 @@ Todos os links abaixo estão fixados no commit estudado para que uma alteração
 [regras-3d]: https://github.com/informach/sistema-zero/blob/9ca0696aef5a536846525704b9d01261e2bd0da7/packages/studio/src/official-extensions/game3dRules/runtime.ts
 [seed-doc]: https://github.com/informach/sistema-zero/blob/9ca0696aef5a536846525704b9d01261e2bd0da7/docs/jornada-criador-seed.md
 [seed-code]: https://github.com/informach/sistema-zero/blob/9ca0696aef5a536846525704b9d01261e2bd0da7/packages/members/src/application/creator-journey/creator-journey-seed.ts
-

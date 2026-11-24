@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-24T11:58:51.088Z",
+  "qualified": "a365206598c9175e8f999801eba5a6fb74d613db",
+  "candidate": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+  "changedFiles": [
+    "docs/plans/2026-11-24-lg02-aquecimento-seguro.md",
+    "packages/core/tests/project-execution.test.ts"
+  ],
+  "productionSourceUnchanged": true,
+  "fingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c"
+}

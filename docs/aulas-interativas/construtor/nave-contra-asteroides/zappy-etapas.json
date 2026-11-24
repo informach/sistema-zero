@@ -1,0 +1,1741 @@
+{
+  "version": 1,
+  "experiences": {
+    "primeira-nave/seta-e-velocidade": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "lighthouse-walk",
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["moves-each-frame", "stopped-after-release", "walked-real-speed"],
+          "goalCopy": {
+            "moves-each-frame": {
+              "label": "Um passinho a cada quadro",
+              "pedido": "Escolha Devagar, segure a seta e olhe os quadros do jogo."
+            },
+            "stopped-after-release": {
+              "label": "Seta solta, nave parada",
+              "pedido": "Em Devagar, solte a seta e olhe os próximos quadros."
+            },
+            "walked-real-speed": {
+              "label": "Os passinhos viraram um voo",
+              "pedido": "Escolha Rápido, segure a seta por alguns segundos e compare."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "slow-start",
+          "text": "Faça o personagem andar. Segure a seta!"
+        },
+        {
+          "id": "slow-walking",
+          "text": "Um quadro, um passinho. E se soltar a seta?"
+        },
+        {
+          "id": "slow-released",
+          "text": "Os quadros passam e ele fica parado. E bem rápido?"
+        },
+        {
+          "id": "slow-real",
+          "text": "Continue segurando. Compare com o Devagar: o que mudou?"
+        },
+        {
+          "id": "slow-out",
+          "text": "Ele saiu da tela. Toque em Começo e teste de novo."
+        },
+        {
+          "id": "slow-out-nave",
+          "text": "A nave saiu da tela. Toque em Começo e teste de novo."
+        },
+        {
+          "id": "slow-start-nave",
+          "text": "Faça a nave andar. Segure a seta!"
+        },
+        {
+          "id": "slow-idea",
+          "text": "O jogo desenha um quadro atrás do outro. Com a seta apertada, um passinho por quadro. Rápido, vira caminhada."
+        },
+        {
+          "id": "slow-bridge",
+          "text": "No seu jogo: em cada quadro, o personagem dá um passinho se a seta estiver apertada."
+        },
+        {
+          "id": "slow-idea-nave",
+          "text": "O jogo desenha um quadro atrás do outro. Com a seta apertada, a nave anda um pouco por quadro. Rápido, vira voo."
+        },
+        {
+          "id": "slow-bridge-nave",
+          "text": "No seu jogo: em cada quadro, a nave anda se a seta estiver apertada."
+        },
+        {
+          "id": "slow-complete",
+          "text": "Quadro a quadro, passinho a passinho. Rápido, vira caminhada!"
+        },
+        {
+          "id": "border-start",
+          "text": "Até onde o personagem vai? Segure a seta."
+        },
+        {
+          "id": "border-off",
+          "text": "O limite está desligado. Segure a seta até a beirada."
+        },
+        {
+          "id": "border-out",
+          "text": "Ele passou da beirada! E se ligar o limite agora?"
+        },
+        {
+          "id": "border-on-out",
+          "text": "O limite está ligado. Olhe o próximo quadro."
+        },
+        {
+          "id": "border-back",
+          "text": "Voltou! E segurando a seta na beirada, com o limite?"
+        },
+        {
+          "id": "border-edge",
+          "text": "Limite ligado. Vá até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-edge-off",
+          "text": "Ligue o limite, vá até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-hold",
+          "text": "A cada passinho, o jogo confere e segura. E sem o limite?"
+        },
+        {
+          "id": "border-idea",
+          "text": "Depois de cada passinho, o jogo confere a beirada. Sem limite, sai da tela; com o limite, volta para dentro."
+        },
+        {
+          "id": "border-bridge",
+          "text": "No seu jogo: o limite segura o personagem dentro da tela, depois de cada passinho."
+        },
+        {
+          "id": "border-idea-nave",
+          "text": "Depois de cada passinho, o jogo confere a beirada. Sem limite, a nave sai da tela; com o limite, volta para dentro."
+        },
+        {
+          "id": "border-bridge-nave",
+          "text": "No seu jogo: o limite segura a nave dentro da tela, depois de cada passinho."
+        },
+        {
+          "id": "border-complete",
+          "text": "Depois de cada passinho, o jogo confere a beirada."
+        },
+        {
+          "id": "slow-released-nave",
+          "text": "Os quadros passam e a nave fica parada. E bem rápido?"
+        },
+        {
+          "id": "slow-complete-nave",
+          "text": "Quadro a quadro, passinho a passinho. Rápido, vira voo!"
+        },
+        {
+          "id": "border-start-nave",
+          "text": "Até onde a nave vai? Segure a seta."
+        },
+        {
+          "id": "border-off-nave",
+          "text": "O limite está desligado. Segure a seta até a beirada."
+        },
+        {
+          "id": "border-out-nave",
+          "text": "A nave passou da beirada! E se ligar o limite agora?"
+        },
+        {
+          "id": "border-on-out-nave",
+          "text": "O limite está ligado. Olhe o próximo quadro."
+        },
+        {
+          "id": "border-back-nave",
+          "text": "Voltou! E segurando a seta na beirada, com o limite?"
+        },
+        {
+          "id": "border-edge-nave",
+          "text": "Limite ligado. Leve a nave até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-edge-off-nave",
+          "text": "Ligue o limite, leve a nave até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-hold-nave",
+          "text": "A cada passinho, o jogo confere e segura a nave. E sem o limite?"
+        },
+        {
+          "id": "border-complete-nave",
+          "text": "Depois de cada passinho, o jogo confere a beirada."
+        },
+        {
+          "id": "stride-start",
+          "text": "Escolha um tamanho de passinho: Passinho pequeno ou Passinho grande. Depois clique em Câmera lenta, segure a seta e observe as marcas e a tira: quanto a nave anda em cada quadro?"
+        },
+        {
+          "id": "stride-small",
+          "text": "Com o passinho pequeno, a nave anda só um pouquinho em cada quadro, e as marcas ficam juntinhas. E com o passinho grande, o que muda? Clique em Passinho grande, segure a seta em câmera lenta e compare as marcas."
+        },
+        {
+          "id": "stride-try-big",
+          "text": "Agora o passinho é grande. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho pequeno."
+        },
+        {
+          "id": "stride-big",
+          "text": "Com o passinho grande, a nave vai mais longe em cada quadro, e as marcas ficam bem separadas. E com o passinho pequeno, o que muda? Clique em Passinho pequeno, segure a seta em câmera lenta e compare as marcas."
+        },
+        {
+          "id": "stride-try-small",
+          "text": "Agora o passinho é pequeno. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho grande."
+        },
+        {
+          "id": "stride-complete",
+          "text": "Nos dois casos, a nave dá um passinho em cada quadro. O que muda é o tamanho do passinho: com o passinho grande, a nave vai mais longe em cada quadro e, por isso, voa mais depressa. Quer sentir a diferença? Clique em Velocidade de verdade com cada passinho."
+        },
+        {
+          "id": "walk-empty",
+          "text": "A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco."
+        },
+        {
+          "id": "walk-no-command",
+          "text": "A tecla está apertada, mas falta o comando de mover. Avance um quadro para testar. Depois adicione o bloco e compare."
+        },
+        {
+          "id": "walk-no-key",
+          "text": "O bloco está na regra, mas a tecla está solta. Avance um quadro para comparar. Apertar a tecla não muda os blocos."
+        },
+        {
+          "id": "walk-both",
+          "text": "Bloco na regra e tecla apertada. Avance um ou vários quadros e observe os passos. Você pode retirar o bloco ou soltar a tecla para comparar."
+        },
+        {
+          "id": "walk-complete",
+          "text": "Você comparou o comando, a tecla e a passagem dos quadros. Continue experimentando: todas as opções permanecem livres."
+        },
+        {
+          "id": "edge-start",
+          "text": "O bloco de mover já está na regra. Aperte a tecla no teclado de teste e avance os quadros. Observe a borda."
+        },
+        {
+          "id": "edge-limited-first",
+          "text": "O bloco de limite já está na regra. Você pode retirá-lo e comparar o que acontece na borda."
+        },
+        {
+          "id": "edge-out",
+          "text": "Ele saiu da tela. Adicione o bloco de limite e avance outro quadro. O que muda?"
+        },
+        {
+          "id": "edge-hold",
+          "text": "Avance mais quadros junto à borda. Veja como o bloco de limite mantém o personagem dentro da tela."
+        },
+        {
+          "id": "edge-order",
+          "text": "Você comparou com e sem o bloco de limite. Abra o teste das duas ordens para ver por que a ordem importa."
+        },
+        {
+          "id": "edge-complete",
+          "text": "Você comparou as duas regras e as duas ordens. Pode repetir os testes e continuar explorando."
+        }
+      ]
+    },
+    "primeira-nave/limite-da-tela": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "lighthouse-walk",
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["left-the-screen", "came-back-inside", "stayed-inside"],
+          "goalCopy": {
+            "left-the-screen": {
+              "label": "Sem o limite, a nave saiu da tela",
+              "pedido": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela."
+            },
+            "came-back-inside": {
+              "label": "Com o limite ligado, a nave voltou para dentro",
+              "pedido": "Com a nave fora da tela, ligue a cerca e olhe o próximo quadro."
+            },
+            "stayed-inside": {
+              "label": "Com o limite, a nave ficou na beirada",
+              "pedido": "Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "slow-start",
+          "text": "Faça o personagem andar. Segure a seta!"
+        },
+        {
+          "id": "slow-walking",
+          "text": "Um quadro, um passinho. E se soltar a seta?"
+        },
+        {
+          "id": "slow-released",
+          "text": "Os quadros passam e ele fica parado. E bem rápido?"
+        },
+        {
+          "id": "slow-real",
+          "text": "Continue segurando. Compare com o Devagar: o que mudou?"
+        },
+        {
+          "id": "slow-out",
+          "text": "Ele saiu da tela. Toque em Começo e teste de novo."
+        },
+        {
+          "id": "slow-out-nave",
+          "text": "A nave saiu da tela. Toque em Começo e teste de novo."
+        },
+        {
+          "id": "slow-start-nave",
+          "text": "Faça a nave andar. Segure a seta!"
+        },
+        {
+          "id": "slow-idea",
+          "text": "O jogo desenha um quadro atrás do outro. Com a seta apertada, um passinho por quadro. Rápido, vira caminhada."
+        },
+        {
+          "id": "slow-bridge",
+          "text": "No seu jogo: em cada quadro, o personagem dá um passinho se a seta estiver apertada."
+        },
+        {
+          "id": "slow-idea-nave",
+          "text": "O jogo desenha um quadro atrás do outro. Com a seta apertada, a nave anda um pouco por quadro. Rápido, vira voo."
+        },
+        {
+          "id": "slow-bridge-nave",
+          "text": "No seu jogo: em cada quadro, a nave anda se a seta estiver apertada."
+        },
+        {
+          "id": "slow-complete",
+          "text": "Quadro a quadro, passinho a passinho. Rápido, vira caminhada!"
+        },
+        {
+          "id": "border-start",
+          "text": "Até onde o personagem vai? Segure a seta."
+        },
+        {
+          "id": "border-off",
+          "text": "O limite está desligado. Segure a seta até a beirada."
+        },
+        {
+          "id": "border-out",
+          "text": "Ele passou da beirada! E se ligar o limite agora?"
+        },
+        {
+          "id": "border-on-out",
+          "text": "O limite está ligado. Olhe o próximo quadro."
+        },
+        {
+          "id": "border-back",
+          "text": "Voltou! E segurando a seta na beirada, com o limite?"
+        },
+        {
+          "id": "border-edge",
+          "text": "Limite ligado. Vá até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-edge-off",
+          "text": "Ligue o limite, vá até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-hold",
+          "text": "A cada passinho, o jogo confere e segura. E sem o limite?"
+        },
+        {
+          "id": "border-idea",
+          "text": "Depois de cada passinho, o jogo confere a beirada. Sem limite, sai da tela; com o limite, volta para dentro."
+        },
+        {
+          "id": "border-bridge",
+          "text": "No seu jogo: o limite segura o personagem dentro da tela, depois de cada passinho."
+        },
+        {
+          "id": "border-idea-nave",
+          "text": "Depois de cada passinho, o jogo confere a beirada. Sem limite, a nave sai da tela; com o limite, volta para dentro."
+        },
+        {
+          "id": "border-bridge-nave",
+          "text": "No seu jogo: o limite segura a nave dentro da tela, depois de cada passinho."
+        },
+        {
+          "id": "border-complete",
+          "text": "Depois de cada passinho, o jogo confere a beirada."
+        },
+        {
+          "id": "slow-released-nave",
+          "text": "Os quadros passam e a nave fica parada. E bem rápido?"
+        },
+        {
+          "id": "slow-complete-nave",
+          "text": "Quadro a quadro, passinho a passinho. Rápido, vira voo!"
+        },
+        {
+          "id": "border-start-nave",
+          "text": "Até onde a nave vai? Segure a seta."
+        },
+        {
+          "id": "border-off-nave",
+          "text": "O limite está desligado. Segure a seta até a beirada."
+        },
+        {
+          "id": "border-out-nave",
+          "text": "A nave passou da beirada! E se ligar o limite agora?"
+        },
+        {
+          "id": "border-on-out-nave",
+          "text": "O limite está ligado. Olhe o próximo quadro."
+        },
+        {
+          "id": "border-back-nave",
+          "text": "Voltou! E segurando a seta na beirada, com o limite?"
+        },
+        {
+          "id": "border-edge-nave",
+          "text": "Limite ligado. Leve a nave até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-edge-off-nave",
+          "text": "Ligue o limite, leve a nave até a beirada e escolha Devagar."
+        },
+        {
+          "id": "border-hold-nave",
+          "text": "A cada passinho, o jogo confere e segura a nave. E sem o limite?"
+        },
+        {
+          "id": "border-complete-nave",
+          "text": "Depois de cada passinho, o jogo confere a beirada."
+        },
+        {
+          "id": "stride-start",
+          "text": "Escolha um tamanho de passinho: Passinho pequeno ou Passinho grande. Depois clique em Câmera lenta, segure a seta e observe as marcas e a tira: quanto a nave anda em cada quadro?"
+        },
+        {
+          "id": "stride-small",
+          "text": "Com o passinho pequeno, a nave anda só um pouquinho em cada quadro, e as marcas ficam juntinhas. E com o passinho grande, o que muda? Clique em Passinho grande, segure a seta em câmera lenta e compare as marcas."
+        },
+        {
+          "id": "stride-try-big",
+          "text": "Agora o passinho é grande. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho pequeno."
+        },
+        {
+          "id": "stride-big",
+          "text": "Com o passinho grande, a nave vai mais longe em cada quadro, e as marcas ficam bem separadas. E com o passinho pequeno, o que muda? Clique em Passinho pequeno, segure a seta em câmera lenta e compare as marcas."
+        },
+        {
+          "id": "stride-try-small",
+          "text": "Agora o passinho é pequeno. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho grande."
+        },
+        {
+          "id": "stride-complete",
+          "text": "Nos dois casos, a nave dá um passinho em cada quadro. O que muda é o tamanho do passinho: com o passinho grande, a nave vai mais longe em cada quadro e, por isso, voa mais depressa. Quer sentir a diferença? Clique em Velocidade de verdade com cada passinho."
+        },
+        {
+          "id": "walk-empty",
+          "text": "A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco."
+        },
+        {
+          "id": "walk-no-command",
+          "text": "A tecla está apertada, mas falta o comando de mover. Avance um quadro para testar. Depois adicione o bloco e compare."
+        },
+        {
+          "id": "walk-no-key",
+          "text": "O bloco está na regra, mas a tecla está solta. Avance um quadro para comparar. Apertar a tecla não muda os blocos."
+        },
+        {
+          "id": "walk-both",
+          "text": "Bloco na regra e tecla apertada. Avance um ou vários quadros e observe os passos. Você pode retirar o bloco ou soltar a tecla para comparar."
+        },
+        {
+          "id": "walk-complete",
+          "text": "Você comparou o comando, a tecla e a passagem dos quadros. Continue experimentando: todas as opções permanecem livres."
+        },
+        {
+          "id": "edge-start",
+          "text": "O bloco de mover já está na regra. Aperte a tecla no teclado de teste e avance os quadros. Observe a borda."
+        },
+        {
+          "id": "edge-limited-first",
+          "text": "O bloco de limite já está na regra. Você pode retirá-lo e comparar o que acontece na borda."
+        },
+        {
+          "id": "edge-out",
+          "text": "Ele saiu da tela. Adicione o bloco de limite e avance outro quadro. O que muda?"
+        },
+        {
+          "id": "edge-hold",
+          "text": "Avance mais quadros junto à borda. Veja como o bloco de limite mantém o personagem dentro da tela."
+        },
+        {
+          "id": "edge-order",
+          "text": "Você comparou com e sem o bloco de limite. Abra o teste das duas ordens para ver por que a ordem importa."
+        },
+        {
+          "id": "edge-complete",
+          "text": "Você comparou as duas regras e as duas ordens. Pode repetir os testes e continuar explorando."
+        }
+      ]
+    },
+    "dia-1/tecla-e-repeticao": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "once-vs-always",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "tres-caixas-tiro",
+            "areas": ["start", "loop", "event"],
+            "cards": [
+              {
+                "id": "paint",
+                "kind": "paint",
+                "label": "Pintar o fundo"
+              },
+              {
+                "id": "create",
+                "kind": "create",
+                "label": "Criar a nave"
+              },
+              {
+                "id": "move",
+                "kind": "move",
+                "label": "Mover a nave um pouquinho"
+              },
+              {
+                "id": "event",
+                "kind": "shot",
+                "label": "Criar um tiro"
+              }
+            ]
+          },
+          "goals": ["on-event", "key-fires", "flood"],
+          "goalCopy": {
+            "on-event": {
+              "label": "Esperando a hora, sem a tecla, nenhum tiro saiu",
+              "pedido": "Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros."
+            },
+            "key-fires": {
+              "label": "Na hora em que a tecla foi apertada, saiu um tiro",
+              "pedido": "Com Na hora em que algo acontece escolhido, clique em Apertar a tecla durante o jogo e observe os tiros."
+            },
+            "flood": {
+              "label": "Sempre, em todo quadro, saiu um tiro novo",
+              "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe os tiros."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "once-vs-always-nave-start",
+          "text": "Quando a nave anda um pouquinho? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-try-once",
+          "text": "A nave vai andar um pouquinho uma vez, no começo. O que você acha que acontece nos outros quadros? Clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-try-always",
+          "text": "A nave vai andar um pouquinho sempre, em todo quadro. O que você acha que muda? Clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-once",
+          "text": "No começo, a nave andou um pouquinho uma vez só, e nos outros quadros ficou parada. E se ela andar sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-nave-always",
+          "text": "Em todo quadro, a nave andou mais um pouquinho, até sair da tela. E se ela andar uma vez só, no começo? Escolha Uma vez, no começo, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-nave-complete",
+          "text": "Uma vez, no começo, a nave andou um pouquinho e parou. Sempre, em todo quadro, ela continuou andando até sair da tela. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-vidas-start",
+          "text": "Quando a nave ganha três vidas? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe as vidas e as batidas do asteroide."
+        },
+        {
+          "id": "once-vs-always-vidas-try-once",
+          "text": "A nave vai ganhar três vidas uma vez, no começo. O que você acha que acontece com as vidas quando o asteroide bater? Clique em Começar o jogo e observe as vidas e as batidas."
+        },
+        {
+          "id": "once-vs-always-vidas-try-always",
+          "text": "A nave vai ganhar três vidas sempre, em todo quadro. O que você acha que acontece com as vidas quando o asteroide bater? Clique em Começar o jogo e observe as vidas e as batidas."
+        },
+        {
+          "id": "once-vs-always-vidas-once",
+          "text": "No começo, a nave ganhou três vidas uma vez só, e cada batida tirou uma. E se ela ganhar três vidas sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-vidas-always",
+          "text": "Em todo quadro, as vidas voltaram a ser três, mesmo depois das batidas. E se a nave ganhar as vidas uma vez só, no começo? Escolha Uma vez, no começo, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-vidas-complete",
+          "text": "Uma vez, no começo, as vidas chegam uma vez só, e as batidas vão tirando até acabar. Sempre, em todo quadro, as vidas voltam a encher depois de cada batida. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-tiro-start",
+          "text": "Quando sai um tiro? Escolha um jeito: Uma vez, no começo, Sempre, em todo quadro, ou Na hora em que algo acontece. Depois clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-try-event",
+          "text": "Agora o tiro está esperando uma coisa acontecer: a tecla ser apertada. O que você acha que acontece sem a tecla? Clique em Começar o jogo, deixe o jogo terminar sem clicar em Apertar a tecla e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-event",
+          "text": "Sem a tecla, nenhum tiro saiu: o tiro ficou esperando. E com a tecla? Clique em Apertar a tecla e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-key",
+          "text": "Na hora em que a tecla foi apertada, saiu um tiro. E sem a tecla, o que acontece? Clique em Jogar de novo, depois em Começar o jogo, e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-event-flood",
+          "text": "Na hora em que a tecla foi apertada, saiu um tiro; sem a tecla, nenhum. E se o tiro sair sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-try-loop",
+          "text": "Agora o tiro vai sair sempre, em todo quadro. O que você acha que vai aparecer? Clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-flood",
+          "text": "Em todo quadro saiu mais um tiro, sem a tecla. E se o tiro sair na hora em que algo acontece? Escolha Na hora em que algo acontece e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-try-start",
+          "text": "Agora o tiro vai sair uma vez, no começo. O que você acha que vai aparecer? Clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-once",
+          "text": "No começo saiu um tiro, e depois mais nenhum. E com os outros jeitos? Escolha Sempre, em todo quadro, ou Na hora em que algo acontece, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-complete",
+          "text": "Uma vez, no começo, sai um tiro só. Sempre, em todo quadro, sai um tiro novo a cada quadro. Na hora em que algo acontece, o tiro espera e sai quando a tecla é apertada. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-dino-start",
+          "text": "Quando o Dino anda um pouquinho? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-try-once",
+          "text": "O Dino vai andar um pouquinho uma vez, no começo. O que você acha que acontece nos outros quadros? Clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-try-always",
+          "text": "O Dino vai andar um pouquinho sempre, em todo quadro. O que você acha que muda? Clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-once",
+          "text": "No começo, o Dino andou um pouquinho uma vez só, e nos outros quadros ficou parado. E se o Dino andar sempre, em todo quadro? Escolha Sempre, em todo quadro, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-always",
+          "text": "Em todo quadro, o Dino andou mais um pouquinho, até sair da tela. E se o Dino andar uma vez só, no começo? Escolha Uma vez, no começo, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-complete",
+          "text": "Uma vez, no começo, o Dino andou um pouquinho e parou, como o tênis que a gente calça uma vez antes de correr. Sempre, em todo quadro, o Dino continuou andando até sair da tela, como os passos que se repetem a corrida inteira. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-dino-som-start",
+          "text": "Quando toca o som do pulo? Escolha um jeito: Uma vez, no começo, Sempre, em todo quadro, ou Na hora em que algo acontece. Depois clique em Começar o jogo e observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-event",
+          "text": "Agora o som do pulo está esperando uma coisa acontecer: a tecla ser apertada. O que você acha que acontece sem a tecla? Clique em Começar o jogo, deixe o jogo terminar sem clicar em Apertar a tecla e observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-event",
+          "text": "Sem a tecla, o som não tocou nenhuma vez: ficou esperando. E com a tecla, o que acontece? Clique em Apertar a tecla e observe o contador de sons e a notinha."
+        },
+        {
+          "id": "once-vs-always-dino-som-key",
+          "text": "Na hora em que a tecla foi apertada, o som tocou. E sem a tecla, o que acontece? Clique em Jogar de novo, depois em Começar o jogo, e deixe o jogo terminar sem clicar em Apertar a tecla. Observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-event-loop",
+          "text": "Na hora em que a tecla foi apertada, o som tocou; sem a tecla, não tocou nenhuma vez. E se o som tocar sempre, em todo quadro? Escolha Sempre, em todo quadro, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-loop",
+          "text": "Agora o som vai tocar sempre, em todo quadro. O que você acha que acontece com o contador de sons? Clique em Começar o jogo e observe."
+        },
+        {
+          "id": "once-vs-always-dino-som-loop",
+          "text": "Em todo quadro, o som tocou de novo, sem a tecla ser apertada. E se o som esperar a hora em que algo acontece? Escolha Na hora em que algo acontece e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-start",
+          "text": "Agora o som vai tocar uma vez, no começo. O que você acha que acontece com o contador de sons? Clique em Começar o jogo e observe."
+        },
+        {
+          "id": "once-vs-always-dino-som-once",
+          "text": "No começo, o som tocou uma vez, e depois mais nenhuma. E se o som esperar a hora em que algo acontece? Escolha Na hora em que algo acontece e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-complete",
+          "text": "Na hora em que algo acontece, o som espera: sem a tecla, não toca nenhuma vez, e na hora em que a tecla é apertada, toca. Não toca no começo nem repete sozinho, como a campainha de casa, que fica quieta até alguém tocar. Pode testar os outros jeitos e comparar quando quiser."
+        }
+      ]
+    },
+    "dia-1/objetos-no-grupo": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "cleanup",
+        "cast": {
+          "obstacle": {
+            "name": "tiro",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "tiro-cima",
+            "exit": "top",
+            "incoming": false
+          },
+          "goals": ["invisible-stored", "rule-removes"],
+          "goalCopy": {
+            "invisible-stored": {
+              "label": "O tiro saiu da tela e continuou no grupo",
+              "pedido": "Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois tiros saírem da tela e observe o grupo."
+            },
+            "rule-removes": {
+              "label": "Tirando quem sai da tela, o tiro saiu do grupo",
+              "pedido": "Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois tiros saírem. Compare o grupo."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "cleanup-start",
+          "text": "Os tiros sobem e saem pela borda de cima da tela. Quando um tiro sai da tela, ele sai também do jogo? Clique em Passar 1 segundo até dois tiros saírem. Observe a tela, os bastidores e o número de tiros no grupo, que é a lista de tiros que o jogo guarda."
+        },
+        {
+          "id": "cleanup-on-first",
+          "text": "Agora o jogo tira quem sai da tela. O que você acha que acontece nos bastidores quando um tiro passa da borda de cima? Clique em Passar 1 segundo até dois tiros saírem e observe os bastidores e o número de tiros no grupo."
+        },
+        {
+          "id": "cleanup-stored",
+          "text": "Os tiros sumiram da tela, mas continuaram no grupo: o jogo ainda guarda e move cada um, mesmo sem ninguém ver. E se o jogo tirar do grupo quem sai da tela? Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois tiros saírem. Compare os bastidores."
+        },
+        {
+          "id": "cleanup-removed",
+          "text": "Tirando quem sai da tela, cada tiro que passou da borda de cima saiu do grupo e foi para os removidos. E sem isso, o que acontece com o tiro que sai da tela? Clique em Parar de tirar do jogo quem sai da tela e passe o tempo até dois tiros saírem. Observe os bastidores."
+        },
+        {
+          "id": "cleanup-complete",
+          "text": "Você comparou os dois jeitos. Sair da tela não tira o tiro do jogo: ele continua no grupo, e o jogo segue cuidando dele à toa. Quem tira é o próprio jogo, quando está combinado tirar os tiros que passam da borda. Pode continuar testando quando quiser."
+        },
+        {
+          "id": "cleanup-dino-start",
+          "text": "Os cactos correm para a esquerda e saem pela borda da tela. Quando um cacto sai da tela, ele sai também do jogo? Clique em Passar 1 segundo até dois cactos saírem. Observe a tela, os bastidores e o número de cactos no grupo, que é a lista de cactos que o jogo guarda."
+        },
+        {
+          "id": "cleanup-dino-on-first",
+          "text": "Agora o jogo tira quem sai da tela. O que você acha que acontece nos bastidores quando um cacto passa da borda da esquerda? Clique em Passar 1 segundo até dois cactos saírem e observe os bastidores e o número de cactos no grupo."
+        },
+        {
+          "id": "cleanup-dino-stored",
+          "text": "Os cactos sumiram da tela, mas continuaram no grupo: o jogo ainda guarda e move cada um, mesmo sem ninguém ver, como o que fica esquecido no fundo da mochila. E se o jogo tirar do grupo quem sai da tela? Clique em Tirar do jogo quem sai da tela e, depois, em Passar 1 segundo até mais dois cactos saírem. Compare os bastidores."
+        },
+        {
+          "id": "cleanup-dino-removed",
+          "text": "Tirando quem sai da tela, cada cacto que passou da borda da esquerda saiu do grupo e foi para os removidos. E sem isso, o que acontece com o cacto que sai da tela? Clique em Parar de tirar do jogo quem sai da tela e, depois, em Passar 1 segundo até dois cactos saírem. Observe os bastidores."
+        },
+        {
+          "id": "cleanup-dino-complete",
+          "text": "Você comparou os dois jeitos. Sair da tela não tira o cacto do jogo: ele continua no grupo, e o jogo segue cuidando dele à toa. Quem tira é o próprio jogo, quando está combinado tirar os cactos que passam da borda. Assim, o grupo fica só com os cactos que ainda vêm pela pista. Pode continuar testando quando quiser."
+        }
+      ]
+    },
+    "dia-1/escrito-e-lido": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "fixed-vs-read",
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["same-spot", "follows", "box-marks"],
+          "goalCopy": {
+            "same-spot": {
+              "label": "Com o número escrito, os tiros nasceram no mesmo lugar",
+              "pedido": "Escolha Número escrito: 400, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas."
+            },
+            "follows": {
+              "label": "Com o número lido, o tiro nasceu onde a nave estava",
+              "pedido": "Escolha Número lido da nave, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas."
+            },
+            "box-marks": {
+              "label": "O tiro sai do meio da nave, da beirada de cima",
+              "pedido": "Com o número lido, clique em Mostrar as marcas da nave e atire. Observe de onde o tiro sai."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "fixed-vs-read-start",
+          "text": "O tiro precisa de um número que diga onde ele nasce. Agora esse número está escrito: 400. Clique em Atirar, mude a nave de lugar e atire de novo. Onde nasce cada tiro? Observe as marcas."
+        },
+        {
+          "id": "fixed-vs-read-start-read",
+          "text": "O tiro precisa de um número que diga onde ele nasce. Agora esse número é lido da nave. Clique em Atirar, mude a nave de lugar e atire de novo. Onde nasce cada tiro? Observe as marcas."
+        },
+        {
+          "id": "fixed-vs-read-read",
+          "text": "Com o número escrito, os dois tiros nasceram no mesmo lugar, mesmo com a nave em outro lugar: 400 é sempre 400. E se o tiro ler o lugar da nave na hora de nascer? Escolha Número lido da nave, atire, mude a nave de lugar e atire de novo. Compare as marcas."
+        },
+        {
+          "id": "fixed-vs-read-fixed",
+          "text": "Com o número lido, cada tiro nasceu onde a nave estava naquela hora. E com um número escrito, o que acontece? Escolha Número escrito: 400, atire, mude a nave de lugar e atire de novo. Compare as marcas."
+        },
+        {
+          "id": "fixed-vs-read-after-marks",
+          "text": "O tiro saiu do meio da nave, da beirada de cima. E quando a nave muda de lugar, o tiro muda junto? Atire, mude a nave de lugar e atire de novo, com o número escrito e com o número lido. Compare as marcas."
+        },
+        {
+          "id": "fixed-vs-read-marks",
+          "text": "O número escrito é sempre o mesmo, e o número lido é o de agora. Mas de que ponto da nave o tiro sai? Clique em Mostrar as marcas da nave e, com o número lido, atire. Observe de onde o tiro sai."
+        },
+        {
+          "id": "fixed-vs-read-complete",
+          "text": "Você comparou os dois números. Escrito, o 400 não muda, e o tiro nasce sempre no mesmo lugar. Lido, o número vem de onde ele está guardado, o lugar da nave, e o tiro nasce no meio dela, na beirada de cima, onde quer que ela esteja. Pode continuar testando."
+        }
+      ]
+    },
+    "dia-2/direcao-do-tiro": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "velocity",
+        "cast": {
+          "hero": {
+            "name": "tiro",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "actions": [
+            {
+              "type": "velocity",
+              "vx": 5,
+              "vy": 0
+            },
+            {
+              "type": "advance",
+              "seconds": 1.5
+            },
+            {
+              "type": "velocity",
+              "vx": 0,
+              "vy": 0
+            }
+          ],
+          "goals": ["up", "down"],
+          "goalCopy": {
+            "up": {
+              "label": "Com um número negativo, o tiro subiu",
+              "pedido": "Escolha um número negativo, como −9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y."
+            },
+            "down": {
+              "label": "Com um número positivo, o tiro desceu",
+              "pedido": "Escolha um número positivo, como 9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "velocity-start",
+          "text": "O tiro está parado no meio da tela. A velocidade para baixo diz quanto o y do tiro muda em cada quadro. O que você acha que acontece com um número negativo, como −9? Escolha −9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o número do y. Quem quiser pode começar por um número positivo."
+        },
+        {
+          "id": "velocity-negative",
+          "text": "A velocidade para baixo está num número negativo. Para que lado o tiro vai andar? Clique em Avançar 1 quadro, um de cada vez, e observe o tiro e o y em cada quadro."
+        },
+        {
+          "id": "velocity-positive",
+          "text": "A velocidade para baixo está num número positivo. Para que lado o tiro vai andar? Clique em Avançar 1 quadro, um de cada vez, e observe o tiro e o y em cada quadro."
+        },
+        {
+          "id": "velocity-up",
+          "text": "Com o número negativo, o y diminuiu um pouco em cada quadro, e o tiro subiu: na tela, y menor fica mais para cima. E com um número positivo, como 9, o que muda? Escolha 9 e avance alguns quadros, observando o tiro e o y."
+        },
+        {
+          "id": "velocity-down",
+          "text": "Com o número positivo, o y aumentou um pouco em cada quadro, e o tiro desceu: na tela, y maior fica mais para baixo. E com um número negativo, como −9, o que muda? Escolha −9 e avance alguns quadros, observando o tiro e o y."
+        },
+        {
+          "id": "velocity-complete",
+          "text": "Você comparou os dois sentidos. Em cada quadro, o jogo soma a velocidade ao y: com um número negativo, o y diminui e o tiro sobe; com um número positivo, o y aumenta e o tiro desce. Quanto maior o número, maior o passo de cada quadro. Pode continuar testando quando quiser."
+        },
+        {
+          "id": "velocity-dino-start",
+          "text": "O cacto está parado na pista. A velocidade para o lado diz quanto o x do cacto muda em cada quadro. O que você acha que acontece com um número positivo, como 5? Escolha 5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o número do x. Quem quiser pode começar pelo −5."
+        },
+        {
+          "id": "velocity-dino-positive",
+          "text": "A velocidade para o lado está num número positivo. Para que lado o cacto vai andar? Clique em Avançar 1 quadro três vezes, um de cada vez, e observe o cacto e o x em cada quadro."
+        },
+        {
+          "id": "velocity-dino-negative",
+          "text": "A velocidade para o lado está num número negativo. Para que lado o cacto vai andar? Clique em Avançar 1 quadro três vezes, um de cada vez, e observe o cacto e o x em cada quadro."
+        },
+        {
+          "id": "velocity-dino-right",
+          "text": "Com o número positivo, o x aumentou 5 em cada quadro, e o cacto foi para a direita. E com um número negativo, como −5, o que muda? Escolha −5 e clique em Avançar 1 quadro três vezes, observando o cacto e o x."
+        },
+        {
+          "id": "velocity-dino-left",
+          "text": "Com o número negativo, o x diminuiu 5 em cada quadro, e o cacto foi para a esquerda: o sinal de menos inverte a direção. E com um número positivo, como 5, o que muda? Escolha 5 e clique em Avançar 1 quadro três vezes, observando o cacto e o x."
+        },
+        {
+          "id": "velocity-dino-zero",
+          "text": "Com 5, o cacto foi para a direita; com −5, para a esquerda. E com a velocidade 0, o que acontece quando os quadros passam? Escolha 0 e clique em Avançar 1 quadro algumas vezes. Observe o cacto e o x."
+        },
+        {
+          "id": "velocity-dino-stopped",
+          "text": "Com 5, o cacto foi para a direita, e com 0 ficou parado: juntar zero ao x não muda nada. E com um número negativo, como −5, o que muda? Escolha −5 e clique em Avançar 1 quadro três vezes, observando o cacto e o x."
+        },
+        {
+          "id": "velocity-dino-complete",
+          "text": "Você comparou os três números. Em cada quadro, o jogo soma a velocidade ao x: com 5, o x aumenta e o cacto vai para a direita; com −5, o x diminui e o cacto vai para a esquerda; com 0, nada muda, e o cacto fica parado. Os cactos do jogo nascem na direita, por isso usam −5 para atravessar a pista. Pode continuar testando quando quiser."
+        }
+      ]
+    },
+    "chuva-de-asteroides/intervalo-das-pedras": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "spawn",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "pedra-segundos",
+            "unit": "seconds",
+            "intervals": [0.5, 1, 1.5, 2],
+            "falling": true
+          },
+          "goals": ["every-frame", "with-timer"],
+          "goalCopy": {
+            "every-frame": {
+              "label": "Em todo quadro, as pedras nasceram coladas",
+              "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+            },
+            "with-timer": {
+              "label": "Com uma espera, sobrou espaço entre as pedras",
+              "pedido": "Escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "spawn-start",
+          "text": "Neste jogo, as pedras nascem lá em cima e caem. Agora nasce uma pedra nova em todo quadro. Quantas pedras você acha que nascem em um segundo, e como elas ficam na tela? Clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+        },
+        {
+          "id": "spawn-wait",
+          "text": "Agora cada pedra nova espera um tempo para nascer. O que você acha que muda na tela? Deixe o tempo passar até nascerem duas pedras e observe onde cada uma aparece."
+        },
+        {
+          "id": "spawn-wall",
+          "text": "Em todo quadro nasceu uma pedra nova: em um segundo foram umas trinta, uma colada na outra, como uma parede. E se cada pedra nova esperar um pouco para nascer? Escolha A cada 1,5 segundos e deixe passar pelo menos 3 segundos. Observe as pedras e quantas nasceram."
+        },
+        {
+          "id": "spawn-gap",
+          "text": "Com a espera, nasceu uma pedra de cada vez, e sobrou espaço entre uma e outra. E se uma pedra nova nascer em todo quadro, sem esperar? Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras."
+        },
+        {
+          "id": "spawn-complete-two",
+          "text": "Você comparou os dois jeitos. Em todo quadro, nascem umas trinta pedras por segundo, coladas. Com uma espera, nasce uma, espera e nasce outra, com espaço entre elas. Experimente outros intervalos e compare quantas pedras nascem no mesmo tempo."
+        }
+      ]
+    },
+    "chuva-de-asteroides/posicao-sorteada": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "random",
+        "cast": {
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "pedra-acima",
+            "axis": "above",
+            "speedModule": false
+          },
+          "goals": ["positions", "above"],
+          "goalCopy": {
+            "positions": {
+              "label": "Cada sorteio pode dar um lugar diferente",
+              "pedido": "Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua."
+            },
+            "above": {
+              "label": "A pedra nasce acima da tela e entra caindo",
+              "pedido": "Clique em Passar 1 segundo e observe de onde a pedra entra na tela."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "random-start",
+          "text": "Cada pedra nova nasce num lugar que o jogo escolhe na hora. Ele escolhe sempre o mesmo lugar? Clique em Sortear um lugar algumas vezes e observe as marquinhas na régua e o x da pedra."
+        },
+        {
+          "id": "random-once",
+          "text": "Saiu um lugar, e a régua ganhou uma marquinha. E no próximo sorteio, que lugar sai? Clique de novo em Sortear um lugar e compare as marquinhas."
+        },
+        {
+          "id": "random-places",
+          "text": "Cada sorteio pode dar um lugar diferente, sempre entre x 90 e x 390: o jogo sorteia, e ninguém sabe antes onde a pedra vai aparecer. E na hora em que nasce, a pedra fica dentro ou fora da tela? Clique em Passar 1 segundo e observe a pedra e a borda de cima."
+        },
+        {
+          "id": "random-above",
+          "text": "A pedra nasce acima da borda de cima, fora da tela, e entra caindo: assim ninguém vê a pedra surgir do nada. E o lugar onde ela nasce é sempre o mesmo? Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua."
+        },
+        {
+          "id": "random-complete",
+          "text": "Você viu as duas coisas. O jogo sorteia o x de cada pedra, entre 90 e 390, e cada sorteio pode dar um lugar diferente. E a pedra nasce acima da tela e entra caindo. Pode continuar sorteando quando quiser."
+        },
+        {
+          "id": "random-dino-start",
+          "text": "Cada cacto novo nasce num lugar que o jogo sorteia na hora, depois da borda da direita. Sai sempre o mesmo lugar? Clique em Sortear um lugar algumas vezes e observe as marquinhas na régua."
+        },
+        {
+          "id": "random-dino-once",
+          "text": "Saiu um lugar, e a régua ganhou uma marquinha. E no próximo sorteio, que lugar sai? Clique de novo em Sortear um lugar e compare as marquinhas."
+        },
+        {
+          "id": "random-dino-places",
+          "text": "Saíram lugares diferentes, todos entre 500 e 560, depois da borda da tela: o jogo sorteia, e ninguém sabe antes onde o cacto vai nascer. E um lugar pode sair de novo? Clique em Sortear um lugar mais algumas vezes e observe quantas marquinhas cada lugar ganha."
+        },
+        {
+          "id": "random-dino-repeat-first",
+          "text": "O mesmo lugar saiu duas vezes: num sorteio, um resultado pode repetir. E os outros lugares da régua, também saem? Clique em Sortear um lugar mais algumas vezes e compare as marquinhas."
+        },
+        {
+          "id": "random-dino-repeat",
+          "text": "Um lugar saiu de novo: num sorteio, o mesmo resultado pode repetir, sempre dentro dos limites da régua. E a velocidade de cada cacto, o jogo também pode sortear? Clique em Sortear uma velocidade algumas vezes e compare as raias."
+        },
+        {
+          "id": "random-dino-speed-once",
+          "text": "Saiu uma velocidade, e o cacto correu um segundo na raia dele. E no próximo sorteio, sai a mesma velocidade? Clique de novo em Sortear uma velocidade e compare as raias."
+        },
+        {
+          "id": "random-dino-speeds",
+          "text": "Saíram −5 e −6, e o cacto −6 chegou mais longe em um segundo: ele anda mais em cada quadro. E o lugar onde cada cacto nasce, também é sorteado? Clique em Sortear um lugar algumas vezes e observe as marquinhas na régua."
+        },
+        {
+          "id": "random-dino-complete",
+          "text": "Você viu as três coisas. O jogo sorteia o lugar de cada cacto, sempre entre 500 e 560, e um lugar pode sair de novo, como num dado: ninguém sabe antes qual número vai sair, e o mesmo número pode sair outra vez. E também sorteia a velocidade: o cacto −6 anda mais em cada quadro e chega mais longe que o −5. Pode continuar sorteando quando quiser."
+        }
+      ]
+    },
+    "dia-3/trombada": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "collision-pair",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["whole-group", "just-the-pair", "others-stay"],
+          "goalCopy": {
+            "whole-group": {
+              "label": "Tirando os grupos, saíram todos os tiros e todas as pedras",
+              "pedido": "Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores."
+            },
+            "just-the-pair": {
+              "label": "Tirando só quem encostou, saíram só o tiro e a pedra da trombada",
+              "pedido": "Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores."
+            },
+            "others-stay": {
+              "label": "As outras pedras continuaram o caminho delas",
+              "pedido": "Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "collision-pair-start",
+          "text": "Três tiros sobem e três pedras descem, mas só o tiro do meio vai encostar numa pedra. Quando os dois se encostarem, o jogo vai tirar o grupo dos tiros e o grupo das pedras. Quantos você acha que vão sair do jogo? Clique em Passar 1 segundo e observe os dois contadores."
+        },
+        {
+          "id": "collision-pair-start-alias",
+          "text": "Três tiros sobem e três pedras descem, mas só o tiro do meio vai encostar numa pedra. Quando os dois se encostarem, o jogo vai tirar só o tiro e a pedra que encostaram. E os outros? Clique em Passar 1 segundo e observe os dois contadores."
+        },
+        {
+          "id": "collision-pair-mixed",
+          "text": "Agora um lado tira o grupo inteiro e o outro tira só quem encostou. Para comparar, escolha os dois do mesmo jeito: primeiro O grupo dos tiros e O grupo das pedras. Depois clique em Passar 1 segundo e observe os contadores."
+        },
+        {
+          "id": "collision-pair-group",
+          "text": "Tirando os grupos, saíram todos os tiros e todas as pedras, mesmo só um par tendo se encostado. E se o jogo tirar só o tiro e a pedra que encostaram? Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e compare os contadores."
+        },
+        {
+          "id": "collision-pair-watch",
+          "text": "Tirando só quem encostou, saíram só o tiro e a pedra que se bateram. E as outras duas pedras, o que acontece com elas depois da trombada? Continue clicando em Passar 1 segundo e observe as pedras."
+        },
+        {
+          "id": "collision-pair-watch-again",
+          "text": "Falta ver o que acontece com as outras pedras depois de uma trombada que tira só quem encostou. Escolha O tiro que encostou e A pedra que encostou, passe o tempo até a trombada e continue observando as pedras."
+        },
+        {
+          "id": "collision-pair-alias",
+          "text": "Tirando só quem encostou, saíram só o tiro e a pedra que se bateram, e as outras pedras seguiram o caminho delas até a borda de baixo. E se o jogo tirar os grupos inteiros? Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e compare os contadores."
+        },
+        {
+          "id": "collision-pair-complete",
+          "text": "Você comparou os dois jeitos. Tirando o grupo, sai todo mundo dele, até quem não encostou em nada. Tirando só quem encostou, saem o tiro e a pedra daquela trombada, e os outros seguem o caminho deles. Pode continuar testando quando quiser."
+        }
+      ]
+    },
+    "pontos/caixa-de-pontos": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "variable",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["stored", "changed-hidden", "shown"],
+          "goalCopy": {
+            "stored": {
+              "label": "A caixa pontos guardou o número, e a tela continuou sem número",
+              "pedido": "Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo."
+            },
+            "changed-hidden": {
+              "label": "Com o número fora da tela, o acerto mudou pontos",
+              "pedido": "Com o número fora da tela, clique em Acertar um asteroide e compare a caixa pontos com a tela."
+            },
+            "shown": {
+              "label": "Mostrar o número não mudou o que estava guardado",
+              "pedido": "Clique em Mostrar o número na tela e compare com a caixa pontos."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "variable-start",
+          "text": "Um jogo pode guardar um número sem mostrar para ninguém. Clique em Guardar o número 0 e observe duas coisas: a caixa pontos e a tela do jogo. O que aparece em cada uma?"
+        },
+        {
+          "id": "variable-stored",
+          "text": "O número ficou guardado na caixa pontos, e a tela continuou sem número: guardar não é mostrar. E se a nave acertar um asteroide agora, com o número fora da tela, o que acontece com pontos? Clique em Acertar um asteroide e compare a caixa com a tela."
+        },
+        {
+          "id": "variable-hide",
+          "text": "O número guardado está na tela. E se ele sair da tela, continua guardado e mudando? Clique em Tirar o número da tela, depois em Acertar um asteroide, e compare a caixa pontos com a tela."
+        },
+        {
+          "id": "variable-shown",
+          "text": "A tela mostrou o número que já estava guardado, como um recado para quem joga, e pontos continuou igual. E se o número sair da tela, ele continua mudando? Clique em Tirar o número da tela, depois em Acertar um asteroide, e compare a caixa pontos com a tela."
+        },
+        {
+          "id": "variable-shown-hidden",
+          "text": "A tela mostrou o número que já estava guardado, como um recado para quem joga, e pontos continuou igual. Agora o número está fora da tela. E se a nave acertar um asteroide, pontos muda mesmo sem aparecer? Clique em Acertar um asteroide e compare a caixa com a tela."
+        },
+        {
+          "id": "variable-hidden",
+          "text": "Pontos mudou, e a tela nem ficou sabendo: o número guardado muda mesmo escondido. E quando a tela mostrar o número, qual vai aparecer? Clique em Mostrar o número na tela e compare com a caixa pontos."
+        },
+        {
+          "id": "variable-complete",
+          "text": "Você comparou guardar e mostrar. O jogo guarda o número na caixa pontos, e cada acerto muda esse número, apareça ele ou não. Mostrar é deixar um recado na tela: o placar conta o número guardado, sem mudar nada nele. Uma caixa que guarda um número se chama variável. Pode continuar testando."
+        },
+        {
+          "id": "variable-dino-start",
+          "text": "Um jogo pode guardar um número sem mostrar para ninguém. Clique em Guardar o número 0 e observe duas coisas: a caixa pontos e a tela do jogo. O que aparece em cada uma?"
+        },
+        {
+          "id": "variable-dino-stored",
+          "text": "O número ficou guardado na caixa pontos, e a tela continuou sem número: guardar não é mostrar. E se o Dino ganhar um ponto agora, com o número fora da tela, o que acontece com pontos? Clique em Ganhar 1 ponto e compare a caixa com a tela."
+        },
+        {
+          "id": "variable-dino-hide",
+          "text": "O número guardado está na tela. E se o número sair da tela, continua guardado e mudando? Clique em Tirar o número da tela, depois em Ganhar 1 ponto, e compare a caixa pontos com a tela."
+        },
+        {
+          "id": "variable-dino-shown",
+          "text": "A tela mostrou o número que já estava guardado, como um recado para quem joga, e pontos continuou igual. E se o número sair da tela, continua mudando? Clique em Tirar o número da tela, depois em Ganhar 1 ponto, e compare a caixa pontos com a tela."
+        },
+        {
+          "id": "variable-dino-shown-hidden",
+          "text": "A tela mostrou o número que já estava guardado, como um recado para quem joga, e pontos continuou igual. Agora o número está fora da tela. E se o Dino ganhar um ponto, pontos muda mesmo sem aparecer? Clique em Ganhar 1 ponto e compare a caixa com a tela."
+        },
+        {
+          "id": "variable-dino-hidden",
+          "text": "Pontos mudou, e a tela nem ficou sabendo: o número guardado muda mesmo escondido. E quando a tela mostrar o número, qual vai aparecer? Clique em Mostrar o número na tela e compare com a caixa pontos."
+        },
+        {
+          "id": "variable-dino-complete",
+          "text": "Você comparou guardar, mudar e mostrar. O jogo guarda o número na caixa pontos, e cada ponto ganho muda esse número, apareça ele ou não, como quem conta os gols de cabeça durante a partida: o número muda mesmo sem ninguém ver. Mostrar é como o placar, onde o número aparece para todo mundo: a tela lê o número guardado, sem mudar nada nele. Uma caixa que guarda um número se chama variável. Pode continuar testando."
+        }
+      ]
+    },
+    "dia-4/vidas-no-comeco": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "once-vs-always",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "uma-ficha-vidas",
+            "areas": ["start", "loop"],
+            "cards": [
+              {
+                "id": "lives",
+                "kind": "lives",
+                "label": "Dar três vidas à nave"
+              }
+            ],
+            "hitEveryFrames": 3
+          },
+          "goals": ["once", "lives-loop"],
+          "goalCopy": {
+            "once": {
+              "label": "Uma vez, no começo: cada batida tirou uma vida",
+              "pedido": "Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas."
+            },
+            "lives-loop": {
+              "label": "Sempre, em todo quadro: as vidas voltaram a encher",
+              "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe as vidas e as batidas."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "once-vs-always-nave-start",
+          "text": "Quando a nave anda um pouquinho? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-try-once",
+          "text": "A nave vai andar um pouquinho uma vez, no começo. O que você acha que acontece nos outros quadros? Clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-try-always",
+          "text": "A nave vai andar um pouquinho sempre, em todo quadro. O que você acha que muda? Clique em Começar o jogo e observe a nave e os quadros."
+        },
+        {
+          "id": "once-vs-always-nave-once",
+          "text": "No começo, a nave andou um pouquinho uma vez só, e nos outros quadros ficou parada. E se ela andar sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-nave-always",
+          "text": "Em todo quadro, a nave andou mais um pouquinho, até sair da tela. E se ela andar uma vez só, no começo? Escolha Uma vez, no começo, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-nave-complete",
+          "text": "Uma vez, no começo, a nave andou um pouquinho e parou. Sempre, em todo quadro, ela continuou andando até sair da tela. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-vidas-start",
+          "text": "Quando a nave ganha três vidas? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe as vidas e as batidas do asteroide."
+        },
+        {
+          "id": "once-vs-always-vidas-try-once",
+          "text": "A nave vai ganhar três vidas uma vez, no começo. O que você acha que acontece com as vidas quando o asteroide bater? Clique em Começar o jogo e observe as vidas e as batidas."
+        },
+        {
+          "id": "once-vs-always-vidas-try-always",
+          "text": "A nave vai ganhar três vidas sempre, em todo quadro. O que você acha que acontece com as vidas quando o asteroide bater? Clique em Começar o jogo e observe as vidas e as batidas."
+        },
+        {
+          "id": "once-vs-always-vidas-once",
+          "text": "No começo, a nave ganhou três vidas uma vez só, e cada batida tirou uma. E se ela ganhar três vidas sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-vidas-always",
+          "text": "Em todo quadro, as vidas voltaram a ser três, mesmo depois das batidas. E se a nave ganhar as vidas uma vez só, no começo? Escolha Uma vez, no começo, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-vidas-complete",
+          "text": "Uma vez, no começo, as vidas chegam uma vez só, e as batidas vão tirando até acabar. Sempre, em todo quadro, as vidas voltam a encher depois de cada batida. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-tiro-start",
+          "text": "Quando sai um tiro? Escolha um jeito: Uma vez, no começo, Sempre, em todo quadro, ou Na hora em que algo acontece. Depois clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-try-event",
+          "text": "Agora o tiro está esperando uma coisa acontecer: a tecla ser apertada. O que você acha que acontece sem a tecla? Clique em Começar o jogo, deixe o jogo terminar sem clicar em Apertar a tecla e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-event",
+          "text": "Sem a tecla, nenhum tiro saiu: o tiro ficou esperando. E com a tecla? Clique em Apertar a tecla e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-key",
+          "text": "Na hora em que a tecla foi apertada, saiu um tiro. E sem a tecla, o que acontece? Clique em Jogar de novo, depois em Começar o jogo, e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-event-flood",
+          "text": "Na hora em que a tecla foi apertada, saiu um tiro; sem a tecla, nenhum. E se o tiro sair sempre, em todo quadro? Escolha Sempre, em todo quadro, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-try-loop",
+          "text": "Agora o tiro vai sair sempre, em todo quadro. O que você acha que vai aparecer? Clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-flood",
+          "text": "Em todo quadro saiu mais um tiro, sem a tecla. E se o tiro sair na hora em que algo acontece? Escolha Na hora em que algo acontece e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-try-start",
+          "text": "Agora o tiro vai sair uma vez, no começo. O que você acha que vai aparecer? Clique em Começar o jogo e observe os tiros."
+        },
+        {
+          "id": "once-vs-always-tiro-once",
+          "text": "No começo saiu um tiro, e depois mais nenhum. E com os outros jeitos? Escolha Sempre, em todo quadro, ou Na hora em que algo acontece, e comece o jogo."
+        },
+        {
+          "id": "once-vs-always-tiro-complete",
+          "text": "Uma vez, no começo, sai um tiro só. Sempre, em todo quadro, sai um tiro novo a cada quadro. Na hora em que algo acontece, o tiro espera e sai quando a tecla é apertada. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-dino-start",
+          "text": "Quando o Dino anda um pouquinho? Escolha Uma vez, no começo, ou Sempre, em todo quadro. Depois clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-try-once",
+          "text": "O Dino vai andar um pouquinho uma vez, no começo. O que você acha que acontece nos outros quadros? Clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-try-always",
+          "text": "O Dino vai andar um pouquinho sempre, em todo quadro. O que você acha que muda? Clique em Começar o jogo e observe o Dino e os quadros."
+        },
+        {
+          "id": "once-vs-always-dino-once",
+          "text": "No começo, o Dino andou um pouquinho uma vez só, e nos outros quadros ficou parado. E se o Dino andar sempre, em todo quadro? Escolha Sempre, em todo quadro, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-always",
+          "text": "Em todo quadro, o Dino andou mais um pouquinho, até sair da tela. E se o Dino andar uma vez só, no começo? Escolha Uma vez, no começo, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-complete",
+          "text": "Uma vez, no começo, o Dino andou um pouquinho e parou, como o tênis que a gente calça uma vez antes de correr. Sempre, em todo quadro, o Dino continuou andando até sair da tela, como os passos que se repetem a corrida inteira. Pode escolher de novo e comparar quando quiser."
+        },
+        {
+          "id": "once-vs-always-dino-som-start",
+          "text": "Quando toca o som do pulo? Escolha um jeito: Uma vez, no começo, Sempre, em todo quadro, ou Na hora em que algo acontece. Depois clique em Começar o jogo e observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-event",
+          "text": "Agora o som do pulo está esperando uma coisa acontecer: a tecla ser apertada. O que você acha que acontece sem a tecla? Clique em Começar o jogo, deixe o jogo terminar sem clicar em Apertar a tecla e observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-event",
+          "text": "Sem a tecla, o som não tocou nenhuma vez: ficou esperando. E com a tecla, o que acontece? Clique em Apertar a tecla e observe o contador de sons e a notinha."
+        },
+        {
+          "id": "once-vs-always-dino-som-key",
+          "text": "Na hora em que a tecla foi apertada, o som tocou. E sem a tecla, o que acontece? Clique em Jogar de novo, depois em Começar o jogo, e deixe o jogo terminar sem clicar em Apertar a tecla. Observe o contador de sons."
+        },
+        {
+          "id": "once-vs-always-dino-som-event-loop",
+          "text": "Na hora em que a tecla foi apertada, o som tocou; sem a tecla, não tocou nenhuma vez. E se o som tocar sempre, em todo quadro? Escolha Sempre, em todo quadro, e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-loop",
+          "text": "Agora o som vai tocar sempre, em todo quadro. O que você acha que acontece com o contador de sons? Clique em Começar o jogo e observe."
+        },
+        {
+          "id": "once-vs-always-dino-som-loop",
+          "text": "Em todo quadro, o som tocou de novo, sem a tecla ser apertada. E se o som esperar a hora em que algo acontece? Escolha Na hora em que algo acontece e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-try-start",
+          "text": "Agora o som vai tocar uma vez, no começo. O que você acha que acontece com o contador de sons? Clique em Começar o jogo e observe."
+        },
+        {
+          "id": "once-vs-always-dino-som-once",
+          "text": "No começo, o som tocou uma vez, e depois mais nenhuma. E se o som esperar a hora em que algo acontece? Escolha Na hora em que algo acontece e clique em Começar o jogo."
+        },
+        {
+          "id": "once-vs-always-dino-som-complete",
+          "text": "Na hora em que algo acontece, o som espera: sem a tecla, não toca nenhuma vez, e na hora em que a tecla é apertada, toca. Não toca no começo nem repete sozinho, como a campainha de casa, que fica quieta até alguém tocar. Pode testar os outros jeitos e comparar quando quiser."
+        }
+      ]
+    },
+    "dia-4/respiro": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "invincibility",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["no-shield", "window", "expires"],
+          "goalCopy": {
+            "no-shield": {
+              "label": "Sem proteção, cada pedra tirou uma vida",
+              "pedido": "Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas."
+            },
+            "window": {
+              "label": "Com 45 quadros, só a primeira pedra tirou vida",
+              "pedido": "Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas."
+            },
+            "expires": {
+              "label": "Com 15 quadros, a proteção acabou antes da terceira pedra",
+              "pedido": "Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "invincibility-start",
+          "text": "Três pedras vão bater na nave, nos quadros 1, 10 e 30. Agora a nave não ganha proteção nenhuma depois de bater. Quantas vidas você acha que sobram? Clique em Avançar até a próxima pedra, uma pedra de cada vez, e observe as vidas."
+        },
+        {
+          "id": "invincibility-try",
+          "text": "Agora, depois de bater, a nave ganha um tempinho de proteção, que conta para trás, um quadro de cada vez. Quantas vidas você acha que sobram depois das três pedras? Clique em Avançar até a próxima pedra e observe as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-running",
+          "text": "Continue clicando em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas e quantos quadros de proteção ainda restam em cada batida."
+        },
+        {
+          "id": "invincibility-none",
+          "text": "Sem proteção, cada pedra tirou uma vida: as três batidas levaram as três vidas. E se a nave ganhar um tempinho de proteção depois de bater? Escolha 45 quadros e avance pedra por pedra, observando as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-long",
+          "text": "Com 45 quadros de proteção, só a primeira pedra tirou vida: as outras chegaram com a nave ainda protegida. E sem proteção nenhuma, o que muda? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-short",
+          "text": "Com 15 quadros, a proteção acabou antes da terceira pedra, e ela tirou outra vida. E sem proteção nenhuma, o que muda? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-none-long",
+          "text": "Sem proteção, as três pedras levaram as três vidas; com 45 quadros, só a primeira tirou vida. E com uma proteção curta, de 15 quadros? A pedra do quadro 30 chega antes ou depois de a proteção acabar? Escolha 15 quadros e avance pedra por pedra."
+        },
+        {
+          "id": "invincibility-none-short",
+          "text": "Sem proteção, as três pedras levaram as três vidas; com 15 quadros, a proteção acabou antes da terceira pedra. E com uma proteção longa, de 45 quadros? Escolha 45 quadros e avance pedra por pedra, observando as vidas e a proteção."
+        },
+        {
+          "id": "invincibility-long-short",
+          "text": "Com 45 quadros, só a primeira pedra tirou vida; com 15, a proteção acabou antes da terceira pedra. E sem proteção nenhuma? Escolha Nenhuma e avance pedra por pedra, observando as vidas."
+        },
+        {
+          "id": "invincibility-complete",
+          "text": "Você comparou as três. Sem proteção, cada batida tira uma vida. Com proteção, a nave fica um tempinho sem perder vida depois de bater, e a proteção conta para trás: se ela acaba antes da próxima pedra, a nave perde outra vida. A proteção é um respiro com prazo, não um escudo para sempre. Pode continuar testando quando quiser."
+        }
+      ]
+    },
+    "comecar-partida/estado-do-jogo": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "game-state",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "preset": {
+            "id": "pedra-40-quadros",
+            "clockFrames": 40,
+            "waitingSeconds": 4,
+            "moment": "screen"
+          },
+          "goals": ["outside", "waiting", "playing"],
+          "goalCopy": {
+            "outside": {
+              "label": "Sem a pergunta, os asteroides nasceram antes de começar",
+              "pedido": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador."
+            },
+            "waiting": {
+              "label": "Com a pergunta, na tela de início, nenhum asteroide nasceu",
+              "pedido": "Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador."
+            },
+            "playing": {
+              "label": "Com a partida começada, os asteroides voltaram a nascer",
+              "pedido": "Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "game-state-start",
+          "text": "A nave está na tela de início, e a partida ainda não começou. Os asteroides já nascem agora? Clique em Deixar o tempo passar e observe o contador de asteroides criados."
+        },
+        {
+          "id": "game-state-start-question",
+          "text": "A pergunta está ligada: a cada toque do relógio, o jogo pergunta se a partida já começou. Na tela de início, o que acontece com os asteroides? Deixe o tempo passar uns 4 segundos e observe o contador de asteroides criados."
+        },
+        {
+          "id": "game-state-outside",
+          "text": "Sem a pergunta, os asteroides nasceram na tela de início, antes de a partida começar. E se, a cada toque do relógio, o jogo perguntar: a partida já começou? Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador."
+        },
+        {
+          "id": "game-state-waiting",
+          "text": "Na tela de início, a resposta foi não: o relógio tocou, e nenhum asteroide nasceu. E quando a partida começar, qual vai ser a resposta? Clique em Começar a partida, deixe o tempo passar e observe o contador."
+        },
+        {
+          "id": "game-state-playing-first",
+          "text": "Jogando, a resposta foi sim: os asteroides nasceram. E na tela de início, com a mesma pergunta ligada, o que acontece? Clique em Voltar à tela de início e deixe o tempo passar uns 4 segundos. Observe o contador."
+        },
+        {
+          "id": "game-state-without",
+          "text": "Com a pergunta ligada, a tela de início esperou, e a partida criou asteroides. E sem a pergunta, o que acontece na tela de início? Clique em Desligar a pergunta e, se precisar, em Voltar à tela de início; depois, deixe o tempo passar. Observe o contador."
+        },
+        {
+          "id": "game-state-complete",
+          "text": "Você comparou os três casos. Sem a pergunta, os asteroides nascem até na tela de início. Com a pergunta, a cada toque do relógio o jogo confere o estado: se a partida já começou, a resposta é sim, e nasce um asteroide; se ainda não começou, a resposta é não, e nada nasce. Pode continuar testando."
+        },
+        {
+          "id": "game-state-dino-start",
+          "text": "O Dino está na tela de início, e a partida ainda não começou. Os cactos já nascem agora? Clique em Deixar o tempo passar e observe o contador de cactos criados."
+        },
+        {
+          "id": "game-state-dino-start-question",
+          "text": "A pergunta está ligada: a cada toque do relógio, o jogo pergunta se a partida já começou. Na tela de início, o que acontece com os cactos? Clique em Deixar o tempo passar, espere uns 3 segundos e observe o contador de cactos criados."
+        },
+        {
+          "id": "game-state-dino-outside",
+          "text": "Sem a pergunta, os cactos nasceram na tela de início, antes de alguém jogar. E se, a cada toque do relógio, o jogo perguntar: a partida já começou? Clique em Ligar a pergunta e deixe o tempo passar uns 3 segundos na tela de início. Observe o contador."
+        },
+        {
+          "id": "game-state-dino-waiting",
+          "text": "Na tela de início, a resposta foi não: o relógio tocou, e nenhum cacto nasceu. E quando a partida começar, qual vai ser a resposta? Clique em Começar a partida, deixe o tempo passar e observe o contador."
+        },
+        {
+          "id": "game-state-dino-playing-first",
+          "text": "Jogando, a resposta foi sim: os cactos nasceram. E na tela de início, com a mesma pergunta ligada, o que acontece? Clique em Voltar à tela de início e deixe o tempo passar uns 3 segundos. Observe o contador."
+        },
+        {
+          "id": "game-state-dino-without",
+          "text": "Com a pergunta ligada, a tela de início esperou, e a partida criou cactos. E sem a pergunta, o que acontece na tela de início? Clique em Desligar a pergunta e, se precisar, em Voltar à tela de início; depois, deixe o tempo passar. Observe o contador."
+        },
+        {
+          "id": "game-state-dino-complete",
+          "text": "Você comparou os três casos. Sem a pergunta, os cactos nascem até na tela de início. Com a pergunta, a cada toque do relógio o jogo confere: se a partida já começou, a resposta é sim, e nasce um cacto; se ainda não começou, a resposta é não, e nada nasce. É como a porta que só abre com a chave certa, e aqui a chave é a partida ter começado. Pode continuar testando."
+        }
+      ]
+    },
+    "dia-5/meta-do-jogo": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "score-goal",
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["igual-conta", "maior-pula", "placa-fixa"],
+          "goalCopy": {
+            "igual-conta": {
+              "label": "Com maior ou igual, chegar a 20 já deu a vitória",
+              "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória."
+            },
+            "maior-pula": {
+              "label": "Com maior que, o 20 não deu a vitória; só o 21",
+              "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória."
+            },
+            "placa-fixa": {
+              "label": "No meio da partida, a placa da meta não mudou",
+              "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa."
+            }
+          },
+          "preset": {
+            "id": "vinte-acertos",
+            "goal": 20,
+            "start": 17
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "score-goal-start",
+          "text": "A partida está quase no fim: o placar está em 17, e a placa da meta diz 20. Escolha o sinal da vitória e clique em Acertar uma pedra, um acerto de cada vez. Em que acerto você acha que o jogo vai dar a vitória?"
+        },
+        {
+          "id": "score-goal-try",
+          "text": "A partida recomeçou no 17. Com este sinal, em que acerto você acha que a vitória vem? Clique em Acertar uma pedra, um de cada vez, e compare."
+        },
+        {
+          "id": "score-goal-running",
+          "text": "Continue clicando em Acertar uma pedra, um acerto de cada vez, e observe o placar e a placa da meta: em que acerto vem a vitória?"
+        },
+        {
+          "id": "score-goal-running-placa",
+          "text": "A partida está no meio. E a placa da meta, dá para mudar agora? Clique em Tentar mudar a placa e observe a meta."
+        },
+        {
+          "id": "score-goal-placa-seen",
+          "text": "A placa continuou 20: durante a partida, a meta não muda. Continue clicando em Acertar uma pedra: em que acerto vem a vitória?"
+        },
+        {
+          "id": "score-goal-equal",
+          "text": "Com maior ou igual, quando o placar chegou a 20, o jogo já deu a vitória: igual à meta também vale. E com maior que, em que acerto a vitória vem? Clique em Maior que (>) e jogue de novo."
+        },
+        {
+          "id": "score-goal-greater",
+          "text": "Com maior que, o 20 não deu a vitória: o placar precisou passar da meta, e ela veio no 21. E com maior ou igual, o que muda? Clique em Maior ou igual (≥) e jogue de novo."
+        },
+        {
+          "id": "score-goal-placa",
+          "text": "Você comparou os dois sinais. E a placa da meta, dá para mudar no meio da partida? Clique em Jogar de novo, em Acertar uma pedra e, no meio da partida, em Tentar mudar a placa."
+        },
+        {
+          "id": "score-goal-complete",
+          "text": "Com maior ou igual, chegar a 20 já vale; com maior que, é preciso passar de 20. E a placa da meta é escolhida antes do jogo e não muda durante a partida. Pode jogar de novo quando quiser."
+        }
+      ]
+    },
+    "dia-5/reiniciar": {
+      "activity": {
+        "type": "experimentation",
+        "scene": "restart",
+        "cast": {
+          "hero": {
+            "name": "nave",
+            "gender": "f"
+          },
+          "obstacle": {
+            "name": "asteroide",
+            "gender": "m"
+          }
+        },
+        "cenario": "nave",
+        "setup": {
+          "freeExploration": true,
+          "goals": ["screen-only", "back-to-menu"],
+          "goalCopy": {
+            "screen-only": {
+              "label": "Só voltando para a tela de início, os asteroides ficaram na tela",
+              "pedido": "Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela."
+            },
+            "back-to-menu": {
+              "label": "Começando tudo de novo, os asteroides saíram e a abertura voltou",
+              "pedido": "Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início."
+            }
+          }
+        }
+      },
+      "falas": [
+        {
+          "id": "restart-start",
+          "text": "No fim da partida, o Enter pode só voltar para a tela de início ou começar tudo de novo. O que acontece com os asteroides da partida anterior? Escolha um jeito e clique em Apertar Enter para jogar."
+        },
+        {
+          "id": "restart-screen-only",
+          "text": "Só voltando para a tela de início, os asteroides da partida anterior ficaram na tela, e a partida nova acabou na hora. E se o Enter começar tudo de novo? Escolha Começar tudo de novo, jogue até bater e, no fim, clique em Apertar Enter até começar outra partida. Observe os asteroides e a tela."
+        },
+        {
+          "id": "restart-everything",
+          "text": "Começando tudo de novo, os asteroides saíram da tela e o jogo voltou para a tela de início: foi preciso outro Enter para jogar. E se o Enter só voltar para a tela de início? Escolha Só voltar para a tela de início, jogue até bater e, no fim, clique em Apertar Enter até começar outra partida. Observe os asteroides na tela."
+        },
+        {
+          "id": "restart-complete",
+          "text": "Você comparou os dois jeitos. Só voltar para a tela de início troca a tela, mas deixa os asteroides da partida anterior na tela. Começar tudo de novo volta tudo ao começo: os asteroides saem da tela, a abertura volta, e a partida nova começa do zero. Pode continuar testando."
+        },
+        {
+          "id": "restart-dino-start",
+          "text": "No fim da partida, o toque pode só voltar para a tela de início ou começar tudo de novo. O que acontece com os cactos da partida anterior? Escolha um jeito e clique em Tocar na tela para jogar."
+        },
+        {
+          "id": "restart-dino-screen-only",
+          "text": "Só voltando para a tela de início, os cactos da partida anterior ficaram na pista, e a partida nova acabou na hora, com uma batida. E se o toque começar tudo de novo? Escolha Começar tudo de novo, jogue até bater e, no fim, clique em Tocar na tela até começar outra partida. Observe a pista."
+        },
+        {
+          "id": "restart-dino-everything",
+          "text": "Começando tudo de novo, os cactos saíram da pista, a abertura voltou, e a partida nova começou limpa. E se o toque só voltar para a tela de início? Escolha Só voltar para a tela de início, jogue até bater e, no fim, clique em Tocar na tela até começar outra partida. Observe os cactos na pista."
+        },
+        {
+          "id": "restart-dino-complete",
+          "text": "Você comparou os dois jeitos. Só voltar para a tela de início troca a tela, mas deixa os cactos da partida anterior na pista, e a partida nova acaba na hora. Começar tudo de novo arruma tudo outra vez: a pista fica vazia, a abertura volta, e a partida nova começa do zero, como arrumar as peças de um jogo de tabuleiro antes de jogar de novo. Pode continuar testando."
+        }
+      ]
+    }
+  }
+}

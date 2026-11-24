@@ -1,0 +1,1632 @@
+{
+  "engine": "Core oficial: contrato da atividade, sessão de experimentação, ações públicas e avaliador; sem interface desenhada.",
+  "source": "qa/construtor-2d-conteudo.ts: atividades exatamente como serão derivadas nos manifestos.",
+  "passed": true,
+  "scenes": 15,
+  "goals": 39,
+  "results": [
+    {
+      "aula": "dia-1",
+      "key": "seta-e-velocidade",
+      "scene": "lighthouse-walk",
+      "targets": ["moves-each-frame", "stopped-after-release", "walked-real-speed"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Em Devagar, solte a seta e olhe os próximos quadros.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "walk-pace",
+            "pace": "lenta"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "hold-arrow",
+            "held": true
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "hold-arrow",
+            "held": false
+          },
+          "complete": ["moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["stopped-after-release", "moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["stopped-after-release", "moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "walk-pace",
+            "pace": "real"
+          },
+          "complete": ["stopped-after-release", "moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "hold-arrow",
+            "held": true
+          },
+          "complete": ["stopped-after-release", "moves-each-frame"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["stopped-after-release", "moves-each-frame", "walked-real-speed"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["stopped-after-release", "moves-each-frame", "walked-real-speed"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "stopped-after-release",
+          "label": "Seta solta, nave parada",
+          "pedido": "Em Devagar, solte a seta e olhe os próximos quadros.",
+          "complete": true
+        },
+        {
+          "id": "moves-each-frame",
+          "label": "Um passinho a cada quadro",
+          "pedido": "Escolha Devagar, segure a seta e olhe os quadros do jogo.",
+          "complete": true
+        },
+        {
+          "id": "walked-real-speed",
+          "label": "Os passinhos viraram um voo",
+          "pedido": "Escolha Rápido, segure a seta por alguns segundos e compare.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Em cada quadro o jogo olha a seta. Apertada, o personagem dá um passinho; solta, ele fica parado. Bem rápido, os passinhos viram uma caminhada.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-1",
+      "key": "limite-da-tela",
+      "scene": "lighthouse-walk",
+      "targets": ["left-the-screen", "came-back-inside", "stayed-inside"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "keep-on-screen",
+            "enabled": false
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "walk-pace",
+            "pace": "real"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "hold-arrow",
+            "held": true
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["left-the-screen"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["left-the-screen"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["left-the-screen"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["left-the-screen"]
+        },
+        {
+          "action": {
+            "type": "keep-on-screen",
+            "enabled": true
+          },
+          "complete": ["left-the-screen"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["left-the-screen", "came-back-inside"]
+        },
+        {
+          "action": {
+            "type": "walk-pace",
+            "pace": "lenta"
+          },
+          "complete": ["left-the-screen", "came-back-inside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["left-the-screen", "stayed-inside", "came-back-inside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["left-the-screen", "stayed-inside", "came-back-inside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 0.03333333333333333
+          },
+          "complete": ["left-the-screen", "stayed-inside", "came-back-inside"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "left-the-screen",
+          "label": "Sem o limite, a nave saiu da tela",
+          "pedido": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela.",
+          "complete": true
+        },
+        {
+          "id": "stayed-inside",
+          "label": "Com o limite, a nave ficou na beirada",
+          "pedido": "Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros.",
+          "complete": true
+        },
+        {
+          "id": "came-back-inside",
+          "label": "Com o limite ligado, a nave voltou para dentro",
+          "pedido": "Com a nave fora da tela, ligue a cerca e olhe o próximo quadro.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Em cada quadro, depois do passinho, o jogo confere a beirada. Sem o limite, o personagem sai da tela; com o limite, ele é puxado de volta para dentro.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-2",
+      "key": "tecla-e-repeticao",
+      "scene": "once-vs-always",
+      "targets": ["on-event", "key-fires", "flood"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "place-in-area",
+            "card": "event",
+            "area": "event"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event"]
+        },
+        {
+          "action": {
+            "type": "trigger"
+          },
+          "complete": ["on-event", "key-fires"]
+        },
+        {
+          "action": {
+            "type": "place-in-area",
+            "card": "event",
+            "area": "loop"
+          },
+          "complete": ["on-event", "key-fires"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event", "key-fires"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event", "key-fires", "flood"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["on-event", "key-fires", "flood"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "on-event",
+          "label": "Esperando a hora, sem a tecla, nenhum tiro saiu",
+          "pedido": "Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros.",
+          "complete": true
+        },
+        {
+          "id": "key-fires",
+          "label": "Na hora em que a tecla foi apertada, saiu um tiro",
+          "pedido": "Com Na hora em que algo acontece escolhido, clique em Apertar a tecla durante o jogo e observe os tiros.",
+          "complete": true
+        },
+        {
+          "id": "flood",
+          "label": "Sempre, em todo quadro, saiu um tiro novo",
+          "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe os tiros.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Ao iniciar é uma vez. Enquanto estiver rodando é sempre. Quando acontecer é na hora.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-2",
+      "key": "objetos-no-grupo",
+      "scene": "cleanup",
+      "targets": ["invisible-stored", "rule-removes"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois tiros saírem da tela e observe o grupo.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["invisible-stored"]
+        },
+        {
+          "action": {
+            "type": "connect",
+            "port": "cleanup",
+            "enabled": true
+          },
+          "complete": ["invisible-stored"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["invisible-stored", "rule-removes"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["invisible-stored", "rule-removes"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "invisible-stored",
+          "label": "O tiro saiu da tela e continuou no grupo",
+          "pedido": "Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois tiros saírem da tela e observe o grupo.",
+          "complete": true
+        },
+        {
+          "id": "rule-removes",
+          "label": "Tirando quem sai da tela, o tiro saiu do grupo",
+          "pedido": "Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois tiros saírem. Compare o grupo.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Sair da tela não tira ninguém do grupo: quem tira é a regra!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-2",
+      "key": "escrito-e-lido",
+      "scene": "fixed-vs-read",
+      "targets": ["same-spot", "follows", "box-marks"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Número escrito: 400, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "value-source",
+            "source": "fixed"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "shoot"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "place",
+            "x": 640,
+            "y": 0
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "shoot"
+          },
+          "complete": ["same-spot"]
+        },
+        {
+          "action": {
+            "type": "value-source",
+            "source": "read"
+          },
+          "complete": ["same-spot"]
+        },
+        {
+          "action": {
+            "type": "shoot"
+          },
+          "complete": ["same-spot"]
+        },
+        {
+          "action": {
+            "type": "place",
+            "x": 160,
+            "y": 0
+          },
+          "complete": ["same-spot"]
+        },
+        {
+          "action": {
+            "type": "shoot"
+          },
+          "complete": ["same-spot", "follows"]
+        },
+        {
+          "action": {
+            "type": "box-marks",
+            "on": true
+          },
+          "complete": ["same-spot", "follows"]
+        },
+        {
+          "action": {
+            "type": "shoot"
+          },
+          "complete": ["same-spot", "follows", "box-marks"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "same-spot",
+          "label": "Com o número escrito, os tiros nasceram no mesmo lugar",
+          "pedido": "Escolha Número escrito: 400, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas.",
+          "complete": true
+        },
+        {
+          "id": "follows",
+          "label": "Com o número lido, o tiro nasceu onde a nave estava",
+          "pedido": "Escolha Número lido da nave, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas.",
+          "complete": true
+        },
+        {
+          "id": "box-marks",
+          "label": "O tiro sai do meio da nave, da beirada de cima",
+          "pedido": "Com o número lido, clique em Mostrar as marcas da nave e atire. Observe de onde o tiro sai.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Número escrito é sempre o mesmo. Número lido é o de agora.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-2",
+      "key": "direcao-do-tiro",
+      "scene": "velocity",
+      "targets": ["up", "down"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha um número negativo, como −9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "velocity",
+            "vx": 0,
+            "vy": -9
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["up"]
+        },
+        {
+          "action": {
+            "type": "velocity",
+            "vx": 0,
+            "vy": 9
+          },
+          "complete": ["up"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["up", "down"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "up",
+          "label": "Com um número negativo, o tiro subiu",
+          "pedido": "Escolha um número negativo, como −9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y.",
+          "complete": true
+        },
+        {
+          "id": "down",
+          "label": "Com um número positivo, o tiro desceu",
+          "pedido": "Escolha um número positivo, como 9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "A posição muda sozinha porque a velocidade é somada nela em cada quadro!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "chuva-de-asteroides",
+      "key": "intervalo-das-pedras",
+      "scene": "spawn",
+      "targets": ["every-frame", "with-timer"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["every-frame"],
+          "born": 30,
+          "interval": 1.5
+        },
+        {
+          "action": {
+            "type": "connect",
+            "port": "timer",
+            "enabled": true
+          },
+          "complete": ["every-frame"],
+          "born": 0,
+          "interval": 1.5
+        },
+        {
+          "action": {
+            "type": "interval",
+            "seconds": 1.5
+          },
+          "complete": ["every-frame"],
+          "born": 0,
+          "interval": 1.5
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["every-frame"],
+          "born": 0,
+          "interval": 1.5
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["every-frame"],
+          "born": 1,
+          "interval": 1.5
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["every-frame", "with-timer"],
+          "born": 2,
+          "interval": 1.5
+        }
+      ],
+      "goals": [
+        {
+          "id": "every-frame",
+          "label": "Em todo quadro, as pedras nasceram coladas",
+          "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram.",
+          "complete": true
+        },
+        {
+          "id": "with-timer",
+          "label": "Com uma espera, sobrou espaço entre as pedras",
+          "pedido": "Escolha A cada 1,5 s e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Com o relógio, nasce um asteroide de cada vez e sobra espaço entre um asteroide e outro!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "chuva-de-asteroides",
+      "key": "posicao-sorteada",
+      "scene": "random",
+      "targets": ["positions", "above"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "sample",
+            "kind": "position",
+            "unit": 0.1,
+            "guided": false
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "sample",
+            "kind": "position",
+            "unit": 0.7,
+            "guided": false
+          },
+          "complete": ["positions"]
+        },
+        {
+          "action": {
+            "type": "sample",
+            "kind": "position",
+            "unit": 0.4,
+            "guided": false
+          },
+          "complete": ["positions"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["positions", "above"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "positions",
+          "label": "Cada sorteio pode dar um lugar diferente",
+          "pedido": "Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua.",
+          "complete": true
+        },
+        {
+          "id": "above",
+          "label": "A pedra nasce acima da tela e entra caindo",
+          "pedido": "Clique em Passar 1 segundo e observe de onde a pedra entra na tela.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Cada sorteio ficou dentro dos limites, e um lugar pode sair mais de uma vez.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-3",
+      "key": "trombada",
+      "scene": "collision-pair",
+      "targets": ["whole-group", "just-the-pair", "others-stay"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["whole-group"]
+        },
+        {
+          "action": {
+            "type": "command-target",
+            "subject": "shot",
+            "target": "alias"
+          },
+          "complete": ["whole-group"]
+        },
+        {
+          "action": {
+            "type": "command-target",
+            "subject": "rock",
+            "target": "alias"
+          },
+          "complete": ["whole-group"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["whole-group", "just-the-pair"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["whole-group", "just-the-pair"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["whole-group", "just-the-pair", "others-stay"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "whole-group",
+          "label": "Tirando os grupos, saíram todos os tiros e todas as pedras",
+          "pedido": "Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores.",
+          "complete": true
+        },
+        {
+          "id": "just-the-pair",
+          "label": "Tirando só quem encostou, saíram só o tiro e a pedra da trombada",
+          "pedido": "Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores.",
+          "complete": true
+        },
+        {
+          "id": "others-stay",
+          "label": "As outras pedras continuaram o caminho delas",
+          "pedido": "Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "O apelido aponta para um. O grupo aponta para todos.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "pontos",
+      "key": "caixa-de-pontos",
+      "scene": "variable",
+      "targets": ["stored", "changed-hidden", "shown"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "store",
+            "value": 0
+          },
+          "complete": ["stored"]
+        },
+        {
+          "action": {
+            "type": "change",
+            "by": 1
+          },
+          "complete": ["stored", "changed-hidden"]
+        },
+        {
+          "action": {
+            "type": "change",
+            "by": 1
+          },
+          "complete": ["stored", "changed-hidden"]
+        },
+        {
+          "action": {
+            "type": "show",
+            "on": true
+          },
+          "complete": ["stored", "changed-hidden", "shown"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "stored",
+          "label": "A caixa pontos guardou o número, e a tela continuou sem número",
+          "pedido": "Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo.",
+          "complete": true
+        },
+        {
+          "id": "changed-hidden",
+          "label": "Com o número fora da tela, o acerto mudou pontos",
+          "pedido": "Com o número fora da tela, clique em Acertar um asteroide e compare a caixa pontos com a tela.",
+          "complete": true
+        },
+        {
+          "id": "shown",
+          "label": "Mostrar o número não mudou o que estava guardado",
+          "pedido": "Clique em Mostrar o número na tela e compare com a caixa pontos.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "São três coisas diferentes: guardar, mudar e mostrar!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-4",
+      "key": "vidas-no-comeco",
+      "scene": "once-vs-always",
+      "targets": ["once", "lives-loop"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "place-in-area",
+            "card": "lives",
+            "area": "start"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "place-in-area",
+            "card": "lives",
+            "area": "loop"
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once", "lives-loop"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once", "lives-loop"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["once", "lives-loop"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "once",
+          "label": "Uma vez, no começo: cada batida tirou uma vida",
+          "pedido": "Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas.",
+          "complete": true
+        },
+        {
+          "id": "lives-loop",
+          "label": "Sempre, em todo quadro: as vidas voltaram a encher",
+          "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe as vidas e as batidas.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Você comparou: uma vida pode acabar quando é dada no começo, mas volta a encher quando é dada durante o jogo.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-4",
+      "key": "respiro",
+      "scene": "invincibility",
+      "targets": ["no-shield", "window", "expires"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "shield",
+            "frames": 0
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield"]
+        },
+        {
+          "action": {
+            "type": "shield",
+            "frames": 45
+          },
+          "complete": ["no-shield"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield", "window"]
+        },
+        {
+          "action": {
+            "type": "shield",
+            "frames": 15
+          },
+          "complete": ["no-shield", "window"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield", "window"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield", "window"]
+        },
+        {
+          "action": {
+            "type": "advance-to"
+          },
+          "complete": ["no-shield", "window", "expires"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "no-shield",
+          "label": "Sem proteção, cada pedra tirou uma vida",
+          "pedido": "Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas.",
+          "complete": true
+        },
+        {
+          "id": "window",
+          "label": "Com 45 quadros, só a primeira pedra tirou vida",
+          "pedido": "Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas.",
+          "complete": true
+        },
+        {
+          "id": "expires",
+          "label": "Com 15 quadros, a proteção acabou antes da terceira pedra",
+          "pedido": "Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "A proteção não é um escudo para sempre: é um respiro com prazo.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "comecar-partida",
+      "key": "estado-do-jogo",
+      "scene": "game-state",
+      "targets": ["outside", "waiting", "playing"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "connect",
+            "port": "condition",
+            "enabled": true
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside", "waiting"]
+        },
+        {
+          "action": {
+            "type": "start",
+            "input": "tap"
+          },
+          "complete": ["outside", "waiting"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside", "waiting"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside", "waiting", "playing"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["outside", "waiting", "playing"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "outside",
+          "label": "Sem a pergunta, os asteroides nasceram antes de começar",
+          "pedido": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador.",
+          "complete": true
+        },
+        {
+          "id": "waiting",
+          "label": "Com a pergunta, na tela de início, nenhum asteroide nasceu",
+          "pedido": "Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador.",
+          "complete": true
+        },
+        {
+          "id": "playing",
+          "label": "Com a partida começada, os asteroides voltaram a nascer",
+          "pedido": "Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "Dentro do Se, Criar asteroide espera no início e volta a criar na partida!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-5",
+      "key": "meta-do-jogo",
+      "scene": "score-goal",
+      "targets": ["igual-conta", "maior-pula", "placa-fixa"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "goal-op",
+            "op": ">="
+          },
+          "complete": [],
+          "scoreGoal": {
+            "points": 17,
+            "op": ">=",
+            "goal": 20,
+            "hits": 0,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": [],
+          "scoreGoal": {
+            "points": 18,
+            "op": ">=",
+            "goal": 20,
+            "hits": 1,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": [],
+          "scoreGoal": {
+            "points": 19,
+            "op": ">=",
+            "goal": 20,
+            "hits": 2,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta"],
+          "scoreGoal": {
+            "points": 20,
+            "op": ">=",
+            "goal": 20,
+            "hits": 3,
+            "won": true
+          }
+        },
+        {
+          "action": {
+            "type": "goal-op",
+            "op": ">"
+          },
+          "complete": ["igual-conta"],
+          "scoreGoal": {
+            "points": 17,
+            "op": ">",
+            "goal": 20,
+            "hits": 0,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta"],
+          "scoreGoal": {
+            "points": 18,
+            "op": ">",
+            "goal": 20,
+            "hits": 1,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta"],
+          "scoreGoal": {
+            "points": 19,
+            "op": ">",
+            "goal": 20,
+            "hits": 2,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta"],
+          "scoreGoal": {
+            "points": 20,
+            "op": ">",
+            "goal": 20,
+            "hits": 3,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta", "maior-pula"],
+          "scoreGoal": {
+            "points": 21,
+            "op": ">",
+            "goal": 20,
+            "hits": 4,
+            "won": true
+          }
+        },
+        {
+          "action": {
+            "type": "goal-restart"
+          },
+          "complete": ["igual-conta", "maior-pula"],
+          "scoreGoal": {
+            "points": 17,
+            "op": ">",
+            "goal": 20,
+            "hits": 0,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-hit"
+          },
+          "complete": ["igual-conta", "maior-pula"],
+          "scoreGoal": {
+            "points": 18,
+            "op": ">",
+            "goal": 20,
+            "hits": 1,
+            "won": false
+          }
+        },
+        {
+          "action": {
+            "type": "goal-edit"
+          },
+          "complete": ["igual-conta", "maior-pula", "placa-fixa"],
+          "scoreGoal": {
+            "points": 18,
+            "op": ">",
+            "goal": 20,
+            "hits": 1,
+            "won": false
+          }
+        }
+      ],
+      "goals": [
+        {
+          "id": "igual-conta",
+          "label": "Com maior ou igual, chegar a 20 já deu a vitória",
+          "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória.",
+          "complete": true
+        },
+        {
+          "id": "maior-pula",
+          "label": "Com maior que, o 20 não deu a vitória; só o 21",
+          "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória.",
+          "complete": true
+        },
+        {
+          "id": "placa-fixa",
+          "label": "No meio da partida, a placa da meta não mudou",
+          "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "A placa da meta é uma constante: durante a partida ela não muda. Com maior ou igual, chegar a 26 já vale; com maior que, é preciso passar de 26.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "aula": "dia-5",
+      "key": "reiniciar",
+      "scene": "restart",
+      "targets": ["screen-only", "back-to-menu"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "start",
+            "input": "key"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "start",
+            "input": "key"
+          },
+          "complete": []
+        },
+        {
+          "action": {
+            "type": "start",
+            "input": "key"
+          },
+          "complete": ["screen-only"]
+        },
+        {
+          "action": {
+            "type": "advance",
+            "seconds": 1
+          },
+          "complete": ["screen-only"]
+        },
+        {
+          "action": {
+            "type": "connect",
+            "port": "restart",
+            "enabled": true
+          },
+          "complete": ["screen-only"]
+        },
+        {
+          "action": {
+            "type": "start",
+            "input": "key"
+          },
+          "complete": ["screen-only"]
+        },
+        {
+          "action": {
+            "type": "start",
+            "input": "key"
+          },
+          "complete": ["screen-only", "back-to-menu"]
+        }
+      ],
+      "goals": [
+        {
+          "id": "screen-only",
+          "label": "Só voltando para a tela de início, os asteroides ficaram na tela",
+          "pedido": "Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela.",
+          "complete": true
+        },
+        {
+          "id": "back-to-menu",
+          "label": "Começando tudo de novo, os asteroides saíram e a abertura voltou",
+          "pedido": "Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início.",
+          "complete": true
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "A pista começou limpa. Isso é jogar de novo de verdade!",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    }
+  ]
+}

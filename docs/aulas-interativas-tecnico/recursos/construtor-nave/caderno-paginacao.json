@@ -1,0 +1,23 @@
+{
+  "primeira-nave-setas": [7],
+  "primeira-nave-entrega": [7],
+  "dia-1-criar-tiro": [9],
+  "dia-1-grupo-tiros": [12, 14],
+  "dia-1-tiro-da-nave": [9],
+  "dia-2-tiros-voam": [6, 7],
+  "dia-2-faxina": [6],
+  "chuva-de-asteroides-relogio": [10],
+  "chuva-de-asteroides-asteroide": [12, 13],
+  "chuva-de-asteroides-retirada": [6],
+  "dia-3-colisao": [8],
+  "dia-3-efeitos": [5],
+  "pontos-placar": [10],
+  "dia-4-vidas": [10],
+  "dia-4-batida": [9],
+  "comecar-partida-teste-inicio": [7, 8, 10, 11, 12, 14],
+  "comecar-partida-aparencias": [6, 7],
+  "dia-5-meta": [12, 14],
+  "dia-5-finais": [7],
+  "dia-5-derrota": [8, 9],
+  "dia-5-entrega": [5]
+}

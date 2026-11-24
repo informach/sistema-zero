@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-11-24T14:14:30.289Z",
+  "main": "0180e39fdc4717ed3becb42c899e8c837b9fa4fd",
+  "staging": "e085f7456a0ca76e139c4420fd38a7698191e688",
+  "qualifiedApplicationSource": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "mainIsAncestorOfStaging": true,
+  "qualifiedTree": "88287b3f494fc38f1acffc32b8d220dae26e3c9b",
+  "stagingTree": "88287b3f494fc38f1acffc32b8d220dae26e3c9b",
+  "contentUnchanged": true,
+  "syncRun": {
+    "id": 45407930019,
+    "attempt": 2,
+    "conclusion": "success"
+  },
+  "additionalIntegrationCiRun": 45409232901,
+  "verified": true
+}

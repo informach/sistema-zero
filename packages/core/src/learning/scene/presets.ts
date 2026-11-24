@@ -39,10 +39,23 @@ export interface RandomPreset {
 }
 
 export interface SpawnPreset {
-  id: 'cacto-segundos' | 'pedra-quadros'
+  id: 'cacto-segundos' | 'pedra-quadros' | 'pedra-segundos'
   unit: 'seconds' | 'frames'
   intervals: number[]
   falling: boolean
+}
+
+/** A placa continua fixa durante a partida; o caso escolhe a meta antes de abrir. */
+export interface ScoreGoalPreset {
+  id: 'vinte-acertos'
+  goal: 20
+  start: 17
+}
+export const SCORE_GOAL_PRESETS = {
+  'vinte-acertos': { id: 'vinte-acertos', goal: 20, start: 17 },
+} as const satisfies Record<ScoreGoalPreset['id'], ScoreGoalPreset>
+export function isScoreGoalPreset(value: unknown): value is ScoreGoalPreset {
+  return isRecord(value) && value.id === 'vinte-acertos' && value.goal === 20 && value.start === 17
 }
 
 export interface CleanupPreset {
@@ -64,6 +77,7 @@ export type ScenePreset =
   | SpawnPreset
   | CleanupPreset
   | GameStatePreset
+  | ScoreGoalPreset
 
 export const GAME_STATE_PRESETS = {
   'cacto-18-quadros': {
@@ -128,6 +142,12 @@ export const SPAWN_PRESETS = {
     intervals: [20, 40, 80],
     falling: true,
   },
+  'pedra-segundos': {
+    id: 'pedra-segundos',
+    unit: 'seconds',
+    intervals: [0.5, 1, 1.5, 2],
+    falling: true,
+  },
 } as const satisfies Record<SpawnPreset['id'], SpawnPreset>
 
 export const RANDOM_GOALS_BY_PRESET: Record<RandomPreset['id'], readonly string[]> = {
@@ -138,6 +158,7 @@ export const RANDOM_GOALS_BY_PRESET: Record<RandomPreset['id'], readonly string[
 export const SPAWN_GOALS_BY_PRESET: Record<SpawnPreset['id'], readonly string[]> = {
   'cacto-segundos': ['every-frame', 'with-timer'],
   'pedra-quadros': ['every-frame', 'with-timer', 'same-fall'],
+  'pedra-segundos': ['every-frame', 'with-timer'],
 }
 
 export function isRandomPreset(value: unknown): value is RandomPreset {

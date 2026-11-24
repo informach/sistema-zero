@@ -1,21 +1,5 @@
-[curious] Com maior que, chegar a 26 já dá a vitória?
+[curious] Se a contagem passar de vinte, a missão deixa de estar completa?
 
 [long pause]
 
-[curious] E do outro lado vai a meta?
-
-[long pause]
-
-[curious] E se as duas coisas acontecerem juntas?
-
-[long pause]
-
-[curious] E a tela de quando eu perder?
-
-[long pause]
-
-[curious] E a partida nova começa igual nos dois jeitos?
-
-[long pause]
-
-[thoughtful] E quando eu ganhar? Também quero jogar de novo!
+[curious] Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida?

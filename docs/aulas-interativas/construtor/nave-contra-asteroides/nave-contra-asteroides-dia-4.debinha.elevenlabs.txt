@@ -1,17 +1,5 @@
-[curious] E se a nave ganhar as três vidas sempre, em todo quadro?
+[curious] O que muda quando eu preparo as vidas enquanto a partida já está acontecendo?
 
 [long pause]
 
-[curious] E como eu vejo quantas vidas eu tenho?
-
-[long pause]
-
-[curious] Qual pedra o jogo vai tirar?
-
-[long pause]
-
-[curious] E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?
-
-[long pause]
-
-[curious] E a tela pode tremer na batida?
+[curious] Como eu consigo perceber quando esse respiro começou e terminou?

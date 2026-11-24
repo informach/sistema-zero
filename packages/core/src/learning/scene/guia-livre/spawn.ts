@@ -40,6 +40,19 @@ export const SPAWN_SPEECH = {
 
 export type FalaDoNascimento = keyof typeof SPAWN_SPEECH
 
+/** Caso em segundos da nova Nave; não cobra a medida de queda em quadros. */
+export const SPAWN_SECONDS_SPEECH: Readonly<Partial<Record<FalaDoNascimento, string>>> = {
+  'spawn-start': SPAWN_SPEECH['spawn-start'],
+  'spawn-wait':
+    'Agora cada pedra nova espera um tempo para nascer. O que você acha que muda na tela? Deixe o tempo passar até nascerem duas pedras e observe onde cada uma aparece.',
+  'spawn-wall':
+    'Em todo quadro nasceu uma pedra nova: em um segundo foram umas trinta, uma colada na outra, como uma parede. E se cada pedra nova esperar um pouco para nascer? Escolha A cada 1,5 segundos e deixe passar pelo menos 3 segundos. Observe as pedras e quantas nasceram.',
+  'spawn-gap':
+    'Com a espera, nasceu uma pedra de cada vez, e sobrou espaço entre uma e outra. E se uma pedra nova nascer em todo quadro, sem esperar? Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras.',
+  'spawn-complete-two':
+    'Você comparou os dois jeitos. Em todo quadro, nascem umas trinta pedras por segundo, coladas. Com uma espera, nasce uma, espera e nasce outra, com espaço entre elas. Experimente outros intervalos e compare quantas pedras nascem no mesmo tempo.',
+}
+
 /**
  * Qual fala vale agora. A ordem sugerida é a da aula (em todo quadro, com espera, a queda), mas cada
  * fala só explica o que a criança JÁ testou: quem começa pela espera é acompanhado nela, e a queda
@@ -56,7 +69,11 @@ export function spawnGuidance(
   has: (meta: string) => boolean,
   activity?: SceneActivity,
 ): FalaDoNascimento {
-  const feita = activity ? metaFeita(activity, METAS, has) : has
+  const caso =
+    activity?.setup?.preset?.id === 'pedra-segundos' && !activity.setup.goals
+      ? { ...activity, setup: { ...activity.setup, goals: ['every-frame', 'with-timer'] } }
+      : activity
+  const feita = caso ? metaFeita(caso, METAS, has) : has
   // `metaFeita` dá por feita a meta que o bloco não pede: a queda que não é pedida não se mede.
   const pedeQueda = has('same-fall') || !feita('same-fall')
   const parede = feita('every-frame'),

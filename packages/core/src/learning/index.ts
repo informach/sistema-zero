@@ -838,7 +838,7 @@ function withAttachedQuestion(
 /** A cena reconstrói a sessão do checkpoint guardado e pergunta ao módulo dela. */
 function evaluateSceneBlock(a: SceneActivity, answers: LearningAnswers): LearningResult {
   const parts = answers.sceneCheckpoint
-  const session = readExperimentSession(a.scene, parts)
+  const session = readExperimentSession(a.scene, parts, a.setup)
   // ⚠️ O ELENCO entra aqui também (achado do full review de 14/09/2026): esta é a avaliação do
   // SERVIDOR, e o `feedback` que ela devolve é gravado na tentativa e lido de volta pelo cartão
   // "Descoberta registrada" e pelo relatório do professor. Sem o elenco, uma turma de nave

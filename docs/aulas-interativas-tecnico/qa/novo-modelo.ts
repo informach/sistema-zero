@@ -1,9 +1,11 @@
 /**
  * Manifestos já migrados para a direção pedagógica de 21/09/2026.
  *
- * Os 50 trios têm cobertura editorial; gravação e ensaio continuam etapas de produção.
+ * A revisão das bases do Construtor mantém as nove aulas Nave e acrescenta cinco Patrulha.
+ * Gravação e ensaio continuam etapas de produção.
  */
 export const MANIFESTOS_NOVO_MODELO = new Set([
+  ...Array.from({ length: 5 }, (_, i) => `patrulha-espacial-aula-${i + 1}.manifesto.json`),
   'aula-1.manifesto.json',
   'aula-2.manifesto.json',
   ...Array.from(

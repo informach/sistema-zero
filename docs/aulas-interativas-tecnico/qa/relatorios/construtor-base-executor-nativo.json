@@ -1,0 +1,80 @@
+{
+  "status": "browserNotExecuted",
+  "browserChecksPassed": null,
+  "reason": "Chromium abortou antes de abrir qualquer página: process_singleton_posix.cc:297 — socket() failed: Operation not permitted (1).",
+  "permissionRequest": "Solicitação require_escalated rejeitada automaticamente pela política granular: sandbox_approval=false; nenhuma tentativa de contornar a restrição.",
+  "preparation": {
+    "bootstrap": "prepareClassicCheckDocument oficial concluído nos quatro casos",
+    "requestValidation": "parseCheckRequest oficial aceitou os quatro pedidos",
+    "runnerUnmodified": true,
+    "runnerSha256": "f5d863510aa36fc19155c24393b9b83eb8bdfe14ec4150ac68da2660da8d83db",
+    "playwright": "1.64.1",
+    "three": "0.184.0"
+  },
+  "preparedFinalObjectives": 14,
+  "preparedNegativeCases": 2,
+  "cases": [
+    {
+      "name": "2d-final",
+      "objectiveIds": [
+        "voar-direita",
+        "voar-esquerda",
+        "um-tiro-por-toque",
+        "tiro-retirado",
+        "pedra-criada",
+        "abertura-protegida",
+        "valores-iniciais",
+        "abertura-sem-pedras"
+      ],
+      "expectedPassed": true,
+      "observedPassed": null,
+      "removedShotNodes": 0
+    },
+    {
+      "name": "2d-sem-disparo",
+      "objectiveIds": ["um-tiro-por-toque"],
+      "expectedPassed": false,
+      "observedPassed": null,
+      "removedShotNodes": 1
+    },
+    {
+      "name": "3d-final",
+      "objectiveIds": [
+        "valores-do-comeco",
+        "um-aperto-um-tiro",
+        "pilotar-so-na-partida",
+        "tiro-sai-do-grupo",
+        "relogio-respeita-comeco",
+        "avisos-da-partida"
+      ],
+      "expectedPassed": true,
+      "observedPassed": null,
+      "removedShotNodes": 0
+    },
+    {
+      "name": "3d-sem-disparo",
+      "objectiveIds": ["um-aperto-um-tiro"],
+      "expectedPassed": false,
+      "observedPassed": null,
+      "removedShotNodes": 1
+    }
+  ],
+  "actualAttempt": {
+    "case": "2d-final",
+    "runnerExitCode": 1,
+    "browserPageOpened": false,
+    "observationsProduced": false,
+    "stderrSummary": "Chromium abortou antes de abrir qualquer página: process_singleton_posix.cc:297 — socket() failed: Operation not permitted (1)."
+  },
+  "limitations": [
+    "Este relatório não aprova nem reprova os objetivos dos alunos; a coleta real de observações ficou bloqueada.",
+    "O runner e o julgador de produção não foram modificados; nenhum mock de renderer nem harness direto substituiu esta prova.",
+    "Fontes do curso, runtime de produção e projetos aprovados não foram modificados.",
+    "A preparação usou arquivos temporários locais. Este relatório preserva o resultado e as entradas oficiais, não distribui esses arquivos como um executor autônomo."
+  ],
+  "officialEntryPoints": {
+    "bootstrap": "packages/studio/src/check/serverCheck.ts: prepareClassicCheckDocument",
+    "requestAndJudge": "packages/studio-runtime/src/check: parseCheckRequest e judgeCheck",
+    "runner": "packages/studio-runtime/runtime/check-objectives.mjs"
+  }
+}
