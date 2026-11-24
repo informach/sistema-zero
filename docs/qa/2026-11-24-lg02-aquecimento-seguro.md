@@ -5,11 +5,11 @@ Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executo
 ## Fonte e integração
 
 - Produção: `538ae843b7534239a715a1d0a6c2a9d32d54604d`.
-- Candidata: `a365206598c9175e8f999801eba5a6fb74d613db`; árvore `e6b63426127831235dc98d34820fe1869a85b74c`.
+- Fonte qualificada do código de produção: `a365206598c9175e8f999801eba5a6fb74d613db`; árvore `e6b63426127831235dc98d34820fe1869a85b74c`. Candidata final `e1b5fcd17c594b47a4ffbc5757c08bdc13a61376`, árvore `d610b8646d64819a15d1e0ba7107866017c908ac`: muda apenas cenários tipados do core e o registro. [Comparação de proveniência](2026-11-24-lg02-evidence/candidate-provenance.json).
 - [PR #286](https://github.com/informach/sistema-zero/pull/286), em rascunho até o aceite.
-- Merge normal em staging: `6c538f77fd5881a4365f16ba2600fd5e33003c4b`. Preservou as entradas concorrentes do Jardim, da voz do Zappy e a correção do contrato de importação Jardim (`84112d04d`). O checkout original com trabalho concorrente permanece preservado.
-- [CI da candidata](https://github.com/informach/sistema-zero/actions/runs/45378554025) e [CI/onda de staging](https://github.com/informach/sistema-zero/actions/runs/45378574284): pendentes neste registro.
-- [Plano Railway](https://github.com/informach/sistema-zero/actions/runs/45378554089): aprovado, zero alterações, intent tree `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`.
+- Merge do SDK em staging: `6c538f77fd5881a4365f16ba2600fd5e33003c4b`; merge da correção tipada: `9ca0696aef5a536846525704b9d01261e2bd0da7`. Preservaram Jardim, voz do Zappy, o contrato de importação Jardim (`84112d04d`) e as entradas posteriores de apelido/quarto. O checkout original com trabalho concorrente permanece preservado.
+- [CI da candidata final](https://github.com/informach/sistema-zero/actions/runs/45387995897) e [CI/onda final de staging](https://github.com/informach/sistema-zero/actions/runs/45388063256): pendentes neste registro. A rodada anterior `45378554025` reprovou três cenários mal tipados do core; a reprodução local e a correção estão no plano, com typecheck e 16 testes/106 expectativas aprovados.
+- [Plano Railway final](https://github.com/informach/sistema-zero/actions/runs/45387995836): aprovado, zero alterações, intent tree `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`.
 - [Imagem Linux de staging](https://github.com/informach/sistema-zero/actions/runs/45378574254): aprovada, incluindo Python e Three reais sem rede externa.
 
 ## Correções
@@ -66,7 +66,7 @@ No curso 2D A Chave do Farol, foram percorridos vídeo e experiência da parte d
 
 Durante a qualificação entraram `3372f2498` (a criança edita o próprio apelido) e `53fc30329` (rolagem do quarto). Foram preservados no merge de staging `9ca0696ae`, junto da correção dos cenários tipados da LG02 (`e1b5fcd17`). A candidata de produção da LG02 não inclui essas duas funcionalidades concorrentes; sua promoção é independente.
 
-A revisão conferiu ownership, restrições do nome completo/nascimento, preservação da identidade confirmada, atualização do token e os contêineres de rolagem. Passaram 125 testes Auth, quatro do BFF e dez da interface perfil/quarto, zero falhas. O apelido aceita 2–40 caracteres, normaliza espaços e não exige unicidade. A troca não altera o nome do certificado. Se a renovação da sessão estiver indisponível, o menu pode conservar o apelido antigo até a próxima renovação (token de até 15 minutos); o valor salvo permanece atualizado. Os pais continuam podendo corrigir o apelido. O quarto preserva a rolagem interna de itens; o ajuste contém os elementos de acessibilidade para não esticar a página.
+A revisão conferiu ownership, restrições do nome completo/nascimento, preservação da identidade confirmada, atualização do token e os contêineres de rolagem. Passaram 125 testes Auth, quatro do BFF e dez da interface perfil/quarto, zero falhas. Os typechecks completos de Auth, member-shell e Kids também passaram localmente sobre `9ca0696ae`, com o lockfile congelado e heap de 6.144 MiB. O apelido aceita 2–40 caracteres, normaliza espaços e não exige unicidade. A troca não altera o nome do certificado. Se a renovação da sessão estiver indisponível, o menu pode conservar o apelido antigo até a próxima renovação (token de até 15 minutos); o valor salvo permanece atualizado. Os pais continuam podendo corrigir o apelido. O quarto preserva a rolagem interna de itens; o ajuste contém os elementos de acessibilidade para não esticar a página.
 
 ## Efeito e limitações para a criança
 
