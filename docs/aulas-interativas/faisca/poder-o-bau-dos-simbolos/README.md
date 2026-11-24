@@ -76,6 +76,16 @@ Com as mesmas regras da Ilha do Farol (o teste `qa/faisca-padrao.test.ts` confer
 
 **Pendências de produção:** gerar a voz nova da professora (`.elevenlabs.txt`) e a de cada personagem (`.debinha.elevenlabs.txt`, `.dede.elevenlabs.txt`); gravar com o palco e acertar os tempos das setas no Verificar plano; reimportar as duas aulas (a seção `entrega` saiu das duas, e a Aula 2 ganhou a seção `sol`), com o Jogo 3D 0.33.0 já no ambiente (os projetos 3D saem com essa versão); se a importação recusar um exemplo salvo do Estúdio por ter mudado, dar a ele um id novo; anexar o PDF novo no Admin.
 
+## Partes longas divididas (24/11/2026)
+
+Antes da gravação, a revisão dos roteiros achou partes de até 1.232 palavras de fala (mais de 8 minutos de voz); a parte mais longa da Ilha tinha cerca de 730. As partes longas foram divididas: a primeira monta a pergunta (o Se só com o então) e testa; a seguinte abre o senão, monta a resposta do não, testa tudo e, se for a última, envia. Cada parte nova tem os seus objetivos, conferidos no executor real nas duas dimensões (`qa/<curso>-browser.ts`, com o cenário `sem-senao`, que a última parte reprova). Os ids dos exemplos que já existiam não mudam: as etapas novas entram no fim da ordem dos ids (`idEtapas` em `qa/poder-gerador.ts`). O caderno acompanha as partes novas. Na mesma revisão, o fim da última montagem de cada aula passou a anunciar as perguntas do quiz, que é a última parte e termina em Concluir aula.
+
+- Aula 1: a lua vira **A lua pergunta a vez** (Parte 5) e **A lua fora da vez** (Parte 6); a estrela vira **A estrela abre o baú** (Parte 7) e **A estrela fora da vez** (Parte 8, com o envio); o quiz é a Parte 9.
+- Aula 2: o mesmo na ilha, nas Partes 3 a 6; o quiz é a Parte 7.
+- Etapas novas: `lua-vez` e `estrela-vez` (a pedra acende ou abre o baú na vez dela, sem cobrar o recomeço).
+- **Para o ensaio:** no 3D, o recomeço toca `apagar` também numa pedra que não acendeu; conferir se a animação pisca.
+- A divisão em mais aulas (quatro, duas 2D e duas 3D) ficou para decisão: as aulas têm cerca de 4.150 e 3.850 palavras de fala (perto de 28 e 26 minutos de voz; a aula mais longa da Ilha tem cerca de 2.900).
+
 ## Regenerar e conferir
 
 Na raiz do repositório:

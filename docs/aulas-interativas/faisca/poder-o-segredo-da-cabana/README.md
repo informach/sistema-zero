@@ -73,6 +73,15 @@ Com as mesmas regras da Ilha do Farol (o teste `qa/faisca-padrao.test.ts` confer
 
 **Pendências de produção:** gerar a voz nova da professora (`.elevenlabs.txt`) e a de cada personagem (`.debinha.elevenlabs.txt`, `.dede.elevenlabs.txt`); gravar com o palco e acertar os tempos das setas no Verificar plano; reimportar as duas aulas (a seção `entrega` saiu das duas), com o Jogo 3D 0.33.0 já no ambiente (os projetos 3D saem com essa versão); se a importação recusar um exemplo salvo do Estúdio por ter mudado, dar a ele um id novo; anexar o PDF novo no Admin.
 
+## Partes longas divididas (24/11/2026)
+
+Antes da gravação, a revisão dos roteiros achou partes de até 1.232 palavras de fala (mais de 8 minutos de voz); a parte mais longa da Ilha tinha cerca de 730. As partes longas foram divididas: a primeira monta a pergunta (o Se só com o então) e testa; a seguinte abre o senão, monta a resposta do não, testa tudo e, se for a última, envia. Cada parte nova tem os seus objetivos, conferidos no executor real nas duas dimensões (`qa/<curso>-browser.ts`, com o cenário `sem-senao`, que a última parte reprova). Os ids dos exemplos que já existiam não mudam: as etapas novas entram no fim da ordem dos ids (`idEtapas` em `qa/poder-gerador.ts`). O caderno acompanha as partes novas. Na mesma revisão, o fim da última montagem de cada aula passou a anunciar as perguntas do quiz, que é a última parte e termina em Concluir aula.
+
+- Aula 1: a porta vira **A cabana abre com as duas peças** (Parte 5) e **Os avisos da cabana** (Parte 6, com o envio); o quiz é a Parte 7.
+- Aula 2: **A cabana da ilha abre com as duas peças** (Parte 3) e **Os avisos da cabana da ilha** (Parte 4); o quiz é a Parte 5.
+- Etapa nova: `abre` (fechada só com a chave, aberta com as duas peças).
+- Na Aula 2, o Dedé pergunta onde estão a chave e o emblema na ilha.
+
 ## Regenerar e conferir
 
 Na raiz do repositório:
