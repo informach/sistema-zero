@@ -1,5 +1,6 @@
 import { CheckSandboxPool } from '../../src/check-sandbox-pool'
 import type { CheckSandboxLease } from '../../src/check-sandbox-pool-store'
+import { forwardProbeMethod } from './lg02-runtime-probe-rpc'
 
 /** Loopback-only qualification. Production has no reset or state-editing route. */
 export class CheckPoolProbe extends CheckSandboxPool {
@@ -35,6 +36,14 @@ export default {
     const body: unknown = await request.json()
     if (!body || typeof body !== 'object') return new Response(null, { status: 400 })
     try {
+      if (
+        url.pathname === '/proxy-acquire' &&
+        'operation' in body &&
+        (body.operation === 'check' || body.operation === 'warm')
+      )
+        return Response.json({
+          result: await forwardProbeMethod(pool, pool.acquire)(body.operation, profileId, threeD),
+        })
       if (
         url.pathname === '/acquire' &&
         'operation' in body &&
