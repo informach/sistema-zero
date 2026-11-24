@@ -944,5 +944,18 @@
         "packages/members/tests/integration/jardim-missao-import.test.ts"
       ]
     }
+  ],
+  "unmergedPullRequestsReviewed": [
+    {
+      "number": 287,
+      "base": "staging",
+      "reviewedBase": "3a7fb2c2edda8d461e1d8fdc64bfd80bc6138795",
+      "headIncludingFix": "61de040eeb7bb21b7733418ae4d976261fd150ce",
+      "files": 43,
+      "state": "draft",
+      "scope": "Construtor proposal, native prototypes, artwork and generators; not a production feature",
+      "finding": "R17: Windows CLI entrypoint and Python output encoding",
+      "proof": "docs/qa/2026-11-24-lg02-evidence/construtor-pr287-review.json"
+    }
   ]
 }

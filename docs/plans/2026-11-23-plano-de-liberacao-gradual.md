@@ -64,6 +64,8 @@ Entradas posteriores ao plano: o apelido infantil editável e a correção de ro
 
 Na primeira consulta de 23/11, **A Ilha do Farol** estava em rascunho com 0/3 aulas publicadas; **O Jardim Secreto**, com 0/2; **Meu primeiro desenho no Pinta** e **Moedas no caminho**, com 0/1 cada. Uma nova leitura de produção às 00:08 UTC de 24/11 (21:08 de 23/11 em São Paulo) confirmou **A Ilha do Farol publicada com 3/3 aulas em Kids e Adultos**, por outra frente. Members, Admin e Kids receberam o ajuste de 32 falas em `8d87bbff8`, já incorporado à LG01. Jardim, Pinta e Moedas continuam em rascunho. **Transformando o vilão em aliado** já estava publicado com 7/7 aulas e não é uma publicação nova desta etapa.
 
+A proposta posterior do Construtor está no PR #287, em rascunho, com seis protótipos nativos e apoio de telas/reinício preparado. Sua receita Windows foi corrigida em `61de040ee`, preservando os projetos. Esse currículo segue revisão própria: importar e avaliar na interface/WebGL, concluir artes 3D e avaliação de aparelhos, fechar a matriz pedagógica e só então reescrever/publicar roteiros, manifestos e materiais. A prioridade dos cursos já listados na LG03 permanece. [Revisão e limites dos protótipos](../qa/2026-11-24-lg02-aquecimento-seguro.md).
+
 ## Integrações regionais do Pinta
 
 **LG04** é a principal pendência técnica para oferecer materiais regionais no Studio com salvamento na conta e publicação.

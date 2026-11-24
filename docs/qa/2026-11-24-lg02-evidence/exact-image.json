@@ -9,9 +9,7 @@
   "suites": [
     {
       "script": "packages/studio-runtime/tests/validation-smoke.ts",
-      "args": [
-        "sistemazero-studio-runtime:lg02-sdk01212-20261124"
-      ],
+      "args": ["sistemazero-studio-runtime:lg02-sdk01212-20261124"],
       "exitCode": 0,
       "logSha256": "907873eeeb227563cdb0a8188e3cb7f2f0f13612bd9adf648a0d5b5d4b50079e",
       "cases": [
@@ -55,9 +53,7 @@
     },
     {
       "script": "packages/studio-runtime/tests/templates-smoke.ts",
-      "args": [
-        "sistemazero-studio-runtime:lg02-sdk01212-20261124"
-      ],
+      "args": ["sistemazero-studio-runtime:lg02-sdk01212-20261124"],
       "exitCode": 0,
       "logSha256": "6d103dc8ca518ae940b24919d81c8526d31932d15fda8c79a84071b3f45c481e",
       "cases": [
@@ -435,10 +431,7 @@
     },
     {
       "script": "packages/studio-runtime/tests/python-playtest-smoke.ts",
-      "args": [
-        "--docker",
-        "--health"
-      ],
+      "args": ["--docker", "--health"],
       "exitCode": 0,
       "logSha256": "69bffbafa59408fe32d5622357396cc23c96427311cdc3faff472b47d2ea758a",
       "cases": [

@@ -82,6 +82,14 @@ O [aceite visual após a implantação](2026-11-24-lg02-evidence/concurrent-ui-f
 
 A linhagem concorrente também conserva a missão do Jardim, o caderno único ao fim da primeira aula, a correção do clique antes das setas, capas e cadastro de dez partes e o ajuste da geração de voz do Admin para quatro frases simultâneas. Esses materiais, registros e a correção de voz permanecem fora da fonte implantada da LG02; sua promoção acompanha a etapa própria de aulas. O ajuste de voz continua sujeito às cotas do provedor e não representa geração ilimitada.
 
+## Proposta do Construtor recebida durante o fechamento
+
+O [PR #287](https://github.com/informach/sistema-zero/pull/287), ainda em rascunho, acrescentou uma proposta curricular e seis projetos nativos: três aparências do 2D completo, um inicial 2D, um completo 3D e um inicial 3D. As 12 imagens 2D permitem 81 combinações exclusivamente visuais; o 3D usa três modelos provisórios da galeria. Para a criança, a proposta do Construtor prepara abertura, telas de resultado e reinício, concentrando a autoria nas regras; a construção integral do fluxo fica prevista para o Inventor. Isso ainda não representa aulas publicadas nem funcionalidade liberada a alunos.
+
+R17 foi reproduzido e corrigido no próprio branch do protótipo: no Windows o exportador saía com código zero sem exportar, por comparar caminho de arquivo com pathname de URL; o gerador Python também escrevia fontes inválidas em UTF-8 quando o modo UTF-8 estava desligado. O commit `61de040eeb7bb21b7733418ae4d976261fd150ce` usa a comparação de URLs do Node e gravação UTF-8 explícita. A receita completa, o caminho com espaço e a importação do módulo sem efeito de exportação passaram.
+
+O [recibo independente](2026-11-24-lg02-evidence/construtor-pr287-review.json) confirmou os seis projetos pelo sanitizador oficial, preservação na importação, geração de arquivos idêntica e as mesmas regras nas três aparências 2D. Três GLBs foram carregados pelo leitor real, com geometria válida. Os seis projetos permaneceram byte a byte iguais; o ZIP foi atualizado com os geradores corrigidos e conferido. Permanecem pendentes o aceite pela interface/WebGL real, artes 3D definitivas, avaliação de toque/aparelhos e a reautoria de roteiros, manifestos e materiais progressivos. O rascunho continua fora de staging e produção; a correção de ferramentas não publica o currículo.
+
 ## Produção
 
 A [onda canônica 45409371184](https://github.com/informach/sistema-zero/actions/runs/45409371184) concluiu `PRODUCTION_WAVE_PASSED`, sem inicializar aplicações novas. Members, Auth, Hub, Gateway, Admin, Comunidade e Kids foram confirmados no commit `0180e39fd` dentro dos contêineres. O recibo guarda os IDs dos sete deployments e o hash do manifesto canônico. A configuração Railway teve zero alterações.
