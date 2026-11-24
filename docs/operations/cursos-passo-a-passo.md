@@ -53,7 +53,7 @@ Cada curso tem uma pasta em `docs/aulas-interativas/<app>/<curso>/` (por exemplo
 
 | Arquivo | O que é | Onde entra |
 | --- | --- | --- |
-| `modulos.md` | nome, subtítulo e descrição do curso; nome e resumo de cada módulo | formulário do curso e de cada módulo no Admin |
+| `modulos.md` | o cadastro do curso e dos módulos, sempre no mesmo padrão (abaixo) | formulário do curso e de cada módulo no Admin |
 | `blocos.json` | todos os blocos usados no curso (2D e 3D) | "Ferramentas que este curso libera no Estúdio": os blocos que a criança ganha ao concluir o curso. Use a união das listas |
 | `aula-N.manifesto.json` | a aula inteira: partes, textos, quiz, cenas, Estúdio, vídeos planejados | "Importar roteiro com partes" de cada aula |
 | `aula-N.roteiro.md`, `aula-N.md` | roteiro de gravação e texto da aula | fonte do manifesto; não sobe |
@@ -62,6 +62,27 @@ Cada curso tem uma pasta em `docs/aulas-interativas/<app>/<curso>/` (por exemplo
 | `passo-a-passo-do-projeto.pdf` | o caderno do aluno, **sempre** | anexo PDF da aula, sempre marcado como caderno para o Zappy |
 | `*.szproject.json` | projetos do Estúdio (inicial e pronto) | já vão dentro do manifesto |
 | `publicacao-<ambiente>.json` | o registro do que foi publicado (ids, revisões, pendências) | escreva ao terminar cada etapa |
+
+**O padrão do `modulos.md`** (igual em todos os cursos; `qa/modulos-padrao.test.ts` reprova o que
+foge dele):
+
+```markdown
+# <Título do curso>
+
+**Título do curso:** <título>            → título do curso no Admin
+**Descrição curta:** <uma frase>          → subtítulo
+**Descrição longa:** <um parágrafo>       → descrição
+
+## Módulo 1 · <título do módulo>          → um por módulo, na ordem, com " · "
+
+**Resumo:** <resumo do módulo>            → resumo do módulo
+
+### Aula 1. <título da aula>              → a lista de aulas e partes do módulo
+```
+
+Cada campo fica num parágrafo próprio. Depois das aulas vêm as notas de produção (posto, o que
+preservar do seed, entregas). `scripts/cursos/conferir-curso.ts` compara esses campos com o curso
+publicado.
 
 Geradores ficam em `docs/aulas-interativas-tecnico/`:
 
@@ -198,38 +219,77 @@ $arquivos = '--videos', 'C:/Users/<você>/Downloads/O Jardim Secreto/Finalizadas
 8. **Registrar** no `publicacao-<ambiente>.json` do curso: a data, os vídeos trocados e o que saiu
    das pendências.
 
+**O adulto usa os mesmos vídeos do Kids do mesmo ambiente** (a cópia aponta para os mesmos ids do
+Vimeo e os mesmos PDFs, sem reenviar). Trocar um vídeo no Kids troca também o do adulto, mas a
+duração fica gravada em cada aula e a base do Zappy é preparada por curso. Se o curso já tinha sido
+copiado para o adulto, depois da troca rode a cópia de novo (Etapa 3). Só a promoção para produção
+cria vídeos novos, com ids próprios.
+
 Em produção, os passos são os mesmos com `--ambiente production --confirmo-producao`. Só troque em
 produção um vídeo que já foi trocado e conferido em staging. Para um curso que ainda vai ser
 promovido, troque em staging e promova (Etapa 4) em vez de trocar nos dois.
 
 ## Etapa 3: copiar o Kids de staging para o adulto de staging
 
-Pelo Admin de staging, na lista de cursos Kids: **Mais ações → Publicar e atualizar no adulto**.
-Confira a prévia (curso adulto `<slug>-adulto`, número de aulas, URL comercial com `/pro/`) e
-aprove. O trabalho prepara as mídias, as vozes e o material do Zappy no próprio ambiente e publica o
-curso adulto.
+O trabalho prepara as mídias, as vozes e o material do Zappy no próprio ambiente e publica o curso
+adulto. Pelo navegador: Admin de staging, lista de cursos Kids, **Mais ações → Publicar e atualizar
+no adulto**. Sem navegador, com o mesmo serviço (o operador implantado `publish-course.ts`):
 
-- A origem precisa estar toda publicada: rascunho diferente do publicado impede a cópia.
+```powershell
+bun scripts/cursos/publicar-curso.ts previa --operacao adulto --ambiente staging --curso jornada-faisca-missao
+bun scripts/cursos/publicar-curso.ts aprovar --operacao adulto --ambiente staging --curso jornada-faisca-missao
+bun scripts/cursos/publicar-curso.ts blocos --operacao adulto --ambiente staging --curso jornada-faisca-missao
+```
+
+- **Prévia:** confira o destino (`<slug>-adulto`, se já existe), o número de módulos e aulas, e o que
+  sai da grade (arquivado, com o histórico dos alunos).
+- **Aprovar:** acompanha até terminar, lendo o estado a cada 30 s.
+- **Blocos:** confere as ferramentas que o curso adulto libera no Estúdio.
+- A origem precisa estar toda publicada: rascunho diferente do publicado impede a cópia (confira com
+  `trocar-videos.ts inspecionar`).
 - Cópia que falha com "Confira as mídias" quase sempre é vídeo sem transcrição. O vídeo provisório
-  de 2 s não tem, então copie para o adulto **depois** da Etapa 2 com a base do Zappy em dia.
-- Regras, retomada e o operador por linha de comando: `docs/operations/sincronizar-curso-kids-adulto.md`.
+  de 2 s não tem, então copie para o adulto **depois** da Etapa 2, com a base do Zappy em dia. Corrigida
+  a causa, `retomar` continua o mesmo trabalho; se o conteúdo mudou, faça uma `previa` nova.
+- Regras da cópia: `docs/operations/sincronizar-curso-kids-adulto.md`.
 
 ## Etapa 4: levar para produção
 
-1. **Kids de staging → Kids de produção:** Admin de staging, lista de cursos Kids, **Mais ações →
-   Promover para produção**.
-   - Confira na prévia os ambientes, o endereço e as aulas que saem da grade, e aprove.
+1. **Kids de staging → Kids de produção** (pelo navegador: Admin de staging, lista de cursos Kids,
+   **Mais ações → Promover para produção**):
+
+   ```powershell
+   bun scripts/cursos/publicar-curso.ts previa --operacao producao --ambiente staging --curso jornada-faisca-missao --confirmo-producao
+   bun scripts/cursos/publicar-curso.ts aprovar --operacao producao --ambiente staging --curso jornada-faisca-missao --confirmo-producao
+   ```
+
+   - Confira na prévia o destino e **as aulas que saem da grade**: a grade de produção passa a ser a
+     de staging. Na Ilha do Farol a promoção arquivou 3 aulas que estavam a mais em produção.
    - O trabalho copia cada vídeo para a pasta do Vimeo de produção, com a lista de domínios de
      produção, copia os arquivos para o R2 de produção e só então publica o curso Kids de produção.
-2. **Kids de produção → adulto de produção:** Admin de **produção**, lista de cursos Kids, **Mais
-   ações → Publicar e atualizar no adulto**. O adulto de produção sempre sai do Kids de produção,
-   nunca do Vimeo de staging.
+2. **Kids de produção → adulto de produção** (pelo navegador: Admin de **produção**, lista de cursos
+   Kids, **Mais ações → Publicar e atualizar no adulto**). O adulto de produção sempre sai do Kids
+   de produção, nunca do Vimeo de staging.
+
+   ```powershell
+   bun scripts/cursos/publicar-curso.ts previa --operacao adulto --ambiente production --curso jornada-faisca-missao --confirmo-producao
+   bun scripts/cursos/publicar-curso.ts aprovar --operacao adulto --ambiente production --curso jornada-faisca-missao --confirmo-producao
+   ```
+
 3. **Conferir em produção:**
-   - os blocos liberados nos dois cursos ("Ferramentas que este curso libera no Estúdio");
+   - os blocos liberados nos dois cursos (`publicar-curso.ts blocos` com `--operacao producao` para
+     o Kids e `--operacao adulto --ambiente production` para o adulto);
+   - os vídeos e as durações (`trocar-videos.ts inspecionar --ambiente production --confirmo-producao`):
+     nenhum id de vídeo pode ser o mesmo do staging;
    - um vídeo de cada aula tocando em `kids.sistemazero.com.br`;
    - a página do curso adulto;
-   - a base do Zappy em `/admin/ia`.
+   - a base do Zappy (`base-do-zappy.ts conferir --ambiente production --confirmo-producao`).
 4. **Registrar** em `publicacao-production.json` (ou numa seção `promocao` do registro de staging).
+
+Os blocos liberados ("Ferramentas que este curso libera no Estúdio") viajam no `metadata` do curso,
+na cópia e na promoção. Cadastre-os no Kids de staging **antes** de promover e de copiar. Na Ilha do
+Farol eles foram cadastrados depois, e os cursos de produção precisaram ser ajustados à mão. Se
+faltar, `publicar-curso.ts blocos ... --blocos docs/aulas-interativas/<app>/<curso>/blocos.json`
+grava a união das listas no curso de destino.
 
 Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operations/publicar-cursos.md`.
 
@@ -265,8 +325,10 @@ Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operati
 | Extração com o código do Admin (legenda do Vimeo, texto do PDF) | `scripts/cursos/lib/extrair-no-admin.ts` |
 | Railway: CLI, variáveis de um serviço e código rodado dentro dele | `scripts/cursos/lib/railway.ts` |
 | Duração de MP4 sem ffmpeg | `scripts/cursos/lib/mp4.ts` |
-| Leitura das aulas, duração, caderno e base do Zappy, dentro do `members` | `scripts/cursos/remoto/aulas-do-curso.mjs` |
-| Copiar Kids → adulto por linha de comando (com recibos) | `scripts/release/sync-course-audiences.ts` |
+| Leitura das aulas, duração, caderno, blocos e base do Zappy, dentro do `members` | `scripts/cursos/remoto/aulas-do-curso.mjs` |
+| O operador de publicação implantado, chamado dentro do `members` | `scripts/cursos/remoto/operador.mjs` |
+| Copiar Kids → adulto e promover para produção (prévia, aprovar, acompanhar, blocos) | `scripts/cursos/publicar-curso.ts` |
+| Copiar Kids → adulto por linha de comando (com recibos e backup) | `scripts/release/sync-course-audiences.ts` |
 | Promover e copiar pelo mesmo serviço do Admin | `packages/members/scripts/publish-course.ts` |
 
 Ainda **fora** do repositório (scripts de um curso só, na `.cache/` local): a importação dos

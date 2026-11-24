@@ -89,10 +89,12 @@ async function conferir() {
 }
 
 if (passo === 'caderno') {
-  const r = await membros<{ resumo: unknown[] }>({ acao: 'caderno' })
+  const r = await membros<{ resumo: { alterados: number }[] }>({ acao: 'caderno' })
   console.log(JSON.stringify(r.resumo))
   if (r.resumo.length === 0) console.log('Nenhum PDF anexado nas aulas deste curso.')
-  else console.log('Rode o passo atualizar para o texto do caderno entrar na base do Zappy.')
+  else if (r.resumo.some((a) => a.alterados > 0))
+    console.log('Rode o passo atualizar para o texto do caderno entrar na base do Zappy.')
+  else console.log('Os PDFs do curso já estavam marcados como caderno do aluno.')
 } else if (passo === 'atualizar') {
   interface Pendente {
     lessonId: string

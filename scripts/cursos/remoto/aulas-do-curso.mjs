@@ -145,6 +145,74 @@ export async function run(p) {
     }
     return { curso, resumo }
   }
+  if (p.acao === 'resumo') {
+    // O que o aluno recebe do cadastro: os campos do curso, os módulos e, em cada aula publicada,
+    // os anexos (com a marca de caderno) e quantos blocos de cada tipo. Só leitura.
+    const modulos = [...arvore.modules].sort(ordem)
+    const porAula = []
+    for (const aula of aulas) {
+      const pub = (await call(`/lessons/${aula.id}/draft/published`)).document
+      const tipos = {}
+      for (const b of pub.blocks) tipos[b.content.kind] = (tipos[b.content.kind] ?? 0) + 1
+      porAula.push({
+        aula: aula.aula,
+        slug: aula.slug,
+        titulo: aula.titulo,
+        publicada: aula.publicada,
+        partes: pub.sections.length,
+        blocos: tipos,
+        anexos: (pub.attachments ?? []).map((x) => ({
+          rotulo: x.label,
+          url: x.url,
+          tipo: x.fileType,
+          bytes: x.sizeBytes,
+          cadernoDoZappy: x.zappyStudentNotebook === true,
+        })),
+      })
+    }
+    return {
+      curso: {
+        ...curso,
+        subtitulo: arvore.subtitle,
+        descricao: arvore.description,
+        capa: arvore.coverImageUrl,
+        nivel: arvore.level,
+        trilha: arvore.track,
+        blocosLiberados: (arvore.studioUnlockBlocks ?? []).length,
+      },
+      modulos: modulos.map((m) => ({ titulo: m.title, resumo: m.summary })),
+      aulas: porAula,
+    }
+  }
+  if (p.acao === 'blocos') {
+    // "Ferramentas que este curso libera no Estúdio" (studioUnlockBlocks): os blocos que a criança
+    // ganha ao concluir o curso. Sem p.blocos, só lê; com p.blocos, grava se for diferente. O PATCH
+    // do curso exige o objeto inteiro, e o resto do curso é conferido depois.
+    const atuais = [...(arvore.studioUnlockBlocks ?? [])].sort()
+    if (!p.blocos) return { curso, blocos: atuais }
+    const desejados = [...new Set(p.blocos)].sort()
+    if (JSON.stringify(atuais) === JSON.stringify(desejados))
+      return { curso, blocos: desejados.length, alterado: false }
+    const { modules: _m, id: _i, createdAt: _c, updatedAt: _u, ...campos } = arvore
+    await call(`/courses/${arvore.id}`, 'PATCH', { ...campos, studioUnlockBlocks: desejados })
+    const depois = await call(`/courses/${arvore.id}`)
+    const gravados = JSON.stringify([...(depois.studioUnlockBlocks ?? [])].sort())
+    const resto = [
+      'title',
+      'subtitle',
+      'description',
+      'coverImageUrl',
+      'status',
+      'salesPageUrl',
+      'level',
+      'track',
+      'audience',
+    ]
+    const igual = resto.every((k) => JSON.stringify(arvore[k]) === JSON.stringify(depois[k]))
+    if (gravados !== JSON.stringify(desejados) || !igual)
+      throw new Error('O curso não ficou como esperado')
+    return { curso, blocos: desejados.length, alterado: true, antes: atuais.length }
+  }
   const ids = new Set(aulas.map((a) => a.id))
   if (p.acao === 'zappy-pendentes') {
     // O mesmo pedido do botão "Atualizar a base do Zappy" do Admin: o Members indexa os textos e
