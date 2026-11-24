@@ -40,9 +40,9 @@ export async function reserveCheckSandbox(
 ): Promise<CheckSandboxReservation | null> {
   try {
     if (!pools) throw new Error('Sandbox pool binding unavailable')
-    const pool = pools.getByName(`${checkSandboxId(executionId)}-${threeD ? '3d' : '2d'}`)
+    const pool = pools.getByName(`objetivos-cache-${threeD ? '3d' : '2d'}`)
     const lease = await awaitWithSignal(
-      () => pool.acquire(operation),
+      () => pool.acquire(operation, executionId, threeD),
       AbortSignal.timeout(CHECK_POOL_RPC_BUDGET_MS),
     )
     if (lease.kind === 'skipped') {
@@ -76,9 +76,11 @@ export async function finishCheckSandbox(
       .then((result) => result.success)
       .catch(() => false)
   }
+  let destructionConfirmed = false
   if (!cleaned) {
     try {
       await sandbox.destroy()
+      destructionConfirmed = true
     } catch {
       console.warn('studio-runtime owned check destruction unconfirmed')
     }
@@ -88,7 +90,7 @@ export async function finishCheckSandbox(
   if (pool) {
     try {
       await awaitWithSignal(
-        () => pool.release(reservation.lease, cleaned),
+        () => pool.release(reservation.lease, cleaned, destructionConfirmed),
         AbortSignal.timeout(CHECK_POOL_RPC_BUDGET_MS),
       )
     } catch {

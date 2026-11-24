@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { readFile } from 'node:fs/promises'
+import { CHECK_SANDBOX_CACHE_SLOTS } from '../src/check-sandbox-pool-store'
 
 test('o sandbox de execução oferece a CPU usada na qualificação dos programas', async () => {
   const config = JSON.parse(await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'))
@@ -26,6 +27,8 @@ test('o sandbox de execução oferece a CPU usada na qualificação dos programa
     )
     expect(threeD.instance_type).toBe('standard-4')
     expect(threeD.max_instances).toBe(10)
+    expect(CHECK_SANDBOX_CACHE_SLOTS.twoD).toBeLessThan(sandbox.max_instances)
+    expect(CHECK_SANDBOX_CACHE_SLOTS.threeD).toBeLessThan(threeD.max_instances)
     expect(deployment.durable_objects.bindings).toContainEqual({
       class_name: 'CheckSandboxPool',
       name: 'CheckSandboxPools',

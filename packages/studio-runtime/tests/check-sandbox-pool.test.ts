@@ -5,8 +5,22 @@ import { finishCheckSandbox, reserveCheckSandbox } from '../src/check-container'
 import {
   CHECK_SANDBOX_LEASE_MS,
   type CheckSandboxAllocation,
+  type CheckSandboxRetirement,
 } from '../src/check-sandbox-pool-store'
 import { checkPoolNamespace, checkPoolSqlite } from './check-pool-sqlite'
+
+test('the shared 3D cache stays bounded across profiles and leaves new checks on the exclusive path', async () => {
+  const pools = checkPoolNamespace()
+  const first = await reserveCheckSandbox(pools, 'profile-a', true, 'warm')
+  const second = await reserveCheckSandbox(pools, 'profile-b', true, 'warm')
+  expect(first?.lease.pooled).toBe(true)
+  expect(second?.lease.pooled).toBe(true)
+  expect(await reserveCheckSandbox(pools, 'profile-c', true, 'warm')).toBeNull()
+  const newcomer = await reserveCheckSandbox(pools, 'profile-c', true, 'check')
+  expect(newcomer?.lease.pooled).toBe(false)
+  expect(newcomer?.lease.sandboxId).not.toBe(first?.lease.sandboxId)
+  expect(newcomer?.lease.sandboxId).not.toBe(second?.lease.sandboxId)
+})
 
 test('actual workerd RPC and SQLite preserve exclusive reservations across concurrent requests and DO reset', async () => {
   const directory = resolve(
@@ -65,7 +79,7 @@ test('actual workerd RPC and SQLite preserve exclusive reservations across concu
   }
 }, 45_000)
 
-function lease(allocation: CheckSandboxAllocation) {
+function lease(allocation: CheckSandboxAllocation | CheckSandboxRetirement) {
   if (allocation.kind !== 'lease') throw new Error('Expected lease')
   return allocation
 }
@@ -79,8 +93,8 @@ test('an acquisition whose response is lost keeps its reservation fenced and use
         const pool = pools.getByName(name)
         return {
           release: pool.release,
-          async acquire(operation) {
-            admitted = await pool.acquire(operation)
+          async acquire(operation, profileId, threeD) {
+            admitted = await pool.acquire(operation, profileId, threeD)
             throw new Error('Acquisition response lost')
           },
         }
@@ -93,8 +107,11 @@ test('an acquisition whose response is lost keeps its reservation fenced and use
   expect(reservation?.lease.pooled).toBe(false)
   expect(reservation?.lease.sandboxId).not.toBe(admitted?.kind === 'lease' && admitted.sandboxId)
   expect(
-    lease(await pools.getByName('objetivos-check-acquisition-1234567890abcdef-2d').acquire('check'))
-      .pooled,
+    lease(
+      await pools
+        .getByName('objetivos-cache-2d')
+        .acquire('check', 'check-acquisition-1234567890abcdef', false),
+    ).pooled,
   ).toBe(false)
 })
 
@@ -145,6 +162,10 @@ test('overlapping checks own different containers and overlapping warm is skippe
 test('expired ownership rotates the container name and fences a late release', () => {
   const { store } = checkPoolSqlite()
   const old = lease(store.acquire('check', 1000))
+  const retirement = store.acquire('check', 1000 + CHECK_SANDBOX_LEASE_MS)
+  expect(retirement.kind).toBe('retire')
+  if (retirement.kind !== 'retire') throw new Error('Expected retirement')
+  expect(store.completeRetirement(retirement)).toBe(true)
   const current = lease(store.acquire('check', 1000 + CHECK_SANDBOX_LEASE_MS))
   expect(current.pooled).toBe(true)
   expect(current.sandboxId).not.toBe(old.sandboxId)
@@ -156,6 +177,10 @@ test('a cleaned operation released after expiry never makes its old name reusabl
   const { store } = checkPoolSqlite()
   const old = lease(store.acquire('check', 1000))
   expect(store.release(old, true, 1000 + CHECK_SANDBOX_LEASE_MS)).toBe(true)
+  const retirement = store.acquire('check', 1001 + CHECK_SANDBOX_LEASE_MS)
+  if (retirement.kind !== 'retire') throw new Error('Expected retirement')
+  expect(retirement.sandboxId).toBe(old.sandboxId)
+  expect(store.completeRetirement(retirement)).toBe(true)
   expect(lease(store.acquire('check', 1001 + CHECK_SANDBOX_LEASE_MS)).sandboxId).not.toBe(
     old.sandboxId,
   )
@@ -173,20 +198,65 @@ test('recreating the store preserves an active reservation in SQLite', () => {
 test('failure retires the name; a forged token cannot release a successor', () => {
   const { store } = checkPoolSqlite()
   const first = lease(store.acquire('check', 1000))
-  expect(store.release(first, false, 1100)).toBe(true)
+  expect(store.release(first, false, 1100, true)).toBe(true)
   const current = lease(store.acquire('check', 1200))
   expect(current.sandboxId).not.toBe(first.sandboxId)
   expect(store.release({ ...current, token: first.token }, true, 1300)).toBe(false)
   expect(lease(store.acquire('check', 1400)).pooled).toBe(false)
 })
 
-test('profile and 2D/3D coordination keys have independent persisted slots', async () => {
+test('profiles share a bounded class cache but keep independent VM identities', async () => {
   const pools = checkPoolNamespace()
-  const allocations = await Promise.all(
-    ['alice-2d', 'alice-3d', 'bob-2d'].map((name) => pools.getByName(name).acquire('check')),
-  )
-  expect(allocations.map((allocation) => lease(allocation).pooled)).toEqual([true, true, true])
-  expect(new Set(allocations.map((allocation) => lease(allocation).sandboxId)).size).toBe(3)
+  const allocations = await Promise.all([
+    reserveCheckSandbox(pools, 'alice', false, 'check'),
+    reserveCheckSandbox(pools, 'alice', true, 'check'),
+    reserveCheckSandbox(pools, 'bob', false, 'check'),
+  ])
+  expect(allocations.map((allocation) => allocation?.lease.pooled)).toEqual([true, true, true])
+  expect(new Set(allocations.map((allocation) => allocation?.lease.sandboxId)).size).toBe(3)
+})
+
+test('eviction fences an idle profile and counts its VM until destruction is confirmed', () => {
+  const { store } = checkPoolSqlite()
+  const first = lease(store.acquire('warm', 1000, 'alice', 1))
+  expect(store.release(first, true, 1100)).toBe(true)
+  const retirement = store.acquire('warm', 1200, 'bob', 1)
+  if (retirement.kind !== 'retire') throw new Error('Expected retirement')
+  expect(retirement.sandboxId).toBe(first.sandboxId)
+  expect(store.release(first, true, 1300)).toBe(false)
+  expect(store.acquire('check', 1400, 'alice', 1).kind).toBe('retire')
+  expect(store.completeRetirement({ ...retirement, token: 'forged' })).toBe(false)
+  expect(store.acquire('warm', 1500, 'bob', 1)).toEqual(retirement)
+  expect(store.completeRetirement(retirement)).toBe(true)
+  const successor = lease(store.acquire('warm', 1600, 'bob', 1))
+  expect(successor.sandboxId).not.toBe(first.sandboxId)
+  expect(store.completeRetirement(retirement)).toBe(false)
+  expect(lease(store.acquire('check', 1700, 'charlie', 1)).pooled).toBe(false)
+})
+
+test('unconfirmed destruction quarantines the slot instead of freeing warm capacity', () => {
+  const { store } = checkPoolSqlite()
+  const first = lease(store.acquire('check', 1000))
+  expect(store.release(first, false, 1100, false)).toBe(true)
+  const retirement = store.acquire('warm', 1200)
+  if (retirement.kind !== 'retire') throw new Error('Expected retirement')
+  expect(retirement.sandboxId).toBe(first.sandboxId)
+  expect(store.acquire('warm', 1300, 'other', 1)).toEqual(retirement)
+})
+
+test('idle cache expiry requires retirement before a new VM is admitted', () => {
+  const { store } = checkPoolSqlite()
+  const first = lease(store.acquire('warm', 1000))
+  store.release(first, true, 1100)
+  expect(lease(store.acquire('check', 1200)).sandboxId).toBe(first.sandboxId)
+  const active = store.acquire('check', 1300)
+  expect(active.kind === 'lease' && active.pooled).toBe(false)
+  // A separate idle generation expires without being handed back to an owner.
+  const secondPool = checkPoolSqlite().store
+  const idle = lease(secondPool.acquire('warm', 1000))
+  secondPool.release(idle, true, 1100)
+  const retirement = secondPool.acquire('check', 301100)
+  expect(retirement.kind).toBe('retire')
 })
 
 test('lost release acknowledgement never destroys a sandbox already acquired by its successor', async () => {

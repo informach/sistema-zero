@@ -70,6 +70,19 @@ async function main() {
     assert.notEqual(threeD.sandboxId, successor.sandboxId)
     assert.equal(await send('release', { lease: successor, reusable: false }), true)
     assert.notEqual((await send('acquire', { operation: 'check' })).sandboxId, successor.sandboxId)
+    const extra = await Promise.all(
+      Array.from({ length: 8 }, (_, index) =>
+        send(`acquire?profile=capacity-${index}-2d`, { operation: 'warm' }),
+      ),
+    )
+    assert.ok(extra.every((lease) => lease.pooled))
+    assert.deepEqual(await send('acquire?profile=capacity-new-2d', { operation: 'warm' }), {
+      kind: 'skipped',
+    })
+    assert.equal(
+      (await send('acquire?profile=capacity-new-2d', { operation: 'check' })).pooled,
+      false,
+    )
     console.log(
       JSON.stringify({
         verified: true,
@@ -78,6 +91,7 @@ async function main() {
         resetPreserved: true,
         staleReleaseFenced: true,
         profileAndClassIsolation: true,
+        sharedCacheBounded: true,
       }),
     )
   } finally {

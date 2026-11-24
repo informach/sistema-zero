@@ -18,6 +18,9 @@ export class LG02ProbeBarrier extends DurableObject {
     if (this.arrivals === 2) this.ready.resolve()
     await this.ready.promise
   }
+  status() {
+    return this.arrivals
+  }
 }
 
 function authorized(request, env) {
@@ -35,6 +38,12 @@ export default {
     if (!authorized(request, env)) return new Response(null, { status: 401 })
     const url = new URL(request.url)
     if (request.method !== 'POST') return new Response(null, { status: 404 })
+    if (url.pathname === '/qa/barrier-state') {
+      const body = await readJsonBodyWithLimit(request, 1024)
+      if (!body || typeof body !== 'object' || !/^[a-f0-9]{24}$/.test(body.barrier))
+        return new Response(null, { status: 400 })
+      return Response.json({ arrivals: await env.QABarriers.getByName(body.barrier).status() })
+    }
     if (url.pathname === '/qa/retire') {
       const body = await readJsonBodyWithLimit(request, 16000)
       if (
@@ -73,12 +82,16 @@ export default {
         ? {
             getByName(name) {
               const pool = env.CheckSandboxPools.getByName(name)
+              let owner
               return {
-                acquire: (operation) => pool.acquire(operation),
-                async release(lease, reusable) {
-                  const result = await pool.release(lease, reusable)
+                acquire(operation, profileId, threeD) {
+                  owner = { profileId, threeD }
+                  return pool.acquire(operation, profileId, threeD)
+                },
+                async release(lease, reusable, destructionConfirmed) {
+                  const result = await pool.release(lease, reusable, destructionConfirmed)
                   if (reusable && result) {
-                    const successor = await pool.acquire('check')
+                    const successor = await pool.acquire('check', owner.profileId, owner.threeD)
                     if (
                       successor.kind !== 'lease' ||
                       !successor.pooled ||

@@ -36,13 +36,22 @@ programa. `ThreeDCheckSandbox` mantém `standard-4` e o limite de 50 instâncias
 executor geral permanece. Na validação remota de 15/10/2026, `lite` falhou ao
 descompactar a imagem no disco de 2 GB.
 
-**Contêiner da verificação dos objetivos (LG02, 24/11/2026).** Um Durable Object por identidade
-e classe 2D/3D reserva exclusivamente uma máquina aquecida. Verificações sucessivas reutilizam
+**Contêiner da verificação dos objetivos (LG02, 24/11/2026).** Um Durable Object por classe
+2D/3D limita o cache a 10 máquinas gerais e 2 máquinas 3D. Cada vaga pertence a um perfil.
+Verificações sucessivas do mesmo perfil reutilizam
 a máquina apenas depois de uma limpeza confirmada; abas sobrepostas recebem máquinas diferentes.
 Falha só destrói a máquina da própria operação. Reservas expiradas trocam o nome do recurso e
 liberações antigas não alteram um sucessor. A posse fica no SQLite do `CheckSandboxPool`, e não
 na memória de uma réplica do Members. Não destruir a máquina após tentar devolver uma reserva
 limpa: a confirmação RPC pode se perder depois de outro dono adquiri-la.
+
+O cache deixa capacidade para verificações novas. Uma vaga ociosa só é substituída depois de
+marcar sua retirada no SQLite e confirmar a destruição do contêiner. Descarte sem confirmação
+mantém a vaga contabilizada. Com todas as vagas em uso, o aquecimento é dispensado e a
+verificação segue em máquina exclusiva descartável. Perfis diferentes nunca reutilizam a
+mesma máquina. As reservas ociosas expiram após 5 minutos; a próxima aquisição descarta o
+nome antigo antes de admitir outro. `STUDIO_CHECK_CACHE_SLOTS` permite somente reduzir o
+limite para a qualificação privada, sem ampliar os tetos do produto.
 
 O `/v1/check/warm` (`{executionId, threeD}`) abre e fecha o Chromium (`runtime/check-warm.mjs`)
 na máquina reservada; se ela já está em uso, dispensa o aquecimento. As máquinas dormem após

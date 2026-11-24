@@ -1,9 +1,11 @@
 import { Database } from 'bun:sqlite'
 import { afterEach } from 'bun:test'
 import {
+  CHECK_SANDBOX_CACHE_SLOTS,
   type CheckSandboxAllocation,
   type CheckSandboxPoolPort,
   createCheckSandboxPoolStore,
+  uncachedCheckSandbox,
 } from '../src/check-sandbox-pool-store'
 
 const databases = new Set<Database>()
@@ -41,13 +43,24 @@ export function checkPoolNamespace() {
       }
       const current = pool
       return {
-        async acquire(operation) {
-          const result = current.transaction(() => current.store.acquire(operation, Date.now()))()
+        async acquire(operation, profileId, threeD) {
+          const transition = current.transaction(() =>
+            current.store.acquire(
+              operation,
+              Date.now(),
+              profileId,
+              threeD ? CHECK_SANDBOX_CACHE_SLOTS.threeD : CHECK_SANDBOX_CACHE_SLOTS.twoD,
+            ),
+          )()
+          // This SQLite-only adapter has no SDK: unconfirmed retirement stays counted.
+          const result = transition.kind === 'retire' ? uncachedCheckSandbox(operation) : transition
           allocations.push(result)
           return result
         },
-        async release(lease, reusable) {
-          return current.transaction(() => current.store.release(lease, reusable, Date.now()))()
+        async release(lease, reusable, destructionConfirmed) {
+          return current.transaction(() =>
+            current.store.release(lease, reusable, Date.now(), destructionConfirmed),
+          )()
         },
       }
     },

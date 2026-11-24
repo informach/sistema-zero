@@ -29,7 +29,9 @@ function readLease(value: unknown): CheckSandboxLease | undefined {
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
-    const pool = env.Pools.getByName(url.searchParams.get('profile') ?? 'profile-2d')
+    const profileId = url.searchParams.get('profile') ?? 'profile-2d'
+    const threeD = profileId.endsWith('-3d')
+    const pool = env.Pools.getByName(`objetivos-cache-${threeD ? '3d' : '2d'}`)
     const body: unknown = await request.json()
     if (!body || typeof body !== 'object') return new Response(null, { status: 400 })
     try {
@@ -38,7 +40,7 @@ export default {
         'operation' in body &&
         (body.operation === 'check' || body.operation === 'warm')
       )
-        return Response.json({ result: await pool.acquire(body.operation) })
+        return Response.json({ result: await pool.acquire(body.operation, profileId, threeD) })
       if (
         url.pathname === '/release' &&
         'lease' in body &&
@@ -46,7 +48,10 @@ export default {
         typeof body.reusable === 'boolean'
       ) {
         const lease = readLease(body.lease)
-        if (lease) return Response.json({ result: await pool.release(lease, body.reusable) })
+        if (lease)
+          return Response.json({
+            result: await pool.release(lease, body.reusable, body.reusable === false),
+          })
       }
       if (url.pathname === '/restart') await pool.restart()
       return new Response(null, { status: 400 })

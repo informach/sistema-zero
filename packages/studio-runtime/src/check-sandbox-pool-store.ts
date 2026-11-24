@@ -1,5 +1,7 @@
 /** Longer than the 140 s execution budget plus cleanup. Expiry retires the name, not its user. */
 export const CHECK_SANDBOX_LEASE_MS = 180_000
+export const CHECK_SANDBOX_CACHE_IDLE_MS = 300_000
+export const CHECK_SANDBOX_CACHE_SLOTS = { twoD: 10, threeD: 2 } as const
 
 export type CheckSandboxOperation = 'check' | 'warm'
 export interface CheckSandboxLease {
@@ -9,21 +11,31 @@ export interface CheckSandboxLease {
   pooled: boolean
 }
 export type CheckSandboxAllocation = CheckSandboxLease | { kind: 'skipped' }
+export interface CheckSandboxRetirement {
+  kind: 'retire'
+  sandboxId: string
+  token: string
+}
 export interface CheckSandboxPoolPort {
-  acquire(operation: CheckSandboxOperation): Promise<CheckSandboxAllocation>
-  release(lease: CheckSandboxLease, reusable: boolean): Promise<boolean>
+  acquire(
+    operation: CheckSandboxOperation,
+    profileId?: string,
+    threeD?: boolean,
+  ): Promise<CheckSandboxAllocation>
+  release(
+    lease: CheckSandboxLease,
+    reusable: boolean,
+    destructionConfirmed?: boolean,
+  ): Promise<boolean>
 }
 export interface CheckSandboxPools {
   getByName(name: string): CheckSandboxPoolPort
 }
-
-/** The store needs only rows, not an SDK-specific cursor. Also used with real SQLite in tests. */
 interface PoolSql {
   exec(query: string, ...bindings: (string | number | null)[]): { toArray(): unknown[] }
 }
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
-
 export function freshCheckSandboxLease(pooled: boolean): CheckSandboxLease {
   return {
     kind: 'lease',
@@ -32,46 +44,106 @@ export function freshCheckSandboxLease(pooled: boolean): CheckSandboxLease {
     pooled,
   }
 }
-
-/** Called synchronously inside a DO storage transaction; no network or await in a transition. */
+export function uncachedCheckSandbox(operation: CheckSandboxOperation): CheckSandboxAllocation {
+  return operation === 'warm' ? { kind: 'skipped' } : freshCheckSandboxLease(false)
+}
+/** Synchronous transitions only. A retiring VM still counts until destruction is acknowledged. */
 export function createCheckSandboxPoolStore(sql: PoolSql) {
   sql.exec(
-    'CREATE TABLE IF NOT EXISTS check_sandbox_slot (slot INTEGER PRIMARY KEY CHECK(slot = 1), sandbox_id TEXT NOT NULL, token TEXT, expires_at INTEGER NOT NULL)',
+    'CREATE TABLE IF NOT EXISTS check_sandbox_cache (profile_id TEXT PRIMARY KEY, sandbox_id TEXT NOT NULL UNIQUE, token TEXT, expires_at INTEGER NOT NULL, retirement_token TEXT)',
   )
-  const read = () => {
-    const row = sql
-      .exec('SELECT sandbox_id, token, expires_at FROM check_sandbox_slot WHERE slot = 1')
-      .toArray()[0]
-    if (row === undefined) return undefined
-    if (
-      !record(row) ||
-      typeof row.sandbox_id !== 'string' ||
-      (row.token !== null && typeof row.token !== 'string') ||
-      typeof row.expires_at !== 'number' ||
-      !Number.isSafeInteger(row.expires_at)
+  const rows = () =>
+    sql
+      .exec(
+        'SELECT profile_id, sandbox_id, token, expires_at, retirement_token FROM check_sandbox_cache ORDER BY expires_at, profile_id',
+      )
+      .toArray()
+      .map((row) => {
+        if (
+          !record(row) ||
+          typeof row.profile_id !== 'string' ||
+          typeof row.sandbox_id !== 'string' ||
+          (row.token !== null && typeof row.token !== 'string') ||
+          (row.retirement_token !== null && typeof row.retirement_token !== 'string') ||
+          typeof row.expires_at !== 'number' ||
+          !Number.isSafeInteger(row.expires_at)
+        )
+          throw new Error('Invalid persisted sandbox reservation')
+        return {
+          profileId: row.profile_id,
+          sandboxId: row.sandbox_id,
+          token: row.token,
+          expiresAt: row.expires_at,
+          retirementToken: row.retirement_token,
+        }
+      })
+  const retire = (current: ReturnType<typeof rows>[number]): CheckSandboxRetirement => {
+    const token = current.retirementToken ?? crypto.randomUUID()
+    sql.exec(
+      'UPDATE check_sandbox_cache SET token = NULL, retirement_token = ? WHERE sandbox_id = ?',
+      token,
+      current.sandboxId,
     )
-      throw new Error('Invalid persisted sandbox reservation')
-    return { sandboxId: row.sandbox_id, token: row.token, expiresAt: row.expires_at }
+    return { kind: 'retire', sandboxId: current.sandboxId, token }
   }
   return {
-    acquire(operation: CheckSandboxOperation, now: number): CheckSandboxAllocation {
-      if (!['check', 'warm'].includes(operation) || !Number.isSafeInteger(now) || now < 0)
+    acquire(
+      operation: CheckSandboxOperation,
+      now: number,
+      profileId = 'default',
+      capacity = 1,
+    ): CheckSandboxAllocation | CheckSandboxRetirement {
+      if (
+        !['check', 'warm'].includes(operation) ||
+        !Number.isSafeInteger(now) ||
+        now < 0 ||
+        typeof profileId !== 'string' ||
+        !profileId ||
+        profileId.length > 256 ||
+        !Number.isSafeInteger(capacity) ||
+        capacity < 1 ||
+        capacity > CHECK_SANDBOX_CACHE_SLOTS.twoD
+      )
         throw new Error('Invalid sandbox acquisition')
-      const current = read()
-      if (current?.token && current.expiresAt > now)
-        return operation === 'warm' ? { kind: 'skipped' } : freshCheckSandboxLease(false)
+      const all = rows()
+      const current = all.find((row) => row.profileId === profileId)
+      if (current?.retirementToken) return retire(current)
+      if (current?.token && current.expiresAt > now) return uncachedCheckSandbox(operation)
+      if (current && current.expiresAt <= now) return retire(current)
+      if (!current && all.length >= capacity) {
+        const victim = all.find(
+          (row) => row.retirementToken || row.token === null || row.expiresAt <= now,
+        )
+        return victim ? retire(victim) : uncachedCheckSandbox(operation)
+      }
       const lease = freshCheckSandboxLease(true)
-      // Only an idle, acknowledged-clean machine can be reused. Expired reservations get a new name.
-      if (current && current.token === null) lease.sandboxId = current.sandboxId
+      // A VM is reused only by its own profile, after acknowledged cleanup.
+      if (current) lease.sandboxId = current.sandboxId
       sql.exec(
-        'INSERT INTO check_sandbox_slot (slot, sandbox_id, token, expires_at) VALUES (1, ?, ?, ?) ON CONFLICT(slot) DO UPDATE SET sandbox_id = excluded.sandbox_id, token = excluded.token, expires_at = excluded.expires_at',
+        'INSERT INTO check_sandbox_cache (profile_id, sandbox_id, token, expires_at, retirement_token) VALUES (?, ?, ?, ?, NULL) ON CONFLICT(profile_id) DO UPDATE SET token = excluded.token, expires_at = excluded.expires_at',
+        profileId,
         lease.sandboxId,
         lease.token,
         now + CHECK_SANDBOX_LEASE_MS,
       )
       return lease
     },
-    release(lease: CheckSandboxLease, reusable: boolean, now: number): boolean {
+    completeRetirement(retirement: CheckSandboxRetirement): boolean {
+      const current = rows().find((row) => row.sandboxId === retirement.sandboxId)
+      if (!current || current.retirementToken !== retirement.token) return false
+      sql.exec(
+        'DELETE FROM check_sandbox_cache WHERE sandbox_id = ? AND retirement_token = ?',
+        retirement.sandboxId,
+        retirement.token,
+      )
+      return true
+    },
+    release(
+      lease: CheckSandboxLease,
+      reusable: boolean,
+      now: number,
+      destructionConfirmed = false,
+    ): boolean {
       if (
         !record(lease) ||
         lease.kind !== 'lease' ||
@@ -79,23 +151,25 @@ export function createCheckSandboxPoolStore(sql: PoolSql) {
         typeof lease.token !== 'string' ||
         typeof lease.pooled !== 'boolean' ||
         typeof reusable !== 'boolean' ||
+        typeof destructionConfirmed !== 'boolean' ||
         !Number.isSafeInteger(now) ||
         now < 0
       )
         throw new Error('Invalid sandbox release')
       if (!lease.pooled) return false
-      const current = read()
-      if (!current || current.sandboxId !== lease.sandboxId || current.token !== lease.token)
-        return false
-      if (!reusable || current.expiresAt <= now)
+      const current = rows().find((row) => row.sandboxId === lease.sandboxId)
+      if (!current || current.token !== lease.token || current.retirementToken) return false
+      if (!reusable && destructionConfirmed)
         sql.exec(
-          'DELETE FROM check_sandbox_slot WHERE slot = 1 AND sandbox_id = ? AND token = ?',
+          'DELETE FROM check_sandbox_cache WHERE sandbox_id = ? AND token = ?',
           lease.sandboxId,
           lease.token,
         )
+      else if (!reusable || current.expiresAt <= now) retire(current)
       else
         sql.exec(
-          'UPDATE check_sandbox_slot SET token = NULL, expires_at = 0 WHERE slot = 1 AND sandbox_id = ? AND token = ?',
+          'UPDATE check_sandbox_cache SET token = NULL, expires_at = ? WHERE sandbox_id = ? AND token = ?',
+          now + CHECK_SANDBOX_CACHE_IDLE_MS,
           lease.sandboxId,
           lease.token,
         )
