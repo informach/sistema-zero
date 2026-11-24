@@ -1,0 +1,67 @@
+{
+  "testedAt": "2026-11-23T19:12:57.480Z",
+  "environment": "staging",
+  "executionId": "check-lg02-d08b7d8acefa9dac5f20f7fc",
+  "scope": "QA sintética; duas abas reais com a mesma identidade do executor",
+  "activationQualified": false,
+  "missing": [
+    "falha de limpeza injetada no contêiner real",
+    "suspensão",
+    "capacidade",
+    "perfis distintos",
+    "percurso autenticado completo do Members"
+  ],
+  "observations": [
+    {
+      "label": "warm",
+      "status": 200,
+      "durationMs": 6159,
+      "body": {
+        "ok": true,
+        "ms": 6075
+      }
+    },
+    {
+      "label": "execution-failure",
+      "status": 500,
+      "durationMs": 19089,
+      "body": {
+        "ok": false,
+        "code": "CHECK_FAILED",
+        "message": "Não foi possível testar o jogo agora."
+      }
+    },
+    {
+      "label": "during-failure",
+      "status": 200,
+      "durationMs": 23238,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto-1",
+            "passed": true
+          },
+          {
+            "id": "texto-2",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "recovery",
+      "status": 200,
+      "durationMs": 5201,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto-1",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

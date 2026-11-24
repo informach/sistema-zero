@@ -1,0 +1,19 @@
+{
+  "kind": "production-promoted-source",
+  "sha": "93c9a15a248138586f1635f5035f5647926ed474",
+  "approvedHead": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+  "tree": "d94d714b731b0aee2c3f2336b9c70cb7fc84065d",
+  "ci": {
+    "run": 45281893853,
+    "attempt": 1,
+    "passedJobs": 9
+  },
+  "planArtifact": {
+    "id": 14871085472,
+    "run": 45281894080
+  },
+  "discovery": {
+    "indexEmpty": true,
+    "closedPagesRead": 3
+  }
+}

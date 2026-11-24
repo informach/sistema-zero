@@ -1,0 +1,296 @@
+{
+  "recordedAt": "2026-11-23T19:18:50.390Z",
+  "environment": "production",
+  "operation": "Preparação de watchPatterns para o próximo deployment, sem iniciar deployments",
+  "updates": [
+    {
+      "service": "admin",
+      "before": [
+        "/packages/admin/**",
+        "/packages/core/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/admin/**",
+        "/packages/core/**",
+        "/packages/molda-cenarios-core/**",
+        "/packages/molda-cenarios/**",
+        "/packages/molda-cenarios-motor/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ]
+    },
+    {
+      "service": "api-gateway",
+      "before": [
+        "/packages/api-gateway/**",
+        "/packages/core/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/api-gateway/**",
+        "/packages/core/**",
+        "/packages/molda-cenarios-core/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/.railway/**"
+      ]
+    },
+    {
+      "service": "arquipelago-api",
+      "before": [
+        "/packages/arquipelago/**",
+        "/packages/arquipelago-api/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/avatar-quarto/**",
+        "/packages/core/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/arquipelago/**",
+        "/packages/arquipelago-api/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/avatar-quarto/**",
+        "/packages/core/**",
+        "/packages/molda-cenarios-core/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ]
+    },
+    {
+      "service": "community-kids",
+      "before": [
+        "/packages/community-kids/**",
+        "/packages/core/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/molda/**",
+        "/packages/pensa/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/community-kids/**",
+        "/packages/core/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/molda/**",
+        "/packages/molda-cenarios-core/**",
+        "/packages/molda-cenarios/**",
+        "/packages/molda-cenarios-motor/**",
+        "/packages/pensa/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ]
+    },
+    {
+      "service": "community",
+      "before": [
+        "/packages/community/**",
+        "/packages/core/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/molda/**",
+        "/packages/pensa/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/community/**",
+        "/packages/core/**",
+        "/packages/edisvg/**",
+        "/packages/member-shell/**",
+        "/packages/avatar-quarto/**",
+        "/packages/arquipelago-contracts/**",
+        "/packages/helpdesk-contracts/**",
+        "/packages/molda/**",
+        "/packages/molda-cenarios-core/**",
+        "/packages/molda-cenarios/**",
+        "/packages/molda-cenarios-motor/**",
+        "/packages/pensa/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/packages/ui/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ]
+    },
+    {
+      "service": "members",
+      "before": [
+        "/packages/members/**",
+        "/packages/core/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ],
+      "after": [
+        "/packages/members/**",
+        "/packages/core/**",
+        "/packages/molda-cenarios-core/**",
+        "/packages/pinta/**",
+        "/packages/studio/**",
+        "/bun.lock",
+        "/package.json",
+        "/.dockerignore",
+        "/scripts/release/**",
+        "/.railway/**"
+      ]
+    }
+  ],
+  "before": [
+    {
+      "service": "community-kids",
+      "deployments": [
+        "47b84d0c-89e0-49fc-b3de-52e9573fa6ce"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "community",
+      "deployments": [
+        "778aee1a-e2e9-4816-8cbb-0385e5723d45"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "admin",
+      "deployments": [
+        "5e10b8b4-bc51-4ba4-8602-9d7315512764"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "members",
+      "deployments": [
+        "12c91907-5bc1-410d-9fae-e2b51b44fd43"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "api-gateway",
+      "deployments": [
+        "d3988e33-3c73-4ce9-917c-dff7029aed65"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "arquipelago-api",
+      "deployments": [
+        "47c779a9-cb21-4567-a4a4-fe4e143f120e"
+      ],
+      "state": "online"
+    }
+  ],
+  "after": [
+    {
+      "service": "community-kids",
+      "deployments": [
+        "47b84d0c-89e0-49fc-b3de-52e9573fa6ce"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "community",
+      "deployments": [
+        "778aee1a-e2e9-4816-8cbb-0385e5723d45"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "admin",
+      "deployments": [
+        "5e10b8b4-bc51-4ba4-8602-9d7315512764"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "members",
+      "deployments": [
+        "12c91907-5bc1-410d-9fae-e2b51b44fd43"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "api-gateway",
+      "deployments": [
+        "d3988e33-3c73-4ce9-917c-dff7029aed65"
+      ],
+      "state": "online"
+    },
+    {
+      "service": "arquipelago-api",
+      "deployments": [
+        "47c779a9-cb21-4567-a4a4-fe4e143f120e"
+      ],
+      "state": "online"
+    }
+  ],
+  "pendingWork": []
+}

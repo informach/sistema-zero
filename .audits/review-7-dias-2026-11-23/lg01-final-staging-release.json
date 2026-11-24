@@ -1,0 +1,102 @@
+{
+  "recordedAt": "2026-11-24 00:33:00 UTC",
+  "candidate": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+  "run": 45281918669,
+  "attempt": 1,
+  "ciJobsPassed": 13,
+  "deploymentJob": "success",
+  "pendingWork": 0,
+  "deployments": [
+    {
+      "name": "community",
+      "deploymentId": "d811dfdc-cc7f-477e-8a7c-b2746d53fdf0",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "admin",
+      "deploymentId": "1175f896-06ba-4a40-be9c-b80d176c9dfd",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "community-kids",
+      "deploymentId": "2f1b20b6-f14e-4723-b232-936fe03141fc",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "api-gateway",
+      "deploymentId": "42cc22be-2b1d-459b-91ec-2e76e26b74dc",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "palco-gravacao",
+      "deploymentId": "e0397b74-c937-48ab-a3f6-5dbdd050e801",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "hub",
+      "deploymentId": "12442a33-5401-47e7-b359-fa68dafe181b",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "auth",
+      "deploymentId": "3e914ffa-8ac9-43bd-ab65-8bcc72d38166",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    },
+    {
+      "name": "members",
+      "deploymentId": "c639c887-8591-43e9-bbaa-cc38dd7ad458",
+      "status": "SUCCESS",
+      "sha": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e"
+    }
+  ],
+  "manual": {
+    "surface": "authenticated Admin local lesson preview and child private QA project",
+    "menu": {
+      "viewportHeight": 936,
+      "trigger": {
+        "x": 1171,
+        "y": 805.5,
+        "width": 40,
+        "height": 40,
+        "top": 805.5,
+        "right": 1211,
+        "bottom": 845.5,
+        "left": 1171
+      },
+      "menu": {
+        "x": 809.453125,
+        "y": 393.5625,
+        "width": 387.546875,
+        "height": 407.9375,
+        "top": 393.5625,
+        "right": 1197,
+        "bottom": 801.5,
+        "left": 809.453125
+      }
+    },
+    "thumbnails": {
+      "count": 24,
+      "loaded": 24,
+      "allNonempty": true,
+      "minExtent": 80,
+      "maxExtent": 82
+    },
+    "adminNetwork": {
+      "parsed": 47,
+      "apiWrites": 0
+    },
+    "privateChildProjectReopenedSaved": true,
+    "privateChildProjectsCount": 7,
+    "originalAdultAudiencePreserved": true,
+    "lessonOrRealChildProgressChangedByAdminPreview": false,
+    "supportMessagesSent": 0,
+    "liveMuralPostsSent": 0
+  }
+}

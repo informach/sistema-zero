@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 
 const directory = new URL('.', import.meta.url)
 const read = name => {
@@ -26,18 +26,31 @@ for (const name of ['services-locked.log', 'services-resumed.log']) {
 const suites = [
   'molda-locked.log', 'studio-locked.log', 'studio-resumed.log', 'ci-and-lessons.log',
   'auth-final-db.log', 'members-db-isolated-final.log', 'referrals-db.log',
-  'hub-db.log', 'commerce-db.log', 'thumbnail-regression-final.log', 'agent-runtime.log',
+  'hub-db.log', 'commerce-db.log', 'thumbnail-regression-final.log', 'campo-fixtures-final.log', 'agent-runtime.log',
 ].map(log => ({ log, ...counts(read(log).replace(/^@\S+ test: /gm, '')) }))
 const types = read('typecheck-locked.log')
+const correctedTypes = read('types-corrected-final.log')
+const originalTypePasses = [...types.matchAll(/^(@\S+):typecheck\s+\| Done in/gm)].map(m => m[1])
+const correctedTypePasses = [...correctedTypes.matchAll(/^(@\S+):typecheck\s+\| Done in/gm)].map(m => m[1])
+const studioFinalTypes = read('studio-typecheck-final.log')
+// O comando final do Studio tem stdout mínimo; o resultado de saída é gravado separadamente.
+if (read('studio-typecheck-final.exit').trim() === '0') correctedTypePasses.push('@sistemazero/studio')
+const typePasses = [...new Set([...originalTypePasses, ...correctedTypePasses])].sort()
+const expectedTypes = readdirSync('packages').flatMap(dir => {
+  try { const p = JSON.parse(readFileSync(`packages/${dir}/package.json`, 'utf8')); return p.scripts?.typecheck ? [p.name] : [] } catch { return [] }
+}).sort()
 const result = {
   generatedAt: new Date().toISOString(),
   services: { packages: services.priorPasses.length + services.results.length, allPassed: services.results.every(r => r.exitCode === 0), counts: Object.fromEntries(serviceCounts) },
   suites,
   types: {
-    completed: [...types.matchAll(/^(@\S+):typecheck\s+\| Done in/gm)].map(m => m[1]),
+    completed: typePasses,
+    expected: expectedTypes,
+    pendingOrFailed: expectedTypes.filter(name => !typePasses.includes(name)),
     initialErrors: [...types.matchAll(/error TS[^\r\n]+/g)].map(m => m[0]),
     correctedConsumersLog: 'types-corrected-final.log',
-    correctedConsumersOutput: read('types-corrected-final.log').trim(),
+    correctedConsumersOutput: correctedTypes.trim(),
+    studioFinalOutput: studioFinalTypes.trim(),
   },
   biome: read('biome-complete.log').split('\n').filter(l => /Checked |Found |Some errors/.test(l)),
   browser: {

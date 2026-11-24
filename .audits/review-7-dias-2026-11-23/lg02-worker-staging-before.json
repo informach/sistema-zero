@@ -1,0 +1,172 @@
+[
+  {
+    "id": "198628ce-a0e0-42d6-aa38-2022e5469d8e",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Pinta Reader A; qualified Linux image 447393906...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "6276e3b7-98a4-4a1c-a40d-172d5b0f6b17",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-20T13:51:21.824247Z"
+  },
+  {
+    "id": "4a4c2915-e9c5-4828-811a-465cc3883355",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Pinta Reader A; qualified Linux image 447496020...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "73635702-d2a1-4ee7-9403-e327e441627a",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-20T14:20:15.004701Z"
+  },
+  {
+    "id": "5d73b9cb-7adf-43e7-975a-c0c145544f60",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Pinta Reader A; qualified Linux image 448130522...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "21f97b94-b6af-48fe-9301-d52887349849",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-20T21:17:37.320402Z"
+  },
+  {
+    "id": "29922fd7-3ce1-4386-8d94-69a0bc669e62",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Pinta Reader A; qualified Linux image 448561772...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "1d8f1245-9e74-4774-abab-603696f0990c",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-21T07:39:45.177951Z"
+  },
+  {
+    "id": "363c3493-0ec1-4e81-aa41-e166d20e121a",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Activate qualified Pinta Python release6; reade...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "eb779fcd-ba5c-4614-93f7-69aba37cf21f",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-21T09:02:47.119003Z"
+  },
+  {
+    "id": "376e216d-bf0e-4333-a5e9-51c276e8d528",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Automatic deployment on upload.",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "f93d8fe7-07d4-464d-ace6-c0a87b810bca",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-23T01:03:13.078702Z"
+  },
+  {
+    "id": "3ffea140-c625-4e5c-9065-9feb6d234fe5",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Automatic deployment on upload.",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "464c90e2-d41b-42cc-9573-2706b669cebf",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-23T01:06:29.026653Z"
+  },
+  {
+    "id": "a0a9df7f-6707-474d-a1e5-ea0534472d87",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Automatic deployment on upload.",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "4b6c9bd5-9c88-4b18-83c4-839900129279",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-23T02:54:16.286937Z"
+  },
+  {
+    "id": "74e843f1-623b-4705-a788-e710e80c6ca5",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Automatic deployment on upload.",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "087cca4a-c3e7-486b-b5a8-3bac014219b8",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-23T09:02:24.284068Z"
+  },
+  {
+    "id": "9feff3c8-c7a2-4dd4-b3be-dc8d6d05625e",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "helena@informach.com.br",
+    "annotations": {
+      "workers/message": "Automatic deployment on upload.",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "c523b815-32a8-4717-a9cf-0335635b8b21",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-11-23T18:45:24.414311Z"
+  }
+]
