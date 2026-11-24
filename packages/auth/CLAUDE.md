@@ -539,8 +539,11 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
 - **Guards:** **criar** e **arquivar** perfil RECUSAM a sessão de perfil (403) — detectada
   pela presença do `x-auth-account-id` que o gateway injeta só quando há `pfl`. Mas
   **editar** (`PATCH /:id`) usa `ownProfileEditContext`: a CONTA edita qualquer perfil
-  dela; a **sessão de PERFIL edita SÓ o próprio** (auto-serviço da criança — nome/foto/
-  telefone; o `:id` precisa ser o perfil ATIVO = `x-auth-user-id`, editar um IRMÃO → 403).
+  dela; a **sessão de PERFIL edita SÓ o próprio** (auto-serviço da criança — APELIDO
+  (`publicNickname`, desde 24/11/2026)/foto/telefone; o `:id` precisa ser o perfil ATIVO =
+  `x-auth-user-id`, editar um IRMÃO → 403). O NOME COMPLETO (`name`, privado, vai no
+  certificado) na sessão de perfil → 403 na rota e no `UpdateProfileDetailsService`. Trocar
+  só o apelido preserva `identityConfirmedAt` (só mudar `name` sozinho zera).
   Listar e selecionar aceitam ambas. Nome do perfil exige **≥ 3 caracteres** (DTO
   `PROFILE_NAME` + `assertProfileName` no agregado). (O gateway resolve `pfl.accountId` →
   header `x-auth-account-id`, stripado da entrada/anti-spoof — ver api-gateway.)

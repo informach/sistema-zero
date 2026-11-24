@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
 import { LevelBadge } from '@/components/kids/level-badge'
-import { apiSend } from '@/lib/api'
+import { type ApiError, apiSend, CODIGO_SEM_ENVELOPE } from '@/lib/api'
 import type { ProfileView, StudentLevelView } from '@/lib/types'
 
 /** Colocação no ranking kids (XP) — `null` = gamificação indisponível (esconde a linha). */
@@ -22,18 +22,29 @@ export interface RankingInfo {
   totalStudents: number
 }
 
-// Edição do PRÓPRIO perfil (não da conta): nome (mín. 3, espelha o auth) + telefone.
+// Edição do PRÓPRIO perfil (não da conta): apelido (2 a 40, espelha o auth) + telefone.
+// Desde 24/11/2026 a criança muda o próprio apelido; o nome completo (privado, vai no
+// certificado) e o nascimento seguem com o responsável, na Área dos pais.
 // O AVATAR é montado por camadas (guarda-roupa) — não há mais upload de foto.
 // E-mail/senha são da CONTA e vivem na Área dos pais — não aqui.
 const ProfileSchema = z.object({
-  name: z.string().trim().min(3, 'O nome precisa de ao menos 3 letras').max(60),
+  publicNickname: z
+    .string()
+    .trim()
+    .min(2, 'O apelido precisa de ao menos 2 letras')
+    .max(40, 'O apelido pode ter até 40 letras'),
   whatsapp: z.string().trim().max(20),
 })
 
+/** O apelido como a criança digitou, com os espaços juntados como o auth guarda. */
+function normalizeNickname(value: string): string {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
 /**
  * Perfil kids (sessão de perfil): 1 card de identidade — avatar CLICÁVEL (abre o
- * guarda-roupa por camadas) + nome + colocação no ranking — e o botão "Editar perfil"
- * abre o modal com nome e telefone DO PERFIL. A criança nunca toca na conta do responsável.
+ * guarda-roupa por camadas) + apelido + colocação no ranking — e o botão "Editar perfil"
+ * abre o modal com apelido e telefone DO PERFIL. A criança nunca toca na conta do responsável.
  */
 export function ProfileClient({
   profile,
@@ -193,13 +204,16 @@ function IdentityCard({
 
 function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => void }) {
   const router = useRouter()
+  // Perfil antigo sem apelido aparece como "Criador(a)": o campo nasce vazio, não com o genérico.
+  const currentNickname = profile.publicNickname ?? ''
+  const [nickname, setNickname] = useState(currentNickname)
   const [whatsapp, setWhatsapp] = useState(profile.whatsapp ?? '')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const parsed = ProfileSchema.pick({ whatsapp: true }).safeParse({ whatsapp })
+    const parsed = ProfileSchema.safeParse({ publicNickname: nickname, whatsapp })
     if (!parsed.success) {
       const next: Record<string, string> = {}
       for (const issue of parsed.error.issues) next[String(issue.path[0])] = issue.message
@@ -208,16 +222,24 @@ function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => 
     }
     setErrors({})
     setSaving(true)
+    const nextNickname = normalizeNickname(parsed.data.publicNickname)
     try {
-      // Telefone vazio → `null` (remove); a borda do auth aceita ambos.
+      // Telefone vazio → `null` (remove); a borda do auth aceita ambos. O apelido só vai
+      // quando mudou (o auth renova a sessão e o menu passa a mostrar o novo).
       await apiSend(`/api/profiles/${profile.id}`, 'PATCH', {
         whatsapp: parsed.data.whatsapp.length > 0 ? parsed.data.whatsapp : null,
+        ...(nextNickname !== currentNickname ? { publicNickname: nextNickname } : {}),
       })
       toast.success('Perfil atualizado!')
       router.refresh()
       onDone()
-    } catch {
-      toast.error('Não foi possível salvar. Tente de novo.')
+    } catch (err) {
+      const apiError = err as Partial<ApiError> | null
+      toast.error(
+        apiError?.code && apiError.code !== CODIGO_SEM_ENVELOPE && apiError.message
+          ? apiError.message
+          : 'Não foi possível salvar. Tente de novo.',
+      )
     } finally {
       setSaving(false)
     }
@@ -225,13 +247,22 @@ function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => 
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-      <div className="rounded-2xl border border-border p-4 text-sm">
-        <p className="font-semibold">Apelido público: {profile.name}</p>
-        <p className="mt-1 text-muted-foreground">
-          Seu responsável pode mudar seu apelido e confirmar seu nome completo na área dos pais, em
-          Família.
-        </p>
-      </div>
+      <Field
+        label="Apelido"
+        htmlFor="profileNickname"
+        error={errors.publicNickname}
+        hint="É assim que os colegas veem você no Mural, no Clube e no ranking. Não use seu nome completo."
+      >
+        <Input
+          id="profileNickname"
+          value={nickname}
+          maxLength={40}
+          autoComplete="off"
+          placeholder="Como os colegas vão te chamar"
+          onChange={(e) => setNickname(e.target.value)}
+          aria-invalid={Boolean(errors.publicNickname)}
+        />
+      </Field>
       <Field label="Telefone" htmlFor="profileWhatsapp" error={errors.whatsapp}>
         <Input
           id="profileWhatsapp"
@@ -243,6 +274,9 @@ function ProfileForm({ profile, onDone }: { profile: ProfileView; onDone: () => 
           aria-invalid={Boolean(errors.whatsapp)}
         />
       </Field>
+      <p className="text-muted-foreground text-sm">
+        Seu nome completo e sua data de nascimento ficam com o seu responsável, na área dos pais.
+      </p>
       <Button type="submit" disabled={saving} className="self-start">
         {saving ? <Spinner /> : null}
         Salvar

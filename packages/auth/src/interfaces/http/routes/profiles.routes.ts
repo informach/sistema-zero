@@ -161,15 +161,11 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       .patch(
         '/profiles/:id',
         async ({ headers, params, body }) => {
-          // A criança edita o PRÓPRIO perfil (sessão de perfil); a conta edita qualquer um.
+          // A criança edita o PRÓPRIO perfil (sessão de perfil: apelido e telefone); a conta
+          // edita qualquer um. O nome completo (privado, vai no certificado) é só dos pais.
           const accountUserId = ownProfileEditContext(headers, params.id)
-          if (
-            (body.name !== undefined || body.publicNickname !== undefined) &&
-            headers['x-auth-account-id']?.trim()
-          )
-            throw new ForbiddenError(
-              'O nome completo e o apelido público só podem ser alterados pelo responsável',
-            )
+          if (body.name !== undefined && headers['x-auth-account-id']?.trim())
+            throw new ForbiddenError('O nome completo só pode ser alterado pelo responsável')
           // Data de nascimento é EDITÁVEL SÓ PELOS PAIS (sessão da conta). Numa sessão
           // de perfil (a criança) o gateway injeta `x-auth-account-id` → recusa a alteração.
           if (body.birthDate !== undefined && headers['x-auth-account-id']?.trim()) {

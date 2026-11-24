@@ -2225,7 +2225,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     sortOrder: number
   }
 
-  test('identidade: apelido público separado, certificado privado com ownership e criança sem edição', async () => {
+  test('identidade: apelido público separado, certificado privado com ownership e criança edita só o apelido', async () => {
     const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const response = await app.handle(
@@ -2278,20 +2278,39 @@ describe('Auth — perfis (estilo Netflix)', () => {
       ),
     )
     expect(await batch.text()).not.toContain('Maria Silva Santos')
-    for (const change of [{ name: 'Hackeado' }, { publicNickname: 'Outro apelido' }]) {
-      expect(
-        (
-          await app.handle(
-            req(
-              'PATCH',
-              `/auth/profiles/${profile.id}`,
-              gw(profile.id, { 'x-auth-account-id': ACCOUNT }),
-              change,
-            ),
-          )
-        ).status,
-      ).toBe(403)
-    }
+    const childHeaders = gw(profile.id, { 'x-auth-account-id': ACCOUNT })
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${profile.id}`, childHeaders, { name: 'Hackeado' }),
+        )
+      ).status,
+    ).toBe(403)
+    // A criança troca o próprio apelido (24/11/2026): vale na hora, o nome completo segue
+    // privado e a identidade confirmada pelos pais continua confirmada (certificado intacto).
+    const renamed = await app.handle(
+      req('PATCH', `/auth/profiles/${profile.id}`, childHeaders, {
+        publicNickname: '  Raio   Verde ',
+      }),
+    )
+    expect(renamed.status).toBe(200)
+    const renamedText = await renamed.text()
+    expect(renamedText).not.toContain('Maria Silva Santos')
+    expect(JSON.parse(renamedText).profile).toMatchObject({
+      name: 'Raio Verde',
+      publicNickname: 'Raio Verde',
+    })
+    const afterRename = await app.handle(
+      req('POST', privatePath, { 'x-internal-token': INTERNAL_TOKEN }, body),
+    )
+    expect(await afterRename.json()).toEqual({ fullName: 'Maria Silva Santos', confirmed: true })
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${profile.id}`, childHeaders, { publicNickname: ' ' }),
+        )
+      ).status,
+    ).toBeGreaterThanOrEqual(400)
   })
 
   test('admission: criação exige requestId estável e ausência não grava perfil', async () => {
@@ -2836,11 +2855,18 @@ describe('Auth — sessão de perfil (PR2)', () => {
   test('sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos', async () => {
     const { app, accountId, profilesRepo } = await setup()
     const ph = gwProfile(PROFILE_ID, accountId)
-    // Nome e apelido são exclusivos do responsável; telefone conserva auto-serviço.
+    // O nome completo é exclusivo do responsável; apelido e telefone são auto-serviço.
     expect(
       (await app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { name: 'Sofia Maria' })))
         .status,
     ).toBe(403)
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${PROFILE_ID}`, ph, { publicNickname: 'Sofi Estrela' }),
+        )
+      ).status,
+    ).toBe(200)
     expect(
       (
         await app.handle(
@@ -2874,6 +2900,14 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(
       (await app.handle(req('PATCH', `/auth/profiles/${SIBLING}`, ph, { name: 'Hackeado' })))
         .status,
+    ).toBe(403)
+    // O apelido também é só do PRÓPRIO perfil: o do irmão segue fora de alcance.
+    expect(
+      (
+        await app.handle(
+          req('PATCH', `/auth/profiles/${SIBLING}`, ph, { publicNickname: 'Hackeado' }),
+        )
+      ).status,
     ).toBe(403)
     // Listar e selecionar seguem livres a partir de uma sessão de perfil.
     expect((await app.handle(req('GET', '/auth/profiles', ph))).status).toBe(200)

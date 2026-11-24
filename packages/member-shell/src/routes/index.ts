@@ -1820,6 +1820,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const parsed = UpdateProfileBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await profiles.update(id, parsed.data)
+      // A criança trocou o PRÓPRIO apelido (24/11/2026): o menu lê o apelido da claim
+      // `pfl` do access token (até 15 min). Renova já, em melhor esforço, para o
+      // `router.refresh()` da tela mostrar o novo; falha só adia até o próximo refresh.
+      if (status === 200 && parsed.data.publicNickname !== undefined) {
+        const viewer = await session.getSession()
+        if (viewer?.activeProfile && viewer.id === id) await gateway.refreshSession()
+      }
       return NextResponse.json(body, { status })
     },
   }

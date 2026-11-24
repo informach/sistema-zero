@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## A criança edita o próprio apelido (24/11/2026)
+
+Pedido da dona: em "Meu perfil" (`app/(app)/perfil/profile-client.tsx`, "Editar perfil") a
+criança muda o PRÓPRIO apelido (2 a 40, espaços juntados; só vai ao servidor quando mudou). O
+nome completo e o nascimento seguem só com o responsável (o Auth recusa `name` na sessão de
+perfil). Sem aviso nem aprovação dos pais; eles veem e corrigem na Família como antes. Perfil
+antigo sem apelido abre o campo vazio, nunca com "Criador(a)". O menu lê o apelido do token: o
+BFF renova a sessão logo depois da troca (CLAUDE.md do member-shell). Teste:
+`tests/profile-nickname-edit.test.tsx`.
+
 ## Apelido no Arquipélago (full review da Aula 7, 19/11/2026)
 
 `activeProfile.name` contém o apelido público completo, não o nome civil. A página do
@@ -1150,7 +1160,7 @@ os três BFFs `/api/helpdesk/portal/*` repetem a proteção com
 da criança. Um perfil que adivinhar a URL é redirecionado pela página e recebe 403 do BFF antes de
 qualquer chamada ao gateway.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
-(nome ≥ 3 / telefone; a IMAGEM vem só do avatar 3D desde 24/07) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
+(apelido 2 a 40 desde 24/11/2026 / telefone; a IMAGEM vem só do avatar 3D desde 24/07) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
 `/auth/me` de escrita em sessão de perfil).
 
 ## Clube dos Criadores + Mural dos Criadores (hub/fórum + vitrine)
