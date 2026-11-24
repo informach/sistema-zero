@@ -1,6 +1,6 @@
 # LG02 — aquecimento seguro: recibo de qualificação
 
-Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executor hospedado passou; CI completo, atualização dos aplicativos de staging e aceite autenticado da fonte final ainda estão em andamento.
+Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executor hospedado e os CIs completos da candidata final e de staging passaram. A onda canônica dos aplicativos de staging e o aceite autenticado da fonte final estão em andamento.
 
 ## Fonte e integração
 
@@ -8,7 +8,7 @@ Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executo
 - Fonte qualificada do código de produção: `a365206598c9175e8f999801eba5a6fb74d613db`; árvore `e6b63426127831235dc98d34820fe1869a85b74c`. Candidata final `e1b5fcd17c594b47a4ffbc5757c08bdc13a61376`, árvore `d610b8646d64819a15d1e0ba7107866017c908ac`: muda apenas cenários tipados do core e o registro. [Comparação de proveniência](2026-11-24-lg02-evidence/candidate-provenance.json).
 - [PR #286](https://github.com/informach/sistema-zero/pull/286), em rascunho até o aceite.
 - Merge do SDK em staging: `6c538f77fd5881a4365f16ba2600fd5e33003c4b`; merge da correção tipada: `9ca0696aef5a536846525704b9d01261e2bd0da7`. Preservaram Jardim, voz do Zappy, o contrato de importação Jardim (`84112d04d`) e as entradas posteriores de apelido/quarto. O checkout original com trabalho concorrente permanece preservado.
-- [CI da candidata final](https://github.com/informach/sistema-zero/actions/runs/45387995897) e [CI/onda final de staging](https://github.com/informach/sistema-zero/actions/runs/45388063256): pendentes neste registro. A rodada anterior `45378554025` reprovou três cenários mal tipados do core; a reprodução local e a correção estão no plano, com typecheck e 16 testes/106 expectativas aprovados.
+- [CI da candidata final](https://github.com/informach/sistema-zero/actions/runs/45387995897): aprovado nos 13 jobs de validação. [CI/onda final de staging](https://github.com/informach/sistema-zero/actions/runs/45388063256): CI aprovado; implantação em andamento. A rodada anterior `45378554025` reprovou três cenários mal tipados do core; a reprodução local e a correção estão no plano, com typecheck e 16 testes/106 expectativas aprovados. A prova de dez mil blocos `45387995801` também passou na candidata final.
 - [Plano Railway final](https://github.com/informach/sistema-zero/actions/runs/45387995836): aprovado, zero alterações, intent tree `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`.
 - [Imagem Linux de staging](https://github.com/informach/sistema-zero/actions/runs/45378574254): aprovada, incluindo Python e Three reais sem rede externa.
 
@@ -76,4 +76,4 @@ Cache cheio, falha de coordenação, primeira visita e retorno após expiração
 
 Interrupção: `STUDIO_CHECK_WARMING_ENABLED=0` conserva o caminho exclusivo da LG01 e a migração SQLite. Não reverter removendo a classe criada.
 
-Pendentes: CI final, onda dos aplicativos em staging, aceite integrado da fonte final, promoção e conferências posteriores em produção. A LG02 não está em produção neste registro.
+Pendentes: onda dos aplicativos em staging, aceite integrado da fonte final, promoção e conferências posteriores em produção. A LG02 não está em produção neste registro.
