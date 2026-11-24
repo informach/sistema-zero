@@ -65,7 +65,13 @@
     "unitTestsPassedAfterFix": 6,
     "productionChromeFlowsPassed": 3,
     "studioTypecheckExitCode": 0,
-    "stagingAcceptanceOfFixedMenuPending": true
+    "stagingAcceptanceOfFixedMenuPending": false,
+    "finalCandidate": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+    "finalStagingAcceptanceReceipt": "lg01-final-staging-release.json",
+    "finalPanelTop": 393.5625,
+    "finalPanelBottom": 801.5,
+    "finalViewportHeight": 936,
+    "finalModelsMenuOpened": true
   },
   "recoveryHelp": {
     "withoutDocumentSession": {
