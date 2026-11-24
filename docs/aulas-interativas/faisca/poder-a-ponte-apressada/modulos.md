@@ -11,8 +11,9 @@ Identificador: aula-1. Dimensão: 2D.
 3. A ponte apressada.
 4. A alavanca baixa a ponte.
 5. A ponte sobe sozinha.
-6. Atravesse a ponte.
-7. Pense na ponte.
+6. A ponte deixa atravessar.
+7. Os avisos da ponte.
+8. Pense na ponte.
 
 [Manifesto](ponte-aula-1.manifesto.json) · [Roteiro](ponte-aula-1.roteiro.md).
 
@@ -21,9 +22,11 @@ Identificador: aula-1. Dimensão: 2D.
 Identificador: aula-2. Dimensão: 3D.
 
 1. A ponte chegou à ilha.
-2. A alavanca e a ponte que sobe sozinha.
-3. Atravesse até o sino.
-4. Pense na ponte da ilha.
+2. A alavanca da ilha.
+3. A ponte da ilha sobe sozinha.
+4. A ponte da ilha deixa atravessar.
+5. Os avisos da ponte da ilha.
+6. Pense na ponte da ilha.
 
 [Manifesto](ponte-aula-2.manifesto.json) · [Roteiro](ponte-aula-2.roteiro.md).
 

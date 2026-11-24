@@ -106,7 +106,27 @@
 
 [confident, clear, unhurried voice] Clique em Olá, apague e escreva: A ponte baixou! Atravesse antes que ela suba.
 
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até a alavanca, na areia, ao lado da ponte.
+
+[interested, animated voice] Olha só: a alavanca puxa, a ponte baixa e o aviso muda!
+
+[engaging, energetic, conversational voice] A ponte ainda não sobe sozinha. Isso vem na próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável ponteAberta com valor falso, e no encontro com a alavanca estão as animações puxar e baixar, ponteAberta verdadeiro e o aviso novo.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, leve o personagem até a alavanca e espere. Tá vendo? A ponte baixa e fica baixada para sempre, porque nada no seu jogo conta o tempo para ela subir.
+
 [engaging, energetic, conversational voice] Agora o relógio, igual ao da Aula 1: o bloco depois de 4 segundos, dentro do encontro com a alavanca, logo abaixo do aviso.
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com a alavanca e o lugar logo abaixo do último bloco dele, o bloco que muda o aviso.
 
 [confident, clear, unhurried voice] Abra Programação e depois Repetições, e pegue o bloco depois de segundos.
 
@@ -176,7 +196,7 @@
 
 [upbeat, encouraging voice] Saia de perto da alavanca e encoste nela de novo. Repare: a ponte baixa outra vez.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável ponteAberta com valor falso, e no encontro com a alavanca estão as animações puxar e baixar, ponteAberta verdadeiro, o aviso e o depois de 4 segundos, e dentro dele estão soltar, subir, ponteAberta falso e o outro aviso.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no encontro com a alavanca, logo abaixo do aviso, está o depois de 4 segundos, e dentro dele estão as animações soltar e subir, ponteAberta falso e o outro aviso.
 
 [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -224,13 +244,7 @@
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se ponteAberta é verdadeiro. Ou seja: a ponte está baixada?
 
-[engaging, energetic, conversational voice] A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
-
-[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
-
-[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
+[engaging, energetic, conversational voice] No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então.
 
 [engaging, energetic, conversational voice] Agora a resposta do sim: o personagem vai para cima da pedra, e o sino toca. Deixe o espaço do então à vista.
 
@@ -266,7 +280,31 @@
 
 [confident, clear, unhurried voice] Por último, clique em repetindo e escolha uma vez.
 
-[engaging, energetic, conversational voice] Embaixo vai o aviso de que deu certo.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez, puxe a alavanca e vá logo para a ponte.
+
+[interested, animated voice] Olha só: o personagem atravessa, e o sino toca!
+
+[upbeat, encouraging voice] Agora toque na tecla R, puxe a alavanca e espere a ponte subir antes de ir até ela.
+
+[engaging, energetic, conversational voice] Conte comigo, bem devagar: um, dois, três, quatro. A ponte subiu. Agora vá até a ponte.
+
+[interested, animated voice] Desta vez, ele fica na margem. Só que o aviso ainda não conta o que aconteceu, nem quando ele atravessa. Isso fica para a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro do personagem com a ponte tem o Se com ponteAberta, e dentro do então estão Colocar o objeto personagem e a animação tocar no sino.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e vá direto à ponte, sem puxar a alavanca. Tá vendo? O personagem fica na margem, mas o aviso continua igual, porque a pergunta da ponte ainda não tem a resposta do não. E, quando ele atravessa, o aviso também não comemora. Agora o aviso vai contar as duas respostas!
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com a ponte e o Se que está dentro dele.
+
+[engaging, energetic, conversational voice] Primeiro, o aviso do sim. Ele vai logo abaixo da animação do sino, ainda dentro do então. Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
@@ -279,6 +317,14 @@
 [confident, clear, unhurried voice] Solte em cima do número.
 
 [confident, clear, unhurried voice] Clique em Olá, apague e escreva: Você atravessou e tocou o sino!
+
+[engaging, energetic, conversational voice] Para a resposta do não, o Se tem outro espaço, o senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
 
 [engaging, energetic, conversational voice] Agora a resposta do não, no espaço do senão: o aviso pede para puxar a alavanca. Deixe esse espaço à vista.
 

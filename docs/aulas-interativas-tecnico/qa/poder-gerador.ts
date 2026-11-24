@@ -86,6 +86,11 @@ export interface PoderConfig<
   tipo?: string
   curso: string
   etapas: readonly E[]
+  /**
+   * A ordem dos ids dos exemplos, quando não é a das etapas: as etapas novas (as partes longas
+   * divididas em 24/11/2026) entram no fim, para os ids das que já existiam não mudarem.
+   */
+  idEtapas?: readonly E[]
   etapaFinal: E
   montarProjeto: (dimensao: PoderDimensao, etapa: E) => P
   checks: (dimensao: PoderDimensao, etapa: E) => Objetivos
@@ -148,7 +153,7 @@ export async function gerarPoder<
     visit(projects[cfg.etapaFinal].blocksState)
     inventory[aula.dimension] = [...palette].sort()
     const id = (p: E) =>
-      `${cfg.idBase}-0000-4000-800${index}-${String(cfg.etapas.indexOf(p) + 1).padStart(12, '0')}`
+      `${cfg.idBase}-0000-4000-800${index}-${String((cfg.idEtapas ?? cfg.etapas).indexOf(p) + 1).padStart(12, '0')}`
     const authoredProject = (part: E) => {
       const project = projects[part]
       if (!isStudioAuthoringProject(project)) throw Error(`Projeto inválido: ${part}`)

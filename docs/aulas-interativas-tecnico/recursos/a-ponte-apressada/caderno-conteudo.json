@@ -332,41 +332,46 @@
     "id": "atravessar-sim",
     "kicker": "Aula 1 · Parte 6 · Construção",
     "title": "A resposta do sim",
-    "subtitle": "O sim leva o personagem para cima da pedra, do outro lado da água.",
+    "subtitle": "O sim leva o personagem para cima da pedra, do outro lado da água, e o sino toca.",
     "items": [
       {
         "kind": "step",
-        "title": "4. Abra o senão",
-        "text": "A resposta do sim fica no espaço do <b>então</b>, e a resposta do não fica no espaço do <b>senão</b>. O Se chega sem o senão. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha. Clique no <b>segundo</b> sinal de mais."
-      },
-      {
-        "kind": "step",
-        "title": "5. Leve o personagem para a pedra",
+        "title": "4. Leve o personagem para a pedra",
         "text": "No espaço do <b>então</b>: <b>Jogo 2D &gt; Movimento &gt; Posição e tamanho.</b> Pegue <b>Mudar a posição do sprite</b> e solte dentro do então. Clique em jogador e escolha <b>personagem</b>. Troque o 0 depois de x por <b>96</b> e o 0 depois de y por <b>240</b>: é o lugar em cima da pedra."
       },
       {
+        "kind": "step",
+        "title": "5. Toque o sino",
+        "text": "Logo abaixo, ainda no então: <b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b>. No primeiro heroi, escolha <b>sino</b>; no segundo, a imagem <b>pedra-do-sino-tocando</b>."
+      },
+      {
         "kind": "drawing",
-        "name": "posicao-2d",
-        "title": "Até aqui, confira se ficou assim",
+        "name": "sim-2d",
+        "title": "Confira se ficou assim",
         "blank": "a resposta do não vem na próxima página"
       }
     ]
   },
   {
     "id": "atravessar-respostas",
-    "kicker": "Aula 1 · Parte 6 · Construção",
-    "title": "O sino e a resposta do não",
-    "subtitle": "No sim, o sino toca e o aviso comemora. No não, o aviso pede para puxar a alavanca.",
+    "kicker": "Aula 1 · Parte 7 · Construção",
+    "title": "Os avisos da ponte",
+    "subtitle": "O aviso conta as duas respostas da ponte.",
     "items": [
       {
         "kind": "step",
-        "title": "6. Toque o sino e avise",
-        "text": "Logo abaixo, ainda no então: <b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b>. No primeiro heroi, escolha <b>sino</b>; no segundo, a imagem <b>pedra-do-sino-tocando</b>.<br/>Embaixo, um <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b> em cima do número: <b>Você atravessou e tocou o sino!</b>"
+        "title": "6. O aviso do sim",
+        "text": "Logo abaixo da troca do sino, ainda no então: <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>: <b>Você atravessou e tocou o sino!</b>"
       },
       {
         "kind": "step",
-        "title": "7. A resposta do não",
-        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
+        "title": "7. Abra o senão",
+        "text": "Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão."
+      },
+      {
+        "kind": "step",
+        "title": "8. A resposta do não",
+        "text": "Dentro do <b>senão</b>, outro aviso: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
       },
       {
         "kind": "drawing",
@@ -377,7 +382,7 @@
   },
   {
     "id": "atravessar-envio",
-    "kicker": "Aula 1 · Parte 6 · Teste e envio",
+    "kicker": "Aula 1 · Parte 7 · Teste e envio",
     "title": "Teste três casos e envie",
     "subtitle": "A ponte só deixa atravessar enquanto está baixada.",
     "items": [
@@ -430,7 +435,7 @@
   },
   {
     "id": "revisao-1",
-    "kicker": "Aula 1 · Parte 7 · Revisão",
+    "kicker": "Aula 1 · Parte 8 · Revisão",
     "title": "Pense na ponte",
     "subtitle": "Depois do envio, quatro perguntas sobre o relógio e a ponte fecham a aula.",
     "items": [
@@ -514,7 +519,7 @@
   },
   {
     "id": "ilha-relogio",
-    "kicker": "Aula 2 · Parte 2 · Construção",
+    "kicker": "Aula 2 · Parte 3 · Construção",
     "title": "O relógio da ilha",
     "subtitle": "Agora o relógio, igual ao da Aula 1: dentro do encontro com a alavanca, logo abaixo do aviso.",
     "items": [
@@ -537,7 +542,7 @@
   },
   {
     "id": "ilha-sobe",
-    "kicker": "Aula 2 · Parte 2 · Construção",
+    "kicker": "Aula 2 · Parte 3 · Construção",
     "title": "A ponte da ilha sobe sozinha",
     "subtitle": "Por último, ponteAberta volta a falso e o aviso muda. Depois, teste e verifique.",
     "items": [
@@ -560,7 +565,7 @@
   },
   {
     "id": "ilha-atravessar",
-    "kicker": "Aula 2 · Parte 3 · Construção",
+    "kicker": "Aula 2 · Parte 4 · Construção",
     "title": "A pergunta da ponte da ilha",
     "subtitle": "Clique em Rodar de novo, puxe a alavanca e vá logo para a ponte: nada acontece, porque o encontro com a ponte ainda não faz nenhuma pergunta.",
     "items": [
@@ -593,43 +598,48 @@
   },
   {
     "id": "ilha-atravessar-sim",
-    "kicker": "Aula 2 · Parte 3 · Construção",
+    "kicker": "Aula 2 · Parte 4 · Construção",
     "title": "Atravesse até a pedra",
-    "subtitle": "E como o personagem chega na pedra, se ele não anda na água? Com o bloco Colocar o objeto.",
+    "subtitle": "O sim leva o personagem para cima da pedra, do outro lado da água, e o sino toca.",
     "items": [
       {
         "kind": "step",
-        "title": "4. Abra o senão",
-        "text": "A resposta do sim fica no espaço do <b>então</b>, e a resposta do não fica no espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o que fica antes da palavra senão, no fim da linha. Não clique no primeiro."
-      },
-      {
-        "kind": "step",
-        "title": "5. Leve o personagem para a pedra",
+        "title": "4. Leve o personagem para a pedra",
         "text": "No espaço do <b>então</b>: <b>Jogo 3D &gt; Objetos &gt; Posição, giro e tamanho.</b> Pegue <b>Colocar o objeto</b> e solte dentro do então. Clique em <b>caixa</b> e escolha <b>personagem</b>.<br/>Agora os três números do lugar em cima da pedra. Use o ponto, e não a vírgula, e comece o número negativo pelo sinal de menos: x <b>−3.9</b>, y <b>1.4</b> e z <b>3.8</b>."
       },
       {
+        "kind": "step",
+        "title": "5. Toque o sino",
+        "text": "Logo abaixo, ainda no então: <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b>: <b>sino</b>, <b>tocar</b> e <b>uma vez</b>."
+      },
+      {
         "kind": "drawing",
-        "name": "posicao-3d",
-        "title": "Até aqui, confira se ficou assim",
+        "name": "sim-3d",
+        "title": "Confira se ficou assim",
         "blank": "a resposta do não vem na próxima página"
       }
     ]
   },
   {
     "id": "ilha-atravessar-respostas",
-    "kicker": "Aula 2 · Parte 3 · Construção",
-    "title": "O sino e a resposta do não",
-    "subtitle": "No sim, o sino toca e o aviso comemora. No não, o aviso pede para puxar a alavanca.",
+    "kicker": "Aula 2 · Parte 5 · Construção",
+    "title": "Os avisos da ponte",
+    "subtitle": "O aviso conta as duas respostas da ponte.",
     "items": [
       {
         "kind": "step",
-        "title": "6. Toque o sino e avise",
-        "text": "Logo abaixo, ainda no então: <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b>: <b>sino</b>, <b>tocar</b> e <b>uma vez</b>. Embaixo, um <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>: <b>Você atravessou e tocou o sino!</b>"
+        "title": "6. O aviso do sim",
+        "text": "Logo abaixo da animação do sino, ainda no então: <b>Alterar variável para</b> com <b>aviso</b> e um <b>texto</b>: <b>Você atravessou e tocou o sino!</b>"
       },
       {
         "kind": "step",
-        "title": "7. A resposta do não",
-        "text": "Dentro do <b>senão</b>, outro <b>Alterar variável para</b> com <b>aviso</b> e outro <b>texto</b>: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
+        "title": "7. Abra o senão",
+        "text": "Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão."
+      },
+      {
+        "kind": "step",
+        "title": "8. A resposta do não",
+        "text": "Dentro do <b>senão</b>, outro aviso: <b>A ponte está levantada. Puxe a alavanca primeiro.</b>"
       },
       {
         "kind": "drawing",
@@ -640,7 +650,7 @@
   },
   {
     "id": "ilha-atravessar-envio",
-    "kicker": "Aula 2 · Parte 3 · Teste e envio",
+    "kicker": "Aula 2 · Parte 5 · Teste e envio",
     "title": "Teste três casos e envie",
     "subtitle": "Na ilha, a ponte também só deixa atravessar enquanto está baixada.",
     "items": [
@@ -672,7 +682,7 @@
   },
   {
     "id": "revisao-2",
-    "kicker": "Aula 2 · Parte 4 · Revisão",
+    "kicker": "Aula 2 · Parte 6 · Revisão",
     "title": "Pense na ponte da ilha",
     "subtitle": "Duas perguntas fecham a aula e o Poder.",
     "items": [

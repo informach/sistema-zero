@@ -348,6 +348,15 @@ const drawings: Record<string, { area: string; corpo: (vazio: string) => string 
     corpo: (vazio) =>
       quando(prontoAlavanca() + encontro2d('ponte', sePonteAberta(naPedra2d(), B.vazio(vazio)))),
   },
+  // A resposta do sim antes dos avisos (a Parte da pergunta, 24/11/2026): o Se ainda só com o então.
+  'sim-2d': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      quando(
+        prontoAlavanca() +
+          encontro2d('ponte', seSoEntao(naPedra2d() + trocar('sino', 'pedra-do-sino-tocando'))),
+      ),
+  },
   'atravessar-2d': {
     area: 'Quando acontecer',
     corpo: () =>
@@ -392,6 +401,14 @@ const drawings: Record<string, { area: string; corpo: (vazio: string) => string 
     area: 'Quando acontecer',
     corpo: (vazio) =>
       quando(prontoAlavanca() + encontro3d('ponte', sePonteAberta(naPedra3d(), B.vazio(vazio)))),
+  },
+  // A resposta do sim antes dos avisos (a Parte da pergunta, 24/11/2026): o Se ainda só com o então.
+  'sim-3d': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      quando(
+        prontoAlavanca() + encontro3d('ponte', seSoEntao(naPedra3d() + tocar('sino', 'tocar'))),
+      ),
   },
   'atravessar-3d': {
     area: 'Quando acontecer',

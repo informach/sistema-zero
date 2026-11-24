@@ -13,23 +13,48 @@ A ponte chegou à ilha.
 
 
 
-## Parte 2. A alavanca e a ponte que sobe sozinha
+## Parte 2. A alavanca da ilha
 
-A alavanca e a ponte que sobe sozinha.
+A alavanca da ilha.
 
 - Intenção: application.
 - Blocos: video-alavanca, ponte-alavanca.
 - Estúdio: projeto.
 - Conclusão: video-alavanca.
 
+- Sem ninguém puxar a alavanca, a ponte continua levantada.
+- Ao encostar na alavanca, a ponte baixa e o aviso conta.
+
+## Parte 3. A ponte da ilha sobe sozinha
+
+A ponte da ilha sobe sozinha.
+
+- Intenção: application.
+- Blocos: video-sobe, ponte-sobe.
+- Estúdio: projeto.
+- Conclusão: video-sobe.
+
 - Logo depois de puxar, a ponte ainda está baixada.
 - Depois de alguns segundos, a ponte sobe sozinha e o aviso muda.
 - Depois que a ponte sobe, puxar a alavanca de novo baixa a ponte outra vez.
 - O "depois de segundos" fica dentro do encontro com a alavanca.
 
-## Parte 3. Atravesse até o sino
+## Parte 4. A ponte da ilha deixa atravessar
 
-Atravesse até o sino.
+A ponte da ilha deixa atravessar.
+
+- Intenção: application.
+- Blocos: video-pergunta, ponte-pergunta.
+- Estúdio: projeto.
+- Conclusão: video-pergunta.
+
+- O "depois de segundos" fica dentro do encontro com a alavanca.
+- Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
+- Chegando depois que a ponte subiu, o personagem não atravessa.
+
+## Parte 5. Os avisos da ponte da ilha
+
+Os avisos da ponte da ilha.
 
 - Intenção: delivery.
 - Blocos: video-atravessar, ponte-atravessar, projeto.
@@ -42,7 +67,7 @@ Atravesse até o sino.
 - Sem puxar a alavanca, a ponte não deixa atravessar e o aviso diz o que fazer.
 - Uma nova partida (tecla R) começa com a ponte levantada.
 
-## Parte 4. Pense na ponte da ilha
+## Parte 6. Pense na ponte da ilha
 
 Pense na ponte da ilha.
 
