@@ -61,9 +61,22 @@ A ponte sobe sozinha.
 - Depois que a ponte sobe, puxar a alavanca de novo baixa a ponte outra vez.
 - O "depois de segundos" fica dentro do encontro com a alavanca.
 
-## Parte 6. Atravesse a ponte
+## Parte 6. A ponte deixa atravessar
 
-Atravesse a ponte.
+A ponte deixa atravessar.
+
+- Intenção: application.
+- Blocos: video-pergunta, ponte-pergunta.
+- Estúdio: projeto.
+- Conclusão: video-pergunta.
+
+- O "depois de segundos" fica dentro do encontro com a alavanca.
+- Puxando a alavanca e indo direto à ponte, o personagem atravessa e o sino toca.
+- Chegando depois que a ponte subiu, o personagem não atravessa.
+
+## Parte 7. Os avisos da ponte
+
+Os avisos da ponte.
 
 - Intenção: delivery.
 - Blocos: video-atravessar, ponte-atravessar, projeto.
@@ -77,7 +90,7 @@ Atravesse a ponte.
 - Uma nova partida (tecla R) começa com a ponte levantada.
 - O farol continua: com a chave, ele acende.
 
-## Parte 7. Pense na ponte
+## Parte 8. Pense na ponte
 
 Pense na ponte.
 

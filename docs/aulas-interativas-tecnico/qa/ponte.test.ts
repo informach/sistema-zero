@@ -171,8 +171,8 @@ describe('manifestos da Ponte', () => {
       // por último, como fechamento.
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'alavanca', 'sobe', 'atravessar', 'revisao']
-          : ['abertura', 'alavanca', 'atravessar', 'revisao'],
+          ? ['abertura', 'material', 'experiencia', 'alavanca', 'sobe', 'pergunta', 'atravessar', 'revisao']
+          : ['abertura', 'alavanca', 'sobe', 'pergunta', 'atravessar', 'revisao'],
       )
       expect(
         m.sections
@@ -198,9 +198,11 @@ describe('manifestos da Ponte', () => {
       // A alavanca não cobra a subida ainda não pedida, e a subida não cobra a travessia.
       const ids = (key: string) =>
         m.sections.find((s: any) => s.key === key)?.completion.projectChecks.map((c: any) => c.id)
-      if (d === '2d') {
-        expect(ids('alavanca')).not.toContain('sobe-sozinha')
-        expect(ids('sobe')).not.toContain('a-tempo')
-      } else expect(ids('alavanca')).not.toContain('a-tempo')
+      // Desde 24/11/2026 as partes longas são divididas: a pergunta da ponte (só o sim) não cobra o
+      // aviso da ponte levantada, que vem na parte seguinte, com o senão.
+      expect(ids('alavanca')).not.toContain('sobe-sozinha')
+      expect(ids('sobe')).not.toContain('a-tempo')
+      expect(ids('pergunta')).toEqual(['depois-dentro', 'a-tempo', 'atrasado'])
+      expect(ids('atravessar')).toContain('fechada')
     })
 })

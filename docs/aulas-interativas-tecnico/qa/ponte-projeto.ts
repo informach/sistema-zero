@@ -40,7 +40,10 @@ import { ILHA_OBSTACULOS, recortarObstaculos } from './ilha-do-farol-observacao'
 import { ilhaSource } from './ilha-do-farol-projeto'
 
 export const PONTE_CURSO = 'jornada-faisca-poder-3'
-export const PONTE_ETAPAS = ['inicio', 'alavanca', 'sobe', 'atravessar'] as const
+/** `pergunta`: o encontro com a ponte e o Se, só com a resposta do sim; `atravessar` põe o senão (24/11/2026). */
+export const PONTE_ETAPAS = ['inicio', 'alavanca', 'sobe', 'pergunta', 'atravessar'] as const
+/** A ordem dos ids dos exemplos: a etapa nova no fim, para os ids das outras não mudarem. */
+export const PONTE_IDS: readonly PonteEtapa[] = ['inicio', 'alavanca', 'sobe', 'atravessar', 'pergunta']
 export type PonteEtapa = (typeof PONTE_ETAPAS)[number]
 export type PonteDimensao = '2d' | '3d'
 /** Quantos segundos a ponte fica baixada. */
@@ -190,7 +193,7 @@ function ir2d(etapa: PonteEtapa): SZIRV2 {
             imagemDe('sino', 'pedra-do-sino-tocando'),
             aviso(PONTE_AVISO.atravessou),
           ],
-          else: [aviso(PONTE_AVISO.levantada)],
+          ...(n >= 4 ? { else: [aviso(PONTE_AVISO.levantada)] } : {}),
         },
       ],
     })
@@ -307,7 +310,7 @@ ${n >= 1 ? 'let ponteAberta=false;' : ''}`
       ? `SZGame3D.onTouch(personagem,alavanca,()=>{SZGame3D.playAnimation(alavanca,"puxar","uma-vez");SZGame3D.playAnimation(ponte,"baixar","uma-vez");ponteAberta=true;aviso=${JSON.stringify(PONTE_AVISO.baixou)};${sobe}});`
       : '',
     n >= 3
-      ? `SZGame3D.onTouch(personagem,ponte,()=>{if(ponteAberta){SZGame3D.setPosition(personagem,${NA_PEDRA_3D.join(',')});SZGame3D.playAnimation(sino,"tocar","uma-vez");aviso=${JSON.stringify(PONTE_AVISO.atravessou)};}else{aviso=${JSON.stringify(PONTE_AVISO.levantada)};}});`
+      ? `SZGame3D.onTouch(personagem,ponte,()=>{if(ponteAberta){SZGame3D.setPosition(personagem,${NA_PEDRA_3D.join(',')});SZGame3D.playAnimation(sino,"tocar","uma-vez");aviso=${JSON.stringify(PONTE_AVISO.atravessou)};}${n >= 4 ? `else{aviso=${JSON.stringify(PONTE_AVISO.levantada)};}` : ''}});`
       : '',
   ].join('\n')
   return s.replace('SZGame3D.animate(cena,()=>{', `${regras}\nSZGame3D.animate(cena,()=>{`)

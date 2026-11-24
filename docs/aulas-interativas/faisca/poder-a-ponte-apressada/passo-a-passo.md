@@ -123,6 +123,6 @@ Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio
 
 ## Entrega
 
-Em cada aula, o envio fica na última montagem: Atravesse a ponte, na Aula 1, e Atravesse até o sino, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+Em cada aula, o envio fica na última montagem: Os avisos da ponte, na Aula 1, e Os avisos da ponte da ilha, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
 Depois do envio vem o quiz da aula: escolha uma resposta em cada pergunta e veja a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

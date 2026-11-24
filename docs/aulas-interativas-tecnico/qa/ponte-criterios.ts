@@ -53,7 +53,7 @@ export const PONTE_ESPERA = { aberta: 1500, subiu: { '2d': 5800, '3d': 4800 } } 
 
 export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProjectCheck[] {
   const three = d === '3d'
-  const n = ['inicio', 'alavanca', 'sobe', 'atravessar'].indexOf(etapa)
+  const n = ['inicio', 'alavanca', 'sobe', 'pergunta', 'atravessar'].indexOf(etapa)
   const approach = (
     targetPath: string,
     timeoutMs: number,
@@ -214,7 +214,10 @@ export function ponteChecks(d: PonteDimensao, etapa: PonteEtapa): SectionProject
   if (n === 1) lista.push(parada, puxa)
   // "Puxar" já ficou na etapa anterior; aqui o "ainda baixada" mostra que a alavanca baixa.
   if (n === 2) lista.push(abertaAntes, sobe, deNovo, dentro)
+  // A pergunta da ponte só com o sim: atravessa a tempo e não atravessa atrasado.
+  if (n === 3) lista.push(dentro, aTempo, atrasado)
   // A última etapa confere o jogo inteiro; "puxar de novo" ficou na anterior (não cabe no prazo).
-  if (n >= 3) lista.push(dentro, aTempo, atrasado, fechada, reinicio, farol)
+  // O aviso da ponte levantada (o senão) é o que separa esta etapa da anterior.
+  if (n >= 4) lista.push(dentro, aTempo, atrasado, fechada, reinicio, farol)
   return lista.filter((c): c is SectionProjectCheck => c !== null)
 }

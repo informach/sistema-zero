@@ -44,7 +44,8 @@ for (const f of readdirSync(runtime))
       )
     writeFileSync(resolve(dir, f), s)
   }
-const p = montarProjetoPonte(d, 'atravessar'),
+// O cenário sem-senao é o projeto da parte da pergunta (só o sim), que a última parte tem de reprovar.
+const p = montarProjetoPonte(d, scenario === 'sem-senao' ? 'pergunta' : 'atravessar'),
   scope = '__sz0123456789abcdef01234567'
 let js = p.files['script.js']
 // Os erros plausíveis da criança (a tabela da proposta).
@@ -61,7 +62,7 @@ if (scenario === 'rapido') js = js.replace(timer, timer.replace('4 * 1000', '1 *
 if (scenario === 'so-imagem') js = js.replace(timer, timer.replace(/\n *ponteAberta = false;/, ''))
 if (scenario === 'sem-se') js = js.replace('if (ponteAberta)', 'if (true)')
 if (scenario === 'invertida') js = js.replace('if (ponteAberta)', 'if (!ponteAberta)')
-if (scenario !== 'correto' && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js']) throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -115,16 +116,18 @@ console.log(d, scenario, JSON.stringify(verdicts, null, 2))
 writeFileSync(resolve(dir, 'vereditos.json'), JSON.stringify(verdicts, null, 2))
 /** O que cada erro deve reprovar em cada etapa (o resto continua passando), nas duas dimensões. */
 const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
-  correto: { alavanca: [], sobe: [], atravessar: [] },
-  'sem-tempo': { sobe: ['sobe-sozinha', 'de-novo'], atravessar: ['atrasado'] },
+  correto: { alavanca: [], sobe: [], pergunta: [], atravessar: [] },
+  'sem-tempo': { sobe: ['sobe-sozinha', 'de-novo'], pergunta: ['atrasado'], atravessar: ['atrasado'] },
   // Solto no começo, o "depois de" sobe a ponte uma vez, 4 s depois de o jogo começar: o
   // resultado da travessia dependeria da hora em que o robô puxa, então nela quem pega o erro é o
   // objetivo de estrutura (o "depois de" dentro do encontro com a alavanca).
   fora: { sobe: ['sobe-sozinha'] },
   rapido: { sobe: ['aberta-antes'] },
-  'so-imagem': { sobe: [], atravessar: ['atrasado'] },
-  'sem-se': { atravessar: ['atrasado', 'fechada'] },
-  invertida: { atravessar: ['a-tempo', 'atrasado', 'fechada'] },
+  'so-imagem': { sobe: [], pergunta: ['atrasado'], atravessar: ['atrasado'] },
+  'sem-se': { pergunta: ['atrasado'], atravessar: ['atrasado', 'fechada'] },
+  invertida: { pergunta: ['a-tempo', 'atrasado'], atravessar: ['a-tempo', 'atrasado', 'fechada'] },
+  // Sem o senão (o projeto da parte da pergunta), só o aviso da ponte levantada reprova.
+  'sem-senao': { pergunta: [], atravessar: ['fechada'] },
 }
 /**
  * No 3D o robô chega à alavanca pela entrada da ponte, encostando nela levantada. Com a pergunta
@@ -133,8 +136,8 @@ const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
  */
 if (d === '3d') {
   const todos = ['a-tempo', 'atrasado', 'fechada', 'reinicio']
-  REPROVA['sem-se'] = { atravessar: todos }
-  REPROVA.invertida = { atravessar: todos }
+  REPROVA['sem-se'] = { pergunta: ['a-tempo', 'atrasado'], atravessar: todos }
+  REPROVA.invertida = { pergunta: ['a-tempo', 'atrasado'], atravessar: todos }
 }
 /**
  * O que depende da hora em que o robô puxa e por isso pode dar os dois resultados: no "fora", o

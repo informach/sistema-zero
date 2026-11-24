@@ -4,7 +4,7 @@
 import { gerarPoder } from './poder-gerador'
 import { ponteAjuda, ponteAulas, ponteExperiencia } from './ponte-conteudo'
 import { ponteChecks } from './ponte-criterios'
-import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS } from './ponte-projeto'
+import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS, PONTE_IDS } from './ponte-projeto'
 import { ponteQuiz2d, ponteQuiz3d } from './ponte-quiz'
 
 const help = `# Passo a passo do projeto: A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${ponteExperiencia.title}\n\n**A ideia:** ${ponteExperiencia.idea}\n\n**O que investigar:**\n\n${ponteExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${ponteExperiencia.observe}\n\n${ponteAulas
@@ -21,7 +21,7 @@ const help = `# Passo a passo do projeto: A ponte apressada\n\nPoder do Faísca.
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, o envio fica na última montagem: Atravesse a ponte, na Aula 1, e Atravesse até o sino, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.\n\nDepois do envio vem o quiz da aula: escolha uma resposta em cada pergunta e veja a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, o envio fica na última montagem: Os avisos da ponte, na Aula 1, e Os avisos da ponte da ilha, na Aula 2. Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.\n\nDepois do envio vem o quiz da aula: escolha uma resposta em cada pergunta e veja a explicação. Você pode tentar de novo. Quando terminar, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 
 await gerarPoder({
   nome: 'A ponte apressada',
@@ -29,6 +29,7 @@ await gerarPoder({
   prefixo: 'ponte',
   curso: PONTE_CURSO,
   etapas: PONTE_ETAPAS,
+  idEtapas: PONTE_IDS,
   etapaFinal: 'atravessar',
   montarProjeto: montarProjetoPonte,
   checks: ponteChecks,

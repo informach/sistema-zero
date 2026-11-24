@@ -278,15 +278,7 @@
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se ponteAberta é verdadeiro. Ou seja: a ponte está baixada?
 
-[engaging, energetic, conversational voice] No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então. A resposta do não fica no espaço do senão.
-
-[engaging, energetic, conversational voice] A ponte precisa das duas respostas. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
-
-[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
-
-[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
+[engaging, energetic, conversational voice] No bloco Se, cada resposta tem o seu espaço. A resposta do sim fica no espaço do então.
 
 [engaging, energetic, conversational voice] Agora a resposta do sim, que roda quando a ponte está baixada: o personagem vai para cima da pedra. Ela vai no espaço do então. Deixe esse espaço à vista.
 
@@ -312,7 +304,31 @@
 
 [confident, clear, unhurried voice] Depois clique no segundo heroi e escolha a imagem pedra do sino tocando.
 
-[engaging, energetic, conversational voice] Embaixo dele vai o aviso de que deu certo.
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez, puxe a alavanca e vá logo para a ponte.
+
+[interested, animated voice] Olha só: o personagem atravessa, e o sino toca!
+
+[upbeat, encouraging voice] Agora toque na tecla R, puxe a alavanca e espere a ponte subir antes de ir até ela.
+
+[engaging, energetic, conversational voice] Conte comigo, bem devagar: um, dois, três, quatro. A ponte subiu. Agora vá até a ponte.
+
+[interested, animated voice] Desta vez, ele fica na margem. Só que o aviso ainda não conta o que aconteceu, nem quando ele atravessa. Isso fica para a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro do personagem com a ponte tem o Se com ponteAberta, e dentro do então estão a mudança de posição e a troca do sino.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e vá direto à ponte, sem puxar a alavanca. Tá vendo? O personagem fica na margem, mas o aviso continua igual, porque a pergunta da ponte ainda não tem a resposta do não. E, quando ele atravessa, o aviso também não comemora. Agora o aviso vai contar as duas respostas!
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com a ponte e o Se que está dentro dele.
+
+[engaging, energetic, conversational voice] Primeiro, o aviso do sim. Ele vai logo abaixo da troca do sino, ainda dentro do então. Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
@@ -325,6 +341,14 @@
 [confident, clear, unhurried voice] Solte em cima do número.
 
 [confident, clear, unhurried voice] Clique em Olá, apague e escreva: Você atravessou e tocou o sino!
+
+[engaging, energetic, conversational voice] Para a resposta do não, o Se tem outro espaço, o senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
 
 [engaging, energetic, conversational voice] Agora a resposta do não, que roda quando a ponte está levantada. Ela vai no espaço do senão. Deixe esse espaço à vista.
 

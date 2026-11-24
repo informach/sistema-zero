@@ -7,7 +7,13 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-alavanca", "video-atravessar"],
+  "clipes": [
+    "video-abertura",
+    "video-alavanca",
+    "video-sobe",
+    "video-pergunta",
+    "video-atravessar"
+  ],
   "intervencoes": [
     {
       "id": "video-abertura-K1",
@@ -32,11 +38,11 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-atravessar-K1",
-      "clipe": "video-atravessar",
+      "id": "video-pergunta-K1",
+      "clipe": "video-pergunta",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "do senão. Agora a resposta do sim: o personagem vai para cima da pedra, e o sino toca. Deixe o espaço do então à vista.",
+      "ancoraAntes": "do então. Agora a resposta do sim: o personagem vai para cima da pedra, e o sino toca. Deixe o espaço do então à vista.",
       "ancoraDepois": "Com o bloco Colocar o objeto. Ele leva o personagem direto para cima da pedra, no lugar que os três números dizem. Abra",
       "falaPrincipal": "E como o personagem chega na pedra, se ele não anda na água?",
       "falaPersonagem": "E como o personagem chega na pedra, se ele não anda na água?",
