@@ -1,8 +1,16 @@
-# Meu primeiro desenho no Pinta: organização do curso
+# Meu primeiro desenho no Pinta
 
-Extra 2 do posto Faísca (`jornada-faisca-extra-2`). Módulo: **Meu primeiro desenho no Pinta**. Preservar o ID do curso, do módulo reservado e da `aula-1` criados pelo seed da jornada.
+**Título do curso:** Meu primeiro desenho no Pinta
 
-## Aula 1. A minha chave no Farol
+**Descrição curta:** Desenhe a chave do seu jogo no Pinta e coloque o seu desenho no Farol.
+
+**Descrição longa:** Um extra do posto Faísca. Você desenha a chave no Pinta, dentro da aula, e na parte seguinte o seu desenho entra no jogo da Chave do Farol no lugar da chave pronta. Uma aula, duas entregas: o desenho e o jogo. É um extra opcional e não conta para subir de posto. Este curso não concede certificado.
+
+## Módulo 1 · Meu primeiro desenho no Pinta
+
+**Resumo:** Desenhe a sua chave no bloco de Pinta, envie o desenho e veja ele aparecer no jogo do Farol, que você também envia.
+
+### Aula 1. A minha chave no Farol
 
 Identificador: aula-1. Dimensão: 2D.
 
@@ -14,3 +22,5 @@ Identificador: aula-1. Dimensão: 2D.
 [Manifesto](meu-desenho-aula-1.manifesto.json) · [Roteiro](meu-desenho-aula-1.roteiro.md).
 
 Duas entregas: o desenho (vaga de arte `minha-chave`, que substitui `chave-dourada`) e o jogo com o desenho. Extra opcional: não conta para subir de posto. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.
+
+Extra 2 do posto Faísca (`jornada-faisca-extra-2`). Módulo: **Meu primeiro desenho no Pinta**. Preservar o ID do curso, do módulo reservado e da `aula-1` criados pelo seed da jornada.

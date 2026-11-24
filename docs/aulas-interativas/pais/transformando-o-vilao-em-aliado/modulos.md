@@ -1,6 +1,6 @@
 # Transformando o vilão em aliado
 
-**Título:** Transformando o vilão em aliado
+**Título do curso:** Transformando o vilão em aliado
 
 **Para quem:** pais e responsáveis, na Área dos pais do Kids. Audiência `kids`, `learner = parents`, gravado e fora da Jornada.
 
@@ -8,7 +8,7 @@
 
 **Descrição longa:** E se o tempo de tela do seu filho pudesse render mais do que você imagina? Em sete aulas, a Helena convida você a descobrir por onde começar.
 
-## Módulo 1: A tela como espaço de criação
+## Módulo 1 · A tela como espaço de criação
 
 **Resumo:** O ponto de partida é uma pergunta simples. Ela pode mudar a forma como você enxerga o tempo de tela do seu filho.
 

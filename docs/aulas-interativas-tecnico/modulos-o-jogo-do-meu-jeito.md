@@ -6,7 +6,7 @@
 
 **Revisão de continuidade da conversa, 07/10/2026:** preparar a folha da nave termina no próximo passo que falta; a observação das pedras começa voltando à prévia e iniciando a partida. Fonte, roteiros, manifestos e Mapa da Aventura (33 páginas) atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
 
-**Título:** O Jogo do Meu Jeito
+**Título do curso:** O Jogo do Meu Jeito
 
 **Descrição curta:** Desenhe, anime e coloque suas próprias artes no jogo.
 
@@ -32,7 +32,7 @@ Revisão local de 05/10/2026: **8 aulas, 54 seções, 50 vídeos planejados, 14 
 
 Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quatro quizzes), `completion`, nomes de ferramentas, botões e valores não mudaram. Nenhum vídeo tinha sido gravado; a gravação segue a fala nova.
 
-## Módulo 1 — Seu jogo e sua nave
+## Módulo 1 · Seu jogo e sua nave
 
 **Resumo:** Guarde uma cópia do jogo, desenhe sua nave e faça o motor pulsar.
 
@@ -42,7 +42,7 @@ Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quat
 | 2. [Desenhe sua nave em pixel art](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-02.md) | Nave 32 × 32 com cabine, luz, sombra e espaço para o motor. | 8 | `aula-02` |
 | 3. [Faça o motor da nave pulsar](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-03.md) | voando, dois quadros, 8 quadros por segundo; revisão. | 7 | `aula-03` |
 
-## Módulo 2 — Suas pedras em movimento
+## Módulo 2 · Suas pedras em movimento
 
 **Resumo:** Desenhe a pedra com formas e curvas, ponha as chamas atrás e anime os detalhes.
 
@@ -51,7 +51,7 @@ Ids, chaves, estrutura (8 aulas, 54 seções, 50 vídeos, 14 experiências, quat
 | 4. [Desenhe um asteroide com formas](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-04.md) | Asteroide em vetor de 64 × 64, com curvas e crateras. | 6 | `aula-04` |
 | 5. [Anime as chamas e as crateras](../aulas-interativas/kids/o-jogo-do-meu-jeito/meu-jeito-aula-05.md) | girando, dois quadros, 8 por segundo; revisão e entrega das duas artes. | 8 | `aula-05` |
 
-## Módulo 3 — Sua arte entra no jogo
+## Módulo 3 · Sua arte entra no jogo
 
 **Resumo:** Use as duas artes na mesma cópia do jogo, teste uma partida completa e aprenda a compartilhar sua versão.
 

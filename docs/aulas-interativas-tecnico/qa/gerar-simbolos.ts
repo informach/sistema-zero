@@ -91,14 +91,14 @@ await gerarPoder({
   cenaDoZappy: 'symbol-sequence',
   passoAPasso: help,
   modulos:
-    '# O baú dos símbolos: organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# O baú dos símbolos\n\n**Título do curso:** O baú dos símbolos\n\n**Descrição curta:** Toque o sol, a lua e a estrela na ordem certa para abrir o baú: o jogo guarda em que passo você está, em 2D e em 3D.\n\n**Descrição longa:** Um Poder do posto Faísca. Três pedras com símbolos abrem um baú quando tocadas na ordem certa, e um símbolo fora da vez recomeça a tentativa. Você guarda o passo da sequência numa variável e faz o jogo conferir cada toque. Na primeira aula no Farol 2D; na segunda, de novo na Ilha 3D, com menos instruções. Cada aula termina com o projeto enviado. Este curso não concede certificado.\n\n## Módulo 1 · O baú dos símbolos\n\n**Resumo:** Guarde o passo da sequência, confira cada símbolo tocado, recomece quando ele vier fora da vez e abra o baú no fim. Primeiro no Farol 2D, depois na Ilha 3D; a última montagem de cada aula envia o projeto.\n\n' +
     simbolosAulas
       .map(
         (a, i) =>
-          `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](simbolos-${a.slug}.manifesto.json) · [Roteiro](simbolos-${a.slug}.roteiro.md).`,
+          `### Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](simbolos-${a.slug}.manifesto.json) · [Roteiro](simbolos-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula, na montagem da estrela; depois dela, só o quiz, que fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na montagem da estrela; depois dela, só o quiz, que fecha a aula. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n',
   resumo:
     'Baú dos símbolos: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

@@ -84,14 +84,14 @@ await gerarPoder({
   cenaDoZappy: 'coin-counter',
   passoAPasso: help,
   modulos:
-    '# Moedas no caminho: organização do curso\n\nPoder 1 do posto Faísca (`jornada-faisca-poder-1`). Módulo: **Moedas no caminho**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +
+    '# Moedas no caminho\n\n**Título do curso:** Moedas no caminho\n\n**Descrição curta:** Espalhe moedas pelo caminho, conte cada uma e use a quantidade para abrir o baú, em 2D e em 3D.\n\n**Descrição longa:** Um Poder do posto Faísca. Você cria um contador que guarda quantas moedas o personagem já pegou e usa essa quantidade para decidir se o baú abre. Na primeira aula a regra nasce no Farol 2D; na segunda você a monta de novo na Ilha 3D, com menos instruções. Cada aula termina com o projeto enviado. Este curso não concede certificado.\n\n## Módulo 1 · Moedas no caminho\n\n**Resumo:** Conte as moedas que o personagem recolhe e abra o baú quando a meta chegar. Primeiro no Farol 2D, depois na Ilha 3D; a última montagem de cada aula envia o projeto.\n\n' +
     moedasAulas
       .map(
         (a, i) =>
-          `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](moedas-${a.slug}.manifesto.json) · [Roteiro](moedas-${a.slug}.roteiro.md).`,
+          `### Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](moedas-${a.slug}.manifesto.json) · [Roteiro](moedas-${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula, na última construção, e o quiz depois dela. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n',
+    '\n\nUma entrega por aula, na última construção, e o quiz depois dela. O Poder conta com as duas aulas concluídas. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar; publicar o curso só depois da `aula-2`.\n\nPoder 1 do posto Faísca (`jornada-faisca-poder-1`). Módulo: **Moedas no caminho**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n',
   resumo:
     'Moedas: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })

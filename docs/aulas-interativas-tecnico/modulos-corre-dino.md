@@ -94,7 +94,7 @@ Pendente: gravar os 76 vídeos com as falas novas, gerar e conferir o PDF do Pas
 
 **O convite só com o conceito (02/11/2026, molde do Cadê).** Decisão da responsável: o vídeo da experiência guiava demais. Os 24 vídeos de experiência saíram do "Olha aqui: nesta experiência…" e seguem a ordem das Diretrizes: o conceito, a analogia, o conceito no jogo dela ("No seu jogo…"), a pergunta da Debinha ou do Dedé (uma só) com "O que você acha? Isso você vai testar na experiência." e um convite de uma frase com o fecho comum. Sem tour pelos controles, sem nomes de botão como gesto, sem sequência de testes. A nota de tela só amplia a experiência parada e mostra o Zappy; a instrução diz o que comparar e "O Zappy te mostra o que testar, e você pode repetir quando quiser."; a ponte virou "Sua vez! Investigue…". O Passo a passo imprime só a instrução na página da experiência (os pedidos, com os botões em sequência, ficam com o Zappy). Pistas, pedidos, montagens e retomadas não mudaram. O guarda está em `qa/corre-dino.test.ts` e em `qa/convite-da-experiencia.test.ts`. Na revisão seguinte, os convites passaram a começar por "Agora você vai investigar…", sem imperativo misturado. Também saíram os resultados que escapavam: o bate-bate (o para-choque respondia a pergunta) virou o combinado do pega-pega nas aulas 9 e 10, e a aula 10 perdeu a segunda pergunta. Saíram ainda o "até um limite" do volume (aula 13), a frase "a tela só mostra o que foi desenhado" (aula 2) e o "só combinar ou arrumar do zero" do tabuleiro (aula 9). A medida 480 por 270 foi para o conceito (aula 1), a pergunta da régua passou a ser apresentada (aula 12), e o convite e a instrução do placar passaram a dizer "com e sem a pergunta" (aula 11).
 
-## Módulo 1 — O Dino ganha vida
+## Módulo 1 · O Dino ganha vida
 
 **Resumo:** Prepare a tela e faça o Dino aparecer, cair e pular com som.
 
@@ -105,7 +105,7 @@ Pendente: gravar os 76 vídeos com as falas novas, gerar e conferir o PDF do Pas
 | 3. [Faça o Dino cair e pular](../aulas-interativas/kids/corre-dino/corre-dino-aula-03.md) | Gravidade e controles de pulo; primeira revisão. | 6 | `aula-03` |
 | 4. [Toque um som em cada pulo](../aulas-interativas/kids/corre-dino/corre-dino-aula-04.md) | Som ligado ao pulo que aconteceu. | 4 | `aula-04` |
 
-## Módulo 2 — Da corrida ao jogo inteiro
+## Módulo 2 · Da corrida ao jogo inteiro
 
 **Resumo:** Crie e mova os cactos, separe a abertura da partida e programe a derrota e o recomeço.
 
@@ -117,7 +117,7 @@ Pendente: gravar os 76 vídeos com as falas novas, gerar e conferir o PDF do Pas
 | 8. [Comece por tecla ou toque](../aulas-interativas/kids/corre-dino/corre-dino-aula-08.md) | Tela de início e entrada para começar a partida. | 4 | `aula-08` |
 | 9. [Termine e recomece a corrida](../aulas-interativas/kids/corre-dino/corre-dino-aula-09.md) | Batida, efeitos, tela de fim e reinício; revisão do ciclo. | 8 | `aula-09` |
 
-## Módulo 3 — Pontos e dificuldade
+## Módulo 3 · Pontos e dificuldade
 
 **Resumo:** Ajuste a área da batida, conte pontos e varie o lugar e a velocidade dos cactos.
 

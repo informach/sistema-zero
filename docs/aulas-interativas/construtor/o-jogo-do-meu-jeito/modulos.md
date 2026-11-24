@@ -6,7 +6,7 @@
 
 **Descrição longa:** Continue a partir de uma cópia do jogo que você concluiu em Nave Contra Asteroides. Crie uma nave em pixel art e um asteroide em vetor no Pinta, anime os dois e use essas artes no Estúdio. Teste as regras com os novos desenhos e, se quiser, publique sua versão no Mural dos Criadores.
 
-## Módulo 1 — Seu jogo e sua nave
+## Módulo 1 · Seu jogo e sua nave
 
 **Resumo:** Guarde uma cópia do jogo, desenhe sua nave e faça o motor pulsar.
 
@@ -14,14 +14,14 @@
 - [Desenhe sua nave em pixel art](meu-jeito-aula-02.md)
 - [Faça o motor da nave pulsar](meu-jeito-aula-03.md)
 
-## Módulo 2 — Suas pedras em movimento
+## Módulo 2 · Suas pedras em movimento
 
 **Resumo:** Desenhe a pedra com formas e curvas, ponha as chamas atrás e anime os detalhes.
 
 - [Desenhe um asteroide com formas](meu-jeito-aula-04.md)
 - [Anime as chamas e as crateras](meu-jeito-aula-05.md)
 
-## Módulo 3 — Sua arte entra no jogo
+## Módulo 3 · Sua arte entra no jogo
 
 **Resumo:** Use as duas artes na mesma cópia do jogo, teste uma partida completa e aprenda a compartilhar sua versão.
 

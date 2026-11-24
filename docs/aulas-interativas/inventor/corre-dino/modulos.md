@@ -6,7 +6,7 @@
 
 **Descrição longa:** Em 13 fases, prepare a tela, faça o Dino pular e coloque cactos na pista. Monte sons, telas de começo e fim, reinício e placar. Depois, varie os obstáculos e ajuste a dificuldade com um limite.
 
-## Módulo 1 — O Dino ganha vida
+## Módulo 1 · O Dino ganha vida
 
 **Resumo:** Prepare a tela e faça o Dino aparecer, cair e pular com som.
 
@@ -15,7 +15,7 @@
 - [Faça o Dino cair e pular](corre-dino-aula-03.md)
 - [Toque um som em cada pulo](corre-dino-aula-04.md)
 
-## Módulo 2 — Da corrida ao jogo inteiro
+## Módulo 2 · Da corrida ao jogo inteiro
 
 **Resumo:** Crie e mova os cactos, separe a abertura da partida e programe a derrota e o recomeço.
 
@@ -25,7 +25,7 @@
 - [Comece por tecla ou toque](corre-dino-aula-08.md)
 - [Termine e recomece a corrida](corre-dino-aula-09.md)
 
-## Módulo 3 — Pontos e dificuldade
+## Módulo 3 · Pontos e dificuldade
 
 **Resumo:** Ajuste a área da batida, conte pontos e varie o lugar e a velocidade dos cactos.
 
