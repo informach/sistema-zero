@@ -1,10 +1,21 @@
 # Construtor: estudo e proposta dos cursos da trilha
 
-**Etapa 1 — desenho dos jogos 2D e 3D e divisão da autoria**
+**Estudo, desenho dos jogos 2D e 3D e protótipos para aprovação**
 
 Data: 24/11/2026. Referência estudada: `informach/sistema-zero`, branch `staging`, commit `9ca0696aef5a536846525704b9d01261e2bd0da7`.
 
-**Estado: proposta para revisão de Helena.** Este documento registra o estudo do Faísca, o enquadramento na Jornada e as decisões propostas para os dois jogos. Não é roteiro de gravação, manifesto de aula, projeto jogável novo nem alteração da política publicada.
+**Estado: proposta e protótipos para revisão de Helena.** Este documento registra o estudo do Faísca, o enquadramento na Jornada, as decisões propostas para os dois jogos e os projetos importáveis já preparados. Os roteiros de gravação, os manifestos das aulas e a atualização da política publicada pertencem às próximas etapas.
+
+**Divisão de autoria aprovada em 24/11/2026:** telas de início, vitória e derrota, estado inicial, comando para começar e mecanismo de reinício chegam preparados no Construtor. A criança programa os sistemas da partida, as condições de vitória e derrota e o acionamento do resultado; aprende a usar a guarda conhecida **Se jogando** nas regras que acrescenta e testa o reinício. Construir toda a estrutura das telas e transições fica para o Inventor. Esta decisão já está aplicada aos projetos iniciais e à sequência abaixo.
+
+**Atualização de direção em 24/11/2026:** a personalização das duas bases fica limitada à aparência. O 2D já oferece três opções de nave, cenário, asteroide e laser. O 3D usa provisoriamente três GLBs reaproveitados da galeria, um para a nave, um para o asteroide e um para o laser, carregados por blocos de modelo. Helena fará as artes definitivas e suas variações no Blender. Vidas, meta, intervalos, velocidades, áreas de colisão e demais regras devem permanecer iguais entre opções de aparência. Os seis arquivos `.szproject.json` acompanham esta proposta para importação e aprovação no Estúdio; o [guia dos protótipos](prototipos-base/README.md) reúne os arquivos, os controles e a validação.
+
+| Dimensão | Entrega atual | Quantidade |
+| --- | --- | --- |
+| 2D | Três jogos completos com combinações visuais diferentes: [principal](prototipos-base/2d/nave-2d-completo.szproject.json), [Órbita](prototipos-base/2d/nave-2d-orbita.szproject.json) e [Nebulosa](prototipos-base/2d/nave-2d-nebulosa.szproject.json) | 3 JSONs |
+| 2D | [Projeto inicial pedagógico](prototipos-base/2d/nave-2d-inicial.szproject.json), com a mesma biblioteca visual | 1 JSON |
+| 3D | [Jogo completo](prototipos-base/3d/patrulha-espacial-3d-completo.szproject.json), com os modelos provisórios da galeria | 1 JSON |
+| 3D | [Projeto inicial pedagógico](prototipos-base/3d/patrulha-espacial-3d-inicial.szproject.json), com os mesmos três GLBs embutidos | 1 JSON |
 
 ## 1. Decisão proposta
 
@@ -13,7 +24,7 @@ O Construtor deve fazer a criança passar de **programar uma relação entre aco
 - **Nave Contra Asteroides**, com Jogo 2D: nave na parte inferior, movimento lateral, tiros para cima e asteroides descendo.
 - **Patrulha Espacial**, com Jogo 3D: nave vista por trás e de cima, movimento lateral em X, altura fixa e asteroides chegando pela profundidade Z. Tiros são objetos reais que percorrem o espaço.
 - Os dois jogos compartilham as mesmas regras principais. A segunda versão permite reconhecer o que continua igual e aprender o que muda no espaço e nos blocos da extensão.
-- O projeto inicial entrega as artes, a apresentação e apoios técnicos explicitamente identificados. A criança constrói surgimento, acerto, pontuação, dano, condições de resultado e regras de execução da partida.
+- O projeto inicial entrega artes, telas, começo, reinício e apoios técnicos identificados. A criança constrói surgimento, acerto, pontuação, dano e condições de resultado; protege suas regras com o padrão fornecido **Se jogando**.
 - A construção inteira do ambiente e do programa, começando sem blocos, fica para o **Inventor**, conforme a orientação nova de Helena nesta conversa.
 
 A quantidade de trabalho será medida pelos sistemas que a criança consegue compreender e modificar. Percentuais de blocos não são uma boa medida: desenhar um cenário pode ocupar muitos blocos e ensinar menos sobre a partida que uma condição curta de vitória.
@@ -126,9 +137,9 @@ Após os cursos 2D e 3D, missão, Poderes e extras abrem juntos. Para avançar, 
 
 A sequência proposta é **Nave 2D e depois Patrulha 3D**, conforme a Jornada. A segunda base retoma sistemas que a criança já construiu, ensina a montagem correspondente com os blocos 3D e investiga as diferenças espaciais.
 
-A Estação de Reciclagem reutiliza criação por tempo, grupos, colisão, pontos, vidas, resultado e reset com coletor e peças. Coletar a peça correta soma um ponto; a incorreta tira uma vida; cada peça deixa de participar após a coleta. O cenário, o coletor, os dois tipos visuais e as posições fixas de entrada chegam preparados. A missão também confere uma mudança de meta e o reinício completo. Ela não pode exigir câmera, modelagem, um Poder específico ou um sorteio novo que as bases não tenham ensinado. [Fonte: currículo][curriculo]
+A Estação de Reciclagem reutiliza criação por tempo, grupos, colisão, pontos, vidas, resultado e reset com coletor e peças. Coletar a peça correta soma um ponto; a incorreta tira uma vida; cada peça deixa de participar após a coleta. O cenário, o coletor, os dois tipos visuais e as posições fixas de entrada chegam preparados. A missão confere os resultados e o reinício completo. O plano curricular anterior também propõe uma mudança de meta no enunciado; essa variação deverá ser conciliada na produção futura, considerando a decisão atual de manter a personalização apenas visual. Ela não pode exigir câmera, modelagem, um Poder específico ou um sorteio novo que as bases não tenham ensinado. [Fonte: currículo][curriculo]
 
-A missão mantém os apoios cuja construção não foi ensinada nas bases. No 3D, não pode exigir que a criança refaça sozinha o transporte, o controle lateral ou os percursos preparados. A matriz de autoria da seção 7 também orientará os critérios da missão.
+A missão mantém os apoios cuja construção não foi ensinada nas bases. As telas, o estado inicial, o começo e o mecanismo de reinício chegam preparados nas duas dimensões. No 3D, também são fornecidos transporte, controle lateral e percursos de grupos. A criança programa criação, contato, contagem, dano, condições finais e o acionamento do resultado; usa a guarda conhecida nas próprias regras e demonstra que os valores e objetos que criou voltam ao começo. O critério de reset verifica o comportamento da partida, sem atribuir à criança a construção do mecanismo pronto. Esta fronteira substitui, para a futura produção da missão, a exigência anterior de programar o fluxo completo. A matriz de autoria da seção 7 orientará os critérios.
 
 ### 4.1.1 Requisitos dos Poderes e papel dos extras
 
@@ -149,8 +160,8 @@ Os extras ampliam ferramentas e expressão: **O Jogo do Meu Jeito** trabalha art
 | Posto | Ponto de partida | Responsabilidade central da criança |
 | --- | --- | --- |
 | Faísca | Mundo e boa parte da apresentação preparados | Fazer o jogo responder, guardar uma informação e decidir |
-| Construtor | Apresentação e apoios técnicos preparados; partida incompleta | Construir os sistemas que fazem objetos surgir, interagir, contar e encerrar uma partida |
-| Inventor, nova direção | Projeto sem blocos | Montar também inicialização, apresentação e estrutura do programa, além das novas regras do jogo |
+| Construtor | Artes, telas, começo, reinício e apoios técnicos preparados; partida incompleta | Construir os sistemas que fazem objetos surgir, interagir e contar; decidir o resultado e usar a guarda de execução conhecida |
+| Inventor, nova direção | Projeto sem blocos | Montar também inicialização, telas, estados, transições e reinício, além das novas regras do jogo |
 
 **Divergência registrada:** o currículo JSON contém um plano anterior do Inventor que entregaria estados, placar e reinício prontos. A orientação de Helena nesta conversa substitui essa premissa para o planejamento futuro. O currículo e o Inventor deverão ser conciliados quando essa frente for trabalhada; este documento não altera agora o seed ou a política publicada.
 
@@ -190,7 +201,9 @@ Uma nave abre uma passagem em um campo de asteroides. Para liberar a rota, o jog
 
 Atirar permite avançar em direção à meta; desviar preserva vidas. A nave, o laser e o asteroide têm silhuetas e sons distintos. O acerto responde imediatamente. O objetivo fica visível durante a partida, e o resultado convida a tentar outra vez.
 
-A arte pode ser personalizada com as opções fornecidas. Produzir pixel art, desenhar asteroides ou modelar a nave fica para os extras correspondentes. O jogo base precisa ser atraente com os materiais de entrada.
+A arte pode ser personalizada com as opções fornecidas. A biblioteca 2D entregue inclui três aparências de nave, três cenários, três asteroides e três lasers, com diferenças reconhecíveis. No protótipo 3D há um modelo provisório por elemento: nave, asteroide e laser da galeria. As artes definitivas e suas variações serão produzidas por Helena no Blender e incorporadas como modelos, mantendo o uso de um bloco para carregar cada objeto.
+
+Trocar a aparência deve manter dimensões de colisão e comportamento. A produção de pixel art, desenhos ou modelos pela criança continua pertencendo aos extras correspondentes. As bases usam materiais fornecidos; a aprovação atual do 3D se concentra no jogo e no uso dos modelos provisórios.
 
 ### 6.2 Regras comuns, fixadas para esta proposta
 
@@ -218,7 +231,7 @@ O escudo coletável, tiros em ângulo, inimigos que atiram, chefão e troca de a
 
 ### 6.3 Parâmetros iniciais para o protótipo
 
-Estes valores são escolhas de partida para a próxima implementação, não resultados de um ensaio realizado:
+Estes valores foram configurados nos protótipos para aprovação. Ainda são escolhas de partida para o ensaio de jogabilidade com iniciantes:
 
 | Parâmetro | Proposta inicial | Como conferir |
 | --- | --- | --- |
@@ -229,11 +242,11 @@ Estes valores são escolhas de partida para a próxima implementação, não res
 | Configuração alternativa de investigação | 1 ou 2 segundos, mudando uma coisa por vez | A criança compara o efeito do intervalo |
 | Tempo de reação desejado | Aproximadamente quatro segundos entre entrada e altura da nave | Medir nos dois motores, sem copiar velocidades numéricas entre unidades diferentes |
 
-Os 20 acertos não devem virar uma constante espalhada: usar uma meta legível que o aluno possa alterar e que a condição consulte. Não cobrar exatamente 20 em todo projeto personalizado. Na versão de ensaio do curso, usar a configuração de referência para comparar efeitos.
+Os 20 acertos devem ter uma única definição legível, consultada pela condição de vitória. A personalização conserva essa meta e os demais parâmetros de jogabilidade. Comparações de intervalo e velocidade, quando necessárias para compreender um conceito, acontecem nas experiências orientadas; não são opções de customização dos jogos entregues.
 
 ### 6.4 Nave Contra Asteroides: funcionamento em 2D
 
-A referência lógica é uma tela de 800 × 480, como o curso existente. A nave fica perto da parte inferior, com espaço de respiro para o tiro nascer. Asteroides entram acima da área visível e descem. Estrelas se movem ao fundo como apresentação pronta.
+A referência lógica é uma tela de 800 × 480, como o curso existente. A nave fica perto da parte inferior, com espaço de respiro para o tiro nascer. Asteroides entram acima da área visível e descem. O cenário e suas estrelas fazem parte da imagem de fundo preparada.
 
 - X representa a posição lateral.
 - Y cresce para baixo na tela.
@@ -258,9 +271,13 @@ A câmera fica atrás e um pouco acima da nave, apontando para o campo de astero
 
 Assim, o 3D acrescenta profundidade, escala aparente e contato espacial. Não exige controlar altitude, virar a câmera, calcular ângulos ou pilotar em seis direções.
 
-O jogo usará **abertura autoral**, com aviso e evento Enter para mudar o estado para jogando. Não usar a tela nativa de início que pausa os eventos, pois ela impediria esse Enter de autoria. No resultado, usar a tela nativa do Jogo 3D e seu botão de reinício, com texto **Voltar ao início**. Depois do botão, o programa é executado novamente e Enter começa a nova partida.
+O projeto inicial já entrega **abertura preparada**, com aviso e evento Enter para mudar o estado para jogando. Essa implementação não usa a tela nativa de início que pausa os eventos, pois ela impediria o Enter preparado. As mensagens das telas finais e o botão nativo **Voltar ao início** também chegam configurados. A criança construirá as condições que acionam o resultado. Depois do botão, o programa é executado novamente e Enter começa a nova partida.
 
 **O controle de fim é uma diferença real entre as versões:** no Jogo 3D, a tecla R montada como evento não funciona depois do fim nativo; o botão funciona. O curso deve explicar e mostrar o controle real. [Fonte: regras e telas 3D][regras-3d]
+
+No protótipo para aprovação, a câmera está em `(0, 8, 12)` e olha para um modelo vazio em `(0, 1, -12)`. Esse alvo não tem geometria e serve apenas ao enquadramento. A nave, o meteoro e o laser já foram empacotados em três GLBs incorporados, reaproveitando as geometrias, cores e materiais da Patrulha Espacial da galeria. Cada um entra por um bloco nativo `sz_g3d_create_model_file`, que gera `SZGame3D.createModelFile`.
+
+O programa entregue não contém a montagem visual das peças por blocos de formas nem opções artísticas novas para o 3D. Quando Helena entregar as artes e variações do Blender, a substituição ocorrerá no campo **modelo** do bloco. Conferir novamente orientação, escala, saída do tiro, caixa de colisão, carregamento e reinício, preservando as regras aprovadas. Os modelos provisórios e os resultados de validação estão descritos no [guia dos protótipos](prototipos-base/README.md) e no [guia 3D](prototipos-base/3d/README.md). [Origem dos modelos: Patrulha da galeria][galeria-3d]
 
 ### 6.6 Por que essas referências da galeria
 
@@ -274,9 +291,9 @@ Esses elementos não entram como regras obrigatórias da base. O Caça Estelar p
 
 O início deve executar sem erro e apresentar um cenário cuidado. Ele não deve conter uma partida completa que a criança apenas liga.
 
-No **2D**, haverá nave visível, ambiente e desenho por quadro. A nave ainda não anda e não atira; não existem asteroides ativos, acertos, pontos, dano ou resultado.
+No **2D**, há nave visível, ambiente, desenho por quadro, telas de abertura/vitória/derrota, estado inicial e evento Enter para começar ou reiniciar após o resultado. A nave ainda não anda e não atira; não existem grupos, asteroides ativos, acertos, pontos, dano ou condições de resultado. As doze opções visuais estão incorporadas. O laço oferece a área protegida **Se jogando** para receber as regras da criança.
 
-No **3D**, haverá ambiente, câmera, modelos, nave pilotável lateralmente e dois grupos vazios. Ainda não há tiros, asteroides ativos, acertos, pontos, dano ou resultado. O movimento lateral preparado evita que uma diferença técnica de controle consuma o curso de transferência.
+No **3D**, há ambiente, câmera, três blocos de modelos GLB, abertura, estado inicial, Enter para começar e mensagens finais com botão de reinício preparados. A nave pode ser pilotada lateralmente depois de Enter; os dois grupos existem vazios. Ainda não há tiros, asteroides ativos, acertos, pontos, dano ou condições de resultado. O movimento lateral preparado evita que uma diferença técnica de controle consuma o curso de transferência. Movimento e transporte só executam enquanto a partida está em andamento. Os modelos provisórios são os mesmos do jogo completo.
 
 O jogo pronto que a criança experimenta na abertura é um exemplo separado. Não é o projeto inicial entregue para editar.
 
@@ -284,7 +301,7 @@ O jogo pronto que a criança experimenta na abertura é um exemplo separado. Nã
 
 | Sistema | Inicial 2D | Construção no 2D | Inicial 3D | Construção no 3D |
 | --- | --- | --- | --- | --- |
-| Artes e apresentação | Nave, fundo, efeitos e opções visuais | Escolher opções e textos conhecidos | Modelos, materiais, céu, iluminação e câmera | Escolher opções compatíveis |
+| Artes e apresentação | Biblioteca com três naves, três fundos, três asteroides e três lasers | Escolher aparências com as mesmas dimensões e regras | Três GLBs provisórios da galeria, um por elemento, e câmera preparada | Trocar o modelo quando as artes e variações do Blender estiverem disponíveis; preservar dimensões e regras |
 | Nave visível | Criação e desenho prontos | Retomar posição e aparência quando necessário | Modelo, escala, posição e orientação prontos | Conferir a relação com tiros e alvos |
 | Controle lateral | Não pronto | Movimento e limite, como retomada do Faísca | Motor lateral, limite e estabilidade prontos | Observar X e usar a posição atual no tiro |
 | Grupos | Não declarados | Criar `tiros` e `asteroides` | Os dois grupos vazios já declarados | Criar cópias e gerir seus conteúdos; não alegar que os declarou |
@@ -295,13 +312,18 @@ O jogo pronto que a criança experimenta na abertura é um exemplo separado. Nã
 | Pontos | Nenhuma pontuação | Criar variável zero, somar no acerto e mostrar o valor | Nenhuma pontuação | Criar variável zero, somar no acerto e mostrar o valor |
 | Vidas e dano | Nenhuma regra de dano | Dar três vidas, retirar uma na batida e consultar a vida | Nenhuma regra de dano | Dar três vidas, evento nave × grupo, dano e consulta da vida |
 | Proteção após dano | Recurso da extensão | Configurar/usar e observar, sem construir o motor de proteção | Recurso da extensão | Usar e observar, sem construir o motor de proteção |
-| Estado da partida | Modo de construção executa diretamente | Abertura, começo, guardas e estados finais | Modo de construção executa diretamente | Variável de estado, começo e guardas; resultado usando a tela nativa |
-| Vitória/derrota | Não existem | Condições, prioridade e telas | Não existem | Condições, prioridade e chamada de fim |
-| Reinício | Não faz parte da regra inicial ensinada | Ligar o bloco de reinício e conferir inicialização completa | Mecanismo do botão final pertence à extensão | Programar os valores iniciais e comprovar reconstrução completa pelo botão |
+| Telas e começo | Abertura, telas finais, estado inicial e Enter preparados | Reconhecer os momentos; sem construir apresentação ou evento de começar | Aviso de abertura, variável `estado`, Enter e mensagens finais preparados | Reconhecer os momentos e a diferença de controle do fim |
+| Execução durante a partida | Guarda **Se jogando** no laço preparado | Construir os novos eventos/relógios e aplicar neles o mesmo padrão; testar antes/durante/depois | Movimento, transporte e percursos protegidos por `estado === jogando` | Aplicar o padrão conhecido nas novas regras; sem montar toda a arquitetura de estados |
+| Vitória/derrota | Telas prontas; sem condições nem pontuação/vida antecipadas | Comparações, prioridade e mudança para o resultado preparado | Mensagens finais prontas; sem condições nem pontuação/vida antecipadas | Comparações, prioridade e ligação com o resultado nativo |
+| Reinício | Enter e bloco de reinício já ligados aos resultados | Inicializar os valores próprios e testar a restauração completa, preservando aparência | Botão final nativo configurado; inicialização executada novamente | Inicializar os valores próprios e testar a restauração completa, preservando aparência |
 
 **As expressões de posição fornecidas são apoio explícito.** A expressão produz uma posição de entrada válida a cada criação. A criança a encaixa no nascimento do asteroide e observa seu efeito: programa quando ele nasce e a criação naquela posição. Projetar distribuição, limites de sorteio e progressão de dificuldade não será critério destas bases; esse trabalho pertence à futura autoria do Inventor. A próxima produção deve usar blocos existentes para a expressão fornecida, com margens verificadas, sem JavaScript cru ou novas APIs inventadas.
 
 Os apoios não devem aparecer como um emaranhado de rotinas sem identificação. Organizar a área para a criança reconhecer preparação e regras que está construindo, usando os recursos de organização existentes no Estúdio. Não pressupor um sistema novo de pastas, bloqueios ou macros.
+
+**A guarda não entrega o sistema que será ensinado.** O projeto inicial não contém um evento Espaço ou temporizador já resolvido. Ao construir o disparo e o surgimento dos asteroides, a criança monta esses elementos e encaixa suas ações no padrão **Se jogando**, retomado na experiência e mostrado passo a passo. Os apoios que já existem vêm protegidos. Não adiar todas essas ligações para uma grande remontagem no fim do curso.
+
+**Telas preparadas não antecipam as respostas.** A abertura já funciona, mas não há comparação de pontos, detecção de vida zero ou fim automático no inicial. Os testes técnicos podem acionar uma tela final diretamente para conferir seu botão; essa chamada pertence somente ao teste e não aparece como solução no projeto da criança. A apresentação inicial usa textos que não dependem de `pontos`, `meta` ou vidas ainda ausentes.
 
 ### 7.3 Particularidades indispensáveis do apoio 3D
 
@@ -315,17 +337,19 @@ Antes de preencher a regra, a criança observa que a preparação apresenta um t
 
 **Pontos têm uma só fonte de verdade.** Usar a variável autoral `pontos` e exibi-la pelo HUD. Não somar simultaneamente nessa variável e em um placar interno sem contrato de sincronização. O motor oferece pontos nativos, mas usar esse recurso sozinho não ensinaria criação de variável.
 
-Cada projeto de entrada só pode ler variáveis que já tenham sido criadas até aquela parte. O HUD do placar entra junto com a variável `pontos`; a preparação visual não deve consultá-la antecipadamente. O mesmo cuidado vale para a meta e para o estado da partida.
+Cada projeto de entrada só pode ler variáveis que já tenham sido criadas até aquela parte. O HUD do placar entra junto com a variável `pontos`; a preparação visual não deve consultá-la antecipadamente. O mesmo cuidado vale para a meta e para as vidas. O estado da partida já é declarado pela preparação desde o projeto inicial.
 
 **Vidas usam o recurso nativo de vida.** A criança configura três, programa a perda e lê o valor para decidir a derrota. A extensão fornece armazenamento, piscar e proteção breve. Isso permite dedicar a autoria à regra do dano; não afirmar que ela implementou internamente a invulnerabilidade. Vida zero não termina o jogo automaticamente. [Fonte: regras 3D][regras-3d]
 
-**Abertura e fim têm contratos distintos.** Abertura autoral com Enter e aviso; fim nativo com botão. O texto e as instruções devem ser idênticos ao comportamento que o protótipo demonstrar.
+**Abertura e fim têm contratos distintos e preparados.** Abertura com Enter e aviso; fim nativo com botão. A criança programa o motivo do encerramento e aciona essa apresentação. O texto e as instruções devem ser idênticos ao comportamento que o protótipo demonstrar.
 
 ### 7.4 O que ficará para a construção desde o zero no Inventor
 
-Além dos novos assuntos de corrida, a criança passará a montar inicialização da cena, criação dos atores, preparação da câmera, desenho/renderização exposto pelos blocos, grupos e estrutura de execução. Ela remontará estados e placar trabalhados no Construtor, com retomadas dos conceitos e todos os passos necessários. Compreensão será conferida, sem presumir domínio apenas pela conclusão do curso.
+Além dos novos assuntos de corrida, a criança passará a montar inicialização da cena, criação dos atores, preparação da câmera, desenho/renderização exposto pelos blocos e grupos. Construirá também as telas, o estado inicial, as transições entre abertura/partida/resultado e o acionamento do reinício. No Construtor ela terá usado essa estrutura e programado as regras que a acionam; no Inventor será autora de sua organização completa, começando sem blocos. O placar, os contatos e outras regras já construídas serão retomados. Compreensão será conferida, sem presumir domínio apenas pela conclusão do curso.
 
 O alvo é retirar os blocos iniciais de apoio. Não é reimplementar internamente o motor gráfico: continuará usando os comandos das extensões.
+
+Essa fronteira mantém a progressão do Faísca: programar uma condição que provoca uma resposta preparada. O projeto da Ilha já entrega reinício por R, enquanto a criança constrói a memória da chave e a decisão. O avanço no Construtor está em combinar vários sistemas e seus resultados; a construção de toda a infraestrutura tem um lugar explícito no Inventor. [Fontes: projetos Farol][farol-projeto] e [Ilha][ilha-projeto].
 
 ## 8. Sequência de aprendizagem proposta
 
@@ -335,33 +359,33 @@ O mapa abaixo define conquistas e dependências. Ainda não define as falas, cad
 
 | Aula proposta | Conquista jogável | O que a criança constrói | Parte preparada que usa |
 | --- | --- | --- | --- |
-| 1. Sua nave na rota | A nave se move e respeita as bordas | Movimento lateral e limite; primeira escolha de aparência | Tela, nave e desenho |
-| 2. Um disparo nasce da nave | Apertar Espaço cria um tiro que sai do lugar certo | Grupo, evento, posição relativa à nave, velocidade, movimento, desenho e limpeza | Aparência do laser e som disponíveis |
-| 3. O campo de asteroides | Asteroides aparecem em intervalos e atravessam a tela | Segundo grupo, relógio em segundos, criação, direção e limpeza | Aparência e valor de posição de entrada fornecidos |
+| 1. Sua nave na rota | Depois de começar, a nave se move e respeita as bordas | Movimento lateral e limite na área protegida; primeira escolha de aparência | Telas, Enter, nave, desenho e guarda **Se jogando** |
+| 2. Um disparo nasce da nave | Apertar Espaço durante a partida cria um tiro no lugar certo | Grupo, evento com a guarda conhecida, posição relativa à nave, velocidade, movimento, desenho e limpeza | Aparência do laser, som e padrão de guarda disponíveis |
+| 3. O campo de asteroides | Asteroides aparecem em intervalos durante a partida e atravessam a tela | Segundo grupo, relógio em segundos, guarda conhecida, criação, direção e limpeza | Aparência, expressão de posição de entrada e estado fornecidos |
 | 4. Um encontro, um acerto | O tiro destrói o asteroide atingido | Colisão entre grupos e retirada apenas do par envolvido | Efeitos prontos, acionados na regra correta |
 | 5. Cada acerto conta | O placar responde a acertos, sem contar tiros perdidos | Variável numérica, zero inicial, incremento e apresentação | Estilo visual dos elementos disponíveis |
 | 6. Três chances para continuar | Batidas custam uma vida, com retorno visível | Vida inicial, contato com a nave, retirada, dano e indicador | Proteção breve e piscar da extensão |
-| 7. Você decide quando começa | Na abertura nada dispara; Enter libera a partida | Estado inicial, transição e guardas de movimento, relógio, tiro e contatos | Estrutura visual do palco |
-| 8. Uma partida com final | A meta vence; ficar sem vidas encerra com derrota | Comparações, prioridade, estados finais e telas | Blocos de apresentação de tela |
-| 9. Recomeçar e deixar do seu jeito | Uma nova partida limpa o estado anterior e conserva as escolhas | Comando de reinício, conferência do estado inicial, mudança de uma regra conhecida e teste final | Os recursos visuais e sonoros fornecidos |
+| 7. Cada regra no seu momento | Os sistemas construídos funcionam somente durante a partida | Testar e corrigir o uso da guarda conhecida em tiro, relógio e contatos; explicar quando uma ação pode acontecer | Telas, estado e transição de início já funcionando |
+| 8. Uma partida com final | A meta vence; ficar sem vidas encerra com derrota | Comparações, prioridade e acionamento do resultado preparado | Apresentação de vitória/derrota e proteção das rotinas preparadas |
+| 9. Testar de novo e deixar do seu jeito | Uma nova partida limpa o estado anterior e conserva a aparência escolhida | Conferir valores iniciais, objetos e relógio; escolher nave/cenário/asteroide/laser e testar a partida inteira | Comando de reinício pronto e biblioteca visual fornecida |
 
-As aulas 2 e 3 precisam de partes separadas: criação, direção/movimento e retirada não são um único conceito. Da mesma forma, a aula 7 deve distinguir o nome do estado, a transição e as regras que precisam consultá-lo. A criança não precisa terminar tudo em uma sentada; os checkpoints permitem parar entre as partes.
+As aulas 2 e 3 precisam de partes separadas: criação, direção/movimento e retirada não são um único conceito. As guardas entram junto de cada regra nova. A etapa 7 é uma retomada aplicada e um diagnóstico dos sistemas construídos, sem ensinar a montagem das telas ou refazer a estrutura de início. Ela pode ser incorporada às revisões das etapas 2–6 se a escrita das partes mostrar que uma aula separada seria repetitiva. A referência de nove aulas não obriga a criar uma aula de preenchimento; duração e identidades serão conciliadas antes da produção. Os checkpoints permitem parar entre conquistas.
 
 O desenho visual fica pronto, mas a criança aprende o **ciclo de vida do objeto**: ele nasce, aparece, se move, interage e sai do jogo. Isso é uma evolução nítida em relação a recolher uma chave já colocada.
 
-As versões das primeiras aulas são ensaios parciais, que entram direto no jogo para testar o sistema recém-construído. A abertura e as condições finais são acrescentadas depois. Não apresentar a versão de vidas sem a condição final como se já fosse a partida completa.
+As versões das primeiras aulas são ensaios parciais, com abertura e Enter já prontos desde o início. As condições finais só são acrescentadas depois de pontos e vidas terem sido construídos. Não apresentar a versão de vidas sem a condição final como se já fosse a partida completa. A tela de fim disponível não deve ser confundida com uma regra de vitória/derrota já resolvida.
 
 ### 8.2 Patrulha Espacial: cinco aulas de referência
 
 | Aula proposta | Conquista | Transferência e novidade | Autoria principal |
 | --- | --- | --- | --- |
-| 1. Da tela ao espaço | A nave pronta dispara um laser real | Reencontrar a partida, observar X/Y/Z e construir o tiro em profundidade | Evento, cópia na posição da nave, direção do tiro e retirada por Z |
-| 2. Meteoros na rota | O campo passa a receber obstáculos | Relógio e grupos conhecidos, agora com moldes e cópias 3D | Temporizador, criação, velocidade configurada e limpeza |
+| 1. Da tela ao espaço | Depois de Enter, a nave pronta dispara um laser real | Reencontrar a partida, observar X/Y/Z e construir o tiro em profundidade | Evento com guarda conhecida, cópia na posição da nave, direção do tiro e retirada por Z |
+| 2. Meteoros na rota | O campo passa a receber obstáculos durante a partida | Relógio e grupos conhecidos, agora com moldes e cópias 3D | Temporizador com guarda conhecida, criação, velocidade configurada e limpeza |
 | 3. Acertar no espaço | Um encontro real soma um ponto | Sobreposição na imagem não garante contato; condição aplicada ao par preparado | Se encostando, retirada, marca de alvo consumido e contador |
 | 4. Três chances na patrulha | A nave recebe dano de forma legível | Reaplicar vida e evento com o grupo | Vida inicial, dano no contato, retirada e leitura do valor |
-| 5. Uma patrulha completa | Começo, vitória, derrota e nova tentativa coerentes | Reaplicar estados e condições; conhecer o botão real de reinício desta extensão | Estado autoral, guardas, resultado, valores iniciais e prova de reset |
+| 5. Uma patrulha completa | Vitória, derrota e nova tentativa coerentes | Reaplicar condições, usar a estrutura preparada e conhecer o botão real de reinício desta extensão | Condições e prioridade, acionamento do resultado, revisão das guardas e prova da restauração dos valores próprios |
 
-O número cinco é uma referência inicial compatível com o outline existente. **Não é um limite que justifique comprimir a última aula.** Se a montagem de estados, resultado e reset ocupar muitas partes, separar essa conquista em duas aulas, conciliando as identidades reservadas. O objetivo da etapa atual é fixar o percurso e a fronteira de autoria; a duração depende do protótipo e da escrita das partes.
+O número cinco é uma referência inicial compatível com o outline existente. A montagem de telas, estado inicial, começo e reinício saiu da autoria dessa base. A última aula se concentra nas condições, na ligação com o resultado e nos testes da partida. Se esses assuntos ainda ocuparem muitas partes, dividir a conquista e conciliar as identidades reservadas; a duração depende do protótipo e da escrita das partes.
 
 No 3D, grupos, tempo e pontos não precisam ser apresentados como conceitos completamente novos. A criança reencontra a ideia, observa sua nova representação e recebe a montagem completa. As experiências novas se concentram em profundidade, altura e contato.
 
@@ -369,14 +393,18 @@ No 3D, grupos, tempo e pontos não precisam ser apresentados como conceitos comp
 
 Desde a primeira aula, a criança vê sua nave. Na segunda conquista, dispara. Na seguinte, tem obstáculos; depois, pode acertá-los. A pontuação torna a evolução visível, e as vidas dão consequência às decisões.
 
-A personalização acompanha o que já foi compreendido:
+A personalização é exclusivamente visual nas duas dimensões. No **2D**, a biblioteca já incorporada permite:
 
-- Aparência, nome e mensagens entre opções fornecidas.
-- Cor do laser e retorno sonoro, respeitando legibilidade.
-- Meta de acertos, depois de aprender a condição que a usa.
-- Intervalo entre asteroides, depois da investigação de tempo.
+- Escolher outra nave entre três opções.
+- Escolher outro cenário entre três opções.
+- Escolher outra aparência de asteroide entre três opções.
+- Escolher outra aparência de laser entre três opções.
 
-Uma mudança de dificuldade deve alterar uma variável por vez e terminar com comparação. Não entregar uma lista de cinco números para copiar e chamar isso de equilíbrio do jogo.
+As opções 2D podem ser combinadas. Os três projetos completos alternativos facilitam visualizar algumas combinações; cada arquivo conserva a biblioteca inteira para outras escolhas. No **3D**, a entrega atual tem um jogo completo e um inicial, com os mesmos modelos provisórios da galeria. As opções definitivas serão feitas por Helena no Blender; serão escolhidas pelo campo de modelo, sem acrescentar montagem procedural das artes ao programa.
+
+Uma troca visual não altera meta, vidas, intervalo de surgimento, velocidade, dano, colisões ou controles. Reiniciar a partida conserva a aparência selecionada no programa. Esse contrato será reconferido ao incorporar as artes do Blender.
+
+A criança testa se sua combinação mantém nave, tiros, alvos e placar legíveis. Essa é a decisão de acabamento desta etapa. Mudanças de regra, dificuldade, mensagens e sons ficam fora da personalização atual.
 
 ## 9. Experiências que precisam anteceder a montagem
 
@@ -392,9 +420,9 @@ Estas são especificações de intenção. A próxima etapa deverá confrontá-l
 | Colisão | Testar encontro, passagem sem tocar e dois alvos com só um atingido | A consequência deve pertencer ao par que se encontrou |
 | Pontuação | Comparar tiro perdido, acerto e novo acerto | O número muda pelo acontecimento certo e guarda o total |
 | Vida | Ver três chances, uma batida e a proteção breve | Uma batida custa uma chance; não todas no contato prolongado |
-| Estado | Comparar o mesmo Espaço ou relógio antes, durante e depois da partida | A mesma entrada pode produzir ou não uma ação conforme o momento |
+| Estado preparado | Comparar o mesmo Espaço ou relógio antes, durante e depois da partida; usar a guarda fornecida | A mesma entrada pode produzir ou não uma ação conforme o momento; a regra nova deve consultar esse momento |
 | Meta e resultado | Comparar valor abaixo, igual e acima da meta; conferir também vida zero | A condição é uma pergunta sobre o estado atual |
-| Reinício | Observar pontos, vidas e objetos antes/depois de uma nova partida | Recomeçar recompõe o estado, sem desfazer o programa |
+| Reinício preparado | Observar pontos, vidas e objetos antes/depois de uma nova partida | O mecanismo pronto executa a inicialização; os valores que a criança criou precisam começar corretamente |
 | Profundidade, no 3D | Dois objetos parecem alinhados na imagem, mas estão em profundidades ou alturas diferentes | Aparência na tela e contato no espaço são coisas diferentes |
 
 Uma experiência pode preparar duas montagens próximas quando concretiza ambas. Não precisa haver um cenário independente para cada rótulo desta tabela. O desenho final deve evitar que a experiência se torne um Estúdio reduzido ou um teste de vocabulário.
@@ -413,7 +441,7 @@ No 3D, concentrar a revisão em uma previsão de contato/profundidade e em um di
 
 ## 10. Critérios da futura implementação e de aprendizagem
 
-Os critérios abaixo pertencem à produção posterior. Não representam testes executados sobre um projeto novo nesta etapa.
+Os critérios abaixo orientam a produção e a aprovação. Os seis protótipos anexos já passaram pelas verificações estruturais e funcionais descritas no [guia de importação e validação](prototipos-base/README.md). No 3D, a verificação inclui o carregamento assíncrono dos GLBs embutidos e o reinício. Os ensaios de aprendizagem, a sensação de jogo e a conferência visual dentro do Estúdio continuam pendentes de revisão.
 
 ### 10.1 Jogo funcionando
 
@@ -436,7 +464,8 @@ Os critérios abaixo pertencem à produção posterior. Não representam testes 
 | Meta e última vida no mesmo ciclo | Aplica a prioridade declarada: derrota |
 | Reiniciar após vitória e derrota | Pontos zero, três vidas, nave no início, grupos vazios e relógio novo |
 | Reiniciar repetidamente | Nenhuma duplicação de eventos, velocidade ou frequência de criação |
-| Alterar cor, mensagem ou meta válida | Verificação aceita a personalização e consulta a regra atual |
+| Trocar uma aparência 2D; depois, integrar as opções do Blender no 3D | A aparência muda; vidas, meta, velocidade, intervalo, área de colisão e controles permanecem iguais |
+| Reiniciar com outra aparência | A partida volta ao começo e preserva as escolhas visuais |
 | Tiro 3D criado de um molde | Move-se; não depende de uma velocidade que o molde não transmite |
 | Encerrar o 3D | Botão nativo funciona; não pedir um R que a pausa impede |
 
@@ -448,9 +477,10 @@ Ao terminar o par, a criança deve conseguir, no seu nível de linguagem:
 - Explicar por que um tiro nasce onde a nave está.
 - Distinguir tirar um objeto de apagar o grupo inteiro.
 - Relacionar um acerto com uma soma de pontos e uma batida com uma perda de vida.
-- Prever o efeito de mudar o intervalo ou a meta.
+- Prever, nas experiências, o efeito de um intervalo diferente e de atingir a meta.
 - Explicar por que o jogo não deve continuar criando coisas na tela final.
 - Mostrar o que uma nova partida precisa restaurar.
+- Identificar o que veio preparado: telas, começo e mecanismo de reinício; distinguir isso das condições e regras que construiu.
 - Reconhecer essas relações na futura Estação de Reciclagem.
 
 Essas evidências não precisam virar uma prova escrita extensa. Podem aparecer em uma previsão, na escolha de um teste, em uma pequena modificação e na explicação curta do que aconteceu. Os testes de software conferem o produto; um ensaio com crianças é necessário para avaliar clareza, carga e autonomia.
@@ -470,8 +500,9 @@ Os IDs abaixo foram localizados no código da referência estudada. Não são te
 | Necessidade | Jogo 2D | Jogo 3D / apoio previsto |
 | --- | --- | --- |
 | Grupo | `sz_g2d_create_group` | `sz_g3d_create_group`; dois grupos vazios fornecidos |
-| Disparo | `sz_g2d_on_key` + `sz_g2d_spawn_bullet` | `sz_g3d_on_key` + `sz_g3d_spawn_copy` |
-| Asteroide | `sz_g2d_spawn_asteroid` | Cópia do molde visual fornecido |
+| Nave com aparência escolhida | `sz_g2d_create_image_sprite` e imagem incorporada | `sz_g3d_create_model_file`, com GLB incorporado; modelo provisório da galeria na entrega atual |
+| Disparo | `sz_g2d_on_key` + `sz_g2d_spawn_image_in_group` | `sz_g3d_on_key` + `sz_g3d_spawn_copy` |
+| Asteroide | `sz_g2d_spawn_image_in_group`, com imagem de asteroide | Cópia do molde visual fornecido |
 | Cadência | `sz_g2d_every_seconds` | `sz_g3d_every_seconds` |
 | Mover grupo | `sz_g2d_update_group` | `sz_g3d_set_velocity` por cópia + `sz_g3d_update_group_no_gravity` |
 | Fora da área | `sz_g2d_prune_offscreen` | `sz_g3d_prune_area`, pelo eixo Z |
@@ -480,11 +511,15 @@ Os IDs abaixo foram localizados no código da referência estudada. Não são te
 | Nave × alvos | `sz_g2d_on_sprite_group_overlap` | `sz_g3d_on_touch_group` |
 | Pontuação autoral | Variável + incremento + `sz_g2d_draw_score` | Variável + incremento + `sz_g3d_hud_text` |
 | Vida | `sz_g2d_set_health`, `sz_g2d_damage_sprite`, `sz_g2d_health_depleted` | `sz_g3d_set_life`, `sz_g3d_hurt`, `sz_g3d_life_of` |
-| Estado | `sz_g2d_set_scene` / `sz_g2d_scene_is` | Variável de texto `estado`, comparação e Se |
-| Resultado | Estado final e `sz_g2d_show_screen` | Estado autoral e `sz_g3d_end_game` |
-| Reinício | `sz_g2d_restart`, ligado pelo aluno | Botão final nativo; inicialização autoral executada novamente |
+| Estado | `sz_g2d_set_scene` / `sz_g2d_scene_is`; início e guarda do laço preparados | Variável de texto `estado`, Enter e guardas dos apoios preparados |
+| Resultado | Condição do aluno muda o estado; blocos preparados desenham a tela correspondente | Condição do aluno liga estado final e `sz_g3d_end_game` às mensagens preparadas |
+| Reinício | `sz_g2d_restart` já ligado a Enter após resultado | Botão final nativo já configurado; inicialização executada novamente |
 
 Para variáveis e condições, os blocos existentes são `sz_js_var_create`, `sz_js_var_assign`, `sz_js_var_increment`, `sz_js_if_else`, `sz_val_variable` e `sz_val_compare`.
+
+A escolha de imagens no 2D substitui os visuais embutidos de `spawn_bullet` e `spawn_asteroid` pelos sprites com imagem já suportados. A competência continua sendo criar objetos em um grupo, com posição, dimensões e velocidade. Todos os projetos 2D carregam as doze imagens incorporadas, e a seleção usa o campo de imagem do bloco existente.
+
+No 3D, `SZGame3D.createModelFile` carrega os três GLBs incorporados: nave, molde de asteroide e molde de tiro. O projeto completo e o inicial usam os mesmos arquivos provisórios. Não é necessário montar as geometrias por blocos ou importar os GLBs separadamente. O carregador nativo trabalha de forma assíncrona; a validação conferiu que os modelos efetivos chegaram, sem ficar nas formas de reserva, e que suas cópias e o reinício funcionaram. A produção de novas artes e variações 3D ficará com Helena no Blender.
 
 ### 11.1 Diferenças que a produção deve respeitar
 
@@ -496,7 +531,7 @@ Para variáveis e condições, os blocos existentes são `sz_js_var_create`, `sz
 
 **Colisões e resultado:** concentrar a decisão final depois das consequências de colisão relevantes. No Jogo 3D consultado, o contato nativo de nave × grupo é processado depois do callback de animação. Para conservar esse evento e a prioridade da derrota, conferir o resultado no início do quadro seguinte, antes de permitir novas ações: primeiro vida zero, senão meta atingida. O incremento de pontos e o evento de vida zero não encerram separadamente a partida. O protótipo deve provar a ordem, inclusive no caso simultâneo, e conferir que os apoios de movimento e de tempo não executam um novo passo após a decisão. A promessa é um resultado único e coerente.
 
-**Reinício:** depois de `end_game`, os eventos de tecla do 3D são ignorados. A abertura autoral desta proposta evita a pausa inicial nativa; o resultado mantém o botão nativo. Não apresentar um evento de teclado como responsável por um clique/Enter que o navegador encaminha ao botão.
+**Reinício:** depois de `end_game`, os eventos de tecla do 3D são ignorados. A abertura preparada desta proposta evita a pausa inicial nativa; o resultado mantém o botão nativo. Os dois controles já estão configurados no inicial. Não apresentar um evento de teclado como responsável por um clique/Enter que o navegador encaminha ao botão.
 
 **Teclado e toque:** o escopo inicial é computador com teclado e navegador compatível com o Estúdio; 3D requer WebGL. Uma prévia responsiva não comprova controles de toque. O 2D tem opções de controle por dedo, mas a nave 3D genérica não recebe automaticamente os controles dos kits. Se for necessária uma versão móvel, ela precisa de adaptação e ensaio próprios.
 
@@ -517,15 +552,15 @@ Este trabalho não precisa de Pensa, Ponte, Pro ou IA como pré-requisito. As ba
 
 ## 13. Encaminhamento da próxima etapa
 
-Com a direção dos jogos e a fronteira de autoria revisadas, a sequência de trabalho é:
+Os seis arquivos importáveis completos e iniciais estão no [pacote de protótipos](prototipos-base/README.md): quatro do 2D e dois do 3D. Com essa primeira implementação disponível, a sequência de trabalho é:
 
-1. **Prototipar os dois jogos finais e seus projetos iniciais.** Confirmar controles, visibilidade, colisões, ritmo, apoios 3D e reinício.
+1. **Aprovar os protótipos no Estúdio.** Importar os jogos completos, experimentar as opções visuais 2D e conferir controles, visibilidade, ritmo e reinício nas duas dimensões. No 3D, avaliar o jogo com os modelos provisórios da galeria, já carregados por blocos de modelo. Os iniciais permitem avaliar a fronteira de autoria. As artes e variações do Blender serão incorporadas quando Helena as fornecer, com nova conferência de escala, orientação, contato e reinício.
 2. **Fechar a matriz por parte.** Para cada parte: projeto de entrada, construção, conceito, experiência anterior, resultado e teste. Ajustar a divisão em aulas se houver concentração excessiva.
 3. **Conciliar os destinos do curso.** Mapear aulas existentes/reservadas e registrar a evolução curricular que será publicada.
 4. **Escrever as aulas e produzir os derivados.** Roteiros, manifestos, experiências, objetivos, vozes e Passo a passo vêm depois desse desenho.
 5. **Validar com execução e observação de iniciantes.** Separar funcionamento, clareza pedagógica e produção/publicação.
 
-O resultado desta etapa é o estudo e uma especificação revisável. As escolhas centrais estão definidas: dois shooters de trajetória reta, profundidade real no 3D, apresentação preparada, autoria crescente dos sistemas e partida completa como conquista do Construtor.
+O estudo e a especificação agora acompanham protótipos importáveis para aprovação. As escolhas centrais estão definidas: dois jogos de nave com trajetória reta, profundidade real no 3D, telas/começo/reinício preparados, personalização apenas visual, autoria crescente dos sistemas e das condições finais e partida completa como conquista do Construtor. A construção integral da estrutura das telas e transições fica para o Inventor.
 
 ## Referências consultadas
 

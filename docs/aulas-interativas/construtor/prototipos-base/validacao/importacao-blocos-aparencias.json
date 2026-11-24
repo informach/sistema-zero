@@ -1,0 +1,404 @@
+{
+  "sourceCommit": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "scope": "Four 2D projects with appearance variants; two 3D prototypes with provisional existing art. Final 3D art and its variants will be supplied from Blender by Helena.",
+  "initialProjectScope": "Opening, result-screen presentation, state control, Enter and restart are prepared in both starters. Firing, spawning, scores, lives and victory/defeat conditions remain for the student. Full authorship of the screen flow is deferred to Inventor.",
+  "preservedCompleteProjects": [
+    {
+      "path": "2d/nave-2d-completo.szproject.json",
+      "sha256": "ff3187e760b0ea612724a54d8773ea7aa1f6f5867d3fdfde64763c6a322beb87"
+    },
+    {
+      "path": "2d/nave-2d-nebulosa.szproject.json",
+      "sha256": "ee4a57b110bd6edcd4332e17b40a52c49902bda3073ba8a049b296cd4e9b584f"
+    },
+    {
+      "path": "2d/nave-2d-orbita.szproject.json",
+      "sha256": "7b5930d1179c36853e9764a43d456b3af9bcc70cfaea03b09d7e847aa201ef55"
+    },
+    {
+      "path": "3d/patrulha-espacial-3d-completo.szproject.json",
+      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2"
+    }
+  ],
+  "files": [
+    {
+      "path": "2d/nave-2d-completo.szproject.json",
+      "sha256": "ff3187e760b0ea612724a54d8773ea7aa1f6f5867d3fdfde64763c6a322beb87",
+      "bytes": 70739
+    },
+    {
+      "path": "2d/nave-2d-inicial.szproject.json",
+      "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f",
+      "bytes": 52219
+    },
+    {
+      "path": "2d/nave-2d-nebulosa.szproject.json",
+      "sha256": "ee4a57b110bd6edcd4332e17b40a52c49902bda3073ba8a049b296cd4e9b584f",
+      "bytes": 70766
+    },
+    {
+      "path": "2d/nave-2d-orbita.szproject.json",
+      "sha256": "7b5930d1179c36853e9764a43d456b3af9bcc70cfaea03b09d7e847aa201ef55",
+      "bytes": 70759
+    },
+    {
+      "path": "3d/patrulha-espacial-3d-completo.szproject.json",
+      "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2",
+      "bytes": 81733
+    },
+    {
+      "path": "3d/patrulha-espacial-3d-inicial.szproject.json",
+      "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5",
+      "bytes": 69940
+    }
+  ],
+  "import": [
+    {
+      "file": "nave-2d-completo.szproject.json",
+      "ok": true,
+      "bytes": 70739,
+      "assets": 12,
+      "blocks": {
+        "nodes": 614,
+        "maxDepth": 46
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    },
+    {
+      "file": "nave-2d-inicial.szproject.json",
+      "ok": true,
+      "bytes": 52219,
+      "assets": 12,
+      "blocks": {
+        "nodes": 305,
+        "maxDepth": 32
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    },
+    {
+      "file": "nave-2d-nebulosa.szproject.json",
+      "ok": true,
+      "bytes": 70766,
+      "assets": 12,
+      "blocks": {
+        "nodes": 614,
+        "maxDepth": 46
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    },
+    {
+      "file": "nave-2d-orbita.szproject.json",
+      "ok": true,
+      "bytes": 70759,
+      "assets": 12,
+      "blocks": {
+        "nodes": 614,
+        "maxDepth": 46
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    },
+    {
+      "file": "patrulha-espacial-3d-completo.szproject.json",
+      "ok": true,
+      "bytes": 81733,
+      "assets": 3,
+      "blocks": {
+        "nodes": 659,
+        "maxDepth": 66
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    },
+    {
+      "file": "patrulha-espacial-3d-inicial.szproject.json",
+      "ok": true,
+      "bytes": 69940,
+      "assets": 3,
+      "blocks": {
+        "nodes": 381,
+        "maxDepth": 56
+      },
+      "formatVersion": 2,
+      "preserved": [
+        "files",
+        "ir",
+        "blocksState",
+        "assets",
+        "installedExtensions"
+      ]
+    }
+  ],
+  "roundtrip": [
+    {
+      "file": "nave-2d-completo.szproject.json",
+      "ok": true,
+      "blocks": 193,
+      "topBlocks": 3
+    },
+    {
+      "file": "nave-2d-inicial.szproject.json",
+      "ok": true,
+      "blocks": 97,
+      "topBlocks": 3
+    },
+    {
+      "file": "nave-2d-nebulosa.szproject.json",
+      "ok": true,
+      "blocks": 193,
+      "topBlocks": 3
+    },
+    {
+      "file": "nave-2d-orbita.szproject.json",
+      "ok": true,
+      "blocks": 193,
+      "topBlocks": 3
+    },
+    {
+      "file": "patrulha-espacial-3d-completo.szproject.json",
+      "ok": true,
+      "blocks": 198,
+      "topBlocks": 3
+    },
+    {
+      "file": "patrulha-espacial-3d-inicial.szproject.json",
+      "ok": true,
+      "blocks": 114,
+      "topBlocks": 3
+    }
+  ],
+  "cosmetics": [
+    {
+      "dimension": "2d",
+      "files": [
+        "nave-2d-completo.szproject.json",
+        "nave-2d-nebulosa.szproject.json",
+        "nave-2d-orbita.szproject.json"
+      ],
+      "ok": true,
+      "rule": "IR differs only in four visual choices",
+      "variantsPerElement": 3,
+      "elements": [
+        "nave",
+        "cenario",
+        "asteroide",
+        "laser"
+      ]
+    },
+    {
+      "dimension": "3d",
+      "files": [
+        "patrulha-espacial-3d-completo.szproject.json",
+        "patrulha-espacial-3d-inicial.szproject.json"
+      ],
+      "ok": true,
+      "status": "provisional-existing-art",
+      "variantsPerElement": 1,
+      "artVariations": "pending Blender assets from Helena",
+      "rule": "No claim of three 3D appearance variants in this delivery"
+    }
+  ],
+  "runtime": {
+    "2d": {
+      "engine": "Official game-2d runtime pinned to 9ca0696a; generated script.js; happy-dom with real native Canvas2D; no browser UI import performed",
+      "tests": [
+        {
+          "test": "All three presets differ only in image choices, with identical mechanics and dimensions",
+          "result": "passed"
+        },
+        {
+          "test": "Opening creates no bullets or asteroids, and movement is gated",
+          "result": "passed"
+        },
+        {
+          "test": "Enter begins; lateral movement and edge limit work",
+          "result": "passed"
+        },
+        {
+          "test": "One press creates one shot; OS key repeat does not create a burst",
+          "result": "passed"
+        },
+        {
+          "test": "Shot origin follows the current ship position",
+          "result": "passed"
+        },
+        {
+          "test": "Offscreen shots are removed",
+          "result": "passed"
+        },
+        {
+          "test": "Timer creates objects with the agreed constant cadence",
+          "result": "passed"
+        },
+        {
+          "test": "One hit removes its two objects and awards exactly one point",
+          "result": "passed"
+        },
+        {
+          "test": "Two simultaneous bullets cannot score the same asteroid twice",
+          "result": "passed"
+        },
+        {
+          "test": "Escaped asteroid is cleaned without damage or points",
+          "result": "passed"
+        },
+        {
+          "test": "Crash removes a target and damages only once during the protection interval",
+          "result": "passed"
+        },
+        {
+          "test": "Simultaneous last hit and lethal crash produce defeat only",
+          "result": "passed"
+        },
+        {
+          "test": "End blocks spawns, motion and scoring",
+          "result": "passed"
+        },
+        {
+          "test": "Restart resets points, life, groups and ship position, preserving the skin",
+          "result": "passed"
+        },
+        {
+          "test": "Reaching the goal with life produces victory",
+          "result": "passed"
+        },
+        {
+          "test": "Repeated restart does not duplicate events or the spawn timer",
+          "result": "passed"
+        },
+        {
+          "test": "Initial project runs, contains no game rules, and has the 12 selectable assets",
+          "result": "passed"
+        },
+        {
+          "test": "Aurora: real-runtime render and asset load",
+          "result": "passed",
+          "warnings": []
+        },
+        {
+          "test": "Órbita: real-runtime render and asset load",
+          "result": "passed",
+          "warnings": []
+        },
+        {
+          "test": "Nebulosa: real-runtime render and asset load",
+          "result": "passed",
+          "warnings": []
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    "2dInitial": {
+      "scope": "Focused initial-project regression using official runtime and exported script; result states forced only by the QA probe, not by learner starter code.",
+      "file": "nave-2d-inicial.szproject.json",
+      "bytes": 52219,
+      "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f",
+      "tests": [
+        {
+          "test": "Starter contains no groups, spawning, clock, points, health or gameplay result conditions",
+          "result": "passed"
+        },
+        {
+          "test": "Only Enter and the drawing loop are supplied, with an empty Se jogando guard",
+          "result": "passed"
+        },
+        {
+          "test": "Opening appears immediately; no movement or shooting is implemented",
+          "result": "passed"
+        },
+        {
+          "test": "Enter starts the unfinished playing area without supplying the child rules",
+          "result": "passed"
+        },
+        {
+          "test": "Enter during playing does not restart the unfinished project",
+          "result": "passed"
+        },
+        {
+          "test": "QA-forced vitoria displays its prepared screen and Enter resets to opening",
+          "result": "passed"
+        },
+        {
+          "test": "QA-forced derrota displays its prepared screen and Enter resets to opening",
+          "result": "passed"
+        },
+        {
+          "test": "Supplied UI executes without missing variable, drawing or image errors",
+          "result": "passed"
+        }
+      ],
+      "errors": [],
+      "warnings": []
+    },
+    "3d": {
+      "engine": "Official composed Jogo 3D runtime, official generated script and official asynchronous GLTFLoader; embedded GLB assets, real Three.js geometry and Canvas2D sky, WebGL drawing replaced by a no-op renderer",
+      "reports": [
+        {
+          "file": "patrulha-espacial-3d-completo",
+          "passed": true,
+          "checks": [
+            "All three embedded gallery GLBs load through the official asynchronous loader without fallback geometry",
+            "Opening blocks movement, spawning and firing",
+            "One shot per press, new copies move, origin follows the ship, lateral bound and fixed altitude",
+            "A hit consumes only its pair and scores once even with two simultaneous bullets; a miss does not score",
+            "Offscreen cleanup without damage or score",
+            "Native contact and one-second damage protection",
+            "Defeat wins a simultaneous final point/final life; final screen stops new actions",
+            "Native result button reruns the generated lifecycle and resets state",
+            "Spawn cadence is reset, victory works, repeated restart does not duplicate key handlers"
+          ],
+          "consoleMessages": []
+        },
+        {
+          "file": "patrulha-espacial-3d-inicial",
+          "passed": true,
+          "checks": [
+            "All three embedded gallery GLBs load through the official asynchronous loader without fallback geometry",
+            "Prepared opening blocks movement and firing; Enter is the supplied start control",
+            "Starter runs 30 seconds after Enter with lateral control, without spawning, timers, points, life rules or ending conditions",
+            "Both prepared result screens and their supplied native reset return to opening, restore position and reload all models; QA-only triggers are absent from starter"
+          ],
+          "consoleMessages": []
+        }
+      ]
+    }
+  },
+  "runtimeProvenance": "The 20-check 2D baseline predates the starter revision; all three complete 2D files are unchanged by SHA-256. Eight focused checks cover the updated 2D starter and identify its current SHA-256. The 3D report covers the current complete and updated starter.",
+  "limitations": [
+    "Blockly executed headlessly with Happy DOM. The 2D runtime used real Canvas2D. The 3D runtime used the official asynchronous GLTFLoader and real Three.js geometry, with WebGL drawing replaced by a no-op renderer. Live Studio UI import and GPU rendering were not performed. All used field classes, block catalogs, mutators, codecs, schema, generators and import sanitizer are official sources."
+  ]
+}

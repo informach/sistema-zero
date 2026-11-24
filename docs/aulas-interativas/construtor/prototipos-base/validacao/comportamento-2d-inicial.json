@@ -1,0 +1,42 @@
+{
+  "scope": "Focused initial-project regression using official runtime and exported script; result states forced only by the QA probe, not by learner starter code.",
+  "file": "nave-2d-inicial.szproject.json",
+  "bytes": 52219,
+  "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f",
+  "tests": [
+    {
+      "test": "Starter contains no groups, spawning, clock, points, health or gameplay result conditions",
+      "result": "passed"
+    },
+    {
+      "test": "Only Enter and the drawing loop are supplied, with an empty Se jogando guard",
+      "result": "passed"
+    },
+    {
+      "test": "Opening appears immediately; no movement or shooting is implemented",
+      "result": "passed"
+    },
+    {
+      "test": "Enter starts the unfinished playing area without supplying the child rules",
+      "result": "passed"
+    },
+    {
+      "test": "Enter during playing does not restart the unfinished project",
+      "result": "passed"
+    },
+    {
+      "test": "QA-forced vitoria displays its prepared screen and Enter resets to opening",
+      "result": "passed"
+    },
+    {
+      "test": "QA-forced derrota displays its prepared screen and Enter resets to opening",
+      "result": "passed"
+    },
+    {
+      "test": "Supplied UI executes without missing variable, drawing or image errors",
+      "result": "passed"
+    }
+  ],
+  "errors": [],
+  "warnings": []
+}

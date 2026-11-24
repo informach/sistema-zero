@@ -1,5 +1,13 @@
 # Nave Contra Asteroides
 
+## Reautoria em preparação — 24/11/2026
+
+A [nova proposta dos cursos base](../proposta-cursos-base-2026-11-24.md) e os [protótipos para importar](../prototipos-base/README.md) passam a orientar a próxima versão. No Construtor, telas, início e reinício chegam prontos; a criança constrói tiros, asteroides, acertos, pontos, vidas e condições de vitória/derrota. A construção completa das telas e do fluxo fica para o Inventor.
+
+Os materiais abaixo pertencem à versão anterior. Roteiros, manifestos, experiências e projetos por parte serão reescritos a partir da aprovação dos novos jogos, preservando as identidades e a continuidade do curso.
+
+## Materiais da versão anterior
+
 Materiais do curso para consulta, gravação e importação.
 
 | Material | Arquivo |
@@ -22,3 +30,4 @@ Os arquivos de cada aula ficam nesta pasta. **Conteúdo** reúne a proposta e as
 | Dê três vidas à nave | [Abrir](nave-contra-asteroides-dia-4.md) | [Abrir](nave-contra-asteroides-dia-4.roteiro.md) | [JSON](nave-contra-asteroides-dia-4.manifesto.json) | [TXT](nave-contra-asteroides-dia-4.elevenlabs.txt) |
 | Comece a partida com Enter | [Abrir](nave-contra-asteroides-comecar-partida.md) | [Abrir](nave-contra-asteroides-comecar-partida.roteiro.md) | [JSON](nave-contra-asteroides-comecar-partida.manifesto.json) | [TXT](nave-contra-asteroides-comecar-partida.elevenlabs.txt) |
 | Termine e recomece a partida | [Abrir](nave-contra-asteroides-dia-5.md) | [Abrir](nave-contra-asteroides-dia-5.roteiro.md) | [JSON](nave-contra-asteroides-dia-5.manifesto.json) | [TXT](nave-contra-asteroides-dia-5.elevenlabs.txt) |
+
