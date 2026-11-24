@@ -180,7 +180,11 @@ export async function run(p) {
         trilha: arvore.track,
         blocosLiberados: (arvore.studioUnlockBlocks ?? []).length,
       },
-      modulos: modulos.map((m) => ({ titulo: m.title, resumo: m.summary })),
+      modulos: modulos.map((m) => ({
+        titulo: m.title,
+        resumo: m.summary,
+        animacao: m.animation ? m.animation.title : null,
+      })),
       aulas: porAula,
     }
   }

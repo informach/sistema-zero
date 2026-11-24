@@ -1,8 +1,9 @@
 /**
  * Confere um curso publicado contra a pasta dele no repositório (só leitura): aulas e partes dos
  * manifestos, o PDF do passo a passo (o mesmo arquivo, marcado como caderno do aluno para o Zappy),
- * os blocos liberados (a união do blocos.json), os vídeos (nenhum provisório de 2 s) e, quando o
- * modulos.md traz, o título, as descrições e os módulos. Passo a passo:
+ * os blocos liberados (a união do blocos.json), os vídeos (nenhum provisório de 2 s), a animação
+ * (ediSVG) de cada módulo e, quando o modulos.md traz, o título, as descrições e os módulos.
+ * Passo a passo:
  * docs/operations/cursos-passo-a-passo.md.
  *
  *   bun scripts/cursos/conferir-curso.ts --ambiente staging --publico kids --curso jornada-faisca-missao \
@@ -40,7 +41,7 @@ interface Resumo {
     status: string
     blocosLiberados: number
   }
-  modulos: { titulo: string; resumo: string | null }[]
+  modulos: { titulo: string; resumo: string | null; animacao: string | null }[]
   aulas: {
     aula: number
     titulo: string
@@ -144,6 +145,10 @@ conferir(
   'vídeos finais (nenhum provisório de 2 s)',
   duracoes.join(', '),
 )
+
+// Toda página de curso tem uma animação (ediSVG) por módulo: scripts/cursos/animacao-do-modulo.ts.
+for (const [i, m] of resumo.modulos.entries())
+  conferir(m.animacao !== null, `módulo ${i + 1} com animação (ediSVG)`, m.animacao ?? m.titulo)
 
 // modulos.md, quando traz os campos (cada curso usa um formato).
 const arquivoModulos = join(op.pasta, 'modulos.md')

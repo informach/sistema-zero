@@ -402,6 +402,48 @@
       "title": "zappy-falando · Voar e acenar",
       "inputs": [],
       "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "jardim-secreto-m1-b1-a1",
+      "source": "jardim-secreto-m1.edisvg",
+      "sourceSha256": "57adc277af1542fa3d6fbe9ac0e1f36e433eed20d2132472c674221aaf9caeae",
+      "boardId": "artboard-jardim-secreto-m1",
+      "animationId": "anim-jardim-secreto-m1",
+      "file": "jardim-secreto-m1-b1-a1.84af4bbabdfc.edi-animation.json",
+      "sha256": "84af4bbabdfc06617ec10fbdb0bcc2265270b08a25b8d3b0b08f33386a217356",
+      "bytes": 135683,
+      "poster": {
+        "file": "jardim-secreto-m1-b1-a1.4beaea9c85a9.png",
+        "sha256": "4beaea9c85a994a4d96274cc4bb57c38e5df56a2a64dc5475be8e43588fdb5e0",
+        "bytes": 45873,
+        "width": 512,
+        "height": 420
+      },
+      "title": "jardim-secreto-m1 · O Jardim Secreto · Faça o jardim florescer",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "ilha-do-farol-m1-b1-a1",
+      "source": "ilha-do-farol-m1.edisvg",
+      "sourceSha256": "baa014b91976c000c5502735e7cc4f2a290872f4761e9866516c3d3f00df1874",
+      "boardId": "artboard-ilha-do-farol-m1",
+      "animationId": "anim-ilha-do-farol-m1",
+      "file": "ilha-do-farol-m1-b1-a1.fd1612bf68a7.edi-animation.json",
+      "sha256": "fd1612bf68a79357ca69de2423c8b005ae60e1688aa97df272a532c16599e5b3",
+      "bytes": 182037,
+      "poster": {
+        "file": "ilha-do-farol-m1-b1-a1.84abd2e7095c.png",
+        "sha256": "84abd2e7095c3eaa578aba672262448781d07499a8fcb3c0e6437de23f71125f",
+        "bytes": 53820,
+        "width": 512,
+        "height": 410
+      },
+      "title": "ilha-do-farol-m1 · A Ilha do Farol · Sua aventura em três dimensões",
+      "inputs": [],
+      "machines": []
     }
   ]
 }

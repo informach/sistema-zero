@@ -1,0 +1,4960 @@
+{
+  "version": 27,
+  "id": "project-ilha-do-farol-m1",
+  "name": "A Ilha do Farol · Sua aventura em três dimensões",
+  "animation": "Parado",
+  "transforms": {
+    "x": 0,
+    "y": 0,
+    "rotation": 0,
+    "sx": 1,
+    "sy": 1,
+    "opacity": 100
+  },
+  "keys": [],
+  "keysByAnimation": {
+    "Parado": [],
+    "Acenar": [
+      0,
+      18,
+      36,
+      72
+    ],
+    "Pular": [
+      0,
+      12,
+      24,
+      48
+    ]
+  },
+  "modes": {
+    "Parado": "loop",
+    "Acenar": "ping-pong",
+    "Pular": "once"
+  },
+  "inputs": {
+    "humor": 0.6,
+    "acenando": false
+  },
+  "artboards": [
+    {
+      "id": "artboard-ilha-do-farol-m1",
+      "name": "A Ilha do Farol · Sua aventura em três dimensões",
+      "scene": {
+        "viewBox": [
+          0,
+          70,
+          500,
+          400
+        ],
+        "nodes": [
+          {
+            "id": "node-mar-fundo",
+            "name": "Mar fundo",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "250",
+              "cy": "372",
+              "rx": "244",
+              "ry": "94",
+              "fill": "#6e9bff"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 250,
+              "py": 372,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-mar",
+            "name": "Mar",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "250",
+              "cy": "366",
+              "rx": "228",
+              "ry": "86",
+              "fill": "#94d5f5"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 250,
+              "py": 366,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-espuma",
+            "name": "Espuma",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "250",
+              "cy": "358",
+              "rx": "198",
+              "ry": "72",
+              "fill": "#ffffff"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 250,
+              "py": 358,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-lateral-da-ilha",
+            "name": "Lateral da ilha",
+            "tag": "path",
+            "attrs": {
+              "d": "M65 340A185 64 0 0 0 435 340L435 364A185 64 0 0 1 65 364Z",
+              "fill": "#dfc283"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 250,
+              "py": 352,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-areia",
+            "name": "Areia",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "250",
+              "cy": "340",
+              "rx": "185",
+              "ry": "64",
+              "fill": "#fae1ab"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 250,
+              "py": 340,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-borda-da-grama",
+            "name": "Borda da grama",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "182",
+              "cy": "322",
+              "rx": "104",
+              "ry": "34",
+              "fill": "#0b7a54"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 182,
+              "py": 322,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-grama",
+            "name": "Grama",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "180",
+              "cy": "318",
+              "rx": "100",
+              "ry": "31",
+              "fill": "#29905a"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 180,
+              "py": 318,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-pedra-1",
+            "name": "Pedra 1",
+            "tag": "path",
+            "attrs": {
+              "d": "M-16 6L-12-6-3-11 9-9 16-1 13 7Z",
+              "fill": "#8f9fb5",
+              "transform": "matrix(1.2 0 0 1.2 404 352)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 404,
+              "py": 352,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-luz-da-pedra-1",
+            "name": "Luz da pedra 1",
+            "tag": "path",
+            "attrs": {
+              "d": "M-12-6-3-11 9-9 2-3Z",
+              "fill": "#b8c4d6",
+              "transform": "matrix(1.2 0 0 1.2 404 352)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 404,
+              "py": 352,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-pedra-2",
+            "name": "Pedra 2",
+            "tag": "path",
+            "attrs": {
+              "d": "M-16 6L-12-6-3-11 9-9 16-1 13 7Z",
+              "fill": "#8f9fb5",
+              "transform": "matrix(0.9 0 0 0.9 96 352)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 96,
+              "py": 352,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-luz-da-pedra-2",
+            "name": "Luz da pedra 2",
+            "tag": "path",
+            "attrs": {
+              "d": "M-12-6-3-11 9-9 2-3Z",
+              "fill": "#b8c4d6",
+              "transform": "matrix(0.9 0 0 0.9 96 352)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 96,
+              "py": 352,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-farol-apagado",
+            "name": "Farol apagado",
+            "tag": "g",
+            "attrs": {
+              "transform": "matrix(1.45 0 0 1.45 212.525 100.5)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 322,
+              "py": 318,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": [
+              {
+                "id": "node-farol-apagado-1",
+                "name": "ellipse 1",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.01438",
+                  "cy": "53.02188",
+                  "rx": "20.0925",
+                  "ry": "17.02875",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-2",
+                "name": "path 2",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 55.195 58.34188 L 54.82688 58.045 L 55.46813 56.16875 L 56.64375 53.65125 L 58.68625 51.3475 L 61.5125 49.36438 L 64.99187 47.76125 L 68.97 46.66875 L 73.245 46.11062 L 77.615 46.11062 L 81.90188 46.66875 L 85.86813 47.76125 L 89.3475 49.36438 L 92.1975 51.3475 L 94.24 53.65125 L 95.11875 56.24 L 95.6175 58.34188 L 95.22562 57.5225 L 95.665 44.35312 L 95.475 44.35312 L 95.4275 43.61687 L 94.24 40.9925 L 92.1975 38.60562 L 89.3475 36.55125 L 85.86813 34.90062 L 81.90188 33.7725 L 77.615 33.17875 L 73.245 33.17875 L 68.97 33.7725 L 64.99187 34.90062 L 61.5125 36.55125 L 58.68625 38.60562 L 56.64375 40.9925 L 55.46813 43.61687 L 55.39688 44.35312 L 55.06437 44.44812 Z",
+                  "fill": "#0f1a33"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-3",
+                "name": "ellipse 3",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.48937",
+                  "cy": "139.92312",
+                  "rx": "19.97375",
+                  "ry": "11.81562",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-4",
+                "name": "rect 4",
+                "tag": "rect",
+                "attrs": {
+                  "x": "55.51562",
+                  "y": "127.89375",
+                  "width": "39.95938",
+                  "height": "13.16938",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-5",
+                "name": "ellipse 5",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.48937",
+                  "cy": "128.09563",
+                  "rx": "19.97375",
+                  "ry": "11.4",
+                  "fill": "#d9592d"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-6",
+                "name": "ellipse 6",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.86938",
+                  "cy": "124.34312",
+                  "rx": "18.65563",
+                  "ry": "11.81562",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-7",
+                "name": "path 7",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 60.30125 31.16 L 89.26438 29.48562 L 90.27375 61.29875 L 91.08125 68.04375 L 94.34687 125.00812 L 57.32063 124.74688 L 59.3275 69.05312 L 60.21813 61.3225 Z",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-8",
+                "name": "path 8",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 58.52 99.83312 L 58.55563 99.83312 L 58.74562 101.86375 L 59.74313 104.25063 L 61.5125 106.42375 L 63.935 108.28812 L 66.91563 109.7725 L 70.33562 110.82937 L 74.01687 111.36375 L 77.78125 111.36375 L 81.43875 110.82937 L 84.85875 109.7725 L 87.86312 108.28812 L 90.27375 106.42375 L 92.055 104.25063 L 93.0525 101.86375 L 93.23063 99.83312 L 93.27813 99.83312 L 93.27813 112.99063 L 93.11187 112.99063 L 93.0525 113.70312 L 92.055 116.17312 L 90.27375 118.4175 L 87.86312 120.365 L 84.85875 121.92063 L 81.43875 122.9775 L 77.78125 123.53562 L 74.01687 123.53562 L 70.33562 122.9775 L 66.91563 121.92063 L 63.935 120.365 L 61.5125 118.4175 L 59.74313 116.17312 L 58.74562 113.70312 L 58.68625 112.99063 L 58.52 112.99063 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-9",
+                "name": "path 9",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 59.11375 73.245 L 59.14938 73.245 L 59.3275 75.27563 L 60.24187 77.65063 L 61.90438 79.82375 L 64.16062 81.71188 L 66.95125 83.19625 L 70.13375 84.24125 L 73.55375 84.76375 L 77.05688 84.76375 L 80.465 84.24125 L 83.6475 83.19625 L 86.43813 81.71188 L 88.70625 79.82375 L 90.345 77.65063 L 91.28313 75.27563 L 91.44938 73.245 L 91.49688 73.245 L 91.49688 86.4025 L 91.35438 86.4025 L 91.28313 87.12688 L 90.345 89.57313 L 88.70625 91.84125 L 86.43813 93.77688 L 83.6475 95.3325 L 80.465 96.40125 L 77.05688 96.9475 L 73.55375 96.9475 L 70.13375 96.40125 L 66.95125 95.3325 L 64.16062 93.77688 L 61.90438 91.84125 L 60.24187 89.57313 L 59.3275 87.12688 L 59.25625 86.4025 L 59.11375 86.4025 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-10",
+                "name": "path 10",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 55.0525 47.74938 L 55.12375 47.74938 L 55.32563 49.98188 L 56.48938 52.59437 L 58.55563 54.99313 L 61.39375 57.0475 L 64.885 58.69812 L 68.88688 59.81437 L 73.17375 60.3725 L 77.5675 60.3725 L 81.86625 59.81437 L 85.84438 58.69812 L 89.3475 57.0475 L 92.1975 54.99313 L 94.25188 52.59437 L 95.4275 49.98188 L 95.62937 47.74938 L 95.70063 47.74938 L 95.39187 57.60562 L 95.20188 57.60562 L 95.1425 58.3775 L 93.96687 61.09688 L 91.88875 63.555 L 89.05062 65.6925 L 85.5475 67.4025 L 81.5575 68.56625 L 77.27062 69.17188 L 72.87687 69.17188 L 68.57812 68.56625 L 64.57625 67.4025 L 61.085 65.6925 L 58.24687 63.555 L 56.1925 61.09688 L 55.02875 58.3775 L 54.9575 57.60562 L 54.74375 57.60562 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-11",
+                "name": "path 11",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 74.94312 2.09 L 90.73687 29.85375 C 89.87 40.55313 61.50062 40.83812 59.14938 29.85375 C 64.41 20.59125 69.67063 11.32875 74.94312 2.09 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-12",
+                "name": "path 12",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 60.24187 35.53 C 63.3175 39.17563 69.4925 40.68375 75.64375 40.83812 C 81.51 40.83812 87.38813 38.91438 89.78687 36.005 L 90.16688 53.4375 C 88.04125 55.82437 82.53125 58.16375 76.02375 58.10437 C 68.93438 58.00937 61.465 54.73188 59.8025 52.71312 Z",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-13",
+                "name": "path 13",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 69.42125 128.28563 C 69.42125 126.635 71.68937 124.01063 74.99062 124.08187 C 77.68625 124.14125 80.23937 126.32625 80.2275 128.155 C 80.2275 136.2775 80.0375 143.29563 80.0375 151.41813 C 77.91187 151.5725 76.58187 151.92875 74.74125 151.905 C 72.85313 151.88125 69.48063 151.18062 69.48063 151.18062 Z",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-14",
+                "name": "rect 14",
+                "tag": "rect",
+                "attrs": {
+                  "x": "74.04063",
+                  "y": "40.17312",
+                  "width": "3.28938",
+                  "height": "19.41563",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-15",
+                "name": "path 15",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 70.02688 130.07875 C 70.00312 127.52563 71.49938 125.74438 71.95063 125.6375 C 72.40188 125.53062 72.77 128.41625 72.77 129.49687 L 72.73438 146.94125 L 70.13375 150.6225 C 70.03875 143.28375 70.08625 134.24687 70.02688 130.07875 Z",
+                  "fill": "#46536e",
+                  "transform": "rotate(0.7 71.3925 138.083)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-16",
+                "name": "path 16",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 79.99 130.1975 C 80.02563 127.64437 78.52937 125.86312 78.06625 125.75625 C 77.615 125.66125 77.25875 128.54688 77.25875 129.6275 L 77.2825 146.73937 C 77.62688 147.80812 79.40813 150.385 79.88312 150.75313 C 79.99 143.41438 79.9425 134.3775 79.99 130.1975 Z",
+                  "fill": "#46536e",
+                  "transform": "rotate(0.8 78.6363 138.213)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-apagado-17",
+                "name": "ellipse 17",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.0975",
+                  "cy": "2.5175",
+                  "rx": "2.41062",
+                  "ry": "2.44625",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "node-farol-aceso",
+            "name": "Farol aceso",
+            "tag": "g",
+            "attrs": {
+              "transform": "matrix(1.45 0 0 1.45 212.525 100.5)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 322,
+              "py": 318,
+              "opacity": 0
+            },
+            "visible": true,
+            "locked": false,
+            "children": [
+              {
+                "id": "node-farol-aceso-1",
+                "name": "path 1",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 2.375 29.6875 L 73.625 42.75 L 73.625 52.25 L 2.375 67.6875 Z",
+                  "fill": "#ffe49b"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-2",
+                "name": "path 2",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 149.625 29.6875 L 76 42.75 L 76 52.25 L 149.625 67.6875 Z",
+                  "fill": "#ffe49b"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-3",
+                "name": "ellipse 3",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.01438",
+                  "cy": "53.02188",
+                  "rx": "20.0925",
+                  "ry": "17.02875",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-4",
+                "name": "path 4",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 55.195 58.34188 L 54.82688 58.045 L 55.46813 56.16875 L 56.64375 53.65125 L 58.68625 51.3475 L 61.5125 49.36438 L 64.99187 47.76125 L 68.97 46.66875 L 73.245 46.11062 L 77.615 46.11062 L 81.90188 46.66875 L 85.86813 47.76125 L 89.3475 49.36438 L 92.1975 51.3475 L 94.24 53.65125 L 95.11875 56.24 L 95.6175 58.34188 L 95.22562 57.5225 L 95.665 44.35312 L 95.475 44.35312 L 95.4275 43.61687 L 94.24 40.9925 L 92.1975 38.60562 L 89.3475 36.55125 L 85.86813 34.90062 L 81.90188 33.7725 L 77.615 33.17875 L 73.245 33.17875 L 68.97 33.7725 L 64.99187 34.90062 L 61.5125 36.55125 L 58.68625 38.60562 L 56.64375 40.9925 L 55.46813 43.61687 L 55.39688 44.35312 L 55.06437 44.44812 Z",
+                  "fill": "#0f1a33"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-5",
+                "name": "ellipse 5",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.48937",
+                  "cy": "139.92312",
+                  "rx": "19.97375",
+                  "ry": "11.81562",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-6",
+                "name": "rect 6",
+                "tag": "rect",
+                "attrs": {
+                  "x": "55.51562",
+                  "y": "127.89375",
+                  "width": "39.95938",
+                  "height": "13.16938",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-7",
+                "name": "ellipse 7",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.48937",
+                  "cy": "128.09563",
+                  "rx": "19.97375",
+                  "ry": "11.4",
+                  "fill": "#d9592d"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-8",
+                "name": "ellipse 8",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.86938",
+                  "cy": "124.34312",
+                  "rx": "18.65563",
+                  "ry": "11.81562",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-9",
+                "name": "path 9",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 60.30125 31.16 L 89.26438 29.48562 L 90.27375 61.29875 L 91.08125 68.04375 L 94.34687 125.00812 L 57.32063 124.74688 L 59.3275 69.05312 L 60.21813 61.3225 Z",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-10",
+                "name": "path 10",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 58.52 99.83312 L 58.55563 99.83312 L 58.74562 101.86375 L 59.74313 104.25063 L 61.5125 106.42375 L 63.935 108.28812 L 66.91563 109.7725 L 70.33562 110.82937 L 74.01687 111.36375 L 77.78125 111.36375 L 81.43875 110.82937 L 84.85875 109.7725 L 87.86312 108.28812 L 90.27375 106.42375 L 92.055 104.25063 L 93.0525 101.86375 L 93.23063 99.83312 L 93.27813 99.83312 L 93.27813 112.99063 L 93.11187 112.99063 L 93.0525 113.70312 L 92.055 116.17312 L 90.27375 118.4175 L 87.86312 120.365 L 84.85875 121.92063 L 81.43875 122.9775 L 77.78125 123.53562 L 74.01687 123.53562 L 70.33562 122.9775 L 66.91563 121.92063 L 63.935 120.365 L 61.5125 118.4175 L 59.74313 116.17312 L 58.74562 113.70312 L 58.68625 112.99063 L 58.52 112.99063 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-11",
+                "name": "path 11",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 59.11375 73.245 L 59.14938 73.245 L 59.3275 75.27563 L 60.24187 77.65063 L 61.90438 79.82375 L 64.16062 81.71188 L 66.95125 83.19625 L 70.13375 84.24125 L 73.55375 84.76375 L 77.05688 84.76375 L 80.465 84.24125 L 83.6475 83.19625 L 86.43813 81.71188 L 88.70625 79.82375 L 90.345 77.65063 L 91.28313 75.27563 L 91.44938 73.245 L 91.49688 73.245 L 91.49688 86.4025 L 91.35438 86.4025 L 91.28313 87.12688 L 90.345 89.57313 L 88.70625 91.84125 L 86.43813 93.77688 L 83.6475 95.3325 L 80.465 96.40125 L 77.05688 96.9475 L 73.55375 96.9475 L 70.13375 96.40125 L 66.95125 95.3325 L 64.16062 93.77688 L 61.90438 91.84125 L 60.24187 89.57313 L 59.3275 87.12688 L 59.25625 86.4025 L 59.11375 86.4025 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-12",
+                "name": "path 12",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 55.0525 47.74938 L 55.12375 47.74938 L 55.32563 49.98188 L 56.48938 52.59437 L 58.55563 54.99313 L 61.39375 57.0475 L 64.885 58.69812 L 68.88688 59.81437 L 73.17375 60.3725 L 77.5675 60.3725 L 81.86625 59.81437 L 85.84438 58.69812 L 89.3475 57.0475 L 92.1975 54.99313 L 94.25188 52.59437 L 95.4275 49.98188 L 95.62937 47.74938 L 95.70063 47.74938 L 95.39187 57.60562 L 95.20188 57.60562 L 95.1425 58.3775 L 93.96687 61.09688 L 91.88875 63.555 L 89.05062 65.6925 L 85.5475 67.4025 L 81.5575 68.56625 L 77.27062 69.17188 L 72.87687 69.17188 L 68.57812 68.56625 L 64.57625 67.4025 L 61.085 65.6925 L 58.24687 63.555 L 56.1925 61.09688 L 55.02875 58.3775 L 54.9575 57.60562 L 54.74375 57.60562 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-13",
+                "name": "path 13",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 74.94312 2.09 L 90.73687 29.85375 C 89.87 40.55313 61.50062 40.83812 59.14938 29.85375 C 64.41 20.59125 69.67063 11.32875 74.94312 2.09 Z",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-14",
+                "name": "path 14",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 60.24187 35.53 C 63.3175 39.17563 69.4925 40.68375 75.64375 40.83812 C 81.51 40.83812 87.38813 38.91438 89.78687 36.005 L 90.16688 53.4375 C 88.04125 55.82437 82.53125 58.16375 76.02375 58.10437 C 68.93438 58.00937 61.465 54.73188 59.8025 52.71312 Z",
+                  "fill": "#fff4b0"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-15",
+                "name": "path 15",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 69.42125 128.28563 C 69.42125 126.635 71.68937 124.01063 74.99062 124.08187 C 77.68625 124.14125 80.23937 126.32625 80.2275 128.155 C 80.2275 136.2775 80.0375 143.29563 80.0375 151.41813 C 77.91187 151.5725 76.58187 151.92875 74.74125 151.905 C 72.85313 151.88125 69.48063 151.18062 69.48063 151.18062 Z",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-16",
+                "name": "rect 16",
+                "tag": "rect",
+                "attrs": {
+                  "x": "74.04063",
+                  "y": "40.17312",
+                  "width": "3.28938",
+                  "height": "19.41563",
+                  "fill": "#e8edf6"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-17",
+                "name": "path 17",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 70.02688 130.07875 C 70.00312 127.52563 71.49938 125.74438 71.95063 125.6375 C 72.40188 125.53062 72.77 128.41625 72.77 129.49687 L 72.73438 146.94125 L 70.13375 150.6225 C 70.03875 143.28375 70.08625 134.24687 70.02688 130.07875 Z",
+                  "fill": "#46536e",
+                  "transform": "rotate(0.7 71.3925 138.083)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-18",
+                "name": "path 18",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 79.99 130.1975 C 80.02563 127.64437 78.52937 125.86312 78.06625 125.75625 C 77.615 125.66125 77.25875 128.54688 77.25875 129.6275 L 77.2825 146.73937 C 77.62688 147.80812 79.40813 150.385 79.88312 150.75313 C 79.99 143.41438 79.9425 134.3775 79.99 130.1975 Z",
+                  "fill": "#46536e",
+                  "transform": "rotate(0.8 78.6363 138.213)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-farol-aceso-19",
+                "name": "ellipse 19",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "75.0975",
+                  "cy": "2.5175",
+                  "rx": "2.41062",
+                  "ry": "2.44625",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "node-brilho-da-luz",
+            "name": "Brilho da luz",
+            "tag": "circle",
+            "attrs": {
+              "cx": "321",
+              "cy": "169",
+              "r": "26",
+              "fill": "#ffe08a"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 321,
+              "py": 169,
+              "opacity": 0
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-sombra-da-chave",
+            "name": "Sombra da chave",
+            "tag": "ellipse",
+            "attrs": {
+              "cx": "232",
+              "cy": "341",
+              "rx": "16",
+              "ry": "4",
+              "fill": "#0f1a33",
+              "opacity": "0.18"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 232,
+              "py": 341,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-chave-dourada",
+            "name": "Chave dourada",
+            "tag": "g",
+            "attrs": {
+              "transform": "matrix(2.2 0 0 2.2 196.8 278.8)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 232,
+              "py": 314,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": [
+              {
+                "id": "node-chave-dourada-1",
+                "name": "ellipse 1",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "12.41",
+                  "cy": "11.7",
+                  "rx": "6.25",
+                  "ry": "6.39",
+                  "fill": "none",
+                  "stroke": "#f3b123",
+                  "stroke-width": "3",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "transform": "rotate(319.5 12.41 11.7)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-chave-dourada-2",
+                "name": "line 2",
+                "tag": "line",
+                "attrs": {
+                  "x1": "20.3",
+                  "y1": "15.46",
+                  "x2": "20.3",
+                  "y2": "26.7",
+                  "fill": "none",
+                  "stroke": "#f3b123",
+                  "stroke-width": "3",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "transform": "rotate(319.5 20.3 21.08)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-chave-dourada-3",
+                "name": "line 3",
+                "tag": "line",
+                "attrs": {
+                  "x1": "21.24",
+                  "y1": "19.64",
+                  "x2": "23.49",
+                  "y2": "19.64",
+                  "fill": "none",
+                  "stroke": "#f3b123",
+                  "stroke-width": "3",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "transform": "rotate(319.5 22.37 19.64)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-chave-dourada-4",
+                "name": "line 4",
+                "tag": "line",
+                "attrs": {
+                  "x1": "23.58",
+                  "y1": "22.57",
+                  "x2": "25.84",
+                  "y2": "22.57",
+                  "fill": "none",
+                  "stroke": "#f3b123",
+                  "stroke-width": "3",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round",
+                  "transform": "rotate(319.5 24.71 22.57)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "node-faisca-1",
+            "name": "Faísca 1",
+            "tag": "path",
+            "attrs": {
+              "d": "M0-10L2.5-2.5 10 0 2.5 2.5 0 10-2.5 2.5-10 0-2.5-2.5Z",
+              "fill": "#ffd75e",
+              "transform": "translate(211 290)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 211,
+              "py": 290,
+              "opacity": 0
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-faisca-2",
+            "name": "Faísca 2",
+            "tag": "path",
+            "attrs": {
+              "d": "M0-10L2.5-2.5 10 0 2.5 2.5 0 10-2.5 2.5-10 0-2.5-2.5Z",
+              "fill": "#ffd75e",
+              "transform": "translate(255 286)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 255,
+              "py": 286,
+              "opacity": 0
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-faisca-3",
+            "name": "Faísca 3",
+            "tag": "path",
+            "attrs": {
+              "d": "M0-10L2.5-2.5 10 0 2.5 2.5 0 10-2.5 2.5-10 0-2.5-2.5Z",
+              "fill": "#ffd75e",
+              "transform": "translate(233 266)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 233,
+              "py": 266,
+              "opacity": 0
+            },
+            "visible": true,
+            "locked": false,
+            "children": []
+          },
+          {
+            "id": "node-personagem",
+            "name": "Personagem",
+            "tag": "g",
+            "attrs": {
+              "transform": "matrix(2.1 0 0 2.1 62.8 265.79999999999995)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 130,
+              "py": 396,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": [
+              {
+                "id": "node-personagem-1",
+                "name": "rect 1",
+                "tag": "rect",
+                "attrs": {
+                  "x": "29.81",
+                  "y": "57.53",
+                  "width": "4.49",
+                  "height": "4.38",
+                  "fill": "#fae1b5"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-2",
+                "name": "polygon 2",
+                "tag": "polygon",
+                "attrs": {
+                  "points": "28.65,56.42 34.99,56.17 34.3,60.94 29.92,60.94",
+                  "fill": "#3b5dc9"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-3",
+                "name": "path 3",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 30.47 44.22 C 31.7 44.15 33.52 43.98 34.36 44.71 C 35.19 45.41 35.56 48.01 35.56 48.83 L 35.54 55.07 C 35.54 55.9 35.84 56.95 35.03 56.95 L 28.04 56.75 C 27.22 56.75 27.62 55.7 27.62 54.87 C 27.66 52.53 27.37 49.93 28 48.14 C 28.62 46.37 29.65 44.22 30.47 44.22 Z",
+                  "fill": "#ffffff"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-4",
+                "name": "rect 4",
+                "tag": "rect",
+                "attrs": {
+                  "x": "29.33",
+                  "y": "61.92",
+                  "width": "5.89",
+                  "height": "2.05",
+                  "rx": "1.02",
+                  "fill": "#000000"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-5",
+                "name": "path 5",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 30.52 13.12 L 30.97 13.12 C 37.9 13.12 43.52 18.75 43.52 25.66 L 43.52 31.18 C 43.52 38.08 45.24 44.15 38.32 44.15 L 28.7 44.31 C 21.79 44.31 18.01 38.08 18.01 31.18 L 18.01 25.66 C 18.01 18.75 23.61 13.12 30.52 13.12 Z",
+                  "fill": "#fae1b5"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-6",
+                "name": "ellipse 6",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "40.62",
+                  "cy": "31.4",
+                  "rx": "2.72",
+                  "ry": "3.66",
+                  "fill": "#ffffff"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-7",
+                "name": "ellipse 7",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "41.95",
+                  "cy": "32.09",
+                  "rx": "1.1",
+                  "ry": "1.64",
+                  "fill": "#000000"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-8",
+                "name": "ellipse 8",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "40.16",
+                  "cy": "39.76",
+                  "rx": "0.29",
+                  "ry": "0",
+                  "fill": "#ffffff"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-9",
+                "name": "path 9",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 43.02 37.1 L 40.23 36.85 C 39.8 37.15 40.02 37.52 39.88 37.9 C 39.69 38.33 40.25 38.42 40.33 38.95 L 41.37 39.51 L 41.82 38.93 Z",
+                  "fill": "#5d275d"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-10",
+                "name": "polygon 10",
+                "tag": "polygon",
+                "attrs": {
+                  "points": "42.91,36.9 42.39,38.56 41.65,38.45 41.02,37.99 40.68,37.13",
+                  "fill": "#ffffff",
+                  "transform": "rotate(13.3 42.22 37.76)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-11",
+                "name": "rect 11",
+                "tag": "rect",
+                "attrs": {
+                  "x": "29.67",
+                  "y": "45.87",
+                  "width": "3.91",
+                  "height": "12.09",
+                  "rx": "1.59",
+                  "fill": "#fae1b5",
+                  "transform": "rotate(0.3 31.63 51.91)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-12",
+                "name": "path 12",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 28.95 51.22 C 30.13 50.78 29.73 50.27 31.78 50.25 C 33.56 50.25 32.86 51.11 34.09 51.48 C 33.42 49.38 34.49 45.77 31.59 45.18 C 28.45 46.01 29.32 49.04 28.95 51.22 Z",
+                  "fill": "#dde5f0"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-13",
+                "name": "path 13",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 16.59 26.77 L 16.82 24.15 L 17.43 21.39 L 18.52 18.48 L 19.43 17.11 L 20.66 16.02 L 22.07 15.19 L 23.54 14.6 L 24.94 14.19 L 26.26 13.82 L 26.12 13.41 L 26.11 13.08 L 26.35 13.2 L 26.89 13.67 L 26.55 12.76 L 26.36 12.11 L 26.35 11.74 L 26.57 11.89 L 26.97 12.23 L 27.39 12.66 L 27.88 13.16 L 28.4 11.55 L 28.58 11.02 L 28.76 10.85 L 28.86 11.02 L 28.9 11.55 L 28.9 12.3 L 28.86 13.12 L 29.86 13.2 L 30.7 13.19 L 31.47 13.12 L 32.25 13.12 L 33.19 13.24 L 34.36 13.48 L 35.84 13.99 L 37.75 14.76 L 39.48 15.79 L 40.78 16.73 L 41.74 17.53 L 42.52 18.19 L 43.19 18.67 L 43.87 18.96 L 44.65 18.98 L 43.79 20.12 L 42.94 20.93 L 42.92 20.97 L 43.6 21.64 L 44.49 22.22 L 43.42 22.71 L 42.49 23.04 L 41.58 23.17 L 40.58 23.16 L 39.32 22.95 L 37.71 22.52 L 35.72 21.92 L 35.68 22.27 L 35.56 22.62 L 35.45 23.57 L 34.87 25.06 L 34.08 26.46 L 33.14 27.93 L 32.25 29.49 L 31.53 31.28 L 30.27 31.63 L 29.93 30.74 L 29.57 30.07 L 29.19 29.65 L 28.76 29.53 L 28.2 29.59 L 27.68 29.83 L 27.48 30.11 L 27.53 30.94 L 27.45 34.26 L 27.48 34.64 L 26.88 36.73 L 25.8 38.55 L 24.39 40.03 L 22.81 41.21 L 21.1 42.1 L 19.47 42.7 L 18 43.03 L 16.8 43.07 L 17.7 41.68 L 17.95 40.4 L 17.84 40.4 L 16.8 40.4 L 17.29 38.97 L 17.43 37.39 L 17.34 35.59 L 16.84 31.5 L 16.64 29.21 Z",
+                  "fill": "#121a30"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-personagem-14",
+                "name": "rect 14",
+                "tag": "rect",
+                "attrs": {
+                  "x": "43.18",
+                  "y": "33.9",
+                  "width": "1.14",
+                  "height": "2.69",
+                  "rx": "0.57",
+                  "fill": "#fae1b5",
+                  "transform": "rotate(340.3 43.76 35.25)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "node-veleiro",
+            "name": "Veleiro",
+            "tag": "g",
+            "attrs": {
+              "transform": "matrix(1.15 0 0 1.15 389.4 336)"
+            },
+            "text": "",
+            "transform": {
+              "x": 0,
+              "y": 0,
+              "rotation": 0,
+              "sx": 1,
+              "sy": 1,
+              "px": 440,
+              "py": 428,
+              "opacity": 100
+            },
+            "visible": true,
+            "locked": false,
+            "children": [
+              {
+                "id": "node-veleiro-1",
+                "name": "path 1",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 49.23875 61.11875 C 71.65125 61.11875 81.35875 61.765 81.35875 63.7725 C 81.35875 65.76625 63.525 66.66 41.1125 66.66 C 18.6725 66.66 20.735 70.785 20.735 68.7775 C 20.735 66.78375 26.8125 61.11875 49.23875 61.11875 Z",
+                  "fill": "#0f1a33",
+                  "transform": "rotate(5.1 50.0225 65.9587)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-2",
+                "name": "line 2",
+                "tag": "line",
+                "attrs": {
+                  "x1": "47.72625",
+                  "y1": "1.04",
+                  "x2": "47.39625",
+                  "y2": "66.66",
+                  "fill": "#835d3f",
+                  "stroke": "#7a5132",
+                  "stroke-width": "2.0625",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-3",
+                "name": "path 3",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 2.84625 54.38125 C 9.39125 56.1275 11.92125 62.535 25.45125 63.97875 C 38.995 65.45 63.15375 67.815 83.69625 67.815 C 83.22875 73.38375 79.6675 84.10875 67.1825 86.57 C 57.35125 86.79 23.1825 87.90375 14.025 81.6475 C 6.6825 74.95125 -0.34375 63.14 2.84625 54.38125 Z",
+                  "fill": "#835d3f"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-4",
+                "name": "path 4",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 4.57875 65.60125 C 4.57875 65.60125 13.02125 69.4375 26.05625 70.4275 C 49.65125 72.215 81.5375 73.6175 81.5375 73.6175",
+                  "fill": "none",
+                  "stroke": "#7a5132",
+                  "stroke-width": "1.375",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-5",
+                "name": "path 5",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 9.91375 75.8175 C 9.91375 75.8175 16.01875 78.925 26.93625 79.90125 C 46.65375 81.675 74.64875 82.1975 74.64875 82.1975",
+                  "fill": "none",
+                  "stroke": "#7a5132",
+                  "stroke-width": "1.375",
+                  "stroke-linecap": "round",
+                  "stroke-linejoin": "round"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-6",
+                "name": "path 6",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 2.6675 53.36375 C 2.5575 53.85875 5.7475 60.43125 19.59375 63.0575 C 32.90375 65.57375 62.92 68.6675 74.40125 68.86 C 86.08875 69.025 84.43875 67.58125 83.4625 66.50875 C 82.4725 65.4225 76.13375 64.02 75.19875 63.9375 C 74.2775 63.8275 87.65625 67.33375 75.075 67.155 C 65.24375 66.97625 31.52875 62.71375 20.1025 60.67875 C 7.35625 58.39625 2.7775 52.8825 2.6675 53.36375 Z",
+                  "fill": "#f3b123"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-7",
+                "name": "path 7",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 46.3375 7.0675 C 34.8425 21.73875 23.36125 36.45125 11.8525 51.1225 C 24.40625 57.37875 35.13125 59.015 45.8975 59.02875 C 44.7425 50.99875 43.73875 44 43.78 35.3375 C 43.87625 26.675 45.045 16.39 46.3375 7.0675 Z",
+                  "fill": "#ffffff"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-8",
+                "name": "path 8",
+                "tag": "path",
+                "attrs": {
+                  "d": "M 48.85375 8.40125 C 59.8125 24.59875 70.73 40.79625 81.68875 57.0075 C 70.11125 60.9125 59.27625 58.78125 48.11125 59.68875 C 49.43125 51.54875 50.71 44.67375 50.77875 36.3825 C 50.86125 28.06375 50.0225 16.89875 48.85375 8.40125 Z",
+                  "fill": "#f3b123"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-9",
+                "name": "polygon 9",
+                "tag": "polygon",
+                "attrs": {
+                  "points": "49.73375,1.4575 62.2325,1.91125 57.32375,4.35875 59.785,7.49375 49.51375,6.6",
+                  "fill": "#cf3f36"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-10",
+                "name": "ellipse 10",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "43.0925",
+                  "cy": "63.085",
+                  "rx": "0",
+                  "ry": "0.89375",
+                  "fill": "#46536e"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-11",
+                "name": "ellipse 11",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "37.3175",
+                  "cy": "75.94125",
+                  "rx": "3.03875",
+                  "ry": "3.03875",
+                  "fill": "#f3b123",
+                  "transform": "rotate(2.7 37.3175 75.9412)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-12",
+                "name": "ellipse 12",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "47.12125",
+                  "cy": "76.40875",
+                  "rx": "3.03875",
+                  "ry": "3.03875",
+                  "fill": "#f3b123",
+                  "transform": "rotate(2.7 47.1213 76.4087)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              },
+              {
+                "id": "node-veleiro-13",
+                "name": "ellipse 13",
+                "tag": "ellipse",
+                "attrs": {
+                  "cx": "56.925",
+                  "cy": "76.87625",
+                  "rx": "3.03875",
+                  "ry": "3.03875",
+                  "fill": "#f3b123",
+                  "transform": "rotate(2.7 56.925 76.8762)"
+                },
+                "text": "",
+                "transform": {
+                  "x": 0,
+                  "y": 0,
+                  "rotation": 0,
+                  "sx": 1,
+                  "sy": 1,
+                  "opacity": 100
+                },
+                "visible": true,
+                "locked": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "defaultArtboardId": "artboard-ilha-do-farol-m1",
+  "motion": {
+    "version": 2,
+    "animations": [
+      {
+        "id": "anim-ilha-do-farol-m1",
+        "name": "A Ilha do Farol · Sua aventura em três dimensões",
+        "fps": 30,
+        "frames": 150,
+        "mode": "loop",
+        "tracks": [
+          {
+            "id": "track-1",
+            "targetId": "node-chave-dourada",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-1-1",
+                "frame": 0,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-2",
+                "frame": 15,
+                "value": -1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-3",
+                "frame": 30,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-4",
+                "frame": 45,
+                "value": -1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-5",
+                "frame": 60,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-6",
+                "frame": 75,
+                "value": -1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-7",
+                "frame": 90,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-8",
+                "frame": 105,
+                "value": -1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-9",
+                "frame": 120,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-10",
+                "frame": 135,
+                "value": -1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-1-11",
+                "frame": 150,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-2",
+            "targetId": "node-chave-dourada",
+            "property": "y",
+            "keys": [
+              {
+                "id": "key-2-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-2",
+                "frame": 20,
+                "value": -6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-3",
+                "frame": 40,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-4",
+                "frame": 54,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    1,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-5",
+                "frame": 66,
+                "value": -42,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-6",
+                "frame": 67,
+                "value": 0,
+                "easing": "hold"
+              },
+              {
+                "id": "key-2-7",
+                "frame": 124,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-8",
+                "frame": 137,
+                "value": -6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-2-9",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-3",
+            "targetId": "node-chave-dourada",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-3-1",
+                "frame": 0,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-2",
+                "frame": 54,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-3",
+                "frame": 62,
+                "value": 1.3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-4",
+                "frame": 66,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-5",
+                "frame": 124,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-6",
+                "frame": 136,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-3-7",
+                "frame": 150,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-4",
+            "targetId": "node-chave-dourada",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-4-1",
+                "frame": 0,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-4-2",
+                "frame": 56,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-4-3",
+                "frame": 66,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-4-4",
+                "frame": 124,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-4-5",
+                "frame": 134,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-4-6",
+                "frame": 150,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-5",
+            "targetId": "node-sombra-da-chave",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-5-1",
+                "frame": 0,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-5-2",
+                "frame": 56,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-5-3",
+                "frame": 64,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-5-4",
+                "frame": 124,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-5-5",
+                "frame": 134,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-5-6",
+                "frame": 150,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-6",
+            "targetId": "node-sombra-da-chave",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-6-1",
+                "frame": 0,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-6-2",
+                "frame": 20,
+                "value": 0.8,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-6-3",
+                "frame": 40,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-6-4",
+                "frame": 124,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-6-5",
+                "frame": 137,
+                "value": 0.8,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-6-6",
+                "frame": 150,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-7",
+            "targetId": "node-faisca-1",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-7-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-7-2",
+                "frame": 56,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-7-3",
+                "frame": 62,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-7-4",
+                "frame": 72,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-7-5",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-8",
+            "targetId": "node-faisca-1",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-8-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-8-2",
+                "frame": 56,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-8-3",
+                "frame": 64,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-8-4",
+                "frame": 72,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-8-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-9",
+            "targetId": "node-faisca-1",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-9-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-9-2",
+                "frame": 56,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-9-3",
+                "frame": 64,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-9-4",
+                "frame": 72,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-9-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-10",
+            "targetId": "node-faisca-2",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-10-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-10-2",
+                "frame": 60,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-10-3",
+                "frame": 66,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-10-4",
+                "frame": 76,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-10-5",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-11",
+            "targetId": "node-faisca-2",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-11-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-11-2",
+                "frame": 60,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-11-3",
+                "frame": 68,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-11-4",
+                "frame": 76,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-11-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-12",
+            "targetId": "node-faisca-2",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-12-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-12-2",
+                "frame": 60,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-12-3",
+                "frame": 68,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-12-4",
+                "frame": 76,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-12-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-13",
+            "targetId": "node-faisca-3",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-13-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-13-2",
+                "frame": 64,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-13-3",
+                "frame": 70,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-13-4",
+                "frame": 80,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-13-5",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-14",
+            "targetId": "node-faisca-3",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-14-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-14-2",
+                "frame": 64,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-14-3",
+                "frame": 72,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-14-4",
+                "frame": 80,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-14-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-15",
+            "targetId": "node-faisca-3",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-15-1",
+                "frame": 0,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-15-2",
+                "frame": 64,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-15-3",
+                "frame": 72,
+                "value": 1.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-15-4",
+                "frame": 80,
+                "value": 0.4,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-15-5",
+                "frame": 150,
+                "value": 0.2,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-16",
+            "targetId": "node-personagem",
+            "property": "x",
+            "keys": [
+              {
+                "id": "key-16-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-16-2",
+                "frame": 10,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-16-3",
+                "frame": 52,
+                "value": 70,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-16-4",
+                "frame": 118,
+                "value": 70,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-16-5",
+                "frame": 146,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-16-6",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-17",
+            "targetId": "node-personagem",
+            "property": "y",
+            "keys": [
+              {
+                "id": "key-17-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-2",
+                "frame": 10,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-3",
+                "frame": 13,
+                "value": -6.642857142857142,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-4",
+                "frame": 16,
+                "value": -7.285714285714286,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-5",
+                "frame": 19,
+                "value": -13.928571428571429,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-6",
+                "frame": 22,
+                "value": -14.571428571428571,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-7",
+                "frame": 25,
+                "value": -21.214285714285715,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-8",
+                "frame": 28,
+                "value": -21.857142857142858,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-9",
+                "frame": 31,
+                "value": -28.5,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-10",
+                "frame": 34,
+                "value": -29.142857142857142,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-11",
+                "frame": 37,
+                "value": -35.785714285714285,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-12",
+                "frame": 40,
+                "value": -36.42857142857143,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-13",
+                "frame": 43,
+                "value": -43.07142857142857,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-14",
+                "frame": 46,
+                "value": -43.714285714285715,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-15",
+                "frame": 49,
+                "value": -50.35714285714286,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-16",
+                "frame": 52,
+                "value": -51,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-17",
+                "frame": 76,
+                "value": -51,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-18",
+                "frame": 82,
+                "value": -66,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    1,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-19",
+                "frame": 88,
+                "value": -51,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-20",
+                "frame": 118,
+                "value": -51,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-21",
+                "frame": 121,
+                "value": -48.333333333333336,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-22",
+                "frame": 124,
+                "value": -39.66666666666667,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-23",
+                "frame": 127,
+                "value": -37,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-24",
+                "frame": 130,
+                "value": -28.333333333333336,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-25",
+                "frame": 133,
+                "value": -25.666666666666664,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-26",
+                "frame": 136,
+                "value": -17,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-27",
+                "frame": 139,
+                "value": -14.333333333333336,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-28",
+                "frame": 142,
+                "value": -5.666666666666671,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-29",
+                "frame": 145,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-17-30",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-18",
+            "targetId": "node-personagem",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-18-1",
+                "frame": 0,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-18-2",
+                "frame": 10,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-18-3",
+                "frame": 52,
+                "value": 0.82,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-18-4",
+                "frame": 118,
+                "value": 0.82,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-18-5",
+                "frame": 146,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-18-6",
+                "frame": 150,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-19",
+            "targetId": "node-personagem",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-19-1",
+                "frame": 0,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-19-2",
+                "frame": 10,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-19-3",
+                "frame": 52,
+                "value": 0.82,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-19-4",
+                "frame": 118,
+                "value": 0.82,
+                "easing": "hold"
+              },
+              {
+                "id": "key-19-5",
+                "frame": 119,
+                "value": -0.82,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-19-6",
+                "frame": 146,
+                "value": -1,
+                "easing": "hold"
+              },
+              {
+                "id": "key-19-7",
+                "frame": 147,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-19-8",
+                "frame": 150,
+                "value": 1,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-20",
+            "targetId": "node-farol-apagado",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-20-1",
+                "frame": 0,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-20-2",
+                "frame": 66,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-20-3",
+                "frame": 72,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-20-4",
+                "frame": 120,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-20-5",
+                "frame": 128,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-20-6",
+                "frame": 150,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-21",
+            "targetId": "node-farol-aceso",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-21-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-21-2",
+                "frame": 66,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-21-3",
+                "frame": 72,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-21-4",
+                "frame": 120,
+                "value": 100,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-21-5",
+                "frame": 128,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-21-6",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-22",
+            "targetId": "node-brilho-da-luz",
+            "property": "opacity",
+            "keys": [
+              {
+                "id": "key-22-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-2",
+                "frame": 68,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-3",
+                "frame": 74,
+                "value": 70,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-4",
+                "frame": 84,
+                "value": 25,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-5",
+                "frame": 94,
+                "value": 70,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-6",
+                "frame": 104,
+                "value": 25,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-7",
+                "frame": 114,
+                "value": 70,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-8",
+                "frame": 122,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-22-9",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-23",
+            "targetId": "node-brilho-da-luz",
+            "property": "sx",
+            "keys": [
+              {
+                "id": "key-23-1",
+                "frame": 0,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-2",
+                "frame": 68,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-3",
+                "frame": 74,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-4",
+                "frame": 84,
+                "value": 0.85,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-5",
+                "frame": 94,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-6",
+                "frame": 104,
+                "value": 0.85,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-7",
+                "frame": 114,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-8",
+                "frame": 122,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-23-9",
+                "frame": 150,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-24",
+            "targetId": "node-brilho-da-luz",
+            "property": "sy",
+            "keys": [
+              {
+                "id": "key-24-1",
+                "frame": 0,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-2",
+                "frame": 68,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-3",
+                "frame": 74,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-4",
+                "frame": 84,
+                "value": 0.85,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-5",
+                "frame": 94,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-6",
+                "frame": 104,
+                "value": 0.85,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-7",
+                "frame": 114,
+                "value": 1.15,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-8",
+                "frame": 122,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-24-9",
+                "frame": 150,
+                "value": 0.6,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-25",
+            "targetId": "node-veleiro",
+            "property": "rotation",
+            "keys": [
+              {
+                "id": "key-25-1",
+                "frame": 0,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-25-2",
+                "frame": 38,
+                "value": 3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-25-3",
+                "frame": 75,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-25-4",
+                "frame": 113,
+                "value": 3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-25-5",
+                "frame": 150,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "id": "track-26",
+            "targetId": "node-veleiro",
+            "property": "y",
+            "keys": [
+              {
+                "id": "key-26-1",
+                "frame": 0,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-2",
+                "frame": 25,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-3",
+                "frame": 50,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-4",
+                "frame": 75,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-5",
+                "frame": 100,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-6",
+                "frame": 125,
+                "value": -3,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              },
+              {
+                "id": "key-26-7",
+                "frame": 150,
+                "value": 0,
+                "easing": {
+                  "kind": "cubic-bezier",
+                  "points": [
+                    0.42,
+                    0,
+                    0.58,
+                    1
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "assets": []
+}

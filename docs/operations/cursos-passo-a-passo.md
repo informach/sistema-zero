@@ -103,21 +103,37 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
 2. **Módulos e aulas.** No editor do curso, um módulo por linha do `modulos.md`, com o resumo, e as
    aulas na ordem.
    - **Animação do módulo (ediSVG):** todo módulo tem a sua animação, mostrada na página do curso
-     no Kids (a comunidade adulta ainda não mostra).
-     - **Arte:** feita no ediSVG (`informach-apps/apps/edisvg`) com as artes vetoriais do projeto
-       do curso: os SVGs dos `.szproject.json`, ou as figuras do Estúdio desenhadas por código, que
-       viram SVG pelo `PincelSvg`. Num curso 3D, monte uma versão 2D parecida com os "gêmeos" em
-       SVG dos modelos (a mesma cena, com os mesmos nomes).
-     - **Exportar:** `node --import tsx scripts/qualify-web-assets.mts <pasta com .edisvg> <pasta nova>`,
-       na pasta do ediSVG. Ele gera `<arquivo>-b1-a1.edi-animation.json` com o pôster e um recibo.
-     - **Guardar no repositório:** `bun scripts/edisvg/import-artifacts.ts <pasta> derived` (a fonte
-       fica em `art/edisvg/`).
-     - **Cadastrar:** no Admin, "Editar módulo" → enviar o `.edi-animation.json` (só esse formato,
-       com pôster, até 10 MB).
-     - Os arquivos atuais estão em `art/edisvg/` (Cadê Todo Mundo e Desafio do Primeiro Jogo).
-     - A cópia para o adulto e a promoção levam a animação junto.
-     - O script que monta, exporta e cadastra a animação a partir das artes do curso é o próximo
-       passo (`scripts/cursos/animacao-do-modulo.ts`, ainda não existe).
+     no Kids (a comunidade adulta ainda não mostra). `conferir-curso.ts` reprova módulo sem ela.
+     - **Arte:** as artes vetoriais do projeto do curso (os SVGs do `.szproject.json`). Num curso 3D,
+       uma versão 2D parecida com os "gêmeos" em SVG dos modelos, que estão no projeto do curso 2D
+       correspondente (a Ilha usa os da Chave do Farol), simulando a profundidade: o chão com
+       espessura, o personagem que diminui ao ir para o fundo, o objeto que gira pela largura.
+     - **Receita:** `docs/aulas-interativas-tecnico/recursos/<curso>/animacao-dos-modulos.ts` diz o
+       curso, o título de cada módulo (igual ao `modulos.md`), as camadas e as trilhas do clipe
+       (loop de 4 a 5 s a 30 quadros/s). Modelos: a do Jardim (2D) e a da Ilha (3D).
+     - **Montar, exportar e cadastrar** (precisa do `informach-apps` ao lado do `sistema-zero`, com
+       `pnpm install`, ou `EDISVG_APP` apontando para `apps/edisvg`):
+
+       ```bash
+       R=docs/aulas-interativas-tecnico/recursos/<curso>/animacao-dos-modulos.ts
+       bun scripts/cursos/animacao-do-modulo.ts --receita $R --passo montar      # art/edisvg/sources/<chave>.edisvg
+       bun scripts/cursos/animacao-do-modulo.ts --receita $R --passo exportar    # art/edisvg/exports + imagens de conferência
+       bun scripts/cursos/animacao-do-modulo.ts --receita $R --passo cadastrar --ambiente staging
+       bun scripts/cursos/animacao-do-modulo.ts --receita $R --passo conferir --ambiente staging
+       ```
+
+       - `montar` usa o próprio código do ediSVG (o importador de SVG e a validação do projeto). O
+         `.edisvg` abre no ediSVG para retocar à mão, mas o próximo `montar` sobrescreve os retoques.
+       - `exportar` roda o exportador do ediSVG num Chromium de verdade. Ele reprova o quadro em 61%
+         do clipe se for igual ao primeiro. As imagens de conferência ficam em `.cache/cursos/animacoes/`:
+         olhe antes de cadastrar.
+       - `cadastrar` guarda o arquivo e o pôster no R2 pelo código do Admin e põe no módulo (título e
+         resumo continuam os mesmos). Rodar de novo não refaz o que já está igual.
+     - Sem o script, à mão: no Admin, "Editar módulo" → enviar o `.edi-animation.json`.
+     - O acervo fica em `art/edisvg/` (`exports/manifest.json`); o teste
+       `scripts/cursos/animacao-do-modulo.test.ts` reprova exportação desatualizada.
+     - A cópia para o adulto e a promoção levam a animação junto. Animação posta depois da cópia ou
+       da promoção só chega lá na próxima.
 3. **Manifesto de cada aula.** Editor da aula → Dados da aula → "Importar roteiro com partes", com
    o `aula-N.manifesto.json`, no modo "Atualizar pelo manifesto". A importação cria as partes, os
    blocos e os vídeos planejados.
@@ -344,6 +360,11 @@ Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operati
 | Leitura das aulas, duração, caderno, blocos e base do Zappy, dentro do `members` | `scripts/cursos/remoto/aulas-do-curso.mjs` |
 | O operador de publicação implantado, chamado dentro do `members` | `scripts/cursos/remoto/operador.mjs` |
 | Copiar Kids → adulto e promover para produção (prévia, aprovar, acompanhar, blocos) | `scripts/cursos/publicar-curso.ts` |
+| Conferir o curso publicado contra a pasta (aulas, manifestos, PDF, blocos, vídeos, animações, modulos.md) | `scripts/cursos/conferir-curso.ts` |
+| Animação de cada módulo: montar com as artes do curso, exportar no ediSVG, cadastrar e conferir | `scripts/cursos/animacao-do-modulo.ts` (receitas em `docs/aulas-interativas-tecnico/recursos/<curso>/animacao-dos-modulos.ts`) |
+| Montar um projeto do ediSVG com o código do próprio ediSVG | `scripts/cursos/lib/edisvg.ts` |
+| Guardar a animação no R2 com o código do Admin | `scripts/cursos/lib/guardar-animacao-no-admin.ts` |
+| Listar e gravar as animações dos módulos, dentro do `members` | `scripts/cursos/remoto/animacoes.mjs` |
 | Copiar Kids → adulto por linha de comando (com recibos e backup) | `scripts/release/sync-course-audiences.ts` |
 | Promover e copiar pelo mesmo serviço do Admin | `packages/members/scripts/publish-course.ts` |
 
