@@ -53,7 +53,9 @@ const FORMATO = 'mp3_44100_64'
 export { MAX_TEXTOS_POR_PEDIDO } from '@/lib/voz-zappy-limites'
 
 /** Quantas frases são geradas ao mesmo tempo. Ver o aviso do teto acima. */
-const CONCORRENCIA = 8
+// O plano do ElevenLabs aceita 5 pedidos ao mesmo tempo; com 8, as frases além do limite voltavam com 429
+// (concurrent_limit_exceeded) e a aula ficava sem parte das vozes (O Jardim Secreto, 24/11/2026).
+const CONCORRENCIA = 4
 /**
  * Teto de FORMA (o que o dicionário aceita como chave). É o da autoria, não o do bom senso.
  * @see MAX_CARACTERES_PARA_GRAVAR
