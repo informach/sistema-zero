@@ -1,0 +1,143 @@
+{
+  "testedAt": "2026-11-23T19:10:06.561Z",
+  "environment": "staging",
+  "executionId": "check-lg02-0793c25dc362d684746c9041",
+  "scope": "QA sintética; duas abas reais com a mesma identidade do executor",
+  "activationQualified": false,
+  "missing": [
+    "falha de limpeza injetada no contêiner real",
+    "suspensão",
+    "capacidade",
+    "perfis distintos",
+    "percurso autenticado completo do Members"
+  ],
+  "observations": [
+    {
+      "label": "first",
+      "status": 200,
+      "durationMs": 6992,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "warm",
+      "status": 200,
+      "durationMs": 2273,
+      "body": {
+        "ok": true,
+        "ms": 2231
+      }
+    },
+    {
+      "label": "repeat",
+      "status": 200,
+      "durationMs": 2551,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "tab-a",
+      "status": 200,
+      "durationMs": 4748,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "tab-b",
+      "status": 200,
+      "durationMs": 7543,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "invalid-warm",
+      "status": 400,
+      "durationMs": 50,
+      "body": {
+        "ok": false,
+        "code": "INVALID_REQUEST",
+        "message": "Pedido inválido."
+      }
+    },
+    {
+      "label": "after-invalid",
+      "status": 200,
+      "durationMs": 4253,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "during-failure",
+      "status": 200,
+      "durationMs": 7298,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "execution-failure",
+      "status": 500,
+      "durationMs": 19073,
+      "body": {
+        "ok": false,
+        "code": "CHECK_FAILED",
+        "message": "Não foi possível testar o jogo agora."
+      }
+    },
+    {
+      "label": "recovery",
+      "status": 200,
+      "durationMs": 10967,
+      "body": {
+        "ok": true,
+        "results": [
+          {
+            "id": "texto",
+            "passed": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -31,6 +31,9 @@ export const CHECK_LIMITS = {
 
 const SCOPE = /^__sz[a-f0-9]{24}$/
 const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
+export function isCheckExecutionId(value: unknown): value is string {
+  return typeof value === 'string' && EXECUTION_ID.test(value)
+}
 /** O arquivo de entrada que o teste acrescenta ao Pro para alcançar as funções exportadas. */
 export const CHECK_ENTRY_PATH = '__sz-check-entry.js'
 

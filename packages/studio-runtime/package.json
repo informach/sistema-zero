@@ -18,7 +18,7 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
-    "@cloudflare/sandbox": "0.10.3",
+    "@cloudflare/sandbox": "0.12.12",
     "@sistemazero/core": "workspace:*"
   },
   "devDependencies": {

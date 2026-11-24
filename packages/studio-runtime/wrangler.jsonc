@@ -38,6 +38,10 @@
   "durable_objects": {
     "bindings": [
       {
+        "class_name": "CheckSandboxPool",
+        "name": "CheckSandboxPools"
+      },
+      {
         "class_name": "ProBuildSandbox",
         "name": "ProBuildSandbox"
       },
@@ -63,6 +67,10 @@
     {
       "new_sqlite_classes": ["ThreeDCheckSandbox"],
       "tag": "v3-three-d-check-sandbox"
+    },
+    {
+      "new_sqlite_classes": ["CheckSandboxPool"],
+      "tag": "v4-exclusive-check-sandbox-pool"
     }
   ],
   "ratelimits": [
@@ -81,6 +89,7 @@
     }
   ],
   "vars": {
+    "STUDIO_CHECK_WARMING_ENABLED": "1",
     "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
     "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime.helena-bcc.workers.dev",
     "PUBLICATION_AUTHORIZATION_URL": "https://kids.sistemazero.com.br/api/internal/studio-play",
@@ -92,6 +101,7 @@
     "staging": {
       "name": "sistemazero-studio-runtime-staging",
       "vars": {
+        "STUDIO_CHECK_WARMING_ENABLED": "1",
         "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
         "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
         "PUBLICATION_AUTHORIZATION_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-play",
@@ -129,6 +139,10 @@
       ],
       "durable_objects": {
         "bindings": [
+          {
+            "class_name": "CheckSandboxPool",
+            "name": "CheckSandboxPools"
+          },
           {
             "class_name": "ProBuildSandbox",
             "name": "ProBuildSandbox"

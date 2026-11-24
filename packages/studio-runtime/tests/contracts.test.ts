@@ -31,7 +31,7 @@ test('a imagem inclui os módulos locais importados pelo executor de objetivos',
       m[1]!.trim().split(/\s+/).slice(0, -1),
     ),
   )
-  const queue = ['runtime/check-objectives.mjs'],
+  const queue = ['runtime/check-objectives.mjs', 'runtime/check-warm.mjs'],
     seen = new Set<string>()
   for (const file of queue) {
     if (seen.has(file)) continue
@@ -176,5 +176,20 @@ describe('contrato do executor Pro', () => {
     expect(lockfile.packages[''].dependencies.vite).toBe('8.1.6')
     expect(versionAtLeast(lockfile.packages['node_modules/nanoid'].version, '3.3.17')).toBe(true)
     expect(versionAtLeast(lockfile.packages['node_modules/postcss'].version, '8.5.23')).toBe(true)
+  })
+
+  test('Worker, binário do sandbox e prova Linux usam a mesma versão fixada do SDK', async () => {
+    const pkg = await Bun.file(new URL('../package.json', import.meta.url)).json()
+    const version = pkg.dependencies['@cloudflare/sandbox']
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/)
+    const dockerfile = await Bun.file(new URL('../Dockerfile', import.meta.url)).text()
+    const imageVersion = dockerfile.match(
+      /COPY --from=docker\.io\/cloudflare\/sandbox:([^ ]+)/,
+    )?.[1]
+    expect(imageVersion).toBe(version)
+    const fixture = await Bun.file(
+      new URL('fixtures/prepare-python-sdk-linux.ts', import.meta.url),
+    ).text()
+    expect(fixture.match(/'@cloudflare\/sandbox': '([^']+)'/)?.[1]).toBe(version)
   })
 })

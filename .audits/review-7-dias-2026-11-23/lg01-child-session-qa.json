@@ -1,0 +1,94 @@
+{
+  "recordedAt": "2026-11-23T22:23:36Z",
+  "environment": "staging",
+  "testedFrontendSha": "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
+  "candidateAfterMainIntegration": "40dd49db7265c33d36b6f82ce9130382f46bef28",
+  "candidateAfterMenuFix": "a5d684728a511f6e8c45f877f572166b1e1453f1",
+  "accountMatchVerifiedReadOnly": true,
+  "privateProject": {
+    "itemId": "01M853GQKW3CVQARHT02G4Y88B",
+    "title": "QA LG01 — miniaturas e tela cheia",
+    "revision": 1,
+    "formatVersion": 2,
+    "bytes": 533,
+    "uploadStatus": 200,
+    "commitStatus": 200,
+    "listAfterReloadStatus": 200,
+    "reopenedSaved": true
+  },
+  "existingProjects": 6,
+  "projectsAfterTest": 7,
+  "existingDrawingsVisible": 2,
+  "fullscreen": {
+    "manualResult": "TypeError: not granted",
+    "sameFailureOnMinimalPageOutsideStudio": true,
+    "documentFullscreenEnabled": true,
+    "documentVisibleAndFocused": true,
+    "automatedChromeFlowPassed": true
+  },
+  "models3d": {
+    "activeProfileKits": [
+      "Jogo 2D"
+    ],
+    "eligibleAccountProvided": true,
+    "manualPreview": {
+      "surface": "existing authenticated Admin session, local lesson preview",
+      "mode": "Conferir livremente",
+      "courseId": "081a0a6b-ea00-59ea-afc9-8842e0c9446f",
+      "lessonId": "f63fe236-5862-42c9-81c8-cb26a113eac2",
+      "modelCount": 24,
+      "allImagesComplete": true,
+      "imageSizePx": 96,
+      "allImagesNonempty": true,
+      "paintedLongestExtentMinPx": 80,
+      "paintedLongestExtentMaxPx": 82,
+      "visuallyRecognizable": true,
+      "fetchXhrRequestsInspected": 138,
+      "apiMutationRequestsObserved": 0,
+      "realChild3dProgressTested": false,
+      "accessOrProgressChanged": false,
+      "emailCodesSent": 0,
+      "previewClosed": true,
+      "originalAdultAudienceRestored": true
+    },
+    "automatedRealWebGLUploadAndReloadPassed": true
+  },
+  "embeddedMenuR13": {
+    "before": {
+      "viewportHeight": 936,
+      "triggerTop": 800.5,
+      "panelTop": 844.5,
+      "panelBottom": 1252.44,
+      "modelsMenuItemOutsideViewport": true
+    },
+    "unitRegressionFailedBeforeFix": true,
+    "unitTestsPassedAfterFix": 6,
+    "productionChromeFlowsPassed": 3,
+    "studioTypecheckExitCode": 0,
+    "stagingAcceptanceOfFixedMenuPending": false,
+    "finalCandidate": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+    "finalStagingAcceptanceReceipt": "lg01-final-staging-release.json",
+    "finalPanelTop": 393.5625,
+    "finalPanelBottom": 801.5,
+    "finalViewportHeight": 936,
+    "finalModelsMenuOpened": true
+  },
+  "recoveryHelp": {
+    "withoutDocumentSession": {
+      "status": 409,
+      "code": "SESSION_CHANGED"
+    },
+    "invalidReportWithDocumentSession": {
+      "status": 400,
+      "code": "VALIDATION_ERROR"
+    },
+    "retainedRecoveryBannerPresent": false,
+    "positiveHttpPostgresTests": 2,
+    "supportMessagesSent": 0
+  },
+  "mural": {
+    "positiveHttpPostgresTests": 2,
+    "livePostsSent": 0
+  },
+  "browserConsoleErrorsAfterReopenBeforeNegativeProbe": 0
+}

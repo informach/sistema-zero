@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import {
   compareExecutionValue,
+  type ExecutionStep,
+  executionNeeds3dNavigation,
   executionProjectChecks,
   executionRuleBudgetMs,
   executionValuesEqual,
@@ -362,4 +364,23 @@ test('an uncaught program exception prevents every execution objective from pass
         .passed,
     ).toBe(false)
   }
+})
+
+describe('executionNeeds3dNavigation', () => {
+  const ida3d: ExecutionStep = {
+    action: 'approachObject3d',
+    actorPath: 'personagem',
+    targetPath: 'chave',
+    timeoutMs: 7000,
+    walkable: [{ minX: -10, maxX: 10, minZ: -10, maxZ: 10 }],
+  }
+  const andarAteObjeto: SectionExecutionRule = { ...anda, steps: [ida3d] }
+  const roteiro: SectionExecutionRule = { type: 'script', steps: [ida3d], code: 'return true' }
+  test('só a ida até um objeto 3D pede o contêiner maior', () => {
+    expect(executionNeeds3dNavigation([{ rule: anda }])).toBe(false)
+    expect(executionNeeds3dNavigation([{ rule: anda }, { rule: andarAteObjeto }])).toBe(true)
+    expect(executionNeeds3dNavigation([{ rule: roteiro }])).toBe(true)
+    expect(executionNeeds3dNavigation([{ rule: dobro }])).toBe(false)
+    expect(executionNeeds3dNavigation([])).toBe(false)
+  })
 })

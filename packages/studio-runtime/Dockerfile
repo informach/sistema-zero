@@ -1,6 +1,6 @@
 FROM node:22.17.0-bookworm-slim
 
-COPY --from=docker.io/cloudflare/sandbox:0.10.3 /container-server/sandbox /sandbox
+COPY --from=docker.io/cloudflare/sandbox:0.12.12 /container-server/sandbox /sandbox
 
 WORKDIR /opt/sz-runtime
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/sz-runtime/browsers
@@ -15,7 +15,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 COPY runtime/pack-artifact.mjs ./
 COPY runtime/check-project.mjs ./
 COPY runtime/validation-profile.json ./
-COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs ./
+COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs runtime/check-warm.mjs ./
 COPY runtime/check-click-target.mjs runtime/check-javascript-modules.mjs runtime/check-approach.mjs runtime/check-approach-3d.mjs ./
 COPY runtime/check-models-ready.mjs ./
 COPY runtime/execution-observation.generated.mjs ./
