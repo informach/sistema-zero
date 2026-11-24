@@ -129,3 +129,4 @@ Provas: testes existentes `studioLibrary`, `regionImageWorld`, `personalRegional
 
 - 24/11: plano e desenho derivados do escopo aprovado; checkout original preservado; dependências instaladas com lockfile congelado.
 - Em andamento: base e reprodução mínima do produtor; inspeção da integração autoritativa e compatibilidade local.
+- Primeiro bloco do produtor: reprodução vermelha → verde com PNG real, captura imutável e marcador divergente; 60 testes/267 expectativas aprovados, Biome dos três arquivos aprovado e typecheck completo de member-shell aprovado. O transporte e as provas do BFF ainda não estão ligados; isso não é aceite da jornada LG04.

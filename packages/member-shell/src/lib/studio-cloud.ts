@@ -40,11 +40,21 @@
  */
 import {
   canReadStudioSealedStorage,
+  STUDIO_SEALED_PARTS_VERSION,
   STUDIO_SEALED_STORAGE_READER,
   StudioSealedManifestSchema,
 } from '@sistemazero/core/creations/studio-sealed-storage'
-import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
-import { assertLegacyStudioProjectMaterials } from '@sistemazero/core/studio/pinta-regional-reference'
+import {
+  STUDIO_PARTS_FORMAT,
+  STUDIO_PARTS_VERSION,
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio'
+import {
+  assertLegacyStudioProjectMaterials,
+  hasRegionalPintaReference,
+} from '@sistemazero/core/studio/pinta-regional-reference'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 
 export { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
 
@@ -192,9 +202,30 @@ const PART_FETCH_CONCURRENCY = 3
 export async function buildStudioCloudSnapshot(
   project: StudioProjectLike,
 ): Promise<{ json: string; parts?: CloudPart[] }> {
-  assertLegacyStudioProjectMaterials(project)
-  const assets = Array.isArray(project.assets) ? project.assets : []
-  if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(project) }
+  // A producer can outlive an editor change while the digest yields. Capture the
+  // complete authored input once so hashes and lazy part text describe one revision.
+  const captured = copyStudioProjectJson(project)
+  if (!captured || typeof captured !== 'object' || Array.isArray(captured))
+    throw new Error('O projeto não é um documento válido.')
+  const assets: unknown[] =
+    'assets' in captured && Array.isArray(captured.assets) ? captured.assets : []
+  const regional = assets.some(hasRegionalPintaReference)
+  const projectFormat = 'formatVersion' in captured ? captured.formatVersion : undefined
+  if (regional) {
+    if (
+      !hashSupported() ||
+      (projectFormat !== STUDIO_PROJECT_FORMAT_VERSION &&
+        projectFormat !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+    )
+      throw new Error(
+        'Esta versão não consegue guardar o cenário na conta. O original foi preservado.',
+      )
+    const { admitRegionalProjectAssets } = await import(
+      '@sistemazero/studio/pinta-regional-admission'
+    )
+    await admitRegionalProjectAssets(assets)
+  } else assertLegacyStudioProjectMaterials(captured)
+  if (assets.length === 0 || !hashSupported()) return { json: JSON.stringify(captured) }
   // Um asset por vez: o pico de memória é UM JSON canônico (um cenário pode ter MB), não
   // todos de uma vez — e o digest já roda fora da main thread.
   const hashes = await perfSpanAsync(
@@ -206,17 +237,29 @@ export async function buildStudioCloudSnapshot(
     },
     { assets: assets.length },
   )
-  const manifest: StudioPartsManifest = {
-    format: STUDIO_PARTS_FORMAT,
-    version: STUDIO_PARTS_VERSION,
-    program: { ...(project as unknown as Record<string, unknown>), assets: [] },
-    assets: hashes,
-  }
+  const manifest = regional
+    ? StudioSealedManifestSchema.parse({
+        format: STUDIO_PARTS_FORMAT,
+        version: STUDIO_SEALED_PARTS_VERSION,
+        requirements: {
+          envelopeVersion: STUDIO_SEALED_PARTS_VERSION,
+          projectFormat,
+          materials: 'pinta-region-5',
+        },
+        program: { ...captured, assets: [] },
+        assets: hashes,
+      })
+    : {
+        format: STUDIO_PARTS_FORMAT,
+        version: STUDIO_PARTS_VERSION,
+        program: { ...captured, assets: [] },
+        assets: hashes,
+      }
   return {
     json: JSON.stringify(manifest),
-    parts: assets.map((asset, index) => ({
-      hash: hashes[index] as string,
-      text: () => canonicalJson(asset),
+    parts: hashes.map((hash, index) => ({
+      hash,
+      text: () => canonicalJson(assets[index]),
     })),
   }
 }
