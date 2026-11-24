@@ -32,10 +32,14 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 | Commit/cancelamento do Pinta com stream vazio | Reprodução: duas falhas; após correção: 25 testes aprovados, zero falhas; 146 expectativas |
 | Tipos | Estúdio, member-shell, Pinta, Members, core e runtime aprovados |
 | Arquivos gerados | Cópias Pro, runtime regional, integração Phaser e perfil da imagem aprovados |
+| Suíte oficial completa do Estúdio | 1.006 arquivos em 182 processos, zero falhas; 783 segundos |
+| SDKs 3D regenerados e contratos do compilador | 112 testes 3D aprovados, dois TODOs preexistentes, zero falhas; mais dois contratos canônicos aprovados |
 
 As provas com serviços reais usam banco e bucket exclusivos de QA, com listeners de loopback e processos encerrados pelo próprio teste. A sessão injetada nessa prova não substitui o aceite infantil autenticado em homologação.
 
-Uma rodada anterior de navegador passou em 15 cenários de Chromium, Chrome e Edge. A rodada final precisa ser repetida após os ajustes de exportação/conversão. Suíte completa do Estúdio, builds, CI obrigatório, imagem e percurso hospedado ainda estão em conferência; as linhas acima não representam aprovação desses gates. O CI passa a incluir uma prova de compilação regional Pro na imagem Linux real, sem rede, conferindo o perfil da imagem e o PNG byte a byte.
+Uma rodada anterior de navegador passou em 15 cenários de Chromium, Chrome e Edge. A rodada final precisa ser repetida após os ajustes de exportação/conversão. Builds, CI obrigatório, imagem e percurso hospedado ainda estão em conferência; as linhas acima não representam aprovação desses gates. O CI inclui uma prova de compilação regional Pro na imagem Linux real, sem rede, conferindo o perfil da imagem e o PNG byte a byte.
+
+Essa prova de imagem passou na primeira candidata. A qualificação adicional de staging encontrou os carregadores 3D derivados das dependências compartilhadas desatualizados; a conferência local reproduziu a divergência. Os dois SDKs e o contrato derivado do contêiner foram regenerados com Bun 1.3.11 e passaram nos testes acima. O perfil passou para `98ec9667f1a3b893503d9427317dda4b1fb3c0cbfa665ad9c11c8837df05a8a3`; a nova imagem e seu CI ainda precisam concluir a qualificação. Os limites, os três imports Three compartilhados e as licenças existentes foram preservados.
 
 ## Limitações e liberação
 
