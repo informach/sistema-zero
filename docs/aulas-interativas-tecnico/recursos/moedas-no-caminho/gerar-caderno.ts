@@ -150,6 +150,21 @@ const seMoedas = (entao: string, explica: string[]) =>
     ],
   )
 
+/**
+ * O Se do baú antes dos avisos (a parte em que o baú abre, 24/11/2026): só o então, sem aviso, e a
+ * linha de baixo ainda com os dois sinais de mais ("+ senão se + senão", `ifElseMutator.ts`).
+ */
+const PE_COM_SENAO = '<div class="bk-boca-pe bk-boca-pe--se">+ senão se −</div>'
+const seMoedasSoEntao = (entao: string, explica: string) => {
+  const html = B.se(
+    'sz_js_if_else',
+    B.valor('sz_val_compare', `${variavel('moedas')} ${lista('≥')} ${B.numero('5')}`),
+    [{ rotulo: 'então', explica, corpo: entao }],
+  )
+  if (!html.includes(PE_COM_SENAO)) throw new Error('O pé do Se mudou em caderno-visual/visual.ts.')
+  return html.replace(PE_COM_SENAO, PE_COM_SENAO.replace('−', '+ senão'))
+}
+
 /** O que já vem no projeto, com o texto do conteúdo, na cor do bloco onde fica. */
 const pronto = (item: Item, i: number, tipo: string) => {
   const texto = item.ready?.[i]
@@ -159,6 +174,13 @@ const pronto = (item: Item, i: number, tipo: string) => {
 const ramos = (item: Item) => {
   if (item.branches?.length !== 2) throw new Error(`O desenho ${item.name} precisa de "branches".`)
   return item.branches
+}
+
+const ramos1 = (item: Item) => {
+  const r = item.branches?.[0]
+  if (!r || item.branches?.length !== 1)
+    throw new Error(`O desenho ${item.name} precisa de um ramo em "branches".`)
+  return r
 }
 
 // Os desenhos dos encaixes. O conteúdo escolhe onde cada um entra e dá os textos dele.
@@ -197,6 +219,44 @@ const drawings: Record<string, { area: string; corpo: (item: Item) => string }> 
               `Mostrar placar ${B.campo('Moedas:')} valor ${variavel('moedas')} em x ${B.numero('38')} y ${B.numero('60')} cor <span class="bk-cor"></span> tamanho ${B.numero('20')}`,
             ),
         ),
+      ),
+  },
+  'abre-2d': {
+    area: 'Quando acontecer',
+    corpo: (item) =>
+      B.area(
+        'Quando acontecer',
+        pronto(item, 0, 'sz_frame_events') +
+          B.comBoca(
+            'sz_g2d_on_overlap',
+            `Quando o sprite ${sprite('personagem')} começar a encostar no sprite ${sprite('bau')}`,
+            seMoedasSoEntao(
+              B.bloco(
+                'sz_g2d_set_image',
+                `Trocar imagem do sprite ${sprite('bau')} para ${B.campo('bau-aberto', { lista: true, miniatura: imagem('bau-aberto') })}`,
+              ),
+              ramos1(item),
+            ),
+          ),
+      ),
+  },
+  'abre-3d': {
+    area: 'Quando acontecer',
+    corpo: (item) =>
+      B.area(
+        'Quando acontecer',
+        pronto(item, 0, 'sz_frame_events') +
+          B.comBoca(
+            'sz_g3d_on_touch',
+            `Quando ${lista('personagem')} encostar em ${lista('bau')}`,
+            seMoedasSoEntao(
+              B.bloco(
+                'sz_g3d_play_animation',
+                `Tocar a animação ${lista('abrir')} em ${lista('bau')} ${lista('uma vez')}`,
+              ),
+              ramos1(item),
+            ),
+          ),
       ),
   },
   'bau-2d': {

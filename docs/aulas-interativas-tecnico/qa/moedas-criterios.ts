@@ -41,7 +41,7 @@ const ACESO_2D = MOEDAS_ASSETS_2D.find((a) => a.name === 'farol-listrado-aceso')
 
 export function moedasChecks(d: MoedasDimensao, etapa: MoedasEtapa): SectionProjectCheck[] {
   const three = d === '3d'
-  const n = ['inicio', 'contador', 'coleta', 'placar', 'bau'].indexOf(etapa)
+  const n = ['inicio', 'contador', 'coleta', 'placar', 'abre', 'bau'].indexOf(etapa)
   const approach = (
     targetPath: string,
     timeoutMs: number,
@@ -135,6 +135,22 @@ export function moedasChecks(d: MoedasDimensao, etapa: MoedasEtapa): SectionProj
           { afterStep: 2, expect: value('aviso', 'changed') },
         ],
       )
+  // O baú fechado com poucas moedas, sem cobrar o aviso (ele vem com o senão, na etapa seguinte).
+  const fechado = three
+    ? check(
+        'fechado',
+        'Com menos de 5 moedas, o baú fica fechado.',
+        [approach('bau', 4000), { action: 'wait', ms: 400 }],
+        bauAberto(false),
+        [{ afterStep: 2, expect: moedas(0) }],
+      )
+    : check(
+        'fechado',
+        'Com menos de 5 moedas, o baú fica fechado.',
+        [approach('moeda2', 2000), approach('bau', 2500), { action: 'wait', ms: 300 }],
+        bauAberto(false),
+        [{ afterStep: 2, expect: moedas(2) }],
+      )
   const cinco = three
     ? check(
         'cinco',
@@ -190,9 +206,15 @@ export function moedasChecks(d: MoedasDimensao, etapa: MoedasEtapa): SectionProj
   if (n >= 1) lista.push(zero)
   if (n >= 2) lista.push(contar, umaVez)
   if (n >= 3) lista.push(placar)
-  if (n >= 4) {
+  // O baú que abre com pelo menos 5 (o Se só com o então): fechado com poucas, aberto com 5 e com 6.
+  if (n === 4) {
+    if (three) lista.splice(0, lista.length, placar)
+    lista.push(fechado, cinco, seis)
+  }
+  if (n >= 5) {
     // A última etapa confere o jogo inteiro; o "zero" e o "contar" já ficaram nas anteriores
-    // e estouravam o prazo da parte no 3D.
+    // e estouravam o prazo da parte no 3D. O aviso do que falta (o senão, no "meta") é o que
+    // separa esta etapa da anterior.
     if (three) lista.splice(0, lista.length, placar)
     lista.push(meta, cinco, seis, reinicio, farol)
   }

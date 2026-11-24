@@ -38,9 +38,22 @@ O número na tela da ilha.
 - Conte cada moeda: no caminho até o farol há cinco, e o número chega a 5.
 - Mostre o número de moedas na tela.
 
-## Parte 4. O baú da ilha abre
+## Parte 4. O baú da ilha abre com pelo menos 5
 
-O baú da ilha abre.
+O baú da ilha abre com pelo menos 5.
+
+- Intenção: application.
+- Blocos: video-abre, ponte-abre.
+- Estúdio: projeto.
+- Conclusão: video-abre.
+
+- Mostre o número de moedas na tela.
+- Com menos de 5 moedas, o baú fica fechado.
+- Com 5 moedas o baú abre (pelo menos 5), e voltar pelo caminho não conta de novo.
+
+## Parte 5. Os avisos do baú da ilha
+
+Os avisos do baú da ilha.
 
 - Intenção: delivery.
 - Blocos: video-bau, ponte-bau, projeto.
@@ -52,7 +65,7 @@ O baú da ilha abre.
 - Com 5 moedas o baú abre (pelo menos 5), e voltar pelo caminho não conta de novo.
 - Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.
 
-## Parte 5. Pense nas moedas da ilha
+## Parte 6. Pense nas moedas da ilha
 
 Pense nas moedas da ilha.
 

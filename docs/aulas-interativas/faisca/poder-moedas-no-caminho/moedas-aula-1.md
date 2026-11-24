@@ -73,9 +73,26 @@ Mostre as moedas na tela.
 - A mesma moeda não conta duas vezes: voltar ao lugar dela não soma de novo.
 - Mostre o número de moedas na tela.
 
-## Parte 7. O baú pede pelo menos 5
+## Parte 7. O baú abre com pelo menos 5
 
-O baú pede pelo menos 5.
+O baú abre com pelo menos 5.
+
+- Intenção: application.
+- Blocos: video-abre, ponte-abre.
+- Estúdio: projeto.
+- Conclusão: video-abre.
+
+- Crie a variável moedas começando em 0: sem encostar em nada, ela continua 0.
+- Conte cada moeda: depois de três moedas, o número é 3 e as três sumiram.
+- A mesma moeda não conta duas vezes: voltar ao lugar dela não soma de novo.
+- Mostre o número de moedas na tela.
+- Com menos de 5 moedas, o baú fica fechado.
+- Com exatamente 5 moedas o baú já abre ("pelo menos 5"), e voltar pelo caminho não conta de novo.
+- Com as 6 moedas o baú também abre.
+
+## Parte 8. Os avisos do baú
+
+Os avisos do baú.
 
 - Intenção: delivery.
 - Blocos: video-bau, ponte-bau, projeto.
@@ -92,7 +109,7 @@ O baú pede pelo menos 5.
 - Uma nova partida (tecla R) recomeça o contador em 0, com as seis moedas de volta.
 - O farol continua: com a chave, ele acende.
 
-## Parte 8. Pense nas moedas
+## Parte 9. Pense nas moedas
 
 Pense nas moedas.
 

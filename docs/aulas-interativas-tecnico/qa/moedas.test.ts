@@ -168,10 +168,11 @@ describe('manifestos das Moedas', () => {
               'contador',
               'coleta',
               'placar',
+              'abre',
               'bau',
               'revisao',
             ]
-          : ['abertura', 'coleta', 'placar', 'bau', 'revisao'],
+          : ['abertura', 'coleta', 'placar', 'abre', 'bau', 'revisao'],
       )
       expect(
         m.sections.filter((s: any) => s.completion.submissionUpToDate).map((s: any) => s.key),
