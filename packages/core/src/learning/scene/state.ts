@@ -42,7 +42,13 @@ import {
   TILEMAP_MARKS_MAX,
 } from './nucleo'
 import { cloneOnce, initialOnce, isSceneOnce, type SceneOnce } from './once-vs-always'
-import { cleanupPreset, gameStatePreset, isRandomPreset, oncePreset } from './presets'
+import {
+  cleanupPreset,
+  gameStatePreset,
+  isRandomPreset,
+  isScoreGoalPreset,
+  oncePreset,
+} from './presets'
 
 /**
  * O estado de uma cena, agrupado por assunto.
@@ -1343,10 +1349,11 @@ function isSceneScoreGoal(value: unknown): value is SceneScoreGoal {
   return (
     inteiro(value.points, SCORE_GOAL.max) &&
     inteiro(value.hits, SCORE_GOAL.max) &&
-    value.goal === SCORE_GOAL.goal &&
+    (value.goal === SCORE_GOAL.goal || value.goal === 20) &&
     SCORE_GOAL_OPS.some((op) => op === value.op) &&
     typeof value.won === 'boolean' &&
-    value.won === scoreGoalReached(value.points as number, value.op as ScoreGoalOp, SCORE_GOAL.goal)
+    value.won ===
+      scoreGoalReached(value.points as number, value.op as ScoreGoalOp, value.goal as number)
   )
 }
 
@@ -2166,7 +2173,12 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     twoClocks: { ...TWO_CLOCKS_PADRAO, rocks: [] },
     copies: { ...COPIES_PADRAO, posts: [] },
     skinGame: { ...SKIN_GAME_PADRAO, visited: ['space'], shots: [] },
-    scoreGoal: { ...SCORE_GOAL_PADRAO },
+    scoreGoal: {
+      ...SCORE_GOAL_PADRAO,
+      ...(scene === 'score-goal' && isScoreGoalPreset(setup?.preset)
+        ? { goal: setup.preset.goal, points: setup.preset.start }
+        : {}),
+    },
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
     // `gravity` ela liga a gravidade. Nas outras, isso já vem pronto para não roubar o foco.
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
@@ -2195,7 +2207,9 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
           ? gameStatePreset(setup?.preset).clockFrames / 30
           : scene === 'spawn' && setup?.preset?.id === 'pedra-quadros'
             ? 40 / 30
-            : 1,
+            : scene === 'spawn' && setup?.preset?.id === 'pedra-segundos'
+              ? 1.5
+              : 1,
       cleanup: false,
       remainder: 0,
       // ⚠️⚠️ A `cleanup` abre com três cactos já na pista (lote 5 do Raio-X): a pista vazia pedia ~5 s

@@ -1,13 +1,9 @@
-[curious] E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?
+[curious] E qual é a missão da nave?
 
 [long pause]
 
-[curious] E quando a nave passa a existir, ela já aparece na tela?
+[curious] E quando eu solto a seta?
 
 [long pause]
 
-[curious] Para que servem todos esses campos?
-
-[long pause]
-
-[curious] E se a nave for desenhada em todo quadro, sem apagar a tela?
+[curious] Se eu continuar segurando a seta, a nave pode desaparecer?

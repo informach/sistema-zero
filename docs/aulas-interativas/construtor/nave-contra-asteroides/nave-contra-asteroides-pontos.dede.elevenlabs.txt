@@ -1,5 +1,1 @@
-[curious] E se o número não estiver na tela, ele continua mudando?
-
-[long pause]
-
-[curious] Onde eu coloco o bloco que soma?
+[curious] Se o número mudou nos bastidores, ele aparece sozinho no placar?

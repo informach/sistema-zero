@@ -1,0 +1,4866 @@
+{
+  "scope": "Jogo 2D oficial e Canvas2D real, teclas/esperas adaptadas para relógio determinístico, codec escalar e judgeExecutionObservation oficiais; checkpoints e settle250ms do executor respeitados. Não é execução no Estúdio publicado nem Verificar plano da gravação.",
+  "objectives": [
+    {
+      "stage": "movimento",
+      "id": "voar-direita",
+      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 447]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "movimento",
+      "id": "voar-esquerda",
+      "sha256": "d6cf5cd9cc1583ecee72f87f39526278640a2eabfc6934b085522697ccb70394",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 297]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite",
+      "id": "voar-direita",
+      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limite",
+      "id": "voar-esquerda",
+      "sha256": "f34970804247568cd4e68a5ec26b83e7407b11393f9bafa707f6d60a9f3d4b8b",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "instrucoes",
+      "id": "voar-direita",
+      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "instrucoes",
+      "id": "voar-esquerda",
+      "sha256": "1a1a0eeb28bf3dedecbe600af18e28289f2331d9f30a7377685f49257e333a15",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "evento-tiro",
+      "id": "voar-direita",
+      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "evento-tiro",
+      "id": "voar-esquerda",
+      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "evento-tiro",
+      "id": "abertura-protegida",
+      "sha256": "6cbd75df7fb272ae3789983303b00f2a9f1d77e7cd11b7a0fd748d714a2c88ed",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "grupo-tiros",
+      "id": "voar-direita",
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "grupo-tiros",
+      "id": "voar-esquerda",
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "grupo-tiros",
+      "id": "um-tiro-por-toque",
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "grupo-tiros",
+      "id": "abertura-protegida",
+      "sha256": "0eec4cab829afbfd685a2380a504e6f7d7d674e1da79ef802a9f892c9299734d",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem-tiro",
+      "id": "voar-direita",
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem-tiro",
+      "id": "voar-esquerda",
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem-tiro",
+      "id": "um-tiro-por-toque",
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "origem-tiro",
+      "id": "abertura-protegida",
+      "sha256": "f116eb0565db5ce9f73b2fd6d30bc964df91cf4f4f7c1649b5e0badf811198aa",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "voo-tiros",
+      "id": "voar-direita",
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "voo-tiros",
+      "id": "voar-esquerda",
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "voo-tiros",
+      "id": "um-tiro-por-toque",
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "voo-tiros",
+      "id": "abertura-protegida",
+      "sha256": "24435b6897a95d1a59ea17cad32f493562d3b7c89f04530a58328deec12a15c8",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-tiros",
+      "id": "voar-direita",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-tiros",
+      "id": "voar-esquerda",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-tiros",
+      "id": "um-tiro-por-toque",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-tiros",
+      "id": "tiro-retirado",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-tiros",
+      "id": "abertura-protegida",
+      "sha256": "db85b1eeb203e5cacc0fdb7438467ffff4689fcc73f42d64498719b1ce7b4d43",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio-asteroides",
+      "id": "voar-direita",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio-asteroides",
+      "id": "voar-esquerda",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio-asteroides",
+      "id": "um-tiro-por-toque",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio-asteroides",
+      "id": "tiro-retirado",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "relogio-asteroides",
+      "id": "abertura-protegida",
+      "sha256": "29d9ce68ed6e812809a44dd9e29711b6fcf6cd937a7dd0d619cee534d00d85c6",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "voar-direita",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "voar-esquerda",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "um-tiro-por-toque",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "tiro-retirado",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "pedra-criada",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "abertura-protegida",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "asteroides",
+      "id": "abertura-sem-pedras",
+      "sha256": "a6cf8732a26cb9cf6571d630a70b59f614dcbb18b4f3a0739b4b4184015fbbdc",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "voar-direita",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "voar-esquerda",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "um-tiro-por-toque",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "tiro-retirado",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "pedra-criada",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "abertura-protegida",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "limpeza-asteroides",
+      "id": "abertura-sem-pedras",
+      "sha256": "65d8001fe1ee9b31dd6b22ff6979998dea0cab404ba7eca1a6eb6d7fb2db311a",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "voar-direita",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "voar-esquerda",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "um-tiro-por-toque",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "tiro-retirado",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "pedra-criada",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "abertura-protegida",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-tiros",
+      "id": "abertura-sem-pedras",
+      "sha256": "93ae7d8a93509336056fe343545a12cf0e6035e4cfab9671bfc63428d4c6913b",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "voar-direita",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "voar-esquerda",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "um-tiro-por-toque",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "tiro-retirado",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "pedra-criada",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "abertura-protegida",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "efeitos-acerto",
+      "id": "abertura-sem-pedras",
+      "sha256": "c468899969f847e0d360ffc4122755a2e967189df0d452203b114861491df552",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "voar-direita",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "voar-esquerda",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "um-tiro-por-toque",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "tiro-retirado",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "pedra-criada",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "abertura-protegida",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "valores-iniciais",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "placar",
+      "id": "abertura-sem-pedras",
+      "sha256": "631e324036b73af1f441a5eb6989317a24c7aad0d984ef9ca89552d3ae447cb8",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "voar-direita",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "voar-esquerda",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "um-tiro-por-toque",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "tiro-retirado",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "pedra-criada",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "abertura-protegida",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "valores-iniciais",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "pontos",
+      "id": "abertura-sem-pedras",
+      "sha256": "f9955fbb9e9eaf881270e7acc31937ec6059908db0f4ddcf7ec4db895be30ab4",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "voar-direita",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "voar-esquerda",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "um-tiro-por-toque",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "tiro-retirado",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "pedra-criada",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "abertura-protegida",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "valores-iniciais",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vidas",
+      "id": "abertura-sem-pedras",
+      "sha256": "7c2f9f90dc8567b1621af69076295cfac59ebacdb1344888ed7ded4031a2a2e9",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "voar-direita",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "voar-esquerda",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "um-tiro-por-toque",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "tiro-retirado",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "pedra-criada",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "abertura-protegida",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "valores-iniciais",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "colisao-nave",
+      "id": "abertura-sem-pedras",
+      "sha256": "5b4b14d8a58380bd5d0b42b3242f9f14dc127dfe1129a11369523aedf1657a5f",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "voar-direita",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "voar-esquerda",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "um-tiro-por-toque",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "tiro-retirado",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "pedra-criada",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "abertura-protegida",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "valores-iniciais",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "dano",
+      "id": "abertura-sem-pedras",
+      "sha256": "ac4388e005b4c4c18bc0bc68427c9c2ace8cbb81fc6eb8ddad6b5fb182181530",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "voar-direita",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "voar-esquerda",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "um-tiro-por-toque",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "tiro-retirado",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "pedra-criada",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "abertura-protegida",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "valores-iniciais",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "inicio-conferido",
+      "id": "abertura-sem-pedras",
+      "sha256": "455ce07ffe589e79d91bbb43735fff846596a20e216a21ba7aea555ac1349fd8",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "voar-direita",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "voar-esquerda",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "um-tiro-por-toque",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "tiro-retirado",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "pedra-criada",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "abertura-protegida",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "valores-iniciais",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "aparencias",
+      "id": "abertura-sem-pedras",
+      "sha256": "4de6a16567848edeab75068bd1b57c1d5f05b9a5a19445cb94644af1261eb7ce",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "voar-direita",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "voar-esquerda",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "um-tiro-por-toque",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "tiro-retirado",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "pedra-criada",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "abertura-protegida",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "valores-iniciais",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "meta",
+      "id": "abertura-sem-pedras",
+      "sha256": "96cde3303e6685e2c3fc8f44b69853b7bea96bd6cfa541b58202b0636b24f077",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "voar-direita",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "voar-esquerda",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "um-tiro-por-toque",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "tiro-retirado",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "pedra-criada",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "abertura-protegida",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "valores-iniciais",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "vitoria",
+      "id": "abertura-sem-pedras",
+      "sha256": "7f85a09d4c389933e5c074b7c60bd6e25d534508b7a5bf01d5be6fd45f49bae5",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "voar-direita",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "voar-esquerda",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "um-tiro-por-toque",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "tiro-retirado",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "pedra-criada",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "abertura-protegida",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "valores-iniciais",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "derrota",
+      "id": "abertura-sem-pedras",
+      "sha256": "d4f9cc16521c96d4b591a90fe45141aeab93a19881e8bc4dc9c0a36ea80bfe46",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "voar-direita",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "voar-direita",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 744]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "voar-esquerda",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "voar-esquerda",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "um-tiro-por-toque",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "um-tiro-por-toque",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "tiro-retirado",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "tiro-retirado",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 1]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "pedra-criada",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "pedra-criada",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 1]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "abertura-protegida",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "abertura-protegida",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 372]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 0]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "valores-iniciais",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "valores-iniciais",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "checkpoints": [
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 3]
+              }
+            }
+          },
+          {
+            "initial": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            },
+            "final": {
+              "found": true,
+              "value": {
+                "format": "sz-observed-v1",
+                "value": [0, 20]
+              }
+            }
+          }
+        ],
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    },
+    {
+      "stage": "final",
+      "id": "abertura-sem-pedras",
+      "sha256": "79f7d9a514250c633ae2831f041c9922232d0a71b3b4e3c76a78c483413c14c2",
+      "observation": {
+        "id": "abertura-sem-pedras",
+        "type": "behavior",
+        "initial": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "final": {
+          "found": true,
+          "value": {
+            "format": "sz-observed-v1",
+            "value": [0, 0]
+          }
+        },
+        "errors": []
+      },
+      "verdict": {
+        "passed": true
+      }
+    }
+  ]
+}

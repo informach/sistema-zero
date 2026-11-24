@@ -1,181 +1,101 @@
-[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo no botão.
+[engaging, energetic, conversational voice] Seu laser precisa seguir para cima. Num elevador, subir e descer são sentidos diferentes, mesmo quando o tamanho de cada passo é parecido.
 
-[engaging, energetic, conversational voice] No seu jogo, você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.
+[engaging, energetic, conversational voice] Na tela 2D, o y cresce de cima para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção.
 
-[curious] E se o tiro sair sempre, em todo quadro?
-
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar em que momento o tiro sai em cada um dos três jeitos. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não espera essa tecla.
-
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a tecla tocada, saía um tiro na hora. Agora a gente vai fazer o seu jogo esperar a barra de espaço!
-
-[engaging, energetic, conversational voice] Tocar numa tecla é um evento, que é algo que acontece no jogo. O que fica dentro de um evento só funciona na hora em que ele acontece.
-
-[engaging, energetic, conversational voice] Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem.
-
-[engaging, energetic, conversational voice] Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um.
-
-[confident, clear, unhurried voice] Agora abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
-
-[engaging, energetic, conversational voice] É esta área que espera as coisas acontecerem, como uma tecla tocada.
-
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe.
-
-[confident, clear, unhurried voice] No menu da tecla, escolha barra de espaço.
-
-[engaging, energetic, conversational voice] É este bloco que espera a barra de espaço: o que ficar dentro dele acontece na hora em que alguém toca nessa tecla.
-
-[engaging, energetic, conversational voice] Por enquanto, a tecla vai fazer só o som do tiro.
-
-[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de Quando apertar a tecla.
-
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro de Quando apertar a tecla.
-
-[confident, clear, unhurried voice] No menu, escolha tiro grande.
-
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço. Escute: o som do tiro toca na hora em que você toca na tecla!
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Quando acontecer está Quando apertar a tecla barra de espaço, e dentro dele está Tocar efeito tiro grande. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[engaging, energetic, conversational voice] O tiro que sai da nave vem daqui a três partes, depois de mais duas experiências.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho ou responder na hora em que alguém pergunta.
-
-[engaging, energetic, conversational voice] O tiro do seu jogo precisa de um número que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.
-
-[curious] E se a nave mudar de lugar, o tiro vai junto?
+[curious] Um número negativo deixa o laser mais fraco?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar onde o tiro nasce quando a nave muda de lugar, com o número escrito e com o número lido da nave. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.
+[engaging, energetic, conversational voice] Comece o jogo e dispare. O laser aparece, mas continua parado. A experiência da parte anterior mostrou o sinal que faz o y diminuir. Agora dê essa velocidade aos lasers e faça o grupo se mover em cada quadro.
 
-[engaging, energetic, conversational voice] No seu jogo, a velocidade do tiro é assim: ela diz quanto o tiro anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.
+[confident, clear, unhurried voice] Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[curious] E com um número negativo, o tiro vai para onde?
+[short pause]
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[confident, clear, unhurried voice] No bloco que cria o laser, encontre o último número, logo depois de vy. Troque esse zero por menos 7. Deixe vx em zero, porque o laser não deve andar para os lados.
 
-[upbeat, encouraging voice] Agora você vai investigar para que lado o tiro anda, e o que acontece com o y, com um número positivo e com um número negativo. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[short pause]
 
-[long pause]
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] Lembra das duas experiências antes desta parte? Com o número lido da nave, o tiro nascia onde ela estava, e com a velocidade negativa ele subia. Agora a gente vai criar o tiro do seu jogo!
+[short pause]
 
-[engaging, energetic, conversational voice] Como vão ser muitos tiros, eles ficam juntos num grupo, que é a lista de tiros que o jogo guarda e move de uma vez. O grupo é criado uma vez só, quando o jogo começa. Por isso, ele vai no fim de Ao iniciar.
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre Se jogando e deixe o encaixe depois do limite da nave à vista.
 
-[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar nave.
+[short pause]
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte logo abaixo de Criar nave.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Movimento. Pegue Mover os sprites do grupo usando suas velocidades e encaixe nesse lugar.
 
-[confident, clear, unhurried voice] Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Clique em asteroides, troque por tiros e clique fora do campo.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que cria a lista dos tiros, ainda vazia.
+[confident, clear, unhurried voice] O grupo chega como asteroides. Clique nesse nome e escolha tiros.
 
-[engaging, energetic, conversational voice] O tiro nasce na hora em que alguém toca na barra de espaço. Por isso, ele vai dentro do evento da tecla, logo acima de Tocar efeito.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o bloco Quando apertar a tecla barra de espaço, em Quando acontecer.
+[upbeat, encouraging voice] Comece o jogo e toque em Espaço. O laser deve subir. Segure Espaço por um instante: esse toque cria um laser, sem uma rajada automática. Solte e toque novamente para criar outro.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar tiro no grupo. Arraste e solte no começo de Quando apertar a tecla, logo acima de Tocar efeito, quando aparecer o encaixe.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o laser tem vx zero e vy menos 7, o movimento do grupo usa tiros e fica dentro de Se jogando. Depois de corrigir, teste de novo.
 
-[engaging, energetic, conversational voice] É este bloco que cria um tiro novo no grupo, cada vez que a tecla é tocada.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[confident, clear, unhurried voice] Repare: o grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro. Deixe os dois assim e, se quiser, escolha uma cor que apareça bem no fundo escuro.
-
-[engaging, energetic, conversational voice] Agora o lugar onde o tiro nasce. Na experiência, o número escrito deixava o tiro sempre no mesmo lugar, e o número lido da nave fazia o tiro nascer onde ela estava. Por isso, o x e o y do tiro vão ler o lugar da nave.
-
-[confident, clear, unhurried voice] Deixe à vista o 100 do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima do 100. Ele toma o lugar do número.
-
-[engaging, energetic, conversational voice] Nesse bloco, escolha nave. É este bloco que lê, na hora do tiro, o meio da nave, de um lado ao outro.
-
-[curious] E a altura de onde sai o tiro?
-
-[engaging, energetic, conversational voice] O y também vai ler a nave. Deixe à vista o 100 do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima do 100 e escolha nave também.
-
-[engaging, energetic, conversational voice] É este bloco que lê a altura da nave na hora do tiro.
-
-[engaging, energetic, conversational voice] Falta a direção. O vx é a velocidade para os lados, e o vy, a velocidade para baixo, como na experiência.
-
-[engaging, energetic, conversational voice] O vx já vem em 0: deixe assim, para o tiro não ir para os lados.
-
-[confident, clear, unhurried voice] Agora clique no -4 do vy, troque por -9, com o sinal de menos, e clique fora do campo. Com o número negativo, o tiro sobe.
-
-[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.
-
-[engaging, energetic, conversational voice] O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e toque na barra de espaço. Tá vendo? O som toca, mas nenhum tiro aparece, porque o jogo ainda não move nem desenha o grupo tiros. Agora a gente vai fazer esses tiros aparecerem e subirem!
+[engaging, energetic, conversational voice] Os lasers já atravessam a tela. Lembra da experiência Objetos que entram e saem? Sumir da janela não retirava um objeto do grupo. Agora acrescente a retirada de quem terminou o caminho.
 
-[engaging, energetic, conversational voice] Os tiros andam e aparecem em todo quadro. Por isso, os dois blocos que cuidam deles, Mover os sprites do grupo e Desenhar o grupo, vão no fim de A cada quadro do jogo, depois do desenho da nave.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
+[short pause]
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave.
+[confident, clear, unhurried voice] Dentro de Se jogando, deixe à vista o encaixe depois de Mover os sprites do grupo tiros.
 
-[engaging, energetic, conversational voice] Nesse bloco, escolha tiros.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que faz cada tiro andar, em todo quadro, com a velocidade que ele recebeu ao nascer.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar do grupo quem sair da tela e encaixe nesse lugar.
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.
+[short pause]
 
-[engaging, energetic, conversational voice] Escolha tiros nesse bloco também.
+[confident, clear, unhurried voice] Troque o grupo asteroides por tiros. No nome depois de chamado, escreva foraDaTela.
 
-[engaging, energetic, conversational voice] É este bloco que desenha todos os tiros do grupo na tela.
+[short pause]
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço. [interested, animated voice] Olha só: o tiro sai da nave e sobe!
+[confident, clear, unhurried voice] Deixe o fazer desse bloco vazio. Retirar já é a ação do bloco; não há outra resposta para executar quando um laser sai.
 
-[engaging, energetic, conversational voice] Agora mova a nave para outro lugar e atire de novo. [confident, clear, unhurried voice] Repare: o tiro nasce na nave outra vez, porque o jogo lê o lugar dela a cada disparo.
+[short pause]
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[upbeat, encouraging voice] Comece o jogo, dispare alguns lasers e espere eles atravessarem a tela. O voo continua igual. A retirada do grupo acontece nos bastidores e será conferida em Verificar projeto.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a retirada usa o grupo tiros, está depois de mover esse grupo e tem o fazer vazio. Depois de corrigir, teste de novo.
 
-[long pause]
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
-
-[engaging, energetic, conversational voice] No seu jogo, os tiros ficam num grupo, que é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.
-
-[curious] E quando o tiro some da tela, ele sai do grupo também?
-
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar o grupo de tiros quando o jogo tira do grupo quem sai da tela e quando não tira. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O tiro sumia da tela, mas continuava no grupo, e o grupo só crescia. No seu jogo isso não aparece na tela, mas está acontecendo. Agora a gente vai fazer o seu jogo tirar esses tiros do grupo!
+[engaging, energetic, conversational voice] Seu disparo já tem momento, origem e caminho. Faça uma sequência curta para conferir essas três coisas juntas.
 
-[engaging, energetic, conversational voice] A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, ela vai entre Mover os sprites do grupo tiros e Desenhar o grupo tiros.
+[confident, clear, unhurried voice] Clique em Rodar de novo para começar o teste na abertura.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço entre esses dois blocos, dentro de A cada quadro do jogo.
+[short pause]
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte logo abaixo de Mover os sprites do grupo tiros, quando aparecer o encaixe.
+[upbeat, encouraging voice] Antes de Enter, toque em Espaço. Nenhum laser deve nascer. Pressione Enter e dispare uma vez no centro.
 
-[curious] Qual grupo eu escolho aqui?
+[upbeat, encouraging voice] Mova para a esquerda e dispare. Depois vá para a direita e dispare novamente. Os novos lasers devem sair da nave e subir.
 
-[engaging, energetic, conversational voice] O grupo de quem sai da tela: os tiros. No grupo, escolha tiros. [confident, clear, unhurried voice] Repare que o bloco também tem a palavra chamado, seguida de sprite: deixe assim. E deixe vazio o encaixe de fazer, na linha de baixo do bloco.
+[upbeat, encouraging voice] Espere os lasers saírem da tela e confira o bloco que os retira do grupo. A verificação também vai acompanhar essa retirada.
 
-[engaging, energetic, conversational voice] É este bloco que tira do grupo cada tiro que passa da borda da tela.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Espaço tem a guarda jogando, a origem lê a nave, vy é negativo, o grupo é movido, desenhado e tem retirada fora da tela. Depois de corrigir, teste de novo.
 
-[confident, clear, unhurried voice] Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo, atire algumas vezes, mude a nave de lugar e atire de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[pleased, lively voice] Você programou lasers que saem da sua nave, voam e deixam a partida ao terminar o caminho!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

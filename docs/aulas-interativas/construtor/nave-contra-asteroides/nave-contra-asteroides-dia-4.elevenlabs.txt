@@ -1,119 +1,167 @@
-[curious] Sabe quando você ganha três fichas na entrada do parque, e cada brinquedo gasta uma?
+[engaging, energetic, conversational voice] Agora a nave vai ganhar três vidas. Pense em três fichas que você recebe antes de começar uma brincadeira. Quando perde uma ficha, ela fica gasta até a próxima rodada.
 
-[engaging, energetic, conversational voice] No seu jogo, a nave vai ter três vidas, e cada pedra que bater vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.
+[engaging, energetic, conversational voice] No jogo, você também precisa escolher a hora de preparar essas chances. Pode ser uma vez, quando a rodada começa, ou uma preparação que se repete enquanto ela acontece. Observe como cada jeito se relaciona com as batidas.
 
-[curious] E se a nave ganhar as três vidas sempre, em todo quadro?
-
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
-
-[upbeat, encouraging voice] Agora você vai investigar quantas vidas a nave tem depois das batidas quando ela ganha as três vidas uma vez só e quando ganha o tempo todo. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Olhe a tela do seu jogo. Tá vendo? Não tem nenhum coração, porque a nave ainda não tem vidas.
-
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Ganhando as vidas uma vez, no começo, cada batida tirava uma. Agora a gente vai dar três vidas à nave do seu jogo!
-
-[engaging, energetic, conversational voice] As vidas são dadas uma vez, quando o jogo começa. Por isso, elas vão no fim de Ao iniciar.
-
-[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos.
-
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte logo abaixo de Criar variável pontos.
-
-[engaging, energetic, conversational voice] Escolha nave. O número já vem em 3: deixe assim, porque a nave começa com três vidas.
-
-[engaging, energetic, conversational voice] É este bloco que dá as três vidas à nave, uma vez, no começo.
-
-[curious] E como eu vejo quantas vidas eu tenho?
-
-[engaging, energetic, conversational voice] Com os corações na tela. Agora os corações. Eles mostram as vidas e precisam ser desenhados em todo quadro, no fim de A cada quadro do jogo, logo depois do placar.
-
-[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Mostrar placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.
-
-[engaging, energetic, conversational voice] Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: deixe assim. Depois, escolha vermelho.
-
-[engaging, energetic, conversational voice] É este bloco que desenha um coração para cada vida da nave.
-
-[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: aparecem três corações na tela, logo abaixo do placar!
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Aqui no seu jogo, deixe uma pedra bater na nave. Tá vendo? A pedra passa pela nave, porque o jogo ainda não confere essa trombada.
-
-[engaging, energetic, conversational voice] Lembra da experiência da trombada? Saíam só o tiro e a pedra que se encostaram. Agora a gente vai tirar do seu jogo só a pedra que bate na nave!
-
-[engaging, energetic, conversational voice] O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, a colisão vai entre o placar e os corações.
-
-[confident, clear, unhurried voice] Deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo.
-
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte logo abaixo de Mostrar placar.
-
-[engaging, energetic, conversational voice] É este bloco que confere, em todo quadro, se alguma pedra encostou na nave.
-
-[curious] Qual pedra o jogo vai tirar?
-
-[engaging, energetic, conversational voice] Só a que bateu. [confident, clear, unhurried voice] Repare no apelido dela. [confident, clear, unhurried voice] Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. [confident, clear, unhurried voice] Confira se ficou asteroides, nave e inimigo.
-
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro dessa colisão. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço.
-
-[engaging, energetic, conversational voice] Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave.
-
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.
-
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e deixe uma pedra bater na nave. [interested, animated voice] Olha só: a pedra explode e sai! Mas os corações continuam três, porque a batida ainda não tira vida. Isso vem depois da próxima experiência.
-
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo, e dentro dela vêm Tirar o sprite inimigo do grupo asteroides e Soltar explosão no sprite inimigo, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Sabe quando você brinca de pega-pega e, depois de ser pego, tem um tempinho para se afastar antes de poderem pegar você de novo? É um respiro.
-
-[engaging, energetic, conversational voice] No seu jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.
-
-[curious] E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?
+[curious] O que muda quando eu preparo as vidas enquanto a partida já está acontecendo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora você vai investigar quantas vidas sobram depois de três pedras sem proteção, com uma proteção curta e com uma proteção longa. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, deixe uma pedra bater na nave. Tá vendo? A pedra explode, mas os corações continuam três, porque a batida ainda não tira vida.
+[engaging, energetic, conversational voice] Prepare as vidas junto com o começo da partida. Depois, acrescente os corações ao desenho do jogo.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Depois de bater, a nave ficava um tempinho protegida. Agora a gente vai pôr a vida e a proteção no seu jogo!
+[confident, clear, unhurried voice] Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] A vida sai na hora da batida, depois da explosão. Por isso, o bloco vai dentro da colisão da nave, logo abaixo de Soltar explosão no sprite.
+[short pause]
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo da explosão, dentro da colisão da nave. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe.
+[confident, clear, unhurried voice] Deixe à vista o encaixe depois de Criar variável pontos e antes de Mudar o estado do jogo para inicio.
 
-[engaging, energetic, conversational voice] Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: deixe assim, porque cada batida tira uma vida e depois dá esse respiro.
+[short pause]
 
-[engaging, energetic, conversational voice] É este bloco que tira uma vida da nave e liga o tempinho de proteção.
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Vida e placar e depois Vida.
 
-[curious] E a tela pode tremer na batida?
+[short pause]
 
-[engaging, energetic, conversational voice] Pode, e é o próximo bloco. Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: deixe assim.
+[confident, clear, unhurried voice] Pegue Dar ao sprite jogador 3 de vida e solte depois da criação de pontos. Troque jogador por nave e conserve 3 de vida.
 
-[engaging, energetic, conversational voice] É este bloco que faz a tela tremer, para quem joga sentir a batida.
+[short pause]
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e deixe uma pedra bater na nave. [interested, animated voice] Olha só: a tela treme e um coração apaga!
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] Espere a proteção acabar e deixe outra pedra bater: outro coração apaga. Por enquanto, ficar sem vidas ainda não encerra a partida. O fim da partida vem mais adiante.
+[short pause]
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro da colisão da nave vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre o placar Acertos. Deixe à vista o encaixe depois dele e antes da legenda dos controles.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+[short pause]
+
+[confident, clear, unhurried voice] Na mesma categoria Vida, pegue Desenhar as vidas do sprite e solte nesse encaixe.
+
+[short pause]
+
+[confident, clear, unhurried voice] Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x,22; e no y,52.
+
+[short pause]
+
+[confident, clear, unhurried voice] Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK.
+
+[short pause]
+
+[upbeat, encouraging voice] Clique no jogo e pressione Enter. Confira os três corações. Por enquanto, os asteroides ainda atravessam a nave sem tirar vida: você preparou as chances, e a batida vem na próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Dar ao sprite nave 3 de vida está em Ao iniciar, e Desenhar as vidas da nave está no desenho de cada quadro. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[upbeat, encouraging voice] Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.
+[engaging, energetic, conversational voice] O encontro entre o tiro e o asteroide já está funcionando. Agora você vai conferir outro encontro: uma pedra do grupo asteroides encostando na nave.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[short pause]
+
+[confident, clear, unhurried voice] Dentro de A cada quadro do jogo, encontre o então de Se jogando. Deixe à vista o encaixe depois do bloco inteiro que confere tiros com asteroides.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue Para cada sprite do grupo que colidir com o sprite e solte nesse encaixe.
+
+[short pause]
+
+[confident, clear, unhurried voice] Conserve grupo asteroides e sprite nave. Em chamar o sprite de, troque inimigo por atingiuNave, tudo junto, com N maiúsculo.
+
+[short pause]
+
+[confident, clear, unhurried voice] Deixe o fazer dessa nova colisão à vista. Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar o sprite do grupo e solte dentro desse fazer.
+
+[short pause]
+
+[confident, clear, unhurried voice] No nome do sprite, troque asteroide por atingiuNave. O grupo continua asteroides. Esse nome indica só a pedra dessa batida.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Desenho e efeitos e depois Partículas. Pegue Soltar explosão no sprite e solte depois da retirada, dentro da mesma colisão. Escolha atingiuNave no nome do sprite.
+
+[short pause]
+
+[confident, clear, unhurried voice] Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Som e depois Efeitos prontos. Pegue Tocar efeito e solte depois da explosão, dentro dessa colisão. Escolha o efeito batida.
+
+[short pause]
+
+[upbeat, encouraging voice] Comece a partida e deixe uma pedra encostar na nave. Só essa pedra desaparece, com explosão e som. Os três corações continuam iguais, porque o dano será sua próxima construção.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a nova colisão confere asteroides com nave, chama a pedra de atingiuNave e usa esse nome na retirada e na explosão. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Uma batida pode acontecer muito perto da próxima. Pense num pega-pega em que, depois de ser pego, você ganha um pequeno tempo para se afastar antes de poder ser pego de novo.
+
+[engaging, energetic, conversational voice] A nave também pode ganhar esse respiro. Durante a proteção, outro contato não tira uma nova vida. Quando esse tempo acaba, ela pode perder outra vida numa nova batida.
+
+[curious] Como eu consigo perceber quando esse respiro começou e terminou?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] A batida já encontra e retira a pedra certa. Agora coloque a perda de uma vida dentro desse mesmo encontro.
+
+[confident, clear, unhurried voice] Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[short pause]
+
+[confident, clear, unhurried voice] Encontre Para cada sprite do grupo asteroides que colidir com o sprite nave. Dentro dele, deixe à vista o encaixe depois da explosão e antes do som de batida.
+
+[short pause]
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Vida e placar e depois Vida. Pegue Machucar o sprite e deixá-lo invencível e solte nesse encaixe.
+
+[short pause]
+
+[confident, clear, unhurried voice] Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros.
+
+[short pause]
+
+[upbeat, encouraging voice] Clique no jogo, comece a partida e deixe uma pedra bater na nave. Um coração deve desaparecer. Afaste-se e espere um pouco; numa batida depois da proteção, outra vida pode ser perdida. Ao chegar a zero, o jogo ainda continua: a regra de terminar virá na última aula.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Machucar o sprite nave fica dentro da colisão da nave, com dano 1 e proteção de 60 quadros; as três vidas continuam preparadas somente em Ao iniciar. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Sua nave ganhou três chances e um respiro entre os danos. Confira o conjunto antes de enviar.
+
+[confident, clear, unhurried voice] Clique em Rodar de novo para conferir a preparação desde o começo.
+
+[short pause]
+
+[upbeat, encouraging voice] Pressione Enter. Confira três corações, deixe uma pedra bater e observe a vida perdida. Desvie de outra pedra: uma pedra que passa sem encostar não tira vida.
+
+[upbeat, encouraging voice] Espere a proteção acabar e teste outra batida. Confira também um acerto de laser: ele deve continuar somando ponto, sem tirar vida da nave.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: as vidas começam em 3, a pedra atingiuNave é retirada na batida e o dano de 1 tem proteção de 60 quadros. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você deu chances à nave e cuidou do ritmo das batidas!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

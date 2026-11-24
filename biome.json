@@ -112,6 +112,14 @@
       }
     },
     {
+      "includes": [
+        "docs/aulas-interativas/construtor/nave-contra-asteroides/**/*.szproject.json",
+        "docs/aulas-interativas/construtor/patrulha-espacial/**/*.szproject.json",
+        "docs/aulas-interativas/construtor/prototipos-base/**/*.szproject.json"
+      ],
+      "formatter": { "enabled": false }
+    },
+    {
       "includes": ["docs/design/ilha-do-farol-molda/projetos/*.molda.json"],
       "formatter": { "enabled": false }
     },

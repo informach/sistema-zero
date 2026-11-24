@@ -1,0 +1,20 @@
+{
+  "course": "nave-contra-asteroides",
+  "resource": "construtor-nave",
+  "dimension": "2d",
+  "title": "Nave Contra Asteroides",
+  "cover": "capa-construtor-nave.jpg",
+  "line1": "Nave contra",
+  "line2": "Asteroides",
+  "phrase": "Todos os passos para construir as regras da sua nave.",
+  "promise": "Do primeiro tiro à partida completa",
+  "ui": {
+    "drawingTitle": "Confira os encaixes desta parte",
+    "testsTitle": "Teste e observe",
+    "continuation": "continuação",
+    "earlierBlocks": "Blocos anteriores",
+    "drawingContinuation": "Confira os encaixes",
+    "galleryTitle": "Escolha a aparência",
+    "pageLabel": "Passo a passo do projeto"
+  }
+}

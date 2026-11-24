@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-seu-passo-a-passo",
+    "video-tres-direcoes",
+    "video-um-aperto-um-laser",
+    "video-laser-segue-a-nave",
+    "video-laser-em-profundidade",
+    "video-fim-do-caminho-do-laser"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "uma rota em duas dimensões. Agora você vai construir a Patrulha Espacial, com uma rota que vem lá do fundo até a nave.",
+      "ancoraDepois": "Continua! Cada asteroide acertado vale um ponto. Você tem três vidas, e uma pedra que passa sem bater na nave não tira",
+      "falaPrincipal": "A missão continua sendo acertar vinte asteroides?",
+      "falaPersonagem": "A missão continua sendo acertar vinte asteroides?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-tres-direcoes-K1",
+      "clipe": "video-tres-direcoes",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "um instante e investigar uma coisa de cada vez: qual número muda o lado, qual muda a altura e qual muda a profundidade?",
+      "ancoraDepois": "Depende de onde o tiro e o asteroide estiverem. Na nossa patrulha, eles vão viajar na mesma altura. Primeiro, vamos",
+      "falaPrincipal": "Se eu mudar a altura da nave, o tiro ainda vai encontrar o asteroide?",
+      "falaPersonagem": "Se eu mudar a altura da nave, o tiro ainda vai encontrar o asteroide?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-laser-segue-a-nave-K1",
+      "clipe": "video-laser-segue-a-nave",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "no centro, mesmo quando a nave está ao lado. Vamos usar a posição da nave para escolher o lugar de cada novo laser.",
+      "ancoraDepois": "Ele pega o lugar da nave no momento do disparo. Depois, segue o próprio caminho. É como soltar uma bolinha: ela sai de",
+      "falaPrincipal": "Ele precisa acompanhar a nave mesmo depois de sair?",
+      "falaPersonagem": "Ele precisa acompanhar a nave mesmo depois de sair?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

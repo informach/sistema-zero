@@ -13,6 +13,7 @@ export const CURSOS_DIRETRIZES_ATUAIS = new Set([
   'jornada-faisca-extra-2',
   'desafio-primeiro-jogo',
   'nave-contra-asteroides',
+  'jornada-construtor-base-3d',
   'corre-dino',
   'o-jogo-do-meu-jeito',
 ])

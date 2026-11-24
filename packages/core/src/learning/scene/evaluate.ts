@@ -38,9 +38,17 @@ export function sceneGoals(
     .goals.filter((g) => (targets?.length ? targets.includes(g.id) : !g.soNoCaso))
     .map((g) => {
       const pedido = goalCopy?.[g.id]?.pedido || pedidoDaMeta(scene, g.id, pilha) || g.pedido
+      const goalLabel =
+        scene === 'score-goal'
+          ? g.id === 'igual-conta'
+            ? `Com maior ou igual, chegar a ${state.scoreGoal.goal} já deu a vitória`
+            : g.id === 'maior-pula'
+              ? `Com maior que, o ${state.scoreGoal.goal} não deu a vitória; só o ${state.scoreGoal.goal + 1}`
+              : g.label
+          : g.label
       return {
         id: g.id,
-        label: castText(goalCopy?.[g.id]?.label || g.label, cast),
+        label: castText(goalCopy?.[g.id]?.label || goalLabel, cast),
         ...(pedido ? { pedido: castText(pedido, cast) } : {}),
         complete: state.evidence.discoveries.includes(g.id),
       }

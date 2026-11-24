@@ -7,7 +7,7 @@ import {
   manifestoParaDestino,
 } from './destinos-publicacao'
 
-test('os destinos reconhecem as cinco ofertas, sem confundir slugs semelhantes', () => {
+test('os destinos reconhecem as ofertas editoriais, sem confundir slugs semelhantes', () => {
   for (const curso of COMMON_COURSE_SLUGS) {
     expect(cursoEditorialComum(curso)).toBe(curso)
     expect(cursoEditorialComum(`${curso}-adulto`)).toBe(curso)
@@ -17,7 +17,7 @@ test('os destinos reconhecem as cinco ofertas, sem confundir slugs semelhantes',
 
 test('todas as aulas projetam somente o vínculo do curso, sem mutar a fonte ou seus projetos', () => {
   const arquivos = listarArquivosAulas().filter((n) => n.endsWith('.manifesto.json'))
-  expect(arquivos).toHaveLength(51)
+  expect(arquivos).toHaveLength(56)
   for (const nome of arquivos) {
     const origem = JSON.parse(readFileSync(caminhoAula(nome), 'utf8'))
     // Os moldes plannedVideo são válidos no formato editorial, conferido pelo validador da autoria.

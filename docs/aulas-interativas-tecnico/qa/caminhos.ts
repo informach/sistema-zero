@@ -13,6 +13,7 @@ export const CURSOS_POR_PREFIXO = {
   simbolos: 'faisca/poder-o-bau-dos-simbolos',
   'meu-desenho': 'faisca/meu-primeiro-desenho-no-pinta',
   'nave-contra-asteroides': 'construtor/nave-contra-asteroides',
+  'patrulha-espacial': 'construtor/patrulha-espacial',
   'corre-dino': 'inventor/corre-dino',
   'meu-jeito': 'construtor/o-jogo-do-meu-jeito',
 } as const

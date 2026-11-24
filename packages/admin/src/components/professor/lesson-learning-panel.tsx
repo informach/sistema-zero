@@ -129,7 +129,7 @@ function answerLines(
   const previsao = [...predictionLines(answers, content), ...conclusaoLines(answers, content)]
 
   if (activity?.type === 'experimentation') {
-    const session = readExperimentSession(activity.scene, answers.sceneCheckpoint)
+    const session = readExperimentSession(activity.scene, answers.sceneCheckpoint, activity.setup)
     if (!session)
       return [
         ...previsao,

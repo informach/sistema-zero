@@ -9,9 +9,10 @@
   },
   "clipes": [
     "video-intervalo-das-pedras",
-    "video-grupo-e-relogio",
+    "video-relogio",
     "video-posicao-sorteada",
     "video-asteroide",
+    "video-retirada",
     "video-entrega"
   ],
   "intervencoes": [
@@ -20,21 +21,10 @@
       "clipe": "video-intervalo-das-pedras",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na chuva de pedras quando",
-      "falaPrincipal": "E se nascer uma pedra em todo quadro?",
-      "falaPersonagem": "E se nascer uma pedra em todo quadro?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-grupo-e-relogio-K1",
-      "clipe": "video-grupo-e-relogio",
-      "personagem": "Dedé",
-      "ocorrencia": 1,
-      "ancoraAntes": "vem asteroides, que é o nome certo para este grupo. Deixe assim. É este bloco que cria a lista das pedras, ainda vazia.",
-      "ancoraDepois": "De 40 em 40 quadros, como na experiência. A pedra não nasce em todo quadro, e sim de tempos em tempos. Por isso, ela",
-      "falaPrincipal": "E quando vai nascer cada pedra?",
-      "falaPersonagem": "E quando vai nascer cada pedra?",
+      "ancoraAntes": "asteroides. Ele indica quanto tempo esperar antes de criar outro, enquanto os que já nasceram continuam seu caminho.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "falaPrincipal": "E se nascer um asteroide em todo quadro?",
+      "falaPersonagem": "E se nascer um asteroide em todo quadro?",
       "tags": ["[curious]"]
     },
     {
@@ -42,21 +32,10 @@
       "clipe": "video-posicao-sorteada",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde cada pedra nova nasce quando o",
-      "falaPrincipal": "E a pedra aparece de repente, no meio da tela?",
-      "falaPersonagem": "E a pedra aparece de repente, no meio da tela?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-asteroide-K1",
-      "clipe": "video-asteroide",
-      "personagem": "Dedé",
-      "ocorrencia": 1,
-      "ancoraAntes": "velocidades e solte nesse lugar. Repare: o grupo já vem asteroides, e nos dois próximos blocos também. Deixe assim.",
-      "ancoraDepois": "Do mesmo jeito que os tiros. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois",
-      "falaPrincipal": "E como tira as pedras que saem da tela?",
-      "falaPersonagem": "E como tira as pedras que saem da tela?",
+      "ancoraAntes": "da parte visível e entrar caindo. Isso deixa a chegada acontecer pela beirada, em vez de aparecer no meio do caminho.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "falaPrincipal": "O sorteio precisa dar um lugar diferente todas as vezes?",
+      "falaPersonagem": "O sorteio precisa dar um lugar diferente todas as vezes?",
       "tags": ["[curious]"]
     }
   ]

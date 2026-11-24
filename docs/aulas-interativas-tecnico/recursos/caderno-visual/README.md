@@ -123,6 +123,8 @@ Os rótulos dos blocos são os do Estúdio, palavra por palavra. Se o Estúdio m
 
 ## Cursos que ainda estão no visual antigo
 
-Os geradores de `corre-dino`, `meu-jeito` e `nave-contra-asteroides` ainda usam o CSS do antigo `cade-todo-mundo/caderno-do-aluno.template.html`.
+Os geradores de `corre-dino` e `meu-jeito` ainda usam o CSS do antigo `cade-todo-mundo/caderno-do-aluno.template.html`.
 
 Em 23/11/2026, os outros cursos do Faísca passaram para esta receita: `moedas-no-caminho`, `o-segredo-da-cabana`, `a-ponte-apressada` e `o-bau-dos-simbolos` (os Poderes, com a Aula 1 em 2D e a Aula 2 em 3D), `jardim-secreto` (a missão) e `meu-primeiro-desenho` (o extra do Pinta, com prints da aula real). As capas dos Poderes e do Jardim são cenas do jogo 3D renderizadas no Blender com as peças publicadas (`docs/design/<curso>-capa/capa.py`, no molde da Ilha); a do Pinta é 2D, sobre a arte da Chave do Farol. Esses cursos vêm depois da trilha: não têm as páginas "Conheça a plataforma". Todos entram no `gerar-materiais.py` e na régua do `guia-da-plataforma.test.ts`. Esse template só continua no repositório por causa deles. Ao refazer um desses cursos, passe-o para esta receita. Quando o último sair, apague o template.
+
+Em 24/11/2026, a reautoria do Construtor também passou para esta receita: [Nave Contra Asteroides](../construtor-nave/) e [Patrulha Espacial](../construtor-patrulha/), pelo [pipeline comum](../construtor-base/README.md). O caminho antigo do gerador da Nave encaminha ao novo. As capas recompõem as artes dos projetos aprovados; no 3D, a projeção usa somente os GLBs provisórios da galeria, aguardando as artes do Blender. Os esquemas são derivados dos snapshots progressivos e das definições oficiais. O JSON contém o texto das partes e o mapa de paginação conserva os blocos inteiros nas continuações. A impressão pode usar WeasyPrint 70, com verificação de limites, fontes, cores e revisão visual de todas as páginas.

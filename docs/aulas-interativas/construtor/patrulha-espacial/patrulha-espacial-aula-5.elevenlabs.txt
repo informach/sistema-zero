@@ -1,0 +1,157 @@
+[engaging, energetic, conversational voice] A nave já perde vida nas batidas. Mas, quando os corações acabam, a versão anterior ainda continua rodando. Vamos usar a vida zero para encerrar a partida e chamar a tela de derrota.
+
+[confident, clear, unhurried voice] Encontre Enquanto estiver rodando e A cada quadro da cena. Deixe visível o começo do fazer, onde está o Se de jogando que movimenta a nave e os grupos.
+
+[engaging, energetic, conversational voice] A nova conferência vai entrar antes desse Se. Assim, se a partida acabou, o jogo decide o resultado antes de continuar o movimento.
+
+[confident, clear, unhurried voice] Dentro de A cada quadro da cena, no começo do fazer, deixe à vista o espaço ao lado de fazer.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
+
+[confident, clear, unhurried voice] Pegue o bloco Se e solte nesse espaço ao lado de fazer.
+
+[engaging, energetic, conversational voice] A pergunta que veio no bloco é x maior que zero. Vamos conferir o momento da partida.
+
+[confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
+
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+
+[confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
+
+[confident, clear, unhurried voice] Abra Programação, depois Valores, e pegue o bloco texto.
+
+[confident, clear, unhurried voice] Solte o bloco texto em cima desse zero.
+
+[confident, clear, unhurried voice] Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.
+
+[engaging, energetic, conversational voice] Agora o Se pergunta se estado é igual a jogando. As ações vão no então dessa pergunta.
+
+[confident, clear, unhurried voice] Confira que o Se anterior desceu e continua logo abaixo do novo, fora do então dele. Deixe visível o então vazio do Se novo.
+
+[confident, clear, unhurried voice] Abra Programação e Lógica e Se. Encaixe outro Se dentro desse então.
+
+[confident, clear, unhurried voice] Na pergunta x maior que zero do Se de dentro, deixe o x à vista. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue a vida de e solte em cima desse x.
+
+[confident, clear, unhurried voice] No nome do objeto, escolha nave. Troque o sinal de maior pelo sinal de menor ou igual. Conserve o zero à direita.
+
+[engaging, energetic, conversational voice] A pergunta agora é: a vida da nave é menor ou igual a zero? Se for, vamos guardar o resultado e terminar a partida.
+
+[confident, clear, unhurried voice] Deixe o então dessa pergunta à vista. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então. No nome contador, escolha estado.
+
+[confident, clear, unhurried voice] Deixe o número um do valor visível. Abra Programação e Valores. Solte texto sobre esse número e escreva derrota no lugar de Olá, tudo em letras minúsculas.
+
+[confident, clear, unhurried voice] Deixe visível o encaixe abaixo dessa mudança de estado. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela nesse lugar.
+
+[confident, clear, unhurried voice] Escolha embaixo, no meio. Apague o texto Pegue as estrelas e deixe o texto vazio. Isso limpa o aviso dos controles antes da tela final.
+
+[confident, clear, unhurried voice] Deixe o encaixe abaixo desse aviso visível. Em Jogo 3D, Placar, vida e telas, abra Telas e fim. Encaixe Fim de jogo e conserve você perdeu.
+
+[interested, animated voice] O estado deixa de ser jogando, e o bloco Fim de jogo abre a tela de derrota que já está preparada. O movimento, os disparos e o relógio param junto com a partida.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Neste teste, deixe pedras baterem na nave, esperando a proteção acabar entre as batidas. Quando a vida chega a zero, aparece o resultado de derrota.
+
+[upbeat, encouraging voice] Clique em Voltar ao início. Você volta à abertura, com zero pontos e três vidas. Pressione Enter para começar outra partida.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: a conferência nova fica antes do movimento, pergunta se está jogando e se a vida da nave chegou a zero; então muda estado para derrota, limpa o aviso de baixo e chama você perdeu.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida.
+
+[confident, clear, unhurried voice] Encontre a pergunta Se a vida de nave é menor ou igual a zero, no começo de A cada quadro da cena.
+
+[confident, clear, unhurried voice] Clique no segundo mais desse Se, o que fica logo antes de senão, para abrir esse espaço. Deixe visível o espaço do senão que apareceu.
+
+[engaging, energetic, conversational voice] Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta.
+
+[confident, clear, unhurried voice] Abra Programação e Lógica e Se. Pegue um Se e encaixe no senão.
+
+[confident, clear, unhurried voice] Na pergunta x maior que zero, escolha pontos no lugar de x. Troque o sinal de maior por maior ou igual. Troque o zero por vinte.
+
+[confident, clear, unhurried voice] Deixe visível o então da pergunta dos pontos. Abra Programação e Variáveis. Encaixe Alterar variável contador para nesse então e escolha estado no nome.
+
+[confident, clear, unhurried voice] Deixe visível o número um do valor. Abra Programação e Valores. Solte texto sobre esse um e escreva vitoria, sem acento e com letras minúsculas.
+
+[confident, clear, unhurried voice] Deixe o encaixe abaixo dessa mudança à vista. Abra Jogo 3D, Placar, vida e telas e Na tela. Encaixe Escrever na tela abaixo.
+
+[confident, clear, unhurried voice] Escolha embaixo, no meio, e deixe o texto vazio, apagando Pegue as estrelas.
+
+[confident, clear, unhurried voice] Deixe visível o encaixe abaixo do aviso vazio. Abra Jogo 3D e Som. Encaixe Tocar o som pronto e conserve moeda.
+
+[confident, clear, unhurried voice] Deixe o encaixe abaixo do som visível. Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.
+
+[curious] Se eu chegar a vinte e a vida também acabar, qual resultado vale?
+
+[engaging, energetic, conversational voice] Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida para completar a rota.
+
+[upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Pilote, desvie e acerte as pedras. Quando o placar chega a vinte e você ainda tem vida, aparece a tela de vitória.
+
+[upbeat, encouraging voice] Depois do resultado, tente mover e disparar: a partida está encerrada. Clique em Voltar ao início. O começo volta com pontos zero e três vidas.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o Se dos vinte pontos fica no senão da vida zero, muda estado para vitoria, limpa o aviso de baixo, toca moeda e chama você ganhou.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Sua patrulha já tem as regras completas. Falta trocar os avisos de projeto inicial pelos avisos da versão pronta. Esses textos estão no seu passo a passo para você copiar exatamente. Depois vamos conferir o conjunto.
+
+[confident, clear, unhurried voice] Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com Patrulha Espacial e Projeto inicial. Troque o texto inteiro por: PATRULHA ESPACIAL, barra em pé, Abra uma rota entre os asteroides.
+
+[confident, clear, unhurried voice] Ainda em Ao iniciar, encontre o aviso de baixo com Enter e as setas. Troque o texto pelo aviso completo: ENTER, começar; SETAS, mover; ESPAÇO, um tiro por aperto. Use os dois-pontos e as barras como estão no passo a passo.
+
+[confident, clear, unhurried voice] Em Quando acontecer, encontre o acontecimento de Enter. Dentro dele, o aviso de cima diz Conheça a nave. Troque o texto inteiro por: Abra a rota, dois-pontos, acerte vinte asteroides e proteja sua nave.
+
+[confident, clear, unhurried voice] Logo abaixo está o aviso de que as regras serão construídas nas aulas. Troque pelo aviso pronto: SETAS, mover; ESPAÇO, atirar; Asteroide que passa não tira vida. Copie os separadores do passo a passo.
+
+[upbeat, encouraging voice] Clique em Rodar de novo. Confira a abertura, os três corações e o zero no placar. Toque em Espaço antes de Enter: não deve sair laser.
+
+[upbeat, encouraging voice] Pressione Enter. Confira o novo aviso, mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.
+
+[upbeat, encouraging voice] Confira as duas formas de terminar em partidas diferentes: acabar a vida mostra derrota; chegar a vinte acertos com vida mostra vitória. Depois de cada resultado, use Voltar ao início.
+
+[upbeat, encouraging voice] Veja o começo voltar: nave no centro, nenhum tiro ou asteroide, três vidas e zero pontos. Pressione Enter e confira se a nova partida funciona como a primeira.
+
+[interested, animated voice] Você levou a ideia da nave para um espaço com profundidade e construiu as regras que fazem a patrulha acontecer. Agora seu jogo está pronto para ser jogado do começo ao fim.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os quatro avisos usam os textos fornecidos, a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Você concluiu a Patrulha Espacial, com acertos, pontos, vidas e duas formas de terminar a partida!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[interested, animated voice] Você construiu uma rota em três dimensões. Fez o laser nascer na nave, criou o intervalo dos asteroides, reconheceu os contatos, contou os acertos e cuidou das vidas. Depois, escolheu quando a partida termina.
+
+[engaging, energetic, conversational voice] Seu jogo está pronto! Se quiser, você pode publicar a Patrulha no Mural dos Criadores. É o lugar da plataforma onde sua família e seus amigos podem jogar os jogos publicados. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.
+
+[confident, clear, unhurried voice] Para publicar, clique em Compartilhar, no alto do Estúdio. Ele pode aparecer como uma setinha para cima.
+
+[engaging, energetic, conversational voice] Abre uma janela, e o resumo do projeto já vem preenchido. Pode deixar como está.
+
+[confident, clear, unhurried voice] Clique em Gerar capa e espere a imagem aparecer. Confira a capa do seu jogo. Depois clique em Publicar e espere a publicação terminar.
+
+[interested, animated voice] Quando aparecer Seu jogo está no Mural, sua patrulha já pode ser jogada pelo link.
+
+[curious] Como eu mostro minha patrulha para a família?
+
+[engaging, energetic, conversational voice] Clique em Copiar link de jogar. Depois envie esse link, com a ajuda de um adulto se precisar. Quem receber pode jogar no computador com o teclado.
+
+[confident, clear, unhurried voice] Clique em Fechar e, por fim, em Concluir aula.

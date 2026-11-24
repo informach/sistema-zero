@@ -78,7 +78,7 @@ export function LivreScoreGoal() {
             <span>
               Maior ou igual (≥)
               <small>
-                {seen.has('igual-conta') ? 'A vitória veio no 26.' : 'Teste para descobrir'}
+                {seen.has('igual-conta') ? `A vitória veio no ${g.goal}.` : 'Teste para descobrir'}
               </small>
             </span>
           </div>
@@ -87,7 +87,7 @@ export function LivreScoreGoal() {
               Maior que (&gt;)
               <small>
                 {seen.has('maior-pula')
-                  ? 'O 26 não deu a vitória. Ela veio no 27.'
+                  ? `O ${g.goal} não deu a vitória. Ela veio no ${g.goal + 1}.`
                   : 'Teste para descobrir'}
               </small>
             </span>
@@ -96,7 +96,7 @@ export function LivreScoreGoal() {
             <span>
               Mudar a placa no meio da partida
               <small>
-                {seen.has('placa-fixa') ? 'A placa continuou 26.' : 'Teste para descobrir'}
+                {seen.has('placa-fixa') ? `A placa continuou ${g.goal}.` : 'Teste para descobrir'}
               </small>
             </span>
           </div>

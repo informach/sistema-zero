@@ -1,25 +1,9 @@
-[curious] E o que a nave faz num quadro em que a seta está solta?
+[curious] Esperar já faz sair um tiro?
 
 [long pause]
 
-[curious] E qual velocidade eu uso?
+[curious] Se eu não vejo mais o laser, ele já saiu do grupo?
 
 [long pause]
 
-[curious] Isso vai apagar a minha nave?
-
-[long pause]
-
-[curious] E se a nave já estiver fora da tela, o que o limite faz com ela?
-
-[long pause]
-
-[curious] Esse nome heroi é o da minha nave?
-
-[long pause]
-
-[curious] E se o fundo de estrelas for desenhado depois da nave?
-
-[long pause]
-
-[curious] Ué, cadê a nave?
+[curious] O laser vai acompanhar a nave se eu escrever só um número?

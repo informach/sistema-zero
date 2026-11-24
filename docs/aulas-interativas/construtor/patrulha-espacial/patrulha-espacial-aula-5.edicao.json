@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-quando-as-vidas-acabam",
+    "video-meta-da-patrulha",
+    "video-patrulha-pronta",
+    "video-sua-patrulha"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-meta-da-patrulha-K1",
+      "clipe": "video-meta-da-patrulha",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.",
+      "ancoraDepois": "Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida",
+      "falaPrincipal": "Se eu chegar a vinte e a vida também acabar, qual resultado vale?",
+      "falaPersonagem": "Se eu chegar a vinte e a vida também acabar, qual resultado vale?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-sua-patrulha-K1",
+      "clipe": "video-sua-patrulha",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e espere a publicação terminar. Quando aparecer Seu jogo está no Mural, sua patrulha já pode ser jogada pelo link.",
+      "ancoraDepois": "Clique em Copiar link de jogar. Depois envie esse link, com a ajuda de um adulto se precisar. Quem receber pode jogar",
+      "falaPrincipal": "Como eu mostro minha patrulha para a família?",
+      "falaPersonagem": "Como eu mostro minha patrulha para a família?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

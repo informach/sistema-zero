@@ -7,28 +7,17 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-variavel", "video-pontos-e-placar"],
+  "clipes": ["video-caixa-de-pontos", "video-placar", "video-somar-acerto", "video-entrega"],
   "intervencoes": [
     {
-      "id": "video-variavel-K1",
-      "clipe": "video-variavel",
+      "id": "video-caixa-de-pontos-K1",
+      "clipe": "video-caixa-de-pontos",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre o número que o jogo",
-      "falaPrincipal": "E se o número não estiver na tela, ele continua mudando?",
-      "falaPersonagem": "E se o número não estiver na tela, ele continua mudando?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-pontos-e-placar-K1",
-      "clipe": "video-pontos-e-placar",
-      "personagem": "Dedé",
-      "ocorrencia": 1,
-      "ancoraAntes": "já vem em 0: deixe assim, porque cada partida começa sem pontos. É este bloco que cria a caixa pontos, guardando 0.",
-      "ancoraDepois": "O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e",
-      "falaPrincipal": "Onde eu coloco o bloco que soma?",
-      "falaPersonagem": "Onde eu coloco o bloco que soma?",
+      "ancoraAntes": "essa contagem na tela são coisas diferentes, como anotar um resultado e levantar uma placa para todo mundo enxergar.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "falaPrincipal": "Se o número mudou nos bastidores, ele aparece sozinho no placar?",
+      "falaPersonagem": "Se o número mudou nos bastidores, ele aparece sozinho no placar?",
       "tags": ["[curious]"]
     }
   ]

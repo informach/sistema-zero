@@ -75,7 +75,7 @@ export class SceneController<S, C> {
       sessionId,
       {
         inicial: () => initialExperiment(start),
-        ler: (parts) => readExperimentSession(activity.scene, parts),
+        ler: (parts) => readExperimentSession(activity.scene, parts, activity.setup),
         passo: (session, command) =>
           stepExperiment(start, session as ExperimentSession, command as ExperimentCommand),
         aceita: (c): c is SceneCommand => isExperimentCommand(c, start),

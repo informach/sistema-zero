@@ -1,4 +1,4 @@
-import type { SceneId } from './actions'
+import type { SceneId, SceneSetup } from './actions'
 import { isSceneAudioUrl } from './audio-url'
 import { discoverySpeechSteps, lighthouseWalkStrideCase } from './discovery-guidance'
 import { gardenSpeechSteps } from './garden'
@@ -294,13 +294,9 @@ export interface ZappySpeech {
  * passinho, e as variantes do Dino das cenas da Nave. Sem o filtro, a voz do Zappy seria gerada (e
  * paga) para falas que o bloco nunca toca.
  */
-function falasLivresDoBloco(activity: {
-  scene?: SceneId
-  cenario?: string
-  setup?: { freeExploration?: boolean; goals?: string[] }
-}) {
+function falasLivresDoBloco(activity: { scene?: SceneId; cenario?: string; setup?: SceneSetup }) {
   const { scene, setup } = activity
-  const passos = discoverySpeechSteps(scene)
+  const passos = discoverySpeechSteps(scene, setup)
   const temDino = passos.some((p) => p.id.includes('-dino-'))
   const doDino = activity.cenario === 'corre-dino'
   return passos.filter(({ id }) => {
@@ -339,7 +335,7 @@ export function falasDaCena(bloco: {
     scene?: SceneId
     zappySpeech?: SceneSpeechOverrides
     cenario?: string
-    setup?: { freeExploration?: boolean; goals?: string[] }
+    setup?: SceneSetup
   }
 }): readonly ZappySpeech[] {
   const falas: readonly [SceneSpeechSlot, string][] = [

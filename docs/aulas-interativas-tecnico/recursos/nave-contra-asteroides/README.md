@@ -1,11 +1,11 @@
-# Passo a passo do projeto
+# Passo a passo do Nave Contra Asteroides
 
-Material comum aos dois públicos, com instruções completas, exemplos e nomes de controles iguais aos da aula. Anexar uma vez na primeira aula; consulta e download opcionais.
+O curso foi refeito em 24/11/2026, a partir dos projetos aprovados do Construtor. Este caminho continua aceitando os comandos anteriores, mas encaminha para o [pipeline comum do Construtor](../construtor-base/README.md). O conteúdo visual atual está em [construtor-nave](../construtor-nave/).
 
-```powershell
+```sh
 python docs/aulas-interativas-tecnico/recursos/nave-contra-asteroides/gerar-materiais.py
 ```
 
-O gerador usa as fontes editoriais e de projeto em `../../qa/`. Requer Bun, Python/Playwright e Chrome ou Edge. Não há versão adulta separada nem argumento `--adulto`.
+Requer Bun, WeasyPrint 70 e pypdf. O PDF usa as peças visuais, Nunito, Baloo 2 e cores oficiais dos blocos que também aparecem nos cadernos do Faísca. As páginas longas são divididas sem diminuir a letra do caderno inteiro. As fontes de aula, projetos e falas permanecem em `../../qa/construtor-2d*`.
 
-Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf). Intermediários e relatórios ficam em `tmp/pdfs/nave-contra-asteroides/`. O pipeline confere fontes, imagens, cores reais dos blocos e limites. Renderizar e revisar visualmente após mudar texto ou esquemas; testes não substituem a inspeção.
+Saída: [passo-a-passo-do-projeto.pdf](../../../aulas-interativas/construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf). Não existe versão adulta diferente do conteúdo. Anexar uma vez na parte 2 da primeira aula; consulta e download são opcionais. Depois de mudar texto ou diagramas, conferir o relatório de limites e renderizar todas as páginas para revisão visual.

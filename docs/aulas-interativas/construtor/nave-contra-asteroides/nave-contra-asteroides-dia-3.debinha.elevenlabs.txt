@@ -1,5 +1,1 @@
-[curious] E se o jogo tirar o grupo inteiro?
-
-[long pause]
-
-[curious] Como ele sabe qual tiro acertou qual pedra?
+[curious] Um acerto deve fazer todos os asteroides sumirem?

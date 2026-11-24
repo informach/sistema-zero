@@ -34,7 +34,7 @@ const O_QUE_COMPARAR: Record<string, string> = {
 }
 
 /** Quando nasce uma pedra nova: em todo quadro, ou de N em N quadros. */
-export type JeitoDeNascer = 'todo' | 20 | 40 | 80
+export type JeitoDeNascer = 'todo' | number
 const JEITOS: readonly JeitoDeNascer[] = ['todo', 20, 40, 80]
 const ROTULO: Record<string, string> = {
   todo: 'Em todo quadro',
@@ -45,8 +45,12 @@ const ROTULO: Record<string, string> = {
 
 const QUADROS_POR_SEGUNDO = sceneFrameRate('spawn') ?? 30
 
-export function jeitoDeAgora(c: Pick<SceneState['crowd'], 'timer' | 'interval'>): JeitoDeNascer {
+export function jeitoDeAgora(
+  c: Pick<SceneState['crowd'], 'timer' | 'interval'>,
+  segundos = false,
+): JeitoDeNascer {
   if (!c.timer) return 'todo'
+  if (segundos) return c.interval
   const n = Math.round(c.interval * QUADROS_POR_SEGUNDO)
   return n === 20 || n === 80 ? n : 40
 }
@@ -59,15 +63,16 @@ export type GestoDoNascimento = JeitoDeNascer | 'passar' | null
 export function proximoGestoDoNascimento(
   fala: string | undefined,
   c: Pick<SceneState['crowd'], 'timer' | 'interval'>,
+  segundos = false,
 ): GestoDoNascimento {
-  const agora = jeitoDeAgora(c)
+  const agora = jeitoDeAgora(c, segundos)
   const escolher = (jeito: JeitoDeNascer): GestoDoNascimento => (agora === jeito ? 'passar' : jeito)
   switch (fala) {
     case 'spawn-start':
     case 'spawn-wait':
       return 'passar'
     case 'spawn-wall':
-      return c.timer ? 'passar' : 40
+      return c.timer ? 'passar' : segundos ? 1.5 : 40
     case 'spawn-gap':
     case 'spawn-same-wall':
       return escolher('todo')
@@ -85,9 +90,11 @@ export function proximoGestoDoNascimento(
 function IdeiaDoNascimento({
   c,
   visto,
+  segundos,
 }: {
   c: SceneState['crowd']
   visto: { parede: boolean; espera: boolean; queda: boolean }
+  segundos: boolean
 }) {
   const medida = (n?: number) => (n === undefined ? '?' : String(n))
   const mediu = c.fallBaseline !== undefined || c.fallComparison !== undefined
@@ -103,18 +110,20 @@ function IdeiaDoNascimento({
         />
         <LinhaDaIdeia
           icone={<Timer size={20} />}
-          caso="Com uma espera de alguns quadros"
+          caso={segundos ? 'Com uma espera em segundos' : 'Com uma espera de alguns quadros'}
           revelado={visto.espera}
           resultado="Nasce uma, espera, nasce outra: sobra espaço entre elas"
         />
-        <LinhaDaIdeia
-          icone={<ArrowDown size={20} />}
-          caso="Quanto a primeira pedra desce em 60 quadros"
-          revelado={mediu}
-          resultado={`De 40 em 40: ${medida(c.fallBaseline)} · De 20 em 20: ${medida(c.fallComparison)}${
-            visto.queda ? '. Igual: cada pedra cai 3 por quadro, nasça quando nascer' : ''
-          }`}
-        />
+        {!segundos && (
+          <LinhaDaIdeia
+            icone={<ArrowDown size={20} />}
+            caso="Quanto a primeira pedra desce em 60 quadros"
+            revelado={mediu}
+            resultado={`De 40 em 40: ${medida(c.fallBaseline)} · De 20 em 20: ${medida(c.fallComparison)}${
+              visto.queda ? '. Igual: cada pedra cai 3 por quadro, nasça quando nascer' : ''
+            }`}
+          />
+        )}
       </div>
     </figure>
   )
@@ -123,23 +132,31 @@ function IdeiaDoNascimento({
 export function LivreSpawn() {
   const { activity, state, dispatch, instruction } = useDiscovery()
   const c = state.crowd
-  const { tem, goals, completed, done } = useDescobertas(O_QUE_COMPARAR)
-  const gesto = proximoGestoDoNascimento(discoveryGuidance(activity, state)?.id, c)
+  const preset = activity.setup?.preset
+  const segundos = preset?.id === 'pedra-segundos'
+  const jeitos: readonly JeitoDeNascer[] = segundos ? ['todo', ...preset.intervals] : JEITOS
+  const comparar = segundos
+    ? {
+        'every-frame': O_QUE_COMPARAR['every-frame']!,
+        'with-timer': 'Escolha A cada 1,5 segundos e observe até nascerem duas pedras.',
+      }
+    : O_QUE_COMPARAR
+  const { tem, goals, completed, done } = useDescobertas(comparar)
+  const gesto = proximoGestoDoNascimento(discoveryGuidance(activity, state)?.id, c, segundos)
   const tempo = useTempo(false)
   const ajuda = useId()
-  const agora = jeitoDeAgora(c)
+  const agora = jeitoDeAgora(c, segundos)
   const escolher = (jeito: JeitoDeNascer) => {
     tempo.parar()
     if (jeito === 'todo') {
       dispatch({ type: 'connect', port: 'timer', enabled: false })
       return
     }
-    const segundos = jeito / QUADROS_POR_SEGUNDO
+    const espera = segundos ? jeito : jeito / QUADROS_POR_SEGUNDO
     if (!c.timer) {
       dispatch({ type: 'connect', port: 'timer', enabled: true })
-      if (Math.round(c.interval * QUADROS_POR_SEGUNDO) !== jeito)
-        dispatch({ type: 'interval', seconds: segundos })
-    } else dispatch({ type: 'interval', seconds: segundos })
+      if (Math.abs(c.interval - espera) > 1e-9) dispatch({ type: 'interval', seconds: espera })
+    } else dispatch({ type: 'interval', seconds: espera })
   }
   return (
     <Frame
@@ -172,6 +189,7 @@ export function LivreSpawn() {
       after={
         <IdeiaDoNascimento
           c={c}
+          segundos={segundos}
           visto={{
             parede: tem('every-frame'),
             espera: tem('with-timer'),
@@ -182,14 +200,16 @@ export function LivreSpawn() {
     >
       <fieldset className="sz-discovery-choices" aria-describedby={ajuda}>
         <legend className="frame-controls-label">Quando nasce uma pedra nova?</legend>
-        {JEITOS.map((jeito) => (
+        {jeitos.map((jeito) => (
           <SceneButton
             key={String(jeito)}
             aria-pressed={agora === jeito}
             tom={gesto === jeito ? 'gesto' : agora === jeito ? 'ligado' : 'ferramenta'}
             onClick={() => escolher(jeito)}
           >
-            {ROTULO[String(jeito)]}
+            {segundos && jeito !== 'todo'
+              ? `A cada ${decimal(jeito)} segundo${jeito === 1 ? '' : 's'}`
+              : ROTULO[String(jeito)]}
           </SceneButton>
         ))}
       </fieldset>

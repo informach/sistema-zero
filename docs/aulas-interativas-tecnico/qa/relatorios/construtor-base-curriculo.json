@@ -1,0 +1,81 @@
+{
+  "files": [
+    "packages/members/src/infrastructure/config/creator-journey-curriculum.json",
+    "docs/jornada-do-criador.md"
+  ],
+  "outlineArraysPreserved": 14,
+  "missionPowersExtrasRequiredPreserved": true,
+  "otherStagesAndMasteriesPreserved": true,
+  "outlines": [
+    {
+      "stage": "faisca",
+      "course": "A Chave do Farol",
+      "outlineHash": "e24a3f76782d9da0be979642a485d7a020438484874e83b5e83c0417ea71e555"
+    },
+    {
+      "stage": "faisca",
+      "course": "A Ilha do Farol",
+      "outlineHash": "cd1fbf2fcded43fefa3c4624f0237184c1a9cce9be1f48b15ff1a29ea89c9b75"
+    },
+    {
+      "stage": "construtor",
+      "course": "Nave Contra Asteroides",
+      "outlineHash": "3af671d7fa509328273a75671cd9bd80a039c5713d3d68c36b5c0609a404fb57"
+    },
+    {
+      "stage": "construtor",
+      "course": "Patrulha Espacial",
+      "outlineHash": "748ac0ef18f22f474889f7966c11a15a856b95aa4cf165bede07c7b3e6bf7d76"
+    },
+    {
+      "stage": "inventor",
+      "course": "Corre, Dino! — evolução do corredor",
+      "outlineHash": "d6f743303d95c20d25df210d3cff92a465d79300f72878ae395d59d3524b1ccb"
+    },
+    {
+      "stage": "inventor",
+      "course": "Corrida Infinita",
+      "outlineHash": "b109a5ad8413f6afb7bda97b115695a1f3b3d7baae56dc7818898df9fa315e15"
+    },
+    {
+      "stage": "explorador",
+      "course": "Acerte o Alvo",
+      "outlineHash": "f23219046d9acdd9155d57689bbb4cedf555c508ec827c49526f67094ff96ce8"
+    },
+    {
+      "stage": "explorador",
+      "course": "Galeria de Alvos",
+      "outlineHash": "544c0971f677be0012da651c72508b381a880d5bf32e7b9c64415e3531c4c300"
+    },
+    {
+      "stage": "mestre",
+      "course": "Mina das Portas",
+      "outlineHash": "2ebd09653d7a7f19b34cc7e8ca1c2dae974844af138c308da4f320b2728fe4e5"
+    },
+    {
+      "stage": "mestre",
+      "course": "Ilhas Suspensas",
+      "outlineHash": "61ddba2cd55f12c888ee31359577fd371e28e53254d4da998f470e589cb37cb5"
+    },
+    {
+      "stage": "arquiteto",
+      "course": "Guardiões do Cristal",
+      "outlineHash": "dfa45e5bad97fcebc8860b2302c311c10a3344bb7d365f2c374e1e250f13063b"
+    },
+    {
+      "stage": "arquiteto",
+      "course": "Guardiões do Cristal",
+      "outlineHash": "5912f83771af6d6cdb6b70a11302f7f66a23c032909ab5774a2e06b76d93035d"
+    },
+    {
+      "stage": "genio",
+      "course": "Ilha que Floresce",
+      "outlineHash": "8b629ffeb0dd46fa2cede06c188a85c845fc39df9be37d03b0dcf7ed29700024"
+    },
+    {
+      "stage": "genio",
+      "course": "Ilha que Floresce",
+      "outlineHash": "f6f97a10c48f49a9d82fb9cb6d39157e40d8be08014070f3c854c94903d2da8c"
+    }
+  ]
+}

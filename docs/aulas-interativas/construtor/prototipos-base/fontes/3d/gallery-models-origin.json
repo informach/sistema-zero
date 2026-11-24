@@ -1,0 +1,51 @@
+{
+  "repository": "informach/sistema-zero",
+  "ref": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "path": "packages/studio/src/official-extensions/game-3d/__gen_patrulhaEspacial.ts",
+  "sourceSha256": "b859bff7604cec0370f5ec0957e5f16564c57aa76028b29fd5dc430284b82adf",
+  "method": "Exact existing gallery geometry and colors, packaged as GLB. Root placement is reset for a reusable asset; native model import centers and fits the bounds.",
+  "models": [
+    {
+      "name": "patrulha-nave-provisoria",
+      "label": "Nave da Patrulha Espacial",
+      "file": "patrulha-nave-provisoria.glb",
+      "bytes": 10764,
+      "sha256": "8d93986f8a13dca2e30fafdc1f31118b554ab9bb542da83f75225dcddfceeb53",
+      "meshes": 4,
+      "rawDimensions": [
+        3,
+        0.44,
+        2.15
+      ],
+      "blockSize": 3
+    },
+    {
+      "name": "patrulha-asteroide-provisorio",
+      "label": "Meteoro da Patrulha Espacial",
+      "file": "patrulha-asteroide-provisorio.glb",
+      "bytes": 25012,
+      "sha256": "86134e012e3cef1a50e605ea756d508ccc6439ef4a09d500b3a9f4dc6688316c",
+      "meshes": 1,
+      "rawDimensions": [
+        1.8,
+        1.8,
+        1.8
+      ],
+      "blockSize": 1.8
+    },
+    {
+      "name": "patrulha-laser-provisorio",
+      "label": "Laser da Patrulha Espacial",
+      "file": "patrulha-laser-provisorio.glb",
+      "bytes": 2188,
+      "sha256": "3280fecb10859b30b794ee94b3ad12d5692b42c3d434e5046313c728c0604b4c",
+      "meshes": 1,
+      "rawDimensions": [
+        0.16,
+        0.16,
+        0.9
+      ],
+      "blockSize": 0.9
+    }
+  ]
+}

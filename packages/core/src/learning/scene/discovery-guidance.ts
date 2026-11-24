@@ -1,11 +1,14 @@
-import type { SceneId } from './actions'
+import type { SceneId, SceneSetup } from './actions'
 import { GUIAS_LIVRES } from './guia-livre'
+import { scoreGoalSpeech } from './guia-livre/score-goal'
+import { SPAWN_SECONDS_SPEECH } from './guia-livre/spawn'
 import { CABANA_SPEECH, cabanaGuidance } from './guidance-cabana'
 import { MOEDAS_SPEECH, moedasGuidance } from './guidance-moedas'
 import { PONTE_SPEECH, ponteGuidance } from './guidance-ponte'
 import { SIMBOLOS_SPEECH, simbolosGuidance } from './guidance-simbolos'
 import type { SceneActivity } from './index'
 import { ISLAND_SPEECH, islandGuidance } from './island-3d'
+import { isScoreGoalPreset } from './presets'
 import {
   lighthouseKeyNotCase,
   lighthouseWalkGone,
@@ -244,9 +247,24 @@ export function discoverySpeech(id: DiscoverySpeechId, cenario?: string): string
   return speech[id]
 }
 
-export function discoverySpeechSteps(scene?: SceneId) {
+function falasDoCaso(
+  scene: SceneId,
+  setup?: SceneSetup,
+): Readonly<Record<string, string>> | undefined {
+  if (scene === 'score-goal' && isScoreGoalPreset(setup?.preset))
+    return scoreGoalSpeech(setup.preset.goal)
+  if (scene === 'spawn' && setup?.preset?.id === 'pedra-segundos')
+    return SPAWN_SECONDS_SPEECH as Readonly<Record<string, string>>
+  return GUIAS_LIVRES[scene]?.speech
+}
+
+export function discoverySpeechSteps(scene?: SceneId, setup?: SceneSetup) {
   const livre = scene ? GUIAS_LIVRES[scene] : undefined
-  if (livre) return Object.entries(livre.speech).map(([id, text]) => ({ id, text }))
+  if (livre)
+    return Object.entries(falasDoCaso(scene!, setup) ?? livre.speech).map(([id, text]) => ({
+      id,
+      text,
+    }))
   const prefixes =
     scene === 'island-3d'
       ? ['island']
@@ -287,7 +305,7 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
   const livre = GUIAS_LIVRES[activity.scene]
   if (livre) {
     const id = livre.guidance(state, has, activity)
-    return { id, text: livre.speech[id] ?? '' }
+    return { id, text: falasDoCaso(activity.scene, activity.setup)?.[id] ?? livre.speech[id] ?? '' }
   }
   let id: keyof typeof speech = 'count-start'
   switch (activity.scene) {

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-encontro-no-espaco",
+    "video-acerto-do-laser",
+    "video-contador-da-patrulha",
+    "video-um-ponto-por-acerto",
+    "video-placar-da-patrulha"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-encontro-no-espaco-K1",
+      "clipe": "video-encontro-no-espaco",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "um asteroide, o laser precisa encontrar o asteroide no espaço. Parecer que os desenhos se cruzaram na tela não basta.",
+      "ancoraDepois": "Podem! Vamos voltar à Ilha do Farol e observar a chave e o personagem de outro lugar. Isso você vai testar na",
+      "falaPrincipal": "Então duas coisas podem parecer juntas e ainda estar separadas?",
+      "falaPersonagem": "Então duas coisas podem parecer juntas e ainda estar separadas?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-um-ponto-por-acerto-K1",
+      "clipe": "video-um-ponto-por-acerto",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Agora ela precisa mudar no acontecimento certo: o contato que acerta uma pedra. Disparar sozinho não vale ponto.",
+      "ancoraDepois": "Não. O ponto pertence ao encontro do laser com a pedra. Vamos colocar a soma dentro dessa resposta. Em Enquanto estiver",
+      "falaPrincipal": "E uma pedra que passa pela nave sem bater, conta como acerto?",
+      "falaPersonagem": "E uma pedra que passa pela nave sem bater, conta como acerto?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

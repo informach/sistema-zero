@@ -1,0 +1,2614 @@
+[
+  {
+    "id": "encontre-1",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Uma conquista de cada vez, até a nave completar a partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use quando precisar",
+        "text": "No alto de cada página estão a aula e a parte. Use este caderno para lembrar um encaixe, conferir um valor ou repetir um teste. Você pode voltar às experiências e rever os vídeos quantas vezes quiser."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Prepare o voo da sua nave",
+        "text": "Nave e cenário escolhidos; movimento lateral funciona somente durante a partida, para ao soltar e respeita as bordas; legenda dos controles visível.",
+        "pages": "Páginas {{pagina:primeira-nave-abertura}} a {{ultima-pagina:primeira-nave-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. Faça o laser nascer na nave",
+        "text": "Um laser parado por toque em Espaço, criado na posição atual da nave; o voo será construído na aula seguinte.",
+        "pages": "Páginas {{pagina:dia-1-tecla-e-repeticao}} a {{ultima-pagina:dia-1-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 3. Faça os lasers voar e sair do jogo",
+        "text": "Lasers sobem e são retirados quando saem da tela, preservando um disparo por toque e a origem na nave.",
+        "pages": "Páginas {{pagina:dia-2-direcao-do-tiro}} a {{ultima-pagina:dia-2-entrega}}"
+      },
+      {
+        "kind": "note",
+        "text": "As telas e o caminho para jogar outra vez já vêm preparados. A cada parte, você acrescenta uma regra ao jogo e testa o resultado."
+      }
+    ]
+  },
+  {
+    "id": "encontre-2",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Continue sua missão",
+    "subtitle": "Uma conquista de cada vez, até a nave completar a partida.",
+    "items": [
+      {
+        "kind": "index",
+        "title": "Aula 4. Faça os asteroides cair",
+        "text": "Asteroides nascem a cada 1,5 segundos em posições sorteadas, caem e são retirados quando escapam; tiros ainda os atravessam.",
+        "pages": "Páginas {{pagina:chuva-de-asteroides-intervalo-das-pedras}} a {{ultima-pagina:chuva-de-asteroides-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 5. Faça o tiro acertar o asteroide",
+        "text": "Cada acerto retira apenas o tiro e o asteroide envolvidos e produz explosão e som.",
+        "pages": "Páginas {{pagina:dia-3-trombada}} a {{ultima-pagina:dia-3-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 6. Conte os acertos",
+        "text": "Pontos começam em zero, somam 1 apenas no acerto e aparecem na tela.",
+        "pages": "Páginas {{pagina:pontos-caixa-de-pontos}} a {{ultima-pagina:pontos-entrega}}"
+      }
+    ]
+  },
+  {
+    "id": "encontre-3",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Continue sua missão",
+    "subtitle": "Uma conquista de cada vez, até a nave completar a partida.",
+    "items": [
+      {
+        "kind": "index",
+        "title": "Aula 7. Dê três vidas à nave",
+        "text": "Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros.",
+        "pages": "Páginas {{pagina:dia-4-vidas-no-comeco}} a {{ultima-pagina:dia-4-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 8. Confira o início e escolha o visual",
+        "text": "Guardas de jogando testadas; aparência de nave, cenário, asteroide e laser escolhida sem mudar as regras.",
+        "pages": "Páginas {{pagina:comecar-partida-estado-do-jogo}} a {{ultima-pagina:comecar-partida-entrega}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 9. Termine e recomece a partida",
+        "text": "Meta de vinte acertos, resultado único, partida parada depois do resultado e novo começo limpo com Enter; projeto final testado e enviado.",
+        "pages": "Páginas {{pagina:dia-5-meta-do-jogo}} a {{ultima-pagina:dia-5-compartilhar}}"
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-abertura",
+    "lesson": "primeira-nave",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Jogue antes de construir",
+    "subtitle": "Experimente a missão antes de construir suas regras.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo. Aperte Enter. Use as setas para a esquerda e para a direita e toque em Espaço para disparar. Observe de onde sai o laser e o que acontece quando ele encontra um asteroide."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique no jogo e pressione Enter."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Segure as setas esquerda e direita para mover; solte para parar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Toque em Espaço para disparar. Cada novo toque cria um laser."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Depois do resultado, Enter volta ao início; outro Enter começa novamente."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": ["Experimente a versão completa. A participação basta para seguir."]
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-seu-caderno-do-aluno",
+    "lesson": "primeira-nave",
+    "part": 2,
+    "kicker": "Aula 1 · Parte 2",
+    "title": "Seu passo a passo do projeto",
+    "subtitle": "Os mesmos passos da aula, para consultar quando precisar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Seu apoio durante a construção",
+        "text": "Este caderno acompanha o mesmo projeto da aula. Primeiro veja a explicação e experimente. Na montagem, procure a aula e a parte no alto da página para consultar os passos. Os links de Como Fazer ficam disponíveis na aula para ajudar quando você precisar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Consulte o Passo a passo do projeto quando precisar de um encaixe ou de um teste."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Se quiser guardar o PDF, clique em Baixar."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Os links do Como fazer ajudam a usar a plataforma; Preciso de ajuda permite pedir orientação sobre o jogo."
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-escolher-nave",
+    "lesson": "primeira-nave",
+    "part": 3,
+    "kicker": "Aula 1 · Parte 3",
+    "title": "Escolha a nave e o cenário",
+    "subtitle": "Agora escolha a aparência da sua nave e do espaço.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Procure o bloco que cria o sprite chamado nave. Deixe esse bloco à vista."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Clique no campo da imagem, onde aparece um nome como nave-falcao-azul. Escolha a nave que você quiser entre as três imagens de nave."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Conserve a largura em 56, a altura em 64 e os outros números. Assim, a troca muda o desenho e mantém o espaço ocupado pela nave."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Ainda em Ao iniciar, procure Pôr o cenário atrás de tudo."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Clique na imagem do cenário, como cenario-aurora, e escolha o espaço que quiser. Você pode trocar só uma imagem, as duas ou manter as que gostou."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "inicial",
+        "after": "aparencia-inicial",
+        "focus": ["sz_g2d_create_image_sprite", "sz_g2d_set_backdrop"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo e pressione Enter. A abertura dá lugar ao espaço, com a nave que você escolheu. Ela ainda fica parada, porque o movimento será sua próxima construção."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-seta-e-velocidade",
+    "lesson": "primeira-nave",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "A nave em câmera lenta",
+    "subtitle": "Observe os passinhos da nave com a seta pressionada e solta.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Observe os passinhos da nave com a seta pressionada e solta."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Observe os passinhos da nave com a seta pressionada e solta."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-setas",
+    "lesson": "primeira-nave",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "Faça a nave responder às setas",
+    "subtitle": "Clique no jogo, pressione Enter e segure uma seta.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo, encontre o Se com a pergunta o estado do jogo é jogando. Deixe à vista o espaço vazio do então."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Movimento e depois Movimentos prontos."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Pegue Mover o sprite nave com as setas esquerda e direita e solte dentro do então desse Se."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "O nome já é nave. No campo velocidade, troque 6 por 5."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "aparencia-inicial",
+        "after": "movimento",
+        "focus": ["sz_g2d_arrows_x"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo e pressione Enter se a abertura estiver aparecendo. Segure a seta da direita por um instante, solte e faça o mesmo com a esquerda. A nave acompanha as setas e para quando você solta."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-limite-da-tela",
+    "lesson": "primeira-nave",
+    "part": 6,
+    "kicker": "Aula 1 · Parte 6",
+    "title": "A beirada da tela",
+    "subtitle": "Compare a nave perto da beirada com o limite ligado e desligado.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare a nave perto da beirada com o limite ligado e desligado."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare a nave perto da beirada com o limite ligado e desligado."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-borda",
+    "lesson": "primeira-nave",
+    "part": 7,
+    "kicker": "Aula 1 · Parte 7",
+    "title": "Mantenha a nave na tela",
+    "subtitle": "Comece a partida e segure uma seta até chegar à beirada.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre o movimento dentro de Se jogando e deixe o encaixe logo abaixo dele à vista."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Movimento e depois Bordas e rebatidas."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Pegue Manter o sprite dentro da tela e solte logo abaixo do movimento, ainda dentro do então."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "O bloco chega com heroi. Clique nesse nome e escolha nave."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "movimento",
+        "after": "limite",
+        "focus": ["sz_g2d_clamp_to_screen"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo e pressione Enter se estiver na abertura. Segure a seta da esquerda até a borda e depois a da direita. A nave deve permanecer inteira na tela, mesmo enquanto você segura a seta."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "primeira-nave-entrega",
+    "lesson": "primeira-nave",
+    "part": 8,
+    "kicker": "Aula 1 · Parte 8",
+    "title": "Mostre os controles e envie",
+    "subtitle": "Sua nave já responde às setas e fica dentro da tela.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe logo abaixo dele à vista, antes das perguntas que desenham as telas."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Escrever e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "limite",
+        "after": "instrucoes",
+        "focus": ["sz_g2d_draw_label", "sz_val_text"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e teste as duas setas até as bordas. Confira também a legenda. O disparo ainda será construído na próxima aula; agora, o movimento já funciona."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-1-tecla-e-repeticao",
+    "lesson": "dia-1",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "Quando sai o tiro?",
+    "subtitle": "Compare o disparo ligado à tecla com a criação repetida em todo quadro.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare o disparo ligado à tecla com a criação repetida em todo quadro."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare o disparo ligado à tecla com a criação repetida em todo quadro."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-1-criar-tiro",
+    "lesson": "dia-1",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "Faça Espaço responder",
+    "subtitle": "Comece seu jogo e toque em Espaço.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe à vista o encaixe depois do evento de Enter, fora do fazer dele. O novo evento vai ser um vizinho do Enter."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Controles e depois Teclado, ações e toque. Pegue Quando apertar a tecla e encaixe no lugar separado que você deixou à vista."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Clique no campo da tecla e escolha barra de espaço."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe à vista o espaço fazer do evento de Espaço. Abra Programação e depois Lógica e Se. Pegue Se e solte dentro desse fazer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Retire a pergunta x maior que zero que nasceu no Se e leve só essa pergunta para a lixeira."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Com o lugar da pergunta à vista, abra Jogo 2D, depois Jogo e telas e depois Telas e partida. Pegue o estado do jogo é e encaixe no lugar vazio."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "No nome do estado, escolha jogando. Esse é o mesmo cuidado usado no movimento."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Deixe à vista o então desse Se. Abra Jogo 2D, depois Som e depois Efeitos prontos. Encaixe Tocar efeito dentro do então e escolha tiro grande."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "instrucoes",
+        "after": "evento-tiro",
+        "focus": ["sz_g2d_on_key", "sz_js_if_else", "sz_g2d_scene_is", "sz_g2d_play_fx"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique em Rodar de novo. Na abertura, toque em Espaço e escute. Depois, pressione Enter e toque em Espaço novamente. O som do tiro deve responder durante a partida. Deixe o som do aparelho ligado para ouvir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-1-objetos-no-grupo",
+    "lesson": "dia-1",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Objetos que entram e saem",
+    "subtitle": "Compare o que aparece na tela com os objetos que continuam guardados no grupo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare o que aparece na tela com os objetos que continuam guardados no grupo."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare o que aparece na tela com os objetos que continuam guardados no grupo."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-1-grupo-tiros",
+    "lesson": "dia-1",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "Crie e mostre os lasers",
+    "subtitle": "Seu Espaço já toca o som, mas ainda falta um laser para aparecer.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe à vista o encaixe depois de Criar sprite painelMensagem e antes de Mudar o estado do jogo para inicio. Abra Jogo 2D, depois Grupos e depois Criar e percorrer."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Pegue Criar grupo de sprites e encaixe ali. No nome que chega como asteroides, escreva tiros."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No evento de Espaço, encontre o então de Se jogando e deixe o encaixe antes do som à vista."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Em Jogo 2D, Grupos, Criar e percorrer, pegue No grupo criar um sprite com imagem. Solte antes do som, dentro do mesmo então."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "O grupo chega como inimigos. Clique nele e escolha tiros. Deixe vazio o nome opcional depois de chamado."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Coloque 395 no x e 372 no y. Esses números vão deixar o primeiro laser na frente da posição inicial da nave."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Coloque 10 na largura e 28 na altura. No campo da imagem, escolha laser-ciano. Deixe vx e vy em zero por enquanto."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 11,
+        "text": "Dentro de A cada quadro do jogo, deixe à vista o encaixe depois de Limpar a tela e antes de Desenhar o sprite nave. Esse lugar fica fora do Se jogando."
+      },
+      {
+        "kind": "step",
+        "number": 12,
+        "text": "Abra Jogo 2D, depois Grupos e depois Desenho e ordem. Pegue Desenhar o grupo, encaixe nesse lugar e troque asteroides por tiros."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "evento-tiro",
+        "after": "grupo-tiros",
+        "focus": ["sz_g2d_create_group", "sz_g2d_spawn_image_in_group", "sz_g2d_draw_group"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e toque em Espaço. Um laser aparece na frente da posição inicial da nave, ainda parado. Mova a nave e dispare de novo: por enquanto, o laser continua nascendo no mesmo lugar."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-1-escrito-e-lido",
+    "lesson": "dia-1",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "Onde o laser nasce?",
+    "subtitle": "Compare a origem dos disparos quando o lugar é fixo e quando acompanha a nave.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare a origem dos disparos quando o lugar é fixo e quando acompanha a nave."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare a origem dos disparos quando o lugar é fixo e quando acompanha a nave."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-1-tiro-da-nave",
+    "lesson": "dia-1",
+    "part": 6,
+    "kicker": "Aula 2 · Parte 6",
+    "title": "Faça o laser nascer na nave",
+    "subtitle": "Comece o jogo, leve a nave para o lado e dispare.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre o bloco que cria o laser no evento de Espaço. Deixe o número 395 do x à vista."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação e depois Matemática. Pegue a conta com dois números e um sinal no meio e encaixe sobre 395."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Clique no sinal da conta e escolha menos. Deixe os dois números em zero por enquanto."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o zero da esquerda da conta à vista. Abra Jogo 2D, depois Movimento e depois Posição e tamanho. Pegue o centro x do sprite e encaixe sobre esse primeiro zero."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No nome do sprite desse valor, troque jogador por nave. No zero que ficou à direita da conta, coloque 5. Como o laser tem dez de largura, tirar cinco coloca o centro dele no centro da nave."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Agora deixe o número 372 do y do laser à vista. Abra Programação e depois Matemática. Encaixe outra conta sobre esse número e escolha menos."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "No zero da esquerda, encaixe a posição y do sprite, em Jogo 2D, Movimento, Posição e tamanho. Troque jogador por nave. No zero que ficou à direita da conta, coloque 24."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "A posição y menos 24 deixa a maior parte do laser acima da nave. Conserve largura 10, altura 28 e as velocidades zero nesta parte."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "grupo-tiros",
+        "after": "origem-tiro",
+        "focus": ["sz_g2d_center_x", "sz_g2d_sprite_y", "sz_math_arithmetic"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo e dispare com a nave no centro, depois à esquerda e depois à direita. Cada novo laser nasce na frente da nave. Eles ainda ficam parados, porque o voo será a próxima construção."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-1-entrega",
+    "lesson": "dia-1",
+    "part": 7,
+    "kicker": "Aula 2 · Parte 7",
+    "title": "Confira e envie a origem dos lasers",
+    "subtitle": "Seu disparo já responde ao Espaço e acompanha o lugar da nave.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo para começar o teste na abertura."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes de Enter, toque em Espaço. Nenhum laser deve aparecer. Pressione Enter e dispare uma vez no centro.",
+          "Leve a nave para a esquerda e dispare. Depois vá para a direita e dispare novamente. Cada novo laser deve nascer na frente da nave; os anteriores continuam onde nasceram.",
+          "Nesta versão, os lasers ainda ficam parados. Na próxima aula você vai construir o voo deles e a retirada quando saírem da tela."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-2-direcao-do-tiro",
+    "lesson": "dia-2",
+    "part": 1,
+    "kicker": "Aula 3 · Parte 1",
+    "title": "Para que lado o laser anda?",
+    "subtitle": "Compare o sentido do laser com velocidades verticais positivas e negativas.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare o sentido do laser com velocidades verticais positivas e negativas."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare o sentido do laser com velocidades verticais positivas e negativas."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-2-tiros-voam",
+    "lesson": "dia-2",
+    "part": 2,
+    "kicker": "Aula 3 · Parte 2",
+    "title": "Faça os lasers voar",
+    "subtitle": "Comece o jogo e dispare.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No bloco que cria o laser, encontre o último número, logo depois de vy. Troque esse zero por menos 7. Deixe vx em zero, porque o laser não deve andar para os lados."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Dentro de A cada quadro do jogo, encontre Se jogando e deixe o encaixe depois do limite da nave à vista."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Abra Jogo 2D, depois Grupos e depois Movimento. Pegue Mover os sprites do grupo usando suas velocidades e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "O grupo chega como asteroides. Clique nesse nome e escolha tiros."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "origem-tiro",
+        "after": "voo-tiros",
+        "focus": ["sz_g2d_update_group"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo e toque em Espaço. O laser deve subir. Segure Espaço por um instante: esse toque cria um laser, sem uma rajada automática. Solte e toque novamente para criar outro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-2-faxina",
+    "lesson": "dia-2",
+    "part": 3,
+    "kicker": "Aula 3 · Parte 3",
+    "title": "Retire os lasers que saíram",
+    "subtitle": "Os lasers já atravessam a tela.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de Se jogando, deixe à vista o encaixe depois de Mover os sprites do grupo tiros."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar do grupo quem sair da tela e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Troque o grupo asteroides por tiros. No nome depois de chamado, escreva foraDaTela."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o fazer desse bloco vazio. Retirar já é a ação do bloco; não há outra resposta para executar quando um laser sai."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "voo-tiros",
+        "after": "limpeza-tiros",
+        "focus": ["sz_g2d_prune_offscreen"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo, dispare alguns lasers e espere eles atravessarem a tela. O voo continua igual. A retirada do grupo acontece nos bastidores e será conferida em Verificar projeto."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-2-entrega",
+    "lesson": "dia-2",
+    "part": 4,
+    "kicker": "Aula 3 · Parte 4",
+    "title": "Teste e envie os lasers",
+    "subtitle": "Seu disparo já tem momento, origem e caminho.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo para começar o teste na abertura."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes de Enter, toque em Espaço. Nenhum laser deve nascer. Pressione Enter e dispare uma vez no centro.",
+          "Mova para a esquerda e dispare. Depois vá para a direita e dispare novamente. Os novos lasers devem sair da nave e subir.",
+          "Espere os lasers saírem da tela e confira o bloco que os retira do grupo. A verificação também vai acompanhar essa retirada."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-intervalo-das-pedras",
+    "lesson": "chuva-de-asteroides",
+    "part": 1,
+    "kicker": "Aula 4 · Parte 1",
+    "title": "Quando nasce outro asteroide?",
+    "subtitle": "Compare os nascimentos sem intervalo e com uma espera. Depois, compare quantos nascem em quatro segundos com intervalos de um e de dois segundos.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare os nascimentos sem intervalo e com uma espera. Depois, compare quantos nascem em quatro segundos com intervalos de um e de dois segundos."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare os nascimentos sem intervalo e com uma espera. Depois, compare quantos nascem em quatro segundos com intervalos de um e de dois segundos."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-relogio",
+    "lesson": "chuva-de-asteroides",
+    "part": 2,
+    "kicker": "Aula 4 · Parte 2",
+    "title": "Prepare o grupo e o relógio",
+    "subtitle": "Seu jogo já dispara, mas ainda não cria asteroides.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe à vista o encaixe depois de Criar grupo de sprites tiros. Abra Jogo 2D, depois Grupos e depois Criar e percorrer."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Pegue outro Criar grupo de sprites e encaixe depois do grupo tiros. O nome já é asteroides; conserve esse nome."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encontre A cada quadro do jogo e siga até o fim desse bloco. Deixe o encaixe de baixo à vista, fora do fazer. O relógio vai ficar depois dele, como outro bloco da área."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Abra Jogo 2D, depois Tempo e depois Quadros e intervalos. Pegue A cada segundos e encaixe fora do laço de quadros, nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Troque o 2 pelo valor 1.5, com ponto entre o um e o cinco. Isso significa um segundo e meio."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Deixe o fazer do relógio à vista. Abra Programação e depois Lógica e Se. Encaixe um Se dentro desse fazer."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Leve a pergunta x maior que zero do Se para a lixeira. Com o espaço da pergunta à vista, abra Jogo 2D, Jogo e telas, Telas e partida, e encaixe o estado do jogo é."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Escolha jogando no estado e deixe o então vazio por enquanto. Assim, os futuros nascimentos também vão esperar a partida começar."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "limpeza-tiros",
+        "after": "relogio-asteroides",
+        "focus": ["sz_g2d_create_group", "sz_g2d_every_seconds", "sz_js_if_else", "sz_g2d_scene_is"]
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-posicao-sorteada",
+    "lesson": "chuva-de-asteroides",
+    "part": 3,
+    "kicker": "Aula 4 · Parte 3",
+    "title": "Onde nasce cada asteroide?",
+    "subtitle": "Observe onde cada sorteio coloca a pedra e como ela entra na tela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Observe onde cada sorteio coloca a pedra e como ela entra na tela."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Observe onde cada sorteio coloca a pedra e como ela entra na tela."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-asteroide",
+    "lesson": "chuva-de-asteroides",
+    "part": 4,
+    "kicker": "Aula 4 · Parte 4",
+    "title": "Crie os asteroides caindo",
+    "subtitle": "O relógio já espera um segundo e meio, mas seu então ainda está vazio.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre A cada 1.5 segundos. Dentro dele, deixe o então de Se jogando à vista."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Grupos e depois Criar e percorrer. Pegue No grupo criar um sprite com imagem e encaixe nesse então."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Troque o grupo inimigos por asteroides. Deixe vazio o nome opcional depois de chamado."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o número do x à vista. Abra Programação e depois Valores. Pegue número aleatório de até e solte sobre esse número."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No sorteio, coloque 24 no primeiro número e 728 no segundo. Essa faixa deixa espaço para a largura do asteroide, nas duas beiradas."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No y da criação, coloque menos 52. Na largura e na altura, coloque 48."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Escolha a imagem asteroide-rocha-lunar. Deixe vx em zero. No último número, logo depois de vy, coloque 2, para a pedra seguir para baixo."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Agora encontre A cada quadro do jogo. Dentro de Se jogando, deixe à vista o encaixe depois de Mover os sprites do grupo tiros e antes da retirada dos tiros."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Abra Jogo 2D, depois Grupos e depois Movimento. Encaixe Mover os sprites do grupo usando suas velocidades nesse lugar. O grupo já é asteroides; conserve."
+      },
+      {
+        "kind": "step",
+        "number": 11,
+        "text": "Mais abaixo no laço de quadros, deixe à vista o encaixe depois de Limpar a tela e antes de Desenhar o grupo tiros, fora do Se."
+      },
+      {
+        "kind": "step",
+        "number": 12,
+        "text": "Abra Jogo 2D, depois Grupos e depois Desenho e ordem. Encaixe Desenhar o grupo nesse lugar e conserve o nome asteroides."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "relogio-asteroides",
+        "after": "asteroides",
+        "focus": [
+          "sz_g2d_spawn_image_in_group",
+          "sz_val_random",
+          "sz_g2d_update_group",
+          "sz_g2d_draw_group"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo e pressione Enter. Espere alguns segundos: novas pedras entram por cima, em lugares sorteados, e caem. Dispare também. Por enquanto, os lasers atravessam os asteroides, porque o acerto ainda será programado."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-retirada",
+    "lesson": "chuva-de-asteroides",
+    "part": 5,
+    "kicker": "Aula 4 · Parte 5",
+    "title": "Retire os asteroides que escapam",
+    "subtitle": "As pedras já entram e atravessam a tela.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo e de Se jogando, deixe à vista o encaixe depois de Tirar do grupo tiros quem sair da tela."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Encaixe outro Tirar do grupo quem sair da tela nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "O grupo já é asteroides. Conserve esse nome e escreva foraDaTela no nome depois de chamado."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o fazer vazio. Neste jogo, um asteroide que escapa não tira vida e não dá ponto."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "asteroides",
+        "after": "limpeza-asteroides",
+        "focus": ["sz_g2d_prune_offscreen"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e deixe algumas pedras atravessarem a tela. Elas continuam entrando por cima e saindo por baixo. A retirada é conferida nos blocos; ver uma pedra desaparecer da janela não mostra sozinho o que ficou no grupo."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-quiz-final",
+    "lesson": "chuva-de-asteroides",
+    "part": 6,
+    "kicker": "Aula 4 · Parte 6",
+    "title": "Confira tiros e asteroides",
+    "subtitle": "Relembre o que aconteceu e explique as regras do seu jogo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Confira o que você descobriu",
+        "text": "Responda à revisão na aula. Antes de escolher, imagine o que aconteceria no jogo. Se uma resposta não combinar com o resultado, leia a explicação e tente outra vez."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Você quer um laser por toque em Espaço. Onde a criação deve acontecer?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "A nave foi para a direita, mas o laser nasceu no antigo lugar do meio. O que falta conferir?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Um laser já não aparece na tela. Isso comprova que saiu do grupo?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Em quatro segundos de jogo, qual espera faz nascer mais asteroides?"
+      }
+    ]
+  },
+  {
+    "id": "chuva-de-asteroides-entrega",
+    "lesson": "chuva-de-asteroides",
+    "part": 7,
+    "kicker": "Aula 4 · Parte 7",
+    "title": "Teste e envie a chuva de asteroides",
+    "subtitle": "Sua rota agora recebe asteroides.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo e observe a abertura por alguns segundos."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Nenhuma pedra deve nascer na abertura. Clique no jogo, pressione Enter e espere a chegada dos asteroides.",
+          "Observe o espaço de tempo entre os nascimentos e os lugares de entrada. O sorteio pode repetir um lugar; ele não precisa alternar entre esquerda e direita.",
+          "Dispare e acompanhe uma pedra até ela sair por baixo. Nesta versão, o tiro ainda atravessa a pedra, e a saída da tela não tem outra reação."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-3-trombada",
+    "lesson": "dia-3",
+    "part": 1,
+    "kicker": "Aula 5 · Parte 1",
+    "title": "Quem sai do jogo no acerto?",
+    "subtitle": "Compare retirar o grupo inteiro com retirar só os dois objetos do encontro.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare retirar o grupo inteiro com retirar só os dois objetos do encontro."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare retirar o grupo inteiro com retirar só os dois objetos do encontro."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-3-colisao",
+    "lesson": "dia-3",
+    "part": 2,
+    "kicker": "Aula 5 · Parte 2",
+    "title": "Retire o par que se encontrou",
+    "subtitle": "Comece o jogo e acerte uma pedra com um laser.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo, encontre Se jogando. Deixe à vista o encaixe depois da retirada dos asteroides."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue Para cada colisão entre os grupos e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Os grupos já são tiros e asteroides. Os nomes do par já são tiro e asteroide. Conserve esses quatro nomes."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o fazer desse encontro à vista. Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar o sprite do grupo e solte dentro do fazer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No sprite que chega como asteroide, escolha tiro. No grupo, escolha tiros. Essa instrução retira o laser que participou do encontro."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Deixe o encaixe abaixo dessa retirada à vista. Pegue outro Tirar o sprite do grupo na mesma gaveta e solte ali, ainda dentro do encontro."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Nesse segundo bloco, conserve o sprite asteroide e o grupo asteroides. Ele retira somente a pedra do par."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "limpeza-asteroides",
+        "after": "colisao-tiros",
+        "focus": ["sz_g2d_on_group_overlap", "sz_g2d_remove_from_group"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo e alinhe a nave com uma pedra. Dispare: o laser e a pedra devem sumir no acerto. Observe outra pedra que estava longe desse encontro; ela continua caindo."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-3-efeitos",
+    "lesson": "dia-3",
+    "part": 3,
+    "kicker": "Aula 5 · Parte 3",
+    "title": "Mostre o acerto",
+    "subtitle": "O acerto já retira o par.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre o encontro entre tiros e asteroides. Dentro do fazer, deixe à vista o encaixe depois das duas retiradas."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Desenho e efeitos e depois Partículas. Pegue Soltar explosão no sprite e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Conserve o nome asteroide. Clique no quadradinho de cor desse bloco. Na janelinha, apague o código de Cor em hexadecimal, digite #ffce69, com o sinal de cerquilha na frente, e clique em OK."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o encaixe logo abaixo da explosão à vista. Abra Jogo 2D, depois Som e depois Efeitos prontos. Encaixe Tocar efeito e escolha explosão."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "colisao-tiros",
+        "after": "efeitos-acerto",
+        "focus": ["sz_g2d_explode", "sz_g2d_play_fx"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo e acerte uma pedra. Veja o brilho no lugar dela e escute o som. Depois dispare sem acertar: o efeito do acerto deve esperar um encontro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-3-entrega",
+    "lesson": "dia-3",
+    "part": 4,
+    "kicker": "Aula 5 · Parte 4",
+    "title": "Teste e envie os acertos",
+    "subtitle": "Seu laser já muda o que acontece com as pedras.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo e comece com Enter."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Alinhe um disparo com um asteroide. Confira a retirada do par, o brilho e o som. Os outros asteroides devem continuar na tela.",
+          "Dispare por uma coluna vazia. O laser atravessa a tela sem provocar uma explosão de acerto. Ainda não há placar nesta versão."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "pontos-caixa-de-pontos",
+    "lesson": "pontos",
+    "part": 1,
+    "kicker": "Aula 6 · Parte 1",
+    "title": "Guardar e mostrar um número",
+    "subtitle": "Compare o número guardado com o número mostrado na tela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare o número guardado com o número mostrado na tela."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare o número guardado com o número mostrado na tela."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "pontos-placar",
+    "lesson": "pontos",
+    "part": 2,
+    "kicker": "Aula 6 · Parte 2",
+    "title": "Prepare o placar",
+    "subtitle": "Seu jogo já reconhece acertos, mas ainda não guarda uma contagem.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe à vista o encaixe depois dos dois grupos, antes de Mudar o estado do jogo para inicio."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Troque o nome contador por pontos. O valor já é zero; deixe assim."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Dentro de A cada quadro do jogo, encontre Desenhar o sprite nave. Deixe o encaixe depois dele à vista, antes da legenda e das telas."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela. Pegue Mostrar placar e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Abra Programação e depois Valores. Pegue o valor de variável, que chega com x, e encaixe sobre o número do placar. Clique nesse x e escolha pontos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "efeitos-acerto",
+        "after": "placar",
+        "focus": ["sz_js_var_create", "sz_g2d_draw_score", "sz_val_variable"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e olhe o canto superior esquerdo. Acertos deve mostrar zero. Mesmo acertando uma pedra, o zero ainda fica, porque a soma será construída na próxima parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pontos-somar-acerto",
+    "lesson": "pontos",
+    "part": 3,
+    "kicker": "Aula 6 · Parte 3",
+    "title": "Some no lugar do acerto",
+    "subtitle": "Comece o jogo e acerte uma pedra.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de Se jogando, encontre o encontro entre tiros e asteroides. Deixe à vista o encaixe no fim do fazer, depois do som da explosão."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação e depois Variáveis. Pegue Somar 1 em variável e encaixe nesse lugar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Deixe o número em 1. Clique no nome que chega como contador e escolha pontos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "placar",
+        "after": "pontos",
+        "focus": ["sz_js_var_increment"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece o jogo e acerte uma pedra. Acertos passa de zero para um. Acerte outra: passa para dois.",
+          "Dispare sem alvo e deixe uma pedra passar sem acertar. A contagem deve ficar igual nesses dois casos."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pontos-quiz-final",
+    "lesson": "pontos",
+    "part": 4,
+    "kicker": "Aula 6 · Parte 4",
+    "title": "Confira a contagem",
+    "subtitle": "Relembre o que aconteceu e explique as regras do seu jogo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Confira o que você descobriu",
+        "text": "Responda à revisão na aula. Antes de escolher, imagine o que aconteceria no jogo. Se uma resposta não combinar com o resultado, leia a explicação e tente outra vez."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "O jogo já marcou cinco acertos. Você começa uma nova partida. Como a nova contagem deve começar?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Você quer contar somente os asteroides acertados pelo laser. Em qual acontecimento a soma pertence?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Pontos muda nos bastidores, mas o placar mostra sempre zero. O que precisa ler a contagem?"
+      }
+    ]
+  },
+  {
+    "id": "pontos-entrega",
+    "lesson": "pontos",
+    "part": 5,
+    "kicker": "Aula 6 · Parte 5",
+    "title": "Teste e envie seu placar",
+    "subtitle": "Agora o placar acompanha seus acertos.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo e comece a partida com Enter. Confira Acertos em zero."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Acerte dois asteroides, um de cada vez, e acompanhe o placar. Ele deve somar um em cada acerto.",
+          "Deixe um laser passar sem alvo e uma pedra escapar. O número deve continuar igual. Quando o par já saiu, esperar mais alguns quadros também não soma outro ponto pelo mesmo acerto."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-4-vidas-no-comeco",
+    "lesson": "dia-4",
+    "part": 1,
+    "kicker": "Aula 7 · Parte 1",
+    "title": "Três chances para pilotar",
+    "subtitle": "Compare preparar as vidas uma vez com preparar de novo a cada quadro.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare preparar as vidas uma vez com preparar de novo a cada quadro."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare preparar as vidas uma vez com preparar de novo a cada quadro."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-4-vidas",
+    "lesson": "dia-4",
+    "part": 2,
+    "kicker": "Aula 7 · Parte 2",
+    "title": "Prepare e mostre as três vidas",
+    "subtitle": "Prepare as vidas junto com o começo da partida.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Deixe à vista o encaixe depois de Criar variável pontos e antes de Mudar o estado do jogo para inicio."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Vida e placar e depois Vida."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Pegue Dar ao sprite jogador 3 de vida e solte depois da criação de pontos. Troque jogador por nave e conserve 3 de vida."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Dentro de A cada quadro do jogo, encontre o placar Acertos. Deixe à vista o encaixe depois dele e antes da legenda dos controles."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Na mesma categoria Vida, pegue Desenhar as vidas do sprite e solte nesse encaixe."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x,22; e no y,52."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "pontos",
+        "after": "vidas",
+        "focus": ["sz_g2d_set_health", "sz_g2d_draw_sprite_health"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo e pressione Enter. Confira os três corações. Por enquanto, os asteroides ainda atravessam a nave sem tirar vida: você preparou as chances, e a batida vem na próxima parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-4-batida",
+    "lesson": "dia-4",
+    "part": 3,
+    "kicker": "Aula 7 · Parte 3",
+    "title": "Encontre a pedra que bateu na nave",
+    "subtitle": "O encontro entre o tiro e o asteroide já está funcionando.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo, encontre o então de Se jogando. Deixe à vista o encaixe depois do bloco inteiro que confere tiros com asteroides."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue Para cada sprite do grupo que colidir com o sprite e solte nesse encaixe."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Conserve grupo asteroides e sprite nave. Em chamar o sprite de, troque inimigo por atingiuNave, tudo junto, com N maiúsculo."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Deixe o fazer dessa nova colisão à vista. Abra Jogo 2D, depois Grupos e depois Participação e limpeza. Pegue Tirar o sprite do grupo e solte dentro desse fazer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "No nome do sprite, troque asteroide por atingiuNave. O grupo continua asteroides. Esse nome indica só a pedra dessa batida."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Abra Jogo 2D, depois Desenho e efeitos e depois Partículas. Pegue Soltar explosão no sprite e solte depois da retirada, dentro da mesma colisão. Escolha atingiuNave no nome do sprite."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Abra Jogo 2D, depois Som e depois Efeitos prontos. Pegue Tocar efeito e solte depois da explosão, dentro dessa colisão. Escolha o efeito batida."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "vidas",
+        "after": "colisao-nave",
+        "focus": [
+          "sz_g2d_on_sprite_group_overlap",
+          "sz_g2d_remove_from_group",
+          "sz_g2d_explode",
+          "sz_g2d_play_fx"
+        ]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e deixe uma pedra encostar na nave. Só essa pedra desaparece, com explosão e som. Os três corações continuam iguais, porque o dano será sua próxima construção."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-4-respiro",
+    "lesson": "dia-4",
+    "part": 4,
+    "kicker": "Aula 7 · Parte 4",
+    "title": "Um respiro depois da batida",
+    "subtitle": "Compare contatos próximos com e sem o tempo de proteção.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare contatos próximos com e sem o tempo de proteção."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare contatos próximos com e sem o tempo de proteção."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-4-dano",
+    "lesson": "dia-4",
+    "part": 5,
+    "kicker": "Aula 7 · Parte 5",
+    "title": "Tire uma vida e dê um respiro",
+    "subtitle": "A batida já encontra e retira a pedra certa.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre Para cada sprite do grupo asteroides que colidir com o sprite nave. Dentro dele, deixe à vista o encaixe depois da explosão e antes do som de batida."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Jogo 2D, depois Vida e placar e depois Vida. Pegue Machucar o sprite e deixá-lo invencível e solte nesse encaixe."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "colisao-nave",
+        "after": "dano",
+        "focus": ["sz_g2d_damage_sprite"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Clique no jogo, comece a partida e deixe uma pedra bater na nave. Um coração deve desaparecer. Afaste-se e espere um pouco; numa batida depois da proteção, outra vida pode ser perdida. Ao chegar a zero, o jogo ainda continua: a regra de terminar virá na última aula."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-4-entrega",
+    "lesson": "dia-4",
+    "part": 6,
+    "kicker": "Aula 7 · Parte 6",
+    "title": "Confira as chances da nave e envie",
+    "subtitle": "Sua nave ganhou três chances e um respiro entre os danos.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo para conferir a preparação desde o começo."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Pressione Enter. Confira três corações, deixe uma pedra bater e observe a vida perdida. Desvie de outra pedra: uma pedra que passa sem encostar não tira vida.",
+          "Espere a proteção acabar e teste outra batida. Confira também um acerto de laser: ele deve continuar somando ponto, sem tirar vida da nave."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "comecar-partida-estado-do-jogo",
+    "lesson": "comecar-partida",
+    "part": 1,
+    "kicker": "Aula 8 · Parte 1",
+    "title": "A hora de jogar",
+    "subtitle": "Compare as ações antes e depois de a partida começar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare as ações antes e depois de a partida começar."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare as ações antes e depois de a partida começar."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "comecar-partida-teste-inicio",
+    "lesson": "comecar-partida",
+    "part": 2,
+    "kicker": "Aula 8 · Parte 2",
+    "title": "Confira as três guardas da partida",
+    "subtitle": "O começo e as telas já vieram preparados.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Encontre A cada 1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Clique em Rodar de novo para voltar à abertura."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "dano",
+        "after": "inicio-conferido",
+        "focus": ["sz_g2d_scene_is", "sz_js_if_else"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.",
+          "Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "comecar-partida-aparencias",
+    "lesson": "comecar-partida",
+    "part": 3,
+    "kicker": "Aula 8 · Parte 3",
+    "title": "Escolha a aparência das pedras e dos lasers",
+    "subtitle": "Agora a combinação visual pode ficar toda do seu jeito.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No relógio de um segundo e meio, encontre o bloco que cria um sprite no grupo asteroides. Clique na imagem, como asteroide-rocha-lunar, e escolha rocha lunar, gelo azul ou cristal violeta. Você também pode manter a imagem atual."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Conserve largura 48, altura 48, o sorteio da posição, a velocidade e o intervalo. A sua escolha muda só a aparência."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "No evento de Espaço, encontre o bloco que cria o sprite no grupo tiros. Clique na imagem, como laser-ciano, e escolha a aparência que quiser entre os três lasers. Manter o atual também vale."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Conserve largura 10, altura 28, a origem lida da nave e as velocidades. Se quiser rever nave e cenário, os dois campos de imagem continuam em Ao iniciar."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "inicio-conferido",
+        "after": "aparencias",
+        "focus": ["sz_g2d_spawn_image_in_group"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e confira sua combinação. Mova, dispare e acerte uma pedra. O jogo continua com as mesmas regras, enquanto os desenhos mostram suas escolhas."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "comecar-partida-entrega",
+    "lesson": "comecar-partida",
+    "part": 4,
+    "kicker": "Aula 8 · Parte 4",
+    "title": "Confira o começo e envie seu visual",
+    "subtitle": "Sua partida espera a hora certa e ganhou a combinação de imagens que você escolheu.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique em Rodar de novo. Confira a abertura e pressione Enter para entrar na partida."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Confira as imagens da nave, do cenário, das pedras e dos lasers. Teste movimento, um acerto que soma ponto e uma batida que tira vida. As regras continuam funcionando juntas."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-5-meta-do-jogo",
+    "lesson": "dia-5",
+    "part": 1,
+    "kicker": "Aula 9 · Parte 1",
+    "title": "O acerto que completa a missão",
+    "subtitle": "Compare os acertos com a meta de vinte e descubra quando a missão está completa.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare os acertos com a meta de vinte e descubra quando a missão está completa."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare os acertos com a meta de vinte e descubra quando a missão está completa."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-5-meta",
+    "lesson": "dia-5",
+    "part": 2,
+    "kicker": "Aula 9 · Parte 2",
+    "title": "Prepare a meta e mostre o progresso",
+    "subtitle": "Seu placar já conta os acertos.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre Criar variável pontos. Deixe à vista o encaixe depois dela e antes de dar vidas à nave."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação e depois Variáveis. Pegue Criar variável e solte nesse encaixe. Troque contador por meta e o valor 0 por 20."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encontre o placar Acertos. Deixe o encaixe depois dele à vista. Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y,32; e no tamanho,21."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor."
+      },
+      {
+        "kind": "step",
+        "number": 9,
+        "text": "Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe."
+      },
+      {
+        "kind": "step",
+        "number": 10,
+        "text": "Na barra, coloque x 280, y 23, largura 240 e altura 11."
+      },
+      {
+        "kind": "step",
+        "number": 11,
+        "text": "Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK."
+      },
+      {
+        "kind": "step",
+        "number": 12,
+        "text": "Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "aparencias",
+        "after": "meta",
+        "focus": ["sz_js_var_create", "sz_g2d_draw_score", "sz_val_variable", "sz_g2d_draw_bar"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece e acerte algumas pedras. Acertos aumenta, a barra vai preenchendo e Meta continua em 20. Ainda falta construir a pergunta que termina a partida."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-5-finais",
+    "lesson": "dia-5",
+    "part": 3,
+    "kicker": "Aula 9 · Parte 3",
+    "title": "Chame a vitória ao completar a meta",
+    "subtitle": "A tela de vitória já está preparada.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de A cada quadro do jogo, encontre o então de Se jogando. Deixe à vista o encaixe depois do bloco inteiro da colisão da nave."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação e depois Lógica &amp; Se. Pegue Se e solte depois da colisão, ainda dentro de Se jogando."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Na pergunta que chegou com x maior que 0, clique no sinal de maior e escolha maior ou igual. Abra Programação, Valores, e encaixe valor da variável no lugar de x. Escolha pontos."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Encaixe outro valor da variável no lugar do 0 do lado direito e escolha meta. A pergunta fica: pontos é maior ou igual a meta?"
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Deixe o então desse novo Se à vista. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida. Pegue Mudar o estado do jogo e solte dentro desse então."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "Troque inicio por vitoria, sem acento, nesse bloco. A regra seleciona a tela pronta quando você completa a missão."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "meta",
+        "after": "vitoria",
+        "focus": ["sz_js_if_else", "sz_val_compare", "sz_val_variable", "sz_g2d_set_scene"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece a partida e acerte vinte asteroides. Quando a contagem alcançar a meta, aparece Rota aberta!. Depois da vitória, setas e Espaço não continuam a partida. Pressione Enter para voltar ao início. A derrota será acrescentada na próxima parte."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-5-derrota",
+    "lesson": "dia-5",
+    "part": 4,
+    "kicker": "Aula 9 · Parte 4",
+    "title": "Escolha um único resultado",
+    "subtitle": "Se as vidas acabarem, a missão termina com a tela de nova tentativa.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro de Se jogando, encontre a pergunta de vitória que você acabou de construir. Deixe à vista o encaixe antes dela, logo depois da colisão da nave."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Abra Programação, Lógica &amp; Se. Pegue outro Se e solte entre a colisão da nave e a pergunta de vitória."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Esse novo Se chega com x maior que 0. Pegue essa pergunta pelo sinal de maior e leve à lixeira. Conserve o Se."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Abra Jogo 2D, Vida e placar, Vida. Pegue as vidas do sprite acabaram? e solte no espaço da pergunta vazia. Troque jogador por nave."
+      },
+      {
+        "kind": "step",
+        "number": 6,
+        "text": "Deixe o então desse Se à vista. Abra Jogo 2D, Jogo e telas, Telas e partida. Pegue Mudar o estado do jogo e solte no então. Troque inicio por derrota."
+      },
+      {
+        "kind": "step",
+        "number": 7,
+        "text": "No Se das vidas, encontre os dois sinais de mais. Clique no segundo mais, o que fica antes da palavra senão. Isso abre o espaço que será usado quando as vidas ainda não acabaram."
+      },
+      {
+        "kind": "step",
+        "number": 8,
+        "text": "Pegue a pergunta de vitória inteira pela palavra Se. Leve esse bloco, com o Mudar para vitoria que está dentro, para o espaço do senão do Se das vidas."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "vitoria",
+        "after": "derrota",
+        "focus": ["sz_js_if_else", "sz_g2d_health_depleted", "sz_g2d_set_scene"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Comece uma partida e deixe a nave perder as três vidas, esperando a proteção entre as batidas. Aparece a tela Tente outra rota. Setas e Espaço devem parar de agir.",
+          "Pressione Enter para voltar à abertura e Enter outra vez para começar. Confira a vitória numa partida em que você completa vinte acertos com vida. Só um resultado deve aparecer."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dia-5-reiniciar",
+    "lesson": "dia-5",
+    "part": 5,
+    "kicker": "Aula 9 · Parte 5",
+    "title": "Uma partida de verdade começa de novo",
+    "subtitle": "Compare voltar só à tela inicial com preparar uma nova partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta experiência",
+        "text": "Compare voltar só à tela inicial com preparar uma nova partida."
+      },
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Investigue na aula",
+        "text": "Observe o que muda quando você age e quando espera. Conte para si o que aconteceu e por que aconteceu. O Zappy acompanha seus testes. Você pode repetir a experiência antes de continuar."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Compare voltar só à tela inicial com preparar uma nova partida."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Observe as descobertas com o Zappy. Você pode repetir os testes e comparar o que acontece."
+      }
+    ]
+  },
+  {
+    "id": "dia-5-quiz-final",
+    "lesson": "dia-5",
+    "part": 6,
+    "kicker": "Aula 9 · Parte 6",
+    "title": "Confira as regras da missão",
+    "subtitle": "Relembre o que aconteceu e explique as regras do seu jogo.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Confira o que você descobriu",
+        "text": "Responda à revisão na aula. Antes de escolher, imagine o que aconteceria no jogo. Se uma resposta não combinar com o resultado, leia a explicação e tente outra vez."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "A contagem chegou a 20 ou passou disso. Qual pergunta reconhece que a meta foi alcançada?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Como o seu jogo escolhe só um resultado?"
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Pense na situação",
+        "text": "Depois do resultado, o que você espera ao usar Enter para recomeçar?"
+      }
+    ]
+  },
+  {
+    "id": "dia-5-entrega",
+    "lesson": "dia-5",
+    "part": 7,
+    "kicker": "Aula 9 · Parte 7",
+    "title": "Teste a missão completa e envie",
+    "subtitle": "A missão está completa.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Encontre o bloco que descreve o jogo para quem usa leitor de tela. No texto, escreva: Nave Contra Asteroides. Enter começa. Setas esquerda e direita movem a nave. Cada aperto de Espaço dispara um laser. Acerte 20 asteroides antes de perder as três vidas. Asteroides que passam sem bater não tiram vida. Enter, depois do resultado, volta ao início."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Clique em Rodar de novo para testar desde a abertura."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta parte",
+        "before": "derrota",
+        "after": "final",
+        "focus": ["sz_g2d_set_stage_description"]
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Antes de Enter, confira que setas e Espaço aguardam. Comece. Teste as duas direções, um laser por aperto, acertos somando pontos e batidas tirando vida com proteção.",
+          "Teste uma partida com vitória e outra com derrota. Depois de cada resultado, confira que a nave não continua a se mover, atirar ou receber novas pedras.",
+          "Depois do resultado, pressione Enter. A abertura volta. Pressione Enter outra vez. Confira zero acertos, três vidas e uma partida sem tiros ou pedras da rodada anterior. Sua combinação de imagens continua a mesma."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Verifique e envie",
+        "text": "Clique em <b>Verificar projeto</b>. Se aparecer um aviso, volte ao encaixe indicado e teste novamente. Com a verificação concluída, clique em <b>Enviar meu projeto</b>, confirme em <b>Enviar</b> e espere <b>Projeto enviado!</b>. Depois, continue pela aula."
+      }
+    ]
+  },
+  {
+    "id": "dia-5-compartilhar",
+    "lesson": "dia-5",
+    "part": 8,
+    "kicker": "Aula 9 · Parte 8",
+    "title": "Mostre sua rota espacial",
+    "subtitle": "Olha quanta coisa você construiu.",
+    "items": [
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Opcional: clique em Compartilhar, confira título e descrição, gere e confira a capa."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Se quiser publicar, clique em Publicar e espere a confirmação."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Copie o link de jogar para mostrar a quem você escolher; peça ajuda a um adulto se precisar."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Você também pode concluir sem publicar. Feche a janela e clique em Concluir aula."
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "O projeto já foi enviado na parte anterior; compartilhar não é uma nova entrega nem uma condição para concluir."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "galeria-nave-falcao-azul",
+    "kicker": "Galeria de aparências",
+    "title": "Naves",
+    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "items": [
+      {
+        "kind": "gallery",
+        "names": ["nave-falcao-azul", "nave-exploradora-coral", "nave-arraia-lilas"]
+      },
+      {
+        "kind": "note",
+        "text": "Escolha a aparência pelo seletor de imagem do bloco. O tamanho, a velocidade, as vidas e a meta continuam os mesmos. Se preferir, mantenha a primeira opção."
+      }
+    ]
+  },
+  {
+    "id": "galeria-cenario-aurora",
+    "kicker": "Galeria de aparências",
+    "title": "Cenários",
+    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "items": [
+      {
+        "kind": "gallery",
+        "names": ["cenario-aurora", "cenario-orbita", "cenario-nebulosa"]
+      },
+      {
+        "kind": "note",
+        "text": "Escolha a aparência pelo seletor de imagem do bloco. O tamanho, a velocidade, as vidas e a meta continuam os mesmos. Se preferir, mantenha a primeira opção."
+      }
+    ]
+  },
+  {
+    "id": "galeria-asteroide-rocha-lunar",
+    "kicker": "Galeria de aparências",
+    "title": "Asteroides",
+    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "items": [
+      {
+        "kind": "gallery",
+        "names": ["asteroide-rocha-lunar", "asteroide-gelo-azul", "asteroide-cristal-violeta"]
+      },
+      {
+        "kind": "note",
+        "text": "Escolha a aparência pelo seletor de imagem do bloco. O tamanho, a velocidade, as vidas e a meta continuam os mesmos. Se preferir, mantenha a primeira opção."
+      }
+    ]
+  },
+  {
+    "id": "galeria-laser-ciano",
+    "kicker": "Galeria de aparências",
+    "title": "Lasers",
+    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "items": [
+      {
+        "kind": "gallery",
+        "names": ["laser-ciano", "laser-dourado", "laser-lilas"]
+      },
+      {
+        "kind": "note",
+        "text": "Escolha a aparência pelo seletor de imagem do bloco. O tamanho, a velocidade, as vidas e a meta continuam os mesmos. Se preferir, mantenha a primeira opção."
+      }
+    ]
+  },
+  {
+    "id": "revisao-ajuda",
+    "kicker": "Seu jogo completo",
+    "title": "Volte ao teste certo",
+    "subtitle": "Você pode investigar uma regra por vez.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "O tiro não acompanha a nave?",
+        "text": "Volte à parte que faz o laser nascer na nave. Confira a posição lida e faça um disparo em cada lado."
+      },
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "O acerto conta mais de uma vez?",
+        "text": "Volte ao encontro do tiro com o asteroide. Confira quais objetos saem e em que lugar o ponto é somado."
+      },
+      {
+        "kind": "box",
+        "tone": "lilas",
+        "title": "A partida não termina?",
+        "text": "Confira as condições da vitória e da derrota. Observe os pontos e as vidas antes de testar cada resultado."
+      },
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "Quer mostrar sua criação?",
+        "text": "A publicação no Mural é uma escolha sua. A última parte da aula mostra o caminho. Você também pode concluir o curso e guardar seu projeto sem publicar."
+      }
+    ]
+  }
+]

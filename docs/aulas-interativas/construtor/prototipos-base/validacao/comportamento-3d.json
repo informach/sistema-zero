@@ -1,0 +1,32 @@
+{
+  "engine": "Official composed Jogo 3D runtime, official generated script and official asynchronous GLTFLoader; embedded GLB assets, real Three.js geometry and Canvas2D sky, WebGL drawing replaced by a no-op renderer",
+  "reports": [
+    {
+      "file": "patrulha-espacial-3d-completo",
+      "passed": true,
+      "checks": [
+        "All three embedded gallery GLBs load through the official asynchronous loader without fallback geometry",
+        "Opening blocks movement, spawning and firing",
+        "One shot per press, new copies move, origin follows the ship, lateral bound and fixed altitude",
+        "A hit consumes only its pair and scores once even with two simultaneous bullets; a miss does not score",
+        "Offscreen cleanup without damage or score",
+        "Native contact and one-second damage protection",
+        "Defeat wins a simultaneous final point/final life; final screen stops new actions",
+        "Native result button reruns the generated lifecycle and resets state",
+        "Spawn cadence is reset, victory works, repeated restart does not duplicate key handlers"
+      ],
+      "consoleMessages": []
+    },
+    {
+      "file": "patrulha-espacial-3d-inicial",
+      "passed": true,
+      "checks": [
+        "All three embedded gallery GLBs load through the official asynchronous loader without fallback geometry",
+        "Prepared opening blocks movement and firing; Enter is the supplied start control",
+        "Starter runs 30 seconds after Enter with lateral control, without spawning, timers, points, life rules or ending conditions",
+        "Both prepared result screens and their supplied native reset return to opening, restore position and reload all models; QA-only triggers are absent from starter"
+      ],
+      "consoleMessages": []
+    }
+  ]
+}

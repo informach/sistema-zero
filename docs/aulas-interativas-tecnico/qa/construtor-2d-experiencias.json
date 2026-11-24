@@ -1,0 +1,682 @@
+{
+  "movimento": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A nave em câmera lenta",
+    "instructions": "Compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Repare nas marcas e nos quadros do jogo enquanto você segura a seta.",
+      "Compare os quadros com a seta solta e, em seguida, Devagar com Rápido.",
+      "Escolha Devagar e segure a seta. Solte a seta e deixe passar alguns quadros. Escolha Rápido e segure a seta por alguns segundos."
+    ],
+    "semPerguntaFinal": true,
+    "activity": {
+      "type": "experimentation",
+      "scene": "lighthouse-walk",
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["moves-each-frame", "stopped-after-release", "walked-real-speed"],
+        "goalCopy": {
+          "moves-each-frame": {
+            "label": "Um passinho a cada quadro",
+            "pedido": "Escolha Devagar, segure a seta e olhe os quadros do jogo."
+          },
+          "stopped-after-release": {
+            "label": "Seta solta, nave parada",
+            "pedido": "Em Devagar, solte a seta e olhe os próximos quadros."
+          },
+          "walked-real-speed": {
+            "label": "Os passinhos viraram um voo",
+            "pedido": "Escolha Rápido, segure a seta por alguns segundos e compare."
+          }
+        }
+      }
+    }
+  },
+  "borda": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A beirada da tela",
+    "instructions": "Compare a nave na beirada com a cerca desligada e com a cerca ligada, inclusive com ela já fora da tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Olhe a faixa fora da tela quando a nave chega na beirada.",
+      "E se a cerca for ligada com a nave já fora da tela? Olhe o próximo quadro.",
+      "Com a cerca desligada, escolha Rápido e segure a seta até a nave sair da tela. Ligue a cerca. Escolha Devagar e segure a seta na beirada."
+    ],
+    "semPerguntaFinal": true,
+    "activity": {
+      "type": "experimentation",
+      "scene": "lighthouse-walk",
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["left-the-screen", "came-back-inside", "stayed-inside"],
+        "goalCopy": {
+          "left-the-screen": {
+            "label": "Sem o limite, a nave saiu da tela",
+            "pedido": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela."
+          },
+          "came-back-inside": {
+            "label": "Com o limite ligado, a nave voltou para dentro",
+            "pedido": "Com a nave fora da tela, ligue a cerca e olhe o próximo quadro."
+          },
+          "stayed-inside": {
+            "label": "Com o limite, a nave ficou na beirada",
+            "pedido": "Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros."
+          }
+        }
+      }
+    }
+  },
+  "evento": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Quando sai o tiro?",
+    "instructions": "Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe quantos tiros saem e em que momento cada um aparece.",
+      "Compare o jeito Na hora em que algo acontece, com a tecla e sem a tecla, com o jeito Sempre, em todo quadro.",
+      "Escolha Na hora em que algo acontece e clique em Começar o jogo sem clicar em mais nada. Depois clique em Apertar a tecla. Por último, escolha Sempre, em todo quadro, e clique em Começar o jogo."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "once-vs-always",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "tres-caixas-tiro",
+          "areas": ["start", "loop", "event"],
+          "cards": [
+            {
+              "id": "paint",
+              "kind": "paint",
+              "label": "Pintar o fundo"
+            },
+            {
+              "id": "create",
+              "kind": "create",
+              "label": "Criar a nave"
+            },
+            {
+              "id": "move",
+              "kind": "move",
+              "label": "Mover a nave um pouquinho"
+            },
+            {
+              "id": "event",
+              "kind": "shot",
+              "label": "Criar um tiro"
+            }
+          ]
+        },
+        "goals": ["on-event", "key-fires", "flood"],
+        "goalCopy": {
+          "on-event": {
+            "label": "Esperando a hora, sem a tecla, nenhum tiro saiu",
+            "pedido": "Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe os tiros."
+          },
+          "key-fires": {
+            "label": "Na hora em que a tecla foi apertada, saiu um tiro",
+            "pedido": "Com Na hora em que algo acontece escolhido, clique em Apertar a tecla durante o jogo e observe os tiros."
+          },
+          "flood": {
+            "label": "Sempre, em todo quadro, saiu um tiro novo",
+            "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe os tiros."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "grupos": {
+    "kind": "interactive",
+    "required": true,
+    "title": "O tiro saiu da tela. E do jogo?",
+    "instructions": "Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe a tela, os bastidores e o número de tiros no grupo.",
+      "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
+      "Clique em Passar 1 segundo até dois tiros saírem. Depois clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois saírem."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "cleanup",
+      "cast": {
+        "obstacle": {
+          "name": "tiro",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "tiro-cima",
+          "exit": "top",
+          "incoming": false
+        },
+        "goals": ["invisible-stored", "rule-removes"],
+        "goalCopy": {
+          "invisible-stored": {
+            "label": "O tiro saiu da tela e continuou no grupo",
+            "pedido": "Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois tiros saírem da tela e observe o grupo."
+          },
+          "rule-removes": {
+            "label": "Tirando quem sai da tela, o tiro saiu do grupo",
+            "pedido": "Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois tiros saírem. Compare o grupo."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "origem": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Onde o tiro nasce?",
+    "instructions": "Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Compare as marcas dos tiros depois de mudar a nave de lugar.",
+      "Faça o mesmo teste com o número escrito e com o número lido da nave.",
+      "Escolha Número escrito: 400, clique em Atirar, clique em Direita e atire de novo. Depois escolha Número lido da nave e repita. Por último, clique em Mostrar as marcas da nave e atire."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "fixed-vs-read",
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["same-spot", "follows", "box-marks"],
+        "goalCopy": {
+          "same-spot": {
+            "label": "Com o número escrito, os tiros nasceram no mesmo lugar",
+            "pedido": "Escolha Número escrito: 400, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas."
+          },
+          "follows": {
+            "label": "Com o número lido, o tiro nasceu onde a nave estava",
+            "pedido": "Escolha Número lido da nave, clique em Atirar, mude a nave de lugar e atire de novo. Compare as marcas."
+          },
+          "box-marks": {
+            "label": "O tiro sai do meio da nave, da beirada de cima",
+            "pedido": "Com o número lido, clique em Mostrar as marcas da nave e atire. Observe de onde o tiro sai."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "velocidade": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Para que lado o tiro anda?",
+    "instructions": "Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe o número do y em cada quadro.",
+      "Compare o tiro e o y com um número negativo e com um número positivo.",
+      "Escolha −9 e clique em Avançar 1 quadro algumas vezes. Depois escolha 9 e avance outros quadros."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "velocity",
+      "cast": {
+        "hero": {
+          "name": "tiro",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "actions": [
+          {
+            "type": "velocity",
+            "vx": 5,
+            "vy": 0
+          },
+          {
+            "type": "advance",
+            "seconds": 1.5
+          },
+          {
+            "type": "velocity",
+            "vx": 0,
+            "vy": 0
+          }
+        ],
+        "goals": ["up", "down"],
+        "goalCopy": {
+          "up": {
+            "label": "Com um número negativo, o tiro subiu",
+            "pedido": "Escolha um número negativo, como −9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y."
+          },
+          "down": {
+            "label": "Com um número positivo, o tiro desceu",
+            "pedido": "Escolha um número positivo, como 9, clique em Avançar 1 quadro algumas vezes e observe o tiro e o y."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "intervalo": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Quando nasce uma pedra nova?",
+    "instructions": "Compare nascer uma pedra em todo quadro com esperar um intervalo. Depois, compare os intervalos de um e de dois segundos, deixando passar quatro segundos em cada teste. Observe quantas pedras nascem e a distância entre elas. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe quantas pedras nascem e o espaço entre elas.",
+      "Compare nascer em todo quadro com esperar um intervalo. Em seguida, compare A cada 1 segundo com A cada 2 segundos, deixando passar o mesmo tempo em cada teste.",
+      "Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Para comparar intervalos, escolha A cada 1 segundo e passe quatro segundos; anote quantas pedras novas nasceram. Escolha A cada 2 segundos, passe outros quatro segundos e compare quantas novas nasceram."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "spawn",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "pedra-segundos",
+          "unit": "seconds",
+          "intervals": [0.5, 1, 1.5, 2],
+          "falling": true
+        },
+        "goals": ["every-frame", "with-timer"],
+        "goalCopy": {
+          "every-frame": {
+            "label": "Em todo quadro, as pedras nasceram coladas",
+            "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+          },
+          "with-timer": {
+            "label": "Com uma espera, sobrou espaço entre as pedras",
+            "pedido": "Escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "sorteio": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Onde nasce cada pedra?",
+    "instructions": "Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Compare as marquinhas na régua depois de cada sorteio.",
+      "Depois de sortear, deixe o tempo passar e observe a borda de cima da tela.",
+      "Clique em Sortear um lugar três vezes. Depois clique em Passar 1 segundo e observe a pedra."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "random",
+      "cast": {
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "pedra-acima",
+          "axis": "above",
+          "speedModule": false
+        },
+        "goals": ["positions", "above"],
+        "goalCopy": {
+          "positions": {
+            "label": "Cada sorteio pode dar um lugar diferente",
+            "pedido": "Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua."
+          },
+          "above": {
+            "label": "A pedra nasce acima da tela e entra caindo",
+            "pedido": "Clique em Passar 1 segundo e observe de onde a pedra entra na tela."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "colisao": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Quem sai do jogo na trombada?",
+    "instructions": "Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe os dois contadores e as pedras que não encostaram em nada.",
+      "Compare tirar os grupos inteiros com tirar só o tiro e a pedra que encostaram.",
+      "Escolha O grupo dos tiros e O grupo das pedras e clique em Passar 1 segundo. Depois clique em Voltar ao começo, escolha O tiro que encostou e A pedra que encostou e passe o tempo até as outras pedras saírem por baixo."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "collision-pair",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["whole-group", "just-the-pair", "others-stay"],
+        "goalCopy": {
+          "whole-group": {
+            "label": "Tirando os grupos, saíram todos os tiros e todas as pedras",
+            "pedido": "Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores."
+          },
+          "just-the-pair": {
+            "label": "Tirando só quem encostou, saíram só o tiro e a pedra da trombada",
+            "pedido": "Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores."
+          },
+          "others-stay": {
+            "label": "As outras pedras continuaram o caminho delas",
+            "pedido": "Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "pontos": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Guardar e mostrar um número",
+    "instructions": "Compare a caixa pontos com a tela do jogo, com o número mostrado na tela e sem ele, quando a nave acerta um asteroide. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Depois de cada botão, compare a caixa pontos com a tela do jogo.",
+      "O número muda mesmo sem aparecer? Teste um acerto com o número fora da tela.",
+      "Clique em Guardar o número 0. Depois clique em Acertar um asteroide duas vezes. Por último, clique em Mostrar o número na tela."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "variable",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["stored", "changed-hidden", "shown"],
+        "goalCopy": {
+          "stored": {
+            "label": "A caixa pontos guardou o número, e a tela continuou sem número",
+            "pedido": "Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo."
+          },
+          "changed-hidden": {
+            "label": "Com o número fora da tela, o acerto mudou pontos",
+            "pedido": "Com o número fora da tela, clique em Acertar um asteroide e compare a caixa pontos com a tela."
+          },
+          "shown": {
+            "label": "Mostrar o número não mudou o que estava guardado",
+            "pedido": "Clique em Mostrar o número na tela e compare com a caixa pontos."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "vidas": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Quando a nave ganha as vidas?",
+    "instructions": "Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe as vidas logo depois de cada batida do asteroide.",
+      "Compare as vidas no fim do jogo nos dois jeitos.",
+      "Escolha Uma vez, no começo, e clique em Começar o jogo. Depois escolha Sempre, em todo quadro, e clique em Começar o jogo de novo."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "once-vs-always",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "uma-ficha-vidas",
+          "areas": ["start", "loop"],
+          "cards": [
+            {
+              "id": "lives",
+              "kind": "lives",
+              "label": "Dar três vidas à nave"
+            }
+          ],
+          "hitEveryFrames": 3
+        },
+        "goals": ["once", "lives-loop"],
+        "goalCopy": {
+          "once": {
+            "label": "Uma vez, no começo: cada batida tirou uma vida",
+            "pedido": "Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas."
+          },
+          "lives-loop": {
+            "label": "Sempre, em todo quadro: as vidas voltaram a encher",
+            "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe as vidas e as batidas."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "protecao": {
+    "kind": "interactive",
+    "required": true,
+    "title": "O tempinho de proteção",
+    "instructions": "Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe as vidas e os quadros de proteção que ainda restam em cada batida.",
+      "Compare as três proteções: Nenhuma, 15 quadros e 45 quadros.",
+      "Escolha Nenhuma e clique em Avançar até a próxima pedra três vezes. Depois faça o mesmo com 45 quadros e, por último, com 15 quadros."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "invincibility",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["no-shield", "window", "expires"],
+        "goalCopy": {
+          "no-shield": {
+            "label": "Sem proteção, cada pedra tirou uma vida",
+            "pedido": "Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas."
+          },
+          "window": {
+            "label": "Com 45 quadros, só a primeira pedra tirou vida",
+            "pedido": "Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas."
+          },
+          "expires": {
+            "label": "Com 15 quadros, a proteção acabou antes da terceira pedra",
+            "pedido": "Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "estado": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A partida já começou?",
+    "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe o contador de asteroides criados enquanto o tempo passa.",
+      "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
+      "Deixe o tempo passar na tela de início. Depois clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos. Por último, clique em Começar a partida e deixe o tempo passar."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "game-state",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "preset": {
+          "id": "pedra-40-quadros",
+          "clockFrames": 40,
+          "waitingSeconds": 4,
+          "moment": "screen"
+        },
+        "goals": ["outside", "waiting", "playing"],
+        "goalCopy": {
+          "outside": {
+            "label": "Sem a pergunta, os asteroides nasceram antes de começar",
+            "pedido": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador."
+          },
+          "waiting": {
+            "label": "Com a pergunta, na tela de início, nenhum asteroide nasceu",
+            "pedido": "Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador."
+          },
+          "playing": {
+            "label": "Com a partida começada, os asteroides voltaram a nascer",
+            "pedido": "Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  },
+  "meta": {
+    "kind": "interactive",
+    "required": true,
+    "title": "A meta do jogo",
+    "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
+      "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
+      "Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa."
+    ],
+    "semPerguntaFinal": true,
+    "activity": {
+      "type": "experimentation",
+      "scene": "score-goal",
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["igual-conta", "maior-pula", "placa-fixa"],
+        "goalCopy": {
+          "igual-conta": {
+            "label": "Com maior ou igual, chegar a 20 já deu a vitória",
+            "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória."
+          },
+          "maior-pula": {
+            "label": "Com maior que, o 20 não deu a vitória; só o 21",
+            "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória."
+          },
+          "placa-fixa": {
+            "label": "No meio da partida, a placa da meta não mudou",
+            "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa."
+          }
+        },
+        "preset": {
+          "id": "vinte-acertos",
+          "goal": 20,
+          "start": 17
+        }
+      }
+    }
+  },
+  "reinicio": {
+    "kind": "interactive",
+    "required": true,
+    "title": "Jogar outra vez",
+    "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+    "hints": [
+      "Observe os asteroides que ficam na tela quando uma partida nova começa.",
+      "Compare os dois jeitos do Enter no fim da partida: só voltar para a tela de início e começar tudo de novo.",
+      "Escolha Só voltar para a tela de início, clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter de novo. Depois faça o mesmo com Começar tudo de novo."
+    ],
+    "activity": {
+      "type": "experimentation",
+      "scene": "restart",
+      "cast": {
+        "hero": {
+          "name": "nave",
+          "gender": "f"
+        },
+        "obstacle": {
+          "name": "asteroide",
+          "gender": "m"
+        }
+      },
+      "cenario": "nave",
+      "setup": {
+        "freeExploration": true,
+        "goals": ["screen-only", "back-to-menu"],
+        "goalCopy": {
+          "screen-only": {
+            "label": "Só voltando para a tela de início, os asteroides ficaram na tela",
+            "pedido": "Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela."
+          },
+          "back-to-menu": {
+            "label": "Começando tudo de novo, os asteroides saíram e a abertura voltou",
+            "pedido": "Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início."
+          }
+        }
+      }
+    },
+    "semPerguntaFinal": true
+  }
+}

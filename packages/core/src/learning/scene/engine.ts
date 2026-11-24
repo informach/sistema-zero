@@ -994,22 +994,28 @@ export function stepScene(
         ? `Acerto! O placar foi para ${g.points}, e o jogo deu a vitória.`
         : `Acerto! O placar foi para ${g.points}. A partida continua.`
       if (g.won && g.op === '>=' && g.points === g.goal)
-        observe(s, 'igual-conta', 'Com maior ou igual, chegar a 26 já deu a vitória')
+        observe(s, 'igual-conta', `Com maior ou igual, chegar a ${g.goal} já deu a vitória`)
       if (g.won && g.op === '>' && g.points === g.goal + 1)
-        observe(s, 'maior-pula', 'Com maior que, o 26 não deu a vitória; só o 27')
+        observe(s, 'maior-pula', `Com maior que, o ${g.goal} não deu a vitória; só o ${g.goal + 1}`)
       break
     }
     case 'goal-op':
       // Trocar o sinal é outra regra de vitória: a partida recomeça, para a comparação ser justa.
-      s.scoreGoal = { ...s.scoreGoal, op: action.op, points: SCORE_GOAL.start, hits: 0, won: false }
+      s.scoreGoal = {
+        ...s.scoreGoal,
+        op: action.op,
+        points: s.scoreGoal.goal - 3,
+        hits: 0,
+        won: false,
+      }
       s.caption =
         action.op === '>'
           ? 'Agora a vitória vem quando o placar for maior que a meta. A partida recomeçou.'
           : 'Agora a vitória vem quando o placar for maior ou igual à meta. A partida recomeçou.'
       break
     case 'goal-restart':
-      s.scoreGoal = { ...s.scoreGoal, points: SCORE_GOAL.start, hits: 0, won: false }
-      s.caption = `Partida nova: o placar voltou para ${SCORE_GOAL.start}.`
+      s.scoreGoal = { ...s.scoreGoal, points: s.scoreGoal.goal - 3, hits: 0, won: false }
+      s.caption = `Partida nova: o placar voltou para ${s.scoreGoal.points}.`
       break
     case 'goal-edit':
       // A placa é uma CONSTANTE: escolhida antes do jogo, nada a muda durante a partida.
@@ -1385,9 +1391,14 @@ export function stepScene(
           // ⚠️ Sem "pista": o Desafio e o Meu Jeito usam esta cena no espaço. E no PASSADO: a frase
           // antiga ("recomeça vazia") ficava embaixo do palco com os cactos já nascendo. ⚠️ Com o
           // nome da PEÇA que a bancada move (lote 5): o fio "Relógio → Nascer cacto" saiu.
-          s.caption = action.enabled
-            ? 'Tudo recomeçou do zero, com Criar cacto dentro do relógio.'
-            : 'Tudo recomeçou do zero, com Criar cacto a cada quadro.'
+          s.caption =
+            scene === 'spawn' && start.setup?.preset?.id === 'pedra-segundos'
+              ? action.enabled
+                ? 'Tudo recomeçou do zero, com uma espera entre os nascimentos.'
+                : 'Tudo recomeçou do zero, com uma pedra nova a cada quadro.'
+              : action.enabled
+                ? 'Tudo recomeçou do zero, com Criar cacto dentro do relógio.'
+                : 'Tudo recomeçou do zero, com Criar cacto a cada quadro.'
           break
         case 'cleanup':
           s.crowd.cleanup = action.enabled
@@ -1686,15 +1697,18 @@ export function stepScene(
 
     case 'interval':
       if (scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling) {
-        const frames = Math.round(action.seconds * 30)
-        if (![20, 40, 80].includes(frames)) return previous
+        const selected =
+          start.setup.preset.unit === 'frames' ? Math.round(action.seconds * 30) : action.seconds
+        if (!start.setup.preset.intervals.includes(selected)) return previous
       }
       s.crowd.interval = action.seconds
       resetTrack(s)
       // ⚠️ Na exploração livre a medida de 20 FICA: a queda pode ser medida de 20 em 20 antes de 40.
       if (scene === 'spawn' && !start.setup?.freeExploration) s.crowd.fallComparison = undefined
       s.caption =
-        scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling
+        scene === 'spawn' &&
+        isSpawnPreset(start.setup?.preset) &&
+        start.setup.preset.unit === 'frames'
           ? `Tudo recomeçou do zero, com o intervalo de ${Math.round(action.seconds * 30)} quadros.`
           : `Tudo recomeçou do zero, com o intervalo de ${decimal(action.seconds)} s.`
       break

@@ -1,0 +1,502 @@
+{
+  "engine": "Motor oficial scene; ações públicas e avaliador oficial, sem desenho da interface",
+  "results": [
+    {
+      "key": "tres-direcoes",
+      "scene": "island-3d",
+      "mode": "position",
+      "goals": ["axis-x", "axis-y", "axis-z"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Aumente e diminua x, observando a chave.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "x",
+            "value": -1
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": false
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": false
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -1,
+              "y": 1,
+              "z": -3
+            },
+            "before": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "x",
+            "value": -2
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": false
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "before": {
+              "x": -1,
+              "y": 1,
+              "z": -3
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+", "x-"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "y",
+            "value": 2
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": false
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -2,
+              "y": 2,
+              "z": -3
+            },
+            "before": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+", "x-", "y+"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "y",
+            "value": 1
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "before": {
+              "x": -2,
+              "y": 2,
+              "z": -3
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+", "x-", "y+", "y-"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "z",
+            "value": -2
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -2,
+              "y": 1,
+              "z": -2
+            },
+            "before": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+", "x-", "y+", "y-", "z+"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "z",
+            "value": -3
+          },
+          "goals": [
+            {
+              "id": "axis-x",
+              "label": "Você comparou aumentar e diminuir x",
+              "pedido": "Aumente e diminua x, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-y",
+              "label": "Você comparou aumentar e diminuir y",
+              "pedido": "Aumente e diminua y, observando a chave.",
+              "complete": true
+            },
+            {
+              "id": "axis-z",
+              "label": "Você comparou aumentar e diminuir z",
+              "pedido": "Aumente e diminua z, observando a chave.",
+              "complete": true
+            }
+          ],
+          "state": {
+            "mode": "position",
+            "view": "front",
+            "key": {
+              "x": -2,
+              "y": 1,
+              "z": -3
+            },
+            "before": {
+              "x": -2,
+              "y": 1,
+              "z": -2
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["x+", "x-", "y+", "y-", "z+", "z-"],
+            "tested": null,
+            "answer": null
+          }
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "x e z mudam o lugar no chão. y muda a altura.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    },
+    {
+      "key": "encontro-no-espaco",
+      "scene": "island-3d",
+      "mode": "contact",
+      "goals": ["contact-apart", "contact-touch"],
+      "before": {
+        "participated": false,
+        "passed": false,
+        "feedback": "Prepare uma separação e teste o encontro.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      },
+      "actions": [
+        {
+          "action": {
+            "type": "island-test"
+          },
+          "goals": [
+            {
+              "id": "contact-apart",
+              "label": "Áreas separadas não se encostam",
+              "pedido": "Prepare uma separação e teste o encontro.",
+              "complete": true
+            },
+            {
+              "id": "contact-touch",
+              "label": "Áreas que se encontram têm contato",
+              "pedido": "Aproxime os objetos e teste o encontro.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "contact",
+            "view": "top",
+            "key": {
+              "x": 0,
+              "y": 3,
+              "z": 1
+            },
+            "before": null,
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": [],
+            "tested": false,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-view",
+            "view": "side"
+          },
+          "goals": [
+            {
+              "id": "contact-apart",
+              "label": "Áreas separadas não se encostam",
+              "pedido": "Prepare uma separação e teste o encontro.",
+              "complete": true
+            },
+            {
+              "id": "contact-touch",
+              "label": "Áreas que se encontram têm contato",
+              "pedido": "Aproxime os objetos e teste o encontro.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "contact",
+            "view": "side",
+            "key": {
+              "x": 0,
+              "y": 3,
+              "z": 1
+            },
+            "before": null,
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": [],
+            "tested": false,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-axis",
+            "axis": "y",
+            "value": 1
+          },
+          "goals": [
+            {
+              "id": "contact-apart",
+              "label": "Áreas separadas não se encostam",
+              "pedido": "Prepare uma separação e teste o encontro.",
+              "complete": true
+            },
+            {
+              "id": "contact-touch",
+              "label": "Áreas que se encontram têm contato",
+              "pedido": "Aproxime os objetos e teste o encontro.",
+              "complete": false
+            }
+          ],
+          "state": {
+            "mode": "contact",
+            "view": "side",
+            "key": {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            "before": {
+              "x": 0,
+              "y": 3,
+              "z": 1
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["y-"],
+            "tested": null,
+            "answer": null
+          }
+        },
+        {
+          "action": {
+            "type": "island-test"
+          },
+          "goals": [
+            {
+              "id": "contact-apart",
+              "label": "Áreas separadas não se encostam",
+              "pedido": "Prepare uma separação e teste o encontro.",
+              "complete": true
+            },
+            {
+              "id": "contact-touch",
+              "label": "Áreas que se encontram têm contato",
+              "pedido": "Aproxime os objetos e teste o encontro.",
+              "complete": true
+            }
+          ],
+          "state": {
+            "mode": "contact",
+            "view": "side",
+            "key": {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            "before": {
+              "x": 0,
+              "y": 3,
+              "z": 1
+            },
+            "hero": {
+              "x": 0,
+              "z": 1
+            },
+            "bounds": false,
+            "directions": ["y-"],
+            "tested": true,
+            "answer": null
+          }
+        }
+      ],
+      "after": {
+        "participated": true,
+        "passed": true,
+        "feedback": "A imagem pode esconder uma separação: o contato depende das três dimensões.",
+        "verifiedBy": "client",
+        "evidence": "exploration"
+      }
+    }
+  ]
+}

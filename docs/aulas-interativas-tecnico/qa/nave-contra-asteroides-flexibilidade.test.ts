@@ -1,117 +1,117 @@
 import { expect, test } from 'bun:test'
-import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
-import { aulasNave } from './gerar-nave-contra-asteroides'
-import { etapasNave } from './nave-contra-asteroides-etapas'
+import { isExecutionRule } from '../../../packages/core/src/learning/project-execution'
+import { evaluateProjectStructure } from '../../../packages/core/src/learning/project-structure'
+import { criterios2D } from './construtor-2d-criterios'
+import { projeto2D } from './construtor-2d-projetos'
 import { fixtureBlock, fixtureBlocks, setFixtureLiteral } from './project-block-test-helpers'
 
-const stages = etapasNave()
-for (const [index, lesson] of aulasNave.entries()) {
-  test(`${lesson.slug}: aceita valores e textos próprios conservando sentido e vínculos`, () => {
-    const project = structuredClone(stages[index + 1]!)
-    for (const block of fixtureBlocks(project)) {
-      switch (block.type) {
-        case 'sz_g2d_create_ship':
-          for (const [name, value] of Object.entries({ X: 300, Y: 430, W: 60, H: 70 }))
-            setFixtureLiteral(block, name, value)
-          break
-        case 'sz_g2d_arrows_x':
-        case 'sz_g2d_starfield':
-          setFixtureLiteral(block, 'SPEED', 2)
-          break
-        case 'sz_g2d_spawn_bullet':
-          setFixtureLiteral(block, 'R', 7)
-          setFixtureLiteral(block, 'VY', -6)
-          break
-        case 'sz_g2d_spawn_asteroid':
-          for (const [name, value] of Object.entries({ Y: -40, SIZE: 48, VY: 4 }))
-            setFixtureLiteral(block, name, value)
-          break
-        case 'sz_g2d_every_frames':
-          setFixtureLiteral(block, 'N', 60)
-          break
-        case 'sz_g2d_draw_score':
-          block.fields = { ...block.fields, LABEL: 'Acertos:' }
-          setFixtureLiteral(block, 'X', 20)
-          setFixtureLiteral(block, 'Y', 32)
-          setFixtureLiteral(block, 'SIZE', 22)
-          break
-        case 'sz_g2d_draw_sprite_health':
-          setFixtureLiteral(block, 'X', 20)
-          setFixtureLiteral(block, 'Y', 55)
-          setFixtureLiteral(block, 'SIZE', 25)
-          break
-        case 'sz_g2d_damage_sprite':
-          setFixtureLiteral(block, 'FRAMES', 60)
-          break
-        case 'sz_g2d_play_fx':
-          block.fields = { ...block.fields, FX: 'jump' }
-          break
-        case 'sz_g2d_show_screen':
-          setFixtureLiteral(block, 'HINT', 'Use Enter para continuar.')
-          break
-        case 'sz_js_const_create':
-          if (block.fields?.NAME === 'alvo') setFixtureLiteral(block, 'VALUE', 12)
-          break
-      }
-    }
-    for (const section of lesson.sections) {
-      expect(
-        evaluateStudioSectionProject(section.checks ?? [], project).filter((row) => !row.passed),
-        section.key,
-      ).toEqual([])
-    }
-  })
-}
+test('as 81 combinações de aparência conservam os critérios e todos os valores do jogo', () => {
+  const original = projeto2D('final')
+  const sets = ['nave-', 'cenario-', 'asteroide-', 'laser-'].map((prefix) =>
+    original.assets
+      .filter((asset: { name: string }) => asset.name.startsWith(prefix))
+      .map((asset: { name: string }) => asset.name),
+  )
+  expect(original.assets).toHaveLength(12)
+  for (const choices of sets) expect(choices).toHaveLength(3)
+  let combinations = 0
+  for (const ship of sets[0]!)
+    for (const background of sets[1]!)
+      for (const asteroid of sets[2]!)
+        for (const laser of sets[3]!) {
+          const project = structuredClone(original)
+          for (const block of fixtureBlocks(project.blocksState)) {
+            if (block.type === 'sz_g2d_create_image_sprite') block.fields!.IMAGE = ship
+            if (block.type === 'sz_g2d_set_backdrop') block.fields!.IMAGE = background
+            if (block.type === 'sz_g2d_spawn_image_in_group')
+              block.fields!.IMAGE = block.fields!.GROUP === 'tiros' ? laser : asteroid
+          }
+          for (const check of criterios2D('final').filter((check) => !isExecutionRule(check.rule)))
+            expect(evaluateProjectStructure(check.rule as never, project), check.id).toBe(true)
+          const neutral = (value: unknown) =>
+            JSON.stringify(value, (key, item) => (key === 'IMAGE' ? '<aparência>' : item))
+          expect(neutral(project.blocksState)).toBe(neutral(original.blocksState))
+          combinations++
+        }
+  expect(combinations).toBe(81)
+})
 
 test.each([
-  [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'W', 0],
-  [2, 'setas', 'setas', 'sz_g2d_arrows_x', 'SPEED', 0],
-  [2, 'setas', 'setas', 'sz_g2d_arrows_x', 'SPEED', -3],
-  // 02/11/2026: o disparo e o dano passaram às partes novas tiro-da-nave e dano.
-  [3, 'tiro-da-nave', 'disparo', 'sz_g2d_spawn_bullet', 'VY', 3],
-  [4, 'asteroide', 'asteroide', 'sz_g2d_spawn_asteroid', 'VY', -1],
-  [4, 'relogio', 'relogio', 'sz_g2d_every_frames', 'N', 0],
-  [7, 'dano', 'dano-protegido', 'sz_g2d_damage_sprite', 'AMOUNT', 2],
-  [9, 'finais', 'alvo', 'sz_js_const_create', 'VALUE', 0],
-] as const)('etapa %s/%s mantém a intenção de %s (%s/%s=%s)', (stage, section, id, type, name, value) => {
-  const project = structuredClone(stages[stage]!)
-  setFixtureLiteral(fixtureBlock(project, type), name, value)
-  const check = aulasNave[stage - 1]!.sections.find((item) => item.key === section)?.checks?.find(
-    (item) => item.id === id,
+  ['inicial', 'nave-preservada', 'sz_g2d_create_image_sprite', 'W', 57],
+  ['inicial', 'nave-preservada', 'sz_g2d_create_image_sprite', 'H', 0],
+  ['movimento', 'movimento-na-partida', 'sz_g2d_arrows_x', 'SPEED', 0],
+  ['voo-tiros', 'evento-protegido', 'sz_g2d_spawn_image_in_group', 'VY', 7],
+  ['relogio-asteroides', 'intervalo-asteroides', 'sz_g2d_every_seconds', 'SECS', 1],
+  ['dano', 'dano-e-protecao', 'sz_g2d_damage_sprite', 'AMOUNT', 2],
+  ['meta', 'nave-preservada', 'sz_js_var_create', 'VALUE', 21],
+] as const)('%s: %s não é cumprido com %s/%s=%s', (stage, id, type, field, value) => {
+  const project = projeto2D(stage)
+  const block =
+    type === 'sz_js_var_create'
+      ? fixtureBlocks(project.blocksState).find(
+          (block) => block.type === type && block.fields?.NAME === 'meta',
+        )!
+      : fixtureBlock(project.blocksState, type)
+  setFixtureLiteral(block, field, value)
+  const check = criterios2D(stage).find((check) => check.id === id)!
+  expect(evaluateProjectStructure(check.rule as never, project)).toBe(false)
+})
+
+test('um bloco desativado ou solto fora das áreas não cumpre a montagem', () => {
+  const check = criterios2D('movimento').find((check) => check.id === 'movimento-na-partida')!
+  const project = projeto2D('movimento')
+  const block = fixtureBlock(project.blocksState, 'sz_g2d_arrows_x')
+  Object.assign(block, { disabled: true })
+  expect(evaluateProjectStructure(check.rule as never, project)).toBe(false)
+  const detached = {
+    ...project,
+    blocksState: { blocks: { languageVersion: 0, blocks: [{ ...block, disabled: false }] } },
+  }
+  expect(evaluateProjectStructure(check.rule as never, detached)).toBe(false)
+})
+
+/** A parte nova não pode aprovar a desmontagem de uma conquista anterior. */
+test.each([
+  ['vidas', 'sz_g2d_update_group', 'GROUP', 'tiros'],
+  ['final', 'sz_g2d_update_group', 'GROUP', 'tiros'],
+  ['vidas', 'sz_g2d_draw_group', 'GROUP', 'tiros'],
+  ['final', 'sz_g2d_draw_score', 'LABEL', 'Acertos:'],
+  ['final', 'sz_g2d_set_health', 'SPRITE', 'nave'],
+  ['final', 'sz_g2d_prune_offscreen', 'GROUP', 'asteroides'],
+] as const)('%s continua exigindo %s/%s=%s', (stage, type, field, selected) => {
+  const project = projeto2D(stage)
+  const block = fixtureBlocks(project.blocksState).find(
+    (block) => block.type === type && String(block.fields?.[field]) === selected,
   )
-  if (!check) throw new Error(`Authored ${section}/${id} check missing`)
-  expect(evaluateStudioSectionProject([check], project)[0]?.passed).toBe(false)
+  expect(block).toBeDefined()
+  Object.assign(block!, { disabled: true })
+  const rejected = criterios2D(stage).filter(
+    (check) =>
+      !isExecutionRule(check.rule) && !evaluateProjectStructure(check.rule as never, project),
+  )
+  expect(rejected.length).toBeGreaterThan(0)
 })
 
-test('o placar pode ter palavras próprias, mas não um rótulo em branco', () => {
-  const project = structuredClone(stages[6]!)
-  const score = fixtureBlock(project, 'sz_g2d_draw_score')
-  score.fields = { ...score.fields, LABEL: '  ' }
-  const check = aulasNave[5]!.sections
-    .find((item) => item.key === 'placar')
-    ?.checks?.find((item) => item.id === 'placar')
-  if (!check) throw new Error('Authored scoreboard check missing')
-  expect(evaluateStudioSectionProject([check], project)[0]?.passed).toBe(false)
+test.each([
+  ['sz_g2d_arrows_x', 'SPRITE', 'nave', 'SPEED', 6],
+  ['sz_g2d_spawn_image_in_group', 'GROUP', 'tiros', 'VY', -8],
+  ['sz_g2d_spawn_image_in_group', 'GROUP', 'tiros', 'W', 11],
+  ['sz_g2d_spawn_image_in_group', 'GROUP', 'asteroides', 'VY', 3],
+  ['sz_g2d_spawn_image_in_group', 'GROUP', 'asteroides', 'H', 49],
+  ['sz_js_var_create', 'NAME', 'pontos', 'VALUE', 1],
+  ['sz_js_var_create', 'NAME', 'meta', 'VALUE', 21],
+  ['sz_g2d_set_health', 'SPRITE', 'nave', 'AMOUNT', 4],
+] as const)('a aparência não autoriza mudar %s/%s=%s, %s para %s', (type, field, selected, input, altered) => {
+  const project = projeto2D('final')
+  const block = fixtureBlocks(project.blocksState).find(
+    (block) => block.type === type && String(block.fields?.[field]) === selected,
+  )!
+  expect(block).toBeDefined()
+  setFixtureLiteral(block, input, altered)
+  expect(
+    criterios2D('final').some(
+      (check) =>
+        !isExecutionRule(check.rule) && !evaluateProjectStructure(check.rule as never, project),
+    ),
+  ).toBe(true)
 })
-
-for (const [stage, section, id, type, axis, value] of [
-  [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'X', 1_000_000],
-  [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'Y', -1_000_000],
-  [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'X', 800],
-  [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'Y', 480],
-  [6, 'placar', 'placar', 'sz_g2d_draw_score', 'X', 1_000_000],
-  [6, 'placar', 'placar', 'sz_g2d_draw_score', 'Y', -1_000_000],
-  [7, 'vidas', 'coracoes', 'sz_g2d_draw_sprite_health', 'X', 1_000_000],
-  [7, 'vidas', 'coracoes', 'sz_g2d_draw_sprite_health', 'Y', -1_000_000],
-  [1, 'montar-areas-e-tela', 'tela', 'sz_g2d_setup_stage', 'W', 960],
-] as const) {
-  test(`${section}/${id}: conserva o mundo do curso e recusa ${axis}=${value}`, () => {
-    const project = structuredClone(stages[stage]!)
-    setFixtureLiteral(fixtureBlock(project, type), axis, value)
-    const check = aulasNave[stage - 1]!.sections.find((s) => s.key === section)?.checks?.find(
-      (c) => c.id === id,
-    )
-    if (!check) throw new Error('Authored spatial check missing')
-    expect(evaluateStudioSectionProject([check], project)[0]?.passed).toBe(false)
-  })
-}

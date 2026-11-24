@@ -1,13 +1,5 @@
-[curious] E se nascer uma pedra em todo quadro?
+[curious] E se nascer um asteroide em todo quadro?
 
 [long pause]
 
-[curious] E quando vai nascer cada pedra?
-
-[long pause]
-
-[curious] E a pedra aparece de repente, no meio da tela?
-
-[long pause]
-
-[curious] E como tira as pedras que saem da tela?
+[curious] O sorteio precisa dar um lugar diferente todas as vezes?

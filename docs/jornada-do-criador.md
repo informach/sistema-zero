@@ -29,6 +29,16 @@ Extras, XP, sequência de dias e publicação no Mural são opcionais para a pro
 
 Cada curso concluído concede seus blocos ao Estúdio, sem esperar Mural ou promoção. Isso inclui cursos arquivados que continuam acessíveis ao aluno; rascunhos não geram novas concessões. Blocos já conquistados permanecem no ledger. A aula pode oferecer blocos curados antes do desbloqueio global. Licença comercial, capacidade global da ferramenta, linguagem/runtime e repertório de blocos continuam verificações distintas.
 
+### Autoria nas bases do Construtor e direção do Inventor
+
+Na reautoria de **Nave Contra Asteroides** e **Patrulha Espacial**, o projeto inicial já oferece abertura, telas de resultado, estado inicial, Enter e reinício. A criança constrói tiros, asteroides, contatos, pontos, vidas e as condições que acionam vitória ou derrota. Aplica a guarda da partida às novas regras e testa a restauração dos valores que criou. A personalização dessas bases limita-se à aparência, preservando regras e áreas de colisão.
+
+A Patrulha retoma os conceitos do curso 2D e oferece a montagem completa dos blocos, com experiências espaciais de eixos e contato. A continuidade 2D → 3D permanece a da jornada; nenhum Poder específico do Faísca é pré-requisito adicional. Os apoios preparados e a autoria de cada parte estão nos [materiais do Construtor](aulas-interativas/construtor/README.md).
+
+No **Inventor**, a direção futura é começar com um projeto sem blocos e construir também a organização completa do jogo: cena, atores, câmera quando necessária, apresentação, estados, transições e reinício. As regras aprendidas no Construtor serão retomadas junto de gravidade, pulo e ritmo. Essa direção ainda exige reautoria e validação dos cursos do Inventor; não declara que a nova versão já está implementada ou publicada.
+
+Os campos `authoredSource` do currículo apontam para os manifestos e títulos atuais das duas bases. Os arrays `lessons` anteriores permanecem como outline legado de identidade do seed, inclusive quando descrevem uma fronteira antiga de autoria. Conservá-los mantém seus hashes e as aulas reservadas; a autoria detalhada não recria IDs nem autoriza reaplicar o seed. Missão, Poderes e extras não foram reautorados nesta etapa.
+
 ## Cursos existentes e direitos comerciais
 
 O seed resolve slug, público e modalidade para manter o UUID real de cada curso. Preserva aulas, versões, conclusões, XP, entregas e concessões. Nunca substitui um curso existente por uma cópia de mesmo título.
