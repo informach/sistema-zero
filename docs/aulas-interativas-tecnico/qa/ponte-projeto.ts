@@ -43,7 +43,13 @@ export const PONTE_CURSO = 'jornada-faisca-poder-3'
 /** `pergunta`: o encontro com a ponte e o Se, só com a resposta do sim; `atravessar` põe o senão (24/11/2026). */
 export const PONTE_ETAPAS = ['inicio', 'alavanca', 'sobe', 'pergunta', 'atravessar'] as const
 /** A ordem dos ids dos exemplos: a etapa nova no fim, para os ids das outras não mudarem. */
-export const PONTE_IDS: readonly PonteEtapa[] = ['inicio', 'alavanca', 'sobe', 'atravessar', 'pergunta']
+export const PONTE_IDS: readonly PonteEtapa[] = [
+  'inicio',
+  'alavanca',
+  'sobe',
+  'atravessar',
+  'pergunta',
+]
 export type PonteEtapa = (typeof PONTE_ETAPAS)[number]
 export type PonteDimensao = '2d' | '3d'
 /** Quantos segundos a ponte fica baixada. */

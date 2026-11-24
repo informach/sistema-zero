@@ -44,7 +44,12 @@ for (const f of readdirSync(runtime))
       )
     writeFileSync(resolve(dir, f), s)
   }
-const p = montarProjetoSimbolos(d, 'estrela'),
+// O cenário sem-senao é o projeto da parte da pergunta da estrela (sem o recomeço dela), e
+// sem-senao-lua, o da pergunta da lua: as partes do senão reprovam esses projetos.
+const p = montarProjetoSimbolos(
+    d,
+    scenario === 'sem-senao' ? 'estrela-vez' : scenario === 'sem-senao-lua' ? 'lua-vez' : 'estrela',
+  ),
   scope = '__sz0123456789abcdef01234567'
 let js = p.files['script.js']
 // Os erros plausíveis da criança (a tabela da proposta).
@@ -53,7 +58,8 @@ if (scenario === 'estrela-sem-se') js = js.replace('if (passo === 2)', 'if (true
 if (scenario === 'nao-volta') js = js.replace(/\n *passo = 0;/g, '')
 if (scenario === 'invertida') js = js.replace('if (passo === 2)', 'if (passo !== 2)')
 if (scenario === 'passo-errado') js = js.replace('if (passo === 2)', 'if (passo === 3)')
-if (scenario !== 'correto' && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao', 'sem-senao-lua'].includes(scenario) && js === p.files['script.js'])
+  throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -107,7 +113,9 @@ console.log(d, scenario, JSON.stringify(verdicts, null, 2))
 writeFileSync(resolve(dir, 'vereditos.json'), JSON.stringify(verdicts, null, 2))
 /** O que cada erro deve reprovar em cada etapa (o resto continua passando), nas duas dimensões. */
 const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
-  correto: { sol: [], lua: [], estrela: [] },
+  correto: { sol: [], 'lua-vez': [], lua: [], 'estrela-vez': [], estrela: [] },
+  'sem-senao': { 'estrela-vez': [], estrela: ['fora-da-vez'] },
+  'sem-senao-lua': { 'lua-vez': [], lua: ['lua-primeiro'] },
   'lua-sem-se': { lua: ['lua-primeiro'], estrela: ['fora-da-vez'] },
   'estrela-sem-se': { estrela: ['fora-da-vez'] },
   'nao-volta': { estrela: ['fora-da-vez'] },

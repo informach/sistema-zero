@@ -519,7 +519,6 @@ function pergunta(
   n: number,
   ideia: string,
   jeito: 'primeira-2d' | 'primeira-3d' | 'de-novo',
-  kids?: string,
 ): Passo[] {
   const enc = DIM[d].enc(s),
     se = SE(enc)
@@ -535,31 +534,6 @@ function pergunta(
           [
             `${CONVERSA} Repare: o Se chega com uma pergunta pronta, x maior que 0. Ela compara dois valores, e a resposta é sim ou não. Desta vez, você vai aproveitar essa pergunta e trocar as partes dela.`,
             `No "o Se chega com uma pergunta pronta", apontar a pergunta [apontar bloco "${se}"].`,
-          ],
-        ]
-  const senao: Passo[] =
-    jeito === 'de-novo'
-      ? [
-          [
-            `${CALMA} Agora abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.`,
-            `No "clique no segundo sinal de mais", clicar no segundo, o de antes da palavra **senão** [abrir "senão" em "${se}"].`,
-          ],
-        ]
-      : [
-          ...(kids ? [[`${PERGUNTA} ${kids}`] as const] : []),
-          [
-            `${CONVERSA} ${
-              jeito === 'primeira-2d' ? 'Num espaço do próprio Se.' : 'Lembra do Se no jogo 2D?'
-            } A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.`,
-            `No "A resposta do sim fica no espaço do então", apontar o espaço do **então**, ainda vazio [apontar encaixe em "${se}" no "então"].`,
-          ],
-          [
-            `${OLHA} Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.`,
-            `No "Olha aqui, na linha de baixo", apontar a linha de baixo do **Se** [apontar bloco "${se}"]. No "O primeiro fica antes de", apontar o primeiro sinal de mais [apontar mais de "senão se" em "${se}"]. No "e o segundo fica antes da palavra", apontar o segundo [apontar mais de "senão" em "${se}"].`,
-          ],
-          [
-            `${CALMA} Clique no segundo sinal de mais. Não clique no primeiro.`,
-            `No "Clique no segundo sinal de mais", clicar no segundo, o de antes da palavra **senão** [abrir "senão" em "${se}"].`,
           ],
         ]
   return [
@@ -593,6 +567,48 @@ function pergunta(
       `${CONVERSA} Pronto: agora o Se pergunta se passo é igual a ${n}. Ou seja: ${ideia}`,
       `No "Pronto: agora o Se pergunta", apontar o **Se** pronto [apontar bloco "${se}"].`,
     ],
+  ]
+}
+
+/**
+ * O senão, na parte seguinte à da pergunta (as partes longas divididas em 24/11/2026): a resposta do
+ * sim já está no então, e a criança abre o espaço da resposta do não.
+ */
+function abrirSenao(
+  d: SimbolosDimensao,
+  s: Simbolo,
+  jeito: 'primeira-2d' | 'primeira-3d' | 'de-novo',
+  kids?: string,
+): Passo[] {
+  const se = SE(DIM[d].enc(s))
+  const senao: Passo[] =
+    jeito === 'de-novo'
+      ? [
+          [
+            `${CALMA} Agora abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.`,
+            `No "clique no segundo sinal de mais", clicar no segundo, o de antes da palavra **senão** [abrir "senão" em "${se}"].`,
+          ],
+        ]
+      : [
+          ...(kids ? [[`${PERGUNTA} ${kids}`] as const] : []),
+          [
+            `${CONVERSA} ${
+              jeito === 'primeira-2d'
+                ? 'Num espaço do próprio Se. A resposta do sim você já colocou no espaço do então,'
+                : 'Lembra do Se no jogo 2D? A resposta do sim já está no espaço do então,'
+            } e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.`,
+            `No "e a resposta do não fica no espaço do senão", apontar a linha de baixo do **Se** [apontar bloco "${se}"].`,
+          ],
+          [
+            `${OLHA} Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.`,
+            `No "Olha aqui, na linha de baixo", apontar a linha de baixo do **Se** [apontar bloco "${se}"]. No "O primeiro fica antes de", apontar o primeiro sinal de mais [apontar mais de "senão se" em "${se}"]. No "e o segundo fica antes da palavra", apontar o segundo [apontar mais de "senão" em "${se}"].`,
+          ],
+          [
+            `${CALMA} Clique no segundo sinal de mais. Não clique no primeiro.`,
+            `No "Clique no segundo sinal de mais", clicar no segundo, o de antes da palavra **senão** [abrir "senão" em "${se}"].`,
+          ],
+        ]
+  return [
     ...senao,
     [
       `${CALMA} Repare: apareceu o espaço do senão.`,
@@ -815,7 +831,7 @@ function parteSol(d: SimbolosDimensao): SimbolosTrecho {
 
 const KIDS_DA_LUA = 'E onde fica o que acontece quando não é a vez da lua?'
 
-function parteLua(d: SimbolosDimensao): SimbolosTrecho {
+function parteLua(d: SimbolosDimensao): SimbolosTrecho[] {
   const x = DIM[d],
     enc = x.enc('lua'),
     sol = x.enc('sol'),
@@ -830,15 +846,26 @@ function parteLua(d: SimbolosDimensao): SimbolosTrecho {
     repare: !tres,
     porque: tres ? 'como no sol' : undefined,
   })
-  const r = juntar([
+  const testeCerto: Passo[] = [
+    [
+      `${ANIMA} Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol e depois até a lua.`,
+      `No "Clique em Rodar de novo mais uma vez", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol e depois até a lua", levar o personagem pelo mesmo caminho ${x.setas.ateOSol} ${x.setas.doSolALua}.`,
+    ],
+    [
+      `${OLHA} Olha só: o sol e a lua acendem, e o aviso pede a estrela.`,
+      `No "Olha só: o sol e a lua acendem", apontar a lua acesa ${x.pedra.lua}. No "e o aviso pede a estrela", apontar o aviso ${x.aviso}.`,
+    ],
+  ]
+  // A parte da pergunta: o Se com a resposta do sim. O senão fica para a parte seguinte (24/11/2026).
+  const a = juntar([
     [
       `${CONVERSA} Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol e depois até a lua. Tá vendo? O sol acende, mas a lua não, porque o jogo ainda não tem nenhuma reação para o encontro com a lua.`,
       `No "clique em Rodar de novo, no alto do Estúdio", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol e depois até a lua", levar o personagem pelas setas do teclado até o sol e depois até a lua ${x.setas.ateOSol} ${x.setas.doSolALua}. No "Tá vendo?", apontar a lua, ainda apagada ${x.pedra.lua}.`,
     ],
     [
       tres
-        ? `${CONVERSA} Como no jogo 2D, a lua pergunta se é a vez dela: passo igual a 1? Com a resposta sim, ela acende. Com a resposta não, a tentativa recomeça. Agora a lua da ilha vai fazer essa pergunta!`
-        : `${CONVERSA} Lembra da experiência? Quando a lua perguntava se era a vez dela, a resposta era sim só com passo valendo 1, ou seja, logo depois do sol. Com a resposta não, a tentativa recomeçava: passo voltava a 0, e os símbolos acesos apagavam. Agora a lua do seu jogo vai fazer essa pergunta!`,
+        ? `${CONVERSA} Como no jogo 2D, a lua pergunta se é a vez dela: passo igual a 1? Com a resposta sim, ela acende. Agora a lua da ilha vai fazer essa pergunta!`
+        : `${CONVERSA} Lembra da experiência? Quando a lua perguntava se era a vez dela, a resposta era sim só com passo valendo 1, ou seja, logo depois do sol. Agora a lua do seu jogo vai fazer essa pergunta!`,
     ],
     [
       `${CONVERSA} Primeiro, o encontro com a lua. Os encontros ficam na área Quando acontecer, e o novo vai logo abaixo do encontro com o sol, fora do fazer dele.`,
@@ -848,16 +875,9 @@ function parteLua(d: SimbolosDimensao): SimbolosTrecho {
       `No "deixe à vista o encontro com o sol", trazer o encontro com o sol para perto do meio [arrastar até "${sol}"]. No "e o espaço logo abaixo dele", apontar o lugar logo abaixo [apontar abaixo de "${sol}"].`,
     ],
     ...encontro(d, 'lua', sol, 'do encontro com o sol'),
-    ...pergunta(
-      d,
-      'lua',
-      1,
-      'o sol já foi tocado?',
-      tres ? 'primeira-3d' : 'primeira-2d',
-      tres ? undefined : KIDS_DA_LUA,
-    ),
+    ...pergunta(d, 'lua', 1, 'o sol já foi tocado?', tres ? 'primeira-3d' : 'primeira-2d'),
     [
-      `${CONVERSA} Agora a resposta do sim, no espaço do então. Ela tem três blocos, como o encontro com o sol: passo vira 2, a lua acende e o aviso muda. Deixe o espaço do então à vista.`,
+      `${CONVERSA} No bloco Se, a resposta do sim fica no espaço do então. Ela tem três blocos, como o encontro com o sol: passo vira 2, a lua acende e o aviso muda. Deixe o espaço do então à vista.`,
       `No "Deixe o espaço do então à vista", apontar o espaço do **então** [apontar encaixe em "${SE(enc)}" no "então"].`,
     ],
     ...alterarVariavel({
@@ -887,15 +907,34 @@ function parteLua(d: SimbolosDimensao): SimbolosTrecho {
       outro: true,
     }),
     ...textoDoAviso(enc, AVISO.lua, true),
+    ...testeCerto,
+    [
+      `${CONVERSA} E se o personagem for direto até a lua? Toque na tecla R e leve o personagem direto até a lua, sem passar pelo sol.`,
+      `No "Toque na tecla R", tocar a tecla R [tecla r]. No "e leve o personagem direto até a lua", levar o personagem até a lua sem encostar no sol ${x.setas.ateALuaSemOSol}.`,
+    ],
+    [
+      `${OLHA} Repare: a lua não acende. Só que o aviso não diz nada. O que acontece quando não é a vez da lua fica para a próxima parte.`,
+      `No "Repare: a lua não acende", apontar a lua apagada ${x.pedra.lua}. No "Só que o aviso não diz nada", apontar o aviso ${x.aviso}.`,
+    ],
+  ])
+  // A parte do senão: fora da vez, a tentativa recomeça.
+  const b = juntar([
+    [
+      `${CONVERSA} Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem direto até a lua, sem passar pelo sol. Tá vendo? A lua não acende, mas o aviso continua igual, porque a pergunta da lua ainda não tem a resposta do não.`,
+      `No "clique em Rodar de novo, no alto do Estúdio", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem direto até a lua", levar o personagem até a lua sem encostar no sol ${x.setas.ateALuaSemOSol}. No "Tá vendo?", apontar o aviso, que continua igual ${x.aviso}.`,
+    ],
+    [
+      tres
+        ? `${CONVERSA} Como no jogo 2D, quando não é a vez da lua, a tentativa recomeça: passo volta a 0, e os símbolos acesos apagam. Agora a lua da ilha vai ganhar a resposta do não!`
+        : `${CONVERSA} Lembra da experiência? Quando não era a vez da lua, a tentativa recomeçava: passo voltava a 0, e os símbolos acesos apagavam. Agora a lua do seu jogo vai ganhar a resposta do não!`,
+    ],
+    [
+      `${CALMA} Na área Quando acontecer, deixe à vista o encontro com a lua e o Se que está dentro dele.`,
+      `No "deixe à vista o encontro com a lua", trazer o **Se** da lua para perto do meio [arrastar até "${SE(enc)}"].`,
+    ],
+    ...abrirSenao(d, 'lua', tres ? 'primeira-3d' : 'primeira-2d', tres ? undefined : KIDS_DA_LUA),
     ...recomeco(d, enc, false),
-    [
-      `${ANIMA} Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol e depois até a lua.`,
-      `No "Clique em Rodar de novo mais uma vez", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol e depois até a lua", levar o personagem pelo mesmo caminho ${x.setas.ateOSol} ${x.setas.doSolALua}.`,
-    ],
-    [
-      `${OLHA} Olha só: o sol e a lua acendem, e o aviso pede a estrela.`,
-      `No "Olha só: o sol e a lua acendem", apontar a lua acesa ${x.pedra.lua}. No "e o aviso pede a estrela", apontar o aviso ${x.aviso}.`,
-    ],
+    ...testeCerto,
     [
       `${CONVERSA} Agora teste fora da vez. Toque na tecla R e leve o personagem direto até a lua, sem passar pelo sol.`,
       `No "Toque na tecla R", tocar a tecla R [tecla r]. No "e leve o personagem direto até a lua", levar o personagem até a lua sem encostar no sol ${x.setas.ateALuaSemOSol}.`,
@@ -907,37 +946,59 @@ function parteLua(d: SimbolosDimensao): SimbolosTrecho {
   ])
   const acesa = tres ? 'Tocar a animação acender na lua' : 'a troca da lua'
   const apagadas = tres ? 'as animações apagar no sol e na lua' : 'as trocas do sol e da lua'
-  return {
-    key: 'lua',
-    title: tres ? 'A lua da ilha pergunta a vez' : 'A lua pergunta a vez',
-    kind: 'build',
-    etapa: 'lua',
-    ponte: `Agora a lua vai perguntar se é a vez dela! No encontro com a lua, monte o Se com passo = 1: no então, passo vira 2, a lua acende e o aviso muda; no senão, passo volta a 0, o sol e a lua apagam e o aviso pede o sol. Teste a ordem certa e a lua primeiro. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.`,
-    text: `${r.text} ${verificar(
-      `dentro do encontro entre personagem e lua está o Se com passo igual a 1, no então estão Alterar variável passo para 2, ${acesa} e o aviso, e no senão estão Alterar variável passo para 0, ${apagadas} e o aviso de recomeçar`,
-    )}`,
-    screen: telaDaMontagem(
-      'da parte anterior',
-      r.tela,
-      `${telaDaConferencia(`"${enc}"`, [
-        ['dentro do encontro entre personagem e lua', enc],
-        ['está o Se com passo igual a 1', SE(enc)],
-        ['no então estão Alterar variável passo para 2', passo2],
-        [
-          'e no senão estão Alterar variável passo para 0',
-          `Alterar variável passo para 0 dentro de ${enc}`,
-        ],
-      ])} ${telaDaSaida}`,
-      x.nota,
-    ),
-    ...(tres ? {} : { kids: [KIDS_DA_LUA] }),
-  }
+  return [
+    {
+      key: 'lua-vez',
+      title: tres ? 'A lua da ilha pergunta a vez' : 'A lua pergunta a vez',
+      kind: 'build',
+      etapa: 'lua-vez',
+      ponte: `Agora a lua vai perguntar se é a vez dela! No encontro com a lua, monte o Se com passo = 1: no então, passo vira 2, a lua acende e o aviso muda. Teste a ordem certa e a lua primeiro. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.`,
+      text: `${a.text} ${verificar(
+        `dentro do encontro entre personagem e lua está o Se com passo igual a 1, e no então estão Alterar variável passo para 2, ${acesa} e o aviso`,
+      )}`,
+      screen: telaDaMontagem(
+        'da parte anterior',
+        a.tela,
+        `${telaDaConferencia(`"${enc}"`, [
+          ['dentro do encontro entre personagem e lua', enc],
+          ['está o Se com passo igual a 1', SE(enc)],
+          ['e no então estão Alterar variável passo para 2', passo2],
+        ])} ${telaDaSaida}`,
+        x.nota,
+      ),
+    },
+    {
+      key: 'lua',
+      title: tres ? 'A lua da ilha fora da vez' : 'A lua fora da vez',
+      kind: 'build',
+      etapa: 'lua',
+      ponte: `Agora a resposta do não! Abra o senão do Se da lua e monte o recomeço: passo volta a 0, o sol e a lua apagam e o aviso pede o sol. Teste a ordem certa e a lua primeiro. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.`,
+      text: `${b.text} ${verificar(
+        `dentro do encontro entre personagem e lua está o Se com passo igual a 1, no então estão Alterar variável passo para 2, ${acesa} e o aviso, e no senão estão Alterar variável passo para 0, ${apagadas} e o aviso de recomeçar`,
+      )}`,
+      screen: telaDaMontagem(
+        'da parte anterior',
+        b.tela,
+        `${telaDaConferencia(`"${enc}"`, [
+          ['dentro do encontro entre personagem e lua', enc],
+          ['está o Se com passo igual a 1', SE(enc)],
+          ['no então estão Alterar variável passo para 2', passo2],
+          [
+            'e no senão estão Alterar variável passo para 0',
+            `Alterar variável passo para 0 dentro de ${enc}`,
+          ],
+        ])} ${telaDaSaida}`,
+        x.nota,
+      ),
+      ...(tres ? {} : { kids: [KIDS_DA_LUA] }),
+    },
+  ]
 }
 
 const KIDS_DA_ESTRELA_2D = 'E se eu errar a ordem, preciso começar outra partida?'
 const KIDS_DO_BAU_3D = 'E o baú, como ele abre?'
 
-function parteEstrela(d: SimbolosDimensao): SimbolosTrecho {
+function parteEstrela(d: SimbolosDimensao): SimbolosTrecho[] {
   const x = DIM[d],
     enc = x.enc('estrela'),
     lua = x.enc('lua'),
@@ -963,15 +1024,26 @@ function parteEstrela(d: SimbolosDimensao): SimbolosTrecho {
   const pronto = tres
     ? 'Pronto, você levou a senha do baú para a ilha em três dimensões: lá também, só a ordem certa abre o baú!'
     : 'Pronto, você programou a senha do baú: o jogo lembra até onde a senha chegou, e só a ordem certa abre o baú!'
-  const r = juntar([
+  const testeCerto: Passo[] = [
+    [
+      `${ANIMA} Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol, a lua e a estrela.`,
+      `No "Clique em Rodar de novo mais uma vez", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol, a lua e a estrela", levar o personagem pelo mesmo caminho ${x.setas.ateOSol} ${x.setas.doSolALua} ${x.setas.daLuaAEstrela}.`,
+    ],
+    [
+      `${OLHA} Olha só: a estrela acende, e o baú abre!`,
+      `No "Olha só: a estrela acende", apontar a estrela acesa ${x.pedra.estrela}. No "e o baú abre", apontar o baú aberto ${x.bau}.`,
+    ],
+  ]
+  // A parte da pergunta: o Se com a resposta do sim. O senão fica para a parte seguinte (24/11/2026).
+  const a = juntar([
     [
       `${CONVERSA} Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol, a lua e a estrela. Tá vendo? O sol e a lua acendem, mas a estrela não, e o baú continua fechado, porque o jogo ainda não tem nenhuma reação para o encontro com a estrela.`,
       `No "clique em Rodar de novo, no alto do Estúdio", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol, a lua e a estrela", levar o personagem pelas setas do teclado de pedra em pedra ${x.setas.ateOSol} ${x.setas.doSolALua} ${x.setas.daLuaAEstrela}. No "Tá vendo?", apontar o baú fechado ${x.bau}.`,
     ],
     [
       tres
-        ? `${CONVERSA} Como no jogo 2D, a estrela pergunta se é a vez dela: passo igual a 2? Com a resposta sim, ela acende e o baú abre. Com a resposta não, a tentativa recomeça, como na lua. Agora a estrela da ilha vai fazer essa pergunta!`
-        : `${CONVERSA} Lembra da experiência? A estrela abria o baú só na vez dela, com passo valendo 2, ou seja, depois do sol e da lua. Fora da vez, a tentativa recomeçava, como na lua. Agora a estrela do seu jogo vai fazer essa pergunta!`,
+        ? `${CONVERSA} Como no jogo 2D, a estrela pergunta se é a vez dela: passo igual a 2? Com a resposta sim, ela acende e o baú abre. Agora a estrela da ilha vai fazer essa pergunta!`
+        : `${CONVERSA} Lembra da experiência? A estrela abria o baú só na vez dela, com passo valendo 2, ou seja, depois do sol e da lua. Agora a estrela do seu jogo vai fazer essa pergunta!`,
     ],
     [
       `${CALMA} Primeiro, o encontro com a estrela. Na área Quando acontecer, deixe à vista o encontro com a lua e o espaço logo abaixo dele, fora do fazer dele.`,
@@ -980,7 +1052,7 @@ function parteEstrela(d: SimbolosDimensao): SimbolosTrecho {
     ...encontro(d, 'estrela', lua, 'do encontro com a lua'),
     ...pergunta(d, 'estrela', 2, 'o sol e a lua já foram tocados, nessa ordem?', 'de-novo'),
     [
-      `${CONVERSA} Agora a resposta do sim, no espaço do então. Ela tem três blocos: a estrela acende, o baú abre e o aviso conta que deu certo. Deixe o espaço do então à vista.`,
+      `${CONVERSA} No bloco Se, a resposta do sim fica no espaço do então. Ela tem três blocos: a estrela acende, o baú abre e o aviso conta que deu certo. Deixe o espaço do então à vista.`,
       `No "Deixe o espaço do então à vista", apontar o espaço do **então** [apontar encaixe em "${SE(enc)}" no "então"].`,
     ],
     ...acende.passos,
@@ -1017,15 +1089,29 @@ function parteEstrela(d: SimbolosDimensao): SimbolosTrecho {
       repare: true,
     }),
     ...textoDoAviso(enc, AVISO.abriu, true),
+    ...testeCerto,
+    [
+      `${CONVERSA} E fora da ordem? Toque na tecla R e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua.`,
+      `No "Toque na tecla R", tocar a tecla R [tecla r]. No "e depois direto até a estrela", levar o personagem até o sol e dali até a estrela, sem encostar na lua ${x.setas.ateOSol} ${x.setas.doSolAEstrelaSemALua}.`,
+    ],
+    [
+      `${OLHA} Repare: o baú continua fechado. Só que nada recomeça, e o aviso não diz nada. O que acontece quando não é a vez da estrela fica para a próxima parte.`,
+      `No "Repare: o baú continua fechado", apontar o baú fechado ${x.bau}. No "Só que nada recomeça", apontar o aviso ${x.aviso}.`,
+    ],
+  ])
+  // A parte do senão: fora da vez, a tentativa recomeça, como na lua, e o envio.
+  const b = juntar([
+    [
+      `${CONVERSA} Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua. Tá vendo? O baú continua fechado, mas nada recomeça: o sol continua aceso, e o aviso não muda. É que a pergunta da estrela ainda não tem a resposta do não.`,
+      `No "clique em Rodar de novo, no alto do Estúdio", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol e depois direto até a estrela", levar o personagem até o sol e dali até a estrela, sem encostar na lua ${x.setas.ateOSol} ${x.setas.doSolAEstrelaSemALua}. No "Tá vendo?", apontar o baú fechado ${x.bau}. No "o sol continua aceso", apontar o sol aceso ${x.pedra.sol}.`,
+    ],
+    [
+      `${CALMA} Na área Quando acontecer, deixe à vista o encontro com a estrela e o Se que está dentro dele.`,
+      `No "deixe à vista o encontro com a estrela", trazer o **Se** da estrela para perto do meio [arrastar até "${SE(enc)}"].`,
+    ],
+    ...abrirSenao(d, 'estrela', 'de-novo'),
     ...recomeco(d, enc, true),
-    [
-      `${ANIMA} Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol, a lua e a estrela.`,
-      `No "Clique em Rodar de novo mais uma vez", clicar em **Rodar de novo** [rodar de novo]. No "e leve o personagem até o sol, a lua e a estrela", levar o personagem pelo mesmo caminho ${x.setas.ateOSol} ${x.setas.doSolALua} ${x.setas.daLuaAEstrela}.`,
-    ],
-    [
-      `${OLHA} Olha só: a estrela acende, e o baú abre!`,
-      `No "Olha só: a estrela acende", apontar a estrela acesa ${x.pedra.estrela}. No "e o baú abre", apontar o baú aberto ${x.bau}.`,
-    ],
+    ...testeCerto,
     [
       `${CONVERSA} Agora teste uma ordem errada. Toque na tecla R e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua.`,
       `No "Toque na tecla R", tocar a tecla R [tecla r]. No "e depois direto até a estrela", levar o personagem até o sol e dali até a estrela, sem encostar na lua ${x.setas.ateOSol} ${x.setas.doSolAEstrelaSemALua}.`,
@@ -1054,34 +1140,58 @@ function parteEstrela(d: SimbolosDimensao): SimbolosTrecho {
   const entao = tres
     ? 'as animações acender na estrela e abrir no baú'
     : 'a troca da estrela, a troca do baú'
-  return {
-    key: 'estrela',
-    title: tres ? 'A estrela abre o baú da ilha' : 'A estrela abre o baú',
-    kind: 'delivery',
-    etapa: 'estrela',
-    ponte: `${
-      tres ? 'Hora de abrir o baú da ilha!' : 'Agora a estrela vai abrir o baú!'
-    } No encontro com a estrela, monte o Se com passo = 2: no então, a estrela acende, o baú ${
-      tres ? 'toca abrir' : 'abre'
-    } e o aviso muda; no senão, recomece como na lua. Teste a ordem certa, uma ordem errada e recomeçar pelo sol. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.`,
-    text: `${r.text} ${entregar(
-      `dentro do encontro entre personagem e estrela está o Se com passo igual a 2, no então estão ${entao} e o aviso, e no senão está o mesmo recomeço da lua`,
-      pronto,
-      'Depois do envio, ainda tem algumas perguntas para você pensar na ordem dos símbolos. Quando aparecer Projeto enviado!, clique em Próxima parte.',
-    )}`,
-    screen: telaDaMontagem(
-      'da parte anterior',
-      r.tela,
-      `${telaDaConferencia(`"${enc}"`, [
-        ['dentro do encontro entre personagem e estrela', enc],
-        ['está o Se com passo igual a 2', SE(enc)],
-        [tres ? 'abrir no baú' : 'a troca do baú', abre.nome],
-        ['e no senão está o mesmo recomeço', `Alterar variável passo para 0 dentro de ${enc}`],
-      ])} ${telaDoEnvio(pronto.split(':')[0] ?? pronto, 'Próxima parte')}`,
-      x.nota,
-    ),
-    kids: [tres ? KIDS_DO_BAU_3D : KIDS_DA_ESTRELA_2D],
-  }
+  return [
+    {
+      key: 'estrela-vez',
+      title: tres ? 'A estrela abre o baú da ilha' : 'A estrela abre o baú',
+      kind: 'build',
+      etapa: 'estrela-vez',
+      ponte: `${
+        tres ? 'Hora de abrir o baú da ilha!' : 'Agora a estrela vai abrir o baú!'
+      } No encontro com a estrela, monte o Se com passo = 2: no então, a estrela acende, o baú ${
+        tres ? 'toca abrir' : 'abre'
+      } e o aviso muda. Teste a ordem certa e uma ordem errada. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.`,
+      text: `${a.text} ${verificar(
+        `dentro do encontro entre personagem e estrela está o Se com passo igual a 2, e no então estão ${entao} e o aviso`,
+      )}`,
+      screen: telaDaMontagem(
+        'da parte anterior',
+        a.tela,
+        `${telaDaConferencia(`"${enc}"`, [
+          ['dentro do encontro entre personagem e estrela', enc],
+          ['está o Se com passo igual a 2', SE(enc)],
+          [tres ? 'abrir no baú' : 'a troca do baú', abre.nome],
+        ])} ${telaDaSaida}`,
+        x.nota,
+      ),
+      ...(tres ? { kids: [KIDS_DO_BAU_3D] } : {}),
+    },
+    {
+      key: 'estrela',
+      title: tres ? 'A estrela da ilha fora da vez' : 'A estrela fora da vez',
+      kind: 'delivery',
+      etapa: 'estrela',
+      ponte:
+        'Agora a resposta do não da estrela! Abra o senão do Se e monte o mesmo recomeço da lua. Teste a ordem certa, uma ordem errada e recomeçar pelo sol. Depois clique em Verificar projeto, em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
+      text: `${b.text} ${entregar(
+        `dentro do encontro entre personagem e estrela está o Se com passo igual a 2, no então estão ${entao} e o aviso, e no senão está o mesmo recomeço da lua`,
+        pronto,
+        'Depois do envio, ainda tem algumas perguntas para você pensar na ordem dos símbolos. Quando aparecer Projeto enviado!, clique em Próxima parte.',
+      )}`,
+      screen: telaDaMontagem(
+        'da parte anterior',
+        b.tela,
+        `${telaDaConferencia(`"${enc}"`, [
+          ['dentro do encontro entre personagem e estrela', enc],
+          ['está o Se com passo igual a 2', SE(enc)],
+          [tres ? 'abrir no baú' : 'a troca do baú', abre.nome],
+          ['e no senão está o mesmo recomeço', `Alterar variável passo para 0 dentro de ${enc}`],
+        ])} ${telaDoEnvio(pronto.split(':')[0] ?? pronto, 'Próxima parte')}`,
+        x.nota,
+      ),
+      ...(tres ? {} : { kids: [KIDS_DA_ESTRELA_2D] }),
+    },
+  ]
 }
 
 /** O quiz fecha cada aula, depois do envio: as perguntas com cena e as sem cena. */
@@ -1137,8 +1247,8 @@ export const simbolosAulas: {
         text: `${CONVERSA} No seu jogo, o baú só abre com uma senha de símbolos. Para conferir a senha, o jogo precisa lembrar até onde você já chegou. ${CALMA} Para lembrar, ele usa uma variável, como temChave na Chave do Farol: um lugar onde o jogo guarda uma informação para usar depois. Desta vez, a variável se chama passo. ${CONVERSA} Sabe quando você aperta os números da senha de um cadeado? Cada número tem a sua vez, e o cadeado só abre se todos vierem na ordem certa. ${CONVERSA} No seu jogo, os símbolos são os números da senha, e a placa mostra a ordem. E cada símbolo, quando é tocado, faz uma pergunta: é a minha vez? ${CONVERSA} O baú pode conferir a senha de dois jeitos: só contando os símbolos tocados, ou conferindo a vez de cada um. ${PERGUNTA} E o que acontece com passo quando um símbolo vem fora da vez? ${CONVERSA} O que você acha? Isso você vai testar na experiência. ${ANIMA} Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.`,
       },
       parteSol('2d'),
-      parteLua('2d'),
-      parteEstrela('2d'),
+      ...parteLua('2d'),
+      ...parteEstrela('2d'),
       revisao(
         'Pense na ordem',
         'Quiz sem vídeo, depois do envio: quatro perguntas, duas previsões com cena e dois diagnósticos.',
@@ -1161,8 +1271,8 @@ export const simbolosAulas: {
         text: `${BOAS_VINDAS} Oi! Na Aula 1, você programou a senha do baú no jogo 2D. Agora o baú dos símbolos chegou à Ilha do Farol, em três dimensões! ${CONVERSA} No gramado da frente ficam as três pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem certa. ${CONVERSA} Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam. ${OLHA} Olha aqui: quando eu levo o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua. ${PERGUNTA} Será que na ilha o baú também só abre na ordem certa? ${CONVERSA} Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. ${ANIMA} Agora é a sua vez: abra o baú da ilha. Quando terminar, clique em Próxima parte.`,
       },
       parteSol('3d'),
-      parteLua('3d'),
-      parteEstrela('3d'),
+      ...parteLua('3d'),
+      ...parteEstrela('3d'),
       revisao(
         'Pense nos símbolos da ilha',
         'Quiz sem vídeo, depois do envio: duas perguntas, uma previsão com cena 3D e uma sem cena.',

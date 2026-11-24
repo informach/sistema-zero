@@ -52,6 +52,19 @@ O sol começa.
 A lua pergunta a vez.
 
 - Intenção: application.
+- Blocos: video-lua-vez, ponte-lua-vez.
+- Estúdio: projeto.
+- Conclusão: video-lua-vez.
+
+- Depois do sol, a lua acende.
+- Começando pela lua, ela não acende.
+- O encontro com a lua pergunta se é a vez dela (Se).
+
+## Parte 6. A lua fora da vez
+
+A lua fora da vez.
+
+- Intenção: application.
 - Blocos: video-lua, ponte-lua.
 - Estúdio: projeto.
 - Conclusão: video-lua.
@@ -60,9 +73,22 @@ A lua pergunta a vez.
 - Começando pela lua, ela não acende e o aviso diz para começar pelo sol.
 - O encontro com a lua pergunta se é a vez dela (Se, com senão).
 
-## Parte 6. A estrela abre o baú
+## Parte 7. A estrela abre o baú
 
 A estrela abre o baú.
+
+- Intenção: application.
+- Blocos: video-estrela-vez, ponte-estrela-vez.
+- Estúdio: projeto.
+- Conclusão: video-estrela-vez.
+
+- O encontro com a estrela pergunta se é a vez dela (Se).
+- Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
+- Depois do sol, a estrela fora da vez não abre o baú.
+
+## Parte 8. A estrela fora da vez
+
+A estrela fora da vez.
 
 - Intenção: delivery.
 - Blocos: video-estrela, ponte-estrela, projeto.
@@ -76,7 +102,7 @@ A estrela abre o baú.
 - Uma nova partida (tecla R) começa com os símbolos apagados.
 - O farol continua: com a chave, ele acende.
 
-## Parte 7. Pense na ordem
+## Parte 9. Pense na ordem
 
 Pense na ordem.
 

@@ -7,7 +7,14 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-sol", "video-lua", "video-estrela"],
+  "clipes": [
+    "video-abertura",
+    "video-sol",
+    "video-lua-vez",
+    "video-lua",
+    "video-estrela-vez",
+    "video-estrela"
+  ],
   "intervencoes": [
     {
       "id": "video-abertura-K1",
@@ -32,8 +39,8 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-estrela-K1",
-      "clipe": "video-estrela",
+      "id": "video-estrela-vez-K1",
+      "clipe": "video-estrela-vez",
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "estrela. Depois clique em Andar e escolha acender. Agora clique em repetindo e escolha uma vez, como nas outras pedras.",

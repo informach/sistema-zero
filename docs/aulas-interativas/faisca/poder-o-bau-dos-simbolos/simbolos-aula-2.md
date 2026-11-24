@@ -30,6 +30,19 @@ O sol da ilha começa.
 A lua da ilha pergunta a vez.
 
 - Intenção: application.
+- Blocos: video-lua-vez, ponte-lua-vez.
+- Estúdio: projeto.
+- Conclusão: video-lua-vez.
+
+- Depois do sol, a lua acende.
+- Começando pela lua, ela não acende.
+- O encontro com a lua pergunta se é a vez dela (Se).
+
+## Parte 4. A lua da ilha fora da vez
+
+A lua da ilha fora da vez.
+
+- Intenção: application.
 - Blocos: video-lua, ponte-lua.
 - Estúdio: projeto.
 - Conclusão: video-lua.
@@ -38,9 +51,22 @@ A lua da ilha pergunta a vez.
 - Começando pela lua, ela não acende e o aviso diz para começar pelo sol.
 - O encontro com a lua pergunta se é a vez dela (Se, com senão).
 
-## Parte 4. A estrela abre o baú da ilha
+## Parte 5. A estrela abre o baú da ilha
 
 A estrela abre o baú da ilha.
+
+- Intenção: application.
+- Blocos: video-estrela-vez, ponte-estrela-vez.
+- Estúdio: projeto.
+- Conclusão: video-estrela-vez.
+
+- O encontro com a estrela pergunta se é a vez dela (Se).
+- Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.
+- Depois do sol, a estrela fora da vez não abre o baú.
+
+## Parte 6. A estrela da ilha fora da vez
+
+A estrela da ilha fora da vez.
 
 - Intenção: delivery.
 - Blocos: video-estrela, ponte-estrela, projeto.
@@ -53,7 +79,7 @@ A estrela abre o baú da ilha.
 - Depois de errar, começar de novo pelo sol abre o baú.
 - Uma nova partida (tecla R) começa com os símbolos apagados.
 
-## Parte 5. Pense nos símbolos da ilha
+## Parte 7. Pense nos símbolos da ilha
 
 Pense nos símbolos da ilha.
 

@@ -39,7 +39,14 @@ export const MOEDAS_CURSO = 'jornada-faisca-poder-1'
 /** `abre`: o Se com moedas >= 5, só com o então e sem aviso; `bau` põe os avisos e o senão (24/11/2026). */
 export const MOEDAS_ETAPAS = ['inicio', 'contador', 'coleta', 'placar', 'abre', 'bau'] as const
 /** A ordem dos ids dos exemplos: a etapa nova no fim, para os ids das outras não mudarem. */
-export const MOEDAS_IDS: readonly MoedasEtapa[] = ['inicio', 'contador', 'coleta', 'placar', 'bau', 'abre']
+export const MOEDAS_IDS: readonly MoedasEtapa[] = [
+  'inicio',
+  'contador',
+  'coleta',
+  'placar',
+  'bau',
+  'abre',
+]
 export type MoedasEtapa = (typeof MOEDAS_ETAPAS)[number]
 export type MoedasDimensao = '2d' | '3d'
 /** A meta do baú: "pelo menos" este número. */

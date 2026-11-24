@@ -58,7 +58,8 @@ if (scenario === 'igual-a-5') js = js.replace('moedas >= 5', 'moedas === 5')
 if (scenario === 'maior-que-5') js = js.replace('moedas >= 5', 'moedas > 5')
 if (scenario === 'sem-somar') js = js.replace('moedas = moedas + 1;', '')
 if (scenario === 'sem-zerar') js = js.replace('let moedas = 0;', 'let moedas = 0; moedas = 2;')
-if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js'])
+  throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -133,6 +134,7 @@ const REPROVA: Record<string, string[]> =
         'sem-senao': etapa === 'bau' ? ['meta'] : [],
       }
 if (!REPROVA[scenario]) throw Error(`Cenário desconhecido: ${scenario}`)
-if (etapa !== 'bau' && !['correto', 'sem-senao'].includes(scenario)) throw Error('Erros só na última etapa')
+if (etapa !== 'bau' && !['correto', 'sem-senao'].includes(scenario))
+  throw Error('Erros só na última etapa')
 const expected = (id: string) => !REPROVA[scenario]!.includes(id)
 if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)

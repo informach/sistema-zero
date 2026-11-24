@@ -56,7 +56,8 @@ if (scenario === 'so-emblema') js = js.replace(PERGUNTA, 'if (temEmblema)')
 if (scenario === 'sempre-aberta') js = js.replace(PERGUNTA, 'if (true)')
 if (scenario === 'invertida') js = js.replace(PERGUNTA, 'if (!(temChave && temEmblema))')
 if (scenario === 'sem-guardar') js = js.replace('temEmblema = true;', '')
-if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js'])
+  throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -121,6 +122,7 @@ const REPROVA: Record<string, string[]> = {
   'sem-senao': etapa === 'porta' ? ['sem-pecas'] : [],
 }
 if (!REPROVA[scenario]) throw Error(`Cenário desconhecido: ${scenario}`)
-if (etapa !== 'porta' && !['correto', 'sem-senao'].includes(scenario)) throw Error('Erros só na última etapa')
+if (etapa !== 'porta' && !['correto', 'sem-senao'].includes(scenario))
+  throw Error('Erros só na última etapa')
 const expected = (id: string) => !REPROVA[scenario]!.includes(id)
 if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)

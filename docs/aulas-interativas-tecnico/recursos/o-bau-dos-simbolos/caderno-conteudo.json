@@ -271,11 +271,6 @@
         "kind": "step",
         "title": "3. Monte a pergunta",
         "text": "O Se chega com uma pergunta pronta, <b>x maior que 0</b>. Ela compara dois valores, e a resposta é sim ou não. Desta vez, troque as partes dela.<br/>Clique no <b>x</b> e escolha <b>passo</b>. Depois clique no sinal de maior e escolha o sinal de igual, <b>=</b>. Agora clique no <b>0</b>, apague e escreva <b>1</b>.<br/>Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?"
-      },
-      {
-        "kind": "step",
-        "title": "4. Abra o senão",
-        "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão.<br/>Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>, no fim da linha. Clique no segundo sinal de mais. Não clique no primeiro."
       }
     ]
   },
@@ -287,33 +282,53 @@
     "items": [
       {
         "kind": "step",
-        "title": "5. Passo vira 2",
+        "title": "4. Passo vira 2",
         "text": "Deixe à vista o espaço do <b>então</b>.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte dentro do então.<br/>É este bloco que guarda que a lua já foi tocada. Ele chega com <b>contador</b>: clique em contador e escolha <b>passo</b>. Depois clique no <b>1</b>, apague e escreva <b>2</b>, porque depois da lua passo vale 2."
       },
       {
         "kind": "step",
-        "title": "6. A lua acende",
+        "title": "5. A lua acende",
         "text": "A troca de imagem vai logo abaixo, ainda no então. Deixe esse lugar à vista.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte logo abaixo do bloco de passo.<br/>É este bloco que acende a lua. Clique no primeiro <b>heroi</b> e escolha <b>lua</b>. Depois clique no segundo heroi e escolha a imagem <b>pedra-lua-acesa</b>."
       },
       {
         "kind": "step",
-        "title": "7. O aviso pede a estrela",
+        "title": "6. O aviso pede a estrela",
         "text": "O aviso vai logo abaixo, ainda no então. Deixe esse lugar à vista.<br/><b>Programação &gt; Variáveis.</b> Pegue outro <b>Alterar variável para</b> e solte logo abaixo da troca de imagem. Clique em contador e escolha <b>aviso</b>.<br/><b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do número. Clique em <b>Olá</b>, apague e escreva <b>A lua acendeu! Agora a estrela.</b>"
+      }
+    ]
+  },
+  {
+    "id": "luavez-blocos",
+    "kicker": "Aula 1 · Parte 5 · Confira e verifique",
+    "title": "A lua acende na vez dela",
+    "subtitle": "Depois do sol, a lua acende. Começando pela lua, ela não acende.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "luavez-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando passo é 1: o sol já foi tocado"]
       },
       {
         "kind": "box",
-        "title": "E quando não é a vez da lua?",
-        "text": "O que acontece quando não é a vez da lua fica no espaço do <b>senão</b>: a tentativa recomeça. Você monta essa resposta na próxima página.",
-        "tone": "note"
+        "tone": "test",
+        "title": "Teste e verifique",
+        "text": "Depois do sol, a lua acende; começando pela lua, ela não acende. Depois clique em <b>Verificar projeto</b> e, quando aparecer <b>Objetivo cumprido!</b>, em <b>Próxima parte</b>."
       }
     ]
   },
   {
     "id": "lua-nao",
-    "kicker": "Aula 1 · Parte 5 · Montagem",
+    "kicker": "Aula 1 · Parte 6 · Montagem",
     "title": "A resposta do não",
     "subtitle": "No senão, a tentativa recomeça: passo volta a 0, o sol e a lua apagam, e o aviso pede para começar pelo sol.",
     "items": [
+      {
+        "kind": "step",
+        "title": "7. Abra o senão",
+        "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. O Se chega sem o senão.<br/>Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>, no fim da linha. Clique no segundo sinal de mais. Não clique no primeiro."
+      },
       {
         "kind": "step",
         "title": "8. Passo volta a 0",
@@ -333,17 +348,12 @@
         "kind": "step",
         "title": "11. O aviso de recomeçar",
         "text": "Por último, o aviso de recomeçar. Ele vai logo abaixo, ainda no senão.<br/><b>Programação &gt; Variáveis.</b> Pegue outro <b>Alterar variável para</b>, solte logo abaixo da troca da lua e escolha <b>aviso</b>. <b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do número. Clique em <b>Olá</b>, apague e escreva <b>Fora da ordem. Comece de novo pelo sol.</b>"
-      },
-      {
-        "kind": "step",
-        "title": "Teste no seu jogo",
-        "text": "Clique em <b>Rodar de novo</b> e leve o personagem até o sol e depois até a lua: o sol e a lua acendem, e o aviso pede a estrela.<br/>Agora toque na tecla R e leve o personagem direto até a lua, sem passar pelo sol: a lua não acende, e o aviso pede para começar pelo sol. É a resposta do senão funcionando!"
       }
     ]
   },
   {
     "id": "lua-blocos",
-    "kicker": "Aula 1 · Parte 5 · Confira e verifique",
+    "kicker": "Aula 1 · Parte 6 · Confira e verifique",
     "title": "A lua confere a vez",
     "subtitle": "O Se da lua pergunta se passo é igual a 1. No então ficam três blocos, e no senão ficam quatro.",
     "items": [
@@ -360,14 +370,14 @@
       {
         "kind": "box",
         "tone": "test",
-        "title": "Verificar e continuar",
-        "text": "Se algo não funcionou, confira o desenho e teste de novo. Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "title": "Teste e verifique",
+        "text": "Leve o personagem até o sol e depois até a lua: os dois acendem. Toque na tecla R e vá direto à lua: ela não acende, e o aviso pede para começar pelo sol. Funcionou? Clique em <b>Verificar projeto</b> e, quando aparecer <b>Objetivo cumprido!</b>, em <b>Próxima parte</b>."
       }
     ]
   },
   {
     "id": "estrela",
-    "kicker": "Aula 1 · Parte 6 · Montagem",
+    "kicker": "Aula 1 · Parte 7 · Montagem",
     "title": "A estrela abre o baú",
     "subtitle": "Leve o personagem até o sol, a lua e a estrela: o sol e a lua acendem, mas a estrela não, e o baú continua fechado.",
     "items": [
@@ -384,34 +394,63 @@
         "kind": "step",
         "title": "2. Ponha o Se e monte a pergunta",
         "text": "Agora a pergunta da estrela: é a minha vez? <b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, dentro do encontro com a estrela.<br/>O Se chega de novo com a pergunta x maior que 0. Troque as partes dela, como na lua: clique no <b>x</b> e escolha <b>passo</b>, troque o sinal de maior pelo sinal de igual, <b>=</b>, e troque o <b>0</b> por <b>2</b>.<br/>Pronto: o Se pergunta se passo é igual a 2. Ou seja: o sol e a lua já foram tocados, nessa ordem?"
-      },
-      {
-        "kind": "step",
-        "title": "3. Abra o senão",
-        "text": "Abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Repare: apareceu o espaço do senão."
       }
     ]
   },
   {
     "id": "estrela-respostas",
-    "kicker": "Aula 1 · Parte 6 · Montagem",
-    "title": "As duas respostas da estrela",
-    "subtitle": "No então, a estrela acende, o baú abre e o aviso conta que deu certo. No senão, a tentativa recomeça, como na lua.",
+    "kicker": "Aula 1 · Parte 7 · Montagem",
+    "title": "A resposta do sim da estrela",
+    "subtitle": "No então, a estrela acende, o baú abre e o aviso conta que deu certo.",
     "items": [
       {
         "kind": "step",
-        "title": "4. A estrela acende",
+        "title": "3. A estrela acende",
         "text": "Deixe à vista o espaço do <b>então</b>.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do então. É este bloco que acende a estrela.<br/>Clique no primeiro <b>heroi</b> e escolha <b>estrela</b>. Depois clique no segundo heroi e escolha a imagem <b>pedra-estrela-acesa</b>."
       },
       {
         "kind": "step",
-        "title": "5. O baú abre",
+        "title": "4. O baú abre",
         "text": "A troca de imagem que abre o baú vai logo abaixo, ainda no então. <b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue outro <b>Trocar imagem do sprite</b> e solte logo abaixo da troca da estrela. É este bloco que abre o baú.<br/>Clique no primeiro heroi e escolha <b>bau</b>. Depois clique no segundo heroi e escolha a imagem <b>bau-aberto</b>."
       },
       {
         "kind": "step",
-        "title": "6. O aviso conta que deu certo",
+        "title": "5. O aviso conta que deu certo",
         "text": "O aviso vai logo abaixo, ainda no então. <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte logo abaixo da troca do baú e escolha <b>aviso</b>.<br/><b>Programação &gt; Valores.</b> Pegue <b>texto</b> e solte em cima do número. Clique em <b>Olá</b>, apague e escreva <b>Na ordem certa! O baú abriu.</b>"
+      }
+    ]
+  },
+  {
+    "id": "estrelavez-blocos",
+    "kicker": "Aula 1 · Parte 7 · Confira e verifique",
+    "title": "A estrela abre o baú na vez dela",
+    "subtitle": "Na ordem certa, o baú abre. Fora da ordem, ele continua fechado.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "estrelavez-2d",
+        "title": "Confira se ficou assim",
+        "ready": ["Os outros encontros e o evento da tecla R"],
+        "branches": ["quando passo é 2: o sol e a lua já foram tocados"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Teste e verifique",
+        "text": "Na ordem certa, o baú abre; do sol direto à estrela, ele continua fechado. Depois clique em <b>Verificar projeto</b> e, quando aparecer <b>Objetivo cumprido!</b>, em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "estrela-nao",
+    "kicker": "Aula 1 · Parte 8 · Montagem",
+    "title": "A estrela fora da vez",
+    "subtitle": "Fora da vez, a tentativa recomeça, como na lua.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "6. Abra o senão",
+        "text": "Abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Repare: apareceu o espaço do senão."
       },
       {
         "kind": "step",
@@ -422,7 +461,7 @@
   },
   {
     "id": "estrela-blocos",
-    "kicker": "Aula 1 · Parte 6 · Confira",
+    "kicker": "Aula 1 · Parte 8 · Confira",
     "title": "A estrela confere a vez",
     "subtitle": "O Se da estrela pergunta se passo é igual a 2. No senão fica o mesmo recomeço da lua.",
     "items": [
@@ -440,7 +479,7 @@
   },
   {
     "id": "estrela-envio",
-    "kicker": "Aula 1 · Parte 6 · Teste e envio",
+    "kicker": "Aula 1 · Parte 8 · Teste e envio",
     "title": "Teste e envie o seu jogo",
     "subtitle": "A estrela foi a última montagem da aula. Teste a senha inteira e depois verifique e envie o projeto.",
     "items": [
@@ -473,7 +512,7 @@
   },
   {
     "id": "revisao-2d",
-    "kicker": "Aula 1 · Parte 7 · Revisão",
+    "kicker": "Aula 1 · Parte 9 · Revisão",
     "title": "Pense na ordem",
     "subtitle": "Antes de concluir a aula, lembre o que você descobriu sobre a senha e o passo.",
     "items": [
@@ -597,24 +636,53 @@
         "kind": "step",
         "title": "2. Ponha o Se e monte a pergunta",
         "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, dentro do encontro com a lua. É este bloco que faz a pergunta da lua.<br/>O Se chega com a pergunta x maior que 0. Clique no <b>x</b> e escolha <b>passo</b>. Depois clique no sinal de maior e escolha o sinal de igual, <b>=</b>. Agora clique no <b>0</b>, apague e escreva <b>1</b>.<br/>Pronto: o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?"
-      },
-      {
-        "kind": "step",
-        "title": "3. Abra o senão",
-        "text": "Lembra do Se no jogo 2D? A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. Na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
       }
     ]
   },
   {
     "id": "lua-3d-respostas",
     "kicker": "Aula 2 · Parte 3 · Montagem",
-    "title": "As duas respostas da lua",
-    "subtitle": "No então, passo vira 2, a lua acende e o aviso pede a estrela. No senão, a tentativa recomeça.",
+    "title": "A resposta do sim da lua",
+    "subtitle": "No então, passo vira 2, a lua acende e o aviso pede a estrela.",
     "items": [
       {
         "kind": "step",
-        "title": "4. A resposta do sim",
+        "title": "3. A resposta do sim",
         "text": "Deixe à vista o espaço do <b>então</b>. <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte dentro do então, escolha <b>passo</b> e troque o 1 por <b>2</b>.<br/>Logo abaixo, a lua acende. <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b>, solte logo abaixo do bloco de passo e escolha <b>lua</b>, <b>acender</b> e <b>uma vez</b>, como no sol.<br/>Embaixo, o aviso. <b>Programação &gt; Variáveis.</b> Pegue outro <b>Alterar variável para</b>, solte logo abaixo do bloco que acende a lua e escolha <b>aviso</b>. Em cima do número, solte um <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>A lua acendeu! Agora a estrela.</b>"
+      }
+    ]
+  },
+  {
+    "id": "luavez-3d-blocos",
+    "kicker": "Aula 2 · Parte 3 · Confira e verifique",
+    "title": "A lua da ilha acende na vez dela",
+    "subtitle": "Depois do sol, a lua acende. Começando pela lua, ela não acende.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "luavez-3d",
+        "title": "Confira se ficou assim",
+        "ready": ["O evento da tecla R e os outros encontros"],
+        "branches": ["quando passo é 1: o sol já foi tocado"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Teste e verifique",
+        "text": "Depois do sol, a lua acende; começando pela lua, ela não acende. Depois clique em <b>Verificar projeto</b> e, quando aparecer <b>Objetivo cumprido!</b>, em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "lua-3d-nao",
+    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "title": "A lua da ilha fora da vez",
+    "subtitle": "Quando não é a vez da lua, a tentativa recomeça: passo volta a 0, e os símbolos acesos apagam.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Abra o senão",
+        "text": "Lembra do Se no jogo 2D? A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>. Na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>. Não clique no primeiro."
       },
       {
         "kind": "step",
@@ -630,7 +698,7 @@
   },
   {
     "id": "lua-3d-blocos",
-    "kicker": "Aula 2 · Parte 3 · Confira e verifique",
+    "kicker": "Aula 2 · Parte 4 · Confira e verifique",
     "title": "A lua da ilha na vez certa",
     "subtitle": "O Se da lua pergunta se passo é igual a 1.",
     "items": [
@@ -654,7 +722,7 @@
   },
   {
     "id": "estrela-3d",
-    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "kicker": "Aula 2 · Parte 5 · Montagem",
     "title": "A estrela abre o baú da ilha",
     "subtitle": "Leve o personagem até o sol, a lua e a estrela: o sol e a lua acendem, mas a estrela não, e o baú continua fechado.",
     "items": [
@@ -671,23 +739,18 @@
         "kind": "step",
         "title": "2. Ponha o Se e monte a pergunta",
         "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte no espaço ao lado de <b>fazer</b>, dentro do encontro com a estrela.<br/>O Se chega de novo com a pergunta x maior que 0. Troque as partes dela, como na lua: clique no <b>x</b> e escolha <b>passo</b>, troque o sinal de maior pelo sinal de igual, <b>=</b>, e troque o <b>0</b> por <b>2</b>.<br/>Pronto: o Se pergunta se o sol e a lua já foram tocados, nessa ordem."
-      },
-      {
-        "kind": "step",
-        "title": "3. Abra o senão",
-        "text": "Abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>."
       }
     ]
   },
   {
     "id": "estrela-3d-respostas",
-    "kicker": "Aula 2 · Parte 4 · Montagem",
+    "kicker": "Aula 2 · Parte 5 · Montagem",
     "title": "O baú da ilha abre",
-    "subtitle": "No então, a estrela acende, o baú toca abrir e o aviso conta que deu certo. No senão, recomece como na lua.",
+    "subtitle": "No então, a estrela acende, o baú abre e o aviso conta que deu certo.",
     "items": [
       {
         "kind": "step",
-        "title": "4. A estrela acende",
+        "title": "3. A estrela acende",
         "text": "Deixe à vista o espaço do <b>então</b>. <b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do então. Escolha <b>estrela</b>, <b>acender</b> e <b>uma vez</b>, como nas outras pedras."
       },
       {
@@ -698,24 +761,58 @@
       },
       {
         "kind": "step",
-        "title": "5. O baú abre",
+        "title": "4. O baú abre",
         "text": "O bloco que abre o baú vai logo abaixo, ainda no então. Pegue outro <b>Tocar a animação</b>, de <b>Jogo 3D &gt; Objetos &gt; Animação do modelo</b>, e solte logo abaixo do bloco que acende a estrela. Escolha <b>bau</b>, <b>abrir</b> e <b>uma vez</b>, porque o baú abre uma vez só."
       },
       {
         "kind": "step",
-        "title": "6. O aviso conta que deu certo",
+        "title": "5. O aviso conta que deu certo",
         "text": "Logo abaixo, ainda no então: <b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e escolha <b>aviso</b>. Em cima do número, solte um <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>Na ordem certa! O baú abriu.</b>"
+      }
+    ]
+  },
+  {
+    "id": "estrelavez-3d-blocos",
+    "kicker": "Aula 2 · Parte 5 · Confira e verifique",
+    "title": "A estrela da ilha abre o baú",
+    "subtitle": "Na ordem certa, o baú abre. Fora da ordem, ele continua fechado.",
+    "items": [
+      {
+        "kind": "drawing",
+        "name": "estrelavez-3d",
+        "title": "Confira se ficou assim",
+        "ready": ["O evento da tecla R e os outros encontros"],
+        "branches": ["quando passo é 2: o sol e a lua já foram tocados"]
+      },
+      {
+        "kind": "box",
+        "tone": "test",
+        "title": "Teste e verifique",
+        "text": "Na ordem certa, o baú abre; do sol direto à estrela, ele continua fechado. Depois clique em <b>Verificar projeto</b> e, quando aparecer <b>Objetivo cumprido!</b>, em <b>Próxima parte</b>."
+      }
+    ]
+  },
+  {
+    "id": "estrela-3d-nao",
+    "kicker": "Aula 2 · Parte 6 · Montagem",
+    "title": "A estrela da ilha fora da vez",
+    "subtitle": "Fora da vez, a tentativa recomeça, como na lua.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "6. Abra o senão",
+        "text": "Abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra <b>senão</b>."
       },
       {
         "kind": "step",
         "title": "7. A resposta do não",
-        "text": "Ela é igual à da lua (página {{pagina:lua-3d-respostas}}): no espaço do <b>senão</b>, monte os mesmos quatro blocos, um embaixo do outro.<br/><b>Programação &gt; Variáveis.</b> Um <b>Alterar variável para</b> com <b>passo</b>, trocando o 1 por <b>0</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Um <b>Tocar a animação</b> com <b>sol</b>, <b>apagar</b> e <b>uma vez</b>, e outro com <b>lua</b>, <b>apagar</b> e <b>uma vez</b>.<br/><b>Programação &gt; Variáveis.</b> Outro <b>Alterar variável para</b> com <b>aviso</b> e, em cima do número, um <b>texto</b> de <b>Programação &gt; Valores</b>: <b>Fora da ordem. Comece de novo pelo sol.</b>"
+        "text": "Ela é igual à da lua (página {{pagina:lua-3d-nao}}): no espaço do <b>senão</b>, monte os mesmos quatro blocos, um embaixo do outro.<br/><b>Programação &gt; Variáveis.</b> Um <b>Alterar variável para</b> com <b>passo</b>, trocando o 1 por <b>0</b>.<br/><b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Um <b>Tocar a animação</b> com <b>sol</b>, <b>apagar</b> e <b>uma vez</b>, e outro com <b>lua</b>, <b>apagar</b> e <b>uma vez</b>.<br/><b>Programação &gt; Variáveis.</b> Outro <b>Alterar variável para</b> com <b>aviso</b> e, em cima do número, um <b>texto</b> de <b>Programação &gt; Valores</b>: <b>Fora da ordem. Comece de novo pelo sol.</b>"
       }
     ]
   },
   {
     "id": "estrela-3d-blocos",
-    "kicker": "Aula 2 · Parte 4 · Confira",
+    "kicker": "Aula 2 · Parte 6 · Confira",
     "title": "A estrela da ilha confere a vez",
     "subtitle": "O Se da estrela pergunta se passo é igual a 2. No senão fica o mesmo recomeço da lua.",
     "items": [
@@ -733,7 +830,7 @@
   },
   {
     "id": "estrela-3d-envio",
-    "kicker": "Aula 2 · Parte 4 · Teste e envio",
+    "kicker": "Aula 2 · Parte 6 · Teste e envio",
     "title": "Teste e envie o seu jogo da ilha",
     "subtitle": "A estrela foi a última montagem da aula. Teste a senha na ilha e depois verifique e envie o projeto.",
     "items": [
@@ -766,7 +863,7 @@
   },
   {
     "id": "revisao-3d",
-    "kicker": "Aula 2 · Parte 5 · Revisão",
+    "kicker": "Aula 2 · Parte 7 · Revisão",
     "title": "Pense nos símbolos da ilha",
     "subtitle": "Antes de concluir a aula, lembre o que muda e o que continua igual na ilha.",
     "items": [

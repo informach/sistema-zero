@@ -62,7 +62,8 @@ if (scenario === 'rapido') js = js.replace(timer, timer.replace('4 * 1000', '1 *
 if (scenario === 'so-imagem') js = js.replace(timer, timer.replace(/\n *ponteAberta = false;/, ''))
 if (scenario === 'sem-se') js = js.replace('if (ponteAberta)', 'if (true)')
 if (scenario === 'invertida') js = js.replace('if (ponteAberta)', 'if (!ponteAberta)')
-if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js']) throw Error('Mutação não aplicada')
+if (!['correto', 'sem-senao'].includes(scenario) && js === p.files['script.js'])
+  throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
   resolve(dir, 'game.html'),
@@ -117,7 +118,11 @@ writeFileSync(resolve(dir, 'vereditos.json'), JSON.stringify(verdicts, null, 2))
 /** O que cada erro deve reprovar em cada etapa (o resto continua passando), nas duas dimensões. */
 const REPROVA: Record<string, Partial<Record<string, string[]>>> = {
   correto: { alavanca: [], sobe: [], pergunta: [], atravessar: [] },
-  'sem-tempo': { sobe: ['sobe-sozinha', 'de-novo'], pergunta: ['atrasado'], atravessar: ['atrasado'] },
+  'sem-tempo': {
+    sobe: ['sobe-sozinha', 'de-novo'],
+    pergunta: ['atrasado'],
+    atravessar: ['atrasado'],
+  },
   // Solto no começo, o "depois de" sobe a ponte uma vez, 4 s depois de o jogo começar: o
   // resultado da travessia dependeria da hora em que o robô puxa, então nela quem pega o erro é o
   // objetivo de estrutura (o "depois de" dentro do encontro com a alavanca).

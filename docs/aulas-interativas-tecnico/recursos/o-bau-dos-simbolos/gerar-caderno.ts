@@ -248,6 +248,27 @@ const pergunta = (n: string, entao: string, senao: string, explica: string[]) =>
     ],
   )
 
+/**
+ * O Se antes do senão (as partes da pergunta, 24/11/2026): só o então, e a linha de baixo ainda com
+ * os dois sinais de mais ("+ senão se + senão", `ifElseMutator.ts`).
+ */
+const PE_COM_SENAO = '<div class="bk-boca-pe bk-boca-pe--se">+ senão se −</div>'
+const perguntaSoEntao = (n: string, entao: string, explica: string) => {
+  const html = B.se(
+    'sz_js_if_else',
+    B.valor('sz_val_compare', `${variavel('passo')} ${lista('=')} ${B.numero(n)}`),
+    [{ rotulo: 'então', explica, corpo: entao }],
+  )
+  if (!html.includes(PE_COM_SENAO)) throw new Error('O pé do Se mudou em caderno-visual/visual.ts.')
+  return html.replace(PE_COM_SENAO, PE_COM_SENAO.replace('−', '+ senão'))
+}
+const ramo = (item: Item) => {
+  const r = item.branches?.[0]
+  if (!r || item.branches?.length !== 1)
+    throw new Error(`O desenho ${item.name} precisa de um ramo.`)
+  return r
+}
+
 // Os desenhos dos encaixes. O conteúdo escolhe onde cada um entra e dá os textos dele.
 function desenhos(dimensao: SimbolosDimensao) {
   const d = DIMENSAO[dimensao]
@@ -288,6 +309,38 @@ function desenhos(dimensao: SimbolosDimensao) {
           ),
         ),
     },
+    luavez: {
+      area: 'Quando acontecer',
+      corpo: (item: Item) =>
+        eventos(
+          item,
+          0,
+          d.encontro(
+            'lua',
+            perguntaSoEntao(
+              '1',
+              mudaPasso('2') + d.acende('lua') + aviso(SIMBOLOS_AVISO.lua),
+              ramo(item),
+            ),
+          ),
+        ),
+    },
+    estrelavez: {
+      area: 'Quando acontecer',
+      corpo: (item: Item) =>
+        eventos(
+          item,
+          0,
+          d.encontro(
+            'estrela',
+            perguntaSoEntao(
+              '2',
+              d.acende('estrela') + d.abreBau() + aviso(SIMBOLOS_AVISO.abriu),
+              ramo(item),
+            ),
+          ),
+        ),
+    },
     estrela: {
       area: 'Quando acontecer',
       corpo: (item: Item) =>
@@ -309,7 +362,10 @@ function desenhos(dimensao: SimbolosDimensao) {
 }
 const DESENHOS = { '2d': desenhos('2d'), '3d': desenhos('3d') }
 function drawing(item: Item): string {
-  const [simbolo, dimensao] = (item.name ?? '').split('-') as [Simbolo, SimbolosDimensao]
+  const [simbolo, dimensao] = (item.name ?? '').split('-') as [
+    Simbolo | 'luavez' | 'estrelavez',
+    SimbolosDimensao,
+  ]
   const desenho = DESENHOS[dimensao]?.[simbolo]
   if (!desenho) throw new Error(`Desenho desconhecido: ${item.name}`)
   return B.esquema(item.title ?? '', desenho.area, desenho.corpo(item))

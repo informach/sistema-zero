@@ -171,7 +171,16 @@ describe('manifestos da Ponte', () => {
       // por último, como fechamento.
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'alavanca', 'sobe', 'pergunta', 'atravessar', 'revisao']
+          ? [
+              'abertura',
+              'material',
+              'experiencia',
+              'alavanca',
+              'sobe',
+              'pergunta',
+              'atravessar',
+              'revisao',
+            ]
           : ['abertura', 'alavanca', 'sobe', 'pergunta', 'atravessar', 'revisao'],
       )
       expect(

@@ -4,7 +4,12 @@
 import { gerarPoder } from './poder-gerador'
 import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
-import { montarProjetoSimbolos, SIMBOLOS_CURSO, SIMBOLOS_ETAPAS } from './simbolos-projeto'
+import {
+  montarProjetoSimbolos,
+  SIMBOLOS_CURSO,
+  SIMBOLOS_ETAPAS,
+  SIMBOLOS_IDS,
+} from './simbolos-projeto'
 import { simbolosQuiz2d, simbolosQuiz3d } from './simbolos-quiz'
 
 const help = `# Passo a passo do projeto: O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
@@ -29,6 +34,7 @@ await gerarPoder({
   prefixo: 'simbolos',
   curso: SIMBOLOS_CURSO,
   etapas: SIMBOLOS_ETAPAS,
+  idEtapas: SIMBOLOS_IDS,
   etapaFinal: 'estrela',
   montarProjeto: montarProjetoSimbolos,
   checks: simbolosChecks,
