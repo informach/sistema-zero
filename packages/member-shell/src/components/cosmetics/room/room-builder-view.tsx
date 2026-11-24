@@ -69,7 +69,8 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
             <div
               role="group"
               aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
-              className="flex flex-wrap gap-1.5 @min-[45rem]/quarto:max-h-[6.5rem] @min-[45rem]/quarto:shrink-0 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-0.5"
+              // `relative` em todo rolável interno: ver a bandeja abaixo.
+              className="relative flex flex-wrap gap-1.5 @min-[45rem]/quarto:max-h-[6.5rem] @min-[45rem]/quarto:shrink-0 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-0.5"
             >
               {props.pieces}
             </div>
@@ -96,7 +97,11 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
                   </button>
                 ))}
               </div>
-              <div className="@container/bandeja @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-1 scrollbar-subtle">
+              {/* `relative` (24/11/2026, o mesmo achado do quarto adulto): os `sr-only` dos
+                  cartões (" moedas" de cada peça paga, a legenda) são `absolute`; sem um bloco
+                  de contenção AQUI eles se posicionavam pela seção de fora, escapavam do recorte
+                  da rolagem e esticavam a página (medido: 900px de janela viravam 4817px). */}
+              <div className="@container/bandeja relative @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-1 scrollbar-subtle">
                 {props.tray}
               </div>
             </section>

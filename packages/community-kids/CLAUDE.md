@@ -157,6 +157,14 @@ itens. Medido no staging: 726×484 → 972×808 em 1440×900, sem rolagem. Teste
 `tests/quarto-foco.test.tsx`, `tests/room-builder-view.test.tsx` e, no member-shell,
 `tests/kids-cosmetics-layout.test.tsx`.
 
+⚠️ **A página voltou a rolar e foi consertada em 24/11/2026 (relato dela).** A bandeja de itens
+e a fileira das peças colocadas (`room-builder-view.tsx` do member-shell) rolam por dentro e
+precisam de `relative`: os `sr-only` dos cartões (" moedas" de cada peça paga, a legenda do
+fieldset) são `absolute` e, sem bloco de contenção no rolável, se posicionavam pela seção de fora,
+escapavam do recorte e esticavam a página (no Chromium, uma janela de 900px virava 4817px de
+rolagem). É o mesmo achado do quarto adulto (`.sz-cos-room-tray { position: relative }`). Regra:
+todo rolável interno desta tela leva `relative`. Guarda em `tests/room-builder-view.test.tsx`.
+
 ## As telas da Jornada do Criador no visual Kids (26/10/2026)
 
 Pedido dela: o currículo novo tinha trocado as telas aprovadas por componentes genéricos. Elas
