@@ -1,6 +1,6 @@
 # LG02 — aquecimento seguro: recibo de qualificação
 
-Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executor hospedado e os CIs completos da candidata final e de staging passaram. A onda canônica dos aplicativos de staging e o aceite autenticado da fonte final estão em andamento.
+Qualificada em 24/11/2026, aguardando promoção. Produção conserva a LG01. A matriz do executor hospedado, os CIs completos, a onda canônica dos 20 serviços de staging e o aceite autenticado da fonte final passaram.
 
 ## Fonte e integração
 
@@ -8,7 +8,7 @@ Em qualificação em 24/11/2026. Produção conserva a LG01. A matriz do executo
 - Fonte qualificada do código de produção: `a365206598c9175e8f999801eba5a6fb74d613db`; árvore `e6b63426127831235dc98d34820fe1869a85b74c`. Candidata final `e1b5fcd17c594b47a4ffbc5757c08bdc13a61376`, árvore `d610b8646d64819a15d1e0ba7107866017c908ac`: muda apenas cenários tipados do core e o registro. [Comparação de proveniência](2026-11-24-lg02-evidence/candidate-provenance.json).
 - [PR #286](https://github.com/informach/sistema-zero/pull/286), em rascunho até o aceite.
 - Merge do SDK em staging: `6c538f77fd5881a4365f16ba2600fd5e33003c4b`; merge da correção tipada: `9ca0696aef5a536846525704b9d01261e2bd0da7`. Preservaram Jardim, voz do Zappy, o contrato de importação Jardim (`84112d04d`) e as entradas posteriores de apelido/quarto. O checkout original com trabalho concorrente permanece preservado.
-- [CI da candidata final](https://github.com/informach/sistema-zero/actions/runs/45387995897): aprovado nos 13 jobs de validação. [CI/onda final de staging](https://github.com/informach/sistema-zero/actions/runs/45388063256): CI aprovado; implantação em andamento. A rodada anterior `45378554025` reprovou três cenários mal tipados do core; a reprodução local e a correção estão no plano, com typecheck e 16 testes/106 expectativas aprovados. A prova de dez mil blocos `45387995801` também passou na candidata final.
+- [CI da candidata final](https://github.com/informach/sistema-zero/actions/runs/45387995897): aprovado nos 13 jobs de validação. [CI/onda final de staging](https://github.com/informach/sistema-zero/actions/runs/45388063256): CI e implantação aprovados; 20 serviços saudáveis em `9ca0696ae`. [Recibos dos CIs](2026-11-24-lg02-evidence/final-ci.json) e [da onda](2026-11-24-lg02-evidence/staging-wave-final.json). A rodada anterior `45378554025` reprovou três cenários mal tipados do core; a reprodução local e a correção estão no plano, com typecheck e 16 testes/106 expectativas aprovados. A prova de dez mil blocos `45387995801` também passou na candidata final.
 - [Plano Railway final](https://github.com/informach/sistema-zero/actions/runs/45387995836): aprovado, zero alterações, intent tree `0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13`.
 - [Imagem Linux de staging](https://github.com/informach/sistema-zero/actions/runs/45378574254): aprovada, incluindo Python e Three reais sem rede externa.
 
@@ -60,13 +60,21 @@ O perfil infantil autorizado abriu a primeira aula de A Ilha do Farol e percorre
 
 Para preparar o projeto válido de homologação, foi inserido pelo Blockly o comando de movimento com velocidade 4, no início do laço, preservando o restante do projeto. A verificação pela interface passou os cinco objetivos em 30.843 ms e concedeu o prêmio normal: +30 XP/+15 moedas (960→990 XP; 505→520 moedas). Após mais de cinco minutos sem usar o executor, o descarte do recurso expirado apareceu no log; uma nova máquina aprovou novamente os cinco objetivos em 32.198 ms, sem repetir XP ou moedas. A indisponibilidade inicial não se repetiu nesse caso.
 
-No curso 2D A Chave do Farol, foram percorridos vídeo e experiência da parte disponível. O projeto inicial reprovou os seis objetivos em 5.668 ms, sem prêmio. Após inserir pelo Blockly os controles direcionais e o movimento do personagem, a interface aprovou os seis objetivos em 10.152 ms e concedeu o prêmio normal de +30 XP/+15 moedas. O perfil ficou com 1.020 XP/535 moedas e recebeu a conquista automática `studio-master-3`. Nenhum prêmio foi atribuído manualmente. Ainda falta repetir aquecimento e verificações após atualizar os aplicativos para a fonte final, incluindo recusas de sessão/acesso/revisão. Nenhum recado, post ou envio ao professor foi feito.
+No curso 2D A Chave do Farol, foram percorridos vídeo e experiência da parte disponível. O projeto inicial reprovou os seis objetivos em 5.668 ms, sem prêmio. Após inserir pelo Blockly os controles direcionais e o movimento do personagem, a interface aprovou os seis objetivos em 10.152 ms e concedeu o prêmio normal de +30 XP/+15 moedas. O perfil ficou com 1.020 XP/535 moedas e recebeu a conquista automática `studio-master-3`. Nenhum prêmio foi atribuído manualmente. Esse percurso antecedeu a onda dos aplicativos finais. Nenhum recado, post ou envio ao professor foi feito.
+
+Após a onda final, a [conferência dentro dos contêineres](2026-11-24-lg02-evidence/staging-app-source.json) confirmou Members, Auth, Gateway e Kids em `9ca0696ae`, com as instâncias antigas retiradas. A [compilação validada e a verificação real](2026-11-24-lg02-evidence/staging-runtime-smoke.json) passaram pelo Members novo, HTTP 200 e fingerprint esperado.
+
+O [aceite infantil final](2026-11-24-lg02-evidence/child-final.json) observou o aquecimento automático na abertura, resposta 202 `warming:true` e aquecimento efetivamente concluído no Worker (5.488 ms). Pedidos sem sessão foram recusados com 401; perfil divergente com 409 `VIEWER_CHANGED`; revisão antiga com 409 `LEARNING_CONFLICT`; parte trancada com 423 `SECTION_LOCKED`. Pedidos autorizados e sua repetição retornaram 202. O 202 aceita a preparação assíncrona; não promete que a máquina já está pronta.
+
+As verificações 2D e 3D foram iniciadas pela interface com 139 ms entre os cliques. O fingerprint do perfil observado foi igual nas abas e os pedidos se sobrepuseram. O 2D aprovou 6/6 objetivos em 6.359 ms; o 3D aprovou 5/5 em 36.398 ms. Ambos concederam zero XP e zero moedas, conservando 1.020 XP/535 moedas. Os [logs do runtime](2026-11-24-lg02-evidence/authenticated-runtime-final.json) confirmaram duas execuções e dois recursos distintos. As duas aulas usam movimento por teclas e a classe geral; navegação por `approachObject3d` usa a classe dedicada e foi provada separadamente na matriz hospedada. O aceite cobre aquecer e verificar; o envio ao professor permanece sem execução, por depender da autorização específica solicitada.
 
 ## Entradas concorrentes incluídas na revisão
 
 Durante a qualificação entraram `3372f2498` (a criança edita o próprio apelido) e `53fc30329` (rolagem do quarto). Foram preservados no merge de staging `9ca0696ae`, junto da correção dos cenários tipados da LG02 (`e1b5fcd17`). A candidata de produção da LG02 não inclui essas duas funcionalidades concorrentes; sua promoção é independente.
 
 A revisão conferiu ownership, restrições do nome completo/nascimento, preservação da identidade confirmada, atualização do token e os contêineres de rolagem. Passaram 125 testes Auth, quatro do BFF e dez da interface perfil/quarto, zero falhas. Os typechecks completos de Auth, member-shell e Kids também passaram localmente sobre `9ca0696ae`, com o lockfile congelado e heap de 6.144 MiB. O apelido aceita 2–40 caracteres, normaliza espaços e não exige unicidade. A troca não altera o nome do certificado. Se a renovação da sessão estiver indisponível, o menu pode conservar o apelido antigo até a próxima renovação (token de até 15 minutos); o valor salvo permanece atualizado. Os pais continuam podendo corrigir o apelido. O quarto preserva a rolagem interna de itens; o ajuste contém os elementos de acessibilidade para não esticar a página.
+
+O [aceite visual após a implantação](2026-11-24-lg02-evidence/concurrent-ui-final.json) confirmou apelido editável, telefone disponível e nome completo/nascimento reservados aos responsáveis; nenhum dado foi salvo. Na mesma janela de 1.278×936, o excesso de rolagem externa do quarto caiu de 810 px para zero. A rolagem interna continuou disponível (670 px visíveis para 1.600 px de conteúdo). Nenhum item foi comprado, movido ou salvo. A página original do usuário foi preservada e voltou ao primeiro plano.
 
 ## Efeito e limitações para a criança
 
@@ -76,4 +84,4 @@ Cache cheio, falha de coordenação, primeira visita e retorno após expiração
 
 Interrupção: `STUDIO_CHECK_WARMING_ENABLED=0` conserva o caminho exclusivo da LG01 e a migração SQLite. Não reverter removendo a classe criada.
 
-Pendentes: onda dos aplicativos em staging, aceite integrado da fonte final, promoção e conferências posteriores em produção. A LG02 não está em produção neste registro.
+Pendentes: promoção e conferências posteriores em produção. A LG02 não está em produção neste registro.

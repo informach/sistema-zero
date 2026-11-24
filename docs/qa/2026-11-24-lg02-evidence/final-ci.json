@@ -1,0 +1,259 @@
+{
+  "checkedAt": "2026-11-24T13:41:50.906Z",
+  "results": [
+    {
+      "name": "candidate",
+      "id": 45387995897,
+      "sha": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T11:56:28Z"
+        },
+        {
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:23Z",
+          "completedAt": "2026-11-24T11:58:00Z"
+        },
+        {
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T11:56:07Z"
+        },
+        {
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:23Z",
+          "completedAt": "2026-11-24T12:17:49Z"
+        },
+        {
+          "name": "molda-cenarios-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T12:02:56Z"
+        },
+        {
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T11:52:52Z"
+        },
+        {
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T12:12:11Z"
+        },
+        {
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:25Z",
+          "completedAt": "2026-11-24T11:54:00Z"
+        },
+        {
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T12:09:46Z"
+        },
+        {
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T11:52:55Z"
+        },
+        {
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:25Z",
+          "completedAt": "2026-11-24T11:58:54Z"
+        },
+        {
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T12:14:28Z"
+        },
+        {
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T12:52:12Z"
+        },
+        {
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-24T12:52:13Z",
+          "completedAt": "2026-11-24T12:52:13Z"
+        }
+      ]
+    },
+    {
+      "name": "staging",
+      "id": 45388063256,
+      "sha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "community-kids-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:28Z",
+          "completedAt": "2026-11-24T12:13:56Z"
+        },
+        {
+          "name": "studio-storage-macos",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:28Z",
+          "completedAt": "2026-11-24T11:56:09Z"
+        },
+        {
+          "name": "studio-python-extensions",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T11:54:53Z"
+        },
+        {
+          "name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T12:56:12Z"
+        },
+        {
+          "name": "studio-e2e-firefox",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T12:00:34Z"
+        },
+        {
+          "name": "desktop-windows",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T11:59:09Z"
+        },
+        {
+          "name": "studio-e2e-chromium-2",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:28Z",
+          "completedAt": "2026-11-24T12:11:53Z"
+        },
+        {
+          "name": "studio-e2e-chromium-3",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:28Z",
+          "completedAt": "2026-11-24T12:18:03Z"
+        },
+        {
+          "name": "studio-e2e-webkit",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T11:59:48Z"
+        },
+        {
+          "name": "studio-e2e-chromium-1",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:28Z",
+          "completedAt": "2026-11-24T12:17:26Z"
+        },
+        {
+          "name": "molda-cenarios-e2e",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T12:00:57Z"
+        },
+        {
+          "name": "arquipelago",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T11:59:31Z"
+        },
+        {
+          "name": "members-image",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:53:27Z",
+          "completedAt": "2026-11-24T11:55:04Z"
+        },
+        {
+          "name": "deploy-staging",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T12:56:15Z",
+          "completedAt": "2026-11-24T13:39:05Z"
+        }
+      ]
+    },
+    {
+      "name": "classic",
+      "id": 45387995801,
+      "sha": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "ten-thousand-blocks",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:24Z",
+          "completedAt": "2026-11-24T11:55:57Z"
+        }
+      ]
+    },
+    {
+      "name": "plan",
+      "id": 45387995836,
+      "sha": "e1b5fcd17c594b47a4ffbc5757c08bdc13a61376",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "railway-config-plan",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-11-24T11:51:23Z",
+          "completedAt": "2026-11-24T11:52:22Z"
+        },
+        {
+          "name": "railway-config-production",
+          "status": "completed",
+          "conclusion": "skipped",
+          "startedAt": "2026-11-24T11:51:22Z",
+          "completedAt": "2026-11-24T11:51:21Z"
+        }
+      ]
+    }
+  ],
+  "verified": true
+}
