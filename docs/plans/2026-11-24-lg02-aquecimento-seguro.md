@@ -72,6 +72,10 @@ A política final de admissão passou a suíte completa: **439 testes, 56 pulado
 
 O instrumento corrigido passou 58 testes focados (296 expectativas), incluindo a regressão RPC executada no workerd: o encaminhamento antigo por bind falhou e o novo por Reflect.apply passou. Os tipos de fonte/testes passaram. A imagem de verificação correspondente é `sistemazero-studio-runtime:lg02-rpc-20261124`, manifesto `sha256:be05fafd0f58a8db11de56c9e6dad9e2db070e0f6c3eb0d891dcaaadc62cc039`, fingerprint `93b91fba78f84c82beca3bcf03efab1e998aa7f641f576c803eacbb6fc18aa27`; smoke e comando de aquecimento aprovados sem rede. O descarte direto no SDK deixou a aplicação QA sem instâncias ativas, confirmando a contenção da falha no proxy. As matrizes hospedadas serão repetidas com esse instrumento.
 
+## Correção dos cenários tipados do seletor 2D/3D
+
+O CI `45378554025` terminou com os testes e os demais pacotes aprovados, mas encontrou três erros no typecheck dos novos cenários do core: os objetos literais não correspondiam à assinatura estrutural do seletor, e o cenário de script usava `source` onde o contrato exige `code`. A reprodução local confirmou os mesmos três erros. Os cenários passaram a usar `ExecutionStep` e `SectionExecutionRule`, com o campo correto e a regra de função já existente. Depois passaram o typecheck do core, os 16 testes/106 expectativas e o Biome. A lógica de produção não mudou; a conferência do perfil comprovou a conservação da imagem já qualificada. O head corrigido exige uma nova rodada completa de CI antes da promoção.
+
 ## R16 — RPC encerrado durante provisionamento
 
 Depois da correção do proxy QA, a prova de capacidade registrou uma falha distinta: `RPCTransportError: RPC session was shut down by disposing the main stub`, após recusa de provisionamento. O SDK 0.10.3 instalado desconecta o cliente incondicionalmente em `onStop`. O mantenedor confirmou a correção desse ciclo em 0.12.12, no [issue 928](https://github.com/cloudflare/sandbox-sdk/issues/928) e [PR 1010](https://github.com/cloudflare/sandbox-sdk/pull/1010).
