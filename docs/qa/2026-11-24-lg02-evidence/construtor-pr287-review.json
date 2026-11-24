@@ -1,0 +1,97 @@
+{
+  "reviewedBase": "3a7fb2c2edda8d461e1d8fdc64bfd80bc6138795",
+  "scope": "Windows reproduction only; no classroom publication or browser WebGL acceptance",
+  "before": {
+    "exitCode": 0,
+    "generatedReport": false,
+    "stdoutBytes": 0,
+    "invalidUtf8": true
+  },
+  "after": {
+    "entry": {
+      "testedAt": "2026-11-24T14:56:08.746Z",
+      "platform": "win32",
+      "results": [
+        {
+          "label": "normal",
+          "generatedProjects": 6,
+          "passed": true
+        },
+        {
+          "label": "path-with-space",
+          "generatedProjects": 6,
+          "passed": true
+        },
+        {
+          "label": "import-has-no-export-side-effect",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    "forcedLegacyPythonPreparation": {
+      "PYTHONUTF8": "0",
+      "generatedSourceDecodesAsUtf8": true,
+      "accentedControlsPreserved": true
+    },
+    "projects": [
+      {
+        "path": "2d/nave-2d-completo.szproject.json",
+        "sha256": "ff3187e760b0ea612724a54d8773ea7aa1f6f5867d3fdfde64763c6a322beb87",
+        "assets": 12,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      },
+      {
+        "path": "2d/nave-2d-inicial.szproject.json",
+        "sha256": "e1b2521b5fb2f122a45421dfb78ba868a1ef468771f74f79c7ecf4a3b633754f",
+        "assets": 12,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      },
+      {
+        "path": "2d/nave-2d-nebulosa.szproject.json",
+        "sha256": "ee4a57b110bd6edcd4332e17b40a52c49902bda3073ba8a049b296cd4e9b584f",
+        "assets": 12,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      },
+      {
+        "path": "2d/nave-2d-orbita.szproject.json",
+        "sha256": "7b5930d1179c36853e9764a43d456b3af9bcc70cfaea03b09d7e847aa201ef55",
+        "assets": 12,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      },
+      {
+        "path": "3d/patrulha-espacial-3d-completo.szproject.json",
+        "sha256": "727815b6189e24fd4d26c52fa0a71f69a09c7ffc1406c03f77404230d267c3b2",
+        "assets": 3,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      },
+      {
+        "path": "3d/patrulha-espacial-3d-inicial.szproject.json",
+        "sha256": "8efa3b7eb7266151782dc600a0914030416c243da01460916c97ad1fd6498ff5",
+        "assets": 3,
+        "sanitized": true,
+        "importContentPreserved": true,
+        "generatedFilesMatch": true
+      }
+    ],
+    "uniqueGlbsParsed": 3,
+    "appearanceVariantsPreserveRules": true,
+    "nativeProjectsByteIdentical": true,
+    "webglAppearanceTested": false
+  },
+  "zipGeneratorsMatchRepository": true,
+  "verified": true,
+  "pullRequest": 287,
+  "fixCommit": "61de040eeb7bb21b7733418ae4d976261fd150ce",
+  "state": "draft; outside deployed LG02 and current staging branch"
+}

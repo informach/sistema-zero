@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-11-24T13:40:20.433Z",
+  "source": "staging normal Worker tail",
+  "runtimeVersion": "382058b9-3175-4bb2-b6f0-d312b8fcaf46",
+  "stagingSource": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "interval": {
+    "start": "2026-11-24T13:36:17.000Z",
+    "end": "2026-11-24T13:36:55.000Z"
+  },
+  "physicalClass": "general; both lessons use key-driven movement, not approachObject3d navigation",
+  "autoWarm": {
+    "threeD": false,
+    "durationMs": 5488
+  },
+  "distinctSandboxCount": 2,
+  "sandboxFingerprints": [
+    "2ed857b903fd575b3df476f28be0748ebf79b327e7fba8b2e616e2fd20e44be0",
+    "31b34ddc1b337fda010d0223df4241dfb95dbee896bac40f19c23c49244a0c3a"
+  ],
+  "timings": [
+    {
+      "threeD": false,
+      "readyMs": 78,
+      "buildMs": 0,
+      "runMs": 4884,
+      "totalMs": 5427
+    },
+    {
+      "threeD": false,
+      "readyMs": 1789,
+      "buildMs": 0,
+      "runMs": 32588,
+      "totalMs": 34963
+    }
+  ],
+  "tailSha256": "105baa962367b5daae8fff12151a9188b3493205fc637ed76df9f753e8f11f29",
+  "verified": true
+}
