@@ -82,6 +82,8 @@ python3 docs/aulas-interativas/construtor/prototipos-base/fontes/3d/generate-sou
 bun docs/aulas-interativas/construtor/prototipos-base/fontes/exportar-projetos.ts
 ```
 
+No Windows, o comando do Python 3 pode ser `python` em vez de `python3`, conforme a instalação. As fontes são gravadas explicitamente em UTF-8, inclusive quando o modo UTF-8 do Python está desligado.
+
 Os dois primeiros comandos preparam os programas intermediários; o último usa os conversores e a fábrica oficiais do Estúdio para atualizar os seis `.szproject.json`. Os GLBs já estão incorporados em `fontes/3d/assets.json`; não é preciso regenerá-los para exportar os projetos.
 
 Para reproduzir também a conversão dos modelos existentes da galeria, há um comando opcional, executado antes dos anteriores:

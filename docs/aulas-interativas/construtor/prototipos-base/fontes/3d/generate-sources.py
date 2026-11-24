@@ -173,9 +173,9 @@ def main():
         (True, 'patrulha-espacial-3d-inicial', 'Patrulha Espacial 3D | Projeto inicial'),
     ]:
         path = OUT / f'{stem}.source.js'
-        path.write_text(source(initial))
+        path.write_text(source(initial), encoding='utf-8')
         manifest.append(dict(stem=stem, source=path.name, name=title, initial=initial, assetsFile='assets.json'))
-    (OUT / 'sources.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+    (OUT / 'sources.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({'files': [x['source'] for x in manifest], 'embeddedModels': 3, 'source': 'Existing Patrulha Espacial gallery models; definitive art and variants by Helena in Blender'}, ensure_ascii=False))
 
 
