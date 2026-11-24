@@ -67,11 +67,11 @@ export async function preparePythonSdkLinux(options: {
       private: true,
       dependencies: {
         '@sistemazero/core': 'file:./packages/core',
-        '@cloudflare/sandbox': '0.10.3',
+        '@cloudflare/sandbox': '0.12.12',
         '@cloudflare/containers': '0.3.7',
         aws4fetch: '1.0.20',
         capnweb: '0.8.0',
-        hono: '4.12.31',
+        hono: '4.13.21',
         wrangler: '4.120.1',
         typescript: '5.9.3',
         zod: '4.3.6',

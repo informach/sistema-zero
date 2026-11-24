@@ -1,6 +1,6 @@
 FROM node:22.17.0-bookworm-slim
 
-COPY --from=docker.io/cloudflare/sandbox:0.10.3 /container-server/sandbox /sandbox
+COPY --from=docker.io/cloudflare/sandbox:0.12.12 /container-server/sandbox /sandbox
 
 WORKDIR /opt/sz-runtime
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/sz-runtime/browsers
