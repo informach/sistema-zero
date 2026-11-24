@@ -17,7 +17,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 
 | ID | Frente | Prioridade | Dependência principal | Estado |
 | --- | --- | --- | --- | --- |
-| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Em execução: candidata `9a8a1a9f2`, incluindo R13/R14; qualificação remota e implantação final pendentes |
+| LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Homologação final aprovada em `9a8a1a9f2`, incluindo R13/R14; reexecução dos checks do push exigidos pelo GitHub antes da promoção |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Não qualificada: falha entre abas reproduzida; excluída da LG01 |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
@@ -110,6 +110,7 @@ Escolher um ID do quadro e registrar seu escopo antes de executar. Ao concluir, 
 | Data | ID | Resultado e evidências |
 | --- | --- | --- |
 | 23/11/2026 | Registro | Proposta preservada para execução gradual; etapas pendentes |
+| 23/11/2026 | LG01 | CI do PR, plano vazio e onda canônica aprovados; oito serviços no SHA final, menu e 24 miniaturas conferidos, projeto infantil reaberto salvo. O cancelamento da rodada automática deixou sete checks obrigatórios cancelados; reexecução integral solicitada, sem alterar proteção |
 | 23/11/2026 | LG03 | Confirmada publicação concorrente de A Ilha do Farol: 3/3 aulas em Kids e Adultos. Leitura de produção, sem executar o publicador nem alterar conteúdo pela LG01. Os demais minicursos seguem em rascunho |
 | 23/11/2026 | LG01 | R14 reproduzido e corrigido: gestos do Pinta conservam a prévia após deslocamento do papel. 76 testes UI e quatro percursos desktop/toque aprovados, tipos Pinta/Studio sem erros. Nova candidata `9a8a1a9f2` em CI e homologação |
 | 23/11/2026 | LG01 | Miniaturas dos 24 modelos conferidas na prévia Admin autenticada. Defeito R13 no menu incorporado corrigido em `a5d684728`, com testes de regressão e navegador. Nova rodada final de CI, plano e staging em andamento; produção ainda pendente |

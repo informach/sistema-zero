@@ -29,8 +29,13 @@
     "railwayPlanChanges": 0,
     "railwaySourceTree": "0bec132654ae9d0b8630a2d10e62f5fbc9e4bf13",
     "tenThousandBlocksStatus": "success",
-    "stagingQualificationStatus": "in_progress",
-    "status": "pending"
+    "stagingQualificationStatus": "success",
+    "status": "pending",
+    "stagingServicesHealthy": 8,
+    "pushCiRun": 45281870815,
+    "pushCiAttempt": 2,
+    "pushCiStatus": "in_progress",
+    "mergeBlocker": "Seven required checks from cancelled push suite; full rerun requested"
   },
   "warmingIncluded": false,
   "warmingBlocker": "R12: failed shared-container check interrupts another tab of the same identity",
