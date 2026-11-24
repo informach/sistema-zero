@@ -45,9 +45,9 @@ liberações antigas não alteram um sucessor. A posse fica no SQLite do `CheckS
 na memória de uma réplica do Members. Não destruir a máquina após tentar devolver uma reserva
 limpa: a confirmação RPC pode se perder depois de outro dono adquiri-la.
 
-O cache deixa capacidade para verificações novas. Uma vaga ociosa só é substituída depois de
+O cache deixa capacidade para verificações novas. Uma vaga expirada só é substituída depois de
 marcar sua retirada no SQLite e confirmar a destruição do contêiner. Descarte sem confirmação
-mantém a vaga contabilizada. Com todas as vagas em uso, o aquecimento é dispensado e a
+mantém a vaga contabilizada. Com o cache cheio, o aquecimento é dispensado e a
 verificação segue em máquina exclusiva descartável. Perfis diferentes nunca reutilizam a
 mesma máquina. As reservas ociosas expiram após 5 minutos; a próxima aquisição descarta o
 nome antigo antes de admitir outro. `STUDIO_CHECK_CACHE_SLOTS` permite somente reduzir o

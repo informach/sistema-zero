@@ -216,22 +216,31 @@ test('profiles share a bounded class cache but keep independent VM identities', 
   expect(new Set(allocations.map((allocation) => allocation?.lease.sandboxId)).size).toBe(3)
 })
 
-test('eviction fences an idle profile and counts its VM until destruction is confirmed', () => {
+test('a full cache does not retire a healthy idle VM to prewarm another profile', () => {
   const { store } = checkPoolSqlite()
   const first = lease(store.acquire('warm', 1000, 'alice', 1))
   expect(store.release(first, true, 1100)).toBe(true)
-  const retirement = store.acquire('warm', 1200, 'bob', 1)
+  expect(store.acquire('warm', 1200, 'bob', 1)).toEqual({ kind: 'skipped' })
+  expect(lease(store.acquire('check', 1300, 'bob', 1)).pooled).toBe(false)
+  expect(lease(store.acquire('check', 1400, 'alice', 1)).sandboxId).toBe(first.sandboxId)
+})
+
+test('eviction fences an expired idle profile and counts its VM until destruction is confirmed', () => {
+  const { store } = checkPoolSqlite()
+  const first = lease(store.acquire('warm', 1000, 'alice', 1))
+  expect(store.release(first, true, 1100)).toBe(true)
+  const retirement = store.acquire('warm', 301100, 'bob', 1)
   if (retirement.kind !== 'retire') throw new Error('Expected retirement')
   expect(retirement.sandboxId).toBe(first.sandboxId)
-  expect(store.release(first, true, 1300)).toBe(false)
-  expect(store.acquire('check', 1400, 'alice', 1).kind).toBe('retire')
+  expect(store.release(first, true, 301200)).toBe(false)
+  expect(store.acquire('check', 301300, 'alice', 1).kind).toBe('retire')
   expect(store.completeRetirement({ ...retirement, token: 'forged' })).toBe(false)
-  expect(store.acquire('warm', 1500, 'bob', 1)).toEqual(retirement)
+  expect(store.acquire('warm', 301400, 'bob', 1)).toEqual(retirement)
   expect(store.completeRetirement(retirement)).toBe(true)
-  const successor = lease(store.acquire('warm', 1600, 'bob', 1))
+  const successor = lease(store.acquire('warm', 301500, 'bob', 1))
   expect(successor.sandboxId).not.toBe(first.sandboxId)
   expect(store.completeRetirement(retirement)).toBe(false)
-  expect(lease(store.acquire('check', 1700, 'charlie', 1)).pooled).toBe(false)
+  expect(lease(store.acquire('check', 301600, 'charlie', 1)).pooled).toBe(false)
 })
 
 test('unconfirmed destruction quarantines the slot instead of freeing warm capacity', () => {

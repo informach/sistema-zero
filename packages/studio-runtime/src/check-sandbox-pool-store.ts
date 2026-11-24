@@ -111,9 +111,9 @@ export function createCheckSandboxPoolStore(sql: PoolSql) {
       if (current?.token && current.expiresAt > now) return uncachedCheckSandbox(operation)
       if (current && current.expiresAt <= now) return retire(current)
       if (!current && all.length >= capacity) {
-        const victim = all.find(
-          (row) => row.retirementToken || row.token === null || row.expiresAt <= now,
-        )
+        // Discarding a VM need not immediately free its scheduler capacity. A cache miss
+        // must not churn healthy idle generations just to prewarm another profile.
+        const victim = all.find((row) => row.retirementToken || row.expiresAt <= now)
         return victim ? retire(victim) : uncachedCheckSandbox(operation)
       }
       const lease = freshCheckSandboxLease(true)
