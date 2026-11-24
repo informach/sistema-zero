@@ -4,6 +4,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { getSandbox } from '@cloudflare/sandbox'
 import { awaitWithSignal, readJsonBodyWithLimit } from '@sistemazero/core/http'
 import { createStudioRuntimeHandler } from '../../src/index'
+import { forwardProbeMethod } from './lg02-runtime-probe-rpc'
 
 export { CheckSandboxPool } from '../../src/check-sandbox-pool'
 export { ProBuildSandbox, ThreeDCheckSandbox } from '../../src/index'
@@ -148,7 +149,7 @@ export default {
                 return target.exec(command, options)
               }
             const value = Reflect.get(target, property, receiver)
-            return typeof value === 'function' ? value.bind(target) : value
+            return typeof value === 'function' ? forwardProbeMethod(target, value) : value
           },
         })
       },

@@ -83,6 +83,9 @@ async function main() {
       (await send('acquire?profile=capacity-new-2d', { operation: 'check' })).pooled,
       false,
     )
+    const forwarded = await send('proxy-acquire?profile=proxy-contract-3d', { operation: 'warm' })
+    assert.equal(forwarded.kind, 'lease')
+    assert.equal(forwarded.pooled, true)
     console.log(
       JSON.stringify({
         verified: true,
@@ -92,6 +95,7 @@ async function main() {
         staleReleaseFenced: true,
         profileAndClassIsolation: true,
         sharedCacheBounded: true,
+        nativeRpcProxyVerified: true,
       }),
     )
   } finally {
