@@ -37,7 +37,10 @@ import { ILHA_ASSETS } from './ilha-do-farol-assets'
 import { ilhaSource } from './ilha-do-farol-projeto'
 
 export const CABANA_CURSO = 'jornada-faisca-poder-2'
-export const CABANA_ETAPAS = ['inicio', 'emblema', 'porta'] as const
+/** `abre`: o Se com temChave e temEmblema, só com o então e sem aviso; `porta` põe os avisos e o senão (24/11/2026). */
+export const CABANA_ETAPAS = ['inicio', 'emblema', 'abre', 'porta'] as const
+/** A ordem dos ids dos exemplos: a etapa nova no fim, para os ids das outras não mudarem. */
+export const CABANA_IDS: readonly CabanaEtapa[] = ['inicio', 'emblema', 'porta', 'abre']
 export type CabanaEtapa = (typeof CABANA_ETAPAS)[number]
 export type CabanaDimensao = '2d' | '3d'
 export const CABANA_AVISO = {
@@ -146,9 +149,9 @@ function ir2d(etapa: CabanaEtapa): SZIRV2 {
           },
           then: [
             { type: 'g2d:setImage', spriteVar: 'cabana', image: 'cabana-aberta' },
-            aviso(CABANA_AVISO.abriu),
+            ...(n >= 3 ? [aviso(CABANA_AVISO.abriu)] : []),
           ],
-          else: [aviso(CABANA_AVISO.falta)],
+          ...(n >= 3 ? { else: [aviso(CABANA_AVISO.falta)] } : {}),
         },
       ],
     })
@@ -230,7 +233,7 @@ ${n >= 1 ? 'let temEmblema=false;' : ''}`
       ? `SZGame3D.onTouch(personagem,emblema,()=>{SZGame3D.setVisible(emblema,"hide");temEmblema=true;aviso=${JSON.stringify(CABANA_AVISO.emblema)};});`
       : '',
     n >= 2
-      ? `SZGame3D.onTouch(personagem,cabana,()=>{if(temChave&&temEmblema){SZGame3D.playAnimation(cabana,"abrir","uma-vez");aviso=${JSON.stringify(CABANA_AVISO.abriu)};}else{aviso=${JSON.stringify(CABANA_AVISO.falta)};}});`
+      ? `SZGame3D.onTouch(personagem,cabana,()=>{if(temChave&&temEmblema){SZGame3D.playAnimation(cabana,"abrir","uma-vez");${n >= 3 ? `aviso=${JSON.stringify(CABANA_AVISO.abriu)};` : ''}}${n >= 3 ? `else{aviso=${JSON.stringify(CABANA_AVISO.falta)};}` : ''}});`
       : '',
   ].join('\n')
   return s.replace('SZGame3D.animate(cena,()=>{', `${regras}\nSZGame3D.animate(cena,()=>{`)

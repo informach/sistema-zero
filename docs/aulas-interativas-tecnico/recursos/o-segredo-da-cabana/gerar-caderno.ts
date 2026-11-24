@@ -266,6 +266,15 @@ const drawings: Record<string, { area: string; corpo: () => string }> = {
     area: 'Quando acontecer',
     corpo: () => quandoAcontecer(OUTROS_EVENTOS, encontro2d('cabana', comPergunta())),
   },
+  // A cabana que abre antes dos avisos (24/11/2026): o Se com a pergunta, ainda só com o então.
+  'abre-2d': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      quandoAcontecer(
+        OUTROS_EVENTOS,
+        encontro2d('cabana', semSenao(seCabana(pergunta(), abrir2d()))),
+      ),
+  },
   'porta-2d': {
     area: 'Quando acontecer',
     corpo: () => quandoAcontecer(OUTROS_EVENTOS, encontro2d('cabana', respostas(abrir2d()))),
@@ -296,6 +305,15 @@ const drawings: Record<string, { area: string; corpo: () => string }> = {
   'pergunta-3d': {
     area: 'Quando acontecer',
     corpo: () => quandoAcontecer(OUTROS_EVENTOS, encontro3d('cabana', comPergunta())),
+  },
+  // A cabana que abre antes dos avisos (24/11/2026): o Se com a pergunta, ainda só com o então.
+  'abre-3d': {
+    area: 'Quando acontecer',
+    corpo: () =>
+      quandoAcontecer(
+        OUTROS_EVENTOS,
+        encontro3d('cabana', semSenao(seCabana(pergunta(), abrir3d()))),
+      ),
   },
   'porta-3d': {
     area: 'Quando acontecer',

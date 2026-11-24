@@ -47,9 +47,21 @@ Guarde o emblema.
 - Guarde o emblema: ao encostar nele, o aviso conta que você pegou.
 - Retire o emblema dentro do encontro entre personagem e emblema.
 
-## Parte 5. A cabana pede as duas
+## Parte 5. A cabana abre com as duas peças
 
-A cabana pede as duas.
+A cabana abre com as duas peças.
+
+- Intenção: application.
+- Blocos: video-abre, ponte-abre.
+- Estúdio: projeto.
+- Conclusão: video-abre.
+
+- Só com a chave, a cabana continua fechada.
+- Com a chave e o emblema, a cabana abre.
+
+## Parte 6. Os avisos da cabana
+
+Os avisos da cabana.
 
 - Intenção: delivery.
 - Blocos: video-porta, ponte-porta, projeto.
@@ -64,7 +76,7 @@ A cabana pede as duas.
 - Pegando o emblema antes da chave a cabana também abre, e uma nova partida (tecla R) a fecha.
 - O farol continua: com a chave, ele acende.
 
-## Parte 6. Pense na cabana
+## Parte 7. Pense na cabana
 
 Pense na cabana.
 

@@ -12,6 +12,7 @@
     "video-material",
     "video-experiencia",
     "video-emblema",
+    "video-abre",
     "video-porta"
   ],
   "intervencoes": [
@@ -49,11 +50,11 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-porta-K1",
-      "clipe": "video-porta",
+      "id": "video-abre-K1",
+      "clipe": "video-abre",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "diz que ela pede a chave e o emblema. Agora toque na tecla R, pegue só a chave e vá até a cabana. Ela continua fechada.",
+      "ancoraAntes": "vamos testar! Clique em Rodar de novo mais uma vez, pegue só a chave e vá até a cabana. Repare: ela continua fechada.",
       "ancoraDepois": "Porque, com a palavra e, a cabana pede as duas peças: temChave é verdadeiro, mas temEmblema ainda é falso, e por isso a",
       "falaPrincipal": "Ué, por que a cabana não abriu só com a chave?",
       "falaPersonagem": "Ué, por que a cabana não abriu só com a chave?",

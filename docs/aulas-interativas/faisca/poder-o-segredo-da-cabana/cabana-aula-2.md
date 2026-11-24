@@ -25,9 +25,21 @@ Guarde o emblema da ilha.
 - Guarde o emblema: ao encostar nele, ele some e o aviso conta.
 - Esconda o emblema dentro do encontro entre personagem e emblema.
 
-## Parte 3. A cabana da ilha abre
+## Parte 3. A cabana da ilha abre com as duas peças
 
-A cabana da ilha abre.
+A cabana da ilha abre com as duas peças.
+
+- Intenção: application.
+- Blocos: video-abre, ponte-abre.
+- Estúdio: projeto.
+- Conclusão: video-abre.
+
+- Só com a chave, a cabana continua fechada.
+- Com a chave e o emblema, a cabana abre.
+
+## Parte 4. Os avisos da cabana da ilha
+
+Os avisos da cabana da ilha.
 
 - Intenção: delivery.
 - Blocos: video-porta, ponte-porta, projeto.
@@ -40,7 +52,7 @@ A cabana da ilha abre.
 - Só com o emblema, a cabana continua fechada.
 - Pegando o emblema antes da chave a cabana também abre, e uma nova partida (tecla R) a fecha.
 
-## Parte 4. Pense na cabana da ilha
+## Parte 5. Pense na cabana da ilha
 
 Pense na cabana da ilha.
 

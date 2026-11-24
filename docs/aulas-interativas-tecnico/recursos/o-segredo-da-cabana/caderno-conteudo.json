@@ -268,9 +268,9 @@
     },
     {
       "id": "porta-2d",
-      "secao": "porta",
+      "secao": "abre",
       "scene": "2d",
-      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
+      "kicker": "Aula 1 · Parte 5 · Montagem",
       "title": "A cabana pede as duas",
       "subtitle": "Pegue a chave e o emblema e vá até a cabana: nada acontece, porque o jogo ainda não sabe o que fazer quando o personagem chega lá.",
       "items": [
@@ -297,31 +297,36 @@
     },
     {
       "id": "porta-2d-pergunta",
-      "secao": "porta",
+      "secao": "abre",
       "scene": "2d",
-      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
-      "title": "A pergunta da cabana",
+      "kicker": "Aula 1 · Parte 5 · Montagem e verificação",
+      "title": "A pergunta e a cabana que abre",
       "subtitle": "A cabana pergunta duas coisas de uma vez: se o personagem tem a chave e se ele tem o emblema.",
       "items": [
         {
           "kind": "step",
           "title": "3. Junte as duas perguntas",
-          "text": "Para juntar duas perguntas numa só, o jogo usa o bloco que tem a palavra <b>e</b> no meio.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
+          "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
         },
         {
           "kind": "step",
           "title": "4. Escolha as duas variáveis",
-          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>.<br/>Agora a pergunta é: o personagem tem a chave e tem o emblema? Com a palavra e, a resposta só é sim quando as duas perguntas dão sim."
+          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>.<br/>Com a palavra <b>e</b>, a resposta só é sim quando as duas perguntas dão sim."
         },
         {
           "kind": "step",
-          "title": "5. Abra o senão",
-          "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>, que o Se ainda não mostra. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>. Clique no segundo. Não clique no primeiro."
+          "title": "5. A cabana abre",
+          "text": "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do <b>então</b>. Ele chega com <b>heroi</b> duas vezes: clique no primeiro e escolha <b>cabana</b>; clique no outro e escolha <b>cabana-aberta</b>."
         },
         {
           "kind": "drawing",
-          "name": "pergunta-2d",
-          "title": "Confira se ficou assim: a pergunta e os dois espaços"
+          "name": "abre-2d",
+          "title": "Confira se ficou assim: a pergunta e a resposta do sim"
+        },
+        {
+          "kind": "step",
+          "title": "Teste e verifique",
+          "text": "Só com a chave, a cabana fica fechada; com as duas peças, ela abre. Depois clique em <b>Verificar projeto</b>."
         }
       ]
     },
@@ -329,19 +334,19 @@
       "id": "porta-2d-respostas",
       "secao": "porta",
       "scene": "2d",
-      "kicker": "Aula 1 · Parte 5 · Montagem e envio",
-      "title": "As respostas da cabana",
+      "kicker": "Aula 1 · Parte 6 · Montagem",
+      "title": "Os avisos da cabana",
       "subtitle": "A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão.",
       "items": [
         {
           "kind": "step",
-          "title": "6. A cabana abre",
-          "text": "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite</b> e solte dentro do <b>então</b>. Ele chega com <b>heroi</b> duas vezes: clique no primeiro e escolha <b>cabana</b>; clique no outro e escolha <b>cabana-aberta</b>.<br/>É este bloco que abre a cabana: ele troca a imagem da cabana fechada pela imagem da cabana aberta."
+          "title": "6. Conte que a cabana abriu",
+          "text": "Logo abaixo de Trocar imagem do sprite, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
         },
         {
           "kind": "step",
-          "title": "7. Conte que a cabana abriu",
-          "text": "Logo abaixo de Trocar imagem do sprite, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>. Clique em Olá, apague e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
+          "title": "7. Abra o senão",
+          "text": "O Se ainda não mostra o espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão."
         },
         {
           "kind": "step",
@@ -359,7 +364,7 @@
       "id": "porta-2d-envio",
       "secao": "porta",
       "scene": "2d-aberta",
-      "kicker": "Aula 1 · Parte 5 · Teste e envio",
+      "kicker": "Aula 1 · Parte 6 · Teste e envio",
       "title": "Teste todos os casos e envie",
       "subtitle": "Teste sem nenhuma peça, com uma de cada vez e com as duas.",
       "items": [
@@ -389,7 +394,7 @@
       "id": "revisao-1",
       "secao": "revisao",
       "scene": "2d-aberta",
-      "kicker": "Aula 1 · Parte 6 · Revisão",
+      "kicker": "Aula 1 · Parte 7 · Revisão",
       "title": "Pense na cabana",
       "subtitle": "Depois do envio, a aula termina com quatro perguntas sobre a cabana.",
       "items": [
@@ -520,9 +525,9 @@
     },
     {
       "id": "porta-3d",
-      "secao": "porta",
+      "secao": "abre",
       "scene": "3d",
-      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
+      "kicker": "Aula 2 · Parte 3 · Montagem",
       "title": "A cabana da ilha abre",
       "subtitle": "Pegue a chave e o emblema e leve o personagem até a cabana: nada acontece, porque o jogo ainda não sabe o que fazer quando ele chega lá.",
       "items": [
@@ -549,31 +554,36 @@
     },
     {
       "id": "porta-3d-pergunta",
-      "secao": "porta",
+      "secao": "abre",
       "scene": "3d",
-      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
-      "title": "A pergunta da cabana",
+      "kicker": "Aula 2 · Parte 3 · Montagem e verificação",
+      "title": "A pergunta e a cabana que abre",
       "subtitle": "A cabana pergunta duas coisas de uma vez: se o personagem tem a chave e se ele tem o emblema.",
       "items": [
         {
           "kind": "step",
           "title": "3. Junte as duas perguntas",
-          "text": "Como no jogo 2D, a cabana junta duas perguntas com o bloco que tem a palavra <b>e</b> no meio.<br/><b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
+          "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue o bloco que tem a palavra e no meio e solte no lugar vazio ao lado de Se. Ele chega com dois <b>0</b>, um de cada lado da palavra e."
         },
         {
           "kind": "step",
           "title": "4. Escolha as duas variáveis",
-          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>.<br/>Agora a pergunta é temChave e temEmblema, igual à do jogo 2D."
+          "text": "<b>Programação &gt; Valores.</b> Pegue <b>valor da variável</b> e solte em cima do primeiro 0. Clique no <b>x</b> e escolha <b>temChave</b>. Pegue outro valor da variável, solte em cima do outro 0 e escolha <b>temEmblema</b>."
         },
         {
           "kind": "step",
-          "title": "5. Abra o senão",
-          "text": "A resposta do sim fica no espaço do <b>então</b>, e a do não fica no espaço do <b>senão</b>, que o Se ainda não mostra. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de senão se, e o segundo fica antes da palavra <b>senão</b>. Clique no segundo. Não clique no primeiro."
+          "title": "5. A cabana abre",
+          "text": "<b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do <b>então</b>. Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>.<br/>Primeiro diga quem vai tocar a animação: clique em heroi e escolha <b>cabana</b>. Depois clique em Andar e escolha <b>abrir</b>. Por último, clique em repetindo e escolha <b>uma vez</b>."
         },
         {
           "kind": "drawing",
-          "name": "pergunta-3d",
-          "title": "Confira se ficou assim: a pergunta e os dois espaços"
+          "name": "abre-3d",
+          "title": "Confira se ficou assim: a pergunta e a resposta do sim"
+        },
+        {
+          "kind": "step",
+          "title": "Teste e verifique",
+          "text": "Só com a chave, a cabana fica fechada; com as duas peças, ela abre. Depois clique em <b>Verificar projeto</b>."
         }
       ]
     },
@@ -581,19 +591,19 @@
       "id": "porta-3d-respostas",
       "secao": "porta",
       "scene": "3d",
-      "kicker": "Aula 2 · Parte 3 · Montagem e envio",
-      "title": "As respostas da cabana",
+      "kicker": "Aula 2 · Parte 4 · Montagem",
+      "title": "Os avisos da cabana",
       "subtitle": "No 3D, a cabana abre com uma animação que já vem no modelo dela: a porta gira e as janelas acendem.",
       "items": [
         {
           "kind": "step",
-          "title": "6. A cabana abre",
-          "text": "<b>Jogo 3D &gt; Objetos &gt; Animação do modelo.</b> Pegue <b>Tocar a animação</b> e solte dentro do <b>então</b>. Ele chega com <b>Andar</b>, <b>heroi</b> e <b>repetindo</b>.<br/>Primeiro diga quem vai tocar a animação: clique em heroi e escolha <b>cabana</b>. Depois clique em Andar e escolha <b>abrir</b>. Por último, clique em repetindo e escolha <b>uma vez</b>."
+          "title": "6. Conte que a cabana abriu",
+          "text": "Logo abaixo de Tocar a animação, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
         },
         {
           "kind": "step",
-          "title": "7. Conte que a cabana abriu",
-          "text": "Logo abaixo de Tocar a animação, ainda dentro do então, solte <b>Alterar variável para</b>, de <b>Programação &gt; Variáveis</b>, e escolha <b>aviso</b>. Em cima do número, solte <b>texto</b>, de <b>Programação &gt; Valores</b>, e escreva <b>A cabana abriu! Você tinha as duas peças.</b>"
+          "title": "7. Abra o senão",
+          "text": "O Se ainda não mostra o espaço do <b>senão</b>. Na linha de baixo do Se, clique no <b>segundo</b> sinal de mais, o de antes da palavra senão."
         },
         {
           "kind": "step",
@@ -611,7 +621,7 @@
       "id": "porta-3d-envio",
       "secao": "porta",
       "scene": "3d",
-      "kicker": "Aula 2 · Parte 3 · Teste e envio",
+      "kicker": "Aula 2 · Parte 4 · Teste e envio",
       "title": "Teste todos os casos e envie",
       "subtitle": "Teste sem nenhuma peça, com uma de cada vez e com as duas, como no jogo 2D.",
       "items": [
@@ -641,7 +651,7 @@
       "id": "revisao-2",
       "secao": "revisao",
       "scene": "3d",
-      "kicker": "Aula 2 · Parte 4 · Revisão",
+      "kicker": "Aula 2 · Parte 5 · Revisão",
       "title": "Pense na cabana da ilha",
       "subtitle": "Depois do envio, a aula termina com duas perguntas sobre a cabana da ilha.",
       "items": [

@@ -7,7 +7,7 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-abertura", "video-emblema", "video-porta"],
+  "clipes": ["video-abertura", "video-emblema", "video-abre", "video-porta"],
   "intervencoes": [
     {
       "id": "video-abertura-K1",
@@ -32,12 +32,12 @@
       "tags": ["[curious]"]
     },
     {
-      "id": "video-porta-K1",
-      "clipe": "video-porta",
+      "id": "video-abre-K1",
+      "clipe": "video-abre",
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "Por último, clique em repetindo e escolha uma vez. É este bloco que abre a cabana: ele toca a animação abrir uma vez.",
-      "ancoraDepois": "Ela toca quando a resposta da pergunta é sim, porque o bloco está dentro do então. Logo abaixo dele, ainda dentro do",
+      "ancoraDepois": "Ela toca quando a resposta da pergunta é sim, porque o bloco está dentro do então. Agora vamos testar! Clique em Rodar",
       "falaPrincipal": "Como a cabana sabe a hora de tocar a animação?",
       "falaPersonagem": "Como a cabana sabe a hora de tocar a animação?",
       "tags": ["[curious]"]
