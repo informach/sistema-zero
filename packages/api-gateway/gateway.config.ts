@@ -3055,6 +3055,19 @@ const config: GatewayConfigInput = {
       timeoutMs: 160_000,
     },
     {
+      // Aquecimento (23/11/2026): a criança abriu a parte e o executor já liga o contêiner dela.
+      // O members responde na hora (202); ninguém espera o contêiner subir.
+      id: 'members-section-project-check-warm',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/sections/:sectionId/project-check/warm',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
       // "Testar agora" da autoria: os objetivos contra o projeto inicial ou o gabarito.
       id: 'members-admin-project-checks-test',
       methods: ['POST'],

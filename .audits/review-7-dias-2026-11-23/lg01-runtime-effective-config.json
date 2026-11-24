@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-11-23T20:48:54.308Z",
+  "approvedHead": "3664ae3347a6e8c55ce0b20a11b7d3f2873f0654",
+  "observations": [
+    {
+      "environment": "staging",
+      "previousDeployment": "9feff3c8-c7a2-4dd4-b3be-dc8d6d05625e",
+      "previousVersion": "c523b815-32a8-4717-a9cf-0335635b8b21",
+      "createdOn": "2026-11-23T18:45:24.414311Z",
+      "configurationSha256": "05294b0e0df2ed0a128bde227a927c7f88fef3db784baf59368ae0246ee22ead",
+      "objectHashVerified": true
+    },
+    {
+      "environment": "production",
+      "previousDeployment": "fe6866a4-3734-4491-ae20-0fffeeabe843",
+      "previousVersion": "3e1f67fb-f26a-4188-aa87-47d7a6dc80c5",
+      "createdOn": "2026-11-08T19:36:06.536799Z",
+      "configurationSha256": "2c53c74ce96be00412438117a39bbcf82af763c6c99be3783beaa6317a00b57d",
+      "objectHashVerified": true
+    }
+  ],
+  "stagingCurrentVersion": "96d176d0-4055-4f1a-9b35-3cf5338f3a76",
+  "membersAndWorkerStatusesMatch": true,
+  "publicChecks": {
+    "testedAt": "2026-11-23T20:46:56.148Z",
+    "method": "HEAD readonly",
+    "observations": [
+      {
+        "name": "production-previous",
+        "status": 200
+      },
+      {
+        "name": "production-members-current",
+        "status": 200
+      },
+      {
+        "name": "staging-previous",
+        "status": 200
+      },
+      {
+        "name": "staging-members-current",
+        "status": 200
+      }
+    ]
+  },
+  "correction": "A primeira entrada da lista cronologica foi tomada indevidamente como atual. O override temporario f69814b em staging foi desfeito, restaurando 05294b0. Producao nao foi alterada durante essa correcao."
+}
