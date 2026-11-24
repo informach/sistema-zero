@@ -62,6 +62,12 @@ Para preparar o projeto válido de homologação, foi inserido pelo Blockly o co
 
 No curso 2D A Chave do Farol, foram percorridos vídeo e experiência da parte disponível. O projeto inicial reprovou os seis objetivos em 5.668 ms, sem prêmio. Após inserir pelo Blockly os controles direcionais e o movimento do personagem, a interface aprovou os seis objetivos em 10.152 ms e concedeu o prêmio normal de +30 XP/+15 moedas. O perfil ficou com 1.020 XP/535 moedas e recebeu a conquista automática `studio-master-3`. Nenhum prêmio foi atribuído manualmente. Ainda falta repetir aquecimento e verificações após atualizar os aplicativos para a fonte final, incluindo recusas de sessão/acesso/revisão. Nenhum recado, post ou envio ao professor foi feito.
 
+## Entradas concorrentes incluídas na revisão
+
+Durante a qualificação entraram `3372f2498` (a criança edita o próprio apelido) e `53fc30329` (rolagem do quarto). Foram preservados no merge de staging `9ca0696ae`, junto da correção dos cenários tipados da LG02 (`e1b5fcd17`). A candidata de produção da LG02 não inclui essas duas funcionalidades concorrentes; sua promoção é independente.
+
+A revisão conferiu ownership, restrições do nome completo/nascimento, preservação da identidade confirmada, atualização do token e os contêineres de rolagem. Passaram 125 testes Auth, quatro do BFF e dez da interface perfil/quarto, zero falhas. O apelido aceita 2–40 caracteres, normaliza espaços e não exige unicidade. A troca não altera o nome do certificado. Se a renovação da sessão estiver indisponível, o menu pode conservar o apelido antigo até a próxima renovação (token de até 15 minutos); o valor salvo permanece atualizado. Os pais continuam podendo corrigir o apelido. O quarto preserva a rolagem interna de itens; o ajuste contém os elementos de acessibilidade para não esticar a página.
+
 ## Efeito e limitações para a criança
 
 Ao abrir ou editar uma parte JavaScript/Pro elegível, o Verificar pode encontrar a máquina preparada. Verificações sucessivas podem reutilizá-la; duas abas mantêm posse separada durante sobreposição. Aquecer não conclui parte nem concede XP. O jogo grande da sessão real levou cerca de 31 s para executar seus cinco objetivos; a mediana sintética de 3,50 s não se aplica a ele.
