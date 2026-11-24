@@ -110,10 +110,10 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
     acesa('lua', false),
     [{ afterStep: 2, expect: value('aviso', 'changed') }],
   )
-  /** A pergunta da vez: um Se com senão dentro do encontro com a pedra. */
-  const seNa = (s: Simbolo): SectionProjectCheck => ({
+  /** A pergunta da vez: um Se dentro do encontro com a pedra (com o senão, a partir do recomeço). */
+  const seNa = (s: Simbolo, comSenao = true): SectionProjectCheck => ({
     id: `se-na-${s}`,
-    label: `O encontro com a ${s} pergunta se é a vez dela (Se, com senão).`,
+    label: `O encontro com a ${s} pergunta se é a vez dela (Se${comSenao ? ', com senão' : ''}).`,
     rule: three
       ? {
           type: 'usesBlock',
@@ -133,6 +133,19 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
           inputBlocks: { BODY: { blockType: 'sz_js_if_else' } },
         },
   })
+  // Sem o senão (as partes da pergunta, 24/11/2026): fora da vez nada acende nem abre, sem cobrar o aviso.
+  const luaCedo = check(
+    'lua-cedo',
+    'Começando pela lua, ela não acende.',
+    [ir('lua'), espera(300)],
+    acesa('lua', false),
+  )
+  const estrelaCedo = check(
+    'estrela-cedo',
+    'Depois do sol, a estrela fora da vez não abre o baú.',
+    [ir('sol'), ir('estrela', 'sol'), espera(300)],
+    aberto(false),
+  )
   const abre = check(
     'ordem-certa',
     'Tocando o sol, a lua e a estrela, nessa ordem, o baú abre.',
@@ -188,7 +201,11 @@ export function simbolosChecks(d: SimbolosDimensao, etapa: SimbolosEtapa): Secti
       )
   const lista: (SectionProjectCheck | null)[] = []
   if (n === 1) lista.push(parado, solComeca)
-  if (n === 2) lista.push(luaDepois, luaPrimeiro, seNa('lua'))
-  if (n >= 3) lista.push(seNa('estrela'), abre, foraDaVez, recomecar, reinicio, farol)
+  if (n === 2) lista.push(luaDepois, luaCedo, seNa('lua', false))
+  // O aviso de começar pelo sol (o senão da lua) é o que separa esta etapa da anterior.
+  if (n === 3) lista.push(luaDepois, luaPrimeiro, seNa('lua'))
+  if (n === 4) lista.push(seNa('estrela', false), abre, estrelaCedo)
+  // O recomeço da estrela (o senão) é o que o "fora da vez" e o "recomecar" conferem.
+  if (n >= 5) lista.push(seNa('estrela'), abre, foraDaVez, recomecar, reinicio, farol)
   return lista.filter((c): c is SectionProjectCheck => c !== null)
 }

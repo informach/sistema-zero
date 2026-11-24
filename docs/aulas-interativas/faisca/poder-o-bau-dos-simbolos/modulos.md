@@ -11,8 +11,10 @@ Identificador: aula-1. Dimensão: 2D.
 3. A ordem dos símbolos.
 4. O sol começa.
 5. A lua pergunta a vez.
-6. A estrela abre o baú.
-7. Pense na ordem.
+6. A lua fora da vez.
+7. A estrela abre o baú.
+8. A estrela fora da vez.
+9. Pense na ordem.
 
 [Manifesto](simbolos-aula-1.manifesto.json) · [Roteiro](simbolos-aula-1.roteiro.md).
 
@@ -23,8 +25,10 @@ Identificador: aula-2. Dimensão: 3D.
 1. Os símbolos chegaram à ilha.
 2. O sol da ilha começa.
 3. A lua da ilha pergunta a vez.
-4. A estrela abre o baú da ilha.
-5. Pense nos símbolos da ilha.
+4. A lua da ilha fora da vez.
+5. A estrela abre o baú da ilha.
+6. A estrela da ilha fora da vez.
+7. Pense nos símbolos da ilha.
 
 [Manifesto](simbolos-aula-2.manifesto.json) · [Roteiro](simbolos-aula-2.roteiro.md).
 

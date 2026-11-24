@@ -185,8 +185,18 @@ describe('manifestos dos símbolos', () => {
       // O envio fecha a montagem da estrela, e o quiz vem depois dele (revisão de 23/11/2026).
       expect(m.sections.map((s: { key: string }) => s.key)).toEqual(
         d === '2d'
-          ? ['abertura', 'material', 'experiencia', 'sol', 'lua', 'estrela', 'revisao']
-          : ['abertura', 'sol', 'lua', 'estrela', 'revisao'],
+          ? [
+              'abertura',
+              'material',
+              'experiencia',
+              'sol',
+              'lua-vez',
+              'lua',
+              'estrela-vez',
+              'estrela',
+              'revisao',
+            ]
+          : ['abertura', 'sol', 'lua-vez', 'lua', 'estrela-vez', 'estrela', 'revisao'],
       )
       const envio = m.sections.filter((s: any) => s.completion.submissionUpToDate)
       expect(envio.map((s: any) => [s.key, s.intent])).toEqual([['estrela', 'delivery']])
@@ -211,5 +221,8 @@ describe('manifestos dos símbolos', () => {
         m.sections.find((s: any) => s.key === key)?.completion.projectChecks.map((c: any) => c.id)
       expect(ids('sol')).not.toContain('lua-depois')
       expect(ids('lua')).not.toContain('ordem-certa')
+      // Desde 24/11/2026 a pergunta de cada pedra (só o sim) não cobra o recomeço, que vem na parte seguinte.
+      expect(ids('lua-vez')).not.toContain('lua-primeiro')
+      expect(ids('estrela-vez')).not.toContain('fora-da-vez')
     })
 })

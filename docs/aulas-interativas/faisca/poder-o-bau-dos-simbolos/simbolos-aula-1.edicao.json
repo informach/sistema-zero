@@ -12,7 +12,9 @@
     "video-material",
     "video-experiencia",
     "video-sol",
+    "video-lua-vez",
     "video-lua",
+    "video-estrela-vez",
     "video-estrela"
   ],
   "intervencoes": [
@@ -43,8 +45,8 @@
       "clipe": "video-lua",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Agora clique no 0, apague e escreva 1. Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?",
-      "ancoraDepois": "Num espaço do próprio Se. A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só",
+      "ancoraAntes": "vai ganhar a resposta do não! Na área Quando acontecer, deixe à vista o encontro com a lua e o Se que está dentro dele.",
+      "ancoraDepois": "Num espaço do próprio Se. A resposta do sim você já colocou no espaço do então, e a resposta do não fica no espaço do",
       "falaPrincipal": "E onde fica o que acontece quando não é a vez da lua?",
       "falaPersonagem": "E onde fica o que acontece quando não é a vez da lua?",
       "tags": ["[curious]"]

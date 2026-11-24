@@ -108,7 +108,7 @@
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol e depois até a lua. Tá vendo? O sol acende, mas a lua não, porque o jogo ainda não tem nenhuma reação para o encontro com a lua.
 
-[engaging, energetic, conversational voice] Como no jogo 2D, a lua pergunta se é a vez dela: passo igual a 1? Com a resposta sim, ela acende. Com a resposta não, a tentativa recomeça. Agora a lua da ilha vai fazer essa pergunta!
+[engaging, energetic, conversational voice] Como no jogo 2D, a lua pergunta se é a vez dela: passo igual a 1? Com a resposta sim, ela acende. Agora a lua da ilha vai fazer essa pergunta!
 
 [engaging, energetic, conversational voice] Primeiro, o encontro com a lua. Os encontros ficam na área Quando acontecer, e o novo vai logo abaixo do encontro com o sol, fora do fazer dele.
 
@@ -140,15 +140,7 @@
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se passo é igual a 1. Ou seja: o sol já foi tocado?
 
-[engaging, energetic, conversational voice] Lembra do Se no jogo 2D? A resposta do sim fica no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
-
-[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
-
-[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
-
-[engaging, energetic, conversational voice] Agora a resposta do sim, no espaço do então. Ela tem três blocos, como o encontro com o sol: passo vira 2, a lua acende e o aviso muda. Deixe o espaço do então à vista.
+[engaging, energetic, conversational voice] No bloco Se, a resposta do sim fica no espaço do então. Ela tem três blocos, como o encontro com o sol: passo vira 2, a lua acende e o aviso muda. Deixe o espaço do então à vista.
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 
@@ -189,6 +181,38 @@
 [confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
 
 [confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: A lua acendeu! Agora a estrela.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol e depois até a lua.
+
+[interested, animated voice] Olha só: o sol e a lua acendem, e o aviso pede a estrela.
+
+[engaging, energetic, conversational voice] E se o personagem for direto até a lua? Toque na tecla R e leve o personagem direto até a lua, sem passar pelo sol.
+
+[interested, animated voice] Repare: a lua não acende. Só que o aviso não diz nada. O que acontece quando não é a vez da lua fica para a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro entre personagem e lua está o Se com passo igual a 1, e no então estão Alterar variável passo para 2, Tocar a animação acender na lua e o aviso.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem direto até a lua, sem passar pelo sol. Tá vendo? A lua não acende, mas o aviso continua igual, porque a pergunta da lua ainda não tem a resposta do não.
+
+[engaging, energetic, conversational voice] Como no jogo 2D, quando não é a vez da lua, a tentativa recomeça: passo volta a 0, e os símbolos acesos apagam. Agora a lua da ilha vai ganhar a resposta do não!
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com a lua e o Se que está dentro dele.
+
+[engaging, energetic, conversational voice] Lembra do Se no jogo 2D? A resposta do sim já está no espaço do então, e a resposta do não fica no espaço do senão. Só que o Se chega sem o senão, e você vai abrir esse espaço agora.
+
+[interested, animated voice] Olha aqui, na linha de baixo do bloco Se: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha.
+
+[confident, clear, unhurried voice] Clique no segundo sinal de mais. Não clique no primeiro.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
 
 [engaging, energetic, conversational voice] Agora a resposta do não. Ela faz a tentativa recomeçar: passo volta a 0, o sol e a lua apagam, e o aviso pede para começar pelo sol.
 
@@ -266,7 +290,7 @@
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol, a lua e a estrela. Tá vendo? O sol e a lua acendem, mas a estrela não, e o baú continua fechado, porque o jogo ainda não tem nenhuma reação para o encontro com a estrela.
 
-[engaging, energetic, conversational voice] Como no jogo 2D, a estrela pergunta se é a vez dela: passo igual a 2? Com a resposta sim, ela acende e o baú abre. Com a resposta não, a tentativa recomeça, como na lua. Agora a estrela da ilha vai fazer essa pergunta!
+[engaging, energetic, conversational voice] Como no jogo 2D, a estrela pergunta se é a vez dela: passo igual a 2? Com a resposta sim, ela acende e o baú abre. Agora a estrela da ilha vai fazer essa pergunta!
 
 [confident, clear, unhurried voice] Primeiro, o encontro com a estrela. Na área Quando acontecer, deixe à vista o encontro com a lua e o espaço logo abaixo dele, fora do fazer dele.
 
@@ -296,11 +320,7 @@
 
 [engaging, energetic, conversational voice] Pronto: agora o Se pergunta se passo é igual a 2. Ou seja: o sol e a lua já foram tocados, nessa ordem?
 
-[confident, clear, unhurried voice] Agora abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.
-
-[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
-
-[engaging, energetic, conversational voice] Agora a resposta do sim, no espaço do então. Ela tem três blocos: a estrela acende, o baú abre e o aviso conta que deu certo. Deixe o espaço do então à vista.
+[engaging, energetic, conversational voice] No bloco Se, a resposta do sim fica no espaço do então. Ela tem três blocos: a estrela acende, o baú abre e o aviso conta que deu certo. Deixe o espaço do então à vista.
 
 [confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Animação do modelo, e pegue o bloco Tocar a animação.
 
@@ -347,6 +367,32 @@
 [confident, clear, unhurried voice] Abra Programação e depois Valores, e pegue o bloco texto. Solte em cima do número.
 
 [confident, clear, unhurried voice] Repare: o texto chega com Olá. Clique em Olá, apague e escreva: Na ordem certa! O baú abriu.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Rodar de novo mais uma vez e leve o personagem até o sol, a lua e a estrela.
+
+[interested, animated voice] Olha só: a estrela acende, e o baú abre!
+
+[engaging, energetic, conversational voice] E fora da ordem? Toque na tecla R e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua.
+
+[interested, animated voice] Repare: o baú continua fechado. Só que nada recomeça, e o aviso não diz nada. O que acontece quando não é a vez da estrela fica para a próxima parte.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro entre personagem e estrela está o Se com passo igual a 2, e no então estão as animações acender na estrela e abrir no baú e o aviso.
+
+[reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e leve o personagem até o sol e depois direto até a estrela, sem passar pela lua. Tá vendo? O baú continua fechado, mas nada recomeça: o sol continua aceso, e o aviso não muda. É que a pergunta da estrela ainda não tem a resposta do não.
+
+[confident, clear, unhurried voice] Na área Quando acontecer, deixe à vista o encontro com a estrela e o Se que está dentro dele.
+
+[confident, clear, unhurried voice] Agora abra o espaço do senão, como na lua: na linha de baixo do Se, clique no segundo sinal de mais, o de antes da palavra senão.
+
+[confident, clear, unhurried voice] Repare: apareceu o espaço do senão.
 
 [engaging, energetic, conversational voice] Agora a resposta do não. Ela é igual à da lua: passo volta a 0, o sol e a lua apagam, e o aviso pede para começar pelo sol.
 

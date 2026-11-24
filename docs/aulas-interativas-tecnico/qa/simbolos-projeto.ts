@@ -39,7 +39,27 @@ import { ilhaSource } from './ilha-do-farol-projeto'
 import { MOEDAS_MODELOS, moedasModeloAsset } from './moedas-projeto'
 
 export const SIMBOLOS_CURSO = 'jornada-faisca-poder-4'
-export const SIMBOLOS_ETAPAS = ['inicio', 'sol', 'lua', 'estrela'] as const
+/**
+ * `lua-vez` e `estrela-vez`: o Se de cada pedra só com o então; `lua` e `estrela` põem o senão
+ * (o recomeço), nas partes seguintes (24/11/2026).
+ */
+export const SIMBOLOS_ETAPAS = [
+  'inicio',
+  'sol',
+  'lua-vez',
+  'lua',
+  'estrela-vez',
+  'estrela',
+] as const
+/** A ordem dos ids dos exemplos: as etapas novas no fim, para os ids das outras não mudarem. */
+export const SIMBOLOS_IDS: readonly SimbolosEtapa[] = [
+  'inicio',
+  'sol',
+  'lua',
+  'estrela',
+  'lua-vez',
+  'estrela-vez',
+]
 export type SimbolosEtapa = (typeof SIMBOLOS_ETAPAS)[number]
 export type SimbolosDimensao = '2d' | '3d'
 /** Os símbolos, na ordem da placa. */
@@ -187,11 +207,11 @@ function ir2d(etapa: SimbolosEtapa): SZIRV2 {
           type: 'if',
           cond: vezDe(1),
           then: [passoVale(2), imagemDe('lua', 'pedra-lua-acesa'), aviso(SIMBOLOS_AVISO.lua)],
-          else: recomeca2d(),
+          ...(n >= 3 ? { else: recomeca2d() } : {}),
         },
       ]),
     )
-  if (n >= 3)
+  if (n >= 4)
     ir.behavior.events.push(
       encontro2d('estrela', [
         {
@@ -202,7 +222,7 @@ function ir2d(etapa: SimbolosEtapa): SZIRV2 {
             imagemDe('bau', 'bau-aberto'),
             aviso(SIMBOLOS_AVISO.abriu),
           ],
-          else: recomeca2d(),
+          ...(n >= 5 ? { else: recomeca2d() } : {}),
         },
       ]),
     )
@@ -308,10 +328,10 @@ ${n >= 1 ? 'let passo=0;' : ''}`
       ? `SZGame3D.onTouch(personagem,sol,()=>{passo=1;SZGame3D.playAnimation(sol,"acender","uma-vez");aviso=${JSON.stringify(SIMBOLOS_AVISO.sol)};});`
       : '',
     n >= 2
-      ? `SZGame3D.onTouch(personagem,lua,()=>{if(passo===1){passo=2;SZGame3D.playAnimation(lua,"acender","uma-vez");aviso=${JSON.stringify(SIMBOLOS_AVISO.lua)};}else{${recomeca}}});`
+      ? `SZGame3D.onTouch(personagem,lua,()=>{if(passo===1){passo=2;SZGame3D.playAnimation(lua,"acender","uma-vez");aviso=${JSON.stringify(SIMBOLOS_AVISO.lua)};}${n >= 3 ? `else{${recomeca}}` : ''}});`
       : '',
-    n >= 3
-      ? `SZGame3D.onTouch(personagem,estrela,()=>{if(passo===2){SZGame3D.playAnimation(estrela,"acender","uma-vez");SZGame3D.playAnimation(bau,"abrir","uma-vez");aviso=${JSON.stringify(SIMBOLOS_AVISO.abriu)};}else{${recomeca}}});`
+    n >= 4
+      ? `SZGame3D.onTouch(personagem,estrela,()=>{if(passo===2){SZGame3D.playAnimation(estrela,"acender","uma-vez");SZGame3D.playAnimation(bau,"abrir","uma-vez");aviso=${JSON.stringify(SIMBOLOS_AVISO.abriu)};}${n >= 5 ? `else{${recomeca}}` : ''}});`
       : '',
   ].join('\n')
   return s.replace('SZGame3D.animate(cena,()=>{', `${regras}\nSZGame3D.animate(cena,()=>{`)
