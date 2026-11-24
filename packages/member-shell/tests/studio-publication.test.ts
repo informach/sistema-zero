@@ -20,7 +20,9 @@ afterEach(() => {
 
 test('a projeção de publicação recusa o marcador regional antes de retirar dados autorais', () => {
   const project = createBlankProjectSnapshot('publication-region', 'Vila')
-  const marker = { regional: { dataVersion: 5 } }
+  const marker = {
+    regional: { dataVersion: 5 as const, sourceId: 'world', sha256: 'f'.repeat(64) },
+  }
   const asset = {
     id: 'cover',
     kind: 'image' as const,

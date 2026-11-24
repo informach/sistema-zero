@@ -96,10 +96,18 @@ function add(inventory: Inventory, id: Extension, variant: Variant, hash: string
 
 async function currentHashes() {
   const { currentProEngineCopies } = await import('../src/modes/pro/proEngineCopies')
+  const { mapTwoDRegionalEngineBootstrap } = await import(
+    '../src/official-extensions/map-2d/regionBootstrap'
+  )
   const rows: Array<[Extension, Variant, string]> = []
   for (const id of EXTENSIONS) {
     const copies = await currentProEngineCopies(id)
     for (const variant of VARIANTS) rows.push([id, variant, sha256(copies[variant])])
+    rows.push([
+      id,
+      'completo',
+      sha256(await mapTwoDRegionalEngineBootstrap(id === 'game-2d' ? 'g2d' : 'gk')),
+    ])
   }
   return rows
 }

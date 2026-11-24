@@ -5,6 +5,7 @@ import { createStore, get, keys, set } from 'idb-keyval'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { embedPintaRegionImage } from '../../../pinta/src/export/regionImage'
 import { encodeAssetBase64 } from '../core/assetBinary'
+import { admitPintaRegionalMaterial } from '../core/pintaRegionalMaterial'
 import { assetMetaManifest, type ProjectAsset, sanitizeProjectAssets } from '../core/projectAssets'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { readValues, writeInOneTransaction } from '../state/idbTransaction'
@@ -74,7 +75,7 @@ afterAll(() => {
   else Reflect.deleteProperty(globalThis, 'indexedDB')
 })
 
-test('the private PNG 5 key survives a published-writer shadow and ordinary library operations', async () => {
+test('a biblioteca pública lê o PNG5 verificado e uma aba antiga não substitui sua autoridade', async () => {
   const owner = scope(),
     db = ownDb(owner)
   expect((await savePersonalAsset(legacy, owner)).ok).toBe(true)
@@ -88,9 +89,12 @@ test('the private PNG 5 key survives a published-writer shadow and ordinary libr
   })
 
   await set('asset:world', { ...legacy, updatedAt: Number.MAX_SAFE_INTEGER }, db)
-  expect(await getPersonalAsset('world', owner)).toBeNull()
-  expect((await getPersonalAssets(['world'], owner)).get('world')).toBeNull()
-  expect(await listPersonalAssets(owner)).toEqual([])
+  expect(await getPersonalAsset('world', owner)).toMatchObject({
+    dataUrl: capture.dataUrl,
+    regional: { dataVersion: 5, sourceId: 'world' },
+  })
+  expect((await getPersonalAssets(['world'], owner)).get('world')?.dataUrl).toBe(capture.dataUrl)
+  expect(await listPersonalAssets(owner)).toHaveLength(1)
   const image: ProjectAsset = {
     id: 'original-material',
     name: 'nome-nos-blocos',
@@ -102,9 +106,10 @@ test('the private PNG 5 key survives a published-writer shadow and ordinary libr
   }
   const restored = { assets: [image], updatedAt: 1 }
   expect(await reconcileDrawingsFromRestoredProject(restored, owner)).toEqual({
-    projectChanged: false,
+    projectChanged: true,
   })
-  expect(restored.assets[0]).toBe(image)
+  expect(restored.assets[0]?.dataUrl).toBe(image.dataUrl)
+  expect(restored.assets[0]?.libId).not.toBe(image.libId)
   expect((await savePersonalAsset(legacy, owner)).ok).toBe(false)
   expect((await removePersonalAsset('world', owner)).ok).toBe(false)
   expect((await savePersonalAssetBundle([{ ...legacy, id: 'neighbor' }, legacy], owner)).ok).toBe(
@@ -268,7 +273,8 @@ test('old project readers reject the protected reference without touching code, 
     kind: 'image',
     ...{ dataUrl: legacy.dataUrl, width: 64, height: 32 },
   }
-  const protectedImage = { ...image, dataUrl: capture.dataUrl, regional: { dataVersion: 5 } }
+  const { regional } = await admitPintaRegionalMaterial({ ...capture, sourceId: legacy.id })
+  const protectedImage = { ...image, dataUrl: capture.dataUrl, regional }
   const files = { 'script.js': 'SZGame2D.createMapScene("mapa", "vila");' }
   const blocksState = { blocks: { blocks: [{ id: 'original-id', type: 'map_scene_create' }] } }
   await set(projectMetaKey(id), { id, storageVersion: 4, name: 'game' }, store)

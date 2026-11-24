@@ -1,3 +1,5 @@
+import type { PintaRegionScene } from '@sistemazero/core/studio/pinta-region-scene'
+import type { PintaRegionalMarker } from '@sistemazero/core/studio/pinta-regional-marker'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
 import {
   sceneObjectIntersectsBox,
@@ -6,8 +8,9 @@ import {
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import type { SZIR } from '#ir'
+import { normalizeSZIR, type SZIR } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { admitPintaRegionalMaterial } from '../core/pintaRegionalMaterial'
 import {
   createEmptyProject,
   normalizeAssetName,
@@ -36,6 +39,7 @@ import { persistProject } from '../state/persistence'
 
 /** Subconjunto do `PintaExportedAsset` que o host repassa (sem acoplar tipos). */
 export interface TilemapGamePayload {
+  regional?: PintaRegionalMarker
   maps?: Array<Omit<TilemapGamePayload, 'maps'>>
   id?: string
   libRevision?: number
@@ -272,7 +276,7 @@ export function assembleTilemapGameProject(payload: TilemapGamePayload): Project
   }
 }
 
-function buildSceneIR(image: string, scene: PintaScene): SZIR {
+function buildSceneIR(image: string, scene: PintaScene | PintaRegionScene): SZIR {
   const str = (value: string) => ({ type: 'str' as const, value }),
     variable = (name: string) => ({ type: 'var' as const, name }),
     // O ponto de início e o tamanho do mundo são LIDOS do cenário quando o jogo roda
@@ -292,20 +296,35 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
   // The opt-in scene uses actual visible pieces, including transformed sets.
   // Keep the previous generation rule for scenes 1/2 and existing game programs.
   const platformer =
-    scene.version === 3
-      ? sceneVisitColliders(scene, world, 'platform', (tile) =>
-          sceneObjectIntersectsBox(tile, world),
-        )
-      : scene.layers.some(
-          (l) =>
-            l.kind === 'tiles' &&
-            l.visible &&
-            l.cells.some(
-              (c) =>
-                c >= 0 &&
-                scene.tilesets.find((t) => t.id === l.tilesetId)?.platform.includes(c & 4095),
+    scene.version === 4
+      ? scene.layers.some(
+          (layer) =>
+            layer.kind === 'tiles' &&
+            layer.visible &&
+            layer.cells.chunks.some((chunk) =>
+              chunk.cells.some(
+                (cell) =>
+                  cell >= 0 &&
+                  scene.tilesets
+                    .find((tileset) => tileset.id === layer.tilesetId)
+                    ?.platform.includes(cell & 4095),
+              ),
             ),
         )
+      : scene.version === 3
+        ? sceneVisitColliders(scene, world, 'platform', (tile) =>
+            sceneObjectIntersectsBox(tile, world),
+          )
+        : scene.layers.some(
+            (l) =>
+              l.kind === 'tiles' &&
+              l.visible &&
+              l.cells.some(
+                (c) =>
+                  c >= 0 &&
+                  scene.tilesets.find((t) => t.id === l.tilesetId)?.platform.includes(c & 4095),
+              ),
+          )
   const old = buildIR(
     image,
     null,
@@ -408,7 +427,39 @@ function buildSceneIR(image: string, scene: PintaScene): SZIR {
 export async function buildTilemapGameProject(
   payload: TilemapGamePayload,
 ): Promise<Project | null> {
-  const project = assembleTilemapGameProject(payload)
+  let project: Project | null
+  if (payload.regional) {
+    const admitted = await admitPintaRegionalMaterial({
+      ...payload,
+      sourceId: payload.id ?? payload.regional.sourceId,
+    })
+    const root = admitted.world.maps.get(admitted.world.rootId)
+    if (!root) return null
+    const name = normalizeAssetName(payload.name) ?? 'meu-mapa'
+    const ir = normalizeSZIR(buildSceneIR(name, root.data.scene))
+    project = {
+      ...createEmptyProject(ulid(), name),
+      ir,
+      blocksState: buildWorkspaceStateFromIR(ir),
+      files: generateProjectFiles({ ir, projectName: name }),
+      assets: [
+        {
+          id: ulid(),
+          name,
+          kind: 'image',
+          source: 'library',
+          dataUrl: payload.dataUrl,
+          width: payload.width,
+          height: payload.height,
+          regional: admitted.regional,
+          libId: `personal:${admitted.world.rootId}`,
+          libOrigin: 'pinta',
+          ...(payload.libRevision === undefined ? {} : { libRevision: payload.libRevision }),
+        },
+      ],
+      installedExtensions: [{ id: 'game-2d', version: gameTwoDVersion(), installedAt: Date.now() }],
+    }
+  } else project = assembleTilemapGameProject(payload)
   if (!project) return null
   await persistProject(project)
   return project

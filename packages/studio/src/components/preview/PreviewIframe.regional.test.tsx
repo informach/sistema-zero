@@ -3,10 +3,7 @@ import 'fake-indexeddb/auto'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject, type Project, type ProjectAsset } from '#core'
 import type { PintaRegionalMarker } from '../../core/pintaRegionalMaterial'
-import {
-  PRIVATE_REGIONAL_PROJECT,
-  UNSUPPORTED_PINTA_REGION,
-} from '../../core/pintaRegionalReference'
+import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
 import { gameTwoDManifest } from '../../official-extensions/game-2d/manifest'
 import { gameKitManifest } from '../../official-extensions/game-2d-advanced/manifest'
 import { privateRegionalProjectScope } from '../../state/pintaRegionalProjectRefresh'
@@ -21,8 +18,8 @@ import { PreviewIframe } from './PreviewIframe'
 
 // A prévia do editor Clássico é o jogador que a criança vê enquanto programa. Os ensaios do material
 // regional passavam pela receita pública (`renderProjectToPreviewDocAsync`) e pelo Pro; este arquivo
-// cobre o caminho do próprio editor: com o perfil privado o motor regional entra no documento, sem
-// ele nada roda, e uma captura que não confere deixa na tela o jogo que já estava.
+// cobre o caminho do próprio editor e a admissão pública; uma captura que não confere deixa
+// na tela o jogo que já estava.
 let material: ProjectAsset & { regional: PintaRegionalMarker }
 let uninstallImageBitmap = () => {}
 
@@ -92,7 +89,7 @@ describe('PreviewIframe com cenário regional do Pinta', () => {
       expect(screen.queryByRole('alert')).toBeNull()
     })
 
-  it('sem o perfil privado o cenário regional não roda e a criança vê o motivo', async () => {
+  it('o leitor público admite o cenário inteiro e conserva o programa da criança', async () => {
     useUIStore.setState({ previewRunning: true })
     useProjectStore.setState({
       project: regionalProject(gameTwoDManifest, [material]),
@@ -100,11 +97,15 @@ describe('PreviewIframe com cenário regional do Pinta', () => {
       saveError: null,
     })
     showPreview()
-    expect(
-      await screen.findByText(UNSUPPORTED_PINTA_REGION, undefined, { timeout: 8000 }),
-    ).toBeTruthy()
-    expect(srcDoc()).not.toContain('_pintaRegionFactory')
-    expect(srcDoc()).not.toContain(material.dataUrl)
+    await waitFor(
+      () => {
+        expect(srcDoc()).toContain('_pintaRegionFactory')
+        expect(srcDoc()).toContain(material.dataUrl)
+        expect(srcDoc()).toContain(btoa('window.PROGRAMA_DA_CRIANCA = "continua";'))
+      },
+      { timeout: 8000 },
+    )
+    expect(screen.queryByRole('alert')).toBeNull()
   })
 
   it('uma captura que não confere deixa na tela o jogo que já estava', async () => {

@@ -20,7 +20,7 @@ Os estados de produção citados pertencem ao levantamento de 23/11. Ao retomar 
 | LG01 | Primeira versão com correções e melhorias prontas | 1 | Contratos, migrações e aplicativos compatíveis | Concluída em produção em 24/11: sete serviços saudáveis, runtime/imagem qualificados, CI e provas finais aprovados. Aquecimento excluído |
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Concluída em produção em 24/11: sete serviços em `0180e39fd`, Worker/imagem qualificados, CI, staging e aceite infantil aprovados. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial: A Ilha do Farol publicada por outra frente, 3/3 aulas em Kids e Adultos; demais cursos pendentes |
-| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Pendente |
+| LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Em execução por autorização de 24/11: integração e provas locais; aceite infantil e entrega ainda pendentes. [Plano](2026-11-24-lg04-pinta-estudio-conta-mural.md) |
 | LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Pendente |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
 | LG07 | Habilitação da prévia isolada do Studio | 3 | Runtime e origens permitidas configurados | Pendente |

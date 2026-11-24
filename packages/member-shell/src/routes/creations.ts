@@ -13,7 +13,7 @@ import {
   PintaPaletteBaseSchema,
   PintaPaletteCommitCapabilitySchema,
 } from '@sistemazero/core/creations/pinta-palette-writer'
-import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
+import { isStudioSealedStorageReader } from '@sistemazero/core/creations/studio-sealed-storage'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
 import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
@@ -648,7 +648,7 @@ export function createCreationsRoutes(deps: {
         reader.length > 0 &&
         (item.tool !== 'studio' ||
           reader.length !== 1 ||
-          studioReader !== STUDIO_SEALED_STORAGE_READER)
+          !isStudioSealedStorageReader(studioReader))
       ) {
         return invalid()
       }

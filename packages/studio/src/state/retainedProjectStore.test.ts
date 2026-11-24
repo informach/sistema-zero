@@ -39,7 +39,7 @@ test('CAS conserva outra aba, confere V4 recente e faz GC somente da última ref
     candidate: regional,
   })
   const content = candidate.parts.files!.strings[0]![1],
-    bodyKey = 'sz:v5:body:' + content
+    bodyKey = `sz:v5:body:${content}`
   expect(await readValue(scope.store, bodyKey)).toBeString()
   await commitRetainedProject(scope, { id: 'a', origin, expectedToken: a.token, candidate: null })
   expect(await readValue(scope.store, bodyKey)).toBeString()
@@ -72,18 +72,19 @@ test('isola escopos e conserva cabeças futuras ou divergência no corpo da foto
     candidate,
   })
   expect(await readRetainedManifest(other, 'id')).toBeUndefined()
-  await expect(
-    commitRetainedProject(createProjectStorageScope('conta-publica'), {
-      id: 'id',
-      origin,
-      expectedToken: null,
-      candidate,
-    }),
-  ).rejects.toThrow()
+  const publicScope = createProjectStorageScope('conta-publica')
+  const publicHead = await commitRetainedProject(publicScope, {
+    id: 'id',
+    origin,
+    expectedToken: null,
+    candidate,
+  })
+  expect(await readRetainedManifest(publicScope, 'id')).toEqual(publicHead)
+  expect((await readRetainedManifest(scope, 'id'))?.token).toBe(head.token)
   const key = retainedProjectKey('id')
   const future = JSON.stringify({ ...head, version: 2 })
   await writeInOneTransaction(scope.store, {
-    puts: [['sz:v5:body:' + candidate.parts.meta!.shape, 'outra coisa']],
+    puts: [[`sz:v5:body:${candidate.parts.meta!.shape}`, 'outra coisa']],
   })
   await expect(readRetainedParts(scope, head)).rejects.toThrow()
   await writeInOneTransaction(scope.store, { puts: [[key, future]] })
@@ -134,8 +135,8 @@ test('recusa reuso de corpo ausente, trocado ou órfão antes de publicar outra 
   const candidate = await prepareRetainedParts(sample('a'))
   await commitRetainedProject(scope, { id: 'a', origin, expectedToken: null, candidate })
   const hash = candidate.parts.files!.strings[0]![1]
-  const key = 'sz:v5:body:' + hash,
-    ref = 'sz:v5:references:' + hash,
+  const key = `sz:v5:body:${hash}`,
+    ref = `sz:v5:references:${hash}`,
     ledger = 'sz:v5:retention-bytes'
   const preserved = [retainedProjectKey('a'), retainedProjectKey('b'), ledger]
   const initial = await readValues(scope.store, preserved)
@@ -184,10 +185,10 @@ test('o download físico carrega somente os corpos da cabeça exata e identifica
   const first = await read()
   expect(first.complete).toBe(true)
   expect(first.warned).toBe(false)
-  for (const [hash, body] of a.bodies) expect(first.rows.get('sz:v5:body:' + hash)).toBe(body.text)
-  const other = 'sz:v5:body:' + b.parts.files!.strings[0]![1]
+  for (const [hash, body] of a.bodies) expect(first.rows.get(`sz:v5:body:${hash}`)).toBe(body.text)
+  const other = `sz:v5:body:${b.parts.files!.strings[0]![1]}`
   expect(first.rows.has(other)).toBe(false)
-  await writeInOneTransaction(scope.store, { deletes: ['sz:v5:body:' + a.parts.files!.shape] })
+  await writeInOneTransaction(scope.store, { deletes: [`sz:v5:body:${a.parts.files!.shape}`] })
   expect(await read()).toMatchObject({ warned: true, complete: false })
   const future = JSON.stringify({ ...head, version: 9, extra: 'aluna' })
   await writeInOneTransaction(scope.store, { puts: [[retainedProjectKey('a'), future]] })

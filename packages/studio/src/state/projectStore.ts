@@ -62,10 +62,13 @@ import {
   pythonProjectOccupiedPaths,
 } from '../core/pgzeroMediaPaths'
 import { readPintaImageAssetMetadata } from '../core/pintaImageAsset'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
+import { hasRegionalPintaReference } from '../core/pintaRegionalReference'
 import { parseProAssistance } from '../core/proAssistance'
 import {
   assertProjectContentPreserved,
   CURRENT_PROJECT_FORMAT_VERSION,
+  isDocumentRecord,
   prepareProjectDocument,
   projectFormatVersion,
   retainProjectTools,
@@ -119,7 +122,7 @@ import {
 import {
   captureProjectStorageScope,
   getProjectStorageScope,
-  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
   type ProjectStorageScope,
   regionalProjectReadOptions,
 } from './projectStorageRuntime'
@@ -250,7 +253,12 @@ interface ProjectStore {
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
   convertToPro: (preserveOriginal: (project: Project) => Promise<void>) => Promise<void>
-  reconcileProAssets: (projectId: string, expected: ProjectAsset[], next: ProjectAsset[]) => void
+  reconcileProAssets: (
+    projectId: string,
+    expected: ProjectAsset[],
+    next: ProjectAsset[],
+    regionalMaterials?: PintaRegionalProjectAdmissions,
+  ) => void
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
   /** Python source stays authoritative in Classic and Pro, including syntax errors. */
@@ -283,6 +291,10 @@ interface ProjectStore {
   /** Adiciona um asset (já reduzido/comprimido pela UI). Devolve erro ou null. */
   addAsset: (input: NewAssetInput) => string | null
   importPintaMapBundle: (input: StudioPintaImportedAsset) => string | null
+  importRegionalPintaMaterial: (
+    input: StudioPintaImportedAsset,
+    signal?: AbortSignal,
+  ) => Promise<string | null>
   importScene3DBundle: (
     plano: PlanoDeImportacaoDeCena3D,
     sinal?: AbortSignal,
@@ -335,7 +347,11 @@ interface ProjectStore {
     expected: ProjectTree,
     tree: ProjectTree,
     beforePublish?: (project: Project) => void,
-    materials?: { assets: ProjectAsset[]; coverAssetName: string | null },
+    materials?: {
+      assets: ProjectAsset[]
+      coverAssetName: string | null
+      regionalMaterials?: PintaRegionalProjectAdmissions
+    },
     pythonConfiguration?: Pick<
       PythonProProjectDocument,
       'runtime' | 'python' | 'installedExtensions'
@@ -460,7 +476,7 @@ export async function loadSanitizedProjectShellById(
   // A migração precisa do documento inteiro antes de separar suas partições.
   if (
     projectFormatVersion(shell) === SUPPORTED_PROJECT_FORMAT_VERSION ||
-    isPrivateRegionalProjectScope(scope)
+    isRegionalProjectScope(scope)
   ) {
     // Python source is authoritative; its derived visual partition stays opaque.
     const prepared = await prepareEditableStudioProject(shell, regionalProjectReadOptions(scope))
@@ -835,7 +851,10 @@ export function createProjectStore(
         }
         assertCurrent()
         const result =
-          projectFormatVersion(raw) === SUPPORTED_PROJECT_FORMAT_VERSION
+          projectFormatVersion(raw) === SUPPORTED_PROJECT_FORMAT_VERSION ||
+          (isDocumentRecord(raw) &&
+            Array.isArray(raw.assets) &&
+            raw.assets.some(hasRegionalPintaReference))
             ? { project: await prepareEditableStudioProject(raw), warnings: [] as string[] }
             : sanitizeImportedProjectSnapshot(await prepareProjectDocument(raw))
         if (!result.project) throw new Error('Documento de projeto inválido.')
@@ -955,7 +974,7 @@ export function createProjectStore(
         }
         set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
       },
-      reconcileProAssets: (projectId, expected, next) => {
+      reconcileProAssets: (projectId, expected, next, regionalMaterials) => {
         const project = get().project
         if (
           project?.id !== projectId ||
@@ -969,8 +988,9 @@ export function createProjectStore(
             ? {
                 materialPath: isPythonMaterialPath,
                 dataLimits: STUDIO_PYTHON_MATERIAL_DATA_LIMITS,
+                regionalMaterials,
               }
-            : undefined,
+            : { regionalMaterials },
         )
         assertProjectContentPreserved({ assets: next }, { ...project, assets: sanitized })
         const sceneIssue = scene3DResourceChangeIssue(project.assets ?? [], sanitized)
@@ -1420,6 +1440,29 @@ export function createProjectStore(
           return error instanceof Error
             ? error.message
             : 'Não consegui trazer o cenário. O projeto foi mantido.'
+        }
+      },
+      importRegionalPintaMaterial: async (input, signal) => {
+        const project = get().project,
+          scope = captureProjectStorageScope()
+        if (!project || get().editingAccess !== 'author') return 'Abra um projeto para editar.'
+        try {
+          const { prepareRegionalPintaImport } = await import('./pintaRegionalImport')
+          const candidate = await prepareRegionalPintaImport(project, input, signal)
+          signal?.throwIfAborted()
+          if (
+            scope !== captureProjectStorageScope() ||
+            scope.signal?.aborted ||
+            get().project !== project ||
+            get().editingAccess !== 'author'
+          )
+            return 'O projeto ou perfil mudou. Traga o cenário novamente; suas edições foram mantidas.'
+          set({ project: bump(candidate), isDirty: true, saveError: null })
+          return null
+        } catch (error) {
+          return error instanceof Error
+            ? error.message
+            : 'Não consegui conferir o cenário. O projeto foi mantido.'
         }
       },
       importPintaMapBundle: (input) => {
@@ -2044,7 +2087,9 @@ export function createProjectStore(
         const limitError = proTreeLimitError(sanitized)
         if (limitError) return limitError
         if (materials) {
-          const assets = sanitizeProjectAssets(materials.assets)
+          const assets = sanitizeProjectAssets(materials.assets, {
+            regionalMaterials: materials.regionalMaterials,
+          })
           assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
           const sceneIssue = scene3DResourceChangeIssue(p.assets ?? [], assets)
           if (sceneIssue) return sceneIssue

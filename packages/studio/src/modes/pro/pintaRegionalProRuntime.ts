@@ -8,10 +8,7 @@ import { isDocumentRecord } from '../../core/projectDocument'
 import { assertProjectContentPreserved } from '../../core/projectDocumentGuards'
 import { loadExtensionBootstrapScript } from '../../extensions/runtime'
 import { findExtension } from '../../official-extensions'
-import {
-  isPrivateRegionalProjectScope,
-  type ProjectStorageScope,
-} from '../../state/projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from '../../state/projectStorageRuntime'
 import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
 
 const proRegionalEnginePath = (extensionId: string) => `public/sz-ext/${extensionId}.js`
@@ -46,7 +43,7 @@ export function createPintaRegionalProRuntime(
   scope: ProjectStorageScope,
   limits?: StudioProBuildLimits,
 ): StudioProRuntimeAdapter {
-  if (!isPrivateRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
+  if (!isRegionalProjectScope(scope)) throw new Error(UNSUPPORTED_PINTA_REGION)
   return {
     limits,
     signal: scope.signal,

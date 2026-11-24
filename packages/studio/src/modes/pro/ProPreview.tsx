@@ -7,12 +7,18 @@ import { Button } from '#ui'
 import { ProStageState } from '../../components/preview/ProStageState'
 import { canBootWebContainer } from '../../components/terminal/webContainerClient'
 import { javaScriptProject } from '../../core/editableProject'
-import { PRIVATE_REGIONAL_PROJECT } from '../../core/pintaRegionalReference'
+import {
+  hasRegionalPintaReference,
+  PRIVATE_REGIONAL_PROJECT,
+} from '../../core/pintaRegionalReference'
 import { updateLegacyProToolchainManifest } from '../../core/proToolchain'
 import { useLogsStore } from '../../state/logsStore'
 import { flushProjectOperations } from '../../state/projectOperations'
 import { PRO_APPLICATION_LIMITS } from '../../state/projectStorageCoordinator'
-import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  isPrivateRegionalProjectScope,
+} from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
 import { updateProToolchainBeforeExecution } from '../../state/proToolchainUpdate'
@@ -62,15 +68,23 @@ function capLogString(value: string): string {
 export function ProPreview(): JSX.Element {
   const hostRuntime = useStudioProRuntime()
   const privateScope = useStudioExecution()[PRIVATE_REGIONAL_PROJECT]
+  const hasRegional = useProjectStore(
+    (state) => state.project?.assets?.some(hasRegionalPintaReference) ?? false,
+  )
+  const regionalScope = hasRegional
+    ? (privateScope ?? captureProjectStorageScope())
+    : privateScope && isPrivateRegionalProjectScope(privateScope)
+      ? privateScope
+      : undefined
   // O projeto que o navegador monta igual ao Vite nem vai ao servidor (execução leve).
   const remoteRuntime = useMemo(
     () =>
-      privateScope
-        ? createPintaRegionalProRuntime(privateScope, hostRuntime?.limits)
+      regionalScope
+        ? createPintaRegionalProRuntime(regionalScope, hostRuntime?.limits)
         : hostRuntime
           ? withLightProBuild(hostRuntime)
           : null,
-    [hostRuntime, privateScope],
+    [hostRuntime, regionalScope],
   )
   const { candidate: selection, mode, select, close, report } = useProCandidatePreview()
   const candidate = selection?.kind === 'python' ? null : selection

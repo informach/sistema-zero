@@ -52,10 +52,19 @@ export function isPrivateRegionalProjectScope(scope: ProjectStorageScope) {
   )
 }
 
+/** Local storage identity is captured independently of remote entitlements. */
+export function isRegionalProjectScope(scope: ProjectStorageScope): boolean {
+  return (
+    scope.namespace.length > 0 &&
+    scope.namespace === scope.namespace.trim() &&
+    scope.identity === databaseName(scope.namespace)
+  )
+}
+
 export function regionalProjectReadOptions(
   scope: ProjectStorageScope,
 ): PrivateRegionalProjectReadOptions {
-  return isPrivateRegionalProjectScope(scope) ? { [PRIVATE_REGIONAL_PROJECT]: scope } : {}
+  return isRegionalProjectScope(scope) ? { [PRIVATE_REGIONAL_PROJECT]: scope } : {}
 }
 
 export function privateRegionalProjectScope(profile: string): ProjectStorageScope {

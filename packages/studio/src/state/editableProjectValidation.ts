@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/core/studio/project-format'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { EditableStudioProject } from '../core/editableProject'
+import type { PintaRegionalProjectAdmissions } from '../core/pintaRegionalProjectAdmission'
 import {
   PRIVATE_REGIONAL_PROJECT,
   type PrivateRegionalProjectReadOptions,
@@ -16,31 +17,51 @@ import {
 } from '../core/projectDocument'
 import { assertScene3DAssets } from '../core/scene3d/validacao'
 import { copyLocalRevision } from './projectStorageRevision'
-import { isPrivateRegionalProjectScope } from './projectStorageRuntime'
+import { isRegionalProjectScope } from './projectStorageRuntime'
 import { prepareProjectForHost } from './projectValidation'
+
+/** Material decoding is input admission. Keep cancellation separate from a corrupt document. */
+async function admitEditableMaterials(assets: unknown, signal?: AbortSignal) {
+  const { admitRegionalProjectAssets } = await import('../core/pintaRegionalProjectAdmission')
+  try {
+    return await admitRegionalProjectAssets(assets, signal)
+  } catch (cause) {
+    signal?.throwIfAborted()
+    if (cause instanceof ProjectDocumentError) throw cause
+    const invalid = new ProjectDocumentError(
+      'invalid-document',
+      cause instanceof Error
+        ? cause.message
+        : 'Os materiais do projeto não conferem. O original foi preservado.',
+    )
+    invalid.cause = cause
+    throw invalid
+  }
+}
 
 /** One language dispatch for storage, host snapshots and recovery; never guesses Python as JS. */
 export async function prepareEditableStudioProject(
   raw: unknown,
-  options: { proBuildLimits?: StudioProBuildLimits } & PrivateRegionalProjectReadOptions = {},
+  options: {
+    proBuildLimits?: StudioProBuildLimits
+    /** In-process proof bound to these exact assets; never a serialized client capability. */
+    regionalMaterials?: PintaRegionalProjectAdmissions
+  } & PrivateRegionalProjectReadOptions = {},
 ): Promise<EditableStudioProject | null> {
   if (raw == null) return null
   const proBuildLimits = options.proBuildLimits ? { ...options.proBuildLimits } : undefined
   const scope = options[PRIVATE_REGIONAL_PROJECT]
-  if (scope && !isPrivateRegionalProjectScope(scope))
-    throw new Error('A captura regional requer um perfil de teste local.')
+  if (scope && !isRegionalProjectScope(scope))
+    throw new Error('O perfil do projeto mudou. Abra o Estúdio novamente.')
   const version = projectFormatVersion(raw)
   const captured = copyStudioProjectJson(raw)
   if (!isDocumentRecord(captured) || !isDocumentRecord(raw)) throw new Error('Documento inválido.')
   const regionalMaterials =
-    scope &&
+    options.regionalMaterials ??
     (version === STUDIO_PROJECT_FORMAT_VERSION ||
-      version === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
-      ? await (await import('../core/pintaRegionalProjectAdmission')).admitRegionalProjectAssets(
-          captured.assets,
-          scope.signal,
-        )
-      : undefined
+    version === STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION
+      ? await admitEditableMaterials(captured.assets, scope?.signal)
+      : undefined)
   const policy = { proBuildLimits, regionalMaterials }
   const snapshot =
     typeof captured.id === 'string'

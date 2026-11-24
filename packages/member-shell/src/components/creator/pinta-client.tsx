@@ -332,7 +332,7 @@ export function PintaClient({
       ...(studioAvailable
         ? {
             sendGameToStudio: async (asset) => {
-              if (!asset.tilemap && !asset.scene) return { ok: false }
+              if (!asset.tilemap && !asset.scene && !asset.regional) return { ok: false }
               const saved = await savePintaStudioBundle(asset, localNamespace)
               if (!saved.ok) return { ok: false, error: saved.error }
               const studio = await import('@sistemazero/studio')
@@ -347,6 +347,7 @@ export function PintaClient({
                 tilemap: asset.tilemap,
                 tilemapFront: asset.tilemapFront,
                 scene: asset.scene,
+                regional: asset.regional,
                 maps: saved.asset.maps,
               })
               if (!project) return { ok: false }

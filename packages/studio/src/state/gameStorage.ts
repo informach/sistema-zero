@@ -6,7 +6,7 @@ import {
   GAME_STORAGE_KEY_PREFIX,
   gameStorageKey,
   isGameStorageDeleted,
-  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
   type ProjectStorageScope,
   runSerializedProjectWrite,
 } from './projectStorageRuntime'
@@ -28,8 +28,7 @@ export interface GameStoragePersistence {
 // O banco dos projetos, pelas transações com commit explícito (`idbTransaction.ts`): o jogo da
 // criança pode estar gravando o placar no instante em que ela recarrega a página.
 async function retainedGameState(scope: ProjectStorageScope, key: string) {
-  if (!isPrivateRegionalProjectScope(scope) || !key.startsWith(GAME_STORAGE_KEY_PREFIX))
-    return undefined
+  if (!isRegionalProjectScope(scope) || !key.startsWith(GAME_STORAGE_KEY_PREFIX)) return undefined
   const disk = await import('./retainedProjectStore')
   const manifest = await disk.readRetainedManifest(scope, key.slice(GAME_STORAGE_KEY_PREFIX.length))
   return manifest ? { disk, manifest } : undefined
@@ -48,7 +47,7 @@ async function persistGameState(
   key: string,
   value: Record<string, string> | undefined,
 ) {
-  if (!isPrivateRegionalProjectScope(scope)) return storeGameState(scope, key, value)
+  if (!isRegionalProjectScope(scope)) return storeGameState(scope, key, value)
   const captured = value && { ...value }
   const active = await retainedGameState(scope, key)
   if (!active) return storeGameState(scope, key, captured)
@@ -58,7 +57,7 @@ async function persistGameState(
 }
 const indexedDbPersistence: GameStoragePersistence = {
   get: async (key, scope) => {
-    if (!isPrivateRegionalProjectScope(scope)) return readValue(scope.store, key)
+    if (!isRegionalProjectScope(scope)) return readValue(scope.store, key)
     // A save between reading the manifest and reading the game replaces the manifest. Read the
     // new one once: answering `{}` made the game start empty and its first write erase the score.
     for (let attempt = 0; ; attempt++) {
@@ -157,7 +156,7 @@ export function createGameStorageRepository(
    * fila no pedido deixava a escrita seguinte (outro placar, um autosave) passar na frente.
    */
   async function ordered(scope: ProjectStorageScope, done: Promise<void>) {
-    if (isPrivateRegionalProjectScope(scope)) await done
+    if (isRegionalProjectScope(scope)) await done
     return { done }
   }
 

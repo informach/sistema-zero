@@ -3,7 +3,7 @@ import { afterAll, beforeAll, expect, test } from 'bun:test'
 import { createRequire } from 'node:module'
 import { pngCrc32 } from '@sistemazero/core/studio/pinta-png-binary'
 import * as Blockly from 'blockly/core'
-import { IDBFactory } from 'fake-indexeddb'
+import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { scene4Fixture } from '../../../core/tests/fixtures/pinta-region-scene'
 import { embedPintaRegionImage } from '../../../pinta/src/export/regionImage'
 import { getPersonalAssetsNamespace, setPersonalAssetsNamespace } from '../asset-library/personal'
@@ -99,6 +99,7 @@ const png = (width: number, height: number, color = '#3355dd') => {
 const url = (bytes: Uint8Array) => `data:image/png;base64,${encodeAssetBase64(bytes)}`
 const capability = (scope: ProjectStorageScope) => ({ [PRIVATE_REGIONAL_PROJECT]: scope })
 const initialDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
+const initialKeyRange = Object.getOwnPropertyDescriptor(globalThis, 'IDBKeyRange')
 const bitmapDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'createImageBitmap')
 const box = { width: 64, height: 32 }
 type Capture = typeof box & { regional: PintaRegionalMarker; dataUrl: string }
@@ -141,6 +142,7 @@ const blocksState = {
 const regionalEngine = { installedExtensions: [installedEngine(gameTwoDManifest)] }
 
 beforeAll(async () => {
+  Object.defineProperty(globalThis, 'IDBKeyRange', { value: IDBKeyRange, configurable: true })
   Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
   Object.defineProperty(globalThis, 'createImageBitmap', {
     configurable: true,
@@ -170,19 +172,19 @@ beforeAll(async () => {
 afterAll(() => {
   if (initialDescriptor) Object.defineProperty(globalThis, 'indexedDB', initialDescriptor)
   else Reflect.deleteProperty(globalThis, 'indexedDB')
+  if (initialKeyRange) Object.defineProperty(globalThis, 'IDBKeyRange', initialKeyRange)
+  else Reflect.deleteProperty(globalThis, 'IDBKeyRange')
   if (bitmapDescriptor) Object.defineProperty(globalThis, 'createImageBitmap', bitmapDescriptor)
   else Reflect.deleteProperty(globalThis, 'createImageBitmap')
 })
 
-test('JS v2 and v3 admit the same captured material only with the private reader', async () => {
+test('JS v2 e v3 públicos admitem o mesmo material verificado por inteiro', async () => {
   const v3 = documentFixture('javascript', 'classic')
   if (v3.programmingLanguage !== 'javascript') throw new Error('Invalid JS fixture')
   for (const base of [createEmptyProject('v2-regional', 'Mapa'), v3]) {
     const material = { ...image, ...before }
     const document = { ...base, assets: [material], blocksState, coverAssetName: image.name }
-    await expect(prepareEditableStudioProject(document)).rejects.toThrow(
-      'O original foi preservado',
-    )
+    expect((await prepareEditableStudioProject(document))?.assets).toEqual([material])
     const prepared = await prepareEditableStudioProject(
       document,
       capability(privateRegionalProjectScope('reader')),
@@ -230,7 +232,7 @@ test('private refresh uses the observed asset partition CAS and does not write f
   expect(reopened?.blocksState).toEqual(blocksState)
   expect(await readValues(scope.store, keys)).toEqual(program)
   expect(await readValues(scope.store, [projectAssetsKey(legacy.id)])).toEqual([
-    { id: legacy.id, assets: [{ ...image, ...after }] },
+    { id: legacy.id, assets: [image] },
   ])
 })
 
@@ -247,9 +249,12 @@ test('an aborted refresh or another profile cannot replace the captured partitio
   await persistProject(otherProject, {}, other)
   const signal = AbortSignal.abort()
   const target = { projectId: ownerProject.id, assetId: image.id, capture: before }
-  await expect(refreshPrivateRegionalProjectAsset({ ...target, scope: other })).rejects.toThrow(
-    'perfil de teste local',
-  )
+  await expect(
+    refreshPrivateRegionalProjectAsset({
+      ...target,
+      scope: { ...other, identity: owner.identity },
+    }),
+  ).rejects.toThrow('perfil do projeto mudou')
   await expect(
     refreshPrivateRegionalProjectAsset({ ...target, scope: owner, signal }),
   ).rejects.toThrow()
@@ -375,7 +380,7 @@ for (const manifest of [gameTwoDManifest, gameKitManifest]) {
       },
     }
     const ready = { ...project, assets: [{ ...image, ...before }] }
-    await expect(renderProjectToPreviewDocAsync(ready)).rejects.toThrow('O original foi preservado')
+    expect(await renderProjectToPreviewDocAsync(ready)).toContain('_pintaRegionFactory')
     const classic = await renderProjectToPreviewDocAsync(ready, capability(scope))
     expect(classic).toContain('__SZGAME_ASSETS')
     expect(classic).toContain(before.dataUrl)
@@ -671,7 +676,7 @@ test('a CRC-valid child with bad compressed pixels cannot replace the stored mat
       assetId: image.id,
       capture: { dataUrl, regional, ...box },
     }),
-  ).rejects.toThrow('Não consegui abrir todas as imagens')
+  ).rejects.toThrow('pixels de uma das imagens')
   expect((await loadProjectAssetsSnapshotById(project.id, scope)).assets).toEqual([image])
 })
 
@@ -892,7 +897,7 @@ test('retém a V4 editável, os materiais e o placar; lista a V5 após descarte 
       expectedV4Token: expected.token,
       assets: [{ ...image, ...before }],
     }
-    const recovery = 'sz:v4:project-recovery:' + id + ':outra-aba'
+    const recovery = `sz:v4:project-recovery:${id}:outra-aba`
     await writeInOneTransaction(scope.store, { puts: [[recovery, { pendente: true }]] })
     await expect(promoteLocalRegionalProject(options)).rejects.toThrow()
     expect(await readRetainedManifest(scope, id)).toBeUndefined()
@@ -926,9 +931,9 @@ test('projeto V4 válido acima de 16MiB privados mantém as fontes editáveis e 
   const base = { ...createEmptyProject(id, 'Vila ampla'), blocksState, assets: [image] }
   const text = '漢'.repeat(2_000_000)
   base.extraFiles = Array.from({ length: 3 }, (_, i) => ({
-    name: 'modulo' + i + '.js',
+    name: `modulo${i}.js`,
     language: 'javascript' as const,
-    content: '/*' + i + text + '*/',
+    content: `/*${i}${text}*/`,
   }))
   await persistProject(base, {}, scope)
   const keys = legacyProjectKeys(id),

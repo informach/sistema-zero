@@ -41,8 +41,10 @@ export function installPngImageBitmap(): () => void {
   }
 }
 
-export async function regionalSceneMaterial(): Promise<
-  ProjectAsset & { regional: PintaRegionalMarker }
+export async function regionalSceneMaterial(
+  overviewColor = '#002244',
+): Promise<
+  ProjectAsset & { kind: 'image'; width: number; height: number; regional: PintaRegionalMarker }
 > {
   const fixture = scene4Fixture()
   const scene = JSON.stringify({
@@ -51,7 +53,7 @@ export async function regionalSceneMaterial(): Promise<
     tilesets: fixture.tilesets.map((sheet) => ({ ...sheet, image: url(png(64, 16)) })),
     art: fixture.art.map((art) => ({ ...art, image: url(png(art.width, art.height)) })),
   })
-  const { png: bytes } = await embedPintaRegionImage(png(64, 32, '#002244'), scene)
+  const { png: bytes } = await embedPintaRegionImage(png(64, 32, overviewColor), scene)
   const dataUrl = url(bytes)
   const { regional } = await admitPintaRegionalMaterial({
     dataUrl,

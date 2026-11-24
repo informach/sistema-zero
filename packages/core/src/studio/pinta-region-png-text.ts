@@ -1,5 +1,6 @@
 /** Encoded-file boundary only. No image surfaces, public recipe or runtime is activated. */
 
+import type { PintaImageTargetLimits } from './pinta-image'
 import { readPngDimensions } from './pinta-png-binary'
 import { PINTA_REGION_IMAGE_MAX_JSON_BYTES } from './pinta-region-image'
 import { PINTA_REGION_IMAGE_PNG_LIMITS } from './pinta-region-image-limits'
@@ -49,6 +50,7 @@ function inflateText(input: Uint8Array, maxBytes: number): string {
 export function readPintaPngText(
   source: Uint8Array,
   maxMetadataBytes = PINTA_REGION_IMAGE_MAX_JSON_BYTES,
+  imageLimits: PintaImageTargetLimits = PINTA_REGION_IMAGE_PNG_LIMITS,
 ): { png: Uint8Array<ArrayBuffer>; text: string; width: number; height: number } {
   if (
     !Number.isSafeInteger(maxMetadataBytes) ||
@@ -64,7 +66,7 @@ export function readPintaPngText(
   // Buffer.slice() aliases its input; use a plain owned array for every caller.
   const png = new Uint8Array(source.byteLength)
   png.set(source)
-  const size = readPngDimensions(png, PINTA_REGION_IMAGE_PNG_LIMITS)
+  const size = readPngDimensions(png, imageLimits)
   const view = new DataView(png.buffer)
   let payload: Uint8Array | undefined
   let compressed = false

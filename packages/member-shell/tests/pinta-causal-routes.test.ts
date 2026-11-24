@@ -648,6 +648,44 @@ test('a Kids session verification outage returns unavailable without signing a c
   expect(unavailable.calls).toEqual([])
 })
 
+for (const [endpoint, routeName] of [
+  ['commit', 'pintaCausalCommit'],
+  ['abort', 'pintaCausalAbort'],
+] as const) {
+  test(`${endpoint} accepts a zero-byte HTTP body stream`, async () => {
+    const { routes, responses, calls } = fixture()
+    responses.set(`units/${endpoint}`, {
+      status: { state: 'expired', opId, intentHash: binding.intentHash },
+      uploadBytes: {},
+    })
+    const request = new Request(`${link}/units/${opId}/${endpoint}`, {
+      method: 'POST',
+      headers: { 'content-length': '0' },
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.close()
+        },
+      }),
+    })
+    expect(request.body !== null).toBe(true)
+    expect((await routes[routeName].POST(request, context)).status).toBe(200)
+    expect(calls).toHaveLength(1)
+  })
+
+  test(`${endpoint} refuses a non-empty HTTP body before signing`, async () => {
+    const { routes, calls } = fixture()
+    const response = await routes[routeName].POST(
+      new Request(`${link}/units/${opId}/${endpoint}`, {
+        method: 'POST',
+        body: ' ',
+      }),
+      context,
+    )
+    expect(response.status).toBe(400)
+    expect(calls).toEqual([])
+  })
+}
+
 test('a Members 403 reaches the browser as forbidden, without the upstream message', async () => {
   const denied = fixture({
     upstream: {

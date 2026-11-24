@@ -104,7 +104,8 @@ export function useWebContainerSync(snapshot: TerminalProjectSnapshot): UseWebCo
             tree: store.getState().project?.tree ?? {},
             legacyRuntime: Boolean(store.getState().project?.proMeta?.origin),
           }),
-          apply: (expected, next) => store.getState().reconcileProAssets(projectId, expected, next),
+          apply: (expected, next, regionalMaterials) =>
+            store.getState().reconcileProAssets(projectId, expected, next, regionalMaterials),
           report: (message) => {
             if (fresh()) setSyncError(message)
           },

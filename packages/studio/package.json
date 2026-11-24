@@ -58,6 +58,11 @@
     "./styles.css": "./src/styles/studio.css",
     "./project-validation": "./src/state/projectValidation.ts",
     "./editable-project-validation": "./src/state/editableProjectValidation.ts",
+    "./pinta-regional-admission": "./src/core/pintaRegionalProjectAdmission.ts",
+    "./pinta-regional-pro-build": "./src/modes/pro/pintaRegionalBuild.ts",
+    "./pinta-regional-runtime": "./src/runtime/javascript/pintaRegionalMaterials.ts",
+    "./pinta-regional-bootstrap": "./src/official-extensions/map-2d/regionBootstrap.ts",
+    "./pinta-regional-pro-runtime": "./src/modes/pro/pintaRegionalProRuntime.ts",
     "./python-snapshot": "./src/runtime/python/snapshot.ts",
     "./python-project-validation": "./src/state/pythonProjectValidation.ts",
     "./blockly-theme": "./src/blockly/publicTheme.ts"

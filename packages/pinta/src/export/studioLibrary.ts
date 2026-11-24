@@ -15,6 +15,7 @@ import type {
   PintaImageSelectionSummary,
   PintaImageTargetLimits,
 } from '@sistemazero/core/studio/pinta-image'
+import type { PintaMemoryAsset } from '../core/assetMemory'
 import { embeddedTilesetOf } from '../core/mapResourceVersions'
 import {
   assetRole,
@@ -32,8 +33,13 @@ import {
 } from '../core/project'
 import { SceneMapClosureError } from '../core/sceneMapClosure'
 import type { PintaExportedAsset } from '../core/types'
+import { isLegacyWorkshopAsset, isWorkshopRegion, pintaWorkshopBody } from '../core/workshopAsset'
 import { flattenCels } from '../pixel/layers'
 import { planImport } from '../state/importPlan'
+import {
+  captureRegionPintaAssetForImage,
+  createRegionPintaPersistence,
+} from '../state/localRegionPersistence'
 import {
   capturePintaAssetForImage,
   createPintaPersistence,
@@ -41,6 +47,7 @@ import {
   isPintaStorageBudgetError,
 } from '../state/persistence'
 import { collectMapTilesets } from '../tiles/mapTilesets'
+import { paintMinimap, tilemapOverview } from '../tiles/minimap'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPortableSvg } from '../tiles/renderVectorTilemap'
 import { visibleShapes } from '../vector/model'
@@ -446,9 +453,20 @@ async function svgThumb(svg: string, width: number, height: number): Promise<str
 }
 
 async function thumbFor(
-  asset: PintaAsset,
-  findAsset: (id: string) => PintaAsset | null,
+  asset: PintaMemoryAsset,
+  findAsset: (id: string) => PintaMemoryAsset | null,
 ): Promise<string | null> {
+  if (isWorkshopRegion(asset)) {
+    const body = pintaWorkshopBody(asset.kind === 'map-set' ? asset.map : asset)
+    if (body.kind !== 'tilemap' || !('origin' in body)) return null
+    const preview = tilemapOverview(body, collectMapTilesets(body, findAsset))
+    if (!preview || typeof document === 'undefined') return null
+    const canvas = document.createElement('canvas')
+    return paintMinimap(canvas, preview.width, preview.height, preview.colors)
+      ? canvas.toDataURL('image/png')
+      : null
+  }
+  if (!isLegacyWorkshopAsset(asset)) return null
   switch (asset.kind) {
     case 'map-set':
       return thumbFor(asset.map, findAsset)
@@ -510,7 +528,10 @@ async function thumbFor(
 const thumbCache = new Map<string, { stamp: string; thumb: string | null }>()
 const THUMB_CACHE_MAX = 512
 
-function thumbStamp(asset: PintaAsset, findAsset: (id: string) => PintaAsset | null): string {
+function thumbStamp(
+  asset: PintaMemoryAsset,
+  findAsset: (id: string) => PintaMemoryAsset | null,
+): string {
   if (asset.kind !== 'tilemap') return String(asset.updatedAt)
   // Uma peça de QUALQUER tileset do mapa mudou → a miniatura muda (o padrão primeiro:
   // o carimbo de um mapa de peças únicas fica igual ao de antes).
@@ -522,8 +543,8 @@ function thumbStamp(asset: PintaAsset, findAsset: (id: string) => PintaAsset | n
 
 async function cachedThumb(
   namespace: string,
-  asset: PintaAsset,
-  findAsset: (id: string) => PintaAsset | null,
+  asset: PintaMemoryAsset,
+  findAsset: (id: string) => PintaMemoryAsset | null,
 ): Promise<string | null> {
   const stamp = thumbStamp(asset, findAsset)
   const cacheKey = JSON.stringify([namespace, asset.id])
@@ -547,7 +568,7 @@ export async function listGalleryForStudio(
   const signal = options.signal
   const includeImageSelection = options.includeImageSelection === true
   signal?.throwIfAborted()
-  const persistence = createPintaPersistence({ namespace })
+  const persistence = createRegionPintaPersistence({ namespace })
   const assets = await persistence.listAllAssets()
   signal?.throwIfAborted()
   const byId = new Map(assets.map((asset) => [asset.id, asset]))
@@ -585,9 +606,12 @@ function turtleShapeFacts(frames: readonly VectorFrame[]) {
 }
 
 function imageSelectionSummary(
-  asset: PintaAsset,
-  findAsset: (id: string) => PintaAsset | null,
+  asset: PintaMemoryAsset,
+  findAsset: (id: string) => PintaMemoryAsset | null,
 ): PintaImageSelectionSummary {
+  if (isWorkshopRegion(asset)) return { kind: 'unavailable', reason: 'regional-runtime-required' }
+  if (!isLegacyWorkshopAsset(asset))
+    return { kind: 'unavailable', reason: 'regional-runtime-required' }
   // Only true is reported, so pixel facts keep the exact shape they always had.
   const vector = { vector: true } as const
   switch (asset.kind) {
@@ -664,9 +688,13 @@ export async function exportAssetForStudio(
   const namespace = options.namespace?.trim() ?? getPintaStorageNamespace()
   const signal = options.signal
   signal?.throwIfAborted()
-  let captured: Awaited<ReturnType<typeof capturePintaAssetForImage>>
+  let captured: Awaited<ReturnType<typeof captureRegionPintaAssetForImage>>
   try {
-    captured = await capturePintaAssetForImage(id, { namespace, signal, includeSceneMaps: true })
+    captured = await captureRegionPintaAssetForImage(id, {
+      namespace,
+      signal,
+      includeSceneMaps: true,
+    })
   } catch (error) {
     signal?.throwIfAborted()
     if (error instanceof SceneMapClosureError)
@@ -705,8 +733,8 @@ export async function exportLoadedAssetForStudio(
 }
 
 async function exportResolvedForStudio(
-  asset: PintaAsset,
-  linked: readonly PintaAsset[],
+  asset: PintaMemoryAsset,
+  linked: readonly PintaMemoryAsset[],
   options: { includeSceneMaps?: boolean } = {},
 ): Promise<ExportForStudioResult> {
   try {
