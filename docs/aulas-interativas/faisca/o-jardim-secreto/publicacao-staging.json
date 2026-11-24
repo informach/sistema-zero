@@ -1,6 +1,6 @@
 {
   "environment": "staging",
-  "purpose": "Kids de staging com vídeos provisórios de 2 segundos, para a gravação das partes (24/11/2026)",
+  "purpose": "Kids de staging com os vídeos finais das duas aulas (24/11/2026); antes, vídeos provisórios de 2 segundos para a gravação das partes",
   "course": {
     "id": "8183249d-3e2b-5105-a5da-8b8653f2d84a",
     "slug": "jornada-faisca-missao",
@@ -28,9 +28,58 @@
     }
   ],
   "capas": "capas-das-aulas/aula-0N-parte-0M.png (10), no molde das capas de A Ilha do Farol; geradas por docs/aulas-interativas-tecnico/recursos/jardim-secreto/capas-das-aulas",
-  "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 5 da Aula 1, sem a marca de caderno do Zappy",
-  "pendente": ["vídeos finais no lugar dos provisórios"],
-  "observacao": "A comparação da publicação de cursos (course-sync.ts, authoringComparable) trata zappyStudentNotebook: false no rascunho como diferente do campo ausente na versão publicada; o anexo foi gravado sem o campo para a cópia não acusar edição pendente.",
+  "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 5 da Aula 1, marcado como caderno do aluno para o Zappy (zappyStudentNotebook) desde 24/11/2026",
+  "pendente": [],
+  "observacao": "A comparação da publicação de cursos (course-sync.ts, authoringComparable) trata zappyStudentNotebook: false no rascunho como diferente do campo ausente na versão publicada; o anexo foi gravado sem o campo para a cópia não acusar edição pendente. Em 24/11/2026 o anexo passou a ter zappyStudentNotebook: true, gravado no rascunho e publicado.",
   "vozesDoZappy": "24/11/2026: as 10 pontes das duas aulas com voz (5 por aula), geradas pelo prepare do sincronizador (sem alterar curso nenhum) e publicadas; os 10 áudios conferidos (200, audio/mpeg)",
-  "blocosLiberados": "24/11/2026: studioUnlockBlocks do curso Kids de staging com 41 blocos, a união do 2D e do 3D do blocos.json; estava vazio"
+  "blocosLiberados": "24/11/2026: studioUnlockBlocks do curso Kids de staging com 41 blocos, a união do 2D e do 3D do blocos.json; estava vazio",
+  "videosFinais": {
+    "data": "2026-11-24",
+    "como": "scripts/cursos/trocar-videos.ts: versão nova de cada vídeo no Vimeo (mesmo id e endereço), capa da parte reaplicada, duração gravada na aula e aulas republicadas",
+    "origem": "Downloads/O Jardim Secreto/Finalizadas (AulaNN - Parte N.mp4)",
+    "partes": {
+      "1-1": {
+        "vimeo": "1249500046",
+        "segundos": 87
+      },
+      "1-2": {
+        "vimeo": "1249500048",
+        "segundos": 76
+      },
+      "1-3": {
+        "vimeo": "1249500047",
+        "segundos": 79
+      },
+      "1-4": {
+        "vimeo": "1249500083",
+        "segundos": 53
+      },
+      "1-5": {
+        "vimeo": "1249500085",
+        "segundos": 45
+      },
+      "2-1": {
+        "vimeo": "1249500086",
+        "segundos": 67
+      },
+      "2-2": {
+        "vimeo": "1249500124",
+        "segundos": 69
+      },
+      "2-3": {
+        "vimeo": "1249500125",
+        "segundos": 79
+      },
+      "2-4": {
+        "vimeo": "1249500126",
+        "segundos": 56
+      },
+      "2-5": {
+        "vimeo": "1249500155",
+        "segundos": 25
+      }
+    },
+    "observacao": "A Parte 5 da Aula 1 travou no processamento do Vimeo (mais de 1 h); a versão travada foi descartada e o arquivo reenviado."
+  },
+  "baseDoZappy": "24/11/2026, sem navegador (scripts/cursos/base-do-zappy.ts atualizar): transcrições dos 10 vídeos e o texto do caderno (34.666 caracteres) na base; relatório sem pendências"
 }

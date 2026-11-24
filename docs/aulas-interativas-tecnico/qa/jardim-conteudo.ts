@@ -15,8 +15,8 @@
  *   comemoração;
  * - sem dicas e sem quiz: quem tiver dúvida volta na aula do curso base;
  * - a Debinha (Aula 1) e o Dedé (Aula 2) fazem as perguntas marcadas em `kids`.
- * Na publicação, o PDF entra na Aula 1 sem a marca de caderno do Zappy, que o daria ao Zappy desde
- * o começo da aula.
+ * Na publicação, o PDF entra na Aula 1 marcado como caderno do aluno para o Zappy: o passo a passo do
+ * projeto é sempre o caderno e fica disponível para ele (decisão de 24/11/2026).
  *
  * Os caminhos das setas no Na tela contam a velocidade de cada jogo (`jardim-projeto.ts`). No 2D
  * (960 × 600), velocidade 5: 300 pixels por segundo. O personagem sai de x 130 e y 310 (72 × 72), o

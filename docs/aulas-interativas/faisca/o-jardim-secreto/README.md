@@ -46,7 +46,7 @@ A Helena pediu que o Jardim funcione como uma missão do posto, e não como uma 
 - **Verificação:** o Verificar projeto confere pelo que o jogo faz, então qualquer solução certa passa. Os objetivos de cada etapa somam os das etapas anteriores.
 - **Sem dicas e sem quiz:** quem tiver dúvida volta na aula do curso base. O quiz continua em `jardim-quiz.ts`, porque a prévia do Jardim o usa, mas saiu das aulas.
 - **Passo a passo:** é um caderno só, com as duas aulas, e chega na última parte da Aula 1, depois do envio. Na Aula 2, a última parte é só a comemoração, e a fala lembra que o caderno está no fim da Aula 1. A página do quiz saiu, e as partes foram renumeradas.
-- **Publicação:** anexar o PDF só na Aula 1, no bloco de materiais da última parte, **sem** a marca de caderno do Zappy. Com a marca, o Zappy lê o caderno desde o começo da aula e pode entregar a solução.
+- **Publicação:** anexar o PDF só na Aula 1, no bloco de materiais da última parte, marcado como caderno do aluno para o Zappy ("Passo a passo do projeto para o Zappy"). Decisão de 24/11/2026: o passo a passo do projeto é sempre o caderno e fica sempre disponível para o Zappy. Antes ele ia sem a marca, para o Zappy não ter o caderno desde o começo da aula.
 - **Teste:** `qa/missao-padrao.test.ts` confere que nenhum Na tela monta ou envia, que cada etapa diz onde voltar, que o caderno só vem depois do envio e que não há quiz. O Jardim saiu do `faisca-padrao.test.ts`, que vale para os cursos que ensinam montando.
 - **Produção:** as vozes, as animações das etapas e a gravação ainda não foram feitas.
 

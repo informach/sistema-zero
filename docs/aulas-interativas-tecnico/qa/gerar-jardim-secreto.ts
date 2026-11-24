@@ -58,7 +58,7 @@ await gerarPoder({
           `## Aula ${i + 1}. ${a.title}\n\nIdentificador: ${a.slug}. Dimensão: ${a.dimension.toUpperCase()}.\n\n${a.trechos.map((t, n) => `${n + 1}. ${t.title}.`).join('\n')}\n\n[Manifesto](${a.slug}.manifesto.json) · [Roteiro](${a.slug}.roteiro.md).`,
       )
       .join('\n\n') +
-    '\n\nUma entrega por aula, na última montagem (a do lugar do regador); depois do envio, a última parte da Aula 1 entrega o Passo a passo do projeto, e a da Aula 2 comemora a missão cumprida. Sem dicas nem quiz. A missão conta com as duas aulas concluídas. Na publicação, anexar o PDF só na Aula 1, sem a marca de caderno do Zappy. Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.\n',
+    '\n\nUma entrega por aula, na última montagem (a do lugar do regador); depois do envio, a última parte da Aula 1 entrega o Passo a passo do projeto, e a da Aula 2 comemora a missão cumprida. Sem dicas nem quiz. A missão conta com as duas aulas concluídas. Na publicação, anexar o PDF só na Aula 1, marcado como caderno do aluno para o Zappy (o passo a passo do projeto é sempre o caderno, decisão de 24/11/2026). Sem certificado nem publicação na comunidade. Produzir e anexar a mídia real antes de publicar.\n',
   resumo:
     'Jardim: duas aulas, roteiros, voz, ajuda, inventário e quatro projetos portáteis gerados.',
 })
