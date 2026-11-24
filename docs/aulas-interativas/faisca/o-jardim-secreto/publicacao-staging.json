@@ -1,0 +1,37 @@
+{
+  "environment": "staging",
+  "purpose": "Kids de staging com vídeos provisórios de 2 segundos, para a gravação das partes (24/11/2026)",
+  "course": {
+    "id": "8183249d-3e2b-5105-a5da-8b8653f2d84a",
+    "slug": "jornada-faisca-missao",
+    "title": "O Jardim Secreto",
+    "status": "published",
+    "module": {
+      "id": "77aeb918-7228-43b9-ae68-a2fc366b6beb",
+      "title": "Faça o jardim florescer"
+    }
+  },
+  "lessons": [
+    {
+      "id": "4fa1db60-2b47-44f0-819e-f887950cb853",
+      "slug": "aula-1",
+      "title": "Faça o jardim florescer em 2D",
+      "sections": 5,
+      "videos": 5
+    },
+    {
+      "id": "cb688ff3-9d28-4fb9-b7d0-87a579ea5dd2",
+      "slug": "aula-2",
+      "title": "Leve sua missão para o 3D",
+      "sections": 5,
+      "videos": 5
+    }
+  ],
+  "capas": "capas-das-aulas/aula-0N-parte-0M.png (10), no molde das capas de A Ilha do Farol; geradas por docs/aulas-interativas-tecnico/recursos/jardim-secreto/capas-das-aulas",
+  "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 5 da Aula 1, sem a marca de caderno do Zappy",
+  "pendente": [
+    "vozes do Zappy nas pontes das duas aulas (botão Voz do Zappy do editor e publicar de novo)",
+    "vídeos finais no lugar dos provisórios"
+  ],
+  "observacao": "A comparação da publicação de cursos (course-sync.ts, authoringComparable) trata zappyStudentNotebook: false no rascunho como diferente do campo ausente na versão publicada; o anexo foi gravado sem o campo para a cópia não acusar edição pendente."
+}
