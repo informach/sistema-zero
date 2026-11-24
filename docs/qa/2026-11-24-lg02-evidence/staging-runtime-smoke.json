@@ -1,0 +1,24 @@
+{
+  "testedAt": "2026-11-24T13:29:48.190Z",
+  "environment": "staging",
+  "membersSha": "9ca0696aef5a536846525704b9d01261e2bd0da7",
+  "results": [
+    {
+      "path": "/v1/build",
+      "status": 200,
+      "durationMs": 9823,
+      "passed": true,
+      "validation": {
+        "profileVersion": 1,
+        "runtimeFingerprint": "b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c"
+      }
+    },
+    {
+      "path": "/v1/check",
+      "status": 200,
+      "durationMs": 5174,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

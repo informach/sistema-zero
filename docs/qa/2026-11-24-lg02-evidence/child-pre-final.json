@@ -1,0 +1,194 @@
+{
+  "testedAt": "2026-11-24 11:37:55 UTC",
+  "stageRuntimeVersion": "382058b9-3175-4bb2-b6f0-d312b8fcaf46",
+  "membersSource": "9a8a1a9f20e76106abbf4cb4c632bc9c0d6ac53e",
+  "scope": "Pre-final application wave; authenticated test profile; no submission or message sent",
+  "courses": [
+    {
+      "title": "O personagem ganha movimento · , Faça o personagem andar",
+      "progress": "67",
+      "checks": [
+        {
+          "status": 200,
+          "durationMs": 5667.699999988079,
+          "passed": false,
+          "results": [
+            {
+              "id": "direcional",
+              "passed": false
+            },
+            {
+              "id": "andar",
+              "passed": false
+            },
+            {
+              "id": "andar-cima",
+              "passed": false
+            },
+            {
+              "id": "andar-baixo",
+              "passed": false
+            },
+            {
+              "id": "andar-esquerda",
+              "passed": false
+            },
+            {
+              "id": "andar-direita",
+              "passed": false
+            }
+          ],
+          "reward": null
+        },
+        {
+          "status": 200,
+          "durationMs": 10152.100000023842,
+          "passed": true,
+          "results": [
+            {
+              "id": "direcional",
+              "passed": true
+            },
+            {
+              "id": "andar",
+              "passed": true
+            },
+            {
+              "id": "andar-cima",
+              "passed": true
+            },
+            {
+              "id": "andar-baixo",
+              "passed": true
+            },
+            {
+              "id": "andar-esquerda",
+              "passed": true
+            },
+            {
+              "id": "andar-direita",
+              "passed": true
+            }
+          ],
+          "reward": {
+            "xpAwarded": 30,
+            "totalXp": 1020,
+            "coinsAwarded": 15,
+            "coinBalance": 535,
+            "badges": [
+              "studio-master-3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Uma ilha com profundidade · , Faça o personagem andar",
+      "progress": "75",
+      "checks": [
+        {
+          "status": 424,
+          "durationMs": 75134.60000002384,
+          "errorCode": "PROJECT_CHECK_UNAVAILABLE",
+          "reward": null
+        },
+        {
+          "status": 200,
+          "durationMs": 36538.69999998808,
+          "passed": false,
+          "results": [
+            {
+              "id": "movimento-no-quadro",
+              "passed": false
+            },
+            {
+              "id": "andar-0",
+              "passed": false
+            },
+            {
+              "id": "andar-1",
+              "passed": false
+            },
+            {
+              "id": "andar-2",
+              "passed": false
+            },
+            {
+              "id": "andar-3",
+              "passed": false
+            }
+          ],
+          "reward": null
+        },
+        {
+          "status": 200,
+          "durationMs": 30842.80000001192,
+          "passed": true,
+          "results": [
+            {
+              "id": "movimento-no-quadro",
+              "passed": true
+            },
+            {
+              "id": "andar-0",
+              "passed": true
+            },
+            {
+              "id": "andar-1",
+              "passed": true
+            },
+            {
+              "id": "andar-2",
+              "passed": true
+            },
+            {
+              "id": "andar-3",
+              "passed": true
+            }
+          ],
+          "reward": {
+            "xpAwarded": 30,
+            "totalXp": 990,
+            "coinsAwarded": 15,
+            "coinBalance": 520,
+            "badges": []
+          }
+        },
+        {
+          "status": 200,
+          "durationMs": 32197.80000001192,
+          "passed": true,
+          "results": [
+            {
+              "id": "movimento-no-quadro",
+              "passed": true
+            },
+            {
+              "id": "andar-0",
+              "passed": true
+            },
+            {
+              "id": "andar-1",
+              "passed": true
+            },
+            {
+              "id": "andar-2",
+              "passed": true
+            },
+            {
+              "id": "andar-3",
+              "passed": true
+            }
+          ],
+          "reward": {
+            "xpAwarded": 0,
+            "totalXp": 990,
+            "coinsAwarded": 0,
+            "coinBalance": 520,
+            "badges": []
+          }
+        }
+      ]
+    }
+  ]
+}

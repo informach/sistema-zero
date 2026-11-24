@@ -33,7 +33,7 @@ Arquivos: `packages/studio-runtime/src/check-container.ts`, novos `check-sandbox
 Arquivos: `studio-runtime/src/index.ts`, `src/worker.ts`, `wrangler.jsonc`, `Dockerfile`, `runtime/check-warm.mjs`; caminhos já existentes de core, Members, Gateway, member-shell, Kids/Community e palco.
 
 - [x] Declarar/exportar o novo coordenador e sua migração SQLite nos dois ambientes.
-- [ ] Conferir autorização, revisão, identidade, intervalo e seleção 2D/3D de ponta a ponta. Conservar o caminho exclusivo da LG01 quando a coordenação não estiver disponível, registrando o motivo.
+- [x] Conferir autorização, revisão, identidade, intervalo e seleção 2D/3D de ponta a ponta. Conservar o caminho exclusivo da LG01 quando a coordenação não estiver disponível, registrando o motivo.
 - [x] Regenerar o perfil da imagem pelos scripts do pacote; executar testes de contrato/capacidade, UI do cartão, serviços, BFF e tipos dos pacotes afetados.
 - [x] Construir e conferir a imagem Linux com o script de aquecimento, usuário sem privilégios e rede de execução desabilitada.
 
@@ -41,11 +41,11 @@ Arquivos: `studio-runtime/src/index.ts`, `src/worker.ts`, `wrangler.jsonc`, `Doc
 
 Instrumentos/recibos próprios de LG02, sem credenciais nos arquivos. Execução sobre projetos sintéticos e o perfil de homologação já indicado, sem enviar recados nem posts.
 
-- [ ] Publicar o runtime/imagem em homologação e repetir a prova R12 com duas abas reais, além de aquecimento sobreposto, limpeza falha e perfis diferentes.
-- [ ] Exercitar suspensão e capacidade; medir primeira verificação e repetições com amostra registrada e comparar com o caminho exclusivo.
-- [ ] Passar CI completo e plano no head final; implantar a onda canônica de staging e percorrer a aula autenticada, incluindo recusas de sessão/acesso/revisão.
-- [ ] Revisar entradas concorrentes e promover pelos PRs/fluxos canônicos somente com os critérios atendidos. Conferir sincronização de main/staging.
-- [ ] Conferir runtime, catálogos, serviços, curso preservado e controles após a implantação. Atualizar o plano gradual com resultado e limitações efetivamente observados.
+- [x] Publicar o runtime/imagem em homologação e repetir a prova R12 com duas abas reais, além de aquecimento sobreposto, limpeza falha e perfis diferentes.
+- [x] Exercitar suspensão e capacidade; medir primeira verificação e repetições com amostra registrada e comparar com o caminho exclusivo.
+- [x] Passar CI completo e plano no head final; implantar a onda canônica de staging e percorrer aquecimento e verificação na aula autenticada, incluindo recusas de sessão/acesso/revisão. O aceite da LG02 não inclui o envio ao professor, que depende da autorização específica solicitada.
+- [x] Revisar entradas concorrentes e promover pelos PRs/fluxos canônicos somente com os critérios atendidos. Conferir sincronização de main/staging.
+- [x] Conferir runtime, catálogos, serviços, curso preservado e controles após a implantação. Atualizar o plano gradual com resultado e limitações efetivamente observados.
 
 ## Evidência local inicial
 
@@ -83,3 +83,15 @@ Depois da correção do proxy QA, a prova de capacidade registrou uma falha dist
 A candidata passa a fixar 0.12.12 no runtime, no binário copiado para a imagem e na prova Linux, com teste de coerência dessas versões. O lockfile conserva as demais versões; só entra o Hono exigido por esse SDK. O serviço de linguagem mantém sua dependência anterior e usa o transporte HTTP padrão, sem a configuração RPC envolvida nesse defeito. Não há mudança nos catálogos ou liberações Python nem nos tetos das instâncias.
 
 A suíte completa passou com o SDK novo: 440 testes, 56 cenários condicionais pulados, zero falhas e 4.683 expectativas. Tipos de fonte/testes, Biome e coerência do perfil passaram. A imagem `sistemazero-studio-runtime:lg02-sdk01212-20261124`, manifesto `sha256:2bff6dacad67f4890c9b69242bc5d83d6f02473489b346d5de390b24a295488a`, passou smoke, aquecimento sem rede e inicialização do binário `/sandbox`, com UID 1000 e porta TCP 3000 pronta. Fingerprint `b0e3c675af3cad13d368c6a5dd39388b65f5fd63bacd2aa7ca2b406ab109a98c`. A prova hospedada ainda está pendente. As tentativas de capacidade do SDK anterior permanecem registradas como falhas; não contam como aceite da candidata corrigida.
+
+## Fechamento da LG02
+
+Concluída em produção em 24/11/2026, fonte `0180e39fdc4717ed3becb42c899e8c837b9fa4fd`, PR #286 e onda canônica `45409371184`. A matriz hospedada final do SDK corrigido, o CI da candidata, os 20 serviços de staging e o aceite infantil passaram. As duas abas autenticadas aprovaram os objetivos sem duplicar prêmio; falhas, capacidade, suspensão, Pro e navegação 3D dedicada passaram nas provas reais próprias.
+
+Os sete serviços de produção, Worker `99386c58`, as duas aplicações com a imagem exata qualificada, compilação/aquecimento/verificação e rotas públicas passaram nas conferências posteriores. Catálogo Python, 16 registros de cursos e controles das outras etapas preservados. O merge de main em staging conservou o conteúdo concorrente. [Recibo, fontes, limites e evidências](../qa/2026-11-24-lg02-aquecimento-seguro.md). Os trechos de pendência acima descrevem as rodadas históricas anteriores a este fechamento.
+
+## Qualificação hospedada da candidata a36520659
+
+A matriz final passou na imagem nova: aquecimento/recuperação, duas abas válidas, falha de execução e de limpeza na posse reutilizável, aquecimento sobreposto, perfis novos sob cache cheio, compilação Pro e erro de sintaxe, navegação 3D dedicada, suspensão observada na API e confirmação de liberação perdida. As aplicações e o Worker QA foram removidos após o descarte dos recursos sintéticos. [Recibo e limitações](../qa/2026-11-24-lg02-aquecimento-seguro.md), com evidências estruturadas da fonte exata.
+
+Dez amostras por caminho deram medianas de 7.682,5 ms no caminho exclusivo e 3.497 ms com reutilização, para HTML pequeno. As esperas de capacidade são separadas da latência. Não é prova de carga ou promessa para jogos grandes. No percurso infantil do Farol, o projeto inicial reprovou corretamente e a versão com o movimento passou os cinco objetivos em 30.843 ms; a primeira tentativa retornou indisponibilidade e permanece registrada. O runtime normal de staging passou compilação com validação e verificação reais. CI, atualização dos aplicativos, aceite autenticado da fonte final e produção ainda estão pendentes.
