@@ -10,6 +10,7 @@ import {
 } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { kidsJourneyTargets, productionApplicationIds } from '../release/kids-journey-targets.mjs'
+import { findPromotedPullRequest, githubPages as pages } from './github-promoted-pr.mjs'
 import {
   createRailwayPorts,
   describeKidsJourneyRolloutFailure,
@@ -34,40 +35,13 @@ export const productionCiJobs = Object.freeze([
   'studio-e2e-webkit',
 ])
 
-async function pages(get, path, field) {
-  const rows = []
-  for (let page = 1; page <= 20; page++) {
-    const value = await get(`${path}${path.includes('?') ? '&' : '?'}per_page=100&page=${page}`)
-    const items = field ? value[field] : value
-    if (!Array.isArray(items)) throw new Error('Resposta GitHub inválida')
-    rows.push(...items)
-    if (field) {
-      if (!Number.isSafeInteger(value.total_count) || value.total_count < rows.length)
-        throw new Error('Contagem GitHub inválida')
-      if (rows.length === value.total_count) return rows
-    } else if (items.length < 100) return rows
-    if (items.length === 0) throw new Error('Paginação GitHub incompleta')
-  }
-  throw new Error('Limite de paginação GitHub excedido')
-}
-
 /** No Railway provider is touched until the promoted tree, CI attempt and PR plan are proven. */
 export async function resolveProductionSource(sha, get) {
   if (!shaPattern.test(sha ?? '')) throw new Error('SHA completo obrigatório')
   const main = await get('/commits/main')
   if (main.sha !== sha || !shaPattern.test(main.commit?.tree?.sha ?? ''))
     throw new Error('Main difere do SHA aprovado')
-  const prs = await pages(get, `/commits/${sha}/pulls`)
-  const eligible = prs.filter(
-    (pr) =>
-      pr.merged_at &&
-      pr.merge_commit_sha === sha &&
-      pr.base?.ref === 'main' &&
-      pr.head?.repo?.full_name === 'informach/sistema-zero',
-  )
-  if (eligible.length !== 1 || !shaPattern.test(eligible[0].head?.sha ?? ''))
-    throw new Error('PR interno promovido único não encontrado')
-  const pr = eligible[0]
+  const pr = await findPromotedPullRequest(sha, get)
   const head = await get(`/commits/${pr.head.sha}`)
   if (head.sha !== pr.head.sha || head.commit?.tree?.sha !== main.commit.tree.sha)
     throw new Error('Árvore promovida difere da árvore aprovada no PR')
