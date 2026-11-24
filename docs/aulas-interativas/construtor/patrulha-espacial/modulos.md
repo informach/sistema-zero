@@ -1,8 +1,28 @@
 # Patrulha Espacial
 
-Cadastro editorial do **Curso da trilha 3D do Construtor**. Esta versão contém a autoria completa das cinco aulas reservadas e seus projetos progressivos. Mídias, cadastro no Admin e publicação continuam como etapas de produção; estes arquivos não afirmam que o curso já foi publicado.
+**Título do curso:** Patrulha Espacial
+
+**Descrição curta:** Leve sua nave para uma rota com profundidade: faça os lasers saírem dela, acerte asteroides, conte pontos e proteja suas três vidas.
+
+**Descrição longa:** Depois de Nave Contra Asteroides, construa a Patrulha Espacial usando os blocos de Programação e Jogo 3D. Primeiro, jogue uma versão pronta. Depois, investigue as direções e o contato no espaço e monte as regras da sua patrulha em pequenas partes: disparos, surgimento de asteroides, limites, acertos, pontos e vidas. A abertura e as telas finais já estão preparadas; você vai construir as condições que decidem quando a partida termina. Cada aula traz montagens, testes e um envio do projeto. Consulte o Passo a passo quando precisar e, se quiser, compartilhe a patrulha no Mural ao terminar.
+
+## Módulo 1 · Sua patrulha em três dimensões
+
+**Resumo:** Leve a lógica da nave para uma rota com profundidade. Faça cada disparo nascer no lugar da nave, programe a chegada dos asteroides, reconheça os contatos e reúna pontos, vidas e decisões de resultado em uma partida completa. Cada aula termina com uma versão testada e enviada; a última inclui uma revisão e o convite opcional para compartilhar.
+
+| Ordem / slug | Aula | Resumo para o cadastro | Conquista entregue |
+|---|---|---|---|
+| 1 · `aula-1` | [Da tela ao espaço](patrulha-espacial-aula-1.md) | Jogue a Patrulha, conheça o caderno, retome os três eixos na Ilha e construa o disparo em partes. | Laser nasce no X da nave, segue pelo Z negativo e termina o caminho. |
+| 2 · `aula-2` | [Asteroides na rota](patrulha-espacial-aula-2.md) | Use um intervalo, monte a receita fornecida dos lugares de entrada e faça as pedras se aproximarem. | Asteroides surgem a cada 1,5 segundo, percorrem a faixa e são retirados depois de passar. |
+| 3 · `aula-3` | [Acertar no espaço](patrulha-espacial-aula-3.md) | Investigue contato real na Ilha, programe a retirada do par e ligue o contador ao placar. | Cada asteroide acertado vale um único ponto; o placar mostra a contagem atual. |
+| 4 · `aula-4` | [Três chances na patrulha](patrulha-espacial-aula-4.md) | Dê três vidas à nave, programe a batida e retire apenas a pedra envolvida. | Batida válida tira uma vida; desviar conserva a nave; passar pela rota não tira vida. |
+| 5 · `aula-5` | [Uma patrulha completa](patrulha-espacial-aula-5.md) | Construa as condições de derrota e vitória, aplique os avisos fornecidos e confira uma nova partida. | Jogo completo com resultado único, reinício integral e envio final. |
+
+O detalhamento das 25 partes está em [mapa-de-aulas.md](mapa-de-aulas.md). Há **18 montagens**, **19 projetos progressivos**, **duas experiências existentes da Ilha**, **dois quizzes** e **um envio ao fim da construção de cada aula**. O material aparece uma vez, na segunda parte da primeira aula. As partes de contador e soma, antes do mostrador, usam conferência de blocos e não prometem um efeito que ainda não aparece.
 
 ## Identidade e configuração
+
+Cadastro editorial do **Curso da trilha 3D do Construtor**. Esta versão contém a autoria completa das cinco aulas reservadas e seus projetos progressivos. Mídias, cadastro no Admin e publicação continuam como etapas de produção; estes arquivos não afirmam que o curso já foi publicado.
 
 | Campo | Valor para cadastro |
 |---|---|
@@ -22,19 +42,13 @@ O título não leva “3D”; a dimensão aparece na tag, conforme a [Jornada do
 
 Reconciliar os UUIDs existentes do curso, do módulo e das aulas em cada público. Não criar um curso de mesmo título para substituir outro, nem apagar as cinco aulas reservadas. A proposta usa **um módulo**, renomeando o módulo provisório “Plano de produção” e preservando sua identidade. A ordem das aulas permanece de 1 a 5. Este documento não inventa UUIDs nem altera a política publicada da Jornada.
 
-## Textos de apresentação
+## Textos da comunidade adulta
 
-### Kids
+As descrições do topo são as do Kids. Na comunidade adulta:
 
-**Descrição curta:** Leve sua nave para uma rota com profundidade: faça os lasers saírem dela, acerte asteroides, conte pontos e proteja suas três vidas.
+**Descrição curta da comunidade adulta:** Reconstrua o tiro espacial em três dimensões, integrando grupos, intervalos, contato, pontos, vidas e condições de resultado.
 
-**Descrição longa:** Depois de Nave Contra Asteroides, construa a Patrulha Espacial usando os blocos de Programação e Jogo 3D. Primeiro, jogue uma versão pronta. Depois, investigue as direções e o contato no espaço e monte as regras da sua patrulha em pequenas partes: disparos, surgimento de asteroides, limites, acertos, pontos e vidas. A abertura e as telas finais já estão preparadas; você vai construir as condições que decidem quando a partida termina. Cada aula traz montagens, testes e um envio do projeto. Consulte o Passo a passo quando precisar e, se quiser, compartilhe a patrulha no Mural ao terminar.
-
-### Comunidade adulta
-
-**Descrição curta:** Reconstrua o tiro espacial em três dimensões, integrando grupos, intervalos, contato, pontos, vidas e condições de resultado.
-
-**Descrição longa:** A partir da nave construída em duas dimensões, programe uma patrulha com profundidade usando Programação e Jogo 3D. Investigue os eixos e o contato entre objetos, monte a origem e o percurso dos disparos, crie asteroides em intervalos e programe retirada, pontuação e dano. A cena, a câmera, os modelos, a abertura e as telas finais fornecem o apoio inicial. A autoria se concentra nas regras da partida e nos testes que mostram quando elas funcionam. O percurso termina com vitória, derrota e reinício conferidos, um projeto completo e publicação opcional no Mural.
+**Descrição longa da comunidade adulta:** A partir da nave construída em duas dimensões, programe uma patrulha com profundidade usando Programação e Jogo 3D. Investigue os eixos e o contato entre objetos, monte a origem e o percurso dos disparos, crie asteroides em intervalos e programe retirada, pontuação e dano. A cena, a câmera, os modelos, a abertura e as telas finais fornecem o apoio inicial. A autoria se concentra nas regras da partida e nos testes que mostram quando elas funcionam. O percurso termina com vitória, derrota e reinício conferidos, um projeto completo e publicação opcional no Mural.
 
 As duas versões usam a mesma sequência de aprendizagem e os mesmos projetos. O master integral da professora serve à edição adulta. Na edição Kids, Debinha aparece nas aulas 1, 3 e 5 e Dedé nas aulas 2 e 4, substituindo os parágrafos completos indicados nos índices de edição. A troca de voz não retira instruções da montagem.
 
@@ -45,20 +59,6 @@ O aluno chega com o **Faísca concluído** e com **Nave Contra Asteroides**, cur
 O par Nave + Patrulha abre missão, Poderes e extras do Construtor conforme a política vigente. A promoção também exige a missão nas duas dimensões e dois Poderes distintos aplicados. Concluir esta base, isoladamente, não é uma promessa de promoção. Publicar no Mural é opcional. Essas regras pertencem à [Jornada](../../../jornada-do-criador.md), não aos critérios de uma parte desta aula.
 
 **Certificado:** esta autoria não cria certificado, regra de emissão ou promessa de certificado para a Patrulha. Preservar a configuração vigente ao reconciliar o cadastro dos dois públicos. O encerramento reconhece o jogo concluído e apresenta o Mural opcional; não contém uma tela fictícia de certificado.
-
-## Módulo 1 · Sua patrulha em três dimensões
-
-**Resumo do módulo:** Leve a lógica da nave para uma rota com profundidade. Faça cada disparo nascer no lugar da nave, programe a chegada dos asteroides, reconheça os contatos e reúna pontos, vidas e decisões de resultado em uma partida completa. Cada aula termina com uma versão testada e enviada; a última inclui uma revisão e o convite opcional para compartilhar.
-
-| Ordem / slug | Aula | Resumo para o cadastro | Conquista entregue |
-|---|---|---|---|
-| 1 · `aula-1` | [Da tela ao espaço](patrulha-espacial-aula-1.md) | Jogue a Patrulha, conheça o caderno, retome os três eixos na Ilha e construa o disparo em partes. | Laser nasce no X da nave, segue pelo Z negativo e termina o caminho. |
-| 2 · `aula-2` | [Asteroides na rota](patrulha-espacial-aula-2.md) | Use um intervalo, monte a receita fornecida dos lugares de entrada e faça as pedras se aproximarem. | Asteroides surgem a cada 1,5 segundo, percorrem a faixa e são retirados depois de passar. |
-| 3 · `aula-3` | [Acertar no espaço](patrulha-espacial-aula-3.md) | Investigue contato real na Ilha, programe a retirada do par e ligue o contador ao placar. | Cada asteroide acertado vale um único ponto; o placar mostra a contagem atual. |
-| 4 · `aula-4` | [Três chances na patrulha](patrulha-espacial-aula-4.md) | Dê três vidas à nave, programe a batida e retire apenas a pedra envolvida. | Batida válida tira uma vida; desviar conserva a nave; passar pela rota não tira vida. |
-| 5 · `aula-5` | [Uma patrulha completa](patrulha-espacial-aula-5.md) | Construa as condições de derrota e vitória, aplique os avisos fornecidos e confira uma nova partida. | Jogo completo com resultado único, reinício integral e envio final. |
-
-O detalhamento das 25 partes está em [mapa-de-aulas.md](mapa-de-aulas.md). Há **18 montagens**, **19 projetos progressivos**, **duas experiências existentes da Ilha**, **dois quizzes** e **um envio ao fim da construção de cada aula**. O material aparece uma vez, na segunda parte da primeira aula. As partes de contador e soma, antes do mostrador, usam conferência de blocos e não prometem um efeito que ainda não aparece.
 
 ## Fronteira entre apoio e autoria
 

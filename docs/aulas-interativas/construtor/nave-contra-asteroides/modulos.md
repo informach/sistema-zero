@@ -1,8 +1,44 @@
-# Nave Contra Asteroides — cadastro e organização
+# Nave Contra Asteroides
 
-Versão editorial de 24/11/2026. Este documento acompanha os materiais e manifestos para revisão. A geração dos arquivos não altera o cadastro do curso nem publica aulas.
+**Título do curso:** Nave Contra Asteroides
+
+**Descrição curta:** Construa uma missão espacial com nave, lasers, asteroides, pontos e três vidas. Escolha as imagens e faça a partida reconhecer vitória e derrota.
+
+**Descrição longa:** Primeiro, jogue uma versão pronta para conhecer a missão: acertar vinte asteroides antes de perder três vidas. Depois, construa as regras do seu próprio jogo em pequenas etapas. Faça a nave se mover, crie lasers que saem dela, coloque pedras em posições sorteadas, programe os acertos e acompanhe pontos e vidas. As telas de início e fim e o reinício já vêm preparados; você aprende as condições que escolhem o resultado e testa uma nova partida. Há experiências para explorar cada ideia, passos de montagem, testes no jogo e um Passo a passo do projeto para consultar quando precisar. Escolha entre três aparências de nave, cenário, asteroide e laser, combinando os desenhos do seu jeito. Ao terminar, você pode compartilhar sua rota no Mural.
+
+## Módulo 1 · A nave e seus controles
+
+**Resumo:** Escolha sua nave e o espaço, mova com as setas e construa lasers que nascem nela, voam e deixam o jogo ao sair da tela.
+
+| Ordem | Aula e slug preservado | Conquista | Partes |
+| --- | --- | --- | --- |
+| 1 | [Prepare o voo da sua nave](nave-contra-asteroides-primeira-nave.md) · `primeira-nave` | Aparência escolhida, movimento lateral, limite da tela e legenda de controles; a nave já pode ser pilotada. | 8 |
+| 2 | [Faça o laser nascer na nave](nave-contra-asteroides-dia-1.md) · `dia-1` | Um disparo por toque, grupo de lasers e origem que acompanha a nave; o laser ainda fica parado. | 7 |
+| 3 | [Faça os lasers voar e sair do jogo](nave-contra-asteroides-dia-2.md) · `dia-2` | Os lasers avançam no sentido certo e deixam o grupo ao sair da tela. | 4 |
+
+## Módulo 2 · Asteroides, pontos e vidas
+
+**Resumo:** Faça as pedras chegarem em intervalos, encontre cada par que se toca, conte acertos e dê à nave três vidas com um respiro entre os danos.
+
+| Ordem | Aula e slug preservado | Conquista | Partes |
+| --- | --- | --- | --- |
+| 4 | [Faça os asteroides cair](nave-contra-asteroides-chuva-de-asteroides.md) · `chuva-de-asteroides` | Nascimento a cada 1,5 segundo, posição sorteada fornecida como apoio, queda, retirada de quem escapa e revisão de tiros/intervalos. | 7 |
+| 5 | [Faça o tiro acertar o asteroide](nave-contra-asteroides-dia-3.md) · `dia-3` | Retirada somente do par, explosão e som do acerto. | 4 |
+| 6 | [Conte os acertos](nave-contra-asteroides-pontos.md) · `pontos` | Pontos começam em zero, aparecem no placar e aumentam uma vez por acerto. | 5 |
+| 7 | [Dê três vidas à nave](nave-contra-asteroides-dia-4.md) · `dia-4` | Três corações, encontro da nave com a pedra, dano de uma vida e proteção temporária. | 6 |
+
+## Módulo 3 · Sua missão completa
+
+**Resumo:** Confira que as regras esperam a partida começar, escolha as outras imagens, decida vitória e derrota e teste o reinício que já está preparado.
+
+| Ordem | Aula e slug preservado | Conquista | Partes |
+| --- | --- | --- | --- |
+| 8 | [Confira o início e escolha o visual](nave-contra-asteroides-comecar-partida.md) · `comecar-partida` | As três guardas de `jogando` conferidas; aparência de asteroide e laser escolhida. | 4 |
+| 9 | [Termine e recomece a partida](nave-contra-asteroides-dia-5.md) · `dia-5` | Meta fixa de vinte, vitória ou derrota, retorno à abertura e nova partida limpa; envio final e compartilhamento opcional. | 8 |
 
 ## Identidade no catálogo
+
+Versão editorial de 24/11/2026. Este documento acompanha os materiais e manifestos para revisão. A geração dos arquivos não altera o cadastro do curso nem publica aulas.
 
 | Campo | Valor desta produção |
 | --- | --- |
@@ -23,43 +59,9 @@ Versão editorial de 24/11/2026. Este documento acompanha os materiais e manifes
 | Certificado | Preservar a política e o cadastro já existentes. Não foi criado novo certificado, bloco de certificado ou promessa de promoção nesta revisão |
 | Estado de produção | Fontes, roteiros, masters, índice de edição, manifestos e projetos preparados; mídias continuam planejadas até gravação e revisão |
 
-**Descrição curta para o catálogo:** Construa uma missão espacial com nave, lasers, asteroides, pontos e três vidas. Escolha as imagens e faça a partida reconhecer vitória e derrota.
-
-**Descrição longa para o catálogo:** Primeiro, jogue uma versão pronta para conhecer a missão: acertar vinte asteroides antes de perder três vidas. Depois, construa as regras do seu próprio jogo em pequenas etapas. Faça a nave se mover, crie lasers que saem dela, coloque pedras em posições sorteadas, programe os acertos e acompanhe pontos e vidas. As telas de início e fim e o reinício já vêm preparados; você aprende as condições que escolhem o resultado e testa uma nova partida. Há experiências para explorar cada ideia, passos de montagem, testes no jogo e um Passo a passo do projeto para consultar quando precisar. Escolha entre três aparências de nave, cenário, asteroide e laser, combinando os desenhos do seu jeito. Ao terminar, você pode compartilhar sua rota no Mural.
-
 **Pré-requisitos pedagógicos:** Faísca concluído, conforme a política publicada da Jornada. Retomar evento, condição e estado simples; saber usar as setas, Espaço e Enter e acompanhar encaixes guiados. Não pressupor Poder, extra, linguagem textual nem ferramenta de arte. As partes voltam a mostrar o caminho da paleta e os campos necessários.
 
 **Duração estimada, para planejamento:** aproximadamente 75–90 minutos de fala, calculados a partir de cerca de 10,7 mil palavras a 120–145 palavras por minuto, antes das pausas de edição. Para assistir, explorar, montar e testar, reservar aproximadamente 4–7 horas, distribuídas como a criança precisar. É uma estimativa editorial, não uma medição com alunos nem prazo de conclusão. A aula de disparos tem mais partes para separar suas conquistas; cada parte é um ponto possível de pausa.
-
-## Módulo 1 · A nave e seus controles
-
-**Resumo para o catálogo:** Escolha sua nave e o espaço, mova com as setas e construa lasers que nascem nela, voam e deixam o jogo ao sair da tela.
-
-| Ordem | Aula e slug preservado | Conquista | Partes |
-| --- | --- | --- | --- |
-| 1 | [Prepare o voo da sua nave](nave-contra-asteroides-primeira-nave.md) · `primeira-nave` | Aparência escolhida, movimento lateral, limite da tela e legenda de controles; a nave já pode ser pilotada. | 8 |
-| 2 | [Faça o laser nascer na nave](nave-contra-asteroides-dia-1.md) · `dia-1` | Um disparo por toque, grupo de lasers e origem que acompanha a nave; o laser ainda fica parado. | 7 |
-| 3 | [Faça os lasers voar e sair do jogo](nave-contra-asteroides-dia-2.md) · `dia-2` | Os lasers avançam no sentido certo e deixam o grupo ao sair da tela. | 4 |
-
-## Módulo 2 · Asteroides, pontos e vidas
-
-**Resumo para o catálogo:** Faça as pedras chegarem em intervalos, encontre cada par que se toca, conte acertos e dê à nave três vidas com um respiro entre os danos.
-
-| Ordem | Aula e slug preservado | Conquista | Partes |
-| --- | --- | --- | --- |
-| 4 | [Faça os asteroides cair](nave-contra-asteroides-chuva-de-asteroides.md) · `chuva-de-asteroides` | Nascimento a cada 1,5 segundo, posição sorteada fornecida como apoio, queda, retirada de quem escapa e revisão de tiros/intervalos. | 7 |
-| 5 | [Faça o tiro acertar o asteroide](nave-contra-asteroides-dia-3.md) · `dia-3` | Retirada somente do par, explosão e som do acerto. | 4 |
-| 6 | [Conte os acertos](nave-contra-asteroides-pontos.md) · `pontos` | Pontos começam em zero, aparecem no placar e aumentam uma vez por acerto. | 5 |
-| 7 | [Dê três vidas à nave](nave-contra-asteroides-dia-4.md) · `dia-4` | Três corações, encontro da nave com a pedra, dano de uma vida e proteção temporária. | 6 |
-
-## Módulo 3 · Sua missão completa
-
-**Resumo para o catálogo:** Confira que as regras esperam a partida começar, escolha as outras imagens, decida vitória e derrota e teste o reinício que já está preparado.
-
-| Ordem | Aula e slug preservado | Conquista | Partes |
-| --- | --- | --- | --- |
-| 8 | [Confira o início e escolha o visual](nave-contra-asteroides-comecar-partida.md) · `comecar-partida` | As três guardas de `jogando` conferidas; aparência de asteroide e laser escolhida. | 4 |
-| 9 | [Termine e recomece a partida](nave-contra-asteroides-dia-5.md) · `dia-5` | Meta fixa de vinte, vitória ou derrota, retorno à abertura e nova partida limpa; envio final e compartilhamento opcional. | 8 |
 
 ## Fronteira de aprendizagem
 
