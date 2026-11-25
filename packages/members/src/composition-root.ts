@@ -111,6 +111,7 @@ import { AdultProfileService } from './application/profiles/adult-profile.servic
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
 import { SendAccessEndedMessagesService } from './application/renewal-reminder/send-access-ended-messages.service'
+import { SendCourseRemindersService } from './application/renewal-reminder/send-course-reminders.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { BuyMoradaPieceService } from './application/room/buy-morada-piece.service'
@@ -193,6 +194,7 @@ import { DrizzleContentAdminRepository } from './infrastructure/persistence/driz
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCoursePublicationRepository } from './infrastructure/persistence/drizzle/course-publication.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
+import { DrizzleCourseRemindersRepository } from './infrastructure/persistence/drizzle/course-reminders.repository'
 import { DrizzleCreationCleanupRepository } from './infrastructure/persistence/drizzle/creation-cleanup.repository'
 import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle/creations.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -741,6 +743,27 @@ export async function createApplication(env: Env): Promise<Application> {
           {
             funnelUrl: env.FUNNEL_URL,
             batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
+            kidsAppUrl: env.KIDS_COMMUNITY_URL,
+            adultAppUrl: env.COMMUNITY_URL,
+          },
+        )
+      : null
+  // Lembretes do curso (25/11/2026): não começou (2 dias), parou (7 dias) e concluiu (apresenta a
+  // Comunidade). Mesmo quarteto + FUNNEL_URL; roda no mesmo ciclo e trava dos avisos acima.
+  const courseRemindersSender =
+    authGateway && env.GATEWAY_URL && env.MEMBERS_HMAC_SECRET && env.FUNNEL_URL
+      ? new SendCourseRemindersService(
+          new DrizzleCourseRemindersRepository(db),
+          authGateway,
+          createGatewayMessagingClient({
+            gatewayUrl: env.GATEWAY_URL,
+            consumerId: 'members',
+            hmacSecret: env.MEMBERS_HMAC_SECRET,
+          }),
+          clock,
+          logger,
+          {
+            funnelUrl: env.FUNNEL_URL,
             kidsAppUrl: env.KIDS_COMMUNITY_URL,
             adultAppUrl: env.COMMUNITY_URL,
           },
@@ -1700,16 +1723,23 @@ export async function createApplication(env: Env): Promise<Application> {
   // SESSÃO numa conexão reservada (não xact): os senders fazem HTTP (Auth, Messaging) e uma
   // transação-portão ficaria `idle in transaction`, derrubada pelo timeout de 30 s do pool.
   const runRenewalReminderCycle = async () => {
-    if (!renewalReminderSender && !challengeLifecycleSender && !accessEndedSender) return
+    if (
+      !renewalReminderSender &&
+      !challengeLifecycleSender &&
+      !accessEndedSender &&
+      !courseRemindersSender
+    )
+      return
     // `false` = outra réplica (ou um ciclo anterior desta) está enviando agora.
     await withSessionAdvisoryLock(connection.sql, RENEWAL_REMINDER_ADVISORY_LOCK_KEY, async () => {
       await renewalReminderSender?.runCycle()
       await challengeLifecycleSender?.runCycle()
       await accessEndedSender?.runCycle()
+      await courseRemindersSender?.runCycle()
     })
   }
   const hasLifecycleSenders = Boolean(
-    renewalReminderSender || challengeLifecycleSender || accessEndedSender,
+    renewalReminderSender || challengeLifecycleSender || accessEndedSender || courseRemindersSender,
   )
 
   // Disparos sem lançar, um por vez nesta réplica (o boot e o timer podem coincidir); `stop()`

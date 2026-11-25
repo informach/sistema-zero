@@ -43,7 +43,12 @@ const ADULT_CONTINUITY_PATH = '/pro/comunidade-dos-criadores/oferta/continuar'
 export function accessEndedLink(
   funnelUrl: string,
   audience: 'kids' | 'adult',
-  campaign: 'fim-do-presente' | 'assinatura-encerrada' | 'desafio-concluido' | 'desafio-encerrado',
+  campaign:
+    | 'fim-do-presente'
+    | 'assinatura-encerrada'
+    | 'desafio-concluido'
+    | 'desafio-encerrado'
+    | 'curso-concluido',
   content?: '2-dias' | 'no-dia',
 ): string {
   const url = new URL(

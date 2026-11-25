@@ -1,6 +1,29 @@
 # CLAUDE.md — @sistemazero/members
 
 
+## Lembretes do curso (25/11/2026)
+
+`SendCourseRemindersService` (`application/renewal-reminder/send-course-reminders.service.ts`) roda
+no MESMO ciclo e advisory lock dos avisos de fim do acesso, com o mesmo quarteto de envs +
+`FUNNEL_URL`. Candidatos (`DrizzleCourseRemindersRepository`): matrícula ATIVA de curso
+(`access_type='course'`), sem `subscription_id`, fora do Desafio (`CHALLENGE_COURSE_REFS`), não
+vencida, de compra única (`source_kind='payment'`) ou presente (`manual` + `scholarship:%`), sem o
+lembrete de conclusão, das mais novas (até 1000 por ciclo). O progresso é por CONTA com a posse
+perfil→conta do Desafio (`loadOwnerClaims`, agora exportada) + a própria conta (o guia dos pais).
+Regra pura (`domain/entitlement/course-reminders.ts`, janela de 72 h a partir de quando passa a
+valer; cada lembrete uma vez por matrícula):
+- `course_not_started`: nenhuma atividade nas aulas publicadas, 2 dias depois de `granted_at`;
+- `course_stalled`: começou, não concluiu, 7 dias depois da atividade mais recente (navegação,
+  partes, blocos, tentativas, entregas, posição de vídeo, conclusões);
+- `course_completed`: algum perfil concluiu TODAS as aulas publicadas; logo depois da conclusão.
+Uma conta com duas matrículas do mesmo curso recebe um lembrete só (`oneCandidatePerCourse`).
+Dedupe em `entitlement_lifecycle_messages_sent` (coluna text, sem migration) com
+`expires_on` = a data da concessão. Templates `course-not-started|stalled|completed[-adult]`
+(`nome`, `curso`, `link`; a conclusão também `comunidade` = continuidade com
+`utm_campaign=curso-concluido`). Link: Kids `<KIDS_COMMUNITY_URL>/login/responsavel`, guia dos pais
+`<KIDS_COMMUNITY_URL>/pais/cursos/<slug>`, adulto `<COMMUNITY_URL>/cursos`. ⚠️ O SQL não tem teste de
+banco (sem Postgres local): conferir num banco descartável antes da staging.
+
 ## Dias de surpresa do prazo divulgado (25/11/2026)
 
 A oferta pode divulgar menos dias que o prazo real (`advertisedAccessDays` no topo de

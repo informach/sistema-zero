@@ -336,7 +336,7 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
  * carrega TODAS as alegações de posse desses perfis. Filtrar a segunda etapa
  * pelas contas candidatas esconderia justamente uma relação conflitante.
  */
-async function loadOwnerClaims(db: Database, accountIds: string[]): Promise<OwnerRow[]> {
+export async function loadOwnerClaims(db: Database, accountIds: string[]): Promise<OwnerRow[]> {
   const accountRows = sql.join(
     accountIds.map((accountId) => sql`(${accountId}::uuid)`),
     sql`, `,
