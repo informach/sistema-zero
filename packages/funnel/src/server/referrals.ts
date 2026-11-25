@@ -33,6 +33,12 @@ const RedeemBody = z.object({
   email: z.string().trim().toLowerCase().regex(EMAIL_RE).max(254),
   telefone: z.string().trim().max(20).optional(),
   attribution: z.unknown().optional(),
+  /** O presente escolhido pelo embaixador (slug da oferta da página). */
+  oferta: z
+    .string()
+    .trim()
+    .regex(/^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
 })
 
 const InviteBody = z.object({
@@ -78,6 +84,7 @@ export async function postRedeemScholarship(
     name: nome,
     email,
     ...(telefone ? { phone: telefone } : {}),
+    ...(parsed.data.oferta ? { offer: parsed.data.oferta } : {}),
     ...(sanitizeGiftAttribution(parsed.data.attribution)
       ? { attribution: sanitizeGiftAttribution(parsed.data.attribution) }
       : {}),

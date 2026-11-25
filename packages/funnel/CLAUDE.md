@@ -34,6 +34,22 @@ Plano no `CLAUDE.md` do referrals (seção "Origem por aquisição").
   Erro ou nada → a página abre.
 - Testes: `tests/integration/referral-origin.test.ts`.
 
+**Uma página por oferta, modo presente (Lote 4, 25/11/2026).** `?presente=<código>` na página da
+oferta (`server/offer-page.ts`) resolve o presente com a oferta da página (`resolveReferralGiftPage(
+gateway, código, slug)`, que manda `?offer=` ao referrals). Presente DESTA oferta → `bodyProps.presente`
+e a resposta vira `no-store`; presente de outra oferta (campanha) → 302 `/bolsa/<código>`; código
+inválido ou referrals fora → a venda normal. No modo presente muda só o selo do topo
+(`origemDoPresente`, a frase da página do presente) e o bloco de compra: `OfertaPresente.astro`
+(o `BolsaResgate` com `oferta`, ou o estado da campanha com a retomada) no lugar do cartão de preço,
+sem `PreCheckoutModal`, sem aviso de cupom; a barra do celular mostra a origem. Aplicado em
+`Desafio917Body` e `DesafioAdultoBody` (os únicos vendidos que podem ser presente; assinatura não é
+presente). `/bolsa/<código>` redireciona à página da oferta quando o presente tem página de venda
+(`resolveOfferFunnel`, irmã do alternador não); senão segue nos corpos de presente de sempre, que
+agora repassam `?oferta=` (a escolha do embaixador) ao resgate. O `/i/` de presente faz o mesmo:
+página da oferta com `?presente=` ou `/bolsa/<código>[?oferta=]`. `BolsaResgate` aceita `oferta`
+(vai como `oferta` ao `/api/bolsa/resgatar` e como `offer` ao referrals, que só aceita oferta ligada
+na lista do público).
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.

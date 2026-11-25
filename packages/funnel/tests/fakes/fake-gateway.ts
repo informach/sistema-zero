@@ -373,8 +373,8 @@ export function createFakeGateway(): FakeGatewayState {
       calls.redirects++
       return redirectResult
     },
-    async resolveReferralCode(code): Promise<GatewayResult> {
-      calls.resolveCode.push(code)
+    async resolveReferralCode(code, offer): Promise<GatewayResult> {
+      calls.resolveCode.push(offer ? `${code}?offer=${offer}` : code)
       return referralCodeResult
     },
     async getAmbassadorByToken(token): Promise<GatewayResult> {

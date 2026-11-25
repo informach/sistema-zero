@@ -302,7 +302,7 @@ describe('preço do catálogo', () => {
 
   test('o topo, o cartão e a barra do celular mostram o desconto só com cupom válido', () => {
     const corpo = PAGINAS['9a17'].corpo
-    expect(corpo).toContain('{preco.precoCheio && preco.descontoPct && (')
+    expect(corpo).toContain('{!presente && preco.precoCheio && preco.descontoPct && (')
     expect(corpo).toContain(
       '<span class="d9-desconto__selo">Cupom {preco.codigo} · {preco.descontoPct}% de desconto</span>',
     )

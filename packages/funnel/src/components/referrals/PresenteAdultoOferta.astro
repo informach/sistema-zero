@@ -16,8 +16,10 @@ interface Props {
   /** Base do app adulto (`COMMUNITY_URL`), sem a barra final. */
   communityUrl: string
   preview?: boolean
+  /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */
+  oferta?: string
 }
-const { gift, kind, communityUrl, preview = false } = Astro.props
+const { gift, kind, communityUrl, preview = false, oferta } = Astro.props
 // O prazo e o Mural vêm da oferta do presente (sem `gift.gift`, a copy de sempre).
 const P = presenteAdultoDaOferta(gift.gift)
 const mostraMural = gift.gift?.includesMural ?? true
@@ -210,7 +212,7 @@ const tela = P.hero.tela
     </div>
     <div class="pa-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" oferta={oferta} />
       ) : preview ? (
         <div class="pa-estado cor-verde"><p class="cda-suave">{P.resgatar.previa}</p></div>
       ) : (
@@ -226,7 +228,7 @@ const tela = P.hero.tela
             <details id="retomar" class="pa-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p class="cda-suave">{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} gift={gift.gift} variante="cade" oferta={oferta} retryOnly />
             </details>
           )}
         </div>

@@ -4,22 +4,36 @@ import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-gro
 import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
 import '../../../styles/comunidade-adulto.css'
 import '../../../styles/desafio-adulto.css'
+import { origemDoPresente } from '../../../content/presente-curso'
 import { PAGINA_DESAFIO_ADULTO as P } from '../../../funnels/desafio-adulto/oferta/pagina'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelOgImage } from '../../../lib/seo'
+import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
+import { giftVariant } from '../../../server/referral-gift-page'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import '../../../styles/ofertas-adulto.css'
 import AdultOfferBar from './AdultOfferBar.astro'
+import OfertaPresente from './OfertaPresente.astro'
 import OfferImage from './OfferImage.astro'
 import OfferImageZoom from './OfferImageZoom.astro'
 
 type Props = OfferPageData['bodyProps']
-const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
+const { f, productName, priceReais, ofertaUrl, coupon, presente } = Astro.props
 const preco = precoDoDesafio(priceReais, coupon)
+// Modo presente (`?presente=`): muda só o selo do topo e o bloco de compra (25/11/2026).
+const origem = presente
+  ? origemDoPresente(
+      presente.gift,
+      giftVariant(presente.gift.gift, presente.gift.audience) === 'pais' ? 'pais' : 'curso',
+    )
+  : null
+const { env } = getDeps()
+const ofertaSlug = env.offerByFunnel[f.key] ?? ''
+const communityUrl = (env.COMMUNITY_URL ?? '').replace(/\/$/, '')
 const fill = (texto: string) => preencherPreco(texto, preco)
 const heroImg = P.hero.imagens[0]
 ---
@@ -57,7 +71,7 @@ const heroImg = P.hero.imagens[0]
    <div class="cda-wrap cda-hero__grade">
     <div class="cda-hero__texto">
      <p class="cda-rotulo cor-verde">
-      {P.hero.rotulos[0]}
+      {origem ?? P.hero.rotulos[0]}
      </p>
      <h1 class="cda-h1" id="adult-titulo">{P.hero.titulo.antes}<span class="cda-destaque">{P.hero.titulo.destaque}</span>{P.hero.titulo.depois}</h1>
      <p class="cda-hero__lead">
@@ -635,6 +649,9 @@ const heroImg = P.hero.imagens[0]
       </ol>
      </div>
     </div>
+    {presente ? (
+     <OfertaPresente presente={presente} communityUrl={communityUrl} oferta={ofertaSlug} />
+    ) : (
     <div class="da-cartao">
      <span class="da-cartao__selo">
       {P.oferta.rotulos[1]}
@@ -709,6 +726,7 @@ const heroImg = P.hero.imagens[0]
       {P.oferta.paragrafos[4]}
      </p>
     </div>
+    )}
    </div>
   </section>
   <section aria-labelledby="adult-depois" class="cda-secao cda-secao--fundo-2" id="depois">
@@ -771,9 +789,13 @@ const heroImg = P.hero.imagens[0]
    </div>
   </section>
  </main>
-<AdultOfferBar price={preco.preco} detail="Pagamento único · 30 dias" action="Quero começar" />
+{origem ? (
+ <AdultOfferBar price={origem} detail="" action="Quero começar" />
+) : (
+ <AdultOfferBar price={preco.preco} detail="Pagamento único · 30 dias" action="Quero começar" />
+)}
 </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <OfferImageZoom />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />}
 </BaseLayout>

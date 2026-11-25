@@ -5,6 +5,14 @@ import { resolveCouponPresentation } from './coupon-presentation'
 import { getDeps } from './deps'
 import { resolveOfferSlug } from './offer'
 import { checkOfferContract } from './offer-contract'
+import { type ReferralGiftPage, resolveReferralGiftPage } from './referral-gift-page'
+
+/** A página da oferta no modo PRESENTE (`?presente=<código>`, 25/11/2026). */
+export type OfferGiftMode = Extract<ReferralGiftPage, { gift: unknown }> & {
+  gift: { gift: NonNullable<Extract<ReferralGiftPage, { gift: unknown }>['gift']['gift']> }
+}
+
+const GIFT_CODE = /^[a-z0-9-]{4,32}$/
 
 // Resolve no servidor; somente as rotas podem devolver Responses HTTP.
 export async function resolveOfferPage(
@@ -50,6 +58,24 @@ export async function resolveOfferPage(
   const quer = url.searchParams.get('quer')
   const ofertaUrl = new URL(url.pathname, site ?? url).toString()
 
+  // Modo presente: o código dá ESTA oferta de presente (campanha de presente, ou a escolha do
+  // embaixador na lista do público). Presente de outra oferta → a página do presente decide
+  // (`/bolsa/<código>` leva à página certa). Código inválido ou referrals fora: a venda normal.
+  const presenteCode = url.searchParams.get('presente')?.trim().toLowerCase() ?? ''
+  let presente: OfferGiftMode | null = null
+  if (GIFT_CODE.test(presenteCode)) {
+    const gift = await resolveReferralGiftPage(gateway, presenteCode, offerSlug)
+    if ('gift' in gift && gift.gift.gift) {
+      const giftSlug = gift.gift.gift.offerSlug
+      if (giftSlug && giftSlug !== offerSlug)
+        return new Response(null, {
+          status: 302,
+          headers: { location: `/bolsa/${presenteCode}`, 'cache-control': 'no-store' },
+        })
+      if (giftSlug === offerSlug) presente = gift as OfferGiftMode
+    }
+  }
+
   // Assinatura: resolve também a oferta IRMÃ do alternador (mesmo padrão do
   // checkout.astro) pra página exibir os DOIS planos (mensal + anual) com preço
   // vivo. `plans === null` = oferta one_time OU catálogo fora do ar (o body de
@@ -90,8 +116,10 @@ export async function resolveOfferPage(
     quer,
     ofertaUrl,
     coupon,
+    presente,
   }
-  return { bodyProps, plans }
+  // O modo presente depende do código na URL (e do estado da campanha): nunca em cache público.
+  return { bodyProps, plans, noStore: presenteCode !== '' }
 }
 
 export type OfferPageData = Exclude<Awaited<ReturnType<typeof resolveOfferPage>>, Response>

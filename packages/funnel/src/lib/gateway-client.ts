@@ -469,11 +469,14 @@ export function createGatewayClient(opts: GatewayClientOptions) {
 
     // ── Indicações e bolsas (@sistemazero/referrals, via gateway) ────────────
 
-    /** GET /referrals/internal/codes/:code — resolve o "quem indicou" da landing /bolsa. */
-    async resolveReferralCode(code: string): Promise<GatewayResult> {
+    /**
+     * GET /referrals/internal/codes/:code — resolve o "quem indicou" da landing /bolsa. `offer`:
+     * o presente escolhido pelo embaixador (a página da oferta no modo presente).
+     */
+    async resolveReferralCode(code: string, offer?: string | null): Promise<GatewayResult> {
       const path = `/referrals/internal/codes/${encodeURIComponent(code)}`
       return requestJson(
-        `${opts.baseUrl}${path}`,
+        `${opts.baseUrl}${path}${offer ? `?offer=${encodeURIComponent(offer)}` : ''}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
         timeoutMs,
       )
@@ -558,6 +561,8 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       name: string
       email: string
       phone?: string
+      /** O presente escolhido pelo embaixador (slug da lista do público). */
+      offer?: string
       attribution?: import('@sistemazero/core/referrals').GiftAttribution | null
     }): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)

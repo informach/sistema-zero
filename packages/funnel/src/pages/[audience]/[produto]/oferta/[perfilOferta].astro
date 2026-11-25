@@ -30,7 +30,10 @@ if (!(comunidade && isComunidadeSubpagina(profile)) && !comunidadeAdulto)
   return new Response(null, { status: 404 })
 const page = await resolveOfferPage(Astro.params, Astro.url, Astro.site)
 if (page instanceof Response) return page
-Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+Astro.response.headers.set(
+  'cache-control',
+  page.noStore ? 'no-store' : 'public, max-age=60, stale-while-revalidate=300',
+)
 ---
 
 <OfertaPage

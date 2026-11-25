@@ -209,6 +209,27 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     expect(gw.calls.links).toHaveLength(calls)
   })
 
+  test('presente de oferta com página abre a página no modo presente; sem página, /bolsa com a escolha', async () => {
+    const gw = createFakeGateway()
+    const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
+    gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'desafio-primeiro-jogo-30-dias' }))
+    const comPagina = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/desafio-primeiro-jogo-30-dias'),
+      { code: 'mari-x7k2', offer: 'desafio-primeiro-jogo-30-dias' },
+      deps,
+    )
+    expect(comPagina.headers.get('location')).toBe(
+      '/kids/desafio-primeiro-jogo/oferta?presente=mari-x7k2',
+    )
+    gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'guia-sem-pagina' }))
+    const semPagina = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/guia-sem-pagina'),
+      { code: 'mari-x7k2', offer: 'guia-sem-pagina' },
+      deps,
+    )
+    expect(semPagina.headers.get('location')).toBe('/bolsa/mari-x7k2?oferta=guia-sem-pagina')
+  })
+
   test('venda de oferta sem página de compra no funil: 404 com explicação', async () => {
     const gw = createFakeGateway()
     gw.setLinkResult(200, linkBody({ offerSlug: 'oferta-sem-funil' }))
