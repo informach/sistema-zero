@@ -436,12 +436,19 @@ export async function preparePix(
   // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
   // aponta p/ a MESMA cobrança Pix (não duplica transação); dados diferentes
   // (cupom novo, CPF corrigido) geram cobrança nova em vez de 409 CONFLICT.
+  // Tudo o que a origem põe no metadata entra na chave (código, lugar e fonte de mídia).
   const leadOrigin = sanitizeLeadOrigin(lead.origin)
+  const originKey = [
+    leadOrigin ? originCookieValue(leadOrigin) : '',
+    sanitizeOriginSource(lead.attribution?.utmSource) ?? '',
+  ]
+    .filter(Boolean)
+    .join('|')
   const fingerprint = await pixContentFingerprint({
     amountInCents: charge.amountInCents,
     couponCode: charge.couponCode,
     contact: c.contact,
-    origin: leadOrigin ? originCookieValue(leadOrigin) : null,
+    origin: originKey || null,
   })
   const idempotencyKey = `funil-${lead.id}-${fingerprint}`
   const input = {

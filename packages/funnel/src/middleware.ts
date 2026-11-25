@@ -1,11 +1,11 @@
 import { defineMiddleware } from 'astro:middleware'
 import { clientIp } from './lib/client-ip'
 import { getEnv } from './lib/env'
-import { placeCookieFor } from './lib/lead-origin'
+import { ORIGIN_COOKIE, originCookieFor } from './lib/lead-origin'
 import { rateLimit } from './lib/rate-limit'
 import { isRateLimitedGetPath } from './lib/rate-limit-paths'
 import { captureError } from './lib/sentry'
-import { campaignRedirectFor } from './server/campaign-redirect'
+import { redirectCandidate } from './server/campaign-redirect'
 import { getDeps } from './server/deps'
 
 // NOTA: TODAS as páginas são SSR (full review 06/2026: quiz/políticas deixaram o
@@ -118,8 +118,14 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   }
 
   // Endereço antigo de campanha (25/11/2026): leva ao link da campanha até a data do Admin.
-  if (method === 'GET' && !ctx.isPrerendered) {
-    const location = await campaignRedirectFor(ctx.url, getDeps().gateway)
+  // Só caminhos que podem ser endereço antigo chegam a montar as dependências; erro abre a página.
+  if (method === 'GET' && !ctx.isPrerendered && redirectCandidate(ctx.url)) {
+    let location: string | null = null
+    try {
+      location = await getDeps().campaignRedirects.lookup(ctx.url)
+    } catch (err) {
+      captureError(err)
+    }
     if (location) {
       const redirect = new Response(null, {
         status: 302,
@@ -140,10 +146,21 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     throw err
   }
   applySecurityHeaders(res.headers)
-  // Botão da plataforma (`?lugar=`): a origem da próxima compra é esse lugar.
-  if (method === 'GET' && !ctx.isPrerendered && !ctx.url.pathname.startsWith('/api/')) {
-    const cookie = placeCookieFor(ctx.url, import.meta.env.PROD)
-    if (cookie) res.headers.append('set-cookie', cookie)
+  // `?indicacao=` ou `?lugar=` na página: a origem da próxima compra. O `/i/` grava a dele (e
+  // nada sobrescreve um cookie de origem que a própria resposta já grava).
+  if (
+    method === 'GET' &&
+    !ctx.isPrerendered &&
+    !ctx.url.pathname.startsWith('/api/') &&
+    !ctx.url.pathname.startsWith('/i/') &&
+    !(res.headers.get('set-cookie') ?? '').includes(`${ORIGIN_COOKIE}=`)
+  ) {
+    try {
+      const cookie = originCookieFor(ctx.url, getEnv().NODE_ENV === 'production')
+      if (cookie) res.headers.append('set-cookie', cookie)
+    } catch (err) {
+      captureError(err)
+    }
   }
   // API nunca é cacheável — default p/ handlers que não setam o próprio header
   // (alguns setam no-store explicitamente; nenhum quer cache compartilhado).

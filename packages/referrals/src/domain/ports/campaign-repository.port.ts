@@ -21,6 +21,8 @@ export interface CampaignRepository {
   findById(id: string): Promise<CampaignRecord | null>
   /** A campanha que reivindica este endereço antigo (o prazo é conferido por quem chama). */
   findByRedirectPath(path: string): Promise<CampaignRecord | null>
+  /** Campanhas com endereço antigo ainda no prazo (o funil guarda a lista e confere localmente). */
+  listActiveRedirects(now: Date): Promise<CampaignRecord[]>
   list(opts: {
     q?: string
     audience?: GiftAudience

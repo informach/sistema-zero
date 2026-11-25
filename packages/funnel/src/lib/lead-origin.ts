@@ -66,8 +66,14 @@ export function sameOrigin(a: LeadOriginV1 | null, b: LeadOriginV1 | null): bool
   return (a?.code ?? null) === (b?.code ?? null) && (a?.place ?? null) === (b?.place ?? null)
 }
 
-/** `?lugar=` de um botão da plataforma: o Set-Cookie da origem, ou `null` sem lugar válido. */
-export function placeCookieFor(url: URL, secure: boolean): string | null {
-  const origin = originFromPlace(url.searchParams.get('lugar'))
+/**
+ * A origem que a própria URL traz: `?indicacao=<código>` (a página que o link `/i/` abriu, também
+ * quando copiada e aberta em outro navegador) ou `?lugar=` (botão da plataforma). O código vence.
+ * Devolve o Set-Cookie, ou `null` sem nada válido.
+ */
+export function originCookieFor(url: URL, secure: boolean): string | null {
+  const origin =
+    originFromCode(url.searchParams.get('indicacao')) ??
+    originFromPlace(url.searchParams.get('lugar'))
   return origin ? originCookie(origin, secure) : null
 }

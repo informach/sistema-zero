@@ -22,7 +22,7 @@ export interface ReferralLinkView {
   couponCode: string | null
 }
 
-const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const SLUG = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/
 const COUPON = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/
 const TOKEN = /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,99}$/
 const CHECKOUT = 'pagamento'
@@ -69,7 +69,8 @@ export function parseReferralLinkView(body: unknown): ReferralLinkView | null {
  * `GET /i/<código>[/<oferta>][/pagamento]` (25/11/2026): o link de indicação. Resolve no
  * referrals, grava a ORIGEM no cookie (vai ao metadata do pagamento) e manda à página certa:
  * - presente → a página do presente (`/bolsa/<código>`, que mostra o estado da campanha);
- * - venda → a página da oferta (`?indicacao=`) ou direto o checkout, com o cupom da campanha.
+ * - venda → a página da oferta ou direto o checkout (sempre com `?indicacao=` e o cupom da
+ *   campanha); a irmã do alternador vai ao checkout, onde o plano se escolhe.
  * Código inexistente ou oferta fora da lista do público: 404 uniforme. Referrals fora: 502.
  */
 export async function referralLinkRedirect(
@@ -90,7 +91,9 @@ export async function referralLinkRedirect(
   if (!code || (offer !== null && !SLUG.test(offer))) return text('Link não encontrado.', 404)
 
   const { status, body } = await deps.gateway.resolveReferralLink(code, offer, checkout)
-  if (status === 404) return text('Este link não existe ou não está mais ativo.', 404)
+  // 4xx do referrals (404, validação) é link que não existe; só 5xx/timeout é "tente de novo".
+  if (status >= 400 && status < 500)
+    return text('Este link não existe ou não está mais ativo.', 404)
   const link = status === 200 ? parseReferralLinkView(body) : null
   if (!link) {
     deps.log?.('referral_link.resolve_failed', { status })
@@ -103,10 +106,14 @@ export async function referralLinkRedirect(
   } else {
     const funnel = await resolveOfferFunnel(deps.env, deps.gateway, link.offerSlug, link.audience)
     if (!funnel) return text('Esta oferta não tem uma página de compra disponível.', 404)
-    const toCheckout = link.target === 'checkout'
+    // A irmã do alternador (o anual da Comunidade, por exemplo) só se escolhe no checkout: a
+    // página da oferta mostra e cota a principal (mesma régua do `/cupom`).
+    const toCheckout = link.target === 'checkout' || funnel.alt
     target = new URL(`${funnel.basePath}/${toCheckout ? 'checkout' : 'oferta'}`, url)
     if (funnel.alt) target.searchParams.set('oferta', link.offerSlug)
-    if (!toCheckout) target.searchParams.set('indicacao', link.code)
+    // O código também na URL: a página regrava o cookie (link copiado e aberto em outro
+    // navegador) e o endereço antigo não redireciona de volta (sem laço).
+    target.searchParams.set('indicacao', link.code)
     if (link.couponCode) target.searchParams.set('cupom', link.couponCode)
   }
   for (const key of UTM_KEYS) {

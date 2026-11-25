@@ -283,6 +283,22 @@ export class DrizzleCampaignRepository implements CampaignRepository {
     return row ? record(row.campaign, row.code) : null
   }
 
+  async listActiveRedirects(now: Date): Promise<CampaignRecord[]> {
+    const rows = await this.db
+      .select({ campaign: campaigns, code: codes.code })
+      .from(campaigns)
+      .innerJoin(codes, eq(codes.campaignId, campaigns.id))
+      .where(
+        and(
+          sql`${campaigns.redirectPath} is not null`,
+          sql`${campaigns.redirectUntil} > ${now.toISOString()}::timestamptz`,
+          ne(campaigns.status, 'draft'),
+        ),
+      )
+      .limit(500)
+    return rows.map((row) => record(row.campaign, row.code))
+  }
+
   async list(opts: {
     q?: string
     audience?: GiftAudience

@@ -3,28 +3,35 @@
 ## Origem de cada compra e links `/i/` (25/11/2026, Lote 3 da frente de embaixadores)
 
 Plano no `CLAUDE.md` do referrals (seção "Origem por aquisição").
-- **Cookie `funil_origem`** (`lib/lead-origin.ts`, HttpOnly, 30 dias): `c:<código>` gravado pelo
-  link `/i/...` ou `p:<lugar>` gravado pelo middleware em qualquer GET de página com `?lugar=`
-  (botões da plataforma). O último link ou botão vence. Diferente de `leads.attribution` (mídia,
+- **Cookie `funil_origem`** (`lib/lead-origin.ts`, HttpOnly, 30 dias, `Secure` pelo
+  `NODE_ENV` de runtime): `c:<código>` gravado pelo link `/i/...` e pelo middleware em qualquer GET
+  de página com `?indicacao=` (a página que o `/i/` abriu, inclusive copiada para outro navegador),
+  ou `p:<lugar>` com `?lugar=` (botões da plataforma; o código vence o lugar). O último link ou
+  botão vence; o middleware não sobrescreve o cookie que a própria resposta (o `/i/`) grava. Diferente de `leads.attribution` (mídia,
   primeiro toque, nunca sobrescrita).
 - **`leads.origin`** (migration `0024_lead_origin`): os handlers de Pix, cartão e assinatura copiam
   o cookie para o lead (`syncLeadOrigin`) antes da cobrança. `leadMetadata` grava as chaves planas
   `origemCodigo`, `origemLugar` (do lead) e `origemFonte` (`attribution.utmSource`, saneada); o
   referrals lê do `GET /payments/internal/payments/:id` e grava a aquisição. O BOLETO vai sem elas
-  (chave de idempotência fixa por lead). O Pix põe a origem no fingerprint só quando há origem
-  (Pix já gerado antes do deploy mantém a chave).
+  (chave de idempotência fixa por lead). O Pix põe no fingerprint tudo o que a origem leva ao
+  metadata (código, lugar e fonte); lead sem nada disso mantém a chave de antes.
 - **`/i/<código>[/<oferta>][/pagamento]`** (`server/referral-link.ts`, rotas finas em
   `pages/i/`): resolve no referrals (`resolveReferralLink`), grava o cookie e responde 302
   `no-store`. Presente → `/bolsa/<código>` (até o Lote 4 trocar pela página da oferta em modo
-  presente). Venda → página da oferta com `?indicacao=` ou o checkout (irmã do alternador com
-  `?oferta=`), mais o cupom da campanha e as UTMs. A página certa vem de `resolveOfferFunnel`
+  presente). Venda → página da oferta ou o checkout, sempre com `?indicacao=` (impede o laço do
+  endereço antigo) e o cupom da campanha e as UTMs; a irmã do alternador (`altOffer`) vai sempre
+  ao checkout com `?oferta=`, porque a página da oferta mostra e cota a principal. Slug até 80;
+  4xx do referrals = 404. A página certa vem de `resolveOfferFunnel`
   (`server/coupon-link.ts`, também usado pelo `/cupom`). 404 uniforme; referrals fora = 502.
   Entrou no teto de GET por IP (`rate-limit-paths.ts`).
-- **Endereço antigo de campanha** (`server/campaign-redirect.ts`, no middleware): todo GET de
-  caminho que pode ser endereço antigo (`isCampaignRedirectPath` do Core, sem `presente`,
-  `indicacao`, `cupom`) consulta `GET /referrals/internal/redirects` com cache de 60 s por
-  caminho (até 2.000 entradas) e espera no máximo 1,5 s. Ativo → 302 para o `/i/` da campanha com a
-  query da visita; só aceita destino `/i/...`. Falha ou nada → a página abre.
+- **Endereço antigo de campanha** (`server/campaign-redirect.ts`, instância em `getDeps()`): o
+  funil guarda a LISTA dos endereços ativos (`GET /referrals/internal/redirects` sem `path`), uma
+  chamada por minuto e por instância qualquer que seja o tráfego (renova em segundo plano; só a
+  primeira visita da instância espera, até 1,5 s; falha também espera o próximo ciclo). O
+  middleware só monta as dependências para caminhos que podem ser endereço antigo
+  (`isCampaignRedirectPath`, sem `presente`/`indicacao`/`cupom`) e confere localmente. Ativo →
+  302 para o `/i/` da campanha com a query da visita menos `lugar`; só aceita destino `/i/...`.
+  Erro ou nada → a página abre.
 - Testes: `tests/integration/referral-origin.test.ts`.
 
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)

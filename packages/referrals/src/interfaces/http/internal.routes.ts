@@ -103,6 +103,24 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     .get(
       '/redirects',
       async ({ query, set }) => {
+        // Sem `path`: a lista dos endereços antigos ativos (o funil a guarda por um minuto e
+        // confere cada visita localmente, sem uma chamada por caminho).
+        if (query.path === undefined) {
+          const active = (await deps.campaigns?.repo.listActiveRedirects(new Date())) ?? []
+          return {
+            items: active.flatMap((campaign) =>
+              campaign.redirectPath && campaignRedirectActive(campaign)
+                ? [
+                    {
+                      path: campaign.redirectPath,
+                      url: deps.campaigns?.campaignLink(campaign) ?? null,
+                      until: campaign.redirectUntil?.toISOString() ?? null,
+                    },
+                  ]
+                : [],
+            ),
+          }
+        }
         const campaign = await deps.campaigns?.repo.findByRedirectPath(query.path)
         if (!campaign || !campaignRedirectActive(campaign)) {
           set.status = 404
@@ -113,7 +131,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           until: campaign.redirectUntil?.toISOString() ?? null,
         }
       },
-      { query: t.Object({ path: t.String({ minLength: 2, maxLength: 120 }) }) },
+      { query: t.Object({ path: t.Optional(t.String({ minLength: 2, maxLength: 120 })) }) },
     )
     .get(
       '/codes/:code',

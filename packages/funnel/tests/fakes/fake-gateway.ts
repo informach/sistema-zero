@@ -61,7 +61,7 @@ export interface FakeGatewayState {
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
     pixUpdates: Array<{ token: string; pixKey: string }>
     links: Array<{ code: string; offerSlug: string | null; checkout: boolean }>
-    redirects: string[]
+    redirects: number
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
   auth: { access: string; refresh: string; password: string; email: string }
@@ -98,7 +98,7 @@ export interface FakeGatewayState {
   setPixResult: (status: number, body?: unknown) => void
   /** Resposta de resolveReferralLink (default 404). */
   setLinkResult: (status: number, body?: unknown) => void
-  /** Resposta de resolveCampaignRedirect (default 404). */
+  /** Resposta de resolveCampaignRedirects (default 200 sem endereços). */
   setRedirectResult: (status: number, body?: unknown) => void
 }
 
@@ -137,7 +137,7 @@ export function createFakeGateway(): FakeGatewayState {
     redemptions: [],
     pixUpdates: [],
     links: [],
-    redirects: [],
+    redirects: 0,
   }
   let ensureBuyerStatus = 201
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
@@ -177,7 +177,7 @@ export function createFakeGateway(): FakeGatewayState {
   let pixResult: { status: number; body: unknown } = { status: 200, body: { ok: true } }
   const notFound = { error: { code: 'NOT_FOUND', message: 'Não encontrado' } }
   let linkResult: { status: number; body: unknown } = { status: 404, body: notFound }
-  let redirectResult: { status: number; body: unknown } = { status: 404, body: notFound }
+  let redirectResult: { status: number; body: unknown } = { status: 200, body: { items: [] } }
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
@@ -369,8 +369,8 @@ export function createFakeGateway(): FakeGatewayState {
       calls.links.push({ code, offerSlug, checkout })
       return linkResult
     },
-    async resolveCampaignRedirect(pathname): Promise<GatewayResult> {
-      calls.redirects.push(pathname)
+    async resolveCampaignRedirects(): Promise<GatewayResult> {
+      calls.redirects++
       return redirectResult
     },
     async resolveReferralCode(code): Promise<GatewayResult> {

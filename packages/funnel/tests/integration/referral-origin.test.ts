@@ -3,16 +3,12 @@ import type { Env } from '../../src/lib/env'
 import {
   ORIGIN_COOKIE,
   originCookie,
+  originCookieFor,
   originFromRequest,
-  placeCookieFor,
 } from '../../src/lib/lead-origin'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { isRateLimitedGetPath } from '../../src/lib/rate-limit-paths'
-import {
-  campaignRedirectFor,
-  clearCampaignRedirectCache,
-  redirectCandidate,
-} from '../../src/server/campaign-redirect'
+import { createCampaignRedirects, redirectCandidate } from '../../src/server/campaign-redirect'
 import { clearOfferCache } from '../../src/server/catalog'
 import { pixContentFingerprint, startBoleto, startPix } from '../../src/server/checkout'
 import { referralLinkRedirect } from '../../src/server/referral-link'
@@ -84,9 +80,13 @@ describe('cookie da origem', () => {
     const bad = new Request('http://x', { headers: { cookie: `${ORIGIN_COOKIE}=c:%3Cscript%3E` } })
     expect(originFromRequest(bad)).toBeNull()
     expect(
-      placeCookieFor(new URL('http://x/kids/oferta?lugar=pais-curso-fechado'), false),
+      originCookieFor(new URL('http://x/kids/oferta?lugar=pais-curso-fechado'), false),
     ).toContain('p%3Apais-curso-fechado')
-    expect(placeCookieFor(new URL('http://x/kids/oferta?lugar=Ã'), false)).toBeNull()
+    expect(originCookieFor(new URL('http://x/kids/oferta?lugar=Ã'), false)).toBeNull()
+    // A página aberta pelo /i/ (ou copiada para outro navegador) regrava o código; ele vence.
+    expect(
+      originCookieFor(new URL('http://x/kids/oferta?indicacao=mari-x7k2&lugar=pais-inicio'), false),
+    ).toContain('c%3Amari-x7k2')
   })
 
   test('/i/ entra no teto de GET por IP', () => {
@@ -136,8 +136,45 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     )
     expect(gw.calls.links[0]).toMatchObject({ offerSlug: null, checkout: true })
     expect(res.headers.get('location')).toBe(
-      '/kids/comunidade-dos-criadores/checkout?oferta=comunidade-dos-criadores-anual',
+      '/kids/comunidade-dos-criadores/checkout?oferta=comunidade-dos-criadores-anual&indicacao=mari-x7k2',
     )
+  })
+
+  test('irmã do alternador com destino na página também vai ao checkout (o plano certo)', async () => {
+    const gw = createFakeGateway()
+    gw.setOfferConfig('comunidade-dos-criadores-mensal', {
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      altOffer: { slug: 'comunidade-dos-criadores-anual' },
+    })
+    gw.setLinkResult(200, linkBody({ offerSlug: 'comunidade-dos-criadores-anual' }))
+    const res = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/comunidade-dos-criadores-anual'),
+      { code: 'mari-x7k2', offer: 'comunidade-dos-criadores-anual' },
+      { env: ENV, gateway: gw.gateway, secureCookie: false },
+    )
+    expect(res.headers.get('location')).toStartWith('/kids/comunidade-dos-criadores/checkout?')
+  })
+
+  test('slug acima de 80 e 4xx do referrals são 404, nunca 502', async () => {
+    const gw = createFakeGateway()
+    const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
+    const long = 'a'.repeat(81)
+    expect(
+      (
+        await referralLinkRedirect(
+          new URL(`http://f/i/mari-x7k2/${long}`),
+          { code: 'mari-x7k2', offer: long },
+          deps,
+        )
+      ).status,
+    ).toBe(404)
+    expect(gw.calls.links).toHaveLength(0)
+    gw.setLinkResult(422)
+    expect(
+      (await referralLinkRedirect(new URL('http://f/i/mari-x7k2'), { code: 'mari-x7k2' }, deps))
+        .status,
+    ).toBe(404)
   })
 
   test('presente leva à página do presente; 404 uniforme; referrals fora = 502', async () => {
@@ -185,7 +222,12 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
 })
 
 describe('endereço antigo de campanha', () => {
-  beforeEach(() => clearCampaignRedirectCache())
+  const LIST = {
+    items: [
+      { path: '/kids/vilao-em-aliado', url: 'https://sistemazero.com.br/i/guia-pais', until: null },
+      { path: '/kids/golpe', url: 'https://golpe.example/x', until: null },
+    ],
+  }
 
   test('só caminhos possíveis e sem parâmetros de link (sem laço)', () => {
     expect(redirectCandidate(new URL('http://f/kids/vilao-em-aliado/'))).toBe(
@@ -197,26 +239,42 @@ describe('endereço antigo de campanha', () => {
     expect(redirectCandidate(new URL('http://f/'))).toBeNull()
   })
 
-  test('ativo leva ao /i/ da campanha com a query; cache evita nova consulta', async () => {
+  test('uma lista por minuto: caminhos diferentes não viram chamadas; lugar não passa adiante', async () => {
     const gw = createFakeGateway()
-    gw.setRedirectResult(200, { url: 'https://sistemazero.com.br/i/guia-pais', until: null })
-    const url = new URL('http://f/kids/vilao-em-aliado?utm_source=whatsapp')
-    expect(await campaignRedirectFor(url, gw.gateway, 1000)).toBe(
-      '/i/guia-pais?utm_source=whatsapp',
-    )
-    expect(await campaignRedirectFor(url, gw.gateway, 2000)).toBe(
-      '/i/guia-pais?utm_source=whatsapp',
-    )
-    expect(gw.calls.redirects).toEqual(['/kids/vilao-em-aliado'])
+    gw.setRedirectResult(200, LIST)
+    let now = 1_000
+    const redirects = createCampaignRedirects({ gateway: gw.gateway, now: () => now })
+    expect(
+      await redirects.lookup(
+        new URL('http://f/kids/vilao-em-aliado?utm_source=whatsapp&lugar=pais-inicio'),
+      ),
+    ).toBe('/i/guia-pais?utm_source=whatsapp')
+    for (let i = 0; i < 50; i++)
+      expect(await redirects.lookup(new URL(`http://f/x/${i}`))).toBeNull()
+    // Destino fora do /i/ é descartado.
+    expect(await redirects.lookup(new URL('http://f/kids/golpe'))).toBeNull()
+    expect(gw.calls.redirects).toBe(1)
+    now += 61_000
+    await redirects.lookup(new URL('http://f/kids/vilao-em-aliado'))
+    expect(gw.calls.redirects).toBe(2)
   })
 
-  test('sem campanha, destino fora do /i/ ou referrals fora: abre a página', async () => {
+  test('caminho que nunca pode ser endereço antigo nem consulta; referrals fora abre a página', async () => {
     const gw = createFakeGateway()
-    expect(await campaignRedirectFor(new URL('http://f/kids/outra'), gw.gateway)).toBeNull()
-    gw.setRedirectResult(200, { url: 'https://golpe.example/x' })
-    expect(await campaignRedirectFor(new URL('http://f/kids/mais-uma'), gw.gateway)).toBeNull()
     gw.setRedirectResult(503)
-    expect(await campaignRedirectFor(new URL('http://f/kids/terceira'), gw.gateway)).toBeNull()
+    let now = 0
+    const redirects = createCampaignRedirects({ gateway: gw.gateway, now: () => now })
+    expect(await redirects.lookup(new URL('http://f/bolsa/abcd'))).toBeNull()
+    expect(gw.calls.redirects).toBe(0)
+    expect(await redirects.lookup(new URL('http://f/kids/vilao-em-aliado'))).toBeNull()
+    expect(await redirects.lookup(new URL('http://f/kids/outra'))).toBeNull()
+    // Falha também espera o próximo ciclo.
+    expect(gw.calls.redirects).toBe(1)
+    now += 61_000
+    gw.setRedirectResult(200, LIST)
+    await redirects.lookup(new URL('http://f/kids/vilao-em-aliado'))
+    await Bun.sleep(1)
+    expect(await redirects.lookup(new URL('http://f/kids/vilao-em-aliado'))).toBe('/i/guia-pais')
   })
 })
 

@@ -12,6 +12,7 @@ import {
   CampaignKindLockedError,
   type CampaignRecord,
   CampaignRedirectTakenError,
+  campaignRedirectActive,
 } from '../../src/domain/campaign'
 import type { CampaignRepository } from '../../src/domain/ports/campaign-repository.port'
 import type { InMemoryReferralRepository } from './in-memory'
@@ -139,6 +140,9 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   }
   async findByRedirectPath(path: string) {
     return this.items.find((item) => item.redirectPath === path) ?? null
+  }
+  async listActiveRedirects(now: Date) {
+    return this.items.filter((item) => campaignRedirectActive(item, now))
   }
   async list(opts: {
     q?: string

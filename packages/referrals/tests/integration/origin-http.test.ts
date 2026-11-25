@@ -196,6 +196,14 @@ describe('rotas da origem por aquisição', () => {
     expect(
       (await app.handle(get('/referrals/internal/redirects?path=/kids/outra', internal))).status,
     ).toBe(404)
+    // Sem `path`: a lista dos ativos, que o funil guarda por um minuto.
+    const list = await (await app.handle(get('/referrals/internal/redirects', internal))).json()
+    expect(list.items).toEqual([
+      expect.objectContaining({
+        path: '/kids/vilao-em-aliado',
+        url: `${FUNNEL_URL}/i/guia-pais-presente`,
+      }),
+    ])
   })
 
   test('Origem das vendas: admin lê, staff não; período maior que um ano é 400', async () => {

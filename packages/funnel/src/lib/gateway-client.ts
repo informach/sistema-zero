@@ -497,11 +497,11 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       )
     },
 
-    /** GET /referrals/internal/redirects?path= — endereço antigo de campanha ainda no prazo. */
-    async resolveCampaignRedirect(pathname: string): Promise<GatewayResult> {
+    /** GET /referrals/internal/redirects — os endereços antigos de campanha ainda no prazo. */
+    async resolveCampaignRedirects(): Promise<GatewayResult> {
       const path = '/referrals/internal/redirects'
       return requestJson(
-        `${opts.baseUrl}${path}?path=${encodeURIComponent(pathname)}`,
+        `${opts.baseUrl}${path}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
         timeoutMs,
       )

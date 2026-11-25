@@ -51,8 +51,9 @@ Serviços (Lote 2):
   rascunho, do mesmo público. Máx. 20 por lista.
 - **Links:** `ReferralLinkService` + `GET /referrals/internal/links/:code[/:oferta][/pagamento]`
   (`mode gift|sale`, `target page|checkout`, estado da campanha, cupom); embaixador sem oferta =
-  presente padrão (links antigos). `GET /referrals/internal/redirects?path=` devolve o link da
-  campanha com endereço antigo ativo (404 fora do prazo). Campanha de venda: `kind` só muda em
+  presente padrão (links antigos). `GET /referrals/internal/redirects` sem `path` devolve a
+  lista dos endereços antigos ativos (`{items: [{path, url, until}]}`, que o funil guarda por um
+  minuto); com `?path=`, só aquele (404 fora do prazo). Campanha de venda: `kind` só muda em
   rascunho sem aquisições (409 `CAMPAIGN_KIND_LOCKED`); endereço de outra campanha → 409
   `CAMPAIGN_REDIRECT_TAKEN`.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
