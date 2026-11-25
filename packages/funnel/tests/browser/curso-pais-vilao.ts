@@ -1,13 +1,16 @@
 /**
  * Run after `bun run build`: node --import tsx tests/browser/curso-pais-vilao.ts
  *
- * Página pública do guia gratuito para pais (`/kids/vilao-em-aliado`, 18/11/2026; texto e layout
- * novos em 21/11/2026). Sobe o build com um referrals falso (pelo gateway falso, que não confere o
- * HMAC) e confere, a 320, 390, 768 e 1440 px: um h1, tema Kids, página indexável, sem rolagem
- * lateral, imagens carregadas, o formulário no topo, as seções curtas, "guia" no lugar de "curso" e
- * o presente em segredo. Depois os estados (campanha ainda não criada, pausada) e o cadastro até o
- * concluído, com o link do guia na área dos pais. Capturas em `QA_OUTPUT` (padrão
- * `tmp/curso-pais-review` na raiz). `QA_CHROMIUM_PATH` usa um Chromium já baixado.
+ * A página do guia para pais (`/kids/vilao-em-aliado`), desde 25/11/2026 a página de VENDA do funil
+ * `kids/vilao-em-aliado` (R$ 27, sem prazo), que abre no modo presente pelos links de campanha e de
+ * embaixador (`?presente=<código>`). Sobe o build com um catálogo e um referrals falsos (pelo
+ * gateway falso, que não confere o HMAC) e confere, a 320, 390, 768 e 1440 px: um h1, tema Kids,
+ * página indexável, sem rolagem lateral, imagens carregadas, o bloco de compra no topo com o preço
+ * do catálogo, as seções curtas e o presente do fim em segredo. Depois o modo presente (o selo de
+ * quem dá, o formulário do guia, fora do índice, o cadastro até o concluído com a oferta no resgate),
+ * a campanha pausada (retomada) e o presente de outra oferta (vai à página do presente). Capturas em
+ * `QA_OUTPUT` (padrão `tmp/curso-pais-review` na raiz). `QA_CHROMIUM_PATH` usa um Chromium já
+ * baixado.
  */
 
 import assert from 'node:assert/strict'
@@ -20,23 +23,24 @@ import { type Browser, chromium, type Page } from 'playwright'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = process.env.QA_OUTPUT ?? resolve(cwd, '../../tmp/curso-pais-review')
-const CODIGO = 'vilao-em-aliado'
+const OFERTA = 'transformando-o-vilao-em-aliado'
 const SLUG = 'transformando-o-vilao-em-aliado'
+const CODIGO = 'guia-pais'
 
-/** O que o referrals falso responde para a campanha do curso; `null` = campanha inexistente. */
-let campanha: Record<string, unknown> | null = null
-const ativa = (extra: Record<string, unknown> = {}) => ({
+/** A campanha de presente do guia; `state` muda nos cenários. */
+const campanha = (extra: Record<string, unknown> = {}) => ({
   code: CODIGO,
   ownerKind: 'campaign',
   audience: 'kids',
-  displayName: 'Minicurso para pais',
+  displayName: 'Encontro de pais',
   giftAvailable: true,
-  source: { kind: 'campaign', name: 'Minicurso para pais', context: 'other', description: '' },
+  source: { kind: 'campaign', name: 'Encontro de pais', context: 'other', description: '' },
   state: 'active',
   startsAt: '2026-11-18T03:00:00Z',
   endsAt: '2030-01-01T03:00:00Z',
   gift: {
     offerId: '44444444-4444-4444-8444-444444444444',
+    offerSlug: OFERTA,
     offerTitle: 'Transformando o vilão em aliado',
     courseSlug: SLUG,
     courseTitle: 'Transformando o vilão em aliado',
@@ -46,7 +50,14 @@ const ativa = (extra: Record<string, unknown> = {}) => ({
   },
   ...extra,
 })
-const resgates: { code: string; email: string }[] = []
+let codigo: Record<string, unknown> = campanha()
+/** Um presente de OUTRA oferta: a página do guia manda à página do presente. */
+const OUTRO = {
+  ...campanha(),
+  code: 'outro-presente',
+  gift: { ...campanha().gift, offerSlug: 'cade-todo-mundo-7-dias', courseSlug: 'cade-todo-mundo' },
+}
+const resgates: Record<string, unknown>[] = []
 
 const gateway = createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://gateway')
@@ -59,8 +70,29 @@ const gateway = createServer((req, res) => {
     raw += chunk
   })
   req.on('end', () => {
+    if (req.method === 'GET' && url.pathname === `/catalog/offers/${OFERTA}`)
+      return send(200, {
+        id: 'qa-guia',
+        slug: OFERTA,
+        name: 'Transformando o vilão em aliado',
+        isAvailable: true,
+        priceCents: 2700,
+        currency: 'BRL',
+        guaranteeDays: 7,
+        pricingMode: 'one_time',
+        billingIntervalMonths: null,
+        accessMode: 'lifetime',
+        accessDurationValue: null,
+        accessDurationUnit: null,
+        product: { name: 'Transformando o vilão em aliado' },
+        content: { allowsCoupon: true },
+      })
     if (req.method === 'GET' && url.pathname === `/referrals/internal/codes/${CODIGO}`)
-      return campanha ? send(200, campanha) : send(404, {})
+      return send(200, codigo)
+    if (req.method === 'GET' && url.pathname === '/referrals/internal/codes/outro-presente')
+      return send(200, OUTRO)
+    if (req.method === 'GET' && url.pathname === '/referrals/internal/redirects')
+      return send(200, { items: [] })
     if (req.method === 'POST' && url.pathname === '/referrals/internal/redemptions') {
       resgates.push(JSON.parse(raw))
       return send(201, {
@@ -99,7 +131,7 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
     FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO: 'cade-todo-mundo-7-dias',
     FUNNEL_OFFER_PRO_CADE_TODO_MUNDO: 'cade-todo-mundo-adulto-7-dias',
-    FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO: 'transformando-o-vilao-em-aliado',
+    FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO: OFERTA,
   },
 })
 
@@ -157,15 +189,16 @@ try {
     reducedMotion: 'reduce',
   })
   await context.addCookies([{ name: 'sz_metrics', value: 'rejected', url: origin }])
-  await context.route(`${origin}/api/{events,analytics/**}`, (route) => route.fulfill({ json: {} }))
+  await context.route(`${origin}/api/{events,analytics/**,leads}`, (route) =>
+    route.fulfill({ json: {} }),
+  )
   const page = await context.newPage()
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await mkdir(output, { recursive: true })
-  const url = `${origin}/kids/${CODIGO}`
+  const url = `${origin}/kids/vilao-em-aliado`
 
-  // Campanha aberta: a página completa, em quatro larguras.
-  campanha = ativa()
+  // A página de venda, em quatro larguras.
   for (const largura of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width: largura, height: 1000 })
     const resposta = await page.goto(url)
@@ -194,11 +227,11 @@ try {
       assert.equal(await page.locator(`#${id}`).count(), 0, `${largura}: sem a seção ${id}`)
     assert.equal(await page.locator('.c9-etapa').count(), 3, `${largura}: o que muda`)
     assert.equal(await page.locator('.c9-duvida').count(), 6, `${largura}: dúvidas`)
-    assert.equal(
-      await page.locator('section.c9-heroi #resgatar input[name="email"]').count(),
-      1,
-      `${largura}: formulário no topo`,
-    )
+    // O bloco de compra no topo: o preço do catálogo e o botão do pré-checkout, sem formulário.
+    const compra = page.locator('section.c9-heroi #resgatar')
+    assert.match(await compra.innerText(), /R\$\s?27/, `${largura}: preço do catálogo`)
+    assert.equal(await compra.locator('[data-checkout-cta]').count(), 1, `${largura}: comprar`)
+    assert.equal(await compra.locator('input[name="email"]').count(), 0, `${largura}: sem cadastro`)
     assert.equal(await page.locator('section.c9-fim a[href="#resgatar"]').count(), 1)
     const corpo = await page.locator('body').innerText()
     assert.match(
@@ -206,23 +239,18 @@ try {
       /A tela que hoje vira briga em casa pode ser\s+sua aliada\s+no desenvolvimento do seu filho\./,
       `${largura}: título`,
     )
-    assert.match(corpo, /Estes dados são seus/, `${largura}: aviso do formulário`)
-    assert.match(corpo, /Liberar o meu guia/, `${largura}: botão do formulário`)
-    assert.doesNotMatch(
-      await page.locator('main').innerText(),
-      /\bcursos?\b(?! para pais)|minicurso|presente/i,
-      `${largura}: guia, não curso`,
-    )
+    assert.match(corpo, /Quero o guia/, `${largura}: botão de compra`)
+    assert.doesNotMatch(corpo, /guia gratuito|de graça/i, `${largura}: a venda não diz gratuito`)
     assert.doesNotMatch(
       corpo,
-      /Cadê Todo Mundo|7 dias|Desafio do Primeiro Jogo/,
+      /Cadê Todo Mundo|7 dias(?! de garantia)|Desafio do Primeiro Jogo/,
       `${largura}: segredo`,
     )
-    await page.screenshot({ path: resolve(output, `aberta-${largura}.png`), fullPage: true })
+    await page.screenshot({ path: resolve(output, `venda-${largura}.png`), fullPage: true })
   }
 
   // O título e a imagem de compartilhamento.
-  assert.match(await page.title(), /guia gratuito para pais \| Sistema Zero$/)
+  assert.match(await page.title(), /guia para pais \| Sistema Zero$/)
   assert.match(
     (await page.locator('meta[property="og:image"]').getAttribute('content')) ?? '',
     /\/img\/transformando-o-vilao-em-aliado\/compartilhar\.jpg$/,
@@ -234,16 +262,40 @@ try {
   await page.evaluate(() => window.scrollTo(0, 1900))
   const barra = page.locator('[data-presente-barra]')
   await barra.locator('a').waitFor({ state: 'visible' })
-  assert.match(await barra.innerText(), /Guia gratuito\s+Sem cartão\s+Quero assistir de graça/)
+  assert.match(await barra.innerText(), /R\$\s?27\s+Pagamento único\s+Quero o guia/)
   assert.ok(
     await barra.evaluate((el) => el.scrollWidth <= el.clientWidth),
     'barra sem rolagem lateral',
   )
   await page.screenshot({ path: resolve(output, 'barra-390.png') })
 
-  // Cadastro até o concluído: o guia abre na área dos pais do app Kids.
+  // Modo presente: o selo de quem dá, o formulário do guia, fora do índice.
+  const presente = `${url}?presente=${CODIGO}`
+  for (const largura of [390, 1440]) {
+    await page.setViewportSize({ width: largura, height: 1000 })
+    const resposta = await page.goto(presente)
+    assert.equal(resposta?.status(), 200, `presente ${largura}: status`)
+    assert.equal(resposta?.headers()['cache-control'], 'no-store', `presente ${largura}: cache`)
+    await carregarTudo(page)
+    assert.equal(await page.locator('h1').count(), 1)
+    assert.equal(
+      await page.locator('meta[name="robots"]').getAttribute('content'),
+      'noindex, nofollow',
+      `presente ${largura}: fora do índice`,
+    )
+    assert.match(await page.locator('.pk-origem').innerText(), /Encontro de pais/)
+    assert.equal(
+      await page.locator('#resgatar input[name="email"]').count(),
+      1,
+      `presente ${largura}: formulário`,
+    )
+    assert.equal(await page.locator('[data-checkout-cta]').count(), 0, `presente ${largura}`)
+    await page.screenshot({ path: resolve(output, `presente-${largura}.png`), fullPage: true })
+  }
+
+  // Cadastro até o concluído: o guia abre na área dos pais e o resgate leva a oferta da página.
   await page.setViewportSize({ width: 1440, height: 1000 })
-  await page.goto(url)
+  await page.goto(presente)
   await page.locator('#resgatar input[name="nome"]').fill('Paula Prado')
   await page.locator('#resgatar input[name="email"]').fill('paula@example.com')
   await page.locator('#resgatar button[type="submit"]').click()
@@ -256,42 +308,23 @@ try {
   assert.equal(resgates.length, 1, 'um resgate enviado')
   assert.equal(resgates[0]?.code, CODIGO)
   assert.equal(resgates[0]?.email, 'paula@example.com')
+  assert.equal(resgates[0]?.offer, OFERTA)
   await page.locator('#resgatar').screenshot({ path: resolve(output, 'concluido.png') })
 
-  // Campanha ainda não criada: a página continua no ar, sem formulário.
-  campanha = null
-  for (const largura of [390, 1440]) {
-    await page.setViewportSize({ width: largura, height: 1000 })
-    const resposta = await page.goto(url)
-    assert.equal(resposta?.status(), 200, `em breve ${largura}: status`)
-    await carregarTudo(page)
-    assert.equal(
-      await page.locator('#resgatar input').count(),
-      0,
-      `em breve ${largura}: sem formulário`,
-    )
-    assert.match(
-      await page.locator('section.c9-heroi #resgatar').innerText(),
-      /As inscrições abrem em breve/,
-    )
-    assert.equal(await page.locator('.c9-etapa').count(), 3)
-    assert.equal(
-      await page.locator('section.c9-fim').count(),
-      0,
-      `em breve ${largura}: sem a faixa`,
-    )
-    await page.screenshot({ path: resolve(output, `em-breve-${largura}.png`), fullPage: true })
-  }
-
   // Campanha pausada: fechada, com a retomada para quem já começou o cadastro.
-  campanha = ativa({ state: 'paused', giftAvailable: false })
-  await page.goto(url)
-  assert.match(await page.locator('body').innerText(), /As inscrições estão fechadas no momento/)
+  codigo = campanha({ state: 'paused', giftAvailable: false })
+  await page.goto(presente)
+  assert.equal(await page.locator('#resgatar input[name="email"]').isVisible(), false)
   assert.equal(await page.locator('details#retomar').count(), 1, 'pausada: retomada')
+
+  // Presente de outra oferta: a página do presente decide para onde ir.
+  const outro = await fetch(`${url}?presente=outro-presente`, { redirect: 'manual' })
+  assert.equal(outro.status, 302)
+  assert.equal(outro.headers.get('location'), '/bolsa/outro-presente')
 
   assert.deepEqual(errors, [], 'page errors')
   console.log(
-    `OK: página do guia para pais em 4 larguras, barra do celular, cadastro e estados. Capturas em ${output}`,
+    `OK: venda do guia em 4 larguras, barra do celular, modo presente, cadastro e estados. Capturas em ${output}`,
   )
 } finally {
   await browser?.close()

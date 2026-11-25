@@ -102,7 +102,19 @@ export interface AmbassadorPageView {
   /** Um link por público (20/10/2026); `null` enquanto aquele link não existe. */
   shareUrls?: import('@sistemazero/core/referrals').AmbassadorShareUrls
   campaigns?: import('@sistemazero/core/referrals').AmbassadorCampaignPage
-  stats: { redemptionsCompleted: number; invitesSent: number }
+  /**
+   * Só quantidades (25/11/2026): `people`, `gifts` e `purchases` contam quem entrou pelos links;
+   * ausentes (ou `null`) no referrals anterior. Nunca valores de venda.
+   */
+  stats: {
+    redemptionsCompleted: number
+    invitesSent: number
+    people?: number | null
+    gifts?: number | null
+    purchases?: number | null
+  }
+  /** As ofertas das listas do Admin, com os links prontos (25/11/2026). */
+  offers?: import('../content/embaixador').OfertaDoEmbaixador[]
 }
 
 /** Corpo de `POST /messaging/send` (gateway → @sistemazero/messaging). */
@@ -530,6 +542,9 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         name: string
         email: string
         audience?: import('@sistemazero/core/referrals').GiftAudience
+        /** A oferta da lista do público (presente escolhido ou indicação, 25/11/2026). */
+        offer?: string
+        kind?: 'gift' | 'referral'
       },
     ): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)

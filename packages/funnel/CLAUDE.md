@@ -86,6 +86,26 @@ Uma página por oferta: as três ofertas que só tinham página de presente vira
   `tests/browser/curso-pais-vilao.ts` e `presente.ts` ainda descrevem o fluxo anterior (formulário
   da campanha fixa; `/bolsa` do Cadê sem redirecionar) e precisam ser revistos.
 
+## Painel do embaixador novo (25/11/2026, Lote 4 da frente de embaixadores)
+
+`/embaixador/<token>` segue o Canvas da frente (quadro embaixador-painel): três números (pessoas
+que entraram pelos links, com presentes e compras; convites; assinaturas que viraram bônus), passo
+1 "Dar um presente" ou "Indicar uma oferta", passo 2 com as ofertas das listas do Admin (o
+`offers` do `GET by-token`, Kids, pais e adulto em cartões próprios; "Pode render um bônus para
+você" na assinatura) e passo 3 com o link (na oferta, "Página da oferta" ou "Direto para o
+pagamento", o `checkoutLink`), o cartão, a mensagem de WhatsApp e o convite por e-mail. Depois vêm
+Bônus, Minhas campanhas, as dúvidas do Canvas (`PAINEL_DUVIDAS`) e o fechamento; saíram "Para quem
+o presente faz sentido" e a tabela "O que o presente inclui". A copy de cada oferta mora em
+`content/embaixador.ts` (`opcaoDeOferta`: a assinatura por público, os cursos conhecidos pelo
+`courseSlug`, o resto montado do nome e do prazo), sem preço escrito (o preço é do catálogo).
+Sem lista do Admin, o presente padrão de cada público com os `shareUrls` de sempre. O convite por
+e-mail manda `offer` + `kind` (`POST /api/embaixador/convites`); o presente do Cadê vai sem a
+oferta, no e-mail aprovado do Cadê. `OFFER_NOT_FOUND` tem mensagem própria. Só quantidades:
+nenhum valor de venda chega ao embaixador. Testes: `referral-gift-copy.test.tsx`,
+`referrals-handlers.test.ts` e os browsers `presente.ts` (painel e o `/bolsa` do Cadê que vai à
+página de venda no modo presente) e `curso-pais-vilao.ts` (a página de venda do guia, o modo
+presente com a oferta no resgate, pausada e presente de outra oferta).
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.

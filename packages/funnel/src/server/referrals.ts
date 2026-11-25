@@ -47,6 +47,13 @@ const InviteBody = z.object({
   email: z.string().trim().toLowerCase().regex(EMAIL_RE).max(254),
   /** Para quem é o presente do convite (20/10/2026); ausente = `kids`. */
   audience: z.enum(['kids', 'adult'] as const satisfies readonly GiftAudience[]).optional(),
+  /** A oferta da lista do público (slug) e o tipo do convite (25/11/2026). */
+  offer: z
+    .string()
+    .trim()
+    .regex(/^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
+  kind: z.enum(['gift', 'referral']).optional(),
 })
 
 const PixBody = z.object({
@@ -102,13 +109,15 @@ export async function postAmbassadorInvite(
   const parsed = InviteBody.safeParse(await safeJson(request))
   if (!parsed.success) return jsonError('Confira os dados e tente novamente.', 400, 'BAD_REQUEST')
 
-  const { token, nome, email, audience } = parsed.data
+  const { token, nome, email, audience, offer, kind } = parsed.data
   // O convite Kids viaja sem o campo, igual ao de antes do presente adulto: o referrals anterior
-  // a 20/10/2026 continua aceitando o convite enquanto os dois sobem.
+  // a 20/10/2026 continua aceitando o convite enquanto os dois sobem. A oferta (e o tipo) só vão
+  // quando a escolha não é o presente padrão.
   const res = await deps.gateway.createAmbassadorInvite(token, {
     name: nome,
     email,
     ...(audience === 'adult' ? { audience } : {}),
+    ...(offer ? { offer, kind: kind ?? 'gift' } : {}),
   })
   if (res.status === 202) return json({ ok: true }, 202)
   // 404 token · 409 já-convidado/já-resgatou · 429 cap diário/teto do gateway.

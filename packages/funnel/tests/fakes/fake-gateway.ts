@@ -56,7 +56,13 @@ export interface FakeGatewayState {
     ambassadorByToken: string[]
     invites: Array<{
       token: string
-      input: { name: string; email: string; audience?: GiftAudience }
+      input: {
+        name: string
+        email: string
+        audience?: GiftAudience
+        offer?: string
+        kind?: 'gift' | 'referral'
+      }
     }>
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
     pixUpdates: Array<{ token: string; pixKey: string }>

@@ -191,6 +191,37 @@ describe('postAmbassadorInvite (/api/embaixador/convites)', () => {
       expect(call.input).not.toHaveProperty('audience')
   })
 
+  test('convite por oferta: a oferta e o tipo viajam; slug torto → 400', async () => {
+    const fake = createFakeGateway()
+    const ok = await postAmbassadorInvite(
+      post('/api/embaixador/convites', {
+        ...valid,
+        offer: 'comunidade-dos-criadores-mensal',
+        kind: 'referral',
+      }),
+      { gateway: fake.gateway },
+    )
+    expect(ok.status).toBe(202)
+    expect(fake.calls.invites[0]?.input).toEqual({
+      name: 'Paula Prado',
+      email: 'paula@example.com',
+      offer: 'comunidade-dos-criadores-mensal',
+      kind: 'referral',
+    })
+    fake.setInviteResult(404, { error: { code: 'OFFER_NOT_FOUND', message: 'Fora da lista' } })
+    const fora = await postAmbassadorInvite(
+      post('/api/embaixador/convites', { ...valid, offer: 'fora-da-lista', kind: 'gift' }),
+      { gateway: fake.gateway },
+    )
+    expect(fora.status).toBe(404)
+    expect(((await fora.json()) as { error: { code: string } }).error.code).toBe('OFFER_NOT_FOUND')
+    const torto = await postAmbassadorInvite(
+      post('/api/embaixador/convites', { ...valid, offer: 'Oferta Torta' }),
+      { gateway: fake.gateway },
+    )
+    expect(torto.status).toBe(400)
+  })
+
   test('público desconhecido → 400 sem chamar o gateway', async () => {
     const fake = createFakeGateway()
     const res = await postAmbassadorInvite(

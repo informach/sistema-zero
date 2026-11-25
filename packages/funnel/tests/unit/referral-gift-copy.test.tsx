@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { EMBAIXADOR_DUVIDAS, PAINEL_EMBAIXADOR } from '../../src/content/embaixador'
+import {
+  EMBAIXADOR_DUVIDAS,
+  type OfertaDoEmbaixador,
+  opcaoDeOferta,
+  PAINEL_DUVIDAS,
+  PAINEL_EMBAIXADOR,
+} from '../../src/content/embaixador'
 import {
   AMBASSADOR_SECTIONS,
   GIFT_FAQ,
@@ -21,7 +27,12 @@ import {
 import BolsaResgate from '../../src/islands/BolsaResgate'
 import EmbaixadorBonus, { bonusLabel } from '../../src/islands/EmbaixadorBonus'
 import EmbaixadorCampanhas from '../../src/islands/EmbaixadorCampanhas'
-import EmbaixadorPainel, { linksDoEmbaixador } from '../../src/islands/EmbaixadorPainel'
+import EmbaixadorPainel, {
+  corpoDoConvite,
+  linkDaEscolha,
+  linksDoEmbaixador,
+  opcoesDoPainel,
+} from '../../src/islands/EmbaixadorPainel'
 
 const src = (path: string) => Bun.file(new URL(`../../src/${path}`, import.meta.url)).text()
 
@@ -31,6 +42,7 @@ const MODULOS = {
   adulto: PRESENTE_ADULTO,
   resgate: RESGATE_COPY,
   painel: PAINEL_EMBAIXADOR,
+  painelDuvidas: PAINEL_DUVIDAS,
   duvidas: EMBAIXADOR_DUVIDAS,
   programa: AMBASSADOR_SECTIONS,
   experiencia: GIFT_SECTIONS,
@@ -483,7 +495,7 @@ describe('painel do embaixador', () => {
     expect(html).toContain('08/11/2026, 23:59')
     expect(html).not.toContain('09/11/2026')
   })
-  test('o seletor oferece os dois públicos e abre no link Kids', () => {
+  test('sem listas do Admin: o presente padrão de cada público, com os links de sempre', () => {
     const html = renderToStaticMarkup(
       <EmbaixadorPainel
         token="token0123456789abcdef"
@@ -495,20 +507,150 @@ describe('painel do embaixador', () => {
         stats={{ redemptionsCompleted: 3, invitesSent: 1 }}
       />,
     )
-    expect(html.match(/type="radio"/g)).toHaveLength(2)
-    expect(html).toContain('Uma criança de 5 a 17 anos')
-    expect(html).toContain('Alguém de 18 anos ou mais')
-    expect(html).toContain('Link do presente para uma família')
+    // Só o modo presente (sem ofertas para indicar), com as duas escolhas.
+    expect(html).toContain(PAINEL_EMBAIXADOR.passo1.presente)
+    expect(html).not.toContain(PAINEL_EMBAIXADOR.passo1.oferta)
+    expect(html).toContain('Cadê Todo Mundo, versão adulta')
     expect(html).toContain('value="https://example.com/bolsa/vo-x7k2"')
     expect(html).toContain('Você faz o cadastro por este link: https://example.com/bolsa/vo-x7k2')
-    expect(html).toContain('O e-mail leva o presente <strong>para uma família</strong>')
-    expect(html).toContain('1 convite por e-mail enviado')
+    expect(html).toContain('O e-mail leva <strong>o presente para uma família</strong>')
+    // O referrals anterior não conta pessoas: o número é o dos resgates.
+    expect(html).toContain(PAINEL_EMBAIXADOR.numeros.pessoas.tituloAntigo)
     expect(html).not.toContain('Cadê Todo Mundo?')
   })
 
-  test('o painel envia o público escolhido no convite e cai no Kids com a resposta antiga', async () => {
-    const ilha = await src('islands/EmbaixadorPainel.tsx')
-    expect(ilha).toMatch(/apiPost\('\/api\/embaixador\/convites', \{[^}]*audience: publico/)
+  const OFERTAS: OfertaDoEmbaixador[] = [
+    {
+      kind: 'gift',
+      offerId: 'o-cade',
+      offerSlug: 'cade-todo-mundo-7-dias',
+      name: 'Cadê Todo Mundo · 7 dias',
+      audience: 'kids',
+      courseSlug: 'cade-todo-mundo',
+      accessDays: 7,
+      includesMural: true,
+      subscription: false,
+      link: 'https://f.test/i/mari-x7k2/cade-todo-mundo-7-dias',
+      checkoutLink: null,
+    },
+    {
+      kind: 'gift',
+      offerId: 'o-guia',
+      offerSlug: 'transformando-o-vilao-em-aliado',
+      name: 'Transformando o vilão em aliado',
+      audience: 'kids',
+      courseSlug: 'transformando-o-vilao-em-aliado',
+      accessDays: null,
+      includesMural: false,
+      subscription: false,
+      link: 'https://f.test/i/mari-x7k2/transformando-o-vilao-em-aliado',
+      checkoutLink: null,
+    },
+    {
+      kind: 'referral',
+      offerId: 'o-com',
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      name: 'Comunidade dos Criadores',
+      audience: 'kids',
+      courseSlug: null,
+      accessDays: null,
+      includesMural: true,
+      subscription: true,
+      link: 'https://f.test/i/mari-x7k2/comunidade-dos-criadores-mensal',
+      checkoutLink: 'https://f.test/i/mari-x7k2/comunidade-dos-criadores-mensal/pagamento',
+    },
+    {
+      kind: 'referral',
+      offerId: 'o-des',
+      offerSlug: 'desafio-primeiro-jogo-adulto-30-dias',
+      name: 'Desafio do Primeiro Jogo (adultos)',
+      audience: 'adult',
+      courseSlug: 'desafio-primeiro-jogo-adulto',
+      accessDays: 30,
+      includesMural: true,
+      subscription: false,
+      link: 'https://f.test/i/mari-a9x4/desafio-primeiro-jogo-adulto-30-dias',
+      checkoutLink: 'javascript:alert(1)',
+    },
+  ]
+
+  test('as escolhas saem das listas do Admin, com a copy do Canvas e sem preço', () => {
+    const opcoes = opcoesDoPainel(OFERTAS, { kids: null, adult: null })
+    expect(opcoes.presente.map((o) => [o.titulo, o.estilo, o.chip])).toEqual([
+      ['Cadê Todo Mundo', 'kids', 'Para uma família'],
+      ['Transformando o vilão em aliado', 'pais', 'Para pais e mães'],
+    ])
+    expect(opcoes.presente[0]?.texto).toBe(
+      'A criança de 5 a 17 anos faz o curso e publica o jogo no Mural Kids. 7 dias, sem custo para a família.',
+    )
+    expect(opcoes.presente[1]?.texto).toContain('Sem prazo, sem custo.')
+    expect(opcoes.oferta.map((o) => [o.titulo, o.bonus])).toEqual([
+      ['Comunidade dos Criadores', true],
+      ['Desafio do Primeiro Jogo, versão adulta', false],
+    ])
+    // Link de pagamento que não é http(s) some (fica só a página).
+    expect(opcoes.oferta[1]?.checkoutLink).toBeNull()
+    const todas = [...opcoes.presente, ...opcoes.oferta]
+    for (const opcao of todas) {
+      const texto = JSON.stringify(opcao)
+      expect([opcao.titulo, /R\$\s*\d|[—–!]|Cadê Todo Mundo\?/.test(texto)]).toEqual([
+        opcao.titulo,
+        false,
+      ])
+    }
+    // Qualquer outra oferta: o nome e o prazo dela.
+    expect(
+      opcaoDeOferta({ ...OFERTAS[0]!, courseSlug: 'outro-curso', name: 'Outro curso' }).texto,
+    ).toBe('7 dias, sem custo para a família.')
+  })
+
+  test('destino do link e o corpo do convite por oferta', () => {
+    const opcoes = opcoesDoPainel(OFERTAS, { kids: null, adult: null })
+    const comunidade = opcoes.oferta[0]!
+    expect(linkDaEscolha(comunidade, 'pagina')).toBe(OFERTAS[2]!.link)
+    expect(linkDaEscolha(comunidade, 'pagamento')).toBe(OFERTAS[2]!.checkoutLink)
+    // Presente não tem pagamento: o destino é sempre a página.
+    expect(linkDaEscolha(opcoes.presente[1], 'pagamento')).toBe(OFERTAS[1]!.link)
+    const contato = { nome: 'Ana', email: 'ana@example.com' }
+    expect(corpoDoConvite('tok', comunidade, contato)).toEqual({
+      token: 'tok',
+      nome: 'Ana',
+      email: 'ana@example.com',
+      audience: 'kids',
+      offer: 'comunidade-dos-criadores-mensal',
+      kind: 'referral',
+    })
+    expect(corpoDoConvite('tok', opcoes.presente[1]!, contato)).toMatchObject({
+      offer: 'transformando-o-vilao-em-aliado',
+      kind: 'gift',
+    })
+    // O presente do Cadê é o convite de sempre (o e-mail aprovado do Cadê), sem a oferta.
+    expect(corpoDoConvite('tok', opcoes.presente[0]!, contato)).toEqual({
+      token: 'tok',
+      nome: 'Ana',
+      email: 'ana@example.com',
+      audience: 'kids',
+    })
+  })
+
+  test('com as listas: os números, o modo oferta e o aviso de bônus da assinatura', () => {
+    const html = renderToStaticMarkup(
+      <EmbaixadorPainel
+        token="token0123456789abcdef"
+        shareUrl="https://example.com/bolsa/vo-x7k2"
+        stats={{ redemptionsCompleted: 3, invitesSent: 1, people: 5, gifts: 3, purchases: 2 }}
+        offers={OFERTAS}
+        bonusCount={1}
+      />,
+    )
+    expect(html).toContain(PAINEL_EMBAIXADOR.numeros.pessoas.titulo)
+    expect(html).toContain('3 ganharam um presente e 2 compraram algo que você indicou.')
+    expect(html).toContain(PAINEL_EMBAIXADOR.passo1.oferta)
+    expect(html).toContain('value="https://f.test/i/mari-x7k2/cade-todo-mundo-7-dias"')
+    expect(html).not.toMatch(/R\$\s?\d/)
+  })
+
+  test('o painel não aceita link que não seja http(s)', () => {
     expect(linksDoEmbaixador('https://e.com/bolsa/k')).toEqual({
       kids: 'https://e.com/bolsa/k',
       adult: null,
@@ -528,10 +670,11 @@ describe('painel do embaixador', () => {
         token="token0123456789abcdef"
         shareUrl="javascript:alert(1)"
         stats={{ redemptionsCompleted: 0, invitesSent: 0 }}
+        offers={[{ ...OFERTAS[0]!, link: 'javascript:alert(1)' }]}
       />,
     )
     expect(html).not.toContain('javascript:')
-    expect(html).toContain(PAINEL_EMBAIXADOR.link.indisponivel)
+    expect(html).toContain(PAINEL_EMBAIXADOR.passo2.vazio)
   })
 
   test('bônus: o valor vem do serviço e o "liberado" só promete pagamento com a chave salva', () => {
@@ -560,26 +703,32 @@ describe('painel do embaixador', () => {
       />,
     )
     expect(plans).toMatch(/R\$\s?30,00 no plano mensal ou R\$\s?80,00 no anual/)
-    expect(plans).toContain('sem comissão nas renovações')
+    expect(plans).toContain('sem bônus nas renovações')
     const sem = renderToStaticMarkup(
       <EmbaixadorBonus token={'t'.repeat(20)} bonus={{ pixKey: 'a@b.com', items: [] }} />,
     )
-    expect(sem).toContain('receber um bônus por essa indicação')
+    expect(sem).toContain('você recebe um bônus, depois dos 7 dias de garantia')
     expect(sem).not.toMatch(/R\$\s?\d/)
   })
 
-  test('a página do painel é privada e mostra a tabela dos dois presentes', async () => {
+  test('a página do painel é privada, passa as ofertas e as dúvidas do Canvas', async () => {
     const page = await src('pages/embaixador/[token].astro')
     expect(page).toContain('referrer-policy')
     expect(page).toContain('EmbaixadorPainel')
+    expect(page).toContain('offers={view.offers}')
     expect(page).toContain('EmbaixadorBonus')
-    expect(page).toContain('P.inclui.linhas')
-    expect(PAINEL_EMBAIXADOR.inclui.linhas.map((linha) => linha.item)).toEqual([
-      'O curso',
-      'O Mural',
-      'Depois dos 7 dias',
-      'Fica para a assinatura',
-      'Custo',
+    expect(page).toContain('PAINEL_DUVIDAS')
+    // As seções que a proposta tirou.
+    expect(page).not.toContain('paraQuem')
+    expect(page).not.toContain('inclui')
+    expect(PAINEL_DUVIDAS.itens.map((item) => item.pergunta)).toEqual([
+      'Qual link devo mandar?',
+      'E se a pessoa comprar um curso pelo meu link?',
+      'Quem recebe precisa pagar alguma coisa?',
+      'Quando uma indicação gera bônus?',
+      'O que eu consigo acompanhar sobre quem convidei?',
+      'E se a pessoa já veio por outro link?',
+      'Posso criar ou alterar as minhas campanhas?',
     ])
   })
 

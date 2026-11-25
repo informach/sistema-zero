@@ -1,10 +1,11 @@
 ---
 // Painel privado do embaixador (`/embaixador/<token>`, capability URL: o token É a chave de acesso).
-// Canvas "Presente Kids e adulto · proposta" (Embaixador, 20/10/2026): o embaixador escolhe para
-// quem é o presente (família ou adulto) e copia o link, a mensagem ou manda o convite DAQUELE
-// público. no-store, no-referrer e canonical público sem o token.
+// Canvas da frente de embaixadores e campanhas (quadro embaixador-painel, 25/11/2026): os números,
+// os três passos (presente ou oferta, a escolha, o link), o bônus, Minhas campanhas, as dúvidas e o
+// fechamento. Só quantidades: nenhum valor de venda. no-store, no-referrer e canonical público sem
+// o token.
 import EmbaixadorLayout from '../../components/referrals/EmbaixadorLayout.astro'
-import { EMBAIXADOR_DUVIDAS, PAINEL_EMBAIXADOR as P } from '../../content/embaixador'
+import { PAINEL_EMBAIXADOR as P, PAINEL_DUVIDAS } from '../../content/embaixador'
 import EmbaixadorBonus, { type EmbaixadorBonusProps } from '../../islands/EmbaixadorBonus'
 import EmbaixadorCampanhas from '../../islands/EmbaixadorCampanhas'
 import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
@@ -43,52 +44,26 @@ const indisponivel = gatewayDown ? P.indisponivel.foraDoAr : P.indisponivel.naoE
           <h1 id="emb-titulo" class="emb-h1">{primeiroNome ? P.cabeca.titulo.replace('{{nome}}', primeiroNome) : P.cabeca.tituloSemNome}</h1>
           <p class="emb-lead">{P.cabeca.texto}</p>
         </div>
-        <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} />
+        <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} offers={view.offers} bonusCount={view.bonus?.items.length ?? 0} />
       </div>
     </section>
-    {view.campaigns && (
-      <section id="minhas-campanhas" class="emb-sec emb-sec--branca" aria-labelledby="emb-campanhas-titulo">
-        <div class="emb-wrap"><EmbaixadorCampanhas client:load campaigns={view.campaigns} /></div>
-      </section>
-    )}
     {view.bonus && (
       <section id="bonus" class="emb-sec emb-sec--branca">
         <div class="emb-wrap"><EmbaixadorBonus client:load token={token} bonus={view.bonus} /></div>
       </section>
     )}
-    <section class="emb-sec" aria-labelledby="emb-para-quem">
+    {view.campaigns && (
+      <section id="minhas-campanhas" class="emb-sec" aria-labelledby="emb-campanhas-titulo">
+        <div class="emb-wrap"><EmbaixadorCampanhas client:load campaigns={view.campaigns} /></div>
+      </section>
+    )}
+    <section id="duvidas" class="emb-sec emb-sec--branca" aria-labelledby="emb-duvidas">
       <div class="emb-wrap emb-pilha">
-        <div class="emb-cabeca">
-          <h2 id="emb-para-quem" class="emb-h2">{P.paraQuem.titulo}</h2>
-          <p class="emb-p">{P.paraQuem.texto}</p>
-        </div>
-        <div class="emb-perfis">
-          <article class="emb-perfil emb-perfil--kids"><strong>{P.paraQuem.kids.titulo}</strong><p>{P.paraQuem.kids.texto}</p></article>
-          <article class="emb-perfil emb-perfil--adult theme-arcade"><strong>{P.paraQuem.adult.titulo}</strong><p>{P.paraQuem.adult.texto}</p></article>
-        </div>
-        <ol class="emb-passos">
-          {P.paraQuem.passos.map((passo, index) => <li><span class="emb-passos__numero" aria-hidden="true">{index + 1}</span><span>{passo}</span></li>)}
-        </ol>
+        <div class="emb-cabeca"><span class="emb-etiqueta">{PAINEL_DUVIDAS.etiqueta}</span><h2 id="emb-duvidas" class="emb-h2">{PAINEL_DUVIDAS.titulo}</h2></div>
+        <div class="emb-duvidas">{PAINEL_DUVIDAS.itens.map((item) => <details class="emb-duvida"><summary>{item.pergunta}</summary>{item.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</details>)}</div>
       </div>
     </section>
-    <section id="inclui" class="emb-sec emb-sec--branca" aria-labelledby="emb-inclui">
-      <div class="emb-wrap emb-pilha">
-        <h2 id="emb-inclui" class="emb-h2">{P.inclui.titulo}</h2>
-        <div class="emb-tabela" role="region" aria-labelledby="emb-inclui" tabindex="0">
-          <table>
-            <thead><tr><th scope="col"><span class="emb-sr">{P.inclui.colunas.item}</span></th><th scope="col" class="emb-tabela__kids">{P.inclui.colunas.kids}</th><th scope="col" class="emb-tabela__adulto">{P.inclui.colunas.adult}</th></tr></thead>
-            <tbody>{P.inclui.linhas.map((linha) => <tr><th scope="row">{linha.item}</th><td>{linha.kids}</td><td>{linha.adult}</td></tr>)}</tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-    <section id="duvidas" class="emb-sec" aria-labelledby="emb-duvidas">
-      <div class="emb-wrap emb-pilha">
-        <div class="emb-cabeca"><span class="emb-etiqueta">{EMBAIXADOR_DUVIDAS.etiqueta}</span><h2 id="emb-duvidas" class="emb-h2">{EMBAIXADOR_DUVIDAS.titulo}</h2></div>
-        <div class="emb-duvidas">{EMBAIXADOR_DUVIDAS.itens.map((item) => <details class="emb-duvida"><summary>{item.pergunta}</summary>{item.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</details>)}</div>
-      </div>
-    </section>
-    <section class="emb-sec emb-sec--branca" aria-labelledby="emb-fim">
+    <section class="emb-sec" aria-labelledby="emb-fim">
       <div class="emb-wrap emb-fim">
         <h2 id="emb-fim" class="emb-h2">{P.fechamento.titulo}</h2>
         <p class="emb-p">{P.fechamento.texto}</p>
