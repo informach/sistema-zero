@@ -40,7 +40,7 @@ export const POST: APIRoute = ({ request, params }) => {
       fulfill: makeFulfill({ repo, gateway, log }),
       grantMembers: makeGrantMembers({
         gateway,
-        resolveOffer: makeResolveOffer(gateway),
+        resolveOffer: makeResolveOffer(gateway, log),
         repo,
         log,
       }),

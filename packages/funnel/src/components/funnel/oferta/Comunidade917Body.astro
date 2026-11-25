@@ -34,6 +34,9 @@ interface Props {
   ofertaUrl: string
   plans: OfferPlans | null
   coupon: CouponPresentation
+  /** A oferta da página e se ela é a principal do produto (o pré-checkout leva a não principal). */
+  offerSlug?: string
+  offerPrimary?: boolean
 }
 const { f, productName, imagesBase, ofertaUrl, plans, coupon, continuidade = false } = Astro.props
 const P = continuidade ? PAGINA_CONTINUAR : PAGINA_9A17
@@ -216,7 +219,7 @@ const CORES_DEPOIS = ['verde', 'amarelo', 'rosa', 'azul-claro']
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <OfferImageZoom />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} {continuidade} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={cupom.codigo} {continuidade} />
 </BaseLayout>
 
 <script>

@@ -1,5 +1,5 @@
 // A oferta principal de cada página no catálogo falso dos testes de navegador (25/11/2026: o funil
-// lê `GET /catalog/products/:sku` → `primaryOfferSlug`, sem as envs `FUNNEL_OFFER_*`).
+// lê `GET /catalog/products/by-sku/:sku` → `primaryOfferSlug`, sem as envs `FUNNEL_OFFER_*`).
 
 export const PAGE_PRIMARIES: Record<string, string> = {
   'comunidade-dos-criadores': 'comunidade-dos-criadores-mensal',
@@ -11,12 +11,12 @@ export const PAGE_PRIMARIES: Record<string, string> = {
   'transformando-o-vilao-em-aliado': 'transformando-o-vilao-em-aliado-1-ano',
 }
 
-/** O corpo de `GET /catalog/products/:sku`, ou null se o caminho não é esse. */
+/** O corpo de `GET /catalog/products/by-sku/:sku`, ou null se o caminho não é esse. */
 export function productResponse(
   pathname: string,
   primaries: Record<string, string> = PAGE_PRIMARIES,
 ): { status: number; body: unknown } | null {
-  const sku = pathname.match(/^\/catalog\/products\/([^/]+)$/)?.[1]
+  const sku = pathname.match(/^\/catalog\/products\/by-sku\/([^/]+)$/)?.[1]
   if (!sku) return null
   const slug = primaries[decodeURIComponent(sku)]
   return slug

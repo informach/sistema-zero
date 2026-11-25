@@ -1,6 +1,6 @@
 ---
 import { getDeps } from '../server/deps'
-import { pageForOffer } from '../server/page-offer'
+import { PageOfferUnavailableError, pageForOffer } from '../server/page-offer'
 
 export const prerender = false
 
@@ -14,7 +14,16 @@ const { gateway, log } = getDeps()
 
 if (slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   for (const audience of ['kids', 'adult'] as const) {
-    const page = await pageForOffer(gateway, slug, audience, { log })
+    let page: Awaited<ReturnType<typeof pageForOffer>>
+    try {
+      page = await pageForOffer(gateway, slug, audience, { log })
+    } catch (error) {
+      if (!(error instanceof PageOfferUnavailableError)) throw error
+      return new Response('Não foi possível abrir a renovação agora. Tente de novo em instantes.', {
+        status: 503,
+        headers: { 'cache-control': 'no-store', 'content-type': 'text/plain; charset=utf-8' },
+      })
+    }
     if (page)
       return Astro.redirect(
         page.primary

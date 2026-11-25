@@ -22,6 +22,11 @@ export interface PreCheckoutModalProps {
    * promete Pix, que não vale no mensal. A Comunidade Kids já é tratada pela chave do funil.
    */
   assinatura?: boolean
+  /**
+   * A oferta que a PÁGINA mostra quando não é a principal do produto (`?oferta=`, 25/11/2026):
+   * vai ao checkout por todo CTA sem `data-checkout-oferta`, para cobrar a mesma oferta da página.
+   */
+  ofertaPadrao?: string
 }
 
 export default function PreCheckoutModal({
@@ -30,6 +35,7 @@ export default function PreCheckoutModal({
   couponCode,
   continuidade = false,
   assinatura = false,
+  ofertaPadrao,
 }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
@@ -89,14 +95,14 @@ export default function PreCheckoutModal({
       if (el) {
         e.preventDefault()
         lastFocusedRef.current = el
-        setOferta(el.getAttribute('data-checkout-oferta'))
+        setOferta(el.getAttribute('data-checkout-oferta') ?? ofertaPadrao ?? null)
         setOpen(true)
         apiPost('/api/events', { eventName: 'abriu_checkout' }).catch(() => {})
       }
     }
     document.addEventListener('click', onDocClick)
     return () => document.removeEventListener('click', onDocClick)
-  }, [funnel])
+  }, [funnel, ofertaPadrao])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

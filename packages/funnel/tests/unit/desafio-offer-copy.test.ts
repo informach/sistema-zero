@@ -215,7 +215,7 @@ describe.each(Object.entries(PAGINAS))('página %s', (nome, { modulo, corpo }) =
   test('CTA de compra, pré-checkout com cupom, Termo da oferta e nenhum <style>', () => {
     expect(corpo.match(/data-checkout-cta/g)?.length).toBe(nome === 'adulto' ? 1 : 2)
     expect(corpo).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />',
     )
     expect(corpo).toContain('const preco = precoDoDesafio(priceReais, coupon)')
     expect(corpo).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)

@@ -126,6 +126,19 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     })
   })
 
+  test('catálogo fora ao achar a página da venda: 502 "tente de novo", nunca 404', async () => {
+    const gw = pagesGateway()
+    gw.setLinkResult(200, linkBody())
+    gw.setProductResult(503)
+    const res = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/desafio-primeiro-jogo-30-dias'),
+      { code: 'mari-x7k2', offer: 'desafio-primeiro-jogo-30-dias' },
+      { gateway: gw.gateway, secureCookie: false },
+    )
+    expect(res.status).toBe(502)
+    expect(await res.text()).toContain('Tente de novo')
+  })
+
   test('direto ao pagamento: checkout do funil (a irmã do alternador vai com ?oferta)', async () => {
     const gw = pagesGateway()
     gw.setOfferConfig('comunidade-dos-criadores-mensal', {

@@ -139,6 +139,8 @@ export async function resolveOfferPage(
   const bodyProps = {
     f,
     offerSlug,
+    /** A oferta da página é a principal do produto (sem `?oferta=`). */
+    offerPrimary: page?.primary ?? true,
     access,
     productName,
     priceLabel,

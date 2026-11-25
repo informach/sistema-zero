@@ -3,11 +3,12 @@ import { funnelsByApelido } from '../funnels/registry'
 import type { GatewayClient } from '../lib/gateway-client'
 import { originCookie } from '../lib/lead-origin'
 import { resolveOfferFunnel } from './coupon-link'
+import { PageOfferUnavailableError } from './page-offer'
 
 export interface ReferralLinkDeps {
   gateway: Pick<
     GatewayClient,
-    'resolveReferralLink' | 'resolveReferralLinkForProduct' | 'getOffer' | 'getProduct'
+    'resolveReferralLink' | 'resolveReferralLinkForProduct' | 'getOffer' | 'getProductBySku'
   >
   secureCookie: boolean
   log?: (event: string, meta?: Record<string, unknown>) => void
@@ -122,7 +123,14 @@ export async function referralLinkRedirect(
     target = new URL(`/bolsa/${encodeURIComponent(link.code)}`, url)
     if (offer && link.sourceKind === 'ambassador') target.searchParams.set('oferta', link.offerSlug)
   } else {
-    const funnel = await resolveOfferFunnel(deps.gateway, link.offerSlug, link.audience)
+    let funnel: Awaited<ReturnType<typeof resolveOfferFunnel>>
+    try {
+      funnel = await resolveOfferFunnel(deps.gateway, link.offerSlug, link.audience)
+    } catch (error) {
+      if (!(error instanceof PageOfferUnavailableError)) throw error
+      deps.log?.('referral_link.page_unavailable', { offerSlug: link.offerSlug })
+      return text('Não foi possível abrir este link agora. Tente de novo em instantes.', 502)
+    }
     if (!funnel) return text('Esta oferta não tem uma página de compra disponível.', 404)
     // A irmã do alternador (o anual da Comunidade, por exemplo) só se escolhe no checkout. Outra
     // oferta do mesmo produto vai com `?oferta=` (a página e o checkout a conferem); a principal

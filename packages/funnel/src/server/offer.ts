@@ -10,7 +10,7 @@ import { primaryOfferSlug } from './page-offer'
  * inventa uma oferta). Produto sem oferta principal marcada → `null` (página indisponível).
  */
 export function makeResolveOffer(
-  gateway: Pick<GatewayClient, 'getProduct'>,
+  gateway: Pick<GatewayClient, 'getProductBySku'>,
   log?: (event: string, meta?: Record<string, unknown>) => void,
 ): (funnel: string | null) => Promise<ResolvedOffer | null> {
   return async (funnel) => {

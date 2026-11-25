@@ -38,6 +38,8 @@ export interface FakeOfferConfig {
   isAvailable?: boolean
   /** SKU do produto da oferta (a página que a vende é a do mesmo produto). */
   productSku?: string
+  /** `content.pageSellable`: pode ser vendida na página do produto pelo `?oferta=`. */
+  pageSellable?: boolean
 }
 
 export interface FakeGatewayState {
@@ -116,6 +118,8 @@ export interface FakeGatewayState {
    * produto responde 404.
    */
   setProductPrimary: (sku: string, slug: string | null) => void
+  /** Força o status da leitura do produto (ex.: 503 = catálogo fora); null volta ao normal. */
+  setProductResult: (status: number | null) => void
   /** Resposta de resolveReferralLink (default 404). */
   setLinkResult: (status: number, body?: unknown) => void
   /** Resposta de resolveCampaignRedirects (default 200 sem endereços). */
@@ -203,6 +207,7 @@ export function createFakeGateway(): FakeGatewayState {
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
   const productPrimary = new Map<string, string | null>() // sku → slug da oferta principal
+  let productStatus: number | null = null
 
   // ── Auth falso (IdP) — login/me/refresh/logout do admin ──────────────────
   const AUTH_PASSWORD = 'segredo'
@@ -256,8 +261,9 @@ export function createFakeGateway(): FakeGatewayState {
     async getCommerceAccess(): Promise<GatewayResult> {
       return { status: 200, body: { items: [] } }
     },
-    async getProduct(sku): Promise<GatewayResult> {
+    async getProductBySku(sku): Promise<GatewayResult> {
       calls.products.push(sku)
+      if (productStatus !== null) return { status: productStatus, body: null }
       if (!productPrimary.has(sku))
         return { status: 404, body: { error: { code: 'PRODUCT_NOT_FOUND' } } }
       return { status: 200, body: { sku, primaryOfferSlug: productPrimary.get(sku) } }
@@ -285,7 +291,10 @@ export function createFakeGateway(): FakeGatewayState {
           billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
           isAvailable: cfg?.isAvailable ?? true,
           product: { name: 'Curso de teste', sku: cfg?.productSku ?? 'curso-qa' },
-          content: cfg?.altOffer ? { altOffer: cfg.altOffer } : {},
+          content: {
+            ...(cfg?.altOffer ? { altOffer: cfg.altOffer } : {}),
+            ...(cfg?.pageSellable ? { pageSellable: true } : {}),
+          },
           includes: [{ name: 'Curso de teste', isPrimary: true }],
         },
       }
@@ -488,6 +497,9 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setProductPrimary: (sku: string, slug: string | null) => {
       productPrimary.set(sku, slug)
+    },
+    setProductResult: (status: number | null) => {
+      productStatus = status
     },
     setLinkResult: (status: number, body?: unknown) => {
       linkResult = { status, body: body ?? null }

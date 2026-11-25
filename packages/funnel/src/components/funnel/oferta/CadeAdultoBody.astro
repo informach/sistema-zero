@@ -84,5 +84,5 @@ const barra = presente
       </div>
     </section>
   </PresenteAdultoOferta>
-  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />}
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />}
 </PresenteAdultoLayout>

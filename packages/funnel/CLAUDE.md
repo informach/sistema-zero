@@ -6,7 +6,7 @@
 testes): a oferta de cada página é a **oferta principal do PRODUTO** da página (`FunnelDef.productSku`),
 marcada no Admin (Catálogo › Produto › "Oferta principal da página de venda"; coluna
 `catalog.products.primary_offer_id`, `PATCH /catalog/products/:id {primaryOfferId}`). O funil lê
-`GET /catalog/products/:sku` → `primaryOfferSlug` (`gateway.getProduct`, a rota pública aceita o SKU)
+`GET /catalog/products/by-sku/:sku` → `primaryOfferSlug` (`gateway.getProductBySku`)
 em `server/page-offer.ts` (`primaryOfferSlug`, cache de 60 s por SKU; 404/sem principal → `null` também
 em cache; falha não-200 usa o valor antigo). Todos os consumidores passam por ali: `oferta`/`checkout`
 (`resolvePageOffer`), a cobrança e o grant (`makeResolveOffer(gateway)`, agora assíncrono e `null` sem
@@ -43,6 +43,17 @@ principal), `/cupom`, `/api/oferta-link`, `/i/`, `/renovar` (`pageForOffer`) e o
   `FUNNEL_OFFER_*` sobrando), `tests/unit/ambassador-links.test.ts`, `referral-origin.test.ts` (link
   curto). No fake: `setProductPrimary(sku, slug|null)` e `setOfferConfig(slug, { productSku })`; nos
   browsers, `tests/browser/helpers/page-primaries.ts` (`productResponse`).
+- **Correções da revisão (25/11/2026):** o produto é lido por `GET /catalog/products/by-sku/:sku`
+  (`gateway.getProductBySku`; slug e SKU não se misturam). `?oferta=` e a cobrança só aceitam,
+  além da principal e da irmã do alternador, oferta do mesmo produto MARCADA no Admin "Pode ser
+  vendida na página do produto" (`content.pageSellable`, `CatalogOfferView.pageSellable`) e no
+  contrato: oferta de presente nunca abre à venda. A oferta da página que não é a principal vai ao
+  checkout por todo CTA (`PreCheckoutModal ofertaPadrao`, de `bodyProps.offerPrimary/offerSlug`).
+  `primaryOfferLookup` distingue `none` de `unavailable` (catálogo fora sem cópia em cache):
+  `pageForOffer` LANÇA `PageOfferUnavailableError`, e `/i/` responde 502, `/cupom` e `/renovar`
+  503, `/api/oferta-link` 503 `CATALOG_UNAVAILABLE` ("tente de novo", nunca "não existe"). Todo
+  `makeResolveOffer` recebe o `log`. No fake: `setOfferConfig(slug, { pageSellable })` e
+  `setProductResult(503)`.
 - ⚠️ **Antes do deploy** (staging e produção): marcar no Admin a oferta principal de cada uma das sete
   páginas; sem isso a página fica 503. Os parágrafos abaixo que falam de `FUNNEL_OFFER_*` são história.
 

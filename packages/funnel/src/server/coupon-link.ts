@@ -8,7 +8,7 @@ import { pageForOffer } from './page-offer'
  * vende essa oferta.
  */
 export async function resolveOfferFunnel(
-  gateway: Pick<GatewayClient, 'getOffer' | 'getProduct'>,
+  gateway: Pick<GatewayClient, 'getOffer' | 'getProductBySku'>,
   slug: string,
   audience: string,
 ): Promise<{ basePath: string; primary: boolean; alt: boolean } | null> {
@@ -18,7 +18,7 @@ export async function resolveOfferFunnel(
 
 /** Só encaminha a páginas cujo checkout vende a oferta exata no público solicitado. */
 export async function resolveCouponOfferPath(
-  gateway: Pick<GatewayClient, 'getOffer' | 'getProduct'>,
+  gateway: Pick<GatewayClient, 'getOffer' | 'getProductBySku'>,
   slug: string,
   audience: string,
 ): Promise<string | null> {

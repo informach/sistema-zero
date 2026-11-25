@@ -6,7 +6,9 @@ import { makeResolveOffer } from '../../src/server/offer'
 import {
   clearPrimaryOfferCache,
   isPageOffer,
+  PageOfferUnavailableError,
   pageForOffer,
+  primaryOfferLookup,
   primaryOfferSlug,
   resolvePageOffer,
 } from '../../src/server/page-offer'
@@ -55,13 +57,17 @@ describe('oferta da página: a principal do produto no catálogo (sem env, 25/11
     expect(gw.calls.products).toEqual(['cade-todo-mundo'])
   })
 
-  test('?oferta= só vale para outra oferta do MESMO produto dentro do contrato', async () => {
+  test('?oferta= só vale para outra oferta do MESMO produto, marcada para a página e no contrato', async () => {
     const gw = createFakeGateway()
     gw.setProductPrimary('cade-todo-mundo', 'cade-1-ano')
     gw.setOfferConfig('cade-1-ano', { productSku: 'cade-todo-mundo' })
-    gw.setOfferConfig('cade-6-meses', { productSku: 'cade-todo-mundo' })
-    gw.setOfferConfig('outra-oferta', { productSku: 'outro-produto' })
+    gw.setOfferConfig('cade-6-meses', { productSku: 'cade-todo-mundo', pageSellable: true })
+    // Mesmo produto, dentro do contrato, mas SEM a marca (a oferta de presente, por exemplo).
+    gw.setOfferConfig('cade-presente', { productSku: 'cade-todo-mundo' })
+    gw.setOfferConfig('outra-oferta', { productSku: 'outro-produto', pageSellable: true })
     expect((await resolvePageOffer(gw.gateway, CADE, 'cade-6-meses'))?.slug).toBe('cade-6-meses')
+    expect((await resolvePageOffer(gw.gateway, CADE, 'cade-presente'))?.slug).toBe('cade-1-ano')
+    expect(await isPageOffer(gw.gateway, CADE, 'cade-presente')).toBe(false)
     // Oferta de outro produto, slug lixo ou ausente: a principal.
     expect((await resolvePageOffer(gw.gateway, CADE, 'outra-oferta'))?.slug).toBe('cade-1-ano')
     expect((await resolvePageOffer(gw.gateway, CADE, '<x>'))?.slug).toBe('cade-1-ano')
@@ -92,6 +98,8 @@ describe('oferta da página: a principal do produto no catálogo (sem env, 25/11
       accessMode: 'fixed',
       accessDurationValue: 15,
       accessDurationUnit: 'days',
+      // Mesmo marcada para a página, o contrato (1 ano) a barra.
+      pageSellable: true,
     })
     const page = { productSku: 'cade-todo-mundo', offerContract: contrato }
     expect((await resolvePageOffer(gw.gateway, page, 'cade-15-dias'))?.slug).toBe('cade-1-ano')
@@ -120,5 +128,17 @@ describe('oferta da página: a principal do produto no catálogo (sem env, 25/11
       join(ROOT, '..', '..', '.railway', 'variables.ts'),
     ])
       expect(readFileSync(file, 'utf8')).not.toMatch(/FUNNEL_OFFER_[A-Z]/)
+  })
+
+  test('catálogo fora sem cópia em cache: "indisponível", não "sem página"', async () => {
+    const gw = createFakeGateway()
+    gw.setOfferConfig('desafio-primeiro-jogo-30-dias', { productSku: 'desafio-primeiro-jogo' })
+    gw.setProductResult(503)
+    expect(await primaryOfferLookup(gw.gateway, 'desafio-primeiro-jogo')).toEqual({
+      kind: 'unavailable',
+    })
+    await expect(pageForOffer(gw.gateway, 'desafio-primeiro-jogo-30-dias', 'kids')).rejects.toThrow(
+      PageOfferUnavailableError,
+    )
   })
 })

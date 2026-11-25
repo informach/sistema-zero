@@ -796,5 +796,5 @@ const heroImg = P.hero.imagens[0]
 </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <OfferImageZoom />
-  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />}
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />}
 </BaseLayout>

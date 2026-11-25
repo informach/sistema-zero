@@ -313,9 +313,12 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         timeoutMs,
       )
     },
-    /** GET /catalog/products/:slug — produto público (aceita o SKU); traz `primaryOfferSlug`. */
-    async getProduct(slug: string): Promise<GatewayResult> {
-      const path = `/catalog/products/${encodeURIComponent(slug)}`
+    /**
+     * GET /catalog/products/by-sku/:sku — produto público pelo SKU (a página de venda do funil),
+     * com `primaryOfferSlug`. Rota própria: slug e SKU são espaços de nome separados.
+     */
+    async getProductBySku(sku: string): Promise<GatewayResult> {
+      const path = `/catalog/products/by-sku/${encodeURIComponent(sku)}`
       return requestJson(
         `${opts.baseUrl}${path}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },

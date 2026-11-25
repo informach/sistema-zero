@@ -12,32 +12,80 @@ import { checkOfferContract } from './offer-contract'
  */
 
 type Log = (event: string, meta?: Record<string, unknown>) => void
-type CatalogGateway = Pick<GatewayClient, 'getOffer' | 'getProduct'>
+type CatalogGateway = Pick<GatewayClient, 'getOffer' | 'getProductBySku'>
 
 const SLUG = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/
 const TTL_MS = 60_000
 const primaryCache = new Map<string, { slug: string | null; at: number }>()
 
-/** O slug da oferta principal do produto (cache curto; falha transitória usa a cópia velha). */
+/**
+ * A oferta principal do produto: `ok` (o slug), `none` (produto sem principal marcada, ou sem o
+ * produto) ou `unavailable` (catálogo/gateway fora e sem cópia em cache). Cache curto; falha
+ * transitória usa a cópia velha. Quem responde ao visitante distingue os dois últimos: "sem
+ * página" é 404, "fora do ar" é "tente de novo".
+ */
+export type PrimaryOfferLookup =
+  | { kind: 'ok'; slug: string }
+  | { kind: 'none' }
+  | { kind: 'unavailable' }
+
+export async function primaryOfferLookup(
+  gateway: CatalogGateway,
+  productSku: string,
+  opts?: { now?: number; log?: Log },
+): Promise<PrimaryOfferLookup> {
+  const now = opts?.now ?? Date.now()
+  const cached = primaryCache.get(productSku)
+  const fromCache = (slug: string | null): PrimaryOfferLookup =>
+    slug ? { kind: 'ok', slug } : { kind: 'none' }
+  if (cached && now - cached.at < TTL_MS) return fromCache(cached.slug)
+  const { status, body } = await gateway.getProductBySku(productSku)
+  if (status === 404) {
+    opts?.log?.('page_offer.no_primary_offer', { productSku, reason: 'product_not_found' })
+    primaryCache.set(productSku, { slug: null, at: now })
+    return { kind: 'none' }
+  }
+  if (status !== 200) {
+    if (cached) return fromCache(cached.slug)
+    opts?.log?.('page_offer.catalog_unavailable', { productSku, status })
+    return { kind: 'unavailable' }
+  }
+  const raw = (body as { primaryOfferSlug?: unknown } | null)?.primaryOfferSlug
+  const slug = typeof raw === 'string' && SLUG.test(raw) ? raw : null
+  if (!slug) opts?.log?.('page_offer.no_primary_offer', { productSku })
+  primaryCache.set(productSku, { slug, at: now })
+  return fromCache(slug)
+}
+
+/** O slug da oferta principal do produto, ou null (sem principal ou catálogo fora). */
 export async function primaryOfferSlug(
   gateway: CatalogGateway,
   productSku: string,
   opts?: { now?: number; log?: Log },
 ): Promise<string | null> {
-  const now = opts?.now ?? Date.now()
-  const cached = primaryCache.get(productSku)
-  if (cached && now - cached.at < TTL_MS) return cached.slug
-  const { status, body } = await gateway.getProduct(productSku)
-  if (status === 404) {
-    primaryCache.set(productSku, { slug: null, at: now })
-    return null
+  const lookup = await primaryOfferLookup(gateway, productSku, opts)
+  return lookup.kind === 'ok' ? lookup.slug : null
+}
+
+/** O catálogo não respondeu: o visitante recebe "tente de novo", nunca "não existe". */
+export class PageOfferUnavailableError extends Error {
+  constructor() {
+    super('O catálogo não respondeu ao resolver a página da oferta.')
+    this.name = 'PageOfferUnavailableError'
   }
-  if (status !== 200) return cached?.slug ?? null
-  const raw = (body as { primaryOfferSlug?: unknown } | null)?.primaryOfferSlug
-  const slug = typeof raw === 'string' && SLUG.test(raw) ? raw : null
-  if (!slug) opts?.log?.('page_offer.no_primary_offer', { productSku })
-  primaryCache.set(productSku, { slug, at: now })
-  return slug
+}
+
+/** Oferta do mesmo produto, marcada para venda na página (`pageSellable`) e dentro do contrato. */
+function sellableOnPage(
+  offer: CatalogOfferView | null,
+  f: Pick<FunnelDef, 'productSku' | 'offerContract'>,
+): boolean {
+  return Boolean(
+    offer &&
+      offer.productSku === f.productSku &&
+      offer.pageSellable &&
+      checkOfferContract(f.offerContract, offer).ok,
+  )
 }
 
 /** Hook de teste. */
@@ -71,11 +119,8 @@ export async function resolvePageOffer(
   const wanted = requested?.trim().toLowerCase() ?? ''
   if (wanted && wanted !== primarySlug && SLUG.test(wanted)) {
     const chosen = await getActiveOffer(gateway, wanted, { log: opts?.log })
-    if (
-      chosen &&
-      chosen.productSku === f.productSku &&
-      checkOfferContract(f.offerContract, chosen).ok
-    ) {
+    // Só oferta MARCADA para a página (`pageSellable`): oferta de presente nunca abre à venda.
+    if (chosen && sellableOnPage(chosen, f)) {
       const principal = await getActiveOffer(gateway, primarySlug, { log: opts?.log })
       // A irmã do alternador fica com a principal (a página mostra os dois planos).
       if (principal?.altOffer?.slug !== wanted)
@@ -88,8 +133,9 @@ export async function resolvePageOffer(
 
 /**
  * Esta oferta pode ser cobrada no checkout desta página? A principal, a irmã do alternador dela,
- * ou outra oferta do mesmo produto dentro do contrato (anti-forja: um slug qualquer no corpo do
- * POST não cobra uma oferta que a página não vende).
+ * ou outra oferta do mesmo produto MARCADA para a página (`pageSellable`) e dentro do contrato
+ * (anti-forja: um slug qualquer no corpo do POST não cobra uma oferta que a página não vende, e a
+ * oferta de presente nunca é cobrada).
  */
 export async function isPageOffer(
   gateway: CatalogGateway,
@@ -102,16 +148,14 @@ export async function isPageOffer(
   if (slug === primarySlug) return true
   const principal = await getActiveOffer(gateway, primarySlug, { log: opts?.log })
   if (principal?.altOffer?.slug === slug) return true
-  const chosen = await getActiveOffer(gateway, slug, { log: opts?.log })
-  return Boolean(
-    chosen && chosen.productSku === f.productSku && checkOfferContract(f.offerContract, chosen).ok,
-  )
+  return sellableOnPage(await getActiveOffer(gateway, slug, { log: opts?.log }), f)
 }
 
 /**
  * A página (funil) que vende esta oferta no público pedido: a do PRODUTO da oferta. `primary`
  * diz se é a principal (link sem `?oferta=`); a irmã do alternador e as outras ofertas do mesmo
- * produto vão com `?oferta=`. `null` = nenhuma página vende essa oferta.
+ * produto marcadas para a página vão com `?oferta=`. `null` = nenhuma página vende essa oferta;
+ * LANÇA `PageOfferUnavailableError` quando o catálogo não respondeu e nada foi achado.
  */
 export async function pageForOffer(
   gateway: CatalogGateway,
@@ -125,19 +169,20 @@ export async function pageForOffer(
   const funnels = FUNNEL_KEYS.map((key) => getFunnelByKey(key)).filter(
     (f): f is FunnelDef => Boolean(f) && f?.audience === target,
   )
+  let unavailable = false
   for (const funnel of funnels) {
-    const primarySlug = await primaryOfferSlug(gateway, funnel.productSku, opts)
-    if (!primarySlug) continue
+    const lookup = await primaryOfferLookup(gateway, funnel.productSku, opts)
+    if (lookup.kind === 'unavailable') unavailable = true
+    if (lookup.kind !== 'ok') continue
+    const primarySlug = lookup.slug
     if (primarySlug === slug) return { funnel, primary: true, alt: false }
     // A irmã do alternador da principal (o anual da Comunidade), qualquer que seja o produto dela.
     const principal = await getActiveOffer(gateway, primarySlug, { log: opts?.log })
     if (principal?.altOffer?.slug === slug) return { funnel, primary: false, alt: true }
-    if (
-      offer &&
-      funnel.productSku === offer.productSku &&
-      checkOfferContract(funnel.offerContract, offer).ok
-    )
-      return { funnel, primary: false, alt: false }
+    if (sellableOnPage(offer, funnel)) return { funnel, primary: false, alt: false }
   }
+  // Nenhuma página encontrada COM o catálogo fora em alguma delas: não dá para afirmar que não
+  // existe página (quem chama responde "tente de novo").
+  if (unavailable) throw new PageOfferUnavailableError()
   return null
 }

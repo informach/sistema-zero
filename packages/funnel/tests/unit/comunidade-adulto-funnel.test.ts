@@ -104,7 +104,7 @@ describe('a página de oferta adulta', () => {
     expect(body).toContain('data-checkout-oferta={mensal?.slug}')
     expect(body).toContain('data-checkout-oferta={anual?.slug}')
     expect(body).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={cupom.codigo} assinatura />',
     )
     // O cupom da URL segue para o checkout; o preço mensal do herói só aparece com o plano mensal.
     expect(body).toContain('const cupom = cupomDaOferta(coupon)')
