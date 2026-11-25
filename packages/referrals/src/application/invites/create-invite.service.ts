@@ -62,8 +62,14 @@ export interface CreateInviteOptions {
       audience: GiftAudience,
       kind: 'gift' | 'referral',
       offerRef: string,
-    ): Promise<{ offerSlug: string; name: string } | null>
+    ): Promise<{ offerSlug: string; name: string; courseSlug: string | null } | null>
   }
+}
+
+/** O Cadê de cada público: o presente dele usa o convite aprovado de sempre, com a oferta no link. */
+const CADE_COURSES: Record<GiftAudience, string> = {
+  kids: 'cade-todo-mundo',
+  adult: 'cade-todo-mundo-adulto',
 }
 
 /**
@@ -99,7 +105,7 @@ export class CreateInviteService {
     const name = input.name.trim().slice(0, 120)
     const kind = input.kind ?? 'gift'
     const wanted = input.offer?.trim()
-    let offer: { offerSlug: string; name: string } | null = null
+    let offer: { offerSlug: string; name: string; courseSlug: string | null } | null = null
     if (wanted) {
       offer = (await this.opts.ambassadorOffers?.allowed(audience, kind, wanted)) ?? null
       if (!offer) return { kind: 'offer_unavailable' }
@@ -130,8 +136,12 @@ export class CreateInviteService {
 
     const seq = await this.repo.bumpInviteSend(invite.id)
     const indicador = publicGiftSourceName({ kind: 'ambassador', name: ambassador.name })
+    // Presente do Cadê escolhido na lista: o e-mail aprovado do Cadê, com o link que leva a
+    // oferta escolhida (a de 15 dias, por exemplo), nunca a padrão.
+    const cadeGift =
+      offer !== null && kind === 'gift' && offer.courseSlug === CADE_COURSES[audience]
     const res = await this.gateway.sendEmail(
-      offer
+      offer && !cadeGift
         ? {
             templateKey: OFFER_INVITE_TEMPLATE[kind][audience],
             recipient: { name: splitName(name).firstName, email },
@@ -150,7 +160,11 @@ export class CreateInviteService {
             variables: {
               nome: splitName(name).firstName,
               indicador,
-              link: scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
+              link: offer
+                ? referralLinkUrl(this.opts.funnelPublicUrl, codeRecord.code, {
+                    offerSlug: offer.offerSlug,
+                  })
+                : scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
             },
           },
       `ambassador-invite:${invite.id}:${seq}`,

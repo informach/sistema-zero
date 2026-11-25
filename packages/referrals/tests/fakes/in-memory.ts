@@ -406,6 +406,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       // Com `gift` (o serviço, desde 15/11/2026): presente por oferta. Sem ele, a linha nasce
       // na forma ANTIGA (`trial` de sete dias), para semear resgates antigos em andamento.
       accessDurationDays: input.gift ? input.gift.accessDurationDays : 7,
+      advertisedDays: input.gift?.advertisedDays ?? null,
       muralVisitorPolicy: input.gift ? 'offer' : 'trial',
       muralVisitorGrantedAt: null,
       giftOfferId: input.gift?.offerId ?? null,

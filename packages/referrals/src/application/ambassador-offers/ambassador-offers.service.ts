@@ -89,36 +89,29 @@ export class AmbassadorOffersService {
         continue
       }
       if (!offer || ambassadorOfferProblem(offer, audience, row.kind)) continue
-      result.push({
-        kind: row.kind,
-        offerId: offer.offerId,
-        offerSlug: offer.offerSlug,
-        name: offer.name,
-        audience,
-        courseSlug: offer.courseSlug,
-        // O prazo que a página e a mensagem mostram (o divulgado, quando a oferta tem um).
-        accessDays: offer.accessMode === 'billing_cycle' ? null : giftAdvertisedDays(offer),
-        includesMural: offer.includesMural,
-        subscription: offer.accessMode === 'billing_cycle',
-      })
+      result.push(toOption(row.kind, offer, audience))
     }
     return result
   }
 
-  /** A opção ligada do público e tipo com este slug ou id; null se não está na lista. */
+  /**
+   * A opção ligada do público e tipo com este slug ou id; null se não está na lista (ou deixou de
+   * servir). Resolve SÓ a oferta pedida no catálogo; catálogo fora LANÇA
+   * `GiftCatalogUnavailableError` (quem chama responde "tente de novo", nunca "link não existe").
+   */
   async allowed(
     audience: GiftAudience,
     kind: AmbassadorOfferKind,
     offerRef: string,
   ): Promise<AmbassadorOfferOption | null> {
-    const ref = offerRef.trim().toLowerCase()
-    const options = await this.options(audience)
-    return (
-      options.find(
-        (o) =>
-          o.kind === kind && (o.offerSlug.toLowerCase() === ref || o.offerId.toLowerCase() === ref),
-      ) ?? null
-    )
+    const ref = offerRef.trim()
+    if (!ref) return null
+    const rows = (await this.repo.list(audience, kind)).filter((r) => r.enabled)
+    if (rows.length === 0) return null
+    const offer = await this.resolve(ref)
+    if (!offer || !rows.some((r) => r.offerId === offer.offerId)) return null
+    if (ambassadorOfferProblem(offer, audience, kind)) return null
+    return toOption(kind, offer, audience)
   }
 
   private async resolve(offerId: string): Promise<GiftOffer | null> {
@@ -127,5 +120,31 @@ export class AmbassadorOffersService {
     } catch {
       throw new GiftCatalogUnavailableError()
     }
+  }
+}
+
+function toOption(
+  kind: AmbassadorOfferKind,
+  offer: GiftOffer,
+  audience: GiftAudience,
+): AmbassadorOfferOption {
+  const months =
+    offer.accessMode === 'fixed' && offer.accessDurationUnit === 'months'
+      ? offer.accessDurationValue
+      : null
+  return {
+    kind,
+    offerId: offer.offerId,
+    offerSlug: offer.offerSlug,
+    name: offer.name,
+    audience,
+    courseSlug: offer.courseSlug,
+    // O prazo que a página e a mensagem mostram: o divulgado em dias, quando a oferta tem um;
+    // prazo em meses vai em `accessMonths` (nunca como dias).
+    accessDays:
+      offer.accessMode === 'billing_cycle' || months !== null ? null : giftAdvertisedDays(offer),
+    accessMonths: months,
+    includesMural: offer.includesMural,
+    subscription: offer.accessMode === 'billing_cycle',
   }
 }

@@ -244,6 +244,11 @@ export const scholarshipRedemptions = referralsSchema.table(
      */
     accessDurationDays: integer(),
     /**
+     * Prazo DIVULGADO no resgate (25/11/2026): o que a pessoa vê e o members avisa; gravado no
+     * claim (a oferta pode mudar depois). Null = sem divulgado (vê o real).
+     */
+    advertisedDays: integer(),
+    /**
      * Null legado; visitor = só visita; trial = participação no prazo do curso + visita depois;
      * offer (0010) = o members concede a oferta `gift_offer_id` (curso, prazo e Mural dela).
      */

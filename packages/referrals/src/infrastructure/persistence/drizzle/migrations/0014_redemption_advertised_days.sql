@@ -1,0 +1,1 @@
+ALTER TABLE "referrals"."scholarship_redemptions" ADD COLUMN "advertised_days" integer;

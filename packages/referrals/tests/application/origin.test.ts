@@ -10,6 +10,7 @@ import {
   CampaignKindLockedError,
   CampaignRedirectTakenError,
   CampaignValidationError,
+  GiftCatalogUnavailableError,
 } from '../../src/domain/campaign'
 import { referralLinkUrl } from '../../src/domain/links'
 import type { GiftOffer } from '../../src/domain/ports/gift-offer-catalog.port'
@@ -236,6 +237,43 @@ describe('listas de ofertas dos embaixadores', () => {
     expect(options.map((o) => [o.offerSlug, o.subscription])).toEqual([
       ['comunidade-dos-criadores-mensal', true],
     ])
+  })
+})
+
+describe('lista do embaixador: meses e catálogo fora', () => {
+  test('oferta de venda em meses sai com accessMonths, nunca como dias', async () => {
+    const { offers, catalog } = base()
+    const anual: GiftOffer = {
+      ...DESAFIO,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d20',
+      offerSlug: 'cade-todo-mundo-1-ano',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+    }
+    catalog.add(anual)
+    await offers.replace({
+      audience: 'kids',
+      kind: 'referral',
+      items: [{ offerId: anual.offerId, enabled: true }],
+    })
+    const [option] = await offers.options('kids')
+    expect(option).toMatchObject({ accessDays: null, accessMonths: 12 })
+    expect(await offers.allowed('kids', 'referral', 'cade-todo-mundo-1-ano')).toMatchObject({
+      accessMonths: 12,
+    })
+  })
+
+  test('catálogo fora ao conferir a escolha LANÇA (vira "tente de novo"), não devolve null', async () => {
+    const { offers, catalog } = base()
+    await offers.replace({
+      audience: 'kids',
+      kind: 'gift',
+      items: [{ offerId: KIDS_GIFT_OFFER.offerId, enabled: true }],
+    })
+    catalog.fail = true
+    await expect(offers.allowed('kids', 'gift', KIDS_GIFT_OFFER.offerSlug)).rejects.toThrow(
+      GiftCatalogUnavailableError,
+    )
   })
 })
 

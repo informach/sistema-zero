@@ -157,6 +157,7 @@ export function toRedemption(row: RedemptionRow): RedemptionRecord {
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
     accessDurationDays: row.accessDurationDays,
+    advertisedDays: row.advertisedDays ?? null,
     muralVisitorPolicy: row.muralVisitorPolicy,
     muralVisitorGrantedAt: row.muralVisitorGrantedAt,
     giftOfferId: row.giftOfferId,
@@ -758,6 +759,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
           // Presente por oferta: curso, prazo e Mural vêm da oferta gravada. Sem `gift` (só
           // usos internos/testes), a linha nasce na forma histórica sem prazo.
           accessDurationDays: input.gift?.accessDurationDays ?? null,
+          advertisedDays: input.gift?.advertisedDays ?? null,
           muralVisitorPolicy: input.gift ? 'offer' : null,
           giftOfferId: input.gift?.offerId ?? null,
           giftSlot,

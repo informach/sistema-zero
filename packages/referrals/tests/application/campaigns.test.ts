@@ -753,6 +753,32 @@ describe('campanhas institucionais', () => {
     expect(String(email.variables?.prazo)).toStartWith('por 7 dias, até ')
   })
 
+  test('o prazo divulgado fica no resgate: mudar a oferta depois não muda a data que a pessoa vê', async () => {
+    const { admin, gateway, referrals, redeem, catalog } = await setup()
+    const quinze = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '10000000-0000-4000-8000-0000000000ab',
+      offerSlug: 'cade-quinze-fixo',
+      accessDurationValue: 15,
+      advertisedAccessDays: 7,
+    })
+    await admin.create({ ...input, code: 'cade-fixo', giftOfferId: quinze.offerId }, 'Operador')
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Cadê Todo Mundo?', learner: 'child' },
+    }
+    await redeem.execute({ ...family, code: 'cade-fixo' })
+    const redemption = referrals.redemptions[0]!
+    expect(redemption.advertisedDays).toBe(7)
+    // A equipe tira o divulgado da oferta depois do resgate: quem já resgatou continua vendo 7.
+    quinze.advertisedAccessDays = null
+    const again = await redeem.execute({ ...family, code: 'cade-fixo' })
+    expect(again).toMatchObject({
+      kind: 'already_redeemed',
+      expiresAt: new Date(redemption.createdAt.getTime() + 7 * 86_400_000).toISOString(),
+    })
+  })
+
   test('presentes de cursos diferentes convivem, e outra campanha do mesmo curso não renova o acesso', async () => {
     const { admin, catalog, redeem, referrals, gateway } = await setup()
     gateway.availabilityResult = {

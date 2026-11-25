@@ -18,6 +18,7 @@ import {
   CampaignUnavailableError,
   campaignSource,
   campaignState,
+  GiftCatalogUnavailableError,
   GiftOfferChangedError,
 } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
@@ -286,7 +287,13 @@ export class RedeemScholarshipService {
     availability: 'available' | 'unavailable' | 'upstream_error'
     gift?: ReferralGiftOfferView
   }> {
-    const ref = await this.giftRefFor(campaign, audience, requested)
+    let ref: string | null
+    try {
+      ref = await this.giftRefFor(campaign, audience, requested)
+    } catch (error) {
+      if (error instanceof GiftCatalogUnavailableError) return { availability: 'upstream_error' }
+      throw error
+    }
     if (!ref) return { availability: 'unavailable' }
     const result = await this.planGift(audience, ref)
     if (result.kind !== 'ok') return { availability: result.kind }
@@ -395,7 +402,7 @@ export class RedeemScholarshipService {
       redemption: {
         status: existing.status,
         // A data mostrada é a do prazo divulgado; a retomada segue o prazo real.
-        expiresAt: this.shownExpiresAtOf(existing, context.offer)?.toISOString() ?? null,
+        expiresAt: this.shownExpiresAtOf(existing)?.toISOString() ?? null,
         canResume: existing.status !== 'completed' && !this.windowElapsed(expiresAt),
       },
       gift: {
@@ -404,7 +411,7 @@ export class RedeemScholarshipService {
         courseSlug: existing.courseSlug ?? context.course?.slug ?? '',
         courseTitle: context.course?.title ?? null,
         learner: context.course?.learner ?? null,
-        accessDays: this.shownDaysOf(existing, context.offer),
+        accessDays: this.shownDaysOf(existing),
         includesMural: context.offer?.includesMural ?? false,
       } satisfies ReferralGiftOfferView,
     }
@@ -438,7 +445,14 @@ export class RedeemScholarshipService {
     // E por VAGA (18/11/2026): curso para pais não ocupa a vaga do presente do público, então a
     // oferta deste código é resolvida primeiro para saber em que vaga procurar o resgate.
     if (codeRecord.ownerKind === 'campaign' && !campaign) return { kind: 'code_not_found' }
-    const ref = await this.giftRefFor(campaign, audience, input.offer)
+    let ref: string | null
+    try {
+      ref = await this.giftRefFor(campaign, audience, input.offer)
+    } catch (error) {
+      // Catálogo fora ao conferir a escolha do embaixador: "tente de novo", não "não existe".
+      if (error instanceof GiftCatalogUnavailableError) return { kind: 'upstream_error' }
+      throw error
+    }
     // Campanha de venda, ou escolha fora da lista do público: o link de presente não existe.
     if (!ref) return { kind: 'code_not_found' }
     const fresh = await this.planGift(audience, ref)
@@ -508,6 +522,9 @@ export class RedeemScholarshipService {
               gift: {
                 offerId: plan.offer.offerId,
                 accessDurationDays: giftAccessDays(plan.offer),
+                // O divulgado de AGORA fica no resgate: mudar a oferta depois não muda a data
+                // que esta pessoa já viu (nem a do members, que gravou o seu na concessão).
+                advertisedDays: shownAdvertised(plan.offer),
               },
             }
           : {}),
@@ -547,11 +564,7 @@ export class RedeemScholarshipService {
       }
       return {
         kind: 'already_redeemed',
-        expiresAt:
-          this.shownExpiresAtOf(
-            redemption,
-            (await this.describeGift(redemption)).offer,
-          )?.toISOString() ?? null,
+        expiresAt: this.shownExpiresAtOf(redemption)?.toISOString() ?? null,
       }
     }
 
@@ -623,15 +636,16 @@ export class RedeemScholarshipService {
    * Os dias que as pessoas VEEM (25/11/2026): o prazo divulgado da oferta, quando há um e é menor
    * que os dias gravados no resgate; senão, os gravados. O acesso e a retomada seguem os gravados.
    */
-  private shownDaysOf(redemption: RedemptionRecord, offer: GiftOffer | null): number | null {
+  private shownDaysOf(redemption: RedemptionRecord): number | null {
     const real = redemption.accessDurationDays
-    const advertised = offer?.advertisedAccessDays ?? null
+    // O divulgado GRAVADO no resgate (nunca o da oferta de hoje).
+    const advertised = redemption.advertisedDays
     return real !== null && advertised !== null && advertised < real ? advertised : real
   }
 
   /** A data de fim que as pessoas VEEM (a do prazo divulgado). */
-  private shownExpiresAtOf(redemption: RedemptionRecord, offer: GiftOffer | null): Date | null {
-    return scholarshipExpiresAt(redemption.createdAt, this.shownDaysOf(redemption, offer))
+  private shownExpiresAtOf(redemption: RedemptionRecord): Date | null {
+    return scholarshipExpiresAt(redemption.createdAt, this.shownDaysOf(redemption))
   }
 
   private windowElapsed(expiresAt: Date | null): boolean {
@@ -853,8 +867,7 @@ export class RedeemScholarshipService {
         : 'none'
     return {
       kind: 'completed',
-      expiresAt:
-        this.shownExpiresAtOf(redemption, this.offerOf(redemption, context))?.toISOString() ?? null,
+      expiresAt: this.shownExpiresAtOf(redemption)?.toISOString() ?? null,
       emailStatus,
       muralAccess,
     }
@@ -902,8 +915,8 @@ export class RedeemScholarshipService {
       // chegam prontos nas variáveis).
       const giftTemplates = offerPolicy || redemption.muralVisitorPolicy === 'trial'
       // O e-mail mostra o prazo DIVULGADO (os dias a mais chegam de surpresa, pelo members).
-      const shownDays = this.shownDaysOf(redemption, offer)
-      const shownExpiresAt = this.shownExpiresAtOf(redemption, offer)
+      const shownDays = this.shownDaysOf(redemption)
+      const shownExpiresAt = this.shownExpiresAtOf(redemption)
       const validade = shownExpiresAt ? formatValidade(shownExpiresAt) : ''
       // O Messaging não tem condicional: curso, prazo e a frase do Mural vão prontos.
       const giftVariables = {
@@ -1111,4 +1124,11 @@ function formatValidade(date: Date): string {
     dateStyle: 'long',
     timeStyle: 'short',
   })
+}
+
+/** O prazo divulgado da oferta, só quando é menor que o real (o que o resgate grava). */
+function shownAdvertised(offer: GiftOffer): number | null {
+  const real = giftAccessDays(offer)
+  const advertised = offer.advertisedAccessDays
+  return real !== null && advertised !== null && advertised < real ? advertised : null
 }

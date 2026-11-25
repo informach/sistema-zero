@@ -69,6 +69,8 @@ export interface RedemptionRecord {
    * oferta vitalícia ou com prazo em meses.
    */
   accessDurationDays: number | null
+  /** Prazo DIVULGADO gravado no resgate (menor que o real), ou null. Só para mostrar. */
+  advertisedDays: number | null
   /**
    * Null identifica resgates anteriores à visita permanente ao Mural; `trial`/`visitor` são o
    * caminho antigo (curso + Mural concedidos em separado); `offer` (15/11/2026) concede a oferta
@@ -108,6 +110,8 @@ export interface RedemptionGift {
   offerId: string
   /** Dias da oferta de prazo fixo em dias; null = vitalícia ou prazo em meses. */
   accessDurationDays: number | null
+  /** O prazo divulgado da oferta no claim (menor que o real), ou null. */
+  advertisedDays?: number | null
 }
 
 export interface InviteRecord {

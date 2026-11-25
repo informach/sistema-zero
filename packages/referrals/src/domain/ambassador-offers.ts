@@ -41,4 +41,6 @@ export interface AmbassadorOfferOption {
   includesMural: boolean
   /** Assinatura (a indicação que pode render bônus). */
   subscription: boolean
+  /** Prazo em MESES da oferta de venda (o Cadê vendido: 12); null fora disso. */
+  accessMonths?: number | null
 }

@@ -71,6 +71,14 @@ Serviços (Lote 2):
   `expiresAt` do resgate, `prazo`/`validade` das boas-vindas e o `accessDays` das opções do
   embaixador. `access_duration_days` do resgate continua o prazo REAL (decide a retomada e o
   `gift_window_elapsed`); o members avisa os dias extras no fim do divulgado.
+- **Correções da revisão do Lote 4 (25/11/2026):** `AmbassadorOffersService.allowed` resolve SÓ a
+  oferta pedida e LANÇA `GiftCatalogUnavailableError` com o catálogo fora (resgate
+  `upstream_error`, leitura pública 502/503, nunca "link não existe"); a opção traz `accessMonths`
+  para a oferta de venda em meses (`accessDays` fica null). O prazo divulgado é GRAVADO no resgate
+  (`scholarship_redemptions.advertised_days`, migration `0014`) e é ele que a resposta e os e-mails
+  mostram: mudar a oferta depois não muda a data de quem já resgatou. O convite do presente do Cadê
+  escolhido usa o e-mail aprovado do Cadê com o link `/i/<código>/<oferta>`. ⚠️ Pendente
+  consciente: um resgate pendente cuja oferta escolhida saiu da lista não retoma pelo link novo.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

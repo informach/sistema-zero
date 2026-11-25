@@ -361,4 +361,46 @@ describe('rotas da origem por aquisição', () => {
       link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}`,
     })
   })
+
+  test('presente do Cadê escolhido: o e-mail aprovado de sempre, com a oferta escolhida no link', async () => {
+    const { app, repo, gateway } = buildApp()
+    await repo.createAmbassadorWithCode({
+      name: 'Mariana Lopes',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    await app.handle(
+      new Request('http://referrals/referrals/admin/ambassador-offers', {
+        method: 'PUT',
+        headers: admin(),
+        body: JSON.stringify({
+          audience: 'kids',
+          kind: 'gift',
+          items: [{ offerId: KIDS_GIFT_OFFER.offerId, enabled: true }],
+        }),
+      }),
+    )
+    const res = await app.handle(
+      new Request(
+        `http://referrals/referrals/internal/ambassadors/by-token/${'m'.repeat(43)}/invites`,
+        {
+          method: 'POST',
+          headers: { 'x-internal-token': TOKEN, 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name: 'Paula',
+            email: 'paula@example.com',
+            offer: KIDS_GIFT_OFFER.offerSlug,
+            kind: 'gift',
+          }),
+        },
+      ),
+    )
+    expect(res.status).toBe(202)
+    const sent = gateway.calls.find((c) => c.kind === 'sendEmail') as unknown as {
+      input: { templateKey: string; variables: Record<string, string> }
+    }
+    expect(sent.input.templateKey).toBe('referrals-scholarship-invite')
+    expect(sent.input.variables.link).toBe(`${FUNNEL_URL}/i/mari-x7k2/${KIDS_GIFT_OFFER.offerSlug}`)
+  })
 })
