@@ -24,7 +24,8 @@ export function memoryArtifactBucket() {
       options?: { sha256?: string; onlyIf?: Headers },
     ) {
       const match = options?.onlyIf?.get('if-match')
-      if (match && etags.get(key) !== match) return null
+      if (match && !/^"[^"\r\n]*"$/.test(match)) throw new Error('Invalid ETag in if-match header')
+      if (match && `"${etags.get(key)}"` !== match) return null
       if (options?.onlyIf?.get('if-none-match') === '*' && objects.has(key)) return null
       objects.set(
         key,
