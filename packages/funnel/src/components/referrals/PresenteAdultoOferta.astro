@@ -4,52 +4,75 @@
 // o layout é o da oferta adulta (`.cda`) com as peças de presente-adulto.css. Quem lê e quem usa é a
 // mesma pessoa, com 18 anos ou mais, e o cadastro é com os dados dela.
 import type { EstadoPresente } from '../../content/presente'
-import { presenteAdultoDaOferta } from '../../content/presente-adulto'
+import { type PRESENTE_ADULTO, presenteAdultoDaOferta } from '../../content/presente-adulto'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { CadeGiftView, ReferralGiftPage } from '../../server/referral-gift-page'
 
 interface Props {
-  /** A oferta do presente já conferida como a do Cadê com prazo em dias (`isCadeGift`). */
-  gift: CadeGiftView
-  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  /**
+   * A oferta do presente já conferida como a do Cadê com prazo em dias (`isCadeGift`). Ausente na
+   * página de venda (`compra`), que não tem quem dá o presente.
+   */
+  gift?: CadeGiftView
+  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
   /** Base do app adulto (`COMMUNITY_URL`), sem a barra final. */
-  communityUrl: string
+  communityUrl?: string
   preview?: boolean
   /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */
   oferta?: string
+  /** A copy pronta (a página de venda do Cadê passa a dela); sem ela, a do presente da oferta. */
+  copy?: typeof PRESENTE_ADULTO
+  /** O rótulo do topo no lugar de quem dá o presente (a página de venda). */
+  selo?: string
+  /**
+   * Página da oferta (25/11/2026): o bloco de compra vem do slot `compra` (preço e botão, ou o
+   * resgate no modo presente), no lugar do formulário; os botões levam a `#oferta`.
+   */
+  compra?: boolean
 }
-const { gift, kind, communityUrl, preview = false, oferta } = Astro.props
+const {
+  gift,
+  kind = 'ready',
+  communityUrl = '',
+  preview = false,
+  oferta,
+  copy,
+  selo,
+  compra = false,
+} = Astro.props
 // O prazo e o Mural vêm da oferta do presente (sem `gift.gift`, a copy de sempre).
-const P = presenteAdultoDaOferta(gift.gift)
-const mostraMural = gift.gift?.includesMural ?? true
-const ready = kind === 'ready' && !preview
-const campaign = gift.source.kind === 'campaign'
-const lastClaimAt = gift.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
-const nome = gift.source.name
-const origem = (
-  !campaign
+const P = copy ?? presenteAdultoDaOferta(gift?.gift)
+const mostraMural = gift?.gift?.includesMural ?? true
+const ready = compra || (kind === 'ready' && !preview)
+const alvo = compra ? '#oferta' : '#resgatar'
+const campaign = gift?.source.kind === 'campaign'
+const lastClaimAt = gift?.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
+const nome = gift?.source.name ?? ''
+const origem =
+  selo ??
+  (!campaign
     ? P.origem.pessoal
-    : gift.source.context === 'event'
+    : gift?.source.context === 'event'
       ? P.origem.evento
       : P.origem.campanha
-).replace('{{nome}}', nome.toLocaleUpperCase('pt-BR'))
+  ).replace('{{nome}}', nome.toLocaleUpperCase('pt-BR'))
 const dia = (iso: string | null) => (iso ? dataBrasilia(iso, false) : '')
 const estado: EstadoPresente | null =
-  kind === 'ready'
+  compra || kind === 'ready'
     ? null
     : {
         ...P.estados[kind],
         titulo:
-          kind === 'ended' && !gift.endsAt
+          kind === 'ended' && !gift?.endsAt
             ? P.estados.endedSemData
             : P.estados[kind].titulo.replace(
                 '{{data}}',
-                dia(kind === 'scheduled' ? gift.startsAt : lastClaimAt),
+                dia(kind === 'scheduled' ? (gift?.startsAt ?? null) : lastClaimAt),
               ),
       }
 const corDoEstado = kind === 'paused' || kind === 'ended' ? 'rosa' : 'azul'
-const podeRetomar = !preview && (kind === 'ended' || kind === 'paused')
+const podeRetomar = !compra && !preview && (kind === 'ended' || kind === 'paused')
 const tela = P.hero.tela
 ---
 {preview && <div class="cda-wrap"><p class="pa-previa" role="status">{P.previa}</p></div>}
@@ -57,7 +80,7 @@ const tela = P.hero.tela
   <div class="cda-wrap cda-hero__grade">
     <div class="cda-hero__texto">
       <p class="cda-rotulo cor-verde">{origem}</p>
-      {campaign && gift.source.description && <p class="cda-hero__lead">{gift.source.description}</p>}
+      {campaign && gift?.source.description && <p class="cda-hero__lead">{gift.source.description}</p>}
       <h1 id="pa-titulo" class="cda-h1">{P.hero.titulo.antes}<span class="cda-destaque">{P.hero.titulo.destaque}</span></h1>
       <p class="cda-hero__lead">{P.hero.texto}</p>
       <ul class="cda-checks">
@@ -70,7 +93,7 @@ const tela = P.hero.tela
       </ul>
       {ready && (
         <div class="cda-acao">
-          <a class="cda-btn cda-btn--grande" href="#resgatar">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+          <a class="cda-btn cda-btn--grande" href={alvo}>{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
           <a class="pa-link" href="#jogo">{P.hero.link}</a>
         </div>
       )}
@@ -185,7 +208,7 @@ const tela = P.hero.tela
       ))}
     </div>
     <p class="pa-nota">{P.condicoes.nota}</p>
-    {ready && <a class="cda-btn cda-btn--grande pa-cta" href="#resgatar">{P.condicoes.cta}</a>}
+    {ready && <a class="cda-btn cda-btn--grande pa-cta" href={alvo}>{P.condicoes.cta}</a>}
   </div>
 </section>
 
@@ -203,6 +226,7 @@ const tela = P.hero.tela
   </div>
 </section>
 
+{compra ? <slot name="compra" /> : gift && (
 <section id="resgatar" class="cda-secao cda-secao--grade" aria-labelledby="pa-resgatar">
   <div class="cda-wrap cda-dupla cda-dupla--oferta">
     <div class="pa-texto">
@@ -236,3 +260,4 @@ const tela = P.hero.tela
     </div>
   </div>
 </section>
+)}

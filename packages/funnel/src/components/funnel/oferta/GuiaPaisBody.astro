@@ -1,0 +1,65 @@
+---
+// Página de venda do guia para pais "Transformando o vilão em aliado" (`kids/vilao-em-aliado`,
+// 25/11/2026). O corpo é o da página aprovada em 21/11/2026 (`CursoPaisOferta`, layout `.c917` e
+// `curso-pais.css`) com o bloco de compra no topo, no lugar do formulário. Venda: a copy de
+// `guiaPaisVenda` com o preço do catálogo (e o cupom já cotado) e o pré-checkout. Modo presente
+// (`?presente=`): a copy do guia gratuito, o selo de quem dá o presente e o `OfertaPresente` com o
+// formulário do guia. O presente do fim do guia continua surpresa.
+import { origemDoPresente } from '../../../content/presente-curso'
+import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
+import {
+  comPreco,
+  GUIA_PAIS_PRESENTE,
+  guiaPaisVenda,
+} from '../../../funnels/vilao-em-aliado/oferta'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import { getDeps } from '../../../server/deps'
+import type { OfferPageData } from '../../../server/offer-page'
+import CursoPaisOferta from '../../referrals/CursoPaisOferta.astro'
+import PresenteLayout from '../../referrals/PresenteLayout.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import OfertaPresente from './OfertaPresente.astro'
+
+type Props = OfferPageData['bodyProps']
+const { f, productName, priceReais, coupon, presente, access, offerSlug } = Astro.props
+const preco = precoDoDesafio(priceReais, coupon)
+const venda = comPreco(guiaPaisVenda(access?.guaranteeDays ?? null), preco.preco)
+const P = presente ? GUIA_PAIS_PRESENTE : venda
+const origem = presente ? origemDoPresente(presente.gift, 'pais') : null
+const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
+// A página pública é `/kids/vilao-em-aliado`; o `/oferta` do funil aponta para ela.
+const canonical = new URL(f.basePath, Astro.site ?? Astro.url).toString()
+const barra = presente ? { ...P.barra, titulo: origem ?? P.barra.titulo } : venda.barra
+---
+<PresenteLayout
+  title={P.seoTitle}
+  description={P.description}
+  ready
+  barra={barra}
+  links={P.topo.links}
+  cta={P.topo.cta}
+  ogImage={P.ogImage}
+  indexavel={!presente}
+  canonical={canonical}
+  termosHref={`${f.basePath}/termos`}
+>
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={P.ogImage} />
+  <CursoPaisOferta copy={P} selo={origem ?? undefined} compra ready>
+    <Fragment slot="compra">
+      {presente ? (
+        <OfertaPresente presente={presente} communityUrl={contaUrl} oferta={offerSlug} formulario="guia" ancora={null} />
+      ) : (
+        <article class="c9-plano" data-analytics-id="guia-oferta">
+          <h2 class="c9-plano__nome">{venda.oferta.selo}</h2>
+          {preco.precoCheio && preco.descontoPct && <span class="c9-tag c9-cor--rosa">{preco.descontoPct}% de desconto</span>}
+          <p class="c9-plano__preco">{preco.precoCheio && <s>{preco.precoCheio}</s>}{preco.precoCheio && ' '}{preco.preco}<span> {venda.oferta.sufixo}</span></p>
+          <p class="c9-plano__texto">{venda.oferta.texto}</p>
+          {preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+          <button type="button" class="c9-plano__btn" data-checkout-cta data-analytics-id="guia-oferta-comprar">{venda.oferta.cta}</button>
+          {venda.oferta.garantia && <p class="c9-plano__texto">{venda.oferta.garantia}</p>}
+        </article>
+      )}
+    </Fragment>
+  </CursoPaisOferta>
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />}
+</PresenteLayout>

@@ -1,0 +1,83 @@
+---
+// Página de venda do Cadê Todo Mundo Kids (`kids/cade-todo-mundo`, 25/11/2026). Uma página por
+// oferta: o corpo é o da página do presente (`PresenteOferta`, seções aprovadas, layout `.c917`)
+// com o bloco de compra no slot `compra`. Venda: a copy de `cadeKidsVenda`, o preço do catálogo (e o
+// cupom já cotado, como no Desafio), o botão do pré-checkout e a barra do celular. Modo presente
+// (`?presente=`): a copy do presente inteira, o selo de quem dá o presente e o `OfertaPresente` no
+// lugar do preço, sem pré-checkout. O prazo e a garantia vêm da oferta do catálogo.
+import { presenteKids } from '../../../content/presente'
+import { prazoDoCade } from '../../../content/presente-resgate'
+import { cadeKidsVenda } from '../../../funnels/cade-todo-mundo/oferta'
+import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import { funnelOgImage } from '../../../lib/seo'
+import { getDeps } from '../../../server/deps'
+import type { OfferPageData } from '../../../server/offer-page'
+import PresenteLayout from '../../referrals/PresenteLayout.astro'
+import PresenteOferta from '../../referrals/PresenteOferta.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import OfertaPresente from './OfertaPresente.astro'
+
+type Props = OfferPageData['bodyProps']
+const { f, productName, priceReais, ofertaUrl, coupon, presente, access, offerSlug } = Astro.props
+const dias =
+  access?.mode === 'fixed' && access.durationUnit === 'days' && access.durationValue
+    ? access.durationValue
+    : 7
+const prazo = prazoDoCade(dias)
+const venda = cadeKidsVenda(prazo, access?.guaranteeDays ?? null)
+const P = presente ? presenteKids(prazo) : venda
+const preco = precoDoDesafio(priceReais, coupon)
+const origem = presente
+  ? (presente.gift.source.kind !== 'campaign'
+      ? P.origem.pessoal
+      : presente.gift.source.context === 'event'
+        ? P.origem.evento
+        : P.origem.campanha
+    ).replace('{{nome}}', presente.gift.source.name)
+  : null
+const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
+const cabeca = presente ? P.resgatar : venda.oferta
+const barra = presente
+  ? { titulo: origem ?? '', texto: P.barra.texto, cta: P.barra.cta }
+  : { titulo: preco.preco, texto: venda.barra.texto, cta: venda.barra.cta }
+---
+<PresenteLayout
+  title={P.seoTitle}
+  description={P.description}
+  ready
+  alvo="oferta"
+  barra={barra}
+  cta={P.topo.cta}
+  indexavel={!presente}
+  canonical={ofertaUrl}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
+  termosHref={`${f.basePath}/termos`}
+>
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={`${f.imagesBase}/${f.checkoutImage ?? "cade-jogo-0.webp"}`} />
+  <PresenteOferta copy={P} selo={origem ?? undefined} compra>
+    <section slot="compra" id="oferta" class="c9-sec pk-pontilhado" aria-labelledby="cade-oferta" data-analytics-id="cade-oferta">
+      <div class="c9-wrap c9-lado c9-lado--topo">
+        <div class="c9-pilha c9-gap-14 c9-b420">
+          <span class="c9-tag c9-cor--amarelo">{cabeca.etiqueta}</span>
+          <h2 id="cade-oferta" class="c9-h2">{cabeca.titulo}</h2>
+          <p class="c9-p">{cabeca.texto}</p>
+          {!presente && preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+        </div>
+        {presente ? (
+          <OfertaPresente presente={presente} communityUrl={contaUrl} oferta={offerSlug} />
+        ) : (
+          <article class="c9-plano">
+            <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>
+            {preco.precoCheio && preco.descontoPct && <span class="c9-tag c9-cor--rosa">{preco.descontoPct}% de desconto</span>}
+            <p class="c9-plano__preco">{preco.precoCheio && <s>{preco.precoCheio}</s>}{preco.precoCheio && ' '}{preco.preco}<span> {venda.oferta.sufixo}</span></p>
+            <p class="c9-plano__texto">{venda.oferta.texto}</p>
+            <button type="button" class="c9-plano__btn" data-checkout-cta data-analytics-id="cade-oferta-comprar">{venda.oferta.cta}</button>
+            {venda.oferta.garantia && <p class="c9-plano__texto">{venda.oferta.garantia}</p>}
+          </article>
+        )}
+      </div>
+    </section>
+  </PresenteOferta>
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />}
+</PresenteLayout>

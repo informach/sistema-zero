@@ -129,7 +129,9 @@ describe('página adulta', () => {
   test('o corpo adulto veste o arcade e o layout usa o rodapé pro com o Termo adulto', async () => {
     const layout = await src('components/referrals/PresenteAdultoLayout.astro')
     expect(layout).toContain('htmlClass="theme-arcade"')
-    expect(layout).toContain('<Footer audience="pro" termosHref={P.legal.termos.href} />')
+    // O Termo adulto é o padrão do rodapé; a página de venda do Cadê adulto passa o dela.
+    expect(layout).toContain('termosHref = P.legal.termos.href')
+    expect(layout).toContain('<Footer audience="pro" termosHref={termosHref} />')
     expect(layout).toContain('class="cda pa-corpo"')
     const corpo = await src('components/referrals/PresenteAdultoOferta.astro')
     expect(corpo).toContain('audience="adult"')

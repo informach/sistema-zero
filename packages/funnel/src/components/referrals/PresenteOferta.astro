@@ -1,7 +1,11 @@
 ---
 // Corpo do presente Kids, com copy aprovada em 05/11/2026. O layout `.c917` e as peças de
 // presente-kids.css preservam a identidade existente. Quem lê e cadastra é o responsável.
-import { type EstadoPresente, presenteKidsDaOferta } from '../../content/presente'
+import {
+  type EstadoPresente,
+  type PRESENTE_KIDS,
+  presenteKidsDaOferta,
+} from '../../content/presente'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { CadeGiftView, ReferralGiftPage } from '../../server/referral-gift-page'
@@ -9,45 +13,68 @@ import OfferImage from '../funnel/oferta/OfferImage.astro'
 import PresenteFigura from './PresenteFigura.astro'
 
 interface Props {
-  /** A oferta do presente já conferida como a do Cadê com prazo em dias (`isCadeGift`). */
-  gift: CadeGiftView
-  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
-  communityUrl: string
+  /**
+   * A oferta do presente já conferida como a do Cadê com prazo em dias (`isCadeGift`). Ausente na
+   * página de venda (`compra`), que não tem quem dá o presente.
+   */
+  gift?: CadeGiftView
+  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  communityUrl?: string
   preview?: boolean
   /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */
   oferta?: string
+  /** A copy pronta (a página de venda do Cadê passa a dela); sem ela, a do presente da oferta. */
+  copy?: typeof PRESENTE_KIDS
+  /** O selo do topo no lugar de quem dá o presente (a página de venda). */
+  selo?: string
+  /**
+   * Página da oferta (25/11/2026): o bloco de compra vem do slot `compra` (preço e botão, ou o
+   * resgate no modo presente), no lugar do formulário; os botões levam a `#oferta`.
+   */
+  compra?: boolean
 }
-const { gift, kind, communityUrl, preview = false, oferta } = Astro.props
+const {
+  gift,
+  kind = 'ready',
+  communityUrl = '',
+  preview = false,
+  oferta,
+  copy,
+  selo,
+  compra = false,
+} = Astro.props
 // O prazo e o Mural vêm da oferta do presente (sem `gift.gift`, a copy de sempre).
-const P = presenteKidsDaOferta(gift.gift)
-const mostraMural = gift.gift?.includesMural ?? true
-const ready = kind === 'ready' && !preview
-const campaign = gift.source.kind === 'campaign'
-const lastClaimAt = gift.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
-const nome = gift.source.name
-const origem = (
-  !campaign
+const P = copy ?? presenteKidsDaOferta(gift?.gift)
+const mostraMural = gift?.gift?.includesMural ?? true
+const ready = compra || (kind === 'ready' && !preview)
+const alvo = compra ? '#oferta' : '#resgatar'
+const campaign = gift?.source.kind === 'campaign'
+const lastClaimAt = gift?.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
+const nome = gift?.source.name ?? ''
+const origem =
+  selo ??
+  (!campaign
     ? P.origem.pessoal
-    : gift.source.context === 'event'
+    : gift?.source.context === 'event'
       ? P.origem.evento
       : P.origem.campanha
-).replace('{{nome}}', nome)
+  ).replace('{{nome}}', nome)
 const dia = (iso: string | null) => (iso ? dataBrasilia(iso, false) : '')
 const estado: EstadoPresente | null =
-  kind === 'ready'
+  compra || kind === 'ready'
     ? null
     : {
         ...P.estados[kind],
         titulo:
-          kind === 'ended' && !gift.endsAt
+          kind === 'ended' && !gift?.endsAt
             ? P.estados.endedSemData
             : P.estados[kind].titulo.replace(
                 '{{data}}',
-                dia(kind === 'scheduled' ? gift.startsAt : lastClaimAt),
+                dia(kind === 'scheduled' ? (gift?.startsAt ?? null) : lastClaimAt),
               ),
       }
 const corDoEstado = kind === 'paused' || kind === 'ended' ? 'rosa' : 'azul-claro'
-const podeRetomar = !preview && (kind === 'ended' || kind === 'paused')
+const podeRetomar = !compra && !preview && (kind === 'ended' || kind === 'paused')
 const check = '<path d="M20 6 9 17l-5-5"></path>'
 const CORES_CHECKS = ['verde', 'amarelo', 'azul-claro']
 const CORES_PASSOS = ['azul', 'amarelo', 'verde']
@@ -58,7 +85,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
   <div class="c9-wrap c9-heroi__grade">
     <div class="c9-heroi__texto">
       <span class="c9-selo pk-origem">{origem}</span>
-      {campaign && gift.source.description && <p class="c9-heroi__lead">{gift.source.description}</p>}
+      {campaign && gift?.source.description && <p class="c9-heroi__lead">{gift.source.description}</p>}
       <h1 id="pk-titulo" class="c9-h1">{P.hero.titulo.antes}<span class="c9-h1__destaque pk-destaque">{P.hero.titulo.destaque}</span></h1>
       <p class="c9-heroi__lead">{P.hero.texto}</p>
       <ul class="c9-checks">
@@ -73,7 +100,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       </ul>
       {ready && (
         <div class="c9-acao">
-          <a class="c9-btn c9-btn--grande" href="#resgatar">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+          <a class="c9-btn c9-btn--grande" href={alvo}>{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
           <a class="pk-link" href="#por-que">{P.hero.link}</a>
         </div>
       )}
@@ -132,7 +159,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
   </div>
 </section>
 
-<section class="c9-sec c9-sec--creme" aria-labelledby="pk-condicoes"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.condicoes.etiqueta}</span><h2 id="pk-condicoes" class="c9-h2">{P.condicoes.titulo}</h2></div><div class="c9-grade c9-min-300 c9-grade--20">{P.condicoes.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><p class="c9-p pk-texto-largo">{P.condicoes.nota}</p>{ready && <a class="c9-btn c9-btn--grande pk-cta" href="#resgatar">{P.condicoes.cta}</a>}</div></section>
+<section class="c9-sec c9-sec--creme" aria-labelledby="pk-condicoes"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.condicoes.etiqueta}</span><h2 id="pk-condicoes" class="c9-h2">{P.condicoes.titulo}</h2></div><div class="c9-grade c9-min-300 c9-grade--20">{P.condicoes.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><p class="c9-p pk-texto-largo">{P.condicoes.nota}</p>{ready && <a class="c9-btn c9-btn--grande pk-cta" href={alvo}>{P.condicoes.cta}</a>}</div></section>
 
 <section id="duvidas" class="c9-sec c9-sec--branco" aria-labelledby="pk-duvidas">
   <div class="c9-wrap c9-pilha c9-gap-20">
@@ -148,6 +175,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
   </div>
 </section>
 
+{compra ? <slot name="compra" /> : gift && (
 <section id="resgatar" class="c9-sec pk-pontilhado" aria-labelledby="pk-resgatar">
   <div class="c9-wrap c9-lado c9-lado--topo">
     <div class="c9-pilha c9-gap-14 c9-b420">
@@ -181,3 +209,4 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
     </div>
   </div>
 </section>
+)}

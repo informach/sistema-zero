@@ -1,37 +1,28 @@
 /**
- * Página pública do guia gratuito para pais "Transformando o vilão em aliado"
- * (`/kids/vilao-em-aliado`, 18/11/2026; texto e layout novos em 21/11/2026): a copy segue as regras
- * de voz do presente, não resume aula, chama o curso de guia, o presente do fim continua em segredo,
- * e o cadastro (no topo) só abre quando a campanha entrega este curso.
+ * Página pública do guia para pais "Transformando o vilão em aliado" (`/kids/vilao-em-aliado`,
+ * 18/11/2026; texto e layout novos em 21/11/2026; página de venda do funil `kids/vilao-em-aliado`
+ * desde 25/11/2026): a copy segue as regras de voz do presente, não resume aula, chama o curso de
+ * guia e o presente do fim continua em segredo. A copy aprovada do guia gratuito é a do modo
+ * presente; a venda troca só o que falava de "gratuito".
  */
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
-  CODIGO_DA_CAMPANHA,
   CURSO_PAIS_VILAO,
   CURSO_PAIS_VILAO_PATH,
   CURSO_PAIS_VILAO_SLUG,
   DEPOIMENTOS_DE_PAIS,
 } from '../../src/content/curso-pais-vilao'
 import { resgateCopy } from '../../src/content/presente-resgate'
+import { getFunnelByKey } from '../../src/funnels/registry'
+import { VILAO_EM_ALIADO } from '../../src/funnels/vilao-em-aliado'
+import { comPreco, guiaPaisVenda } from '../../src/funnels/vilao-em-aliado/oferta'
 import BolsaResgate from '../../src/islands/BolsaResgate'
-import { cursoPaisVilaoView } from '../../src/server/curso-pais-vilao'
-import { createFakeGateway } from '../fakes/fake-gateway'
 
 const src = (path: string) => Bun.file(new URL(`../../src/${path}`, import.meta.url)).text()
 const texto = JSON.stringify([CURSO_PAIS_VILAO, DEPOIMENTOS_DE_PAIS])
 
-const campanha = {
-  code: CODIGO_DA_CAMPANHA,
-  ownerKind: 'campaign',
-  audience: 'kids',
-  displayName: 'Minicurso para pais',
-  source: { kind: 'campaign', name: 'Minicurso para pais', context: 'other' },
-  state: 'active',
-  startsAt: '2026-11-18T03:00:00Z',
-  endsAt: '2030-01-01T03:00:00Z',
-  giftAvailable: true,
-}
+const CODIGO = 'guia-pais-presente'
 const oferta = {
   offerId: '44444444-4444-4444-8444-444444444444',
   offerTitle: 'Transformando o vilão em aliado',
@@ -43,11 +34,6 @@ const oferta = {
 }
 /** A oferta tipada como a leitura pública do referrals, para o formulário e a copy. */
 const ofertaDoGuia = { ...oferta, learner: 'parents' as const }
-const ver = async (status: number, body: unknown) => {
-  const fake = createFakeGateway()
-  fake.setReferralCodeResult(status, body)
-  return cursoPaisVilaoView(fake.gateway, 'https://kids.sistemazero.com.br/')
-}
 
 describe('copy da página do curso para pais', () => {
   test('segue as regras de voz do presente', () => {
@@ -116,80 +102,46 @@ describe('copy da página do curso para pais', () => {
   })
 })
 
-describe('cadastro da página do curso para pais', () => {
-  test('campanha ativa do curso abre o formulário, com a URL do app Kids sem a barra', async () => {
-    const view = await ver(200, { ...campanha, gift: oferta })
-    expect(view).toMatchObject({
-      ready: true,
-      podeRetomar: false,
-      resgate: {
-        code: CODIGO_DA_CAMPANHA,
-        campaign: true,
-        communityUrl: 'https://kids.sistemazero.com.br',
-        gift: { courseSlug: CURSO_PAIS_VILAO_SLUG, learner: 'parents' },
-      },
+describe('venda do guia', () => {
+  const venda = comPreco(guiaPaisVenda(7), 'R$ 27')
+  const textoVenda = JSON.stringify(venda)
+
+  test('o funil do guia é registrado com a página pública, sem prazo e com Termo próprio', () => {
+    expect(getFunnelByKey('kids/vilao-em-aliado')).toBe(VILAO_EM_ALIADO)
+    expect(VILAO_EM_ALIADO.basePath).toBe(CURSO_PAIS_VILAO_PATH)
+    expect(VILAO_EM_ALIADO.offerContract).toMatchObject({
+      pricingMode: 'one_time',
+      accessMode: 'lifetime',
     })
-    expect(view.estado).toBeUndefined()
+    expect(VILAO_EM_ALIADO.lifetimeAccess).toBe(true)
+    expect(VILAO_EM_ALIADO.legal.termos.titulo).toContain('Transformando o vilão em aliado')
+    expect(VILAO_EM_ALIADO.productSku).toBe(CURSO_PAIS_VILAO_SLUG)
   })
 
-  test('campanha inexistente, referrals fora do ar ou resposta torta: em breve, sem formulário', async () => {
-    for (const [status, body] of [
-      [404, {}],
-      [503, {}],
-      [200, { ...campanha, gift: { ...oferta, learner: 'adulto' } }],
-    ] as const) {
-      const view = await ver(status, body)
-      expect([status, view.ready, view.resgate, view.estado?.etiqueta]).toEqual([
-        status,
-        false,
-        undefined,
-        'Em breve',
-      ])
-    }
+  test('a venda não diz gratuito e mostra o preço do catálogo', () => {
+    expect(textoVenda).not.toMatch(/gratuit|de graça|sem cartão/i)
+    expect(textoVenda).not.toContain('{{preco}}')
+    expect(venda.hero.selo).toBe('Guia para pais')
+    expect(venda.barra.titulo).toBe('R$ 27')
+    expect(venda.duvidas.itens.map((item) => item.pergunta)).toContain('Quanto custa?')
+    expect(venda.oferta.garantia).toContain('7 dias de garantia')
+    expect(comPreco(guiaPaisVenda(null), 'R$ 27').oferta.garantia).toBeNull()
   })
 
-  test('falha fechada quando a campanha entrega outra coisa', async () => {
-    const outras = [
-      { ...campanha },
-      { ...campanha, gift: { ...oferta, courseSlug: 'outro-curso-para-pais' } },
-      { ...campanha, gift: { ...oferta, learner: 'child' } },
-      { ...campanha, audience: 'adult', gift: oferta },
-      {
-        ...campanha,
-        gift: { ...oferta, courseSlug: 'cade-todo-mundo', learner: 'child', accessDays: 7 },
-      },
-    ]
-    for (const body of outras) {
-      const view = await ver(200, body)
-      expect([view.ready, view.resgate]).toEqual([false, undefined])
-    }
+  test('a venda segue as regras de voz e o presente do fim continua surpresa', () => {
+    expect(/[—–!]/.test(textoVenda)).toBe(false)
+    expect(/mesmo que|sem precisar|em preparação|carreira/i.test(textoVenda)).toBe(false)
+    expect(textoVenda).not.toMatch(/Cadê Todo Mundo|Desafio do Primeiro Jogo|presente/i)
+    expect(textoVenda).not.toMatch(/\bcursos?\b(?! para pais)|minicurso/i)
+    expect(venda.hero.surpresa).toBe('Uma surpresa na última aula')
   })
+})
 
-  test('agendada ou sem disponibilidade: em breve; pausada ou encerrada: fechada, com retomada', async () => {
-    const agendada = await ver(200, { ...campanha, state: 'scheduled', gift: oferta })
-    expect([agendada.ready, agendada.podeRetomar, agendada.estado?.etiqueta]).toEqual([
-      false,
-      false,
-      'Em breve',
-    ])
-    const indisponivel = await ver(200, { ...campanha, giftAvailable: false, gift: oferta })
-    expect([indisponivel.ready, indisponivel.estado?.etiqueta]).toEqual([false, 'Em breve'])
-    for (const state of ['paused', 'ended']) {
-      const fechada = await ver(200, { ...campanha, state, giftAvailable: false, gift: oferta })
-      expect([state, fechada.ready, fechada.podeRetomar, fechada.estado?.etiqueta]).toEqual([
-        state,
-        false,
-        true,
-        'Inscrições fechadas',
-      ])
-      expect(fechada.resgate?.code).toBe(CODIGO_DA_CAMPANHA)
-    }
-  })
-
+describe('formulário do guia no modo presente', () => {
   test('o formulário é o do curso para pais: dados do adulto, sem perfil de criança', () => {
     const html = renderToStaticMarkup(
       <BolsaResgate
-        code={CODIGO_DA_CAMPANHA}
+        code={CODIGO}
         referrerName="Minicurso para pais"
         communityUrl="https://kids.sistemazero.com.br"
         audience="kids"
@@ -205,7 +157,7 @@ describe('cadastro da página do curso para pais', () => {
   test('na variante guia, o formulário diz guia e não chama o guia de presente', () => {
     const html = renderToStaticMarkup(
       <BolsaResgate
-        code={CODIGO_DA_CAMPANHA}
+        code={CODIGO}
         referrerName="Minicurso para pais"
         communityUrl="https://kids.sistemazero.com.br"
         audience="kids"
@@ -256,33 +208,42 @@ describe('cadastro da página do curso para pais', () => {
 })
 
 describe('rota e peças da página', () => {
-  test('a rota é pública, indexável e usa o layout e o corpo do curso', async () => {
+  test('a rota pública é a oferta do funil do guia, sem campanha fixa no código', async () => {
     const rota = await src('pages/kids/vilao-em-aliado.astro')
     expect(rota).toContain('export const prerender = false')
-    expect(rota).toContain('<PresenteLayout')
-    expect(rota).toContain(' indexavel>')
-    expect(rota).toContain('<CursoPaisOferta')
-    expect(rota).toContain('cursoPaisVilaoView(gateway, env.KIDS_COMMUNITY_URL)')
+    expect(rota).toContain("{ audience: 'kids', produto: 'vilao-em-aliado' }")
+    expect(rota).toContain('<OfertaPage {...page} />')
+    expect(rota).not.toMatch(/CODIGO_DA_CAMPANHA|cursoPaisVilaoView/)
+    const conteudo = await src('content/curso-pais-vilao.ts')
+    expect(conteudo).not.toContain('CODIGO_DA_CAMPANHA')
+    expect(
+      await Bun.file(new URL('../../src/server/curso-pais-vilao.ts', import.meta.url)).exists(),
+    ).toBe(false)
+  })
+
+  test('o corpo do guia: compra no topo, presente com o formulário do guia, página indexável', async () => {
+    const corpo = await src('components/funnel/oferta/GuiaPaisBody.astro')
+    expect(corpo).toContain('<CursoPaisOferta copy={P}')
+    expect(corpo).toContain('data-checkout-cta')
+    expect(corpo).toContain('formulario="guia"')
+    expect(corpo).toContain('{!presente && <PreCheckoutModal')
+    expect(corpo).toContain('indexavel={!presente}')
+    const peca = await src('components/referrals/CursoPaisOferta.astro')
+    expect(peca).toContain("variante: 'guia'")
+    expect(peca).toContain('<slot name="compra" />')
+    expect(peca).toContain('DEPOIMENTOS_DE_PAIS.length > 0 &&')
+    expect(peca).not.toMatch(/Cadê|7 dias/)
+    const formulario = peca.indexOf('<div id="resgatar"')
+    expect(formulario).toBeGreaterThan(peca.indexOf('id="cpv-titulo"'))
+    expect(formulario).toBeLessThan(peca.indexOf('id="o-que-muda"'))
     const layout = await src('components/referrals/PresenteLayout.astro')
     expect(layout).toContain('noindex={!indexavel}')
     expect(layout).toContain('indexavel = false')
   })
 
-  test('o corpo mostra o formulário no topo, na variante guia, e os depoimentos só quando existem', async () => {
-    const corpo = await src('components/referrals/CursoPaisOferta.astro')
-    expect(corpo).toContain("variante: 'guia'")
-    expect(corpo).toContain('<BolsaResgate client:load {...formulario} />')
-    expect(corpo).toContain('<BolsaResgate client:load {...formulario} retryOnly />')
-    expect(corpo).toContain('DEPOIMENTOS_DE_PAIS.length > 0 &&')
-    expect(corpo).not.toMatch(/Cadê|7 dias/)
-    const formulario = corpo.indexOf('<div id="resgatar"')
-    expect(formulario).toBeGreaterThan(corpo.indexOf('id="cpv-titulo"'))
-    expect(formulario).toBeLessThan(corpo.indexOf('id="o-que-muda"'))
-    expect(corpo).toMatch(/\{ready && \(\s*<section class="c9-fim"/)
-  })
-
-  test('a página está no sitemap', async () => {
+  test('a página e o Termo estão no sitemap', async () => {
     const config = await Bun.file(new URL('../../astro.config.mjs', import.meta.url)).text()
     expect(config).toContain('`${site}/kids/vilao-em-aliado`')
+    expect(config).toContain('`${site}/kids/vilao-em-aliado/termos`')
   })
 })

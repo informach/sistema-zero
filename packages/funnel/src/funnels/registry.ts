@@ -17,10 +17,13 @@ import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
 export type { QuizAnswers } from '../lib/quiz-types'
 
+import { CADE_ADULTO } from './cade-adulto'
+import { CADE_TODO_MUNDO } from './cade-todo-mundo'
 import { COMUNIDADE_ADULTO } from './comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
 import { DESAFIO_ADULTO } from './desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
+import { VILAO_EM_ALIADO } from './vilao-em-aliado'
 
 export type Audience = 'pro' | 'kids'
 export const AUDIENCES = ['pro', 'kids'] as const
@@ -195,6 +198,13 @@ export interface FunnelOfferContract {
   accessDurationUnit: 'days' | 'months' | null
   /** Condição legal repetida pela copy; `null` quando o funil não promete garantia. */
   guaranteeDays: number | null
+  /**
+   * A copy lê o prazo da própria oferta (o Cadê, 25/11/2026): qualquer duração do modo e da
+   * unidade acima vale, e `accessDurationValue` é ignorado.
+   */
+  anyDuration?: boolean
+  /** A copy lê a garantia da própria oferta: qualquer `guaranteeDays` vale. */
+  anyGuarantee?: boolean
 }
 
 /** O Termo de Uso da oferta do funil (um por oferta) e a versão gravada em cada compra. */
@@ -274,10 +284,17 @@ export const FUNNELS: Record<string, FunnelDef> = {
   // O Desafio adulto entra depois: `/pro` segue na Comunidade. A env
   // `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção.
   [DESAFIO_ADULTO.key]: DESAFIO_ADULTO,
+  // Uma página por oferta (25/11/2026): o Cadê adulto, depois do Desafio adulto (`/pro` não muda).
+  // Env `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO`.
+  [CADE_ADULTO.key]: CADE_ADULTO,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
   // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
   // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.
   [COMUNIDADE_DOS_CRIADORES.key]: COMUNIDADE_DOS_CRIADORES,
+  // Uma página por oferta (25/11/2026): o Cadê Kids e o guia para pais, por último (`/kids` não
+  // muda). Envs `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` e `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO`.
+  [CADE_TODO_MUNDO.key]: CADE_TODO_MUNDO,
+  [VILAO_EM_ALIADO.key]: VILAO_EM_ALIADO,
 }
 
 /** Chaves válidas de funil (p/ validar `{ funnel }` recebido do cliente em /api/leads). */

@@ -50,6 +50,42 @@ página da oferta com `?presente=` ou `/bolsa/<código>[?oferta=]`. `BolsaResgat
 (vai como `oferta` ao `/api/bolsa/resgatar` e como `offer` ao referrals, que só aceita oferta ligada
 na lista do público).
 
+## Cadê Todo Mundo e guia para pais com página de venda (25/11/2026, Lote 4 parte 2)
+
+Uma página por oferta: as três ofertas que só tinham página de presente viraram funis do registry.
+- **`kids/cade-todo-mundo`** (`CadeKidsBody`) e **`pro/cade-todo-mundo`** (`CadeAdultoBody`, tema
+  arcade): o corpo é o da página do presente (`PresenteOferta`/`PresenteAdultoOferta`, seções
+  aprovadas) com o bloco de compra no slot `compra` (prop `compra`; sem ela, as páginas do presente
+  seguem iguais). Venda: `cadeKidsVenda`/`cadeAdultoVenda` (`funnels/cade-*/oferta.ts`) trocam só o
+  topo, as condições, as dúvidas que falavam do presente e o bloco de compra; preço e cupom pelo
+  `precoDoDesafio`, `PreCheckoutModal`, barra do celular para `#oferta`. Modo presente
+  (`?presente=`): a copy do presente inteira (`presenteKids`/`presenteAdulto`, agora exportadas) e o
+  `OfertaPresente`. O PRAZO e a GARANTIA vêm da oferta do catálogo (`bodyProps.access`, novo em
+  `resolveOfferPage`, junto com `offerSlug`): nada de "7 dias" escrito à mão. O contrato só exige
+  pagamento único com prazo fixo em dias (`FunnelOfferContract.anyDuration`/`anyGuarantee`, novos).
+- **`kids/vilao-em-aliado`** (`GuiaPaisBody`): o guia é curso pago (R$ 27, vitalício; contrato
+  `one_time` + `lifetime`, garantia da oferta). `/kids/vilao-em-aliado` renderiza a oferta do funil
+  (o `/oferta` do funil é o mesmo corpo, com canonical na página pública). `CursoPaisOferta`
+  recebe a copy (`copy`) e o slot `compra` no lugar do formulário do topo; venda pela
+  `guiaPaisVenda` (sem "gratuito", `{{preco}}` trocado por `comPreco`), presente pela copy aprovada
+  do guia gratuito (`GUIA_PAIS_PRESENTE`) e o `OfertaPresente` com `formulario="guia"`. Saíram
+  `server/curso-pais-vilao.ts` e `CODIGO_DA_CAMPANHA`: o presente do guia sai por link de campanha
+  ou de embaixador, e o endereço antigo pelo redirecionamento genérico de campanha. A métrica da
+  página passou a `kind: 'oferta'` do funil, com o mesmo id.
+- `PresenteLayout`/`PresenteAdultoLayout` ganharam `alvo` (o id do botão do topo e da barra),
+  `termosHref`, `canonical`, `indexavel` (adulto) e o slot `head`. Termos próprios:
+  `termos-cade-kids.ts`, `termos-cade-adulto.ts`, `termos-guia-pais.ts` (versões
+  `cade-kids-2026-11-25`, `cade-adulto-2026-11-25`, `guia-pais-2026-11-25`).
+- ⚠️ **Envs obrigatórias (fail-fast) antes do deploy**, staging e produção:
+  `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` (a oferta do Cadê, hoje `cade-todo-mundo-7-dias`),
+  `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO` (`cade-todo-mundo-adulto-7-dias`) e
+  `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta vitalícia do guia). Declaradas em
+  `.railway/variables.ts`. Com a env do Cadê apontando para a oferta do presente, o `/bolsa` dos
+  presentes do Cadê passa a abrir esta página no modo presente.
+- Testes: `tests/unit/cade-oferta.test.ts` e `tests/unit/curso-pais-vilao.test.tsx`. Os browsers
+  `tests/browser/curso-pais-vilao.ts` e `presente.ts` ainda descrevem o fluxo anterior (formulário
+  da campanha fixa; `/bolsa` do Cadê sem redirecionar) e precisam ser revistos.
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.

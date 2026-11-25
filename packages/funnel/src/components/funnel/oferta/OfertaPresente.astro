@@ -18,8 +18,12 @@ interface Props {
   communityUrl: string
   /** O slug da oferta da página: vai no resgate (a escolha do embaixador). */
   oferta: string
+  /** O formulário do guia para pais ("guia" no lugar de "curso"; `/kids/vilao-em-aliado`). */
+  formulario?: 'guia'
+  /** O id do bloco (padrão `resgatar`; `null` quando a página já tem a âncora em volta). */
+  ancora?: string | null
 }
-const { presente, communityUrl, oferta } = Astro.props
+const { presente, communityUrl, oferta, formulario, ancora = 'resgatar' } = Astro.props
 const { gift, kind } = presente
 const audience = gift.audience === 'adult' ? 'adult' : 'kids'
 const adulto = audience === 'adult'
@@ -61,12 +65,12 @@ const resgate = {
   audience,
   campaign,
   gift: gift.gift,
-  variante,
+  variante: formulario ?? variante,
   oferta,
 } as const
 ---
 {adulto ? (
-  <article id="resgatar" class="op-presente pa-form" aria-labelledby="op-presente-titulo">
+  <article id={ancora ?? undefined} class="op-presente pa-form" aria-labelledby="op-presente-titulo">
     <p class="cda-rotulo cor-verde">{origem}</p>
     <h3 id="op-presente-titulo" class="cda-h3">{P.resgatar.titulo}</h3>
     <p class="cda-suave">{P.resgatar.texto}</p>
@@ -92,7 +96,7 @@ const resgate = {
     )}
   </article>
 ) : (
-  <article id="resgatar" class="c9-plano op-presente pk-form" aria-labelledby="op-presente-titulo">
+  <article id={ancora ?? undefined} class="c9-plano op-presente pk-form" aria-labelledby="op-presente-titulo">
     <span class="c9-tag c9-cor--amarelo">{origem}</span>
     <h3 id="op-presente-titulo" class="c9-plano__nome">{P.resgatar.titulo}</h3>
     <p class="c9-plano__texto">{P.resgatar.texto}</p>

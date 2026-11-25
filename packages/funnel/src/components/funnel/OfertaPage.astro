@@ -1,17 +1,23 @@
 ---
+import { CADE_ADULTO } from '../../funnels/cade-adulto'
+import { CADE_TODO_MUNDO } from '../../funnels/cade-todo-mundo'
 import { COMUNIDADE_ADULTO } from '../../funnels/comunidade-adulto'
 import type { ComunidadeAdultoSubpagina } from '../../funnels/comunidade-adulto/oferta'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import type { ComunidadeOfertaId } from '../../funnels/comunidade-dos-criadores/oferta/types'
 import { DESAFIO_ADULTO } from '../../funnels/desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
+import { VILAO_EM_ALIADO } from '../../funnels/vilao-em-aliado'
 import type { OfferPageData } from '../../server/offer-page'
+import CadeAdultoBody from './oferta/CadeAdultoBody.astro'
+import CadeKidsBody from './oferta/CadeKidsBody.astro'
 import Comunidade917Body from './oferta/Comunidade917Body.astro'
 import ComunidadeAdultoContinuarBody from './oferta/ComunidadeAdultoContinuarBody.astro'
 import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
 import ComunidadeContinuarBody from './oferta/ComunidadeContinuarBody.astro'
 import Desafio917Body from './oferta/Desafio917Body.astro'
 import DesafioAdultoBody from './oferta/DesafioAdultoBody.astro'
+import GuiaPaisBody from './oferta/GuiaPaisBody.astro'
 
 // Cada funil tem o seu corpo de oferta, escolhido pela CHAVE do funil (nunca por exclusão: um funil
 // novo sem corpo declarado falha alto em vez de cair na página de outro produto).
@@ -32,7 +38,13 @@ const corpo =
         ? 'desafio'
         : f.key === DESAFIO_ADULTO.key
           ? 'desafio-adulto'
-          : null
+          : f.key === CADE_TODO_MUNDO.key
+            ? 'cade'
+            : f.key === CADE_ADULTO.key
+              ? 'cade-adulto'
+              : f.key === VILAO_EM_ALIADO.key
+                ? 'guia-pais'
+                : null
 if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
@@ -51,6 +63,12 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
     )
   ) : corpo === 'desafio-adulto' ? (
     <DesafioAdultoBody {...bodyProps} />
+  ) : corpo === 'cade' ? (
+    <CadeKidsBody {...bodyProps} />
+  ) : corpo === 'cade-adulto' ? (
+    <CadeAdultoBody {...bodyProps} />
+  ) : corpo === 'guia-pais' ? (
+    <GuiaPaisBody {...bodyProps} />
   ) : (
     <Desafio917Body {...bodyProps} />
   )

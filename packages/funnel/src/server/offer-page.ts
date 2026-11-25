@@ -105,8 +105,21 @@ export async function resolveOfferPage(
     }
   }
 
+  // A política de acesso publicada pelo catálogo: as páginas que leem o prazo da própria oferta
+  // (o Cadê, 25/11/2026) e a garantia. `null` com o catálogo fora (o contrato já barrou a venda).
+  const access = offer
+    ? {
+        mode: offer.accessMode,
+        durationValue: offer.accessDurationValue,
+        durationUnit: offer.accessDurationUnit,
+        guaranteeDays: offer.guaranteeDays,
+      }
+    : null
+
   const bodyProps = {
     f,
+    offerSlug,
+    access,
     productName,
     priceLabel,
     priceLabelShort,
