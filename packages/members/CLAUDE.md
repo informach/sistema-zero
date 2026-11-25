@@ -24,6 +24,14 @@ Dedupe em `entitlement_lifecycle_messages_sent` (coluna text, sem migration) com
 `<KIDS_COMMUNITY_URL>/pais/cursos/<slug>`, adulto `<COMMUNITY_URL>/cursos`. ⚠️ O SQL não tem teste de
 banco (sem Postgres local): conferir num banco descartável antes da staging.
 
+## Lembretes dos cursos para pais (25/11/2026)
+
+Curso para pais (`learner: 'parents'`, Kids) NÃO usa os lembretes da criança: cada um tem os seus
+três e-mails, escritos para o conteúdo dele (`PARENTS_COURSE_TEMPLATES` em
+`send-course-reminders.service.ts`; o guia usa `course-{not-started,stalled,completed}-vilao-em-aliado`).
+Curso para pais novo sem os próprios cai nos neutros `course-*-pais`. Curso novo para pais =
+escrever os três no seed do Messaging e acrescentar o slug no mapa.
+
 ## Dias de surpresa do prazo divulgado (25/11/2026)
 
 A oferta pode divulgar menos dias que o prazo real (`advertisedAccessDays` no topo de

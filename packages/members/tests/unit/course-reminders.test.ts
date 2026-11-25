@@ -170,11 +170,29 @@ describe('envio dos lembretes', () => {
     expect(sent[1]?.variables?.link).toBe(
       'https://kids.sistemazero.com.br/pais/cursos/transformando-o-vilao-em-aliado',
     )
+    // O guia tem os e-mails dele (nunca o da criança criando jogos).
+    expect(sent[1]?.templateKey).toBe('course-not-started-vilao-em-aliado')
     expect(marks[0]).toEqual({
       entitlementId: 'ent-1',
       dedupeOn: candidate().grantedAt.toISOString().slice(0, 10),
       kind: 'course_not_started',
     })
+  })
+
+  test('outro curso para pais sem e-mails próprios usa os neutros dos pais', async () => {
+    const { service, sent } = setup(
+      [
+        candidate({
+          entitlementId: 'ent-pais',
+          courseRef: 'outro-curso-para-pais',
+          courseTitle: 'Outro curso para pais',
+          learner: 'parents',
+        }),
+      ],
+      { 'conta-1': identity('conta-1') },
+    )
+    await service.runCycle()
+    expect(sent[0]?.templateKey).toBe('course-not-started-pais')
   })
 
   test('conclusão adulta: /cursos e a Comunidade adulta com as UTMs', async () => {

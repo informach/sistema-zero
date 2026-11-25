@@ -419,6 +419,15 @@ página de continuidade da Comunidade, com UTMs). Kids fala com o responsável s
 estuda (vale também para o guia dos pais); o adulto fala com a pessoa. Nada de prazo nem de acesso
 vitalício. Teste: `tests/course-reminders-copy.test.ts`.
 
+## Lembretes dos cursos para pais (25/11/2026)
+
+Seis e-mails do consumer `members`: `course-{not-started,stalled,completed}-vilao-em-aliado` (o guia
+"Transformando o vilão em aliado", com o conteúdo dele: a Helena, as aulas curtas, a apostila e o
+certificado; o presente do fim do guia continua surpresa; variáveis `nome`, `link` e, na conclusão,
+`comunidade`) e os neutros `course-*-pais` (com `curso`) para curso para pais que ainda não tem os
+próprios. Falam com o responsável sobre o curso DELE, nunca da criança criando jogos; só a
+conclusão apresenta a Comunidade. Teste: `tests/course-reminders-copy.test.ts`.
+
 ## Desafio do Primeiro Jogo para adultos (21/10/2026)
 
 Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria

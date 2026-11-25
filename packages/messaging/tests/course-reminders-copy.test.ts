@@ -22,6 +22,12 @@ const CONTRACTS = {
   'course-stalled-adult': ['nome', 'curso', 'link'],
   'course-completed': ['nome', 'curso', 'link', 'comunidade'],
   'course-completed-adult': ['nome', 'curso', 'link', 'comunidade'],
+  'course-not-started-vilao-em-aliado': ['nome', 'link'],
+  'course-stalled-vilao-em-aliado': ['nome', 'link'],
+  'course-completed-vilao-em-aliado': ['nome', 'link', 'comunidade'],
+  'course-not-started-pais': ['nome', 'curso', 'link'],
+  'course-stalled-pais': ['nome', 'curso', 'link'],
+  'course-completed-pais': ['nome', 'curso', 'link', 'comunidade'],
 } as const
 
 describe('lembretes do curso', () => {
@@ -69,5 +75,26 @@ describe('lembretes do curso', () => {
       for (const banned of ['carreira', 'mesmo que', 'sem precisar', 'não é '])
         expect(text.toLowerCase()).not.toContain(banned)
     }
+  })
+
+  test('cursos para pais: falam com o responsável sobre o curso dele, nunca da criança criando no curso', () => {
+    for (const key of [
+      'course-not-started-vilao-em-aliado',
+      'course-stalled-vilao-em-aliado',
+      'course-not-started-pais',
+      'course-stalled-pais',
+    ]) {
+      expect(readable(key)).toContain('área dos pais')
+      expect(readable(key)).not.toMatch(/Comunidade|criança|criando jogos/)
+    }
+    // O guia nomeia o próprio conteúdo; o presente do fim do guia continua surpresa.
+    for (const key of [
+      'course-not-started-vilao-em-aliado',
+      'course-stalled-vilao-em-aliado',
+      'course-completed-vilao-em-aliado',
+    ]) {
+      expect(readable(key)).not.toMatch(/presente|Cadê/i)
+    }
+    expect(readable('course-not-started-vilao-em-aliado')).toContain('Helena')
   })
 })

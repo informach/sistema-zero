@@ -34,6 +34,24 @@ const TEMPLATES: Record<CourseReminderKind, { kids: string; adult: string }> = {
 }
 
 /**
+ * Cursos PARA PAIS (25/11/2026, decisão da dona): cada um tem os seus três e-mails, escritos para
+ * o conteúdo dele. Curso para pais novo sem os próprios cai nos neutros `-pais` (nunca nos da
+ * criança). Curso novo para pais: escrever os três no seed do Messaging e acrescentar aqui.
+ */
+const PARENTS_COURSE_TEMPLATES: Record<string, Record<CourseReminderKind, string>> = {
+  'transformando-o-vilao-em-aliado': {
+    course_not_started: 'course-not-started-vilao-em-aliado',
+    course_stalled: 'course-stalled-vilao-em-aliado',
+    course_completed: 'course-completed-vilao-em-aliado',
+  },
+}
+const PARENTS_DEFAULT_TEMPLATES: Record<CourseReminderKind, string> = {
+  course_not_started: 'course-not-started-pais',
+  course_stalled: 'course-stalled-pais',
+  course_completed: 'course-completed-pais',
+}
+
+/**
  * Lembretes do curso (25/11/2026), e-mail ao responsável (Kids) ou à própria pessoa (adulto):
  * `course-not-started` 2 dias depois do acesso sem nenhuma aula começada, `course-stalled` 7 dias
  * depois da última atividade num curso começado e não terminado (uma vez) e `course-completed`
@@ -82,7 +100,10 @@ export class SendCourseRemindersService {
     kind: CourseReminderKind,
   ): Promise<'sent' | 'skipped' | 'failed'> {
     const adult = candidate.audience === 'adult'
-    const templateKey = TEMPLATES[kind][adult ? 'adult' : 'kids']
+    const templateKey =
+      !adult && candidate.learner === 'parents'
+        ? (PARENTS_COURSE_TEMPLATES[candidate.courseRef]?.[kind] ?? PARENTS_DEFAULT_TEMPLATES[kind])
+        : TEMPLATES[kind][adult ? 'adult' : 'kids']
     const dedupeOn = courseReminderDedupeKey(candidate.grantedAt)
     const mark = () =>
       this.repository.markSent(candidate.entitlementId, dedupeOn, kind, this.clock())

@@ -1228,6 +1228,145 @@ export const seeds = [
       footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
     }),
   },
+  // Lembretes dos cursos PARA PAIS (25/11/2026): quem assiste é o próprio responsável, na área
+  // dos pais. Cada curso para pais tem os seus três e-mails, escritos para o conteúdo dele
+  // (`-vilao-em-aliado` é o guia); curso novo sem os próprios usa os neutros `-pais`, que nunca
+  // falam da criança criando. Mesmas variáveis dos lembretes do curso.
+  {
+    key: 'course-not-started-vilao-em-aliado',
+    channel: 'email' as const,
+    name: 'Guia dos pais: ainda não começou (e-mail)',
+    subject: '{{nome}}, a primeira aula do guia já está na área dos pais',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'As aulas são curtas e dá para assistir no celular ou no computador.',
+      title: 'A primeira aula do guia',
+      content: [
+        p(
+          'Olá, {{nome}}. O guia <strong>Transformando o vilão em aliado</strong> está liberado na sua conta, em Cursos para pais.',
+        ),
+        p(
+          'Na primeira aula, a Helena mostra como a tela que hoje vira briga em casa pode ajudar o seu filho a planejar, seguir um passo a passo e lidar com o erro. As aulas são curtas, e dá para assistir no celular ou no computador.',
+        ),
+        ctaButton('Assistir à primeira aula', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-stalled-vilao-em-aliado',
+    channel: 'email' as const,
+    name: 'Guia dos pais: parou no meio (e-mail)',
+    subject: '{{nome}}, o guia continua de onde você parou',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'As aulas são curtas, e a apostila ajuda a lembrar o que você já viu.',
+      title: 'O guia continua de onde você parou',
+      content: [
+        p(
+          'Olá, {{nome}}. Você começou o guia <strong>Transformando o vilão em aliado</strong>, e ele continua na área dos pais, de onde você parou.',
+        ),
+        p(
+          'Cada aula traz uma ideia para levar para a rotina com o seu filho. As aulas são curtas, e a apostila ajuda a lembrar o que você já viu.',
+        ),
+        ctaButton('Continuar o guia', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-completed-vilao-em-aliado',
+    channel: 'email' as const,
+    name: 'Guia dos pais: concluído (e-mail)',
+    subject: '{{nome}}, você concluiu o guia Transformando o vilão em aliado',
+    variables: ['nome', 'link', 'comunidade'],
+    body: emailLayout({
+      preheader: 'Parabéns por ter chegado até o fim do guia.',
+      title: 'Guia concluído',
+      content: [
+        p(
+          'Olá, {{nome}}. Você concluiu o guia <strong>Transformando o vilão em aliado</strong>. Parabéns por ter chegado até o fim.',
+        ),
+        p(
+          'As aulas e a apostila continuam na área dos pais para você rever, e o certificado fica na última aula.',
+        ),
+        ctaButton('Abrir o guia', '{{link}}'),
+        p(
+          'Para ver na prática o que o guia mostra, a Comunidade dos Criadores é onde o seu filho cria jogos com orientação, de 5 a 17 anos. Ele planeja, testa, erra e ajusta, com os cursos, o Estúdio e o Mural.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{comunidade}}'),
+        fallbackLink('{{comunidade}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-not-started-pais',
+    channel: 'email' as const,
+    name: 'Curso para pais: ainda não começou (e-mail)',
+    subject: '{{nome}}, o curso {{curso}} está na área dos pais',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'As aulas ficam na área dos pais, para você assistir no seu ritmo.',
+      title: 'O curso está na área dos pais',
+      content: [
+        p(
+          'Olá, {{nome}}. O curso <strong>{{curso}}</strong> está liberado na sua conta, em Cursos para pais.',
+        ),
+        p(
+          'As aulas ficam na área dos pais, e você assiste no seu ritmo, no celular ou no computador.',
+        ),
+        ctaButton('Assistir à primeira aula', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-stalled-pais',
+    channel: 'email' as const,
+    name: 'Curso para pais: parou no meio (e-mail)',
+    subject: '{{nome}}, o curso {{curso}} continua de onde você parou',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'As aulas continuam na área dos pais.',
+      title: 'O curso continua de onde você parou',
+      content: [
+        p(
+          'Olá, {{nome}}. Você começou o curso <strong>{{curso}}</strong>, e ele continua na área dos pais, de onde você parou.',
+        ),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-completed-pais',
+    channel: 'email' as const,
+    name: 'Curso para pais: concluído (e-mail)',
+    subject: '{{nome}}, você concluiu o curso {{curso}}',
+    variables: ['nome', 'curso', 'link', 'comunidade'],
+    body: emailLayout({
+      preheader: 'Parabéns por ter chegado até o fim do curso.',
+      title: 'Curso concluído',
+      content: [
+        p(
+          'Olá, {{nome}}. Você concluiu o curso <strong>{{curso}}</strong>. Parabéns por ter chegado até o fim.',
+        ),
+        p('As aulas continuam na área dos pais para você rever.'),
+        ctaButton('Abrir o curso', '{{link}}'),
+        p(
+          'Para o seu filho criar jogos com orientação, a Comunidade dos Criadores reúne cursos, o Estúdio e o Mural, para crianças de 5 a 17 anos.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{comunidade}}'),
+        fallbackLink('{{comunidade}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
   {
     key: 'subscription-ended-kids',
     channel: 'email' as const,
