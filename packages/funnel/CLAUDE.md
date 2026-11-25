@@ -1,5 +1,21 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Mini checkout da conta: origem da oferta, lugar e cupom (25/11/2026, Lote 5)
+
+`server/member-commerce.ts` (S2S do member-shell):
+- origem `{kind:'offer', offerRef}` (a página de um curso na área dos pais): chave
+  `offer:<slug>` (`commerceOriginKey`), recuperada também pelo `offerRef` (`store.recover`);
+- `place` no corpo (saneado por `sanitizeOriginPlace`): no `pay`, dentro da trava do produto e antes
+  de preparar a cobrança, vira `lead.origin = {version:1, code:null, place}`, então o metadata leva
+  `origemLugar` e o fingerprint do Pix o inclui (a cobrança da conta não tem o cookie do funil);
+- ação `quote` (`quoteMemberOffer`): só oferta disponível, avulsa e com `content.allowsCoupon`; senão
+  422 `COUPON_NOT_ALLOWED`; código vazio 422 `INVALID_COUPON`; cotação por `resolveCharge` e resposta
+  `{listPriceCents, discountCents, finalPriceCents, couponCode}`. No `pay`, cupom em assinatura ou em
+  oferta sem a marca também é 422 `COUPON_NOT_ALLOWED`; o `expectedPriceCents` é o valor cotado.
+- Trocar de plano: o BFF manda o `offerRef` da irmã e o `inspect` prepara a compra daquela oferta
+  (uma por conta e oferta), sem mexer na outra.
+- Testes: o bloco "mini checkout da área dos pais" de `tests/integration/member-commerce.test.ts`.
+
 ## Oferta de cada página no CATÁLOGO e links curtos por curso (25/11/2026)
 
 **Sem env de oferta.** As `FUNNEL_OFFER_*` saíram de vez (código, `.env.example`, `.railway/variables.ts`,

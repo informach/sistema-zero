@@ -986,3 +986,160 @@ describe('checkout da conta autenticada', () => {
     )
   })
 })
+
+describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
+  beforeEach(() => clearOfferCache())
+  const pix = {
+    method: 'pix',
+    acceptedTerms: true,
+    termsVersion: 'qa',
+    contact: { cpf: '52998224725', telefone: '11988887777' },
+  }
+  const fromCourse = { ...input, origin: { kind: 'offer', offerRef: offer.slug } }
+  test('a página do curso compra pela origem da oferta e a recupera pela oferta', async () => {
+    const { deps } = setup()
+    const body = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    expect(body).toMatchObject({ status: 'READY', origin: { kind: 'offer', offerRef: offer.slug } })
+    const paid = await handleMemberCommerce(
+      request({ ...fromCourse, checkoutId: body.checkoutId, data: pix }),
+      'pay',
+      deps,
+    )
+    expect(paid.status).toBe(200)
+    const recovered = await handleMemberCommerce(request(fromCourse), 'recover', deps)
+    expect(recovered.status).toBe(200)
+    expect((await recovered.json()).checkoutId).toBe(body.checkoutId)
+  })
+  test('o lugar do botão vai ao lead e ao metadata da cobrança como origemLugar', async () => {
+    const { deps, gw, state } = setup()
+    const body = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    const response = await handleMemberCommerce(
+      request({
+        ...fromCourse,
+        checkoutId: body.checkoutId,
+        place: 'pais-curso-fechado',
+        data: pix,
+      }),
+      'pay',
+      deps,
+    )
+    expect(response.status).toBe(200)
+    expect(gw.calls.create[0]?.input).toMatchObject({
+      metadata: { origemLugar: 'pais-curso-fechado', accountUserId: accountId },
+    })
+    expect([...state.leads.values()][0]?.origin).toEqual({
+      version: 1,
+      code: null,
+      place: 'pais-curso-fechado',
+    })
+  })
+  test('lugar fora da régua não vai a lugar nenhum', async () => {
+    const { deps, gw } = setup()
+    const body = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    await handleMemberCommerce(
+      request({ ...fromCourse, checkoutId: body.checkoutId, place: 'Pais Início!', data: pix }),
+      'pay',
+      deps,
+    )
+    expect(gw.calls.create).toHaveLength(1)
+    expect(
+      (gw.calls.create[0]?.input as { metadata: Record<string, unknown> }).metadata.origemLugar,
+    ).toBeUndefined()
+  })
+  test('o cupom é cotado no catálogo e a cobrança usa o valor cotado', async () => {
+    const { deps, gw } = setup()
+    const withCoupon = { ...offer, content: { allowsCoupon: true } }
+    gw.gateway.getOffer = async () => ({ status: 200, body: withCoupon })
+    gw.addCoupon('PAIS10', 700)
+    const quoted = await handleMemberCommerce(
+      request({ ...fromCourse, data: { couponCode: 'pais10' } }),
+      'quote',
+      deps,
+    )
+    expect(quoted.status).toBe(200)
+    expect(await quoted.json()).toMatchObject({
+      listPriceCents: 3700,
+      discountCents: 700,
+      finalPriceCents: 3000,
+      couponCode: 'PAIS10',
+    })
+    const invalid = await handleMemberCommerce(
+      request({ ...fromCourse, data: { couponCode: 'NAOEXISTE' } }),
+      'quote',
+      deps,
+    )
+    expect(invalid.status).toBe(422)
+    const body = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    const paid = await handleMemberCommerce(
+      request({
+        ...fromCourse,
+        checkoutId: body.checkoutId,
+        data: { ...pix, couponCode: 'PAIS10', expectedPriceCents: 3000 },
+      }),
+      'pay',
+      deps,
+    )
+    expect(paid.status).toBe(200)
+    expect(gw.calls.create[0]?.input).toMatchObject({ amountInCents: 3000 })
+  })
+  test('oferta sem a marca de cupom e assinatura recusam cupom', async () => {
+    const { deps, gw } = setup()
+    gw.addCoupon('PAIS10', 700)
+    const plain = await handleMemberCommerce(
+      request({ ...fromCourse, data: { couponCode: 'PAIS10' } }),
+      'quote',
+      deps,
+    )
+    expect(plain.status).toBe(422)
+    expect((await plain.json()).error.code).toBe('COUPON_NOT_ALLOWED')
+    const subscription = {
+      ...offer,
+      pricingMode: 'subscription' as const,
+      billingIntervalMonths: 12,
+      accessMode: 'billing_cycle',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+      content: { allowsCoupon: true },
+    }
+    gw.gateway.getOffer = async () => ({ status: 200, body: subscription })
+    gw.setOfferConfig(offer.slug, { pricingMode: 'subscription', billingIntervalMonths: 12 })
+    const quoted = await handleMemberCommerce(
+      request({ ...fromCourse, data: { couponCode: 'PAIS10' } }),
+      'quote',
+      deps,
+    )
+    expect((await quoted.json()).error.code).toBe('COUPON_NOT_ALLOWED')
+    const body = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    const paid = await handleMemberCommerce(
+      request({
+        ...fromCourse,
+        checkoutId: body.checkoutId,
+        data: { ...pix, couponCode: 'PAIS10' },
+      }),
+      'pay',
+      deps,
+    )
+    expect(paid.status).toBe(422)
+    expect(gw.calls.create).toHaveLength(0)
+  })
+  test('trocar de plano abre a compra da outra oferta do mesmo produto, sem perder a primeira', async () => {
+    const { deps, gw } = setup()
+    const annual = {
+      ...offer,
+      id: '20000000-0000-4000-8000-000000000002',
+      slug: 'curso-qa-anual',
+    }
+    gw.gateway.getOffer = async (slug: string) => ({
+      status: 200,
+      body: slug === annual.slug ? annual : offer,
+    })
+    const first = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    const second = await (
+      await handleMemberCommerce(request({ ...fromCourse, offerRef: annual.slug }), 'inspect', deps)
+    ).json()
+    expect(second.offer.slug).toBe(annual.slug)
+    expect(second.checkoutId).not.toBe(first.checkoutId)
+    const again = await (await handleMemberCommerce(request(fromCourse), 'inspect', deps)).json()
+    expect(again.checkoutId).toBe(first.checkoutId)
+  })
+})

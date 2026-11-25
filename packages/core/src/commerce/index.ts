@@ -55,6 +55,10 @@ export const CommerceOriginSchema = z.discriminatedUnion('kind', [
     blockId: z.uuid(),
   }),
   z.strictObject({ kind: z.literal('promotion'), offerRef }),
+  // A página de um curso na área dos pais (25/11/2026): a oferta é a principal do produto ou uma
+  // marcada "Pode ser vendida na página do produto". O lugar do botão (`place`) viaja AO LADO da
+  // origem, nunca dentro dela: a origem identifica a compra, o lugar só alimenta a Origem das vendas.
+  z.strictObject({ kind: z.literal('offer'), offerRef }),
 ])
 export type CommerceOrigin = z.infer<typeof CommerceOriginSchema>
 export interface CommerceContact {
@@ -90,6 +94,7 @@ export const CommerceCatalogOfferSchema = z.object({
   accessMode: z.string(),
   accessDurationValue: z.number().int().nullable(),
   accessDurationUnit: z.string().nullable(),
+  guaranteeDays: z.number().int().nonnegative().nullable().optional(),
   product: z.object({
     id: z.uuid(),
     audience: z.enum(['kids', 'adult']),
@@ -103,6 +108,8 @@ export const CommerceCatalogOfferSchema = z.object({
       memberPromotion: memberPromotionSchema.optional(),
       checkoutTerms: CheckoutTermsSchema.optional(),
       altOffer: z.object({ slug: offerRef, label: z.string().optional() }).optional(),
+      allowsCoupon: z.boolean().optional(),
+      pageSellable: z.boolean().optional(),
     })
     .nullable(),
   includes: z.array(z.object({ productId: z.uuid(), name: z.string(), isPrimary: z.boolean() })),
