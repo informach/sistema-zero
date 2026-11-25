@@ -31,6 +31,7 @@
     "./mastery-review-runtime": "./src/runtime/masteryReviewEnvironment.ts",
     "./challenge-runtime": "./src/runtime/challengeEnvironment.ts",
     "./project-factory": "./src/core/projectFactory.ts",
+    "./pinta-game": "./src/projects/tilemapGame.ts",
     "./authoring-options": "./src/core/authoringOptions.ts",
     "./free-project-options": "./src/core/freeProjectOptions.ts",
     "./project-migrations": "./src/project-migrations/index.ts",

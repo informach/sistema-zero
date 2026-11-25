@@ -40,6 +40,7 @@ test('the real Pinta play button creates a complete regional game on first use',
     })
     .toBeTruthy()
   expect(observed.result?.maps).toBeGreaterThanOrEqual(2)
+  expect(observed.result?.navigation).toBe(`/estudio?projeto=${observed.result?.projectId}`)
   expect(observed.result?.layers).toBeGreaterThanOrEqual(16)
   await expect(
     page.frameLocator('iframe[title="Projeto regional público"]').locator('canvas').first(),

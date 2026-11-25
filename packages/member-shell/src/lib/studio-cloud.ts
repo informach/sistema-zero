@@ -442,6 +442,33 @@ export function createStudioCloudSync(options: {
    */
   const pendingThumb = new Set<string>()
   const listTimeoutMs = options.listTimeoutMs ?? LIST_TIMEOUT_MS
+  const restoring = new Map<
+    string,
+    {
+      revision: number
+      raw: unknown
+      promise: ReturnType<StudioCloudModule['restoreProjectFromCloud']>
+    }
+  >()
+
+  /** A cold deep link and the gallery can download the same revision together.
+   * Share only an identical in-flight write; different content still faces native CAS. */
+  function restoreCloudSnapshot(raw: unknown, summary: CloudCreationSummary) {
+    const current = restoring.get(summary.itemId)
+    if (current?.revision === summary.revision && canonicalJson(current.raw) === canonicalJson(raw))
+      return current.promise
+    const promise = studio
+      .restoreProjectFromCloud(raw, {
+        expectedId: summary.itemId,
+        namespace: options.localNamespace ?? options.viewerId,
+        thumb: summary.thumb,
+      })
+      .finally(() => {
+        if (restoring.get(summary.itemId)?.promise === promise) restoring.delete(summary.itemId)
+      })
+    restoring.set(summary.itemId, { revision: summary.revision, raw, promise })
+    return promise
+  }
 
   function loadCloudThumb(id: string): Promise<string | null> {
     if (!studio.loadProjectThumbForCloud) return Promise.resolve(null)
@@ -725,11 +752,13 @@ export function createStudioCloudSync(options: {
       const downloaded = await cloud.download(id)
       if (!downloaded) return false
       const raw = await resolveCloudProject(downloaded, id)
-      const restored = await studio.restoreProjectFromCloud(raw, {
+      // Compare the same admitted shape used by the gallery (defaults and field
+      // normalization can differ from the wire JSON without changing its content).
+      const { project, warnings } = await studio.validateCloudProjectSnapshot(raw, {
         expectedId: id,
-        namespace: options.localNamespace ?? options.viewerId,
-        thumb: downloaded.summary.thumb,
       })
+      if (warnings.length > 0) onWarnings(id, warnings)
+      const restored = await restoreCloudSnapshot(project, downloaded.summary)
       if (restored.project.id !== id) return false
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
       marks.clearTombstone(id)
@@ -845,11 +874,7 @@ export function createStudioCloudSync(options: {
         apply: async (summary, project) => {
           // Já conferido no `fetch`; o restauro sanea de novo (idempotente) e grava — com a
           // miniatura que a nuvem listou (o card nasce com capa sem abrir o jogo).
-          const restored = await studio.restoreProjectFromCloud(project, {
-            expectedId: summary.itemId,
-            namespace: options.localNamespace ?? options.viewerId,
-            thumb: summary.thumb,
-          })
+          const restored = await restoreCloudSnapshot(project, summary)
           return restored.project.id === summary.itemId
         },
         keepLocalCopy: async (item) => {
