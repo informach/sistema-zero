@@ -14,6 +14,7 @@ import {
 import type { AnalyticsEnvironment, QuizDefinition } from '../analytics/types'
 import type { AddressFormInput } from '../lib/checkout-schema'
 import type { LeadAttributionV1 } from '../lib/lead-attribution'
+import type { LeadOriginV1 } from '../lib/lead-origin'
 import type { QuizAnswers } from '../lib/quiz-types'
 import type { CheckoutPlan } from '../server/checkout-plan'
 import type { MemberCheckoutPresentation, PreparedMemberCharge } from './member-commerce-types'
@@ -64,6 +65,9 @@ export const leads = funil.table(
     // First-touch versionado. Só aceita identificadores técnicos curtos e nunca
     // é sobrescrito depois de preenchido (QR/evento continuam atribuíveis).
     attribution: jsonb('attribution').$type<LeadAttributionV1>(),
+    // De onde veio ESTA compra (link de indicação ou botão da plataforma), trocada a cada link:
+    // vai ao metadata do pagamento (`origemCodigo`/`origemLugar`) e o referrals grava a origem.
+    origin: jsonb('origin').$type<LeadOriginV1>(),
 
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),

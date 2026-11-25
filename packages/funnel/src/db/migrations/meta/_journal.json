@@ -169,6 +169,13 @@
       "when": 1795106530521,
       "tag": "0023_member_checkout_plans",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795639626430,
+      "tag": "0024_lead_origin",
+      "breakpoints": true
     }
   ]
 }

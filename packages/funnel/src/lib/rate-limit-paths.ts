@@ -5,9 +5,10 @@ import { AUDIENCES } from '../funnels/registry'
 // - /api/checkout/:id, /api/leads e admin;
 // - /bolsa/<code> e /embaixador/<token> (cada hit SSR = 1 chamada assinada ao gateway);
 // - /kids/vilao-em-aliado (a página do curso para pais lê a campanha no gateway a cada hit).
+// - /i/<código>[/<oferta>][/pagamento] (cada hit = 1 a 2 chamadas assinadas ao gateway).
 // As audiências vêm do registry (fonte da verdade) — um público novo entra no teto sozinho.
 const RATE_LIMITED_GET = new RegExp(
-  `^\\/(?:oferta|checkout|resultado)\\/?$|^\\/(?:${AUDIENCES.join('|')})\\/[^/]+\\/(?:oferta|checkout|resultado)\\/?$|^\\/(?:bolsa|embaixador)(?:\\/|$)|^\\/admin(?:\\/|$)|^\\/api\\/(?:leads|checkout|admin)(?:\\/|$)`,
+  `^\\/(?:oferta|checkout|resultado)\\/?$|^\\/(?:${AUDIENCES.join('|')})\\/[^/]+\\/(?:oferta|checkout|resultado)\\/?$|^\\/(?:bolsa|embaixador|i)(?:\\/|$)|^\\/admin(?:\\/|$)|^\\/api\\/(?:leads|checkout|admin)(?:\\/|$)`,
 )
 
 export function isRateLimitedGetPath(pathname: string): boolean {

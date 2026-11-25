@@ -1,5 +1,32 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Origem de cada compra e links `/i/` (25/11/2026, Lote 3 da frente de embaixadores)
+
+Plano no `CLAUDE.md` do referrals (seção "Origem por aquisição").
+- **Cookie `funil_origem`** (`lib/lead-origin.ts`, HttpOnly, 30 dias): `c:<código>` gravado pelo
+  link `/i/...` ou `p:<lugar>` gravado pelo middleware em qualquer GET de página com `?lugar=`
+  (botões da plataforma). O último link ou botão vence. Diferente de `leads.attribution` (mídia,
+  primeiro toque, nunca sobrescrita).
+- **`leads.origin`** (migration `0024_lead_origin`): os handlers de Pix, cartão e assinatura copiam
+  o cookie para o lead (`syncLeadOrigin`) antes da cobrança. `leadMetadata` grava as chaves planas
+  `origemCodigo`, `origemLugar` (do lead) e `origemFonte` (`attribution.utmSource`, saneada); o
+  referrals lê do `GET /payments/internal/payments/:id` e grava a aquisição. O BOLETO vai sem elas
+  (chave de idempotência fixa por lead). O Pix põe a origem no fingerprint só quando há origem
+  (Pix já gerado antes do deploy mantém a chave).
+- **`/i/<código>[/<oferta>][/pagamento]`** (`server/referral-link.ts`, rotas finas em
+  `pages/i/`): resolve no referrals (`resolveReferralLink`), grava o cookie e responde 302
+  `no-store`. Presente → `/bolsa/<código>` (até o Lote 4 trocar pela página da oferta em modo
+  presente). Venda → página da oferta com `?indicacao=` ou o checkout (irmã do alternador com
+  `?oferta=`), mais o cupom da campanha e as UTMs. A página certa vem de `resolveOfferFunnel`
+  (`server/coupon-link.ts`, também usado pelo `/cupom`). 404 uniforme; referrals fora = 502.
+  Entrou no teto de GET por IP (`rate-limit-paths.ts`).
+- **Endereço antigo de campanha** (`server/campaign-redirect.ts`, no middleware): todo GET de
+  caminho que pode ser endereço antigo (`isCampaignRedirectPath` do Core, sem `presente`,
+  `indicacao`, `cupom`) consulta `GET /referrals/internal/redirects` com cache de 60 s por
+  caminho (até 2.000 entradas) e espera no máximo 1,5 s. Ativo → 302 para o `/i/` da campanha com a
+  query da visita; só aceita destino `/i/...`. Falha ou nada → a página abre.
+- Testes: `tests/integration/referral-origin.test.ts`.
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.

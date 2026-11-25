@@ -479,6 +479,34 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       )
     },
 
+    /**
+     * GET /referrals/internal/links/:code[/:oferta][/pagamento] — o que o link `/i/...` abre
+     * (25/11/2026): presente ou venda, a oferta, o destino e o estado da campanha.
+     */
+    async resolveReferralLink(
+      code: string,
+      offerSlug: string | null,
+      checkout: boolean,
+    ): Promise<GatewayResult> {
+      const segments = [code, ...(offerSlug ? [offerSlug] : []), ...(checkout ? ['pagamento'] : [])]
+      const path = `/referrals/internal/links/${segments.map(encodeURIComponent).join('/')}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /** GET /referrals/internal/redirects?path= — endereço antigo de campanha ainda no prazo. */
+    async resolveCampaignRedirect(pathname: string): Promise<GatewayResult> {
+      const path = '/referrals/internal/redirects'
+      return requestJson(
+        `${opts.baseUrl}${path}?path=${encodeURIComponent(pathname)}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
     /** GET /referrals/internal/ambassadors/by-token/:token — página do embaixador (capability URL). */
     async getAmbassadorByToken(token: string, campaignOffset = 0): Promise<GatewayResult> {
       const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}`

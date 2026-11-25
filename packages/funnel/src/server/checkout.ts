@@ -1,3 +1,9 @@
+import {
+  PAYMENT_ORIGIN_CODE_KEY,
+  PAYMENT_ORIGIN_PLACE_KEY,
+  PAYMENT_ORIGIN_SOURCE_KEY,
+  sanitizeOriginSource,
+} from '@sistemazero/core/referrals'
 import { executeCheckoutPlan } from './checkout-dispatch'
 import { runPostPayment } from './checkout-fulfillment'
 import type { CheckoutPlan } from './checkout-plan'
@@ -18,6 +24,12 @@ import {
 } from '../lib/checkout-schema'
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
+import {
+  originCookieValue,
+  originFromRequest,
+  sameOrigin,
+  sanitizeLeadOrigin,
+} from '../lib/lead-origin'
 import { getLeadId } from '../lib/lead-session'
 import {
   type CatalogOfferView,
@@ -125,11 +137,17 @@ function cleanAddress(a: AddressFormInput): Record<string, string> {
   return out
 }
 
-/** Metadata comum das cobranças (rastreia origem/lead/oferta no payments e no recibo). */
+/**
+ * Metadata comum das cobranças (rastreia origem/lead/oferta no payments e no recibo). Com
+ * `withOrigin`, leva as chaves planas da origem que o referrals lê para gravar a aquisição
+ * (`origemCodigo`, `origemLugar`, `origemFonte`). O boleto vai sem elas: a chave de
+ * idempotência dele é fixa por lead, e uma origem nova mudaria o payload (409 no reenvio).
+ */
 function leadMetadata(
   lead: Lead,
   sku: string,
   charge: { offerId: string; couponCode: string | null },
+  withOrigin = true,
 ): Record<string, unknown> {
   const meta: Record<string, unknown> = {
     leadId: lead.id,
@@ -154,7 +172,25 @@ function leadMetadata(
     meta.billingFunnelKey = funnel.key
   }
   if (charge.couponCode) meta.couponCode = charge.couponCode
+  if (withOrigin) {
+    const origin = sanitizeLeadOrigin(lead.origin)
+    if (origin?.code) meta[PAYMENT_ORIGIN_CODE_KEY] = origin.code
+    if (origin?.place) meta[PAYMENT_ORIGIN_PLACE_KEY] = origin.place
+    const source = sanitizeOriginSource(lead.attribution?.utmSource)
+    if (source) meta[PAYMENT_ORIGIN_SOURCE_KEY] = source
+  }
   return meta
+}
+
+/**
+ * A origem do cookie (último link de indicação ou botão da plataforma) passa ao lead antes da
+ * cobrança: é ela que vai ao metadata. Sem cookie, fica a que o lead já tinha.
+ */
+async function syncLeadOrigin(deps: CheckoutDeps, lead: Lead, request: Request): Promise<Lead> {
+  const fromCookie = originFromRequest(request)
+  if (!fromCookie || sameOrigin(fromCookie, sanitizeLeadOrigin(lead.origin))) return lead
+  await deps.repo.updateLead(lead.id, { origin: fromCookie })
+  return { ...lead, origin: fromCookie }
 }
 
 /** Extrai o envelope de erro do gateway/payments (`{ error: { code, message } }`). */
@@ -323,14 +359,19 @@ export async function pixContentFingerprint(input: {
   amountInCents: number
   couponCode: string | null
   contact: CheckoutContactInput
+  /** A origem que vai ao metadata: outra origem = outro payload = outra chave. */
+  origin?: string | null
 }): Promise<string> {
-  const canonical = [
+  const parts: (string | number)[] = [
     input.amountInCents,
     input.couponCode ?? '',
     input.contact.nome,
     input.contact.email,
     input.contact.cpf.replace(/\D/g, ''),
-  ].join('|')
+  ]
+  // Sem origem a chave fica a de sempre (Pix já gerado antes do deploy segue o mesmo).
+  if (input.origin) parts.push(input.origin)
+  const canonical = parts.join('|')
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical))
   return [...new Uint8Array(digest)]
     .slice(0, 6)
@@ -360,6 +401,7 @@ export async function preparePix(
   if (!parsed.success) return invalidBody(parsed.error)
   const c = parsed.data
   lead = await applyContact(deps, lead, c.contact)
+  lead = await syncLeadOrigin(deps, lead, request)
 
   // Oferta escolhida (principal do funil OU a irmã do alternador, validada).
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
@@ -394,10 +436,12 @@ export async function preparePix(
   // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
   // aponta p/ a MESMA cobrança Pix (não duplica transação); dados diferentes
   // (cupom novo, CPF corrigido) geram cobrança nova em vez de 409 CONFLICT.
+  const leadOrigin = sanitizeLeadOrigin(lead.origin)
   const fingerprint = await pixContentFingerprint({
     amountInCents: charge.amountInCents,
     couponCode: charge.couponCode,
     contact: c.contact,
+    origin: leadOrigin ? originCookieValue(leadOrigin) : null,
   })
   const idempotencyKey = `funil-${lead.id}-${fingerprint}`
   const input = {
@@ -506,7 +550,7 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
       address: cleanAddress(form.address),
     },
     boleto: { expiresInDays: 3, message: `Pagamento de ${productName}` },
-    metadata: leadMetadata(lead, productSku, charge),
+    metadata: leadMetadata(lead, productSku, charge, false),
   }
 
   const { status, body } = await deps.gateway.createPayment(input, idempotencyKey)
@@ -560,6 +604,7 @@ export async function prepareCard(
   // Telefone vem do FORMULÁRIO (obrigatório no schema) — fonte da verdade, não o lead.
   const phoneDigits = c.contact.telefone.replace(/\D/g, '')
   lead = await applyContact(deps, lead, c.contact)
+  lead = await syncLeadOrigin(deps, lead, request)
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
   if (!chosen.ok) return chosen.response
@@ -659,6 +704,7 @@ export async function prepareSubscription(
   // Telefone vem do FORMULÁRIO (obrigatório no schema) — fonte da verdade, não o lead.
   const phoneDigits = c.contact.telefone.replace(/\D/g, '')
   lead = await applyContact(deps, lead, c.contact)
+  lead = await syncLeadOrigin(deps, lead, request)
 
   const chosen = await resolveChosenOffer(deps, lead.funnel, c.offerSlug)
   if (!chosen.ok) return chosen.response

@@ -60,6 +60,8 @@ export interface FakeGatewayState {
     }>
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
     pixUpdates: Array<{ token: string; pixKey: string }>
+    links: Array<{ code: string; offerSlug: string | null; checkout: boolean }>
+    redirects: string[]
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
   auth: { access: string; refresh: string; password: string; email: string }
@@ -94,6 +96,10 @@ export interface FakeGatewayState {
   setRedeemResult: (status: number, body?: unknown) => void
   /** Resposta de updateAmbassadorPix (default 200). */
   setPixResult: (status: number, body?: unknown) => void
+  /** Resposta de resolveReferralLink (default 404). */
+  setLinkResult: (status: number, body?: unknown) => void
+  /** Resposta de resolveCampaignRedirect (default 404). */
+  setRedirectResult: (status: number, body?: unknown) => void
 }
 
 /** Gateway falso em memória (não verifica HMAC; usado nos testes de checkout). */
@@ -130,6 +136,8 @@ export function createFakeGateway(): FakeGatewayState {
     invites: [],
     redemptions: [],
     pixUpdates: [],
+    links: [],
+    redirects: [],
   }
   let ensureBuyerStatus = 201
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
@@ -167,6 +175,9 @@ export function createFakeGateway(): FakeGatewayState {
     body: { status: 'completed' },
   }
   let pixResult: { status: number; body: unknown } = { status: 200, body: { ok: true } }
+  const notFound = { error: { code: 'NOT_FOUND', message: 'Não encontrado' } }
+  let linkResult: { status: number; body: unknown } = { status: 404, body: notFound }
+  let redirectResult: { status: number; body: unknown } = { status: 404, body: notFound }
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
@@ -354,6 +365,14 @@ export function createFakeGateway(): FakeGatewayState {
       }
       return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
     },
+    async resolveReferralLink(code, offerSlug, checkout): Promise<GatewayResult> {
+      calls.links.push({ code, offerSlug, checkout })
+      return linkResult
+    },
+    async resolveCampaignRedirect(pathname): Promise<GatewayResult> {
+      calls.redirects.push(pathname)
+      return redirectResult
+    },
     async resolveReferralCode(code): Promise<GatewayResult> {
       calls.resolveCode.push(code)
       return referralCodeResult
@@ -434,6 +453,12 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setPixResult: (status: number, body?: unknown) => {
       pixResult = { status, body: body ?? null }
+    },
+    setLinkResult: (status: number, body?: unknown) => {
+      linkResult = { status, body: body ?? null }
+    },
+    setRedirectResult: (status: number, body?: unknown) => {
+      redirectResult = { status, body: body ?? null }
     },
   }
 }

@@ -1,9 +1,12 @@
 import { defineMiddleware } from 'astro:middleware'
 import { clientIp } from './lib/client-ip'
 import { getEnv } from './lib/env'
+import { placeCookieFor } from './lib/lead-origin'
 import { rateLimit } from './lib/rate-limit'
 import { isRateLimitedGetPath } from './lib/rate-limit-paths'
 import { captureError } from './lib/sentry'
+import { campaignRedirectFor } from './server/campaign-redirect'
+import { getDeps } from './server/deps'
 
 // NOTA: TODAS as páginas são SSR (full review 06/2026: quiz/políticas deixaram o
 // prerender) — a middleware cobre o site inteiro com os security headers. Se uma
@@ -114,6 +117,19 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     }
   }
 
+  // Endereço antigo de campanha (25/11/2026): leva ao link da campanha até a data do Admin.
+  if (method === 'GET' && !ctx.isPrerendered) {
+    const location = await campaignRedirectFor(ctx.url, getDeps().gateway)
+    if (location) {
+      const redirect = new Response(null, {
+        status: 302,
+        headers: { location, 'cache-control': 'no-store' },
+      })
+      applySecurityHeaders(redirect.headers)
+      return redirect
+    }
+  }
+
   let res: Response
   try {
     res = await next()
@@ -124,6 +140,11 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     throw err
   }
   applySecurityHeaders(res.headers)
+  // Botão da plataforma (`?lugar=`): a origem da próxima compra é esse lugar.
+  if (method === 'GET' && !ctx.isPrerendered && !ctx.url.pathname.startsWith('/api/')) {
+    const cookie = placeCookieFor(ctx.url, import.meta.env.PROD)
+    if (cookie) res.headers.append('set-cookie', cookie)
+  }
   // API nunca é cacheável — default p/ handlers que não setam o próprio header
   // (alguns setam no-store explicitamente; nenhum quer cache compartilhado).
   if (ctx.url.pathname.startsWith('/api/') && !res.headers.has('cache-control')) {
