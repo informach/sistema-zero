@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { runOwnedNodeProcess } from './fixtures/owned-node-process'
 
+// Allow both owned deadlines (30s compiler + 45s workerd) and process-tree retirement.
 test('native R2 updates, restores and retires publication pointers without losing CAS protection', async () => {
   const node = process.env.STUDIO_PYTHON_BUILD_NODE ?? Bun.which('node')
   if (!node) throw new Error('Node is required for the native R2 publication proof')
@@ -76,4 +77,4 @@ test('native R2 updates, restores and retires publication pointers without losin
       }
   }
   if (errors.length) throw new AggregateError(errors, 'Native R2 publication proof failed')
-}, 60000)
+}, 90000)
