@@ -352,6 +352,7 @@ export const en: Record<string, string> = {
   'pintaImport.adding': 'Bringing…',
   'pintaImport.inProject': '✓ in project',
   'pintaImport.refreshVector': 'Refresh vector',
+  'pintaImport.refreshMap': 'Refresh scene',
   'pintaImport.vectorTooLarge': 'This vector is too large to keep as SVG in Studio.',
   'pintaImport.gameBadge': 'game: {name}',
   'pintaImport.kind.sprite': '🧍 character',

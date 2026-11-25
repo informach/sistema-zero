@@ -813,6 +813,13 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
 
+      - name: Jogar mapa regional pelo botão real do Pinta
+        if: matrix.shard == 1
+        working-directory: packages/studio
+        env:
+          PYTHON_PROBE_OUTPUT_DIR: ../../.cache/studio-pinta-play-button
+        run: bunx playwright test --config playwright.lg04.config.ts --project=chromium --grep=the.real.Pinta.play.button
+
       - name: Publicar diagnóstico Playwright
         if: failure()
         uses: actions/upload-artifact@v4
@@ -824,6 +831,7 @@ jobs:
             packages/studio/.cache/pinta-local-chunks-results
             packages/studio/.cache/pinta-render-pressure-results
             packages/studio/.cache/pinta-minimap-results
+            .cache/studio-pinta-play-button
           retention-days: 7
 
   studio-e2e-firefox:

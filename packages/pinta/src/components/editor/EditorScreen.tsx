@@ -429,11 +429,7 @@ function EditorTopbar({
   // senão, o "Baixar".
   const sendsToStudio = Boolean(adapter.sendToStudio && asset.projectRef)
 
-  /**
-   * O que atravessa a ponte "Usar no Estúdio" (PNG achatado na v1): montado em
-   * `export/studioBridge.ts` (sprites enviam a FOLHA inteira; tilesets a folha
-   * de peças; tilemap o mapa achatado; vetoriais rasterizam).
-   */
+  /** Captura o desenho e as dependências completas do mapa pela mesma porta da biblioteca. */
   async function exportForStudio(): Promise<import('../../core/types').PintaExportedAsset | null> {
     return buildStudioMapBundle(asset, gallery.getState().assets, { animationId, frameIndex })
   }
@@ -455,7 +451,7 @@ function EditorTopbar({
       }
       const result = await adapter.sendToStudio(payload)
       const successCopy =
-        payload.tilemap || payload.scene
+        payload.tilemap || payload.scene || payload.regional
           ? adapter.studioOwned
             ? COPY.sendToStudio.mapSuccess
             : COPY.sendToStudio.mapSuccessLocked
@@ -476,7 +472,7 @@ function EditorTopbar({
     setSending(true)
     try {
       const payload = await exportForStudio()
-      if (!payload?.tilemap && !payload?.scene) {
+      if (!payload?.tilemap && !payload?.scene && !payload?.regional) {
         showToast(COPY.sendToStudio.error)
         return
       }

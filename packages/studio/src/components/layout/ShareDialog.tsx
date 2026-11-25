@@ -102,6 +102,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
   const describeStartedRef = useRef(false)
   // Síncrono com a abertura: a IA espera saber se o post já tem descrição.
   const statusPendingRef = useRef(false)
+  const editedFields = useRef({ title: false, description: 0 })
 
   // Reseta tudo a cada abertura (o componente fica montado entre aberturas).
   useEffect(() => {
@@ -113,6 +114,7 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
       projectId: project?.id,
     }
     if (!open) return
+    editedFields.current = { title: false, description: 0 }
     // Preset do admin (aula): título/descrição já vêm prontos. Sem preset (Estúdio
     // Completo) → título = nome do projeto e descrição vazia (a IA tenta preencher).
     const editableTitle = adapter?.titleEditable !== false
@@ -153,9 +155,10 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
           if (abort.signal.aborted || !value.published) return
           setStatus(value)
           // Atualizar abre com o post de agora: a descrição e a capa que ele já tem.
-          if (value.description?.trim())
+          if (editedFields.current.description === 0 && value.description?.trim())
             setDescription(value.description.trim().slice(0, MAX_DESCRIPTION))
-          if (editableTitle && value.title?.trim()) setTitle(value.title.trim().slice(0, MAX_TITLE))
+          if (!editedFields.current.title && editableTitle && value.title?.trim())
+            setTitle(value.title.trim().slice(0, MAX_TITLE))
           // Só quando a criança ainda não escolheu outra capa enquanto o status carregava.
           if (value.coverUrl)
             setCover((chosen) =>
@@ -204,17 +207,19 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     if (!open || describeStartedRef.current || statusLoading || statusPendingRef.current) return
     if (!adapter || !project) return
     describeStartedRef.current = true
+    if (editedFields.current.description !== 0) return
     if (adapter.presetDescription?.trim()) return
     const generate = adapter.generateDescription
     if (!generate) return
     setGenerating(true)
     setAiUses((n) => n + 1) // a geração automática conta no teto de IA
     const current = currentOperation()
+    const descriptionRevision = editedFields.current.description
     generate({ project, title: title.trim() || project.name })
       .then((draft) => {
         if (!current()) return
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
-        if (clean) setDescription(clean)
+        if (clean && editedFields.current.description === descriptionRevision) setDescription(clean)
       })
       .catch((error: unknown) => {
         if (current() && isAiQuotaError(error)) setAiExhausted(aiQuotaScopeOf(error))
@@ -236,11 +241,12 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
     setGenerating(true)
     setAiUses((n) => n + 1)
     const current = currentOperation()
+    const descriptionRevision = editedFields.current.description
     generate({ project, title: title.trim() || project.name })
       .then((draft) => {
         if (!current()) return
         const clean = (draft ?? '').trim().slice(0, MAX_DESCRIPTION)
-        if (clean) setDescription(clean)
+        if (clean && editedFields.current.description === descriptionRevision) setDescription(clean)
       })
       .catch((error: unknown) => {
         if (current() && isAiQuotaError(error)) setAiExhausted(aiQuotaScopeOf(error))
@@ -520,7 +526,10 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
                 aria-label={t('share.step.title.label')}
                 value={title}
                 maxLength={MAX_TITLE}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  editedFields.current.title = true
+                  setTitle(e.target.value)
+                }}
                 className="w-full rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg"
               />
             </label>
@@ -539,7 +548,10 @@ export function ShareDialog({ open, onClose, adapter }: ShareDialogProps): JSX.E
               maxLength={MAX_DESCRIPTION}
               rows={3}
               placeholder={t('share.step.describe.placeholder')}
-              onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
+              onChange={(e) => {
+                editedFields.current.description++
+                setDescription(e.target.value.slice(0, MAX_DESCRIPTION))
+              }}
               disabled={generating}
               className="w-full resize-none rounded-md border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg disabled:opacity-60"
             />

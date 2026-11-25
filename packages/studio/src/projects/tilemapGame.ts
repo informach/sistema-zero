@@ -21,6 +21,7 @@ import {
 } from '../core/project'
 import { sanitizeSceneMeta } from '../core/projectAssets'
 import { persistProject } from '../state/persistence'
+import { captureProjectStorageScope, getProjectStorageScope } from '../state/projectStorageRuntime'
 
 /**
  * "Jogar meu mapa" (lote MapperMate F4): a criança desenha o mapa no Pinta e o
@@ -421,21 +422,33 @@ function buildSceneIR(image: string, scene: PintaScene | PintaRegionScene): SZIR
 /**
  * Monta E PERSISTE o projeto-jogo a partir do mapa do Pinta. Devolve o `Project`
  * (o host navega para ele) ou `null` se o mapa não veio válido. ⚠️ o host deve
- * chamar `setStudioStorageNamespace(viewerId)` ANTES (persiste no IndexedDB do
- * perfil).
+ * fornecer o namespace do perfil que iniciou a captura. Chamadas antigas sem opções
+ * conservam o perfil ativo no início, inclusive durante a admissão assíncrona do PNG.
  */
 export async function buildTilemapGameProject(
   payload: TilemapGamePayload,
+  options: { namespace?: string; signal?: AbortSignal } = {},
 ): Promise<Project | null> {
+  const scope =
+    options.namespace === undefined
+      ? captureProjectStorageScope()
+      : getProjectStorageScope(options.namespace)
+  const { signal } = options
+  signal?.throwIfAborted()
+  const captured = { ...payload }
   let project: Project | null
-  if (payload.regional) {
-    const admitted = await admitPintaRegionalMaterial({
-      ...payload,
-      sourceId: payload.id ?? payload.regional.sourceId,
-    })
+  if (captured.regional) {
+    const admitted = await admitPintaRegionalMaterial(
+      {
+        ...captured,
+        sourceId: captured.id ?? captured.regional.sourceId,
+      },
+      signal,
+    )
+    signal?.throwIfAborted()
     const root = admitted.world.maps.get(admitted.world.rootId)
     if (!root) return null
-    const name = normalizeAssetName(payload.name) ?? 'meu-mapa'
+    const name = normalizeAssetName(captured.name) ?? 'meu-mapa'
     const ir = normalizeSZIR(buildSceneIR(name, root.data.scene))
     project = {
       ...createEmptyProject(ulid(), name),
@@ -448,19 +461,20 @@ export async function buildTilemapGameProject(
           name,
           kind: 'image',
           source: 'library',
-          dataUrl: payload.dataUrl,
-          width: payload.width,
-          height: payload.height,
+          dataUrl: admitted.dataUrl,
+          width: root.width,
+          height: root.height,
           regional: admitted.regional,
           libId: `personal:${admitted.world.rootId}`,
           libOrigin: 'pinta',
-          ...(payload.libRevision === undefined ? {} : { libRevision: payload.libRevision }),
+          ...(captured.libRevision === undefined ? {} : { libRevision: captured.libRevision }),
         },
       ],
       installedExtensions: [{ id: 'game-2d', version: gameTwoDVersion(), installedAt: Date.now() }],
     }
-  } else project = assembleTilemapGameProject(payload)
+  } else project = assembleTilemapGameProject(captured)
   if (!project) return null
-  await persistProject(project)
+  signal?.throwIfAborted()
+  await persistProject(project, {}, scope)
   return project
 }

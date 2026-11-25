@@ -1,8 +1,11 @@
+import { mountPintaPlayButton } from '../../packages/member-shell/qa/pinta-play-button.fixture'
+import { sendPintaGameToStudio } from '../../packages/member-shell/src/components/creator/send-pinta-game-to-studio'
 import {
   exportAssetForStudio,
   listGalleryForStudio,
 } from '../../packages/pinta/src/export/studioLibrary'
 import { createRegionPintaPersistence } from '../../packages/pinta/src/state/localRegionPersistence'
+import { setPintaStorageNamespace } from '../../packages/pinta/src/state/persistence'
 import { regionVila } from '../../packages/pinta/src/testing/regionVila'
 import {
   getPersonalAsset,
@@ -16,6 +19,51 @@ import {
   setProjectStorageNamespace,
 } from '../../packages/studio/src/state/projectStorageRuntime'
 import { loadSanitizedProjectById } from '../../packages/studio/src/state/projectStore'
+
+type PlayButtonState = {
+  view: Awaited<ReturnType<typeof mountPintaPlayButton>>
+  projectId: string | null
+  navigation?: string
+}
+let playButton: PlayButtonState | null = null
+
+/** The editor's real button, exporter, host library and first project write in a fresh namespace. */
+export async function showPintaPlayButton(namespace: string) {
+  setPintaStorageNamespace(namespace)
+  setProjectStorageNamespace(namespace)
+  const { map, assets } = regionVila()
+  const persistence = createRegionPintaPersistence({ namespace })
+  await persistence.persistAssets(assets)
+  const state: PlayButtonState = {
+    projectId: null,
+    view: await mountPintaPlayButton(persistence, {
+      studioOwned: true,
+      sendGameToStudio: (payload) =>
+        sendPintaGameToStudio(payload, {
+          namespace,
+          navigate(path) {
+            state.navigation = path
+            state.projectId = new URL(path, location.href).searchParams.get('projeto')
+          },
+        }),
+    }),
+  }
+  playButton = state
+  return { name: map.name }
+}
+
+export async function readPintaPlayButton(namespace: string) {
+  const state = playButton
+  if (state?.navigation && !state.projectId)
+    throw new Error('The Pinta host must navigate directly to the game it created.')
+  if (!state?.projectId) return null
+  state.view.dispose()
+  playButton = null
+  return {
+    ...(await showPintaPublicBridge(namespace, state.projectId)),
+    navigation: state.navigation,
+  }
+}
 
 /** Browser qualification through the public export, storage and player boundaries. */
 export async function showPintaPublicBridge(namespace: string, existingId?: string) {

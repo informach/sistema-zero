@@ -252,6 +252,53 @@ describe('AssetsPanel — botão "Trazer do Pinta"', () => {
 })
 
 describe('PintaImportDialog', () => {
+  it('atualiza explicitamente um cenário já no projeto sem biblioteca local, preservando seu programa e identidade', async () => {
+    const { installPngImageBitmap, regionalSceneMaterial } = await import(
+      '../../../testing/pintaRegionalMaterialFixture'
+    )
+    const { gameTwoDManifest } = await import('../../../official-extensions/game-2d/manifest')
+    const restoreBitmap = installPngImageBitmap()
+    try {
+      const before = await regionalSceneMaterial('#112233')
+      const after = await regionalSceneMaterial('#334455')
+      const project = createEmptyProject('p1', 'Meu Jogo')
+      project.installedExtensions = [
+        { id: gameTwoDManifest.id, version: gameTwoDManifest.version, installedAt: 0 },
+      ]
+      project.assets = [{ ...before, id: 'original', name: 'cenario-dos-meus-blocos' }]
+      useProjectStore.setState({
+        project,
+        isDirty: false,
+        editingAccess: 'author',
+        saveError: null,
+      })
+      const adapter = fakeAdapter({
+        list: async () => [
+          { id: 'world', name: 'vila-editada', role: 'tilemap', updatedAt: 40, thumbDataUrl: null },
+        ],
+        import: async () => ({ ok: true, asset: { ...after, id: 'world' } }),
+      })
+      render(
+        <StudioPintaLibraryProvider value={adapter}>
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>,
+      )
+      fireEvent.click(await screen.findByRole('button', { name: 'Atualizar cenário' }))
+      await waitFor(() =>
+        expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(after.dataUrl),
+      )
+      const updated = useProjectStore.getState().project!
+      expect(updated.assets).toHaveLength(1)
+      expect(updated.assets?.[0]?.id).toBe('original')
+      expect(updated.assets?.[0]?.name).toBe('cenario-dos-meus-blocos')
+      expect(updated.files).toEqual(project.files)
+      expect(updated.blocksState).toEqual(project.blocksState)
+      expect(screen.getByText('✓ no projeto')).toBeTruthy()
+    } finally {
+      restoreBitmap()
+    }
+  })
+
   it('atualiza a cópia raster antiga de um vetor sem trocar o nome usado pelos blocos', async () => {
     const project = createEmptyProject('p1', 'Meu Jogo')
     project.assets = [
