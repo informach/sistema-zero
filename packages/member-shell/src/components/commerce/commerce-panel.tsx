@@ -6,7 +6,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import type { CommerceView, PurchaseView } from '../../lib/commerce'
-import { accountPlace, isRecurring } from './commerce-copy'
+import { accountPlace, isCommunityProduct, isCourseProduct, isRecurring } from './commerce-copy'
 import { type CouponQuote, OrderSummary, PurchaseForm } from './purchase-form'
 
 function errorMessage(error: unknown) {
@@ -30,6 +30,19 @@ export interface CommerceNextStep {
   label: string
   /** A frase do "Pronto", sem o recibo (que o painel sempre acrescenta). */
   text?: string
+}
+
+/** O valor da cobrança aberta (com o cupom) para o resumo ao lado do Pix. */
+function chargedQuote(view: PurchaseView): CouponQuote | null {
+  const charge = view.payment?.charge
+  return charge
+    ? {
+        couponCode: charge.couponCode ?? '',
+        listPriceCents: charge.listPriceCents,
+        discountCents: charge.discountCents,
+        finalPriceCents: charge.chargedPriceCents,
+      }
+    : null
 }
 
 /** O que a nova resposta não traz e a tela ainda precisa (cartão e os dois planos). */
@@ -72,6 +85,9 @@ export function CommercePanel({
   )
   const locked = useRef(false)
   const alive = useRef(true)
+  // O plano que a pessoa escolheu no alternador: recarregar (oferta mudou, "Tentar novamente")
+  // reabre ESTE plano, não a oferta principal.
+  const chosenPlan = useRef<string | undefined>(undefined)
   const originKey = JSON.stringify(origin)
   const load = useCallback(
     async (signal?: AbortSignal) => {
@@ -83,6 +99,7 @@ export function CommercePanel({
             action: 'inspect',
             origin: JSON.parse(originKey),
             ...(checkoutId ? { checkoutId } : {}),
+            ...(chosenPlan.current ? { offerRef: chosenPlan.current } : {}),
             ...(place ? { place } : {}),
           },
           undefined,
@@ -203,7 +220,9 @@ export function CommercePanel({
         offerRef: offerSlug,
         ...(place ? { place } : {}),
       })
-      if (alive.current) setView(keep(result, current))
+      if (!alive.current) return
+      if (result.mode === 'purchase') chosenPlan.current = result.offer.slug
+      setView(keep(result, current))
     } catch (e) {
       if (alive.current) setError(errorMessage(e))
     } finally {
@@ -331,6 +350,7 @@ export function CommercePanel({
             <OrderSummary
               offer={view.offer}
               method={view.payment?.pix ? 'pix' : 'card'}
+              coupon={chargedQuote(view)}
               imageUrl={imageUrl}
             />
           </div>
@@ -618,6 +638,7 @@ function PurchaseDone({
 }) {
   const offer = view.offer
   const kids = offer.product.audience === 'kids'
+  const community = isCommunityProduct(offer)
   const go = (href: string, label: string) => (
     <a
       href={href}
@@ -633,12 +654,18 @@ function PurchaseDone({
           <Check className="size-9" strokeWidth={2.6} aria-hidden="true" />
         </span>
         <h3 className="sz-display m-0 text-[28px] leading-tight">
-          {kids ? `A ${offer.product.name} está liberada` : 'Sua assinatura está ativa'}
+          {kids && community
+            ? `A ${offer.product.name} está liberada`
+            : 'Sua assinatura está ativa'}
         </h3>
         <p className="m-0 max-w-[30rem] text-base text-muted-foreground">
-          {kids
-            ? 'Os cursos de criação de jogos, o Estúdio e o Mural já estão liberados para os seus filhos. E você ganhou todos os cursos para pais.'
-            : 'Os cursos, o Estúdio e o Mural já estão liberados na sua conta.'}
+          {/* "E você ganhou todos os cursos para pais" volta quando a dona confirmar que a
+              assinatura Kids inclui os cursos para pais. */}
+          {community
+            ? kids
+              ? 'Os cursos de criação de jogos, o Estúdio e o Mural já estão liberados para os seus filhos.'
+              : 'Os cursos, o Estúdio e o Mural já estão liberados na sua conta.'
+            : `O acesso a ${offer.product.name} já está liberado ${kids ? 'para os seus filhos' : 'na sua conta'}.`}
         </p>
         {kids ? (
           <ol className="m-0 box-border w-full rounded-2xl bg-muted py-4 pr-5 pl-9 text-left text-[15px] leading-relaxed">
@@ -671,10 +698,12 @@ function PurchaseDone({
         />
       ) : null}
       <ConfirmedChip />
-      <h3 className="sz-display m-0 text-[28px] leading-tight">O curso já é seu</h3>
+      <h3 className="sz-display m-0 text-[28px] leading-tight">
+        {isCourseProduct(offer) ? 'O curso já é seu' : 'Compra confirmada'}
+      </h3>
       <p className="m-0 max-w-[30rem] text-base text-muted-foreground">
-        {next?.text ?? `${offer.name} está liberado na sua conta.`} O recibo e a nota fiscal chegam
-        no seu e-mail.
+        {next?.text ?? `O acesso a ${offer.product.name} já está liberado na sua conta.`} O recibo e
+        a nota fiscal chegam no seu e-mail.
       </p>
       <Actions>
         {close}

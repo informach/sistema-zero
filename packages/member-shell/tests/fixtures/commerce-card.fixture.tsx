@@ -7,14 +7,19 @@ GlobalRegistrator.register()
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const pending: { resolve(value: CommerceView): void; reject(error: Error): void }[] = []
+const pending: {
+  resolve(value: CommerceView): void
+  reject(error: unknown): void
+  body: Record<string, unknown> | undefined
+}[] = []
 function requestAt(index: number) {
   const request = pending[index]
   if (!request) throw new Error(`Pedido ${index} não foi iniciado`)
   return request
 }
 mock.module('../../src/lib/api', () => ({
-  apiSend: () => new Promise<CommerceView>((resolve, reject) => pending.push({ resolve, reject })),
+  apiSend: (_path: string, _method: string, body?: Record<string, unknown>) =>
+    new Promise<CommerceView>((resolve, reject) => pending.push({ resolve, reject, body })),
   apiGet: async () => ({ items: [] }),
 }))
 mock.module('next/navigation', () => ({ useRouter: () => ({ refresh() {} }) }))
@@ -117,7 +122,7 @@ const monthly: CommerceCatalogOffer = {
   product: {
     id: '50000000-0000-4000-8000-000000000001',
     audience: 'kids',
-    sku: 'COMUNIDADE',
+    sku: 'comunidade-dos-criadores',
     name: 'Comunidade dos Criadores',
     status: 'active',
   },
@@ -143,7 +148,12 @@ const course: CommerceCatalogOffer = {
   accessMode: 'fixed',
   accessDurationValue: 12,
   accessDurationUnit: 'months',
-  product: { ...monthly.product, id: '50000000-0000-4000-8000-000000000003', sku: 'GUIA' },
+  product: {
+    ...monthly.product,
+    id: '50000000-0000-4000-8000-000000000003',
+    sku: 'GUIA',
+    kind: 'course',
+  },
   content: { allowsCoupon: true },
 }
 function purchase(target: CommerceCatalogOffer, over: Partial<PurchaseView>): PurchaseView {
@@ -254,4 +264,130 @@ test('Pronto: o curso já é seu, sem exclamação', async () => {
   expect(host.querySelector('[aria-current="step"]')?.textContent).toBe('3 · Pronto')
   const done = host.querySelector('[role="status"]')?.textContent ?? ''
   expect(done).not.toContain('!')
+})
+
+// Revisão do Lote 5 (25/11/2026).
+async function openCommunity() {
+  await act(async () =>
+    root.render(
+      <CommerceCard
+        origin={{ kind: 'community' }}
+        mode="purchase"
+        variant="community"
+        offer={monthly}
+        plans={[monthly, annual]}
+        title="Seus filhos também podem criar os próprios jogos"
+        buttonLabel="Assinar a Comunidade"
+      />,
+    ),
+  )
+  const button = [...host.querySelectorAll('button')].find(
+    (b) => b.textContent === 'Assinar a Comunidade',
+  )
+  await act(async () => button?.click())
+}
+test('revisão: a tela do Pix mostra o valor cobrado com o cupom', async () => {
+  await openCourse()
+  await act(async () =>
+    requestAt(0).resolve(
+      purchase(course, {
+        status: 'PENDING',
+        payment: {
+          status: 'PENDING',
+          pix: { copiaECola: '00020126pix', expiresAt: null },
+          charge: {
+            listPriceCents: 2700,
+            discountCents: 700,
+            chargedPriceCents: 2000,
+            couponCode: 'PAIS10',
+          },
+        },
+      }),
+    ),
+  )
+  const summary = host.querySelector('aside[aria-label="Resumo do pedido"]')?.textContent ?? ''
+  expect(summary.replace(/ /g, ' ')).toContain('PAIS10 · − R$ 7')
+  expect(summary.replace(/ /g, ' ')).toContain('R$ 20')
+})
+test('revisão: o Pronto da Comunidade não promete os cursos para pais', async () => {
+  await openCommunity()
+  await act(async () =>
+    requestAt(0).resolve(purchase(monthly, { status: 'PAID', accessGranted: true })),
+  )
+  expect(text()).toContain('A Comunidade dos Criadores está liberada')
+  expect(text()).toContain('o Estúdio e o Mural já estão liberados para os seus filhos')
+  expect(text()).not.toContain('cursos para pais')
+})
+test('revisão: outra assinatura e outro produto avulso não falam da Comunidade nem de curso', async () => {
+  const tool: CommerceCatalogOffer = {
+    ...monthly,
+    product: {
+      ...monthly.product,
+      sku: 'estudio-completo',
+      name: 'Estúdio Completo',
+      kind: 'tool',
+    },
+  }
+  await act(async () =>
+    root.render(
+      <CommerceCard
+        origin={{ kind: 'promotion', offerRef: tool.slug }}
+        mode="purchase"
+        offer={tool}
+        title="Estúdio"
+        buttonLabel="Abrir"
+      />,
+    ),
+  )
+  await act(async () =>
+    [...host.querySelectorAll('button')].find((b) => b.textContent === 'Abrir')?.click(),
+  )
+  await act(async () =>
+    requestAt(0).resolve(purchase(tool, { status: 'PAID', accessGranted: true })),
+  )
+  expect(text()).toContain('Fazer a assinatura')
+  expect(text()).toContain('Sua assinatura está ativa')
+  expect(text()).toContain('O acesso a Estúdio Completo já está liberado para os seus filhos.')
+  expect(text()).not.toMatch(/Comunidade|Mural|cursos de criação/)
+})
+test('revisão: o plano escolhido continua quando a oferta muda e a tela recarrega', async () => {
+  await openCommunity()
+  const complete = {
+    contact: {
+      nome: 'Ana Souza',
+      email: 'ana@example.invalid',
+      cpf: '52998224725',
+      telefone: '11988887777',
+    },
+  }
+  await act(async () =>
+    requestAt(0).resolve(purchase(monthly, { ...complete, plans: [monthly, annual] })),
+  )
+  const annualButton = [...host.querySelectorAll('[role="radiogroup"] button')].find((b) =>
+    b.textContent?.startsWith('Anual'),
+  ) as HTMLButtonElement | undefined
+  await act(async () => annualButton?.click())
+  expect(requestAt(1).body).toMatchObject({ action: 'inspect', offerRef: annual.slug })
+  expect(requestAt(1).body?.checkoutId).toBeUndefined()
+  await act(async () =>
+    requestAt(1).resolve(
+      purchase(annual, {
+        ...complete,
+        checkoutId: '60000000-0000-4000-8000-000000000002',
+        plans: [annual, monthly],
+      }),
+    ),
+  )
+  const terms = host.querySelector('input[type="checkbox"]') as HTMLInputElement | null
+  await act(async () => terms?.click())
+  await act(async () => {
+    host
+      .querySelector('form')
+      ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+  })
+  expect(requestAt(2).body).toMatchObject({ action: 'pay', offerRef: annual.slug })
+  await act(async () =>
+    requestAt(2).reject({ code: 'OFFER_CHANGED', message: 'As condições da oferta mudaram.' }),
+  )
+  expect(requestAt(3).body).toMatchObject({ action: 'inspect', offerRef: annual.slug })
 })

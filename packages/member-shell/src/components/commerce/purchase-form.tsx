@@ -25,6 +25,7 @@ import {
   intervalText,
   isRecurring,
   money,
+  oneTimeItemLabel,
   payButtonText,
   perMonthCents,
   pixAllowed,
@@ -142,16 +143,18 @@ export function OrderSummary({
       )}
       <div className="flex flex-col gap-2 border-border border-t pt-3.5">
         <div className="flex justify-between gap-3 text-[15px]">
-          <span className="text-muted-foreground">{recurring ? planName(offer) : 'Curso'}</span>
+          <span className="text-muted-foreground">
+            {recurring ? planName(offer) : oneTimeItemLabel(offer)}
+          </span>
           <span>
-            {money(offer.priceCents)}
+            {money(coupon?.listPriceCents ?? offer.priceCents)}
             {recurring ? ` ${intervalText(offer)}` : ''}
           </span>
         </div>
         {!recurring ? (
           <div className="flex justify-between gap-3 text-[15px]">
             <span className="text-muted-foreground">Cupom</span>
-            {coupon ? (
+            {coupon?.couponCode ? (
               <span>
                 {coupon.couponCode} · − {money(coupon.discountCents)}
               </span>

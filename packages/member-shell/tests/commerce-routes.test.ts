@@ -475,6 +475,59 @@ describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
     expect(forged.status).toBe(404)
     expect(funnelCall(q, 'inspect')).toBeUndefined()
   })
+  test('revisão: o alternador aparece quando só a irmã aponta para a oferta da origem', async () => {
+    const q = setup()
+    // A mensal (a da origem) não aponta para ninguém; a anual, principal do produto, aponta para ela.
+    const anual: CommerceCatalogOffer = {
+      ...offer,
+      id: '40000000-0000-4000-8000-000000000002',
+      slug: 'comunidade-anual',
+      priceCents: 97000,
+      billingIntervalMonths: 12,
+      content: { altOffer: { slug: offer.slug } },
+    }
+    q.addOffer(offer)
+    q.addOffer(anual)
+    q.setProduct(200, anual.slug)
+    const body = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: { kind: 'community' } }))
+    ).json()
+    expect(body.plans.map((p: CommerceCatalogOffer) => p.slug)).toEqual([offer.slug, anual.slug])
+    // A principal que aponta para OUTRA oferta não vira o segundo plano.
+    q.addOffer({ ...anual, content: { altOffer: { slug: 'outra' } } })
+    const lone = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: { kind: 'community' } }))
+    ).json()
+    expect(lone.plans).toBeUndefined()
+  })
+  test('revisão: trocar de plano nunca abre a compra em andamento de outro plano', async () => {
+    const q = setup()
+    const anual: CommerceCatalogOffer = {
+      ...offer,
+      id: '40000000-0000-4000-8000-000000000002',
+      slug: 'comunidade-anual',
+      priceCents: 97000,
+      billingIntervalMonths: 12,
+    }
+    q.addOffer({ ...offer, content: { altOffer: { slug: anual.slug } } })
+    q.addOffer(anual)
+    q.setRecovery(200, { checkoutId: '60000000-0000-4000-8000-000000000009', offer })
+    const community = { kind: 'community' }
+    const switched = await (
+      await q.routes.commerce.POST(
+        request({ action: 'inspect', origin: community, offerRef: anual.slug }),
+      )
+    ).json()
+    expect(q.calls.some((c) => c.path.endsWith('/recover'))).toBe(false)
+    expect(funnelCall(q, 'inspect')?.offerRef).toBe(anual.slug)
+    expect(switched.checkoutId).toBe('60000000-0000-4000-8000-000000000001')
+    // Sem escolha de plano, a compra em andamento continua vindo primeiro.
+    q.calls.length = 0
+    const reopened = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: community }))
+    ).json()
+    expect(reopened.checkoutId).toBe('60000000-0000-4000-8000-000000000009')
+  })
   test('o cupom é cotado pelo funil, sem chamar o catálogo pelo BFF', async () => {
     const q = setup()
     q.addOffer(guia)

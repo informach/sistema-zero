@@ -14,6 +14,9 @@
   oferta sem a marca também é 422 `COUPON_NOT_ALLOWED`; o `expectedPriceCents` é o valor cotado.
 - Trocar de plano: o BFF manda o `offerRef` da irmã e o `inspect` prepara a compra daquela oferta
   (uma por conta e oferta), sem mexer na outra.
+- O estado da compra (`memberCheckoutState`) traz `payment.charge` `{listPriceCents, discountCents,
+  chargedPriceCents, couponCode}`, lido do `offer_snapshot` da cobrança em `lead_payments`: a tela do
+  Pix mostra o valor cobrado com o cupom (revisão de 25/11/2026).
 - Testes: o bloco "mini checkout da área dos pais" de `tests/integration/member-commerce.test.ts`.
 
 ## Oferta de cada página no CATÁLOGO e links curtos por curso (25/11/2026)

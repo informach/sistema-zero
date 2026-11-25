@@ -173,6 +173,31 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
           : null
     return config ? { config, expectedOfferId: target.id } : null
   }
+  /**
+   * A outra ponta do alternador, nos dois sentidos: a que esta oferta aponta (`altOffer`) ou, numa
+   * assinatura que não aponta para ninguém, a oferta principal do produto quando É ELA que aponta
+   * para esta. `known` é a irmã já lida (a oferta da origem depois de trocar de plano).
+   */
+  async function otherPlan(target: CommerceCatalogOffer, known?: CommerceCatalogOffer) {
+    if (known) return known.isAvailable && siblingOffers(target, known) ? known : null
+    const slug = target.content?.altOffer?.slug
+    if (slug && slug !== target.slug) {
+      const other = await offer(slug)
+      return other?.isAvailable && siblingOffers(target, other) ? other : null
+    }
+    if (!isSubscription(target)) return null
+    const product = await deps.gateway.gatewayFetch<{ primaryOfferSlug?: unknown }>(
+      `/catalog/products/by-sku/${encodeURIComponent(target.product.sku)}`,
+    )
+    const primary = product.status === 200 ? product.body?.primaryOfferSlug : null
+    if (typeof primary !== 'string' || primary === target.slug) return null
+    const other = await offer(primary)
+    return other?.isAvailable &&
+      other.content?.altOffer?.slug === target.slug &&
+      siblingOffers(target, other)
+      ? other
+      : null
+  }
   async function eligibility(target: CommerceCatalogOffer) {
     const [access, subscriptions] = await Promise.all([
       deps.gateway.gatewayFetch<{ items: CommerceAccess[] }>('/members/commerce/access'),
@@ -224,9 +249,10 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       const parsed = bodySchema.safeParse(await request.json().catch(() => null))
       if (!parsed.success) return failure('Pedido inválido.', 400)
       const input = parsed.data
-      if (input.action === 'inspect' && !input.checkoutId) {
+      if (input.action === 'inspect' && !input.checkoutId && !input.offerRef) {
         // Recuperar uma operação própria precede regras de NOVAS vendas e a leitura
-        // do bloco/card atual. Não cria lead nem inicia pagamento.
+        // do bloco/card atual. Não cria lead nem inicia pagamento. Com `offerRef` a pessoa
+        // escolheu um plano na tela aberta: a compra em andamento de outro plano não toma o lugar.
         const recovered = await deps.gateway.gatewayFetchHmac<Record<string, unknown>>(
           '/funnel/internal/commerce/recover',
           { method: 'POST', body: { account: actor, origin: input.origin } },
@@ -365,14 +391,8 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       }
       let plans: CommerceCatalogOffer[] | undefined
       if (input.action === 'inspect') {
-        const otherSlug = target.id === base.id ? base.content?.altOffer?.slug : base.slug
-        const other =
-          otherSlug && otherSlug !== target.slug
-            ? target.id === base.id
-              ? await offer(otherSlug)
-              : base
-            : null
-        if (other?.isAvailable && siblingOffers(target, other)) plans = [target, other]
+        const other = await otherPlan(target, target.id === base.id ? undefined : base)
+        if (other) plans = [target, other]
       }
       if (input.action === 'inspect' || input.action === 'pay' || input.action === 'restart') {
         const decision = await eligibility(target)
@@ -419,9 +439,8 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
   }
   /** O outro plano da assinatura (mensal ou anual) para a linha de preço do cartão. */
   async function plansOf(target: CommerceCatalogOffer) {
-    const slug = target.content?.altOffer?.slug
-    const other = slug ? await offer(slug) : null
-    return other?.isAvailable && siblingOffers(target, other) ? [target, other] : undefined
+    const other = await otherPlan(target)
+    return other ? [target, other] : undefined
   }
   const commercePromotions = {
     GET: async () => {
@@ -492,7 +511,9 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
                   ? {
                       title: 'Seus filhos também podem criar os próprios jogos',
                       description:
-                        'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar jogos, com aulas, o Estúdio e a nossa equipe por perto. E você fica com todos os cursos para pais.',
+                        'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar jogos, com aulas, o Estúdio e a nossa equipe por perto.',
+                      // "E você fica com todos os cursos para pais" volta quando a dona confirmar
+                      // que a assinatura Kids inclui os cursos para pais.
                       buttonLabel: 'Assinar a Comunidade',
                       // A ilustração da criança criando um jogo (`public/ilustra` do app Kids).
                       imageUrl: '/ilustra/criando.webp',

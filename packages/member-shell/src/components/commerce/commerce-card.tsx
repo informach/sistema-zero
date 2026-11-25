@@ -13,7 +13,14 @@ import { apiGet, apiSend } from '../../lib/api'
 import type { CommerceView, PromotionCardView } from '../../lib/commerce'
 import { useLessonPlayer } from '../lesson-player-context'
 import { useLessonPreview } from '../lesson-preview-context'
-import { intervalText, isRecurring, money, perMonthCents } from './commerce-copy'
+import {
+  intervalText,
+  isCommunityProduct,
+  isRecurring,
+  money,
+  perMonthCents,
+  purchaseDialogTitle,
+} from './commerce-copy'
 import { type CommerceNextStep, CommercePanel } from './commerce-panel'
 
 /**
@@ -25,10 +32,8 @@ import { type CommerceNextStep, CommercePanel } from './commerce-panel'
  */
 export type CommerceCardVariant = 'community' | 'course' | 'default'
 
-const COMMUNITY_KIDS_INCLUDES = [
-  'Todos os cursos de criação de jogos, o Estúdio e o Mural',
-  'Todos os cursos para pais, inclusive os próximos que forem lançados',
-]
+// "Todos os cursos para pais" fica de fora até a dona confirmar que a assinatura Kids os inclui.
+const COMMUNITY_KIDS_INCLUDES = ['Todos os cursos de criação de jogos, o Estúdio e o Mural']
 
 function PriceLine({
   offer,
@@ -152,12 +157,7 @@ export function CommerceCard({
   }, [router])
   const Icon = included ? CheckCircle2 : mode === 'gift' ? Gift : ShoppingBag
   const purchase = mode === 'purchase' && !included
-  const dialogTitle =
-    purchase && offer
-      ? isRecurring(offer)
-        ? `Assinar a ${offer.product.name}`
-        : 'Comprar o curso'
-      : title
+  const dialogTitle = purchase && offer ? purchaseDialogTitle(offer) : title
   const action = included ? (
     <a
       href={included.continueUrl}
@@ -210,7 +210,9 @@ export function CommerceCard({
   )
   if (variant === 'community' && !included) {
     const includes = [
-      ...(offer?.product.audience === 'kids' ? COMMUNITY_KIDS_INCLUDES : []),
+      ...(offer && offer.product.audience === 'kids' && isCommunityProduct(offer)
+        ? COMMUNITY_KIDS_INCLUDES
+        : []),
       ...(offer?.content?.maxProfiles && offer.product.audience === 'kids'
         ? [
             offer.content.maxProfiles === 1
@@ -429,9 +431,11 @@ export function CommercePromotions() {
           mode={promotion.mode}
           variant={
             promotion.mode === 'purchase' && offer
-              ? isRecurring(offer)
+              ? isCommunityProduct(offer)
                 ? 'community'
-                : 'course'
+                : isRecurring(offer)
+                  ? 'default'
+                  : 'course'
               : 'default'
           }
           offer={offer}

@@ -33,6 +33,22 @@ Canvas `pais-checkout` (assinatura) e `pais-checkout-curso` (curso). Tudo em
   `plans`, e o destaque padrão da Comunidade Kids usa a copy do Canvas e `/ilustra/criando.webp`.
 - Testes: `tests/commerce-purchase-form.test.tsx`, `tests/commerce-routes.test.ts` (seção Lote 5) e
   a fixture `tests/fixtures/commerce-card.fixture.tsx` (destaque, curso, Pix, Pronto).
+- **Revisão do Lote 5 (25/11/2026):**
+  - a tela do Pix mostra o valor cobrado e o cupom (`payment.charge`, do funil) no `OrderSummary`;
+  - o texto da Comunidade (o que entra, o "Pronto", o cartão `community`) só vale para o produto da
+    Comunidade (`isCommunityProduct`, pelos SKUs `comunidade-dos-criadores[-adulto]`); outra assinatura
+    diz "Sua assinatura está ativa";
+  - "todos os cursos para pais" saiu da copy no ar (cartão, destaque e "Pronto") até a dona confirmar
+    que a assinatura Kids os inclui;
+  - `perMonthCents` arredonda para cima;
+  - o plano escolhido (`chosenPlan`) volta como `offerRef` no recarregar do `OFFER_CHANGED`;
+  - o BFF não roda o `recover` quando o `inspect` traz `offerRef` (trocar de plano nunca abre a compra
+    de outro plano);
+  - o alternador acha a irmã nos dois sentidos (`otherPlan`: o `altOffer` desta ou a principal do
+    produto que aponta para esta);
+  - "Curso", "Comprar o curso" e "O curso já é seu" só com `product.kind === 'course'` (campo novo,
+    opcional, no `CommerceCatalogOfferSchema`); fora disso "Produto", "Finalizar a compra" e "Compra
+    confirmada".
 
 ## Trocar o apelido renova a sessão de perfil (24/11/2026)
 

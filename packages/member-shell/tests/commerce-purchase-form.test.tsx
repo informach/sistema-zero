@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { perMonthCents, purchaseDialogTitle } from '../src/components/commerce/commerce-copy'
 import { OrderSummary, PurchaseForm } from '../src/components/commerce/purchase-form'
 import type { PurchaseView } from '../src/lib/commerce'
 
@@ -125,6 +126,43 @@ describe('resumo do pedido', () => {
     expect(html).toContain('PAIS10')
     expect(html).toContain('R$ 90')
   })
+  test('revisão: o por mês do anual arredonda para cima (12 vezes nunca dá menos que o anual)', () => {
+    const anual = offer(12)
+    expect(perMonthCents(anual)).toBe(8084)
+    expect(perMonthCents(anual) * 12).toBeGreaterThanOrEqual(anual.priceCents)
+    expect(perMonthCents(offer(12, { priceCents: 120000 }))).toBe(10000)
+  })
+  test('revisão: produto avulso que não é curso não é chamado de curso', () => {
+    const avulso = offer(null)
+    const html = text(renderToStaticMarkup(<OrderSummary offer={avulso} method="pix" />))
+    expect(html).toContain('Produto')
+    expect(html).not.toContain('Curso')
+    expect(purchaseDialogTitle(avulso)).toBe('Finalizar a compra')
+    const curso = offer(null, { product: { ...avulso.product, kind: 'course' } })
+    expect(text(renderToStaticMarkup(<OrderSummary offer={curso} method="pix" />))).toContain(
+      'Curso',
+    )
+    expect(purchaseDialogTitle(curso)).toBe('Comprar o curso')
+  })
+  test('revisão: só a Comunidade é "Assinar a Comunidade"; outra assinatura fica neutra', () => {
+    const comunidade = offer(1, {
+      product: { ...offer(1).product, sku: 'comunidade-dos-criadores' },
+    })
+    expect(purchaseDialogTitle(comunidade)).toBe('Assinar a Comunidade dos Criadores')
+    expect(purchaseDialogTitle(offer(1))).toBe('Fazer a assinatura')
+  })
+  test('revisão: o resumo do Pix mostra o valor cobrado sem cupom vazio', () => {
+    const html = text(
+      renderToStaticMarkup(
+        <OrderSummary
+          offer={offer(null)}
+          method="pix"
+          coupon={{ couponCode: '', listPriceCents: 9700, discountCents: 0, finalPriceCents: 9700 }}
+        />,
+      ),
+    )
+    expect(html).not.toContain(' − ')
+  })
 })
 
 describe('formulário do mini checkout', () => {
@@ -135,7 +173,7 @@ describe('formulário do mini checkout', () => {
     expect(html).toContain('Escolha o plano')
     expect(html.indexOf('Anual')).toBeLessThan(html.indexOf('Mensal'))
     expect(html).toContain('Economize R$ 194')
-    expect(html).toContain('R$ 80,83 por mês')
+    expect(html).toContain('R$ 80,84 por mês')
     expect(html).toContain('No plano mensal o pagamento é só no cartão')
     expect(html).toContain('Assinar por R$ 97 ao mês')
     expect(html).not.toContain('Tem um cupom')

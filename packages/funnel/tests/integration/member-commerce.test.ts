@@ -1081,6 +1081,15 @@ describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
     )
     expect(paid.status).toBe(200)
     expect(gw.calls.create[0]?.input).toMatchObject({ amountInCents: 3000 })
+    // A tela do Pix mostra o valor cobrado e o cupom, também ao reabrir a compra.
+    const charge = { listPriceCents: 3700, discountCents: 700, chargedPriceCents: 3000 }
+    expect((await paid.json()).payment.charge).toEqual({ ...charge, couponCode: 'PAIS10' })
+    const reopened = await handleMemberCommerce(
+      request({ ...fromCourse, checkoutId: body.checkoutId }),
+      'status',
+      deps,
+    )
+    expect((await reopened.json()).payment.charge).toMatchObject(charge)
   })
   test('oferta sem a marca de cupom e assinatura recusam cupom', async () => {
     const { deps, gw } = setup()

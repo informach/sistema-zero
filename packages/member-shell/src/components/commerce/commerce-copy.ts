@@ -89,9 +89,36 @@ export function annualSavingsCents(plans: readonly CommerceCatalogOffer[]): numb
   return savings > 0 ? savings : null
 }
 
-/** O plano anual dividido por 12, arredondado para baixo (nunca promete menos do que cobra). */
+/**
+ * O plano anual dividido por 12, arredondado para CIMA: 12 vezes o "por mês" nunca dá menos do que
+ * o anual cobra.
+ */
 export const perMonthCents = (offer: CommerceCatalogOffer) =>
-  Math.floor(offer.priceCents / (offer.billingIntervalMonths || 1))
+  Math.ceil(offer.priceCents / (offer.billingIntervalMonths || 1))
+
+/** Os produtos da Comunidade dos Criadores (Kids e adulta), pelo SKU do catálogo. */
+export const COMMUNITY_PRODUCT_SKUS: readonly string[] = [
+  'comunidade-dos-criadores',
+  'comunidade-dos-criadores-adulto',
+]
+
+/** Só a Comunidade fala dos cursos, do Estúdio e do Mural; outra assinatura fala só dela. */
+export const isCommunityProduct = (offer: CommerceCatalogOffer) =>
+  COMMUNITY_PRODUCT_SKUS.includes(offer.product.sku)
+
+/** Curso pelo tipo do catálogo; sem o tipo (resposta antiga), não chama de curso. */
+export const isCourseProduct = (offer: CommerceCatalogOffer) => offer.product.kind === 'course'
+
+/** O rótulo da linha do preço numa compra avulsa ("Curso" ou, fora de curso, "Produto"). */
+export const oneTimeItemLabel = (offer: CommerceCatalogOffer) =>
+  isCourseProduct(offer) ? 'Curso' : 'Produto'
+
+/** O título da janela de compra. */
+export function purchaseDialogTitle(offer: CommerceCatalogOffer): string {
+  if (isRecurring(offer))
+    return isCommunityProduct(offer) ? `Assinar a ${offer.product.name}` : 'Fazer a assinatura'
+  return isCourseProduct(offer) ? 'Comprar o curso' : 'Finalizar a compra'
+}
 
 /** O texto do botão de pagar, com o valor de hoje (o cotado com cupom, quando houver). */
 export function payButtonText(

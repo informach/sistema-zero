@@ -101,6 +101,8 @@ export const CommerceCatalogOfferSchema = z.object({
     sku: z.string(),
     name: z.string(),
     status: z.string(),
+    /** O tipo do produto no catálogo (`course`, `bundle`, `tool`...); ausente na resposta antiga. */
+    kind: z.string().optional(),
   }),
   content: z
     .object({
