@@ -61,7 +61,25 @@ Serviços (Lote 2):
   traz `results` (quantidades + faturamento). A página do embaixador (`by-token`) recebe só
   `stats.people` e as `offers` com os links: nunca valores de venda.
 - **Backfill:** `bun run acquisitions:backfill [plan|apply]` (conversões ganham
-  `subscriber_email`; presentes e conversões viram aquisições; listas nascem com o Cadê).
+  `subscriber_email`; presentes e conversões viram aquisições, as conversões estornadas como
+  aquisição `refunded`; listas nascem com o Cadê).
+
+Correções da revisão do Lote 2 (25/11/2026):
+- O pagamento repara os presentes da PRÓPRIA pessoa sem aquisição antes de escolher o
+  embaixador (`repairGifts(20, email)`; falha = reentrega). Sem isso, quem resgatou antes da 0013
+  e assinou antes do primeiro sweep perdia o bônus em silêncio.
+- Prazo do reparo por corte FIXO, não pela idade: `ORIGIN_LEGACY_BEFORE` (ISO, setar no Railway
+  com o instante do deploy da 0013). Presente concluído antes = prazo longo (3650 dias, o acordo
+  antigo não tinha prazo); depois = prazo de hoje. Sem a env, todo reparo ganha o prazo longo.
+- A releitura do pagamento (`cancelIfNoLongerPaid`) só roda no caminho que grava conversão; a
+  compra sem bônus não paga a ida extra (o "custo zero no agregado" de sempre).
+- Mesma CONTA com outro e-mail de cobrança: antes de gravar, confere as conversões ativas dos
+  e-mails da pessoa no público (a vaga do UNIQUE é por e-mail).
+- `origemFonte` usa `sanitizeOriginSource` (aceita `_`, `.` e `+` do `utm_source`).
+- Relatórios: passando de 20.000 linhas ficam as MAIS NOVAS e a Origem das vendas traz
+  `truncated: true`. Slugs: cursor por ciclo, oferta que o catálogo não resolve não trava a fila.
+- `stats.conversions` da campanha junta pelo código (a venda direta não tem resgate).
+- Listas de campanhas e embaixadores: `results.revenueCents` é `null` para staff.
 
 ⚠️ Seção "Banco" abaixo está desatualizada em dois pontos: o resgate é UNIQUE
 `(email, audience, gift_slot)` (0011; vagas `main`, `parents:`, `course:`, `offer:` desde a

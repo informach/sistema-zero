@@ -149,6 +149,9 @@ try {
         bonusTerms: null,
       })
       if (result.created) subsCreated++
+      // Conversão estornada (garantia): a venda não conta; a aquisição nasce estornada.
+      if (row.conversion.status === 'canceled')
+        await acquisitionRepo.markRefundedByPayment(row.conversion.paymentId)
     }
   report.subscriptionAcquisitionsCreated = subsCreated
 

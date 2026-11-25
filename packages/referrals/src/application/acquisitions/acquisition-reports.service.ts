@@ -18,7 +18,10 @@ import {
   resultsByOffer,
   revenueByWeek,
 } from '../../domain/acquisition-reports'
-import type { AcquisitionRepository } from '../../domain/ports/acquisition-repository.port'
+import {
+  type AcquisitionRepository,
+  REPORT_ROW_LIMIT,
+} from '../../domain/ports/acquisition-repository.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type {
   ConversionRecord,
@@ -112,6 +115,7 @@ export class AcquisitionReportsService {
         .slice(-LATEST)
         .reverse()
         .map((a) => acquisitionView(a, names, firstIds)),
+      ...(period.length >= REPORT_ROW_LIMIT ? { truncated: true } : {}),
     }
   }
 

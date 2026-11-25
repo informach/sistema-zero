@@ -1,5 +1,5 @@
 import type { GiftAudience } from '@sistemazero/core/referrals'
-import { and, asc, eq, gte, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import type { AcquisitionRecord, NewAcquisition } from '../../../domain/acquisition'
 import {
   type AcquisitionRepository,
@@ -124,26 +124,49 @@ export class DrizzleAcquisitionRepository implements AcquisitionRepository {
     return rows.map(toAcquisition)
   }
 
-  async listCompletedRedemptionsWithoutAcquisition(limit: number) {
+  async listCompletedRedemptionsWithoutAcquisition(limit: number, email?: string) {
     const rows = await this.db
       .select({ redemption: scholarshipRedemptions, code: codes })
       .from(scholarshipRedemptions)
       .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
       .leftJoin(acquisitions, eq(acquisitions.redemptionId, scholarshipRedemptions.id))
-      .where(and(eq(scholarshipRedemptions.status, 'completed'), isNull(acquisitions.id)))
+      .where(
+        and(
+          eq(scholarshipRedemptions.status, 'completed'),
+          isNull(acquisitions.id),
+          email ? eq(scholarshipRedemptions.email, email.trim().toLowerCase()) : undefined,
+        ),
+      )
       .orderBy(asc(scholarshipRedemptions.createdAt))
       .limit(limit)
     return rows.map((row) => ({ redemption: toRedemption(row.redemption), code: toCode(row.code) }))
   }
 
-  async listMissingOfferSlug(limit: number): Promise<{ id: string; offerId: string }[]> {
+  async listMissingOfferSlug(
+    limit: number,
+    after?: { createdAt: Date; id: string } | null,
+  ): Promise<{ id: string; offerId: string; createdAt: Date }[]> {
     const rows = await this.db
-      .select({ id: acquisitions.id, offerId: acquisitions.offerId })
+      .select({
+        id: acquisitions.id,
+        offerId: acquisitions.offerId,
+        createdAt: acquisitions.createdAt,
+      })
       .from(acquisitions)
-      .where(and(isNull(acquisitions.offerSlug), isNotNull(acquisitions.offerId)))
-      .orderBy(asc(acquisitions.createdAt))
+      .where(
+        and(
+          isNull(acquisitions.offerSlug),
+          isNotNull(acquisitions.offerId),
+          after
+            ? sql`(${acquisitions.createdAt}, ${acquisitions.id}) > (${after.createdAt.toISOString()}::timestamptz, ${after.id}::uuid)`
+            : undefined,
+        ),
+      )
+      .orderBy(asc(acquisitions.createdAt), asc(acquisitions.id))
       .limit(limit)
-    return rows.flatMap((row) => (row.offerId ? [{ id: row.id, offerId: row.offerId }] : []))
+    return rows.flatMap((row) =>
+      row.offerId ? [{ id: row.id, offerId: row.offerId, createdAt: row.createdAt }] : [],
+    )
   }
 
   async setOfferSlug(id: string, offerSlug: string, asSubscription = false): Promise<void> {
@@ -190,13 +213,14 @@ export class DrizzleAcquisitionRepository implements AcquisitionRepository {
     return this.read(eq(acquisitions.email, email.trim().toLowerCase()))
   }
 
+  /** As MAIS NOVAS até o teto, devolvidas da mais antiga para a mais nova. */
   private async read(where: ReturnType<typeof and>): Promise<AcquisitionRecord[]> {
     const rows = await this.db
       .select()
       .from(acquisitions)
       .where(where)
-      .orderBy(asc(acquisitions.acquiredAt), asc(acquisitions.createdAt))
+      .orderBy(desc(acquisitions.acquiredAt), desc(acquisitions.createdAt))
       .limit(REPORT_ROW_LIMIT)
-    return rows.map(toAcquisition)
+    return rows.reverse().map(toAcquisition)
   }
 }

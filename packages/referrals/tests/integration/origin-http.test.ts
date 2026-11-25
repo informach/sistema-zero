@@ -214,4 +214,29 @@ describe('rotas da origem por aquisição', () => {
         .status,
     ).toBe(200)
   })
+
+  test('lista de campanhas: equipe vê as quantidades, só admin vê o faturamento', async () => {
+    const { app, campaigns } = buildApp()
+    const now = Date.now()
+    await campaigns.create(
+      {
+        name: 'Feira',
+        publicTitle: 'Feira',
+        description: '',
+        context: 'event',
+        code: 'feira-dezembro',
+        startsAt: new Date(now - DAY).toISOString(),
+        endsAt: new Date(now + DAY).toISOString(),
+        status: 'active',
+        channel: 'evento',
+        giftOfferId: KIDS_GIFT_OFFER.offerId,
+      },
+      'Helena',
+    )
+    const read = async (role: string) =>
+      (await (await app.handle(get('/referrals/admin/campaigns', admin(role)))).json()).items[0]
+        .results
+    expect((await read('staff')).revenueCents).toBeNull()
+    expect((await read('admin')).revenueCents).toBe('0')
+  })
 })

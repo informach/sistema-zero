@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   isCampaignRedirectPath,
   sanitizeOriginPlace,
+  sanitizeOriginSource,
   sanitizeReferralCode,
 } from '../src/referrals/index'
 
@@ -46,4 +47,13 @@ describe('origem da aquisição', () => {
     expect(isCampaignRedirectPath(`/kids/${'a'.repeat(114)}`)).toBe(true) // 120
     expect(isCampaignRedirectPath(`/kids/${'a'.repeat(115)}`)).toBe(false) // 121
   })
+})
+
+test('fonte de mídia aceita os tokens do utm_source (sublinhado, ponto, mais)', () => {
+  expect(sanitizeOriginSource('Google_Ads')).toBe('google_ads')
+  expect(sanitizeOriginSource('l.instagram.com')).toBe('l.instagram.com')
+  expect(sanitizeOriginSource('meta+ads')).toBe('meta+ads')
+  expect(sanitizeOriginSource('_x')).toBeNull()
+  expect(sanitizeOriginSource('a b')).toBeNull()
+  expect(sanitizeOriginSource('a'.repeat(101))).toBeNull()
 })

@@ -10,7 +10,13 @@ import type {
   ReferralRepository,
 } from '../../domain/ports/referral-repository.port'
 import { CONVERSION_STATUSES } from '../../domain/ports/referral-repository.port'
-import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
+import {
+  assertInternalCaller,
+  canSeeRevenue,
+  decodeIdentityHeader,
+  requireAdmin,
+  revenueFor,
+} from './auth'
 
 // String (não RegExp.source): o `pattern` do TypeBox compila SEM flags — um /i
 // perdido rejeitaria uuid maiúsculo com 422.
@@ -128,13 +134,19 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             offset: query.offset ?? 0,
           })
           const results = await deps.reports?.ambassadorResults(items.map((i) => i.id))
+          const revenue = canSeeRevenue(headers)
           return {
-            items: items.map((i) => ({
-              ...i,
-              ...(results?.get(i.id) ? { results: results.get(i.id) } : {}),
-              linkEmailSentAt: i.linkEmailSentAt?.toISOString() ?? null,
-              createdAt: i.createdAt.toISOString(),
-            })),
+            items: items.map((i) =>
+              revenueFor(
+                {
+                  ...i,
+                  ...(results?.get(i.id) ? { results: results.get(i.id) } : {}),
+                  linkEmailSentAt: i.linkEmailSentAt?.toISOString() ?? null,
+                  createdAt: i.createdAt.toISOString(),
+                },
+                revenue,
+              ),
+            ),
             total,
           }
         },

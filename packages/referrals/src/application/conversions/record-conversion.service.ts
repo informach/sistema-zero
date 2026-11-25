@@ -7,6 +7,7 @@ import {
   PAYMENT_ORIGIN_PLACE_KEY,
   PAYMENT_ORIGIN_SOURCE_KEY,
   sanitizeOriginPlace,
+  sanitizeOriginSource,
   sanitizeReferralCode,
 } from '@sistemazero/core/referrals'
 import {
@@ -79,6 +80,10 @@ export class RecordConversionService {
     private readonly catalog: CatalogClient,
     private readonly config: RecordConversionConfig,
     private readonly logger: Logger,
+    /** Presentes concluídos da pessoa que ainda não viraram aquisição (reparo na hora). */
+    private readonly giftRepair?: {
+      repairGifts(limit?: number, email?: string): Promise<number>
+    },
   ) {}
 
   private get defaults(): BonusDefaults {
@@ -179,6 +184,16 @@ export class RecordConversionService {
       ...origin,
     })
 
+    // Presente resgatado antes da 0013 (ou cujo registro falhou) ainda sem aquisição: repara
+    // agora, senão o embaixador dele perderia o bônus se a assinatura chegasse antes do sweep.
+    if (this.giftRepair) {
+      try {
+        await this.giftRepair.repairGifts(20, email)
+      } catch (error) {
+        return { kind: 'retryable', reason: `reparo dos presentes indisponível: ${msg(error)}` }
+      }
+    }
+
     // O bônus: primeiro embaixador no prazo, entre as aquisições da pessoa no público (a
     // desta compra incluída — quem assinou direto pelo link conta).
     const history = await this.acquisitions.listActiveForPerson({ email, accountUserId, audience })
@@ -194,7 +209,9 @@ export class RecordConversionService {
         }),
         startedAt,
       )
-    if (!winner?.bonusTerms) return this.cancelIfNoLongerPaid(paymentId)
+    // Sem bônus em jogo, não há o que reconferir: um estorno que chegue agora encontra a
+    // aquisição já gravada (onRefunded a marca) — só a conversão paga a ida extra ao payments.
+    if (!winner?.bonusTerms) return { kind: 'ok' }
 
     if (!offer) {
       const resolved = await this.resolveOffer(paymentId, offerId)
@@ -207,8 +224,21 @@ export class RecordConversionService {
         offer.slug,
         this.config.conversionOfferSlugs.includes(offer.slug),
       )
-    if (!this.config.conversionOfferSlugs.includes(offer.slug))
-      return this.cancelIfNoLongerPaid(paymentId)
+    if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
+
+    // A mesma CONTA com outro e-mail de cobrança (cancelou e assinou de novo pela plataforma):
+    // a vaga do bônus é por e-mail, então confere as conversões ativas dos e-mails da pessoa.
+    if (accountUserId) {
+      const emails = [...new Set([email, ...history.map((item) => item.email)])]
+      const earlier = (await this.repo.listConversionsBySubscribers(emails)).find(
+        (c) =>
+          c.audience === audience &&
+          c.paymentId !== paymentId &&
+          c.status !== 'canceled' &&
+          c.status !== 'superseded',
+      )
+      if (earlier) return { kind: 'ok' }
+    }
 
     const terms = winner.bonusTerms
     const selfBlocked = terms.ambassadorEmail !== '' && terms.ambassadorEmail === email
@@ -230,7 +260,7 @@ export class RecordConversionService {
         ? (terms.annualCents ?? 0)
         : (terms.monthlyCents ?? 0)
       : (terms.fixedCents ?? 0)
-    if (!winner.codeId) return this.cancelIfNoLongerPaid(paymentId)
+    if (!winner.codeId) return { kind: 'ok' }
 
     const { created } = await this.repo.insertConversion({
       redemptionId: winner.redemptionId,
@@ -340,7 +370,7 @@ export class RecordConversionService {
     }
     const base = { codeId: null, campaignId: null, ambassadorId: null, bonusTerms: null }
     if (place) return { ...base, originKind: 'platform', place, utm: null }
-    const source = sanitizeOriginPlace(metadata[PAYMENT_ORIGIN_SOURCE_KEY])
+    const source = sanitizeOriginSource(metadata[PAYMENT_ORIGIN_SOURCE_KEY])
     if (source)
       return {
         ...base,

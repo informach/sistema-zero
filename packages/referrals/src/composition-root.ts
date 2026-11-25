@@ -130,6 +130,23 @@ export function createApplication(env: Env): Application {
     timeoutMs: env.S2S_TIMEOUT_MS,
   })
   const bonusAmounts = { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS }
+  const maintenance = new AcquisitionMaintenanceService(
+    acquisitionRepo,
+    catalog,
+    {
+      defaults: {
+        amounts: bonusAmounts,
+        legacyCents: env.BONUS_AMOUNT_CENTS,
+        windowDays: env.BONUS_WINDOW_DAYS,
+      },
+      // Presentes de antes de 25/11/2026 tinham acordo sem prazo (ver o serviço).
+      repairWindowDays: LEGACY_GIFT_WINDOW_DAYS,
+      legacyBefore: env.ORIGIN_LEGACY_BEFORE ? new Date(env.ORIGIN_LEGACY_BEFORE) : null,
+      batchSize: 100,
+      conversionOfferSlugs: env.CONVERSION_OFFER_SLUGS,
+    },
+    logger,
+  )
   const recordConversion = new RecordConversionService(
     repo,
     acquisitionRepo,
@@ -148,22 +165,8 @@ export function createApplication(env: Env): Application {
       matureHours: env.BONUS_MATURE_HOURS,
     },
     logger,
-  )
-  const maintenance = new AcquisitionMaintenanceService(
-    acquisitionRepo,
-    catalog,
-    {
-      defaults: {
-        amounts: bonusAmounts,
-        legacyCents: env.BONUS_AMOUNT_CENTS,
-        windowDays: env.BONUS_WINDOW_DAYS,
-      },
-      // Presentes de antes de 25/11/2026 tinham acordo sem prazo (ver o serviço).
-      repairWindowDays: LEGACY_GIFT_WINDOW_DAYS,
-      batchSize: 100,
-      conversionOfferSlugs: env.CONVERSION_OFFER_SLUGS,
-    },
-    logger,
+    // Antes de escolher o embaixador, os presentes da pessoa que ainda não viraram aquisição.
+    maintenance,
   )
   const sweep = new SweepConversionsService(
     repo,

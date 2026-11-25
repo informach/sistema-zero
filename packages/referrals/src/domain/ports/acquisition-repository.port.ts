@@ -22,12 +22,23 @@ export interface AcquisitionRepository {
     accountUserId?: string | null
     audience: GiftAudience
   }): Promise<AcquisitionRecord[]>
-  /** Reparo: presentes concluídos que ainda não viraram aquisição (falha no registro). */
+  /**
+   * Reparo: presentes concluídos que ainda não viraram aquisição (falha no registro, ou
+   * resgates anteriores à 0013). Com `email`, só os dessa pessoa (o pagamento repara antes de
+   * escolher o embaixador).
+   */
   listCompletedRedemptionsWithoutAcquisition(
     limit: number,
+    email?: string,
   ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]>
-  /** Compras gravadas sem o slug da oferta (o catálogo estava fora). */
-  listMissingOfferSlug(limit: number): Promise<{ id: string; offerId: string }[]>
+  /**
+   * Compras gravadas sem o slug da oferta (o catálogo estava fora), em ordem de criação.
+   * `after` pula as já tentadas neste ciclo (oferta que o catálogo não resolve não trava a fila).
+   */
+  listMissingOfferSlug(
+    limit: number,
+    after?: { createdAt: Date; id: string } | null,
+  ): Promise<{ id: string; offerId: string; createdAt: Date }[]>
   /**
    * Grava o slug (só se faltava). `asSubscription`: a oferta é da Comunidade (o anual à vista
    * no Pix chega sem `subscriptionId` e entra como `one_time`; aqui vira `subscription`).
@@ -35,7 +46,8 @@ export interface AcquisitionRepository {
   setOfferSlug(id: string, offerSlug: string, asSubscription?: boolean): Promise<void>
 
   // ── Leituras dos relatórios (Admin) ───────────────────────────────────────
-  /** Teto de linhas de uma leitura de relatório (o relatório agrega em memória). */
+  // Da mais antiga para a mais nova; passando de REPORT_ROW_LIMIT, ficam as MAIS NOVAS (quem
+  // chama sabe pelo tamanho da lista que houve corte).
   listByCampaigns(campaignIds: string[]): Promise<AcquisitionRecord[]>
   /** As do embaixador: link pessoal e campanhas ligadas a ele. */
   listByAmbassadors(ambassadorIds: string[]): Promise<AcquisitionRecord[]>

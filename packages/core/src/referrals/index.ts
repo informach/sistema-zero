@@ -163,14 +163,15 @@ export interface CampaignInput {
  * Resultado de uma origem (campanha ou embaixador), contado pelas aquisições com aquela origem
  * (25/11/2026). `people` = pessoas distintas que entraram por ela (presente ou compra);
  * `purchases` = compras fora a assinatura; `subscriptions` = primeiras assinaturas;
- * `revenueCents` = valor pago, sem estornos (string: bigint).
+ * `revenueCents` = valor pago, sem estornos (string: bigint); `null` para quem não é admin (o
+ * faturamento é leitura admin+, como a Origem das vendas).
  */
 export interface OriginResults {
   people: number
   gifts: number
   purchases: number
   subscriptions: number
-  revenueCents: string
+  revenueCents: string | null
 }
 export interface CampaignView extends CampaignInput {
   couponView?: CampaignCouponView | null
@@ -328,6 +329,16 @@ export function sanitizeOriginPlace(value: unknown): string | null {
   return ORIGIN_PLACE_PATTERN.test(place) ? place : null
 }
 /**
+ * Fonte de mídia (`utm_source`) gravada como `origemFonte`: a mesma régua de token do funil
+ * (`google_ads`, `l.instagram.com`, `meta+ads`), em minúsculas e até 100 caracteres.
+ */
+export const ORIGIN_SOURCE_PATTERN = /^[a-z0-9][a-z0-9._+-]{0,99}$/
+export function sanitizeOriginSource(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const source = value.trim().toLowerCase()
+  return ORIGIN_SOURCE_PATTERN.test(source) ? source : null
+}
+/**
  * Chaves PLANAS que o funil grava no `metadata` do pagamento e o referrals lê para gravar a
  * aquisição com a origem. Planas de propósito: o payments limita a 50 chaves e consultas
  * `metadata->>'origemCodigo'` ficam diretas.
@@ -411,6 +422,11 @@ export interface OriginReport {
   ambassadors: OriginRankingRow[]
   campaigns: OriginRankingRow[]
   latest: AcquisitionView[]
+  /**
+   * O período passou do teto de linhas da leitura: os números cobrem só as aquisições mais
+   * recentes. O painel avisa e pede um período menor.
+   */
+  truncated?: boolean
 }
 /** O que veio por um embaixador ou por uma campanha, oferta a oferta. */
 export interface OriginOfferRow {

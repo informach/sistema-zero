@@ -336,7 +336,9 @@ export class DrizzleCampaignRepository implements CampaignRepository {
       })
       .from(codes)
       .leftJoin(scholarshipRedemptions, eq(scholarshipRedemptions.codeId, codes.id))
-      .leftJoin(conversions, eq(conversions.redemptionId, scholarshipRedemptions.id))
+      // Pelo código, não pelo resgate: a venda direta pelo link (campanha de venda) gera
+      // conversão sem resgate.
+      .leftJoin(conversions, eq(conversions.codeId, codes.id))
       .where(and(eq(codes.ownerKind, 'campaign'), eq(codes.campaignId, id)))
     return {
       redemptions: Number(row?.redemptions ?? 0),

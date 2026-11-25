@@ -1,7 +1,13 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
-import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
+import {
+  assertInternalCaller,
+  canSeeRevenue,
+  decodeIdentityHeader,
+  requireAdmin,
+  revenueFor,
+} from './auth'
 
 const campaignBody = t.Object({
   coupon: t.Optional(
@@ -83,13 +89,16 @@ export function campaignsRoutes(deps: {
     })
     .get(
       '',
-      ({ query }) =>
-        deps.campaigns.list({
+      async ({ query, headers }) => {
+        const page = await deps.campaigns.list({
           audience: query.audience,
           q: query.q,
           limit: query.limit ?? 25,
           offset: query.offset ?? 0,
-        }),
+        })
+        const revenue = canSeeRevenue(headers)
+        return { ...page, items: page.items.map((item) => revenueFor(item, revenue)) }
+      },
       {
         query: t.Object({
           audience: audienceQuery,

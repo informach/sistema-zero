@@ -4,9 +4,6 @@ import { type BonusDefaults, giftAcquisition } from '../../domain/acquisition'
 import type { AcquisitionRepository } from '../../domain/ports/acquisition-repository.port'
 import type { CatalogClient } from '../../domain/ports/clients.port'
 
-/** Até quantos dias depois de concluído um presente sem aquisição é tratado como falha recente. */
-const RECENT_REPAIR_DAYS = 7
-
 export interface AcquisitionMaintenanceConfig {
   defaults: BonusDefaults
   /**
@@ -15,6 +12,13 @@ export interface AcquisitionMaintenanceConfig {
    * sempre): o backfill os grava com um prazo longo para não tirar o bônus de quem já tinha.
    */
   repairWindowDays: number
+  /**
+   * Quando a 0013 entrou no ar (`ORIGIN_LEGACY_BEFORE`): presente concluído ANTES disso é do
+   * acordo antigo e ganha o prazo longo; depois, é falha do registro em tempo real e ganha o
+   * prazo de hoje. Sem a data, todo presente reparado ganha o prazo longo (o lado que não tira
+   * bônus de ninguém).
+   */
+  legacyBefore?: Date | null
   batchSize: number
   /** Slugs da Comunidade: a compra dessas ofertas é assinatura, mesmo no anual à vista. */
   conversionOfferSlugs: string[]
@@ -36,24 +40,28 @@ export class AcquisitionMaintenanceService {
     private readonly now: () => Date = () => new Date(),
   ) {}
 
-  /** Devolve quantas aquisições de presente foram criadas. */
-  async repairGifts(limit = this.config.batchSize): Promise<number> {
-    const pending = await this.acquisitions.listCompletedRedemptionsWithoutAcquisition(limit)
+  /**
+   * Devolve quantas aquisições de presente foram criadas. Com `email`, repara só os presentes
+   * dessa pessoa e LANÇA na falha (o pagamento dela pede reentrega em vez de seguir sem o
+   * presente); no ciclo do sweep, cada falha só vira aviso.
+   */
+  async repairGifts(limit = this.config.batchSize, email?: string): Promise<number> {
+    const pending = await this.acquisitions.listCompletedRedemptionsWithoutAcquisition(limit, email)
+    const legacyBefore = this.config.legacyBefore ?? null
     let created = 0
     for (const { redemption, code } of pending) {
       const completedAt = redemption.completedAt ?? redemption.createdAt
-      // Falha recente do registro em tempo real: o acordo é o de hoje. Presente antigo (o
-      // backfill da 0013): o acordo dele não tinha prazo, então o prazo é o longo.
-      const recent = this.now().getTime() - completedAt.getTime() <= RECENT_REPAIR_DAYS * 86_400_000
+      const legacy = !legacyBefore || completedAt.getTime() < legacyBefore.getTime()
       try {
         const result = await this.acquisitions.insert(
           giftAcquisition(redemption, code, completedAt, {
             ...this.config.defaults,
-            windowDays: recent ? this.config.defaults.windowDays : this.config.repairWindowDays,
+            windowDays: legacy ? this.config.repairWindowDays : this.config.defaults.windowDays,
           }),
         )
         if (result.created) created++
       } catch (error) {
+        if (email) throw error
         this.logger.warn('referrals.gift_acquisition_repair_failed', {
           redemptionId: redemption.id,
           error: serializeError(error),
@@ -63,9 +71,17 @@ export class AcquisitionMaintenanceService {
     return created
   }
 
+  /** Onde o último ciclo parou: oferta que o catálogo não resolve não trava a fila. */
+  private slugCursor: { createdAt: Date; id: string } | null = null
+
   /** Devolve quantos slugs foram preenchidos. Catálogo fora: tenta no próximo ciclo. */
   async fillOfferSlugs(limit = this.config.batchSize): Promise<number> {
-    const missing = await this.acquisitions.listMissingOfferSlug(limit)
+    const missing = await this.acquisitions.listMissingOfferSlug(limit, this.slugCursor)
+    // Lote incompleto = chegou ao fim; o próximo ciclo recomeça do início (as que o catálogo
+    // não resolvia ganham outra chance).
+    const last = missing.at(-1)
+    this.slugCursor =
+      missing.length < limit || !last ? null : { createdAt: last.createdAt, id: last.id }
     const cache = new Map<string, string | null>()
     let filled = 0
     for (const item of missing) {

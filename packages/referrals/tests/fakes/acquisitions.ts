@@ -68,9 +68,14 @@ export class InMemoryAcquisitionRepository implements AcquisitionRepository {
       )
   }
 
-  async listCompletedRedemptionsWithoutAcquisition(limit: number) {
+  async listCompletedRedemptionsWithoutAcquisition(limit: number, email?: string) {
     return this.referrals.redemptions
-      .filter((r) => r.status === 'completed' && !this.items.some((a) => a.redemptionId === r.id))
+      .filter(
+        (r) =>
+          r.status === 'completed' &&
+          (!email || r.email === email) &&
+          !this.items.some((a) => a.redemptionId === r.id),
+      )
       .slice(0, limit)
       .flatMap((redemption) => {
         const code = this.referrals.codes.find((c) => c.id === redemption.codeId)
@@ -78,11 +83,12 @@ export class InMemoryAcquisitionRepository implements AcquisitionRepository {
       })
   }
 
-  async listMissingOfferSlug(limit: number) {
-    return this.items
-      .filter((a) => a.offerSlug === null && a.offerId !== null)
-      .slice(0, limit)
-      .map((a) => ({ id: a.id, offerId: a.offerId as string }))
+  async listMissingOfferSlug(limit: number, after?: { createdAt: Date; id: string } | null) {
+    const missing = this.items.filter((a) => a.offerSlug === null && a.offerId !== null)
+    const start = after ? missing.findIndex((a) => a.id === after.id) + 1 : 0
+    return missing
+      .slice(start, start + limit)
+      .map((a) => ({ id: a.id, offerId: a.offerId as string, createdAt: a.createdAt }))
   }
 
   async setOfferSlug(id: string, offerSlug: string, asSubscription = false) {
