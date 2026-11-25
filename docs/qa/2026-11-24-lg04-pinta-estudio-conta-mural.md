@@ -19,6 +19,7 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 - Uma exclusão durante o primeiro envio poderia deixar uma tentativa antiga livre para recriar o projeto. O cliente agora passa pela exclusão autoritativa mesmo sem uma primeira confirmação local.
 - Em homologação, a confirmação do Pinta recebia HTTP 400 depois de upload e verificação aprovados. O adaptador HTTP entregava um stream de zero bytes, e o BFF recusava a mera presença do stream. Commit e cancelamento passam a conferir os bytes efetivos; qualquer corpo não vazio continua recusado.
 - O botão real “Jogar meu mapa” ainda exigia os campos legados `tilemap`/`scene` e recusava o PNG regional antes de chamar o host. A interface passa a reconhecer o marcador regional, mantendo a admissão integral no destino. A prova pelo botão reproduziu três falhas nos navegadores antes da correção; a rodada seguinte aprovou os 18 cenários. Esse percurso foi acrescentado ao CI obrigatório.
+- Na janela de publicação, digitar durante a consulta do post podia perder título/resumo quando a resposta tardia ou o rascunho automático chegavam. O diálogo acompanha a edição manual por abertura: a consulta conserva os campos tocados, e a geração automática não substitui um resumo já escrito. Pedir um novo resumo explicitamente continua disponível. Reprodução focada: duas falhas; após a correção, 19 testes/91 expectativas aprovados, incluindo o conteúdo efetivamente enviado ao publicar/atualizar.
 
 ## Evidências locais
 
