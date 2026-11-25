@@ -123,9 +123,22 @@ Dois caminhos com o mesmo resultado: o script `scripts/cursos/cadastrar-curso.ts
        uma versão 2D parecida com os "gêmeos" em SVG dos modelos, que estão no projeto do curso 2D
        correspondente (a Ilha usa os da Chave do Farol), simulando a profundidade: o chão com
        espessura, o personagem que diminui ao ir para o fundo, o objeto que gira pela largura.
+     - **Estilo (igual em todos os cursos):** fundo transparente e um chão oval com espessura (grama,
+       areia, ilha), com o personagem e os objetos do curso em cima, como no Jardim e na Ilha. Não
+       use o cenário inteiro do jogo como fundo: o retângulo vira um quadro duro na página. A
+       primeira versão do Moedas usou o cenário praia tropical com uma faixa de contador no alto, e
+       a dona reprovou ("um quadrado esquisito"). Peça do cenário que você quiser, como uma
+       palmeira, sai do SVG do cenário como arte à parte (a receita do Moedas tem um exemplo).
+       Contador ou placar fica no desenho (moedas apagadas que se acendem), sem caixa escura de
+       interface.
+     - **Tamanho na página:** a trilha do curso põe a animação numa caixa de proporção 9:8
+       (`.kids-trail-art`, 250 px de largura no computador), com a animação inteira dentro. Prancheta
+       muito mais larga que alta encolhe na caixa. Use perto de 500×400 (Ilha 500×400, Jardim
+       500×410, Moedas 500×380) e encha o alto com o desenho, em vez de deixar o céu vazio.
      - **Receita:** `docs/aulas-interativas-tecnico/recursos/<curso>/animacao-dos-modulos.ts` diz o
        curso, o título de cada módulo (igual ao `modulos.md`), as camadas e as trilhas do clipe
-       (loop de 4 a 5 s a 30 quadros/s). Modelos: a do Jardim (2D) e a da Ilha (3D).
+       (loop de 4 a 5 s a 30 quadros/s). Modelos: a do Jardim (2D), a da Ilha (3D) e a do Moedas (2D,
+       com uma palmeira tirada do cenário e o contador desenhado).
      - **Montar, exportar e cadastrar** (precisa do `informach-apps` ao lado do `sistema-zero`, com
        `pnpm install`, ou `EDISVG_APP` apontando para `apps/edisvg`):
 
@@ -141,14 +154,20 @@ Dois caminhos com o mesmo resultado: o script `scripts/cursos/cadastrar-curso.ts
          `.edisvg` abre no ediSVG para retocar à mão, mas o próximo `montar` sobrescreve os retoques.
        - `exportar` roda o exportador do ediSVG num Chromium de verdade. Ele reprova o quadro em 61%
          do clipe se for igual ao primeiro. As imagens de conferência ficam em `.cache/cursos/animacoes/`:
-         olhe antes de cadastrar.
+         olhe antes de cadastrar. Elas mostram só o primeiro quadro e o de 61%. Para ver outros
+         (o meio de um voo, o recomeço do loop), use o player do ediSVG numa página local:
+         `mountWebAnimation(svg, conteúdo, {autoplay: false})` de
+         `packages/edisvg/vendor/edi-web-player.mjs`, `advance(segundos)` e uma foto por quadro.
+         Rode com o Node: no Windows, o Chromium do Playwright não abre pelo Bun (fica parado).
        - `cadastrar` guarda o arquivo e o pôster no R2 pelo código do Admin e põe no módulo (título e
          resumo continuam os mesmos). Rodar de novo não refaz o que já está igual.
      - **Quando o ediSVG muda a versão do projeto** (o `PROJECT_VERSION` do `informach-apps`, de 27
        para 28 em 24/11/2026), o `montar` regrava o `.edisvg` só com a versão nova. O teste passa a
        acusar que a exportação guardada não é a do projeto atual. Há duas saídas: exportar e
        cadastrar de novo, ou voltar o `.edisvg` à cópia que foi exportada, que fica em
-       `.cache/cursos/animacoes/<curso>/<hora>/entrada/`. No Moedas, voltei à cópia exportada.
+       `.cache/cursos/animacoes/<curso>/<hora>/entrada/`. Na primeira versão do Moedas, voltei à
+       cópia exportada; a versão refeita (25/11/2026) já saiu na versão 28 e foi exportada e
+       cadastrada de novo.
      - Sem o script, à mão: no Admin, "Editar módulo" → enviar o `.edi-animation.json`.
      - O acervo fica em `art/edisvg/` (`exports/manifest.json`); o teste
        `scripts/cursos/animacao-do-modulo.test.ts` reprova exportação desatualizada.

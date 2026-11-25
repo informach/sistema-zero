@@ -94,7 +94,7 @@
   "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 2 da Aula 1 (Passo a passo do projeto), marcado como caderno do aluno para o Zappy",
   "vozesDoZappy": "45 falas em 18 blocos (11 na Aula 1, 7 na Aula 2), pelo código do botão Gerar a voz do Zappy",
   "blocosLiberados": "59 blocos, a união do 2D e do 3D do blocos.json",
-  "animacaoDoModulo": "art/edisvg/exports/moedas-no-caminho-m1-b1-a1.679c4e31328e.edi-animation.json (receita docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/animacao-dos-modulos.ts)",
+  "animacaoDoModulo": "art/edisvg/exports/moedas-no-caminho-m1-b1-a1.36bdc0a5eab2.edi-animation.json (receita docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/animacao-dos-modulos.ts; refeita em 25/11/2026 no molde do Jardim e da Ilha, chão oval sem o cenário retangular)",
   "baseDoZappy": "25/11/2026: o caderno na base (31.408 caracteres); os vídeos provisórios não têm fala, então ficam sem transcrição até os vídeos finais",
   "conferido": "scripts/cursos/conferir-curso.ts --provisorio: Tudo confere",
   "pendente": [

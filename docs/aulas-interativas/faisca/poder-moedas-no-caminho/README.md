@@ -78,7 +78,8 @@ provisórios de 2 s. Cada parte com vídeo tem a sua capa (`capas-das-aulas/`, g
 `docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/capas-das-aulas/`). A `aula-2` foi
 criada no mesmo módulo, e as duas aulas foram importadas. O caderno está na Parte 2 da Aula 1,
 marcado para o Zappy. A voz do Zappy, os 59 blocos liberados e a animação do módulo estão
-cadastrados. Os ids e o que falta estão em [publicacao-staging.json](publicacao-staging.json).
+cadastrados. A animação foi refeita no mesmo dia no molde do Jardim e da Ilha (chão oval, sem o
+cenário retangular do jogo). Os ids e o que falta estão em [publicacao-staging.json](publicacao-staging.json).
 Próximo passo: gravar com o palco e trocar os vídeos provisórios pelos finais (Etapa 2 do guia
 `docs/operations/cursos-passo-a-passo.md`).
 
