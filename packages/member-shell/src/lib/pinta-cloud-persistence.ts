@@ -683,10 +683,7 @@ export function createCloudMirroredPintaPersistence(
         wakeCausal()
         return
       }
-      void local
-        .listAllAssets()
-        .then(startReconcile)
-        .catch(() => {})
+      startReconcile(() => local.listAllAssets())
     }, 1_500)
   }
   const slotSnapshots = new WeakMap<readonly symbol[], readonly symbol[]>()
@@ -1981,17 +1978,23 @@ export function createCloudMirroredPintaPersistence(
   }
 
   /** Dispara uma reconciliação (single-flight) e avisa o pacote do começo e do fim. */
-  function startReconcile(localAssets: PintaWorkshopAsset[]): void {
+  function startReconcile(
+    localAssets: PintaWorkshopAsset[] | (() => Promise<PintaWorkshopAsset[]>),
+  ): void {
     if (!cloud.supported || reconcileInFlight || causalSession.signal.aborted) return
+    // The focal index can return before the full inventory is decoded. Announce
+    // and own that pending read now, so deep links wait and repeat loads join it.
     emit({ type: 'sync-start' })
-    reconcileInFlight = perfSpanAsync('kids:pinta:reconcile', () => reconcile(localAssets))
+    reconcileInFlight = perfSpanAsync('kids:pinta:reconcile', async () =>
+      reconcile(typeof localAssets === 'function' ? await localAssets() : localAssets),
+    )
       .then(async (assets) => {
         await reportCausalQueue().catch(() => {})
         return assets
       })
       .catch(async (error) => {
         await reportCausalQueue(error).catch(() => {})
-        return localAssets
+        return typeof localAssets === 'function' ? [] : localAssets
       })
       .finally(() => {
         lastReconcileEndedAt = now()
@@ -2010,7 +2013,7 @@ export function createCloudMirroredPintaPersistence(
       if (causalLocal && causalCloud) wakeCausal()
       if (!skippedOpen.has(event.id)) return
       skippedOpen.delete(event.id)
-      void local.listAllAssets().then((localAssets) => startReconcile(localAssets))
+      startReconcile(() => local.listAllAssets())
     }) ?? null
 
   if (causalLocal && causalCloud && typeof window !== 'undefined')
@@ -2095,10 +2098,7 @@ export function createCloudMirroredPintaPersistence(
       lostFormat(asset)
     }
     if (now() - lastReconcileEndedAt >= reconcileMinIntervalMs)
-      void local
-        .listAllAssets()
-        .then(startReconcile)
-        .catch(() => {})
+      startReconcile(() => local.listAllAssets())
     return index
   }
 

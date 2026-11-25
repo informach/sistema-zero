@@ -25,7 +25,7 @@ test('as regiões sobem pela fila causal e o cliente antigo encontra o dado regi
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b6 pass\b/)
+    expect(stdout + stderr).toMatch(/\b8 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

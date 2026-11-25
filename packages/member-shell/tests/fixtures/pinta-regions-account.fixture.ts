@@ -529,3 +529,77 @@ test('o nativo 9 não é anunciado: a conta recusa guardar um mapa com regras se
     host.mirror.dispose?.()
   }
 })
+
+test('índice focal anuncia a busca antes de devolver vazio e não duplica a leitura pendente', async () => {
+  const source = await accountWithWorld('regioes-abertura-origem')
+  await source.host.flush()
+  source.host.mirror.dispose?.()
+  const namespace = 'regioes-abertura-fria'
+  setPintaStorageNamespace(namespace)
+  const host = newHost(namespace, source.server.transport(7))
+  const list = host.local.listAllAssets.bind(host.local)
+  let release!: () => void
+  const gate = new Promise<void>((done) => {
+    release = done
+  })
+  let reads = 0
+  host.local.listAllAssets = async () => {
+    reads += 1
+    await gate
+    return list()
+  }
+  const events: string[] = []
+  let end!: () => void
+  const ended = new Promise<void>((done) => {
+    end = done
+  })
+  const detach = host.mirror.subscribe?.((event) => {
+    events.push(event.type)
+    if (event.type === 'sync-end') end()
+  })
+  try {
+    const initial = await host.mirror.listGalleryIndex?.()
+    expect(initial?.cards).toEqual([])
+    // InitialAssetOpener can now wait rather than declaring the requested map missing.
+    expect(events[0]).toBe('sync-start')
+    await host.mirror.listGalleryIndex?.()
+    expect(reads).toBe(1)
+    release()
+    await ended
+    const restored = await host.mirror.listGalleryIndex?.()
+    expect(restored?.cards.some((card) => card.id === source.world.id)).toBe(true)
+    expect(events.filter((type) => type === 'sync-start')).toHaveLength(1)
+    expect(events.filter((type) => type === 'sync-end')).toHaveLength(1)
+  } finally {
+    release()
+    await ended
+    detach?.()
+    host.mirror.dispose?.()
+  }
+})
+
+test('falha ao ler o inventário focal encerra o aviso de busca sem deixar promessa rejeitada', async () => {
+  const namespace = 'regioes-abertura-falha'
+  setPintaStorageNamespace(namespace)
+  const host = newHost(namespace, causalServer([]).transport(7))
+  host.local.listAllAssets = async () => {
+    throw new Error('Disco indisponível')
+  }
+  const events: string[] = []
+  let end!: () => void
+  const ended = new Promise<void>((done) => {
+    end = done
+  })
+  const detach = host.mirror.subscribe?.((event) => {
+    events.push(event.type)
+    if (event.type === 'sync-end') end()
+  })
+  try {
+    expect((await host.mirror.listGalleryIndex?.())?.cards).toEqual([])
+    await ended
+    expect(events.filter((type) => type.startsWith('sync-'))).toEqual(['sync-start', 'sync-end'])
+  } finally {
+    detach?.()
+    host.mirror.dispose?.()
+  }
+})
