@@ -89,12 +89,25 @@ Geradores ficam em `docs/aulas-interativas-tecnico/`:
 - **Manifestos:** `qa/gerar-<curso>.ts` (molde em `qa/poder-gerador.ts`). Ele valida o manifesto e o
   teto de 2 MiB da importação.
 - **Capas:** `recursos/<curso>/capas-das-aulas/gerar-capas.ts` e depois `renderizar-capas.py`.
+  - Molde: o do Jardim ou o do Moedas. Em cima, a ilustração do curso; embaixo, o selo "AULA N DE
+    M", o título com a última palavra em amarelo e o cartão com o que a parte pede e "SEÇÃO N DE M".
+  - A cor das faixas vem da arte do curso: verde no Jardim, azul do mar no Moedas.
+  - Acerte o recorte da ilustração (`top` da `.arte`) para o objeto principal do curso aparecer
+    acima da faixa. No Moedas, foi o baú.
+  - Só as partes com vídeo precisam de capa (a capa é o pôster do vídeo). O quiz do fim de uma aula
+    costuma não ter vídeo.
+  - O texto do cartão é uma frase curta, tirada do recado da parte (o bloco `ponte-*` do manifesto).
+    O `renderizar-capas.py` reprova texto fora do lugar.
+- **Capa do curso:** `recursos/caderno-visual/arte/capa-<curso>.jpg`, o mesmo render da capa do
+  caderno.
 - **PDF:** `recursos/<curso>/gerar-caderno.ts` e depois `renderizar-caderno.mjs`.
 - **Vídeo provisório (o mesmo para todos os cursos):** `recursos/video-provisorio/video-provisorio-2s.mp4`.
 
 ## Etapa 1: cadastrar no Kids de staging
 
-Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
+Dois caminhos com o mesmo resultado: o script `scripts/cursos/cadastrar-curso.ts` (abaixo, em
+"Por script"), que faz os passos 1 a 7 a partir da pasta do curso, ou o Admin de staging, na lente
+**Kids**, em Conteúdo → Cursos.
 
 1. **Curso.** Criar o curso (ou abrir o que já existe: os cursos da Jornada do Criador nascem do
    seed `packages/members/scripts/seed-creator-journey.ts`, com módulo e aulas reservados).
@@ -131,6 +144,11 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
          olhe antes de cadastrar.
        - `cadastrar` guarda o arquivo e o pôster no R2 pelo código do Admin e põe no módulo (título e
          resumo continuam os mesmos). Rodar de novo não refaz o que já está igual.
+     - **Quando o ediSVG muda a versão do projeto** (o `PROJECT_VERSION` do `informach-apps`, de 27
+       para 28 em 24/11/2026), o `montar` regrava o `.edisvg` só com a versão nova. O teste passa a
+       acusar que a exportação guardada não é a do projeto atual. Há duas saídas: exportar e
+       cadastrar de novo, ou voltar o `.edisvg` à cópia que foi exportada, que fica em
+       `.cache/cursos/animacoes/<curso>/<hora>/entrada/`. No Moedas, voltei à cópia exportada.
      - Sem o script, à mão: no Admin, "Editar módulo" → enviar o `.edi-animation.json`.
      - O acervo fica em `art/edisvg/` (`exports/manifest.json`); o teste
        `scripts/cursos/animacao-do-modulo.test.ts` reprova exportação desatualizada.
@@ -166,11 +184,69 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
 8. **Registrar** em `publicacao-staging.json`: os ids do curso, do módulo e das aulas, as partes, os
    vídeos e o que ficou pendente (normalmente, "vídeos finais no lugar dos provisórios").
 
-Cursos grandes já foram cadastrados por scripts que falam direto com o `members` pelo `railway ssh`
-(importação, vídeos provisórios, ligação de vídeo e capa, anexo, vozes). Esses scripts ainda não
-estão no repositório: são de um curso só e ficam na pasta local `.cache/` de quem os rodou.
-Publicar direto no `members` pula a sincronização do Zappy: depois de usá-los, rode
-`bun scripts/cursos/base-do-zappy.ts atualizar @curso` (Etapa 2, passo 5).
+### Por script: `cadastrar-curso.ts`
+
+O script faz os passos 1 a 7 sem navegador. Ele fala com o `members` de staging pelo `railway ssh` e
+usa o código do próprio Admin, fora do Next, para o Vimeo, o R2 e a voz do Zappy. As variáveis do
+Admin ficam só na memória. É só staging: a produção recebe o curso pela promoção (Etapa 4). Usado
+no Moedas no caminho (25/11/2026).
+
+```bash
+P=docs/aulas-interativas/<app>/<curso>
+bun scripts/cursos/cadastrar-curso.ts inspecionar --pasta $P   # o curso no staging e o que a pasta tem (só leitura)
+bun scripts/cursos/cadastrar-curso.ts aulas --pasta $P         # cria módulos e aulas que faltam e importa os manifestos
+bun scripts/cursos/cadastrar-curso.ts midia --pasta $P         # vídeos provisórios com capa, capas, capa do curso e caderno
+bun scripts/cursos/cadastrar-curso.ts ligar --pasta $P         # vídeo e capa nos blocos, caderno marcado para o Zappy, valida
+bun scripts/cursos/cadastrar-curso.ts vozes --pasta $P         # voz do Zappy (balões, quizzes e experiências)
+bun scripts/cursos/cadastrar-curso.ts publicar --pasta $P      # publica aulas, grava módulos e curso e publica o curso
+```
+
+Depois do script:
+- **Animação de cada módulo:** `animacao-do-modulo.ts` (passo 2).
+- **Base do Zappy:** `base-do-zappy.ts atualizar` (Etapa 2, passo 5). Publicar direto no
+  `members` pula a sincronização do Zappy.
+- **Conferência:** `conferir-curso.ts --provisorio`. Com essa opção, ele cobra o vídeo provisório
+  de 2 s em toda parte com vídeo, no lugar do vídeo final.
+
+O que o script lê da pasta:
+- `modulos.md`: título, as duas descrições, os módulos com o resumo e as aulas de cada módulo.
+- `blocos.json`: os blocos liberados são a união das listas.
+- `(prefixo-)aula-N.manifesto.json`: o slug do curso sai do `courseSlug`.
+- `passo-a-passo-do-projeto.pdf`.
+- `capas-das-aulas/aula-0N-parte-0M.png`: uma por parte com vídeo, isto é, toda parte que tem um
+  bloco com vídeo planejado no manifesto.
+- A capa do curso: `caderno-visual/arte/capa-<pasta>.jpg` (sem o prefixo `poder-`) ou
+  `--capa-do-curso <arquivo>`.
+
+O estado fica em `.cache/cursos/cadastrar/<curso>-staging/midia.json`: os ids dos vídeos e os
+endereços do R2. Cada passo pode rodar de novo, e o que já está igual fica como está.
+
+O que o script faz por baixo e o que já se descobriu:
+- **O seed traz uma aula só** (a `aula-1` reservada, com título de plano de produção). O passo
+  `aulas` cria as que faltam no módulo certo, acerta título e slug da reservada e põe as aulas na
+  ordem dos manifestos.
+- **Um vídeo do Vimeo por parte com vídeo**, com o nome `<curso> | Aula N Parte M | provisório |
+  <data>`. O Admin põe cada um na pasta e na lista de domínios de staging, que já tem o domínio do
+  Kids de staging. A capa do Vimeo e o `posterUrl` do bloco são a mesma imagem. No R2 público, o
+  nome do arquivo é o sha256 dela, como o `trocar-videos.ts checar` espera. O caderno vai para o R2
+  privado (`r2priv:`).
+- **O Vimeo às vezes estoura o tempo** no envio de uma capa (`TimeoutError`). Rode o passo de novo:
+  ele retoma de onde parou.
+- **Vídeo travado em "processando":** um vídeo de 2 s processa em segundos, e o passo espera até
+  15 minutos. No Moedas, a parte 2-2 travou, como a Parte 5 do Jardim. Use `--refazer 2-2`: o
+  passo apaga esse vídeo no Vimeo e envia de novo. O R2 sobe antes da espera, então um vídeo
+  travado não segura o resto.
+- **O caderno** vai na aula que tem o bloco de materiais com título "Passo a passo do projeto".
+  Ele é anexado já marcado para o Zappy e entra no bloco como o item "Baixar passo a passo do
+  projeto".
+- **A voz do Zappy** sai do mesmo código do botão do Admin (`falasDaAula` mais `gerarVozes`). O que
+  já existe no R2 é reaproveitado sem custo. No Moedas: 45 falas em 18 blocos.
+- **Com o vídeo provisório, a base do Zappy fica só com o caderno.** O vídeo de 2 s não tem fala, e
+  o Vimeo não gera legenda. O relatório da base aponta "aula com vídeo sem transcrição" até os
+  vídeos finais (Etapa 2).
+- **Ao publicar,** o curso recebe título, descrições, capa e blocos liberados, e o PATCH leva o
+  curso inteiro. O módulo é gravado sem o campo da animação, então a animação já cadastrada fica
+  como está.
 
 ## Etapa 2: trocar os vídeos provisórios pelos finais
 
@@ -354,6 +430,9 @@ Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operati
 - **Versão travada no Vimeo:** se uma versão ficar mais de meia hora processando, use o passo
   `descartar` da troca e envie de novo (Etapa 2, passo 3).
 - **Promoção é de mão única:** o que for editado em produção some na próxima promoção.
+- **Disco cheio no meio de um passo (`ENOSPC`):** os passos são retomáveis. Libere espaço e rode de
+  novo. O `base-do-zappy.ts atualizar` entrega ao `members` antes de gravar o relatório local, então
+  repetir não duplica nada.
 
 ## Ferramentas no repositório
 
@@ -367,7 +446,11 @@ Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operati
 | Leitura das aulas, duração, caderno, blocos e base do Zappy, dentro do `members` | `scripts/cursos/remoto/aulas-do-curso.mjs` |
 | O operador de publicação implantado, chamado dentro do `members` | `scripts/cursos/remoto/operador.mjs` |
 | Copiar Kids → adulto e promover para produção (prévia, aprovar, acompanhar, blocos) | `scripts/cursos/publicar-curso.ts` |
-| Conferir o curso publicado contra a pasta (aulas, manifestos, PDF, blocos, vídeos, animações, modulos.md) | `scripts/cursos/conferir-curso.ts` |
+| Cadastrar um curso no Kids de staging a partir da pasta (aulas, vídeos provisórios com capa, caderno, voz do Zappy, publicar) | `scripts/cursos/cadastrar-curso.ts` |
+| Vimeo, R2 e voz do Zappy com o código do Admin, para o cadastro | `scripts/cursos/lib/midia-no-admin.ts` |
+| Criar aulas, importar, ligar, gravar vozes e publicar, dentro do `members` | `scripts/cursos/remoto/cadastro.mjs` |
+| Capas das partes (molde do Moedas, azul) | `docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/capas-das-aulas/` |
+| Conferir o curso publicado contra a pasta (aulas, manifestos, PDF, blocos, vídeos, animações, modulos.md); `--provisorio` logo depois do cadastro | `scripts/cursos/conferir-curso.ts` |
 | Animação de cada módulo: montar com as artes do curso, exportar no ediSVG, cadastrar e conferir | `scripts/cursos/animacao-do-modulo.ts` (receitas em `docs/aulas-interativas-tecnico/recursos/<curso>/animacao-dos-modulos.ts`) |
 | Montar um projeto do ediSVG com o código do próprio ediSVG | `scripts/cursos/lib/edisvg.ts` |
 | Guardar a animação no R2 com o código do Admin | `scripts/cursos/lib/guardar-animacao-no-admin.ts` |
@@ -375,7 +458,7 @@ Promoção, retomada, concorrência e as variáveis dos serviços: `docs/operati
 | Copiar Kids → adulto por linha de comando (com recibos e backup) | `scripts/release/sync-course-audiences.ts` |
 | Promover e copiar pelo mesmo serviço do Admin | `packages/members/scripts/publish-course.ts` |
 
-Ainda **fora** do repositório (scripts de um curso só, na `.cache/` local): a importação dos
-manifestos por script, a criação dos vídeos provisórios com capa, a ligação vídeo e capa nos blocos,
-o anexo do PDF e as vozes aplicadas direto no `members`. Pelo Admin (Etapa 1), nada disso é
-necessário.
+O cadastro inteiro por script (importação, vídeos provisórios com capa, ligação vídeo e capa, anexo
+do caderno e vozes) está no repositório desde 25/11/2026: `scripts/cursos/cadastrar-curso.ts`. Os
+scripts de um curso só que vieram antes (Ilha do Farol e Jardim Secreto, em `.cache/`) não são mais
+necessários.

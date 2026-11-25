@@ -8,7 +8,8 @@
  * docs/operations/cursos-passo-a-passo.md.
  *
  *   bun scripts/cursos/conferir-curso.ts --ambiente staging --publico kids --curso jornada-faisca-missao \
- *     --pasta docs/aulas-interativas/faisca/o-jardim-secreto [--confirmo-producao]
+ *     --pasta docs/aulas-interativas/faisca/o-jardim-secreto [--provisorio] [--confirmo-producao]
+ *   --provisorio: logo depois do cadastro (Etapa 1), cobra o vídeo provisório de 2 s no lugar do final
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
@@ -24,6 +25,7 @@ const { values: op } = parseArgs({
     pasta: { type: 'string' },
     ator: { type: 'string', default: '00000000-0000-4000-8000-00000000a007' },
     'confirmo-producao': { type: 'boolean', default: false },
+    provisorio: { type: 'boolean', default: false },
   },
 })
 const ambiente = op.ambiente as Ambiente
@@ -139,15 +141,23 @@ if (existsSync(arquivoBlocos)) {
   )
 }
 
-// Vídeos: nenhum provisório (2 s) e todos com duração.
+// Vídeos: nenhum provisório (2 s) e todos com duração. Com --provisorio (logo depois do cadastro,
+// Etapa 1), o contrário: todos são o vídeo provisório de 2 s.
 const duracoes = inspecao.aulas.flatMap((a) =>
   a.partes.flatMap((p) => p.videos.map((v) => v.durationSeconds)),
 )
-conferir(
-  duracoes.length > 0 && duracoes.every((d) => d > 5),
-  'vídeos finais (nenhum provisório de 2 s)',
-  duracoes.join(', '),
-)
+if (op.provisorio)
+  conferir(
+    duracoes.length > 0 && duracoes.every((d) => d === 2),
+    'vídeos provisórios de 2 s em todas as partes com vídeo (Etapa 1)',
+    duracoes.join(', '),
+  )
+else
+  conferir(
+    duracoes.length > 0 && duracoes.every((d) => d > 5),
+    'vídeos finais (nenhum provisório de 2 s)',
+    duracoes.join(', '),
+  )
 
 // Toda página de curso tem uma animação (ediSVG) por módulo: scripts/cursos/animacao-do-modulo.ts.
 // Menos os cursos para os pais (learner = parents), que não levam animação (decisão dela, 25/11/2026).

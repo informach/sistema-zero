@@ -71,6 +71,17 @@ Antes da gravação, a revisão dos roteiros achou partes de até 1.232 palavras
 - Etapa nova: `abre` (o baú fechado com poucas moedas, sem cobrar o aviso, e aberto com 5 e com 6).
 - Na Aula 2, o Tocar a animação escolhe primeiro o modelo (bau) e depois a animação.
 
+## Cadastro no Kids de staging (25/11/2026)
+
+Cadastrado e publicado no Kids de staging com `scripts/cursos/cadastrar-curso.ts`, com os vídeos
+provisórios de 2 s. Cada parte com vídeo tem a sua capa (`capas-das-aulas/`, geradas por
+`docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/capas-das-aulas/`). A `aula-2` foi
+criada no mesmo módulo, e as duas aulas foram importadas. O caderno está na Parte 2 da Aula 1,
+marcado para o Zappy. A voz do Zappy, os 59 blocos liberados e a animação do módulo estão
+cadastrados. Os ids e o que falta estão em [publicacao-staging.json](publicacao-staging.json).
+Próximo passo: gravar com o palco e trocar os vídeos provisórios pelos finais (Etapa 2 do guia
+`docs/operations/cursos-passo-a-passo.md`).
+
 ## Regenerar e conferir
 
 Na raiz do repositório:

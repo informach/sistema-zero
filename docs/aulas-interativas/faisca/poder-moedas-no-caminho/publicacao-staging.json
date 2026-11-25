@@ -1,0 +1,104 @@
+{
+  "environment": "staging",
+  "purpose": "Kids de staging com vídeos provisórios de 2 segundos e a capa de cada parte, para a gravação das partes (25/11/2026)",
+  "course": {
+    "id": "4ecb2e98-4c17-56f3-a44d-d10fd002fd1f",
+    "slug": "jornada-faisca-poder-1",
+    "title": "Moedas no caminho",
+    "status": "published",
+    "module": {
+      "id": "35134430-300b-4bf7-9b5a-23c97acb4f49",
+      "title": "Moedas no caminho"
+    }
+  },
+  "lessons": [
+    {
+      "id": "b57666c0-8b78-4c06-a498-3caf8a76f39b",
+      "slug": "aula-1",
+      "title": "Cada moeda conta",
+      "sections": 9,
+      "videos": 8,
+      "observacao": "a aula-1 reservada do seed"
+    },
+    {
+      "id": "2d96b320-6e63-41dd-a9c0-fe5133b1eaf4",
+      "slug": "aula-2",
+      "title": "Moedas na ilha",
+      "sections": 6,
+      "videos": 5,
+      "observacao": "criada pelo cadastro (o seed só traz a aula-1)"
+    }
+  ],
+  "como": "scripts/cursos/cadastrar-curso.ts (aulas, midia, ligar, vozes, publicar) --pasta docs/aulas-interativas/faisca/poder-moedas-no-caminho",
+  "videosProvisorios": {
+    "data": "2026-11-25",
+    "arquivo": "docs/aulas-interativas-tecnico/recursos/video-provisorio/video-provisorio-2s.mp4",
+    "partes": {
+      "1-1": {
+        "vimeo": "1249935235",
+        "segundos": 2
+      },
+      "1-2": {
+        "vimeo": "1249935234",
+        "segundos": 2
+      },
+      "1-3": {
+        "vimeo": "1249935236",
+        "segundos": 2
+      },
+      "1-4": {
+        "vimeo": "1249935312",
+        "segundos": 2
+      },
+      "1-5": {
+        "vimeo": "1249935461",
+        "segundos": 2
+      },
+      "1-6": {
+        "vimeo": "1249935481",
+        "segundos": 2
+      },
+      "1-7": {
+        "vimeo": "1249935546",
+        "segundos": 2
+      },
+      "1-8": {
+        "vimeo": "1249935553",
+        "segundos": 2
+      },
+      "2-1": {
+        "vimeo": "1249935555",
+        "segundos": 2
+      },
+      "2-2": {
+        "vimeo": "1249938870",
+        "segundos": 2
+      },
+      "2-3": {
+        "vimeo": "1249935622",
+        "segundos": 2
+      },
+      "2-4": {
+        "vimeo": "1249935625",
+        "segundos": 2
+      },
+      "2-5": {
+        "vimeo": "1249935688",
+        "segundos": 2
+      }
+    },
+    "observacao": "um vídeo do Vimeo por parte com vídeo (13), na pasta e na lista de domínios do Admin de staging; o da parte 2-2 travou em processando por mais de 15 min e foi apagado e enviado de novo (--refazer 2-2)"
+  },
+  "capas": "capas-das-aulas/aula-0N-parte-0M.png (13, só as partes com vídeo), no molde das capas de O Jardim Secreto, com a arte caderno-visual/arte/capa-moedas-no-caminho.jpg; geradas por docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/capas-das-aulas",
+  "capaDoCurso": "caderno-visual/arte/capa-moedas-no-caminho.jpg",
+  "workbook": "passo-a-passo-do-projeto.pdf no bloco de materiais da Parte 2 da Aula 1 (Passo a passo do projeto), marcado como caderno do aluno para o Zappy",
+  "vozesDoZappy": "45 falas em 18 blocos (11 na Aula 1, 7 na Aula 2), pelo código do botão Gerar a voz do Zappy",
+  "blocosLiberados": "59 blocos, a união do 2D e do 3D do blocos.json",
+  "animacaoDoModulo": "art/edisvg/exports/moedas-no-caminho-m1-b1-a1.679c4e31328e.edi-animation.json (receita docs/aulas-interativas-tecnico/recursos/moedas-no-caminho/animacao-dos-modulos.ts)",
+  "baseDoZappy": "25/11/2026: o caderno na base (31.408 caracteres); os vídeos provisórios não têm fala, então ficam sem transcrição até os vídeos finais",
+  "conferido": "scripts/cursos/conferir-curso.ts --provisorio: Tudo confere",
+  "pendente": [
+    "vídeos finais no lugar dos provisórios (Etapa 2), com a base do Zappy depois",
+    "cópia para o adulto (Etapa 3) e produção (Etapa 4)"
+  ]
+}
