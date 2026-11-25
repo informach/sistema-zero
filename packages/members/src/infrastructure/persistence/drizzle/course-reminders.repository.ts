@@ -1,11 +1,11 @@
-import { and, asc, desc, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, isNull, notInArray, or, sql } from 'drizzle-orm'
 import { CHALLENGE_COURSE_REFS } from '../../../domain/entitlement/challenge-courses'
 import {
   COURSE_REMINDER_KINDS,
   type CourseReminderCandidate,
+  type CourseReminderCursor,
   type CourseReminderKind,
   type CourseRemindersRepository,
-  courseReminderDedupeKey,
 } from '../../../domain/ports/course-reminders-repository.port'
 import { loadOwnerClaims } from './challenge-lifecycle.repository'
 import type { Database } from './db'
@@ -40,7 +40,11 @@ type Base = {
 export class DrizzleCourseRemindersRepository implements CourseRemindersRepository {
   constructor(private readonly db: Database) {}
 
-  async listCandidates(now: Date, limit: number): Promise<CourseReminderCandidate[]> {
+  async listCandidates(
+    now: Date,
+    limit: number,
+    after?: CourseReminderCursor | null,
+  ): Promise<{ candidates: CourseReminderCandidate[]; next: CourseReminderCursor | null }> {
     const rows = await this.db
       .select({
         entitlementId: entitlements.id,
@@ -58,60 +62,79 @@ export class DrizzleCourseRemindersRepository implements CourseRemindersReposito
           sql`(${entitlements.expiresAt} is null or ${entitlements.expiresAt} > ${now.toISOString()}::timestamptz)`,
           // Compra única ou presente (resgate `scholarship:`); cortesia do admin fica de fora.
           sql`(${entitlements.sourceKind} = 'payment' or (${entitlements.sourceKind} = 'manual' and ${entitlements.sourceId} like 'scholarship:%'))`,
-          // A conclusão é o último lembrete: quem já o recebeu não ocupa vaga do lote.
+          // A conclusão é o último lembrete: a conta que já o recebeu deste curso, por QUALQUER
+          // matrícula dele, não ocupa vaga do lote.
           sql`not exists (
             select 1
               from members.entitlement_lifecycle_messages_sent sent
-             where sent.entitlement_id = ${entitlements.id}
+              join members.entitlements other on other.id = sent.entitlement_id
+             where other.user_id = ${entitlements.userId}
+               and other.course_ref = ${entitlements.courseRef}
                and sent.message_kind = 'course_completed'
           )`,
+          // Página seguinte (keyset na mesma ordem do `orderBy`).
+          after
+            ? or(
+                sql`${entitlements.grantedAt} < ${after.grantedAt.toISOString()}::timestamptz`,
+                and(
+                  sql`${entitlements.grantedAt} = ${after.grantedAt.toISOString()}::timestamptz`,
+                  sql`${entitlements.id} < ${after.entitlementId}::uuid`,
+                ),
+              )
+            : undefined,
         ),
       )
       .orderBy(desc(entitlements.grantedAt), desc(entitlements.id))
       .limit(limit)
+    const last = rows.at(-1)
+    const next =
+      rows.length === limit && last?.grantedAt
+        ? { grantedAt: last.grantedAt, entitlementId: last.entitlementId }
+        : null
     const candidates = rows.filter(
       (row): row is Base => row.courseRef !== null && row.grantedAt !== null,
     )
-    if (candidates.length === 0) return []
+    if (candidates.length === 0) return { candidates: [], next }
 
+    // O que a CONTA já recebeu de cada curso, por qualquer matrícula dele (ativa ou não).
+    const accountIds = [...new Set(candidates.map((c) => c.accountId))]
+    const courseRefs = [...new Set(candidates.map((c) => c.courseRef))]
     const sentRows = await this.db
       .select({
-        entitlementId: entitlementLifecycleMessagesSent.entitlementId,
-        expiresOn: entitlementLifecycleMessagesSent.expiresOn,
+        accountId: entitlements.userId,
+        courseRef: entitlements.courseRef,
         messageKind: entitlementLifecycleMessagesSent.messageKind,
       })
       .from(entitlementLifecycleMessagesSent)
+      .innerJoin(entitlements, eq(entitlements.id, entitlementLifecycleMessagesSent.entitlementId))
       .where(
         and(
-          inArray(
-            entitlementLifecycleMessagesSent.entitlementId,
-            candidates.map((c) => c.entitlementId),
-          ),
+          inArray(entitlements.userId, accountIds),
+          inArray(entitlements.courseRef, courseRefs),
           inArray(entitlementLifecycleMessagesSent.messageKind, [...COURSE_REMINDER_KINDS]),
         ),
       )
-    const sentByEntitlement = new Map<string, CourseReminderKind[]>()
-    const byId = new Map(candidates.map((c) => [c.entitlementId, c] as const))
+    const sentByCourse = new Map<string, CourseReminderKind[]>()
     for (const row of sentRows) {
-      const candidate = byId.get(row.entitlementId)
-      if (!candidate || row.expiresOn !== courseReminderDedupeKey(candidate.grantedAt)) continue
-      const kinds = sentByEntitlement.get(row.entitlementId) ?? []
-      kinds.push(row.messageKind as CourseReminderKind)
-      sentByEntitlement.set(row.entitlementId, kinds)
+      const key = `${row.accountId}|${row.courseRef}`
+      const kinds = sentByCourse.get(key) ?? []
+      if (!kinds.includes(row.messageKind as CourseReminderKind))
+        kinds.push(row.messageKind as CourseReminderKind)
+      sentByCourse.set(key, kinds)
     }
 
     const result: CourseReminderCandidate[] = []
-    for (const courseRef of new Set(candidates.map((c) => c.courseRef))) {
+    for (const courseRef of courseRefs) {
       const group = candidates.filter((c) => c.courseRef === courseRef)
-      result.push(...(await this.withProgress(group, courseRef, sentByEntitlement)))
+      result.push(...(await this.withProgress(group, courseRef, sentByCourse)))
     }
-    return result
+    return { candidates: result, next }
   }
 
   private async withProgress(
     candidates: Base[],
     courseRef: string,
-    sentByEntitlement: Map<string, CourseReminderKind[]>,
+    sentByCourse: Map<string, CourseReminderKind[]>,
   ): Promise<CourseReminderCandidate[]> {
     const [course] = await this.db
       .select({
@@ -294,7 +317,7 @@ export class DrizzleCourseRemindersRepository implements CourseRemindersReposito
       completed: completedAt.has(candidate.accountId),
       lastActivityAt: lastActivity.get(candidate.accountId) ?? null,
       completedAt: completedAt.get(candidate.accountId) ?? null,
-      sentKinds: sentByEntitlement.get(candidate.entitlementId) ?? [],
+      sentKinds: sentByCourse.get(`${candidate.accountId}|${courseRef}`) ?? [],
     }))
   }
 

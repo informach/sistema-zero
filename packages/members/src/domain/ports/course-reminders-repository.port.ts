@@ -29,17 +29,32 @@ export interface CourseReminderCandidate {
   lastActivityAt: Date | null
   /** Quando a última aula que faltava foi concluída (só com `completed`). */
   completedAt: Date | null
-  /** Os lembretes que esta matrícula já recebeu (dedupe pela data da concessão). */
+  /**
+   * Os lembretes que a CONTA já recebeu deste curso, por qualquer matrícula dele (presente e
+   * depois compra contam juntos): cada lembrete sai uma vez por conta e curso.
+   */
   sentKinds: CourseReminderKind[]
+}
+
+/** Cursor da leitura em páginas (a matrícula mais antiga da página anterior). */
+export interface CourseReminderCursor {
+  grantedAt: Date
+  entitlementId: string
 }
 
 export interface CourseRemindersRepository {
   /**
    * Matrículas ATIVAS de curso (compra única `payment` ou presente `manual` com `scholarship:`),
    * sem assinatura, fora do Desafio, que ainda não receberam o lembrete de conclusão, das mais
-   * novas para as mais antigas (até `limit`), já com o progresso da conta no curso.
+   * novas para as mais antigas, uma página de até `limit` depois de `after`, já com o progresso
+   * da conta no curso. `next` = o cursor da próxima página (null na última): o ciclo lê TODAS,
+   * para a matrícula antiga nunca ficar sem a vez.
    */
-  listCandidates(now: Date, limit: number): Promise<CourseReminderCandidate[]>
+  listCandidates(
+    now: Date,
+    limit: number,
+    after?: CourseReminderCursor | null,
+  ): Promise<{ candidates: CourseReminderCandidate[]; next: CourseReminderCursor | null }>
   markSent(
     entitlementId: string,
     dedupeOn: string,

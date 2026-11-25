@@ -95,12 +95,30 @@ describe('qual lembrete cabe agora', () => {
   })
 })
 
-function setup(candidates: CourseReminderCandidate[], identities: Record<string, AccountIdentity>) {
+function setup(
+  candidates: CourseReminderCandidate[],
+  identities: Record<string, AccountIdentity>,
+  pageSize?: number,
+) {
   const marks: Array<{ entitlementId: string; dedupeOn: string; kind: CourseReminderKind }> = []
   const sent: SendEmailInput[] = []
+  const pages: number[] = []
   const repo: CourseRemindersRepository = {
-    async listCandidates() {
-      return candidates
+    // Páginas na ordem dada (o SQL ordena das mais novas para as mais antigas).
+    async listCandidates(_now, limit, after) {
+      const start = after
+        ? candidates.findIndex((c) => c.entitlementId === after.entitlementId) + 1
+        : 0
+      pages.push(start)
+      const page = candidates.slice(start, start + limit)
+      const last = page.at(-1)
+      return {
+        candidates: page,
+        next:
+          page.length === limit && last
+            ? { grantedAt: last.grantedAt, entitlementId: last.entitlementId }
+            : null,
+      }
     },
     async markSent(entitlementId, dedupeOn, kind) {
       marks.push({ entitlementId, dedupeOn, kind })
@@ -131,9 +149,10 @@ function setup(candidates: CourseReminderCandidate[], identities: Record<string,
       funnelUrl: 'https://sistemazero.com.br',
       kidsAppUrl: 'https://kids.sistemazero.com.br/',
       adultAppUrl: 'https://comunidade.sistemazero.com.br',
+      ...(pageSize ? { limit: pageSize } : {}),
     },
   )
-  return { service, marks, sent }
+  return { service, marks, sent, pages }
 }
 
 const identity = (id: string): AccountIdentity => ({
@@ -220,5 +239,75 @@ describe('envio dos lembretes', () => {
     expect(await service.runCycle()).toEqual({ sent: 0, skipped: 1, failed: 0 })
     expect(sent).toHaveLength(0)
     expect(marks).toHaveLength(1)
+  })
+})
+
+describe('lembretes do curso: todas as páginas e um lembrete por conta e curso (revisão 25/11/2026)', () => {
+  test('a matrícula antiga além da primeira página também recebe o lembrete', async () => {
+    const novas = Array.from({ length: 3 }, (_, i) =>
+      candidate({
+        entitlementId: `nova-${i}`,
+        accountId: `conta-nova-${i}`,
+        grantedAt: new Date(NOW.getTime() - DAY),
+      }),
+    )
+    const antiga = candidate({
+      entitlementId: 'antiga',
+      accountId: 'conta-antiga',
+      started: true,
+      lastActivityAt: new Date(NOW.getTime() - 8 * DAY),
+      grantedAt: new Date(NOW.getTime() - 200 * DAY),
+    })
+    const { service, sent, pages } = setup(
+      [...novas, antiga],
+      { 'conta-antiga': identity('conta-antiga') },
+      2,
+    )
+    await service.runCycle()
+    // Duas páginas cheias e a última vazia (o cursor só para quando a página não enche).
+    expect(pages).toEqual([0, 2, 4])
+    expect(sent.map((s) => s.templateKey)).toEqual(['course-stalled'])
+  })
+
+  test('duas matrículas do mesmo curso em páginas diferentes: um e-mail só', async () => {
+    const concluido = {
+      started: true,
+      completed: true,
+      lastActivityAt: new Date(NOW.getTime() - 3600_000),
+      completedAt: new Date(NOW.getTime() - 3600_000),
+    }
+    const { service, sent, marks } = setup(
+      [
+        candidate({ entitlementId: 'compra', ...concluido }),
+        candidate({
+          entitlementId: 'presente',
+          grantedAt: new Date(NOW.getTime() - 20 * DAY),
+          ...concluido,
+        }),
+      ],
+      { 'conta-1': identity('conta-1') },
+      1,
+    )
+    await service.runCycle()
+    expect(sent.length).toBe(1)
+    expect(marks.map((m) => m.entitlementId)).toEqual(['compra'])
+  })
+
+  test('o lembrete que a conta já recebeu por outra matrícula do curso não sai de novo', async () => {
+    // O repositório junta os enviados por conta e curso: a compra nova chega com o do presente.
+    const { service, sent } = setup(
+      [
+        candidate({
+          entitlementId: 'compra',
+          started: true,
+          completed: true,
+          completedAt: new Date(NOW.getTime() - 3600_000),
+          sentKinds: ['course_not_started', 'course_completed'],
+        }),
+      ],
+      { 'conta-1': identity('conta-1') },
+    )
+    await service.runCycle()
+    expect(sent.length).toBe(0)
   })
 })

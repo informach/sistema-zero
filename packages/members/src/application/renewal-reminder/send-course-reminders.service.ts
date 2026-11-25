@@ -4,6 +4,7 @@ import { dueCourseReminder, oneCandidatePerCourse } from '../../domain/entitleme
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import {
   type CourseReminderCandidate,
+  type CourseReminderCursor,
   type CourseReminderKind,
   type CourseRemindersRepository,
   courseReminderDedupeKey,
@@ -20,11 +21,13 @@ export interface CourseRemindersOptions {
   adultAppUrl?: string
   /** A janela de cada lembrete (padrão 72 h, a dos avisos de fim do acesso). */
   windowMs?: number
-  /** Quantas matrículas o ciclo lê (as mais novas primeiro). */
+  /** Tamanho da página de matrículas (o ciclo lê todas, das mais novas para as mais antigas). */
   limit?: number
 }
 
-const DEFAULT_LIMIT = 1000
+const DEFAULT_LIMIT = 500
+/** Teto de páginas por ciclo (defesa contra laço; 200 × 500 = 100 mil matrículas). */
+const MAX_PAGES = 200
 
 /** Os templates de cada lembrete por público (contrato com o seed do Messaging). */
 const TEMPLATES: Record<CourseReminderKind, { kids: string; adult: string }> = {
@@ -72,13 +75,25 @@ export class SendCourseRemindersService {
     const now = this.clock()
     const windowMs = this.opts.windowMs ?? ACCESS_ENDED_WINDOW_MS
     const totals = { sent: 0, skipped: 0, failed: 0 }
-    const candidates = oneCandidatePerCourse(
-      await this.repository.listCandidates(now, this.opts.limit ?? DEFAULT_LIMIT),
-    )
-    for (const candidate of candidates) {
-      const kind = dueCourseReminder(candidate, now, windowMs)
-      if (!kind) continue
-      totals[await this.send(candidate, kind)]++
+    const limit = this.opts.limit ?? DEFAULT_LIMIT
+    // Uma conta com duas matrículas do mesmo curso em páginas diferentes: vale a primeira vista
+    // (a mais nova); os lembretes já enviados vêm da conta e do curso, não da matrícula.
+    const seen = new Set<string>()
+    let after: CourseReminderCursor | null = null
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const { candidates, next } = await this.repository.listCandidates(now, limit, after)
+      for (const candidate of oneCandidatePerCourse(candidates)) {
+        const key = `${candidate.accountId}|${candidate.courseRef}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        const kind = dueCourseReminder(candidate, now, windowMs)
+        if (!kind) continue
+        totals[await this.send(candidate, kind)]++
+      }
+      if (!next) break
+      after = next
+      if (page === MAX_PAGES - 1)
+        this.logger.warn('course_reminders.page_cap', { pages: MAX_PAGES })
     }
     if (totals.sent > 0 || totals.failed > 0) this.logger.info('course_reminders.cycle', totals)
     return totals
