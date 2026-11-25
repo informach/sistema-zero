@@ -1088,6 +1088,146 @@ export const seeds = [
       footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
     }),
   },
+  // Lembretes do curso (25/11/2026), enviados pelo MEMBERS para o curso comprado ou recebido de
+  // presente (fora o Desafio, que tem os seus): não começou (2 dias depois do acesso), parou (7 dias
+  // sem atividade) e concluiu (apresenta a Comunidade). Kids vai ao responsável (vale também para o
+  // guia dos pais, que o próprio responsável assiste); `-adult` vai à própria pessoa. CONTRATO:
+  // `nome`+`curso`+`link` (onde continuar: Kids `<app>/login/responsavel` ou `<app>/pais/cursos/
+  // <slug>`; adulto `<app>/cursos`) e, na conclusão, `comunidade` (continuidade com UTMs).
+  {
+    key: 'course-not-started',
+    channel: 'email' as const,
+    name: 'Lembrete: curso ainda não começou (e-mail)',
+    subject: '{{nome}}, o curso {{curso}} está esperando',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'O curso já está liberado na conta. Comece pela primeira aula.',
+      title: 'O curso {{curso}} está esperando',
+      content: [
+        p(
+          'Olá, {{nome}}. O curso <strong>{{curso}}</strong> está liberado na conta e ainda não começou.',
+        ),
+        p(
+          'Comece pela primeira aula. O progresso fica guardado, e dá para continuar de onde parou em outro dia.',
+        ),
+        ctaButton('Começar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-not-started-adult',
+    channel: 'email' as const,
+    name: 'Lembrete: curso ainda não começou, adulto (e-mail)',
+    subject: '{{nome}}, o seu curso {{curso}} está esperando',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'O curso já está liberado na sua conta. Comece pela primeira aula.',
+      title: 'O seu curso {{curso}} está esperando',
+      content: [
+        p(
+          'Oi, {{nome}}. O seu curso <strong>{{curso}}</strong> está liberado e ainda não começou.',
+        ),
+        p(
+          'Comece pela primeira aula. O seu progresso fica guardado na conta, e você continua de onde parou quando quiser.',
+        ),
+        ctaButton('Começar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-stalled',
+    channel: 'email' as const,
+    name: 'Lembrete: curso parado há uma semana (e-mail)',
+    subject: '{{nome}}, o curso {{curso}} continua de onde parou',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'O que já foi feito continua guardado na conta.',
+      title: 'O curso {{curso}} continua de onde parou',
+      content: [
+        p(
+          'Olá, {{nome}}. Faz uma semana que ninguém abre o curso <strong>{{curso}}</strong>. O que já foi feito continua guardado, e a próxima aula começa de onde parou.',
+        ),
+        p('Um pouco por vez já ajuda: uma aula hoje mantém o projeto andando.'),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-stalled-adult',
+    channel: 'email' as const,
+    name: 'Lembrete: curso parado há uma semana, adulto (e-mail)',
+    subject: '{{nome}}, o seu curso {{curso}} continua de onde parou',
+    variables: ['nome', 'curso', 'link'],
+    body: emailLayout({
+      preheader: 'O que você já fez continua guardado na sua conta.',
+      title: 'O seu curso {{curso}} continua de onde parou',
+      content: [
+        p(
+          'Oi, {{nome}}. Faz uma semana que você não abre o curso <strong>{{curso}}</strong>. O que você já fez continua guardado, e a próxima aula começa de onde parou.',
+        ),
+        p('Um pouco por vez já ajuda: uma aula hoje mantém o seu projeto andando.'),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-completed',
+    channel: 'email' as const,
+    name: 'Curso concluído, com a Comunidade (e-mail)',
+    subject: '{{nome}}, o curso {{curso}} foi concluído',
+    variables: ['nome', 'curso', 'link', 'comunidade'],
+    body: emailLayout({
+      preheader: 'Parabéns pelo caminho até aqui. O que foi criado continua na conta.',
+      title: 'Curso concluído',
+      content: [
+        p(
+          'Olá, {{nome}}. O curso <strong>{{curso}}</strong> foi concluído. Parabéns pelo caminho até aqui.',
+        ),
+        p(
+          'O que foi criado continua guardado na conta, e dá para rever as aulas pelo <a href="{{link}}">acesso de sempre</a>.',
+        ),
+        p(
+          'Para a criança continuar criando jogos, a Comunidade dos Criadores reúne os próximos cursos, o Estúdio e o Mural, para crianças de 5 a 17 anos.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{comunidade}}'),
+        fallbackLink('{{comunidade}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-completed-adult',
+    channel: 'email' as const,
+    name: 'Curso concluído, com a Comunidade adulta (e-mail)',
+    subject: '{{nome}}, você concluiu o curso {{curso}}',
+    variables: ['nome', 'curso', 'link', 'comunidade'],
+    body: emailLayout({
+      preheader: 'Parabéns pelo caminho até aqui. O que você criou continua na sua conta.',
+      title: 'Curso concluído',
+      content: [
+        p(
+          'Oi, {{nome}}. Você concluiu o curso <strong>{{curso}}</strong>. Parabéns pelo caminho até aqui.',
+        ),
+        p(
+          'O que você criou continua guardado na sua conta, e dá para rever as aulas pelo <a href="{{link}}">acesso de sempre</a>.',
+        ),
+        p(
+          'Para continuar criando, a Comunidade dos Criadores reúne os próximos cursos, o Estúdio e o Mural para quem quer criar os próprios jogos.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{comunidade}}'),
+        fallbackLink('{{comunidade}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
   {
     key: 'subscription-ended-kids',
     channel: 'email' as const,

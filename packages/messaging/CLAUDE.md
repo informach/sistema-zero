@@ -410,6 +410,15 @@ embaixador escolheu na lista do público, quando não é o Cadê padrão) e
 funil). Light Copy, sem nome de produto fixo; o Kids fala com o responsável e mantém a frase do
 convite único. Seed depois do deploy do referrals.
 
+## Lembretes do curso (25/11/2026)
+
+Seis e-mails do consumer `members` para o curso comprado ou recebido de presente (fora o Desafio):
+`course-not-started`, `course-stalled` e `course-completed`, com a versão `-adult`. Variáveis
+`nome`, `curso` e `link` (onde continuar, pronto do members); a conclusão também `comunidade` (a
+página de continuidade da Comunidade, com UTMs). Kids fala com o responsável sem presumir quem
+estuda (vale também para o guia dos pais); o adulto fala com a pessoa. Nada de prazo nem de acesso
+vitalício. Teste: `tests/course-reminders-copy.test.ts`.
+
 ## Desafio do Primeiro Jogo para adultos (21/10/2026)
 
 Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria
