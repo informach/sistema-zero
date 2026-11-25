@@ -97,6 +97,8 @@ const OfferContentSchema = t.Object({
   maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
   // Prazo DIVULGADO em dias (menor que o real; a diferença chega de surpresa). O agregado confere.
   advertisedAccessDays: t.Optional(t.Integer({ minimum: 1, maximum: 3650 })),
+  // Opt-in: pode ser vendida na página do produto pelo `?oferta=` (além da principal e da irmã).
+  pageSellable: t.Optional(t.Boolean()),
   // Oferta IRMÃ do alternador do checkout (mensal ↔ anual). O funil valida o slug
   // escolhido contra este link (anti-forja); `label` = texto do alternador.
   altOffer: t.Optional(

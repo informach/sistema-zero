@@ -1544,6 +1544,17 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'passthrough',
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
+    // Leitura pública do produto pelo SKU (25/11/2026): o funil abre a página de venda pela
+    // oferta principal do produto. Rota própria (slug e SKU são espaços de nome separados).
+    {
+      id: 'catalog-product-by-sku',
+      methods: ['GET'],
+      pathPattern: '/catalog/products/by-sku/:sku',
+      service: 'catalog',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
     {
       id: 'catalog-products-write',
       methods: ['POST'],

@@ -22,14 +22,26 @@ export class GetProductService {
    * (página histórica degrada graciosamente).
    */
   async getPublicBySlug(slug: string): Promise<PublicProductView | null> {
-    // Slug com fallback pelo SKU: o funil identifica a página pelo SKU do produto.
-    const product = (await this.products.findBySlug(slug)) ?? (await this.products.findBySku(slug))
+    return this.publicView(await this.products.findBySlug(slug))
+  }
+
+  /**
+   * Leitura pública pelo SKU (o funil identifica a página pelo SKU do produto). Rota PRÓPRIA:
+   * slug e SKU são espaços de nome separados, e um slug igual ao SKU de outro produto abriria a
+   * página com a oferta errada.
+   */
+  async getPublicBySku(sku: string): Promise<PublicProductView | null> {
+    return this.publicView(await this.products.findBySku(sku))
+  }
+
+  private async publicView(product: Awaited<ReturnType<ProductRepository['findBySlug']>>) {
     if (!product || product.status === 'draft') return null
     let primaryOfferSlug: string | null = null
     if (product.primaryOfferId && this.offers) {
       const offer = await this.offers.findById(product.primaryOfferId)
-      // Rascunho nunca é público; a oferta precisa continuar sendo deste produto.
-      if (offer && offer.status !== 'draft' && offer.productId === product.id)
+      // Só oferta ATIVA vende: pausada/arquivada/rascunho como principal deixa a página sem oferta
+      // (o funil responde "indisponível" e loga), em vez de abrir sem preço vivo.
+      if (offer && offer.status === 'active' && offer.productId === product.id)
         primaryOfferSlug = offer.slug
     }
     return toPublicProductView(product, primaryOfferSlug)

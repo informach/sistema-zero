@@ -144,6 +144,9 @@ const registry = new RouteRegistry([
         route.id === 'referrals-internal-redirects',
     )
     .map((route) => routeConfigSchema.parse(route)),
+  ...realConfig.routes
+    .filter((route) => route.id === 'catalog-product-get' || route.id === 'catalog-product-by-sku')
+    .map((route) => routeConfigSchema.parse(route)),
   r({
     id: 'referrals-internal-code',
     methods: ['GET'],
@@ -564,6 +567,13 @@ describe('RouteRegistry', () => {
     ).toBe('referrals-internal-link-target')
     expect(registry.resolve('GET', '/referrals/internal/redirects', 'v1')?.route.id).toBe(
       'referrals-internal-redirects',
+    )
+    // Produto pelo SKU (página de venda do funil) e pelo slug, sem um engolir o outro.
+    expect(
+      registry.resolve('GET', '/catalog/products/by-sku/cade-todo-mundo', 'v1')?.route.id,
+    ).toBe('catalog-product-by-sku')
+    expect(registry.resolve('GET', '/catalog/products/cade-todo-mundo', 'v1')?.route.id).toBe(
+      'catalog-product-get',
     )
     // O literal `grant-manual` NUNCA cai no `grant` (segmento distinto).
     expect(registry.resolve('POST', '/members/webhooks/grant-manual', 'v1')?.route.id).toBe(

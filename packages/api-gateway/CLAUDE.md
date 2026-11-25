@@ -1,5 +1,11 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Produto pelo SKU (25/11/2026)
+
+`catalog-product-by-sku` (`GET /catalog/products/by-sku/:sku`, pública, 600/min por IP): o funil
+abre a página de venda pela oferta principal do produto, lido pelo SKU. Teste em
+`route-registry.test.ts`.
+
 ## Origem das vendas e links `/i/` das indicações (25/11/2026)
 
 Referrals: `referrals-internal-link`, `-link-offer`, `-link-target` (`GET

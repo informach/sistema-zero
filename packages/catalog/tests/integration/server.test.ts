@@ -137,10 +137,58 @@ describe('catalog HTTP', () => {
     const ok = await patch(anual.id)
     expect(ok.status).toBe(200)
     expect((await ok.json()).primaryOfferId).toBe(anual.id)
-    const pub = await app.handle(req('GET', '/catalog/products/cade-todo-mundo'))
+    // O funil lê pelo SKU, em rota própria: slug e SKU são espaços de nome separados.
+    const pub = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
     expect(pub.status).toBe(200)
     expect((await pub.json()).primaryOfferSlug).toBe('cade-1-ano')
+    expect((await app.handle(req('GET', '/catalog/products/cade-todo-mundo'))).status).toBe(404)
+    expect((await app.handle(req('GET', '/catalog/products/cade-pagina'))).status).toBe(200)
+
+    // A principal arquivada sai da leitura pública e não trava a edição do resto do produto.
+    const archived = await app.handle(
+      req('PATCH', `/catalog/offers/${anual.id}`, { headers: ADMIN, body: { status: 'archived' } }),
+    )
+    expect(archived.status).toBe(200)
+    const after = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
+    expect((await after.json()).primaryOfferSlug).toBeNull()
+    const rename = await app.handle(
+      req('PATCH', `/catalog/products/${cade.id}`, {
+        headers: ADMIN,
+        body: { name: 'Cadê Todo Mundo', primaryOfferId: anual.id },
+      }),
+    )
+    expect(rename.status).toBe(200)
     expect((await patch(null)).status).toBe(200)
+  })
+
+  it('oferta aceita a marca "pode ser vendida na página do produto"', async () => {
+    const { app, createProduct, createOffer } = build()
+    const product = await createProduct.execute({
+      audience: 'kids',
+      kind: 'ebook',
+      status: 'active',
+      sku: 'marca-pagina',
+      slug: 'marca-pagina',
+      name: 'Curso',
+      fulfillment: { accessType: 'course', courseRef: 'marca-pagina' },
+    })
+    const offer = await createOffer.execute({
+      productId: product.id,
+      code: 'marca-pagina-6m',
+      slug: 'marca-pagina-6m',
+      name: 'Curso 6 meses',
+      priceCents: 2700,
+      status: 'active',
+    })
+    const res = await app.handle(
+      req('PATCH', `/catalog/offers/${offer.id}`, {
+        headers: ADMIN,
+        body: { content: { pageSellable: true } },
+      }),
+    )
+    expect(res.status).toBe(200)
+    const pub = await app.handle(req('GET', '/catalog/offers/marca-pagina-6m'))
+    expect((await pub.json()).content.pageSellable).toBe(true)
   })
 
   it('cards do Início respeitam público, disponibilidade, publicação e local configurado', async () => {

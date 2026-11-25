@@ -7,7 +7,14 @@
 `PATCH /catalog/products/:id` aceita `primaryOfferId` (uuid ou null); o `UpdateProductService`
 recusa (400) oferta de outro produto ou arquivada. A view admin traz `primaryOfferId`; a pública
 `GET /catalog/products/:slug` traz `primaryOfferSlug` (null sem marca, com oferta rascunho ou de
-outro produto) e aceita também o SKU no lugar do slug (o funil identifica a página pelo SKU).
+outro produto). O funil lê pelo SKU em rota PRÓPRIA, `GET /catalog/products/by-sku/:sku`
+(gateway `catalog-product-by-sku`): slug e SKU são espaços de nome separados, e o fallback antigo do
+slug para o SKU podia abrir a página com o produto errado. Só oferta ATIVA vira `primaryOfferSlug`
+(pausada/arquivada sai null e a página responde "indisponível"); criar/editar oferta também limpa o
+cache de produto. O PATCH confere `primaryOfferId` só quando ele MUDA (o formulário manda o payload
+inteiro; uma principal arquivada depois não trava a edição do resto). `content.pageSellable`
+(opt-in na OFERTA): a oferta pode ser vendida na página do produto pelo `?oferta=` (além da
+principal e da irmã do alternador); oferta de presente fica sem a marca.
 Substitui as envs `FUNNEL_OFFER_*` do funil. ⚠️ Operação: antes do deploy do funil sem as envs,
 marcar a oferta principal de CADA página no Admin de staging e de produção (Comunidade Kids e
 adulta, Desafio Kids e adulto, Cadê Kids e adulto, guia dos pais); página sem marca responde 503.

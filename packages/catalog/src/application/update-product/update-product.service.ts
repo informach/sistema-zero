@@ -71,7 +71,9 @@ export class UpdateProductService {
 
     if (command.status !== undefined) product.setStatus(command.status)
 
-    if (command.primaryOfferId !== undefined) {
+    // Só confere a oferta principal quando ela MUDA: o formulário do Admin manda o payload
+    // inteiro, e uma oferta principal arquivada depois não pode travar a edição do resto.
+    if (command.primaryOfferId !== undefined && command.primaryOfferId !== product.primaryOfferId) {
       if (command.primaryOfferId !== null) {
         const offer = this.offers ? await this.offers.findById(command.primaryOfferId) : null
         if (!offer || offer.productId !== product.id)
