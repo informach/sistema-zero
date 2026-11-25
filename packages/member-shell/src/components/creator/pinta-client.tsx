@@ -16,7 +16,7 @@ import type {
 import type { PintaWorkshopAsset } from '@sistemazero/pinta/assets'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { concluirPinta } from '../../lib/arquipelago-pinta'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
@@ -32,6 +32,7 @@ import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { usePintaAccount } from './pinta-account-scope'
 import { savePintaStudioBundle } from './save-pinta-studio-bundle'
+import { sendPintaGameToStudio } from './send-pinta-game-to-studio'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import {
   canOpenPensaMission,
@@ -100,6 +101,15 @@ export function PintaClient({
   const localNamespace = creatorStorageNamespace(viewerId, audience)
   const [attempt, setAttempt] = useState(0)
   const loadKey = JSON.stringify([viewerId, audience, attempt, account])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: retire pending work when the profile, access or workshop lifetime changes.
+  const gameOwner = useMemo(
+    () => ({ controller: new AbortController() }),
+    [localNamespace, studioAvailable, loadKey],
+  )
+  useLayoutEffect(() => {
+    if (gameOwner.controller.signal.aborted) gameOwner.controller = new AbortController()
+    return () => gameOwner.controller.abort()
+  }, [gameOwner])
   const [load, setLoad] = useState<PintaLoad | null>(null)
   const current = load?.key === loadKey ? load : null
   const session = current?.status === 'ready' ? current : null
@@ -331,28 +341,12 @@ export function PintaClient({
       // tela bloqueada com o jogo já feito).
       ...(studioAvailable
         ? {
-            sendGameToStudio: async (asset) => {
-              if (!asset.tilemap && !asset.scene) return { ok: false }
-              const saved = await savePintaStudioBundle(asset, localNamespace)
-              if (!saved.ok) return { ok: false, error: saved.error }
-              const studio = await import('@sistemazero/studio')
-              studio.setStudioStorageNamespace(localNamespace)
-              const project = await studio.buildTilemapGameProject({
-                id: asset.id,
-                libRevision: saved.asset.libRevision,
-                name: saved.asset.name,
-                dataUrl: asset.dataUrl,
-                width: asset.width,
-                height: asset.height,
-                tilemap: asset.tilemap,
-                tilemapFront: asset.tilemapFront,
-                scene: asset.scene,
-                maps: saved.asset.maps,
-              })
-              if (!project) return { ok: false }
-              router.push('/estudio')
-              return { ok: true }
-            },
+            sendGameToStudio: (asset) =>
+              sendPintaGameToStudio(asset, {
+                namespace: localNamespace,
+                signal: gameOwner.controller.signal,
+                navigate,
+              }),
           }
         : {}),
       // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
@@ -376,6 +370,8 @@ export function PintaClient({
     missionSession,
     localNamespace,
     initialCanvas,
+    gameOwner,
+    navigate,
   ])
 
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence

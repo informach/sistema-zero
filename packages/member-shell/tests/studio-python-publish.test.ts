@@ -581,18 +581,37 @@ for (const context of ['free', 'lesson', 'live'] as const)
             ? await currentPublishedSource(f.bucket, initial.publicationId)
             : null
           // A byte/policy fixture; rendering is qualified independently in the real browser runtime.
-          const raw = await pngWithPintaData(
-            Buffer.from(
-              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
-              'base64',
-            ),
-            {
-              format: 'pinta',
-              kind: 'map',
-              version,
-              ...(version === 4 && !malformed ? { scene: { version: 3 } } : {}),
-            },
-          )
+          const pixels =
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAALSURBVAiZY2AAAgAABQABYlUyiAAAAABJRU5ErkJggg=='
+          const raw = await pngWithPintaData(Buffer.from(pixels.split(',')[1] ?? '', 'base64'), {
+            format: 'pinta',
+            kind: 'map',
+            version,
+            ...(version === 4 && !malformed
+              ? {
+                  scene: {
+                    version: 3,
+                    id: 'scene',
+                    name: 'Mapa',
+                    tileSize: 1,
+                    cols: 1,
+                    rows: 1,
+                    tilesets: [
+                      {
+                        id: 'tiles',
+                        name: 'Peças',
+                        image: pixels,
+                        columns: 1,
+                        count: 1,
+                        solid: [],
+                        platform: [],
+                      },
+                    ],
+                    layers: [],
+                  },
+                }
+              : {}),
+          })
           const dataUrl = `data:image/png;base64,${Buffer.from(raw).toString('base64')}`
           f.project.assets = [
             {

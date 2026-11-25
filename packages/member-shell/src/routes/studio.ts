@@ -72,6 +72,7 @@ import {
 import {
   callStudioPublication,
   isStudioClassicHistoryProject,
+  prepareStudioPublicProject,
   publishStudioClassicRevision,
   publishStudioProRevision,
   publishStudioPythonRevision,
@@ -79,7 +80,6 @@ import {
   studioClassicHistoryAvailable,
   studioGameFingerprint,
   studioPublicationOwner,
-  studioPublicProject,
   studioRequiredPintaRuntimeFeatures,
 } from '../server/studio-publication'
 import {
@@ -783,7 +783,7 @@ export function createStudioRoutes(deps: {
           )
         const project = await prepareEditableStudioProject(submitted.body.project)
         if (!project) return invalid()
-        publicationProject = studioPublicProject(project)
+        publicationProject = await prepareStudioPublicProject(project)
         requiredPintaRuntimeFeatures = studioRequiredPintaRuntimeFeatures(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
@@ -1143,7 +1143,7 @@ export function createStudioRoutes(deps: {
             : null)
         const project = await prepareEditableStudioProject(rawProject)
         if (!project) return invalid()
-        publicationProject = studioPublicProject(project)
+        publicationProject = await prepareStudioPublicProject(project)
         requiredPintaRuntimeFeatures = studioRequiredPintaRuntimeFeatures(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
@@ -1883,7 +1883,8 @@ export function createStudioRoutes(deps: {
         const project = await prepareEditableStudioProject(candidate)
         if (project)
           unchangedGame =
-            studioGameFingerprint(studioPublicProject(project)) === published.fingerprint
+            studioGameFingerprint(await prepareStudioPublicProject(project)) ===
+            published.fingerprint
       }
     } catch {
       // Sem a comparação, o botão segue liberado e a publicação confere de novo.

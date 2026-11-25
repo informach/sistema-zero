@@ -47,6 +47,7 @@ export interface StudioPintaImagePreview {
 }
 
 export interface StudioPintaImportedAsset {
+  regional?: import('@sistemazero/core/studio/pinta-regional-marker').PintaRegionalMarker
   id: string
   name: string
   dataUrl: string

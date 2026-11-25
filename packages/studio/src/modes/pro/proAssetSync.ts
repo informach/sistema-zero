@@ -6,6 +6,10 @@ import {
   type ProjectTree,
 } from '#core'
 import { fileSystemErrorCode } from '../../components/terminal/fileSystemError'
+import {
+  admitRegionalProjectAssets,
+  type PintaRegionalProjectAdmissions,
+} from '../../core/pintaRegionalProjectAdmission'
 import { PRO_ASSET_MANIFEST, validProAssetPath } from '../../core/proAssetPaths'
 import { buildProAssetBundle, decodeProAsset, type ProAssetBundle } from '../../core/proAssets'
 
@@ -48,7 +52,11 @@ export function createProAssetSync(
   options: {
     active(): boolean
     get(): { assets: ProjectAsset[]; tree: ProjectTree; legacyRuntime?: boolean }
-    apply(expected: ProjectAsset[], next: ProjectAsset[]): void
+    apply(
+      expected: ProjectAsset[],
+      next: ProjectAsset[],
+      regionalMaterials?: PintaRegionalProjectAdmissions,
+    ): void
     report(message: string): void
   },
 ) {
@@ -134,7 +142,9 @@ export function createProAssetSync(
         legacyRuntime: current.legacyRuntime,
       })
       check()
-      options.apply(current.assets, next)
+      const regionalMaterials = await admitRegionalProjectAssets(next)
+      check()
+      options.apply(current.assets, next, regionalMaterials)
       const newIds = new Set(additions.map((asset) => asset.id))
       const entries = bundle.manifest.assets.filter((entry) => newIds.has(entry.id))
       // Seed the observed baseline only for files actually read. Other materialized
@@ -220,7 +230,9 @@ export function createProAssetSync(
           acceptedInPass.set(entry.path, disk)
         }
       if (next !== current.assets) {
-        options.apply(current.assets, next)
+        const regionalMaterials = await admitRegionalProjectAssets(next)
+        check()
+        options.apply(current.assets, next, regionalMaterials)
         for (const [path, bytes] of acceptedInPass) accepted.set(path, bytes)
         check()
       }

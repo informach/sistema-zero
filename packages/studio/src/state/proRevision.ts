@@ -14,6 +14,7 @@ import {
   type EditableStudioProject as Project,
   type PythonProProjectDocument,
 } from '../core/editableProject'
+import { admitRegionalProjectAssets } from '../core/pintaRegionalProjectAdmission'
 import { buildProAssetBundle } from '../core/proAssets'
 import { digestProAssistance, getProAssistance } from '../core/proAssistance'
 import type { ProjectTree } from '../core/proProject'
@@ -276,6 +277,10 @@ async function applyRevision(
       installedExtensions: next.installedExtensions,
     }
   } else await buildProAssetBundle(materials?.assets ?? project.assets, tree)
+  const regionalMaterials =
+    materials && !isPythonProject(project)
+      ? await admitRegionalProjectAssets(materials.assets)
+      : undefined
   // Includes edits to assets/metadata while digesting, even when the source tree is unchanged.
   if (
     captureProjectStorageScope() !== scope ||
@@ -290,7 +295,7 @@ async function applyRevision(
       project.tree!,
       tree,
       beforePublish ? (next) => beforePublish(inverse, next, assetInverse) : undefined,
-      materials,
+      materials ? { ...materials, regionalMaterials } : undefined,
       pythonConfiguration,
     )
   if (error) throw new Error(error)

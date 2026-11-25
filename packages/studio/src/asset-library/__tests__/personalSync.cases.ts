@@ -1249,7 +1249,7 @@ const { reconcileDrawingsFromRestoredProject } = await import('../personalSync')
 
 function derivedPintaAsset(): ProjectAsset {
   const dataUrl =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII='
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAALSURBVAiZY2AAAgAABQABYlUyiAAAAABJRU5ErkJggg=='
   const bytes = Buffer.from(dataUrl.split(',')[1]!, 'base64')
   return drawingAsset({
     dataUrl,

@@ -1,4 +1,7 @@
-import { STUDIO_SEALED_STORAGE_READER } from '@sistemazero/core/creations/studio-sealed-storage'
+import {
+  STUDIO_SEALED_LEGACY_READER,
+  STUDIO_SEALED_STORAGE_READER,
+} from '@sistemazero/core/creations/studio-sealed-storage'
 import { ForbiddenError } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type {
@@ -28,7 +31,9 @@ import {
 
 const CreationDownloadQuery = t.Object({
   ...AudienceQuery.properties,
-  studioReader: t.Optional(t.Literal(STUDIO_SEALED_STORAGE_READER)),
+  studioReader: t.Optional(
+    t.Union([t.Literal(STUDIO_SEALED_STORAGE_READER), t.Literal(STUDIO_SEALED_LEGACY_READER)]),
+  ),
 })
 
 export interface CreationsRoutesDeps {

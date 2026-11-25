@@ -1,4 +1,10 @@
-import { PINTA_REGION_WORLD_BUDGET } from '@sistemazero/core/studio/pinta-region-image-limits'
+import {
+  PINTA_REGION_WORLD_BUDGET,
+  type PintaRegionWorldBudget,
+  validPintaRegionImageMetadataBudget,
+} from '@sistemazero/core/studio/pinta-region-image-limits'
+import { checkAdmittedPintaPngPixels } from '@sistemazero/core/studio/pinta-region-png-pixels'
+import { admitLegacyPintaPngMetadata } from './pintaPngMetadataAdmission'
 import {
   type AdmittedPintaRegionalMaterial,
   admitPintaRegionalMaterial,
@@ -123,8 +129,17 @@ export async function admitRegionalProjectAssets(
     world: AdmittedPintaRegionalMaterial['world'],
     name: string,
   ) => void | Promise<void>,
+  budget: Readonly<PintaRegionWorldBudget> = PINTA_REGION_WORLD_BUDGET,
 ): Promise<PintaRegionalProjectAdmissions> {
   signal?.throwIfAborted()
+  const remaining = { ...budget }
+  if (
+    !validPintaRegionImageMetadataBudget(remaining) ||
+    !Number.isSafeInteger(remaining.imagePixels) ||
+    remaining.imagePixels < 0 ||
+    remaining.imagePixels > PINTA_REGION_WORLD_BUDGET.imagePixels
+  )
+    throw new Error('O orçamento dos materiais não é válido.')
   if (Array.isArray(assets) && assets.length > MAX_ASSETS_COUNT)
     throw new Error('Os materiais excedem o espaço do projeto. Os originais foram preservados.')
   const materials = Array.isArray(assets)
@@ -158,7 +173,21 @@ export async function admitRegionalProjectAssets(
   if (chars > MAX_ASSETS_TOTAL_CHARS)
     throw new Error('Os materiais excedem o espaço do projeto. Os originais foram preservados.')
 
-  const remaining = { ...PINTA_REGION_WORLD_BUDGET }
+  // First enforce the complete asset budget; only then inspect any embedded metadata.
+  for (const binding of materials) {
+    signal?.throwIfAborted()
+    if (
+      binding &&
+      !binding.regional &&
+      binding.kind === 'image' &&
+      typeof binding.dataUrl === 'string'
+    )
+      remaining.metadataBytes -= admitLegacyPintaPngMetadata(
+        binding.dataUrl,
+        remaining.metadataBytes,
+      )
+  }
+
   const worlds: Array<{
     id: string
     name: string
@@ -196,9 +225,17 @@ export async function admitRegionalProjectAssets(
     remaining.imagePixels -= admitted.world.imagePixels
     remaining.indexBytes -= admitted.world.indexBytes
     remaining.metadataBytes -= admitted.world.metadataBytes
-    if (visitWorld) worlds.push({ id, name, world: admitted.world })
+    worlds.push({ id, name, world: admitted.world })
     markers.set(id, admitted.regional)
   }
+  // Every header and joint budget precedes pixel streams. This pure check also
+  // runs on the server, before any browser/native graphics allocation.
+  for (const { world } of worlds)
+    for (const images of [world.maps.values(), world.images.values()])
+      for (const image of images) {
+        signal?.throwIfAborted()
+        checkAdmittedPintaPngPixels(image)
+      }
   if (visitWorld)
     for (const { id, name, world } of worlds) {
       signal?.throwIfAborted()

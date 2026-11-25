@@ -8,10 +8,14 @@ import {
   preserveLegacyRegionalEdit,
 } from '../project-migrations/localRegionalAuthority'
 import { prepareEditableStudioProject } from './editableProjectValidation'
-import type { IdbWrite } from './idbTransaction'
+import { type IdbWrite, readValue, readValues } from './idbTransaction'
 import { notifyRecoveredProjects } from './projectPersistenceEvents'
-import { latestRecoveries, projectFromRecovery } from './projectStorageCoordinator'
-import { projectBlocksKey, projectRecoveryKey } from './projectStorageKeys'
+import {
+  latestRecoveries,
+  PRO_APPLICATION_LIMITS,
+  projectFromRecovery,
+} from './projectStorageCoordinator'
+import { applicationBudgetKey, projectBlocksKey, projectRecoveryKey } from './projectStorageKeys'
 import { assembleProjectRecord } from './projectStorageRecords'
 import {
   acceptsLocalHead,
@@ -23,6 +27,7 @@ import {
   readLocalRevision,
 } from './projectStorageRevision'
 import type { ProjectStorageScope } from './projectStorageRuntime'
+import { type RetainedApplicationBudget, retainedApplications } from './retainedProjectApplications'
 import {
   acknowledgeRetainedJournal,
   readRetainedDrafts,
@@ -93,6 +98,7 @@ async function preserveLegacySources(scope: ProjectStorageScope, manifest: Retai
 }
 
 export interface RetainedPatch {
+  applicationBudget?: RetainedApplicationBudget
   /** A missing part here stays untouched. An explicitly supplied undefined removes only that part. */
   values: RetainedValues
   /** Only authored edits replace the editor head. Auxiliary updates preserve it. */
@@ -149,6 +155,7 @@ export async function patchRetainedProject(
         candidate: parts,
         ...(retired.length ? { source: retired, retire: retired.map(([key]) => key) } : {}),
         ready,
+        applicationBudget: change.applicationBudget,
       })
     } catch (error) {
       if (!(error instanceof ProjectWriteConflict) || ready?.() === false) throw error
@@ -165,20 +172,19 @@ export async function saveRetainedDocument(
   manifest: RetainedManifest,
   project: EditableStudioProject,
   write: IdbWrite,
+  replace = false,
 ) {
   const stamp = readLocalRevision(project)
-  if (
-    !stamp ||
-    stamp.lineage.scope !== scope.identity ||
-    manifest.deleted ||
-    stamp.lineage.pending.size
-  )
+  if (!stamp || stamp.lineage.scope !== scope.identity || manifest.deleted)
     throw new ProjectWriteConflict()
   const snapshot = {
     puts: write.puts?.map(([key, value]) => [key, copyStudioProjectJson(value)] as const),
     deletes: [...(write.deletes ?? [])],
   }
-  const source = await readRetainedParts(scope, manifest, ['head'])
+  const additions = [...stamp.lineage.pending.values()]
+    .filter((entry) => entry.sequence <= stamp.sequence)
+    .map((entry) => entry.record)
+  const source = await readRetainedParts(scope, manifest, ['head', 'applications'])
   const previous = retainedEditorHead(manifest, source.head)
   const next = localHead(stamp)
   if (previous.writer === next.writer && previous.sequence > next.sequence)
@@ -202,6 +208,18 @@ export async function saveRetainedDocument(
     if (!part) invalidRetention()
     edits[part] = undefined
   }
+  const applications =
+    additions.length || (replace && source.applications !== undefined)
+      ? retainedApplications(
+          manifest.id,
+          source.applications,
+          await readValue(scope.store, applicationBudgetKey()),
+          additions,
+          replace,
+        )
+      : undefined
+  if (applications)
+    edits.applications = applications.records.length ? applications.records : undefined
   // A freshly minted publication token also distinguishes edits made to a reused project object.
   const head = { ...next, token: crypto.randomUUID() }
   // Exit copies this revision supersedes: older ones of the durable head, older ones of this
@@ -221,10 +239,19 @@ export async function saveRetainedDocument(
     values: edits,
     nextHead: head,
     retire: covered.flatMap(({ native }) => (native ? [native] : [])),
+    applicationBudget: applications?.budget,
   })
   stamp.lineage.durableToken = head.token
   stamp.lineage.recovery = false
   stamp.lineage.recoverySources = undefined
+  for (const record of additions) {
+    stamp.lineage.saved.add(record.operationId)
+    stamp.lineage.pending.delete(record.operationId)
+  }
+  while (stamp.lineage.saved.size > PRO_APPLICATION_LIMITS.operations) {
+    const first = stamp.lineage.saved.values().next()
+    if (!first.done) stamp.lineage.saved.delete(first.value)
+  }
   acknowledgeRetainedJournal(scope, covered)
 }
 
@@ -267,9 +294,25 @@ export function detachedHead(base: string): LocalHead {
 export async function removeRetainedProject(
   scope: ProjectStorageScope,
   manifest: RetainedManifest,
+  builderDeletion = false,
 ) {
   if (manifest.deleted) return
-  const recovery = await preserveLegacyRegionalEdit(scope, manifest)
+  const firstRecovery = await preserveLegacyRegionalEdit(scope, manifest)
+  const recovery = firstRecovery.created
+    ? await preserveLegacyRegionalEdit(scope, manifest)
+    : firstRecovery
+  const { meta } = await readRetainedParts(scope, manifest, ['meta'])
+  let history: ReadonlyArray<readonly [IDBValidKey, unknown]> = []
+  if (isDocumentRecord(meta) && meta.kind === 'pro') {
+    const disk = await import('./proProjectHistory')
+    await disk.quiesceProHistory(scope, manifest.id)
+    const keys = await disk.proHistoryStorageKeys(scope, manifest.id)
+    const values = await readValues(scope.store, keys)
+    history = keys.map((key, index) => [key, values[index]] as const)
+  }
+  const previousBudget = recovery.guards.find(([key]) => key === applicationBudgetKey())?.[1]
+  const budget = retainedApplications(manifest.id, undefined, previousBudget, [], true).budget
+  delete budget.next[manifest.id]
   // Explicit deletion also discards the project's own exit copies, like its legacy sources. An
   // exit copy the editor cannot adopt (no blocks restored yet) used to block it forever.
   const drafts = await readRetainedDrafts(scope, manifest.id)
@@ -282,14 +325,17 @@ export async function removeRetainedProject(
     origin: manifest.origin,
     expectedToken: manifest.token,
     candidate: null,
-    source: [...recovery.guards, ...native],
+    source: [...recovery.guards, ...native, ...history],
     retireLegacy: true,
-    retire: native.map(([key]) => key),
+    retire: [...native.map(([key]) => key), ...history.map(([key]) => key)],
+    applicationBudget: budget,
+    builderDeletion,
     // Another tab staging an exit right now still wins: only the captured mirrors may remain.
     ready: () => onlyCapturedJournal(scope, manifest.id, captured),
   })
   acknowledgeRetainedJournal(scope, drafts)
-  if (recovery.created && recovery.fork) notifyRecoveredProjects(scope, [recovery.fork])
+  if (firstRecovery.created && firstRecovery.fork)
+    notifyRecoveredProjects(scope, [firstRecovery.fork])
 }
 
 function onlyCapturedJournal(
@@ -337,7 +383,7 @@ export async function loadRetainedProjectDraft(
   if (eligible.length !== 1) return null
   const draft = eligible[0]!
   // Classic retained projects have no Pro applications to replay.
-  if (draft.applications.length || draft.resetApplications) return null
+  if (draft.resetApplications) return null
   const id = manifest.id
   const puts = [...(draft.write.puts ?? [])]
   if (draft.incompleteBlocks && !puts.some(([key]) => key === projectBlocksKey(id))) {
@@ -351,6 +397,8 @@ export async function loadRetainedProjectDraft(
   installLocalRevision(project, scope.identity, head)
   const stamp = readLocalRevision(project)!
   stamp.lineage.recovery = true
+  for (const record of draft.applications)
+    stamp.lineage.pending.set(record.operationId, { sequence: stamp.sequence, record })
   stamp.lineage.recoverySources = [
     ...(draft.replacesRecovery ?? []),
     { key: projectRecoveryKey(id, draft.head.writer), token: draft.head.token },

@@ -11,6 +11,7 @@ import {
 } from '#core'
 import { extensionBootstrapContext, loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
+import { hasRegionalPintaReference } from '../core/pintaRegionalReference'
 import { buildProAssetBundle } from '../core/proAssets'
 import { criarTransporteDeCenas3D } from '../core/scene3d/transporte'
 import { gameUiFontBootstrapScript, loadGameUiFont } from '../official-extensions/gameUiFont'
@@ -62,6 +63,18 @@ export async function buildClassicFileMap(
 ): Promise<ClassicFileMapResult> {
   const files: ExportFileMap = {}
   const warnings: string[] = []
+  const regional = project.assets?.some(hasRegionalPintaReference)
+    ? await (
+        await import('../runtime/javascript/pintaRegionalMaterials')
+      ).prepareRegionalMaterialData(project.assets)
+    : undefined
+  const regionalEngine = regional
+    ? (await import('../runtime/javascript/pintaRegionalMaterials')).regionalJavaScriptEngine(
+        project.installedExtensions,
+      )
+    : undefined
+  if (regional && !regionalEngine)
+    throw new Error('Este cenário precisa de um só motor: Jogo 2D ou Jogo 2D Avançado.')
   // O site exportado leva o modelo de verdade, não a referência da biblioteca dos cursos.
   await preloadCourseModels(project.assets, project.files['script.js'])
 
@@ -79,7 +92,7 @@ export async function buildClassicFileMap(
   // manifest): `normalizeAssetName` remove pontos, então `url('fundo.png')` de
   // um tutorial referencia o asset `fundopng` — sem a reescrita o site
   // publicado dava 404 no fundo.
-  const exportManifest = assetManifest(project.assets)
+  const exportManifest = assetManifest(project.assets, regional?.proof)
   const exportCss = (css: string) => rewriteCssAssetUrlsToAssetNames(css, exportManifest)
 
   if (hasExternalCss) files['public/style.css'] = await minifiers.css(exportCss(rawCss))
@@ -206,7 +219,14 @@ export async function buildClassicFileMap(
     }
     const src = `sz-ext/${installed.id}.js`
     files[`public/${src}`] = await minifiers.js(
-      await loadExtensionBootstrapScript(ext, bootstrapContext),
+      regional && regionalEngine?.id === installed.id && !options.conversion
+        ? await (
+            await import('../official-extensions/map-2d/regionBootstrap')
+          ).mapTwoDRegionalMaterialsBootstrap(
+            installed.id === 'game-2d' ? 'g2d' : 'gk',
+            regional.wire,
+          )
+        : await loadExtensionBootstrapScript(ext, bootstrapContext),
       {
         module: Boolean(ext.runtime.esmImports),
       },
@@ -283,7 +303,7 @@ export async function buildClassicFileMap(
     assetsScriptSrc = 'sz-assets.js'
     files['public/sz-assets.js'] = buildAssetsRuntime(
       manifest,
-      assetMetaManifest(project.assets, bootstrapContext),
+      assetMetaManifest(project.assets, bootstrapContext, regional?.proof),
       soundsExport,
       models3dExport,
       cenas3d,
@@ -377,6 +397,9 @@ export async function buildProFileMap(
     legacyRuntime: Boolean(project.proMeta?.origin),
   })
   for (const [path, bytes] of bundle.files) files[path] = bytes
+  const { regionalProBuildFiles } = await import('../modes/pro/pintaRegionalBuild')
+  const regional = await regionalProBuildFiles(project)
+  if (regional) files[regional.path] = regional.script
   if (!files['ASSET-CREDITS.md'])
     files['ASSET-CREDITS.md'] = [
       '# Materiais do jogo',

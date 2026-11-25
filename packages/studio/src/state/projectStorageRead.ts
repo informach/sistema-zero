@@ -16,7 +16,7 @@ import {
 } from './projectStorageKeys'
 import { assembleProjectRecord, type StoredProjectRecord } from './projectStorageRecords'
 import { installLocalRevision, isLocalHead } from './projectStorageRevision'
-import { isPrivateRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
+import { isRegionalProjectScope, type ProjectStorageScope } from './projectStorageRuntime'
 import { type ProjectSummary, projectEnvironmentSummary } from './projectSummary'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -178,8 +178,8 @@ export async function readProjectAssetsSnapshot(
   const installedExtensions = isRecord(meta) ? meta.installedExtensions : undefined
   if (!isRecord(record)) return { assets: [], environment, installedExtensions }
   const privateRead = options[PRIVATE_REGIONAL_PROJECT]
-  if (privateRead && (privateRead !== scope || !isPrivateRegionalProjectScope(scope)))
-    throw new Error('A captura regional requer um perfil de teste local.')
+  if (privateRead && (privateRead !== scope || !isRegionalProjectScope(scope)))
+    throw new Error('O perfil do projeto mudou. Abra o Estúdio novamente.')
   if (
     privateRead &&
     (!isRecord(meta) ||

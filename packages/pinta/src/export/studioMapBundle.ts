@@ -1,3 +1,6 @@
+import { readPngDataUrl } from '@sistemazero/core/studio/pinta-png-binary'
+import { PINTA_REGION_IMAGE_PNG_LIMITS } from '@sistemazero/core/studio/pinta-region-image-limits'
+import { readPintaRegionImageWorld } from '@sistemazero/core/studio/pinta-region-image-world'
 import type { ActiveFrameRef } from '../core/assetEdit'
 import type { PintaMemoryAsset } from '../core/assetMemory'
 import { COPY } from '../core/copy'
@@ -50,5 +53,50 @@ export async function buildStudioMapBundle(
     prepared.push({ ...payload, id: target.id, name: target.name })
   }
   const [root, ...maps] = prepared
+  if (root && regional) {
+    const { embedPintaRegionImage } = await import('./regionImage')
+    const url = (bytes: Uint8Array) => {
+      const parts: string[] = []
+      for (let at = 0; at < bytes.length; at += 4096)
+        parts.push(String.fromCharCode(...bytes.subarray(at, at + 4096)))
+      return `data:image/png;base64,${btoa(parts.join(''))}`
+    }
+    const embed = (
+      payload: Omit<PintaExportedAsset, 'maps'>,
+      world?: import('@sistemazero/core/studio/pinta-image').PintaImageWorld,
+    ) =>
+      embedPintaRegionImage(
+        readPngDataUrl(payload.dataUrl, PINTA_REGION_IMAGE_PNG_LIMITS).bytes,
+        JSON.stringify(payload.scene),
+        { world },
+      )
+    const children = []
+    for (const map of maps)
+      children.push({ id: map.id, name: map.name, png: url((await embed(map)).png) })
+    const original = await embed(
+      root,
+      children.length ? { version: 1, rootId: root.id, maps: children } : undefined,
+    )
+    const world = readPintaRegionImageWorld(original.png)
+    if (world.rootId !== root.id) return null
+    const digest = await crypto.subtle.digest('SHA-256', Uint8Array.from(original.png))
+    const dataUrl = url(original.png)
+    const payload = {
+      id: root.id,
+      name: root.name,
+      dataUrl,
+      width: original.width,
+      height: original.height,
+      regional: {
+        dataVersion: 5 as const,
+        sourceId: root.id,
+        sha256: Array.from(new Uint8Array(digest), (byte) =>
+          byte.toString(16).padStart(2, '0'),
+        ).join(''),
+      },
+    }
+    if (validateStudioPayloadSize(payload) !== 'ok') throw new StudioMapBundleError('asset-too-big')
+    return payload
+  }
   return root ? { ...root, ...(maps.length ? { maps } : {}) } : null
 }

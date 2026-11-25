@@ -37,7 +37,11 @@ import {
   ProjectWriteConflict,
   readLocalRevision,
 } from './projectStorageRevision'
-import type { ProjectStorageScope } from './projectStorageRuntime'
+import {
+  isPrivateRegionalProjectScope,
+  isRegionalProjectScope,
+  type ProjectStorageScope,
+} from './projectStorageRuntime'
 import { stageSynchronousExitJournal } from './synchronousExitJournal'
 import { ExitJournalError, hasSynchronousExitJournal } from './synchronousExitJournalProbe'
 
@@ -147,12 +151,13 @@ export function applicationBudget(value: unknown): Budget {
     throw new Error('O orçamento do histórico local está incompatível.')
   return value as Budget
 }
-function journalWrite(
+export function journalWrite(
   id: string,
   before: unknown,
   aggregate: unknown,
   additions: ProApplicationRecord[],
   version: ProjectStorageVersion = PROJECT_STORAGE_VERSION,
+  budgetId = id,
 ): IdbWrite {
   if (!additions.length) return {}
   if (additions.some((record) => record.projectId !== id))
@@ -188,7 +193,7 @@ function journalWrite(
       )
     records.splice(expired, 1)
   }
-  const totals = { ...applicationBudget(aggregate), [id]: bytes() }
+  const totals = { ...applicationBudget(aggregate), [budgetId]: bytes() }
   if (
     Object.values(totals).reduce((sum, size) => sum + size, 0) > PRO_APPLICATION_LIMITS.profileBytes
   )
@@ -514,6 +519,14 @@ export async function listProApplications(
   scope: ProjectStorageScope,
   projectId: string,
 ): Promise<ProApplicationRecord[]> {
+  if (isRegionalProjectScope(scope)) {
+    const { readRetainedManifest, readRetainedParts } = await import('./retainedProjectStore')
+    const retained = await readRetainedManifest(scope, projectId)
+    if (retained)
+      return retained.deleted
+        ? []
+        : journal((await readRetainedParts(scope, retained, ['applications'])).applications)
+  }
   const [value] = await readValues(scope.store, [projectApplicationsKey(projectId)])
   return journal(value)
 }
@@ -524,6 +537,21 @@ export async function bindProjectToDurableHead(
   scope: ProjectStorageScope,
   options: { legacyMaterialsOnly?: true } = {},
 ): Promise<void> {
+  if (isRegionalProjectScope(scope)) {
+    const disk = await import('./retainedProjectStore')
+    const retained = await disk.readRetainedManifest(scope, project.id)
+    if (retained) {
+      if (retained.deleted) throw new ProjectWriteConflict()
+      const values = await disk.readRetainedParts(scope, retained, ['head', 'assets'])
+      if (options.legacyMaterialsOnly && isPrivateRegionalProjectScope(scope))
+        assertLegacyStudioProjectMaterials(values.assets)
+      const { readRetainedDrafts } = await import('./retainedProjectDrafts')
+      if ((await readRetainedDrafts(scope, project.id)).length) throw new ProjectWriteConflict()
+      const { retainedEditorHead } = await import('./retainedProjectEditor')
+      installLocalRevision(project, scope.identity, retainedEditorHead(retained, values.head))
+      return
+    }
+  }
   // A migração da base v3 só troca o formato: a cabeça v3 vira a cabeça v4 e o conteúdo é o
   // mesmo. Ela vem ANTES da captura; sem isso, a primeira substituição de um projeto que só
   // existia em v3 via a cabeça migrada como "outra aba" e acusava um conflito falso (P4 da

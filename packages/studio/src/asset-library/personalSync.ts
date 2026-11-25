@@ -283,6 +283,14 @@ export async function reconcileDrawingsFromRestoredProject(
     try {
       const drawing = drawings.get(id) ?? null
       if (!drawing) continue
+      if (asset.regional && asset.dataUrl !== drawing.dataUrl) {
+        // A remote project keeps its exact PNG. A different local drawing must
+        // not replace it in the next automatic library sweep.
+        const { libId: _id, libOrigin: _origin, libRevision: _revision, ...detached } = asset
+        nextAssets[index] = detached
+        projectChanged = true
+        continue
+      }
       // The Molda's sky in a Raylib project (its panorama PNG): the restored game keeps the
       // panorama it came with, and only a sky edited here afterwards goes in again.
       if (asset.kind === 'image' && drawing.kind === 'environment3d') {
@@ -352,7 +360,8 @@ async function resolveDrawings(
   for (const asset of assets) {
     const id = personalIdOf(asset)
     if (!id || cache.has(id)) continue
-    cache.set(id, await getPersonalAsset(id, { namespace }))
+    const drawing = await getPersonalAsset(id, { namespace })
+    cache.set(id, drawing?.regional ? null : drawing)
   }
   return cache
 }
@@ -728,6 +737,8 @@ async function sweepUnmeasured(
 
   // A pending opening/CAS can refuse a required write. Keep its marker unconsumed so the
   // next normal focus/hydration sweep can reconcile it; do not retry inside this sweep.
+  if (context.namespace === context.storageScope.namespace && context.canonicalChanged)
+    await syncPrivateRegionalDrawings(storeApi, context, result, changeToken)
   if (canonicalWritesCompleted && !context.canonicalWriteRefused && context.python?.current()) {
     context.state.lastSyncToken = changeToken
     context.state.didInitialSweep = true
@@ -743,6 +754,19 @@ async function syncPrivateRegionalDrawings(
 ) {
   const { storageScope: scope, namespace } = context
   const signal = context.python?.signal ?? context.callerSignal
+  context.mapInventory ??= readPersonalAssetInventory({ namespace }).then((result) => {
+    if (!result.ok) throw new Error(result.error)
+    return result.assets
+  })
+  let inventory: PersonalAsset[]
+  try {
+    inventory = await context.mapInventory
+  } catch (error) {
+    worldFailure(context, result, error)
+    return
+  }
+  const regionalIds = new Set(inventory.filter((asset) => asset.regional).map((asset) => asset.id))
+  if (regionalIds.size === 0) return
   const [
     { readPersonalRegionalMap, PINTA_REGIONAL_PERSONAL_CAPTURE },
     { refreshPrivateRegionalProjectAsset },
@@ -758,6 +782,7 @@ async function syncPrivateRegionalDrawings(
   for (const summary of projects) {
     if (signal?.aborted || !isContextActive(context)) return
     const open = live?.id === summary.id ? live : undefined
+    let attempted = false
     try {
       const assets =
         open?.assets ??
@@ -768,8 +793,15 @@ async function syncPrivateRegionalDrawings(
         ).assets
       for (const asset of assets) {
         const sourceId = personalIdOf(asset)
-        if (!sourceId || asset.kind !== 'image' || asset.libOrigin === 'molda' || asset.pintaImage)
+        if (
+          !sourceId ||
+          !regionalIds.has(sourceId) ||
+          asset.kind !== 'image' ||
+          asset.libOrigin === 'molda' ||
+          asset.pintaImage
+        )
           continue
+        attempted = true
         if (signal?.aborted || !isContextActive(context)) return
         if (!captured.has(sourceId))
           captured.set(
@@ -805,10 +837,18 @@ async function syncPrivateRegionalDrawings(
         } else context.canonicalWriteRefused = true
       }
     } catch (error) {
-      if (!signal?.aborted && isContextActive(context)) worldFailure(context, result, error)
+      if (!signal?.aborted && isContextActive(context)) {
+        context.canonicalWriteRefused = true
+        if (attempted || isPrivateRegionalProjectScope(scope)) worldFailure(context, result, error)
+      }
     }
   }
-  if (!context.canonicalWriteRefused && !signal?.aborted && isContextActive(context)) {
+  if (
+    isPrivateRegionalProjectScope(scope) &&
+    !context.canonicalWriteRefused &&
+    !signal?.aborted &&
+    isContextActive(context)
+  ) {
     context.state.didInitialSweep = true
     context.state.lastSyncToken = changeToken
   }

@@ -3,6 +3,7 @@ import {
   codeUsesPintaScenePlayer,
   PINTA_STUDIO_LEGACY_LIMITS,
 } from '@sistemazero/core/studio/pinta-limits'
+import type { PintaRegionalMarker } from '@sistemazero/core/studio/pinta-regional-marker'
 import {
   type PintaScene,
   readPintaScene,
@@ -122,6 +123,7 @@ export interface ProjectTilemapMeta {
  * (retrocompatível: projetos legados não têm).
  */
 export interface ProjectAsset {
+  regional?: PintaRegionalMarker
   /** Optional preserved URL from conversion or an imported binary file. */
   proPath?: string
   /** Explicit provenance, never inferred from the file extension. */

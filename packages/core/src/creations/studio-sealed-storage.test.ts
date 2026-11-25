@@ -61,6 +61,38 @@ describe('Studio sealed storage readers', () => {
         ...requirements,
         materials: 'pinta-region-5',
       }),
+    ).toBe(true)
+    expect(canReadStudioSealedStorage('studio-parts-v2', requirements)).toBe(true)
+    expect(
+      canReadStudioSealedStorage('studio-parts-v2', {
+        ...requirements,
+        materials: 'pinta-region-5',
+      }),
+    ).toBe(false)
+    expect(
+      canReadStudioSealedStorage('studio-parts-v2', {
+        ...requirements,
+        programmingLanguage: 'python',
+      }),
+    ).toBe(false)
+  })
+
+  test('o manifesto liga a linguagem real à capacidade que será autorizada', () => {
+    const fixture = {
+      format: 'sz-studio-parts',
+      version: 2,
+      requirements: { ...requirements, programmingLanguage: 'python' },
+      program: { id: locator.itemId, formatVersion: 3, programmingLanguage: 'python', assets: [] },
+      assets: [],
+    }
+    expect(StudioSealedManifestSchema.safeParse(fixture).success).toBe(true)
+    expect(StudioSealedManifestSchema.safeParse({ ...fixture, requirements }).success).toBe(false)
+    expect(
+      StudioSealedManifestSchema.safeParse({
+        ...fixture,
+        requirements: { ...fixture.requirements, projectFormat: 2 },
+        program: { ...fixture.program, formatVersion: 2 },
+      }).success,
     ).toBe(false)
   })
 

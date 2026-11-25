@@ -673,7 +673,6 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           !observedStudio ||
           (existing && existing.accountId !== input.accountId) ||
           input.studioSeal.requirements.projectFormat !== input.formatVersion ||
-          input.studioSeal.requirements.materials !== 'legacy' ||
           (existing && hasStudioSealedStorage(existing) && !observedStudio.adopted)
         )
           throw new StudioSealedWriteError('ticket-invalid')
@@ -946,8 +945,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           !observedStudio ||
           canonicalJson(studioProof.ticket.scope) !== canonicalJson(studioOwner) ||
           row.accountId !== studioOwner.accountId ||
-          studioProof.ticket.revision !== input.revision ||
-          studioProof.ticket.requirements.materials !== 'legacy'
+          studioProof.ticket.revision !== input.revision
         )
           throw new StudioSealedWriteError('ticket-invalid')
         await ensureStudioAccount(tx, studioOwner.accountId)
@@ -1348,12 +1346,6 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       }
       const confirmedStudio =
         studioOwner && row.storageRef ? confirmedParts({ ...row, ...studioOwner, tool }) : undefined
-      if (
-        confirmedStudio?.studioSealReceipt &&
-        confirmedStudio.studioSealReceipt.requirements.materials !== 'legacy'
-      ) {
-        throw new StudioStorageProtocolError()
-      }
       await tx
         .update(creations)
         .set({

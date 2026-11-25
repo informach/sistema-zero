@@ -1,6 +1,6 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import type { StudioPythonPublication } from '@sistemazero/core/studio/python-publication'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { createEmptyProject } from '#core'
 import { projectPublicationId } from '../../core/projectPublication'
@@ -439,6 +439,65 @@ describe('ShareDialog: republicar atualiza o post do projeto', () => {
     coverUrl: 'https://cover.test/now.png',
     history: false,
   }
+
+  it('preserva o resumo escrito enquanto consulta um projeto ainda sem post', async () => {
+    seedProject()
+    let answer!: (value: { published: false }) => void
+    const adapter = makeAdapter({
+      status: () =>
+        new Promise((done) => {
+          answer = done
+        }),
+      presetCoverUrl: 'https://cover.test/qa.png',
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Resumo do projeto' }), {
+      target: { value: 'O cenário que eu desenhei.' },
+    })
+    await act(async () => answer({ published: false }))
+    expect(
+      (screen.getByRole('textbox', { name: 'Resumo do projeto' }) as HTMLTextAreaElement).value,
+    ).toBe('O cenário que eu desenhei.')
+    expect(adapter.generateDescription).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await waitFor(() => expect(adapter.publish).toHaveBeenCalledTimes(1))
+    expect(pubArg(adapter)).toMatchObject({ description: 'O cenário que eu desenhei.' })
+  })
+
+  it('a consulta atrasada do post conserva o título e resumo já editados', async () => {
+    seedProject()
+    let answer!: (value: typeof published & { unchanged: boolean }) => void
+    const adapter = makeAdapter({
+      status: () =>
+        new Promise((done) => {
+          answer = done
+        }),
+      publish: mock(async () => ({ playUrl: '/jogar/x', updated: true })),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
+      target: { value: 'Minha ilha nova' },
+    })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Resumo do projeto' }), {
+      target: { value: 'Mudei as peças da ilha.' },
+    })
+    await act(async () => answer({ ...published, unchanged: false }))
+    await screen.findByText('Atualizar no Mural dos Criadores')
+    expect((screen.getByRole('textbox', { name: 'Título' }) as HTMLInputElement).value).toBe(
+      'Minha ilha nova',
+    )
+    expect(
+      (screen.getByRole('textbox', { name: 'Resumo do projeto' }) as HTMLTextAreaElement).value,
+    ).toBe('Mudei as peças da ilha.')
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+    await waitFor(() => expect(adapter.publish).toHaveBeenCalledTimes(1))
+    expect(pubArg(adapter)).toMatchObject({
+      title: 'Minha ilha nova',
+      description: 'Mudei as peças da ilha.',
+      keepCover: true,
+    })
+  })
 
   it('abre com o post de agora, mantém a capa e manda keepCover ao atualizar', async () => {
     seedProject()
