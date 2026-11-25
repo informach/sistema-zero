@@ -28,6 +28,7 @@
     "src",
     "playground",
     "test-setup.ts",
+    "scripts/pinta-probe-css.ts",
     "scripts/memory-regions-probe.ts",
     "scripts/layers-regions-probe.ts",
     "scripts/queries-regions-probe.ts",
