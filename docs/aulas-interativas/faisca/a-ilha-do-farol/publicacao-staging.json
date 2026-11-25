@@ -266,5 +266,12 @@
     "staging": "Members e Admin publicados em b1220ea67; cópia para o adulto concluída (trabalho d9b8dc8a-80fc-4bc7-a1b9-01bf8558a66f); as vozes geradas nela foram postas nas três aulas do Kids (23 blocos) e as aulas publicadas de novo",
     "producao": "publicada em 24/11/2026. Members, Admin e Kids de produção publicados direto no commit 8d87bbff8 da main (diferença para 3d7c53253: só voz.ts e publish-course.ts, sem migração), porque o workflow Deploy produção recusa o plano de configuração com 6 alterações feitas fora do IaC; essas alterações não foram aplicadas. Promoção Kids (trabalho b1118907-2e36-4e87-b6d6-c2830d48bebb) e cópia para o adulto (61244671-6957-4091-8883-be661c097f5c) concluídas: os dois cursos publicados, 3 aulas, 17 vídeos próprios da produção (nenhum da staging), 23 blocos com voz do Zappy e o PDF na Aula 1."
   },
-  "blocosLiberados": "24/11/2026: studioUnlockBlocks com os 28 blocos do inventário blocos.json (blocks) no Kids e no adulto da staging e no Kids e no adulto da produção; estava vazio nos quatro"
+  "blocosLiberados": "24/11/2026: studioUnlockBlocks com os 28 blocos do inventário blocos.json (blocks) no Kids e no adulto da staging e no Kids e no adulto da produção; estava vazio nos quatro",
+  "animacaoDoModulo": {
+    "arquivo": "art/edisvg/exports/ilha-do-farol-m1-b1-a1.fd1612bf68a7.edi-animation.json (receita docs/aulas-interativas-tecnico/recursos/ilha-farol/animacao-dos-modulos.ts)",
+    "staging": "25/11/2026, Kids: scripts/cursos/animacao-do-modulo.ts --passo cadastrar --ambiente staging",
+    "producao": "25/11/2026, Kids, aprovada por ela: o mesmo arquivo, cadastrado direto no módulo (--ambiente production --confirmo-producao) em vez de promover de novo, porque a promoção copiaria outra vez os vídeos que mudaram em staging depois da última; https://cdn.sistemazero.com.br/admin/module-animation/cab39b63-e0b5-4eb8-b2ff-1f839b3dac60/animation.edi-animation.json",
+    "conferido": "animacao-do-modulo.ts --passo conferir e conferir-curso.ts no Kids dos dois ambientes: Tudo confere",
+    "adulto": "sem animação: a comunidade adulta ainda não mostra; vai junto na próxima cópia para o adulto"
+  }
 }

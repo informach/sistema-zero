@@ -179,6 +179,7 @@ export async function run(p) {
         nivel: arvore.level,
         trilha: arvore.track,
         blocosLiberados: (arvore.studioUnlockBlocks ?? []).length,
+        paraOsPais: arvore.learner === 'parents',
       },
       modulos: modulos.map((m) => ({
         titulo: m.title,

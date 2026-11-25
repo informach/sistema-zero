@@ -23,6 +23,14 @@
     "trabalho": "27b76c1a-e252-44b0-8f77-941f70bf933c, completed com 41 de 41 tarefas",
     "videos": "os mesmos 10 vídeos do Kids de produção"
   },
+  "animacaoDoModulo": {
+    "em": "2026-11-25",
+    "arquivo": "art/edisvg/exports/jardim-secreto-m1-b1-a1.84af4bbabdfc.edi-animation.json, o mesmo do Kids de staging (receita docs/aulas-interativas-tecnico/recursos/jardim-secreto/animacao-dos-modulos.ts)",
+    "como": "scripts/cursos/animacao-do-modulo.ts --passo cadastrar --ambiente production --confirmo-producao, direto no módulo do Kids, em vez de promover de novo: a promoção copiaria outra vez os vídeos finais, que mudaram em staging depois da promoção e já estão na produção",
+    "url": "https://cdn.sistemazero.com.br/admin/module-animation/6df7a0d3-ac23-475f-aff0-53e2f5214e90/animation.edi-animation.json",
+    "conferido": "animacao-do-modulo.ts --passo conferir e conferir-curso.ts no Kids de produção: Tudo confere",
+    "adulto": "sem animação: a comunidade adulta ainda não mostra; vai junto na próxima cópia para o adulto"
+  },
   "conferido": "scripts/cursos/conferir-curso.ts nos dois cursos de produção: aulas e partes dos manifestos, PDF marcado como caderno do aluno para o Zappy, 41 blocos liberados, vídeos finais; base do Zappy do Kids de produção em dia (base-do-zappy.ts conferir)",
   "naoConferido": "um vídeo tocando em kids.sistemazero.com.br e a página do curso adulto no navegador"
 }

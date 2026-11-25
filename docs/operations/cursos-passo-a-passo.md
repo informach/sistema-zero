@@ -104,6 +104,8 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
    aulas na ordem.
    - **Animação do módulo (ediSVG):** todo módulo tem a sua animação, mostrada na página do curso
      no Kids (a comunidade adulta ainda não mostra). `conferir-curso.ts` reprova módulo sem ela.
+     Os cursos para os pais (`learner = parents`) não levam animação, e o `conferir-curso.ts` não
+     a cobra neles.
      - **Arte:** as artes vetoriais do projeto do curso (os SVGs do `.szproject.json`). Num curso 3D,
        uma versão 2D parecida com os "gêmeos" em SVG dos modelos, que estão no projeto do curso 2D
        correspondente (a Ilha usa os da Chave do Farol), simulando a profundidade: o chão com
@@ -134,6 +136,11 @@ Tudo pelo Admin de staging, na lente **Kids**, em Conteúdo → Cursos.
        `scripts/cursos/animacao-do-modulo.test.ts` reprova exportação desatualizada.
      - A cópia para o adulto e a promoção levam a animação junto. Animação posta depois da cópia ou
        da promoção só chega lá na próxima.
+     - Curso já promovido que ganhou animação depois: depois de aprovada no staging, rode o
+       `cadastrar` com `--ambiente production --confirmo-producao`. O script grava o mesmo arquivo,
+       só no módulo. Não promova de novo só por causa da animação. A promoção copia outra vez todo
+       vídeo que mudou em staging depois da última, porque o recibo do vídeo leva a data de
+       modificação. O Jardim e a Ilha foram assim (25/11/2026).
 3. **Manifesto de cada aula.** Editor da aula → Dados da aula → "Importar roteiro com partes", com
    o `aula-N.manifesto.json`, no modo "Atualizar pelo manifesto". A importação cria as partes, os
    blocos e os vídeos planejados.

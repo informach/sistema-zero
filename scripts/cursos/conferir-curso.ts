@@ -2,7 +2,8 @@
  * Confere um curso publicado contra a pasta dele no repositório (só leitura): aulas e partes dos
  * manifestos, o PDF do passo a passo (o mesmo arquivo, marcado como caderno do aluno para o Zappy),
  * os blocos liberados (a união do blocos.json), os vídeos (nenhum provisório de 2 s), a animação
- * (ediSVG) de cada módulo e, quando o modulos.md traz, o título, as descrições e os módulos.
+ * (ediSVG) de cada módulo e, quando o modulos.md traz, o título, as descrições e os módulos. Curso
+ * para os pais (learner = parents) não leva caderno do Zappy nem animação: esses dois ficam de fora.
  * Passo a passo:
  * docs/operations/cursos-passo-a-passo.md.
  *
@@ -40,6 +41,7 @@ interface Resumo {
     descricao: string | null
     status: string
     blocosLiberados: number
+    paraOsPais: boolean
   }
   modulos: { titulo: string; resumo: string | null; animacao: string | null }[]
   aulas: {
@@ -116,7 +118,8 @@ if (existsSync(pdf)) {
     `${anexosPdf.map((x) => `aula ${x.aula}: ${x.rotulo}`).join('; ') || 'nenhum PDF'}${peloSha ? ' (mesmo sha256)' : peloTamanho ? ` (mesmo tamanho, ${bytes.length} bytes)` : ''}`,
   )
 }
-for (const x of anexosPdf)
+// Curso para os pais fica fora da base do Zappy (packages/core/src/course/learner.ts): sem caderno.
+for (const x of resumo.curso.paraOsPais ? [] : anexosPdf)
   conferir(
     x.cadernoDoZappy,
     `aula ${x.aula}: PDF marcado como caderno do aluno para o Zappy`,
@@ -147,8 +150,10 @@ conferir(
 )
 
 // Toda página de curso tem uma animação (ediSVG) por módulo: scripts/cursos/animacao-do-modulo.ts.
-for (const [i, m] of resumo.modulos.entries())
-  conferir(m.animacao !== null, `módulo ${i + 1} com animação (ediSVG)`, m.animacao ?? m.titulo)
+// Menos os cursos para os pais (learner = parents), que não levam animação (decisão dela, 25/11/2026).
+if (!resumo.curso.paraOsPais)
+  for (const [i, m] of resumo.modulos.entries())
+    conferir(m.animacao !== null, `módulo ${i + 1} com animação (ediSVG)`, m.animacao ?? m.titulo)
 
 // modulos.md, quando traz os campos (cada curso usa um formato).
 const arquivoModulos = join(op.pasta, 'modulos.md')
