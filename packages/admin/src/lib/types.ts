@@ -1061,6 +1061,11 @@ export interface OfferContent {
   /** Teto de PERFIS (estilo Netflix) DESTA oferta — plataforma Kids. Inteiro 1..50. */
   maxProfiles?: number
   /**
+   * Prazo DIVULGADO em dias (25/11/2026): o que página e e-mails mostram, menor que a duração
+   * real (prazo fixo em dias). A diferença chega de surpresa por e-mail.
+   */
+  advertisedAccessDays?: number
+  /**
    * OFERTA IRMÃ do alternador do checkout (mensal ↔ anual): `slug` = a oferta alvo
    * (o funil valida o slug escolhido contra este link); `label` = texto do alternador.
    */

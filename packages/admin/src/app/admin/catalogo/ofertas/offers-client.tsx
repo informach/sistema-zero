@@ -93,6 +93,8 @@ interface FormState {
   installmentsMax: string
   guaranteeDays: string
   maxProfiles: string
+  /** Prazo divulgado em dias (só prazo fixo em dias, menor que a duração real). */
+  advertisedAccessDays: string
   status: string
   items: OfferItemDraft[]
 }
@@ -116,6 +118,7 @@ const EMPTY_FORM: FormState = {
   installmentsMax: '',
   guaranteeDays: '',
   maxProfiles: '',
+  advertisedAccessDays: '',
   status: 'draft',
   items: [],
 }
@@ -219,19 +222,27 @@ function optInt(v: string): number | null {
 const ALT_OFFER_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 /**
- * Mescla `maxProfiles` e `altOffer` no `content` existente da oferta SEM apagar os
- * demais campos (badge/cta/cupom). Valor nulo → remove o campo. Objeto vazio → `null`.
+ * Mescla `maxProfiles`, `altOffer` e `advertisedAccessDays` no `content` existente da oferta
+ * SEM apagar os demais campos (badge/cta/cupom). Valor nulo → remove o campo. Objeto vazio →
+ * `null`.
  */
-function mergeOfferContent(
+export function mergeOfferContent(
   base: OfferContent | null,
   max: number | null,
   altOffer: { slug: string; label?: string } | null,
+  advertisedAccessDays: number | null = null,
 ): OfferContent | null {
-  const { maxProfiles: _dropMax, altOffer: _dropAlt, ...rest } = base ?? {}
+  const {
+    maxProfiles: _dropMax,
+    altOffer: _dropAlt,
+    advertisedAccessDays: _dropAdvertised,
+    ...rest
+  } = base ?? {}
   const merged: OfferContent = {
     ...rest,
     ...(max != null ? { maxProfiles: max } : {}),
     ...(altOffer ? { altOffer } : {}),
+    ...(advertisedAccessDays != null ? { advertisedAccessDays } : {}),
   }
   return Object.keys(merged).length > 0 ? merged : null
 }
@@ -362,6 +373,8 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
       maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
+      advertisedAccessDays:
+        o.content?.advertisedAccessDays != null ? String(o.content.advertisedAccessDays) : '',
       memberPromotion: o.content?.memberPromotion,
       checkoutTermsUrl: o.content?.checkoutTerms?.url ?? '',
       checkoutTermsVersion: o.content?.checkoutTerms?.version ?? '',
@@ -472,6 +485,18 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
     // Teto de perfis (kids) da OFERTA, clampado 1..50; mesclado no `content` sem apagar o resto.
     const maxP = optInt(form.maxProfiles)
     const maxProfiles = maxP ? Math.min(maxP, MAX_KIDS_PROFILES) : null
+    // Prazo divulgado: só no prazo fixo em dias e menor que a duração real (o catálogo confere
+    // de novo). Fora disso o campo some do `content`.
+    const fixedDays =
+      form.pricingMode === 'one_time' &&
+      form.accessMode === 'fixed' &&
+      form.accessDurationUnit === 'days'
+    const advertisedAccessDays = fixedDays ? optInt(form.advertisedAccessDays) : null
+    const realDays = optInt(form.accessDurationValue)
+    if (advertisedAccessDays != null && (realDays == null || advertisedAccessDays >= realDays)) {
+      toast.error('O prazo divulgado precisa ser menor que a duração do acesso.')
+      return
+    }
     setSaving(true)
     try {
       // PATCH substitui a coleção de itens — envia sempre o estado completo do editor.
@@ -495,7 +520,7 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
           installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
           content: {
-            ...mergeOfferContent(editing.content, maxProfiles, altOffer),
+            ...mergeOfferContent(editing.content, maxProfiles, altOffer, advertisedAccessDays),
             checkoutTerms,
             ...(form.memberPromotion
               ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -507,7 +532,7 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
         toast.success('Oferta atualizada.')
       } else {
         const content = {
-          ...mergeOfferContent(null, maxProfiles, altOffer),
+          ...mergeOfferContent(null, maxProfiles, altOffer, advertisedAccessDays),
           ...(checkoutTerms ? { checkoutTerms } : {}),
           ...(form.memberPromotion
             ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -972,6 +997,26 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
                     <option value="months">Meses</option>
                   </Select>
                 </Field>
+                {form.accessDurationUnit === 'days' ? (
+                  <Field
+                    label="Prazo divulgado (dias)"
+                    htmlFor="advertisedAccessDays"
+                    hint="Opcional. A página e os e-mails mostram este prazo. Os dias que faltam até a duração do acesso chegam de surpresa, num e-mail no fim do prazo divulgado. Precisa ser menor que a duração."
+                  >
+                    <Input
+                      id="advertisedAccessDays"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputMode="numeric"
+                      placeholder="Ex.: 7 (vazio: mostra a duração real)"
+                      value={form.advertisedAccessDays}
+                      onChange={(e) =>
+                        setForm((current) => ({ ...current, advertisedAccessDays: e.target.value }))
+                      }
+                    />
+                  </Field>
+                ) : null}
               </div>
             ) : null}
             <Field
