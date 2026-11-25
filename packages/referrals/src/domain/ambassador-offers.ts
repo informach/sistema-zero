@@ -43,4 +43,6 @@ export interface AmbassadorOfferOption {
   subscription: boolean
   /** Prazo em MESES da oferta de venda (o Cadê vendido: 12); null fora disso. */
   accessMonths?: number | null
+  /** SKU do produto da oferta: o link curto `/i/<código>/<apelido>` acha a oferta por ele. */
+  productSku?: string | null
 }

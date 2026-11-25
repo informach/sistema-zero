@@ -168,6 +168,32 @@ describe('rotas da origem por aquisição', () => {
     expect((await app.handle(get('/referrals/internal/links/mari-x7k2', {}))).status).toBe(401)
   })
 
+  test('link curto por produto: ?product=&kind= acha a oferta da lista; query torta é 422', async () => {
+    const { app, repo } = buildApp()
+    await repo.createAmbassadorWithCode({
+      name: 'Mariana',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    const internal = { 'x-internal-token': TOKEN }
+    // Sem oferta do produto na lista de indicação: 404 uniforme.
+    expect(
+      (
+        await app.handle(
+          get(
+            '/referrals/internal/links/mari-x7k2?product=cade-todo-mundo&kind=referral',
+            internal,
+          ),
+        )
+      ).status,
+    ).toBe(404)
+    expect(
+      (await app.handle(get('/referrals/internal/links/mari-x7k2?product=Nada%20Disso', internal)))
+        .status,
+    ).toBeGreaterThanOrEqual(400)
+  })
+
   test('endereço antigo: ativo devolve o link da campanha; sem campanha, 404', async () => {
     const { app, campaigns } = buildApp()
     const now = Date.now()

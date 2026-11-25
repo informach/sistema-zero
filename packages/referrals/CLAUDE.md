@@ -2,6 +2,18 @@
 
 ## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
 
+**Uma oferta por curso em cada lista e o link curto por curso (25/11/2026, depois do Lote 4).**
+`AmbassadorOffersService.replace` recusa (400, "X e Y são do mesmo curso. Deixe só uma delas ligada
+nesta lista.") duas ofertas LIGADAS do mesmo produto (`GiftOffer.productSku`, do `product.sku` da
+leitura do catálogo) na mesma lista; desligada não conta e as listas de presente e de indicação são
+independentes (o mesmo curso pode estar uma vez em cada). As opções do painel levam `productSku`.
+`GET /referrals/internal/links/:code?product=<sku>[,<sku>...]&kind=gift|referral[&checkout=1]`
+(`ReferralLinkService.resolveForProduct`; até 4 SKUs, um por página do apelido) devolve a oferta da
+lista daquele tipo cujo produto é um dos pedidos (404 sem ela); código de campanha ignora o produto e
+devolve a oferta da campanha. É o que o funil usa para `/i/<código>/<apelido>[/pagamento|/presente]`.
+A rota do gateway é a mesma (`/referrals/internal/links/:code`, a query passa). Testes:
+`tests/application/origin.test.ts` e `tests/integration/origin-http.test.ts`.
+
 Plano: `~/.claude/plans/certo-pode-implementar-essa-scalable-moler-of-b148f7fd-d0e6-4d96-94d2-9e9851d0669e.md`;
 proposta visual aprovada no Canvas `https://claude.ai/artifact/KUqRLeArtSWi9XLwjMWPXc`.
 

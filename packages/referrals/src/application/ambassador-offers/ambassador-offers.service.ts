@@ -59,12 +59,25 @@ export class AmbassadorOffersService {
     }
     // Só as ligadas precisam servir AGORA; uma desligada pode ficar na lista (pausada no
     // Catálogo, por exemplo) sem bloquear o save.
+    // Uma oferta LIGADA por produto em cada lista (25/11/2026): o link curto `/i/<código>/<apelido>`
+    // diz só o curso, então duas do mesmo produto deixariam o link sem saber qual entregar. As
+    // duas listas são independentes (o mesmo curso pode estar uma vez em cada).
+    const products = new Map<string, string>()
     for (const item of input.items.filter((i) => i.enabled)) {
       const offer = await this.resolve(item.offerId)
       if (!offer)
         throw new AmbassadorOfferValidationError('Uma das ofertas não foi encontrada no Catálogo.')
       const problem = ambassadorOfferProblem(offer, input.audience, input.kind)
       if (problem) throw new AmbassadorOfferValidationError(problem)
+      const product = offer.productSku
+      if (product) {
+        const other = products.get(product)
+        if (other)
+          throw new AmbassadorOfferValidationError(
+            `${other} e ${offer.name} são do mesmo curso. Deixe só uma delas ligada nesta lista.`,
+          )
+        products.set(product, offer.name)
+      }
     }
     return this.repo.replace(input.audience, input.kind, input.items)
   }
@@ -144,6 +157,7 @@ function toOption(
     accessDays:
       offer.accessMode === 'billing_cycle' || months !== null ? null : giftAdvertisedDays(offer),
     accessMonths: months,
+    productSku: offer.productSku ?? null,
     includesMural: offer.includesMural,
     subscription: offer.accessMode === 'billing_cycle',
   }

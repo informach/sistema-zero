@@ -108,6 +108,48 @@ export class ReferralLinkService {
     return { kind: 'not_found' }
   }
 
+  /**
+   * O link curto `/i/<código>/<apelido>[/presente|/pagamento]` (25/11/2026): a oferta da lista do
+   * tipo pedido (`gift` = presentes, `referral` = indicação) cujo PRODUTO é um dos da página
+   * (`productSkus`, um por público). Código de campanha ignora o apelido (vale a oferta dela).
+   */
+  async resolveForProduct(
+    codeValue: string,
+    kind: 'gift' | 'referral',
+    productSkus: string[],
+    checkout: boolean,
+  ): Promise<LinkResult> {
+    const code = await this.repo.findCodeByCode(codeValue)
+    if (code?.status !== 'active') return { kind: 'not_found' }
+    if (code.ownerKind === 'campaign') return this.resolve(codeValue, null, checkout)
+    if (code.ownerKind !== 'ambassador') return { kind: 'not_found' }
+    const wanted = new Set(productSkus)
+    let options: Awaited<ReturnType<AmbassadorOffersService['options']>>
+    try {
+      options = await this.offers.options(code.audience)
+    } catch {
+      return { kind: 'upstream_error' }
+    }
+    const option = options.find(
+      (o) =>
+        o.kind === kind &&
+        o.productSku !== undefined &&
+        o.productSku !== null &&
+        wanted.has(o.productSku),
+    )
+    if (!option) return { kind: 'not_found' }
+    return {
+      kind: 'ok',
+      link: this.ambassadorLink(
+        code.code,
+        code.audience,
+        kind === 'gift' ? 'gift' : 'sale',
+        option,
+        checkout,
+      ),
+    }
+  }
+
   private ambassadorLink(
     code: string,
     audience: GiftAudience,

@@ -43,7 +43,7 @@ function catalog(overrides: { view?: object; entitlements?: object; status?: num
       accessMode: 'fixed',
       accessDurationValue: 7,
       accessDurationUnit: 'days',
-      product: { audience: 'kids', slug: 'cade-todo-mundo' },
+      product: { audience: 'kids', slug: 'cade-todo-mundo', sku: 'cade-todo-mundo' },
       ...overrides.view,
     })
   }) as typeof fetch
@@ -80,6 +80,7 @@ describe('GiftOfferCatalogHttpClient', () => {
       advertisedAccessDays: null,
       courseSlug: 'cade-todo-mundo',
       includesMural: true,
+      productSku: 'cade-todo-mundo',
     })
     const entitlements = seen.find((call) => call.url.endsWith('/entitlements'))!
     expect(entitlements.url).toBe(

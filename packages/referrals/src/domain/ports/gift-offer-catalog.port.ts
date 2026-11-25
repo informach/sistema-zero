@@ -33,6 +33,11 @@ export interface GiftOffer {
   courseSlug: string | null
   /** A oferta inclui o Mural completo (Kids ou adulto) como item. */
   includesMural: boolean
+  /**
+   * SKU do produto da oferta (25/11/2026): a página de venda é por produto, e as listas dos
+   * embaixadores aceitam uma oferta por produto. Ausente nas leituras antigas.
+   */
+  productSku?: string | null
 }
 
 export interface GiftOfferCatalog {

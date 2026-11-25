@@ -67,8 +67,31 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .get(
       '/links/:code',
-      async ({ params, set }) => linkResponse(deps, params.code, null, false, set),
-      { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
+      async ({ params, query, set }) => {
+        // Link curto por curso (`/i/<código>/<apelido>[/presente|/pagamento]`, 25/11/2026): o
+        // funil manda os SKUs do produto da página (um por público) e o tipo da lista.
+        if (query.product) {
+          const skus = query.product
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+          return linkResponse(deps, params.code, null, query.checkout === '1', set, {
+            kind: query.kind === 'gift' ? 'gift' : 'referral',
+            skus,
+          })
+        }
+        return linkResponse(deps, params.code, null, false, set)
+      },
+      {
+        params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }),
+        query: t.Object({
+          product: t.Optional(
+            t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9-]+(,[a-z0-9-]+){0,3}$' }),
+          ),
+          kind: t.Optional(t.Union([t.Literal('gift'), t.Literal('referral')])),
+          checkout: t.Optional(t.Literal('1')),
+        }),
+      },
     )
     .get(
       '/links/:code/:offer',
@@ -441,13 +464,16 @@ async function linkResponse(
   offer: string | null,
   checkout: boolean,
   set: SetStatus,
+  byProduct?: { kind: 'gift' | 'referral'; skus: string[] },
 ) {
   const code = normalizeCode(rawCode)
   if (!deps.links || !isValidCode(code)) {
     set.status = 404
     return envelope('LINK_NOT_FOUND', 'Link não encontrado')
   }
-  const result = await deps.links.resolve(code, offer, checkout)
+  const result = byProduct
+    ? await deps.links.resolveForProduct(code, byProduct.kind, byProduct.skus, checkout)
+    : await deps.links.resolve(code, offer, checkout)
   if (result.kind === 'upstream_error') {
     set.status = 502
     return envelope('UPSTREAM_ERROR', 'Não foi possível abrir o link agora')

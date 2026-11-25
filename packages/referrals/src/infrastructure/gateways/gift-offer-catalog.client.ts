@@ -21,7 +21,7 @@ const offerSchema = z.object({
   accessMode: z.enum(['fixed', 'lifetime', 'billing_cycle']),
   accessDurationValue: z.number().int().positive().nullable(),
   accessDurationUnit: z.enum(['days', 'months']).nullable(),
-  product: z.object({ audience: z.string() }).partial().optional(),
+  product: z.object({ audience: z.string(), sku: z.string() }).partial().optional(),
   content: z
     .object({ advertisedAccessDays: z.number().int().positive().optional() })
     .partial()
@@ -102,6 +102,7 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
       name: view.name,
       status: view.status,
       audience: audience === 'kids' || audience === 'adult' ? audience : null,
+      productSku: view.product?.sku ?? null,
       accessMode: view.accessMode,
       accessDurationValue: view.accessDurationValue,
       accessDurationUnit: view.accessDurationUnit,

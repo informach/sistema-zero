@@ -277,6 +277,102 @@ describe('lista do embaixador: meses e catálogo fora', () => {
   })
 })
 
+describe('uma oferta por produto em cada lista, e o link curto pelo produto', () => {
+  test('duas ofertas LIGADAS do mesmo produto na mesma lista são recusadas; listas são independentes', async () => {
+    const { offers, catalog } = base()
+    const quinze = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d30',
+      offerSlug: 'cade-15-dias',
+      productSku: 'cade-todo-mundo',
+    })
+    const sete = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d34',
+      offerSlug: 'cade-7-dias',
+      productSku: 'cade-todo-mundo',
+    })
+    await expect(
+      offers.replace({
+        audience: 'kids',
+        kind: 'gift',
+        items: [
+          { offerId: quinze.offerId, enabled: true },
+          { offerId: sete.offerId, enabled: true },
+        ],
+      }),
+    ).rejects.toThrow('são do mesmo curso')
+    // Desligada não conta; e a venda do mesmo curso vai na outra lista.
+    await offers.replace({
+      audience: 'kids',
+      kind: 'gift',
+      items: [
+        { offerId: quinze.offerId, enabled: true },
+        { offerId: sete.offerId, enabled: false },
+      ],
+    })
+    const anual = catalog.add({
+      ...DESAFIO,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d31',
+      offerSlug: 'cade-1-ano',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+      productSku: 'cade-todo-mundo',
+    })
+    await offers.replace({
+      audience: 'kids',
+      kind: 'referral',
+      items: [{ offerId: anual.offerId, enabled: true }],
+    })
+  })
+
+  test('o link curto acha a oferta do produto na lista do tipo pedido', async () => {
+    const { referrals, offers, catalog, links } = base()
+    await referrals.createAmbassadorWithCode({
+      name: 'Mariana',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    const quinze = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d32',
+      offerSlug: 'cade-15-dias',
+      productSku: 'cade-todo-mundo',
+    })
+    const anual = catalog.add({
+      ...DESAFIO,
+      offerId: '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d33',
+      offerSlug: 'cade-1-ano',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+      productSku: 'cade-todo-mundo',
+    })
+    await offers.replace({
+      audience: 'kids',
+      kind: 'gift',
+      items: [{ offerId: quinze.offerId, enabled: true }],
+    })
+    await offers.replace({
+      audience: 'kids',
+      kind: 'referral',
+      items: [{ offerId: anual.offerId, enabled: true }],
+    })
+    const skus = ['cade-todo-mundo', 'cade-todo-mundo-adulto']
+    expect(await links.resolveForProduct('mari-x7k2', 'gift', skus, false)).toMatchObject({
+      kind: 'ok',
+      link: { mode: 'gift', offerSlug: 'cade-15-dias' },
+    })
+    expect(await links.resolveForProduct('mari-x7k2', 'referral', skus, true)).toMatchObject({
+      kind: 'ok',
+      link: { mode: 'sale', offerSlug: 'cade-1-ano', target: 'checkout' },
+    })
+    expect((await links.resolveForProduct('mari-x7k2', 'gift', ['outro'], false)).kind).toBe(
+      'not_found',
+    )
+  })
+})
+
 describe('links de indicação', () => {
   async function ambassadorWithLists() {
     const ctx = base()
