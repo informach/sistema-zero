@@ -45,6 +45,8 @@ export interface PurchaseView {
     pix?: { copiaECola: string; imagemQrcodeBase64?: string; expiresAt: string | null } | null
   } | null
   cardConfig?: SubscriptionCardConfigView
+  /** Os dois planos do mesmo produto (mensal e anual), quando a oferta tem o alternador. */
+  plans?: CommerceCatalogOffer[]
   termsUrl: string
   privacyUrl: string
   termsVersion: string
@@ -66,4 +68,7 @@ export interface PromotionCardView {
   offerRef: string
   promotion: MemberPromotion
   decision: { kind: string; giftEndsAt?: string | null; manageUrl?: string }
+  /** A oferta do cartão (preço, perfis e garantia) e, na assinatura, os dois planos. */
+  offer?: CommerceCatalogOffer
+  plans?: CommerceCatalogOffer[]
 }

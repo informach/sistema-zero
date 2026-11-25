@@ -1,5 +1,39 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Mini checkout da área dos pais (25/11/2026, Lote 5 da frente de embaixadores)
+
+Canvas `pais-checkout` (assinatura) e `pais-checkout-curso` (curso). Tudo em
+`components/commerce/`:
+- **`commerce-copy.ts`** (puro): as frases e os números, sempre da oferta (`money`, `intervalText`,
+  `planName`, `renewalText`, `accessText` "Acesso por 1 ano", `guaranteeText` do `guaranteeDays`,
+  `profilesText` do `content.maxProfiles`, `annualSavingsCents`, `perMonthCents`, `payButtonText`).
+  Nada de preço, garantia ou perfis escritos à mão; nunca promete acesso vitalício.
+- **`PurchaseForm`** desenha as duas colunas (formulário + `OrderSummary`): "Escolha o plano" (só
+  com `view.plans`, anual primeiro, "Economize" calculado), "Seus dados" (pede só o que falta:
+  "Falta só o seu CPF"; "Corrigir" abre os três campos), "Como pagar" (Pix desligado no mensal,
+  cartão com "Validade" MM/AAAA num campo e as parcelas consultadas no blur do número), o cupom
+  (só compra avulsa com `content.allowsCoupon`; `onQuote` cota no funil e o valor cotado vai como
+  `expectedPriceCents` + `couponCode`), os termos e o botão com o valor.
+- **`CommercePanel`**: etapas (`aria-current="step"`), a tela do Pix (QR, copia e cola com
+  "Copiar", "Válido até", "Já paguei, conferir", "Pode fechar e voltar depois") e o "Pronto"
+  (assinatura Kids: "A <produto> está liberada" + os três passos + "Ir para Família"; curso: "O
+  curso já é seu" com `next` opcional `{href, label, text}` para "Começar a primeira aula").
+  Props novas: `onClose`, `place`, `imageUrl`, `next`. Trocar de plano = `inspect` com `offerRef`
+  da irmã; `pay`/`restart` mandam o `offerRef` do plano aberto (sem ele o BFF cobraria a principal).
+- **`CommerceCard`** ganhou `variant`: `community` (imagem ao lado, o que entra, perfis da oferta,
+  "R$ X por mês ou R$ Y por ano", garantia da oferta) e `course` (capa, selo, `eyebrow`, `chips`,
+  preço com "pagamento único"); `default` é o de sempre (blocos de aula, presentes). O diálogo de
+  compra usa `bodyClassName="p-0"` (prop nova do `Dialog` do ui) e 900px.
+- **BFF (`routes/commerce.ts`)**: origem nova `{kind:'offer', offerRef}` (só a principal do produto,
+  lida em `/catalog/products/by-sku/:sku`, ou oferta `content.pageSellable`; catálogo fora = 503);
+  `place` ao lado da origem, conferido em `COMMERCE_PLACES` (`pais-inicio|pais-cursos|
+  pais-curso-fechado`; adulto sem o `pais-`; aula = `aula`) e repassado ao funil; `offerRef` no corpo
+  troca de plano só para a irmã do alternador (`siblingOffers`, mesmo produto); `inspect` devolve
+  `plans`; ação `quote` vai ao funil (o BFF nunca cota no catálogo). As promoções trazem `offer` e
+  `plans`, e o destaque padrão da Comunidade Kids usa a copy do Canvas e `/ilustra/criando.webp`.
+- Testes: `tests/commerce-purchase-form.test.tsx`, `tests/commerce-routes.test.ts` (seção Lote 5) e
+  a fixture `tests/fixtures/commerce-card.fixture.tsx` (destaque, curso, Pix, Pronto).
+
 ## Trocar o apelido renova a sessão de perfil (24/11/2026)
 
 `profileUpdate.PATCH` (`routes/index.ts`): com resposta 200, `publicNickname` no corpo e a sessão
