@@ -33,6 +33,44 @@ function makeOffer(
   })
 }
 
+describe('prazo divulgado (content.advertisedAccessDays)', () => {
+  const fixed15 = () =>
+    makeOffer({ accessMode: 'fixed', accessDurationValue: 15, accessDurationUnit: 'days' })
+
+  it('aceita prazo divulgado menor que o real em dias', () => {
+    const offer = fixed15()
+    offer.updateDetails({ content: { advertisedAccessDays: 7 } })
+    expect(offer.content?.advertisedAccessDays).toBe(7)
+  })
+
+  it('recusa prazo divulgado igual ou maior que o real, ou não inteiro', () => {
+    for (const advertisedAccessDays of [15, 20, 0, 2.5])
+      expect(() => fixed15().updateDetails({ content: { advertisedAccessDays } })).toThrow(
+        ValidationError,
+      )
+  })
+
+  it('recusa em oferta vitalícia ou com prazo em meses', () => {
+    expect(() => makeOffer().updateDetails({ content: { advertisedAccessDays: 7 } })).toThrow(
+      ValidationError,
+    )
+    const months = makeOffer({
+      accessMode: 'fixed',
+      accessDurationValue: 2,
+      accessDurationUnit: 'months',
+    })
+    expect(() => months.updateDetails({ content: { advertisedAccessDays: 7 } })).toThrow(
+      ValidationError,
+    )
+  })
+
+  it('encurtar o prazo real abaixo do divulgado é recusado', () => {
+    const offer = fixed15()
+    offer.updateDetails({ content: { advertisedAccessDays: 7 } })
+    expect(() => offer.updateDetails({ accessDurationValue: 7 })).toThrow(ValidationError)
+  })
+})
+
 describe('OfferAggregate', () => {
   it('cria com preço válido e emite offer.created', () => {
     const offer = makeOffer()

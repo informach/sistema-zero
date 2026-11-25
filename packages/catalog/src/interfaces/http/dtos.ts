@@ -95,6 +95,8 @@ const OfferContentSchema = t.Object({
   // Teto de PERFIS (kids — planos "N perfis") DESTA oferta. Inteiro ≥ 1; injetado no
   // fulfillment resolvido (/entitlements) → o members congela no snapshot da matrícula.
   maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
+  // Prazo DIVULGADO em dias (menor que o real; a diferença chega de surpresa). O agregado confere.
+  advertisedAccessDays: t.Optional(t.Integer({ minimum: 1, maximum: 3650 })),
   // Oferta IRMÃ do alternador do checkout (mensal ↔ anual). O funil valida o slug
   // escolhido contra este link (anti-forja); `label` = texto do alternador.
   altOffer: t.Optional(

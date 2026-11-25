@@ -1331,6 +1331,44 @@ describe('catalog HTTP', () => {
       expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBe(4)
     })
 
+    it('prazo divulgado: null sem o campo (a oferta vitalícia não pode ter)', async () => {
+      const built = await seedKidsOffer({ offerMaxProfiles: 2 })
+      const result = (await entitlementsOf(built)) as { advertisedAccessDays?: number | null }
+      expect(result.advertisedAccessDays).toBeNull()
+    })
+
+    it('prazo divulgado: exposto em /entitlements e no content da leitura pública', async () => {
+      const built = build()
+      const main = await built.createProduct.execute({
+        audience: 'kids',
+        sku: 'cade-main',
+        slug: 'cade-main',
+        name: 'Cadê',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'cade-todo-mundo' },
+      })
+      await built.createOffer.execute({
+        productId: main.id,
+        code: 'cade-15',
+        slug: 'cade-15',
+        name: 'Cadê 15 dias',
+        priceCents: 3700,
+        status: 'active',
+        accessMode: 'fixed',
+        accessDurationValue: 15,
+        accessDurationUnit: 'days',
+        content: { advertisedAccessDays: 7 },
+      })
+      const ent = await built.app.handle(req('GET', '/catalog/offers/cade-15/entitlements'))
+      expect(((await ent.json()) as { advertisedAccessDays: number }).advertisedAccessDays).toBe(7)
+      const pub = await built.app.handle(req('GET', '/catalog/offers/cade-15'))
+      expect(
+        ((await pub.json()) as { content: { advertisedAccessDays: number } }).content
+          .advertisedAccessDays,
+      ).toBe(7)
+    })
+
     it('oferta SEM maxProfiles → nenhum item carrega o campo', async () => {
       const built = await seedKidsOffer({})
       const { items } = await entitlementsOf(built)
