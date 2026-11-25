@@ -15,7 +15,7 @@ import {
   MAX_AMBASSADOR_OFFERS,
 } from '../../domain/ambassador-offers'
 import { GiftCatalogUnavailableError } from '../../domain/campaign'
-import { giftAccessDays } from '../../domain/gift-policy'
+import { giftAdvertisedDays } from '../../domain/gift-policy'
 import type { AmbassadorOfferRepository } from '../../domain/ports/ambassador-offer-repository.port'
 import type { GiftOffer, GiftOfferCatalog } from '../../domain/ports/gift-offer-catalog.port'
 
@@ -96,7 +96,8 @@ export class AmbassadorOffersService {
         name: offer.name,
         audience,
         courseSlug: offer.courseSlug,
-        accessDays: offer.accessMode === 'billing_cycle' ? null : giftAccessDays(offer),
+        // O prazo que a página e a mensagem mostram (o divulgado, quando a oferta tem um).
+        accessDays: offer.accessMode === 'billing_cycle' ? null : giftAdvertisedDays(offer),
         includesMural: offer.includesMural,
         subscription: offer.accessMode === 'billing_cycle',
       })

@@ -846,6 +846,7 @@ export const KIDS_GIFT_OFFER: GiftOffer = {
   accessMode: 'fixed',
   accessDurationValue: 7,
   accessDurationUnit: 'days',
+  advertisedAccessDays: null,
   courseSlug: 'cade-todo-mundo',
   includesMural: true,
 }
@@ -859,6 +860,7 @@ export const ADULT_GIFT_OFFER: GiftOffer = {
   accessMode: 'fixed',
   accessDurationValue: 7,
   accessDurationUnit: 'days',
+  advertisedAccessDays: null,
   courseSlug: 'cade-todo-mundo-adulto',
   includesMural: true,
 }

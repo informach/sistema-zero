@@ -24,6 +24,11 @@ export interface GiftOffer {
   accessMode: 'fixed' | 'lifetime' | 'billing_cycle'
   accessDurationValue: number | null
   accessDurationUnit: 'days' | 'months' | null
+  /**
+   * Prazo DIVULGADO em dias (25/11/2026, `content.advertisedAccessDays` do catálogo), menor que o
+   * real; null sem ele. Só o que as pessoas veem usa este prazo; o acesso real é o da oferta.
+   */
+  advertisedAccessDays: number | null
   /** `courseRef` do curso principal (item `isPrimary` com acesso `course`); null se não há. */
   courseSlug: string | null
   /** A oferta inclui o Mural completo (Kids ou adulto) como item. */

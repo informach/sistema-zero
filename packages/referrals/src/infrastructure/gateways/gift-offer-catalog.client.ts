@@ -22,6 +22,11 @@ const offerSchema = z.object({
   accessDurationValue: z.number().int().positive().nullable(),
   accessDurationUnit: z.enum(['days', 'months']).nullable(),
   product: z.object({ audience: z.string() }).partial().optional(),
+  content: z
+    .object({ advertisedAccessDays: z.number().int().positive().optional() })
+    .partial()
+    .nullable()
+    .optional(),
 })
 
 /** `GET /catalog/offers/:ref/entitlements` (S2S, token interno: o manifesto de entrega). */
@@ -100,6 +105,14 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
       accessMode: view.accessMode,
       accessDurationValue: view.accessDurationValue,
       accessDurationUnit: view.accessDurationUnit,
+      // O catálogo já confere a regra; aqui só vale abaixo de um prazo real em dias.
+      advertisedAccessDays:
+        view.accessMode === 'fixed' &&
+        view.accessDurationUnit === 'days' &&
+        view.accessDurationValue !== null &&
+        (view.content?.advertisedAccessDays ?? Number.POSITIVE_INFINITY) < view.accessDurationValue
+          ? (view.content?.advertisedAccessDays ?? null)
+          : null,
       courseSlug: primaryCourse?.fulfillment?.courseRef ?? null,
       includesMural: resolved.items.some(
         (item) =>

@@ -37,6 +37,17 @@ export function giftAccessDays(offer: GiftOffer): number | null {
 }
 
 /**
+ * Dias que as pessoas VEEM (25/11/2026): o prazo divulgado da oferta quando ela tem um (os dias
+ * a mais chegam de surpresa, avisados pelo members); senão, o prazo real. Nunca decide acesso.
+ */
+export function giftAdvertisedDays(
+  offer: Pick<GiftOffer, 'accessMode' | 'accessDurationValue' | 'advertisedAccessDays'>,
+): number | null {
+  if (offer.accessMode !== 'fixed') return null
+  return offer.advertisedAccessDays ?? offer.accessDurationValue
+}
+
+/**
  * Motivo para recusar a oferta como presente, ou null se serve. O presente concede sem cobrar,
  * então a oferta precisa ser de pagamento único (assinatura não vira presente), sem prazo ou com
  * prazo fixo em DIAS (o resgate grava os dias e o fim é contado deles), não arquivada (pausada

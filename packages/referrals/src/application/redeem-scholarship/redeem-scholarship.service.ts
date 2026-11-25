@@ -24,6 +24,7 @@ import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
 import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
+  giftAdvertisedDays,
   giftGuidanceText,
   giftMuralText,
   giftOfferProblem,
@@ -299,7 +300,7 @@ export class RedeemScholarshipService {
         courseSlug: offer.courseSlug,
         courseTitle: course?.title ?? null,
         learner: course?.learner ?? null,
-        accessDays: giftAccessDays(offer),
+        accessDays: giftAdvertisedDays(offer),
         includesMural: offer.includesMural,
       },
     }
@@ -393,7 +394,8 @@ export class RedeemScholarshipService {
     return {
       redemption: {
         status: existing.status,
-        expiresAt: expiresAt?.toISOString() ?? null,
+        // A data mostrada é a do prazo divulgado; a retomada segue o prazo real.
+        expiresAt: this.shownExpiresAtOf(existing, context.offer)?.toISOString() ?? null,
         canResume: existing.status !== 'completed' && !this.windowElapsed(expiresAt),
       },
       gift: {
@@ -402,7 +404,7 @@ export class RedeemScholarshipService {
         courseSlug: existing.courseSlug ?? context.course?.slug ?? '',
         courseTitle: context.course?.title ?? null,
         learner: context.course?.learner ?? null,
-        accessDays: existing.accessDurationDays,
+        accessDays: this.shownDaysOf(existing, context.offer),
         includesMural: context.offer?.includesMural ?? false,
       } satisfies ReferralGiftOfferView,
     }
@@ -545,7 +547,11 @@ export class RedeemScholarshipService {
       }
       return {
         kind: 'already_redeemed',
-        expiresAt: this.expiresAtOf(redemption)?.toISOString() ?? null,
+        expiresAt:
+          this.shownExpiresAtOf(
+            redemption,
+            (await this.describeGift(redemption)).offer,
+          )?.toISOString() ?? null,
       }
     }
 
@@ -611,6 +617,21 @@ export class RedeemScholarshipService {
    */
   private expiresAtOf(redemption: RedemptionRecord): Date | null {
     return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
+  }
+
+  /**
+   * Os dias que as pessoas VEEM (25/11/2026): o prazo divulgado da oferta, quando há um e é menor
+   * que os dias gravados no resgate; senão, os gravados. O acesso e a retomada seguem os gravados.
+   */
+  private shownDaysOf(redemption: RedemptionRecord, offer: GiftOffer | null): number | null {
+    const real = redemption.accessDurationDays
+    const advertised = offer?.advertisedAccessDays ?? null
+    return real !== null && advertised !== null && advertised < real ? advertised : real
+  }
+
+  /** A data de fim que as pessoas VEEM (a do prazo divulgado). */
+  private shownExpiresAtOf(redemption: RedemptionRecord, offer: GiftOffer | null): Date | null {
+    return scholarshipExpiresAt(redemption.createdAt, this.shownDaysOf(redemption, offer))
   }
 
   private windowElapsed(expiresAt: Date | null): boolean {
@@ -832,7 +853,8 @@ export class RedeemScholarshipService {
         : 'none'
     return {
       kind: 'completed',
-      expiresAt: expiresAt?.toISOString() ?? null,
+      expiresAt:
+        this.shownExpiresAtOf(redemption, this.offerOf(redemption, context))?.toISOString() ?? null,
       emailStatus,
       muralAccess,
     }
@@ -879,13 +901,16 @@ export class RedeemScholarshipService {
       // Presente por oferta e o `trial` antigo usam os mesmos e-mails (curso, prazo e Mural
       // chegam prontos nas variáveis).
       const giftTemplates = offerPolicy || redemption.muralVisitorPolicy === 'trial'
-      const validade = expiresAt ? formatValidade(expiresAt) : ''
+      // O e-mail mostra o prazo DIVULGADO (os dias a mais chegam de surpresa, pelo members).
+      const shownDays = this.shownDaysOf(redemption, offer)
+      const shownExpiresAt = this.shownExpiresAtOf(redemption, offer)
+      const validade = shownExpiresAt ? formatValidade(shownExpiresAt) : ''
       // O Messaging não tem condicional: curso, prazo e a frase do Mural vão prontos.
       const giftVariables = {
         curso: context.course?.title ?? UNKNOWN_COURSE_TITLE,
         prazo:
-          expiresAt && redemption.accessDurationDays !== null
-            ? `por ${giftDurationLabel(redemption.accessDurationDays)}, até ${validade} (horário de Brasília)`
+          shownExpiresAt && shownDays !== null
+            ? `por ${giftDurationLabel(shownDays)}, até ${validade} (horário de Brasília)`
             : 'sem prazo para terminar',
         mural: giftMuralText({
           audience: redemption.audience,

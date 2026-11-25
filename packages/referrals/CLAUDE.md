@@ -65,6 +65,12 @@ Serviços (Lote 2):
   precisa estar ligada na lista do público (`OFFER_NOT_FOUND` 404); templates
   `referrals-offer-{gift,referral}-invite[-adult]` (`nome`, `indicador`, `oferta`, `link` =
   `/i/<código>/<oferta>`). A indicação de oferta à venda não é barrada por presente já resgatado.
+- **Prazo divulgado** (25/11/2026): `GiftOffer.advertisedAccessDays` vem do `content` do catálogo
+  (só abaixo de um prazo real em dias). O que as pessoas veem usa ele (`giftAdvertisedDays`,
+  `shownDaysOf`/`shownExpiresAtOf`): `gift.accessDays` da leitura pública e da área de membros,
+  `expiresAt` do resgate, `prazo`/`validade` das boas-vindas e o `accessDays` das opções do
+  embaixador. `access_duration_days` do resgate continua o prazo REAL (decide a retomada e o
+  `gift_window_elapsed`); o members avisa os dias extras no fim do divulgado.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

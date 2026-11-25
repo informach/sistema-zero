@@ -729,6 +729,30 @@ describe('campanhas institucionais', () => {
     })
   })
 
+  test('prazo divulgado: o acesso grava os 15 dias reais; resposta e e-mail mostram os 7', async () => {
+    const { admin, gateway, referrals, redeem, catalog } = await setup()
+    const quinze = catalog.add({
+      ...KIDS_GIFT_OFFER,
+      offerId: '10000000-0000-4000-8000-0000000000aa',
+      offerSlug: 'cade-todo-mundo-15-dias',
+      accessDurationValue: 15,
+      advertisedAccessDays: 7,
+    })
+    await admin.create({ ...input, code: 'cade-quinze', giftOfferId: quinze.offerId }, 'Operador')
+    gateway.availabilityResult = {
+      status: 200,
+      body: { available: true, title: 'Cadê Todo Mundo?', learner: 'child' },
+    }
+    const result = await redeem.execute({ ...family, code: 'cade-quinze' })
+    expect(result.kind).toBe('completed')
+    const redemption = referrals.redemptions[0]!
+    expect(redemption.accessDurationDays).toBe(15)
+    const shown = new Date(redemption.createdAt.getTime() + 7 * 86_400_000).toISOString()
+    expect(result).toMatchObject({ expiresAt: shown })
+    const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
+    expect(String(email.variables?.prazo)).toStartWith('por 7 dias, até ')
+  })
+
   test('presentes de cursos diferentes convivem, e outra campanha do mesmo curso não renova o acesso', async () => {
     const { admin, catalog, redeem, referrals, gateway } = await setup()
     gateway.availabilityResult = {
