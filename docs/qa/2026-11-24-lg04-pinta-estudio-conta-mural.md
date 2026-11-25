@@ -2,6 +2,20 @@
 
 Em qualificação em homologação. Produção ainda não recebeu esta entrega. O [plano de execução](../plans/2026-11-24-lg04-pinta-estudio-conta-mural.md) contém o percurso e os critérios de aceite.
 
+## Aceite hospedado de 25/11 e correção adicional
+
+A candidata `5dab9c309` passou nos 13 jobs do CI, no plano Railway e na prova de dez mil blocos. A integração `f34107fa1` concluiu o CI e a implantação normal dos seis serviços afetados, preservando os conteúdos concorrentes de staging.
+
+Na sessão infantil de homologação, a primeira abertura fria do Estúdio passou sem recuperação; o link de edição abriu automaticamente o mapa do Pinta vindo da conta. A atualização explícita do cenário conservou projeto, material, nome, arquivos e blocos. Outra sessão sem IndexedDB, biblioteca ou cache recuperou o PNG atualizado byte a byte e o mesmo IR autoral. Na reabertura, os identificadores gerados do Blockly não são byte-idênticos; essa comparação permanece separada da preservação autoral. O mapa nativo recuperou as três peças esperadas. “Jogar meu mapa” abriu diretamente outro projeto com blocos, execução e movimento pelas setas. São contextos isolados no mesmo computador, sem teste em um segundo aparelho físico.
+
+A autorização específica para publicar, atualizar o mesmo post/link e remover o único projeto próprio “LG04 — Ilhas de teste”, somente em homologação, foi recebida em 25/11. A primeira publicação respondeu 200, apareceu uma única vez no Mural e rodou com movimento em uma sessão anônima, sem cookies e sem IndexedDB.
+
+Depois de uma nova edição real no Pinta, o projeto guardou o cenário atualizado mantendo seus arquivos e blocos exatamente iguais. A atualização da publicação respondeu 502; o histórico confirmou que somente a versão anterior continuava ativa. A reprodução com as funções de produção e R2 nativo local mostrou `Invalid ETag in if-match header`: o ETag bruto era enviado como cabeçalho HTTP sem as aspas exigidas. A gravação inicial não usa esse cabeçalho e passava; atualizar, restaurar ou retirar uma reserva existente atingiam a condição incorreta.
+
+Corrigidos os dois pontos de escrita condicional, conservando o CAS. Uma regressão nova executa o código de produção em workerd/R2 nativos: criação, segunda versão no mesmo link, confirmação repetida, escritor antigo recusado, desativação, restauração e retirada idempotente. Reprodução: 500 antes da correção; depois, 28 testes focados/210 expectativas aprovados. A nova fonte, seu perfil e sua imagem precisam de qualificação própria antes de repetir a atualização hospedada. O post de QA ainda será removido ao terminar; produção permanece sem LG04.
+
+A suíte completa do executor após a correção terminou com 441 aprovados, 56 condicionais pulados, zero falhas e 4.688 expectativas. A nova prova compila sua fixture num processo próprio: duas compilações no mesmo processo da suíte Windows impediam a prova de compressão de ler os pontos de entrada do core/Zod, embora ambas passassem isoladas. A rodada completa com a compilação isolada aprovou também essa prova preexistente.
+
 ## Comportamento da entrega
 
 O cenário regional levado do Pinta permanece completo dentro do projeto do Estúdio: desenho, lugares, peças e colisões. O projeto usa seus próprios bytes ao reabrir ou jogar, inclusive quando a biblioteca do aparelho contém outra revisão. A captura da miniatura conserva o perfil de origem.
@@ -62,7 +76,7 @@ O CI inclui compilação regional Pro na imagem Linux real, sem rede, conferindo
 - A publicação/execução Python depende das capacidades do catálogo autorizado; sua distribuição acompanha a LG08.
 - A biblioteca pessoal, o documento na conta e o histórico local têm contratos próprios. Esta entrega não anuncia sincronização do histórico local de aplicações Pro entre aparelhos.
 - Aulas legadas conservam seus checkpoints e sua recusa explícita de importação regional. O percurso regional é qualificado no Estúdio livre.
-- A autorização para publicar, atualizar e remover um único post próprio de QA em homologação foi solicitada para o projeto preparado com título, resumo e capa. Nenhum post foi enviado enquanto a resposta está pendente. A autorização anterior da LG02 ao professor se refere àquele envio.
+- A publicação de QA em homologação foi autorizada especificamente e iniciada. A atualização do mesmo post/link e a remoção final aguardam a qualificação da correção R2 descrita acima. A autorização não inclui posts de teste em produção.
 
 ## Integração e retorno
 

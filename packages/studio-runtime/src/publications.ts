@@ -191,7 +191,8 @@ async function commit(bucket: PublicationBucket, state: StoredPublication, etag?
     lastOperation: state.lastOperation,
   }
   const written = await bucket.put(publicationKey(state.playId), JSON.stringify(stored), {
-    onlyIf: new Headers(etag ? { 'If-Match': etag } : { 'If-None-Match': '*' }),
+    // R2's etag is bare; HTTP condition headers require a quoted entity tag.
+    onlyIf: new Headers(etag ? { 'If-Match': `"${etag}"` } : { 'If-None-Match': '*' }),
   })
   if (!written)
     throw new PublicationError(
@@ -758,7 +759,11 @@ export async function retirePublicationReservation(
         deletedAt: now,
         retirementHash: input.retirementHash,
       }),
-      { onlyIf: new Headers(previous ? { 'If-Match': previous.etag } : { 'If-None-Match': '*' }) },
+      {
+        onlyIf: new Headers(
+          previous ? { 'If-Match': `"${previous.etag}"` } : { 'If-None-Match': '*' },
+        ),
+      },
     )
     if (!written) throw new PublicationError(409, 'A publicação mudou durante a retirada.')
   }
