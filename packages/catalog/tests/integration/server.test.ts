@@ -38,11 +38,11 @@ function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
   const coupons = new InMemoryCouponRepository()
   const resolver = new ResolveOfferEntitlementsService(products)
   const createProduct = new CreateProductService(products, logger)
-  const updateProduct = new UpdateProductService(products, logger)
+  const updateProduct = new UpdateProductService(products, logger, offers)
   const createOffer = new CreateOfferService(offers, products, resolver, logger)
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
   const getOffer = new GetOfferService(offers, products, resolver, logger)
-  const getProduct = new GetProductService(products)
+  const getProduct = new GetProductService(products, offers)
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
@@ -92,6 +92,57 @@ function req(
 const ADMIN = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
 
 describe('catalog HTTP', () => {
+  it('oferta principal da página: só oferta do produto; a leitura pública traz o slug (pelo SKU)', async () => {
+    const { app, createProduct, createOffer } = build()
+    const base = {
+      audience: 'kids' as const,
+      kind: 'ebook' as const,
+      status: 'active' as const,
+    }
+    const cade = await createProduct.execute({
+      ...base,
+      sku: 'cade-todo-mundo',
+      slug: 'cade-pagina',
+      name: 'Cadê',
+      fulfillment: { accessType: 'course', courseRef: 'cade-todo-mundo' },
+    })
+    const outro = await createProduct.execute({
+      ...base,
+      sku: 'outro',
+      slug: 'outro',
+      name: 'Outro',
+      fulfillment: { accessType: 'course', courseRef: 'outro' },
+    })
+    const anual = await createOffer.execute({
+      productId: cade.id,
+      code: 'cade-1-ano',
+      slug: 'cade-1-ano',
+      name: 'Cadê 1 ano',
+      priceCents: 3700,
+      status: 'active',
+    })
+    const alheia = await createOffer.execute({
+      productId: outro.id,
+      code: 'outro-oferta',
+      slug: 'outro-oferta',
+      name: 'Outro',
+      priceCents: 2700,
+      status: 'active',
+    })
+    const patch = (primaryOfferId: string | null) =>
+      app.handle(
+        req('PATCH', `/catalog/products/${cade.id}`, { headers: ADMIN, body: { primaryOfferId } }),
+      )
+    expect((await patch(alheia.id)).status).toBe(400)
+    const ok = await patch(anual.id)
+    expect(ok.status).toBe(200)
+    expect((await ok.json()).primaryOfferId).toBe(anual.id)
+    const pub = await app.handle(req('GET', '/catalog/products/cade-todo-mundo'))
+    expect(pub.status).toBe(200)
+    expect((await pub.json()).primaryOfferSlug).toBe('cade-1-ano')
+    expect((await patch(null)).status).toBe(200)
+  })
+
   it('cards do Início respeitam público, disponibilidade, publicação e local configurado', async () => {
     const { app, createProduct, createOffer } = build()
     for (const audience of ['kids', 'adult'] as const) {

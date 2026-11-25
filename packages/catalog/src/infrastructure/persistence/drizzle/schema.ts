@@ -62,6 +62,10 @@ export const products = catalog.table(
     // O que a área de membros precisa para liberar (estruturado em JSON).
     fulfillment: jsonb('fulfillment').$type<FulfillmentSpec>(),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+    // Oferta principal da PÁGINA DE VENDA do produto (25/11/2026): o funil abre a página com ela
+    // e aceita `?oferta=` só de outra oferta do mesmo produto. Sem FK (circular com offers); o
+    // serviço confere que a oferta é do produto.
+    primaryOfferId: uuid('primary_offer_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

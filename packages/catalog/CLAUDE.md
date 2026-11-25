@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/catalog
 
+## Oferta principal da página de venda (25/11/2026)
+
+`products.primary_offer_id` (uuid, nulo; migration `0013_product_primary_offer`, sem FK porque
+`offers` já referencia `products`): a oferta com que o funil abre a página de venda do produto.
+`PATCH /catalog/products/:id` aceita `primaryOfferId` (uuid ou null); o `UpdateProductService`
+recusa (400) oferta de outro produto ou arquivada. A view admin traz `primaryOfferId`; a pública
+`GET /catalog/products/:slug` traz `primaryOfferSlug` (null sem marca, com oferta rascunho ou de
+outro produto) e aceita também o SKU no lugar do slug (o funil identifica a página pelo SKU).
+Substitui as envs `FUNNEL_OFFER_*` do funil. ⚠️ Operação: antes do deploy do funil sem as envs,
+marcar a oferta principal de CADA página no Admin de staging e de produção (Comunidade Kids e
+adulta, Desafio Kids e adulto, Cadê Kids e adulto, guia dos pais); página sem marca responde 503.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

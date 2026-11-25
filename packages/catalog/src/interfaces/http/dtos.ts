@@ -176,6 +176,8 @@ export const UpdateProductBody = t.Object({
   fulfillment: t.Optional(t.Union([FulfillmentSchema, t.Null()])),
   metadata: t.Optional(t.Union([MetadataSchema, t.Null()])),
   components: t.Optional(t.Array(ComponentSchema)),
+  /** Oferta principal da página de venda (uma oferta deste produto); null limpa. */
+  primaryOfferId: t.Optional(t.Union([UUID, t.Null()])),
 })
 
 /** Corpo de `POST /catalog/offers`. */

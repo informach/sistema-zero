@@ -133,6 +133,7 @@ export class DrizzleProductRepository implements ProductRepository {
             currency: s.currency,
             fulfillment: s.fulfillment,
             metadata: s.metadata,
+            primaryOfferId: s.primaryOfferId,
             updatedAt: s.updatedAt,
           })
           .where(and(eq(products.id, s.id), eq(products.version, s.version)))
@@ -188,6 +189,7 @@ function toRow(s: ProductSnapshot) {
     currency: s.currency,
     fulfillment: s.fulfillment,
     metadata: s.metadata,
+    primaryOfferId: s.primaryOfferId,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   }
@@ -235,6 +237,7 @@ function toSnapshot(row: ProductRow, componentRows: ComponentRow[]): ProductSnap
     currency: row.currency as Currency,
     fulfillment: row.fulfillment ?? null,
     metadata: row.metadata ?? null,
+    primaryOfferId: row.primaryOfferId ?? null,
     components: componentRows
       .map((c) => ({
         componentProductId: c.componentProductId,

@@ -1,9 +1,11 @@
 import type { Logger } from '@sistemazero/core/logging'
+import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
 import type { FulfillmentSpec } from '../../domain/product/fulfillment'
 import { ProductNotFoundError } from '../../domain/product/product.errors'
 import type { ProductKind } from '../../domain/product/product.kind'
 import type { ProductStatus } from '../../domain/product/product.status'
+import { ValidationError } from '../../domain/shared/errors'
 import {
   assertComponentsExist,
   assertNoComponentCycle,
@@ -23,6 +25,8 @@ export interface UpdateProductCommand {
   status?: ProductStatus
   /** Se presente, SUBSTITUI a lista de componentes do combo. */
   components?: ComponentInput[]
+  /** Oferta principal da página de venda (precisa ser deste produto); null limpa. */
+  primaryOfferId?: string | null
 }
 
 /** Caso de uso: atualizar um produto (admin). Concorrência otimista no repositório. */
@@ -30,6 +34,8 @@ export class UpdateProductService {
   constructor(
     private readonly products: ProductRepository,
     private readonly logger: Logger,
+    /** Confere a oferta principal (sem ele, o campo é recusado). */
+    private readonly offers?: Pick<OfferRepository, 'findById'>,
   ) {}
 
   async execute(command: UpdateProductCommand): Promise<ProductView> {
@@ -64,6 +70,17 @@ export class UpdateProductService {
     }
 
     if (command.status !== undefined) product.setStatus(command.status)
+
+    if (command.primaryOfferId !== undefined) {
+      if (command.primaryOfferId !== null) {
+        const offer = this.offers ? await this.offers.findById(command.primaryOfferId) : null
+        if (!offer || offer.productId !== product.id)
+          throw new ValidationError('A oferta principal precisa ser uma oferta deste produto.')
+        if (offer.status === 'archived')
+          throw new ValidationError('A oferta principal não pode estar arquivada.')
+      }
+      product.setPrimaryOffer(command.primaryOfferId)
+    }
 
     // Coerência kind↔fulfillment↔components↔status sobre o estado CONSOLIDADO
     // (validar dentro de cada setter falharia em estados intermediários legítimos).
