@@ -23,7 +23,10 @@ const offerSchema = z.object({
   accessDurationUnit: z.enum(['days', 'months']).nullable(),
   product: z.object({ audience: z.string(), sku: z.string() }).partial().optional(),
   content: z
-    .object({ advertisedAccessDays: z.number().int().positive().optional() })
+    .object({
+      advertisedAccessDays: z.number().int().positive().optional(),
+      pageSellable: z.boolean().optional(),
+    })
     .partial()
     .nullable()
     .optional(),
@@ -115,6 +118,7 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
           ? (view.content?.advertisedAccessDays ?? null)
           : null,
       courseSlug: primaryCourse?.fulfillment?.courseRef ?? null,
+      pageSellable: view.content?.pageSellable === true,
       includesMural: resolved.items.some(
         (item) =>
           item.fulfillment?.accessType === 'community' &&
@@ -125,5 +129,16 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
     this.cache.set(key, { at: now, offer })
     this.cache.set(offer.offerId, { at: now, offer })
     return offer
+  }
+
+  /** `GET /catalog/products/by-sku/:sku` (leitura pública): o slug da oferta principal. */
+  async primaryOfferSlugOf(productSku: string): Promise<string | null> {
+    const doFetch = this.options.fetchImpl ?? fetch
+    const url = `${this.options.baseUrl.replace(/\/$/, '')}/catalog/products/by-sku/${encodeURIComponent(productSku)}`
+    const res = await doFetch(url, { signal: AbortSignal.timeout(this.options.timeoutMs) })
+    if (res.status === 404) return null
+    if (!res.ok) throw new Error(`catálogo respondeu ${res.status}`)
+    const body = (await res.json()) as { primaryOfferSlug?: unknown }
+    return typeof body.primaryOfferSlug === 'string' ? body.primaryOfferSlug : null
   }
 }

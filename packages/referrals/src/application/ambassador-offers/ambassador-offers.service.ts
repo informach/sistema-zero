@@ -108,6 +108,25 @@ export class AmbassadorOffersService {
   }
 
   /**
+   * As opções ligadas do público e tipo, como `options`, mas LANÇANDO
+   * `GiftCatalogUnavailableError` quando o catálogo falha (os links curtos por produto respondem
+   * "tente de novo", nunca "link não existe").
+   */
+  async optionsOrThrow(
+    audience: GiftAudience,
+    kind: AmbassadorOfferKind,
+  ): Promise<AmbassadorOfferOption[]> {
+    const rows = (await this.repo.list(audience, kind)).filter((r) => r.enabled)
+    const result: AmbassadorOfferOption[] = []
+    for (const row of rows) {
+      const offer = await this.resolve(row.offerId)
+      if (!offer || ambassadorOfferProblem(offer, audience, row.kind)) continue
+      result.push(toOption(row.kind, offer, audience))
+    }
+    return result
+  }
+
+  /**
    * A opção ligada do público e tipo com este slug ou id; null se não está na lista (ou deixou de
    * servir). Resolve SÓ a oferta pedida no catálogo; catálogo fora LANÇA
    * `GiftCatalogUnavailableError` (quem chama responde "tente de novo", nunca "link não existe").

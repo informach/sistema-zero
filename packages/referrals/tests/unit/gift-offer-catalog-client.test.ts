@@ -80,6 +80,7 @@ describe('GiftOfferCatalogHttpClient', () => {
       advertisedAccessDays: null,
       courseSlug: 'cade-todo-mundo',
       includesMural: true,
+      pageSellable: false,
       productSku: 'cade-todo-mundo',
     })
     const entitlements = seen.find((call) => call.url.endsWith('/entitlements'))!

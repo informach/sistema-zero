@@ -91,6 +91,11 @@ Serviços (Lote 2):
   mostram: mudar a oferta depois não muda a data de quem já resgatou. O convite do presente do Cadê
   escolhido usa o e-mail aprovado do Cadê com o link `/i/<código>/<oferta>`. ⚠️ Pendente
   consciente: um resgate pendente cuja oferta escolhida saiu da lista não retoma pelo link novo.
+- **Revisão da oferta como parâmetro (25/11/2026):** os links curtos por produto
+  (`resolveForProduct`) usam `AmbassadorOffersService.optionsOrThrow`, que LANÇA com o catálogo fora
+  (`upstream_error`, nunca "link não existe"). A campanha de VENDA só salva com oferta que seja a
+  principal do produto (`GiftOfferCatalog.primaryOfferSlugOf`, `GET /catalog/products/by-sku/:sku`)
+  ou marcada `content.pageSellable` no Catálogo: a página de venda não abre outra oferta.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

@@ -579,6 +579,20 @@ export class CampaignAdminService {
           ? 'Escolha uma oferta do público adulto, o mesmo da campanha.'
           : 'Escolha uma oferta do público Kids, o mesmo da campanha.',
       )
+    // A página de venda só abre a principal do produto ou oferta marcada para a página: a de
+    // presente nunca é vendida, e o link da campanha cairia numa página que não vende a oferta.
+    if (offer.pageSellable) return
+    if (!this.giftOffers.primaryOfferSlugOf || !offer.productSku) return
+    let primary: string | null
+    try {
+      primary = await this.giftOffers.primaryOfferSlugOf(offer.productSku)
+    } catch {
+      throw new GiftCatalogUnavailableError()
+    }
+    if (primary !== offer.offerSlug)
+      throw new CampaignValidationError(
+        'A oferta à venda precisa ser a principal do produto ou estar marcada, no Catálogo, como "Pode ser vendida na página do produto".',
+      )
   }
 
   private async validateAmbassador(input: CampaignInput) {

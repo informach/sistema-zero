@@ -38,9 +38,20 @@ export interface GiftOffer {
    * embaixadores aceitam uma oferta por produto. Ausente nas leituras antigas.
    */
   productSku?: string | null
+  /**
+   * `content.pageSellable` (25/11/2026): a oferta pode ser vendida na página do produto pelo
+   * `?oferta=`. Ausente nas leituras antigas (vale como `false`).
+   */
+  pageSellable?: boolean
 }
 
 export interface GiftOfferCatalog {
   /** Resolve por UUID ou slug. `null` = oferta inexistente (ou rascunho); lança se o Catálogo falhar. */
   resolve(offerRef: string): Promise<GiftOffer | null>
+  /**
+   * O slug da oferta PRINCIPAL do produto (a da página de venda), ou null sem principal/produto;
+   * lança se o Catálogo falhar. Opcional: sem ele, a conferência da campanha de venda só olha a
+   * marca `pageSellable`.
+   */
+  primaryOfferSlugOf?(productSku: string): Promise<string | null>
 }

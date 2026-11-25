@@ -370,6 +370,50 @@ describe('uma oferta por produto em cada lista, e o link curto pelo produto', ()
     expect((await links.resolveForProduct('mari-x7k2', 'gift', ['outro'], false)).kind).toBe(
       'not_found',
     )
+    // Catálogo fora: "tente de novo" (upstream_error), nunca "link não existe".
+    catalog.fail = true
+    expect((await links.resolveForProduct('mari-x7k2', 'gift', skus, false)).kind).toBe(
+      'upstream_error',
+    )
+  })
+})
+
+describe('campanha de venda: só a principal ou oferta marcada para a página', () => {
+  class CatalogWithPrimary extends FakeGiftOfferCatalog {
+    primaries = new Map<string, string>()
+    async primaryOfferSlugOf(sku: string) {
+      return this.primaries.get(sku) ?? null
+    }
+  }
+  function withPrimary() {
+    const referrals = new InMemoryReferralRepository()
+    const campaigns = new InMemoryCampaignRepository(referrals)
+    const catalog = new CatalogWithPrimary()
+    const desafio = catalog.add({ ...DESAFIO, productSku: 'desafio-primeiro-jogo' })
+    const admin = new CampaignAdminService(
+      campaigns,
+      referrals,
+      'https://funil.test',
+      () => now,
+      undefined,
+      catalog,
+    )
+    return { catalog, admin, desafio }
+  }
+
+  test('oferta que não é a principal nem está marcada é recusada', async () => {
+    const { catalog, admin } = withPrimary()
+    catalog.primaries.set('desafio-primeiro-jogo', 'outra-oferta')
+    await expect(admin.create(saleInput, 'Helena')).rejects.toThrow(CampaignValidationError)
+  })
+
+  test('a principal do produto e a oferta marcada para a página passam', async () => {
+    const principal = withPrimary()
+    principal.catalog.primaries.set('desafio-primeiro-jogo', DESAFIO.offerSlug)
+    expect(await principal.admin.create(saleInput, 'Helena')).toMatchObject({ kind: 'sale' })
+    const marcada = withPrimary()
+    marcada.desafio.pageSellable = true
+    expect(await marcada.admin.create(saleInput, 'Helena')).toMatchObject({ kind: 'sale' })
   })
 })
 

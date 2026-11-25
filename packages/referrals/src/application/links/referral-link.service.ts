@@ -124,9 +124,11 @@ export class ReferralLinkService {
     if (code.ownerKind === 'campaign') return this.resolve(codeValue, null, checkout)
     if (code.ownerKind !== 'ambassador') return { kind: 'not_found' }
     const wanted = new Set(productSkus)
-    let options: Awaited<ReturnType<AmbassadorOffersService['options']>>
+    let options: Awaited<ReturnType<AmbassadorOffersService['optionsOrThrow']>>
     try {
-      options = await this.offers.options(code.audience)
+      // O caminho que LANÇA com o catálogo fora (o `options` engole a falha e a lista vazia
+      // viraria "link não existe").
+      options = await this.offers.optionsOrThrow(code.audience, kind)
     } catch {
       return { kind: 'upstream_error' }
     }
