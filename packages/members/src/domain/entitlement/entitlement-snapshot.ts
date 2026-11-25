@@ -31,4 +31,22 @@ export interface EntitlementSnapshot {
    * snapshots anteriores e fora do presente: os avisos de fim do presente tratam como `kids`.
    */
   giftAudience?: 'kids' | 'adult'
+  /**
+   * Prazo DIVULGADO em dias (25/11/2026, `advertisedAccessDays` da oferta), menor que o prazo
+   * real do `accessPolicy`. Não muda o acesso: no fim do divulgado sai o e-mail dos dias a mais.
+   */
+  advertisedAccessDays?: number
+}
+
+/**
+ * O prazo divulgado só vai ao snapshot abaixo de um prazo real em dias (o e-mail dos dias de
+ * surpresa sai no fim dele).
+ */
+export function advertisedDaysFor(
+  advertised: number | undefined,
+  policy: PurchasedAccessPolicy | null | undefined,
+): { advertisedAccessDays?: number } {
+  if (advertised === undefined || !policy || policy.mode !== 'fixed') return {}
+  if (policy.durationUnit !== 'days' || advertised >= policy.durationValue) return {}
+  return { advertisedAccessDays: advertised }
 }

@@ -73,7 +73,30 @@ export function expiresOnKey(expiresAt: Date): string {
 export const GIFT_LIFECYCLE_KINDS = ['gift_expiry_2d', 'gift_expired'] as const
 export type GiftLifecycleKind = (typeof GIFT_LIFECYCLE_KINDS)[number]
 export const SUBSCRIPTION_ENDED_KIND = 'subscription_ended' as const
-export type AccessEndedKind = GiftLifecycleKind | typeof SUBSCRIPTION_ENDED_KIND
+/**
+ * Dias de SURPRESA (25/11/2026): a oferta divulga menos dias que o prazo real
+ * (`snapshot.advertisedAccessDays`); no fim do prazo divulgado, um e-mail avisa os dias a mais.
+ */
+export const BONUS_DAYS_KIND = 'gift_bonus_days' as const
+export type AccessEndedKind =
+  | GiftLifecycleKind
+  | typeof SUBSCRIPTION_ENDED_KIND
+  | typeof BONUS_DAYS_KIND
+
+/** Uma matrícula de curso cujo prazo divulgado acabou e que ainda tem os dias de surpresa. */
+export interface BonusDaysEntitlement {
+  id: string
+  userId: string
+  /** Agrupa as matrículas da mesma entrega (resgate `scholarship:` ou a compra). */
+  sourceId: string
+  /** O fim REAL do acesso (chave do dedupe e a data do e-mail). */
+  expiresAt: Date
+  /** Público do curso (o do presente, ou o do curso comprado). */
+  audience: 'kids' | 'adult'
+  courseTitle: string | null
+  /** Os dias a mais (prazo real menos o divulgado). */
+  extraDays: number
+}
 
 /** Ofertas da assinatura da Comunidade por audiência (snapshot `offerSlug`, igual ao catálogo). */
 export const COMMUNITY_SUBSCRIPTION_OFFER_SLUGS = {
@@ -135,6 +158,16 @@ export interface AccessEndedMessagesRepository {
     windowMs: number,
     limit: number,
   ): Promise<EndedSubscriptionEntitlement[]>
+  /**
+   * Matrículas de curso com prazo divulgado (`snapshot.advertisedAccessDays` menor que o prazo
+   * real em dias) cujo fim DIVULGADO passou há no máximo `windowMs` ms, ainda ativas e sem o aviso
+   * `gift_bonus_days`. Presente e compra de prazo fixo. `limit` conta entregas.
+   */
+  listBonusDaysEntitlements(
+    now: Date,
+    windowMs: number,
+    limit: number,
+  ): Promise<BonusDaysEntitlement[]>
   markAccessEndedMessageSent(
     entitlementId: string,
     expiresOn: string,

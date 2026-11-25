@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/members
 
+
+## Dias de surpresa do prazo divulgado (25/11/2026)
+
+A oferta pode divulgar menos dias que o prazo real (`advertisedAccessDays` no topo de
+`/catalog/offers/:ref/entitlements`). O grant por política de oferta (presente `useOfferAccessPolicy`)
+e o grant de compra gravam `snapshot.advertisedAccessDays` só abaixo de um prazo real em dias
+(`advertisedDaysFor`); o acesso continua o real. `listBonusDaysEntitlements` acha a matrícula de
+CURSO ativa cujo fim divulgado (fim real menos os dias a mais) passou há até 72 h, e o
+`SendAccessEndedMessagesService` manda uma vez `gift-bonus-days` (Kids, ao responsável, link
+`<KIDS_COMMUNITY_URL>/login/responsavel`) ou `gift-bonus-days-adult` (`<COMMUNITY_URL>/cursos`), com
+`nome`, `curso`, `dias` ("8 dias") e `data` (fim real). Dedupe no mesmo
+`entitlement_lifecycle_messages_sent` com `message_kind = 'gift_bonus_days'` (coluna text, sem
+migration). Vale para presente e compra de prazo fixo. ⚠️ A consulta SQL nova não tem teste de banco
+(os `tests/db` pedem Postgres local): conferir num banco descartável antes da staging.
 ## Aquecer o contêiner do "Verificar projeto" (23/11/2026)
 
 `POST /members/lessons/:lessonId/sections/:sectionId/project-check/warm` `{revision}` →

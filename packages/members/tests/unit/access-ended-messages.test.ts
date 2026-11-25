@@ -8,6 +8,7 @@ import type { AccountIdentity, AuthGateway } from '../../src/domain/ports/auth-g
 import type { SendEmailInput } from '../../src/domain/ports/messaging-gateway.port'
 import {
   type AccessEndedMessagesRepository,
+  type BonusDaysEntitlement,
   type EndedSubscriptionEntitlement,
   expiresOnKey,
   type GiftLifecycleEntitlement,
@@ -17,7 +18,11 @@ const NOW = new Date('2026-10-20T15:00:00Z')
 const FUNNEL = 'https://sistemazero.com.br'
 const silentLogger = { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} }
 
-function fakeRepo(gifts: GiftLifecycleEntitlement[], ended: EndedSubscriptionEntitlement[]) {
+function fakeRepo(
+  gifts: GiftLifecycleEntitlement[],
+  ended: EndedSubscriptionEntitlement[],
+  bonus: BonusDaysEntitlement[] = [],
+) {
   const sent = new Set<string>()
   const windows: number[] = []
   const repo: AccessEndedMessagesRepository = {
@@ -31,6 +36,11 @@ function fakeRepo(gifts: GiftLifecycleEntitlement[], ended: EndedSubscriptionEnt
       windows.push(windowMs)
       return ended.filter(
         (row) => !sent.has(`${row.id}|${expiresOnKey(row.endedAt)}|subscription_ended`),
+      )
+    },
+    async listBonusDaysEntitlements() {
+      return bonus.filter(
+        (row) => !sent.has(`${row.id}|${expiresOnKey(row.expiresAt)}|gift_bonus_days`),
       )
     },
     async markAccessEndedMessageSent(id, expiresOn, kind) {
@@ -277,5 +287,46 @@ describe('SendAccessEndedMessagesService', () => {
     const { repo, windows } = fakeRepo([], [])
     await service(repo, fakeAuth({}), fakeMessaging()).runCycle()
     expect(windows).toEqual([ACCESS_ENDED_WINDOW_MS, ACCESS_ENDED_WINDOW_MS])
+  })
+
+  test('dias de surpresa: um e-mail no fim do prazo divulgado, com os dias a mais e o fim real', async () => {
+    const expiresAt = new Date('2026-10-28T15:00:00Z')
+    const row = (id: string, audience: 'kids' | 'adult'): BonusDaysEntitlement => ({
+      id,
+      userId: `u-${audience}`,
+      sourceId: `scholarship:${id}`,
+      expiresAt,
+      audience,
+      courseTitle: 'Cadê Todo Mundo?',
+      extraDays: 8,
+    })
+    const { repo, sent } = fakeRepo([], [], [row('e-1', 'kids'), row('e-2', 'adult')])
+    const messaging = fakeMessaging()
+    const svc = new SendAccessEndedMessagesService(
+      repo,
+      fakeAuth({ 'u-kids': identity('u-kids'), 'u-adult': identity('u-adult', 'Bia') }),
+      messaging.gateway,
+      () => NOW,
+      silentLogger,
+      { funnelUrl: FUNNEL, kidsAppUrl: 'https://kids.test/', adultAppUrl: 'https://app.test' },
+    )
+    await svc.runCycle()
+    await svc.runCycle()
+    expect(messaging.sent).toHaveLength(2)
+    expect(messaging.sent[0]).toMatchObject({
+      templateKey: 'gift-bonus-days',
+      variables: {
+        nome: 'Ana',
+        curso: 'Cadê Todo Mundo?',
+        dias: '8 dias',
+        data: '28/10/2026',
+        link: 'https://kids.test/login/responsavel',
+      },
+    })
+    expect(messaging.sent[1]).toMatchObject({
+      templateKey: 'gift-bonus-days-adult',
+      variables: { link: 'https://app.test/cursos' },
+    })
+    expect(sent.has(`e-1|${expiresOnKey(expiresAt)}|gift_bonus_days`)).toBe(true)
   })
 })

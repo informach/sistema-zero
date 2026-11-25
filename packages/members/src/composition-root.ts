@@ -738,7 +738,12 @@ export async function createApplication(env: Env): Promise<Application> {
           }),
           clock,
           logger,
-          { funnelUrl: env.FUNNEL_URL, batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT },
+          {
+            funnelUrl: env.FUNNEL_URL,
+            batchLimit: env.RENEWAL_REMINDER_BATCH_LIMIT,
+            kidsAppUrl: env.KIDS_COMMUNITY_URL,
+            adultAppUrl: env.COMMUNITY_URL,
+          },
         )
       : null
   const listMyCourses = new ListMyCoursesService(

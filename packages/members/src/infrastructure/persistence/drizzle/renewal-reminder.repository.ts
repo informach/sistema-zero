@@ -7,6 +7,7 @@ import {
 import {
   type AccessEndedKind,
   type AccessEndedMessagesRepository,
+  type BonusDaysEntitlement,
   COMMUNITY_SUBSCRIPTION_OFFER_SLUGS,
   type EndedSubscriptionEntitlement,
   type ExpiringTermEntitlement,
@@ -359,6 +360,66 @@ export class DrizzleRenewalReminderRepository
         },
       ]
     })
+  }
+
+  async listBonusDaysEntitlements(
+    now: Date,
+    windowMs: number,
+    limit: number,
+  ): Promise<BonusDaysEntitlement[]> {
+    const nowIso = now.toISOString()
+    const sinceIso = new Date(now.getTime() - windowMs).toISOString()
+    // Fim divulgado = fim real menos os dias a mais (prazo real em dias menos o divulgado). Só
+    // matrícula de CURSO (o Mural temporário da mesma entrega não manda outro e-mail).
+    const rows = await this.db.execute(sql`
+      with candidates as (
+        select e.id, e.user_id, e.source_id, e.expires_at,
+          (e.snapshot -> 'accessPolicy' ->> 'durationValue')::int
+            - (e.snapshot ->> 'advertisedAccessDays')::int as extra_days,
+          c.title as course_title,
+          case when e.snapshot ->> 'giftAudience' = 'adult' or c.audience::text = 'adult'
+            then 'adult' else 'kids' end as audience
+          from members.entitlements e
+          left join members.courses c on c.slug = e.course_ref
+         where e.status = 'active'
+           and e.access_type = 'course'
+           and e.expires_at is not null
+           and e.expires_at > ${nowIso}::timestamptz
+           and e.snapshot ->> 'advertisedAccessDays' ~ '^[0-9]+$'
+           and e.snapshot -> 'accessPolicy' ->> 'mode' = 'fixed'
+           and e.snapshot -> 'accessPolicy' ->> 'durationUnit' = 'days'
+           and (e.snapshot -> 'accessPolicy' ->> 'durationValue') ~ '^[0-9]+$'
+           and (e.snapshot -> 'accessPolicy' ->> 'durationValue')::int
+             > (e.snapshot ->> 'advertisedAccessDays')::int
+      ), due as (
+        select c.* from candidates c
+         where c.expires_at - make_interval(days => c.extra_days) <= ${nowIso}::timestamptz
+           and c.expires_at - make_interval(days => c.extra_days) > ${sinceIso}::timestamptz
+           and not exists (
+             select 1 from members.entitlement_lifecycle_messages_sent sent
+              where sent.entitlement_id = c.id
+                and sent.expires_on = (c.expires_at at time zone 'UTC')::date
+                and sent.message_kind = 'gift_bonus_days'
+           )
+      ), groups as (
+        select user_id, source_id, expires_at from due
+         group by user_id, source_id, expires_at
+         order by expires_at, user_id, source_id
+         limit ${limit}
+      )
+      select due.* from due
+        join groups using (user_id, source_id, expires_at)
+       order by due.expires_at, due.id
+    `)
+    return rows.map((row) => ({
+      id: String(row.id),
+      userId: String(row.user_id),
+      sourceId: String(row.source_id),
+      expiresAt: new Date(row.expires_at as string),
+      audience: row.audience === 'adult' ? ('adult' as const) : ('kids' as const),
+      courseTitle: typeof row.course_title === 'string' ? row.course_title : null,
+      extraDays: Number(row.extra_days),
+    }))
   }
 
   async listEndedCommunitySubscriptions(

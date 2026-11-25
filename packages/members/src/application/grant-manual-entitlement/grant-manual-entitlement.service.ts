@@ -9,9 +9,10 @@ import {
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../domain/entitlement/entitlement.errors'
-import type {
-  EntitlementSnapshot,
-  PurchasedAccessPolicy,
+import {
+  advertisedDaysFor,
+  type EntitlementSnapshot,
+  type PurchasedAccessPolicy,
 } from '../../domain/entitlement/entitlement-snapshot'
 import type { AccessType } from '../../domain/entitlement/fulfillment'
 import {
@@ -256,6 +257,7 @@ export class GrantManualEntitlementService {
         resolvedAt: now.toISOString(),
         ...(accessPolicy ? { accessPolicy } : {}),
         ...(gift?.audience ? { giftAudience: gift.audience } : {}),
+        ...advertisedDaysFor(offer.advertisedAccessDays, accessPolicy),
       }
       grants.push({
         userId,
