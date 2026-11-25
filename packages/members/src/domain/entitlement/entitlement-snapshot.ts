@@ -36,6 +36,11 @@ export interface EntitlementSnapshot {
    * real do `accessPolicy`. Não muda o acesso: no fim do divulgado sai o e-mail dos dias a mais.
    */
   advertisedAccessDays?: number
+  /**
+   * Fim DIVULGADO (ISO), calculado na concessão: o e-mail dos dias a mais sai nesta data e não é
+   * recalculado se o fim real mudar depois (extensão, nova compra, ajuste do admin).
+   */
+  advertisedEndsAt?: string
 }
 
 /**
@@ -45,8 +50,16 @@ export interface EntitlementSnapshot {
 export function advertisedDaysFor(
   advertised: number | undefined,
   policy: PurchasedAccessPolicy | null | undefined,
-): { advertisedAccessDays?: number } {
+  /** O fim real gravado nesta concessão: dele sai o fim divulgado. */
+  expiresAt?: Date | null,
+): { advertisedAccessDays?: number; advertisedEndsAt?: string } {
   if (advertised === undefined || !policy || policy.mode !== 'fixed') return {}
   if (policy.durationUnit !== 'days' || advertised >= policy.durationValue) return {}
-  return { advertisedAccessDays: advertised }
+  const extraMs = (policy.durationValue - advertised) * 86_400_000
+  return {
+    advertisedAccessDays: advertised,
+    ...(expiresAt
+      ? { advertisedEndsAt: new Date(expiresAt.getTime() - extraMs).toISOString() }
+      : {}),
+  }
 }

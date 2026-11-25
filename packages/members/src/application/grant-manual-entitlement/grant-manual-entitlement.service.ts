@@ -257,7 +257,7 @@ export class GrantManualEntitlementService {
         resolvedAt: now.toISOString(),
         ...(accessPolicy ? { accessPolicy } : {}),
         ...(gift?.audience ? { giftAudience: gift.audience } : {}),
-        ...advertisedDaysFor(offer.advertisedAccessDays, accessPolicy),
+        ...advertisedDaysFor(offer.advertisedAccessDays, accessPolicy, expiresAt),
       }
       grants.push({
         userId,

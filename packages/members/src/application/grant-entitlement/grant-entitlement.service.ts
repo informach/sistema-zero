@@ -97,7 +97,17 @@ export class GrantEntitlementService {
         resolvedAt: cmd.grantedAt.toISOString(),
         accessPolicy,
         // Prazo divulgado (25/11/2026): o e-mail dos dias a mais sai no fim dele.
-        ...advertisedDaysFor(offer.advertisedAccessDays, accessPolicy),
+        ...advertisedDaysFor(
+          offer.advertisedAccessDays,
+          accessPolicy,
+          accessPolicy.mode === 'fixed'
+            ? computeFixedExpiry(
+                cmd.grantedAt,
+                accessPolicy.durationValue,
+                accessPolicy.durationUnit,
+              )
+            : null,
+        ),
       }
       let applied: boolean
       if (accessPolicy.mode === 'billing_cycle') {

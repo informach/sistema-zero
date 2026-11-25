@@ -369,13 +369,18 @@ export class DrizzleRenewalReminderRepository
   ): Promise<BonusDaysEntitlement[]> {
     const nowIso = now.toISOString()
     const sinceIso = new Date(now.getTime() - windowMs).toISOString()
-    // Fim divulgado = fim real menos os dias a mais (prazo real em dias menos o divulgado). Só
-    // matrícula de CURSO (o Mural temporário da mesma entrega não manda outro e-mail).
+    // Fim divulgado: o gravado na concessão (`advertisedEndsAt`); matrícula anterior a ele cai na
+    // conta pelo fim real de hoje. Os dias a mais são os que faltam do fim divulgado ao fim real
+    // de AGORA (uma extensão depois conta a favor). Só matrícula de CURSO.
     const rows = await this.db.execute(sql`
       with candidates as (
         select e.id, e.user_id, e.source_id, e.expires_at,
-          (e.snapshot -> 'accessPolicy' ->> 'durationValue')::int
-            - (e.snapshot ->> 'advertisedAccessDays')::int as extra_days,
+          coalesce(
+            (e.snapshot ->> 'advertisedEndsAt')::timestamptz,
+            e.expires_at - make_interval(days =>
+              (e.snapshot -> 'accessPolicy' ->> 'durationValue')::int
+                - (e.snapshot ->> 'advertisedAccessDays')::int)
+          ) as advertised_ends_at,
           c.title as course_title,
           case when e.snapshot ->> 'giftAudience' = 'adult' or c.audience::text = 'adult'
             then 'adult' else 'kids' end as audience
@@ -393,8 +398,9 @@ export class DrizzleRenewalReminderRepository
              > (e.snapshot ->> 'advertisedAccessDays')::int
       ), due as (
         select c.* from candidates c
-         where c.expires_at - make_interval(days => c.extra_days) <= ${nowIso}::timestamptz
-           and c.expires_at - make_interval(days => c.extra_days) > ${sinceIso}::timestamptz
+         where c.advertised_ends_at <= ${nowIso}::timestamptz
+           and c.advertised_ends_at > ${sinceIso}::timestamptz
+           and c.expires_at > c.advertised_ends_at
            and not exists (
              select 1 from members.entitlement_lifecycle_messages_sent sent
               where sent.entitlement_id = c.id
@@ -418,7 +424,14 @@ export class DrizzleRenewalReminderRepository
       expiresAt: new Date(row.expires_at as string),
       audience: row.audience === 'adult' ? ('adult' as const) : ('kids' as const),
       courseTitle: typeof row.course_title === 'string' ? row.course_title : null,
-      extraDays: Number(row.extra_days),
+      extraDays: Math.max(
+        1,
+        Math.round(
+          (new Date(row.expires_at as string).getTime() -
+            new Date(row.advertised_ends_at as string).getTime()) /
+            86_400_000,
+        ),
+      ),
     }))
   }
 

@@ -12,7 +12,10 @@ CURSO ativa cujo fim divulgado (fim real menos os dias a mais) passou há até 7
 `<KIDS_COMMUNITY_URL>/login/responsavel`) ou `gift-bonus-days-adult` (`<COMMUNITY_URL>/cursos`), com
 `nome`, `curso`, `dias` ("8 dias") e `data` (fim real). Dedupe no mesmo
 `entitlement_lifecycle_messages_sent` com `message_kind = 'gift_bonus_days'` (coluna text, sem
-migration). Vale para presente e compra de prazo fixo. ⚠️ A consulta SQL nova não tem teste de banco
+migration). O grant grava também `snapshot.advertisedEndsAt` (fim divulgado calculado do fim
+real DAQUELA concessão): a consulta usa essa data, então estender o acesso depois não move o
+e-mail; os `dias` são os que faltam dela ao fim real de agora. Matrícula sem o campo cai na conta
+antiga (fim real menos a diferença de prazos). Vale para presente e compra de prazo fixo. ⚠️ A consulta SQL nova não tem teste de banco
 (os `tests/db` pedem Postgres local): conferir num banco descartável antes da staging.
 ## Aquecer o contêiner do "Verificar projeto" (23/11/2026)
 
