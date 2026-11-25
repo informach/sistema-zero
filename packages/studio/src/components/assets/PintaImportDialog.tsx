@@ -284,7 +284,7 @@ export function PintaImportDialog({
           return
         }
       }
-      // Já no projeto, este botão é o "Atualizar vetor": só faz sentido se o Pinta mandou SVG.
+      // Existing regional maps and rasterized vectors have explicit refresh actions.
       if (
         !recipe &&
         !result.asset.regional &&
@@ -462,8 +462,8 @@ export function PintaImportDialog({
                     </div>
                   </div>
                   <div className="flex min-h-8 items-center justify-end gap-2">
-                    {/* Já no projeto → SÓ o selinho (decisão da dona: sem
-                        "Adicionar de novo" — re-add acidental não existe). */}
+                    {/* An existing drawing is never added twice. Regional maps can
+                        explicitly refresh their captured PNG, including on a new device. */}
                     {python ? (
                       <Button
                         variant="primary"
@@ -482,6 +482,20 @@ export function PintaImportDialog({
                         <span className="inline-flex items-center text-xs font-semibold text-emerald-500">
                           {t('pintaImport.inProject')}
                         </span>
+                        {assets.some(
+                          (asset) => personalIdOf(asset) === drawing.id && !!asset.regional,
+                        ) ? (
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            disabled={busyId !== null}
+                            onClick={() => void handleAdd(drawing)}
+                          >
+                            {busyId === drawing.id
+                              ? t('pintaImport.adding')
+                              : t('pintaImport.refreshMap')}
+                          </Button>
+                        ) : null}
                         {drawing.style === 'vector' &&
                         assets.some(
                           (asset) =>

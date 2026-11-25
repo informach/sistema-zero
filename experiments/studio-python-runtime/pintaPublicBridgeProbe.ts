@@ -1,5 +1,5 @@
 import { mountPintaPlayButton } from '../../packages/member-shell/qa/pinta-play-button.fixture'
-import { savePintaStudioBundle } from '../../packages/member-shell/src/components/creator/save-pinta-studio-bundle'
+import { sendPintaGameToStudio } from '../../packages/member-shell/src/components/creator/send-pinta-game-to-studio'
 import {
   exportAssetForStudio,
   listGalleryForStudio,
@@ -23,6 +23,7 @@ import { loadSanitizedProjectById } from '../../packages/studio/src/state/projec
 type PlayButtonState = {
   view: Awaited<ReturnType<typeof mountPintaPlayButton>>
   projectId: string | null
+  navigation?: string
 }
 let playButton: PlayButtonState | null = null
 
@@ -37,14 +38,14 @@ export async function showPintaPlayButton(namespace: string) {
     projectId: null,
     view: await mountPintaPlayButton(persistence, {
       studioOwned: true,
-      async sendGameToStudio(payload) {
-        const saved = await savePintaStudioBundle(payload, namespace)
-        if (!saved.ok) return saved
-        const project = await buildTilemapGameProject(saved.asset)
-        if (!project) throw new Error('The editor must create a regional playable project.')
-        state.projectId = project.id
-        return { ok: true }
-      },
+      sendGameToStudio: (payload) =>
+        sendPintaGameToStudio(payload, {
+          namespace,
+          navigate(path) {
+            state.navigation = path
+            state.projectId = new URL(path, location.href).searchParams.get('projeto')
+          },
+        }),
     }),
   }
   playButton = state
@@ -53,10 +54,15 @@ export async function showPintaPlayButton(namespace: string) {
 
 export async function readPintaPlayButton(namespace: string) {
   const state = playButton
+  if (state?.navigation && !state.projectId)
+    throw new Error('The Pinta host must navigate directly to the game it created.')
   if (!state?.projectId) return null
   state.view.dispose()
   playButton = null
-  return showPintaPublicBridge(namespace, state.projectId)
+  return {
+    ...(await showPintaPublicBridge(namespace, state.projectId)),
+    navigation: state.navigation,
+  }
 }
 
 /** Browser qualification through the public export, storage and player boundaries. */

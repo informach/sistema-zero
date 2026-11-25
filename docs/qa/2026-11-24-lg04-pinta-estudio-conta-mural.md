@@ -12,6 +12,10 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 
 ## Achados corrigidos durante a qualificação
 
+- A criação do jogo consultava o perfil global depois de admitir o PNG. Uma troca durante essa espera podia gravar no perfil seguinte. O construtor captura o armazenamento antes da espera; o host cancela a geração anterior na troca de perfil ou acesso, inclusive A → B → A. Três provas com IndexedDB e PNG reais cobrem esses casos; a reprodução anterior gravava no perfil errado.
+- A biblioteca pessoal é local: num aparelho vazio, editar no Pinta não religa sozinho a cópia já guardada no jogo. A janela “Trazer do Pinta” mostrava apenas “já no projeto” e impedia uma atualização explícita. O cenário regional existente agora oferece “Atualizar cenário”, usando a mesma admissão integral e preservando ID, nome, programa e blocos. Reprodução: um teste falhou antes; depois, os 56 testes da janela/360 expectativas passaram. Abertura de desenhos continua sem importação automática. O percurso hospedado deve ser repetido após a implantação.
+- “Jogar meu mapa” criava o jogo completo, mas levava à galeria. O adaptador do produto agora abre o projeto criado por seu ID. A prova de navegador chama esse mesmo adaptador, confere a navegação e reabre os bytes persistidos. Trinta cenários passaram nos cinco navegadores após a correção.
+- Num contexto vazio autenticado normalmente, o link do jogo e a descida da galeria restauravam a mesma cópia em paralelo: a autoridade local recusava a segunda escrita, mostrando recuperação na primeira abertura. A reprodução hospedada capturou `ProjectWriteConflict`; uma prova com o coordenador real, IndexedDB, blocos e PNG reproduziu a falha. As duas entradas compartilham somente a escrita em andamento de conteúdo admitido idêntico e mesma revisão. Dois testes passaram/12 expectativas; conteúdo diferente continua sujeito à recusa nativa, sem sobrescrever o vencedor. A repetição hospedada depende da nova implantação.
 - A conversão Classic → Pro e a exportação Classic ainda passavam pela porta legada de materiais. Agora usam o cenário admitido; a compilação Pro adapta somente a cópia intacta do motor compatível, preservando a árvore autoral.
 - A validação nova aplicava o teto regional a folhas de sprites antigas e recusava algumas imagens comuns do acervo. A leitura de metadados legados conserva sua política de dimensões, sem rasterização, e mantém CRC, limites de bytes e descompressão. A admissão regional conserva seus limites completos.
 - Trocar de perfil cancelava a gravação final do perfil anterior ao consultar a autoridade local. O salvamento captura seu banco e pode terminar nele; a troca continua cancelando o trabalho de interface.
@@ -40,6 +44,9 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 | Navegadores após a correção do botão regional | 18 aprovados em Chrome, Edge e Chromium; rodada final de 58,3 segundos |
 | Ponte regional com o CSS real do Pinta e canvas limitado à janela | 30 aprovados: 18 em Chrome/Edge/Chromium, seis em Firefox e seis em WebKit; sem erros de página |
 | Tipos após a correção do botão regional | Pinta, member-shell e Estúdio aprovados; conferências dos SDKs e perfil da imagem aprovadas |
+| Últimos ajustes de abertura, perfil e projetos | 276 testes aprovados, zero falhas; 6.881 expectativas na suíte de projetos, incluindo restauração nativa concorrente |
+| Nuvem e reabertura após a coordenação das escritas | 52 testes aprovados, zero falhas; 225 expectativas |
+| Atualização explícita do cenário pela janela real | 56 testes aprovados, zero falhas; 360 expectativas |
 
 As provas com serviços reais usam banco e bucket exclusivos de QA, com listeners de loopback e processos encerrados pelo próprio teste. A sessão injetada nessa prova não substitui o aceite infantil autenticado em homologação.
 
@@ -64,6 +71,9 @@ O retorno operacional deve preservar os objetos selados e as autoridades locais.
 
 ## Qualificação hospedada em andamento
 
+- A integração `2a0c99e444219dc59cad202f3aab6afc2c4c8f39` completou os 13 jobs e a [implantação normal de staging](https://github.com/informach/sistema-zero/actions/runs/45515065112). Members, Auth, Kids, Comunidade, Admin e Palco ficaram prontos na fonte esperada; as chamadas autenticadas de compilação e verificação responderam 200 com o perfil 98ec9667. A rodada posterior de QA foi cancelada antes da implantação ao encontrar os novos achados acima; a nova candidata deve passar em seu próprio CI.
+- Pela sessão infantil real, o botão criou um jogo completo; os blocos e a execução com as setas foram conferidos. O projeto próprio recebeu confirmações seladas e foi exportado antes e depois da restauração em contexto sem IndexedDB. O PNG permaneceu byte a byte; a primeira abertura precisou de nova tentativa, motivando a correção concorrente acima. A comparação textual do programa também precisa distinguir os identificadores regenerados dos blocos do conteúdo autoral; não equivale ainda ao aceite final da nova candidata.
+- A revisão automática externa da PR 289 foi pulada por limite de arquivos/créditos. Seu check bem-sucedido não representa aprovação de código. Sem alteração de cobrança ou filtros para contornar esse limite.
 - Candidata `6606c563b03f3473579a0585c2c9bff8283b1514`: os 13 jobs de validação do [CI da PR](https://github.com/informach/sistema-zero/actions/runs/45488604088), o plano Railway e a prova de dez mil blocos passaram. A correção posterior do botão exige nova rodada sobre seu próprio commit.
 - Integração em staging `6a0fde4bb7a65baade7dc19b36caec460cc7d750`: [CI e implantação normal aprovados](https://github.com/informach/sistema-zero/actions/runs/45488644607), preservando os commits de aulas da outra sessão.
 - Imagem qualificada `sha256:a65cc06c02251211a1154b2cb96a54b68bc6f195a05d7e07fbbc6973a6c09236`, perfil `98ec9667f1a3b893503d9427317dda4b1fb3c0cbfa665ad9c11c8837df05a8a3`: cinco suítes de imagem aprovadas, mais quatro provas Python sem promover catálogo. Guardas de aulas: cinco provas de navegador e quatro verificações do Farol, incluindo negativos intencionais, aprovadas.
