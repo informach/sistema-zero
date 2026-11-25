@@ -5,6 +5,7 @@ import type {
   GiftSource,
   ReferralBonusAmounts,
 } from '@sistemazero/core/referrals'
+import type { AcquisitionRecord } from '../../src/domain/acquisition'
 import type {
   EnsureBuyerInput,
   GatewayResult,
@@ -39,6 +40,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
   redemptions: RedemptionRecord[] = []
   invites: InviteRecord[] = []
   conversions: ConversionRecord[] = []
+  /** Aquisições com origem (0013), compartilhadas com o `InMemoryAcquisitionRepository`. */
+  acquisitions: AcquisitionRecord[] = []
   /** Força UMA colisão de código no próximo createAmbassadorWithCode. */
   failNextCodeInsert = false
 
@@ -247,6 +250,12 @@ export class InMemoryReferralRepository implements ReferralRepository {
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, 200)
+  }
+
+  async listConversionsBySubscribers(emails: string[]): Promise<ConversionRecord[]> {
+    return this.conversions
+      .filter((c) => c.subscriberEmail !== null && emails.includes(c.subscriberEmail))
+      .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
   }
 
   async listConversionsByRedemptions(redemptionIds: string[]) {
@@ -592,7 +601,10 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }
 
   async insertConversion(input: {
-    redemptionId: string
+    redemptionId: string | null
+    acquisitionId?: string | null
+    subscriberEmail: string
+    audience: GiftAudience
     codeId: string
     ambassadorId: string | null
     paymentId: string
@@ -605,9 +617,11 @@ export class InMemoryReferralRepository implements ReferralRepository {
     maturesAt: Date
   }): Promise<{ created: boolean }> {
     if (this.conversions.some((c) => c.paymentId === input.paymentId)) return { created: false }
+    // A vaga é da pessoa no público (e, nas conversões antigas sem e-mail, a do resgate).
     const current = this.conversions.find(
       (c) =>
-        c.redemptionId === input.redemptionId &&
+        ((c.subscriberEmail === input.subscriberEmail && c.audience === input.audience) ||
+          (input.redemptionId !== null && c.redemptionId === input.redemptionId)) &&
         c.status !== 'canceled' &&
         c.status !== 'superseded',
     )
@@ -626,6 +640,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
     this.conversions.push({
       id: randomUUID(),
       ...input,
+      acquisitionId: input.acquisitionId ?? null,
       eligibleAt: null,
       notifiedAt: null,
       paidMarkedAt: null,
@@ -707,8 +722,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
           ambassadorName: a?.name ?? null,
           ambassadorEmail: a?.email ?? null,
           ambassadorPixKey: a?.pixKey ?? null,
-          redemptionName: r?.name ?? '',
-          redemptionEmail: r?.email ?? '',
+          redemptionName: r?.name ?? null,
+          redemptionEmail: r?.email ?? c.subscriberEmail ?? '',
         }
       })
     return { items, total: filtered.length }

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { serializeError } from '@sistemazero/core/logging'
 import {
   type GiftAttribution,
   type GiftAudience,
@@ -11,6 +12,7 @@ import {
   type ReferralGiftOfferView,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
+import { giftAcquisition } from '../../domain/acquisition'
 import {
   type CampaignRecord,
   CampaignUnavailableError,
@@ -31,6 +33,7 @@ import {
   scholarshipExpiresAt,
 } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
+import type { AcquisitionRepository } from '../../domain/ports/acquisition-repository.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type {
   GatewayResult,
@@ -92,6 +95,14 @@ export interface RedeemOptions {
   leaseMs: number
   campaigns?: CampaignRepository
   bonusAmounts?: ReferralBonusAmounts
+  /**
+   * Aquisições com origem (25/11/2026): o presente concluído vira aquisição `gift` com o acordo
+   * do bônus capturado. Best-effort: uma falha aqui não desfaz o presente; o sweep repara.
+   */
+  acquisitions?: AcquisitionRepository
+  /** Valor único legado e prazo do link pessoal (para o acordo capturado). */
+  legacyBonusCents?: number
+  bonusWindowDays?: number
 }
 
 /** O curso principal do presente, como o members o publica. */
@@ -570,6 +581,27 @@ export class RedeemScholarshipService {
     return slug
   }
 
+  /** O presente concluído vira aquisição `gift` (idempotente por resgate; falha não derruba). */
+  private async recordGiftAcquisition(redemption: RedemptionRecord): Promise<void> {
+    if (!this.opts.acquisitions) return
+    try {
+      const code = await this.repo.findCodeById(redemption.codeId)
+      if (!code) return
+      await this.opts.acquisitions.insert(
+        giftAcquisition(redemption, code, this.now(), {
+          amounts: this.opts.bonusAmounts ?? null,
+          legacyCents: this.opts.legacyBonusCents ?? 3000,
+          windowDays: this.opts.bonusWindowDays ?? 45,
+        }),
+      )
+    } catch (error) {
+      this.logger.warn('referrals.gift_acquisition_failed', {
+        redemptionId: redemption.id,
+        error: serializeError(error),
+      })
+    }
+  }
+
   private async runSteps(
     redemption: RedemptionRecord,
     source: GiftSource,
@@ -742,6 +774,7 @@ export class RedeemScholarshipService {
     }
 
     await this.repo.markRedemptionGranted(redemption.id, this.now())
+    await this.recordGiftAcquisition({ ...redemption, userId })
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.

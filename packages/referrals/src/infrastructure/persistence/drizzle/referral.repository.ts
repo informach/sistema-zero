@@ -51,6 +51,13 @@ import {
  */
 const CONVERSION_SWEEP_LOCK_KEY = '7429184620031201'
 
+/**
+ * Classe do advisory lock de DUAS chaves (int, int) que serializa a vaga de conversão por
+ * pessoa e público: `(classe, hashtext(email|público))`. O espaço de duas chaves não se sobrepõe
+ * ao de uma chave bigint (sweep e poda acima).
+ */
+const CONVERSION_SLOT_LOCK_CLASS = 742918462
+
 type AmbassadorRow = typeof ambassadors.$inferSelect
 type CodeRow = typeof codes.$inferSelect
 type RedemptionRow = typeof scholarshipRedemptions.$inferSelect
@@ -89,6 +96,9 @@ function toConversion(row: ConversionRow): ConversionRecord {
   return {
     id: row.id,
     redemptionId: row.redemptionId,
+    acquisitionId: row.acquisitionId,
+    subscriberEmail: row.subscriberEmail,
+    audience: (row.audience as GiftAudience | null) ?? null,
     codeId: row.codeId,
     ambassadorId: row.ambassadorId,
     paymentId: row.paymentId,
@@ -108,7 +118,7 @@ function toConversion(row: ConversionRow): ConversionRecord {
   }
 }
 
-function toCode(row: CodeRow): CodeRecord {
+export function toCode(row: CodeRow): CodeRecord {
   return {
     id: row.id,
     code: row.code,
@@ -123,7 +133,7 @@ function toCode(row: CodeRow): CodeRecord {
   }
 }
 
-function toRedemption(row: RedemptionRow): RedemptionRecord {
+export function toRedemption(row: RedemptionRow): RedemptionRecord {
   return {
     id: row.id,
     codeId: row.codeId,
@@ -186,6 +196,16 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .orderBy(desc(scholarshipRedemptions.createdAt))
       .limit(200)
     return rows.map((row) => toRedemption(row.redemption))
+  }
+
+  async listConversionsBySubscribers(emails: string[]): Promise<ConversionRecord[]> {
+    if (emails.length === 0) return []
+    const rows = await this.db
+      .select()
+      .from(conversions)
+      .where(inArray(conversions.subscriberEmail, emails))
+      .orderBy(desc(conversions.paidAt))
+    return rows.map(toConversion)
   }
 
   async listConversionsByRedemptions(redemptionIds: string[]) {
@@ -990,7 +1010,10 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }
 
   async insertConversion(input: {
-    redemptionId: string
+    redemptionId: string | null
+    acquisitionId?: string | null
+    subscriberEmail: string
+    audience: GiftAudience
     codeId: string
     ambassadorId: string | null
     paymentId: string
@@ -1004,23 +1027,31 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }): Promise<{ created: boolean }> {
     try {
       return await this.db.transaction(async (tx) => {
-        // Serializa a escolha por resgate, inclusive quando ainda não existe conversão.
-        await tx
-          .select({ id: scholarshipRedemptions.id })
-          .from(scholarshipRedemptions)
-          .where(eq(scholarshipRedemptions.id, input.redemptionId))
-          .for('update')
+        // A vaga é da PESSOA no público (uma primeira assinatura), com ou sem resgate: serializa
+        // por (e-mail, público) num advisory lock de duas chaves (espaço distinto dos locks de
+        // uma chave do sweep e da poda).
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(${CONVERSION_SLOT_LOCK_CLASS}::int, hashtext(${`${input.subscriberEmail}|${input.audience}`}))`,
+        )
         const [seen] = await tx
           .select({ id: conversions.id })
           .from(conversions)
           .where(eq(conversions.paymentId, input.paymentId))
         if (seen) return { created: false }
+        // Conversões anteriores à 0013 não têm `subscriber_email` (o backfill preenche): a vaga
+        // também é ocupada pela do mesmo resgate.
         const [current] = await tx
           .select()
           .from(conversions)
           .where(
             and(
-              eq(conversions.redemptionId, input.redemptionId),
+              or(
+                and(
+                  eq(conversions.subscriberEmail, input.subscriberEmail),
+                  eq(conversions.audience, input.audience),
+                ),
+                input.redemptionId ? eq(conversions.redemptionId, input.redemptionId) : undefined,
+              ),
               sql`${conversions.status} not in ('canceled', 'superseded')`,
             ),
           )
@@ -1044,7 +1075,9 @@ export class DrizzleReferralRepository implements ReferralRepository {
         }
         // Qualquer conflito aborta também a substituição acima: nunca liberar a
         // vaga se o paymentId já foi atribuído por outra transação.
-        await tx.insert(conversions).values(input)
+        await tx
+          .insert(conversions)
+          .values({ ...input, acquisitionId: input.acquisitionId ?? null })
         return { created: true }
       })
     } catch (error) {
@@ -1169,7 +1202,8 @@ export class DrizzleReferralRepository implements ReferralRepository {
         .from(conversions)
         .leftJoin(ambassadors, eq(ambassadors.id, conversions.ambassadorId))
         .innerJoin(codes, eq(codes.id, conversions.codeId))
-        .innerJoin(scholarshipRedemptions, eq(scholarshipRedemptions.id, conversions.redemptionId))
+        // Venda pelo link não tem resgate: LEFT join (e o total, sem o join, bate com os itens).
+        .leftJoin(scholarshipRedemptions, eq(scholarshipRedemptions.id, conversions.redemptionId))
         .where(where)
         .orderBy(desc(conversions.paidAt))
         .limit(opts.limit)
@@ -1187,7 +1221,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         ambassadorEmail: r.ambassadorEmail,
         ambassadorPixKey: r.ambassadorPixKey,
         redemptionName: r.redemptionName,
-        redemptionEmail: r.redemptionEmail,
+        redemptionEmail: r.redemptionEmail ?? r.conversion.subscriberEmail ?? '',
       })),
       total,
     }

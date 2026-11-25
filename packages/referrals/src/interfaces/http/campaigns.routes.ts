@@ -43,6 +43,15 @@ const campaignBody = t.Object({
    * do Elysia apaga campo fora dele.
    */
   giftOfferId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+  /** Tipo (25/11/2026): ausente = `gift` na criação; na edição mantém o gravado. */
+  kind: t.Optional(t.Union([t.Literal('gift'), t.Literal('sale')])),
+  /** Oferta à venda da campanha `sale` (UUID do catálogo). */
+  saleOfferId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+  /** Destino do link da venda: a página da oferta ou direto o pagamento. */
+  linkTarget: t.Optional(t.Union([t.Literal('page'), t.Literal('checkout')])),
+  /** Endereço antigo redirecionado até `redirectUntil` (validação completa no serviço). */
+  redirectPath: t.Optional(t.Nullable(t.String({ maxLength: 120 }))),
+  redirectUntil: t.Optional(t.Nullable(t.String({ maxLength: 40 }))),
   ambassadorId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
   commissionEnabled: t.Optional(t.Boolean()),
   commissionAmountCents: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 }))),

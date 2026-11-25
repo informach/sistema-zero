@@ -5,13 +5,16 @@ import {
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
 import { Elysia, t } from 'elysia'
+import type { AcquisitionReportsService } from '../../application/acquisitions/acquisition-reports.service'
+import type { AmbassadorOffersService } from '../../application/ambassador-offers/ambassador-offers.service'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
+import type { ReferralLinkService } from '../../application/links/referral-link.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
-import { campaignSource, campaignState } from '../../domain/campaign'
+import { campaignRedirectActive, campaignSource, campaignState } from '../../domain/campaign'
 import { EMAIL_PATTERN, isValidCode, normalizeCode } from '../../domain/codes'
-import { scholarshipShareUrl } from '../../domain/links'
+import { CHECKOUT_SEGMENT, referralLinkUrl, scholarshipShareUrl } from '../../domain/links'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { assertInternalCaller } from './auth'
 
@@ -29,7 +32,15 @@ export interface InternalRoutesDeps {
   bonusAmountCents?: number
   bonusAnnualAmountCents?: number
   internalToken?: string
+  /** Links `/i/...` (25/11/2026): o que cada link abre. */
+  links?: ReferralLinkService
+  /** As ofertas que o embaixador pode mandar (página do embaixador). */
+  ambassadorOffers?: AmbassadorOffersService
+  /** Pessoas que entraram pelos links do embaixador (o número da página). */
+  reports?: AcquisitionReportsService
 }
+
+const SLUG = '^[a-z0-9]+(?:-[a-z0-9]+)*$'
 
 /**
  * Rotas S2S consumidas pelo FUNIL (landings /bolsa e /embaixador) via gateway
@@ -53,6 +64,56 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         return policy
       },
       { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
+    )
+    .get(
+      '/links/:code',
+      async ({ params, set }) => linkResponse(deps, params.code, null, false, set),
+      { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
+    )
+    .get(
+      '/links/:code/:offer',
+      async ({ params, set }) =>
+        params.offer === CHECKOUT_SEGMENT
+          ? linkResponse(deps, params.code, null, true, set)
+          : linkResponse(deps, params.code, params.offer, false, set),
+      {
+        params: t.Object({
+          code: t.String({ minLength: 1, maxLength: 64 }),
+          offer: t.String({ minLength: 1, maxLength: 80, pattern: SLUG }),
+        }),
+      },
+    )
+    .get(
+      '/links/:code/:offer/:target',
+      async ({ params, set }) => {
+        if (params.target !== CHECKOUT_SEGMENT) {
+          set.status = 404
+          return envelope('LINK_NOT_FOUND', 'Link não encontrado')
+        }
+        return linkResponse(deps, params.code, params.offer, true, set)
+      },
+      {
+        params: t.Object({
+          code: t.String({ minLength: 1, maxLength: 64 }),
+          offer: t.String({ minLength: 1, maxLength: 80, pattern: SLUG }),
+          target: t.String({ minLength: 1, maxLength: 16 }),
+        }),
+      },
+    )
+    .get(
+      '/redirects',
+      async ({ query, set }) => {
+        const campaign = await deps.campaigns?.repo.findByRedirectPath(query.path)
+        if (!campaign || !campaignRedirectActive(campaign)) {
+          set.status = 404
+          return envelope('REDIRECT_NOT_FOUND', 'Sem redirecionamento')
+        }
+        return {
+          url: deps.campaigns?.campaignLink(campaign) ?? null,
+          until: campaign.redirectUntil?.toISOString() ?? null,
+        }
+      },
+      { query: t.Object({ path: t.String({ minLength: 2, maxLength: 120 }) }) },
     )
     .get(
       '/codes/:code',
@@ -128,7 +189,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // nunca quem assinou. A régua do que é visível vive no repo/domínio
         // (filtro no SQL, ANTES do limit — canceladas não empurram bônus reais
         // para fora da página).
-        const [visible, shareUrls, campaigns] = await Promise.all([
+        const [visible, shareUrls, campaigns, offers, results] = await Promise.all([
           deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50),
           // O código adulto nasce aqui quando falta (idempotente e seguro em corrida).
           deps.ambassadors
@@ -138,6 +199,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
                 adult: null,
               }),
           deps.campaigns?.forAmbassador(ambassador.id, query.campaignOffset ?? 0),
+          ambassadorOfferLinks(deps, ambassador),
+          deps.reports?.ambassadorResults([ambassador.id]),
         ])
         return {
           name: ambassador.name,
@@ -146,7 +209,9 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           shareUrl: scholarshipShareUrl(deps.funnelPublicUrl, ambassador.code),
           shareUrls,
           campaigns,
-          stats: ambassador.stats,
+          // Só quantidades: o embaixador nunca vê valores de venda (decisão de 25/11/2026).
+          stats: { ...ambassador.stats, people: results?.get(ambassador.id)?.people ?? null },
+          offers,
           bonus: {
             amountCents: deps.bonusAmountCents,
             annualAmountCents: deps.bonusAnnualAmountCents,
@@ -311,4 +376,67 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         }),
       },
     )
+}
+
+type SetStatus = { status?: number | string }
+
+async function linkResponse(
+  deps: InternalRoutesDeps,
+  rawCode: string,
+  offer: string | null,
+  checkout: boolean,
+  set: SetStatus,
+) {
+  const code = normalizeCode(rawCode)
+  if (!deps.links || !isValidCode(code)) {
+    set.status = 404
+    return envelope('LINK_NOT_FOUND', 'Link não encontrado')
+  }
+  const result = await deps.links.resolve(code, offer, checkout)
+  if (result.kind === 'upstream_error') {
+    set.status = 502
+    return envelope('UPSTREAM_ERROR', 'Não foi possível abrir o link agora')
+  }
+  if (result.kind === 'not_found') {
+    set.status = 404
+    return envelope('LINK_NOT_FOUND', 'Link não encontrado')
+  }
+  return result.link
+}
+
+/**
+ * As opções da página do embaixador nos dois públicos, cada uma com o link pronto (`/i/<código
+ * do público>/<oferta>`). O código adulto nasce sob demanda (como no `shareUrls`); sem ele, as
+ * opções adultas ficam de fora.
+ */
+async function ambassadorOfferLinks(
+  deps: InternalRoutesDeps,
+  ambassador: { id: string; name: string; status: string; code: string | null },
+) {
+  if (!deps.ambassadorOffers) return []
+  const codes = deps.ambassadors
+    ? await deps.ambassadors.shareCodes({
+        ...ambassador,
+        status: ambassador.status === 'active' ? 'active' : 'disabled',
+      })
+    : { kids: ambassador.code, adult: null }
+  const items = []
+  for (const audience of ['kids', 'adult'] as const) {
+    const code = codes[audience]
+    if (!code) continue
+    for (const option of await deps.ambassadorOffers.options(audience)) {
+      items.push({
+        ...option,
+        link: referralLinkUrl(deps.funnelPublicUrl, code, { offerSlug: option.offerSlug }),
+        checkoutLink:
+          option.kind === 'referral'
+            ? referralLinkUrl(deps.funnelPublicUrl, code, {
+                offerSlug: option.offerSlug,
+                checkout: true,
+              })
+            : null,
+      })
+    }
+  }
+  return items
 }

@@ -28,6 +28,41 @@ Migration `0013_origin_acquisitions` (gerada pelo drizzle-kit):
 - Links: `referralLinkUrl` em `domain/links.ts` (`/i/<code>[/<oferta>][/pagamento]`); o
   `/bolsa/<code>` antigo continua valendo e o funil o redireciona para a página da oferta.
 
+Serviços (Lote 2):
+- **Aquisição de presente:** `RedeemScholarshipService` grava a aquisição `gift` logo após
+  `markRedemptionGranted` (best-effort, com o acordo do bônus em `bonus_terms`: valores e prazo
+  capturados na hora, campanha pelo snapshot `campaignReferral`, link pessoal com
+  `BONUS_WINDOW_DAYS`=45). O sweep repara presentes concluídos sem aquisição
+  (`AcquisitionMaintenanceService.repairGifts`: os dos últimos 7 dias ganham o prazo normal, os
+  antigos o prazo longo de 3650 dias, para o backfill não tirar bônus de ninguém) e completa o
+  slug das compras (`fillOfferSlugs`).
+- **Compra (`RecordConversionService`, reescrito):** TODO `payment.paid` vira aquisição pelo
+  metadata (`origemCodigo` → embaixador/campanha; `origemLugar` → `platform`; `origemFonte` →
+  `ads`; nada → `none`), sem catálogo quando o público vem em `billingAudience`. Renovação não é
+  aquisição: já existe aquisição dessa `subscription_id`, ou a cobrança veio mais de 20 dias
+  depois de a assinatura nascer. O bônus: só slug em `CONVERSION_OFFER_SLUGS`;
+  `firstAmbassadorInWindow` procura, entre as aquisições ativas da pessoa (e-mail ou conta) no
+  público, a PRIMEIRA com embaixador cujo prazo cobre a data em que a assinatura nasceu; sem
+  nenhuma, tenta o outro público (presente Kids → Comunidade adulta). Assinatura criada antes da
+  entrada pelo embaixador não é dele. A vaga é `conversions_subscriber_uq` (lock
+  `742918462`); estorno marca a aquisição `refunded`.
+- **Listas:** `AmbassadorOffersService` (`GET|PUT /referrals/admin/ambassador-offers`, lock
+  `742918463`): presente pela régua `giftOfferProblem`; indicação = oferta não arquivada, não
+  rascunho, do mesmo público. Máx. 20 por lista.
+- **Links:** `ReferralLinkService` + `GET /referrals/internal/links/:code[/:oferta][/pagamento]`
+  (`mode gift|sale`, `target page|checkout`, estado da campanha, cupom); embaixador sem oferta =
+  presente padrão (links antigos). `GET /referrals/internal/redirects?path=` devolve o link da
+  campanha com endereço antigo ativo (404 fora do prazo). Campanha de venda: `kind` só muda em
+  rascunho sem aquisições (409 `CAMPAIGN_KIND_LOCKED`); endereço de outra campanha → 409
+  `CAMPAIGN_REDIRECT_TAKEN`.
+- **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
+  e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
+  `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores
+  traz `results` (quantidades + faturamento). A página do embaixador (`by-token`) recebe só
+  `stats.people` e as `offers` com os links: nunca valores de venda.
+- **Backfill:** `bun run acquisitions:backfill [plan|apply]` (conversões ganham
+  `subscriber_email`; presentes e conversões viram aquisições; listas nascem com o Cadê).
+
 ⚠️ Seção "Banco" abaixo está desatualizada em dois pontos: o resgate é UNIQUE
 `(email, audience, gift_slot)` (0011; vagas `main`, `parents:`, `course:`, `offer:` desde a
 0012) e o UNIQUE parcial de conversões exclui `canceled` e `superseded` (0007).

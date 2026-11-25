@@ -32,4 +32,18 @@ describe('origem da aquisição', () => {
     expect(isCampaignRedirectPath('/Kids/Vilao')).toBe(false)
     expect(isCampaignRedirectPath('https://outro.site/x')).toBe(false)
   })
+
+  test('endereço antigo: nunca a raiz de um público nem um prefixo reservado; até 120', () => {
+    expect(isCampaignRedirectPath('/kids')).toBe(false)
+    for (const reservado of [
+      '/i/abcd',
+      '/bolsa/mariana-x7k2',
+      '/cupom/x/y',
+      '/embaixador/t',
+      '/api/x',
+    ])
+      expect(isCampaignRedirectPath(reservado)).toBe(false)
+    expect(isCampaignRedirectPath(`/kids/${'a'.repeat(114)}`)).toBe(true) // 120
+    expect(isCampaignRedirectPath(`/kids/${'a'.repeat(115)}`)).toBe(false) // 121
+  })
 })

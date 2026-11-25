@@ -1,5 +1,15 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Origem das vendas e links `/i/` das indicações (25/11/2026)
+
+Referrals: `referrals-internal-link`, `-link-offer`, `-link-target` (`GET
+/referrals/internal/links/:code[/:offer[/:target]]`) e `referrals-internal-redirects` (`GET
+/referrals/internal/redirects`), HMAC `allowedConsumers: ['funnel']`, no balde agregado de 3000/min
+das landings. Admin: `referrals-admin-{origins,acquisitions,campaign-results,ambassador-results}-read`
+são literais admin+ (e-mails e faturamento; vencem o wildcard staff+) e
+`referrals-admin-ambassador-offers-write` é o PUT das listas (o wildcard de escrita só cobre
+POST/PATCH), admin+ com `audit: {}`. Teste: `route-registry.test.ts`.
+
 ## Versões das ilhas do Molda Cenários (21/11/2026)
 
 `members-cenarios-publicacao-versoes` (`GET /members/cenarios/publicacoes/perfis/:ilha/versoes`,

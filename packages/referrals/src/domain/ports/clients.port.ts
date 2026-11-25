@@ -26,6 +26,8 @@ export interface OfferSnapshot {
   slug: string
   name: string
   billingIntervalMonths?: number | null
+  /** Público do produto principal (`product.audience`); null quando a view não traz. */
+  audience?: 'kids' | 'adult' | null
 }
 
 export interface CatalogClient {

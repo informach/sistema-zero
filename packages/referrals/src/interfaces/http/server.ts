@@ -3,23 +3,31 @@ import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
+import type { AcquisitionReportsService } from '../../application/acquisitions/acquisition-reports.service'
+import type { AmbassadorOffersService } from '../../application/ambassador-offers/ambassador-offers.service'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
+import type { ReferralLinkService } from '../../application/links/referral-link.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
+import { AmbassadorOfferValidationError } from '../../domain/ambassador-offers'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
   CampaignGiftOfferLockedError,
+  CampaignKindLockedError,
+  CampaignRedirectTakenError,
   CampaignValidationError,
   GiftCatalogUnavailableError,
 } from '../../domain/campaign'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
+import { ambassadorOffersRoutes } from './ambassador-offers.routes'
 import { campaignsRoutes } from './campaigns.routes'
 import { internalRoutes } from './internal.routes'
 import { meRoutes } from './me.routes'
 import { memberGiftRoutes } from './member-gifts.routes'
+import { originsRoutes } from './origins.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './webhooks.routes'
 
 export interface HttpDeps {
@@ -29,6 +37,10 @@ export interface HttpDeps {
   invite: CreateInviteService
   ambassadors: AmbassadorAdminService
   campaigns?: CampaignAdminService
+  /** Origem por aquisição (25/11/2026): listas, links e relatórios. */
+  ambassadorOffers?: AmbassadorOffersService
+  links?: ReferralLinkService
+  reports?: AcquisitionReportsService
   funnelPublicUrl: string
   /** Snapshot da env BONUS_AMOUNT_CENTS — exposto na view "me" (copy nunca hardcoda). */
   bonusAmountCents: number
@@ -73,6 +85,18 @@ export function createServer(deps: HttpDeps) {
           set.status = 409
           return envelope('CAMPAIGN_GIFT_OFFER_LOCKED', error.message)
         }
+        if (error instanceof CampaignKindLockedError) {
+          set.status = 409
+          return envelope('CAMPAIGN_KIND_LOCKED', error.message)
+        }
+        if (error instanceof CampaignRedirectTakenError) {
+          set.status = 409
+          return envelope('CAMPAIGN_REDIRECT_TAKEN', error.message)
+        }
+        if (error instanceof AmbassadorOfferValidationError) {
+          set.status = 400
+          return envelope('AMBASSADOR_OFFERS_INVALID', error.message)
+        }
         if (error instanceof GiftCatalogUnavailableError) {
           set.status = 503
           return envelope('CATALOG_UNAVAILABLE', error.message)
@@ -107,7 +131,26 @@ export function createServer(deps: HttpDeps) {
           repo: deps.repo,
           requireAdminEnabled: deps.requireAdminEnabled ?? true,
           internalToken: deps.internalToken,
+          reports: deps.reports,
         }),
+      )
+      .use(
+        deps.ambassadorOffers
+          ? ambassadorOffersRoutes({
+              offers: deps.ambassadorOffers,
+              requireAdminEnabled: deps.requireAdminEnabled ?? true,
+              internalToken: deps.internalToken,
+            })
+          : new Elysia(),
+      )
+      .use(
+        deps.reports
+          ? originsRoutes({
+              reports: deps.reports,
+              requireAdminEnabled: deps.requireAdminEnabled ?? true,
+              internalToken: deps.internalToken,
+            })
+          : new Elysia(),
       )
       .use(
         deps.campaigns
@@ -129,6 +172,9 @@ export function createServer(deps: HttpDeps) {
           bonusAmountCents: deps.bonusAmountCents,
           bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
           internalToken: deps.internalToken,
+          links: deps.links,
+          ambassadorOffers: deps.ambassadorOffers,
+          reports: deps.reports,
         }),
       )
       .use(

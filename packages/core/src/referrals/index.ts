@@ -98,16 +98,27 @@ export type CampaignLinkTarget = 'page' | 'checkout'
 export const CAMPAIGN_LINK_TARGETS: readonly CampaignLinkTarget[] = ['page', 'checkout']
 /**
  * Endereço antigo do funil que redireciona para a campanha até uma data (ex.:
- * `/kids/vilao-em-aliado`). Caminho absoluto do funil, sem query, em minúsculas.
+ * `/kids/vilao-em-aliado`). Caminho absoluto, sem query, em minúsculas, com pelo menos dois
+ * segmentos (nunca a raiz de um público) e até 120 caracteres (`campaigns.redirect_path`).
+ * Prefixos do próprio programa e do funil são reservados: redirecioná-los quebraria links já
+ * enviados (`/bolsa/<código>`, `/i/...`) ou o próprio funil.
  */
-export const CAMPAIGN_REDIRECT_PATH_PATTERN = /^\/[a-z0-9][a-z0-9/-]{0,119}$/
+const REDIRECT_SEGMENT = /^[a-z0-9][a-z0-9-]*$/
+const RESERVED_REDIRECT_ROOTS = new Set([
+  'i',
+  'bolsa',
+  'cupom',
+  'embaixador',
+  'api',
+  'admin',
+  'termos',
+  'privacidade',
+])
 export function isCampaignRedirectPath(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    CAMPAIGN_REDIRECT_PATH_PATTERN.test(value) &&
-    !value.includes('//') &&
-    !value.endsWith('/')
-  )
+  if (typeof value !== 'string' || value.length > 120 || !value.startsWith('/')) return false
+  const segments = value.slice(1).split('/')
+  if (segments.length < 2 || !segments.every((s) => REDIRECT_SEGMENT.test(s))) return false
+  return !RESERVED_REDIRECT_ROOTS.has(segments[0] ?? '')
 }
 export interface CampaignInput {
   /** Ausente/null conserva o calendário manual legado. */
@@ -323,6 +334,106 @@ export function sanitizeOriginPlace(value: unknown): string | null {
  */
 export const PAYMENT_ORIGIN_CODE_KEY = 'origemCodigo'
 export const PAYMENT_ORIGIN_PLACE_KEY = 'origemLugar'
+/** `utm_source` do lead (anúncio ou rede), quando a compra não veio de indicação nem botão. */
+export const PAYMENT_ORIGIN_SOURCE_KEY = 'origemFonte'
+
+/** Uma aquisição como o Admin a mostra (ficha da conta, últimas aquisições, pessoas). */
+export interface AcquisitionView {
+  id: string
+  email: string
+  audience: GiftAudience
+  kind: AcquisitionKind
+  offerId: string | null
+  offerSlug: string | null
+  /** Valor pago (string: bigint). Presente = "0". */
+  amountCents: string
+  originKind: AcquisitionOriginKind
+  campaignId: string | null
+  campaignTitle: string | null
+  ambassadorId: string | null
+  ambassadorName: string | null
+  place: string | null
+  utmSource: string | null
+  status: 'active' | 'refunded'
+  acquiredAt: string
+  /** É a primeira aquisição da pessoa no público ("por onde entrou"). */
+  firstEntry: boolean
+}
+/** Linha de resultado por origem no relatório "Origem das vendas". */
+export interface OriginBreakdownRow {
+  origin: AcquisitionOriginKind
+  /** Pessoas cuja PRIMEIRA aquisição no público caiu no período com esta origem. */
+  newPeople: number
+  gifts: number
+  purchases: number
+  subscriptions: number
+  revenueCents: string
+}
+export interface OriginWeekRow {
+  /** Segunda-feira da semana (YYYY-MM-DD, Brasília). */
+  weekStart: string
+  revenueByOrigin: Record<AcquisitionOriginKind, string>
+}
+export interface OriginPlaceRow {
+  place: string
+  purchases: number
+  subscriptions: number
+  revenueCents: string
+}
+/** Pela primeira entrada da pessoa: quantas assinaram até 45 dias depois e em quantos dias. */
+export interface OriginPathRow {
+  kind: AcquisitionKind
+  offerSlug: string | null
+  people: number
+  subscribed: number
+  averageDays: number | null
+}
+export interface OriginRankingRow extends OriginResults {
+  id: string
+  name: string
+}
+export interface OriginReport {
+  from: string
+  to: string
+  totals: {
+    newPeople: number
+    gifts: number
+    purchases: number
+    subscriptions: number
+    revenueCents: string
+    /** Parte do faturamento que veio de embaixadores e campanhas (0 a 1). */
+    referralShare: number
+  }
+  byOrigin: OriginBreakdownRow[]
+  weeks: OriginWeekRow[]
+  places: OriginPlaceRow[]
+  paths: OriginPathRow[]
+  ambassadors: OriginRankingRow[]
+  campaigns: OriginRankingRow[]
+  latest: AcquisitionView[]
+}
+/** O que veio por um embaixador ou por uma campanha, oferta a oferta. */
+export interface OriginOfferRow {
+  kind: AcquisitionKind
+  offerSlug: string | null
+  count: number
+  revenueCents: string
+}
+/** Uma pessoa que entrou por uma origem, com o que fez depois (detalhe no Admin). */
+export interface OriginPersonView {
+  email: string
+  /** A aquisição por esta origem (a primeira, se houver mais de uma). */
+  entry: AcquisitionView
+  /** O que a pessoa adquiriu depois, de qualquer origem. */
+  later: AcquisitionView[]
+  conversion: { status: string; bonusCents: number; paidAt: string } | null
+}
+export interface OriginDetail {
+  results: OriginResults
+  byOffer: OriginOfferRow[]
+  people: OriginPersonView[]
+  peopleTotal: number
+}
 
 /** Identificadores de mídia, nunca dados livres de uma família. */
 export function sanitizeGiftAttribution(value: unknown): GiftAttribution | null {

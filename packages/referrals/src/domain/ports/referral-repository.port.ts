@@ -164,7 +164,13 @@ export const AMBASSADOR_VISIBLE_CONVERSION_STATUSES = ['pending', 'eligible', 'p
  */
 export interface ConversionRecord {
   id: string
-  redemptionId: string
+  /** Resgate de onde veio o embaixador; nulo na venda pelo link (atribuída pela aquisição). */
+  redemptionId: string | null
+  /** Aquisição com a origem que ganhou o bônus (0013); nula nas conversões anteriores. */
+  acquisitionId: string | null
+  /** Quem assinou (lower) e o público: uma primeira assinatura por pessoa e público. */
+  subscriberEmail: string | null
+  audience: GiftAudience | null
   codeId: string
   ambassadorId: string | null
   paymentId: string
@@ -188,7 +194,9 @@ export interface ConversionListItem extends ConversionRecord {
   ambassadorName: string | null
   ambassadorEmail: string | null
   ambassadorPixKey: string | null
-  redemptionName: string
+  /** Nome do resgate de onde veio; nulo na venda pelo link (sem presente). */
+  redemptionName: string | null
+  /** E-mail de quem assinou: o do resgate ou, sem resgate, o `subscriberEmail`. */
   redemptionEmail: string
 }
 
@@ -210,6 +218,8 @@ export interface ReferralRepository {
     audience?: GiftAudience,
   ): Promise<RedemptionRecord[]>
   listConversionsByRedemptions(redemptionIds: string[]): Promise<ConversionRecord[]>
+  /** Conversões destas pessoas (pelo `subscriber_email`, preenchido desde a 0013). */
+  listConversionsBySubscribers(emails: string[]): Promise<ConversionRecord[]>
   // ── Embaixadores ──────────────────────────────────────────────────────────
   /** Cria embaixador + código na MESMA transação. `email_exists` = UNIQUE do e-mail. */
   createAmbassadorWithCode(input: {
@@ -366,7 +376,11 @@ export interface ReferralRepository {
    * Demais conflitos devolvem `created: false`; elegíveis/pagas não mudam.
    */
   insertConversion(input: {
-    redemptionId: string
+    redemptionId: string | null
+    acquisitionId?: string | null
+    /** Normalizado (lower). Obrigatório nas conversões novas (UNIQUE por pessoa e público). */
+    subscriberEmail: string
+    audience: GiftAudience
     codeId: string
     ambassadorId: string | null
     paymentId: string

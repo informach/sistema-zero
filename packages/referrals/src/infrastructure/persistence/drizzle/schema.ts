@@ -25,6 +25,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import type { AcquisitionBonusTerms } from '../../../domain/acquisition'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
 
 /**
@@ -417,6 +418,11 @@ export const acquisitions = referralsSchema.table(
     /** Etiqueta do botão da plataforma (`platform`). */
     place: varchar({ length: 48 }),
     utm: jsonb().$type<GiftAttribution>(),
+    /**
+     * Acordo do bônus capturado NA HORA da aquisição (embaixador, valores, prazo). Editar a
+     * campanha ou o padrão depois não muda o que já foi aceito. Nulo sem embaixador.
+     */
+    bonusTerms: jsonb().$type<AcquisitionBonusTerms>(),
     /** active | refunded */
     status: varchar({ length: 16 }).notNull().default('active'),
     acquiredAt: timestamp({ withTimezone: true }).notNull(),

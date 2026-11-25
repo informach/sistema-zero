@@ -5118,6 +5118,63 @@ const config: GatewayConfigInput = {
       transforms: referralsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Origem das vendas (25/11/2026): as leituras trazem o e-mail de cada pessoa e o
+    // faturamento por origem. Mesma régua da listagem de bônus: admin+, rotas literais
+    // (vencem o wildcard staff+ por especificidade).
+    {
+      id: 'referrals-admin-origins-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/origins',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-acquisitions-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/acquisitions',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-campaign-results-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/campaigns/:id/results',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-ambassador-results-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/ambassadors/:id/results',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Listas de ofertas dos embaixadores: PUT (troca a lista inteira) não cai no
+    // wildcard de escrita (só POST/PATCH).
+    {
+      id: 'referrals-admin-ambassador-offers-write',
+      methods: ['PUT'],
+      pathPattern: '/referrals/admin/ambassador-offers',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     {
       id: 'referrals-admin-read',
       methods: ['GET'],
@@ -5208,6 +5265,64 @@ const config: GatewayConfigInput = {
       // cortava o fluxo no meio em upstream frio (o funil espera até 45s).
       timeoutMs: 45_000,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Links de indicação `/i/<código>[/<oferta>][/pagamento]` e endereço antigo de campanha
+    // (25/11/2026): leituras do funil, no balde agregado das landings (ver codes/:code).
+    {
+      id: 'referrals-internal-link',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-link-offer',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code/:offer',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-link-target',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code/:offer/:target',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-redirects',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/redirects',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
     },
     {
       // Chave Pix do bônus, cadastrada pelo PRÓPRIO embaixador na página

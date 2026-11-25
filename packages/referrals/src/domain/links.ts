@@ -26,17 +26,26 @@ export function scholarshipShareUrl(funnelPublicUrl: string, code: string): stri
 }
 
 /**
+ * Segmento final que leva direto ao pagamento. É reservado: nenhuma oferta pode se chamar
+ * assim no link (o funil lê `/i/<code>/pagamento` como "a campanha, direto ao pagamento").
+ */
+export const CHECKOUT_SEGMENT = 'pagamento'
+
+/**
  * Link de indicação (25/11/2026): `/i/<code>` (a campanha, que já sabe a oferta) ou
  * `/i/<code>/<oferta>` (o embaixador escolhendo uma oferta da lista), com `/pagamento` para ir
  * direto ao checkout. O funil resolve no referrals e redireciona para a página certa.
+ * ⚠️ Código de embaixador sempre leva a oferta: `checkout` sem oferta só vale para campanha.
  */
 export function referralLinkUrl(
   funnelPublicUrl: string,
   code: string,
   options: { offerSlug?: string | null; checkout?: boolean } = {},
 ): string {
-  const parts = [funnelBase(funnelPublicUrl), 'i', code]
-  if (options.offerSlug) parts.push(options.offerSlug)
-  if (options.checkout) parts.push('pagamento')
+  if (options.offerSlug === CHECKOUT_SEGMENT)
+    throw new Error(`"${CHECKOUT_SEGMENT}" é reservado no link de indicação`)
+  const parts = [funnelBase(funnelPublicUrl), 'i', encodeURIComponent(code)]
+  if (options.offerSlug) parts.push(encodeURIComponent(options.offerSlug))
+  if (options.checkout) parts.push(CHECKOUT_SEGMENT)
   return parts.join('/')
 }

@@ -1,5 +1,6 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
+import type { AcquisitionReportsService } from '../../application/acquisitions/acquisition-reports.service'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import { EMAIL_PATTERN } from '../../domain/codes'
 import type {
@@ -21,6 +22,8 @@ export interface AdminRoutesDeps {
   repo: ReferralRepository
   requireAdminEnabled: boolean
   internalToken?: string
+  /** Resultados por origem de cada embaixador da página (25/11/2026). */
+  reports?: AcquisitionReportsService
 }
 
 /** Resgates no detalhe do embaixador (e-mail COMPLETO — visão admin). */
@@ -124,9 +127,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             limit: Math.min(query.limit ?? 25, 100),
             offset: query.offset ?? 0,
           })
+          const results = await deps.reports?.ambassadorResults(items.map((i) => i.id))
           return {
             items: items.map((i) => ({
               ...i,
+              ...(results?.get(i.id) ? { results: results.get(i.id) } : {}),
               linkEmailSentAt: i.linkEmailSentAt?.toISOString() ?? null,
               createdAt: i.createdAt.toISOString(),
             })),

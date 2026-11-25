@@ -1,17 +1,55 @@
 import type {
   CampaignInput,
+  CampaignKind,
+  CampaignLinkTarget,
   CampaignState,
   GiftAudience,
   GiftSource,
 } from '@sistemazero/core/referrals'
 
-export interface CampaignRecord extends Omit<CampaignInput, 'startsAt' | 'endsAt' | 'audience'> {
+export interface CampaignRecord
+  extends Omit<
+    CampaignInput,
+    | 'startsAt'
+    | 'endsAt'
+    | 'audience'
+    | 'kind'
+    | 'saleOfferId'
+    | 'linkTarget'
+    | 'redirectPath'
+    | 'redirectUntil'
+  > {
   audience: GiftAudience
+  kind: CampaignKind
+  saleOfferId: string | null
+  linkTarget: CampaignLinkTarget
+  redirectPath: string | null
+  redirectUntil: Date | null
   id: string
   startsAt: Date
   endsAt: Date
   createdAt: Date
   updatedAt: Date
+}
+
+/** A oferta que a campanha entrega: a do presente ou a da venda (nula em campanha antiga). */
+export function campaignOfferId(
+  campaign: Pick<CampaignRecord, 'kind' | 'giftOfferId' | 'saleOfferId'>,
+) {
+  return campaign.kind === 'sale' ? campaign.saleOfferId : (campaign.giftOfferId ?? null)
+}
+
+/** Endereço antigo ainda redirecionando para a campanha. */
+export function campaignRedirectActive(
+  campaign: Pick<CampaignRecord, 'redirectPath' | 'redirectUntil' | 'status'>,
+  now = new Date(),
+): boolean {
+  return (
+    campaign.redirectPath !== null &&
+    campaign.redirectUntil !== null &&
+    campaign.status !== 'draft' &&
+    now < campaign.redirectUntil
+  )
 }
 
 export function campaignState(
@@ -63,6 +101,22 @@ export class CampaignGiftOfferLockedError extends Error {
     super(
       'A oferta do presente só muda enquanto a campanha está em rascunho e sem cadastros. Duplique a campanha para criar uma edição com outra oferta.',
     )
+  }
+}
+
+/** O tipo (presente ou venda) segue a régua do público: só muda em rascunho sem cadastros. */
+export class CampaignKindLockedError extends Error {
+  constructor() {
+    super(
+      'O tipo da campanha só muda enquanto ela está em rascunho e sem cadastros. Duplique a campanha para criar uma edição de outro tipo.',
+    )
+  }
+}
+
+/** Outro endereço antigo já redireciona para uma campanha (UNIQUE `redirect_path`). */
+export class CampaignRedirectTakenError extends Error {
+  constructor() {
+    super('Este endereço antigo já redireciona para outra campanha.')
   }
 }
 

@@ -129,6 +129,21 @@ const registry = new RouteRegistry([
   // do funil (literais sob /referrals/internal) + o grant-manual do members.
   r({ id: 'referrals-admin-read', methods: ['GET'], pathPattern: '/referrals/admin/*' }),
   r({ id: 'referrals-admin-write', methods: ['POST', 'PATCH'], pathPattern: '/referrals/admin/*' }),
+  ...realConfig.routes
+    .filter(
+      (route) =>
+        route.id.startsWith('referrals-admin-') &&
+        route.id !== 'referrals-admin-read' &&
+        route.id !== 'referrals-admin-write',
+    )
+    .map((route) => routeConfigSchema.parse(route)),
+  ...realConfig.routes
+    .filter(
+      (route) =>
+        route.id.startsWith('referrals-internal-link') ||
+        route.id === 'referrals-internal-redirects',
+    )
+    .map((route) => routeConfigSchema.parse(route)),
   r({
     id: 'referrals-internal-code',
     methods: ['GET'],
@@ -521,6 +536,35 @@ describe('RouteRegistry', () => {
       registry.resolve('POST', '/referrals/internal/ambassadors/by-token/tok123/invites', 'v1')
         ?.route.id,
     ).toBe('referrals-internal-invite')
+    // Origem das vendas (e-mails + faturamento): literais admin+ vencem o wildcard staff+.
+    for (const [path, id] of [
+      ['/referrals/admin/origins', 'referrals-admin-origins-read'],
+      ['/referrals/admin/acquisitions', 'referrals-admin-acquisitions-read'],
+      ['/referrals/admin/campaigns/c1/results', 'referrals-admin-campaign-results-read'],
+      ['/referrals/admin/ambassadors/a1/results', 'referrals-admin-ambassador-results-read'],
+      ['/referrals/admin/conversions', 'referrals-admin-conversions-read'],
+    ])
+      expect(registry.resolve('GET', path, 'v1')?.route.id).toBe(id)
+    expect(registry.resolve('GET', '/referrals/admin/ambassador-offers', 'v1')?.route.id).toBe(
+      'referrals-admin-read',
+    )
+    expect(registry.resolve('PUT', '/referrals/admin/ambassador-offers', 'v1')?.route.id).toBe(
+      'referrals-admin-ambassador-offers-write',
+    )
+    // Links `/i/` do funil: um, dois ou três segmentos depois de /links.
+    expect(registry.resolve('GET', '/referrals/internal/links/mari-x7k2', 'v1')?.route.id).toBe(
+      'referrals-internal-link',
+    )
+    expect(
+      registry.resolve('GET', '/referrals/internal/links/mari-x7k2/desafio', 'v1')?.route.id,
+    ).toBe('referrals-internal-link-offer')
+    expect(
+      registry.resolve('GET', '/referrals/internal/links/mari-x7k2/desafio/pagamento', 'v1')?.route
+        .id,
+    ).toBe('referrals-internal-link-target')
+    expect(registry.resolve('GET', '/referrals/internal/redirects', 'v1')?.route.id).toBe(
+      'referrals-internal-redirects',
+    )
     // O literal `grant-manual` NUNCA cai no `grant` (segmento distinto).
     expect(registry.resolve('POST', '/members/webhooks/grant-manual', 'v1')?.route.id).toBe(
       'members-webhook-grant-manual',

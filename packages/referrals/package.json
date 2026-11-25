@@ -12,6 +12,7 @@
     "test": "bun test",
     "gifts:upgrade-mural": "bun run scripts/upgrade-mural-trials.ts",
     "gifts:backfill-offer": "bun run scripts/backfill-gift-offer.ts",
+    "acquisitions:backfill": "bun run scripts/backfill-acquisitions.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "check": "biome check .",
