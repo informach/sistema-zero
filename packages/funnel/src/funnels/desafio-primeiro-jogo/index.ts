@@ -10,6 +10,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   basePath: '/kids/desafio-primeiro-jogo',
   productName: 'Desafio do Primeiro Jogo',
   productSku: 'desafio-primeiro-jogo',
+  apelido: 'desafio',
   imagesBase: '/img/desafio-primeiro-jogo',
   checkoutImage: 'farol-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',

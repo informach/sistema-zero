@@ -1,35 +1,27 @@
 ---
-import { FUNNEL_KEYS, getFunnelByKey } from '../funnels/registry'
-import { getActiveOffer } from '../server/catalog'
 import { getDeps } from '../server/deps'
+import { pageForOffer } from '../server/page-offer'
 
 export const prerender = false
 
 // Destino do LEMBRETE de renovação do plano anual à vista (e-mail do members):
-// `/renovar?oferta=<slug>` → resolve o FUNIL que vende a oferta e manda ao
-// checkout dele. O slug pode ser a oferta PRINCIPAL do funil (env
-// FUNNEL_OFFER_*) ou a IRMÃ do alternador (altOffer da principal, no catálogo)
-// — nesse caso o `?oferta=` repassado pré-seleciona o plano certo no checkout.
+// `/renovar?oferta=<slug>` → a página do PRODUTO da oferta (catálogo, 25/11/2026) e o checkout
+// dela; a oferta que não é a principal vai com `?oferta=` (pré-seleciona o plano certo).
 Astro.response.headers.set('cache-control', 'no-store')
 
 const slug = (Astro.url.searchParams.get('oferta') ?? '').trim().toLowerCase()
-const { env, gateway, log } = getDeps()
+const { gateway, log } = getDeps()
 
 if (slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-  const direct = FUNNEL_KEYS.find((key) => env.offerByFunnel[key] === slug)
-  if (direct) {
-    const f = getFunnelByKey(direct)
-    if (f) return Astro.redirect(`${f.basePath}/checkout`, 302)
-  }
-
-  for (const key of FUNNEL_KEYS) {
-    const principal = env.offerByFunnel[key]
-    if (!principal) continue
-    const offer = await getActiveOffer(gateway, principal, { log })
-    if (offer?.altOffer?.slug === slug) {
-      const f = getFunnelByKey(key)
-      if (f) return Astro.redirect(`${f.basePath}/checkout?oferta=${encodeURIComponent(slug)}`, 302)
-    }
+  for (const audience of ['kids', 'adult'] as const) {
+    const page = await pageForOffer(gateway, slug, audience, { log })
+    if (page)
+      return Astro.redirect(
+        page.primary
+          ? `${page.funnel.basePath}/checkout`
+          : `${page.funnel.basePath}/checkout?oferta=${encodeURIComponent(slug)}`,
+        302,
+      )
   }
 }
 

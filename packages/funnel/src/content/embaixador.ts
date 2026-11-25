@@ -206,6 +206,8 @@ export interface OfertaDoEmbaixador {
   accessDays: number | null
   /** Prazo em meses da oferta de venda (o Cadê vendido: 12 = "1 ano"); ausente nas antigas. */
   accessMonths?: number | null
+  /** SKU do produto da oferta: dá o apelido do link curto (`/i/<código>/<apelido>`). */
+  productSku?: string | null
   includesMural: boolean
   subscription: boolean
   link: string

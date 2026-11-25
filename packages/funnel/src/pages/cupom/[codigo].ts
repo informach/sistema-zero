@@ -10,8 +10,8 @@ export const GET: APIRoute = async ({ params, url }) => {
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' }
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,59}$/.test(code))
     return new Response('Cupom inválido.', { status: 400, headers })
-  const { env, gateway } = getDeps()
-  const path = await resolveCouponOfferPath(env, gateway, slug, audience)
+  const { gateway } = getDeps()
+  const path = await resolveCouponOfferPath(gateway, slug, audience)
   if (!path)
     return new Response('Esta oferta não tem uma página de compra disponível neste link.', {
       status: 404,

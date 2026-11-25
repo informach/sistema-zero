@@ -1,12 +1,14 @@
 import { sanitizeReferralCode } from '@sistemazero/core/referrals'
-import type { Env } from '../lib/env'
+import { funnelsByApelido } from '../funnels/registry'
 import type { GatewayClient } from '../lib/gateway-client'
 import { originCookie } from '../lib/lead-origin'
 import { resolveOfferFunnel } from './coupon-link'
 
 export interface ReferralLinkDeps {
-  env: Env
-  gateway: GatewayClient
+  gateway: Pick<
+    GatewayClient,
+    'resolveReferralLink' | 'resolveReferralLinkForProduct' | 'getOffer' | 'getProduct'
+  >
   secureCookie: boolean
   log?: (event: string, meta?: Record<string, unknown>) => void
 }
@@ -26,6 +28,7 @@ const SLUG = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/
 const COUPON = /^[A-Za-z0-9][A-Za-z0-9._-]{0,59}$/
 const TOKEN = /^[a-zA-Z0-9][a-zA-Z0-9._+-]{0,99}$/
 const CHECKOUT = 'pagamento'
+const GIFT = 'presente'
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'event_code'] as const
 const HEADERS = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' }
 
@@ -81,16 +84,28 @@ export async function referralLinkRedirect(
   const code = sanitizeReferralCode(params.code)
   let offer = params.offer ?? null
   let checkout = false
+  // Link curto por curso (25/11/2026): `/i/<código>/<apelido>[/pagamento|/presente]`. O referrals
+  // escolhe a oferta da lista do embaixador (indicação ou presente) do produto dessa página.
+  const pages = funnelsByApelido(offer)
+  const gift = pages.length > 0 && params.target === GIFT
   if (params.target !== undefined) {
-    if (params.target !== CHECKOUT) return text('Link não encontrado.', 404)
-    checkout = true
+    if (params.target !== CHECKOUT && !gift) return text('Link não encontrado.', 404)
+    checkout = params.target === CHECKOUT
   } else if (offer === CHECKOUT) {
     offer = null
     checkout = true
   }
   if (!code || (offer !== null && !SLUG.test(offer))) return text('Link não encontrado.', 404)
 
-  const { status, body } = await deps.gateway.resolveReferralLink(code, offer, checkout)
+  const { status, body } =
+    pages.length > 0
+      ? await deps.gateway.resolveReferralLinkForProduct(
+          code,
+          gift ? 'gift' : 'referral',
+          pages.map((f) => f.productSku),
+          checkout,
+        )
+      : await deps.gateway.resolveReferralLink(code, offer, checkout)
   // 4xx do referrals (404, validação) é link que não existe; só 5xx/timeout é "tente de novo".
   if (status >= 400 && status < 500)
     return text('Este link não existe ou não está mais ativo.', 404)
@@ -105,15 +120,16 @@ export async function referralLinkRedirect(
     // Presente: a página do presente resolve o CURSO e redireciona à página de venda dele no modo
     // presente (uma página por curso); leva a escolha do embaixador quando ela veio no link.
     target = new URL(`/bolsa/${encodeURIComponent(link.code)}`, url)
-    if (offer) target.searchParams.set('oferta', link.offerSlug)
+    if (offer && link.sourceKind === 'ambassador') target.searchParams.set('oferta', link.offerSlug)
   } else {
-    const funnel = await resolveOfferFunnel(deps.env, deps.gateway, link.offerSlug, link.audience)
+    const funnel = await resolveOfferFunnel(deps.gateway, link.offerSlug, link.audience)
     if (!funnel) return text('Esta oferta não tem uma página de compra disponível.', 404)
-    // A irmã do alternador (o anual da Comunidade, por exemplo) só se escolhe no checkout: a
-    // página da oferta mostra e cota a principal (mesma régua do `/cupom`).
+    // A irmã do alternador (o anual da Comunidade, por exemplo) só se escolhe no checkout. Outra
+    // oferta do mesmo produto vai com `?oferta=` (a página e o checkout a conferem); a principal
+    // vai sem.
     const toCheckout = link.target === 'checkout' || funnel.alt
     target = new URL(`${funnel.basePath}/${toCheckout ? 'checkout' : 'oferta'}`, url)
-    if (funnel.alt) target.searchParams.set('oferta', link.offerSlug)
+    if (!funnel.primary) target.searchParams.set('oferta', link.offerSlug)
     // O código também na URL: a página regrava o cookie (link copiado e aberto em outro
     // navegador) e o endereço antigo não redireciona de volta (sem laço).
     target.searchParams.set('indicacao', link.code)

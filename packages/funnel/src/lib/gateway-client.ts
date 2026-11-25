@@ -313,6 +313,15 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         timeoutMs,
       )
     },
+    /** GET /catalog/products/:slug — produto público (aceita o SKU); traz `primaryOfferSlug`. */
+    async getProduct(slug: string): Promise<GatewayResult> {
+      const path = `/catalog/products/${encodeURIComponent(slug)}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
     async getOffer(slug: string): Promise<GatewayResult> {
       const path = `/catalog/offers/${encodeURIComponent(slug)}`
       return requestJson(
@@ -507,6 +516,27 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       const path = `/referrals/internal/links/${segments.map(encodeURIComponent).join('/')}`
       return requestJson(
         `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /**
+     * GET /referrals/internal/links/:code?product=&kind=[&checkout=1] — o link curto por curso
+     * (`/i/<código>/<apelido>`): a oferta da lista do tipo pedido cujo produto é um dos `skus`.
+     * O HMAC assina o pathname, sem a query.
+     */
+    async resolveReferralLinkForProduct(
+      code: string,
+      kind: 'gift' | 'referral',
+      skus: string[],
+      checkout: boolean,
+    ): Promise<GatewayResult> {
+      const path = `/referrals/internal/links/${encodeURIComponent(code)}`
+      const query = new URLSearchParams({ product: skus.join(','), kind })
+      if (checkout) query.set('checkout', '1')
+      return requestJson(
+        `${opts.baseUrl}${path}?${query.toString()}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
         timeoutMs,
       )

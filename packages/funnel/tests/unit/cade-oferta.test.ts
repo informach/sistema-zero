@@ -13,7 +13,6 @@ import { cadeAdultoVenda } from '../../src/funnels/cade-adulto/oferta'
 import { CADE_TODO_MUNDO } from '../../src/funnels/cade-todo-mundo'
 import { cadeKidsVenda } from '../../src/funnels/cade-todo-mundo/oferta'
 import { FUNNEL_KEYS, FUNNELS, getFunnelByKey } from '../../src/funnels/registry'
-import { offerEnvKey } from '../../src/lib/env'
 import { checkOfferContract } from '../../src/server/offer-contract'
 
 const src = (path: string) => Bun.file(new URL(`../../src/${path}`, import.meta.url)).text()
@@ -28,12 +27,14 @@ const politica = (over: Partial<Parameters<typeof checkOfferContract>[1] & objec
 })
 
 describe('registro dos funis novos', () => {
-  test('Cadê Kids, Cadê adulto e o guia, cada um com a sua env', () => {
+  test('Cadê Kids, Cadê adulto e o guia, cada um pelo produto do catálogo', () => {
     expect(getFunnelByKey('kids/cade-todo-mundo')).toBe(CADE_TODO_MUNDO)
     expect(getFunnelByKey('pro/cade-todo-mundo')).toBe(CADE_ADULTO)
-    expect(offerEnvKey(CADE_TODO_MUNDO.key)).toBe('FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO')
-    expect(offerEnvKey(CADE_ADULTO.key)).toBe('FUNNEL_OFFER_PRO_CADE_TODO_MUNDO')
-    expect(offerEnvKey('kids/vilao-em-aliado')).toBe('FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO')
+    expect(CADE_TODO_MUNDO.productSku).toBe('cade-todo-mundo')
+    expect(CADE_ADULTO.productSku).toBe('cade-todo-mundo-adulto')
+    expect(getFunnelByKey('kids/vilao-em-aliado')?.productSku).toBe(
+      'transformando-o-vilao-em-aliado',
+    )
   })
 
   test('as landings /kids e /pro continuam no primeiro funil de antes', () => {
@@ -41,14 +42,6 @@ describe('registro dos funis novos', () => {
       FUNNEL_KEYS.find((k) => FUNNELS[k]?.audience === audience)
     expect(primeiro('kids')).toBe('kids/desafio-primeiro-jogo')
     expect(primeiro('pro')).toBe('pro/comunidade-dos-criadores')
-  })
-
-  test('as envs novas estão declaradas no Railway', async () => {
-    const vars = await Bun.file(
-      new URL('../../../../.railway/variables.ts', import.meta.url),
-    ).text()
-    for (const key of ['kids/cade-todo-mundo', 'pro/cade-todo-mundo', 'kids/vilao-em-aliado'])
-      expect(vars).toContain(`'${offerEnvKey(key)}'`)
   })
 })
 

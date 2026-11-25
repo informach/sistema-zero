@@ -21,13 +21,6 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     FUNNEL_INTERNAL_TOKEN: 'qa-isolated-local',
     SENTRY_DSN: '',
     TRUST_PROXY: 'false',
-    FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
-    FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-adulto-30-dias',
-    FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
-    FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO: 'cade-todo-mundo-7-dias',
-    FUNNEL_OFFER_PRO_CADE_TODO_MUNDO: 'cade-todo-mundo-adulto-7-dias',
-    FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO: 'transformando-o-vilao-em-aliado',
-    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
   },
 })
 const result = {

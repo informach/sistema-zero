@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
-import type { Env } from '../../src/lib/env'
 import {
   ORIGIN_COOKIE,
   originCookie,
@@ -11,6 +10,7 @@ import { isRateLimitedGetPath } from '../../src/lib/rate-limit-paths'
 import { createCampaignRedirects, redirectCandidate } from '../../src/server/campaign-redirect'
 import { clearOfferCache } from '../../src/server/catalog'
 import { pixContentFingerprint, startBoleto, startPix } from '../../src/server/checkout'
+import { clearPrimaryOfferCache } from '../../src/server/page-offer'
 import { referralLinkRedirect } from '../../src/server/referral-link'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
@@ -21,12 +21,20 @@ const CONTACT = {
   cpf: '529.982.247-25',
   telefone: '(11) 98888-7777',
 }
-const ENV = {
-  offerByFunnel: {
-    'kids/desafio-primeiro-jogo': 'desafio-primeiro-jogo-30-dias',
-    'kids/comunidade-dos-criadores': 'comunidade-dos-criadores-mensal',
-  },
-} as unknown as Env
+/** O catálogo falso com as páginas do Desafio e da Comunidade Kids (a principal de cada produto). */
+function pagesGateway() {
+  clearPrimaryOfferCache()
+  const gw = createFakeGateway()
+  gw.setProductPrimary('desafio-primeiro-jogo', 'desafio-primeiro-jogo-30-dias')
+  gw.setOfferConfig('desafio-primeiro-jogo-30-dias', {
+    productSku: 'desafio-primeiro-jogo',
+    accessMode: 'fixed',
+    accessDurationValue: 30,
+    accessDurationUnit: 'days',
+  })
+  gw.setProductPrimary('comunidade-dos-criadores', 'comunidade-dos-criadores-mensal')
+  return gw
+}
 
 const linkBody = (overrides: Record<string, unknown> = {}) => ({
   code: 'mari-x7k2',
@@ -99,12 +107,12 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
   beforeEach(() => clearOfferCache())
 
   test('venda pela página: oferta com ?indicacao, cupom e UTM; grava a origem', async () => {
-    const gw = createFakeGateway()
+    const gw = pagesGateway()
     gw.setLinkResult(200, linkBody({ couponCode: 'black10' }))
     const res = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2/desafio-primeiro-jogo-30-dias?utm_source=instagram'),
       { code: 'mari-x7k2', offer: 'desafio-primeiro-jogo-30-dias' },
-      { env: ENV, gateway: gw.gateway, secureCookie: false },
+      { gateway: gw.gateway, secureCookie: false },
     )
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toBe(
@@ -119,11 +127,12 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
   })
 
   test('direto ao pagamento: checkout do funil (a irmã do alternador vai com ?oferta)', async () => {
-    const gw = createFakeGateway()
+    const gw = pagesGateway()
     gw.setOfferConfig('comunidade-dos-criadores-mensal', {
       pricingMode: 'subscription',
       billingIntervalMonths: 1,
       altOffer: { slug: 'comunidade-dos-criadores-anual' },
+      productSku: 'comunidade-dos-criadores',
     })
     gw.setLinkResult(
       200,
@@ -132,7 +141,7 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     const res = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2/pagamento'),
       { code: 'mari-x7k2', offer: 'pagamento' },
-      { env: ENV, gateway: gw.gateway, secureCookie: false },
+      { gateway: gw.gateway, secureCookie: false },
     )
     expect(gw.calls.links[0]).toMatchObject({ offerSlug: null, checkout: true })
     expect(res.headers.get('location')).toBe(
@@ -141,24 +150,25 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
   })
 
   test('irmã do alternador com destino na página também vai ao checkout (o plano certo)', async () => {
-    const gw = createFakeGateway()
+    const gw = pagesGateway()
     gw.setOfferConfig('comunidade-dos-criadores-mensal', {
       pricingMode: 'subscription',
       billingIntervalMonths: 1,
       altOffer: { slug: 'comunidade-dos-criadores-anual' },
+      productSku: 'comunidade-dos-criadores',
     })
     gw.setLinkResult(200, linkBody({ offerSlug: 'comunidade-dos-criadores-anual' }))
     const res = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2/comunidade-dos-criadores-anual'),
       { code: 'mari-x7k2', offer: 'comunidade-dos-criadores-anual' },
-      { env: ENV, gateway: gw.gateway, secureCookie: false },
+      { gateway: gw.gateway, secureCookie: false },
     )
     expect(res.headers.get('location')).toStartWith('/kids/comunidade-dos-criadores/checkout?')
   })
 
   test('slug acima de 80 e 4xx do referrals são 404, nunca 502', async () => {
-    const gw = createFakeGateway()
-    const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
+    const gw = pagesGateway()
+    const deps = { gateway: gw.gateway, secureCookie: false }
     const long = 'a'.repeat(81)
     expect(
       (
@@ -178,9 +188,9 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
   })
 
   test('presente leva à página do presente; 404 uniforme; referrals fora = 502', async () => {
-    const gw = createFakeGateway()
+    const gw = pagesGateway()
     gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'cade-todo-mundo-7-dias' }))
-    const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
+    const deps = { gateway: gw.gateway, secureCookie: false }
     const gift = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2'),
       { code: 'mari-x7k2' },
@@ -210,8 +220,8 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
   })
 
   test('presente sempre passa pela página do presente, levando a escolha do embaixador', async () => {
-    const gw = createFakeGateway()
-    const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
+    const gw = pagesGateway()
+    const deps = { gateway: gw.gateway, secureCookie: false }
     gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'desafio-primeiro-jogo-30-dias' }))
     const comPagina = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2/desafio-primeiro-jogo-30-dias'),
@@ -231,13 +241,67 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     expect(semPagina.headers.get('location')).toBe('/bolsa/mari-x7k2?oferta=guia-sem-pagina')
   })
 
+  test('link curto por curso: /i/<código>/<apelido>[/pagamento|/presente] pede ao referrals pelo produto', async () => {
+    const gw = pagesGateway()
+    const deps = { gateway: gw.gateway, secureCookie: false }
+    gw.setLinkResult(200, linkBody())
+    const venda = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/desafio'),
+      { code: 'mari-x7k2', offer: 'desafio' },
+      deps,
+    )
+    expect(venda.headers.get('location')).toBe(
+      '/kids/desafio-primeiro-jogo/oferta?indicacao=mari-x7k2',
+    )
+    expect(gw.calls.links[0]).toMatchObject({
+      code: 'mari-x7k2',
+      checkout: false,
+      kind: 'referral',
+    })
+    expect(gw.calls.links[0]?.skus?.toSorted()).toEqual([
+      'desafio-primeiro-jogo',
+      'desafio-primeiro-jogo-adulto',
+    ])
+
+    gw.setLinkResult(200, linkBody({ target: 'checkout' }))
+    const pagamento = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/desafio/pagamento'),
+      { code: 'mari-x7k2', offer: 'desafio', target: 'pagamento' },
+      deps,
+    )
+    expect(pagamento.headers.get('location')).toStartWith('/kids/desafio-primeiro-jogo/checkout?')
+    expect(gw.calls.links[1]).toMatchObject({ checkout: true, kind: 'referral' })
+
+    gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'cade-todo-mundo-15-dias' }))
+    const presente = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/cade/presente'),
+      { code: 'mari-x7k2', offer: 'cade', target: 'presente' },
+      deps,
+    )
+    expect(presente.headers.get('location')).toBe('/bolsa/mari-x7k2?oferta=cade-todo-mundo-15-dias')
+    expect(gw.calls.links[2]?.kind).toBe('gift')
+    expect(gw.calls.links[2]?.skus?.toSorted()).toEqual([
+      'cade-todo-mundo',
+      'cade-todo-mundo-adulto',
+    ])
+
+    // `/presente` só depois de um apelido; depois de um slug de oferta continua 404.
+    const torto = await referralLinkRedirect(
+      new URL('http://f/i/mari-x7k2/desafio-primeiro-jogo-30-dias/presente'),
+      { code: 'mari-x7k2', offer: 'desafio-primeiro-jogo-30-dias', target: 'presente' },
+      deps,
+    )
+    expect(torto.status).toBe(404)
+    expect(gw.calls.links).toHaveLength(3)
+  })
+
   test('venda de oferta sem página de compra no funil: 404 com explicação', async () => {
-    const gw = createFakeGateway()
+    const gw = pagesGateway()
     gw.setLinkResult(200, linkBody({ offerSlug: 'oferta-sem-funil' }))
     const res = await referralLinkRedirect(
       new URL('http://f/i/mari-x7k2/oferta-sem-funil'),
       { code: 'mari-x7k2', offer: 'oferta-sem-funil' },
-      { env: ENV, gateway: gw.gateway, secureCookie: false },
+      { gateway: gw.gateway, secureCookie: false },
     )
     expect(res.status).toBe(404)
   })

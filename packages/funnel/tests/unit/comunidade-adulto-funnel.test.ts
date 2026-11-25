@@ -28,7 +28,6 @@ import {
   getFunnelByKey,
   isFunnelKey,
 } from '../../src/funnels/registry'
-import { offerEnvKey } from '../../src/lib/env'
 
 // Funil adulto da Comunidade dos Criadores (20/10/2026, Canvas de 19/10): o registro, o despacho da
 // oferta pela chave, a copy da página e as etapas compartilhadas (checkout, pré-checkout, obrigado).
@@ -80,15 +79,8 @@ describe('registro do funil adulto', () => {
     expect(new Set(versoes).size).toBe(versoes.length)
   })
 
-  test('a oferta vem da env declarada no Railway e no exemplo', () => {
-    const env = offerEnvKey(COMUNIDADE_ADULTO.key)
-    expect(env).toBe('FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES')
-    expect(readFileSync(join(ROOT, '..', '..', '.railway', 'variables.ts'), 'utf8')).toContain(
-      `'${env}'`,
-    )
-    expect(readFileSync(join(ROOT, '.env.example'), 'utf8')).toContain(
-      `${env}=comunidade-dos-criadores-adulto-mensal`,
-    )
+  test('a oferta vem da principal do produto no catálogo (sem env)', () => {
+    expect(COMUNIDADE_ADULTO.productSku).toBe('comunidade-dos-criadores-adulto')
   })
 
   test('o preço de reserva é o mesmo da Comunidade Kids (R$ 97 e R$ 970)', () => {

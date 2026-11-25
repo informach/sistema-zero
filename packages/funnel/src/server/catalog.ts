@@ -22,6 +22,8 @@ export interface CatalogOfferView {
   guaranteeDays: number | null
   installmentsMax: number | null
   productName: string
+  /** SKU do produto da oferta: a página que a vende é a do mesmo produto (25/11/2026). */
+  productSku: string
   /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
   allowsCoupon: boolean
   /** `one_time` (pagamento único) ou `subscription` (recorrente). */
@@ -341,6 +343,7 @@ export function parseCatalogOffer(
     guaranteeDays: typeof o.guaranteeDays === 'number' ? o.guaranteeDays : null,
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
+    productSku: typeof product.sku === 'string' ? product.sku : '',
     allowsCoupon: content.allowsCoupon === true,
     pricingMode,
     ...accessPolicy,

@@ -739,7 +739,7 @@ describe('painel do embaixador', () => {
     const page = await src('pages/embaixador/[token].astro')
     expect(page).toContain('referrer-policy')
     expect(page).toContain('EmbaixadorPainel')
-    expect(page).toContain('offers={view.offers}')
+    expect(page).toContain('offers={view.offers ? comLinksCurtos(view.offers) : undefined}')
     expect(page).toContain('EmbaixadorBonus')
     expect(page).toContain('PAINEL_DUVIDAS')
     // As seções que a proposta tirou.

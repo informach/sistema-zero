@@ -225,9 +225,9 @@ export interface FunnelDef {
   key: string
   /** Prefixo de URL do funil: `/${audience}/${produto}`. */
   basePath: string
-  // ⚠️ A oferta principal do funil NÃO vive mais no código: vem da env
-  // `FUNNEL_OFFER_<KEY>` (obrigatória, fail-fast — ver `lib/env.ts`/`server/offer.ts`),
-  // resolvida por `resolveOfferSlug(env, key)`. Trocar de oferta/campanha = só mudar a env.
+  // ⚠️ A oferta principal da página NÃO vive no código nem em env (25/11/2026): é a
+  // `primaryOfferId` do PRODUTO (`productSku`) no catálogo, marcada no Admin
+  // (`server/page-offer.ts`). Sem ela, a página responde 503.
   productName: string
   /**
    * Nome da cobrança da oferta PRINCIPAL (descrição do pagamento e da assinatura), quando difere do
@@ -256,7 +256,7 @@ export interface FunnelDef {
   lifetimeAccess?: boolean
   /**
    * Use quando a copy contém uma promessa rígida de acesso. Página e cobrança falham fechadas se
-   * a env apontar para uma oferta com contrato diferente.
+   * a oferta do catálogo tiver um contrato diferente.
    */
   offerContract?: FunnelOfferContract
   steps: FunnelSteps
@@ -266,6 +266,12 @@ export interface FunnelDef {
    * página vende (1 ano): a página é escolhida pelo CURSO, nunca pela oferta.
    */
   giftCourses?: readonly string[]
+  /**
+   * Apelido do curso no link curto do embaixador (25/11/2026): `/i/<código>/<apelido>` (página de
+   * venda), `/i/<código>/<apelido>/pagamento` (checkout) e `/i/<código>/<apelido>/presente`
+   * (presente). Único por público; o mesmo apelido nos dois públicos (o público vem do código).
+   */
+  apelido?: string
   /** Termo de Uso da oferta, em `${basePath}/termos`. A Política de Privacidade é única. */
   legal: FunnelLegal
   content: FunnelContent
@@ -287,18 +293,16 @@ export function funnelKey(audience: string, produto: string): string {
 export const FUNNELS: Record<string, FunnelDef> = {
   // A landing /pro abre a Comunidade adulta, primeiro funil deste público.
   [COMUNIDADE_ADULTO.key]: COMUNIDADE_ADULTO,
-  // O Desafio adulto entra depois: `/pro` segue na Comunidade. A env
-  // `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção.
+  // O Desafio adulto entra depois: `/pro` segue na Comunidade.
   [DESAFIO_ADULTO.key]: DESAFIO_ADULTO,
   // Uma página por oferta (25/11/2026): o Cadê adulto, depois do Desafio adulto (`/pro` não muda).
-  // Env `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO`.
   [CADE_ADULTO.key]: CADE_ADULTO,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
   // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
   // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.
   [COMUNIDADE_DOS_CRIADORES.key]: COMUNIDADE_DOS_CRIADORES,
   // Uma página por oferta (25/11/2026): o Cadê Kids e o guia para pais, por último (`/kids` não
-  // muda). Envs `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` e `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO`.
+  // muda).
   [CADE_TODO_MUNDO.key]: CADE_TODO_MUNDO,
   [VILAO_EM_ALIADO.key]: VILAO_EM_ALIADO,
 }
@@ -335,6 +339,18 @@ export function funnelForGiftCourse(
       (f) => f.audience === target && (f.giftCourses ?? []).includes(courseSlug),
     ) ?? null
   )
+}
+
+/** As páginas (uma por público) de um apelido de link curto; vazio = não é apelido. */
+export function funnelsByApelido(apelido: string | null | undefined): FunnelDef[] {
+  if (!apelido) return []
+  return Object.values(FUNNELS).filter((f) => f.apelido === apelido)
+}
+
+/** O apelido de link curto da página que vende este produto (`productSku`), se houver. */
+export function apelidoDoProduto(productSku: string | null | undefined): string | null {
+  if (!productSku) return null
+  return Object.values(FUNNELS).find((f) => f.productSku === productSku)?.apelido ?? null
 }
 
 export function getFunnelByKey(key: string | null | undefined): FunnelDef | null {

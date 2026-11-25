@@ -1,5 +1,51 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Oferta de cada página no CATÁLOGO e links curtos por curso (25/11/2026)
+
+**Sem env de oferta.** As `FUNNEL_OFFER_*` saíram de vez (código, `.env.example`, `.railway/variables.ts`,
+testes): a oferta de cada página é a **oferta principal do PRODUTO** da página (`FunnelDef.productSku`),
+marcada no Admin (Catálogo › Produto › "Oferta principal da página de venda"; coluna
+`catalog.products.primary_offer_id`, `PATCH /catalog/products/:id {primaryOfferId}`). O funil lê
+`GET /catalog/products/:sku` → `primaryOfferSlug` (`gateway.getProduct`, a rota pública aceita o SKU)
+em `server/page-offer.ts` (`primaryOfferSlug`, cache de 60 s por SKU; 404/sem principal → `null` também
+em cache; falha não-200 usa o valor antigo). Todos os consumidores passam por ali: `oferta`/`checkout`
+(`resolvePageOffer`), a cobrança e o grant (`makeResolveOffer(gateway)`, agora assíncrono e `null` sem
+principal), `/cupom`, `/api/oferta-link`, `/i/`, `/renovar` (`pageForOffer`) e o commerce interno
+(`defaultOfferRef`, `termsForOffer` pelo `offer.product.sku`).
+- **Sem principal marcada:** a página e o checkout respondem 503 "temporariamente indisponível"
+  (eventos `offer.page_without_primary_offer` / `checkout.page_without_primary_offer`; log
+  `page_offer.no_primary_offer`), a cobrança 503 `OFFER_UNAVAILABLE` e o grant sem `offerRef` re-tenta
+  (`GrantRetryError(503)`). O boot NUNCA falha por isso. O modo presente (`?presente=`) segue sem
+  depender da principal.
+- **`?oferta=<slug>`** na página e no checkout escolhe OUTRA oferta do MESMO produto, se ela estiver
+  disponível e passar no `offerContract` da página; senão vale a principal (sem erro). A irmã do
+  alternador continua indo ao checkout. No `POST` da cobrança o conjunto aceito é a principal, a
+  irmã do alternador e as ofertas do mesmo produto dentro do contrato; slug forjado segue 400
+  `INVALID_OFFER`. O cupom é cotado contra a oferta mostrada. `CatalogOfferView.productSku` vem do
+  `product.sku` da oferta.
+- **Links curtos por curso:** `FunnelDef.apelido` (`comunidade`, `desafio`, `cade`, `guia`; único por
+  público, o mesmo nos dois públicos porque o público vem do código) e `funnelsByApelido` /
+  `apelidoDoProduto` no registry. `/i/<código>/<apelido>` (página de venda),
+  `/i/<código>/<apelido>/pagamento` (checkout) e `/i/<código>/<apelido>/presente` (presente):
+  `referralLinkRedirect` pede ao referrals `GET /referrals/internal/links/:code?product=<skus>&kind=
+  gift|referral[&checkout=1]` (`gateway.resolveReferralLinkForProduct`; o HMAC assina o pathname, sem a
+  query) com os SKUs das páginas desse apelido; o referrals devolve a oferta da lista do embaixador
+  daquele tipo para o produto. O presente segue `/bolsa/<código>?oferta=` → a página do curso com
+  `?presente=&oferta-presente=`. Código de campanha ignora o apelido (vale a oferta da campanha).
+  `/presente` depois de um slug de oferta é 404. Os links antigos (`/i/<código>`,
+  `/i/<código>/<oferta>[/pagamento]`) continuam iguais; a venda que não é a principal vai com
+  `?oferta=` (campanhas inclusive).
+- **Painel do embaixador:** `server/ambassador-links.ts` (`comLinksCurtos`, aplicado no
+  `[token].astro`) troca o `link`/`checkoutLink` das ofertas pelo link curto quando o produto tem
+  apelido e aparece uma vez naquele tipo e público; senão fica o link do referrals. As ofertas
+  chegam com `productSku` do referrals.
+- Testes: `tests/unit/offer.test.ts` (principal, cache, `?oferta=`, contrato, `pageForOffer`, nenhuma
+  `FUNNEL_OFFER_*` sobrando), `tests/unit/ambassador-links.test.ts`, `referral-origin.test.ts` (link
+  curto). No fake: `setProductPrimary(sku, slug|null)` e `setOfferConfig(slug, { productSku })`; nos
+  browsers, `tests/browser/helpers/page-primaries.ts` (`productResponse`).
+- ⚠️ **Antes do deploy** (staging e produção): marcar no Admin a oferta principal de cada uma das sete
+  páginas; sem isso a página fica 503. Os parágrafos abaixo que falam de `FUNNEL_OFFER_*` são história.
+
 ## Origem de cada compra e links `/i/` (25/11/2026, Lote 3 da frente de embaixadores)
 
 Plano no `CLAUDE.md` do referrals (seção "Origem por aquisição").
@@ -77,7 +123,7 @@ Uma página por oferta: as três ofertas que só tinham página de presente vira
   `termosHref`, `canonical`, `indexavel` (adulto) e o slot `head`. Termos próprios:
   `termos-cade-kids.ts`, `termos-cade-adulto.ts`, `termos-guia-pais.ts` (versões
   `cade-kids-2026-11-25`, `cade-adulto-2026-11-25`, `guia-pais-2026-11-25`).
-- ⚠️ **Envs obrigatórias (fail-fast) antes do deploy**, staging e produção:
+- ⚠️ (Até 25/11/2026; hoje a oferta é a principal do produto no catálogo, ver o topo.) **Envs obrigatórias (fail-fast) antes do deploy**, staging e produção:
   `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` (a oferta do Cadê, hoje `cade-todo-mundo-7-dias`),
   `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO` (`cade-todo-mundo-adulto-7-dias`) e
   `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta vitalícia do guia). Declaradas em
@@ -427,7 +473,7 @@ As respostas do quiz vão para o JSON `quiz_answers` (chave snake_case → valor
 `repo.mergeQuizAnswers` (merge atômico) — **genérico: cada funil tem o seu quiz, com perguntas
 diferentes** (não há mais colunas por pergunta).
 
-**Oferta de cada funil = 100% por ENV, uma por funil (sem slug no código, sem fallback — 28/06):**
+**Oferta de cada funil (28/06 a 25/11/2026 por ENV; HOJE é a principal do produto no catálogo, ver o topo deste arquivo):**
 o `catalogOfferSlug` SAIU do `FunnelDef`. Cada funil lê a sua oferta da env **`FUNNEL_OFFER_<KEY>`**
 (`offerEnvKey(key)` em `lib/env.ts`: key em MAIÚSCULAS, não-alfanumérico→`_`; ex.:
 `pro/no-comando-da-ia`→`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`,
@@ -1493,9 +1539,8 @@ determinística + auto-retry da ilha). Envs de runtime: `DATABASE_URL=${{Postgre
 egress/ida à internet; a borda pública também funciona), `FUNNEL_HMAC_SECRET`/
 `FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 — fail-fast), `COMMUNITY_URL` (app adulto) +
 **`KIDS_COMMUNITY_URL`** (app kids — destino do funil `kids/*`: botão da /obrigado E link de senha
-do welcome; ausente cai no COMMUNITY_URL, então **setar em prod/staging**), **`FUNNEL_OFFER_<KEY>`
-de CADA funil** (oferta por funil — OBRIGATÓRIA, sem ela o boot/healthcheck falha; ex.:
-`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`, `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`), `SENTRY_DSN`
+do welcome; ausente cai no COMMUNITY_URL, então **setar em prod/staging**), (as antigas `FUNNEL_OFFER_<KEY>` saíram em 25/11/2026: a oferta é a principal do produto no
+catálogo), `SENTRY_DSN`
 (projeto sistema-zero-funnel; ausente = desligado), **`NODE_ENV=production`** (controla o `Secure`
 dos cookies!), **`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone
 lê HOST/PORT do ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro

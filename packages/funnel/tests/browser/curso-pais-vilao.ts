@@ -20,6 +20,7 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium, type Page } from 'playwright'
+import { productResponse } from './helpers/page-primaries'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = process.env.QA_OUTPUT ?? resolve(cwd, '../../tmp/curso-pais-review')
@@ -59,6 +60,17 @@ const OUTRO = {
 }
 const resgates: Record<string, unknown>[] = []
 
+// A oferta principal de cada página no catálogo falso (sem as envs FUNNEL_OFFER_*).
+const PRIMARIES: Record<string, string> = {
+  'comunidade-dos-criadores': 'comunidade-dos-criadores-mensal',
+  'comunidade-dos-criadores-adulto': 'comunidade-dos-criadores-adulto-mensal',
+  'desafio-primeiro-jogo-adulto': 'desafio-primeiro-jogo-adulto-30-dias',
+  'desafio-primeiro-jogo': 'desafio-primeiro-jogo-30-dias',
+  'cade-todo-mundo': 'cade-todo-mundo-7-dias',
+  'cade-todo-mundo-adulto': 'cade-todo-mundo-adulto-7-dias',
+  'transformando-o-vilao-em-aliado': OFERTA,
+}
+
 const gateway = createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://gateway')
   const send = (status: number, body: unknown) => {
@@ -70,6 +82,8 @@ const gateway = createServer((req, res) => {
     raw += chunk
   })
   req.on('end', () => {
+    const product = productResponse(url.pathname, PRIMARIES)
+    if (product) return send(product.status, product.body)
     if (req.method === 'GET' && url.pathname === `/catalog/offers/${OFERTA}`)
       return send(200, {
         id: 'qa-guia',
@@ -125,13 +139,6 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     TRUST_PROXY: 'false',
     COMMUNITY_URL: 'https://comunidade.qa.local',
     KIDS_COMMUNITY_URL: 'https://kids.qa.local',
-    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
-    FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
-    FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-adulto-30-dias',
-    FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
-    FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO: 'cade-todo-mundo-7-dias',
-    FUNNEL_OFFER_PRO_CADE_TODO_MUNDO: 'cade-todo-mundo-adulto-7-dias',
-    FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO: OFERTA,
   },
 })
 

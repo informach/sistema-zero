@@ -3,7 +3,7 @@
 // oferta do catálogo serve de venda e de presente (`?presente=` abre o modo presente). O corpo é
 // `CadeAdultoBody`, montado com as seções aprovadas da página do presente adulto (tema arcade).
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO` (hoje
+// Oferta no catálogo: a principal do produto (marcada no Admin) (hoje
 // `cade-todo-mundo-adulto-7-dias`). O prazo vem da oferta. Registrado DEPOIS do Desafio adulto: a
 // landing `/pro` segue abrindo a Comunidade.
 
@@ -78,6 +78,7 @@ export const CADE_ADULTO: FunnelDef = {
   // O nome da cobrança separa o Cadê adulto do Kids em Compras.
   chargeName: 'Cadê Todo Mundo (adultos)',
   productSku: 'cade-todo-mundo-adulto',
+  apelido: 'cade',
   imagesBase: '/img/cade-todo-mundo',
   checkoutImage: 'cade-jogo-0.webp',
   byline: 'Helena e Júlio · Sistema Zero',

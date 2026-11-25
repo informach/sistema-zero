@@ -3,8 +3,8 @@ import { formatBRLFromCents, formatBRLFromCents2 } from '../lib/money'
 import { getActiveOffer, type OfferPlans } from './catalog'
 import { resolveCouponPresentation } from './coupon-presentation'
 import { getDeps } from './deps'
-import { resolveOfferSlug } from './offer'
 import { checkOfferContract } from './offer-contract'
+import { resolvePageOffer } from './page-offer'
 import { type ReferralGiftPage, resolveReferralGiftPage } from './referral-gift-page'
 
 /** A página da oferta no modo PRESENTE (`?presente=<código>`, 25/11/2026). */
@@ -29,9 +29,11 @@ export async function resolveOfferPage(
   if (!f) return new Response(null, { status: 404 })
 
   const { env, gateway, log } = getDeps()
-  // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
-  const offerSlug = resolveOfferSlug(env, f.key)
-  const offer = await getActiveOffer(gateway, offerSlug, { log })
+  // A oferta da página vem do CATÁLOGO (a principal do produto, ou `?oferta=` de outra oferta do
+  // mesmo produto dentro do contrato, 25/11/2026). MESMA régua do checkout.
+  const page = await resolvePageOffer(gateway, f, url.searchParams.get('oferta'), { log })
+  const offerSlug = page?.slug ?? ''
+  const offer = page?.offer ?? null
   // Modo presente (uma página por CURSO, resolvido ANTES da oferta de venda: o presente só
   // depende do referrals, e a venda fora do ar não pode derrubar o resgate): o código dá de presente um curso desta página
   // (`giftCourses`), qualquer que seja a oferta do presente (a de 15 dias, a escolhida pelo
@@ -58,6 +60,11 @@ export async function resolveOfferPage(
     }
   }
 
+  // Sem oferta principal marcada no catálogo: a venda fica indisponível (o presente não cobra).
+  if (!page && !presente) {
+    log('offer.page_without_primary_offer', { funnel: f.key, productSku: f.productSku })
+    return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+  }
   const contractCheck = checkOfferContract(f.offerContract, offer)
   // A venda fora do contrato fecha a página, mas não o PRESENTE (ele não cobra nada).
   if (!contractCheck.ok && !presente) {

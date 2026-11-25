@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
-import type { Env } from '../../src/lib/env'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache } from '../../src/server/catalog'
 import { quoteCheckout, startCard, startPix, startSubscription } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
 import { makeResolveOffer } from '../../src/server/offer'
+import { clearPrimaryOfferCache } from '../../src/server/page-offer'
 import type { PurchasedOfferSnapshotV1 } from '../../src/server/purchased-offer-snapshot'
 import { handlePaymentWebhook } from '../../src/server/webhook'
 import { createFakeRepo } from '../fakes/fake-db'
@@ -447,21 +447,17 @@ describe('grant ramificado (anual à vista)', () => {
   })
 })
 
-describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irmã anual)', () => {
+describe('fiação do funil kids/comunidade-dos-criadores (catálogo → mensal + irmã anual)', () => {
   // Exercita a cadeia REAL: lead com o funil novo → makeResolveOffer (registry +
-  // env) → oferta mensal do catálogo → alternador pra irmã anual. A mecânica
-  // genérica de assinatura já está coberta acima; aqui é a fiação do funil.
+  // oferta principal do produto no catálogo) → oferta mensal → alternador pra irmã anual. A
+  // mecânica genérica de assinatura já está coberta acima; aqui é a fiação do funil.
   const CDC_MENSAL = 'comunidade-dos-criadores-mensal'
   const CDC_ANUAL = 'comunidade-dos-criadores-anual'
-  const cdcEnv = {
-    offerByFunnel: {
-      'pro/comunidade-dos-criadores': 'oferta-comunidade-adulta',
-      'kids/comunidade-dos-criadores': CDC_MENSAL,
-    },
-  } as unknown as Env
 
   function cdcGateway() {
+    clearPrimaryOfferCache()
     const gw = createFakeGateway()
+    gw.setProductPrimary('comunidade-dos-criadores', CDC_MENSAL)
     gw.setOfferConfig(CDC_MENSAL, {
       priceCents: 9700,
       pricingMode: 'subscription',
@@ -481,7 +477,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
     repo: ReturnType<typeof createFakeRepo>['repo'],
     gw: ReturnType<typeof createFakeGateway>,
   ) {
-    const resolveOffer = makeResolveOffer(cdcEnv)
+    const resolveOffer = makeResolveOffer(gw.gateway)
     return {
       repo,
       gateway: gw.gateway,
@@ -501,7 +497,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
     return id
   }
 
-  test('assinatura mensal: a env do funil resolve a oferta e cobra 9700 no intervalo 1', async () => {
+  test('assinatura mensal: a principal do produto resolve a oferta e cobra 9700 no intervalo 1', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = cdcGateway()
     const id = await cdcLead(repo)

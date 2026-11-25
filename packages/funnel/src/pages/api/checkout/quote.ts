@@ -7,5 +7,5 @@ export const prerender = false
 
 export const POST: APIRoute = ({ request }) => {
   const { repo, gateway, env } = getDeps()
-  return quoteCheckout(request, { gateway, repo, resolveOffer: makeResolveOffer(env) })
+  return quoteCheckout(request, { gateway, repo, resolveOffer: makeResolveOffer(gateway) })
 }

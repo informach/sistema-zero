@@ -4,7 +4,7 @@
 // campanha e de embaixador, que abrem a página no modo presente (`?presente=`). Quem assiste é o
 // adulto, na área dos pais do app Kids.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta de 1 ano, R$ 27, do curso
+// Oferta no catálogo: a principal do produto (marcada no Admin) (a oferta de 1 ano, R$ 27, do curso
 // `transformando-o-vilao-em-aliado`). Registrado por último: a landing `/kids` segue abrindo o
 // Desafio.
 
@@ -76,6 +76,7 @@ export const VILAO_EM_ALIADO: FunnelDef = {
   basePath: '/kids/vilao-em-aliado',
   productName: 'Transformando o vilão em aliado',
   productSku: 'transformando-o-vilao-em-aliado',
+  apelido: 'guia',
   imagesBase: '/img/transformando-o-vilao-em-aliado',
   checkoutImage: 'vilao-em-aliado.webp',
   byline: 'Helena · Sistema Zero',

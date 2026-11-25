@@ -68,7 +68,8 @@ export interface CheckoutDeps {
    * (lead legado/sem funil) cai no funil default/env. Permite vender mais de um
    * produto sem trocar o handler — o slug do preço autoritativo sai daqui.
    */
-  resolveOffer(funnel: string | null): ResolvedOffer
+  /** A oferta PRINCIPAL da página do lead (catálogo); null = página sem oferta principal. */
+  resolveOffer(funnel: string | null): ResolvedOffer | null | Promise<ResolvedOffer | null>
   /**
    * Registra o comprador no IdP após o pagamento confirmado. Best-effort nos
    * caminhos de polling/cartão (o webhook é o backstop durável). Opcional para
@@ -299,7 +300,16 @@ async function resolveChosenOffer(
   funnel: string | null,
   requestedSlug: string | undefined,
 ): Promise<ChosenOffer> {
-  const principal = deps.resolveOffer(funnel)
+  const principal = await deps.resolveOffer(funnel)
+  if (!principal)
+    return {
+      ok: false,
+      response: jsonError(
+        'Esta oferta está temporariamente indisponível.',
+        503,
+        'OFFER_UNAVAILABLE',
+      ),
+    }
   if (!requestedSlug || requestedSlug === principal.offerSlug) {
     const offer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
     const contractError = checkoutContractError(principal.offerContract, offer, deps.log)
@@ -307,7 +317,18 @@ async function resolveChosenOffer(
     return { ok: true, ...principal, offer }
   }
   const principalOffer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
-  if (principalOffer?.altOffer?.slug !== requestedSlug) {
+  // A irmã do alternador OU outra oferta do MESMO produto dentro do contrato da página (a página
+  // aceita `?oferta=`, 25/11/2026). Slug qualquer no corpo continua 400.
+  const sameProduct =
+    principalOffer?.altOffer?.slug !== requestedSlug
+      ? await getActiveOffer(deps.gateway, requestedSlug, { log: deps.log })
+      : null
+  const allowedSibling =
+    principalOffer?.altOffer?.slug === requestedSlug ||
+    (sameProduct !== null &&
+      sameProduct.productSku === principal.productSku &&
+      checkOfferContract(principal.offerContract, sameProduct).ok)
+  if (!allowedSibling) {
     return {
       ok: false,
       response: jsonError('Oferta inválida para este checkout.', 400, 'INVALID_OFFER'),

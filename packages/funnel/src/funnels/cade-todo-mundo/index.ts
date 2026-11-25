@@ -3,7 +3,7 @@
 // de venda e de presente (`?presente=` abre o modo presente). O corpo é `CadeKidsBody`, montado com
 // as seções aprovadas da página do presente.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` (a oferta do Cadê, hoje
+// Oferta no catálogo: a principal do produto (marcada no Admin) (a oferta do Cadê, hoje
 // `cade-todo-mundo-7-dias`). O prazo vem da oferta (a copy o lê do catálogo); o contrato só exige
 // pagamento único com prazo fixo em dias. Registrado DEPOIS da Comunidade: a landing `/kids` segue
 // abrindo o Desafio.
@@ -68,6 +68,7 @@ export const CADE_TODO_MUNDO: FunnelDef = {
   basePath: '/kids/cade-todo-mundo',
   productName: 'Cadê Todo Mundo',
   productSku: 'cade-todo-mundo',
+  apelido: 'cade',
   imagesBase: '/img/cade-todo-mundo',
   checkoutImage: 'cade-jogo-0.webp',
   byline: 'Helena e Júlio · Sistema Zero',

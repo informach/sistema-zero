@@ -9,6 +9,6 @@ export const GET: APIRoute = ({ params, url }) => {
   return referralLinkRedirect(
     url,
     { code: params.codigo, offer: params.oferta, target: params.destino },
-    { env, gateway, log, secureCookie: env.NODE_ENV === 'production' },
+    { gateway, log, secureCookie: env.NODE_ENV === 'production' },
   )
 }

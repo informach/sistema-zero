@@ -11,7 +11,7 @@ export const prerender = false
 
 export const POST: APIRoute = ({ request }) => {
   const { repo, gateway, env, log } = getDeps()
-  const grantDeps = { gateway, resolveOffer: makeResolveOffer(env), repo, log }
+  const grantDeps = { gateway, resolveOffer: makeResolveOffer(gateway), repo, log }
   return handlePaymentWebhook(request, {
     repo,
     internalToken: env.FUNNEL_INTERNAL_TOKEN,

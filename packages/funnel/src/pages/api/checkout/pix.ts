@@ -10,7 +10,7 @@ export const POST: APIRoute = ({ request }) => {
   return startPix(request, {
     repo,
     gateway,
-    resolveOffer: makeResolveOffer(env),
+    resolveOffer: makeResolveOffer(gateway),
     log,
   })
 }

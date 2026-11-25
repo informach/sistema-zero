@@ -10,6 +10,7 @@ import EmbaixadorBonus, { type EmbaixadorBonusProps } from '../../islands/Embaix
 import EmbaixadorCampanhas from '../../islands/EmbaixadorCampanhas'
 import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
 import type { AmbassadorPageView } from '../../lib/gateway-client'
+import { comLinksCurtos } from '../../server/ambassador-links'
 import { getDeps } from '../../server/deps'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
@@ -44,7 +45,7 @@ const indisponivel = gatewayDown ? P.indisponivel.foraDoAr : P.indisponivel.naoE
           <h1 id="emb-titulo" class="emb-h1">{primeiroNome ? P.cabeca.titulo.replace('{{nome}}', primeiroNome) : P.cabeca.tituloSemNome}</h1>
           <p class="emb-lead">{P.cabeca.texto}</p>
         </div>
-        <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} offers={view.offers} bonusCount={view.bonus?.items.length ?? 0} />
+        <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} offers={view.offers ? comLinksCurtos(view.offers) : undefined} bonusCount={view.bonus?.items.length ?? 0} />
       </div>
     </section>
     {view.bonus && (

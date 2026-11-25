@@ -40,7 +40,7 @@ export interface MemberCommerceDeps {
   checkout: Omit<CheckoutDeps, 'repo' | 'gateway' | 'resolveOffer'>
   funnelUrl: string
   termsForOffer: (offer: CommerceCatalogOffer, audience: 'kids' | 'adult') => CheckoutTerms | null
-  defaultOfferRef?: (audience: 'kids' | 'adult') => string | undefined
+  defaultOfferRef?: (audience: 'kids' | 'adult') => string | undefined | Promise<string | undefined>
 }
 
 /** Entrada S2S: identidade e oferta vêm do BFF, depois de conferir sessão e origem publicada. */
@@ -70,7 +70,7 @@ export async function handleMemberCommerce(
     })
   }
   if (action === 'default-offer') {
-    const ref = deps.defaultOfferRef?.(input.account.audience)
+    const ref = await deps.defaultOfferRef?.(input.account.audience)
     if (!ref) return jsonError('Oferta não configurada.', 503, 'OFFER_UNAVAILABLE')
     const response = await deps.gateway.getOffer(ref)
     const parsedOffer = CommerceCatalogOfferSchema.safeParse(response.body)

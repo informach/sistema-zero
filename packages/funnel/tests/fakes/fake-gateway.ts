@@ -36,6 +36,8 @@ export interface FakeOfferConfig {
   billingIntervalMonths?: number | null
   altOffer?: { slug: string; label?: string } | null
   isAvailable?: boolean
+  /** SKU do produto da oferta (a página que a vende é a do mesmo produto). */
+  productSku?: string
 }
 
 export interface FakeGatewayState {
@@ -66,7 +68,14 @@ export interface FakeGatewayState {
     }>
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
     pixUpdates: Array<{ token: string; pixKey: string }>
-    links: Array<{ code: string; offerSlug: string | null; checkout: boolean }>
+    links: Array<{
+      code: string
+      offerSlug: string | null
+      checkout: boolean
+      kind?: 'gift' | 'referral'
+      skus?: string[]
+    }>
+    products: string[]
     redirects: number
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
@@ -102,6 +111,11 @@ export interface FakeGatewayState {
   setRedeemResult: (status: number, body?: unknown) => void
   /** Resposta de updateAmbassadorPix (default 200). */
   setPixResult: (status: number, body?: unknown) => void
+  /**
+   * Oferta principal da página do produto (SKU → slug; null = sem principal). Sem registro, o
+   * produto responde 404.
+   */
+  setProductPrimary: (sku: string, slug: string | null) => void
   /** Resposta de resolveReferralLink (default 404). */
   setLinkResult: (status: number, body?: unknown) => void
   /** Resposta de resolveCampaignRedirects (default 200 sem endereços). */
@@ -143,6 +157,7 @@ export function createFakeGateway(): FakeGatewayState {
     redemptions: [],
     pixUpdates: [],
     links: [],
+    products: [],
     redirects: 0,
   }
   let ensureBuyerStatus = 201
@@ -187,6 +202,7 @@ export function createFakeGateway(): FakeGatewayState {
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
+  const productPrimary = new Map<string, string | null>() // sku → slug da oferta principal
 
   // ── Auth falso (IdP) — login/me/refresh/logout do admin ──────────────────
   const AUTH_PASSWORD = 'segredo'
@@ -240,6 +256,12 @@ export function createFakeGateway(): FakeGatewayState {
     async getCommerceAccess(): Promise<GatewayResult> {
       return { status: 200, body: { items: [] } }
     },
+    async getProduct(sku): Promise<GatewayResult> {
+      calls.products.push(sku)
+      if (!productPrimary.has(sku))
+        return { status: 404, body: { error: { code: 'PRODUCT_NOT_FOUND' } } }
+      return { status: 200, body: { sku, primaryOfferSlug: productPrimary.get(sku) } }
+    },
     async getOffer(slug): Promise<GatewayResult> {
       const cfg = offerConfigs.get(slug)
       const pricingMode = cfg?.pricingMode ?? 'one_time'
@@ -262,7 +284,7 @@ export function createFakeGateway(): FakeGatewayState {
           accessDurationUnit: cfg?.accessDurationUnit ?? null,
           billingIntervalMonths: cfg?.billingIntervalMonths ?? null,
           isAvailable: cfg?.isAvailable ?? true,
-          product: { name: 'Curso de teste', sku: 'curso-qa' },
+          product: { name: 'Curso de teste', sku: cfg?.productSku ?? 'curso-qa' },
           content: cfg?.altOffer ? { altOffer: cfg.altOffer } : {},
           includes: [{ name: 'Curso de teste', isPrimary: true }],
         },
@@ -375,6 +397,10 @@ export function createFakeGateway(): FakeGatewayState {
       calls.links.push({ code, offerSlug, checkout })
       return linkResult
     },
+    async resolveReferralLinkForProduct(code, kind, skus, checkout): Promise<GatewayResult> {
+      calls.links.push({ code, offerSlug: null, checkout, kind, skus })
+      return linkResult
+    },
     async resolveCampaignRedirects(): Promise<GatewayResult> {
       calls.redirects++
       return redirectResult
@@ -459,6 +485,9 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setPixResult: (status: number, body?: unknown) => {
       pixResult = { status, body: body ?? null }
+    },
+    setProductPrimary: (sku: string, slug: string | null) => {
+      productPrimary.set(sku, slug)
     },
     setLinkResult: (status: number, body?: unknown) => {
       linkResult = { status, body: body ?? null }
