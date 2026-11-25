@@ -1,5 +1,12 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Oferta vendável na página do produto (25/11/2026)
+
+Formulário da oferta (Catálogo › Ofertas): caixa "Pode ser vendida na página do produto"
+(`content.pageSellable`, `mergeOfferContent` 5º argumento). Além da oferta principal do produto e da
+irmã do alternador, o funil só abre e cobra pelo `?oferta=` as ofertas marcadas; ofertas de presente
+ficam desmarcadas. Teste em `tests/catalog-offer-access-policy.test.tsx`.
+
 ## Oferta principal da página de venda (25/11/2026)
 
 Formulário do produto (`/admin/catalogo/produtos/[id]`, `product-form-client.tsx`): cartão "Oferta

@@ -8,6 +8,7 @@ import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
+import { InfoTooltip } from '@sistemazero/ui/info-tooltip'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
@@ -95,6 +96,8 @@ interface FormState {
   maxProfiles: string
   /** Prazo divulgado em dias (só prazo fixo em dias, menor que a duração real). */
   advertisedAccessDays: string
+  /** Pode ser vendida na página do produto pelo `?oferta=` (oferta de presente: desmarcada). */
+  pageSellable: boolean
   status: string
   items: OfferItemDraft[]
 }
@@ -119,6 +122,7 @@ const EMPTY_FORM: FormState = {
   guaranteeDays: '',
   maxProfiles: '',
   advertisedAccessDays: '',
+  pageSellable: false,
   status: 'draft',
   items: [],
 }
@@ -231,11 +235,13 @@ export function mergeOfferContent(
   max: number | null,
   altOffer: { slug: string; label?: string } | null,
   advertisedAccessDays: number | null = null,
+  pageSellable = false,
 ): OfferContent | null {
   const {
     maxProfiles: _dropMax,
     altOffer: _dropAlt,
     advertisedAccessDays: _dropAdvertised,
+    pageSellable: _dropSellable,
     ...rest
   } = base ?? {}
   const merged: OfferContent = {
@@ -243,6 +249,7 @@ export function mergeOfferContent(
     ...(max != null ? { maxProfiles: max } : {}),
     ...(altOffer ? { altOffer } : {}),
     ...(advertisedAccessDays != null ? { advertisedAccessDays } : {}),
+    ...(pageSellable ? { pageSellable: true } : {}),
   }
   return Object.keys(merged).length > 0 ? merged : null
 }
@@ -375,6 +382,7 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
       maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
       advertisedAccessDays:
         o.content?.advertisedAccessDays != null ? String(o.content.advertisedAccessDays) : '',
+      pageSellable: o.content?.pageSellable === true,
       memberPromotion: o.content?.memberPromotion,
       checkoutTermsUrl: o.content?.checkoutTerms?.url ?? '',
       checkoutTermsVersion: o.content?.checkoutTerms?.version ?? '',
@@ -520,7 +528,13 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
           installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
           content: {
-            ...mergeOfferContent(editing.content, maxProfiles, altOffer, advertisedAccessDays),
+            ...mergeOfferContent(
+              editing.content,
+              maxProfiles,
+              altOffer,
+              advertisedAccessDays,
+              form.pageSellable,
+            ),
             checkoutTerms,
             ...(form.memberPromotion
               ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -532,7 +546,13 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
         toast.success('Oferta atualizada.')
       } else {
         const content = {
-          ...mergeOfferContent(null, maxProfiles, altOffer, advertisedAccessDays),
+          ...mergeOfferContent(
+            null,
+            maxProfiles,
+            altOffer,
+            advertisedAccessDays,
+            form.pageSellable,
+          ),
           ...(checkoutTerms ? { checkoutTerms } : {}),
           ...(form.memberPromotion
             ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -1019,6 +1039,18 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
                 ) : null}
               </div>
             ) : null}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.pageSellable}
+                onChange={(e) =>
+                  setForm((current) => ({ ...current, pageSellable: e.target.checked }))
+                }
+                className="size-4 accent-[color:var(--primary)]"
+              />
+              Pode ser vendida na página do produto
+              <InfoTooltip text="Além da oferta principal do produto, a página de venda só abre e cobra as ofertas com esta marca (por um link com ?oferta=). Deixe desmarcada nas ofertas de presente." />
+            </label>
             <Field
               label="Garantia (dias, opcional)"
               htmlFor="guarantee"

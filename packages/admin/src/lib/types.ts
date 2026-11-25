@@ -1066,6 +1066,11 @@ export interface OfferContent {
    */
   advertisedAccessDays?: number
   /**
+   * Pode ser vendida na página do produto (25/11/2026): além da oferta principal e da irmã do
+   * alternador, o funil só vende pelo `?oferta=` as ofertas com esta marca.
+   */
+  pageSellable?: boolean
+  /**
    * OFERTA IRMÃ do alternador do checkout (mensal ↔ anual): `slug` = a oferta alvo
    * (o funil valida o slug escolhido contra este link); `label` = texto do alternador.
    */

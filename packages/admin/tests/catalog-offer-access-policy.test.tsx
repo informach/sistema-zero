@@ -153,4 +153,12 @@ describe('prazo divulgado no conteúdo da oferta', () => {
     expect(mergeOfferContent(base, 2, null, null)).toEqual({ badge: 'Novo', maxProfiles: 2 })
     expect(mergeOfferContent({ advertisedAccessDays: 7 }, null, null, null)).toBeNull()
   })
+
+  test('marca "pode ser vendida na página": liga com true, desmarcar remove do content', () => {
+    expect(mergeOfferContent({ badge: 'Novo' }, null, null, null, true)).toEqual({
+      badge: 'Novo',
+      pageSellable: true,
+    })
+    expect(mergeOfferContent({ pageSellable: true }, null, null, null, false)).toBeNull()
+  })
 })
