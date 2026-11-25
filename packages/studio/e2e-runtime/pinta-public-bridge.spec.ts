@@ -14,6 +14,18 @@ test('the real Pinta play button creates a complete regional game on first use',
     namespace,
   )
   await page.getByRole('button', { name: `Abrir ${name} (Mapa)`, exact: true }).click()
+  const grid = page.getByRole('img', { name: 'Grade do mapa', exact: true })
+  await expect(grid).toBeVisible()
+  const canvas = await grid.evaluate((element) => ({
+    width: (element as HTMLCanvasElement).width,
+    height: (element as HTMLCanvasElement).height,
+    screenWidth: window.innerWidth,
+    screenHeight: window.innerHeight,
+  }))
+  expect(canvas.width).toBeGreaterThan(0)
+  expect(canvas.height).toBeGreaterThan(0)
+  expect(canvas.width).toBeLessThanOrEqual(canvas.screenWidth)
+  expect(canvas.height).toBeLessThanOrEqual(canvas.screenHeight)
   await page.getByRole('button', { name: 'Jogar meu mapa', exact: true }).click()
   const observed: {
     result: Awaited<ReturnType<typeof globalThis.providerProbe.readPintaPlayButton>>

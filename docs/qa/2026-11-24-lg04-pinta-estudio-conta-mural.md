@@ -38,13 +38,14 @@ A publicação recebe o documento conferido e remove os vínculos privados da bi
 | SDKs 3D regenerados e contratos do compilador | 112 testes 3D aprovados, dois TODOs preexistentes, zero falhas; mais dois contratos canônicos aprovados |
 | Pinta completo após a correção do botão regional | 3.037 aprovados, 18 condicionais pulados, zero falhas; 37.194 expectativas |
 | Navegadores após a correção do botão regional | 18 aprovados em Chrome, Edge e Chromium; rodada final de 58,3 segundos |
+| Ponte regional com o CSS real do Pinta e canvas limitado à janela | 30 aprovados: 18 em Chrome/Edge/Chromium, seis em Firefox e seis em WebKit; sem erros de página |
 | Tipos após a correção do botão regional | Pinta, member-shell e Estúdio aprovados; conferências dos SDKs e perfil da imagem aprovadas |
 
 As provas com serviços reais usam banco e bucket exclusivos de QA, com listeners de loopback e processos encerrados pelo próprio teste. A sessão injetada nessa prova não substitui o aceite infantil autenticado em homologação.
 
-Uma rodada anterior de navegador passou em 15 cenários de Chromium, Chrome e Edge. A rodada final precisa ser repetida após os ajustes de exportação/conversão. Builds, CI obrigatório, imagem e percurso hospedado ainda estão em conferência; as linhas acima não representam aprovação desses gates. O CI inclui uma prova de compilação regional Pro na imagem Linux real, sem rede, conferindo o perfil da imagem e o PNG byte a byte.
+A rodada regional final cobre exportação, importação, execução Classic/Pro, atualização do mesmo programa, botão real do Pinta e reabertura do PNG completo. Na ampliação para Firefox, a página de provas sem Tailwind deixava a área de desenho crescer com o papel inteiro; corrigida a composição da fixture para compilar e carregar o CSS real do Pinta antes de montar o editor. Acrescentadas as verificações das dimensões do canvas. O pintor do produto já limitava o desenho ao viewport e não foi alterado. Essas provas locais não substituem o CI obrigatório e o aceite hospedado.
 
-Essa prova de imagem passou na primeira candidata. A qualificação adicional de staging encontrou os carregadores 3D derivados das dependências compartilhadas desatualizados; a conferência local reproduziu a divergência. Os dois SDKs e o contrato derivado do contêiner foram regenerados com Bun 1.3.11 e passaram nos testes acima. O perfil passou para `98ec9667f1a3b893503d9427317dda4b1fb3c0cbfa665ad9c11c8837df05a8a3`; a nova imagem e seu CI ainda precisam concluir a qualificação. Os limites, os três imports Three compartilhados e as licenças existentes foram preservados.
+O CI inclui compilação regional Pro na imagem Linux real, sem rede, conferindo o perfil e o PNG byte a byte. A qualificação adicional encontrou os carregadores 3D derivados desatualizados; os dois SDKs e o contrato do contêiner foram regenerados com Bun 1.3.11. A imagem com perfil `98ec9667f1a3b893503d9427317dda4b1fb3c0cbfa665ad9c11c8837df05a8a3` passou nas cinco suítes reais e está pronta nos dois pools de staging. Os limites, os três imports Three compartilhados e as licenças foram preservados. Os ajustes posteriores da interface/QA não modificam os arquivos do runtime ou do core usados nessa imagem.
 
 ## Limitações e liberação
 
@@ -53,7 +54,7 @@ Essa prova de imagem passou na primeira candidata. A qualificação adicional de
 - A publicação/execução Python depende das capacidades do catálogo autorizado; sua distribuição acompanha a LG08.
 - A biblioteca pessoal, o documento na conta e o histórico local têm contratos próprios. Esta entrega não anuncia sincronização do histórico local de aplicações Pro entre aparelhos.
 - Aulas legadas conservam seus checkpoints e sua recusa explícita de importação regional. O percurso regional é qualificado no Estúdio livre.
-- A publicação real de teste no Mural será solicitada para o projeto concreto preparado em homologação, se puder notificar outras pessoas. A autorização anterior de envio da LG02 ao professor se refere àquele envio.
+- A autorização para publicar, atualizar e remover um único post próprio de QA em homologação foi solicitada para o projeto preparado com título, resumo e capa. Nenhum post foi enviado enquanto a resposta está pendente. A autorização anterior da LG02 ao professor se refere àquele envio.
 
 ## Integração e retorno
 

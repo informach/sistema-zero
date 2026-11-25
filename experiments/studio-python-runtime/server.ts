@@ -28,6 +28,8 @@ import { createPythonInspectionProbe } from './inspectionFixtures'
 import { createRuntimeNetworkProfile } from './network'
 import { TURTLE_EXTENSION } from './turtleFixtures'
 
+let pintaProbeCss: Promise<string> | undefined
+
 // Bun1.3 Windows leaks server sockets into child_process children (oven-sh/bun#36938).
 // Fail before building/listening instead of producing unreliable qualification results.
 if (process.platform === 'win32' && !Bun.semver.satisfies(Bun.version, '>=1.4.0'))
@@ -443,6 +445,12 @@ const host = Bun.serve({
       return new Response(rawHostSource, { headers: { 'Content-Type': 'text/javascript' } })
     if (path === '/provider-host.mjs')
       return new Response(providerHostSource, { headers: { 'Content-Type': 'text/javascript' } })
+    if (path === '/pinta-play-button.css') {
+      pintaProbeCss ??= import('../../packages/pinta/scripts/pinta-probe-css').then((module) =>
+        module.buildPintaProbeCss(),
+      )
+      return new Response(await pintaProbeCss, { headers: { 'Content-Type': 'text/css' } })
+    }
     if (path === '/analysis-host.mjs')
       return new Response(analysisHostSource, { headers: { 'Content-Type': 'text/javascript' } })
     if (path === '/analysis')

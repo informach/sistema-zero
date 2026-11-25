@@ -20,7 +20,10 @@ import {
 } from '../../packages/studio/src/state/projectStorageRuntime'
 import { loadSanitizedProjectById } from '../../packages/studio/src/state/projectStore'
 
-type PlayButtonState = { view: ReturnType<typeof mountPintaPlayButton>; projectId: string | null }
+type PlayButtonState = {
+  view: Awaited<ReturnType<typeof mountPintaPlayButton>>
+  projectId: string | null
+}
 let playButton: PlayButtonState | null = null
 
 /** The editor's real button, exporter, host library and first project write in a fresh namespace. */
@@ -32,7 +35,7 @@ export async function showPintaPlayButton(namespace: string) {
   await persistence.persistAssets(assets)
   const state: PlayButtonState = {
     projectId: null,
-    view: mountPintaPlayButton(persistence, {
+    view: await mountPintaPlayButton(persistence, {
       studioOwned: true,
       async sendGameToStudio(payload) {
         const saved = await savePintaStudioBundle(payload, namespace)
