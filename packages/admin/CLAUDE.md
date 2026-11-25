@@ -1,5 +1,15 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Oferta principal da página de venda (25/11/2026)
+
+Formulário do produto (`/admin/catalogo/produtos/[id]`, `product-form-client.tsx`): cartão "Oferta
+principal da página de venda" com as ofertas não arquivadas do PRÓPRIO produto
+(`/api/catalog/offers?productId=`); "Sem página de venda" limpa. Vai no PATCH completo como
+`primaryOfferId` (o catálogo recusa oferta de outro produto). Substitui as envs `FUNNEL_OFFER_*`
+do funil: antes do deploy do funil, marcar a oferta principal de cada página em staging e em
+produção. Teste: `tests/product-primary-offer.test.ts`.
+
+
 
 ## Prazo divulgado da oferta (25/11/2026)
 

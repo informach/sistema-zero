@@ -1094,6 +1094,8 @@ export interface ProductView {
   fulfillment: FulfillmentSpec | null
   metadata: Record<string, unknown> | null
   components: ProductComponentView[]
+  /** Oferta principal da página de venda (25/11/2026); null = página sem oferta à venda. */
+  primaryOfferId?: string | null
   createdAt: string
   updatedAt: string
 }
