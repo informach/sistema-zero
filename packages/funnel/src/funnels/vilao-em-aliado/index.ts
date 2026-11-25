@@ -94,6 +94,7 @@ export const VILAO_EM_ALIADO: FunnelDef = {
     anyGuarantee: true,
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
+  giftCourses: ['transformando-o-vilao-em-aliado'],
   legal: { termos: TERMOS_GUIA_PAIS, termsVersion: 'guia-pais-2026-11-25' },
   content: {
     copy: GUIA_PRODUTO,

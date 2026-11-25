@@ -260,6 +260,12 @@ export interface FunnelDef {
    */
   offerContract?: FunnelOfferContract
   steps: FunnelSteps
+  /**
+   * Cursos que, dados de PRESENTE, abrem nesta página no modo presente (uma página por curso,
+   * 25/11/2026). O presente costuma ser outra oferta do catálogo (15 dias) do mesmo curso que a
+   * página vende (1 ano): a página é escolhida pelo CURSO, nunca pela oferta.
+   */
+  giftCourses?: readonly string[]
   /** Termo de Uso da oferta, em `${basePath}/termos`. A Política de Privacidade é única. */
   legal: FunnelLegal
   content: FunnelContent
@@ -317,6 +323,20 @@ export function getFunnel(
 }
 
 /** Resolve um funil pela chave composta gravada no lead (`pro/comunidade-dos-criadores`). */
+/** A página que recebe o presente deste curso no público (`kids` | `adult`), se houver. */
+export function funnelForGiftCourse(
+  courseSlug: string | null | undefined,
+  audience: 'kids' | 'adult',
+): FunnelDef | null {
+  if (!courseSlug) return null
+  const target = audience === 'adult' ? 'pro' : 'kids'
+  return (
+    Object.values(FUNNELS).find(
+      (f) => f.audience === target && (f.giftCourses ?? []).includes(courseSlug),
+    ) ?? null
+  )
+}
+
 export function getFunnelByKey(key: string | null | undefined): FunnelDef | null {
   if (!key) return null
   return FUNNELS[key] ?? null

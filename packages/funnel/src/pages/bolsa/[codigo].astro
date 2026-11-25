@@ -16,7 +16,7 @@ import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
 import { PRESENTE_KIDS, presenteKidsDaOferta } from '../../content/presente'
 import { presenteAdultoDaOferta } from '../../content/presente-adulto'
 import { presenteCursoCopy } from '../../content/presente-curso'
-import { resolveOfferFunnel } from '../../server/coupon-link'
+import { funnelForGiftCourse } from '../../funnels/registry'
 import { getDeps } from '../../server/deps'
 import { giftVariant, isCadeGift, resolveReferralGiftPage } from '../../server/referral-gift-page'
 export const prerender = false
@@ -30,13 +30,15 @@ const escolhida = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/.test(escolhidaRaw)
   ? escolhidaRaw
   : undefined
 const page = await resolveReferralGiftPage(gateway, codigo, escolhida)
-// Uma página por oferta (25/11/2026): o presente de uma oferta que tem página de venda abre nela,
-// no modo presente. As outras (o Cadê, por enquanto) seguem nesta página.
-if ('gift' in page && page.gift.gift?.offerSlug) {
-  const funnel = await resolveOfferFunnel(env, gateway, page.gift.gift.offerSlug, page.audience)
-  if (funnel && !funnel.alt) {
+// Uma página por curso (25/11/2026): o presente de um curso que tem página de venda abre nela,
+// no modo presente (mesmo sendo outra oferta do catálogo, a de 15 dias). Esta página só fica
+// para curso sem página de venda.
+if ('gift' in page && page.gift.gift) {
+  const funnel = funnelForGiftCourse(page.gift.gift.courseSlug, page.audience)
+  if (funnel) {
     const target = new URL(`${funnel.basePath}/oferta`, Astro.url)
     target.searchParams.set('presente', codigo)
+    if (escolhida) target.searchParams.set('oferta-presente', escolhida)
     for (const [key, value] of Astro.url.searchParams)
       if (key.startsWith('utm_') || key === 'event_code') target.searchParams.set(key, value)
     return Astro.redirect(`${target.pathname}${target.search}`, 302)

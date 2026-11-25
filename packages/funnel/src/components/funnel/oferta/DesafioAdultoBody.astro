@@ -32,7 +32,6 @@ const origem = presente
     )
   : null
 const { env } = getDeps()
-const ofertaSlug = env.offerByFunnel[f.key] ?? ''
 const communityUrl = (env.COMMUNITY_URL ?? '').replace(/\/$/, '')
 const fill = (texto: string) => preencherPreco(texto, preco)
 const heroImg = P.hero.imagens[0]
@@ -650,7 +649,7 @@ const heroImg = P.hero.imagens[0]
      </div>
     </div>
     {presente ? (
-     <OfertaPresente presente={presente} communityUrl={communityUrl} oferta={ofertaSlug} />
+     <OfertaPresente presente={presente} communityUrl={communityUrl} />
     ) : (
     <div class="da-cartao">
      <span class="da-cartao__selo">

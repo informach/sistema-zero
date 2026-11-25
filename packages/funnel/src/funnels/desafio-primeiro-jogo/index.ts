@@ -26,6 +26,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  giftCourses: ['desafio-primeiro-jogo'],
   legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-10-21' },
   content: {
     copy: DESAFIO_PRODUTO,

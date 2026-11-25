@@ -48,6 +48,7 @@ export const DESAFIO_ADULTO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  giftCourses: ['desafio-primeiro-jogo-adulto'],
   legal: { termos: TERMOS_DESAFIO_ADULTO, termsVersion: 'desafio-adulto-2026-10-21' },
   content: {
     copy: DESAFIO_ADULTO_PRODUTO,

@@ -19,7 +19,7 @@ import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import OfertaPresente from './OfertaPresente.astro'
 
 type Props = OfferPageData['bodyProps']
-const { f, productName, priceReais, ofertaUrl, coupon, presente, access, offerSlug } = Astro.props
+const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astro.props
 // Venda: o prazo da oferta de venda (1 ano). Presente: o prazo do presente, o divulgado
 // (`gift.accessDays`, 7 dias), que é outra oferta.
 const prazo = presente
@@ -65,7 +65,7 @@ const barra = presente
           {!presente && preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
         </div>
         {presente ? (
-          <OfertaPresente presente={presente} communityUrl={contaUrl} oferta={offerSlug} />
+          <OfertaPresente presente={presente} communityUrl={contaUrl} />
         ) : (
           <article class="c9-plano">
             <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>

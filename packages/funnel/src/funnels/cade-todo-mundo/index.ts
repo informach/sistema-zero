@@ -88,6 +88,7 @@ export const CADE_TODO_MUNDO: FunnelDef = {
     anyGuarantee: true,
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
+  giftCourses: ['cade-todo-mundo'],
   legal: { termos: TERMOS_CADE_KIDS, termsVersion: 'cade-kids-2026-11-25' },
   content: {
     copy: CADE_PRODUTO,

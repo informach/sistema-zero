@@ -97,6 +97,7 @@ export const CADE_ADULTO: FunnelDef = {
     anyGuarantee: true,
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
+  giftCourses: ['cade-todo-mundo-adulto'],
   legal: { termos: TERMOS_CADE_ADULTO, termsVersion: 'cade-adulto-2026-11-25' },
   content: {
     copy: CADE_ADULTO_PRODUTO,

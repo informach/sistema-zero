@@ -111,8 +111,11 @@ presente com a oferta no resgate, pausada e presente de outra oferta).
 Presentes: 7 dias divulgados e 15 reais (`advertisedAccessDays` no catálogo; a copy do presente
 usa `gift.accessDays`, o divulgado). Comunidade: enquanto a assinatura estiver ativa. Nada promete
 acesso vitalício nem "sem prazo". Curso vendido e dado de presente tem DUAS ofertas no catálogo
-(venda de 1 ano na env do funil; presente de 15 dias nas listas dos embaixadores), por isso o
-presente do Cadê volta a abrir em `/bolsa`. `prazoDaOferta` (`content/presente-resgate.ts`) dá
+(venda de 1 ano na env do funil; presente de 15 dias nas listas dos embaixadores), mas UMA página:
+a página é escolhida pelo CURSO (`FunnelDef.giftCourses` + `funnelForGiftCourse`), nunca pela
+oferta. `/bolsa/<código>` e o `/i/` de presente só redirecionam à página do curso com
+`?presente=<código>` (e `&oferta-presente=<slug>` quando o embaixador escolheu a oferta, que vai
+ao resgate); `/bolsa` só desenha corpo para curso sem página de venda. `prazoDaOferta` (`content/presente-resgate.ts`) dá
 "1 ano" no rótulo e "12 meses" nas frases com artigo.
 
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)

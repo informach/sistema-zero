@@ -209,7 +209,7 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
     expect(gw.calls.links).toHaveLength(calls)
   })
 
-  test('presente de oferta com página abre a página no modo presente; sem página, /bolsa com a escolha', async () => {
+  test('presente sempre passa pela página do presente, levando a escolha do embaixador', async () => {
     const gw = createFakeGateway()
     const deps = { env: ENV, gateway: gw.gateway, secureCookie: false }
     gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'desafio-primeiro-jogo-30-dias' }))
@@ -218,8 +218,9 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
       { code: 'mari-x7k2', offer: 'desafio-primeiro-jogo-30-dias' },
       deps,
     )
+    // A página do presente resolve o curso e redireciona (uma página por curso).
     expect(comPagina.headers.get('location')).toBe(
-      '/kids/desafio-primeiro-jogo/oferta?presente=mari-x7k2',
+      '/bolsa/mari-x7k2?oferta=desafio-primeiro-jogo-30-dias',
     )
     gw.setLinkResult(200, linkBody({ mode: 'gift', offerSlug: 'guia-sem-pagina' }))
     const semPagina = await referralLinkRedirect(
@@ -358,5 +359,21 @@ describe('origem no metadata do pagamento', () => {
       .metadata
     expect(boleto.origemLugar).toBeUndefined()
     expect(boleto.origemCodigo).toBeUndefined()
+  })
+})
+
+describe('uma página por curso', () => {
+  test('o presente do curso abre na página dele, qualquer que seja a oferta do presente', async () => {
+    const { funnelForGiftCourse } = await import('../../src/funnels/registry')
+    expect(funnelForGiftCourse('cade-todo-mundo', 'kids')?.key).toBe('kids/cade-todo-mundo')
+    expect(funnelForGiftCourse('cade-todo-mundo-adulto', 'adult')?.key).toBe('pro/cade-todo-mundo')
+    expect(funnelForGiftCourse('transformando-o-vilao-em-aliado', 'kids')?.key).toBe(
+      'kids/vilao-em-aliado',
+    )
+    expect(funnelForGiftCourse('desafio-primeiro-jogo-adulto', 'adult')?.key).toBe(
+      'pro/desafio-primeiro-jogo',
+    )
+    expect(funnelForGiftCourse('cade-todo-mundo', 'adult')).toBeNull()
+    expect(funnelForGiftCourse('curso-sem-pagina', 'kids')).toBeNull()
   })
 })

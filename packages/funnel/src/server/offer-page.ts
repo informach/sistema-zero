@@ -10,7 +10,11 @@ import { type ReferralGiftPage, resolveReferralGiftPage } from './referral-gift-
 /** A página da oferta no modo PRESENTE (`?presente=<código>`, 25/11/2026). */
 export type OfferGiftMode = Extract<ReferralGiftPage, { gift: unknown }> & {
   gift: { gift: NonNullable<Extract<ReferralGiftPage, { gift: unknown }>['gift']['gift']> }
+  /** O presente escolhido pelo embaixador (`?oferta-presente=`), repassado ao resgate. */
+  chosenOffer: string | null
 }
+
+const OFFER_SLUG = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const GIFT_CODE = /^[a-z0-9-]{4,32}$/
 
@@ -58,21 +62,28 @@ export async function resolveOfferPage(
   const quer = url.searchParams.get('quer')
   const ofertaUrl = new URL(url.pathname, site ?? url).toString()
 
-  // Modo presente: o código dá ESTA oferta de presente (campanha de presente, ou a escolha do
-  // embaixador na lista do público). Presente de outra oferta → a página do presente decide
-  // (`/bolsa/<código>` leva à página certa). Código inválido ou referrals fora: a venda normal.
+  // Modo presente (uma página por CURSO): o código dá de presente um curso desta página
+  // (`giftCourses`), qualquer que seja a oferta do presente (a de 15 dias, a escolhida pelo
+  // embaixador em `?oferta-presente=`). Presente de outro curso → `/bolsa/<código>`, que só
+  // redireciona à página certa. Código inválido ou referrals fora: a venda normal.
   const presenteCode = url.searchParams.get('presente')?.trim().toLowerCase() ?? ''
+  const chosenRaw = url.searchParams.get('oferta-presente')?.trim() ?? ''
+  const chosenOffer = OFFER_SLUG.test(chosenRaw) ? chosenRaw : null
   let presente: OfferGiftMode | null = null
   if (GIFT_CODE.test(presenteCode)) {
-    const gift = await resolveReferralGiftPage(gateway, presenteCode, offerSlug)
+    const gift = await resolveReferralGiftPage(gateway, presenteCode, chosenOffer)
     if ('gift' in gift && gift.gift.gift) {
-      const giftSlug = gift.gift.gift.offerSlug
-      if (giftSlug && giftSlug !== offerSlug)
+      const course = gift.gift.gift.courseSlug
+      if (course && (f.giftCourses ?? []).includes(course))
+        presente = { ...gift, chosenOffer } as OfferGiftMode
+      else if (course) {
+        const target = new URL(`/bolsa/${presenteCode}`, url)
+        if (chosenOffer) target.searchParams.set('oferta', chosenOffer)
         return new Response(null, {
           status: 302,
-          headers: { location: `/bolsa/${presenteCode}`, 'cache-control': 'no-store' },
+          headers: { location: `${target.pathname}${target.search}`, 'cache-control': 'no-store' },
         })
-      if (giftSlug === offerSlug) presente = gift as OfferGiftMode
+      }
     }
   }
 

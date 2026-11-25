@@ -102,16 +102,10 @@ export async function referralLinkRedirect(
 
   let target: URL
   if (link.mode === 'gift') {
-    // Presente de oferta com página de venda: a página dela no modo presente. Sem página (o Cadê,
-    // por enquanto): a página do presente, com a escolha do embaixador quando ela veio no link.
-    const funnel = await resolveOfferFunnel(deps.env, deps.gateway, link.offerSlug, link.audience)
-    if (funnel && !funnel.alt) {
-      target = new URL(`${funnel.basePath}/oferta`, url)
-      target.searchParams.set('presente', link.code)
-    } else {
-      target = new URL(`/bolsa/${encodeURIComponent(link.code)}`, url)
-      if (offer) target.searchParams.set('oferta', link.offerSlug)
-    }
+    // Presente: a página do presente resolve o CURSO e redireciona à página de venda dele no modo
+    // presente (uma página por curso); leva a escolha do embaixador quando ela veio no link.
+    target = new URL(`/bolsa/${encodeURIComponent(link.code)}`, url)
+    if (offer) target.searchParams.set('oferta', link.offerSlug)
   } else {
     const funnel = await resolveOfferFunnel(deps.env, deps.gateway, link.offerSlug, link.audience)
     if (!funnel) return text('Esta oferta não tem uma página de compra disponível.', 404)

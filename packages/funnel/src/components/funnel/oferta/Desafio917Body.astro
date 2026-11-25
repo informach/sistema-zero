@@ -37,7 +37,6 @@ const origem = presente
       giftVariant(presente.gift.gift, presente.gift.audience) === 'pais' ? 'pais' : 'curso',
     )
   : null
-const ofertaSlug = getDeps().env.offerByFunnel[f.key] ?? ''
 const fill = (texto: string) => preencherPreco(texto, preco)
 const img = (src: string) => `/img/${src}`
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
@@ -247,7 +246,7 @@ const CAMINHO = [
               ))}
             </ul>
             {presente ? (
-              <OfertaPresente presente={presente} communityUrl={contaUrl.replace(/\/$/, '')} oferta={ofertaSlug} />
+              <OfertaPresente presente={presente} communityUrl={contaUrl.replace(/\/$/, '')} />
             ) : (
             <article class="c9-plano d9-plano">
               <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
