@@ -247,7 +247,14 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           shareUrls,
           campaigns,
           // Só quantidades: o embaixador nunca vê valores de venda (decisão de 25/11/2026).
-          stats: { ...ambassador.stats, people: results?.get(ambassador.id)?.people ?? null },
+          // Só quantidades (decisão de 25/11/2026): pessoas, presentes e compras pelos links.
+          // Nunca valores de venda: o faturamento é leitura do Admin.
+          stats: {
+            ...ambassador.stats,
+            people: results?.get(ambassador.id)?.people ?? null,
+            gifts: results?.get(ambassador.id)?.gifts ?? null,
+            purchases: results?.get(ambassador.id)?.purchases ?? null,
+          },
           offers,
           bonus: {
             amountCents: deps.bonusAmountCents,
