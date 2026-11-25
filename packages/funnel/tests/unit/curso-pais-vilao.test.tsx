@@ -106,14 +106,21 @@ describe('venda do guia', () => {
   const venda = comPreco(guiaPaisVenda(7), 'R$ 27')
   const textoVenda = JSON.stringify(venda)
 
-  test('o funil do guia é registrado com a página pública, sem prazo e com Termo próprio', () => {
+  test('o funil do guia é registrado com a página pública, 1 ano de acesso e Termo próprio', () => {
     expect(getFunnelByKey('kids/vilao-em-aliado')).toBe(VILAO_EM_ALIADO)
     expect(VILAO_EM_ALIADO.basePath).toBe(CURSO_PAIS_VILAO_PATH)
     expect(VILAO_EM_ALIADO.offerContract).toMatchObject({
       pricingMode: 'one_time',
-      accessMode: 'lifetime',
+      accessMode: 'fixed',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
     })
-    expect(VILAO_EM_ALIADO.lifetimeAccess).toBe(true)
+    // Nada de prometer acesso vitalício (decisão de 25/11/2026).
+    expect(VILAO_EM_ALIADO.lifetimeAccess).toBe(false)
+    expect(JSON.stringify(VILAO_EM_ALIADO.legal.termos)).not.toMatch(
+      /vitalíc|sem prazo|não tem prazo/i,
+    )
+    expect(textoVenda).not.toMatch(/vitalíc|sem prazo/i)
     expect(VILAO_EM_ALIADO.legal.termos.titulo).toContain('Transformando o vilão em aliado')
     expect(VILAO_EM_ALIADO.productSku).toBe(CURSO_PAIS_VILAO_SLUG)
   })

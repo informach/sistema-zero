@@ -297,6 +297,32 @@ export function prazoDoCade(dias: number): PrazoDoCade {
   }
 }
 
+/**
+ * O prazo de uma oferta de VENDA com prazo fixo (25/11/2026: o Cadê vendido tem 1 ano), nos
+ * mesmos marcadores do `prazoDoCade`. Em meses: `dias` diz "1 ano" (ou "N meses") e `extenso`
+ * diz "12 meses" (ou "N meses"), para as frases com artigo ("durante os 12 meses") seguirem
+ * corretas. Em dias, é o `prazoDoCade`.
+ */
+export function prazoDaOferta(
+  access: { durationUnit: 'days' | 'months' | null; durationValue: number | null } | null,
+  padraoDias = 7,
+): PrazoDoCade {
+  if (access?.durationUnit === 'months' && access.durationValue) {
+    const meses = access.durationValue
+    const extenso = meses === 1 ? '1 mês' : `${meses} meses`
+    const rotulo = meses === 12 ? '1 ano' : extenso
+    return {
+      dias: rotulo,
+      diasCaixaAlta: rotulo.toLocaleUpperCase('pt-BR'),
+      extenso,
+      extensoInicial: extenso,
+    }
+  }
+  return prazoDoCade(
+    access?.durationUnit === 'days' && access.durationValue ? access.durationValue : padraoDias,
+  )
+}
+
 /** Curso para pais: a página do curso na área dos pais do app Kids. */
 export function cursoParaPaisHref(communityUrl: string, courseSlug: string): string {
   return `${communityUrl}/pais/cursos/${encodeURIComponent(courseSlug)}`

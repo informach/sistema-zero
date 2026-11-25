@@ -6,7 +6,7 @@
 // (`?presente=`): a copy do presente inteira, o selo de quem dá o presente e o `OfertaPresente` no
 // lugar do preço, sem pré-checkout. O prazo e a garantia vêm da oferta do catálogo.
 import { presenteKids } from '../../../content/presente'
-import { prazoDoCade } from '../../../content/presente-resgate'
+import { prazoDaOferta, prazoDoCade } from '../../../content/presente-resgate'
 import { cadeKidsVenda } from '../../../funnels/cade-todo-mundo/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -20,11 +20,11 @@ import OfertaPresente from './OfertaPresente.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente, access, offerSlug } = Astro.props
-const dias =
-  access?.mode === 'fixed' && access.durationUnit === 'days' && access.durationValue
-    ? access.durationValue
-    : 7
-const prazo = prazoDoCade(dias)
+// Venda: o prazo da oferta de venda (1 ano). Presente: o prazo do presente, o divulgado
+// (`gift.accessDays`, 7 dias), que é outra oferta.
+const prazo = presente
+  ? prazoDoCade(presente.gift.gift.accessDays ?? 7)
+  : prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeKidsVenda(prazo, access?.guaranteeDays ?? null)
 const P = presente ? presenteKids(prazo) : venda
 const preco = precoDoDesafio(priceReais, coupon)

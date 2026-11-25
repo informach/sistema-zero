@@ -7,7 +7,7 @@ import { describe, expect, test } from 'bun:test'
 import { TERMOS_CADE_ADULTO } from '../../src/content/legal/termos-cade-adulto'
 import { TERMOS_CADE_KIDS } from '../../src/content/legal/termos-cade-kids'
 import { TERMOS_GUIA_PAIS } from '../../src/content/legal/termos-guia-pais'
-import { prazoDoCade } from '../../src/content/presente-resgate'
+import { prazoDaOferta, prazoDoCade } from '../../src/content/presente-resgate'
 import { CADE_ADULTO } from '../../src/funnels/cade-adulto'
 import { cadeAdultoVenda } from '../../src/funnels/cade-adulto/oferta'
 import { CADE_TODO_MUNDO } from '../../src/funnels/cade-todo-mundo'
@@ -21,8 +21,8 @@ const src = (path: string) => Bun.file(new URL(`../../src/${path}`, import.meta.
 const politica = (over: Partial<Parameters<typeof checkOfferContract>[1] & object> = {}) => ({
   pricingMode: 'one_time' as const,
   accessMode: 'fixed' as const,
-  accessDurationValue: 7,
-  accessDurationUnit: 'days' as const,
+  accessDurationValue: 12,
+  accessDurationUnit: 'months' as const,
   guaranteeDays: 7,
   ...over,
 })
@@ -53,16 +53,16 @@ describe('registro dos funis novos', () => {
 })
 
 describe('contrato do Cadê: o prazo e a garantia vêm da oferta', () => {
-  test('aceita qualquer prazo fixo em dias e qualquer garantia', () => {
+  test('a venda é por prazo fixo em meses (1 ano); qualquer número de meses e garantia', () => {
     for (const contrato of [CADE_TODO_MUNDO.offerContract, CADE_ADULTO.offerContract]) {
       expect(checkOfferContract(contrato, politica()).ok).toBe(true)
       expect(
-        checkOfferContract(contrato, politica({ accessDurationValue: 30, guaranteeDays: null })).ok,
+        checkOfferContract(contrato, politica({ accessDurationValue: 6, guaranteeDays: null })).ok,
       ).toBe(true)
     }
   })
 
-  test('recusa vitalício, meses e assinatura', () => {
+  test('recusa vitalício, dias (a oferta do presente) e assinatura', () => {
     const contrato = CADE_TODO_MUNDO.offerContract
     expect(
       checkOfferContract(
@@ -70,14 +70,24 @@ describe('contrato do Cadê: o prazo e a garantia vêm da oferta', () => {
         politica({ accessMode: 'lifetime', accessDurationValue: null, accessDurationUnit: null }),
       ).ok,
     ).toBe(false)
-    expect(checkOfferContract(contrato, politica({ accessDurationUnit: 'months' })).ok).toBe(false)
+    expect(
+      checkOfferContract(
+        contrato,
+        politica({ accessDurationValue: 15, accessDurationUnit: 'days' }),
+      ).ok,
+    ).toBe(false)
     expect(checkOfferContract(contrato, politica({ pricingMode: 'subscription' })).ok).toBe(false)
   })
 
   test('o contrato do Desafio continua rígido', () => {
     const desafio = getFunnelByKey('kids/desafio-primeiro-jogo')?.offerContract
-    expect(checkOfferContract(desafio, politica({ accessDurationValue: 30 })).ok).toBe(true)
-    expect(checkOfferContract(desafio, politica({ accessDurationValue: 7 })).ok).toBe(false)
+    const dias = { accessDurationUnit: 'days' as const }
+    expect(checkOfferContract(desafio, politica({ ...dias, accessDurationValue: 30 })).ok).toBe(
+      true,
+    )
+    expect(checkOfferContract(desafio, politica({ ...dias, accessDurationValue: 7 })).ok).toBe(
+      false,
+    )
   })
 })
 
@@ -178,5 +188,17 @@ describe('Termos das ofertas novas', () => {
     expect(JSON.stringify(TERMOS_GUIA_PAIS)).not.toMatch(/Mural|Estúdio/)
     expect(CADE_TODO_MUNDO.legal.termos).toBe(TERMOS_CADE_KIDS)
     expect(CADE_ADULTO.legal.termos).toBe(TERMOS_CADE_ADULTO)
+  })
+})
+
+describe('prazo da venda em meses', () => {
+  test('12 meses vira 1 ano no rótulo e 12 meses nas frases com artigo', () => {
+    expect(prazoDaOferta({ durationUnit: 'months', durationValue: 12 })).toMatchObject({
+      dias: '1 ano',
+      extenso: '12 meses',
+    })
+    expect(prazoDaOferta({ durationUnit: 'months', durationValue: 6 }).dias).toBe('6 meses')
+    expect(prazoDaOferta({ durationUnit: 'days', durationValue: 15 }).dias).toBe('15 dias')
+    expect(prazoDaOferta(null).dias).toBe('7 dias')
   })
 })

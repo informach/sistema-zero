@@ -106,6 +106,15 @@ nenhum valor de venda chega ao embaixador. Testes: `referral-gift-copy.test.tsx`
 página de venda no modo presente) e `curso-pais-vilao.ts` (a página de venda do guia, o modo
 presente com a oferta no resgate, pausada e presente de outra oferta).
 
+**Prazos (decisão de 25/11/2026).** Guia dos pais e Cadê VENDIDO: 1 ano (oferta de venda
+`fixed`/12/`months`; o guia tem contrato rígido e o Cadê lê os meses da oferta). Desafio: 30 dias.
+Presentes: 7 dias divulgados e 15 reais (`advertisedAccessDays` no catálogo; a copy do presente
+usa `gift.accessDays`, o divulgado). Comunidade: enquanto a assinatura estiver ativa. Nada promete
+acesso vitalício nem "sem prazo". Curso vendido e dado de presente tem DUAS ofertas no catálogo
+(venda de 1 ano na env do funil; presente de 15 dias nas listas dos embaixadores), por isso o
+presente do Cadê volta a abrir em `/bolsa`. `prazoDaOferta` (`content/presente-resgate.ts`) dá
+"1 ano" no rótulo e "12 meses" nas frases com artigo.
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.

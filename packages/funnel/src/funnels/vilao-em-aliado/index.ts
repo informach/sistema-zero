@@ -1,10 +1,10 @@
 // Funil kids do guia para pais "Transformando o vilão em aliado" (`kids/vilao-em-aliado`,
-// 25/11/2026): curso pago normal, sem prazo. A página pública `/kids/vilao-em-aliado` é a página de
+// 25/11/2026): curso pago normal, com 1 ano de acesso. A página pública `/kids/vilao-em-aliado` é a página de
 // venda dele (o mesmo corpo de `/kids/vilao-em-aliado/oferta`); o presente sai pelos links de
 // campanha e de embaixador, que abrem a página no modo presente (`?presente=`). Quem assiste é o
 // adulto, na área dos pais do app Kids.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta vitalícia de R$ 27 do curso
+// Oferta no catálogo: env `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta de 1 ano, R$ 27, do curso
 // `transformando-o-vilao-em-aliado`). Registrado por último: a landing `/kids` segue abrindo o
 // Desafio.
 
@@ -48,7 +48,7 @@ const GUIA_OBRIGADO: FunnelObrigado = {
   entrega: [
     'Transformando o vilão em aliado: 7 aulas curtas em vídeo.',
     'Apostila para consultar e certificado no final.',
-    'O guia fica na sua conta sem prazo.',
+    'O guia fica na sua conta por 1 ano, contado da aprovação do pagamento.',
     'Pagamento único, sem assinatura.',
   ],
   passos: [
@@ -83,12 +83,13 @@ export const VILAO_EM_ALIADO: FunnelDef = {
   seoDescription:
     'Guia para pais, em 7 aulas curtas em vídeo. A Helena mostra como a tela que hoje vira briga em casa pode ser sua aliada no desenvolvimento do seu filho.',
   theme: 'kids',
-  lifetimeAccess: true,
+  lifetimeAccess: false,
+  // 1 ano de acesso (decisão de 25/11/2026: nada de prometer acesso vitalício).
   offerContract: {
     pricingMode: 'one_time',
-    accessMode: 'lifetime',
-    accessDurationValue: null,
-    accessDurationUnit: null,
+    accessMode: 'fixed',
+    accessDurationValue: 12,
+    accessDurationUnit: 'months',
     guaranteeDays: null,
     anyGuarantee: true,
   },

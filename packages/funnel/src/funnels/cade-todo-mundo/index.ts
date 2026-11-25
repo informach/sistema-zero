@@ -81,7 +81,8 @@ export const CADE_TODO_MUNDO: FunnelDef = {
     pricingMode: 'one_time',
     accessMode: 'fixed',
     accessDurationValue: null,
-    accessDurationUnit: 'days',
+    // A venda é por 1 ano (decisão de 25/11/2026); o presente é outra oferta, de dias.
+    accessDurationUnit: 'months',
     guaranteeDays: null,
     anyDuration: true,
     anyGuarantee: true,

@@ -1,5 +1,5 @@
 // Página de venda do guia para pais "Transformando o vilão em aliado" (`/kids/vilao-em-aliado`,
-// 25/11/2026). O guia virou curso pago normal (R$ 27 no catálogo, sem prazo); o presente dele sai
+// 25/11/2026). O guia virou curso pago normal (R$ 27 no catálogo, 1 ano de acesso); o presente dele sai
 // pelos links de campanha e de embaixador, que abrem esta mesma página no modo presente. A copy
 // aprovada em 21/11/2026 (`CURSO_PAIS_VILAO`, a do guia gratuito) é a do modo presente; na venda
 // mudam só o que falava de "gratuito", os botões e o bloco de compra. O presente do fim do guia
@@ -56,7 +56,7 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
       selo: 'Guia para pais',
       beneficios: [
         P.hero.beneficios[0] ?? '',
-        'Pagamento único, com acesso sem prazo',
+        'Pagamento único, com 1 ano de acesso',
         P.hero.beneficios[2] ?? '',
       ],
     },
@@ -67,7 +67,13 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
           return {
             pergunta: 'Quanto custa?',
             resposta:
-              '{{preco}}, em pagamento único. Nenhuma assinatura começa, e o guia fica na sua conta sem prazo.',
+              '{{preco}}, em pagamento único. Nenhuma assinatura começa, e o guia fica na sua conta por 1 ano.',
+          }
+        if (item.pergunta === 'Por quanto tempo fico com o guia?')
+          return {
+            ...item,
+            resposta:
+              'Por 1 ano, contado da aprovação do pagamento. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.',
           }
         if (item.pergunta === 'Já tenho conta no Sistema Zero Kids. Preciso de outra?')
           return {
@@ -82,7 +88,7 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
     oferta: {
       selo: 'Transformando o vilão em aliado',
       sufixo: 'pagamento único',
-      texto: '7 aulas curtas em vídeo, apostila e certificado. O guia fica na sua conta sem prazo.',
+      texto: '7 aulas curtas em vídeo, apostila e certificado. O guia fica na sua conta por 1 ano.',
       cta: CTA,
       garantia:
         garantiaDias === null

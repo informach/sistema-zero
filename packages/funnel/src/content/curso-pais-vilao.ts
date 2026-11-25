@@ -139,7 +139,7 @@ export const CURSO_PAIS_VILAO = {
       {
         pergunta: 'Por quanto tempo fico com o guia?',
         resposta:
-          'O guia fica na sua conta sem prazo. Você pode rever as aulas e consultar a apostila sempre que quiser.',
+          'Pelo prazo do seu acesso, que aparece no cadastro. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.',
       },
     ],
   },
