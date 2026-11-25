@@ -53,6 +53,8 @@ export function publicGiftSourceName(source: Pick<GiftSource, 'kind' | 'name'>):
  */
 export interface ReferralGiftOfferView {
   offerId: string
+  /** O slug da oferta (25/11/2026): o funil abre a página dela no modo presente. */
+  offerSlug?: string
   offerTitle: string
   courseSlug: string | null
   courseTitle: string | null

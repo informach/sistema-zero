@@ -53,6 +53,11 @@ export interface RedeemInput {
   email: string
   phone?: string
   attribution?: GiftAttribution | null
+  /**
+   * O presente que o embaixador escolheu na lista do público (slug ou id, 25/11/2026). Vale só
+   * para código de embaixador e só se a oferta está ligada na lista; campanha usa a dela.
+   */
+  offer?: string | null
 }
 
 export type RedeemResult =
@@ -103,6 +108,14 @@ export interface RedeemOptions {
   /** Valor único legado e prazo do link pessoal (para o acordo capturado). */
   legacyBonusCents?: number
   bonusWindowDays?: number
+  /** As listas do Admin: o presente que o embaixador pode escolher (sem ela, só o padrão). */
+  ambassadorOffers?: {
+    allowed(
+      audience: GiftAudience,
+      kind: 'gift',
+      offerRef: string,
+    ): Promise<{ offerId: string } | null>
+  }
 }
 
 /** O curso principal do presente, como o members o publica. */
@@ -265,19 +278,23 @@ export class RedeemScholarshipService {
    * que a oferta entrega. `gift` só quando a oferta resolve e o presente está disponível.
    */
   async publicGift(
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     audience: GiftAudience,
+    requested?: string | null,
   ): Promise<{
     availability: 'available' | 'unavailable' | 'upstream_error'
     gift?: ReferralGiftOfferView
   }> {
-    const result = await this.planGift(audience, giftOfferRef(campaign, audience))
+    const ref = await this.giftRefFor(campaign, audience, requested)
+    if (!ref) return { availability: 'unavailable' }
+    const result = await this.planGift(audience, ref)
     if (result.kind !== 'ok') return { availability: result.kind }
     const { offer, course } = result.value
     return {
       availability: 'available',
       gift: {
         offerId: offer.offerId,
+        offerSlug: offer.offerSlug,
         offerTitle: offer.name,
         courseSlug: offer.courseSlug,
         courseTitle: course?.title ?? null,
@@ -288,13 +305,32 @@ export class RedeemScholarshipService {
     }
   }
 
+  /**
+   * A oferta que o código dá de presente: a da campanha (campanha de VENDA não dá presente:
+   * `null`), a escolhida pelo embaixador quando está ligada na lista do público, ou a padrão.
+   * Escolha fora da lista também é `null` (o link não existe).
+   */
+  async giftRefFor(
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
+    audience: GiftAudience,
+    requested?: string | null,
+  ): Promise<string | null> {
+    if (campaign) return campaign.kind === 'sale' ? null : giftOfferRef(campaign, audience)
+    const wanted = requested?.trim()
+    if (wanted && this.opts.ambassadorOffers) {
+      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted)
+      return option?.offerId ?? null
+    }
+    return giftOfferRef(null, audience)
+  }
+
   /** Consulta a mesma vaga da execução, sem claim, concessão ou envio de email. */
   private async findExistingGift(
     email: string,
     audience: GiftAudience,
     userId: string | undefined,
     ownerKind: string,
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     fresh: Availability<GiftPlan>,
   ) {
     const fromEmail = await this.repo.listRedemptionsByEmail(email, audience)
@@ -334,12 +370,15 @@ export class RedeemScholarshipService {
   }
 
   async inspectAccountGift(
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     audience: GiftAudience,
     ownerKind: string,
     account: { userId: string; email: string },
+    requested?: string | null,
   ) {
-    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    const ref = await this.giftRefFor(campaign, audience, requested)
+    if (!ref) return null
+    const fresh = await this.planGift(audience, ref)
     const { existing } = await this.findExistingGift(
       normalizeEmail(account.email),
       audience,
@@ -396,7 +435,11 @@ export class RedeemScholarshipService {
     // "Já resgatado" é por público: o mesmo e-mail pode ter um presente Kids e um adulto.
     // E por VAGA (18/11/2026): curso para pais não ocupa a vaga do presente do público, então a
     // oferta deste código é resolvida primeiro para saber em que vaga procurar o resgate.
-    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    if (codeRecord.ownerKind === 'campaign' && !campaign) return { kind: 'code_not_found' }
+    const ref = await this.giftRefFor(campaign, audience, input.offer)
+    // Campanha de venda, ou escolha fora da lista do público: o link de presente não existe.
+    if (!ref) return { kind: 'code_not_found' }
+    const fresh = await this.planGift(audience, ref)
     const { giftSlot, existing } = await this.findExistingGift(
       email,
       audience,

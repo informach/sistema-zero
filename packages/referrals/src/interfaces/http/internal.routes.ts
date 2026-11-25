@@ -135,7 +135,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .get(
       '/codes/:code',
-      async ({ params, headers, set }) => {
+      async ({ params, query, headers, set }) => {
         guard(headers)
         const code = normalizeCode(params.code)
         if (!isValidCode(code)) {
@@ -151,7 +151,11 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           record.ownerKind === 'campaign' && record.campaignId
             ? await deps.campaigns?.repo.findById(record.campaignId)
             : null
-        if (record.ownerKind === 'campaign' && (!campaign || campaignState(campaign) === 'draft')) {
+        // Campanha de venda não tem página de presente (o link dela abre a oferta).
+        if (
+          record.ownerKind === 'campaign' &&
+          (!campaign || campaignState(campaign) === 'draft' || campaign.kind === 'sale')
+        ) {
           set.status = 404
           return envelope('CODE_NOT_FOUND', 'Código não encontrado')
         }
@@ -166,7 +170,16 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // Fora do ar (agendada, pausada, encerrada) não há cadastro novo, mas a página ainda diz
         // qual curso é o presente (curso para pais tem outra página): o `gift` vem quando a
         // oferta resolve, e falha do catálogo só o omite (a página cai no texto de sempre).
-        const plan = await deps.redeem.publicGift(campaign ?? null, audience)
+        // A escolha do embaixador fora da lista do público: o link não existe.
+        if (
+          query.offer &&
+          !campaign &&
+          !(await deps.redeem.giftRefFor(null, audience, query.offer))
+        ) {
+          set.status = 404
+          return envelope('CODE_NOT_FOUND', 'Código não encontrado')
+        }
+        const plan = await deps.redeem.publicGift(campaign ?? null, audience, query.offer)
         const { availability, gift } =
           state === 'active'
             ? plan
@@ -192,7 +205,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           ...(gift ? { gift } : {}),
         }
       },
-      { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
+      {
+        params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }),
+        query: t.Object({
+          /** O presente escolhido pelo embaixador (slug da lista do público). */
+          offer: t.Optional(t.String({ minLength: 1, maxLength: 80, pattern: SLUG })),
+        }),
+      },
     )
     .get(
       '/ambassadors/by-token/:token',
@@ -329,6 +348,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           email: body.email,
           phone: body.phone,
           attribution: sanitizeGiftAttribution(body.attribution),
+          offer: body.offer ?? null,
         })
         switch (result.kind) {
           case 'completed':
@@ -383,6 +403,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           name: t.String({ minLength: 2, maxLength: 120 }),
           email: t.String({ pattern: EMAIL_PATTERN, maxLength: 254 }),
           phone: t.Optional(t.String({ maxLength: 20 })),
+          /** O presente escolhido pelo embaixador (slug da lista do público). */
+          offer: t.Optional(t.String({ minLength: 1, maxLength: 80, pattern: SLUG })),
           attribution: t.Optional(
             t.Object({
               utmSource: t.Optional(t.Nullable(t.String({ maxLength: 100 }))),

@@ -56,6 +56,11 @@ Serviços (Lote 2):
   minuto); com `?path=`, só aquele (404 fora do prazo). Campanha de venda: `kind` só muda em
   rascunho sem aquisições (409 `CAMPAIGN_KIND_LOCKED`); endereço de outra campanha → 409
   `CAMPAIGN_REDIRECT_TAKEN`.
+- **Presente escolhido** (`RedeemScholarshipService.giftRefFor`): campanha usa a oferta dela, e
+  campanha de VENDA não dá presente (`codes/:code` 404, resgate 404, área de membros 410). Código
+  de embaixador aceita `offer` (slug) no resgate e `?offer=` no `codes/:code` quando a oferta
+  está LIGADA na lista de presentes do público (`AmbassadorOffersService.allowed`); fora da lista
+  = 404; sem `offer`, a oferta padrão. A leitura pública do presente traz `gift.offerSlug`.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

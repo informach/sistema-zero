@@ -78,6 +78,11 @@ export function createApplication(env: Env): Application {
   // Sem o app adulto o presente adulto responde "indisponível"; o Kids segue normal.
   if (!env.COMMUNITY_URL) logger.warn('referrals.adult_gift_disabled', { missing: 'COMMUNITY_URL' })
 
+  const ambassadorOffers = new AmbassadorOffersService(
+    new DrizzleAmbassadorOfferRepository(connection.db),
+    giftOffers,
+    logger,
+  )
   const redeem = new RedeemScholarshipService(
     repo,
     gateway,
@@ -91,12 +96,8 @@ export function createApplication(env: Env): Application {
       acquisitions: acquisitionRepo,
       legacyBonusCents: env.BONUS_AMOUNT_CENTS,
       bonusWindowDays: env.BONUS_WINDOW_DAYS,
+      ambassadorOffers,
     },
-    logger,
-  )
-  const ambassadorOffers = new AmbassadorOffersService(
-    new DrizzleAmbassadorOfferRepository(connection.db),
-    giftOffers,
     logger,
   )
   const links = new ReferralLinkService(

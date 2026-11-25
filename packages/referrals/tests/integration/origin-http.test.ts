@@ -76,6 +76,7 @@ function buildApp() {
         communityUrl: null,
         leaseMs: 90_000,
         campaigns: campaignRepo,
+        ambassadorOffers,
       },
       silentLogger,
     ),
@@ -246,5 +247,71 @@ describe('rotas da origem por aquisição', () => {
         .results
     expect((await read('staff')).revenueCents).toBeNull()
     expect((await read('admin')).revenueCents).toBe('0')
+  })
+
+  test('campanha de VENDA não abre presente: código e resgate respondem 404', async () => {
+    const { app, campaigns } = buildApp()
+    const now = Date.now()
+    await campaigns.create(
+      {
+        name: 'Venda do Desafio',
+        publicTitle: 'Desafio',
+        description: '',
+        context: 'ad',
+        code: 'venda-desafio',
+        startsAt: new Date(now - DAY).toISOString(),
+        endsAt: new Date(now + DAY).toISOString(),
+        status: 'active',
+        channel: 'instagram',
+        kind: 'sale',
+        saleOfferId: DESAFIO.offerId,
+        linkTarget: 'page',
+      },
+      'Helena',
+    )
+    const internal = { 'x-internal-token': TOKEN }
+    expect(
+      (await app.handle(get('/referrals/internal/codes/venda-desafio', internal))).status,
+    ).toBe(404)
+    const redeem = await app.handle(
+      new Request('http://referrals/referrals/internal/redemptions', {
+        method: 'POST',
+        headers: { ...internal, 'content-type': 'application/json' },
+        body: JSON.stringify({ code: 'venda-desafio', name: 'Paula', email: 'paula@example.com' }),
+      }),
+    )
+    expect(redeem.status).toBe(404)
+  })
+
+  test('presente escolhido pelo embaixador: só o que está ligado na lista do público', async () => {
+    const { app, repo } = buildApp()
+    await repo.createAmbassadorWithCode({
+      name: 'Mariana',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    const put = await app.handle(
+      new Request('http://referrals/referrals/admin/ambassador-offers', {
+        method: 'PUT',
+        headers: admin(),
+        body: JSON.stringify({
+          audience: 'kids',
+          kind: 'gift',
+          items: [{ offerId: DESAFIO.offerId, enabled: true }],
+        }),
+      }),
+    )
+    expect(put.status).toBe(200)
+    const internal = { 'x-internal-token': TOKEN }
+    const chosen = await app.handle(
+      get(`/referrals/internal/codes/mari-x7k2?offer=${DESAFIO.offerSlug}`, internal),
+    )
+    expect(chosen.status).toBe(200)
+    expect((await chosen.json()).gift.offerSlug).toBe(DESAFIO.offerSlug)
+    expect(
+      (await app.handle(get('/referrals/internal/codes/mari-x7k2?offer=fora-da-lista', internal)))
+        .status,
+    ).toBe(404)
   })
 })
