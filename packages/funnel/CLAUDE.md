@@ -61,10 +61,11 @@ Uma página por oferta: as três ofertas que só tinham página de presente vira
   `precoDoDesafio`, `PreCheckoutModal`, barra do celular para `#oferta`. Modo presente
   (`?presente=`): a copy do presente inteira (`presenteKids`/`presenteAdulto`, agora exportadas) e o
   `OfertaPresente`. O PRAZO e a GARANTIA vêm da oferta do catálogo (`bodyProps.access`, novo em
-  `resolveOfferPage`, junto com `offerSlug`): nada de "7 dias" escrito à mão. O contrato só exige
-  pagamento único com prazo fixo em dias (`FunnelOfferContract.anyDuration`/`anyGuarantee`, novos).
-- **`kids/vilao-em-aliado`** (`GuiaPaisBody`): o guia é curso pago (R$ 27, vitalício; contrato
-  `one_time` + `lifetime`, garantia da oferta). `/kids/vilao-em-aliado` renderiza a oferta do funil
+  `resolveOfferPage`, junto com `offerSlug`): nada de "7 dias" escrito à mão. O contrato da VENDA exige
+  pagamento único com prazo fixo em MESES (1 ano; `FunnelOfferContract.anyDuration`/`anyGuarantee`);
+  o presente é outra oferta, de dias.
+- **`kids/vilao-em-aliado`** (`GuiaPaisBody`): o guia é curso pago (R$ 27, 1 ano de acesso; contrato
+  `one_time` + `fixed`/12/`months`, garantia da oferta). `/kids/vilao-em-aliado` renderiza a oferta do funil
   (o `/oferta` do funil é o mesmo corpo, com canonical na página pública). `CursoPaisOferta`
   recebe a copy (`copy`) e o slot `compra` no lugar do formulário do topo; venda pela
   `guiaPaisVenda` (sem "gratuito", `{{preco}}` trocado por `comPreco`), presente pela copy aprovada

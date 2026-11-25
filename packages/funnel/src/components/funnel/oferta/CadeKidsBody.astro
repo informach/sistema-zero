@@ -22,9 +22,12 @@ type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astro.props
 // Venda: o prazo da oferta de venda (1 ano). Presente: o prazo do presente, o divulgado
 // (`gift.accessDays`, 7 dias), que é outra oferta.
-const prazo = presente
-  ? prazoDoCade(presente.gift.gift.accessDays ?? 7)
-  : prazoDaOferta(access?.mode === 'fixed' ? access : null)
+// Presente sem prazo (oferta vitalícia, não usada pelas campanhas de presente): os marcadores do
+// prazo da página de venda, nunca "7 dias" escrito à mão.
+const prazo =
+  presente && presente.gift.gift.accessDays !== null
+    ? prazoDoCade(presente.gift.gift.accessDays)
+    : prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeKidsVenda(prazo, access?.guaranteeDays ?? null)
 const P = presente ? presenteKids(prazo) : venda
 const preco = precoDoDesafio(priceReais, coupon)

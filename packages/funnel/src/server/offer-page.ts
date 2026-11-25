@@ -32,8 +32,35 @@ export async function resolveOfferPage(
   // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
   const offerSlug = resolveOfferSlug(env, f.key)
   const offer = await getActiveOffer(gateway, offerSlug, { log })
+  // Modo presente (uma página por CURSO, resolvido ANTES da oferta de venda: o presente só
+  // depende do referrals, e a venda fora do ar não pode derrubar o resgate): o código dá de presente um curso desta página
+  // (`giftCourses`), qualquer que seja a oferta do presente (a de 15 dias, a escolhida pelo
+  // embaixador em `?oferta-presente=`). Presente de outro curso → `/bolsa/<código>`, que só
+  // redireciona à página certa. Código inválido ou referrals fora: a venda normal.
+  const presenteCode = url.searchParams.get('presente')?.trim().toLowerCase() ?? ''
+  const chosenRaw = url.searchParams.get('oferta-presente')?.trim() ?? ''
+  const chosenOffer = OFFER_SLUG.test(chosenRaw) ? chosenRaw : null
+  let presente: OfferGiftMode | null = null
+  if (GIFT_CODE.test(presenteCode)) {
+    const gift = await resolveReferralGiftPage(gateway, presenteCode, chosenOffer)
+    if ('gift' in gift && gift.gift.gift) {
+      const course = gift.gift.gift.courseSlug
+      if (course && (f.giftCourses ?? []).includes(course))
+        presente = { ...gift, chosenOffer } as OfferGiftMode
+      else if (course) {
+        const target = new URL(`/bolsa/${presenteCode}`, url)
+        if (chosenOffer) target.searchParams.set('oferta', chosenOffer)
+        return new Response(null, {
+          status: 302,
+          headers: { location: `${target.pathname}${target.search}`, 'cache-control': 'no-store' },
+        })
+      }
+    }
+  }
+
   const contractCheck = checkOfferContract(f.offerContract, offer)
-  if (!contractCheck.ok) {
+  // A venda fora do contrato fecha a página, mas não o PRESENTE (ele não cobra nada).
+  if (!contractCheck.ok && !presente) {
     log('offer.contract_mismatch', {
       funnel: f.key,
       offerSlug,
@@ -61,31 +88,6 @@ export async function resolveOfferPage(
   // por-URL segue seguro (mesma classe do `perfil`: grosso, sem dado pessoal).
   const quer = url.searchParams.get('quer')
   const ofertaUrl = new URL(url.pathname, site ?? url).toString()
-
-  // Modo presente (uma página por CURSO): o código dá de presente um curso desta página
-  // (`giftCourses`), qualquer que seja a oferta do presente (a de 15 dias, a escolhida pelo
-  // embaixador em `?oferta-presente=`). Presente de outro curso → `/bolsa/<código>`, que só
-  // redireciona à página certa. Código inválido ou referrals fora: a venda normal.
-  const presenteCode = url.searchParams.get('presente')?.trim().toLowerCase() ?? ''
-  const chosenRaw = url.searchParams.get('oferta-presente')?.trim() ?? ''
-  const chosenOffer = OFFER_SLUG.test(chosenRaw) ? chosenRaw : null
-  let presente: OfferGiftMode | null = null
-  if (GIFT_CODE.test(presenteCode)) {
-    const gift = await resolveReferralGiftPage(gateway, presenteCode, chosenOffer)
-    if ('gift' in gift && gift.gift.gift) {
-      const course = gift.gift.gift.courseSlug
-      if (course && (f.giftCourses ?? []).includes(course))
-        presente = { ...gift, chosenOffer } as OfferGiftMode
-      else if (course) {
-        const target = new URL(`/bolsa/${presenteCode}`, url)
-        if (chosenOffer) target.searchParams.set('oferta', chosenOffer)
-        return new Response(null, {
-          status: 302,
-          headers: { location: `${target.pathname}${target.search}`, 'cache-control': 'no-store' },
-        })
-      }
-    }
-  }
 
   // Assinatura: resolve também a oferta IRMÃ do alternador (mesmo padrão do
   // checkout.astro) pra página exibir os DOIS planos (mensal + anual) com preço

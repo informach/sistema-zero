@@ -4,6 +4,7 @@ import {
   EMBAIXADOR_DUVIDAS,
   type OfertaDoEmbaixador,
   opcaoDeOferta,
+  opcoesPadrao,
   PAINEL_DUVIDAS,
   PAINEL_EMBAIXADOR,
 } from '../../src/content/embaixador'
@@ -624,13 +625,36 @@ describe('painel do embaixador', () => {
       offer: 'transformando-o-vilao-em-aliado',
       kind: 'gift',
     })
-    // O presente do Cadê é o convite de sempre (o e-mail aprovado do Cadê), sem a oferta.
+    // O presente do Cadê também leva a oferta ESCOLHIDA (o referrals usa o e-mail aprovado do
+    // Cadê, com o link dessa oferta; sem ela, a amiga receberia a oferta padrão).
     expect(corpoDoConvite('tok', opcoes.presente[0]!, contato)).toEqual({
       token: 'tok',
       nome: 'Ana',
       email: 'ana@example.com',
       audience: 'kids',
+      offer: OFERTAS[0]!.offerSlug,
+      kind: 'gift',
     })
+    // Só o presente padrão (sem lista do Admin) vai sem oferta.
+    expect(
+      corpoDoConvite('tok', opcoesPadrao({ kids: 'https://x/bolsa/a', adult: null })[0]!, contato),
+    ).toEqual({
+      token: 'tok',
+      nome: 'Ana',
+      email: 'ana@example.com',
+      audience: 'kids',
+    })
+    // Oferta de venda em meses: "1 ano", nunca "12 dias".
+    expect(
+      opcaoDeOferta({
+        ...OFERTAS[0]!,
+        kind: 'referral',
+        accessDays: null,
+        accessMonths: 12,
+        courseSlug: 'outro-curso',
+        name: 'Outro',
+      }).texto,
+    ).toContain('1 ano')
   })
 
   test('com as listas: os números, o modo oferta e o aviso de bônus da assinatura', () => {

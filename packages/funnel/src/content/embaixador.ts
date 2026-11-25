@@ -204,6 +204,8 @@ export interface OfertaDoEmbaixador {
   audience: GiftAudience
   courseSlug: string | null
   accessDays: number | null
+  /** Prazo em meses da oferta de venda (o Cadê vendido: 12 = "1 ano"); ausente nas antigas. */
+  accessMonths?: number | null
   includesMural: boolean
   subscription: boolean
   link: string
@@ -311,8 +313,10 @@ const MENSAGENS: Record<string, Partial<Record<ModoEmbaixador, (prazo: string) =
   },
 }
 
-/** "7 dias" ou, sem prazo, o texto de quem não tem data para terminar. */
-function prazoDe(accessDays: number | null): string | null {
+/** "7 dias", "1 ano" ou "6 meses"; sem prazo, null (a copy não fala de duração). */
+function prazoDe(accessDays: number | null, accessMonths?: number | null): string | null {
+  if (accessMonths)
+    return accessMonths === 12 ? '1 ano' : accessMonths === 1 ? '1 mês' : `${accessMonths} meses`
   return accessDays === null ? null : giftDurationLabel(accessDays)
 }
 
@@ -332,7 +336,7 @@ export function opcaoDeOferta(oferta: OfertaDoEmbaixador): OpcaoDoEmbaixador {
     : oferta.courseSlug === CURSO_PAIS
       ? 'pais'
       : 'kids'
-  const prazo = prazoDe(oferta.accessDays)
+  const prazo = prazoDe(oferta.accessDays, oferta.accessMonths)
   const base = {
     id: `${oferta.kind}:${oferta.audience}:${oferta.offerSlug}`,
     modo,
@@ -391,8 +395,6 @@ export function opcaoDeOferta(oferta: OfertaDoEmbaixador): OpcaoDoEmbaixador {
       : adulto
         ? `Oi. Lembrei de você: no Sistema Zero tem ${titulo}, e acho que combina com você. Dá uma olhada por este link: {{link}}`
         : `Oi. Lembrei de vocês: no Sistema Zero tem ${titulo}, e acho que combina com vocês. Dá uma olhada por este link: {{link}}`)
-  const cade =
-    oferta.courseSlug === 'cade-todo-mundo' || oferta.courseSlug === 'cade-todo-mundo-adulto'
   return {
     ...base,
     titulo,
@@ -413,8 +415,9 @@ export function opcaoDeOferta(oferta: OfertaDoEmbaixador): OpcaoDoEmbaixador {
             : 'o presente para uma família'
         : `a indicação de ${titulo}`,
     mensagem,
-    // O presente do Cadê é o convite de sempre (o e-mail aprovado do Cadê); os outros levam a oferta.
-    conviteOferta: modo === 'presente' && cade ? null : oferta.offerSlug,
+    // Toda oferta da lista vai no convite: o presente do Cadê sai no e-mail aprovado de sempre
+    // (o referrals escolhe), mas com a oferta ESCOLHIDA no link, nunca a padrão.
+    conviteOferta: oferta.offerSlug,
   }
 }
 

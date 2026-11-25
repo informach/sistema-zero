@@ -309,8 +309,9 @@ export function prazoDaOferta(
 ): PrazoDoCade {
   if (access?.durationUnit === 'months' && access.durationValue) {
     const meses = access.durationValue
-    const extenso = meses === 1 ? '1 mês' : `${meses} meses`
-    const rotulo = meses === 12 ? '1 ano' : extenso
+    // As frases com artigo pedem plural ("durante os 30 dias"): 1 mês vira 30 dias nelas.
+    const extenso = meses === 1 ? '30 dias' : `${meses} meses`
+    const rotulo = meses === 12 ? '1 ano' : meses === 1 ? '1 mês' : extenso
     return {
       dias: rotulo,
       diasCaixaAlta: rotulo.toLocaleUpperCase('pt-BR'),
