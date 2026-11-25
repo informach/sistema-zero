@@ -393,6 +393,15 @@ público do resgate; o Kids continua com as chaves de sempre.
 - Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
   copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.
 
+## Convites do embaixador por oferta (25/11/2026)
+
+Quatro e-mails do consumer `referrals`: `referrals-offer-gift-invite` e `-adult` (o presente que o
+embaixador escolheu na lista do público, quando não é o Cadê padrão) e
+`referrals-offer-referral-invite` e `-adult` (a indicação de uma oferta à venda). Variáveis
+`nome`, `indicador`, `oferta` (nome da oferta no catálogo) e `link` (`/i/<código>/<oferta>` do
+funil). Light Copy, sem nome de produto fixo; o Kids fala com o responsável e mantém a frase do
+convite único. Seed depois do deploy do referrals.
+
 ## Desafio do Primeiro Jogo para adultos (21/10/2026)
 
 Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria

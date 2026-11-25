@@ -114,6 +114,7 @@ export function createApplication(env: Env): Application {
       funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
       dailyLimit: env.INVITE_DAILY_LIMIT,
       adultGiftEnabled: Boolean(env.COMMUNITY_URL),
+      ambassadorOffers,
     },
     logger,
   )

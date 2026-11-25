@@ -83,7 +83,7 @@ function buildApp() {
     invite: new CreateInviteService(
       repo,
       gateway,
-      { funnelPublicUrl: FUNNEL_URL, dailyLimit: 50, adultGiftEnabled: false },
+      { funnelPublicUrl: FUNNEL_URL, dailyLimit: 50, adultGiftEnabled: false, ambassadorOffers },
       silentLogger,
     ),
     ambassadors: new AmbassadorAdminService(
@@ -101,7 +101,7 @@ function buildApp() {
     internalToken: TOKEN,
     readiness: async () => {},
   })
-  return { app, repo, campaigns }
+  return { app, repo, campaigns, gateway }
 }
 
 const admin = (role = 'admin') => ({
@@ -313,5 +313,52 @@ describe('rotas da origem por aquisição', () => {
       (await app.handle(get('/referrals/internal/codes/mari-x7k2?offer=fora-da-lista', internal)))
         .status,
     ).toBe(404)
+  })
+
+  test('convite por oferta: indicação da lista sai no template da oferta; fora da lista, 404', async () => {
+    const { app, repo, gateway } = buildApp()
+    await repo.createAmbassadorWithCode({
+      name: 'Mariana Lopes',
+      email: 'mariana@example.com',
+      pageToken: 'm'.repeat(43),
+      code: 'mari-x7k2',
+    })
+    await app.handle(
+      new Request('http://referrals/referrals/admin/ambassador-offers', {
+        method: 'PUT',
+        headers: admin(),
+        body: JSON.stringify({
+          audience: 'kids',
+          kind: 'referral',
+          items: [{ offerId: DESAFIO.offerId, enabled: true }],
+        }),
+      }),
+    )
+    const invite = (offer: string) =>
+      app.handle(
+        new Request(
+          `http://referrals/referrals/internal/ambassadors/by-token/${'m'.repeat(43)}/invites`,
+          {
+            method: 'POST',
+            headers: { 'x-internal-token': TOKEN, 'content-type': 'application/json' },
+            body: JSON.stringify({
+              name: 'Paula',
+              email: 'paula@example.com',
+              offer,
+              kind: 'referral',
+            }),
+          },
+        ),
+      )
+    expect((await invite('fora-da-lista')).status).toBe(404)
+    expect((await invite(DESAFIO.offerSlug)).status).toBe(202)
+    const sent = gateway.calls.find((c) => c.kind === 'sendEmail') as unknown as {
+      input: { templateKey: string; variables: Record<string, string> }
+    }
+    expect(sent.input.templateKey).toBe('referrals-offer-referral-invite')
+    expect(sent.input.variables).toMatchObject({
+      oferta: DESAFIO.name,
+      link: `${FUNNEL_URL}/i/mari-x7k2/${DESAFIO.offerSlug}`,
+    })
   })
 })

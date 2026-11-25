@@ -298,6 +298,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           name: body.name,
           email: body.email,
           audience: body.audience ?? 'kids',
+          offer: body.offer ?? null,
+          kind: body.kind ?? 'gift',
         })
         switch (result.kind) {
           case 'sent':
@@ -312,6 +314,9 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           case 'already_redeemed':
             set.status = 409
             return envelope('EMAIL_ALREADY_REDEEMED', 'Este e-mail já resgatou este presente.')
+          case 'offer_unavailable':
+            set.status = 404
+            return envelope('OFFER_NOT_FOUND', 'Esta oferta não está disponível para convites.')
           case 'gift_unavailable':
             // Presente do público sem configuração (adulto sem `COMMUNITY_URL`): nenhum
             // convite sai para um link que não abre.
@@ -335,6 +340,9 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           email: t.String({ pattern: EMAIL_PATTERN, maxLength: 254 }),
           /** Público do presente convidado; ausente = `kids`. */
           audience: t.Optional(AUDIENCE),
+          /** A oferta da lista do público (presente escolhido ou indicação). */
+          offer: t.Optional(t.String({ minLength: 1, maxLength: 80, pattern: SLUG })),
+          kind: t.Optional(t.Union([t.Literal('gift'), t.Literal('referral')])),
         }),
       },
     )

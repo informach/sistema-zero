@@ -61,6 +61,10 @@ Serviços (Lote 2):
   de embaixador aceita `offer` (slug) no resgate e `?offer=` no `codes/:code` quando a oferta
   está LIGADA na lista de presentes do público (`AmbassadorOffersService.allowed`); fora da lista
   = 404; sem `offer`, a oferta padrão. A leitura pública do presente traz `gift.offerSlug`.
+- **Convite por oferta** (`CreateInviteService`, `POST …/invites` com `offer` + `kind`): a oferta
+  precisa estar ligada na lista do público (`OFFER_NOT_FOUND` 404); templates
+  `referrals-offer-{gift,referral}-invite[-adult]` (`nome`, `indicador`, `oferta`, `link` =
+  `/i/<código>/<oferta>`). A indicação de oferta à venda não é barrada por presente já resgatado.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

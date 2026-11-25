@@ -1533,6 +1533,110 @@ export const seeds = [
         'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
     }),
   },
+  // Convites do embaixador por OFERTA (25/11/2026): o presente escolhido na lista do público
+  // (que não é o Cadê padrão) e a indicação de uma oferta à venda. CONTRATO:
+  // `nome`+`indicador`+`oferta`+`link`; `oferta` é o nome da oferta no catálogo e `link` é o
+  // `/i/<código>/<oferta>` do funil, que abre a página da oferta (no modo presente ou de venda).
+  {
+    key: 'referrals-offer-gift-invite',
+    channel: 'email' as const,
+    name: 'Presente escolhido pelo embaixador: convite (e-mail)',
+    subject: '{{indicador}} deu um presente para a sua família',
+    variables: ['nome', 'indicador', 'oferta', 'link'],
+    body: emailLayout({
+      preheader: 'O presente não pede cartão e não cria assinatura.',
+      title: '{{nome}}, {{indicador}} deu um presente para a sua família',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> lembrou de vocês e deu de presente <strong>{{oferta}}</strong>, do Sistema Zero, sem custo.',
+        ),
+        p(
+          'No link abaixo você vê o que o presente inclui e por quanto tempo ele vale. Para receber, confirme os seus dados de responsável. Não pedimos cartão e não criamos assinatura.',
+        ),
+        ctaButton('Ver o presente', '{{link}}'),
+        divider,
+        small(
+          'Este é um convite único: {{indicador}} nos passou o seu e-mail só para isso. Se não tiver interesse, pode ignorar, que a gente não escreve de novo.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+    }),
+  },
+  {
+    key: 'referrals-offer-gift-invite-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto escolhido pelo embaixador: convite (e-mail)',
+    subject: '{{indicador}} deu um presente para você',
+    variables: ['nome', 'indicador', 'oferta', 'link'],
+    body: emailLayout({
+      preheader: 'O presente não pede cartão e não cria assinatura.',
+      title: '{{indicador}} deu um presente para você',
+      content: [
+        p('Oi, {{nome}}.'),
+        p(
+          '<strong>{{indicador}}</strong> lembrou de você e deu de presente <strong>{{oferta}}</strong>, do Sistema Zero, sem custo.',
+        ),
+        p(
+          'No link abaixo você vê o que o presente inclui e por quanto tempo ele vale. O cadastro é ali mesmo. Não pedimos cartão e não criamos assinatura.',
+        ),
+        ctaButton('Ver o meu presente', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
+    }),
+  },
+  {
+    key: 'referrals-offer-referral-invite',
+    channel: 'email' as const,
+    name: 'Indicação de oferta pelo embaixador: convite (e-mail)',
+    subject: '{{indicador}} indicou {{oferta}} para a sua família',
+    variables: ['nome', 'indicador', 'oferta', 'link'],
+    body: emailLayout({
+      preheader: 'Veja com calma o que a oferta inclui antes de decidir.',
+      title: '{{nome}}, {{indicador}} lembrou da sua família',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> lembrou de vocês e indicou <strong>{{oferta}}</strong>, do Sistema Zero.',
+        ),
+        p(
+          'No link abaixo você conhece a oferta com calma: o que ela inclui, para quem é e o preço. Comprar ou não é decisão de vocês.',
+        ),
+        ctaButton('Conhecer a oferta', '{{link}}'),
+        divider,
+        small(
+          'Este é um convite único: {{indicador}} nos passou o seu e-mail só para isso. Se não tiver interesse, pode ignorar, que a gente não escreve de novo.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+    }),
+  },
+  {
+    key: 'referrals-offer-referral-invite-adult',
+    channel: 'email' as const,
+    name: 'Indicação de oferta adulta pelo embaixador: convite (e-mail)',
+    subject: '{{indicador}} indicou {{oferta}} para você',
+    variables: ['nome', 'indicador', 'oferta', 'link'],
+    body: emailLayout({
+      preheader: 'Veja com calma o que a oferta inclui antes de decidir.',
+      title: '{{indicador}} lembrou de você',
+      content: [
+        p('Oi, {{nome}}.'),
+        p(
+          '<strong>{{indicador}}</strong> lembrou de você e indicou <strong>{{oferta}}</strong>, do Sistema Zero.',
+        ),
+        p(
+          'No link abaixo você conhece a oferta com calma: o que ela inclui, para quem é e o preço. Comprar ou não é decisão sua.',
+        ),
+        ctaButton('Conhecer a oferta', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
+    }),
+  },
   ...[
     { key: 'referrals-scholarship-welcome-adult', campaign: false, newAccount: true },
     { key: 'referrals-scholarship-existing-adult', campaign: false, newAccount: false },
