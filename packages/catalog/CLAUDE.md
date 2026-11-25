@@ -7,6 +7,16 @@
 
 Guia operacional para trabalhar neste package. Leia antes de editar.
 
+## Prazo divulgado da oferta (25/11/2026)
+
+`content.advertisedAccessDays` (inteiro de dias): o prazo que página, confirmação e e-mails
+mostram, MENOR que o prazo real (`fixed` em `days`); a diferença chega de surpresa (o members
+avisa os dias extras no fim do prazo divulgado). O agregado recusa em oferta vitalícia, em meses,
+igual ou maior que o real, e também quando uma edição do prazo real o deixa abaixo do divulgado
+(`assertAdvertisedAccessDays`, estado consolidado). Sai no `content` da leitura pública
+(`GET /catalog/offers/:ref`) e no topo de `GET /catalog/offers/:ref/entitlements`
+(`advertisedAccessDays`, null sem o campo), ao lado da política de acesso.
+
 ## O que é
 
 **Serviço de catálogo**: a **fonte da verdade comercial e de fulfillment** do monorepo. Cadastra
