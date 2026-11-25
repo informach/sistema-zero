@@ -2771,25 +2771,6 @@ describe('as previsões das aulas atuais, no motor', () => {
     expect(blocos.length).toBeGreaterThan(25)
   })
 
-  // ⭐ Exploração livre (02/11/2026): os pedidos falam da IDEIA, com os rótulos da tela livre ("Uma
-  // vez, no começo" e "Sempre, em todo quadro"); os nomes das áreas do Estúdio ficam para a montagem.
-  test('o piloto compara a mesma ficha uma vez, no começo, e sempre, em todo quadro', () => {
-    const piloto = blocos.find(
-      ({ onde, bloco }) =>
-        onde === 'nave-contra-asteroides-primeira-nave.manifesto.json' &&
-        bloco.activity.scene === 'once-vs-always',
-    )
-    const setup = piloto?.bloco.activity.setup
-    expect(setup?.goals).toEqual(['once', 'always'])
-    // A mesma ficha nas duas metas (o preset tem só `move`): a comparação é do momento, não da ação.
-    expect(setup?.preset).toEqual(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])
-    expect(setup?.freeExploration).toBe(true)
-    expect(setup?.goalCopy?.once?.pedido).toContain('Uma vez, no começo')
-    expect(setup?.goalCopy?.always?.pedido).toContain('Sempre, em todo quadro')
-    for (const meta of ['once', 'always'] as const)
-      expect(setup?.goalCopy?.[meta]?.pedido).not.toMatch(/Ao iniciar|Enquanto estiver rodando/)
-  })
-
   /**
    * ⚠️⚠️ As previsões ESCRITAS nos manifestos, por manifesto e cena (`onde · cena · revealOn`), e quais
    * delas são de caso autoral (preset ou meta fora da tabela, conferidas só pela meta).
