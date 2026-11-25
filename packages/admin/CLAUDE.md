@@ -7,6 +7,7 @@ Catálogo › Ofertas: no prazo fixo em DIAS aparece "Prazo divulgado (dias)" (`
 mesclado por `mergeOfferContent` sem apagar o resto do `content`; some fora do prazo fixo em dias).
 Precisa ser menor que a duração (o catálogo confere de novo). Página e e-mails mostram o divulgado; os
 dias extras chegam num e-mail de surpresa do members no fim do prazo divulgado.
+
 ## Cenários 3D: atalho para a oficina na plataforma (16/11/2026)
 
 A oficina de cenários mora na plataforma (`/molda/cenarios` no Kids e na comunidade adulta) e

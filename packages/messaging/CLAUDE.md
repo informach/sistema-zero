@@ -393,6 +393,14 @@ público do resgate; o Kids continua com as chaves de sempre.
 - Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
   copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.
 
+## Dias de surpresa no curso (25/11/2026)
+
+`gift-bonus-days` (Kids, ao responsável) e `gift-bonus-days-adult`, só e-mail, enviados pelo
+MEMBERS (`SendAccessEndedMessagesService`) no fim do prazo DIVULGADO da oferta, quando o prazo real é
+maior: "você ganhou mais {{dias}}". Variáveis `nome`, `curso`, `dias` ("8 dias"), `data` (fim real,
+dd/mm/aaaa) e `link` (Kids: entrada do responsável; adulto: `/cursos`). Texto neutro entre presente e
+compra ("o acesso ao curso"). Teste em `tests/access-ended-copy.test.ts`.
+
 ## Convites do embaixador por oferta (25/11/2026)
 
 Quatro e-mails do consumer `referrals`: `referrals-offer-gift-invite` e `-adult` (o presente que o

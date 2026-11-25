@@ -1040,6 +1040,54 @@ export const seeds = [
       footerNote: 'Você recebeu este e-mail porque recebeu um presente na sua conta.',
     }),
   },
+  // Dias de SURPRESA (25/11/2026): a oferta divulga menos dias que o prazo real; no fim do prazo
+  // divulgado o MEMBERS avisa os dias a mais. Serve ao presente e à compra de prazo fixo (o texto
+  // fala do acesso ao curso, não do presente). CONTRATO: `nome`+`curso`+`dias` ("8 dias")+`data`
+  // (fim real, dd/mm/aaaa)+`link` (Kids: entrada do responsável; adulto: `/cursos`).
+  {
+    key: 'gift-bonus-days',
+    channel: 'email' as const,
+    name: 'Dias de surpresa no curso (e-mail)',
+    subject: '{{nome}}, você ganhou mais {{dias}} no curso',
+    variables: ['nome', 'curso', 'dias', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Uma surpresa para a criança terminar o curso com calma.',
+      title: 'Você ganhou mais {{dias}} para terminar',
+      content: [
+        p(
+          'Olá, {{nome}}. Uma surpresa: o acesso ao curso <strong>{{curso}}</strong> ganhou mais <strong>{{dias}}</strong>. Agora ele vai até <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Se o jogo ficou pela metade, a criança continua de onde parou, com as aulas e o projeto guardados no perfil dela.',
+        ),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'gift-bonus-days-adult',
+    channel: 'email' as const,
+    name: 'Dias de surpresa no curso, adulto (e-mail)',
+    subject: '{{nome}}, você ganhou mais {{dias}} no curso',
+    variables: ['nome', 'curso', 'dias', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Uma surpresa para você terminar o curso com calma.',
+      title: 'Você ganhou mais {{dias}} para terminar',
+      content: [
+        p(
+          'Oi, {{nome}}. Uma surpresa: o seu acesso ao curso <strong>{{curso}}</strong> ganhou mais <strong>{{dias}}</strong>. Agora ele vai até <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Se o seu jogo ficou pela metade, você continua de onde parou. Os seus projetos estão guardados na conta.',
+        ),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso liberado na sua conta.',
+    }),
+  },
   {
     key: 'subscription-ended-kids',
     channel: 'email' as const,
