@@ -1,0 +1,35 @@
+import { describe, expect, test } from 'bun:test'
+import {
+  isCampaignRedirectPath,
+  sanitizeOriginPlace,
+  sanitizeReferralCode,
+} from '../src/referrals/index'
+
+describe('origem da aquisição', () => {
+  test('código de indicação: o mesmo formato de codes.code, em minúsculas', () => {
+    expect(sanitizeReferralCode(' Mariana-X7K2 ')).toBe('mariana-x7k2')
+    expect(sanitizeReferralCode('abc')).toBeNull()
+    expect(sanitizeReferralCode('a'.repeat(33))).toBeNull()
+    expect(sanitizeReferralCode('com espaço')).toBeNull()
+    expect(sanitizeReferralCode(42)).toBeNull()
+  })
+
+  test('lugar do botão: etiqueta curta, sem caracteres livres', () => {
+    expect(sanitizeOriginPlace('pais-curso-fechado')).toBe('pais-curso-fechado')
+    expect(sanitizeOriginPlace('Pais-Inicio')).toBe('pais-inicio')
+    expect(sanitizeOriginPlace('-pais')).toBeNull()
+    expect(sanitizeOriginPlace('pais curso')).toBeNull()
+    expect(sanitizeOriginPlace('a'.repeat(49))).toBeNull()
+    expect(sanitizeOriginPlace(null)).toBeNull()
+  })
+
+  test('endereço antigo: caminho absoluto do funil, sem query nem barra no fim', () => {
+    expect(isCampaignRedirectPath('/kids/vilao-em-aliado')).toBe(true)
+    expect(isCampaignRedirectPath('/kids/vilao-em-aliado/')).toBe(false)
+    expect(isCampaignRedirectPath('/kids//vilao')).toBe(false)
+    expect(isCampaignRedirectPath('/kids/vilao?x=1')).toBe(false)
+    expect(isCampaignRedirectPath('kids/vilao')).toBe(false)
+    expect(isCampaignRedirectPath('/Kids/Vilao')).toBe(false)
+    expect(isCampaignRedirectPath('https://outro.site/x')).toBe(false)
+  })
+})

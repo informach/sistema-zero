@@ -1,5 +1,37 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
+
+Plano: `~/.claude/plans/certo-pode-implementar-essa-scalable-moler-of-b148f7fd-d0e6-4d96-94d2-9e9851d0669e.md`;
+proposta visual aprovada no Canvas `https://claude.ai/artifact/KUqRLeArtSWi9XLwjMWPXc`.
+
+Migration `0013_origin_acquisitions` (gerada pelo drizzle-kit):
+- `acquisitions`: cada presente resgatado (`kind gift`, `redemption_id`), compra avulsa
+  (`one_time`) e PRIMEIRA cobrança de assinatura (`subscription`), com `origin_kind`
+  (`ambassador|campaign|platform|ads|none`), `code_id`/`campaign_id`/`ambassador_id`, `place`
+  (botão da plataforma) e `utm`. UNIQUE parcial por `payment_id` e por `redemption_id`; CHECK
+  `acquisitions_source_check` (presente tem resgate, compra tem pagamento). "Por onde a pessoa
+  entrou" é a mais antiga; o bônus olha as aquisições com embaixador dentro do prazo.
+- `ambassador_offers`: a lista do PÚBLICO (vale para todos os embaixadores dele) de ofertas de
+  presente (`gift`) e de indicação (`referral`), com `position` e `enabled`.
+- `campaigns`: `kind` (`gift` padrão | `sale`), `sale_offer_id`, `link_target` (`page|checkout`),
+  `redirect_path` + `redirect_until` (endereço antigo do funil redirecionado até a data, UNIQUE
+  parcial). O endereço antigo fica na campanha e NÃO vira linha em `codes` (`codes_campaign_uq` e
+  os JOINs de `campaign.repository` aceitam um código por campanha).
+- `conversions`: `redemption_id` opcional, `acquisition_id`, `subscriber_email` + `audience` e o
+  UNIQUE parcial `conversions_subscriber_uq` (uma primeira assinatura por pessoa e público, fora
+  `canceled/superseded`); `conversions_redemption_uq` e `conversions_payment_uq` continuam.
+- Core (`@sistemazero/core/referrals`): `CampaignKind`, `CampaignLinkTarget`,
+  `isCampaignRedirectPath`, `OriginResults`, `AmbassadorOffer*`, `AcquisitionOriginKind`,
+  `AcquisitionKind`, `sanitizeReferralCode`, `sanitizeOriginPlace` e as chaves planas do metadata
+  do pagamento `origemCodigo`/`origemLugar`. Tudo opcional no fio.
+- Links: `referralLinkUrl` em `domain/links.ts` (`/i/<code>[/<oferta>][/pagamento]`); o
+  `/bolsa/<code>` antigo continua valendo e o funil o redireciona para a página da oferta.
+
+⚠️ Seção "Banco" abaixo está desatualizada em dois pontos: o resgate é UNIQUE
+`(email, audience, gift_slot)` (0011; vagas `main`, `parents:`, `course:`, `offer:` desde a
+0012) e o UNIQUE parcial de conversões exclui `canceled` e `superseded` (0007).
+
 ## Vaga do presente: curso para pais não ocupa a do público (18/11/2026)
 
 O limite deixou de ser "um resgate por e-mail e público" e passou a ser por VAGA

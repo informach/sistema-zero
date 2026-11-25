@@ -248,7 +248,7 @@ test('responsável só pode pedir a execução Python de um minijogo pelo caminh
   for (const method of ['GET', 'PUT', 'DELETE'])
     expect(kidsMayAccess(parent, path, method, 'conta')).toBe(false)
   for (const altered of [
-    path + '/extra',
+    `${path}/extra`,
     path.replace('/ambiente', '/verificar'),
     path.replace('/familia', ''),
     path.replace('/ambiente', '/../ambiente'),

@@ -87,9 +87,41 @@ export interface AmbassadorShareUrls {
   kids: string | null
   adult: string | null
 }
+/**
+ * Tipo da campanha (25/11/2026): `gift` dá a oferta de presente; `sale` leva à página de venda
+ * (ou direto ao pagamento) de UMA oferta. Ausente = `gift` (todas as campanhas anteriores).
+ */
+export type CampaignKind = 'gift' | 'sale'
+export const CAMPAIGN_KINDS: readonly CampaignKind[] = ['gift', 'sale']
+/** Para onde o link de venda leva: a página da oferta ou direto o pagamento. */
+export type CampaignLinkTarget = 'page' | 'checkout'
+export const CAMPAIGN_LINK_TARGETS: readonly CampaignLinkTarget[] = ['page', 'checkout']
+/**
+ * Endereço antigo do funil que redireciona para a campanha até uma data (ex.:
+ * `/kids/vilao-em-aliado`). Caminho absoluto do funil, sem query, em minúsculas.
+ */
+export const CAMPAIGN_REDIRECT_PATH_PATTERN = /^\/[a-z0-9][a-z0-9/-]{0,119}$/
+export function isCampaignRedirectPath(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    CAMPAIGN_REDIRECT_PATH_PATTERN.test(value) &&
+    !value.includes('//') &&
+    !value.endsWith('/')
+  )
+}
 export interface CampaignInput {
   /** Ausente/null conserva o calendário manual legado. */
   schedule?: CampaignSchedule | null
+  /** Ausente = `gift`. Só muda em rascunho sem cadastros, como o público. */
+  kind?: CampaignKind
+  /** Oferta à venda da campanha `sale` (UUID do catálogo). Nula na campanha de presente. */
+  saleOfferId?: string | null
+  /** Destino do link da campanha `sale`. Ausente = `page`. */
+  linkTarget?: CampaignLinkTarget
+  /** Endereço antigo que redireciona para a campanha até `redirectUntil`; null = nenhum. */
+  redirectPath?: string | null
+  /** Fim do redirecionamento (ISO). Obrigatório com `redirectPath`. */
+  redirectUntil?: string | null
   coupon?: CampaignCouponLink | null
   name: string
   publicTitle: string
@@ -116,9 +148,26 @@ export interface CampaignInput {
   /** Primeira cobrança paga antes deste prazo após o resgate; independente dos sete dias. */
   commissionWindowDays?: number | null
 }
+/**
+ * Resultado de uma origem (campanha ou embaixador), contado pelas aquisições com aquela origem
+ * (25/11/2026). `people` = pessoas distintas que entraram por ela (presente ou compra);
+ * `purchases` = compras fora a assinatura; `subscriptions` = primeiras assinaturas;
+ * `revenueCents` = valor pago, sem estornos (string: bigint).
+ */
+export interface OriginResults {
+  people: number
+  gifts: number
+  purchases: number
+  subscriptions: number
+  revenueCents: string
+}
 export interface CampaignView extends CampaignInput {
   couponView?: CampaignCouponView | null
   audience: GiftAudience
+  kind?: CampaignKind
+  linkTarget?: CampaignLinkTarget
+  /** Ausente em respostas anteriores a 25/11/2026. */
+  results?: OriginResults
   ambassadorName?: string | null
   id: string
   state: CampaignState
@@ -212,6 +261,68 @@ export interface CampaignDetailView {
     } | null
   }[]
 }
+
+/**
+ * Ofertas que o embaixador pode mandar (25/11/2026): a lista é do PÚBLICO (vale para todos os
+ * embaixadores dele) e o Admin a edita. `gift` = presente (pagamento único, sem prazo ou com
+ * prazo em dias); `referral` = indicação (a pessoa compra; só a assinatura da Comunidade dá bônus).
+ */
+export type AmbassadorOfferKind = 'gift' | 'referral'
+export const AMBASSADOR_OFFER_KINDS: readonly AmbassadorOfferKind[] = ['gift', 'referral']
+export interface AmbassadorOfferItem {
+  offerId: string
+  enabled: boolean
+}
+export interface AmbassadorOfferView extends AmbassadorOfferItem {
+  audience: GiftAudience
+  kind: AmbassadorOfferKind
+  position: number
+  updatedAt: string
+}
+export interface AmbassadorOffersInput {
+  audience: GiftAudience
+  kind: AmbassadorOfferKind
+  /** A lista inteira, na ordem em que aparece na página do embaixador. */
+  items: AmbassadorOfferItem[]
+}
+
+/**
+ * De onde veio uma aquisição (25/11/2026). `ambassador` = link pessoal; `campaign` = link de
+ * campanha (com ou sem embaixador); `platform` = botão dentro da plataforma (`place`);
+ * `ads` = marcas de anúncio (UTM); `none` = sem indicação.
+ */
+export type AcquisitionOriginKind = 'ambassador' | 'campaign' | 'platform' | 'ads' | 'none'
+export const ACQUISITION_ORIGIN_KINDS: readonly AcquisitionOriginKind[] = [
+  'ambassador',
+  'campaign',
+  'platform',
+  'ads',
+  'none',
+]
+/** O que foi adquirido: presente resgatado, compra avulsa ou (primeira) assinatura. */
+export type AcquisitionKind = 'gift' | 'one_time' | 'subscription'
+export const ACQUISITION_KINDS: readonly AcquisitionKind[] = ['gift', 'one_time', 'subscription']
+/** Código de indicação (embaixador ou campanha), o mesmo formato de `codes.code`. */
+export const REFERRAL_CODE_PATTERN = /^[a-z0-9-]{4,32}$/
+/** Etiqueta do lugar de um botão da plataforma (ex.: `pais-curso-fechado`). */
+export const ORIGIN_PLACE_PATTERN = /^[a-z0-9][a-z0-9-]{1,47}$/
+export function sanitizeReferralCode(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const code = value.trim().toLowerCase()
+  return REFERRAL_CODE_PATTERN.test(code) ? code : null
+}
+export function sanitizeOriginPlace(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const place = value.trim().toLowerCase()
+  return ORIGIN_PLACE_PATTERN.test(place) ? place : null
+}
+/**
+ * Chaves PLANAS que o funil grava no `metadata` do pagamento e o referrals lê para gravar a
+ * aquisição com a origem. Planas de propósito: o payments limita a 50 chaves e consultas
+ * `metadata->>'origemCodigo'` ficam diretas.
+ */
+export const PAYMENT_ORIGIN_CODE_KEY = 'origemCodigo'
+export const PAYMENT_ORIGIN_PLACE_KEY = 'origemLugar'
 
 /** Identificadores de mídia, nunca dados livres de uma família. */
 export function sanitizeGiftAttribution(value: unknown): GiftAttribution | null {

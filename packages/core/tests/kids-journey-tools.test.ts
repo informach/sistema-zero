@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { JOURNEY_LEVEL_SLUGS } from '../src/journey/catalog'
-import { type KidsJourneyView } from '../src/journey/kids-policy'
+import type { KidsJourneyView } from '../src/journey/kids-policy'
 import { projectKidsJourney } from '../src/journey/kids-projection'
 import { kidsCreativeToolAvailability } from '../src/journey/kids-tools'
 import { type CreativeToolId, creativeToolAvailability } from '../src/journey/state'

@@ -16,7 +16,27 @@ export function ambassadorPageUrl(funnelPublicUrl: string, pageToken: string): s
   return `${funnelBase(funnelPublicUrl)}/embaixador/${pageToken}`
 }
 
-/** Link de bolsa que o embaixador compartilha. */
+/**
+ * Link de bolsa antigo (`/bolsa/<code>`). Continua valendo para sempre (os e-mails e as
+ * mensagens já enviados o citam); desde 25/11/2026 o funil o redireciona para a página da
+ * oferta no modo presente. Links novos saem por `referralLinkUrl`.
+ */
 export function scholarshipShareUrl(funnelPublicUrl: string, code: string): string {
   return `${funnelBase(funnelPublicUrl)}/bolsa/${code}`
+}
+
+/**
+ * Link de indicação (25/11/2026): `/i/<code>` (a campanha, que já sabe a oferta) ou
+ * `/i/<code>/<oferta>` (o embaixador escolhendo uma oferta da lista), com `/pagamento` para ir
+ * direto ao checkout. O funil resolve no referrals e redireciona para a página certa.
+ */
+export function referralLinkUrl(
+  funnelPublicUrl: string,
+  code: string,
+  options: { offerSlug?: string | null; checkout?: boolean } = {},
+): string {
+  const parts = [funnelBase(funnelPublicUrl), 'i', code]
+  if (options.offerSlug) parts.push(options.offerSlug)
+  if (options.checkout) parts.push('pagamento')
+  return parts.join('/')
 }

@@ -11,6 +11,7 @@ import type { CreateInviteService } from '../../application/invites/create-invit
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
 import { campaignSource, campaignState } from '../../domain/campaign'
 import { EMAIL_PATTERN, isValidCode, normalizeCode } from '../../domain/codes'
+import { scholarshipShareUrl } from '../../domain/links'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { assertInternalCaller } from './auth'
 
@@ -38,7 +39,6 @@ export interface InternalRoutesDeps {
 export function internalRoutes(deps: InternalRoutesDeps) {
   const guard = (headers: Record<string, string | undefined>) =>
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
-  const base = deps.funnelPublicUrl.replace(/\/$/, '')
 
   return new Elysia({ prefix: '/referrals/internal' })
     .onTransform(({ headers }) => guard(headers))
@@ -133,14 +133,17 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           // O código adulto nasce aqui quando falta (idempotente e seguro em corrida).
           deps.ambassadors
             ? deps.ambassadors.shareUrls(ambassador)
-            : Promise.resolve({ kids: `${base}/bolsa/${ambassador.code}`, adult: null }),
+            : Promise.resolve({
+                kids: scholarshipShareUrl(deps.funnelPublicUrl, ambassador.code),
+                adult: null,
+              }),
           deps.campaigns?.forAmbassador(ambassador.id, query.campaignOffset ?? 0),
         ])
         return {
           name: ambassador.name,
           code: ambassador.code,
           // `shareUrl` continua sendo o link Kids (compatível com o funil anterior).
-          shareUrl: `${base}/bolsa/${ambassador.code}`,
+          shareUrl: scholarshipShareUrl(deps.funnelPublicUrl, ambassador.code),
           shareUrls,
           campaigns,
           stats: ambassador.stats,
