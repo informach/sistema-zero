@@ -3,6 +3,7 @@
 import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { LessonMobileTopbar } from '@sistemazero/member-shell/components/lesson-ui/mobile-topbar'
 import { StreakWidget } from '@sistemazero/member-shell/components/lesson-ui/streak-widget'
+import { useLessonTabsHeight } from '@sistemazero/member-shell/lib/use-lesson-tabs-height'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import {
   CircleHelp,
@@ -325,23 +326,9 @@ export function CommunityTabs({
   const moreLinks = visibleCommunityNav(MORE_LINKS, arquipelagoLiberado)
   const moreActive = inMore(pathname, moreLinks)
 
-  useEffect(() => {
-    const node = navigation.current
-    const frame = node?.closest<HTMLElement>('.sz-app')
-    if (!node || !frame) return
-    const update = () =>
-      frame.style.setProperty(
-        '--sz-lesson-tabs-height',
-        `${Math.ceil(node.getBoundingClientRect().height)}px`,
-      )
-    update()
-    const observer = new ResizeObserver(update)
-    observer.observe(node)
-    return () => {
-      observer.disconnect()
-      frame.style.removeProperty('--sz-lesson-tabs-height')
-    }
-  }, [])
+  // O rodapé fixo da aula fica logo acima destas abas: elas publicam a altura medida (a mesma régua
+  // da barra do Kids, no member-shell).
+  useLessonTabsHeight(navigation)
 
   // Trocar de página fecha o painel.
   // biome-ignore lint/correctness/useExhaustiveDependencies: o efeito reage SÓ à troca de rota.

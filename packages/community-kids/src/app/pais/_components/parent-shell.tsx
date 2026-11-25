@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import Link from 'next/link'
-import { type ReactNode, useEffect, useState } from 'react'
+import { type CSSProperties, type ReactNode, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLogo } from '@/components/kids/kids-logo'
@@ -308,6 +308,10 @@ export function ParentShell({
           <main
             id="main-content"
             tabIndex={-1}
+            // A aula dos pais não tem a barra de abas de baixo (ela some no regime de aula), então
+            // o rodapé fixo da aula vai ao PÉ da tela. Sem o `0px`, o tema contava a barra de
+            // reserva (3.5rem) e o rodapé ficava solto acima do pé, com a aula passando por baixo.
+            style={{ '--sz-lesson-tabs-height': '0px' } as CSSProperties}
             className="kids-aula w-full flex-1 px-4 pt-6 pb-40 md:px-8 md:pt-8 md:pb-32"
           >
             {children}
