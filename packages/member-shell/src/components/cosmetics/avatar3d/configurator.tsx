@@ -437,6 +437,7 @@ export function AvatarConfigurator({
                   <CustomizePanel editor={editor} activeGroup={activeGroup} tabChip={tabChip} />
                 ) : (
                   <div className="flex flex-col gap-2">
+                    <PendingPurchase editor={editor} inBooth />
                     <p className="text-center font-semibold text-muted-foreground text-xs @min-[45rem]/avatar:text-left @min-[45rem]/avatar:text-sm">
                       Escolha a pose e clique em <strong>Tirar foto</strong> lá em cima 📸
                     </p>
@@ -464,6 +465,67 @@ export function AvatarConfigurator({
             )}
           </section>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * A compra da peça vestida de prévia: no Personalizar, colada nas peças; na Cabine, logo acima das
+ * poses, porque a foto espera a prévia acabar (26/11/2026: na Cabine o "Tirar foto" ficava
+ * desligado sem dizer por quê).
+ */
+function PendingPurchase({ editor, inBooth = false }: { editor: AvatarEditor; inBooth?: boolean }) {
+  const { pending, catalog } = editor
+  if (!pending) {
+    if (!inBooth || editor.status !== 'preview') return null
+    return (
+      <p
+        role="status"
+        className="rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5 font-semibold text-sm"
+      >
+        Tem uma peça só de prévia no seu avatar. Volte ao Personalizar para comprar ou tirar a peça,
+        e aí a foto sai.
+      </p>
+    )
+  }
+  return (
+    <div
+      role="status"
+      className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+    >
+      <p className="font-semibold text-sm">
+        {pending.tier === 'festa'
+          ? 'Esta peça vem da festa do Arquipélago. Na época da festa, ela chega pelo jogo.'
+          : pending.kind === 'set'
+            ? 'Gostou da fantasia? Ela está vestida de prévia!'
+            : 'Gostou? Está vestido de prévia!'}{' '}
+        <span className="text-muted-foreground">({avatarItemLabel(catalog, pending.id)})</span>
+        {inBooth ? (
+          <span className="block text-muted-foreground">
+            A foto sai quando você comprar a peça ou deixar para depois.
+          </span>
+        ) : null}
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={editor.cancelBuy}
+          disabled={Boolean(editor.busy)}
+          className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
+        >
+          Deixar para depois
+        </button>
+        {pending.tier === 'festa' ? null : (
+          <button
+            type="button"
+            onClick={() => editor.choose(pending)}
+            disabled={Boolean(editor.busy)}
+            className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
+          >
+            <ZappyCoin className="size-4" /> Comprar por {pending.price}
+          </button>
+        )}
       </div>
     </div>
   )
@@ -618,41 +680,7 @@ function CustomizePanel({
       </div>
 
       {/* A compra (a peça já está vestida de prévia), colada nas peças. */}
-      {pending ? (
-        <div
-          role="status"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
-        >
-          <p className="font-semibold text-sm">
-            {pending.tier === 'festa'
-              ? 'Esta peça vem da festa do Arquipélago. Na época da festa, ela chega pelo jogo.'
-              : pending.kind === 'set'
-                ? 'Gostou da fantasia? Ela está vestida de prévia!'
-                : 'Gostou? Está vestido de prévia!'}{' '}
-            <span className="text-muted-foreground">({avatarItemLabel(catalog, pending.id)})</span>
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={editor.cancelBuy}
-              disabled={Boolean(editor.busy)}
-              className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
-            >
-              Deixar para depois
-            </button>
-            {pending.tier === 'festa' ? null : (
-              <button
-                type="button"
-                onClick={() => editor.choose(pending)}
-                disabled={Boolean(editor.busy)}
-                className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
-              >
-                <ZappyCoin className="size-4" /> Comprar por {pending.price}
-              </button>
-            )}
-          </div>
-        </div>
-      ) : null}
+      <PendingPurchase editor={editor} />
     </>
   )
 }
