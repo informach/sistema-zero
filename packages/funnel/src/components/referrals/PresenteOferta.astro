@@ -18,7 +18,7 @@ interface Props {
    * página de venda (`compra`), que não tem quem dá o presente.
    */
   gift?: CadeGiftView
-  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable' | 'course_benefit'>
   communityUrl?: string
   preview?: boolean
   /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */

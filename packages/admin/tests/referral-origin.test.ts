@@ -23,6 +23,7 @@ import {
   ambassadorCountLabel,
   bonusCameBy,
   bonusLine,
+  courseAccessOrigin,
   isOriginDetail,
   isOriginReport,
   moneyFromCents,
@@ -60,6 +61,39 @@ const names = new Map([
   ['cade-todo-mundo-7-dias', 'Cadê Todo Mundo? · 7 dias'],
   ['desafio', 'Desafio do Primeiro Jogo'],
 ])
+
+test('resgate dentro do curso e origem do acesso são informações distintas no Admin', () => {
+  const gift = acq({
+    originKind: 'course',
+    campaignId: null,
+    ambassadorId: null,
+    courseBenefit: {
+      benefitId: 'benefit',
+      benefitName: 'Cadê no guia',
+      courseSlug: 'guia',
+      lessonId: null,
+      blockId: null,
+      accessSource: null,
+      accessOrigin: {
+        acquisitionId: 'parent',
+        originKind: 'campaign',
+        campaignId: 'laopa',
+        campaignTitle: 'Laopa 13',
+        ambassadorId: null,
+        ambassadorName: null,
+        offerSlug: 'guia-presente',
+        utmSource: null,
+        acquiredAt: '2026-11-13T10:00:00Z',
+      },
+    },
+  })
+  expect(acquisitionOrigin(gift).detail).toBe('Cadê no guia')
+  expect(courseAccessOrigin(gift)).toBe('Campanha: Laopa 13')
+  expect(
+    courseAccessOrigin({ ...gift, courseBenefit: { ...gift.courseBenefit!, accessOrigin: null } }),
+  ).toBe('Origem não identificada')
+  expect(courseAccessOrigin(acq())).toBeNull()
+})
 
 describe('números e textos', () => {
   test('dinheiro a partir da string de centavos e o número redondo dos cartões', () => {
@@ -319,6 +353,7 @@ describe('Origem das vendas e a ficha', () => {
       {
         weekStart: '2026-11-23',
         revenueByOrigin: {
+          course: '0',
           ambassador: '6900',
           campaign: '0',
           platform: '100',

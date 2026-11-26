@@ -2,6 +2,7 @@ import {
   ACQUISITION_ORIGIN_KINDS,
   type AcquisitionOriginKind,
   type AcquisitionView,
+  type CourseBenefitContext,
   type OriginBreakdownRow,
   type OriginOfferRow,
   type OriginPathRow,
@@ -178,10 +179,17 @@ export function pathsToSubscription(
 
 export function acquisitionView(
   a: AcquisitionRecord,
-  names: { campaigns: Map<string, string>; ambassadors: Map<string, string> },
+  names: {
+    campaigns: Map<string, string>
+    ambassadors: Map<string, string>
+    benefits?: Map<string, CourseBenefitContext>
+  },
   firstIds: Set<string>,
 ): AcquisitionView {
   return {
+    ...(a.redemptionId && names.benefits?.has(a.redemptionId)
+      ? { courseBenefit: names.benefits.get(a.redemptionId) }
+      : {}),
     id: a.id,
     email: a.email,
     audience: a.audience,

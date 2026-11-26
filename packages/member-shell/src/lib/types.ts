@@ -1595,6 +1595,7 @@ export interface EbookDownloadView {
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
+  commerceAccessSource?: import('@sistemazero/core/commerce').CommerceAccessSource | null
   requirements?: LessonRequirement[]
   /**
    * As partes da aula. Para a criança a conclusão chega como VISTA: os objetivos do projeto trazem

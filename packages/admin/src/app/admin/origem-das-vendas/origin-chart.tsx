@@ -23,6 +23,7 @@ import { ORIGIN_CHART_LABELS } from '@/lib/referral-origin'
  * (cores fixas, eixos em cinza neutro). Cada barra é uma semana (segunda a domingo, Brasília).
  */
 export const ORIGIN_COLORS: Record<AcquisitionOriginKind, string> = {
+  course: '#0891b2',
   ambassador: '#1b5cf3',
   campaign: '#7c4dff',
   platform: '#16a34a',

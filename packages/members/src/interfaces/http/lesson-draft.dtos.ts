@@ -146,11 +146,18 @@ export function parsePublishedLessonBlock(value: unknown): LessonBlockContent {
  */
 const branchValidators = new Map<string, ReturnType<typeof getSchemaValidator>>()
 function blockRejection(content: { kind: string }): string {
-  if (branchValidators.size === 0)
+  if (branchValidators.size === 0) {
+    const byKind = new Map<string, TSchema[]>()
     for (const branch of (authoringSchema(LessonBlockContentSchema).anyOf ?? []) as TSchema[]) {
       const kind = branch.properties?.kind?.const
-      if (typeof kind === 'string') branchValidators.set(kind, getSchemaValidator(branch))
+      if (typeof kind === 'string') byKind.set(kind, [...(byKind.get(kind) ?? []), branch])
     }
+    for (const [kind, branches] of byKind)
+      branchValidators.set(
+        kind,
+        getSchemaValidator(branches.length === 1 ? branches[0]! : t.Union(branches)),
+      )
+  }
   const [first] = [...(branchValidators.get(content.kind)?.Errors(content) ?? [])]
   const onde = first?.path ? ` O campo \`${first.path}\` não confere: ${first.message}.` : ''
   return `O bloco "${content.kind}" precisa manter os campos do seu tipo. Textos e respostas podem ficar vazios no rascunho.${onde}`

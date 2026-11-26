@@ -6,6 +6,7 @@ import { AmbassadorAdminService } from './application/ambassadors/ambassador-adm
 import { CampaignAdminService } from './application/campaigns/campaign-admin.service'
 import { RecordConversionService } from './application/conversions/record-conversion.service'
 import { SweepConversionsService } from './application/conversions/sweep-conversions.service'
+import { CourseBenefitAdminService } from './application/course-benefits/course-benefit-admin.service'
 import { CreateInviteService } from './application/invites/create-invite.service'
 import { ReferralLinkService } from './application/links/referral-link.service'
 import { RedeemScholarshipService } from './application/redeem-scholarship/redeem-scholarship.service'
@@ -22,6 +23,7 @@ import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAcquisitionRepository } from './infrastructure/persistence/drizzle/acquisition.repository'
 import { DrizzleAmbassadorOfferRepository } from './infrastructure/persistence/drizzle/ambassador-offer.repository'
 import { DrizzleCampaignRepository } from './infrastructure/persistence/drizzle/campaign.repository'
+import { DrizzleCourseBenefitRepository } from './infrastructure/persistence/drizzle/course-benefit.repository'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleProcessedWebhookStore } from './infrastructure/persistence/drizzle/processed-webhook.store'
 import { DrizzleReferralRepository } from './infrastructure/persistence/drizzle/referral.repository'
@@ -42,7 +44,8 @@ export function createApplication(env: Env): Application {
   const repo = new DrizzleReferralRepository(connection.db)
   const campaignRepo = new DrizzleCampaignRepository(connection.db)
   const acquisitionRepo = new DrizzleAcquisitionRepository(connection.db)
-  const reports = new AcquisitionReportsService(acquisitionRepo, campaignRepo, repo)
+  const benefitRepo = new DrizzleCourseBenefitRepository(connection.db)
+  const reports = new AcquisitionReportsService(acquisitionRepo, campaignRepo, repo, benefitRepo)
   // A oferta do presente vem do catálogo direto (rede privada + token interno), como o cupom.
   const giftOffers = new GiftOfferCatalogHttpClient({
     baseUrl: env.CATALOG_BASE_URL,
@@ -92,6 +95,7 @@ export function createApplication(env: Env): Application {
       giftOffers,
       leaseMs: env.REDEMPTION_LEASE_MS,
       campaigns: campaignRepo,
+      benefits: benefitRepo,
       bonusAmounts: { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS },
       acquisitions: acquisitionRepo,
       legacyBonusCents: env.BONUS_AMOUNT_CENTS,
@@ -100,12 +104,15 @@ export function createApplication(env: Env): Application {
     },
     logger,
   )
+  const benefits = new CourseBenefitAdminService(benefitRepo, campaignRepo, gateway, giftOffers)
   const links = new ReferralLinkService(
     repo,
     campaignRepo,
     giftOffers,
     ambassadorOffers,
     couponCatalog,
+    undefined,
+    benefitRepo,
   )
   const invite = new CreateInviteService(
     repo,
@@ -181,6 +188,7 @@ export function createApplication(env: Env): Application {
   const processedWebhooks = new DrizzleProcessedWebhookStore(connection.db)
 
   const app = createServer({
+    benefits,
     logger,
     repo,
     redeem,

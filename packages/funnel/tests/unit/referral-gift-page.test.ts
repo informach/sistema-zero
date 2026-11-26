@@ -6,6 +6,24 @@ import {
 } from '../../src/server/referral-gift-page'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
+test('link antigo do benefício aponta para o curso de origem, sem formulário de resgate público', async () => {
+  const fake = createFakeGateway()
+  fake.setReferralCodeResult(200, {
+    code: 'guia-cade',
+    ownerKind: 'benefit',
+    source: { kind: 'benefit', name: 'Cadê no guia' },
+    audience: 'kids',
+    state: 'active',
+    giftAvailable: false,
+    courseBenefit: { courseSlug: 'transformando-o-vilao-em-aliado', name: 'Cadê no guia' },
+  })
+  expect(await resolveReferralGiftPage(fake.gateway, 'guia-cade')).toEqual({
+    kind: 'course_benefit',
+    audience: 'kids',
+    courseSlug: 'transformando-o-vilao-em-aliado',
+  })
+})
+
 describe('resolveReferralGiftPage', () => {
   test('a projeção pública remove sobrenomes em ambos os públicos, inclusive de respostas antigas', async () => {
     const fake = createFakeGateway()

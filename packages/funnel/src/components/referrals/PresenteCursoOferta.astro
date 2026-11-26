@@ -14,7 +14,7 @@ import type { ReferralGiftPage } from '../../server/referral-gift-page'
 
 interface Props {
   gift: ReferralGiftView & { gift: ReferralGiftOfferView }
-  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable' | 'course_benefit'>
   communityUrl: string
   variante: 'pais' | 'curso'
   /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */

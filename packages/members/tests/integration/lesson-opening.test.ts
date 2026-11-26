@@ -3,6 +3,36 @@ import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, videoCoverageAnswers } from '@sistemazero/core/learning'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
+test('aula informa a matrícula que abriu o curso; prévia privilegiada não vira prova de acesso', async () => {
+  const ctx = buildApp(),
+    userId = randomUUID()
+  const course = seedSampleCourse(ctx.courses, `source-${userId}`, 'published', 'kids')
+  const entitlement = grantLifetime(ctx.entitlements, { userId, courseRef: course.slug })
+  const response = await ctx.app.handle(
+    new Request(`http://localhost/members/courses/${course.slug}/lessons/${course.lessonIds[0]}`, {
+      headers: { 'x-auth-user-id': userId },
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect((await response.json()).commerceAccessSource).toEqual({
+    entitlementId: entitlement.id,
+    sourceKind: 'manual',
+    sourceId: 'seed',
+    subscriptionId: null,
+  })
+  const preview = await ctx.app.handle(
+    new Request(`http://localhost/members/courses/${course.slug}/lessons/${course.lessonIds[0]}`, {
+      headers: {
+        'x-auth-user-id': randomUUID(),
+        'x-auth-user-role': 'admin',
+        'x-auth-user-status': 'active',
+      },
+    }),
+  )
+  expect(preview.status).toBe(200)
+  expect((await preview.json()).commerceAccessSource).toBeNull()
+})
+
 describe('abertura conserva a navegação já guardada', () => {
   test('o responsável retoma o fim ainda não assistido mesmo depois de liberar a próxima parte', async () => {
     const ctx = buildApp(),

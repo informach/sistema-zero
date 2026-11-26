@@ -149,7 +149,13 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       if (lesson.status !== 200 || !lesson.body) return null
       const block = lesson.body.blocks.find((b) => b.id === origin.blockId)
       const parsed = CommerceBlockSchema.safeParse(block?.content)
-      return parsed.success ? { config: parsed.data, expectedOfferId: null } : null
+      return parsed.success
+        ? {
+            config: parsed.data,
+            expectedOfferId: null,
+            accessSource: lesson.body.commerceAccessSource ?? null,
+          }
+        : null
     }
     const target = await offer(origin.offerRef)
     const promotion = memberPromotionSchema.safeParse(target?.content?.memberPromotion)
@@ -317,9 +323,14 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       if (config.kind === 'gift') {
         if (input.action !== 'inspect' && input.action !== 'redeem')
           return failure('Ação inválida.', 400)
+        const benefitCode = 'benefitCode' in config ? config.benefitCode : undefined
+        const code = benefitCode ?? config.campaignCode
+        if (!code) return failure('Presente não configurado.', 404)
+        if (benefitCode && input.origin.kind !== 'lesson')
+          return failure('Este benefício é ativado dentro do curso.', 403)
         const body = {
           account: actor,
-          code: config.campaignCode,
+          code,
           originKind: input.origin.kind,
           originId:
             input.origin.kind === 'lesson'
@@ -328,6 +339,16 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
                 ? input.origin.offerRef
                 : 'community',
           ...(input.origin.kind === 'lesson' ? { blockId: input.origin.blockId } : {}),
+          ...(input.origin.kind === 'lesson'
+            ? {
+                sourceLesson: {
+                  courseSlug: input.origin.courseSlug,
+                  lessonId: input.origin.lessonId,
+                  blockId: input.origin.blockId,
+                  accessSource: 'accessSource' in source ? source.accessSource : null,
+                },
+              }
+            : {}),
         }
         const inspected = await deps.gateway.gatewayFetchHmac<{
           gift?: ReferralGiftOfferView
@@ -339,7 +360,7 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
         if (inspected.status !== 200 || !inspected.body?.gift)
           return NextResponse.json(inspected.body, { status: inspected.status })
         if (source.expectedOfferId && inspected.body.gift.offerId !== source.expectedOfferId)
-          return failure('A campanha está vinculada a outra oferta.', 409)
+          return failure('Este presente está vinculado a outra oferta.', 409)
         const gift = inspected.body.gift
         if (gift.courseSlug && (input.action === 'inspect' || input.action === 'redeem')) {
           const access = await deps.gateway.gatewayFetch<{ items: CommerceAccess[] }>(

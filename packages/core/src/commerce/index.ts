@@ -10,12 +10,30 @@ const presentation = {
   buttonLabel: z.string().trim().min(1).max(80).optional(),
 }
 export const CommerceBlockSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('gift'), campaignCode, ...presentation }),
+  z
+    .strictObject({
+      kind: z.literal('gift'),
+      campaignCode: campaignCode.optional(),
+      benefitCode: campaignCode.optional(),
+      ...presentation,
+    })
+    .refine((value) => Boolean(value.campaignCode) !== Boolean(value.benefitCode), {
+      message: 'Escolha uma campanha ou um benefício do curso.',
+    }),
   z.strictObject({ kind: z.literal('purchase'), offerRef, ...presentation }),
 ])
 export type CommerceBlock = z.infer<typeof CommerceBlockSchema>
 export type GiftBlock = Extract<CommerceBlock, { kind: 'gift' }>
 export type PurchaseBlock = Extract<CommerceBlock, { kind: 'purchase' }>
+
+/** Matrícula real que autorizou a aula; a prévia da equipe não cria esta referência. */
+export const CommerceAccessSourceSchema = z.strictObject({
+  entitlementId: z.uuid(),
+  sourceKind: z.enum(['payment', 'subscription', 'manual']),
+  sourceId: z.string().min(1).max(200),
+  subscriptionId: z.string().max(200).nullable(),
+})
+export type CommerceAccessSource = z.infer<typeof CommerceAccessSourceSchema>
 
 export const memberPromotionSchema = z
   .strictObject({
