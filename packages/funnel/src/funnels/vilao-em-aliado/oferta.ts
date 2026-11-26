@@ -17,7 +17,12 @@ type Raso<T> = T extends string
 
 /** A copy do guia (as duas versões têm a mesma forma). */
 export type GuiaPaisCopy = Raso<Omit<typeof CURSO_PAIS_VILAO, 'estados'>> & {
+  hero: { figura: { rotulo: string; imagem: ImagemPresente } }
   quemConduz: { foto: ImagemPresente }
+  formato: { imagem: ImagemPresente }
+  /** Uma figura ao lado da cena da casa (o curso da Vivianne; o guia fica só no texto). */
+  cena: { figura?: { rotulo: string; imagem: ImagemPresente } }
+  /** Uma figura ao lado do que muda (o curso da Vivianne; o guia fica só nos cartões). */
   oQueMuda: { figuras?: readonly { rotulo: string; imagem: ImagemPresente }[] }
   estados: {
     emBreve: EstadoPresente
@@ -55,6 +60,7 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
     hero: {
       ...P.hero,
       selo: 'Guia para pais',
+      cta: CTA,
       beneficios: [
         P.hero.beneficios[0] ?? '',
         'Pagamento único, com 1 ano de acesso',
@@ -84,6 +90,18 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
           }
         return item
       }),
+    },
+    formato: {
+      ...P.formato,
+      itens: P.formato.itens.map((item) =>
+        item.titulo === 'Na área dos pais'
+          ? {
+              ...item,
+              texto:
+                'O guia fica na sua conta do Sistema Zero Kids por 1 ano, no menu Cursos para pais, e termina com o certificado.',
+            }
+          : item,
+      ),
     },
     fim: { ...P.fim, cta: CTA, nota: 'Pagamento único, sem assinatura.' },
     oferta: {

@@ -23,6 +23,7 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
     barra: { titulo: '{{preco}}', texto: 'Pagamento único', cta: CTA },
     hero: {
       ...P.hero,
+      cta: CTA,
       beneficios: [
         P.hero.beneficios[0] ?? '',
         'Pagamento único, com 1 ano de acesso',
@@ -60,6 +61,18 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
             'Não. A assinatura da Comunidade dos Criadores inclui os cursos para pais. Entre na área dos pais e abra o curso em Cursos para pais.',
         },
       ],
+    },
+    formato: {
+      ...P.formato,
+      itens: P.formato.itens.map((item) =>
+        item.titulo === 'Na área dos pais'
+          ? {
+              ...item,
+              texto:
+                'O curso fica na sua conta do Sistema Zero Kids por 1 ano, no menu Cursos para pais, e termina com o certificado.',
+            }
+          : item,
+      ),
     },
     fim: { ...P.fim, cta: CTA, nota: 'Pagamento único, sem assinatura.' },
     oferta: {

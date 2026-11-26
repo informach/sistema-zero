@@ -119,7 +119,14 @@ export function cartaoDoPresente(
     retomavel,
     estado,
     retomar: P.estados.retomar,
-    janela: { titulo: P.resgatar.titulo, texto: P.resgatar.texto },
+    // O guia para pais chama o curso de guia também na janela do cadastro (26/11/2026).
+    janela:
+      opts.formulario === 'guia'
+        ? {
+            titulo: P.resgatar.titulo.replace(/\bcurso\b/g, 'guia'),
+            texto: P.resgatar.texto.replace(/\bcurso\b/g, 'guia'),
+          }
+        : { titulo: P.resgatar.titulo, texto: P.resgatar.texto },
     resgate: {
       code: gift.code,
       referrerName: nome,

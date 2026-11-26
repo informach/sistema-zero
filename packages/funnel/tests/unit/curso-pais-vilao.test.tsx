@@ -58,6 +58,7 @@ describe('copy da página do curso para pais', () => {
   })
 
   test('a página não resume aula: sem lista de aulas, cenas ou o fim da história do André', () => {
+    // `formato` (Como funciona) fala do formato do guia, nunca do conteúdo de uma aula.
     for (const secao of ['aulas', 'porQue', 'paraQuem', 'comoFunciona', 'resgatar'])
       expect(Object.keys(CURSO_PAIS_VILAO)).not.toContain(secao)
     expect(texto).not.toMatch(/faculdade|palestr|autonomia|função executiva|porta de entrada/i)
@@ -68,6 +69,7 @@ describe('copy da página do curso para pais', () => {
     expect(CURSO_PAIS_VILAO.hero.beneficios[0]).toContain('7 aulas')
     expect(CURSO_PAIS_VILAO.hero.beneficios[1]).toBe('Gratuito, sem cartão e sem assinatura')
     expect(CURSO_PAIS_VILAO.oQueMuda.itens).toHaveLength(3)
+    expect(CURSO_PAIS_VILAO.formato.itens).toHaveLength(3)
     expect(CURSO_PAIS_VILAO_PATH).toBe('/kids/vilao-em-aliado')
   })
 
@@ -91,7 +93,8 @@ describe('copy da página do curso para pais', () => {
 
   test('as imagens existem no public', async () => {
     for (const caminho of [
-      CURSO_PAIS_VILAO.oQueMuda.figura.imagem.src,
+      CURSO_PAIS_VILAO.hero.figura.imagem.src,
+      CURSO_PAIS_VILAO.formato.imagem.src,
       CURSO_PAIS_VILAO.quemConduz.foto.src,
       CURSO_PAIS_VILAO.ogImage,
     ])
@@ -132,6 +135,9 @@ describe('venda do guia', () => {
     expect(venda.barra.titulo).toBe('R$ 27')
     expect(venda.duvidas.itens.map((item) => item.pergunta)).toContain('Quanto custa?')
     expect(venda.oferta.garantia).toContain('7 dias de garantia')
+    expect(venda.hero.cta).toBe('Quero o guia')
+    expect(venda.compra.texto).not.toMatch(/R\$|1 ano|pagamento/)
+    expect(venda.formato.itens.at(-1)?.texto).toContain('por 1 ano')
     expect(comPreco(guiaPaisVenda(null), 'R$ 27').oferta.garantia).toBeNull()
   })
 
@@ -228,23 +234,37 @@ describe('rota e peças da página', () => {
     ).toBe(false)
   })
 
-  test('o corpo do guia: compra no topo, presente com o formulário do guia, página indexável', async () => {
+  test('o corpo do guia: compra na seção da oferta, presente com o formulário do guia, página indexável', async () => {
     const corpo = await src('components/funnel/oferta/GuiaPaisBody.astro')
     expect(corpo).toContain('<CursoPaisOferta copy={P}')
+    expect(corpo).toContain('id="oferta"')
+    expect(corpo).toContain('alvo="oferta"')
     expect(corpo).toContain('data-checkout-cta')
     expect(corpo).toContain("formulario: 'guia'")
     expect(corpo).toContain('<PresenteJanela cartao={cartao} />')
     expect(corpo).toContain('{!presente && <PreCheckoutModal')
     expect(corpo).toContain('indexavel={!presente}')
     const peca = await src('components/referrals/CursoPaisOferta.astro')
-    expect(peca).toContain("variante: 'guia'")
     expect(peca).toContain('<slot name="compra" />')
     expect(peca).toContain('depoimentos = DEPOIMENTOS_DE_PAIS')
     expect(peca).toContain('depoimentos.length > 0 &&')
-    expect(peca).not.toMatch(/Cadê|7 dias/)
-    const formulario = peca.indexOf('<div id="resgatar"')
-    expect(formulario).toBeGreaterThan(peca.indexOf('id="cpv-titulo"'))
-    expect(formulario).toBeLessThan(peca.indexOf('id="o-que-muda"'))
+    expect(peca).not.toMatch(/Cadê|7 dias|BolsaResgate/)
+    // A estrutura das outras páginas de venda: o topo sem cartão de compra (o botão leva à oferta)
+    // e o bloco de compra depois das dúvidas, antes do fechamento.
+    const marcas = [
+      'id="cpv-titulo"',
+      'id="na-sua-casa"',
+      'id="o-que-muda"',
+      'id="como-funciona"',
+      'id="quem-conduz"',
+      'id="duvidas"',
+      '<slot name="compra" />',
+      'id="cpv-fim"',
+    ]
+    const ordem = marcas.map((marca) => peca.indexOf(marca))
+    expect(ordem.every((posicao) => posicao > 0)).toBe(true)
+    expect([...ordem].sort((a, b) => a - b)).toEqual(ordem)
+    expect(peca).toContain('href="#oferta"')
     const layout = await src('components/referrals/PresenteLayout.astro')
     expect(layout).toContain('noindex={!indexavel}')
     expect(layout).toContain('indexavel = false')
