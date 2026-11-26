@@ -2,6 +2,21 @@
 
 Compilador isolado dos projetos Pro do Sistema Zero. Um BFF autorizado envia a árvore do projeto, o Worker aplica um catálogo fechado de dependências e o Cloudflare Sandbox executa o build sem acesso à internet. Somente o BFF chama o build; o navegador lê os arquivos compilados por um endereço temporário imprevisível, sem credenciais.
 
+## A ida 3D termina encostando (26/11/2026)
+
+Caso real do Jardim Secreto em produção: com o regador num lugar do chão diferente do gabarito, o
+objetivo "pegar o regador" reprovava às vezes num projeto certo. A rota de `approachObject3d`
+(`runtime/check-approach-3d.mjs`) dava a ida por concluída a até 0,22 do último ponto, e as caixas
+do personagem e do alvo ficavam a centésimos de se sobrepor; o encontro do jogo não começava. Agora,
+depois da rota, `ensureContact` dá pulsos curtos (`CONTACT_PULSE_MS`, até `CONTACT_PULSES`) na
+direção do centro do alvo até as caixas se sobreporem `CONTACT_DEPTH` (0,1) nos dois eixos, pela
+mesma régua de caixas do Jogo 3D (meias medidas `userData.sz.hw/hd`), e `waitFrames(2)` espera o
+mundo andar dois quadros (teto `CONTACT_FRAMES_MAX_MS`, dentro do prazo do passo) antes do próximo
+passo, para o "começou a encostar" acontecer. Prova: `tests/check-approach-3d.test.mjs` (por
+mutação) e `bun docs/aulas-interativas-tecnico/qa/jardim-browser.ts 3d <cenário>` com os cenários
+`jeffrey`, `guardado` e `regador:x,z`. Mudou o runtime: `bun run gen:validation-profile` e deploy do
+Worker (staging e produção) para chegar às aulas.
+
 ## Ambientes e capacidade
 
 O runtime Python usa `STUDIO_PYTHON_DISTRIBUTIONS_SHA256`, um SHA256 hexadecimal de 64 caracteres que fixa o objeto privado `runtime-configs/<SHA>.json` no binding R2 `PRO_ARTIFACTS`. O JSON segue `StudioPythonRuntimeConfigurationSchema` do Core:

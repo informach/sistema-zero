@@ -283,3 +283,76 @@ test('com a seta apertada e a leitura lenta (um quadro por leitura), chega sem p
     clock.mockRestore()
   }
 })
+
+test('chegar pela tolerância da rota não basta: o teste encosta de verdade no alvo (Jardim, 26/11/2026)', async () => {
+  // Personagem parado a 0,21 do fim da rota: a rota já o dá por "chegou", mas as caixas só se
+  // sobrepõem 0,04 no x e o encontro do jogo às vezes não começava.
+  let now = 0,
+    x = 9.04,
+    held = null,
+    frame = 0
+  const clock = spyOn(Date, 'now').mockImplementation(() => now)
+  const presses = []
+  const page = {
+    keyboard: {
+      down: async (key) => {
+        held = key
+        presses.push(key)
+      },
+      up: async () => {
+        held = null
+      },
+    },
+    waitForTimeout: async (ms) => {
+      now += ms
+      frame += ms / 40
+      if (held) x += ((held === 'ArrowRight' ? 1 : -1) * 3 * ms) / 1000
+    },
+  }
+  const values = {
+    'personagem.position.y': 0,
+    'personagem.position.z': 0,
+    'personagem.userData.sz.hw': 0.5,
+    'personagem.userData.sz.hh': 0.5,
+    'personagem.userData.sz.hd': 0.5,
+    'alvo.position.x': 10,
+    'alvo.position.y': 0,
+    'alvo.position.z': 0,
+    'alvo.userData.sz.hw': 0.5,
+    'alvo.userData.sz.hh': 0.5,
+    'alvo.userData.sz.hd': 0.5,
+  }
+  const read = async (paths) =>
+    paths.map((path) => ({
+      found: true,
+      value: {
+        format: 'sz-observed-v1',
+        value: [
+          0,
+          path === 'personagem.position.x'
+            ? x
+            : path.endsWith('._szWorld._frameNo')
+              ? Math.floor(frame)
+              : values[path],
+        ],
+      },
+    }))
+  try {
+    await approachObject3d(
+      page,
+      {
+        actorPath: 'personagem',
+        targetPath: 'alvo',
+        walkable: [{ minX: -1, maxX: 11, minZ: -1, maxZ: 1 }],
+        timeoutMs: 5000,
+      },
+      read,
+    )
+    // As caixas se sobrepõem com folga (1 − |x − 10| ≥ 0,1) e nenhuma seta fica apertada.
+    expect(1 - Math.abs(x - 10)).toBeGreaterThanOrEqual(0.1)
+    expect(presses.every((k) => k === 'ArrowRight')).toBe(true)
+    expect(held).toBeNull()
+  } finally {
+    clock.mockRestore()
+  }
+})
