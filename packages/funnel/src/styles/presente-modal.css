@@ -47,11 +47,10 @@
 }
 /* Depois do cadastro, a confirmação fala sozinha: o convite do topo da janela sai. */
 .pm-painel:has(.bz-card--resultado) .pm-cabeca__texto {
-  visibility: hidden;
+  display: none;
 }
 .pm-painel:has(.bz-card--resultado) .pm-cabeca {
   justify-content: flex-end;
-  margin-bottom: -44px;
 }
 .pm-fechar {
   display: grid;
