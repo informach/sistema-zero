@@ -61,20 +61,11 @@
         }
       ]
     },
-    "realEmissionChecked": [
-      "staging",
-      "production"
-    ],
+    "realEmissionChecked": ["staging", "production"],
     "syntheticCertificatesRevoked": true,
     "platformSignatures": {
-      "names": [
-        "Helena Oliveira",
-        "Júlio Felipe"
-      ],
-      "files": [
-        "assinaturas/helena-oliveira.webp",
-        "assinaturas/julio-felipe.webp"
-      ],
+      "names": ["Helena Oliveira", "Júlio Felipe"],
+      "files": ["assinaturas/helena-oliveira.webp", "assinaturas/julio-felipe.webp"],
       "realIssuance": {
         "staging": {
           "issued": true,
@@ -578,11 +569,7 @@
     }
   },
   "aula1Parte2": {
-    "blocks": [
-      "video",
-      "materials",
-      "rich_text"
-    ],
+    "blocks": ["video", "materials", "rich_text"],
     "materialsTitle": "Materiais da aula",
     "fileLabel": "Baixar apostila do curso",
     "book3DBlock": false,
@@ -593,11 +580,7 @@
     "environments": {
       "staging": {
         "environment": "staging",
-        "sectionKinds": [
-          "video",
-          "materials",
-          "rich_text"
-        ],
+        "sectionKinds": ["video", "materials", "rich_text"],
         "book3D": false,
         "consultationText": true,
         "summaryBelowMaterials": true,
@@ -608,11 +591,7 @@
       },
       "production": {
         "environment": "production",
-        "sectionKinds": [
-          "video",
-          "materials",
-          "rich_text"
-        ],
+        "sectionKinds": ["video", "materials", "rich_text"],
         "book3D": false,
         "consultationText": true,
         "summaryBelowMaterials": true,
