@@ -47,14 +47,18 @@ function safeTarget(value: unknown): string | null {
   }
 }
 
-function parseList(body: unknown): Map<string, string> {
-  const map = new Map<string, string>()
+type CachedRedirect = { target: string; until: number }
+
+function parseList(body: unknown): Map<string, CachedRedirect> {
+  const map = new Map<string, CachedRedirect>()
   const items = (body as { items?: unknown } | null)?.items
   if (!Array.isArray(items)) return map
   for (const item of items) {
-    const raw = item as { path?: unknown; url?: unknown }
+    const raw = item as { path?: unknown; url?: unknown; until?: unknown }
     const target = safeTarget(raw.url)
-    if (isCampaignRedirectPath(raw.path) && target) map.set(raw.path, target)
+    const until = typeof raw.until === 'string' ? Date.parse(raw.until) : Number.NaN
+    if (isCampaignRedirectPath(raw.path) && target && Number.isFinite(until))
+      map.set(raw.path, { target, until })
   }
   return map
 }
@@ -62,7 +66,7 @@ function parseList(body: unknown): Map<string, string> {
 export function createCampaignRedirects(deps: CampaignRedirectsDeps): CampaignRedirects {
   const ttlMs = deps.ttlMs ?? 60_000
   const timeoutMs = deps.timeoutMs ?? 1_500
-  let list: Map<string, string> | null = null
+  let list: Map<string, CachedRedirect> | null = null
   let fetchedAt = 0
   let inflight: Promise<void> | null = null
 
@@ -106,8 +110,9 @@ export function createCampaignRedirects(deps: CampaignRedirectsDeps): CampaignRe
         void refresh()
       }
       const found = list?.get(path)
-      if (!found) return null
-      const target = new URL(found, url)
+      // A lista pode continuar em cache durante uma falha: o prazo da campanha vale por visita.
+      if (!found || deps.now() >= found.until) return null
+      const target = new URL(found.target, url)
       for (const [key, value] of url.searchParams)
         if (!DROPPED_PARAMS.has(key)) target.searchParams.set(key, value)
       return `${target.pathname}${target.search}`

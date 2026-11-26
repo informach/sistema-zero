@@ -166,6 +166,32 @@ describe('RecordConversionService', () => {
   })
 
   test.each([
+    false,
+    true,
+  ])('estorno antes do INSERT não deixa compra avulsa ativa (com embaixador: %s)', async (withAmbassador) => {
+    if (withAmbassador) await seedGift()
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({
+        subscriptionId: null,
+        metadata: { offerId: 'offer-desafio', billingAudience: 'kids' },
+      }),
+    )
+    const insert = acquisitions.insert.bind(acquisitions)
+    acquisitions.insert = async (input) => {
+      // A entrega do estorno termina depois da leitura PAID e antes da aquisição existir.
+      payments.byId.set('pay-1', { ...payments.byId.get('pay-1')!, status: 'REFUNDED' })
+      expect((await service.execute(refund())).kind).toBe('ok')
+      expect(await acquisitions.findByPayment('pay-1')).toBeNull()
+      return insert(input)
+    }
+
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(await acquisitions.findByPayment('pay-1')).toMatchObject({ status: 'refunded' })
+    expect(repo.conversions).toHaveLength(0)
+  })
+
+  test.each([
     1, 12,
   ])('presente pessoal + assinatura no ciclo %s: bônus do acordo aceito', async (cycle) => {
     await seedGift()
@@ -688,6 +714,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',
@@ -743,6 +771,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',
@@ -787,6 +817,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',

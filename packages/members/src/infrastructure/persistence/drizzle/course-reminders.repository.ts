@@ -69,7 +69,14 @@ export async function loadCourseAccountProgress(
     .select({ id: lessons.id })
     .from(lessons)
     .innerJoin(modules, eq(modules.id, lessons.moduleId))
-    .where(and(eq(lessons.courseId, course.id), eq(lessons.isPublished, true)))
+    .where(
+      and(
+        eq(lessons.courseId, course.id),
+        eq(lessons.isPublished, true),
+        isNull(lessons.archivedAt),
+        isNull(modules.archivedAt),
+      ),
+    )
     .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessons.id))
   const lessonIds = lessonRows.map((lesson) => lesson.id)
   if (lessonIds.length === 0)
@@ -147,6 +154,7 @@ export async function loadCourseAccountProgress(
           and(
             inArray(studioSubmissions.accountId, accountIds),
             eq(studioSubmissions.courseId, course.id),
+            inArray(studioSubmissions.lessonId, lessonIds),
           ),
         ),
     ])
@@ -170,7 +178,11 @@ export async function loadCourseAccountProgress(
       .select({ userId: lessonProgress.userId, at: lessonProgress.updatedAt })
       .from(lessonProgress)
       .where(
-        and(inArray(lessonProgress.userId, safeProfileIds), eq(lessonProgress.courseId, course.id)),
+        and(
+          inArray(lessonProgress.userId, safeProfileIds),
+          eq(lessonProgress.courseId, course.id),
+          inArray(lessonProgress.lessonId, lessonIds),
+        ),
       ),
     db
       .select({
