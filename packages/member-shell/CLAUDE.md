@@ -1,5 +1,38 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Quarto: modo construção e salvar sozinho (26/11/2026)
+
+Proposta aprovada "Modo construção" (artifact JumYepv6zU68fEo8843m8t), em cima do layout de abas
+(Decorar, Construir, No quarto). As regras de onde a peça cai são do core (`morada/build.ts`, ver o
+CLAUDE.md de lá); aqui fica a tela, só na pele Kids (a adulta segue o editor de antes).
+
+- `morada-room-builder.tsx`: a peça em andamento (`placing`: nova, movida ou duplicada) segue o
+  ponteiro como fantasma (`moradaPlace` sobre o `hover`), verde ou vermelha com o motivo; clique (ou
+  Enter) põe, R gira, Esc desiste. Parede, janela e piso continuam na mão; móvel e peça movida
+  soltam. ⚠️ Cada peça em andamento entra UMA vez: o id dela é gasto no primeiro clique que serve
+  (`placedIds`); dois `pointerup` do mesmo clique chegavam antes do novo render e punham duas
+  janelas (a espera de 300 ms do protótipo saiu). Tirar usa `moradaRemove` (fecha o vão). Mover,
+  Duplicar, Copiar/Colar cores; Desfazer/Refazer (`commit` guarda o passo com `pushMoradaHistory`;
+  Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, também com o foco no corpo da página).
+- `morada-room-scene.tsx`: o chão de clique (apertar e soltar sem arrastar: arrastar gira a vista),
+  o fantasma, a prévia com a parede já trocada, as paredes em pé/cortadas/baixas (janelas e portas
+  acompanham a parede delas; baixas = só o rodapé), a grade por cima do piso e a câmera que arrasta
+  com o botão direito ou dois dedos.
+- **Salvar sozinho** (`useMoradaEditor(skin, {autosave: true})`, só Kids): 1 s depois do último
+  gesto (`MORADA_AUTOSAVE_MS`), uma gravação por vez (o gesto feito durante ela sai na seguinte, com a
+  revisão nova, e fica na tela), na hora com `keepalive` ao esconder a aba, no `pagehide` e ao
+  desmontar. `saveState` (`idle|saving|saved|error`) vira o selo "Salvando…/Salvo/Não salvou. Tentar
+  de novo" no lugar do botão "Salvar quarto". Falha não tenta sozinha sem parar; 409 abre o conflito
+  de sempre e para de gravar. Só casa válida vai (o fantasma vermelho nunca entra).
+- Testes: `tests/morada-editor-hook.test.ts` (roda `qa/morada-editor-hook.fixture.tsx` num navegador
+  de mentira: espera de 1 s, gestos seguidos, aba escondida, desmontar, conflito, falha e nova
+  tentativa, gesto durante a gravação), `tests/cosmetics-skin.test.tsx` e, no Kids,
+  `tests/room-builder-view.test.tsx`. No Chromium, com a prévia local
+  (`bun packages/member-shell/qa/room-serve.ts`): `community-kids/scripts/room-build-smoke.ts`
+  (compilar para Node no Windows: `bun build --target=node --external @playwright/test
+  --external playwright-core`); põe a janela na parede, confere o vão, uma janela só, desfazer e
+  refazer gravados. Não roda no CI (as peças da Morada não estão no git).
+
 ## Janela de compra aberta segura o cartão (25/11/2026, revisão do Lote 7)
 
 `useCommerceDialogRefresh(key)` registra a compra com a janela aberta (`OPEN_PURCHASES`, por slug
