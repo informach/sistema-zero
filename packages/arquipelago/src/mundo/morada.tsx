@@ -92,16 +92,29 @@ const lot: MoradaInstance = {
 }
 
 /** Física independente: o avatar e as portas têm a mesma medida do Meu Quarto. */
+/** A peça em andamento no modo construção (26/11/2026): a caixa verde onde cabe, vermelha onde não. */
+export interface FantasmaDaMorada {
+  instance: MoradaInstance
+  valid: boolean
+  /** A origem do cômodo da peça (as posições são do cômodo). */
+  origin: readonly [number, number, number]
+}
+
 export function CenaMorada({
   house,
   editing,
   onSelect,
   onPlace,
+  onHover,
+  ghost,
 }: {
   house: MoradaHouse
   editing: boolean
   onSelect(instance: MoradaInstance): void
   onPlace(x: number, z: number): void
+  /** O ponteiro sobre o lote, no modo construção (o fantasma segue). */
+  onHover?(x: number, z: number): void
+  ghost?: FantasmaDaMorada | null
 }) {
   const jogo = useJogo()
   const { loja } = jogo
@@ -169,7 +182,10 @@ export function CenaMorada({
                 )}
               />
             )}
-            {editing ? <PlacementPlane size={house.lot.size} onPlace={onPlace} /> : null}
+            {editing ? (
+              <PlacementPlane size={house.lot.size} onPlace={onPlace} onHover={onHover} />
+            ) : null}
+            {editing && ghost ? <PlacementGhost ghost={ghost} /> : null}
           </Physics>
         </Suspense>
       </Canvas>
@@ -178,12 +194,42 @@ export function CenaMorada({
 }
 
 /** O gerenciador 3D não encaminha pointercancel à malha: cancelar invalida o toque no canvas. */
+/** A caixa da peça em andamento, na cor do resultado (como no quarto da plataforma). */
+function PlacementGhost({ ghost }: { ghost: FantasmaDaMorada }) {
+  const piece = MORADA_CATALOG.pieces[ghost.instance.pieceId]
+  if (!piece) return null
+  const [ox, oy, oz] = ghost.origin
+  const [px, py, pz] = ghost.instance.position
+  return (
+    <group position={[ox + px, oy + py, oz + pz]} rotation={[0, ghost.instance.rotation, 0]}>
+      <mesh
+        position={[
+          (piece.min[0] + piece.max[0]) / 2,
+          (piece.min[1] + piece.max[1]) / 2,
+          (piece.min[2] + piece.max[2]) / 2,
+        ]}
+        raycast={() => null}
+      >
+        <boxGeometry args={[piece.size[0], piece.size[1], Math.max(piece.size[2], 0.05)]} />
+        <meshBasicMaterial
+          color={ghost.valid ? '#3ec27a' : '#e2504c'}
+          transparent
+          opacity={0.38}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
+
 function PlacementPlane({
   size,
   onPlace,
+  onHover,
 }: {
   size: MoradaHouse['lot']['size']
   onPlace(x: number, z: number): void
+  onHover?(x: number, z: number): void
 }) {
   const canvas = useThree((state) => state.gl.domElement)
   const pressed = useRef(false)
@@ -208,6 +254,7 @@ function PlacementPlane({
       onPointerDown={(event) => {
         pressed.current = event.button === 0
       }}
+      onPointerMove={(event) => onHover?.(event.point.x, event.point.z)}
       onClick={(event) => {
         event.stopPropagation()
         if (!pressed.current) return

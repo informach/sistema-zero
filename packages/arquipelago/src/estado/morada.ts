@@ -49,11 +49,14 @@ export interface MoradaState {
   rest(instanceId: string, mode: MoradaRest['mode']): void
   stopRest(): void
   before: MoradaHouse[]
+  /** O refazer (26/11/2026, o modo construção compartilhado com o quarto). */
+  after: MoradaHouse[]
   load(): Promise<void>
   enter(editing?: boolean): Promise<void>
   close(): Promise<void>
   edit(house: MoradaHouse): boolean
   undo(): void
+  redo(): void
   save(): Promise<boolean>
   recover(): void
   setEditing(value: boolean): void
@@ -110,7 +113,7 @@ const sameHouse = (left: MoradaHouse, right: MoradaHouse) =>
 
 type DocumentState = Pick<
   MoradaState,
-  'house' | 'revision' | 'owned' | 'status' | 'error' | 'dirty' | 'recovery' | 'before'
+  'house' | 'revision' | 'owned' | 'status' | 'error' | 'dirty' | 'recovery' | 'before' | 'after'
 >
 const emptyDocument = (): DocumentState => ({
   house: null,
@@ -121,6 +124,7 @@ const emptyDocument = (): DocumentState => ({
   dirty: false,
   recovery: null,
   before: [],
+  after: [],
 })
 function documentOf(state: MoradaState): DocumentState {
   return {
@@ -132,6 +136,7 @@ function documentOf(state: MoradaState): DocumentState {
     dirty: state.dirty,
     recovery: state.recovery,
     before: state.before,
+    after: state.after,
   }
 }
 
@@ -302,6 +307,7 @@ export function createCasaMoradaStore(
           dirty,
           error: warning,
           before: [],
+          after: [],
         })
         reflect(house)
       } catch (error) {
@@ -384,14 +390,27 @@ export function createCasaMoradaStore(
         return false
       }
       get().stopRest()
-      set({ house, dirty: true, before: [...get().before.slice(-29), current], error: null })
+      set({
+        house,
+        dirty: true,
+        before: [...get().before.slice(-59), current],
+        after: [],
+        error: null,
+      })
       reflect(house)
       return true
     },
     undo() {
-      const before = get().before
+      const { before, after, house: current } = get()
       const house = before.at(-1)
-      if (house && get().edit(house)) set({ before: before.slice(0, -1) })
+      if (house && current && get().edit(house))
+        set({ before: before.slice(0, -1), after: [current, ...after].slice(0, 60) })
+    },
+    redo() {
+      const { before, after, house: current } = get()
+      const house = after[0]
+      if (house && current && get().edit(house))
+        set({ before: [...before, current].slice(-60), after: after.slice(1) })
     },
     async save() {
       activateScope()

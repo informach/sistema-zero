@@ -573,7 +573,8 @@ export function moradaRemove(
   const next = { ...house, instances: house.instances.filter((i) => !removed.has(i.id)) }
   const target = house.instances.find((i) => i.id === id)
   const piece = target ? catalog.pieces[target.pieceId] : undefined
-  if (!target || !piece || target.parentId || !moradaInsertKind(piece)) return next
+  // Peça do quintal (sem cômodo) não tem parede de cômodo para fechar.
+  if (!target?.roomId || !piece || target.parentId || !moradaInsertKind(piece)) return next
   const [x, z] = moradaInstanceCenter(target, piece)
   const wall = moradaWalls(next, catalog, target.roomId).find((w) => {
     if (!w.openings.length) return false

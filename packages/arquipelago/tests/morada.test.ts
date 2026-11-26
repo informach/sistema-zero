@@ -1,9 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import {
+  applyMoradaPlacement,
   createMoradaHouse,
   MORADA_CATALOG,
   type MoradaInstance,
+  moradaPlace,
+  moradaRemove,
 } from '@sistemazero/avatar-quarto/morada/catalog'
 import { BoxGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { criarLoja } from '../src/estado/loja'
@@ -282,5 +285,44 @@ describe('persistência da casa compartilhada', () => {
     expect(source.getState().status).toBe('ready')
     expect(source.getState().dirty).toBe(false)
     expect(source.getState().revision).toBe(1)
+  })
+})
+
+describe('modo construção compartilhado com o quarto (26/11/2026)', () => {
+  test('janela pelo motor do core abre o vão; tirar fecha; desfazer e refazer voltam a casa', async () => {
+    const platform = criarPlataformaFalsa({ persistir: false })
+    const store = createCasaMoradaStore(game(), platform, storage())
+    await store.getState().enter(true)
+    const house = store.getState().house!
+    const room = house.rooms.find((r) => r.id === house.roomId)!
+    // Perto da parede do fundo do quarto, em coordenadas do cômodo (como o editor converte).
+    const placement = moradaPlace(
+      house,
+      'construcao/janela_quadrada_inteira_branca',
+      [-2.2, -2.6],
+      {
+        roomId: room.id,
+      },
+    )
+    expect(placement.valid).toBe(true)
+    expect(store.getState().edit(applyMoradaPlacement(house, placement))).toBe(true)
+    const placed = store.getState().house!
+    expect(placed.instances.some((i) => i.pieceId === 'construcao/janela_2m')).toBe(true)
+    expect(store.getState().edit(moradaRemove(placed, placement.instance.id))).toBe(true)
+    expect(
+      store.getState().house!.instances.some((i) => i.pieceId === 'construcao/janela_2m'),
+    ).toBe(false)
+    store.getState().undo()
+    expect(store.getState().house).toEqual(placed)
+    expect(store.getState().after).toHaveLength(1)
+    store.getState().redo()
+    expect(
+      store.getState().house!.instances.some((i) => i.pieceId === 'construcao/janela_2m'),
+    ).toBe(false)
+    expect(store.getState().after).toHaveLength(0)
+    // Um gesto novo apaga o refazer.
+    store.getState().undo()
+    expect(store.getState().edit({ ...placed, roomId: placed.roomId })).toBe(true)
+    expect(store.getState().after).toHaveLength(0)
   })
 })
