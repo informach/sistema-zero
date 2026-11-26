@@ -95,9 +95,10 @@ const gateway = createServer((req, res) => {
         guaranteeDays: 7,
         pricingMode: 'one_time',
         billingIntervalMonths: null,
-        accessMode: 'lifetime',
-        accessDurationValue: null,
-        accessDurationUnit: null,
+        // A venda do guia é por 1 ano (decisão de 25/11/2026): o contrato da página recusa vitalícia.
+        accessMode: 'fixed',
+        accessDurationValue: 12,
+        accessDurationUnit: 'months',
         product: { name: 'Transformando o vilão em aliado' },
         content: { allowsCoupon: true },
       })
@@ -315,7 +316,9 @@ try {
   assert.equal(resgates.length, 1, 'um resgate enviado')
   assert.equal(resgates[0]?.code, CODIGO)
   assert.equal(resgates[0]?.email, 'paula@example.com')
-  assert.equal(resgates[0]?.offer, OFERTA)
+  // Campanha: o resgate não leva oferta (vale a da campanha); só a escolha do embaixador
+  // (`?oferta-presente=`) vai no resgate (uma página por curso, 25/11/2026).
+  assert.equal(resgates[0]?.offer, undefined)
   await page.locator('#resgatar').screenshot({ path: resolve(output, 'concluido.png') })
 
   // Campanha pausada: fechada, com a retomada para quem já começou o cadastro.
