@@ -3,6 +3,7 @@ import {
   type MoradaCatalog,
   type MoradaHouse,
   type MoradaInstance,
+  moradaBoundaryMargin,
   moradaFootprint,
 } from '@sistemazero/core/morada'
 
@@ -43,7 +44,8 @@ export function moradaFitsRoom(
   const room = house.rooms.find((r) => r.id === house.roomId)
   if (!piece || !room) return false
   if (instance.parentId) return true
-  const margin = piece.kind === 'construction' ? 0.2 : 0.001
+  // A mesma folga do servidor (`validateMoradaHouse`): a janela de Natal na borda troca de cor.
+  const margin = moradaBoundaryMargin(piece)
   const cos = Math.cos(instance.rotation),
     sin = Math.sin(instance.rotation)
   return [piece.min[0], piece.max[0]].every((x) =>

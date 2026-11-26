@@ -29,6 +29,31 @@ export function readMoradaEnvelope(value: unknown): MoradaHouseEnvelope {
 /** O salvar sozinho do quarto (26/11/2026, o mesmo do avatar): 1 s depois do último gesto. */
 export const MORADA_AUTOSAVE_MS = 1000
 export type MoradaSaveState = 'idle' | 'saving' | 'saved' | 'error'
+/**
+ * O navegador recusa `keepalive` com corpo acima de 64 KiB (o `fetch` lança antes de sair). Abaixo
+ * desta medida o envio da saída vai com `keepalive`; acima, vai como pedido comum (e o aviso de sair
+ * da página segura enquanto houver mudança pendente).
+ */
+export const MORADA_KEEPALIVE_MAX_BYTES = 60_000
+
+/**
+ * O corpo do PUT do quarto: só os cômodos, o lote e as peças DO QUARTO. O servidor, com
+ * `scope: 'room'`, usa da casa enviada só o quarto e o bichinho (o resto vem da casa guardada), então
+ * mandar a casa inteira só aumentava o corpo (e passava do teto do `keepalive` numa casa grande).
+ */
+export function moradaRoomPutBody(house: MoradaHouse, revision: number): string {
+  const room = { ...house, instances: house.instances.filter((i) => i.roomId === house.roomId) }
+  return JSON.stringify({ house: room, revision, scope: 'room' })
+}
+
+/** A frase que o servidor mandou com a recusa (`{error: {message}}`), quando há. */
+function serverReason(body: unknown): string | null {
+  if (!body || typeof body !== 'object' || !('error' in body)) return null
+  const error = (body as { error: unknown }).error
+  if (!error || typeof error !== 'object' || !('message' in error)) return null
+  const message = (error as { message: unknown }).message
+  return typeof message === 'string' && message.trim() ? message.trim() : null
+}
 
 export function useMoradaEditor(
   skin: CosmeticsSkin = 'kids',
@@ -50,6 +75,12 @@ export function useMoradaEditor(
   const conflictRef = useRef(conflict)
   conflictRef.current = conflict
   const [saveState, setSaveState] = useState<MoradaSaveState>('idle')
+  /**
+   * Sobe quando a casa da tela é TROCADA por outra que não veio desta aba (abrir de novo, resolver
+   * um conflito). Quem guarda o desfazer recomeça o histórico nessa hora: desfazer para uma casa de
+   * antes da troca gravaria por cima da versão mais nova (revisão de 26/11/2026).
+   */
+  const [generation, setGeneration] = useState(0)
   /** Uma gravação por vez; o gesto que chega durante ela pede outra logo depois. */
   const inflight = useRef(false)
   const again = useRef(false)
@@ -78,6 +109,8 @@ export function useMoradaEditor(
       setSaved(envelope)
       setDraft(envelope.house)
       setConflict(null)
+      conflictRef.current = null
+      setGeneration((g) => g + 1)
       setMessage('')
       setStatus('ready')
     } catch (error) {
@@ -108,7 +141,11 @@ export function useMoradaEditor(
       again.current = true
       return
     }
-    if (JSON.stringify(saved.house) === JSON.stringify(draft)) return
+    if (JSON.stringify(saved.house) === JSON.stringify(draft)) {
+      // Desfez de volta ao que está guardado: nada a gravar, e o "Não salvou" de antes sai.
+      setSaveState((state) => (state === 'error' ? 'saved' : state))
+      return
+    }
     const errors = validateMoradaHouse(draft)
     if (errors.length) {
       setSaveState('error')
@@ -122,14 +159,17 @@ export function useMoradaEditor(
     setSaveState('saving')
     if (!autosave) setMessage('')
     const sent = JSON.stringify(draft)
+    const payload = moradaRoomPutBody(draft, saved.revision)
     try {
       const response = await sessionFetch('/api/members/house', {
         method: 'PUT',
-        keepalive,
+        // Corpo grande demais para o `keepalive` vai como pedido comum (com ele, o `fetch` lançava).
+        keepalive:
+          keepalive && new TextEncoder().encode(payload).byteLength <= MORADA_KEEPALIVE_MAX_BYTES,
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ house: draft, revision: saved.revision, scope: 'room' }),
+        body: payload,
       })
-      const body: unknown = await response.json()
+      const body: unknown = await response.json().catch(() => null)
       if (!alive.current) return
       if (response.status === 409) {
         const current =
@@ -139,12 +179,19 @@ export function useMoradaEditor(
         if (!current)
           throw new Error('Sua casa mudou em outro lugar. Abra novamente antes de salvar.')
         setConflict(current)
+        // Já, e não no próximo render: o `finally` pode pedir outra gravação agora, e ela sairia
+        // com a revisão velha (outro 409 à toa).
+        conflictRef.current = current
+        again.current = false
         setStatus('ready')
         setSaveState('idle')
         return
       }
       if (!response.ok)
-        throw new Error('Não foi possível salvar. Seu arranjo continua aqui para tentar novamente.')
+        throw new Error(
+          serverReason(body) ??
+            'Não foi possível salvar. Seu arranjo continua aqui para tentar novamente.',
+        )
       const envelope = readMoradaEnvelope(body)
       setSaved(envelope)
       savedRef.current = envelope
@@ -157,16 +204,19 @@ export function useMoradaEditor(
       if (alive.current) {
         setStatus('ready')
         setSaveState('error')
-        if (!autosave)
-          setMessage(
-            error instanceof Error ? error.message : 'Não foi possível salvar. Tente novamente.',
-          )
+        // Com o salvar sozinho, o selo já diz "Não salvou"; o motivo do servidor (peça ainda não
+        // comprada, peça fora do quarto) aparece também, senão a criança não sabe o que mudar.
+        setMessage(
+          error instanceof Error ? error.message : 'Não foi possível salvar. Tente novamente.',
+        )
       }
     } finally {
       inflight.current = false
-      if (again.current && alive.current) {
+      if (again.current && !conflictRef.current) {
         again.current = false
-        void save()
+        // O gesto feito durante a gravação sai mesmo com a tela já fechada (navegou no app): sem
+        // isto ele se perdia ao desmontar.
+        void save({ keepalive: !alive.current })
       }
     }
   }
@@ -174,8 +224,11 @@ export function useMoradaEditor(
     if (!conflict) return
     const local = draftRef.current
     setSaved(conflict)
+    savedRef.current = conflict
     setDraft(keepLocal && local ? replaceMoradaRoom(conflict.house, local) : conflict.house)
     setConflict(null)
+    conflictRef.current = null
+    setGeneration((g) => g + 1)
     setMessage(
       keepLocal
         ? 'Seu arranjo foi aplicado à casa atual. Confira e salve novamente.'
@@ -233,6 +286,10 @@ export function useMoradaEditor(
     const timer = setTimeout(() => void saveRef.current(), MORADA_AUTOSAVE_MS)
     return () => clearTimeout(timer)
   }, [autosave, dirty, draft, conflict])
+  // Undo de volta ao guardado (sem nada a gravar) também tira o "Não salvou".
+  useEffect(() => {
+    if (!dirty && saveState === 'error') setSaveState('saved')
+  }, [dirty, saveState])
   // Sair da página, esconder a aba ou fechar a tela grava o que falta na hora.
   useEffect(() => {
     if (!autosave) return
@@ -240,23 +297,52 @@ export function useMoradaEditor(
     const hidden = () => {
       if (document.visibilityState === 'hidden') flush()
     }
-    window.addEventListener('pagehide', flush)
+    /**
+     * A página vai embora com uma gravação no ar: o pedido comum dela pode ser cortado, e o gesto
+     * feito depois só sairia no fim dela, que não chega. Manda a casa de agora, com `keepalive`, sem
+     * esperar (com a revisão de antes: se a primeira chegou, esta recebe 409 e nada se estraga).
+     */
+    const leaving = () => {
+      const draft = draftRef.current
+      const saved = savedRef.current
+      if (!inflight.current || !draft || !saved || conflictRef.current) return flush()
+      if (JSON.stringify(saved.house) === JSON.stringify(draft)) return
+      const payload = moradaRoomPutBody(draft, saved.revision)
+      if (new TextEncoder().encode(payload).byteLength > MORADA_KEEPALIVE_MAX_BYTES) return
+      void sessionFetch('/api/members/house', {
+        method: 'PUT',
+        keepalive: true,
+        headers: { 'content-type': 'application/json' },
+        body: payload,
+      }).catch(() => undefined)
+    }
+    window.addEventListener('pagehide', leaving)
     document.addEventListener('visibilitychange', hidden)
     return () => {
-      window.removeEventListener('pagehide', flush)
+      window.removeEventListener('pagehide', leaving)
       document.removeEventListener('visibilitychange', hidden)
       flush()
     }
   }, [autosave])
   useEffect(() => {
-    if (!dirty || (autosave && saveState !== 'error')) return
+    // Com o salvar sozinho, o aviso de sair só segura quando a gravação falhou ou quando a casa é
+    // grande demais para o envio com `keepalive` da saída.
+    const big =
+      autosave &&
+      dirty &&
+      draft &&
+      saved &&
+      new TextEncoder().encode(moradaRoomPutBody(draft, saved.revision)).byteLength >
+        MORADA_KEEPALIVE_MAX_BYTES
+    if (!dirty || (autosave && saveState !== 'error' && !big)) return
     const handler = (event: BeforeUnloadEvent) => {
       event.preventDefault()
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty, autosave, saveState])
+  }, [dirty, autosave, saveState, draft, saved])
   return {
+    generation,
     saved,
     wallet,
     draft,
