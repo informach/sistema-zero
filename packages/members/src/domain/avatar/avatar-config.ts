@@ -32,6 +32,14 @@ export interface AvatarConfig {
   slots: AvatarSlots
   filter?: AvatarFilter
   customized?: boolean
+  /** O enquadramento escolhido na Cabine de fotos (26/11/2026). Ausente = nunca escolheu. */
+  photoFraming?: AvatarPhotoFraming
+}
+
+export type AvatarPhotoFraming = 'face' | 'body'
+
+export function isAvatarPhotoFraming(valor: unknown): valor is AvatarPhotoFraming {
+  return valor === 'face' || valor === 'body'
 }
 
 const FILTROS: ReadonlySet<string> = new Set(['girl', 'boy', 'all'])
@@ -59,6 +67,7 @@ type Cru = {
   slots?: unknown
   filter?: unknown
   customized?: unknown
+  photoFraming?: unknown
 } | null
 
 function slotsCrus(valor: unknown): AvatarSlots | null {
@@ -79,6 +88,7 @@ export function canonicalizeAvatarConfig(
 ): AvatarConfig {
   const cru = raw as Cru
   const filter = isAvatarFilter(cru?.filter) ? cru.filter : undefined
+  const enquadramento = isAvatarPhotoFraming(cru?.photoFraming) ? cru.photoFraming : undefined
   const slots = cru?.version === 3 ? slotsCrus(cru.slots) : null
   if (slots) {
     // A fantasia vestida acompanha as trocas de parte que a arte fizer (o elmo do cavaleiro).
@@ -90,9 +100,13 @@ export function canonicalizeAvatarConfig(
         slots: comOrelhas,
         ...(filter ? { filter } : {}),
         ...(cru?.customized === true ? { customized: true } : {}),
+        ...(enquadramento ? { photoFraming: enquadramento } : {}),
       }
   }
-  return defaultAvatarConfig(seed, filter, catalog)
+  return {
+    ...defaultAvatarConfig(seed, filter, catalog),
+    ...(enquadramento ? { photoFraming: enquadramento } : {}),
+  }
 }
 
 /**
