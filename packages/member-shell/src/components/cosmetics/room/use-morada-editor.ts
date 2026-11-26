@@ -155,9 +155,11 @@ export function useMoradaEditor(
       return
     }
     inflight.current = true
-    setStatus('saving')
-    setSaveState('saving')
-    if (!autosave) setMessage('')
+    if (alive.current) {
+      setStatus('saving')
+      setSaveState('saving')
+      if (!autosave) setMessage('')
+    }
     const sent = JSON.stringify(draft)
     const payload = moradaRoomPutBody(draft, saved.revision)
     try {
@@ -170,7 +172,6 @@ export function useMoradaEditor(
         body: payload,
       })
       const body: unknown = await response.json().catch(() => null)
-      if (!alive.current) return
       if (response.status === 409) {
         const current =
           body && typeof body === 'object' && 'current' in body
@@ -178,11 +179,12 @@ export function useMoradaEditor(
             : null
         if (!current)
           throw new Error('Sua casa mudou em outro lugar. Abra novamente antes de salvar.')
-        setConflict(current)
         // Já, e não no próximo render: o `finally` pode pedir outra gravação agora, e ela sairia
         // com a revisão velha (outro 409 à toa).
         conflictRef.current = current
         again.current = false
+        if (!alive.current) return
+        setConflict(current)
         setStatus('ready')
         setSaveState('idle')
         return
@@ -193,8 +195,11 @@ export function useMoradaEditor(
             'Não foi possível salvar. Seu arranjo continua aqui para tentar novamente.',
         )
       const envelope = readMoradaEnvelope(body)
-      setSaved(envelope)
+      // A tela pode ter fechado enquanto o pedido estava no ar. O gesto pendente ainda precisa
+      // da revisão confirmada para gravar em seguida; só as atualizações da tela são dispensadas.
       savedRef.current = envelope
+      if (!alive.current) return
+      setSaved(envelope)
       // O gesto feito DURANTE a gravação fica na tela (e sai na próxima).
       if (JSON.stringify(draftRef.current) === sent) setDraft(envelope.house)
       setStatus('ready')

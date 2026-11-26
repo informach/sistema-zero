@@ -25,6 +25,7 @@ interface Chamada {
 type Editor = ReturnType<typeof useMoradaEditor>
 let chamadas: Chamada[] = []
 let revisao = 3
+let casaGuardada = createMoradaHouse()
 let resposta: 'ok' | 'falha' | 'conflito' | 'motivo' = 'ok'
 /** Com uma promessa aqui, o PUT espera até ela resolver (a gravação "em voo"). */
 let segurar: Promise<void> | null = null
@@ -34,6 +35,7 @@ const puts = () => chamadas.filter((c) => c.method === 'PUT')
 beforeEach(() => {
   chamadas = []
   revisao = 3
+  casaGuardada = createMoradaHouse()
   resposta = 'ok'
   segurar = null
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -43,7 +45,7 @@ beforeEach(() => {
     chamadas.push({ method, path: url.pathname, body, keepalive: init?.keepalive === true })
     if (url.pathname === '/api/members/room') return Response.json({ balance: 100 })
     if (url.pathname === '/api/members/house' && method === 'GET')
-      return Response.json({ house: createMoradaHouse(), revision: revisao, owned: [] })
+      return Response.json({ house: casaGuardada, revision: revisao, owned: [] })
     if (url.pathname === '/api/members/house' && method === 'PUT') {
       if (segurar) await segurar
       if (resposta === 'falha') return new Response('{}', { status: 503 })
@@ -52,12 +54,19 @@ beforeEach(() => {
           { error: { code: 'MORADA_INVALID', message: 'Peça ainda não comprada: Cama azul.' } },
           { status: 400 },
         )
-      if (resposta === 'conflito')
+      if (resposta === 'conflito' || body.revision !== revisao)
         return Response.json(
-          { current: { house: createMoradaHouse(), revision: revisao + 10, owned: [] } },
+          {
+            current: {
+              house: casaGuardada,
+              revision: resposta === 'conflito' ? revisao + 10 : revisao,
+              owned: [],
+            },
+          },
           { status: 409 },
         )
       revisao += 1
+      casaGuardada = body.house
       return Response.json({ house: body.house, revision: revisao, owned: [] })
     }
     return new Response('{}', { status: 404 })
@@ -302,4 +311,7 @@ test('sair da tela com uma gravação no ar: o gesto de depois ainda sai, com ke
   await esperar(() => puts().length === 2)
   expect(luz(puts()[1])).toBe('tarde')
   expect(puts()[1]?.keepalive).toBe(true)
+  expect(puts()[1]?.body?.revision).toBe(4)
+  await esperar(() => revisao === 5)
+  expect(casaGuardada.rooms.find((r) => r.id === casaGuardada.roomId)?.lighting).toBe('tarde')
 })
