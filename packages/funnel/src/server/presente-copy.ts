@@ -15,7 +15,7 @@ const TROCAS: readonly [RegExp, string][] = [
 ]
 
 function trocar(texto: string, cartao: CartaoDoPresente): string {
-  if (CONDICOES_DA_VENDA.test(texto)) return cartao.texto
+  if (CONDICOES_DA_VENDA.test(texto)) return cartao.frase
   return TROCAS.reduce((atual, [de, para]) => atual.replace(de, para), texto)
 }
 

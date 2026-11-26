@@ -12,11 +12,6 @@
   color: var(--cda-texto);
   font-size: 0.75rem;
 }
-.cda .adult-price-before {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--cda-texto-apoio);
-}
 .cda .adult-coupon {
   padding: 1rem;
   border: 1px solid var(--cda-amarelo);

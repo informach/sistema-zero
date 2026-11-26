@@ -19,6 +19,7 @@ import { isCadeGift } from '../../../server/referral-gift-page'
 import PresenteLayout from '../../referrals/PresenteLayout.astro'
 import PresenteOferta from '../../referrals/PresenteOferta.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
 import PresenteAcao from './PresenteAcao.astro'
 import PresenteJanela from './PresenteJanela.astro'
 
@@ -37,7 +38,7 @@ const P = presente
   ? presenteKidsDaOferta(isCadeGift(presente.gift.gift) ? presente.gift.gift : undefined)
   : venda
 // No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
-const cabeca = cartao ? { ...venda.oferta, texto: cartao.texto } : venda.oferta
+const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta
 const barra = cartao
   ? { titulo: cartao.etiqueta, texto: cartao.precoFinal, cta: cartao.cta, presente: cartao.aberto }
   : { titulo: preco.preco, texto: venda.barra.texto, cta: venda.barra.cta }
@@ -68,15 +69,14 @@ const barra = cartao
           <article class="c9-plano">
             <span class="c9-tag c9-cor--amarelo">{cartao.etiqueta}</span>
             <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>
-            <p class="c9-plano__preco"><s>{cartao.precoCheio}</s> {cartao.precoFinal}</p>
+            <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
             <p class="c9-plano__texto">{cartao.texto}</p>
             <PresenteAcao cartao={cartao} classeBotao="c9-plano__btn" analyticsId="cade-oferta-presente" />
           </article>
         ) : (
           <article class="c9-plano">
             <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>
-            {preco.precoCheio && preco.descontoPct && <span class="c9-tag c9-cor--rosa">{preco.descontoPct}% de desconto</span>}
-            <p class="c9-plano__preco">{preco.precoCheio && <s>{preco.precoCheio}</s>}{preco.precoCheio && ' '}{preco.preco}<span> {venda.oferta.sufixo}</span></p>
+            <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={venda.oferta.sufixo} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="c9-tag c9-cor--rosa" />
             <p class="c9-plano__texto">{venda.oferta.texto}</p>
             <button type="button" class="c9-plano__btn" data-checkout-cta data-analytics-id="cade-oferta-comprar">{venda.oferta.cta}</button>
             {venda.oferta.garantia && <p class="c9-plano__texto">{venda.oferta.garantia}</p>}

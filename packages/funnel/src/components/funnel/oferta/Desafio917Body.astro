@@ -24,6 +24,7 @@ import DesafioIcone from './DesafioIcone.astro'
 import DesafioRelato from './DesafioRelato.astro'
 import OfferImage from './OfferImage.astro'
 import OfferImageZoom from './OfferImageZoom.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
 import PresenteAcao from './PresenteAcao.astro'
 import PresenteJanela from './PresenteJanela.astro'
 import '../../../styles/desafio-pratica.css'
@@ -251,15 +252,14 @@ const CAMINHO = [
             <article class="c9-plano d9-plano">
               <span class="c9-tag c9-cor--amarelo">{cartao.etiqueta}</span>
               <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
-              <p class="c9-plano__preco"><s class="d9-cheio">{cartao.precoCheio}</s>{cartao.precoFinal}</p>
+              <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
               <p class="c9-plano__texto">{cartao.texto}</p>
               <PresenteAcao cartao={cartao} classeBotao="c9-plano__btn d9-plano__btn" analyticsId="desafio-oferta-presente" />
             </article>
             ) : (
             <article class="c9-plano d9-plano">
               <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
-              {preco.precoCheio && preco.descontoPct && <span class="d9-desconto__selo">{preco.descontoPct}% de desconto</span>}
-              <p class="c9-plano__preco">{preco.precoCheio && <s class="d9-cheio">{preco.precoCheio}</s>}{preco.preco}<span> {P.oferta.sufixo}</span></p>
+              <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={P.oferta.sufixo} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="d9-desconto__selo" />
               <p class="c9-plano__texto">{fill(P.oferta.porDia)}</p>
               <button type="button" class="c9-plano__btn d9-plano__btn" data-checkout-cta data-analytics-id="desafio-oferta-comprar">{fill(P.cta)}</button>
               <p class="d9-plano__garantia"><DesafioIcone nome="escudo" tamanho={24} /><span>{P.oferta.garantia}</span></p>

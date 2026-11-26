@@ -19,6 +19,7 @@ import '../../../styles/ofertas-adulto.css'
 import AdultOfferBar from './AdultOfferBar.astro'
 import OfferImage from './OfferImage.astro'
 import OfferImageZoom from './OfferImageZoom.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
 import PresenteAcao from './PresenteAcao.astro'
 import PresenteJanela from './PresenteJanela.astro'
 
@@ -635,7 +636,7 @@ const heroImg = P.hero.imagens[0]
       {P.oferta.titulo}
      </h2>
      <p class="cda-suave">
-      {cartao ? cartao.texto : P.oferta.paragrafos[0]}
+      {cartao ? cartao.frase : P.oferta.paragrafos[0]}
      </p>
      {!cartao && (
      <div class="cda-caixa cda-caixa--depois">
@@ -654,8 +655,7 @@ const heroImg = P.hero.imagens[0]
     <div class="da-cartao">
      <span class="da-cartao__selo">{P.oferta.rotulos[1]}</span>
      <p class="cda-rotulo cor-verde">{cartao.etiqueta}</p>
-     <del class="adult-price-before">{cartao.precoCheio}</del>
-     <p class="da-cartao__preco">{cartao.precoFinal}</p>
+     <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
      <p class="cda-suave">{cartao.texto}</p>
      <PresenteAcao cartao={cartao} classeBotao="cda-btn cda-btn--grande" analyticsId="desafio-adulto-oferta-presente" />
     </div>
@@ -664,8 +664,7 @@ const heroImg = P.hero.imagens[0]
      <span class="da-cartao__selo">
       {P.oferta.rotulos[1]}
      </span>
-     {preco.precoCheio && <del class="adult-price-before">{preco.precoCheio}</del>}
-     <p class="da-cartao__preco" set:html={fill(P.oferta.paragrafos[1])} />
+     <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={P.oferta.paragrafos[1]} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="pc-preco__desconto--arcade" />
      <p class="cda-suave">
       {P.oferta.paragrafos[2]}
      </p>
@@ -725,7 +724,7 @@ const heroImg = P.hero.imagens[0]
        </span>
       </li>
      </ul>
-     {preco.aviso && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
+     {preco.aviso?.alerta && <p class="adult-coupon" role="alert">{preco.aviso.texto}</p>}
         <button class="cda-btn cda-btn--grande" data-checkout-cta data-analytics-id="desafio-adulto-oferta-comprar" type="button">
       {P.oferta.acoes[0]}
      </button>

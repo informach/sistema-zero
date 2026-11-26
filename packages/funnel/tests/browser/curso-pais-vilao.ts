@@ -296,7 +296,7 @@ try {
     const cartao = page.locator('#resgatar .c9-plano')
     assert.match(
       await cartao.innerText(),
-      /Um presente da campanha Encontro de pais para você[\s\S]*R\$\s?27\s+R\$\s?0[\s\S]*Quero o meu presente/,
+      /Um presente da campanha Encontro de pais para você[\s\S]*De R\$\s?27 por\s+R\$\s?0\s+sem custo e sem cartão\s+(?:Acesso ao guia|\d+ dias? de acesso ao guia)[^\n]*cadastro\.\s+Quero o meu presente/,
       `presente ${largura}: cartão`,
     )
     // Um cartão só: nada de moldura do formulário dentro dele.

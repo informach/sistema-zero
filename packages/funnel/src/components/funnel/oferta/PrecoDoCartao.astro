@@ -1,0 +1,27 @@
+---
+// O preço do cartão de compra (26/11/2026), igual em todas as páginas de oferta e nos três modos:
+// com cupom ou presente, "De R$ X por" pequeno e riscado; embaixo o preço final grande; embaixo o
+// sufixo ("pagamento único" na venda, "sem custo e sem cartão" no presente). Sem desconto, o preço
+// grande e o sufixo na linha de baixo, no mesmo ritmo. O selo do desconto fica em cima.
+import '../../../styles/preco-cartao.css'
+
+interface Props {
+  /** O preço cheio, riscado. Só com cupom ou presente. */
+  de?: string | null
+  /** O preço final. */
+  valor: string
+  sufixo: string
+  /** "20% de desconto", em cima do preço. */
+  desconto?: string | null
+  /** A classe do selo do desconto, a do tema da página. */
+  classeDesconto?: string
+}
+
+const { de = null, valor, sufixo, desconto = null, classeDesconto = '' } = Astro.props
+---
+<div class="pc-preco">
+  {desconto && <span class:list={['pc-preco__desconto', classeDesconto]}>{desconto}</span>}
+  {de && <p class="pc-preco__de">De <s>{de}</s> por</p>}
+  <p class="pc-preco__valor">{valor}</p>
+  <p class="pc-preco__sufixo">{sufixo}</p>
+</div>

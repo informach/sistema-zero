@@ -294,7 +294,7 @@
 
 **oferta.paragrafos[0]**: Você recebe as três etapas da Chave do Farol, as aulas e o espaço para praticar. Ao longo da construção, aprende o que faz cada parte funcionar e testa suas mudanças, com materiais de consulta e orientação por mensagens.
 
-**oferta.paragrafos[1]**: {{preco}}<span> pagamento único</span>
+**oferta.paragrafos[1]**: pagamento único
 
 **oferta.paragrafos[2]**: 30 dias de acesso. Sem renovação automática.
 

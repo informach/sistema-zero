@@ -55,7 +55,10 @@ describe('cartaoDoPresente', () => {
     expect(c.etiqueta).toBe('Um presente de Marta para você')
     expect(c.precoCheio.replace(/\s/g, ' ')).toBe('R$ 37')
     expect(c.precoFinal.replace(/\s/g, ' ')).toBe('R$ 0')
-    expect(c.texto).toBe(
+    // O cartão diz o prazo; a condição vai na linha embaixo do "R$ 0" (sem repetir).
+    expect(c.texto).toBe('7 dias de acesso ao curso e ao Mural, contados do cadastro.')
+    expect(c.condicao).toBe('sem custo e sem cartão')
+    expect(c.frase).toBe(
       '7 dias de acesso ao curso e ao Mural, contados do cadastro. Sem custo e sem cartão.',
     )
     expect(c.cta).toBe(CTA_DO_PRESENTE)
@@ -83,9 +86,7 @@ describe('cartaoDoPresente', () => {
       formulario: 'guia',
     })
     expect(guia.precoCheio.replace(/\s/g, ' ')).toBe('R$ 27')
-    expect(guia.texto).toBe(
-      '7 dias de acesso ao guia, contados do cadastro. Sem custo e sem cartão.',
-    )
+    expect(guia.texto).toBe('7 dias de acesso ao guia, contados do cadastro.')
     expect(guia.resgate.variante).toBe('guia')
     const adulto = cartaoDoPresente(presente({ audience: 'adult' }), opts)
     expect(adulto.adulto).toBe(true)
@@ -94,8 +95,9 @@ describe('cartaoDoPresente', () => {
 
   test('sem prazo, nunca promete "sem prazo"', () => {
     const c = cartaoDoPresente(presente({ dias: null }), opts)
-    expect(c.texto).toBe('Acesso ao curso e ao Mural, sem custo e sem cartão.')
-    expect(c.texto).not.toMatch(/sem prazo|vitalíci/i)
+    expect(c.texto).toBe('Acesso ao curso e ao Mural, a partir do cadastro.')
+    expect(c.frase).toBe('Acesso ao curso e ao Mural, sem custo e sem cartão.')
+    expect(`${c.texto} ${c.frase}`).not.toMatch(/sem prazo|vitalíci/i)
   })
 
   test('pausada ou encerrada: o estado no lugar do botão, com a retomada; agendada: só o estado', () => {
@@ -121,8 +123,8 @@ describe('copyDoPresente', () => {
 
   test('as condições da venda viram a frase do presente e o prazo conta do cadastro', () => {
     const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
-    expect(kids.condicoes).toBe(cartao.texto)
-    expect(kids.fim.texto).toBe(cartao.texto)
+    expect(kids.condicoes).toBe(cartao.frase)
+    expect(kids.fim.texto).toBe(cartao.frase)
     for (const pagina of [PAGINA_DESAFIO_9A17, PAGINA_DESAFIO_ADULTO]) {
       expect(JSON.stringify(copyDoPresente(pagina, cartao))).not.toMatch(/aprovação do pagamento/)
     }
