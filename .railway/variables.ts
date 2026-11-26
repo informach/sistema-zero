@@ -308,6 +308,13 @@ const common: Record<string, string[]> = {
     'FUNNEL_CONSUMER_ID',
     'FUNNEL_HMAC_SECRET',
     'FUNNEL_INTERNAL_TOKEN',
+    // Preservar na transição para primary_offer_id: réplicas anteriores e rollback
+    // ainda podem precisar desses slugs. O código novo consulta o catálogo.
+    'FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES',
+    'FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO',
+    'FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES',
+    'FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO',
+    'FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA',
     'FUNNEL_PUBLIC_URL',
     'GATEWAY_URL',
     'HOST',
