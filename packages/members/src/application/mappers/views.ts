@@ -453,6 +453,8 @@ export interface AvatarStateView {
   balance: number
   /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
   balanceUnlimited?: boolean
+  /** O enquadramento da última escolha na Cabine de fotos (`null` = nunca escolheu). */
+  photoFraming: 'face' | 'body' | null
 }
 
 export interface MyCourseView {

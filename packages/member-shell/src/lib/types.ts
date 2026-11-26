@@ -1166,6 +1166,8 @@ export interface AvatarStateView {
   owned: string[]
   /** Foto (snapshot) atual do avatar — `null` se ainda não há. */
   photoUrl: string | null
+  /** O enquadramento da última escolha na Cabine de fotos (`null`/ausente = nunca escolheu). */
+  photoFraming?: 'face' | 'body' | null
   balance: number
   /** `true` = equipe (passe livre): moedas virtuais ilimitadas — a UI mostra ∞. */
   balanceUnlimited?: boolean

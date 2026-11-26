@@ -788,12 +788,17 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             userId,
             resolveAccountId(headers),
             query.audience ?? 'kids',
-            { slots: body.slots, ...(body.filter ? { filter: body.filter } : {}) },
+            {
+              slots: body.slots,
+              ...(body.filter ? { filter: body.filter } : {}),
+              ...(body.framing ? { framing: body.framing } : {}),
+            },
           )
           return {
             equipped: equipped.slots,
             style: equipped.style,
             filter: equipped.filter ?? null,
+            photoFraming: equipped.photoFraming ?? null,
           }
         },
         { body: AvatarConfigBody, query: AudienceQuery },

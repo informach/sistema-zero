@@ -1,7 +1,11 @@
 'use client'
 
 import { CameraControls } from '@react-three/drei'
-import { type ComponentRef, useEffect, useRef } from 'react'
+import { useThree } from '@react-three/fiber'
+import { type ComponentRef, type RefObject, useEffect, useRef } from 'react'
+import * as THREE from 'three'
+import { measureCharacter } from './measure'
+import { type PhotoFraming, photoFrame } from './photo-framing'
 
 export type CamMode = 'customize' | 'photo'
 
@@ -32,30 +36,64 @@ const CAM_POS = [-0.28, 0.72, 2.05] as const
 const CAM_POS_PHOTO = [-0.28, 0.72, 2.4] as const
 const CAM_TARGET = [0, 0.56, 0] as const
 
+/** Quanto a prévia espera a pose chegar ao auge antes de medir o boneco (as poses param no auge). */
+const POSE_ASSENTA_MS = 900
+
 export function CameraManager({
   mode,
   ready,
+  framing,
+  charRef,
+  pose,
 }: {
   mode: CamMode
   /** Vira `true` quando o rig fica em pé (pés no pódio) — só então a moldura faz sentido. */
   ready: boolean
+  /**
+   * Cabine com o enquadramento escolhido (26/11/2026): a prévia mostra o que a foto vai pegar,
+   * pela MESMA conta da foto (`photoFrame`), medindo o boneco da pose de agora. Sem ele, a moldura
+   * fixa de sempre.
+   */
+  framing?: PhotoFraming
+  charRef?: RefObject<THREE.Group | null>
+  /** A pose da Cabine: trocar reenquadra depois que ela assenta. */
+  pose?: string
 }) {
   const controls = useRef<ComponentRef<typeof CameraControls>>(null)
+  const gl = useThree((s) => s.gl)
+  const box = useRef(new THREE.Box3())
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `pose` não é lida, mas cada troca de pose precisa medir o boneco de novo.
   useEffect(() => {
     const cc = controls.current
     if (!cc || !ready) return
-    // Mesmo alvo nos dois modos; só a distância muda (foto = mais longe). Reenquadra ao entrar
-    // em cada modo (recentraliza de frente) — `mode` é lido de propósito.
-    const [px, py, pz] = mode === 'photo' ? CAM_POS_PHOTO : CAM_POS
-    void cc.setLookAt(px, py, pz, ...CAM_TARGET, true)
-  }, [mode, ready])
+    const enquadrar = () => {
+      const char = charRef?.current
+      if (mode === 'photo' && framing && char) {
+        measureCharacter(char, box.current)
+        if (!box.current.isEmpty()) {
+          const { position, target } = photoFrame(box.current, gl.domElement, framing === 'face')
+          void cc.setLookAt(...position, ...target, true)
+          return
+        }
+      }
+      // Mesmo alvo nos dois modos; só a distância muda (foto = mais longe). Reenquadra ao entrar
+      // em cada modo (recentraliza de frente) — `mode` é lido de propósito.
+      const [px, py, pz] = mode === 'photo' ? CAM_POS_PHOTO : CAM_POS
+      void cc.setLookAt(px, py, pz, ...CAM_TARGET, true)
+    }
+    enquadrar()
+    if (mode !== 'photo' || !framing) return
+    // A pose escolhida ainda está começando: mede de novo quando ela chega ao auge.
+    const t = setTimeout(enquadrar, POSE_ASSENTA_MS)
+    return () => clearTimeout(t)
+  }, [mode, ready, framing, pose, charRef, gl])
 
   return (
     <CameraControls
       ref={controls}
       makeDefault
-      minDistance={0.9}
+      minDistance={0.5}
       maxDistance={5}
       minPolarAngle={Math.PI / 6}
       maxPolarAngle={Math.PI / 1.9}

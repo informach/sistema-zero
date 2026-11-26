@@ -57,6 +57,8 @@ const AVATAR_SLUG = z.string().regex(/^[a-z0-9-]{1,64}$/)
 const AvatarConfigSchema = z.object({
   slots: z.record(z.string().regex(/^[a-z_]{1,40}$/), z.string().regex(/^[a-z0-9_-]{1,96}$/)),
   filter: z.enum(['girl', 'boy', 'all']).optional(),
+  /** O enquadramento escolhido na Cabine de fotos (rosto ou corpo inteiro). */
+  framing: z.enum(['face', 'body']).optional(),
 })
 
 /** Estado do quarto (o members canonicaliza contra o inventário/paleta — aqui só forma). */

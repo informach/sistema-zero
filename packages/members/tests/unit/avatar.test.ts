@@ -215,3 +215,40 @@ describe('avatar do pack: a peça paga que já estava no avatar guardado', () =>
     expect(ownershipOf(C, chapeu)).toBe(chapeu)
   })
 })
+
+describe('avatar do pack: o enquadramento da Cabine de fotos', () => {
+  const repo = (config: unknown, gravar?: (c: unknown) => void) =>
+    ({
+      getConfig: async () => config,
+      listInventory: async () => [],
+      upsertConfig: async (_u: string, _a: string, _au: string, c: unknown) => gravar?.(c),
+    }) as unknown as ConstructorParameters<typeof EquipAvatarService>[0]
+
+  test('grava a escolha e a mantém quando o pedido não a traz', async () => {
+    let gravado: { photoFraming?: string } | null = null
+    const svc = () =>
+      new EquipAvatarService(
+        repo(gravado, (c) => (gravado = c as never)),
+        () => new Date(),
+      )
+    await svc().execute('u', 'a', 'kids', { slots: base(), framing: 'body' })
+    expect(gravado?.photoFraming).toBe('body')
+    await svc().execute('u', 'a', 'kids', { slots: base() })
+    expect(gravado?.photoFraming).toBe('body')
+    await svc().execute('u', 'a', 'kids', { slots: base(), framing: 'face' })
+    expect(gravado?.photoFraming).toBe('face')
+  })
+
+  test('a leitura guarda a escolha válida e ignora lixo', () => {
+    const ok = canonicalizeAvatarConfig(
+      { version: 3, style: 'cute-v1', slots: base(), photoFraming: 'face' },
+      'u',
+    )
+    expect(ok.photoFraming).toBe('face')
+    const lixo = canonicalizeAvatarConfig(
+      { version: 3, style: 'cute-v1', slots: base(), photoFraming: 'perto' },
+      'u',
+    )
+    expect(lixo.photoFraming).toBeUndefined()
+  })
+})

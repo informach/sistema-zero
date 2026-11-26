@@ -341,6 +341,8 @@ export const RoomStateBody = t.Object({
 export const AvatarConfigBody = t.Object({
   slots: t.Record(t.String({ maxLength: 40 }), AVATAR_SLUG, { maxProperties: 32 }),
   filter: t.Optional(t.Union([t.Literal('girl'), t.Literal('boy'), t.Literal('all')])),
+  /** O enquadramento escolhido na Cabine de fotos (26/11/2026). */
+  framing: t.Optional(t.Union([t.Literal('face'), t.Literal('body')])),
 })
 
 /**

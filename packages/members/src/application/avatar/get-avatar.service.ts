@@ -31,6 +31,7 @@ export class GetAvatarService {
       style: equipped.style,
       equipped: equipped.slots,
       filter: equipped.filter ?? null,
+      photoFraming: equipped.photoFraming ?? null,
       customized: equipped.customized === true,
       owned,
       photoUrl,

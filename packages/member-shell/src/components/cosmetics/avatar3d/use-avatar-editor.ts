@@ -33,6 +33,7 @@ import {
 import type { AvatarStateView } from '../../../lib/types'
 import type { AvatarMessages } from '../skin'
 import type { CaptureFn } from './avatar-scene'
+import type { PhotoFraming } from './photo-framing'
 
 const C = AVATAR_CATALOG
 export type Mode = 'customize' | 'photo'
@@ -113,11 +114,18 @@ export function useAvatarEditor({
   const [state, setState] = useState<AvatarStateView | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const [slots, setSlots] = useState<AvatarSlots>({})
-  const [saved, setSaved] = useState<{ slots: AvatarSlots; filter: AvatarFilter | null }>({
+  const [saved, setSaved] = useState<{
+    slots: AvatarSlots
+    filter: AvatarFilter | null
+    framing: PhotoFraming | null
+  }>({
     slots: {},
     filter: null,
+    framing: null,
   })
   const [filter, setFilter] = useState<AvatarFilter | null>(null)
+  /** O enquadramento que a pessoa escolheu na Cabine (`null` = nunca escolheu). Fica no perfil. */
+  const [framing, setFraming] = useState<PhotoFraming | null>(null)
   const [owned, setOwned] = useState<ReadonlySet<string>>(new Set())
   const [balance, setBalance] = useState(0)
   const [coinsUnlimited, setCoinsUnlimited] = useState(false)
@@ -157,8 +165,10 @@ export function useAvatarEditor({
       // A foto que existe é a do avatar gravado; sem foto, a primeira visita tira (abaixo).
       fotografado.current = data.photoUrl ? chave(data.equipped) : null
       setSlots(data.equipped)
-      setSaved({ slots: data.equipped, filter: data.filter })
+      const framingSalvo = data.photoFraming ?? null
+      setSaved({ slots: data.equipped, filter: data.filter, framing: framingSalvo })
       setFilter(data.filter)
+      setFraming(framingSalvo)
       setOwned(new Set(data.owned))
       setBalance(data.balance)
       setCoinsUnlimited(data.balanceUnlimited === true)
@@ -209,7 +219,13 @@ export function useAvatarEditor({
   const alvo =
     unowned.length === 0 ? slots : avatarWithoutPreview(slots, ultimoProprio.current, unowned)
 
-  const dirty = !same(alvo, saved.slots) || (filter !== null && filter !== saved.filter)
+  const dirty =
+    !same(alvo, saved.slots) ||
+    (filter !== null && filter !== saved.filter) ||
+    (framing !== null && framing !== saved.framing)
+  // Cabine: a última escolha da pessoa; sem escolha, corpo inteiro com uma pose escolhida e rosto
+  // sem pose (a foto automática é sempre rosto).
+  const photoFraming: PhotoFraming = framing ?? (pose === AVATAR_IDLE_POSE ? 'face' : 'body')
   const status: SaveStatus =
     unowned.length > 0
       ? 'preview'
@@ -331,9 +347,15 @@ export function useAvatarEditor({
     setSaveError(false)
   }
 
+  /** Cabine: "Rosto" ou "Corpo inteiro". Grava no perfil como o filtro (a Cabine lembra). */
+  function choosePhotoFraming(f: PhotoFraming) {
+    setFraming(f)
+    setSaveError(false)
+  }
+
   // ── Salvar sozinho ──────────────────────────────────────────────────────────────────────
-  const latest = useRef({ slots, alvo, filter, unowned, saved, dirty })
-  latest.current = { slots, alvo, filter, unowned, saved, dirty }
+  const latest = useRef({ slots, alvo, filter, framing, unowned, saved, dirty })
+  latest.current = { slots, alvo, filter, framing, unowned, saved, dirty }
   const inFlight = useRef<Promise<boolean> | null>(null)
   const emVoo = useRef<AbortController | null>(null)
 
@@ -341,7 +363,7 @@ export function useAvatarEditor({
   const persist = useCallback(async (opts: { keepalive?: boolean } = {}): Promise<boolean> => {
     const atual = latest.current
     if (!atual.dirty) return true
-    const enviado = { slots: atual.alvo, filter: atual.filter }
+    const enviado = { slots: atual.alvo, filter: atual.filter, framing: atual.framing }
     const controle = new AbortController()
     emVoo.current = controle
     setSaving(true)
@@ -349,12 +371,20 @@ export function useAvatarEditor({
       const res = await fetch('/api/members/avatar', {
         method: 'PUT',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(enviado.filter ? enviado : { slots: enviado.slots }),
+        body: JSON.stringify({
+          slots: enviado.slots,
+          ...(enviado.filter ? { filter: enviado.filter } : {}),
+          ...(enviado.framing ? { framing: enviado.framing } : {}),
+        }),
         signal: controle.signal,
         ...(opts.keepalive ? { keepalive: true } : {}),
       })
       if (!res.ok) throw new Error('equip')
-      setSaved({ slots: enviado.slots, filter: enviado.filter ?? latest.current.saved.filter })
+      setSaved({
+        slots: enviado.slots,
+        filter: enviado.filter ?? latest.current.saved.filter,
+        framing: enviado.framing ?? latest.current.saved.framing,
+      })
       setSaveError(false)
       savedSomething.current = true
       return true
@@ -386,7 +416,7 @@ export function useAvatarEditor({
     if (loadState !== 'ready' || !dirty || saveError) return
     const t = setTimeout(() => void saveNow(), AUTOSAVE_DELAY_MS)
     return () => clearTimeout(t)
-  }, [loadState, dirty, saveError, alvoKey, filter, saveNow])
+  }, [loadState, dirty, saveError, alvoKey, filter, framing, saveNow])
 
   /**
    * A foto de frente, quando o avatar gravado é o da tela (nada por gravar, nenhuma prévia) e a
@@ -461,13 +491,17 @@ export function useAvatarEditor({
   }
 
   /** Cabine de fotos: a foto de corpo inteiro na pose escolhida. */
-  async function takePhoto() {
+  /**
+   * A foto da Cabine. `framing`: o enquadramento ("Rosto" = a régua da foto automática, "Corpo
+   * inteiro" = a pose inteira). Sem ele, corpo inteiro (a tela adulta, que não tem a escolha).
+   */
+  async function takePhoto(opts: { framing?: PhotoFraming } = {}) {
     const capture = captureRef.current
     if (!capture || photoBusy) return
     setPhotoBusy(true)
     try {
       await saveNow()
-      const blob = await capture({ portrait: false })
+      const blob = await capture({ portrait: (opts.framing ?? 'body') === 'face' })
       if (!blob) throw new Error('foto')
       const fd = new FormData()
       fd.append('file', new File([blob], 'avatar.png', { type: 'image/png' }))
@@ -521,6 +555,8 @@ export function useAvatarEditor({
     dismissNotice: () => setNotice(null),
     randomize,
     chooseFilter,
+    photoFraming,
+    choosePhotoFraming,
     takePhoto,
     finishBeforeExit,
   }
