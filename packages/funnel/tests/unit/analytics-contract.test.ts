@@ -44,10 +44,11 @@ describe('contrato de medição', () => {
       'kids/comunidade-dos-criadores',
     )
     expect(analyticsPage('/')).toMatchObject({ kind: 'bio', publicText: true })
+    // O guia para pais virou oferta do funil (25/11/2026), com o mesmo id de antes.
     expect(analyticsPage('/kids/vilao-em-aliado')).toMatchObject({
       id: 'kids/vilao-em-aliado',
-      kind: 'curso-pais',
-      funnel: null,
+      kind: 'oferta',
+      funnel: 'kids/vilao-em-aliado',
       publicText: true,
     })
     // A Como funciona virou 301 (20/10/2026), mas o painel ainda abre os dados de antes.

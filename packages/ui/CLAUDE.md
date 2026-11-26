@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/ui
 
+## `Dialog.bodyClassName` (25/11/2026)
+
+Prop opcional que troca o espaçamento do corpo (padrão `p-5`). O mini checkout usa `p-0` para as
+duas colunas irem até a borda. Sem a prop, nada muda.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (React, Tailwind, CVA
 > etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,

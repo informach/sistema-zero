@@ -72,10 +72,15 @@ export class ListCatalogService {
     }
 
     const journeyLocks = journeyLockViews(published, journeyState?.locks ?? null)
+    // O cartão do curso para pais diz quantas aulas o curso tem (uma consulta para todos).
+    const lessonCounts = parents
+      ? await this.courses.countPublishedLessonsByCourseIds(published.map((course) => course.id))
+      : null
     return published.map((course) => {
       if (parents) {
         return {
           ...toCatalogCourseView(course, hasMaster || owned.has(course.slug), { locked: false }),
+          lessonsCount: lessonCounts?.get(course.id) ?? 0,
           accessReason: privileged
             ? ('staff' as const)
             : parentsCourseAccessReason(course.slug, active, this.clock()),

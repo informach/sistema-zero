@@ -7,7 +7,7 @@ const page = await resolveOfferPage(Astro.params, Astro.url, Astro.site)
 if (page instanceof Response) return page
 Astro.response.headers.set(
   'cache-control',
-  Astro.params.produto === 'desafio-primeiro-jogo'
+  page.noStore || Astro.params.produto === 'desafio-primeiro-jogo'
     ? 'no-store'
     : 'public, max-age=60, stale-while-revalidate=300',
 )

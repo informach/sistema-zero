@@ -23,6 +23,9 @@ export class CatalogHttpClient implements CatalogClient {
     if (!slug) throw new Error('catalog: slug ausente na view da oferta')
     const billingIntervalMonths =
       typeof body.billingIntervalMonths === 'number' ? body.billingIntervalMonths : null
-    return { id, slug, name, billingIntervalMonths }
+    const product = body.product as { audience?: unknown } | undefined
+    const audience =
+      product?.audience === 'kids' || product?.audience === 'adult' ? product.audience : null
+    return { id, slug, name, billingIntervalMonths, audience }
   }
 }

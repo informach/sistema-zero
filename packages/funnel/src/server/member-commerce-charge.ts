@@ -10,6 +10,7 @@ import {
   SubscriptionChargeSchema,
 } from '../lib/checkout-schema'
 import { json, jsonError } from '../lib/http'
+import { sameOrigin, sanitizeLeadOrigin } from '../lib/lead-origin'
 import { type CheckoutDeps, prepareCard, preparePix, prepareSubscription } from './checkout'
 import { executeCheckoutPlan } from './checkout-dispatch'
 import { runPostPayment } from './checkout-fulfillment'
@@ -26,6 +27,7 @@ export async function chargeMemberCheckout(
   deps: CheckoutDeps,
   store: MemberCommerceStore,
   funnelUrl: string,
+  place: string | null = null,
 ): Promise<Response> {
   const selected = await store.withProductLock(
     account.userId,
@@ -91,6 +93,9 @@ export async function chargeMemberCheckout(
         )
       if (data.acceptedTerms !== true)
         return jsonError('Confirme as condições da compra.', 400, 'TERMS_REQUIRED')
+      const coupon = typeof data.couponCode === 'string' ? data.couponCode.trim() : ''
+      if (coupon && (offer.pricingMode === 'subscription' || offer.content?.allowsCoupon !== true))
+        return jsonError('Esta oferta não aceita cupom.', 422, 'COUPON_NOT_ALLOWED')
       const posted = z.record(z.string(), z.unknown()).safeParse(data.contact)
       const billing = CheckoutContactSchema.safeParse({
         ...contact,
@@ -133,6 +138,13 @@ export async function chargeMemberCheckout(
           400,
           'MISSING_CUSTOMER_DATA',
         )
+      // O botão da plataforma vai ao metadata da cobrança (`origemLugar`) pelo lead: a cobrança
+      // da conta não tem o cookie do funil, então o lugar é gravado aqui, antes de preparar.
+      if (place) {
+        const wanted = { version: 1 as const, code: null, place }
+        if (!sameOrigin(wanted, sanitizeLeadOrigin(lead.origin)))
+          await unit.repo.updateLead(lead.id, { origin: wanted })
+      }
       const request: PreparedMemberCharge = {
         method,
         body: validated.data,

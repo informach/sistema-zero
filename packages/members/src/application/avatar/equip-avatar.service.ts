@@ -2,6 +2,7 @@ import {
   AVATAR_CATALOG,
   type AvatarFilter,
   type AvatarSlots,
+  ownershipOf,
   withCurrentSet,
   withEars,
 } from '@sistemazero/core/avatar'
@@ -51,7 +52,13 @@ export class EquipAvatarService {
     // Uma tela aberta antes da troca de parte da fantasia ainda manda a parte antiga: vira a nova.
     // Só troca o que era antigo; a fantasia pela metade continua recusada (não completa).
     const slots = withCurrentSet(AVATAR_CATALOG, input.slots, { completar: false })
-    assertEquippableConfig({ slots, filter }, new Set(owned))
+    // A peça paga que JÁ está no avatar guardado continua valendo sem estar no inventário (era
+    // grátis quando foi gravada, ou veio na troca de avatar): a pessoa pode mudar o resto sem
+    // perdê-la. Tirou e gravou, volta a precisar comprar. Mesma régua da tela (26/11/2026).
+    const keep = Object.values(atual.slots)
+      .map((id) => ownershipOf(AVATAR_CATALOG, id))
+      .filter((k): k is string => k !== null)
+    assertEquippableConfig({ slots, filter }, new Set([...owned, ...keep]))
     // Personalizado = a pessoa mudou alguma peça. Só responder o filtro (a pergunta da primeira
     // vez) grava o filtro, mas o avatar continua o sorteado: a ação de aula ainda não passa.
     const mudou = !mesmasPecas(withEars(AVATAR_CATALOG, slots), atual.slots)

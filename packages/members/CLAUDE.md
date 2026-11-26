@@ -1,5 +1,81 @@
 # CLAUDE.md — @sistemazero/members
 
+## "Começaram o curso do presente" (25/11/2026, Admin)
+
+`POST /members/admin/course-starts` `{courseSlug, userIds (até 500)}` → `{started}` (staff+, rota
+`members-admin-course-starts` no gateway; curso inexistente 404). A régua de progresso por CONTA
+saiu dos lembretes para `loadCourseAccountProgress` (`course-reminders.repository.ts`: perfil→conta
+pelo `loadOwnerClaims` + a própria conta), que `DrizzleCourseStartsRepository` e os lembretes usam.
+Teste da rota: `tests/integration/course-starts.test.ts`; SQL em `tests/db/course-reminders.repository.test.ts`.
+
+## Oferta de venda do curso para pais (25/11/2026, Lote 6)
+
+`metadata.salesOfferRef` (jsonb, sem migration): o slug da oferta de venda no catálogo que a área
+dos pais vende no curso fechado, pelo mini checkout. DTO do curso `salesOfferRef` (slug ou vazio);
+no PATCH AUSENTE preserva (régua do `studioUnlockBlocks`), `null`/vazio limpa; o create grava pelo
+`buildCourseMetadata`. `CourseView.salesOfferRef` e `CatalogCourseView.salesOfferRef` +
+`description`; o catálogo dos pais (`learner=parents`) traz também `lessonsCount` (aulas publicadas,
+`countPublishedLessonsByCourseIds` numa consulta). O preço NÃO é resolvido aqui: o member-shell lê
+a oferta no catálogo. Testes: fim de `tests/integration/parents-course.test.ts`.
+
+
+
+## Lembretes do curso (25/11/2026)
+
+`SendCourseRemindersService` (`application/renewal-reminder/send-course-reminders.service.ts`) roda
+no MESMO ciclo e advisory lock dos avisos de fim do acesso, com o mesmo quarteto de envs +
+`FUNNEL_URL`. Candidatos (`DrizzleCourseRemindersRepository`): matrícula ATIVA de curso
+(`access_type='course'`), sem `subscription_id`, fora do Desafio (`CHALLENGE_COURSE_REFS`), não
+vencida, de compra única (`source_kind='payment'`) ou presente (`manual` + `scholarship:%`), sem o
+lembrete de conclusão em NENHUMA matrícula da conta para o curso, das mais novas para as mais
+antigas, em páginas de 500 por cursor (o ciclo lê todas, teto de 200 páginas: a matrícula antiga
+não fica sem a vez). O progresso é por CONTA com a posse
+perfil→conta do Desafio (`loadOwnerClaims`, agora exportada) + a própria conta (o guia dos pais).
+Regra pura (`domain/entitlement/course-reminders.ts`, janela de 72 h a partir de quando passa a
+valer; cada lembrete uma vez por matrícula):
+- `course_not_started`: nenhuma atividade nas aulas publicadas, 2 dias depois de `granted_at`;
+- `course_stalled`: começou, não concluiu, 7 dias depois da atividade mais recente (navegação,
+  partes, blocos, tentativas, entregas, posição de vídeo, conclusões);
+- `course_completed`: algum perfil concluiu TODAS as aulas publicadas; logo depois da conclusão.
+Cada lembrete sai uma vez por CONTA e CURSO: `sentKinds` junta os enviados de qualquer matrícula do
+curso (ativa ou não) e o ciclo usa só a primeira matrícula vista de cada conta e curso, mesmo em
+páginas diferentes (`oneCandidatePerCourse` dentro da página).
+Dedupe em `entitlement_lifecycle_messages_sent` (coluna text, sem migration) com
+`expires_on` = a data da concessão. Templates `course-not-started|stalled|completed[-adult]`
+(`nome`, `curso`, `link`; a conclusão também `comunidade` = continuidade com
+`utm_campaign=curso-concluido`). Link: Kids `<KIDS_COMMUNITY_URL>/login/responsavel`, guia dos pais
+`<KIDS_COMMUNITY_URL>/pais/cursos/<slug>`, adulto `<COMMUNITY_URL>/cursos`. SQL conferido no histórico
+real de migrations em `tests/db/course-reminders.repository.test.ts` (`COURSE_REMINDERS_TEST_DATABASE_URL`,
+banco local `kids_journey_*`, declarada no CI). ⚠️ O cursor volta como Date do JS (ms) e `granted_at` tem
+µs: o keyset compara e ordena por `date_trunc('milliseconds', granted_at)`, senão as matrículas do mesmo
+milissegundo da fronteira da página eram PULADAS (achado do banco real, 25/11/2026).
+
+## Lembretes dos cursos para pais (25/11/2026)
+
+Curso para pais (`learner: 'parents'`, Kids) NÃO usa os lembretes da criança: cada um tem os seus
+três e-mails, escritos para o conteúdo dele (`PARENTS_COURSE_TEMPLATES` em
+`send-course-reminders.service.ts`; o guia usa `course-{not-started,stalled,completed}-vilao-em-aliado`).
+Curso para pais novo sem os próprios cai nos neutros `course-*-pais`. Curso novo para pais =
+escrever os três no seed do Messaging e acrescentar o slug no mapa.
+O curso da Vivianne (`como-ajudar-seu-filho-autista-nas-frustracoes`) usa
+`course-{not-started,stalled,completed}-autismo-frustracoes` (25/11/2026).
+
+## Dias de surpresa do prazo divulgado (25/11/2026)
+
+A oferta pode divulgar menos dias que o prazo real (`advertisedAccessDays` no topo de
+`/catalog/offers/:ref/entitlements`). O grant por política de oferta (presente `useOfferAccessPolicy`)
+e o grant de compra gravam `snapshot.advertisedAccessDays` só abaixo de um prazo real em dias
+(`advertisedDaysFor`); o acesso continua o real. `listBonusDaysEntitlements` acha a matrícula de
+CURSO ativa cujo fim divulgado (fim real menos os dias a mais) passou há até 72 h, e o
+`SendAccessEndedMessagesService` manda uma vez `gift-bonus-days` (Kids, ao responsável, link
+`<KIDS_COMMUNITY_URL>/login/responsavel`) ou `gift-bonus-days-adult` (`<COMMUNITY_URL>/cursos`), com
+`nome`, `curso`, `dias` ("8 dias") e `data` (fim real). Dedupe no mesmo
+`entitlement_lifecycle_messages_sent` com `message_kind = 'gift_bonus_days'` (coluna text, sem
+migration). O grant grava também `snapshot.advertisedEndsAt` (fim divulgado calculado do fim
+real DAQUELA concessão): a consulta usa essa data, então estender o acesso depois não move o
+e-mail; os `dias` são os que faltam dela ao fim real de agora. Matrícula sem o campo cai na conta
+antiga (fim real menos a diferença de prazos). Vale para presente e compra de prazo fixo. SQL conferido em
+`tests/db/course-reminders.repository.test.ts` (fim gravado e calculado, janela, dedupe, público).
 ## Aquecer o contêiner do "Verificar projeto" (23/11/2026)
 
 `POST /members/lessons/:lessonId/sections/:sectionId/project-check/warm` `{revision}` →

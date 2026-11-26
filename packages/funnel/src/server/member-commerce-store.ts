@@ -223,7 +223,7 @@ export function createMemberCommerceStore(db: Database): MemberCommerceStore {
                 or(
                   sql`${commerceOriginKey(origin)} = ANY(${memberCheckouts.originKeys})`,
                   sql`${memberCheckouts.origin} = ${JSON.stringify(origin)}::jsonb`,
-                  ...(origin.kind === 'promotion'
+                  ...(origin.kind === 'promotion' || origin.kind === 'offer'
                     ? [eq(memberCheckouts.offerRef, origin.offerRef)]
                     : []),
                 ),

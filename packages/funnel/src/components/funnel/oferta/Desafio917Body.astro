@@ -7,6 +7,7 @@
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-917.css'
 import '../../../styles/desafio-917.css'
+import { origemDoPresente } from '../../../content/presente-curso'
 import { PAGINA_DESAFIO_9A17 as P } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -15,18 +16,27 @@ import { funnelLinkWithAttribution } from '../../../lib/lead-attribution'
 import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
+import { giftVariant } from '../../../server/referral-gift-page'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import DesafioFigura from './DesafioFigura.astro'
 import DesafioIcone from './DesafioIcone.astro'
 import DesafioRelato from './DesafioRelato.astro'
+import OfertaPresente from './OfertaPresente.astro'
 import OfferImage from './OfferImage.astro'
 import OfferImageZoom from './OfferImageZoom.astro'
 import '../../../styles/desafio-pratica.css'
 
 type Props = OfferPageData['bodyProps']
-const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
+const { f, productName, priceReais, ofertaUrl, coupon, presente } = Astro.props
 const preco = precoDoDesafio(priceReais, coupon)
+// Modo presente (`?presente=`): muda só o selo do topo e o bloco de compra (25/11/2026).
+const origem = presente
+  ? origemDoPresente(
+      presente.gift,
+      giftVariant(presente.gift.gift, presente.gift.audience) === 'pais' ? 'pais' : 'curso',
+    )
+  : null
 const fill = (texto: string) => preencherPreco(texto, preco)
 const img = (src: string) => `/img/${src}`
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
@@ -67,7 +77,7 @@ const CAMINHO = [
       <section class="c9-sec c9-heroi" aria-labelledby="d9-titulo" data-analytics-id="desafio-hero">
         <div class="c9-wrap c9-heroi__grade">
           <div class="c9-heroi__texto">
-            <span class="c9-selo">{P.hero.selo}</span>
+            <span class="c9-selo">{origem ?? P.hero.selo}</span>
             <h1 id="d9-titulo" class="c9-h1">{P.hero.titulo}<span class="c9-h1__destaque">{P.hero.destaque}</span></h1>
             <p class="c9-heroi__lead">{P.hero.texto}</p>
             <ul class="c9-checks">
@@ -78,7 +88,7 @@ const CAMINHO = [
                 </li>
               ))}
             </ul>
-            {preco.precoCheio && preco.descontoPct && (
+            {!presente && preco.precoCheio && preco.descontoPct && (
               <div class="d9-desconto">
                 <span class="d9-desconto__selo">Cupom {preco.codigo} · {preco.descontoPct}% de desconto</span>
                 <p class="d9-desconto__preco">De <s>{preco.precoCheio}</s> por <strong>{preco.preco}</strong></p>
@@ -227,7 +237,7 @@ const CAMINHO = [
         <div class="c9-wrap c9-wrap--planos c9-pilha c9-gap-26">
           <div class="c9-pilha c9-gap-12 c9-cabeca--860">
             <h2 id="d9-oferta" class="c9-h2 c9-h2--planos">{P.oferta.titulo}</h2>
-            {preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+            {!presente && preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
           </div>
           <div class="c9-linha c9-gap-24 c9-linha--esticada">
             <ul class="c9-inclui" aria-label={P.oferta.incluiLabel}>
@@ -235,6 +245,9 @@ const CAMINHO = [
                 <li><DesafioIcone nome="check" tamanho={22} /><span>{item}</span></li>
               ))}
             </ul>
+            {presente ? (
+              <OfertaPresente presente={presente} communityUrl={contaUrl.replace(/\/$/, '')} />
+            ) : (
             <article class="c9-plano d9-plano">
               <h3 class="c9-plano__nome">{P.oferta.selo}</h3>
               {preco.precoCheio && preco.descontoPct && <span class="d9-desconto__selo">{preco.descontoPct}% de desconto</span>}
@@ -243,6 +256,7 @@ const CAMINHO = [
               <button type="button" class="c9-plano__btn d9-plano__btn" data-checkout-cta data-analytics-id="desafio-oferta-comprar">{fill(P.cta)}</button>
               <p class="d9-plano__garantia"><DesafioIcone nome="escudo" tamanho={24} /><span>{P.oferta.garantia}</span></p>
             </article>
+            )}
           </div>
           <div class="c9-linha c9-gap-18 c9-linha--esticada">
             <div class="c9-depois">
@@ -292,7 +306,11 @@ const CAMINHO = [
           <div class="c9-pilha c9-gap-14 c9-b520">
             <h2 id="d9-fim" class="c9-h2 c9-h2--fim">{P.fim.titulo}</h2>
             <p class="d9-fim__texto">{fill(P.fim.texto)}</p>
-            <button type="button" class="c9-btn c9-btn--grande c9-btn--amarelo" data-checkout-cta data-analytics-id="desafio-convite-comprar">{P.fim.cta}</button>
+            {presente ? (
+              <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#oferta" data-analytics-id="desafio-convite-presente">{P.fim.cta}</a>
+            ) : (
+              <button type="button" class="c9-btn c9-btn--grande c9-btn--amarelo" data-checkout-cta data-analytics-id="desafio-convite-comprar">{P.fim.cta}</button>
+            )}
           </div>
         </div>
       </section>
@@ -300,7 +318,9 @@ const CAMINHO = [
 
     <div class="kof-mobar c9-barra" data-mobar aria-hidden="true">
       <span class="c9-barra__preco">
-        {preco.precoCheio && preco.descontoPct ? (
+        {origem ? (
+          <strong>{origem}</strong>
+        ) : preco.precoCheio && preco.descontoPct ? (
           <><strong><s class="d9-barra__cheio">{preco.precoCheio}</s>{' '}{preco.preco}</strong><span>{preco.descontoPct}% de desconto</span></>
         ) : (
           <><strong>{preco.preco}</strong><span>{P.barra.sufixo}</span></>
@@ -310,7 +330,7 @@ const CAMINHO = [
     </div>
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+  {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />}
   <OfferImageZoom />
 </BaseLayout>
 

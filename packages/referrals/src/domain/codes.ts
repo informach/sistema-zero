@@ -1,7 +1,11 @@
 import { randomBytes, randomInt } from 'node:crypto'
+import { REFERRAL_CODE_PATTERN } from '@sistemazero/core/referrals'
 
-/** Formato canônico de um código de indicação/bolsa (sempre lower). */
-export const CODE_RE = /^[a-z0-9-]{4,32}$/
+/**
+ * Formato canônico de um código de indicação/bolsa (sempre lower). A fonte é o core, que o
+ * funil também usa para ler o código do link (`sanitizeReferralCode`).
+ */
+export const CODE_RE = REFERRAL_CODE_PATTERN
 
 /**
  * Alfabeto sem caracteres ambíguos (0/o, 1/l/i) — o código é lido em voz alta

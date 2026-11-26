@@ -1,16 +1,14 @@
-// Página pública do guia gratuito para pais "Transformando o vilão em aliado"
-// (`/kids/vilao-em-aliado`; proposta do Canvas aprovada em 21/11/2026). A página é curta e desperta
-// curiosidade: não resume aula nem conta o que o guia ensina (as respostas, as cenas da casa e a
-// história do André ficam nas aulas), e as dúvidas falam só de como fazer o guia. O presente do fim
-// é surpresa: nada aqui diz o que ele é. O cadastro reaproveita o fluxo do presente: a página lê a
-// campanha `CODIGO_DA_CAMPANHA` no referrals e mostra o formulário `BolsaResgate` na variante `guia`
-// (a `pais` com "guia" no lugar de "curso"), já no topo, ao lado do título.
+// Copy aprovada do guia para pais "Transformando o vilão em aliado" (`/kids/vilao-em-aliado`;
+// proposta do Canvas aprovada em 21/11/2026). A página é curta e desperta curiosidade: não resume
+// aula nem conta o que o guia ensina (as respostas, as cenas da casa e a história do André ficam
+// nas aulas), e as dúvidas falam só de como fazer o guia. O presente do fim é surpresa: nada aqui
+// diz o que ele é. Desde 25/11/2026 o guia é pago (funil `kids/vilao-em-aliado`): este texto, o do
+// guia gratuito, é o do modo presente; a venda troca o que falava de "gratuito"
+// (`funnels/vilao-em-aliado/oferta.ts`).
 import type { EstadoPresente, ImagemPresente } from './presente'
 
-/** O curso que a campanha precisa entregar para a página abrir o cadastro. */
+/** O curso do guia no Members. */
 export const CURSO_PAIS_VILAO_SLUG = 'transformando-o-vilao-em-aliado'
-/** Código da campanha Kids (criada no Admin) com a oferta sem prazo do curso. */
-export const CODIGO_DA_CAMPANHA = 'vilao-em-aliado'
 export const CURSO_PAIS_VILAO_PATH = '/kids/vilao-em-aliado'
 
 const IMAGENS = '/img/transformando-o-vilao-em-aliado'
@@ -141,7 +139,7 @@ export const CURSO_PAIS_VILAO = {
       {
         pergunta: 'Por quanto tempo fico com o guia?',
         resposta:
-          'O guia fica na sua conta sem prazo. Você pode rever as aulas e consultar a apostila sempre que quiser.',
+          'Pelo prazo do seu acesso, que aparece no cadastro. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.',
       },
     ],
   },

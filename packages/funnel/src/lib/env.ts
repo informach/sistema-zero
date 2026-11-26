@@ -1,39 +1,4 @@
 import { z } from 'zod'
-import { FUNNEL_KEYS } from '../funnels/registry'
-
-/**
- * Nome DETERMINÍSTICO da env que carrega a oferta de um funil: `FUNNEL_OFFER_<KEY>`,
- * com a chave em maiúsculas e tudo que não é A–Z/0–9 virando `_`. Ex.:
- * `pro/comunidade-dos-criadores` → `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`;
- * `kids/desafio-primeiro-jogo` → `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`.
- */
-export function offerEnvKey(funnelKey: string): string {
-  return `FUNNEL_OFFER_${funnelKey.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}`
-}
-
-/**
- * Mapa `funilKey → offerSlug` lido SÓ das envs (sem fallback no código). Cada funil
- * do registry EXIGE a sua `FUNNEL_OFFER_<KEY>` — faltando uma, LANÇA (fail-fast: o
- * boot/healthcheck do funil falha em vez de cobrar a oferta errada). `lenient` (testes)
- * apenas omite as ausentes.
- */
-function readFunnelOffers(src: Record<string, unknown>, lenient = false): Record<string, string> {
-  const out: Record<string, string> = {}
-  const missing: string[] = []
-  for (const key of FUNNEL_KEYS) {
-    const raw = src[offerEnvKey(key)]
-    const value = typeof raw === 'string' ? raw.trim() : ''
-    if (value) out[key] = value
-    else missing.push(`${offerEnvKey(key)} (funil "${key}")`)
-  }
-  if (!lenient && missing.length > 0) {
-    throw new Error(
-      `Oferta não configurada — defina no Railway: ${missing.join(', ')}. ` +
-        'A oferta de cada funil vem 100% da env (sem fallback no código).',
-    )
-  }
-  return out
-}
 
 /** URL http(s) válida (fail-fast de produção — evita base interna mal formada). */
 function isHttpUrl(value: string): boolean {
@@ -80,10 +45,8 @@ const EnvSchema = z
     // Sentry (erros). Ausente = desligado (dev/local). Projeto sistema-zero-funnel.
     SENTRY_DSN: z.string().optional(),
 
-    // Oferta do funil: vem 100% da env `FUNNEL_OFFER_<KEY>` (uma por funil, obrigatória,
-    // fail-fast — ver `offerEnvKey`/`readFunnelOffers` + `server/offer.ts`). O preço/inclusões
-    // são cotados AO VIVO no catálogo por esse slug. PRODUCT_PRICE_CENTS = só rótulo de fallback
-    // de PREÇO quando a oferta não é encontrada na cotação.
+    // A oferta de cada página vem do catálogo (a principal do produto, `server/page-offer.ts`).
+    // PRODUCT_PRICE_CENTS = só rótulo de fallback de PREÇO quando a oferta não é encontrada.
     PRODUCT_PRICE_CENTS: z.coerce.number().int().positive().default(3700),
     // Admin: a sessão agora é o JWT do auth (IdP) guardado em cookie HttpOnly e
     // validado via gateway `/auth/me` — o funil não guarda credencial/segredo de admin.
@@ -118,23 +81,19 @@ const EnvSchema = z
   })
   .transform((env) => ({ ...env, TRUST_PROXY: env.TRUST_PROXY === 'true' }))
 
-export type Env = z.infer<typeof EnvSchema> & {
-  /** Oferta por funil (`funilKey → offerSlug`), lida SÓ das envs. Ver `server/offer.ts`. */
-  offerByFunnel: Record<string, string>
-}
+export type Env = z.infer<typeof EnvSchema>
 
 let cached: Env | undefined
 
 /** Lê e valida o ambiente uma única vez (cacheado). Lança no boot se faltar algo. */
 export function getEnv(): Env {
   if (!cached) {
-    cached = { ...EnvSchema.parse(process.env), offerByFunnel: readFunnelOffers(process.env) }
+    cached = EnvSchema.parse(process.env)
   }
   return cached
 }
 
 /** Permite injetar um ambiente já validado em testes (sem ler `process.env`). */
 export function setEnvForTests(env: Partial<z.input<typeof EnvSchema>>): void {
-  const merged = { ...process.env, ...env }
-  cached = { ...EnvSchema.parse(merged), offerByFunnel: readFunnelOffers(merged, true) }
+  cached = EnvSchema.parse({ ...process.env, ...env })
 }

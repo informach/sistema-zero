@@ -28,6 +28,32 @@ export class PaymentsHttpClient implements PaymentsClient {
     return createdAt
   }
 
+  async listPaidOfferIds(input: {
+    email: string
+    before: Date
+    excludePaymentId: string
+  }): Promise<string[]> {
+    const query = new URLSearchParams({
+      email: input.email,
+      before: input.before.toISOString(),
+      exclude: input.excludePaymentId,
+    })
+    const res = await fetch(
+      `${this.opts.baseUrl}/payments/internal/customers/paid-offers?${query}`,
+      {
+        headers: this.opts.internalToken ? { 'x-internal-token': this.opts.internalToken } : {},
+        signal: AbortSignal.timeout(this.opts.timeoutMs),
+      },
+    )
+    // Sem a rota (payments antigo) ou fora do ar: falha alta, a entrega volta. Nunca "sem
+    // histórico", que pagaria bônus a quem já assinou antes.
+    if (!res.ok) throw new Error(`payments respondeu ${res.status}`)
+    const body = (await res.json()) as Record<string, unknown>
+    if (!Array.isArray(body.offerIds) || body.offerIds.some((id) => typeof id !== 'string'))
+      throw new Error('payments: offerIds ausente/inválido na resposta')
+    return body.offerIds as string[]
+  }
+
   async getPayment(paymentId: string): Promise<PaymentSnapshot | null> {
     const res = await fetch(
       `${this.opts.baseUrl}/payments/internal/payments/${encodeURIComponent(paymentId)}`,

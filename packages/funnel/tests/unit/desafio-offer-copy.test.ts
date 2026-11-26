@@ -27,7 +27,6 @@ import {
   isDesafioOfertaAntiga,
 } from '../../src/funnels/desafio-primeiro-jogo/offer'
 import { FUNNELS, getFunnel, isDesafioFunnel } from '../../src/funnels/registry'
-import { offerEnvKey } from '../../src/lib/env'
 
 // As páginas de oferta do Desafio do Primeiro Jogo: a Kids, de 5 a 17 anos
 // (`/kids/desafio-primeiro-jogo/oferta`, a única Kids desde 13/11/2026, quando a "criar junto" saiu)
@@ -152,15 +151,8 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     )
   })
 
-  test('a oferta vem da env, declarada no Railway e no exemplo', () => {
-    const env = offerEnvKey(DESAFIO_ADULTO.key)
-    expect(env).toBe('FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO')
-    expect(readFileSync(join(ROOT, '..', '..', '.railway', 'variables.ts'), 'utf8')).toContain(
-      `'${env}'`,
-    )
-    expect(readFileSync(join(ROOT, '.env.example'), 'utf8')).toContain(
-      `${env}=desafio-primeiro-jogo-adulto-30-dias`,
-    )
+  test('a oferta vem da principal do produto no catálogo (sem env)', () => {
+    expect(DESAFIO_ADULTO.productSku).toBe('desafio-primeiro-jogo-adulto')
   })
 
   test('a faixa do Kids é 5 a 17 na página e no SEO; o Termo segue a versão de 21/10', () => {
@@ -223,7 +215,7 @@ describe.each(Object.entries(PAGINAS))('página %s', (nome, { modulo, corpo }) =
   test('CTA de compra, pré-checkout com cupom, Termo da oferta e nenhum <style>', () => {
     expect(corpo.match(/data-checkout-cta/g)?.length).toBe(nome === 'adulto' ? 1 : 2)
     expect(corpo).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />',
+      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />',
     )
     expect(corpo).toContain('const preco = precoDoDesafio(priceReais, coupon)')
     expect(corpo).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
@@ -302,7 +294,7 @@ describe('preço do catálogo', () => {
 
   test('o topo, o cartão e a barra do celular mostram o desconto só com cupom válido', () => {
     const corpo = PAGINAS['9a17'].corpo
-    expect(corpo).toContain('{preco.precoCheio && preco.descontoPct && (')
+    expect(corpo).toContain('{!presente && preco.precoCheio && preco.descontoPct && (')
     expect(corpo).toContain(
       '<span class="d9-desconto__selo">Cupom {preco.codigo} · {preco.descontoPct}% de desconto</span>',
     )

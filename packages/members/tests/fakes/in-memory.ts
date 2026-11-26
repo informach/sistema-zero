@@ -817,6 +817,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const {
       version: _version,
       salesPageUrl,
+      salesOfferRef,
       studioUnlockBlocks,
       audience,
       sequentialLock,
@@ -836,6 +837,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     // currículo do Estúdio se perdia no create, quando em produção (Drizzle) ele grava.
     const metadata: Record<string, unknown> = {}
     if (salesPageUrl) metadata.salesPageUrl = salesPageUrl
+    if (salesOfferRef) metadata.salesOfferRef = salesOfferRef
     const blocks = (studioUnlockBlocks ?? [])
       .map((type) => type.trim())
       .filter((type) => type.length > 0)

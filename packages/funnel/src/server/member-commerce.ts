@@ -4,12 +4,15 @@ import {
   CommerceCatalogOfferSchema,
   CommerceOriginSchema,
 } from '@sistemazero/core/commerce'
+import { sanitizeOriginPlace } from '@sistemazero/core/referrals'
 import { z } from 'zod'
 import type { FunnelRepo } from '../db/repo'
 import { computeFixedAccessExpiry, fixedAccessFromSnapshot } from '../lib/access-period'
+import { CouponCodeSchema } from '../lib/checkout-schema'
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
 import { safeEqual } from '../lib/safe-equal'
+import { resolveCharge } from './catalog'
 import type { CheckoutDeps } from './checkout'
 import { chargeMemberCheckout } from './member-commerce-charge'
 import { memberCheckoutState } from './member-commerce-state'
@@ -30,6 +33,8 @@ const inputSchema = z.strictObject({
     .regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/)
     .optional(),
   checkoutId: z.uuid().optional(),
+  /** O botão da plataforma (`pais-inicio`, `pais-curso-fechado`, `aula`...): o BFF deriva da origem. */
+  place: z.string().max(48).optional(),
   data: z.record(z.string(), z.unknown()).optional(),
 })
 export interface MemberCommerceDeps {
@@ -40,7 +45,7 @@ export interface MemberCommerceDeps {
   checkout: Omit<CheckoutDeps, 'repo' | 'gateway' | 'resolveOffer'>
   funnelUrl: string
   termsForOffer: (offer: CommerceCatalogOffer, audience: 'kids' | 'adult') => CheckoutTerms | null
-  defaultOfferRef?: (audience: 'kids' | 'adult') => string | undefined
+  defaultOfferRef?: (audience: 'kids' | 'adult') => string | undefined | Promise<string | undefined>
 }
 
 /** Entrada S2S: identidade e oferta vêm do BFF, depois de conferir sessão e origem publicada. */
@@ -53,12 +58,22 @@ export async function handleMemberCommerce(
   if (!token || !deps.internalToken || !safeEqual(token, deps.internalToken))
     return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
   if (
-    !['inspect', 'recover', 'pending', 'pay', 'status', 'restart', 'default-offer'].includes(action)
+    ![
+      'inspect',
+      'recover',
+      'pending',
+      'pay',
+      'status',
+      'restart',
+      'default-offer',
+      'quote',
+    ].includes(action)
   )
     return jsonError('Ação inválida.', 404, 'NOT_FOUND')
   const parsed = inputSchema.safeParse(await safeJson(request))
   if (!parsed.success) return jsonError('Pedido inválido.', 400, 'BAD_REQUEST')
   const input = parsed.data
+  const place = sanitizeOriginPlace(input.place)
   if (action === 'pending') {
     const rows = await deps.store.pending(input.account.userId, input.account.audience)
     return json({
@@ -70,7 +85,7 @@ export async function handleMemberCommerce(
     })
   }
   if (action === 'default-offer') {
-    const ref = deps.defaultOfferRef?.(input.account.audience)
+    const ref = await deps.defaultOfferRef?.(input.account.audience)
     if (!ref) return jsonError('Oferta não configurada.', 503, 'OFFER_UNAVAILABLE')
     const response = await deps.gateway.getOffer(ref)
     const parsedOffer = CommerceCatalogOfferSchema.safeParse(response.body)
@@ -155,6 +170,7 @@ export async function handleMemberCommerce(
       checkoutDeps(owned),
       deps.store,
       deps.funnelUrl,
+      place,
     )
   const found = await deps.gateway.getOffer(input.offerRef ?? owned?.offerRef ?? '')
   const offerParsed = CommerceCatalogOfferSchema.safeParse(found.body)
@@ -163,6 +179,7 @@ export async function handleMemberCommerce(
   const offer = offerParsed.data
   if (offer.product.audience !== input.account.audience || offer.product.status !== 'active')
     return jsonError('Oferta não disponível.', 404, 'OFFER_UNAVAILABLE')
+  if (action === 'quote') return quoteMemberOffer(deps, offer, input.data?.couponCode)
   const terms = offer.content?.checkoutTerms ?? deps.termsForOffer(offer, input.account.audience)
   if (!terms)
     return jsonError(
@@ -262,6 +279,7 @@ export async function handleMemberCommerce(
       checkoutDeps({ ...checkout, presentation }),
       deps.store,
       deps.funnelUrl,
+      place,
     )
   return memberCheckoutState(
     checkout,
@@ -271,4 +289,36 @@ export async function handleMemberCommerce(
     deps.funnelUrl,
     checkout.pendingRequest ? checkout.presentation : presentation,
   )
+}
+
+/**
+ * O cupom do mini checkout (25/11/2026): a cotação autoritativa do catálogo, nunca do navegador.
+ * Assinatura não aceita cupom (o valor cotado viraria o de todos os ciclos), nem oferta sem a marca
+ * `allowsCoupon`. O valor final volta como `expectedPriceCents` no pagamento.
+ */
+async function quoteMemberOffer(
+  deps: MemberCommerceDeps,
+  offer: CommerceCatalogOffer,
+  raw: unknown,
+): Promise<Response> {
+  if (!offer.isAvailable)
+    return jsonError(
+      'Esta oferta não está disponível para novas compras.',
+      410,
+      'OFFER_UNAVAILABLE',
+    )
+  if (offer.pricingMode === 'subscription' || offer.content?.allowsCoupon !== true)
+    return jsonError('Esta oferta não aceita cupom.', 422, 'COUPON_NOT_ALLOWED')
+  const code = CouponCodeSchema.safeParse(typeof raw === 'string' ? raw.trim() : raw)
+  if (!code.success || !code.data)
+    return jsonError('Confira o código do cupom.', 422, 'INVALID_COUPON')
+  const charge = await resolveCharge(deps.gateway, offer.slug, code.data)
+  if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
+  return json({
+    offerSlug: offer.slug,
+    listPriceCents: charge.listPriceCents,
+    discountCents: charge.discountCents,
+    finalPriceCents: charge.amountInCents,
+    couponCode: charge.couponCode,
+  })
 }

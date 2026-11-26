@@ -18,6 +18,22 @@ function comOrigem(base: string, origem: string): string {
 }
 
 /**
+ * O botão da plataforma que levou à página de venda (`?lugar=`, 25/11/2026): o funil grava o
+ * lugar no cookie de origem e ele chega à Origem das vendas no Admin. Endereço que não é URL
+ * completa volta como veio.
+ */
+export type PlatformPlace = 'crianca-curso-fechado' | 'crianca-produto-fechado'
+export function comLugar(href: string, lugar: PlatformPlace): string {
+  try {
+    const url = new URL(href)
+    url.searchParams.set('lugar', lugar)
+    return url.href
+  } catch {
+    return href
+  }
+}
+
+/**
  * A página de continuidade da Comunidade dos Criadores Kids, com a tela de origem no
  * `utm_content` (ex.: `ferramenta-pinta`, `pais-assinatura`).
  */

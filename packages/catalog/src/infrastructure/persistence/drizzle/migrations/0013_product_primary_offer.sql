@@ -1,0 +1,1 @@
+ALTER TABLE "catalog"."products" ADD COLUMN "primary_offer_id" uuid;

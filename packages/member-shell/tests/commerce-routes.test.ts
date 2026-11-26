@@ -1,9 +1,13 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import type { CommerceBlock, CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import type { CommerceAccess } from '../src/lib/commerce-eligibility'
 import type { SessionUser } from '../src/lib/types'
 import { type CommerceRouteDeps, createCommerceRoutes } from '../src/routes/commerce'
 import type { CallOpts, GatewayResponse } from '../src/server/gateway'
+import { clearPrimaryOfferCache } from '../src/server/page-sellable'
+
+// A oferta principal fica 60 s na memória do processo: cada teste começa sem ela.
+beforeEach(() => clearPrimaryOfferCache())
 
 const accountId = '10000000-0000-4000-8000-000000000001'
 const lessonId = '20000000-0000-4000-8000-000000000001'
@@ -62,6 +66,12 @@ function setup() {
   let access: CommerceAccess[] = []
   let recovery: { status: number; body: unknown } = { status: 404, body: null }
   const calls: { path: string; body: unknown }[] = []
+  const reads: string[] = []
+  const offers = new Map<string, CommerceCatalogOffer>()
+  let product: { status: number; primaryOfferSlug: string | null } = {
+    status: 200,
+    primaryOfferSlug: offer.slug,
+  }
   const deps: CommerceRouteDeps = {
     audience: 'kids',
     session: { getSession: async () => user },
@@ -88,7 +98,13 @@ function setup() {
     },
     gateway: {
       async gatewayFetch<T>(path: string) {
-        if (path.startsWith('/catalog/offers/')) return reply<T>(offer)
+        reads.push(path)
+        if (path.startsWith('/catalog/offers/')) {
+          const slug = decodeURIComponent(path.slice('/catalog/offers/'.length))
+          return reply<T>(offers.get(slug) ?? offer)
+        }
+        if (path.startsWith('/catalog/products/by-sku/'))
+          return reply<T>({ primaryOfferSlug: product.primaryOfferSlug }, product.status)
         if (path === '/catalog/member-promotions') return reply<T>({ items: [] })
         return reply<T>({ items: access }, accessStatus)
       },
@@ -102,6 +118,8 @@ function setup() {
           })
         if (path.endsWith('/recover')) return reply<T>(recovery.body, recovery.status)
         if (path.endsWith('/default-offer')) return reply<T>({ offer })
+        if (path.endsWith('/quote'))
+          return reply<T>({ listPriceCents: 2700, discountCents: 700, finalPriceCents: 2000 })
         if (path.includes('member-gifts'))
           return reply<T>({
             gift: {
@@ -126,6 +144,13 @@ function setup() {
       recovery = { status, body }
     },
     calls,
+    reads,
+    addOffer: (value: CommerceCatalogOffer) => {
+      offers.set(value.slug, value)
+    },
+    setProduct: (status: number, primaryOfferSlug: string | null) => {
+      product = { status, primaryOfferSlug }
+    },
     setUser: (value: SessionUser | null) => {
       user = value
     },
@@ -345,5 +370,195 @@ describe('blocos e cards comerciais autenticados', () => {
     expect(body.items[0].origin).toEqual({ kind: 'community' })
     expect(body.items[0].offerRef).toBe(offer.slug)
     expect(q.calls[0]?.path).toBe('/funnel/internal/commerce/default-offer')
+  })
+})
+
+describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
+  const guia: CommerceCatalogOffer = {
+    ...offer,
+    id: '40000000-0000-4000-8000-000000000010',
+    slug: 'guia-pais-1-ano',
+    name: 'Transformando o vilão em aliado',
+    priceCents: 2700,
+    pricingMode: 'one_time',
+    billingIntervalMonths: null,
+    installmentsMax: 3,
+    accessMode: 'fixed',
+    accessDurationValue: 12,
+    accessDurationUnit: 'months',
+    product: { ...offer.product, id: '50000000-0000-4000-8000-000000000010', sku: 'GUIA' },
+    content: { allowsCoupon: true },
+  }
+  const fromCourse = { kind: 'offer', offerRef: guia.slug }
+  const funnelCall = (q: ReturnType<typeof setup>, action: string) =>
+    q.calls.find((c) => c.path === `/funnel/internal/commerce/${action}`)?.body as
+      | Record<string, unknown>
+      | undefined
+  test('a página do curso vende a oferta principal do produto, com o lugar do botão', async () => {
+    const q = setup()
+    q.addOffer(guia)
+    q.setProduct(200, guia.slug)
+    const response = await q.routes.commerce.POST(
+      request({ action: 'inspect', origin: fromCourse }),
+    )
+    expect(response.status).toBe(200)
+    expect(funnelCall(q, 'inspect')).toMatchObject({
+      offerRef: guia.slug,
+      origin: fromCourse,
+      place: 'pais-curso-fechado',
+    })
+    expect(q.reads).toContain('/catalog/products/by-sku/GUIA')
+  })
+  test('oferta que não é a principal nem marcada para a página não abre à venda', async () => {
+    const q = setup()
+    q.addOffer(guia)
+    q.setProduct(200, 'guia-pais-presente')
+    const refused = await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse }))
+    expect(refused.status).toBe(404)
+    expect(funnelCall(q, 'inspect')).toBeUndefined()
+    // A principal fica 60 s na memória: o catálogo fora só aparece numa leitura nova.
+    clearPrimaryOfferCache()
+    q.setProduct(503, null)
+    expect(
+      (await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse }))).status,
+    ).toBe(503)
+    q.addOffer({ ...guia, content: { allowsCoupon: true, pageSellable: true } })
+    expect(
+      (await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse }))).status,
+    ).toBe(200)
+  })
+  test('o lugar vem da lista do público; outro valor vira o lugar padrão da origem', async () => {
+    const q = setup()
+    q.addOffer(guia)
+    q.setProduct(200, guia.slug)
+    await q.routes.commerce.POST(
+      request({ action: 'inspect', origin: fromCourse, place: 'pais-cursos' }),
+    )
+    expect(funnelCall(q, 'inspect')?.place).toBe('pais-cursos')
+    q.calls.length = 0
+    await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse, place: 'admin' }))
+    expect(funnelCall(q, 'inspect')?.place).toBe('pais-curso-fechado')
+    q.calls.length = 0
+    await q.routes.commerce.POST(request({ action: 'inspect', origin: { kind: 'community' } }))
+    expect(funnelCall(q, 'inspect')?.place).toBe('pais-inicio')
+    q.calls.length = 0
+    q.setBlock({ kind: 'purchase', offerRef: guia.slug })
+    await q.routes.commerce.POST(request({ action: 'inspect', origin, place: 'pais-inicio' }))
+    expect(funnelCall(q, 'inspect')?.place).toBe('aula')
+  })
+  test('os dois planos voltam juntos e a troca só aceita a irmã do mesmo produto', async () => {
+    const q = setup()
+    const anual: CommerceCatalogOffer = {
+      ...offer,
+      id: '40000000-0000-4000-8000-000000000002',
+      slug: 'comunidade-anual',
+      priceCents: 97000,
+      billingIntervalMonths: 12,
+    }
+    q.addOffer({ ...offer, content: { altOffer: { slug: anual.slug } } })
+    q.addOffer(anual)
+    q.addOffer(guia)
+    const community = { kind: 'community' }
+    const first = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: community }))
+    ).json()
+    expect(first.plans.map((p: CommerceCatalogOffer) => p.slug)).toEqual([offer.slug, anual.slug])
+    q.calls.length = 0
+    const switched = await (
+      await q.routes.commerce.POST(
+        request({ action: 'inspect', origin: community, offerRef: anual.slug }),
+      )
+    ).json()
+    expect(funnelCall(q, 'inspect')?.offerRef).toBe(anual.slug)
+    expect(switched.plans.map((p: CommerceCatalogOffer) => p.slug)).toEqual([
+      anual.slug,
+      offer.slug,
+    ])
+    q.calls.length = 0
+    const forged = await q.routes.commerce.POST(
+      request({ action: 'inspect', origin: community, offerRef: guia.slug }),
+    )
+    expect(forged.status).toBe(404)
+    expect(funnelCall(q, 'inspect')).toBeUndefined()
+  })
+  test('revisão: o alternador aparece quando só a irmã aponta para a oferta da origem', async () => {
+    const q = setup()
+    // A mensal (a da origem) não aponta para ninguém; a anual, principal do produto, aponta para ela.
+    const anual: CommerceCatalogOffer = {
+      ...offer,
+      id: '40000000-0000-4000-8000-000000000002',
+      slug: 'comunidade-anual',
+      priceCents: 97000,
+      billingIntervalMonths: 12,
+      content: { altOffer: { slug: offer.slug } },
+    }
+    q.addOffer(offer)
+    q.addOffer(anual)
+    q.setProduct(200, anual.slug)
+    const body = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: { kind: 'community' } }))
+    ).json()
+    expect(body.plans.map((p: CommerceCatalogOffer) => p.slug)).toEqual([offer.slug, anual.slug])
+    // A principal que aponta para OUTRA oferta não vira o segundo plano.
+    q.addOffer({ ...anual, content: { altOffer: { slug: 'outra' } } })
+    const lone = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: { kind: 'community' } }))
+    ).json()
+    expect(lone.plans).toBeUndefined()
+  })
+  test('revisão do Lote 7: catálogo fora não vira a leitura de uma oferta chamada "unavailable"', async () => {
+    const q = setup()
+    clearPrimaryOfferCache()
+    q.addOffer(offer)
+    q.setProduct(503, null)
+    const res = await q.routes.commerce.POST(
+      request({ action: 'inspect', origin: { kind: 'community' } }),
+    )
+    expect(res.status).toBeLessThan(500)
+    expect(q.reads).not.toContain('/catalog/offers/unavailable')
+  })
+  test('revisão: trocar de plano nunca abre a compra em andamento de outro plano', async () => {
+    const q = setup()
+    const anual: CommerceCatalogOffer = {
+      ...offer,
+      id: '40000000-0000-4000-8000-000000000002',
+      slug: 'comunidade-anual',
+      priceCents: 97000,
+      billingIntervalMonths: 12,
+    }
+    q.addOffer({ ...offer, content: { altOffer: { slug: anual.slug } } })
+    q.addOffer(anual)
+    q.setRecovery(200, { checkoutId: '60000000-0000-4000-8000-000000000009', offer })
+    const community = { kind: 'community' }
+    const switched = await (
+      await q.routes.commerce.POST(
+        request({ action: 'inspect', origin: community, offerRef: anual.slug }),
+      )
+    ).json()
+    expect(q.calls.some((c) => c.path.endsWith('/recover'))).toBe(false)
+    expect(funnelCall(q, 'inspect')?.offerRef).toBe(anual.slug)
+    expect(switched.checkoutId).toBe('60000000-0000-4000-8000-000000000001')
+    // Sem escolha de plano, a compra em andamento continua vindo primeiro.
+    q.calls.length = 0
+    const reopened = await (
+      await q.routes.commerce.POST(request({ action: 'inspect', origin: community }))
+    ).json()
+    expect(reopened.checkoutId).toBe('60000000-0000-4000-8000-000000000009')
+  })
+  test('o cupom é cotado pelo funil, sem chamar o catálogo pelo BFF', async () => {
+    const q = setup()
+    q.addOffer(guia)
+    q.setProduct(200, guia.slug)
+    const response = await q.routes.commerce.POST(
+      request({ action: 'quote', origin: fromCourse, data: { couponCode: 'PAIS10' } }),
+    )
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body).toEqual({ listPriceCents: 2700, discountCents: 700, finalPriceCents: 2000 })
+    expect(funnelCall(q, 'quote')).toMatchObject({
+      offerRef: guia.slug,
+      data: { couponCode: 'PAIS10' },
+    })
+    expect(q.reads.some((r) => r.includes('/quote'))).toBe(false)
   })
 })

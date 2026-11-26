@@ -143,6 +143,43 @@ test('recarregar e matar a aba no meio da migração nunca deixa projeto pela me
 
   const counts: number[] = []
   let current = page
+  if (browserName === 'webkit') {
+    // No WebKit rápido, os atrasos abaixo podem observar só zero ou todos os projetos.
+    // Observar o commit nativo do primeiro projeto e recarregar nesse ponto garante
+    // uma interrupção real, sem atrasar, bloquear ou substituir a persistência.
+    await context.addInitScript(
+      ({ origin, metaKey }) => {
+        const marker = 'qa-migration-interruption-observed'
+        if (
+          location.origin !== origin ||
+          location.pathname !== '/' ||
+          sessionStorage.getItem(marker)
+        )
+          return
+        const originalPut = IDBObjectStore.prototype.put
+        let observed = false
+        IDBObjectStore.prototype.put = function (this: IDBObjectStore, ...args) {
+          const request = originalPut.apply(this, args)
+          if (!observed && args[1] === metaKey) {
+            observed = true
+            this.transaction.addEventListener(
+              'complete',
+              () => {
+                sessionStorage.setItem(marker, '1')
+                location.replace('/favicon.svg')
+              },
+              { once: true },
+            )
+          }
+          return request
+        }
+      },
+      { origin: new URL(page.url()).origin, metaKey: projectMetaKey(projects[0]!.id, 4) },
+    )
+    await current.goto('/', { waitUntil: 'commit' })
+    await current.waitForURL('**/favicon.svg', { timeout: 60_000 })
+    counts.push(await observe(current, 'recarga após o primeiro commit nativo'))
+  }
   const delays = [120, 260, 420, 600, 850, 1200, 1700, 2400]
   for (const [round, delay] of delays.entries()) {
     await throttle(current)

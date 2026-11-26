@@ -435,6 +435,8 @@ export interface CourseView {
   coverImageUrl: string | null
   /** Página de vendas (funil) — destino do cadeado no catálogo do community. */
   salesPageUrl: string | null
+  /** A oferta de venda do curso para pais (25/11/2026); ausente em members antigo. */
+  salesOfferRef?: string | null
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience
@@ -1061,6 +1063,16 @@ export interface OfferContent {
   /** Teto de PERFIS (estilo Netflix) DESTA oferta — plataforma Kids. Inteiro 1..50. */
   maxProfiles?: number
   /**
+   * Prazo DIVULGADO em dias (25/11/2026): o que página e e-mails mostram, menor que a duração
+   * real (prazo fixo em dias). A diferença chega de surpresa por e-mail.
+   */
+  advertisedAccessDays?: number
+  /**
+   * Pode ser vendida na página do produto (25/11/2026): além da oferta principal e da irmã do
+   * alternador, o funil só vende pelo `?oferta=` as ofertas com esta marca.
+   */
+  pageSellable?: boolean
+  /**
    * OFERTA IRMÃ do alternador do checkout (mensal ↔ anual): `slug` = a oferta alvo
    * (o funil valida o slug escolhido contra este link); `label` = texto do alternador.
    */
@@ -1089,6 +1101,8 @@ export interface ProductView {
   fulfillment: FulfillmentSpec | null
   metadata: Record<string, unknown> | null
   components: ProductComponentView[]
+  /** Oferta principal da página de venda (25/11/2026); null = página sem oferta à venda. */
+  primaryOfferId?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -1460,6 +1474,11 @@ export interface AmbassadorListItemView {
   invitesSent: number
   linkEmailSentAt: string | null
   createdAt: string
+  /**
+   * O que a pessoa trouxe nesta comunidade, contando as campanhas ligadas a ela (25/11/2026).
+   * `revenueCents` é `null` para quem não é admin; ausente em referrals anterior.
+   */
+  results?: import('@sistemazero/core/referrals').OriginResults
 }
 
 export type ConversionStatus =
@@ -1504,6 +1523,8 @@ export interface ConversionAdminView {
   paidMarkedAt: string | null
   paidMarkedBy: string | null
   note: string | null
+  /** O embaixador do bônus (o "Veio por" casa por ele; ausente no referrals anterior). */
+  ambassadorId?: string | null
   ambassadorName: string | null
   ambassadorEmail: string | null
   ambassadorPixKey: string | null

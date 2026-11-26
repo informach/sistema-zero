@@ -77,8 +77,13 @@ export function parseGiftOffer(raw: unknown): ReferralGiftOfferView | undefined 
   )
     return null
   const courseTitle = typeof gift.courseTitle === 'string' ? gift.courseTitle.trim() : ''
+  const slug =
+    typeof gift.offerSlug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(gift.offerSlug)
+      ? gift.offerSlug
+      : undefined
   return {
     offerId: gift.offerId,
+    ...(slug ? { offerSlug: slug } : {}),
     offerTitle: gift.offerTitle.trim(),
     courseSlug: (gift.courseSlug as string | null) || null,
     courseTitle: courseTitle || null,
@@ -110,10 +115,12 @@ export type ReferralGiftPage =
 export async function resolveReferralGiftPage(
   gateway: Pick<GatewayClient, 'resolveReferralCode'>,
   code: string,
+  /** O presente escolhido pelo embaixador (a página da oferta no modo presente). */
+  chosenOffer?: string | null,
 ): Promise<ReferralGiftPage> {
   if (!/^[a-z0-9-]{4,32}$/.test(code)) return { kind: 'not_found' }
 
-  const result = await gateway.resolveReferralCode(code)
+  const result = await gateway.resolveReferralCode(code, chosenOffer)
   if (result.status === 404) return { kind: 'not_found' }
   if (result.status !== 200) return { kind: 'unavailable' }
 

@@ -3,7 +3,7 @@
 // (ComunidadeAdultoOfertaBody, tema arcade); a /oferta
 // despacha pelo body deste funil via `f.key`.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES` aponta a oferta MENSAL
+// Oferta no catálogo: a principal do produto (marcada no Admin) aponta a oferta MENSAL
 // (`comunidade-dos-criadores-adulto-mensal`, criada pelo seed do catálogo); a ANUAL é a irmã
 // ligada por `altOffer` (alternador do checkout). A landing `/pro` abre esta Comunidade.
 
@@ -27,6 +27,7 @@ export const COMUNIDADE_ADULTO: FunnelDef = {
   productName: 'Comunidade dos Criadores',
   chargeName: 'Comunidade dos Criadores (adultos)',
   productSku: 'comunidade-dos-criadores-adulto',
+  apelido: 'comunidade',
   imagesBase: '/img/comunidade-adulto',
   checkoutImage: 'checkout-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',

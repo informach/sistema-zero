@@ -12,10 +12,12 @@ import {
   type RedeemOptions,
   RedeemScholarshipService,
 } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
+import { giftAcquisition } from '../../src/domain/acquisition'
 import { CampaignAudienceLockedError, CampaignValidationError } from '../../src/domain/campaign'
 import { isMuralTrialGranted, offerGiftAudience } from '../../src/domain/gift-policy'
 import type { PaymentSnapshot } from '../../src/domain/ports/clients.port'
 import type { SendEmailInput } from '../../src/domain/ports/gateway.port'
+import { InMemoryAcquisitionRepository } from '../fakes/acquisitions'
 import { InMemoryCampaignRepository } from '../fakes/campaigns'
 import {
   ADULT_GIFT_OFFER,
@@ -560,96 +562,87 @@ describe('presente adulto: conversões', () => {
     amountInCents: 4700n,
     paidAt: PAID_AT,
     customer: { email: 'ana@example.com' },
-    metadata: { offerId: 'offer-adulto' },
+    metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000ad', billingAudience: 'adult' },
     subscriptionId: null,
   }
+  const DEFAULTS = { amounts: null, legacyCents: 3000, windowDays: 45 }
 
-  test('assinatura adulta credita o resgate adulto do e-mail', async () => {
-    const repo = new InMemoryReferralRepository()
-    const { ambassador, code, adultCode } = await seedAmbassador(repo)
-    for (const [codeId, audience] of [
-      [code.id, 'kids'],
-      [adultCode.id, 'adult'],
-    ] as const) {
-      const { redemption } = await repo.insertRedemption({
-        codeId,
-        audience,
-        email: 'ana@example.com',
-        name: 'Ana',
-        phone: null,
-      })
-      await repo.markRedemptionGranted(redemption.id, PAID_AT)
-      redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
-    }
-    const service = new RecordConversionService(
+  function serviceFor(repo: InMemoryReferralRepository, slugs: string[]) {
+    return new RecordConversionService(
       repo,
+      new InMemoryAcquisitionRepository(repo),
+      new InMemoryCampaignRepository(repo),
       {
         getPayment: async () => payment,
         getSubscriptionCreatedAt: async () => null,
+        listPaidOfferIds: async () => [],
       },
       {
         getOfferById: async () => ({
-          id: 'offer-adulto',
+          id: '0ffe0000-0000-4000-8000-0000000000ad',
           slug: 'comunidade-dos-criadores-adulto-mensal',
           name: 'Comunidade adulta',
+          audience: 'adult',
         }),
       },
-      {
-        conversionOfferSlugs: [
-          'comunidade-dos-criadores-mensal',
-          'comunidade-dos-criadores-adulto-mensal',
-        ],
-        bonusAmountCents: 3000,
-        matureHours: 180,
-      },
+      { conversionOfferSlugs: slugs, bonusAmountCents: 3000, matureHours: 180 },
       silentLogger,
     )
-    const out = await service.execute({
-      deliveryId: 'd-1',
-      eventName: 'payment.paid',
-      payload: { paymentId: 'pay-adulto' },
-    })
-    expect(out.kind).toBe('ok')
-    const adultRedemption = repo.redemptions.find((r) => r.audience === 'adult')!
-    expect(repo.conversions).toHaveLength(1)
-    expect(repo.conversions[0]).toMatchObject({
-      redemptionId: adultRedemption.id,
-      codeId: adultCode.id,
-      ambassadorId: ambassador.id,
-      status: 'pending',
-      bonusCents: 3000,
-    })
-  })
+  }
 
-  test('sem resgate do público da oferta, conta o resgate do outro público', async () => {
-    const repo = new InMemoryReferralRepository()
-    const { code } = await seedAmbassador(repo)
+  /** O presente concluído vira aquisição, como o resgate faz. */
+  async function giftFor(
+    repo: InMemoryReferralRepository,
+    codeId: string,
+    audience: 'kids' | 'adult',
+  ) {
     const { redemption } = await repo.insertRedemption({
-      codeId: code.id,
-      audience: 'kids',
+      codeId,
+      audience,
       email: 'ana@example.com',
       name: 'Ana',
       phone: null,
     })
     await repo.markRedemptionGranted(redemption.id, PAID_AT)
     redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
-    const service = new RecordConversionService(
-      repo,
-      { getPayment: async () => payment, getSubscriptionCreatedAt: async () => null },
-      {
-        getOfferById: async () => ({
-          id: 'offer-adulto',
-          slug: 'comunidade-dos-criadores-adulto-mensal',
-          name: 'Comunidade adulta',
-        }),
-      },
-      {
-        conversionOfferSlugs: ['comunidade-dos-criadores-adulto-mensal'],
-        bonusAmountCents: 3000,
-        matureHours: 180,
-      },
-      silentLogger,
+    const code = repo.codes.find((c) => c.id === codeId)!
+    await new InMemoryAcquisitionRepository(repo).insert(
+      giftAcquisition(redemption, code, redemption.createdAt, DEFAULTS),
     )
+    return redemption
+  }
+
+  test('assinatura adulta credita o presente adulto do e-mail', async () => {
+    const repo = new InMemoryReferralRepository()
+    const { ambassador, code, adultCode } = await seedAmbassador(repo)
+    await giftFor(repo, code.id, 'kids')
+    const adultRedemption = await giftFor(repo, adultCode.id, 'adult')
+    const service = serviceFor(repo, [
+      'comunidade-dos-criadores-mensal',
+      'comunidade-dos-criadores-adulto-mensal',
+    ])
+    const out = await service.execute({
+      deliveryId: 'd-1',
+      eventName: 'payment.paid',
+      payload: { paymentId: 'pay-adulto' },
+    })
+    expect(out.kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(1)
+    expect(repo.conversions[0]).toMatchObject({
+      redemptionId: adultRedemption.id,
+      codeId: adultCode.id,
+      ambassadorId: ambassador.id,
+      audience: 'adult',
+      status: 'pending',
+      bonusCents: 3000,
+    })
+  })
+
+  test('sem presente do público da oferta, conta o presente do outro público', async () => {
+    const repo = new InMemoryReferralRepository()
+    const { code } = await seedAmbassador(repo)
+    const redemption = await giftFor(repo, code.id, 'kids')
+    const service = serviceFor(repo, ['comunidade-dos-criadores-adulto-mensal'])
     await service.execute({
       deliveryId: 'd-2',
       eventName: 'payment.paid',

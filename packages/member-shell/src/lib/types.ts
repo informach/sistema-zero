@@ -202,6 +202,14 @@ export interface CatalogCourseView {
   milestones?: CourseMilestonesView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
+  /**
+   * A oferta de venda do curso no catálogo (25/11/2026): a área dos pais vende o curso fechado
+   * por ela, no mini checkout. Ausente/`null` = sem venda na plataforma (members antigo também).
+   */
+  salesOfferRef?: string | null
+  description?: string | null
+  /** Aulas publicadas; só no catálogo dos cursos para pais. */
+  lessonsCount?: number
   /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
   createdAt?: string
 }

@@ -393,6 +393,41 @@ público do resgate; o Kids continua com as chaves de sempre.
 - Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
   copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.
 
+## Dias de surpresa no curso (25/11/2026)
+
+`gift-bonus-days` (Kids, ao responsável) e `gift-bonus-days-adult`, só e-mail, enviados pelo
+MEMBERS (`SendAccessEndedMessagesService`) no fim do prazo DIVULGADO da oferta, quando o prazo real é
+maior: "você ganhou mais {{dias}}". Variáveis `nome`, `curso`, `dias` ("8 dias"), `data` (fim real,
+dd/mm/aaaa) e `link` (Kids: entrada do responsável; adulto: `/cursos`). Texto neutro entre presente e
+compra ("o acesso ao curso"). Teste em `tests/access-ended-copy.test.ts`.
+
+## Convites do embaixador por oferta (25/11/2026)
+
+Quatro e-mails do consumer `referrals`: `referrals-offer-gift-invite` e `-adult` (o presente que o
+embaixador escolheu na lista do público, quando não é o Cadê padrão) e
+`referrals-offer-referral-invite` e `-adult` (a indicação de uma oferta à venda). Variáveis
+`nome`, `indicador`, `oferta` (nome da oferta no catálogo) e `link` (`/i/<código>/<oferta>` do
+funil). Light Copy, sem nome de produto fixo; o Kids fala com o responsável e mantém a frase do
+convite único. Seed depois do deploy do referrals.
+
+## Lembretes do curso (25/11/2026)
+
+Seis e-mails do consumer `members` para o curso comprado ou recebido de presente (fora o Desafio):
+`course-not-started`, `course-stalled` e `course-completed`, com a versão `-adult`. Variáveis
+`nome`, `curso` e `link` (onde continuar, pronto do members); a conclusão também `comunidade` (a
+página de continuidade da Comunidade, com UTMs). Kids fala com o responsável sem presumir quem
+estuda (vale também para o guia dos pais); o adulto fala com a pessoa. Nada de prazo nem de acesso
+vitalício. Teste: `tests/course-reminders-copy.test.ts`.
+
+## Lembretes dos cursos para pais (25/11/2026)
+
+Seis e-mails do consumer `members`: `course-{not-started,stalled,completed}-vilao-em-aliado` (o guia
+"Transformando o vilão em aliado", com o conteúdo dele: a Helena, as aulas curtas, a apostila e o
+certificado; o presente do fim do guia continua surpresa; variáveis `nome`, `link` e, na conclusão,
+`comunidade`) e os neutros `course-*-pais` (com `curso`) para curso para pais que ainda não tem os
+próprios. Falam com o responsável sobre o curso DELE, nunca da criança criando jogos; só a
+conclusão apresenta a Comunidade. Teste: `tests/course-reminders-copy.test.ts`.
+
 ## Desafio do Primeiro Jogo para adultos (21/10/2026)
 
 Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria

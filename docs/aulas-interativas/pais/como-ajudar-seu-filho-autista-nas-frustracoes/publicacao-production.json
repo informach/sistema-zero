@@ -1,0 +1,283 @@
+{
+  "environment": "production",
+  "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+  "moduleIds": ["e5bef4a4-faf7-58fa-a46c-e5cf39d90885"],
+  "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "status": "published",
+  "audience": "kids",
+  "learner": "parents",
+  "modality": "recorded",
+  "careerSlot": null,
+  "courseUrl": "https://kids.sistemazero.com.br/pais/cursos/como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessons": [
+    {
+      "id": "4e733c39-9738-5798-a1ed-f64bb4683d70",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+      "title": "Crise não é desobediência, é comunicação",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "8eb52a80-0fb3-51aa-a7ba-7f8baf1ccda6",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+      "title": "De onde vem a frustração",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "8d576869-81a7-56a1-a73e-182e2945d198",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+      "title": "Antes da crise: de pais reativos a pais estrategistas",
+      "published": true,
+      "sections": 3
+    },
+    {
+      "id": "3c6319a3-8c4d-5fb9-ae1b-86d2b52a8023",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+      "title": "Durante a crise: a intervenção inteligente",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "7c644260-9b91-5284-a463-1409203c3fb1",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+      "title": "Depois da crise: onde a magia acontece",
+      "published": true,
+      "sections": 3
+    }
+  ],
+  "parts": [
+    {
+      "aula": 1,
+      "parte": 1,
+      "title": "Boas-vindas",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185515?h=24322939b3",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/f7a84f238efb88e2dc5eca05d074e799f1ecbc1150e96e37e6e3f97ad54fbca8/file.png",
+        "durationSeconds": 105
+      },
+      "coverFile": "capas-das-aulas/aula-01-parte-01.png",
+      "coverSha256": "cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e"
+    },
+    {
+      "aula": 1,
+      "parte": 2,
+      "title": "O que ninguém te contou sobre a crise",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185730?h=bb91229350",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/0eb9e43a31554ac2fff7faf28add120d1c6d55ccf3db4dbd22c4364e479d64ae/file.png",
+        "durationSeconds": 143
+      },
+      "coverFile": "capas-das-aulas/aula-01-parte-02.png",
+      "coverSha256": "878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b"
+    },
+    {
+      "aula": 2,
+      "parte": 1,
+      "title": "As quatro raízes da frustração",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185417?h=e6a578661e",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/592d18ef860f656da0c9cac7d71db22310058710d04a705b1b85b852d4d31ba7/file.png",
+        "durationSeconds": 139
+      },
+      "coverFile": "capas-das-aulas/aula-02-parte-01.png",
+      "coverSha256": "de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1"
+    },
+    {
+      "aula": 2,
+      "parte": 2,
+      "title": "Função ou julgamento?",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185296?h=7b5a3abbcc",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/7ab6798b922d87f444f37b7bec8e1d076bd02a58b0304061c09e8dd73b5afab6/file.png",
+        "durationSeconds": 135
+      },
+      "coverFile": "capas-das-aulas/aula-02-parte-02.png",
+      "coverSha256": "9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2"
+    },
+    {
+      "aula": 3,
+      "parte": 1,
+      "title": "Rotina visual e clareza do que vai acontecer",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185363?h=5c4dc1c2f1",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/984a56f975283b964214d95ccbcd18bdfc49fce1d563bb99b22d8d6b991ef904/file.png",
+        "durationSeconds": 111
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-01.png",
+      "coverSha256": "3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31"
+    },
+    {
+      "aula": 3,
+      "parte": 2,
+      "title": "Treino de pequenas frustrações",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185580?h=90c662d65b",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/8145cb4481bbffacc93576c234b31f88c975bdf46f58816ff987ee84b9c642d8/file.png",
+        "durationSeconds": 131
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-02.png",
+      "coverSha256": "b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689"
+    },
+    {
+      "aula": 3,
+      "parte": 3,
+      "title": "Ensinar um jeito de pedir",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185461?h=f288e1d888",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/6f6ac8d7b02131a06f0a1cb7d0cf9a72dc7752739698ab6a575a78e7cbb9cc52/file.png",
+        "durationSeconds": 117
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-03.png",
+      "coverSha256": "a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f"
+    },
+    {
+      "aula": 4,
+      "parte": 1,
+      "title": "O ambiente e o seu tom",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185550?h=765ef1199f",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/bdf1ae9fbf7e493e7668678bc103335c71626fdc56de89c14d7d4c7583f484c7/file.png",
+        "durationSeconds": 157
+      },
+      "coverFile": "capas-das-aulas/aula-04-parte-01.png",
+      "coverSha256": "65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441"
+    },
+    {
+      "aula": 4,
+      "parte": 2,
+      "title": "O que não fazer no auge",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185244?h=0bb35232ab",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/ee09d7aa39e7d9b7f29e5e9e370343c348852cc667351c46e8edfc7fed5db835/file.png",
+        "durationSeconds": 107
+      },
+      "coverFile": "capas-das-aulas/aula-04-parte-02.png",
+      "coverSha256": "6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472"
+    },
+    {
+      "aula": 5,
+      "parte": 1,
+      "title": "Acolher e ensinar para a próxima vez",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185650?h=ddd72ec066",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/e395e8f0fcf3f187f74ba756b0513e67871078b45df4ac4ddd50dfdb5ab5f8e1/file.png",
+        "durationSeconds": 108
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-01.png",
+      "coverSha256": "bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35"
+    },
+    {
+      "aula": 5,
+      "parte": 2,
+      "title": "O gatilho, a consequência e os ajustes",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185700?h=e346b4ad54",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/b61b0022254e54a19d50187bbe1d42d8b8a66ed617e768dbb87cf926d215eeca/file.png",
+        "durationSeconds": 149
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-02.png",
+      "coverSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179"
+    },
+    {
+      "aula": 5,
+      "parte": 3,
+      "title": "Hoje eu escuto melhor",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250185210?h=1c0995efd3",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/52c58760fc84f8dd6972b18a70ab52f553511a29a71abfda30b1a72a02f815d2/file.png",
+        "durationSeconds": 112
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-03.png",
+      "coverSha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e"
+    }
+  ],
+  "apostila": {
+    "aula": 1,
+    "parte": 2,
+    "file": "apostila.pdf",
+    "sha256": "09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed",
+    "attachment": {
+      "id": "cf4dd07c-7ca9-56ed-ab37-c1af2170dea2",
+      "url": "r2priv:admin/course-publication/f66a99a88972a7534f531837c1373914a13a2bd39c25ad01953749187e581d9d/file.pdf",
+      "label": "Apostila do curso: Frustrações e crises",
+      "fileType": "application/pdf",
+      "sizeBytes": 946916,
+      "zappyStudentNotebook": true
+    }
+  },
+  "certificate": {
+    "aula": 5,
+    "parte": 3,
+    "file": "certificado.png",
+    "config": {
+      "kind": "certificate",
+      "title": "Certificado de conclusão",
+      "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
+      "introLine": "Certificamos que",
+      "signatures": [
+        {
+          "name": "Helena Oliveira",
+          "imageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/13db18d1b9dee4439582e89c91eef47bf9c6d40804f67ab4ab038158bc7d7335/file.webp"
+        },
+        {
+          "name": "Júlio Felipe",
+          "imageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/cf91909b6c7f1a2ab83755db62c66b8ff27367e229d03036947861ee37e5a695/file.webp"
+        }
+      ],
+      "accentColor": "#38204e",
+      "baseImageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/26ba4c0cea5c60042eb538ca4b3f6e2bf56513c4e4d6e1f3ac5c56fc10d0894e/file.png",
+      "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises"
+    }
+  },
+  "courseCover": {
+    "file": "capa-do-curso.png",
+    "url": "https://cdn.sistemazero.com.br/admin/course-publication/7dcdf31448481ad33f0bf4d2bbd4eb6f6107b88f003b97b09475571fccd3e38b/file.png"
+  },
+  "pending": [],
+  "verifiedAt": "2026-11-26T08:50:52.499695Z",
+  "videoReplacements": [
+    {
+      "part": "5-2",
+      "date": "2026-11-26T10:59:07.012Z",
+      "receipt": "troca-video-aula-05-parte-02-2026-11-26.json",
+      "sourceSha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e",
+      "videoId": "1250185700",
+      "versionUri": "/videos/1250185700/versions/1258176144",
+      "posterUri": "/videos/1250185700/pictures/2230896339",
+      "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+      "versionActive": true,
+      "posterReuploaded": true,
+      "private": true,
+      "durationSeconds": 149,
+      "browserVerifiedAt": "2026-11-26T10:57:53.529Z",
+      "playbackWithoutError": true,
+      "tailAudioDecoded": true,
+      "sameVideoId": true
+    }
+  ]
+}

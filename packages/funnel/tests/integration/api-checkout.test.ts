@@ -111,6 +111,7 @@ describe('POST /api/checkout/pix', () => {
   })
 
   test('bloqueia se a cotação mudar para vitalícia depois da view válida em cache', async () => {
+    clearOfferCache()
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     const slug = 'desafio-primeiro-jogo-30-dias'
@@ -121,6 +122,7 @@ describe('POST /api/checkout/pix', () => {
       accessDurationValue: 30,
       accessDurationUnit: 'days',
     })
+    expect(await getActiveOffer(gw.gateway, slug)).toMatchObject({ accessMode: 'fixed' })
     const baseGateway = gw.gateway
     const gateway: GatewayClient = {
       ...baseGateway,

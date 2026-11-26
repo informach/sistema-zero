@@ -9,7 +9,10 @@ import {
   CampaignAudienceLockedError,
   CampaignConflictError,
   CampaignGiftOfferLockedError,
+  CampaignKindLockedError,
   type CampaignRecord,
+  CampaignRedirectTakenError,
+  campaignRedirectActive,
 } from '../../src/domain/campaign'
 import type { CampaignRepository } from '../../src/domain/ports/campaign-repository.port'
 import type { InMemoryReferralRepository } from './in-memory'
@@ -20,10 +23,18 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   constructor(private readonly referrals: InMemoryReferralRepository) {}
   async create(input: CampaignInput, actor: string, duplicatedFrom?: string) {
     if (this.referrals.codes.some((code) => code.code === input.code)) return null
+    this.assertRedirectFree(input.redirectPath ?? null, null)
+    const kind = input.kind ?? 'gift'
     const value: CampaignRecord = {
       ...input,
       audience: input.audience ?? 'kids',
-      giftOfferId: input.giftOfferId ?? null,
+      kind,
+      giftOfferId: kind === 'sale' ? null : (input.giftOfferId ?? null),
+      saleOfferId: kind === 'sale' ? (input.saleOfferId ?? null) : null,
+      linkTarget: kind === 'sale' ? (input.linkTarget ?? 'page') : 'page',
+      redirectPath: input.redirectPath ?? null,
+      redirectUntil:
+        input.redirectPath && input.redirectUntil ? new Date(input.redirectUntil) : null,
       id: randomUUID(),
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
@@ -77,9 +88,35 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       if (this.referrals.redemptions.some((r) => r.codeId === ownCode?.id))
         throw new CampaignGiftOfferLockedError()
     }
+    const kind = input.kind ?? value.kind
+    const used =
+      this.referrals.redemptions.some((r) => r.codeId === ownCode?.id) ||
+      (await this.hasAcquisitions(id))
+    if (kind !== value.kind && (value.status !== 'draft' || used))
+      throw new CampaignKindLockedError()
+    const saleOfferId = input.saleOfferId === undefined ? value.saleOfferId : input.saleOfferId
+    if (
+      value.saleOfferId &&
+      saleOfferId !== value.saleOfferId &&
+      (value.status !== 'draft' || used)
+    )
+      throw new CampaignGiftOfferLockedError()
+    const redirectPath = input.redirectPath === undefined ? value.redirectPath : input.redirectPath
+    const redirectUntil =
+      input.redirectUntil === undefined
+        ? value.redirectUntil
+        : input.redirectUntil
+          ? new Date(input.redirectUntil)
+          : null
+    this.assertRedirectFree(redirectPath ?? null, id)
     Object.assign(value, input, {
       audience,
-      giftOfferId,
+      kind,
+      giftOfferId: kind === 'sale' ? null : giftOfferId,
+      saleOfferId: kind === 'sale' ? saleOfferId : null,
+      linkTarget: kind === 'sale' ? (input.linkTarget ?? value.linkTarget) : 'page',
+      redirectPath: redirectPath ?? null,
+      redirectUntil: redirectPath ? redirectUntil : null,
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
       updatedAt: new Date(Math.max(Date.now(), value.updatedAt.getTime() + 1)),
@@ -100,6 +137,12 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   }
   async findById(id: string) {
     return this.items.find((item) => item.id === id) ?? null
+  }
+  async findByRedirectPath(path: string) {
+    return this.items.find((item) => item.redirectPath === path) ?? null
+  }
+  async listActiveRedirects(now: Date) {
+    return this.items.filter((item) => campaignRedirectActive(item, now))
   }
   async list(opts: {
     q?: string
@@ -125,12 +168,44 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       redemptions: rows.filter((r) => r.status === 'completed').length,
       pending: rows.filter((r) => r.status === 'pending').length,
       failed: rows.filter((r) => r.status === 'failed').length,
-      conversions: this.referrals.conversions.filter(
-        (c) => c.codeId === code?.id && c.status !== 'canceled' && c.status !== 'superseded',
-      ).length,
+      conversions: new Set(
+        this.referrals.acquisitions
+          .filter(
+            (a) =>
+              a.kind === 'subscription' &&
+              a.status === 'active' &&
+              (a.campaignId === id ||
+                this.referrals.acquisitions.some(
+                  (g) =>
+                    g.campaignId === id &&
+                    g.kind === 'gift' &&
+                    g.status === 'active' &&
+                    g.audience === a.audience &&
+                    g.email === a.email &&
+                    g.acquiredAt <= a.acquiredAt,
+                )),
+          )
+          .map((a) => a.email),
+      ).size,
     }
   }
   async history(id: string) {
     return this.audits.get(id) ?? []
+  }
+  async hasAcquisitions(id: string) {
+    return this.referrals.acquisitions.some((a) => a.campaignId === id)
+  }
+  /** Espelha o UNIQUE `campaigns_redirect_path_uq`, soltando o caminho cujo prazo passou. */
+  private assertRedirectFree(path: string | null, keepId: string | null) {
+    if (!path) return
+    for (const other of this.items) {
+      if (other.id === keepId || other.redirectPath !== path) continue
+      if (other.redirectUntil && other.redirectUntil.getTime() <= Date.now()) {
+        other.redirectPath = null
+        other.redirectUntil = null
+        continue
+      }
+      throw new CampaignRedirectTakenError()
+    }
   }
 }

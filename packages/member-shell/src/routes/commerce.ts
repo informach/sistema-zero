@@ -19,6 +19,7 @@ import {
 import { isSameOriginRequest } from '../lib/csrf'
 import type { AuthClient, MembersClient, PaymentsClient } from '../server/clients'
 import type { GatewayModule } from '../server/gateway'
+import { pageSellableStatus, primaryOfferSlugFor } from '../server/page-sellable'
 import type { SessionModule } from '../server/session'
 
 export interface CommerceRouteDeps {
@@ -30,15 +31,45 @@ export interface CommerceRouteDeps {
   audience: 'kids' | 'adult'
 }
 const bodySchema = z.strictObject({
-  action: z.enum(['inspect', 'redeem', 'pay', 'status', 'restart']),
+  action: z.enum(['inspect', 'redeem', 'pay', 'status', 'restart', 'quote']),
   origin: CommerceOriginSchema,
   checkoutId: z.uuid().optional(),
+  /** O outro plano do mesmo produto (mensal ou anual): só vale se for a irmã da oferta da origem. */
+  offerRef: z
+    .string()
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/)
+    .optional(),
+  /** O botão que abriu a compra. Fora da lista do público, vale o lugar padrão da origem. */
+  place: z.string().max(48).optional(),
   data: z.record(z.string(), z.unknown()).optional(),
 })
+/**
+ * Os botões da plataforma que vendem (25/11/2026). Vão ao metadata da cobrança como `origemLugar`
+ * e alimentam a Origem das vendas no Admin. A aula é sempre `aula`.
+ */
+export const COMMERCE_PLACES = {
+  kids: { inicio: 'pais-inicio', cursos: 'pais-cursos', curso: 'pais-curso-fechado' },
+  adult: { inicio: 'inicio', cursos: 'cursos', curso: 'curso-fechado' },
+} as const
+/** Duas ofertas do mesmo produto ligadas pelo alternador (`content.altOffer`), em qualquer sentido. */
+const isSubscription = (offer: CommerceCatalogOffer) => offer.pricingMode === 'subscription'
+function siblingOffers(a: CommerceCatalogOffer, b: CommerceCatalogOffer) {
+  return (
+    a.id !== b.id &&
+    a.product.id === b.product.id &&
+    (a.content?.altOffer?.slug === b.slug || b.content?.altOffer?.slug === a.slug)
+  )
+}
 function failure(message: string, status = 503) {
   return NextResponse.json({ error: { code: 'COMMERCE_UNAVAILABLE', message } }, { status })
 }
 export function createCommerceRoutes(deps: CommerceRouteDeps) {
+  function placeFor(origin: CommerceOrigin, requested: string | undefined) {
+    if (origin.kind === 'lesson') return 'aula'
+    const places = COMMERCE_PLACES[deps.audience]
+    if (requested && (Object.values(places) as string[]).includes(requested)) return requested
+    return origin.kind === 'offer' ? places.curso : places.inicio
+  }
   async function account() {
     const session = await deps.session.getSession()
     if (
@@ -63,6 +94,11 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       audience: deps.audience,
     }
   }
+  /** O produto pelo SKU (oferta principal), pelo cache curto de `page-sellable.ts`. */
+  const productBySku = (sku: string) =>
+    deps.gateway.gatewayFetch<{ primaryOfferSlug?: unknown }>(
+      `/catalog/products/by-sku/${encodeURIComponent(sku)}`,
+    )
   async function offer(ref: string): Promise<CommerceCatalogOffer | null> {
     const found = await deps.gateway.gatewayFetch(`/catalog/offers/${encodeURIComponent(ref)}`)
     const parsed = CommerceCatalogOfferSchema.safeParse(found.body)
@@ -95,6 +131,19 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
           }
         : null
     }
+    if (origin.kind === 'offer') {
+      // A página do curso só vende a oferta principal do produto ou uma marcada no Admin
+      // "Pode ser vendida na página do produto": a oferta de presente nunca abre à venda.
+      const target = await offer(origin.offerRef)
+      if (!target) return null
+      const sellable = await pageSellableStatus(target, productBySku)
+      if (sellable === 'unavailable') return 'unavailable' as const
+      if (sellable !== 'sellable') return null
+      return {
+        config: { kind: 'purchase' as const, offerRef: target.slug },
+        expectedOfferId: target.id,
+      }
+    }
     if (origin.kind === 'lesson') {
       const lesson = await deps.members.getLesson(origin.courseSlug, origin.lessonId)
       if (lesson.status !== 200 || !lesson.body) return null
@@ -125,6 +174,30 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
             }
           : null
     return config ? { config, expectedOfferId: target.id } : null
+  }
+  /**
+   * A outra ponta do alternador, nos dois sentidos: a que esta oferta aponta (`altOffer`) ou, numa
+   * assinatura que não aponta para ninguém, a oferta principal do produto quando É ELA que aponta
+   * para esta. `known` é a irmã já lida (a oferta da origem depois de trocar de plano).
+   */
+  async function otherPlan(target: CommerceCatalogOffer, known?: CommerceCatalogOffer) {
+    if (known) return known.isAvailable && siblingOffers(target, known) ? known : null
+    const slug = target.content?.altOffer?.slug
+    if (slug && slug !== target.slug) {
+      const other = await offer(slug)
+      return other?.isAvailable && siblingOffers(target, other) ? other : null
+    }
+    if (!isSubscription(target)) return null
+    const primary = await primaryOfferSlugFor(productBySku, target.product.sku)
+    // `'unavailable'` é o marcador de catálogo fora, não um slug: sem a irmã, segue sem trocar.
+    if (typeof primary !== 'string' || primary === 'unavailable' || primary === target.slug)
+      return null
+    const other = await offer(primary)
+    return other?.isAvailable &&
+      other.content?.altOffer?.slug === target.slug &&
+      siblingOffers(target, other)
+      ? other
+      : null
   }
   async function eligibility(target: CommerceCatalogOffer) {
     const [access, subscriptions] = await Promise.all([
@@ -177,9 +250,10 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       const parsed = bodySchema.safeParse(await request.json().catch(() => null))
       if (!parsed.success) return failure('Pedido inválido.', 400)
       const input = parsed.data
-      if (input.action === 'inspect' && !input.checkoutId) {
+      if (input.action === 'inspect' && !input.checkoutId && !input.offerRef) {
         // Recuperar uma operação própria precede regras de NOVAS vendas e a leitura
-        // do bloco/card atual. Não cria lead nem inicia pagamento.
+        // do bloco/card atual. Não cria lead nem inicia pagamento. Com `offerRef` a pessoa
+        // escolheu um plano na tela aberta: a compra em andamento de outro plano não toma o lugar.
         const recovered = await deps.gateway.gatewayFetchHmac<Record<string, unknown>>(
           '/funnel/internal/commerce/recover',
           { method: 'POST', body: { account: actor, origin: input.origin } },
@@ -236,6 +310,8 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
         )
       }
       const source = await originConfig(input.origin, actor)
+      if (source === 'unavailable')
+        return failure('Não foi possível consultar esta oferta. Tente novamente.')
       if (!source) return failure('Esta oferta não está disponível neste local.', 404)
       const { config } = source
       if (config.kind === 'gift') {
@@ -304,8 +380,21 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
           headers: { 'cache-control': 'no-store' },
         })
       }
-      const target = await offer(config.offerRef)
-      if (!target) return failure('Não foi possível consultar esta oferta.')
+      const base = await offer(config.offerRef)
+      if (!base) return failure('Não foi possível consultar esta oferta.')
+      let target = base
+      if (input.offerRef && input.offerRef !== base.slug) {
+        // Trocar de plano: só a irmã do alternador, do mesmo produto e do mesmo público.
+        const chosen = await offer(input.offerRef)
+        if (!chosen || !siblingOffers(base, chosen))
+          return failure('Este plano não está disponível aqui.', 404)
+        target = chosen
+      }
+      let plans: CommerceCatalogOffer[] | undefined
+      if (input.action === 'inspect') {
+        const other = await otherPlan(target, target.id === base.id ? undefined : base)
+        if (other) plans = [target, other]
+      }
       if (input.action === 'inspect' || input.action === 'pay' || input.action === 'restart') {
         const decision = await eligibility(target)
         if (!decision)
@@ -326,23 +415,33 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
             origin: input.origin,
             offerRef: target.slug,
             checkoutId: input.checkoutId,
+            place: placeFor(input.origin, input.place),
             data: input.data,
           },
         },
       )
-      if (response.status !== 200)
-        return NextResponse.json(response.body, { status: response.status })
+      if (response.status !== 200 || input.action === 'quote')
+        return NextResponse.json(response.body, {
+          status: response.status,
+          headers: { 'cache-control': 'no-store' },
+        })
       const cardConfig = input.action === 'inspect' ? await deps.payments.getCardConfig() : null
       return NextResponse.json(
         {
           ...(response.body as object),
           mode: 'purchase',
           config,
+          ...(plans ? { plans } : {}),
           ...(cardConfig?.status === 200 ? { cardConfig: cardConfig.body } : {}),
         },
         { headers: { 'cache-control': 'no-store' } },
       )
     },
+  }
+  /** O outro plano da assinatura (mensal ou anual) para a linha de preço do cartão. */
+  async function plansOf(target: CommerceCatalogOffer) {
+    const other = await otherPlan(target)
+    return other ? [target, other] : undefined
   }
   const commercePromotions = {
     GET: async () => {
@@ -365,7 +464,14 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
         const decision =
           promotion.mode === 'purchase' ? await eligibility(target) : { kind: 'gift' }
         if (!decision) continue
-        items.push({ offerRef: target.slug, promotion, decision })
+        items.push({
+          offerRef: target.slug,
+          promotion,
+          decision,
+          ...(promotion.mode === 'purchase'
+            ? { offer: target, plans: isSubscription(target) ? await plansOf(target) : undefined }
+            : {}),
+        })
       }
       if (
         !result.body.items.some((raw) => {
@@ -393,6 +499,7 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
         ) {
           const target = parsed.data
           const decision = await eligibility(target)
+          // O destaque da Comunidade na Início dos pais (Canvas "pais-inicio", 25/11/2026).
           if (decision)
             items.push({
               origin: { kind: 'community' as const },
@@ -401,11 +508,24 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
                 enabled: true,
                 mode: 'purchase' as const,
                 location: 'parent_home' as const,
-                title: target.name,
-                description: 'Aulas, ferramentas e acompanhamento para continuar criando.',
-                buttonLabel: 'Assinar a comunidade',
+                ...(deps.audience === 'kids'
+                  ? {
+                      title: 'Seus filhos também podem criar os próprios jogos',
+                      description:
+                        'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar jogos, com aulas, o Estúdio e a nossa equipe por perto. E você fica com todos os cursos para pais.',
+                      buttonLabel: 'Assinar a Comunidade',
+                      // A ilustração da criança criando um jogo (`public/ilustra` do app Kids).
+                      imageUrl: '/ilustra/criando.webp',
+                    }
+                  : {
+                      title: target.name,
+                      description: 'Aulas, ferramentas e acompanhamento para continuar criando.',
+                      buttonLabel: 'Assinar a comunidade',
+                    }),
               },
               decision,
+              offer: target,
+              plans: await plansOf(target),
             })
         }
       }

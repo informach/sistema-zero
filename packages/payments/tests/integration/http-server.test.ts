@@ -28,6 +28,10 @@ import { RecoveryPolicyService } from '../../src/application/subscription-recove
 import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
 import { ResolveSupersededRecoveryService } from '../../src/application/subscription-recovery/resolve-superseded-recovery.service'
 import { ReviewHistoricalAdmissionService } from '../../src/application/subscription-recovery/review-historical-admission.service'
+import type {
+  PaidOffersQuery,
+  PaidOffersReader,
+} from '../../src/domain/ports/paid-offers-read.port'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
@@ -186,6 +190,15 @@ function buildApp(opts: BuildOpts = {}) {
     },
   }
 
+  // Ofertas já pagas por um e-mail (rota interna do referrals): grava a consulta recebida.
+  const paidOfferQueries: PaidOffersQuery[] = []
+  const paidOffers: PaidOffersReader = {
+    async listPaidOfferIds(query) {
+      paidOfferQueries.push(query)
+      return ['11111111-1111-4111-8111-111111111111']
+    },
+  }
+
   const app = createServer({
     resolveSupersededRecovery: new ResolveSupersededRecoveryService(
       { findById: async () => null },
@@ -331,6 +344,7 @@ function buildApp(opts: BuildOpts = {}) {
     getAdminPayment: new GetAdminPaymentService(repo),
     listSubscriptions: new ListSubscriptionsService(subscriptionsAdminRead),
     getAdminSubscription: new GetAdminSubscriptionService(subscriptionRepo),
+    paidOffers,
     getPaymentsStats: new GetPaymentsStatsService(paymentsAdminRead),
     getDailyPaymentsStats: new GetDailyPaymentsStatsService(paymentsAdminRead),
     getSubscriptionStats: new GetSubscriptionStatsService(subscriptionsAdminRead),
@@ -345,7 +359,7 @@ function buildApp(opts: BuildOpts = {}) {
     ),
   })
 
-  return { app, repo, subscriptionRepo, gateway, recoveryPolicies }
+  return { app, repo, subscriptionRepo, gateway, recoveryPolicies, paidOfferQueries }
 }
 
 describe('Admin: política de regularização autenticada e auditada', () => {
@@ -2022,6 +2036,33 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
 })
 
 describe('Rota interna S2S (/payments/internal/payments/:id — leitura p/ o fiscal)', () => {
+  test('ofertas já pagas por um e-mail: token interno, data validada e só os ids', async () => {
+    const { app, paidOfferQueries } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
+    const exclude = '22222222-2222-4222-8222-222222222222'
+    const url = `http://localhost/payments/internal/customers/paid-offers?email=ana%40example.com&before=2026-11-25T12%3A00%3A00.000Z&exclude=${exclude}`
+    expect((await app.handle(new Request(url))).status).toBe(401)
+    const ok = await app.handle(
+      new Request(url, { headers: { 'x-internal-token': 'tok-interno-de-teste-16' } }),
+    )
+    expect(ok.status).toBe(200)
+    expect(await ok.json()).toEqual({ offerIds: ['11111111-1111-4111-8111-111111111111'] })
+    expect(paidOfferQueries).toEqual([
+      {
+        email: 'ana@example.com',
+        before: new Date('2026-11-25T12:00:00.000Z'),
+        excludePaymentId: exclude,
+      },
+    ])
+    const bad = await app.handle(
+      new Request(
+        'http://localhost/payments/internal/customers/paid-offers?email=ana%40example.com&before=ontem-de-manha',
+        { headers: { 'x-internal-token': 'tok-interno-de-teste-16' } },
+      ),
+    )
+    expect(bad.status).toBe(400)
+    expect(paidOfferQueries).toHaveLength(1)
+  })
+
   test('data original da assinatura exige token interno e não expõe dados do cartão', async () => {
     const { app, subscriptionRepo } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
     const created = await app.handle(

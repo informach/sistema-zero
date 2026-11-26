@@ -4,6 +4,21 @@ import { safeEqual } from '@sistemazero/core/security'
 const ADMIN_ROLES = new Set(['superadmin', 'admin', 'staff'])
 const ADMIN_WRITE_ROLES = new Set(['superadmin', 'admin'])
 
+/** Faturamento (por campanha, por embaixador) é leitura admin+; a equipe vê só quantidades. */
+export function canSeeRevenue(headers: Record<string, string | undefined>): boolean {
+  return ADMIN_WRITE_ROLES.has(headers['x-auth-user-role'] ?? '')
+}
+
+/** Tira o faturamento dos resultados para quem não é admin. */
+export function revenueFor<T extends { results?: { revenueCents: string | null } }>(
+  item: T,
+  visible: boolean,
+): T {
+  return visible || !item.results
+    ? item
+    : { ...item, results: { ...item.results, revenueCents: null } }
+}
+
 /**
  * Defesa em profundidade das rotas admin. O RBAC real é do gateway (JWT +
  * authorize.roles); aqui conferimos os headers `X-Auth-User-*` injetados.

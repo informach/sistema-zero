@@ -1,0 +1,614 @@
+{
+  "verifiedAt": "2026-11-26T08:50:52.499695Z",
+  "course": {
+    "audience": "kids",
+    "learner": "parents",
+    "modality": "recorded",
+    "careerSlot": null,
+    "modules": 1,
+    "lessons": 5,
+    "parts": 12
+  },
+  "slides": {
+    "file": "conferencia-slides-2026-11-25.md",
+    "slides": 9,
+    "topics": 20,
+    "allCovered": true,
+    "scope": "Apresentação comparada às falas dos roteiros."
+  },
+  "apostila": {
+    "pages": 10,
+    "internalPagesTextUnchanged": 9,
+    "coverHasLessonCount": false,
+    "position": {
+      "lesson": 1,
+      "part": 2,
+      "immediatelyAfterVideo": true
+    }
+  },
+  "certificate": {
+    "layout": "Mãe e filho à esquerda, psicóloga à direita, junto ao rodapé; centro e QR livres.",
+    "simulation": {
+      "renderer": "packages/member-shell/src/server/certificate-pdf.ts",
+      "fields": [
+        "introLine",
+        "studentName",
+        "coursePhrase",
+        "bodyText",
+        "issuedAt",
+        "serial",
+        "verifyUrl",
+        "signatures[0].imageUrl",
+        "signatures[0].name",
+        "signatures[1].imageUrl",
+        "signatures[1].name"
+      ],
+      "cases": [
+        {
+          "key": "nome-curto",
+          "nameLength": 8,
+          "signatures": 0
+        },
+        {
+          "key": "nome-longo",
+          "nameLength": 69,
+          "signatures": 0
+        },
+        {
+          "key": "todos-os-campos",
+          "nameLength": 69,
+          "signatures": 2
+        }
+      ]
+    },
+    "realEmissionChecked": ["staging", "production"],
+    "syntheticCertificatesRevoked": true,
+    "platformSignatures": {
+      "names": ["Helena Oliveira", "Júlio Felipe"],
+      "files": ["assinaturas/helena-oliveira.webp", "assinaturas/julio-felipe.webp"],
+      "realIssuance": {
+        "staging": {
+          "issued": true,
+          "pdfBytes": 2048380,
+          "embeddedImages": 4,
+          "cachedDownloadIdentical": true,
+          "qaCertificateRevoked": true
+        },
+        "production": {
+          "issued": true,
+          "pdfBytes": 2048185,
+          "embeddedImages": 4,
+          "cachedDownloadIdentical": true,
+          "qaCertificateRevoked": true
+        }
+      },
+      "productionExistingPdfCacheRefreshed": 1,
+      "issuedRecordsPreserved": true
+    }
+  },
+  "checks": {
+    "parentsEditorialTests": {
+      "passed": 32,
+      "failed": 0
+    },
+    "generatorBiome": {
+      "files": 2,
+      "passed": true
+    },
+    "lessonCoversGeometry": {
+      "files": 12,
+      "passed": true
+    }
+  },
+  "environments": {
+    "staging": {
+      "environment": "staging",
+      "verifiedAt": "2026-11-26T00:59:13.153Z",
+      "courseId": "45da87d0-c2d2-400c-889d-5d4bbe1c868f",
+      "courseCoverSha256": "0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b",
+      "certificateSha256": "30e85a03867342461b250692c0567344fff03c7cfe4cc29056d46cbadf26ca6e",
+      "pdfSha256": "09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed",
+      "apostila": {
+        "aula": 1,
+        "parte": 2,
+        "immediatelyAfterVideo": true,
+        "optional": true
+      },
+      "rows": [
+        {
+          "key": "1-1",
+          "videoId": "1250184262",
+          "duration": 105,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e",
+          "thumbnailMeanPixelDifference": 3.698
+        },
+        {
+          "key": "1-2",
+          "videoId": "1250184261",
+          "duration": 143,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b",
+          "thumbnailMeanPixelDifference": 4.327
+        },
+        {
+          "key": "2-1",
+          "videoId": "1250184263",
+          "duration": 139,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1",
+          "thumbnailMeanPixelDifference": 4.288
+        },
+        {
+          "key": "2-2",
+          "videoId": "1250184340",
+          "duration": 135,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2",
+          "thumbnailMeanPixelDifference": 4.111
+        },
+        {
+          "key": "3-1",
+          "videoId": "1250184344",
+          "duration": 111,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31",
+          "thumbnailMeanPixelDifference": 4.232
+        },
+        {
+          "key": "3-2",
+          "videoId": "1250184360",
+          "duration": 131,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689",
+          "thumbnailMeanPixelDifference": 4.315
+        },
+        {
+          "key": "3-3",
+          "videoId": "1250184409",
+          "duration": 117,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f",
+          "thumbnailMeanPixelDifference": 4.153
+        },
+        {
+          "key": "4-1",
+          "videoId": "1250184411",
+          "duration": 157,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441",
+          "thumbnailMeanPixelDifference": 4.086
+        },
+        {
+          "key": "4-2",
+          "videoId": "1250184446",
+          "duration": 107,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472",
+          "thumbnailMeanPixelDifference": 4.139
+        },
+        {
+          "key": "5-1",
+          "videoId": "1250184475",
+          "duration": 108,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35",
+          "thumbnailMeanPixelDifference": 4.412
+        },
+        {
+          "key": "5-2",
+          "videoId": "1250184501",
+          "duration": 149,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+          "thumbnailMeanPixelDifference": 4.301
+        },
+        {
+          "key": "5-3",
+          "videoId": "1250184507",
+          "duration": 112,
+          "available": true,
+          "domain": "community-kids-staging.up.railway.app",
+          "private": true,
+          "download": false,
+          "posterSha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e",
+          "thumbnailMeanPixelDifference": 4.049
+        }
+      ],
+      "browser": {
+        "environment": "staging",
+        "parentsCatalog": true,
+        "lesson": true,
+        "privatePdfDownloadBytes": 970652,
+        "played": [
+          {
+            "key": "1-1",
+            "time": 0.219995,
+            "duration": 104.8,
+            "error": null
+          },
+          {
+            "key": "1-2",
+            "time": 0.214452,
+            "duration": 143.43333333333334,
+            "error": null
+          },
+          {
+            "key": "2-1",
+            "time": 0.213173,
+            "duration": 139.13333333333333,
+            "error": null
+          },
+          {
+            "key": "2-2",
+            "time": 0.214884,
+            "duration": 135.1,
+            "error": null
+          },
+          {
+            "key": "3-1",
+            "time": 0.20983,
+            "duration": 110.96666666666667,
+            "error": null
+          },
+          {
+            "key": "3-2",
+            "time": 0.222395,
+            "duration": 130.73333333333332,
+            "error": null
+          },
+          {
+            "key": "3-3",
+            "time": 0.218242,
+            "duration": 116.63333333333334,
+            "error": null
+          },
+          {
+            "key": "4-1",
+            "time": 0.213591,
+            "duration": 156.63333333333333,
+            "error": null
+          },
+          {
+            "key": "4-2",
+            "time": 0.207584,
+            "duration": 107.13333333333334,
+            "error": null
+          },
+          {
+            "key": "5-1",
+            "time": 0.220892,
+            "duration": 108.3,
+            "error": null
+          },
+          {
+            "key": "5-2",
+            "time": 0.220294,
+            "duration": 149.2,
+            "error": null
+          },
+          {
+            "key": "5-3",
+            "time": 0.20734,
+            "duration": 112.3,
+            "error": null
+          }
+        ],
+        "finalPdfDownloaded": true,
+        "apostilaVisibleInPart2": true,
+        "certificateIssuedByRealService": true
+      },
+      "syntheticAccountBlocked": true,
+      "syntheticGrantRevoked": true
+    },
+    "production": {
+      "environment": "production",
+      "verifiedAt": "2026-11-26T01:02:19.006Z",
+      "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+      "courseCoverSha256": "0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b",
+      "certificateSha256": "30e85a03867342461b250692c0567344fff03c7cfe4cc29056d46cbadf26ca6e",
+      "pdfSha256": "09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed",
+      "apostila": {
+        "aula": 1,
+        "parte": 2,
+        "immediatelyAfterVideo": true,
+        "optional": true
+      },
+      "rows": [
+        {
+          "key": "1-1",
+          "videoId": "1250185515",
+          "duration": 105,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e",
+          "thumbnailMeanPixelDifference": 4.968
+        },
+        {
+          "key": "1-2",
+          "videoId": "1250185730",
+          "duration": 143,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b",
+          "thumbnailMeanPixelDifference": 5.902
+        },
+        {
+          "key": "2-1",
+          "videoId": "1250185417",
+          "duration": 139,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1",
+          "thumbnailMeanPixelDifference": 5.822
+        },
+        {
+          "key": "2-2",
+          "videoId": "1250185296",
+          "duration": 135,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2",
+          "thumbnailMeanPixelDifference": 5.586
+        },
+        {
+          "key": "3-1",
+          "videoId": "1250185363",
+          "duration": 111,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31",
+          "thumbnailMeanPixelDifference": 5.756
+        },
+        {
+          "key": "3-2",
+          "videoId": "1250185580",
+          "duration": 131,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689",
+          "thumbnailMeanPixelDifference": 5.842
+        },
+        {
+          "key": "3-3",
+          "videoId": "1250185461",
+          "duration": 117,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f",
+          "thumbnailMeanPixelDifference": 5.629
+        },
+        {
+          "key": "4-1",
+          "videoId": "1250185550",
+          "duration": 157,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441",
+          "thumbnailMeanPixelDifference": 5.539
+        },
+        {
+          "key": "4-2",
+          "videoId": "1250185244",
+          "duration": 107,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472",
+          "thumbnailMeanPixelDifference": 5.628
+        },
+        {
+          "key": "5-1",
+          "videoId": "1250185650",
+          "duration": 108,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35",
+          "thumbnailMeanPixelDifference": 5.996
+        },
+        {
+          "key": "5-2",
+          "videoId": "1250185700",
+          "duration": 149,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+          "thumbnailMeanPixelDifference": 5.831
+        },
+        {
+          "key": "5-3",
+          "videoId": "1250185210",
+          "duration": 112,
+          "available": true,
+          "domain": "kids.sistemazero.com.br",
+          "private": true,
+          "download": false,
+          "posterSha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e",
+          "thumbnailMeanPixelDifference": 5.476
+        }
+      ],
+      "browser": {
+        "environment": "production",
+        "parentsCatalog": true,
+        "lesson": true,
+        "privatePdfDownloadBytes": 970689,
+        "played": [
+          {
+            "key": "1-1",
+            "time": 0.217253,
+            "duration": 104.8,
+            "error": null
+          },
+          {
+            "key": "1-2",
+            "time": 0.208835,
+            "duration": 143.43333333333334,
+            "error": null
+          },
+          {
+            "key": "2-1",
+            "time": 0.212079,
+            "duration": 139.13333333333333,
+            "error": null
+          },
+          {
+            "key": "2-2",
+            "time": 0.22013,
+            "duration": 135.1,
+            "error": null
+          },
+          {
+            "key": "3-1",
+            "time": 0.219374,
+            "duration": 110.96666666666667,
+            "error": null
+          },
+          {
+            "key": "3-2",
+            "time": 0.208881,
+            "duration": 130.73333333333332,
+            "error": null
+          },
+          {
+            "key": "3-3",
+            "time": 0.217297,
+            "duration": 116.63333333333334,
+            "error": null
+          },
+          {
+            "key": "4-1",
+            "time": 0.219081,
+            "duration": 156.63333333333333,
+            "error": null
+          },
+          {
+            "key": "4-2",
+            "time": 0.220699,
+            "duration": 107.13333333333334,
+            "error": null
+          },
+          {
+            "key": "5-1",
+            "time": 0.212977,
+            "duration": 108.3,
+            "error": null
+          },
+          {
+            "key": "5-2",
+            "time": 0.213723,
+            "duration": 149.2,
+            "error": null
+          },
+          {
+            "key": "5-3",
+            "time": 0.211001,
+            "duration": 112.3,
+            "error": null
+          }
+        ],
+        "finalPdfDownloaded": true,
+        "apostilaVisibleInPart2": true,
+        "certificateIssuedByRealService": true
+      },
+      "syntheticAccountBlocked": true,
+      "syntheticGrantRevoked": true
+    }
+  },
+  "aula1Parte2": {
+    "blocks": ["video", "materials", "rich_text"],
+    "materialsTitle": "Materiais da aula",
+    "fileLabel": "Baixar apostila do curso",
+    "book3DBlock": false,
+    "bookPreviewPropertyAbsent": true,
+    "richTextBlocks": 1,
+    "summaryTitle": "Para consultar",
+    "summaryPosition": "Depois dos materiais, na mesma coluna.",
+    "environments": {
+      "staging": {
+        "environment": "staging",
+        "sectionKinds": ["video", "materials", "rich_text"],
+        "book3D": false,
+        "consultationText": true,
+        "summaryBelowMaterials": true,
+        "oneColumn": true,
+        "materialBelowVideo": true,
+        "download": true,
+        "mobileNoOverflow": true
+      },
+      "production": {
+        "environment": "production",
+        "sectionKinds": ["video", "materials", "rich_text"],
+        "book3D": false,
+        "consultationText": true,
+        "summaryBelowMaterials": true,
+        "oneColumn": true,
+        "materialBelowVideo": true,
+        "download": true,
+        "mobileNoOverflow": true
+      }
+    },
+    "validation": "Resumo original restaurado e aula validada e publicada pelo serviço canônico de autoria em cada ambiente; vídeos, anexos e conclusão preservados."
+  },
+  "videoReplacement5Part2": {
+    "receipt": "troca-video-aula-05-parte-02-2026-11-26.json",
+    "staging": true,
+    "production": true,
+    "posterReuploadedBoth": true,
+    "playbackAndTailAudioBoth": true,
+    "sourceSha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e"
+  }
+}

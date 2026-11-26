@@ -1,61 +1,142 @@
-import { describe, expect, test } from 'bun:test'
-import { type Env, offerEnvKey } from '../../src/lib/env'
-import { makeResolveOffer, resolveOfferSlug } from '../../src/server/offer'
+import { beforeEach, describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { clearOfferCache } from '../../src/server/catalog'
+import { makeResolveOffer } from '../../src/server/offer'
+import {
+  clearPrimaryOfferCache,
+  isPageOffer,
+  PageOfferUnavailableError,
+  pageForOffer,
+  primaryOfferLookup,
+  primaryOfferSlug,
+  resolvePageOffer,
+} from '../../src/server/page-offer'
+import { createFakeGateway } from '../fakes/fake-gateway'
 
-// A oferta vem 100% das envs (mapa `funilKey → offerSlug` montado em lib/env.ts).
-const env = {
-  offerByFunnel: {
-    'pro/comunidade-dos-criadores': 'oferta-comunidade-adulta',
-    'kids/desafio-primeiro-jogo': 'oferta-kids-julho',
-    'kids/comunidade-dos-criadores': 'oferta-comunidade-mensal',
-  },
-} as unknown as Env
+const ROOT = join(import.meta.dir, '..', '..')
+const CADE = { productSku: 'cade-todo-mundo', offerContract: undefined }
 
-describe('resolução de oferta (100% por env, com compat de lead legado)', () => {
-  test('resolveOfferSlug devolve a oferta da env do funil', () => {
-    expect(resolveOfferSlug(env, 'pro/comunidade-dos-criadores')).toBe('oferta-comunidade-adulta')
-    expect(resolveOfferSlug(env, 'kids/desafio-primeiro-jogo')).toBe('oferta-kids-julho')
-    expect(resolveOfferSlug(env, 'kids/comunidade-dos-criadores')).toBe('oferta-comunidade-mensal')
-  })
+beforeEach(() => {
+  clearOfferCache()
+  clearPrimaryOfferCache()
+})
 
-  test('makeResolveOffer usa a env do funil do lead', () => {
-    const resolve = makeResolveOffer(env)
-    expect(resolve('kids/desafio-primeiro-jogo').offerSlug).toBe('oferta-kids-julho')
-    expect(resolve('pro/comunidade-dos-criadores').offerSlug).toBe('oferta-comunidade-adulta')
-    expect(resolve('kids/comunidade-dos-criadores').offerSlug).toBe('oferta-comunidade-mensal')
-  })
-
-  test('a cobrança da Comunidade adulta leva "(adultos)": é o que separa adulto de Kids em Compras', () => {
-    const resolve = makeResolveOffer({
-      offerByFunnel: {
-        'pro/comunidade-dos-criadores': 'comunidade-dos-criadores-adulto-mensal',
-        'kids/comunidade-dos-criadores': 'oferta-comunidade-mensal',
-      },
-    } as unknown as Env)
-    expect(resolve('pro/comunidade-dos-criadores').productName).toBe(
+describe('oferta da página: a principal do produto no catálogo (sem env, 25/11/2026)', () => {
+  test('makeResolveOffer lê a principal do produto do funil do lead', async () => {
+    const gw = createFakeGateway()
+    gw.setProductPrimary('desafio-primeiro-jogo', 'oferta-kids-julho')
+    gw.setProductPrimary(
+      'comunidade-dos-criadores-adulto',
+      'comunidade-dos-criadores-adulto-mensal',
+    )
+    const resolve = makeResolveOffer(gw.gateway)
+    expect((await resolve('kids/desafio-primeiro-jogo'))?.offerSlug).toBe('oferta-kids-julho')
+    // A cobrança da Comunidade adulta leva "(adultos)": é o que separa adulto de Kids em Compras.
+    expect((await resolve('pro/comunidade-dos-criadores'))?.productName).toBe(
       'Comunidade dos Criadores (adultos)',
     )
-    expect(resolve('kids/comunidade-dos-criadores').productName).toBe('Comunidade dos Criadores')
+    // Funil nulo é legado e cai no default (a Comunidade adulta).
+    expect((await resolve(null))?.offerSlug).toBe('comunidade-dos-criadores-adulto-mensal')
   })
 
-  test('funil nulo é legado e cai no default; funil desconhecido → lança', () => {
-    const resolve = makeResolveOffer(env)
-    expect(resolve(null).offerSlug).toBe('oferta-comunidade-adulta')
-    expect(() => resolve('pro/inexistente')).toThrow()
+  test('sem oferta principal marcada: null (página indisponível); funil desconhecido lança', async () => {
+    const gw = createFakeGateway()
+    gw.setProductPrimary('desafio-primeiro-jogo', null)
+    const resolve = makeResolveOffer(gw.gateway)
+    expect(await resolve('kids/desafio-primeiro-jogo')).toBeNull()
+    expect(await resolve('kids/comunidade-dos-criadores')).toBeNull()
+    await expect(resolve('pro/inexistente')).rejects.toThrow()
   })
 
-  test('funil conhecido mas SEM env de oferta → lança', () => {
-    const semKids = { offerByFunnel: { 'pro/comunidade-dos-criadores': 'x' } } as unknown as Env
-    expect(() => resolveOfferSlug(semKids, 'kids/desafio-primeiro-jogo')).toThrow()
-    expect(() => resolveOfferSlug(semKids, 'kids/comunidade-dos-criadores')).toThrow()
+  test('a principal fica em cache curto (uma ida ao catálogo por minuto)', async () => {
+    const gw = createFakeGateway()
+    gw.setProductPrimary('cade-todo-mundo', 'cade-1-ano')
+    expect(await primaryOfferSlug(gw.gateway, 'cade-todo-mundo', { now: 1000 })).toBe('cade-1-ano')
+    expect(await primaryOfferSlug(gw.gateway, 'cade-todo-mundo', { now: 2000 })).toBe('cade-1-ano')
+    expect(gw.calls.products).toEqual(['cade-todo-mundo'])
   })
 
-  test('offerEnvKey mapeia a chave do funil pra env FUNNEL_OFFER_<KEY>', () => {
-    expect(offerEnvKey('pro/comunidade-dos-criadores')).toBe(
-      'FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES',
-    )
-    expect(offerEnvKey('kids/comunidade-dos-criadores')).toBe(
-      'FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES',
+  test('?oferta= só vale para outra oferta do MESMO produto, marcada para a página e no contrato', async () => {
+    const gw = createFakeGateway()
+    gw.setProductPrimary('cade-todo-mundo', 'cade-1-ano')
+    gw.setOfferConfig('cade-1-ano', { productSku: 'cade-todo-mundo' })
+    gw.setOfferConfig('cade-6-meses', { productSku: 'cade-todo-mundo', pageSellable: true })
+    // Mesmo produto, dentro do contrato, mas SEM a marca (a oferta de presente, por exemplo).
+    gw.setOfferConfig('cade-presente', { productSku: 'cade-todo-mundo' })
+    gw.setOfferConfig('outra-oferta', { productSku: 'outro-produto', pageSellable: true })
+    expect((await resolvePageOffer(gw.gateway, CADE, 'cade-6-meses'))?.slug).toBe('cade-6-meses')
+    expect((await resolvePageOffer(gw.gateway, CADE, 'cade-presente'))?.slug).toBe('cade-1-ano')
+    expect(await isPageOffer(gw.gateway, CADE, 'cade-presente')).toBe(false)
+    // Oferta de outro produto, slug lixo ou ausente: a principal.
+    expect((await resolvePageOffer(gw.gateway, CADE, 'outra-oferta'))?.slug).toBe('cade-1-ano')
+    expect((await resolvePageOffer(gw.gateway, CADE, '<x>'))?.slug).toBe('cade-1-ano')
+    expect(await isPageOffer(gw.gateway, CADE, 'outra-oferta')).toBe(false)
+    expect(await isPageOffer(gw.gateway, CADE, 'cade-6-meses')).toBe(true)
+  })
+
+  test('o contrato da página barra a oferta de presente (15 dias) no Cadê vendido (1 ano)', async () => {
+    const gw = createFakeGateway()
+    const contrato = {
+      pricingMode: 'one_time' as const,
+      accessMode: 'fixed' as const,
+      accessDurationValue: null,
+      accessDurationUnit: 'months' as const,
+      guaranteeDays: null,
+      anyDuration: true,
+      anyGuarantee: true,
+    }
+    gw.setProductPrimary('cade-todo-mundo', 'cade-1-ano')
+    gw.setOfferConfig('cade-1-ano', {
+      productSku: 'cade-todo-mundo',
+      accessMode: 'fixed',
+      accessDurationValue: 12,
+      accessDurationUnit: 'months',
+    })
+    gw.setOfferConfig('cade-15-dias', {
+      productSku: 'cade-todo-mundo',
+      accessMode: 'fixed',
+      accessDurationValue: 15,
+      accessDurationUnit: 'days',
+      // Mesmo marcada para a página, o contrato (1 ano) a barra.
+      pageSellable: true,
+    })
+    const page = { productSku: 'cade-todo-mundo', offerContract: contrato }
+    expect((await resolvePageOffer(gw.gateway, page, 'cade-15-dias'))?.slug).toBe('cade-1-ano')
+    expect(await isPageOffer(gw.gateway, page, 'cade-15-dias')).toBe(false)
+  })
+
+  test('pageForOffer acha a página pelo produto da oferta', async () => {
+    const gw = createFakeGateway()
+    gw.setProductPrimary('desafio-primeiro-jogo', 'desafio-primeiro-jogo-30-dias')
+    gw.setOfferConfig('desafio-primeiro-jogo-30-dias', {
+      productSku: 'desafio-primeiro-jogo',
+      accessMode: 'fixed',
+      accessDurationValue: 30,
+      accessDurationUnit: 'days',
+    })
+    const page = await pageForOffer(gw.gateway, 'desafio-primeiro-jogo-30-dias', 'kids')
+    expect(page).toMatchObject({ primary: true, alt: false })
+    expect(page?.funnel.key).toBe('kids/desafio-primeiro-jogo')
+    expect(await pageForOffer(gw.gateway, 'desafio-primeiro-jogo-30-dias', 'adult')).toBeNull()
+  })
+
+  test('a configuração do funil não lê nem pede as envs legadas de oferta', () => {
+    // O IaC preserva os valores existentes para réplicas antigas e rollback.
+    // O funil novo usa exclusivamente a oferta principal do catálogo.
+    for (const file of [join(ROOT, 'src', 'lib', 'env.ts'), join(ROOT, '.env.example')])
+      expect(readFileSync(file, 'utf8')).not.toMatch(/FUNNEL_OFFER_[A-Z]/)
+  })
+
+  test('catálogo fora sem cópia em cache: "indisponível", não "sem página"', async () => {
+    const gw = createFakeGateway()
+    gw.setOfferConfig('desafio-primeiro-jogo-30-dias', { productSku: 'desafio-primeiro-jogo' })
+    gw.setProductResult(503)
+    expect(await primaryOfferLookup(gw.gateway, 'desafio-primeiro-jogo')).toEqual({
+      kind: 'unavailable',
+    })
+    await expect(pageForOffer(gw.gateway, 'desafio-primeiro-jogo-30-dias', 'kids')).rejects.toThrow(
+      PageOfferUnavailableError,
     )
   })
 })

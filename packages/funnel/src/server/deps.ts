@@ -4,6 +4,7 @@ import { startWebhookRetention } from '../db/retention'
 import { type Env, getEnv } from '../lib/env'
 import { createGatewayClient, type GatewayClient } from '../lib/gateway-client'
 import { initSentry, mirrorErrorEvent } from '../lib/sentry'
+import { type CampaignRedirects, createCampaignRedirects } from './campaign-redirect'
 
 export interface Deps {
   repo: FunnelRepo
@@ -11,6 +12,8 @@ export interface Deps {
   gateway: GatewayClient
   /** Log de diagnóstico (stderr) p/ os handlers que aceitam `log?:` via deps. */
   log: (msg: string, meta?: Record<string, unknown>) => void
+  /** Endereços antigos de campanha (lista do referrals guardada por um minuto). */
+  campaignRedirects: CampaignRedirects
 }
 
 let cached: Deps | undefined
@@ -27,21 +30,24 @@ export function getDeps(): Deps {
       environment: env.NODE_ENV,
       release: process.env.RAILWAY_GIT_COMMIT_SHA,
     })
+    const gateway = createGatewayClient({
+      baseUrl: env.GATEWAY_URL,
+      consumerId: env.FUNNEL_CONSUMER_ID,
+      hmacSecret: env.FUNNEL_HMAC_SECRET,
+    })
+    const log: Deps['log'] = (msg, meta) => {
+      console.error(msg, meta ?? '')
+      // Convenção do monorepo: evento `*_error`/`*_failed` é sinal alertável →
+      // espelha no Sentry (issue por nome). Sucessos (welcome.sent, grant.done…)
+      // ficam só no stderr.
+      if (/(error|failed)$/.test(msg)) mirrorErrorEvent(msg, meta)
+    }
     cached = {
       env,
       repo: createFunnelRepo(getDb()),
-      gateway: createGatewayClient({
-        baseUrl: env.GATEWAY_URL,
-        consumerId: env.FUNNEL_CONSUMER_ID,
-        hmacSecret: env.FUNNEL_HMAC_SECRET,
-      }),
-      log: (msg, meta) => {
-        console.error(msg, meta ?? '')
-        // Convenção do monorepo: evento `*_error`/`*_failed` é sinal alertável →
-        // espelha no Sentry (issue por nome). Sucessos (welcome.sent, grant.done…)
-        // ficam só no stderr.
-        if (/(error|failed)$/.test(msg)) mirrorErrorEvent(msg, meta)
-      },
+      gateway,
+      log,
+      campaignRedirects: createCampaignRedirects({ gateway, now: Date.now, log }),
     }
     // Limpeza periódica do dedupe de webhooks (1x por processo, advisory lock).
     startWebhookRetention(getDb(), cached.log)

@@ -48,3 +48,14 @@ describe('catalog-http.gateway — token interno', () => {
     expect('x-internal-token' in (calls[0]?.headers ?? {})).toBe(false)
   })
 })
+
+describe('catalog-http.gateway — prazo divulgado', () => {
+  it('lê advertisedAccessDays do topo de /entitlements', async () => {
+    const body = JSON.stringify({ ...JSON.parse(OFFER_BODY), advertisedAccessDays: 7 })
+    const gateway = createCatalogHttpGateway({
+      baseUrl: 'http://catalog:3003',
+      fetchImpl: (async () => new Response(body, { status: 200 })) as unknown as typeof fetch,
+    })
+    expect((await gateway.resolveOfferEntitlements('oferta'))?.advertisedAccessDays).toBe(7)
+  })
+})

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { type CommerceCatalogOffer, CommerceCatalogOfferSchema } from '@sistemazero/core/commerce'
 import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import type { AdultProfilePreferences } from '@sistemazero/core/profiles'
 import type { CreatorMasteriesResponse, CreatorMasteryEvidenceResponse } from '../lib/mastery'
@@ -94,6 +95,7 @@ import type {
   ZappyStoredResponseView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
+import { pageSellableStatus } from './page-sellable'
 import { createPensaClient } from './pensa-client'
 import type { AuthTokens } from './session'
 
@@ -559,6 +561,32 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Todos os cursos para pais publicados, com `hasAccess` da conta (os fechados também). */
     listParentCatalog(): Promise<GatewayResponse<{ courses: CatalogCourseView[] }>> {
       return gw.gatewayFetch('/members/catalog', { query: { audience, learner: 'parents' } })
+    },
+
+    /**
+     * A oferta de venda de um curso (`salesOfferRef`, 25/11/2026), lida do catálogo para o preço,
+     * o prazo e a garantia do cartão. `null` quando não existe, não está à venda ou é de outro
+     * público: o cartão fica sem compra, nunca com preço inventado. Server Component.
+     */
+    async getSaleOfferReadonly(ref: string): Promise<CommerceCatalogOffer | null> {
+      if (!/^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/.test(ref)) return null
+      const found = await gw
+        .gatewayFetchReadonly(`/catalog/offers/${encodeURIComponent(ref)}`)
+        .catch(() => null)
+      const parsed = CommerceCatalogOfferSchema.safeParse(found?.body)
+      if (
+        found?.status !== 200 ||
+        !parsed.success ||
+        !parsed.data.isAvailable ||
+        parsed.data.product.audience !== audience
+      )
+        return null
+      // A MESMA régua do mini checkout (origem `offer`): o cartão só mostra preço e compra quando
+      // a compra vai abrir. Catálogo fora ao conferir: sem compra (nunca preço que não vende).
+      const sellable = await pageSellableStatus(parsed.data, (sku) =>
+        gw.gatewayFetchReadonly(`/catalog/products/by-sku/${encodeURIComponent(sku)}`),
+      )
+      return sellable === 'sellable' ? parsed.data : null
     },
 
     getCreatorMasteriesReadonly(): Promise<GatewayResponse<CreatorMasteriesResponse>> {

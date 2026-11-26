@@ -1,0 +1,107 @@
+[
+  {
+    "file": "arte-base.png",
+    "bytes": 2013361,
+    "sha256": "806f9af218bf16ba6318605c9cd252382c0e41bd5c5ac9ca96d14b498287fd05"
+  },
+  {
+    "file": "capa-do-curso.png",
+    "bytes": 1837555,
+    "sha256": "0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b"
+  },
+  {
+    "file": "capa-apostila.png",
+    "bytes": 2210972,
+    "sha256": "5d7afeed821e6391c0585e08d887938aea99aee664effc82ed285376c1947ed3"
+  },
+  {
+    "file": "apostila.pdf",
+    "bytes": 946916,
+    "sha256": "09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed"
+  },
+  {
+    "file": "certificado.png",
+    "bytes": 1606482,
+    "sha256": "30e85a03867342461b250692c0567344fff03c7cfe4cc29056d46cbadf26ca6e"
+  },
+  {
+    "file": "certificado-demonstracao.pdf",
+    "bytes": 2048185,
+    "sha256": "03dc1220748c6b966f11bd4c192e082d9b290dd5d921fe66fc3d4b540674faee"
+  },
+  {
+    "file": "certificado-demonstracao.png",
+    "bytes": 996795,
+    "sha256": "adb7fb68e9344deec94935ed5652a53c7dd3996f6484fd6dcc6cf1de430e9a5c"
+  },
+  {
+    "file": "capas-das-aulas/aula-01-parte-01.png",
+    "bytes": 1191136,
+    "sha256": "cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e"
+  },
+  {
+    "file": "capas-das-aulas/aula-01-parte-02.png",
+    "bytes": 1205304,
+    "sha256": "878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b"
+  },
+  {
+    "file": "capas-das-aulas/aula-02-parte-01.png",
+    "bytes": 1203553,
+    "sha256": "de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1"
+  },
+  {
+    "file": "capas-das-aulas/aula-02-parte-02.png",
+    "bytes": 1201795,
+    "sha256": "9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2"
+  },
+  {
+    "file": "capas-das-aulas/aula-03-parte-01.png",
+    "bytes": 1204582,
+    "sha256": "3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31"
+  },
+  {
+    "file": "capas-das-aulas/aula-03-parte-02.png",
+    "bytes": 1203672,
+    "sha256": "b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689"
+  },
+  {
+    "file": "capas-das-aulas/aula-03-parte-03.png",
+    "bytes": 1201491,
+    "sha256": "a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f"
+  },
+  {
+    "file": "capas-das-aulas/aula-04-parte-01.png",
+    "bytes": 1198900,
+    "sha256": "65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441"
+  },
+  {
+    "file": "capas-das-aulas/aula-04-parte-02.png",
+    "bytes": 1201172,
+    "sha256": "6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472"
+  },
+  {
+    "file": "capas-das-aulas/aula-05-parte-01.png",
+    "bytes": 1204567,
+    "sha256": "bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35"
+  },
+  {
+    "file": "capas-das-aulas/aula-05-parte-02.png",
+    "bytes": 1205482,
+    "sha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179"
+  },
+  {
+    "file": "capas-das-aulas/aula-05-parte-03.png",
+    "bytes": 1197964,
+    "sha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e"
+  },
+  {
+    "file": "assinaturas/helena-oliveira.webp",
+    "bytes": 57090,
+    "sha256": "03e20c41c4d6d54cf2e5f843fe6b11896d12cee43319fa9fcbbc8a4b4ce21c35"
+  },
+  {
+    "file": "assinaturas/julio-felipe.webp",
+    "bytes": 86292,
+    "sha256": "be0df79f3c6c1ac6e8a6f0d00b13156a1327906a22a7c5e0f3f38ab35e6502b6"
+  }
+]

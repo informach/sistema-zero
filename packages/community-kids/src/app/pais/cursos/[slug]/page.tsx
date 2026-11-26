@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { getMyCourse, listParentCatalog } from '@/server/members'
+import { loadParentSaleOffers } from '@/server/parent-course-offers'
 import { getSession } from '@/server/session'
 import { ParentCourseClosed, ParentCourseView } from './parent-course-view'
 
@@ -23,7 +24,17 @@ export default async function ParentCoursePage({ params }: { params: Promise<{ s
       catalog?.status === 200
         ? catalog.body?.courses.find((item) => item.courseSlug === slug)
         : undefined
-    if (course) return <ParentCourseClosed parentName={session.firstName} course={course} />
+    if (course) {
+      // A compra pelo mini checkout usa a oferta de venda do curso (o preço vem do catálogo).
+      const offers = await loadParentSaleOffers([course])
+      return (
+        <ParentCourseClosed
+          parentName={session.firstName}
+          course={course}
+          offer={offers[course.courseSlug] ?? null}
+        />
+      )
+    }
   }
   if (courseRes.status === 403 || courseRes.status === 404 || courseRes.status === 423) notFound()
   throw new Error('Falha ao carregar o curso')

@@ -856,6 +856,15 @@ const CourseBodyProperties = {
   // Página de vendas (funil): vira `metadata.salesPageUrl` — é para onde o
   // cadeado do catálogo "Todos os cursos" leva quem não tem acesso.
   salesPageUrl: NULLABLE_URL,
+  // A oferta de venda do curso no catálogo (25/11/2026): a página do curso fechado na área dos
+  // pais vende ESTA oferta pelo mini checkout. Vira `metadata.salesOfferRef`. AUSENTE PRESERVA
+  // (build antigo do Admin não apaga), `null`/vazio limpa.
+  salesOfferRef: t.Optional(
+    t.Union([
+      t.String({ maxLength: 140, pattern: '^$|^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$' }),
+      t.Null(),
+    ]),
+  ),
   status: COURSE_STATUS,
   // Plataforma do curso. AUSENTE: create → `adult`; update → PRESERVA a atual
   // (build antigo do admin sem o campo não rebaixa curso kids em silêncio).

@@ -129,6 +129,24 @@ const registry = new RouteRegistry([
   // do funil (literais sob /referrals/internal) + o grant-manual do members.
   r({ id: 'referrals-admin-read', methods: ['GET'], pathPattern: '/referrals/admin/*' }),
   r({ id: 'referrals-admin-write', methods: ['POST', 'PATCH'], pathPattern: '/referrals/admin/*' }),
+  ...realConfig.routes
+    .filter(
+      (route) =>
+        route.id.startsWith('referrals-admin-') &&
+        route.id !== 'referrals-admin-read' &&
+        route.id !== 'referrals-admin-write',
+    )
+    .map((route) => routeConfigSchema.parse(route)),
+  ...realConfig.routes
+    .filter(
+      (route) =>
+        route.id.startsWith('referrals-internal-link') ||
+        route.id === 'referrals-internal-redirects',
+    )
+    .map((route) => routeConfigSchema.parse(route)),
+  ...realConfig.routes
+    .filter((route) => route.id === 'catalog-product-get' || route.id === 'catalog-product-by-sku')
+    .map((route) => routeConfigSchema.parse(route)),
   r({
     id: 'referrals-internal-code',
     methods: ['GET'],
@@ -521,6 +539,42 @@ describe('RouteRegistry', () => {
       registry.resolve('POST', '/referrals/internal/ambassadors/by-token/tok123/invites', 'v1')
         ?.route.id,
     ).toBe('referrals-internal-invite')
+    // Origem das vendas (e-mails + faturamento): literais admin+ vencem o wildcard staff+.
+    for (const [path, id] of [
+      ['/referrals/admin/origins', 'referrals-admin-origins-read'],
+      ['/referrals/admin/acquisitions', 'referrals-admin-acquisitions-read'],
+      ['/referrals/admin/campaigns/c1/results', 'referrals-admin-campaign-results-read'],
+      ['/referrals/admin/ambassadors/a1/results', 'referrals-admin-ambassador-results-read'],
+      ['/referrals/admin/conversions', 'referrals-admin-conversions-read'],
+    ] as const)
+      expect(registry.resolve('GET', path, 'v1')?.route.id).toBe(id)
+    expect(registry.resolve('GET', '/referrals/admin/ambassador-offers', 'v1')?.route.id).toBe(
+      'referrals-admin-read',
+    )
+    expect(registry.resolve('PUT', '/referrals/admin/ambassador-offers', 'v1')?.route.id).toBe(
+      'referrals-admin-ambassador-offers-write',
+    )
+    // Links `/i/` do funil: um, dois ou três segmentos depois de /links.
+    expect(registry.resolve('GET', '/referrals/internal/links/mari-x7k2', 'v1')?.route.id).toBe(
+      'referrals-internal-link',
+    )
+    expect(
+      registry.resolve('GET', '/referrals/internal/links/mari-x7k2/desafio', 'v1')?.route.id,
+    ).toBe('referrals-internal-link-offer')
+    expect(
+      registry.resolve('GET', '/referrals/internal/links/mari-x7k2/desafio/pagamento', 'v1')?.route
+        .id,
+    ).toBe('referrals-internal-link-target')
+    expect(registry.resolve('GET', '/referrals/internal/redirects', 'v1')?.route.id).toBe(
+      'referrals-internal-redirects',
+    )
+    // Produto pelo SKU (página de venda do funil) e pelo slug, sem um engolir o outro.
+    expect(
+      registry.resolve('GET', '/catalog/products/by-sku/cade-todo-mundo', 'v1')?.route.id,
+    ).toBe('catalog-product-by-sku')
+    expect(registry.resolve('GET', '/catalog/products/cade-todo-mundo', 'v1')?.route.id).toBe(
+      'catalog-product-get',
+    )
     // O literal `grant-manual` NUNCA cai no `grant` (segmento distinto).
     expect(registry.resolve('POST', '/members/webhooks/grant-manual', 'v1')?.route.id).toBe(
       'members-webhook-grant-manual',
@@ -539,4 +593,19 @@ describe('RouteRegistry', () => {
     // Encoding válido segue decodificado normalmente.
     expect(registry.resolve('GET', '/payments/a%20b', 'v1')?.params.id).toBe('a b')
   })
+})
+
+test('Lote 7: "começaram o curso do presente" é POST staff+ do members, com corpo pequeno', () => {
+  const registry = new RouteRegistry(
+    realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+  )
+  const route = registry.resolve('POST', '/members/admin/course-starts', 'v1')?.route
+  expect(route).toMatchObject({
+    id: 'members-admin-course-starts',
+    service: 'members',
+    authorize: { roles: ['superadmin', 'admin', 'staff'] },
+  })
+  expect(registry.resolve('GET', '/members/admin/course-starts', 'v1')?.route.id).not.toBe(
+    'members-admin-course-starts',
+  )
 })

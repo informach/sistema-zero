@@ -23,7 +23,13 @@ import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { loadAllPages } from '@/lib/load-all-pages'
 import type { Platform } from '@/lib/platform'
 import { skuify, slugify } from '@/lib/slug'
-import type { CourseView, FulfillmentSpec, Paginated, ProductView } from '@/lib/types'
+import type {
+  CourseView,
+  FulfillmentSpec,
+  OfferListItem,
+  Paginated,
+  ProductView,
+} from '@/lib/types'
 
 // Tipos oferecidos no cadastro. `service`/`other` saíram do form (decisão do
 // usuário, 06/2026 — "por enquanto"): o catálogo segue aceitando (enum no banco,
@@ -124,6 +130,9 @@ function ProductFormForCommunity({
   const [products, setProducts] = useState<ProductView[]>([])
   const [courses, setCourses] = useState<CourseOption[]>([])
   const [coursesLoading, setCoursesLoading] = useState(true)
+  // Oferta principal da página de venda (25/11/2026): uma das ofertas DESTE produto.
+  const [primaryOfferId, setPrimaryOfferId] = useState<string>('')
+  const [productOffers, setProductOffers] = useState<OfferListItem[]>([])
 
   useEffect(() => {
     let alive = true
@@ -175,6 +184,7 @@ function ProductFormForCommunity({
             .map((c) => ({ productId: c.productId, isPrimary: c.isPrimary })),
         )
         setFulfillment(sanitizeFulfillment(p.fulfillment))
+        setPrimaryOfferId(p.primaryOfferId ?? '')
         setSkuDirty(true)
         setSlugDirty(true)
       })
@@ -188,6 +198,25 @@ function ProductFormForCommunity({
       })
       .finally(() => {
         if (alive) setLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [productId, apiGet])
+
+  // As ofertas do produto (só na edição: produto novo ainda não tem oferta).
+  useEffect(() => {
+    if (!productId) return
+    let alive = true
+    apiGet<Paginated<OfferListItem>>(
+      `/api/catalog/offers?${new URLSearchParams({ productId, limit: '100', offset: '0' })}`,
+    )
+      .then((page) => {
+        if (alive) setProductOffers(page.items.filter((o) => o.status !== 'archived'))
+      })
+      .catch((err) => {
+        if (alive && !isCanceledCommunityRequest(err))
+          toast.error('As ofertas do produto não carregaram. Recarregue para escolher a principal.')
       })
     return () => {
       alive = false
@@ -249,6 +278,7 @@ function ProductFormForCommunity({
           description: form.description.trim() ? form.description : null,
           fulfillment: fulfillmentPayload,
           components: componentsPayload,
+          primaryOfferId: primaryOfferId || null,
         })
         toast.success('Produto atualizado.')
       } else {
@@ -476,6 +506,40 @@ function ProductFormForCommunity({
               courses={courses}
               coursesLoading={coursesLoading}
             />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {isEdit ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-1.5 text-base">
+              Oferta principal da página de venda
+              <InfoTooltip text="A oferta que a página de venda deste produto mostra quando o link não escolhe outra. Um link pode abrir outra oferta deste mesmo produto (por exemplo, o plano anual). Sem oferta principal, a página fica indisponível." />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Field
+              label="Oferta principal"
+              htmlFor="primary-offer"
+              hint="Só aparecem as ofertas deste produto que não estão arquivadas."
+            >
+              <Select
+                id="primary-offer"
+                value={primaryOfferId}
+                onChange={(e) => setPrimaryOfferId(e.target.value)}
+              >
+                <option value="">Sem página de venda</option>
+                {productOffers.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name} ({statusLabel(o.status)})
+                  </option>
+                ))}
+                {primaryOfferId && !productOffers.some((o) => o.id === primaryOfferId) ? (
+                  <option value={primaryOfferId}>Oferta atual (fora da lista)</option>
+                ) : null}
+              </Select>
+            </Field>
           </CardContent>
         </Card>
       ) : null}

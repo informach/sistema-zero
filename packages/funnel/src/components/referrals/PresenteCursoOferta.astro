@@ -17,8 +17,10 @@ interface Props {
   kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
   communityUrl: string
   variante: 'pais' | 'curso'
+  /** O presente escolhido pelo embaixador (`?oferta=` do link), repassado ao resgate. */
+  oferta?: string
 }
-const { gift, kind, communityUrl, variante } = Astro.props
+const { gift, kind, communityUrl, variante, oferta } = Astro.props
 const audience = gift.audience === 'adult' ? 'adult' : 'kids'
 const adulto = audience === 'adult'
 const P = presenteCursoCopy(audience, gift.gift, variante)
@@ -60,6 +62,7 @@ const resgate = {
   campaign,
   gift: gift.gift,
   variante,
+  oferta,
 } as const
 ---
 {adulto ? (

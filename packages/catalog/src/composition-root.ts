@@ -56,7 +56,7 @@ export function createApplication(env: Env): Application {
   // Serviços de domínio/aplicação
   const resolver = new ResolveOfferEntitlementsService(products)
   const getOffer = new GetOfferService(offers, products, resolver, logger)
-  const getProduct = new GetProductService(products)
+  const getProduct = new GetProductService(products, offers)
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
@@ -72,7 +72,7 @@ export function createApplication(env: Env): Application {
   )
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createProduct = new CreateProductService(products, logger)
-  const updateProduct = new UpdateProductService(products, logger)
+  const updateProduct = new UpdateProductService(products, logger, offers)
   const createOffer = new CreateOfferService(offers, products, resolver, logger)
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
   const createCoupon = new CreateCouponService(coupons, offers, products, logger)

@@ -307,3 +307,53 @@ describe('Curso para pais — regras de autoria', () => {
     expect(issues.map((issue) => issue.blockId)).toEqual(['b2', 'b3'])
   })
 })
+
+describe('Curso para pais — a oferta de venda (Lote 6, 25/11/2026)', () => {
+  const COURSE = {
+    slug: 'curso-dos-pais',
+    title: 'Curso dos pais',
+    subtitle: null,
+    description: 'O que o curso mostra.',
+    coverImageUrl: null,
+    status: 'draft',
+    audience: 'kids',
+    learner: 'parents',
+  }
+  test('o curso guarda a oferta de venda; PATCH sem o campo preserva e null limpa', async () => {
+    const env = buildApp({ now: NOW })
+    const created = await readJson(
+      await request(env, '/members/admin/courses', {
+        method: 'POST',
+        body: { ...COURSE, salesOfferRef: 'guia-pais-1-ano' },
+      }),
+    )
+    expect(created.salesOfferRef).toBe('guia-pais-1-ano')
+    const patch = (body: Record<string, unknown>, version: number) =>
+      request(env, `/members/admin/courses/${created.id}`, {
+        method: 'PATCH',
+        body: { ...COURSE, ...body, version },
+      })
+    const kept = await readJson(await patch({ title: 'Outro título' }, created.version))
+    expect(kept.salesOfferRef).toBe('guia-pais-1-ano')
+    const cleared = await readJson(await patch({ salesOfferRef: null }, kept.version))
+    expect(cleared.salesOfferRef).toBeNull()
+    expect((await patch({ salesOfferRef: 'Oferta inválida!' }, cleared.version)).status).toBe(400)
+  })
+  test('o catálogo dos pais leva a oferta, a descrição e as aulas publicadas', async () => {
+    const env = buildApp({ now: NOW })
+    const { course, lessonIds } = seedParentsCourse(env)
+    course.metadata = { salesOfferRef: 'guia-pais-1-ano' }
+    course.description = 'O que o curso mostra.'
+    const catalog = await readJson(
+      await request(env, '/members/catalog?audience=kids&learner=parents', {
+        headers: parentHeaders,
+      }),
+    )
+    expect(catalog.courses[0]).toMatchObject({
+      salesOfferRef: 'guia-pais-1-ano',
+      description: 'O que o curso mostra.',
+      lessonsCount: lessonIds.length,
+      hasAccess: false,
+    })
+  })
+})

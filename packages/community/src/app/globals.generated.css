@@ -1,5 +1,5 @@
 /* Gerado por packages/ui/scripts/lesson-theme.mjs. Não editar.
- * Fontes SHA-256: e23769ad09f1706a6c822dde605ced367ed4301303fdb6b295ad9eeb4640b8a0
+ * Fontes SHA-256: eec8da41c2cc4be5cc7efeb876886cf9a69b2e6cac03ebe8d89e542875170211
  */
 @import "tailwindcss";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind (registra as cores sz para o
@@ -3610,8 +3610,15 @@ html:has(.sz-app[data-embedded="true"] [data-sz-tool-notice]) :where(.sz-communi
     1.5rem
   );
 }
+/* A barra de abas entra pela MESMA medida do rodapé (`--sz-lesson-tabs-height`, que a barra publica
+   e que a moldura sem abas declara 0): com o `3.5rem` cravado, a barra da chamada da sala adulta
+   (sem abas) ficava solta 56px acima do rodapé. */
 :where(body:has(.sz-lesson-ui)) .kids-aula .sz-live-controls {
-  bottom: calc(var(--sz-lesson-nav-height, 0px) + 3.5rem + env(safe-area-inset-bottom) + 0.5rem);
+  bottom: calc(
+    var(--sz-lesson-nav-height, 0px) +
+    var(--sz-lesson-tabs-height, calc(3.5rem + env(safe-area-inset-bottom))) +
+    0.5rem
+  );
 }
 @media (min-width: 768px) {
   :where(body:has(.sz-lesson-ui)) .kids-aula {

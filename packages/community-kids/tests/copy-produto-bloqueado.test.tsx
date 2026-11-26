@@ -155,7 +155,7 @@ describe('a copy aprovada das seis telas', () => {
     )
     const link = screen.getByRole('link', { name: 'Ver com o meu responsável' })
     expect(link.getAttribute('href')).toBe(
-      `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=ferramenta-${LOCKED_PRODUCTS[id].slug}`,
+      `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=ferramenta-${LOCKED_PRODUCTS[id].slug}&lugar=crianca-produto-fechado`,
     )
     expect(link.getAttribute('href')).toContain('utm_content=ferramenta-')
     expect(link.getAttribute('target')).toBe('_blank')

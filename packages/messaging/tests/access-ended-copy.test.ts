@@ -26,6 +26,9 @@ const CONTRACTS = {
   'subscription-ended-kids': ['nome', 'link'],
   'subscription-ended-adult': ['nome', 'link'],
   'profile-turned-18': ['nome', 'nome_perfil', 'link'],
+  // Dias de surpresa (25/11/2026): o members manda os dias a mais e o fim real.
+  'gift-bonus-days': ['nome', 'curso', 'dias', 'data', 'link'],
+  'gift-bonus-days-adult': ['nome', 'curso', 'dias', 'data', 'link'],
 } as const
 
 describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
@@ -87,6 +90,16 @@ describe('fim do acesso e perfil que fez 18 anos (20/10/2026)', () => {
         '{{nome_perfil}} fez 18 anos, e o perfil Kids continua funcionando enquanto a sua assinatura estiver ativa.',
         'Agora {{nome_perfil}} também pode ter uma conta própria na área adulta. Ela começa nova, usa o mesmo Estúdio, e os projetos continuam no perfil Kids.',
         'Conhecer a área adulta',
+      ],
+      'gift-bonus-days': [
+        "subject: '{{nome}}, você ganhou mais {{dias}} no curso'",
+        'Uma surpresa: o acesso ao curso <strong>{{curso}}</strong> ganhou mais <strong>{{dias}}</strong>.',
+        'Continuar o curso',
+      ],
+      'gift-bonus-days-adult': [
+        "subject: '{{nome}}, você ganhou mais {{dias}} no curso'",
+        'Uma surpresa: o seu acesso ao curso <strong>{{curso}}</strong> ganhou mais <strong>{{dias}}</strong>.',
+        'Continuar o curso',
       ],
     }
     for (const [key, texts] of Object.entries(expectations))

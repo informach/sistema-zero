@@ -78,6 +78,11 @@ describe('templates do Messaging usados pelo Referrals', () => {
       'referrals-scholarship-existing-adult',
       'referrals-campaign-welcome-adult',
       'referrals-campaign-existing-adult',
+      // Convites por oferta (25/11/2026).
+      'referrals-offer-gift-invite',
+      'referrals-offer-gift-invite-adult',
+      'referrals-offer-referral-invite',
+      'referrals-offer-referral-invite-adult',
       'kids-new-access',
       'new-access',
     ])

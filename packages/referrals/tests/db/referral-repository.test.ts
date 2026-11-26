@@ -4,11 +4,13 @@ import type { CampaignInput } from '@sistemazero/core/referrals'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
+import type { NewAcquisition } from '../../src/domain/acquisition'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
   CampaignUnavailableError,
 } from '../../src/domain/campaign'
+import { DrizzleAcquisitionRepository } from '../../src/infrastructure/persistence/drizzle/acquisition.repository'
 import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
 import {
   createDbConnection,
@@ -98,8 +100,30 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   })
 
   beforeEach(async () => {
-    await connection.sql`truncate referrals.invites, referrals.scholarship_redemptions, referrals.codes, referrals.ambassadors, referrals.campaign_history, referrals.campaigns cascade`
+    await connection.sql`truncate referrals.acquisitions, referrals.invites, referrals.scholarship_redemptions, referrals.codes, referrals.ambassadors, referrals.campaign_history, referrals.campaigns cascade`
   })
+
+  function acquisition(input: Partial<NewAcquisition> & Pick<NewAcquisition, 'email' | 'kind'>) {
+    return new DrizzleAcquisitionRepository(connection.db).insert({
+      accountUserId: null,
+      audience: 'kids',
+      offerId: null,
+      offerSlug: null,
+      amountCents: 0n,
+      paymentId: null,
+      subscriptionId: null,
+      redemptionId: null,
+      originKind: 'none',
+      codeId: null,
+      campaignId: null,
+      ambassadorId: null,
+      place: null,
+      utm: null,
+      bonusTerms: null,
+      acquiredAt: new Date(),
+      ...input,
+    })
+  }
 
   async function seedCode() {
     const created = await repo.createAmbassadorWithCode({
@@ -191,8 +215,30 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     ).toBe(1)
     expect((await repo.listRedemptionsByAmbassador(ambassador.id, 'adult')).length).toBe(0)
     expect((await repo.listRedemptionsByAmbassador(ambassador.id, 'kids')).length).toBe(2)
+    // "Assinaram" vem das aquisições (revisão final, 25/11/2026): presente da campanha e, depois,
+    // a primeira assinatura sem código no pagamento. A conversão é a vaga do bônus.
+    await acquisition({
+      email: 'family@example.com',
+      kind: 'gift',
+      redemptionId: first.redemption.id,
+      originKind: 'campaign',
+      codeId: code!.id,
+      campaignId: campaign!.id,
+      acquiredAt: new Date(Date.now() - 60_000),
+    })
+    await acquisition({
+      email: 'family@example.com',
+      kind: 'subscription',
+      paymentId: 'campaign-pay',
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+    })
+    // Presente de OUTRA pessoa não conta a assinatura desta.
+    await acquisition({ email: 'next@example.com', kind: 'subscription', paymentId: 'outra-pay' })
     await repo.insertConversion({
       redemptionId: first.redemption.id,
+      subscriberEmail: 'family@example.com',
+      audience: 'kids',
       codeId: code!.id,
       ambassadorId: ambassador.id,
       paymentId: 'campaign-pay',
@@ -465,8 +511,19 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect(await campaigns.history(campaign.id)).toHaveLength(3)
 
     await repo.markRedemptionGranted(accepted.redemption.id, new Date())
+    await acquisition({
+      email: 'familia@example.com',
+      kind: 'subscription',
+      paymentId: 'campanha-local-payment',
+      originKind: 'campaign',
+      codeId: code.id,
+      campaignId: campaign.id,
+      amountCents: 10000n,
+    })
     await repo.insertConversion({
       redemptionId: accepted.redemption.id,
+      subscriberEmail: 'familia@example.com',
+      audience: 'kids',
       codeId: code.id,
       ambassadorId: null,
       paymentId: 'campanha-local-payment',
@@ -484,6 +541,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect(await repo.cancelPendingConversionByPayment('campanha-local-payment')).toEqual({
       kind: 'canceled',
     })
+    await new DrizzleAcquisitionRepository(connection.db).markRefundedByPayment(
+      'campanha-local-payment',
+    )
     expect((await campaigns.stats(campaign.id)).conversions).toBe(0)
     expect((await repo.listConversions({ limit: 25, offset: 0 })).total).toBe(0)
   })

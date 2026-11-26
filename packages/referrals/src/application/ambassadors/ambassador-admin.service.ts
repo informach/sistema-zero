@@ -78,23 +78,35 @@ export class AmbassadorAdminService {
    * Presente adulto sem configuração: `adult: null`, sem criar código.
    */
   async shareUrls(a: AmbassadorRecord & { code: string | null }): Promise<AmbassadorShareUrls> {
-    const kids = a.code ? scholarshipShareUrl(this.opts.funnelPublicUrl, a.code) : null
-    let adult: string | null = null
-    if (!this.opts.adultGiftEnabled) return { kids, adult }
+    const codes = await this.shareCodes(a)
+    const url = (code: string | null) =>
+      code ? scholarshipShareUrl(this.opts.funnelPublicUrl, code) : null
+    return { kids: url(codes.kids), adult: url(codes.adult) }
+  }
+
+  /**
+   * Os códigos do embaixador por público (os links `/i/<código>/<oferta>` e `/bolsa/<código>`
+   * saem deles). O adulto nasce aqui quando falta, como em `shareUrls`.
+   */
+  async shareCodes(
+    a: Pick<AmbassadorRecord, 'id' | 'status' | 'name'> & { code: string | null },
+  ): Promise<{ kids: string | null; adult: string | null }> {
+    const kids = a.code
+    if (!this.opts.adultGiftEnabled) return { kids, adult: null }
     try {
       const code =
         a.status === 'active'
           ? await ensureAmbassadorShareCode(this.repo, a, 'adult')
           : ((await this.repo.listCodesByAmbassador(a.id)).find((c) => c.audience === 'adult') ??
             null)
-      adult = code ? scholarshipShareUrl(this.opts.funnelPublicUrl, code.code) : null
+      return { kids, adult: code?.code ?? null }
     } catch (error) {
       this.logger.error('referrals.ambassador_adult_code_failed', {
         ambassadorId: a.id,
         error: error instanceof Error ? error.message : String(error),
       })
+      return { kids, adult: null }
     }
-    return { kids, adult }
   }
 
   async create(input: {
@@ -257,7 +269,7 @@ export class AmbassadorAdminService {
     const redemptions = await this.repo.listRedemptionsByAmbassador(id, audience)
     const conversions = await this.repo.listConversionsByRedemptions(redemptions.map((r) => r.id))
     for (const c of conversions) {
-      if (c.status === 'superseded') continue
+      if (c.status === 'superseded' || !c.redemptionId) continue
       const previous = conversionByRedemption.get(c.redemptionId)
       if (!previous || (previous.status === 'canceled' && c.status !== 'canceled'))
         conversionByRedemption.set(c.redemptionId, c)

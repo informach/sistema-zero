@@ -5,7 +5,10 @@ import {
   type AvatarCommunity,
   type AvatarFilter,
   type AvatarSlots,
+  avatarProblems,
   drawAvatar,
+  ownershipOf,
+  withEars,
 } from '@sistemazero/core/avatar'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -64,6 +67,32 @@ const chave = (slots: AvatarSlots) =>
 const same = (a: AvatarSlots, b: AvatarSlots) => {
   const ka = Object.keys(a)
   return ka.length === Object.keys(b).length && ka.every((k) => a[k] === b[k])
+}
+
+/**
+ * O avatar da tela SEM as peças pagas só de prévia: cada encaixe com uma delas volta à peça do
+ * último avatar sem prévia (ou fica vazio). Assim, o que a pessoa muda DEPOIS de experimentar uma
+ * peça paga também grava (26/11/2026: só o avatar de antes da prévia gravava, e as mudanças
+ * seguintes se perdiam ao sair). Se o resultado não fecha pelas regras do pack (uma fantasia pela
+ * metade, uma peça obrigatória vazia), grava o último avatar sem prévia, como antes.
+ */
+export function avatarWithoutPreview(
+  slots: AvatarSlots,
+  ultimoProprio: AvatarSlots,
+  faltam: readonly string[],
+): AvatarSlots {
+  const previa = (id: string | undefined) => {
+    const k = id ? ownershipOf(C, id) : null
+    return k !== null && faltam.includes(k)
+  }
+  const out: AvatarSlots = { ...slots }
+  for (const [slot, id] of Object.entries(slots)) {
+    if (!previa(id)) continue
+    const antes = ultimoProprio[slot]
+    if (antes && !previa(antes)) out[slot] = antes
+    else delete out[slot]
+  }
+  return avatarProblems(C, withEars(C, out)).length === 0 ? out : ultimoProprio
 }
 
 /**
@@ -161,12 +190,24 @@ export function useAvatarEditor({
     () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', owned, slots, community) : []),
     [tab, kind, filter, owned, slots, community],
   )
-  const unowned = useMemo(() => avatarUnownedWorn(C, slots, owned), [slots, owned])
-  // O que se grava: o avatar da tela, ou, com uma peça paga só de prévia, o último avatar sem
-  // prévia (as mudanças grátis de antes da prévia não se perdem; a peça paga só entra comprada).
+  // A peça paga que JÁ está no avatar guardado continua vestível sem estar no inventário (era
+  // grátis quando foi gravada, ou veio na troca de avatar): não é prévia. Sem isso, a pessoa que
+  // abria com uma peça assim nunca gravava nada e a Cabine ficava sem "Tirar foto" (relato de
+  // 26/11/2026). Tirou e gravou: volta a precisar comprar (a mesma régua do servidor).
+  const wearable = useMemo(() => {
+    const keys = Object.values(saved.slots)
+      .map((id) => ownershipOf(C, id))
+      .filter((k): k is string => k !== null)
+    return keys.length === 0 ? owned : new Set([...owned, ...keys])
+  }, [owned, saved.slots])
+  const unowned = useMemo(() => avatarUnownedWorn(C, slots, wearable), [slots, wearable])
+  // O que se grava: o avatar da tela, ou, com uma peça paga só de prévia, o avatar da tela sem
+  // ela (`avatarWithoutPreview`: as mudanças de antes E de depois da prévia não se perdem; a peça
+  // paga só entra comprada).
   const ultimoProprio = useRef<AvatarSlots>(slots)
   if (unowned.length === 0) ultimoProprio.current = slots
-  const alvo = unowned.length === 0 ? slots : ultimoProprio.current
+  const alvo =
+    unowned.length === 0 ? slots : avatarWithoutPreview(slots, ultimoProprio.current, unowned)
 
   const dirty = !same(alvo, saved.slots) || (filter !== null && filter !== saved.filter)
   const status: SaveStatus =
@@ -207,7 +248,7 @@ export function useAvatarEditor({
     setPending((p) => {
       if (!item.owned) return { item, undo: p?.undo ?? antes }
       // A prévia de outra peça paga continua de pé enquanto ela estiver no avatar.
-      return p && avatarUnownedWorn(C, depois, owned).includes(p.item.id) ? p : null
+      return p && avatarUnownedWorn(C, depois, wearable).includes(p.item.id) ? p : null
     })
   }
 

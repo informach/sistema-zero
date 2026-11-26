@@ -19,6 +19,10 @@ export interface CampaignRepository {
     expectedUpdatedAt: string,
   ): Promise<CampaignRecord | null>
   findById(id: string): Promise<CampaignRecord | null>
+  /** A campanha que reivindica este endereço antigo (o prazo é conferido por quem chama). */
+  findByRedirectPath(path: string): Promise<CampaignRecord | null>
+  /** Campanhas com endereço antigo ainda no prazo (o funil guarda a lista e confere localmente). */
+  listActiveRedirects(now: Date): Promise<CampaignRecord[]>
   list(opts: {
     q?: string
     audience?: GiftAudience
@@ -28,5 +32,7 @@ export interface CampaignRepository {
     offset: number
   }): Promise<{ items: CampaignRecord[]; total: number }>
   stats(id: string): Promise<CampaignView['stats']>
+  /** Alguém já comprou ou resgatou pela campanha (trava tipo e oferta à venda). */
+  hasAcquisitions(id: string): Promise<boolean>
   history(id: string): Promise<CampaignAuditView[]>
 }

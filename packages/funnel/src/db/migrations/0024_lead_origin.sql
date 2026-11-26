@@ -1,0 +1,1 @@
+ALTER TABLE "funil"."leads" ADD COLUMN "origin" jsonb;

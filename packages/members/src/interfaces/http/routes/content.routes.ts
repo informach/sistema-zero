@@ -63,6 +63,8 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   description: b.description ?? null,
   coverImageUrl: b.coverImageUrl ?? null,
   salesPageUrl: b.salesPageUrl?.trim() ? b.salesPageUrl.trim() : null,
+  // Ausente preserva no PATCH (como o currículo do Estúdio); vazio ou null limpa.
+  salesOfferRef: Object.hasOwn(b, 'salesOfferRef') ? b.salesOfferRef?.trim() || null : undefined,
   status: b.status as CourseStatus,
   // `null` = não informado (create → adult; update → preserva — ver CourseFields).
   audience: b.audience ?? null,

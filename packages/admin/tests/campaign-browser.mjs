@@ -68,7 +68,7 @@ try {
         })
       }
       if (url.pathname === '/api/members/courses')
-        return send({ items: [{ slug: 'cade-todo-mundo-adulto', status: 'published' }] })
+        return send({ items: [{ slug: 'cade-todo-mundo-adulto', status: 'published' }], total: 1 })
       if (url.pathname === '/api/catalog/offers')
         return send({
           items: [
@@ -79,7 +79,8 @@ try {
               priceCents: 6700,
               currency: 'BRL',
               isAvailable: true,
-              content: { allowsCoupon: true },
+              pricingMode: 'one_time',
+              content: { allowsCoupon: true, pageSellable: true },
               accessMode: 'fixed',
               accessDurationValue: 30,
               accessDurationUnit: 'days',
@@ -91,7 +92,33 @@ try {
           ],
           total: 1,
         })
-      if (url.pathname === '/api/catalog/products') return send({ items: [], total: 0 })
+      if (url.pathname === '/api/catalog/products')
+        return send({
+          items: [
+            {
+              id: '44444444-4444-4444-8444-444444444444',
+              sku: `desafio-${audience}`,
+              name: `Curso ${audience}`,
+              kind: 'course',
+              status: 'active',
+              primaryOfferId: offerId,
+              fulfillment: { courseRef: `cade-todo-mundo-${audience}` },
+            },
+          ],
+          total: 1,
+        })
+      if (url.pathname === '/api/admin/referrals/ambassadors')
+        return send({
+          items: [
+            {
+              id: '55555555-5555-4555-8555-555555555555',
+              name: 'Parceira Laopa',
+              email: 'parceira@example.test',
+              status: 'active',
+            },
+          ],
+          total: 1,
+        })
       const campaign = campaigns.get(audience)
       if (url.pathname.endsWith('/coupon')) {
         campaign.coupon = { couponId: '33333333-3333-4333-8333-333333333333', offerId }
@@ -121,7 +148,7 @@ try {
           state: 'scheduled',
           updatedAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
-          shareUrl: `https://example.test/bolsa/${body.code}`,
+          shareUrl: `https://example.test/i/${body.code}${body.kind === 'sale' && body.linkTarget === 'checkout' ? '/pagamento' : ''}`,
           stats: { redemptions: 0, pending: 0, failed: 0, conversions: 0 },
         }
         campaigns.set(audience, saved)
@@ -249,8 +276,45 @@ try {
       .getByRole('dialog', { name: 'Cartão de divulgação', exact: true })
       .screenshot({ path: join(artifacts, `avulso-${audience}.png`) })
   }
+  // A campanha usada para vender o curso: origem ligada à embaixadora, sem bônus no curso avulso.
+  await page.goto(`http://127.0.0.1:${server.address().port}/?audience=kids`)
+  await page.getByRole('button', { name: 'Nova campanha', exact: true }).click()
+  await page.getByRole('radio', { name: /Vender uma oferta/ }).click()
+  await page.getByLabel('Nome interno', { exact: true }).fill('Venda pela Laopa')
+  await page.getByLabel('Título público', { exact: true }).fill('Curso para os pais')
+  await page.getByLabel('Código do link', { exact: false }).fill('pais-laopa')
+  await page.locator('select[name="campaign-sale-offer"]').selectOption(offerId)
+  await page.getByRole('radio', { name: /Direto para o pagamento/ }).check()
+  await page.locator('input[name="campaign-redirect"]').check()
+  await page
+    .locator('input[name="campaign-redirect-path"]')
+    .fill('https://example.test/kids/curso-antigo')
+  await page.getByLabel('Buscar embaixador por nome ou e-mail').fill('Laopa')
+  await page.getByRole('button', { name: 'Buscar embaixador', exact: true }).click()
+  await page.getByRole('button', { name: /Parceira Laopa · parceira@example.test/ }).click()
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    assert.equal(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      true,
+    )
+    await page
+      .getByRole('dialog')
+      .screenshot({ path: join(artifacts, `venda-com-embaixadora-${width}.png`) })
+  }
+  await page.getByRole('button', { name: 'Salvar campanha', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Venda pela Laopa', exact: true }).waitFor()
+  assert.equal(campaigns.get('kids').kind, 'sale')
+  assert.equal(campaigns.get('kids').saleOfferId, offerId)
+  assert.equal(campaigns.get('kids').linkTarget, 'checkout')
+  assert.equal(campaigns.get('kids').redirectPath, '/kids/curso-antigo')
+  assert.equal(campaigns.get('kids').ambassadorId, '55555555-5555-4555-8555-555555555555')
+  assert.equal(campaigns.get('kids').commissionEnabled, false)
+  assert.equal(campaigns.get('kids').giftOfferId, undefined)
   assert.deepEqual(errors, [])
-  console.log('OK: calendário, cadastro opcional, públicos, 3 larguras e PNG dos cupons.')
+  console.log(
+    'OK: presente, venda com embaixadora, calendário, públicos, 3 larguras e PNG dos cupons.',
+  )
 } finally {
   await browser?.close()
   server?.close()

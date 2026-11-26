@@ -4,7 +4,7 @@
 // pelo `f.key`. Quiz adulto v1 em conversa (`quiz/`) com
 // resultado em carta, desde 21/10/2026.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` aponta
+// Oferta no catálogo: a principal do produto (marcada no Admin) aponta
 // `desafio-primeiro-jogo-adulto-30-dias` (criada pelo seed do catálogo, curso
 // `desafio-primeiro-jogo-adulto`). Registrado DEPOIS da Comunidade adulta: a landing `/pro`
 // abre a Comunidade dos Criadores adulta.
@@ -30,6 +30,7 @@ export const DESAFIO_ADULTO: FunnelDef = {
   // O mesmo nome da oferta no catálogo: é por ele que Compras separa o Desafio adulto do Kids.
   chargeName: 'Desafio do Primeiro Jogo (adultos)',
   productSku: 'desafio-primeiro-jogo-adulto',
+  apelido: 'desafio',
   imagesBase: '/img/desafio-primeiro-jogo',
   checkoutImage: 'farol-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
@@ -38,8 +39,8 @@ export const DESAFIO_ADULTO: FunnelDef = {
   // `.theme-arcade` no <html>: tokens `--cda-*` e mapeamento semântico em global.css.
   theme: 'arcade',
   lifetimeAccess: false,
-  // A mesma promessa rígida do Desafio Kids: página e cobrança falham fechadas se a env apontar
-  // para uma oferta com outra política.
+  // A mesma promessa rígida do Desafio Kids: página e cobrança falham fechadas se a oferta principal
+  // do catálogo tiver outra política.
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
@@ -48,6 +49,7 @@ export const DESAFIO_ADULTO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  giftCourses: ['desafio-primeiro-jogo-adulto'],
   legal: { termos: TERMOS_DESAFIO_ADULTO, termsVersion: 'desafio-adulto-2026-10-21' },
   content: {
     copy: DESAFIO_ADULTO_PRODUTO,

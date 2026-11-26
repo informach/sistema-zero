@@ -1,5 +1,174 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Origem por aquisição, ofertas dos embaixadores e campanha de venda (25/11/2026, em andamento)
+
+**Uma oferta por curso em cada lista e o link curto por curso (25/11/2026, depois do Lote 4).**
+`AmbassadorOffersService.replace` recusa (400, "X e Y são do mesmo curso. Deixe só uma delas ligada
+nesta lista.") duas ofertas LIGADAS do mesmo produto (`GiftOffer.productSku`, do `product.sku` da
+leitura do catálogo) na mesma lista; desligada não conta e as listas de presente e de indicação são
+independentes (o mesmo curso pode estar uma vez em cada). As opções do painel levam `productSku`.
+`GET /referrals/internal/links/:code?product=<sku>[,<sku>...]&kind=gift|referral[&checkout=1]`
+(`ReferralLinkService.resolveForProduct`; até 4 SKUs, um por página do apelido) devolve a oferta da
+lista daquele tipo cujo produto é um dos pedidos (404 sem ela); código de campanha ignora o produto e
+devolve a oferta da campanha. É o que o funil usa para `/i/<código>/<apelido>[/pagamento|/presente]`.
+A rota do gateway é a mesma (`/referrals/internal/links/:code`, a query passa). Testes:
+`tests/application/origin.test.ts` e `tests/integration/origin-http.test.ts`.
+
+Plano: `~/.claude/plans/certo-pode-implementar-essa-scalable-moler-of-b148f7fd-d0e6-4d96-94d2-9e9851d0669e.md`;
+proposta visual aprovada no Canvas `https://claude.ai/artifact/KUqRLeArtSWi9XLwjMWPXc`.
+
+Migration `0013_origin_acquisitions` (gerada pelo drizzle-kit):
+- `acquisitions`: cada presente resgatado (`kind gift`, `redemption_id`), compra avulsa
+  (`one_time`) e PRIMEIRA cobrança de assinatura (`subscription`), com `origin_kind`
+  (`ambassador|campaign|platform|ads|none`), `code_id`/`campaign_id`/`ambassador_id`, `place`
+  (botão da plataforma) e `utm`. UNIQUE parcial por `payment_id` e por `redemption_id`; CHECK
+  `acquisitions_source_check` (presente tem resgate, compra tem pagamento). "Por onde a pessoa
+  entrou" é a mais antiga; o bônus olha as aquisições com embaixador dentro do prazo.
+- `ambassador_offers`: a lista do PÚBLICO (vale para todos os embaixadores dele) de ofertas de
+  presente (`gift`) e de indicação (`referral`), com `position` e `enabled`.
+- `campaigns`: `kind` (`gift` padrão | `sale`), `sale_offer_id`, `link_target` (`page|checkout`),
+  `redirect_path` + `redirect_until` (endereço antigo do funil redirecionado até a data, UNIQUE
+  parcial). O endereço antigo fica na campanha e NÃO vira linha em `codes` (`codes_campaign_uq` e
+  os JOINs de `campaign.repository` aceitam um código por campanha).
+- `conversions`: `redemption_id` opcional, `acquisition_id`, `subscriber_email` + `audience` e o
+  UNIQUE parcial `conversions_subscriber_uq` (uma primeira assinatura por pessoa e público, fora
+  `canceled/superseded`); `conversions_redemption_uq` e `conversions_payment_uq` continuam.
+- Core (`@sistemazero/core/referrals`): `CampaignKind`, `CampaignLinkTarget`,
+  `isCampaignRedirectPath`, `OriginResults`, `AmbassadorOffer*`, `AcquisitionOriginKind`,
+  `AcquisitionKind`, `sanitizeReferralCode`, `sanitizeOriginPlace` e as chaves planas do metadata
+  do pagamento `origemCodigo`/`origemLugar`. Tudo opcional no fio.
+- Links: `referralLinkUrl` em `domain/links.ts` (`/i/<code>[/<oferta>][/pagamento]`); o
+  `/bolsa/<code>` antigo continua valendo e o funil o redireciona para a página da oferta.
+
+Serviços (Lote 2):
+- **Aquisição de presente:** `RedeemScholarshipService` grava a aquisição `gift` logo após
+  `markRedemptionGranted` (best-effort, com o acordo do bônus em `bonus_terms`: valores e prazo
+  capturados na hora, campanha pelo snapshot `campaignReferral`, link pessoal com
+  `BONUS_WINDOW_DAYS`=45). O sweep repara presentes concluídos sem aquisição
+  (`AcquisitionMaintenanceService.repairGifts`: os dos últimos 7 dias ganham o prazo normal, os
+  antigos o prazo longo de 3650 dias, para o backfill não tirar bônus de ninguém) e completa o
+  slug das compras (`fillOfferSlugs`).
+- **Compra (`RecordConversionService`, reescrito):** TODO `payment.paid` vira aquisição pelo
+  metadata (`origemCodigo` → embaixador/campanha; `origemLugar` → `platform`; `origemFonte` →
+  `ads`; nada → `none`), sem catálogo quando o público vem em `billingAudience`. Renovação não é
+  aquisição: já existe aquisição dessa `subscription_id`, ou a cobrança veio mais de 20 dias
+  depois de a assinatura nascer. O bônus: só slug em `CONVERSION_OFFER_SLUGS`;
+  `firstAmbassadorInWindow` procura, entre as aquisições ativas da pessoa (e-mail ou conta) no
+  público, a PRIMEIRA com embaixador cujo prazo cobre a data em que a assinatura nasceu; sem
+  nenhuma, tenta o outro público (presente Kids → Comunidade adulta). Assinatura criada antes da
+  entrada pelo embaixador não é dele. A vaga é `conversions_subscriber_uq` (lock
+  `742918462`); estorno marca a aquisição `refunded`.
+- **Listas:** `AmbassadorOffersService` (`GET|PUT /referrals/admin/ambassador-offers`, lock
+  `742918463`): presente pela régua `giftOfferProblem`; indicação = oferta não arquivada, não
+  rascunho, do mesmo público. Máx. 20 por lista.
+- **Links:** `ReferralLinkService` + `GET /referrals/internal/links/:code[/:oferta][/pagamento]`
+  (`mode gift|sale`, `target page|checkout`, estado da campanha, cupom); embaixador sem oferta =
+  presente padrão (links antigos). `GET /referrals/internal/redirects` sem `path` devolve a
+  lista dos endereços antigos ativos (`{items: [{path, url, until}]}`, que o funil guarda por um
+  minuto); com `?path=`, só aquele (404 fora do prazo). Campanha de venda: `kind` só muda em
+  rascunho sem aquisições (409 `CAMPAIGN_KIND_LOCKED`); endereço de outra campanha → 409
+  `CAMPAIGN_REDIRECT_TAKEN`.
+- **Presente escolhido** (`RedeemScholarshipService.giftRefFor`): campanha usa a oferta dela, e
+  campanha de VENDA não dá presente (`codes/:code` 404, resgate 404, área de membros 410). Código
+  de embaixador aceita `offer` (slug) no resgate e `?offer=` no `codes/:code` quando a oferta
+  está LIGADA na lista de presentes do público (`AmbassadorOffersService.allowed`); fora da lista
+  = 404; sem `offer`, a oferta padrão. A leitura pública do presente traz `gift.offerSlug`.
+- **Convite por oferta** (`CreateInviteService`, `POST …/invites` com `offer` + `kind`): a oferta
+  precisa estar ligada na lista do público (`OFFER_NOT_FOUND` 404); templates
+  `referrals-offer-{gift,referral}-invite[-adult]` (`nome`, `indicador`, `oferta`, `link` =
+  `/i/<código>/<oferta>`). A indicação de oferta à venda não é barrada por presente já resgatado.
+- **Prazo divulgado** (25/11/2026): `GiftOffer.advertisedAccessDays` vem do `content` do catálogo
+  (só abaixo de um prazo real em dias). O que as pessoas veem usa ele (`giftAdvertisedDays`,
+  `shownDaysOf`/`shownExpiresAtOf`): `gift.accessDays` da leitura pública e da área de membros,
+  `expiresAt` do resgate, `prazo`/`validade` das boas-vindas e o `accessDays` das opções do
+  embaixador. `access_duration_days` do resgate continua o prazo REAL (decide a retomada e o
+  `gift_window_elapsed`); o members avisa os dias extras no fim do divulgado.
+- **Correções da revisão do Lote 4 (25/11/2026):** `AmbassadorOffersService.allowed` resolve SÓ a
+  oferta pedida e LANÇA `GiftCatalogUnavailableError` com o catálogo fora (resgate
+  `upstream_error`, leitura pública 502/503, nunca "link não existe"); a opção traz `accessMonths`
+  para a oferta de venda em meses (`accessDays` fica null). O prazo divulgado é GRAVADO no resgate
+  (`scholarship_redemptions.advertised_days`, migration `0014`) e é ele que a resposta e os e-mails
+  mostram: mudar a oferta depois não muda a data de quem já resgatou. O convite do presente do Cadê
+  escolhido usa o e-mail aprovado do Cadê com o link `/i/<código>/<oferta>`. ⚠️ Pendente
+  consciente: um resgate pendente cuja oferta escolhida saiu da lista não retoma pelo link novo.
+- **Revisão da oferta como parâmetro (25/11/2026):** os links curtos por produto
+  (`resolveForProduct`) usam `AmbassadorOffersService.optionsOrThrow`, que LANÇA com o catálogo fora
+  (`upstream_error`, nunca "link não existe"). A campanha de VENDA só salva com oferta que seja a
+  principal do produto (`GiftOfferCatalog.primaryOfferSlugOf`, `GET /catalog/products/by-sku/:sku`)
+  ou marcada `content.pageSellable` no Catálogo: a página de venda não abre outra oferta.
+- **Resultados por comunidade (revisão do Lote 7, 25/11/2026):** `ambassadorResults`,
+  `campaignResults`, `ambassadorDetail` e `campaignDetail` aceitam `audience` (o embaixador tem código
+  nos dois públicos): a lista de embaixadores e de campanhas repassa o `audience` da consulta, e
+  `GET …/results?audience=` filtra o detalhe. A listagem de bônus traz `ambassadorId`.
+- **Extra do Lote 7 (25/11/2026):** `AcquisitionView.accountUserId` e `OriginPersonView.accountUserId`
+  (o "Ver ficha" do Admin); o detalhe traz `giftCourses` (contas que entraram por PRESENTE da origem,
+  por `course_slug` do resgate, até 5000 por curso, via `giftCourseSlugs`), que o BFF do Admin troca
+  por `giftStarted` perguntando ao members (`POST /members/admin/course-starts`) e nunca manda ao
+  navegador; `GET /origins?offers=<ids>` (até 20) filtra o relatório por oferta ("pessoa nova" =
+  quem ENTROU por uma delas); `GET /ambassador-offers` traz `counts` (aquisições ativas
+  `origin_kind = 'ambassador'` por oferta: `gifts`/`purchases`/`subscriptions`, uma consulta
+  agrupada); `GET /acquisitions?email` traz `bonuses` (as conversões do e-mail fora as
+  substituídas, com embaixador e campanha, sem chave Pix). As duas consultas
+  (`giftCourseSlugs`, `countAmbassadorAcquisitionsByOffer`) estão em `tests/db/origin.repository.test.ts`.
+- **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
+  e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
+  `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores
+  traz `results` (quantidades + faturamento). A página do embaixador (`by-token`) recebe só
+  `stats.people` e as `offers` com os links: nunca valores de venda.
+- **Backfill:** `bun run acquisitions:backfill [plan|apply]` (conversões ganham
+  `subscriber_email`; presentes e conversões viram aquisições, as conversões estornadas como
+  aquisição `refunded`; listas nascem com o Cadê).
+
+Correções da revisão do Lote 2 (25/11/2026):
+- O pagamento repara os presentes da PRÓPRIA pessoa sem aquisição antes de escolher o
+  embaixador (`repairGifts(20, email)`; falha = reentrega). Sem isso, quem resgatou antes da 0013
+  e assinou antes do primeiro sweep perdia o bônus em silêncio.
+- Prazo do reparo por corte FIXO, não pela idade: `ORIGIN_LEGACY_BEFORE` (ISO, setar no Railway
+  com o instante do deploy da 0013). Presente concluído antes = prazo longo (3650 dias, o acordo
+  antigo não tinha prazo); depois = prazo de hoje. Sem a env, todo reparo ganha o prazo longo.
+- A releitura do pagamento (`cancelIfNoLongerPaid`) roda em toda compra concluída, inclusive sem
+  bônus: um estorno pode chegar entre a leitura PAID e o INSERT da aquisição (revisão independente).
+- Mesma CONTA com outro e-mail de cobrança: antes de gravar, confere as conversões ativas dos
+  e-mails da pessoa no público (a vaga do UNIQUE é por e-mail).
+- `origemFonte` usa `sanitizeOriginSource` (aceita `_`, `.` e `+` do `utm_source`).
+- Relatórios: passando de 20.000 linhas ficam as MAIS NOVAS e a Origem das vendas traz
+  `truncated: true`. Slugs: cursor por ciclo, oferta que o catálogo não resolve não trava a fila.
+- `stats.conversions` da campanha junta pelo código (a venda direta não tem resgate).
+
+Correções da revisão final (25/11/2026):
+- **Bônus só da PRIMEIRA assinatura** (`hadEarlierSubscription`, no caminho do bônus): a pessoa
+  que já tinha assinatura no público (aquisição `subscription` ou com slug de conversão, por e-mail
+  ou conta, antes desta compra) não rende bônus, mesmo entrando agora por um embaixador. O histórico
+  de antes da 0013 vem do payments: `GET /payments/internal/customers/paid-offers?email&before&exclude`
+  (`PaymentsClient.listPaidOfferIds`, ids das ofertas PAGAS do e-mail; cada uma resolvida no
+  catálogo, só conta slug de conversão do mesmo público). Payments fora ou sem a rota = reentrega,
+  nunca "sem histórico". ⚠️ Deploy do PAYMENTS antes do referrals.
+- **Autoindicação também pela CONTA**: `accountUserId` do pagamento igual ao
+  `ambassadors.account_user_id` do embaixador → `self_blocked`.
+- **Mesma conta com outro e-mail, dentro da trava**: `insertConversion` recebe `accountUserId` e
+  `personEmails`; trava a conta (`account:<id>|<público>`) e depois o e-mail, e recusa se outro
+  e-mail da pessoa já tem conversão ativa no público.
+- **`stats` da campanha em duas leituras** (resgates; assinaturas). `stats.conversions` = pessoas
+  com aquisição `subscription` ativa pelo link da campanha OU depois de um presente dela, no mesmo
+  público (as conversões não servem: campanha sem embaixador não gera conversão). SQL conferido em
+  `tests/db/origin.repository.test.ts` e `tests/db/campaign-review.test.ts` (modelo novo).
+- **Conferência em Postgres real (25/11/2026):** migrations do zero e `tests/db` inteiro verdes.
+  Achados: (1) a compra com a oferta já resolvida na gravação (sem `billingAudience`) e slug da
+  Comunidade nascia `one_time` (o anual à vista ficava fora de "assinaram"): o `kind` agora sai do
+  slug também ali; (2) `offerId` do metadata que não é uuid quebrava o INSERT (coluna uuid) e a
+  entrega voltava para sempre: é consumido sem aquisição; (3) o cursor de `listMissingOfferSlug`
+  voltava como Date (ms) contra `created_at` em µs e repetia a última linha da página: ordem e
+  comparação usam `date_trunc('milliseconds', created_at)`.
+- **Backfill**: o `subscriber_email` (e o e-mail da aquisição `subscription`) é o de quem PAGOU,
+  lido no payments; sem o pagamento, o do resgate (`payerEmailFallbacks` no relatório).
+- `.railway/variables.ts` declara `BONUS_ANNUAL_AMOUNT_CENTS`, `BONUS_WINDOW_DAYS` e
+  `ORIGIN_LEGACY_BEFORE`: criar no painel do Railway (staging e produção) antes do deploy.
+- Listas de campanhas e embaixadores: `results.revenueCents` é `null` para staff.
+
+⚠️ Seção "Banco" abaixo está desatualizada em dois pontos: o resgate é UNIQUE
+`(email, audience, gift_slot)` (0011; vagas `main`, `parents:`, `course:`, `offer:` desde a
+0012) e o UNIQUE parcial de conversões exclui `canceled` e `superseded` (0007).
+
 ## Vaga do presente: curso para pais não ocupa a do público (18/11/2026)
 
 O limite deixou de ser "um resgate por e-mail e público" e passou a ser por VAGA

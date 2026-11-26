@@ -20,6 +20,11 @@ import type { ResolveOfferEntitlementsService } from '../resolve-offer-entitleme
 export interface OfferEntitlementsResult extends OfferAccessPolicyView {
   offerId: string
   offerSlug: string
+  /**
+   * Prazo DIVULGADO em dias (25/11/2026, `content.advertisedAccessDays`), ou null. O members o
+   * congela no snapshot da matrícula e avisa os dias extras no fim do prazo divulgado.
+   */
+  advertisedAccessDays: number | null
   items: EntitlementView[]
 }
 
@@ -92,6 +97,7 @@ export class GetOfferService {
       offerId: offer.id,
       offerSlug: offer.slug,
       ...toOfferAccessPolicyView(offer),
+      advertisedAccessDays: offer.content?.advertisedAccessDays ?? null,
       items,
     }
   }

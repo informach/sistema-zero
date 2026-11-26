@@ -3,9 +3,10 @@ import type { Logger } from '@sistemazero/core/logging'
 import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { InvalidPurchasedAccessPolicyError } from '../../domain/entitlement/entitlement.errors'
-import type {
-  EntitlementSnapshot,
-  PurchasedAccessPolicy,
+import {
+  advertisedDaysFor,
+  type EntitlementSnapshot,
+  type PurchasedAccessPolicy,
 } from '../../domain/entitlement/entitlement-snapshot'
 import {
   createMuralVisitorSnapshot,
@@ -95,6 +96,18 @@ export class GrantEntitlementService {
         fulfillment: item.fulfillment,
         resolvedAt: cmd.grantedAt.toISOString(),
         accessPolicy,
+        // Prazo divulgado (25/11/2026): o e-mail dos dias a mais sai no fim dele.
+        ...advertisedDaysFor(
+          offer.advertisedAccessDays,
+          accessPolicy,
+          accessPolicy.mode === 'fixed'
+            ? computeFixedExpiry(
+                cmd.grantedAt,
+                accessPolicy.durationValue,
+                accessPolicy.durationUnit,
+              )
+            : null,
+        ),
       }
       let applied: boolean
       if (accessPolicy.mode === 'billing_cycle') {

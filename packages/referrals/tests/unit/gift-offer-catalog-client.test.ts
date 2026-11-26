@@ -43,7 +43,7 @@ function catalog(overrides: { view?: object; entitlements?: object; status?: num
       accessMode: 'fixed',
       accessDurationValue: 7,
       accessDurationUnit: 'days',
-      product: { audience: 'kids', slug: 'cade-todo-mundo' },
+      product: { audience: 'kids', slug: 'cade-todo-mundo', sku: 'cade-todo-mundo' },
       ...overrides.view,
     })
   }) as typeof fetch
@@ -57,6 +57,15 @@ function catalog(overrides: { view?: object; entitlements?: object; status?: num
 }
 
 describe('GiftOfferCatalogHttpClient', () => {
+  test('prazo divulgado: lido do content só abaixo do prazo real em dias', async () => {
+    const real15 = catalog({
+      view: { accessDurationValue: 15, content: { advertisedAccessDays: 7 } },
+    })
+    expect((await real15.client.resolve('cade-todo-mundo-7-dias'))?.advertisedAccessDays).toBe(7)
+    const igual = catalog({ view: { content: { advertisedAccessDays: 7 } } })
+    expect((await igual.client.resolve('cade-todo-mundo-7-dias'))?.advertisedAccessDays).toBeNull()
+  })
+
   test('resume a oferta: público do produto, política, curso principal e Mural', async () => {
     const { client, seen } = catalog()
     expect(await client.resolve('cade-todo-mundo-7-dias')).toEqual({
@@ -68,8 +77,11 @@ describe('GiftOfferCatalogHttpClient', () => {
       accessMode: 'fixed',
       accessDurationValue: 7,
       accessDurationUnit: 'days',
+      advertisedAccessDays: null,
       courseSlug: 'cade-todo-mundo',
       includesMural: true,
+      pageSellable: false,
+      productSku: 'cade-todo-mundo',
     })
     const entitlements = seen.find((call) => call.url.endsWith('/entitlements'))!
     expect(entitlements.url).toBe(

@@ -248,6 +248,7 @@ export class CourseAdminService {
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
     const {
       salesPageUrl,
+      salesOfferRef,
       studioUnlockBlocks,
       audience,
       sequentialLock,
@@ -310,7 +311,11 @@ export class CourseAdminService {
       modality: nextModality,
       // `learner` AUSENTE preserva o atual (régua do audience).
       learner: nextLearner,
-      metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
+      metadata: withCourseMetadata(existing.metadata, {
+        salesPageUrl,
+        salesOfferRef,
+        studioUnlockBlocks,
+      }),
     }
     assertLiveOffJourney(merged)
     assertParentsOffJourney(merged)
@@ -472,11 +477,20 @@ function assertJourneySlot(course: {
  */
 function withCourseMetadata(
   metadata: Record<string, unknown> | null,
-  patch: { salesPageUrl: string | null; studioUnlockBlocks?: string[] | null },
+  patch: {
+    salesPageUrl: string | null
+    salesOfferRef?: string | null
+    studioUnlockBlocks?: string[] | null
+  },
 ): Record<string, unknown> | null {
   const next: Record<string, unknown> = { ...(metadata ?? {}) }
   if (patch.salesPageUrl) next.salesPageUrl = patch.salesPageUrl
   else delete next.salesPageUrl
+  // `salesOfferRef`: ausente preserva (régua do currículo do Estúdio), `null` limpa.
+  if (patch.salesOfferRef !== undefined) {
+    if (patch.salesOfferRef) next.salesOfferRef = patch.salesOfferRef
+    else delete next.salesOfferRef
+  }
   if (patch.studioUnlockBlocks !== undefined) {
     const blocks = normalizeUnlockBlocks(patch.studioUnlockBlocks)
     if (blocks.length > 0) next.studioUnlockBlocks = blocks

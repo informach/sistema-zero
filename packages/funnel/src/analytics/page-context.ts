@@ -15,13 +15,24 @@ export function analyticsPage(path: string): PageContext | null {
       funnel: null,
       publicText: true,
     }
-  // Página avulsa do minicurso gratuito para pais (18/11/2026): fora dos funis, sem checkout.
+  // A página pública do guia para pais é a oferta do funil `kids/vilao-em-aliado` desde 25/11/2026
+  // (antes, curso gratuito fora dos funis, `kind: 'curso-pais'`). O id fica o mesmo para o painel
+  // juntar os dados de antes e de depois.
   if (normalized === '/kids/vilao-em-aliado')
     return {
       id: 'kids/vilao-em-aliado',
       path: normalized,
-      kind: 'curso-pais',
-      funnel: null,
+      kind: 'oferta',
+      funnel: 'kids/vilao-em-aliado',
+      publicText: true,
+    }
+  // O curso para pais da Vivianne (25/11/2026): a página pública é a oferta do funil.
+  if (normalized === '/kids/como-ajudar-seu-filho-autista-nas-frustracoes')
+    return {
+      id: 'kids/como-ajudar-seu-filho-autista-nas-frustracoes',
+      path: normalized,
+      kind: 'oferta',
+      funnel: 'kids/como-ajudar-seu-filho-autista-nas-frustracoes',
       publicText: true,
     }
   const [, audience, product, step, ...variant] = normalized.split('/')

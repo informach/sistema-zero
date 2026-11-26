@@ -22,10 +22,31 @@ interface Props {
   barra?: { titulo: string; texto: string; cta: string }
   /** Sem as seções do Cadê (variante de outro curso): sem os atalhos delas. */
   secoes?: boolean
+  /** O id da seção do botão do topo e da barra (padrão: o formulário; venda: `oferta`). */
+  alvo?: string
+  /** O texto do botão do topo (padrão: o do presente). */
+  cta?: string
+  /** O Termo do rodapé (padrão: o da Comunidade adulta, como o aceite do presente). */
+  termosHref?: string
+  /** Página pública e indexável (padrão: fora dos buscadores, como todo link de presente). */
+  indexavel?: boolean
+  canonical?: string
 }
-const { title, description, ready = false, barra = P.barra, secoes = true } = Astro.props
+const {
+  title,
+  description,
+  ready = false,
+  barra = P.barra,
+  secoes = true,
+  alvo = 'resgatar',
+  cta = P.topo.cta,
+  termosHref = P.legal.termos.href,
+  indexavel = false,
+  canonical,
+} = Astro.props
 ---
-<BaseLayout title={title} description={description} noindex htmlClass="theme-arcade">
+<BaseLayout title={title} description={description} noindex={!indexavel} canonical={canonical} htmlClass="theme-arcade">
+  <slot name="head" slot="head" />
   {[bricolageTitulo, atkinsonCorpo, silkscreenPixel].map((href) => <link slot="head" rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
   <div class="cda pa-corpo">
     <a class="cda-pular" href="#conteudo">{P.pular}</a>
@@ -37,21 +58,24 @@ const { title, description, ready = false, barra = P.barra, secoes = true } = As
         </a>
         <nav class="cda-topo__nav" aria-label={P.topo.navAria}>
           {secoes && P.topo.links.map((link) => <a class="cda-topo__link" href={link.href}>{link.label}</a>)}
-          {ready && <a class="cda-btn cda-btn--compacta pa-topo-cta" href="#resgatar">{P.topo.cta}</a>}
+          {ready && <a class="cda-btn cda-btn--compacta pa-topo-cta" href={`#${alvo}`}>{cta}</a>}
         </nav>
       </div>
     </header>
     <main id="conteudo"><slot /></main>
     {ready && (
-      <div class="cda-barra" data-presente-barra aria-hidden="true">
+      <div class="cda-barra" data-presente-barra data-alvo={alvo} aria-hidden="true">
         <p class="cda-barra__preco"><strong>{barra.titulo}</strong><span>{barra.texto}</span></p>
-        <a class="cda-btn cda-btn--barra" href="#resgatar" tabindex="-1">{barra.cta}</a>
+        <a class="cda-btn cda-btn--barra" href={`#${alvo}`} tabindex="-1">{barra.cta}</a>
       </div>
     )}
   </div>
-  <Footer audience="pro" termosHref={P.legal.termos.href} />
+  <Footer audience="pro" termosHref={termosHref} />
 </BaseLayout>
 <script>
   import { ligarBarraFixa } from '../../lib/barra-fixa'
-  ligarBarraFixa('[data-presente-barra]', 'resgatar')
+  ligarBarraFixa(
+    '[data-presente-barra]',
+    document.querySelector('[data-presente-barra]')?.getAttribute('data-alvo') ?? 'resgatar',
+  )
 </script>

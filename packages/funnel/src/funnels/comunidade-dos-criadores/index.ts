@@ -4,9 +4,9 @@
 // ComunidadeContinuarBody) com body próprio; a /oferta despacha pelo body
 // deste funil via `f.key`.
 //
-// Oferta no catálogo: env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES` aponta a
+// Oferta no catálogo: a principal do produto (marcada no Admin) aponta a
 // oferta MENSAL (`comunidade-dos-criadores-mensal`); a ANUAL é a irmã ligada por
-// `content.altOffer` (alternador do checkout). Se um dia a env apontar pra anual,
+// `content.altOffer` (alternador do checkout). Se um dia a principal for a anual,
 // a página se auto-normaliza por `billingIntervalMonths`, mas o preço estrutural
 // (JSON-LD/og) passa a ser o anual — preferir a mensal como principal.
 
@@ -41,6 +41,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   basePath: '/kids/comunidade-dos-criadores',
   productName: 'Comunidade dos Criadores',
   productSku: 'comunidade-dos-criadores',
+  apelido: 'comunidade',
   imagesBase: '/img/comunidade-dos-criadores',
   // Capa dedicada (card do checkout + og:image + JSON-LD): a arte "Corre, Dino!".
   checkoutImage: 'checkout-capa.webp',

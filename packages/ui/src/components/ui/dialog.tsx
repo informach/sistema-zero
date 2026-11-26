@@ -20,6 +20,7 @@ export function Dialog({
   titleAlign = 'left',
   onBack,
   closeLabel = 'Fechar',
+  bodyClassName,
 }: {
   open: boolean
   onClose: () => void
@@ -33,6 +34,8 @@ export function Dialog({
   /** Presente → renderiza o link "Voltar" no canto esquerdo do header. */
   onBack?: () => void
   closeLabel?: string
+  /** Troca o espaçamento do corpo (ex.: `p-0` num conteúdo de duas colunas que vai até a borda). */
+  bodyClassName?: string
 }) {
   // Gestão de foco do modal (a11y) compartilhada: foca o card ao abrir, prende o Tab,
   // fecha no Esc e devolve o foco ao gatilho — ver `useModalA11y`.
@@ -94,7 +97,7 @@ export function Dialog({
             <X className="size-4" />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
+        <div className={cn('min-h-0 flex-1 overflow-y-auto p-5', bodyClassName)}>{children}</div>
         {footer ? (
           <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border p-5">
             {footer}

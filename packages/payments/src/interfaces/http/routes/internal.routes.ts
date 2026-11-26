@@ -1,6 +1,7 @@
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { GetAdminPaymentService } from '../../../application/get-admin-payment/get-admin-payment.service'
 import type { GetAdminSubscriptionService } from '../../../application/get-admin-subscription/get-admin-subscription.service'
+import type { PaidOffersReader } from '../../../domain/ports/paid-offers-read.port'
 import type { Logger } from '../../../infrastructure/logging/logger'
 import { AdminIdParam } from '../dtos'
 import { assertInternalCaller } from '../internal-auth'
@@ -10,8 +11,12 @@ export interface InternalRoutesDeps {
   internalToken?: string
   getPayment: GetAdminPaymentService
   getSubscription: GetAdminSubscriptionService
+  /** Ofertas já pagas por um e-mail (a primeira assinatura do referrals). Sem ela, 503. */
+  paidOffers?: PaidOffersReader
   logger: Logger
 }
+
+const UUID = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 /**
  * Leitura S2S para serviços internos (hoje: o fiscal, que precisa do pagamento
@@ -43,5 +48,33 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         return { id: view.id, createdAt: view.createdAt }
       },
       { params: AdminIdParam },
+    )
+    .get(
+      '/customers/paid-offers',
+      async ({ query, headers, set }) => {
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken)
+        if (!deps.paidOffers) {
+          set.status = 503
+          return { code: 'PAID_OFFERS_UNAVAILABLE', message: 'Leitura indisponível.' }
+        }
+        const before = new Date(query.before)
+        if (!Number.isFinite(before.getTime())) {
+          set.status = 400
+          return { code: 'VALIDATION_ERROR', message: 'Data inválida.' }
+        }
+        const offerIds = await deps.paidOffers.listPaidOfferIds({
+          email: query.email,
+          before,
+          ...(query.exclude ? { excludePaymentId: query.exclude } : {}),
+        })
+        return { offerIds }
+      },
+      {
+        query: t.Object({
+          email: t.String({ minLength: 3, maxLength: 254 }),
+          before: t.String({ minLength: 10, maxLength: 40 }),
+          exclude: t.Optional(t.String({ pattern: UUID })),
+        }),
+      },
     )
 }

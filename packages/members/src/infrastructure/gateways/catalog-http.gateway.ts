@@ -107,11 +107,15 @@ function parseResolvedOffer(
     })
   }
   const accessPolicy = parseAccessPolicy(b)
+  const advertised = b.advertisedAccessDays
   return {
     offerId: b.offerId,
     offerSlug: b.offerSlug,
     items,
     ...(accessPolicy ? { accessPolicy } : {}),
+    ...(typeof advertised === 'number' && Number.isInteger(advertised) && advertised > 0
+      ? { advertisedAccessDays: advertised }
+      : {}),
   }
 }
 

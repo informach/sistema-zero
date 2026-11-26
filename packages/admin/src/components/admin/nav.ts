@@ -2,6 +2,7 @@ import {
   Award,
   BookOpen,
   CalendarDays,
+  Compass,
   Contact,
   CreditCard,
   Crown,
@@ -157,6 +158,12 @@ export const NAV_GROUPS: NavGroup[] = [
         match: '/admin/catalogo',
       },
       { label: 'Campanhas', href: '/admin/embaixadores', icon: Gift },
+      {
+        label: 'Origem das vendas',
+        href: '/admin/origem-das-vendas',
+        icon: Compass,
+        roles: ['superadmin', 'admin'],
+      },
       { label: 'Zappy e Pensa', href: '/admin/ia', icon: Sparkles },
       // Somente leitura: o trabalho acontece no app de atendimento (outra aba).
       { label: 'Atendimento', href: '/admin/atendimento', icon: Headset },
@@ -288,6 +295,8 @@ export function homeForRole(role: string): string {
 const PLATFORM_SCOPED_PREFIXES = [
   '/admin/catalogo',
   '/admin/embaixadores',
+  // Origem das vendas: as aquisições da comunidade da lente (25/11/2026).
+  '/admin/origem-das-vendas',
   '/admin/pagamentos/transacoes',
   '/admin/pagamentos/assinaturas',
   '/admin/professor',

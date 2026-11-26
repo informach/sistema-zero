@@ -69,6 +69,8 @@ export interface RedemptionRecord {
    * oferta vitalícia ou com prazo em meses.
    */
   accessDurationDays: number | null
+  /** Prazo DIVULGADO gravado no resgate (menor que o real), ou null. Só para mostrar. */
+  advertisedDays: number | null
   /**
    * Null identifica resgates anteriores à visita permanente ao Mural; `trial`/`visitor` são o
    * caminho antigo (curso + Mural concedidos em separado); `offer` (15/11/2026) concede a oferta
@@ -108,6 +110,8 @@ export interface RedemptionGift {
   offerId: string
   /** Dias da oferta de prazo fixo em dias; null = vitalícia ou prazo em meses. */
   accessDurationDays: number | null
+  /** O prazo divulgado da oferta no claim (menor que o real), ou null. */
+  advertisedDays?: number | null
 }
 
 export interface InviteRecord {
@@ -164,7 +168,13 @@ export const AMBASSADOR_VISIBLE_CONVERSION_STATUSES = ['pending', 'eligible', 'p
  */
 export interface ConversionRecord {
   id: string
-  redemptionId: string
+  /** Resgate de onde veio o embaixador; nulo na venda pelo link (atribuída pela aquisição). */
+  redemptionId: string | null
+  /** Aquisição com a origem que ganhou o bônus (0013); nula nas conversões anteriores. */
+  acquisitionId: string | null
+  /** Quem assinou (lower) e o público: uma primeira assinatura por pessoa e público. */
+  subscriberEmail: string | null
+  audience: GiftAudience | null
   codeId: string
   ambassadorId: string | null
   paymentId: string
@@ -188,7 +198,9 @@ export interface ConversionListItem extends ConversionRecord {
   ambassadorName: string | null
   ambassadorEmail: string | null
   ambassadorPixKey: string | null
-  redemptionName: string
+  /** Nome do resgate de onde veio; nulo na venda pelo link (sem presente). */
+  redemptionName: string | null
+  /** E-mail de quem assinou: o do resgate ou, sem resgate, o `subscriberEmail`. */
   redemptionEmail: string
 }
 
@@ -210,6 +222,8 @@ export interface ReferralRepository {
     audience?: GiftAudience,
   ): Promise<RedemptionRecord[]>
   listConversionsByRedemptions(redemptionIds: string[]): Promise<ConversionRecord[]>
+  /** Conversões destas pessoas (pelo `subscriber_email`, preenchido desde a 0013). */
+  listConversionsBySubscribers(emails: string[]): Promise<ConversionRecord[]>
   // ── Embaixadores ──────────────────────────────────────────────────────────
   /** Cria embaixador + código na MESMA transação. `email_exists` = UNIQUE do e-mail. */
   createAmbassadorWithCode(input: {
@@ -366,7 +380,11 @@ export interface ReferralRepository {
    * Demais conflitos devolvem `created: false`; elegíveis/pagas não mudam.
    */
   insertConversion(input: {
-    redemptionId: string
+    redemptionId: string | null
+    acquisitionId?: string | null
+    /** Normalizado (lower). Obrigatório nas conversões novas (UNIQUE por pessoa e público). */
+    subscriberEmail: string
+    audience: GiftAudience
     codeId: string
     ambassadorId: string | null
     paymentId: string
@@ -377,6 +395,13 @@ export interface ReferralRepository {
     status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
+    /**
+     * A CONTA de quem pagou e os outros e-mails dela no público (revisão final, 25/11/2026):
+     * a vaga também é da conta. Sob a mesma trava, uma conversão ativa de outro e-mail da
+     * pessoa impede a nova (cancelou e assinou de novo com outro e-mail de cobrança).
+     */
+    accountUserId?: string | null
+    personEmails?: readonly string[]
   }): Promise<{ created: boolean }>
   /**
    * Estorno cancela pending e estados sem bônus, inclusive autoindicação.

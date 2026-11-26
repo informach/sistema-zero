@@ -5,8 +5,10 @@
  * que não confere o HMAC) e confere, a 390 e a 1440 px: `/bolsa/<codigo>` Kids e adulto (o corpo
  * escolhido pelo público do código, um h1, âncoras, imagens, sem rolagem lateral), os estados
  * (encerrada, agendada, preparando, link inválido), a prévia do Admin com `?audience`, o resgate
- * nos dois públicos (concluído Kids, "já resgatado" adulto) e o painel do embaixador (o seletor
- * troca o link e o convite por e-mail leva o público escolhido). As capturas ficam em `QA_OUTPUT`
+ * nos dois públicos (concluído Kids, "já resgatado" adulto), o presente do Cadê com a oferta na
+ * leitura (vai à página de venda do Cadê no modo presente, 25/11/2026) e o painel do embaixador (os
+ * números, presente ou oferta, a escolha troca o link, o destino da oferta e o convite por e-mail
+ * leva o público e, na indicação, a oferta). As capturas ficam em `QA_OUTPUT`
  * (padrão `tmp/presente-review` na raiz). `QA_CHROME_CHANNEL=chrome` usa o Chrome instalado e
  * `QA_CHROMIUM_PATH` um Chromium já baixado; sem os dois, o Chromium do Playwright.
  */
@@ -19,6 +21,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium, type Page } from 'playwright'
 import { checkOfferImageZoom } from './helpers/offer-image-zoom'
+import { productResponse } from './helpers/page-primaries'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = process.env.QA_OUTPUT ?? resolve(cwd, '../../tmp/presente-review')
@@ -81,8 +84,33 @@ const CODES: Record<string, unknown> = {
   'feira-fim-kids': campanha('feira-fim-kids', 'kids', 'ended'),
   // Resposta do referrals anterior a 20/10/2026: sem `audience`, vale Kids.
   'antigo-01': { ...pessoal('antigo-01', 'kids'), audience: undefined },
+  // O presente do Cadê com a oferta na leitura (25/11/2026): a página do presente leva à página de
+  // venda do Cadê, no modo presente.
+  'marta-cade': pessoal('marta-cade', 'kids', {
+    gift: {
+      offerId: '33333333-3333-4333-8333-333333333333',
+      offerSlug: 'cade-todo-mundo-7-dias',
+      offerTitle: 'Cadê Todo Mundo · 7 dias',
+      courseSlug: 'cade-todo-mundo',
+      courseTitle: 'Cadê Todo Mundo',
+      learner: 'child',
+      accessDays: 7,
+      includesMural: true,
+    },
+  }),
 }
 const invites: unknown[] = []
+
+// A oferta principal de cada página no catálogo falso (sem as envs FUNNEL_OFFER_*).
+const PRIMARIES: Record<string, string> = {
+  'comunidade-dos-criadores': 'comunidade-dos-criadores-mensal',
+  'comunidade-dos-criadores-adulto': 'comunidade-dos-criadores-adulto-mensal',
+  'desafio-primeiro-jogo-adulto': 'desafio-primeiro-jogo-adulto-30-dias',
+  'desafio-primeiro-jogo': 'desafio-primeiro-jogo-30-dias',
+  'cade-todo-mundo': 'cade-todo-mundo-7-dias',
+  'cade-todo-mundo-adulto': 'cade-todo-mundo-adulto-7-dias',
+  'transformando-o-vilao-em-aliado': 'transformando-o-vilao-em-aliado',
+}
 
 const gateway = createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://gateway')
@@ -95,6 +123,8 @@ const gateway = createServer((req, res) => {
     raw += chunk
   })
   req.on('end', () => {
+    const product = productResponse(url.pathname, PRIMARIES)
+    if (product) return send(product.status, product.body)
     const code = url.pathname.match(/^\/referrals\/internal\/codes\/([^/]+)$/)?.[1]
     if (req.method === 'GET' && code) return CODES[code] ? send(200, CODES[code]) : send(404, {})
     if (url.pathname === `/referrals/internal/ambassadors/by-token/${TOKEN}`)
@@ -103,7 +133,48 @@ const gateway = createServer((req, res) => {
         code: 'marta-k7q2',
         shareUrl: `${origin}/bolsa/marta-k7q2`,
         shareUrls: { kids: `${origin}/bolsa/marta-k7q2`, adult: `${origin}/bolsa/marta-a9x4` },
-        stats: { redemptionsCompleted: 4, invitesSent: 2 },
+        stats: { redemptionsCompleted: 4, invitesSent: 2, people: 6, gifts: 4, purchases: 2 },
+        offers: [
+          {
+            kind: 'gift',
+            offerId: 'o-cade',
+            offerSlug: 'cade-todo-mundo-7-dias',
+            name: 'Cadê Todo Mundo · 7 dias',
+            audience: 'kids',
+            courseSlug: 'cade-todo-mundo',
+            accessDays: 7,
+            includesMural: true,
+            subscription: false,
+            link: `${origin}/i/marta-k7q2/cade-todo-mundo-7-dias`,
+            checkoutLink: null,
+          },
+          {
+            kind: 'gift',
+            offerId: 'o-cade-adulto',
+            offerSlug: 'cade-todo-mundo-adulto-7-dias',
+            name: 'Cadê Todo Mundo (adultos) · 7 dias',
+            audience: 'adult',
+            courseSlug: 'cade-todo-mundo-adulto',
+            accessDays: 7,
+            includesMural: true,
+            subscription: false,
+            link: `${origin}/i/marta-a9x4/cade-todo-mundo-adulto-7-dias`,
+            checkoutLink: null,
+          },
+          {
+            kind: 'referral',
+            offerId: 'o-comunidade',
+            offerSlug: 'comunidade-dos-criadores-mensal',
+            name: 'Comunidade dos Criadores',
+            audience: 'kids',
+            courseSlug: null,
+            accessDays: null,
+            includesMural: true,
+            subscription: true,
+            link: `${origin}/i/marta-k7q2/comunidade-dos-criadores-mensal`,
+            checkoutLink: `${origin}/i/marta-k7q2/comunidade-dos-criadores-mensal/pagamento`,
+          },
+        ],
         campaigns: {
           total: 3,
           limit: 20,
@@ -234,10 +305,6 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     TRUST_PROXY: 'false',
     COMMUNITY_URL: 'https://comunidade.qa.local',
     KIDS_COMMUNITY_URL: 'https://kids.qa.local',
-    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
-    FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
-    FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-adulto-30-dias',
-    FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
   },
 })
 
@@ -380,7 +447,7 @@ const CASOS: Caso[] = [
     nome: 'embaixador',
     path: `/embaixador/${TOKEN}`,
     status: 200,
-    marca: /Escolha para quem é o presente/,
+    marca: /Escolha o que mandar e copie o seu link/,
     tema: 'theme-kids',
     formulario: false,
   },
@@ -637,25 +704,69 @@ try {
     'dados preservados durante envio',
   )
   await page.goto(`${origin}/embaixador/${TOKEN}`)
-  const link = page.getByRole('textbox', { name: 'Seu link público do presente' })
-  assert.equal(await link.inputValue(), `${origin}/bolsa/marta-k7q2`)
-  await page.getByRole('radio', { name: /Alguém de 18 anos ou mais/ }).check()
-  assert.equal(await link.inputValue(), `${origin}/bolsa/marta-a9x4`)
-  assert.match(await page.locator('#painel').innerText(), /Link do presente para um adulto/)
+  // Os números: só quantidades, nenhum valor de venda.
+  const painel = page.locator('#painel')
+  assert.match(await painel.innerText(), /Pessoas que entraram pelos seus links\s+6/)
+  assert.match(
+    await painel.innerText(),
+    /4 ganharam um presente e 2 compraram algo que você indicou/,
+  )
+  assert.match(await painel.innerText(), /Assinaturas que viraram bônus\s+2/)
+  assert.doesNotMatch(await painel.innerText(), /R\$\s?\d/)
+  // Presente: a escolha troca o link; o Cadê usa o convite de sempre (sem a oferta).
+  const link = page.getByRole('textbox', { name: 'Seu link para compartilhar' })
+  assert.equal(await link.inputValue(), `${origin}/i/marta-k7q2/cade-todo-mundo-7-dias`)
+  await page.getByRole('radio', { name: /Cadê Todo Mundo, versão adulta/ }).check()
+  assert.equal(await link.inputValue(), `${origin}/i/marta-a9x4/cade-todo-mundo-adulto-7-dias`)
   await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Ana')
   await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('ana@example.com')
   await page.getByRole('button', { name: 'Enviar convite' }).click()
   await page.getByText('Convite enviado para ana@example.com.').waitFor()
   assert.deepEqual(invites, [{ name: 'Ana', email: 'ana@example.com', audience: 'adult' }])
-  await page.getByRole('radio', { name: /Uma criança de 5 a 17 anos/ }).check()
+  await page.getByRole('radio', { name: /A criança de 5 a 17 anos/ }).check()
   await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Bia')
   await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('bia@example.com')
   await page.getByRole('button', { name: 'Enviar convite' }).click()
   await page.getByText('Convite enviado para bia@example.com.').waitFor()
   assert.deepEqual(invites[1], { name: 'Bia', email: 'bia@example.com' })
+  // Oferta: a assinatura avisa do bônus; o destino troca o link; o convite leva a oferta.
+  await page.getByRole('radio', { name: 'Indicar uma oferta' }).check()
+  assert.match(await painel.innerText(), /Pode render um bônus para você/)
+  assert.equal(await link.inputValue(), `${origin}/i/marta-k7q2/comunidade-dos-criadores-mensal`)
+  await page.getByRole('radio', { name: 'Direto para o pagamento' }).check()
+  assert.equal(
+    await link.inputValue(),
+    `${origin}/i/marta-k7q2/comunidade-dos-criadores-mensal/pagamento`,
+  )
+  await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Caio')
+  await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('caio@example.com')
+  await page.getByRole('button', { name: 'Enviar convite' }).click()
+  await page.getByText('Convite enviado para caio@example.com.').waitFor()
+  assert.deepEqual(invites[2], {
+    name: 'Caio',
+    email: 'caio@example.com',
+    offer: 'comunidade-dos-criadores-mensal',
+    kind: 'referral',
+  })
   assert.match(await page.locator('#bonus').innerText(), /R\$\s?30,00/)
-  await page.getByRole('radio', { name: /Alguém de 18 anos ou mais/ }).check()
-  await page.locator('#painel').screenshot({ path: resolve(output, 'embaixador-adulto-1440.png') })
+  await painel.screenshot({ path: resolve(output, 'embaixador-oferta-1440.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  assert.ok(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1,
+    ),
+    'painel sem rolagem lateral a 390',
+  )
+  await painel.screenshot({ path: resolve(output, 'embaixador-oferta-390.png') })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+
+  // O presente do Cadê com a oferta na leitura vai à página de venda do Cadê, no modo presente.
+  const cade = await fetch(`${origin}/bolsa/marta-cade?utm_source=whatsapp`, { redirect: 'manual' })
+  assert.equal(cade.status, 302)
+  assert.equal(
+    cade.headers.get('location'),
+    '/kids/cade-todo-mundo/oferta?presente=marta-cade&utm_source=whatsapp',
+  )
 
   const campaignSection = page.locator('#minhas-campanhas')
   assert.match(await campaignSection.innerText(), /08\/11\/2026,? 23:59/)

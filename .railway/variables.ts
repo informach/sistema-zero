@@ -27,7 +27,10 @@ const common: Record<string, string[]> = {
   referrals: [
     'APP_ENV',
     'BONUS_AMOUNT_CENTS',
+    'BONUS_ANNUAL_AMOUNT_CENTS',
     'BONUS_MATURE_HOURS',
+    // Origem por aquisição (25/11/2026): criar no painel antes do deploy da 0013.
+    'BONUS_WINDOW_DAYS',
     'CATALOG_BASE_URL',
     'CATALOG_INTERNAL_TOKEN',
     'COMMUNITY_URL',
@@ -40,6 +43,7 @@ const common: Record<string, string[]> = {
     'KIDS_COMMUNITY_URL',
     'METRICS_TOKEN',
     'NODE_ENV',
+    'ORIGIN_LEGACY_BEFORE',
     'PAYMENTS_BASE_URL',
     'PAYMENTS_INTERNAL_TOKEN',
     'PAYMENTS_WEBHOOK_HMAC_SECRET',
@@ -304,6 +308,8 @@ const common: Record<string, string[]> = {
     'FUNNEL_CONSUMER_ID',
     'FUNNEL_HMAC_SECRET',
     'FUNNEL_INTERNAL_TOKEN',
+    // Preservar na transição para primary_offer_id: réplicas anteriores e rollback
+    // ainda podem precisar desses slugs. O código novo consulta o catálogo.
     'FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES',
     'FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO',
     'FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES',

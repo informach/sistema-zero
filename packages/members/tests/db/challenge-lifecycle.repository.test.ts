@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { DrizzleChallengeLifecycleRepository } from '../../src/infrastructure/persistence/drizzle/challenge-lifecycle.repository'
+import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
+import {
+  DrizzleCourseStartsRepository,
+  loadCourseAccountProgress,
+} from '../../src/infrastructure/persistence/drizzle/course-reminders.repository'
 import {
   createDbConnection,
   type DbConnection,
@@ -15,6 +20,7 @@ if (!testDatabaseUrl) {
 describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgres real', () => {
   let conn: DbConnection
   const createdIds: string[] = []
+  const createdCourses: string[] = []
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
@@ -28,8 +34,55 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       await conn.sql`delete from members.lesson_navigation where user_id = any(${createdIds}::uuid[])`
       await conn.sql`delete from members.profile_preferences where user_id = any(${createdIds}::uuid[])`
       await conn.sql`delete from members.entitlements where id = any(${createdIds}::uuid[])`
+      await conn.sql`delete from members.lesson_progress where user_id = any(${createdIds}::uuid[])`
+    }
+    for (const id of createdCourses) {
+      await conn.sql`delete from members.lessons where course_id = ${id}`
+      await conn.sql`delete from members.modules where course_id = ${id}`
+      await conn.sql`delete from members.courses where id = ${id}`
     }
     await conn.close()
+  })
+
+  test('curso reorganizado: aulas arquivadas não impedem conclusão nem contam como início', async () => {
+    const account = randomUUID()
+    const finishedAccount = randomUUID()
+    createdIds.push(account, finishedAccount)
+    const slug = `curso-reorganizado-${randomUUID()}`
+    const { courseId, lessonIds } = await ensureChallengeCourse(conn, slug)
+    createdCourses.push(courseId)
+    const [active, retired] = lessonIds as [string, string]
+    await conn.sql`update members.lessons set archived_at = now() where id = ${retired}`
+    const retiredModule = randomUUID()
+    const retiredModuleLesson = randomUUID()
+    await conn.sql`insert into members.modules (id, course_id, title, sort_order, archived_at)
+      values (${retiredModule}, ${courseId}, 'Módulo retirado', 1, now())`
+    await conn.sql`insert into members.lessons (id, module_id, course_id, slug, title, sort_order)
+      values (${retiredModuleLesson}, ${retiredModule}, ${courseId}, 'aula-retirada', 'Retirada', 0)`
+    for (const lesson of [retired, retiredModuleLesson]) {
+      await conn.sql`insert into members.lesson_navigation (user_id, account_id, lesson_id, section_id)
+        values (${account}, ${account}, ${lesson}, ${randomUUID()})`
+      await conn.sql`insert into members.lesson_progress (user_id, lesson_id, course_id, updated_at)
+        values (${account}, ${lesson}, ${courseId}, now())`
+    }
+    await conn.sql`insert into members.lesson_completions (id, user_id, course_id, lesson_id, completed_at)
+      values (${randomUUID()}, ${finishedAccount}, ${courseId}, ${active}, now())`
+
+    const progress = await loadCourseAccountProgress(conn.db, slug, [account, finishedAccount])
+    expect(progress?.lessonCount).toBe(1)
+    expect(
+      (await new DrizzleCourseRepository(conn.db).countPublishedLessonsByCourseIds([courseId])).get(
+        courseId,
+      ),
+    ).toBe(1)
+    expect(progress?.completedAt.has(finishedAccount)).toBe(true)
+    expect(progress?.started.has(account)).toBe(false)
+    expect(
+      await new DrizzleCourseStartsRepository(conn.db).startedAccounts(slug, [
+        account,
+        finishedAccount,
+      ]),
+    ).toEqual([finishedAccount])
   })
 
   test('progresso só pertence à compra pela relação explícita e não ambígua perfil→conta', async () => {
@@ -271,6 +324,7 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
       add column if not exists slug text,
       add column if not exists audience text not null default 'kids',
       add column if not exists title text not null default 'Curso',
+      add column if not exists learner text not null default 'child',
       add column if not exists status text not null default 'published',
       add column if not exists created_at timestamptz not null default now(),
       add column if not exists updated_at timestamptz not null default now()`,
@@ -354,6 +408,11 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
     `alter table members.lesson_progress
       add column if not exists user_id uuid,
       add column if not exists course_id uuid`,
+    `alter table members.lesson_section_progress add column if not exists completed_at timestamptz`,
+    `alter table members.lesson_block_progress add column if not exists updated_at timestamptz`,
+    `alter table members.learning_attempts add column if not exists created_at timestamptz`,
+    `alter table members.studio_submissions add column if not exists submitted_at timestamptz, add column if not exists lesson_id uuid`,
+    `alter table members.lesson_progress add column if not exists updated_at timestamptz, add column if not exists lesson_id uuid`,
     `create table if not exists members.lesson_completions (
       id uuid primary key, user_id uuid not null, lesson_id uuid not null, course_id uuid not null,
       completed_at timestamptz not null default now())`,

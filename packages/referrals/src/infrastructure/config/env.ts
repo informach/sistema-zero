@@ -122,6 +122,17 @@ const EnvSchema = z
       .default(DEFAULT_REFERRAL_BONUS.annual),
     /** Garantia + buffer até o bônus liberar (7d + 12h — régua da NFS-e). */
     BONUS_MATURE_HOURS: z.coerce.number().int().positive().default(180),
+    /**
+     * Prazo do link PESSOAL do embaixador (25/11/2026): a primeira assinatura rende bônus se
+     * vier até N dias depois da aquisição pelo link. Campanha usa o prazo dela.
+     */
+    BONUS_WINDOW_DAYS: z.coerce.number().int().min(1).max(3650).default(45),
+    /**
+     * Quando a origem por aquisição (0013) entrou no ar, em ISO. Presente concluído antes disso
+     * que o reparo transforma em aquisição ganha o prazo longo (o acordo antigo não tinha
+     * prazo); depois, o prazo de hoje. Ausente = todo reparo ganha o prazo longo.
+     */
+    ORIGIN_LEGACY_BEFORE: z.iso.datetime({ offset: true }).optional(),
     CONVERSION_SWEEP_INTERVAL_MS: z.coerce
       .number()
       .int()

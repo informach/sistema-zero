@@ -95,6 +95,10 @@ const OfferContentSchema = t.Object({
   // Teto de PERFIS (kids — planos "N perfis") DESTA oferta. Inteiro ≥ 1; injetado no
   // fulfillment resolvido (/entitlements) → o members congela no snapshot da matrícula.
   maxProfiles: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
+  // Prazo DIVULGADO em dias (menor que o real; a diferença chega de surpresa). O agregado confere.
+  advertisedAccessDays: t.Optional(t.Integer({ minimum: 1, maximum: 3650 })),
+  // Opt-in: pode ser vendida na página do produto pelo `?oferta=` (além da principal e da irmã).
+  pageSellable: t.Optional(t.Boolean()),
   // Oferta IRMÃ do alternador do checkout (mensal ↔ anual). O funil valida o slug
   // escolhido contra este link (anti-forja); `label` = texto do alternador.
   altOffer: t.Optional(
@@ -174,6 +178,8 @@ export const UpdateProductBody = t.Object({
   fulfillment: t.Optional(t.Union([FulfillmentSchema, t.Null()])),
   metadata: t.Optional(t.Union([MetadataSchema, t.Null()])),
   components: t.Optional(t.Array(ComponentSchema)),
+  /** Oferta principal da página de venda (uma oferta deste produto); null limpa. */
+  primaryOfferId: t.Optional(t.Union([UUID, t.Null()])),
 })
 
 /** Corpo de `POST /catalog/offers`. */

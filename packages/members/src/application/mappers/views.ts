@@ -539,6 +539,14 @@ export interface CatalogCourseView {
   milestones: CourseMilestonesView
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
+  /**
+   * A oferta de venda do curso no catálogo (`metadata.salesOfferRef`, 25/11/2026): a área dos
+   * pais vende o curso fechado por ela, no mini checkout. `null` = sem venda na plataforma.
+   */
+  salesOfferRef: string | null
+  description: string | null
+  /** Aulas publicadas; só no catálogo dos cursos para pais (o cartão diz "7 aulas"). */
+  lessonsCount?: number
   /** Criação do curso (ISO) — alimenta o seletor de ordem por data do catálogo. */
   createdAt: string
 }
@@ -564,6 +572,8 @@ export function toCatalogCourseView(
     milestones,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
+    salesOfferRef: resolveSalesOfferRef(course),
+    description: course.description,
     createdAt: course.createdAt.toISOString(),
   }
 }
@@ -607,6 +617,12 @@ export type CourseAccessReason =
 
 /** Identity comes from the published curriculum, never from mutable course titles/tags. */
 export type CourseCurriculumView = import('@sistemazero/core/journey').CreatorCoursePlacement
+
+/** A oferta de venda (`metadata.salesOfferRef`), só com o formato de slug do catálogo. */
+export function resolveSalesOfferRef(course: Course): string | null {
+  const raw = course.metadata?.salesOfferRef
+  return typeof raw === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/.test(raw) ? raw : null
+}
 
 /** URL da página de vendas (funil) — `metadata.salesPageUrl` string não-vazia, senão `null`. */
 export function resolveSalesPageUrl(course: Course): string | null {

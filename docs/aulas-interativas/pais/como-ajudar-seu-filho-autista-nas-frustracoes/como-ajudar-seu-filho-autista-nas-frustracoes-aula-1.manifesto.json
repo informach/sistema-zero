@@ -13,19 +13,18 @@
       "plannedVideo": "Título: O que ninguém te contou sobre a crise\n\nDesenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 2."
     },
     {
+      "key": "apostila",
+      "content": {
+        "kind": "materials",
+        "title": "Materiais da aula",
+        "items": []
+      }
+    },
+    {
       "key": "resumo-a1",
       "content": {
         "kind": "rich_text",
         "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação: pode expressar uma dificuldade que a criança não está conseguindo enfrentar.\n- Mudanças inesperadas, excesso de estímulos ou uma barreira podem contribuir para a crise. Observar a situação ajuda a entender o que ficou difícil.\n- Nem toda fala é verbal. O olhar, o silêncio, o grito e a tentativa de se afastar podem dar pistas; não são uma tradução pronta do que toda criança sente.\n- Antes de corrigir ou chamar de birra, pergunte: o que ficou difícil para o meu filho nessa situação?\n- O curso segue por cinco aulas: entender a crise, conhecer fatores da frustração e cuidar do antes, do durante e do depois."
-      }
-    },
-    {
-      "key": "apostila",
-      "content": {
-        "kind": "materials",
-        "title": "Apostila do curso: Frustrações e crises",
-        "bookPreview": true,
-        "items": []
       }
     }
   ],
@@ -49,7 +48,7 @@
       "title": "O que ninguém te contou sobre a crise",
       "objective": "Desenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar.",
       "intent": "explanation",
-      "blockKeys": ["video-a1-comunicacao", "resumo-a1", "apostila"],
+      "blockKeys": ["video-a1-comunicacao", "apostila", "resumo-a1"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],

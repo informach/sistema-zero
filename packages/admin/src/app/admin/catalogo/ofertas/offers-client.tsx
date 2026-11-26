@@ -8,6 +8,7 @@ import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
+import { InfoTooltip } from '@sistemazero/ui/info-tooltip'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
@@ -93,6 +94,10 @@ interface FormState {
   installmentsMax: string
   guaranteeDays: string
   maxProfiles: string
+  /** Prazo divulgado em dias (só prazo fixo em dias, menor que a duração real). */
+  advertisedAccessDays: string
+  /** Pode ser vendida na página do produto pelo `?oferta=` (oferta de presente: desmarcada). */
+  pageSellable: boolean
   status: string
   items: OfferItemDraft[]
 }
@@ -116,6 +121,8 @@ const EMPTY_FORM: FormState = {
   installmentsMax: '',
   guaranteeDays: '',
   maxProfiles: '',
+  advertisedAccessDays: '',
+  pageSellable: false,
   status: 'draft',
   items: [],
 }
@@ -219,19 +226,30 @@ function optInt(v: string): number | null {
 const ALT_OFFER_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 /**
- * Mescla `maxProfiles` e `altOffer` no `content` existente da oferta SEM apagar os
- * demais campos (badge/cta/cupom). Valor nulo → remove o campo. Objeto vazio → `null`.
+ * Mescla `maxProfiles`, `altOffer` e `advertisedAccessDays` no `content` existente da oferta
+ * SEM apagar os demais campos (badge/cta/cupom). Valor nulo → remove o campo. Objeto vazio →
+ * `null`.
  */
-function mergeOfferContent(
+export function mergeOfferContent(
   base: OfferContent | null,
   max: number | null,
   altOffer: { slug: string; label?: string } | null,
+  advertisedAccessDays: number | null = null,
+  pageSellable = false,
 ): OfferContent | null {
-  const { maxProfiles: _dropMax, altOffer: _dropAlt, ...rest } = base ?? {}
+  const {
+    maxProfiles: _dropMax,
+    altOffer: _dropAlt,
+    advertisedAccessDays: _dropAdvertised,
+    pageSellable: _dropSellable,
+    ...rest
+  } = base ?? {}
   const merged: OfferContent = {
     ...rest,
     ...(max != null ? { maxProfiles: max } : {}),
     ...(altOffer ? { altOffer } : {}),
+    ...(advertisedAccessDays != null ? { advertisedAccessDays } : {}),
+    ...(pageSellable ? { pageSellable: true } : {}),
   }
   return Object.keys(merged).length > 0 ? merged : null
 }
@@ -362,6 +380,9 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
       installmentsMax: o.installmentsMax != null ? String(o.installmentsMax) : '',
       guaranteeDays: o.guaranteeDays != null ? String(o.guaranteeDays) : '',
       maxProfiles: o.content?.maxProfiles != null ? String(o.content.maxProfiles) : '',
+      advertisedAccessDays:
+        o.content?.advertisedAccessDays != null ? String(o.content.advertisedAccessDays) : '',
+      pageSellable: o.content?.pageSellable === true,
       memberPromotion: o.content?.memberPromotion,
       checkoutTermsUrl: o.content?.checkoutTerms?.url ?? '',
       checkoutTermsVersion: o.content?.checkoutTerms?.version ?? '',
@@ -472,6 +493,18 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
     // Teto de perfis (kids) da OFERTA, clampado 1..50; mesclado no `content` sem apagar o resto.
     const maxP = optInt(form.maxProfiles)
     const maxProfiles = maxP ? Math.min(maxP, MAX_KIDS_PROFILES) : null
+    // Prazo divulgado: só no prazo fixo em dias e menor que a duração real (o catálogo confere
+    // de novo). Fora disso o campo some do `content`.
+    const fixedDays =
+      form.pricingMode === 'one_time' &&
+      form.accessMode === 'fixed' &&
+      form.accessDurationUnit === 'days'
+    const advertisedAccessDays = fixedDays ? optInt(form.advertisedAccessDays) : null
+    const realDays = optInt(form.accessDurationValue)
+    if (advertisedAccessDays != null && (realDays == null || advertisedAccessDays >= realDays)) {
+      toast.error('O prazo divulgado precisa ser menor que a duração do acesso.')
+      return
+    }
     setSaving(true)
     try {
       // PATCH substitui a coleção de itens — envia sempre o estado completo do editor.
@@ -495,7 +528,13 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
           installmentsMax: isSubscription ? null : optInt(form.installmentsMax),
           guaranteeDays: optInt(form.guaranteeDays),
           content: {
-            ...mergeOfferContent(editing.content, maxProfiles, altOffer),
+            ...mergeOfferContent(
+              editing.content,
+              maxProfiles,
+              altOffer,
+              advertisedAccessDays,
+              form.pageSellable,
+            ),
             checkoutTerms,
             ...(form.memberPromotion
               ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -507,7 +546,13 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
         toast.success('Oferta atualizada.')
       } else {
         const content = {
-          ...mergeOfferContent(null, maxProfiles, altOffer),
+          ...mergeOfferContent(
+            null,
+            maxProfiles,
+            altOffer,
+            advertisedAccessDays,
+            form.pageSellable,
+          ),
           ...(checkoutTerms ? { checkoutTerms } : {}),
           ...(form.memberPromotion
             ? { memberPromotion: memberPromotionSchema.parse(form.memberPromotion) }
@@ -972,8 +1017,40 @@ function OffersForCommunity({ audience }: { audience: Platform }) {
                     <option value="months">Meses</option>
                   </Select>
                 </Field>
+                {form.accessDurationUnit === 'days' ? (
+                  <Field
+                    label="Prazo divulgado (dias)"
+                    htmlFor="advertisedAccessDays"
+                    hint="Opcional. A página e os e-mails mostram este prazo. Os dias que faltam até a duração do acesso chegam de surpresa, num e-mail no fim do prazo divulgado. Precisa ser menor que a duração."
+                  >
+                    <Input
+                      id="advertisedAccessDays"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputMode="numeric"
+                      placeholder="Ex.: 7 (vazio: mostra a duração real)"
+                      value={form.advertisedAccessDays}
+                      onChange={(e) =>
+                        setForm((current) => ({ ...current, advertisedAccessDays: e.target.value }))
+                      }
+                    />
+                  </Field>
+                ) : null}
               </div>
             ) : null}
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.pageSellable}
+                onChange={(e) =>
+                  setForm((current) => ({ ...current, pageSellable: e.target.checked }))
+                }
+                className="size-4 accent-[color:var(--primary)]"
+              />
+              Pode ser vendida na página do produto
+              <InfoTooltip text="Além da oferta principal do produto, a página de venda só abre e cobra as ofertas com esta marca (por um link com ?oferta=). Deixe desmarcada nas ofertas de presente." />
+            </label>
             <Field
               label="Garantia (dias, opcional)"
               htmlFor="guarantee"

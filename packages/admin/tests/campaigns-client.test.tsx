@@ -14,11 +14,12 @@ test('busca mais recente vence mesmo quando a resposta antiga chega por último'
   const requests: { url: string; resolve: (value: Response) => void }[] = []
   // Só as buscas de campanhas entram na corrida; o catálogo (ofertas de presente) responde vazio.
   globalThis.fetch = ((url: string | URL | Request) =>
-    String(url).startsWith('/api/catalog/')
-      ? Promise.resolve(Response.json({ items: [], total: 0 }))
-      : new Promise<Response>((resolve) => {
+    String(url).includes('/api/admin/referrals/campaigns?')
+      ? new Promise<Response>((resolve) => {
           requests.push({ url: String(url), resolve })
-        })) as typeof fetch
+        })
+      : // O catálogo, os cursos e a Origem das vendas respondem vazio: fora da corrida.
+        Promise.resolve(Response.json({ items: [], total: 0 }, { status: 200 }))) as typeof fetch
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
@@ -63,10 +64,18 @@ test('busca mais recente vence mesmo quando a resposta antiga chega por último'
     expect(container.textContent).toContain('Campanha nova')
     expect(container.textContent).not.toContain('Campanha antiga')
 
-    const refresh = [...container.querySelectorAll('button')].find(
-      (button) => button.textContent === 'Atualizar',
-    )!
-    await act(async () => refresh.click())
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+        input,
+        'outra',
+      )
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await act(async () =>
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })),
+    )
     await act(async () =>
       requests[2]!.resolve(
         Response.json({ error: { message: 'Serviço indisponível' } }, { status: 503 }),

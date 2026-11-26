@@ -23,6 +23,8 @@ export interface ResolvedOffer {
   items: ResolvedOfferItem[]
   /** Ausente quando o catálogo não mandou (contrato antigo). */
   accessPolicy?: ResolvedOfferAccessPolicy
+  /** Prazo divulgado em dias (25/11/2026); ausente sem ele. */
+  advertisedAccessDays?: number
 }
 
 /**

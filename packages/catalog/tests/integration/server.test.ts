@@ -38,11 +38,11 @@ function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
   const coupons = new InMemoryCouponRepository()
   const resolver = new ResolveOfferEntitlementsService(products)
   const createProduct = new CreateProductService(products, logger)
-  const updateProduct = new UpdateProductService(products, logger)
+  const updateProduct = new UpdateProductService(products, logger, offers)
   const createOffer = new CreateOfferService(offers, products, resolver, logger)
   const updateOffer = new UpdateOfferService(offers, products, resolver, logger)
   const getOffer = new GetOfferService(offers, products, resolver, logger)
-  const getProduct = new GetProductService(products)
+  const getProduct = new GetProductService(products, offers)
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
@@ -92,6 +92,105 @@ function req(
 const ADMIN = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
 
 describe('catalog HTTP', () => {
+  it('oferta principal da página: só oferta do produto; a leitura pública traz o slug (pelo SKU)', async () => {
+    const { app, createProduct, createOffer } = build()
+    const base = {
+      audience: 'kids' as const,
+      kind: 'ebook' as const,
+      status: 'active' as const,
+    }
+    const cade = await createProduct.execute({
+      ...base,
+      sku: 'cade-todo-mundo',
+      slug: 'cade-pagina',
+      name: 'Cadê',
+      fulfillment: { accessType: 'course', courseRef: 'cade-todo-mundo' },
+    })
+    const outro = await createProduct.execute({
+      ...base,
+      sku: 'outro',
+      slug: 'outro',
+      name: 'Outro',
+      fulfillment: { accessType: 'course', courseRef: 'outro' },
+    })
+    const anual = await createOffer.execute({
+      productId: cade.id,
+      code: 'cade-1-ano',
+      slug: 'cade-1-ano',
+      name: 'Cadê 1 ano',
+      priceCents: 3700,
+      status: 'active',
+    })
+    const alheia = await createOffer.execute({
+      productId: outro.id,
+      code: 'outro-oferta',
+      slug: 'outro-oferta',
+      name: 'Outro',
+      priceCents: 2700,
+      status: 'active',
+    })
+    const patch = (primaryOfferId: string | null) =>
+      app.handle(
+        req('PATCH', `/catalog/products/${cade.id}`, { headers: ADMIN, body: { primaryOfferId } }),
+      )
+    expect((await patch(alheia.id)).status).toBe(400)
+    const ok = await patch(anual.id)
+    expect(ok.status).toBe(200)
+    expect(await ok.json()).toMatchObject({ primaryOfferId: anual.id })
+    // O funil lê pelo SKU, em rota própria: slug e SKU são espaços de nome separados.
+    const pub = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
+    expect(pub.status).toBe(200)
+    expect(await pub.json()).toMatchObject({ primaryOfferSlug: 'cade-1-ano' })
+    expect((await app.handle(req('GET', '/catalog/products/cade-todo-mundo'))).status).toBe(404)
+    expect((await app.handle(req('GET', '/catalog/products/cade-pagina'))).status).toBe(200)
+
+    // A principal arquivada sai da leitura pública e não trava a edição do resto do produto.
+    const archived = await app.handle(
+      req('PATCH', `/catalog/offers/${anual.id}`, { headers: ADMIN, body: { status: 'archived' } }),
+    )
+    expect(archived.status).toBe(200)
+    const after = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
+    expect(await after.json()).toMatchObject({ primaryOfferSlug: null })
+    const rename = await app.handle(
+      req('PATCH', `/catalog/products/${cade.id}`, {
+        headers: ADMIN,
+        body: { name: 'Cadê Todo Mundo', primaryOfferId: anual.id },
+      }),
+    )
+    expect(rename.status).toBe(200)
+    expect((await patch(null)).status).toBe(200)
+  })
+
+  it('oferta aceita a marca "pode ser vendida na página do produto"', async () => {
+    const { app, createProduct, createOffer } = build()
+    const product = await createProduct.execute({
+      audience: 'kids',
+      kind: 'ebook',
+      status: 'active',
+      sku: 'marca-pagina',
+      slug: 'marca-pagina',
+      name: 'Curso',
+      fulfillment: { accessType: 'course', courseRef: 'marca-pagina' },
+    })
+    const offer = await createOffer.execute({
+      productId: product.id,
+      code: 'marca-pagina-6m',
+      slug: 'marca-pagina-6m',
+      name: 'Curso 6 meses',
+      priceCents: 2700,
+      status: 'active',
+    })
+    const res = await app.handle(
+      req('PATCH', `/catalog/offers/${offer.id}`, {
+        headers: ADMIN,
+        body: { content: { pageSellable: true } },
+      }),
+    )
+    expect(res.status).toBe(200)
+    const pub = await app.handle(req('GET', '/catalog/offers/marca-pagina-6m'))
+    expect(await pub.json()).toMatchObject({ content: { pageSellable: true } })
+  })
+
   it('cards do Início respeitam público, disponibilidade, publicação e local configurado', async () => {
     const { app, createProduct, createOffer } = build()
     for (const audience of ['kids', 'adult'] as const) {
@@ -1329,6 +1428,44 @@ describe('catalog HTTP', () => {
       })
       const { items } = result
       expect(items.find((i) => i.isPrimary)?.fulfillment?.maxProfiles).toBe(4)
+    })
+
+    it('prazo divulgado: null sem o campo (a oferta vitalícia não pode ter)', async () => {
+      const built = await seedKidsOffer({ offerMaxProfiles: 2 })
+      const result = (await entitlementsOf(built)) as { advertisedAccessDays?: number | null }
+      expect(result.advertisedAccessDays).toBeNull()
+    })
+
+    it('prazo divulgado: exposto em /entitlements e no content da leitura pública', async () => {
+      const built = build()
+      const main = await built.createProduct.execute({
+        audience: 'kids',
+        sku: 'cade-main',
+        slug: 'cade-main',
+        name: 'Cadê',
+        kind: 'ebook',
+        status: 'active',
+        fulfillment: { accessType: 'course', courseRef: 'cade-todo-mundo' },
+      })
+      await built.createOffer.execute({
+        productId: main.id,
+        code: 'cade-15',
+        slug: 'cade-15',
+        name: 'Cadê 15 dias',
+        priceCents: 3700,
+        status: 'active',
+        accessMode: 'fixed',
+        accessDurationValue: 15,
+        accessDurationUnit: 'days',
+        content: { advertisedAccessDays: 7 },
+      })
+      const ent = await built.app.handle(req('GET', '/catalog/offers/cade-15/entitlements'))
+      expect(((await ent.json()) as { advertisedAccessDays: number }).advertisedAccessDays).toBe(7)
+      const pub = await built.app.handle(req('GET', '/catalog/offers/cade-15'))
+      expect(
+        ((await pub.json()) as { content: { advertisedAccessDays: number } }).content
+          .advertisedAccessDays,
+      ).toBe(7)
     })
 
     it('oferta SEM maxProfiles → nenhum item carrega o campo', async () => {

@@ -18,6 +18,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium, type Page } from 'playwright'
 import { checkOfferImageZoom } from './helpers/offer-image-zoom'
+import { productResponse } from './helpers/page-primaries'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = resolve(cwd, '../../tmp/desafio-ofertas-review')
@@ -32,7 +33,24 @@ const OFFERS: Record<string, number> = {
   'comunidade-dos-criadores-adulto-mensal': 9700,
   'comunidade-dos-criadores-adulto-anual': 97000,
 }
+// A oferta principal de cada página no catálogo falso (sem as envs FUNNEL_OFFER_*).
+const PRIMARIES: Record<string, string> = {
+  'comunidade-dos-criadores': 'comunidade-dos-criadores-mensal',
+  'comunidade-dos-criadores-adulto': 'comunidade-dos-criadores-adulto-mensal',
+  'desafio-primeiro-jogo-adulto': 'desafio-primeiro-jogo-adulto-30-dias',
+  'desafio-primeiro-jogo': 'desafio-primeiro-jogo-30-dias',
+  'cade-todo-mundo': 'cade-todo-mundo-7-dias',
+  'cade-todo-mundo-adulto': 'cade-todo-mundo-adulto-7-dias',
+  'transformando-o-vilao-em-aliado': 'transformando-o-vilao-em-aliado',
+}
+
 const catalog = createServer((req, res) => {
+  const product = productResponse((req.url ?? '').split('?')[0] ?? '', PRIMARIES)
+  if (product) {
+    res.writeHead(product.status, { 'content-type': 'application/json' })
+    res.end(JSON.stringify(product.body))
+    return
+  }
   if (req.method === 'POST' && /^\/catalog\/offers\/[^/]+\/quote$/.test(req.url ?? '')) {
     const slug = req.url?.split('/')[3] ?? ''
     if (slug.startsWith('comunidade-')) {
@@ -114,10 +132,6 @@ const app = spawn('node', ['dist/server/entry.mjs'], {
     FUNNEL_INTERNAL_TOKEN: 'qa-isolated-local',
     SENTRY_DSN: '',
     TRUST_PROXY: 'false',
-    FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-mensal',
-    FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES: 'comunidade-dos-criadores-adulto-mensal',
-    FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-adulto-30-dias',
-    FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO: 'desafio-primeiro-jogo-30-dias',
   },
 })
 

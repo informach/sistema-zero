@@ -284,36 +284,99 @@
   color: var(--kof-tinta);
 }
 
-/* ── O seletor de público ───────────────────────────────────────────────────── */
+/* ── O painel: números, passos e escolhas (Canvas de 25/11/2026) ─────────────── */
 .emb .emb-painel {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
-.emb .emb-publicos {
+.emb .emb-numeros {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 20px;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
 }
-.emb .emb-publico {
-  position: relative;
+.emb .emb-numero {
+  gap: 8px;
+}
+.emb .emb-numero__titulo {
+  color: var(--kof-tinta-suave);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.emb .emb-numero__valor {
+  font-family: var(--emb-titulo);
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.emb .emb-passo {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 22px;
+}
+.emb .emb-passo__titulo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--emb-titulo);
+  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.emb .emb-passo__numero {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font-family: var(--emb-corpo);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+/* Os botões de alternar (presente ou oferta; página ou pagamento). */
+.emb .emb-segmento {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 6px;
+  border: 1px solid var(--kof-linha);
+  border-radius: 16px;
+  background: var(--kof-carta);
+}
+.emb .emb-segmento--destino {
+  display: flex;
+  align-self: stretch;
+  background: var(--kof-sup2);
+}
+.emb .emb-segmento--destino legend {
+  margin-bottom: 8px;
+}
+.emb .emb-segmento__opcao {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: var(--kof-tinta);
+  font-size: 1.0625rem;
+  font-weight: 700;
   cursor: pointer;
-  opacity: 0.86;
 }
-.emb .emb-publico.is-marcado {
-  opacity: 1;
-  outline: 4px solid var(--kof-acao);
-  outline-offset: 3px;
+.emb .emb-segmento__opcao.is-marcado {
+  border-color: var(--kof-acao);
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
 }
-.emb .emb-publico__radio {
+.emb .emb-segmento__radio {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -322,60 +385,104 @@
   opacity: 0;
   cursor: pointer;
 }
-.emb .emb-publico:has(.emb-publico__radio:focus-visible) {
+.emb .emb-segmento__opcao:has(.emb-segmento__radio:focus-visible) {
+  outline: 3px solid var(--kof-tinta);
+  outline-offset: 2px;
+}
+/* As escolhas do passo 2: cartões na língua de cada público. */
+.emb .emb-opcoes {
+  display: grid;
+  /* auto-fill: uma oferta só fica do tamanho de uma coluna (três por linha no computador). */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  gap: 20px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.emb .emb-opcao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px;
+  cursor: pointer;
+  opacity: 0.86;
+}
+.emb .emb-opcao.is-marcado {
+  opacity: 1;
+  outline: 4px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.emb .emb-opcao__radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.emb .emb-opcao:has(.emb-opcao__radio:focus-visible) {
   outline: 4px solid var(--kof-tinta);
   outline-offset: 3px;
 }
-.emb .emb-publico__topo {
+.emb .emb-opcao__topo {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
 }
-.emb .emb-publico__marca {
+.emb .emb-opcao__marca {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
   width: 30px;
   height: 30px;
   color: transparent;
 }
-.emb .emb-publico__corpo {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.emb .emb-publico__imagem {
-  flex: none;
-  width: 132px;
+.emb .emb-opcao__imagem {
+  box-sizing: border-box;
+  width: 100%;
   height: auto;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
-  object-position: left top;
 }
-.emb .emb-publico__texto {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-.emb .emb-publico__titulo {
+.emb .emb-opcao__titulo {
   font-size: 1.5625rem;
   font-weight: 800;
   line-height: 1.1;
 }
-/* A carta Kids: contorno de tinta, cantos redondos e a Baloo. */
-.emb .emb-publico--kids {
+.emb .emb-opcao__texto {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.emb .emb-opcao__bonus {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--kof-menta);
+  color: var(--kof-tinta);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+/* Kids e pais: contorno de tinta, cantos redondos e a Baloo; o chip muda de cor. */
+.emb .emb-opcao--kids,
+.emb .emb-opcao--pais {
   border: 3px solid var(--kof-tinta);
   border-radius: 22px;
   background: var(--kof-carta);
   box-shadow: 4px 4px 0 var(--kof-carta-degrau);
 }
-.emb .emb-publico--kids.is-marcado {
+.emb .emb-opcao--kids.is-marcado,
+.emb .emb-opcao--pais.is-marcado {
   box-shadow: 8px 8px 0 var(--kof-acao);
 }
-.emb .emb-publico--kids .emb-publico__selo {
+.emb .emb-opcao--kids .emb-opcao__chip,
+.emb .emb-opcao--pais .emb-opcao__chip {
   display: inline-flex;
   align-items: center;
   min-height: 34px;
@@ -389,60 +496,72 @@
   font-weight: 800;
   transform: rotate(-2deg);
 }
-.emb .emb-publico--kids .emb-publico__marca {
+.emb .emb-opcao--pais .emb-opcao__chip {
+  background: var(--kof-lilas);
+}
+.emb .emb-opcao--kids .emb-opcao__marca,
+.emb .emb-opcao--pais .emb-opcao__marca {
   border: 3px solid var(--kof-tinta);
   border-radius: 50%;
   background: var(--kof-carta);
 }
-.emb .emb-publico--kids.is-marcado .emb-publico__marca {
+.emb .emb-opcao--kids.is-marcado .emb-opcao__marca,
+.emb .emb-opcao--pais.is-marcado .emb-opcao__marca {
   background: var(--kof-acao);
   color: var(--kof-sobre-acao);
 }
-.emb .emb-publico--kids .emb-publico__imagem {
+.emb .emb-opcao--kids .emb-opcao__imagem,
+.emb .emb-opcao--pais .emb-opcao__imagem {
   border: 3px solid var(--kof-tinta);
   border-radius: 10px;
 }
-.emb .emb-publico--kids .emb-publico__titulo {
+.emb .emb-opcao--kids .emb-opcao__titulo,
+.emb .emb-opcao--pais .emb-opcao__titulo {
   font-family: var(--kof-display);
   color: var(--kof-tinta);
 }
-.emb .emb-publico--kids .emb-publico__texto > span {
+.emb .emb-opcao--kids .emb-opcao__texto,
+.emb .emb-opcao--pais .emb-opcao__texto {
   color: var(--kof-tinta-suave);
 }
-/* A carta adulta: arcade, com os tokens `--cda-*` da classe `theme-arcade` da própria carta. */
-.emb .emb-publico--adult {
+/* O adulto: arcade, com os tokens `--cda-*` da classe `theme-arcade` do próprio cartão. */
+.emb .emb-opcao--adult {
   border: 3px solid var(--cda-linha-forte);
   background: var(--cda-fundo);
   color: var(--cda-texto);
   box-shadow: 4px 4px 0 var(--kof-carta-degrau);
 }
-.emb .emb-publico--adult.is-marcado {
+.emb .emb-opcao--adult.is-marcado {
   box-shadow: 8px 8px 0 var(--cda-rosa);
 }
-.emb .emb-publico--adult .emb-publico__selo {
+.emb .emb-opcao--adult .emb-opcao__chip {
   padding: 5px 10px;
   background: var(--cda-verde);
   color: var(--cda-fundo);
   font-family: var(--cda-pixel);
   font-size: 0.8125rem;
 }
-.emb .emb-publico--adult .emb-publico__marca {
+.emb .emb-opcao--adult .emb-opcao__marca {
   border: 3px solid var(--cda-linha-forte);
   background: var(--cda-fundo-2);
 }
-.emb .emb-publico--adult.is-marcado .emb-publico__marca {
+.emb .emb-opcao--adult.is-marcado .emb-opcao__marca {
   background: var(--cda-amarelo);
   color: var(--cda-fundo);
 }
-.emb .emb-publico--adult .emb-publico__imagem {
+.emb .emb-opcao--adult .emb-opcao__imagem {
   border: 3px solid var(--cda-linha-forte);
-  object-position: left;
 }
-.emb .emb-publico--adult .emb-publico__titulo {
+.emb .emb-opcao--adult .emb-opcao__titulo {
   font-family: var(--cda-titulo);
 }
-.emb .emb-publico--adult .emb-publico__texto > span {
+.emb .emb-opcao--adult .emb-opcao__texto {
   color: var(--cda-texto-suave);
+}
+.emb .emb-opcao--adult .emb-opcao__bonus {
+  border-radius: 0;
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
 }
 
 /* ── Cartões do painel ──────────────────────────────────────────────────────── */
@@ -572,6 +691,11 @@
   border-radius: 10px;
   background: var(--kof-amarelo);
 }
+.emb .emb-chip--pais {
+  border: 2px solid var(--kof-tinta);
+  border-radius: 10px;
+  background: var(--kof-lilas);
+}
 .emb .emb-chip--adult {
   background: var(--cda-fundo);
   color: var(--cda-verde);
@@ -601,21 +725,6 @@
   flex-direction: column;
   gap: 8px;
 }
-.emb .emb-resgates {
-  gap: 8px;
-}
-.emb .emb-resgates__titulo {
-  color: var(--kof-tinta-suave);
-  font-size: 1.0625rem;
-  font-weight: 700;
-}
-.emb .emb-resgates__numero {
-  font-family: var(--emb-titulo);
-  font-size: 2.75rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
 /* ── Bônus ──────────────────────────────────────────────────────────────────── */
 .emb .emb-bonus {
   display: flex;
@@ -649,114 +758,7 @@
   font-size: 1rem;
 }
 
-/* ── Para quem faz sentido, passos e a tabela ───────────────────────────────── */
-.emb .emb-perfis {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 22px;
-}
-.emb .emb-perfil {
-  display: flex;
-  flex: 1 1 420px;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  padding: 24px;
-}
-.emb .emb-perfil p {
-  font-size: 1.0625rem;
-}
-.emb .emb-perfil--kids {
-  border: 3px solid var(--kof-tinta);
-  border-radius: 20px;
-  background: var(--kof-carta);
-  box-shadow: 6px 6px 0 var(--kof-amarelo);
-}
-.emb .emb-perfil--kids strong {
-  font-family: var(--kof-display);
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1.15;
-}
-.emb .emb-perfil--kids p {
-  color: var(--kof-tinta-suave);
-}
-.emb .emb-perfil--adult {
-  border: 3px solid var(--cda-linha-forte);
-  background: var(--cda-fundo);
-  color: var(--cda-texto);
-  box-shadow: 6px 6px 0 var(--cda-rosa);
-}
-.emb .emb-perfil--adult strong {
-  font-family: var(--cda-titulo);
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1.15;
-}
-.emb .emb-perfil--adult p {
-  color: var(--cda-texto-suave);
-}
-.emb .emb-passos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-  gap: 16px;
-}
-.emb .emb-passos li {
-  display: flex;
-  gap: 14px;
-  padding: 20px;
-  border: 1px solid var(--kof-linha);
-  border-radius: 16px;
-  background: var(--kof-carta);
-  font-size: 1.0625rem;
-}
-.emb .emb-passos__numero {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--kof-acao);
-  color: var(--kof-sobre-acao);
-  font-weight: 700;
-}
-.emb .emb-tabela {
-  overflow-x: auto;
-  border: 1px solid var(--kof-linha);
-  border-radius: 16px;
-  background: var(--kof-carta);
-}
-.emb .emb-tabela table {
-  width: 100%;
-  min-width: 720px;
-  border-collapse: collapse;
-  font-size: 1.0625rem;
-}
-.emb .emb-tabela thead tr {
-  background: var(--kof-sup2);
-  text-align: left;
-}
-.emb .emb-tabela th,
-.emb .emb-tabela td {
-  padding: 14px 18px;
-  vertical-align: top;
-}
-.emb .emb-tabela tbody tr {
-  border-top: 1px solid var(--kof-linha);
-}
-.emb .emb-tabela tbody th {
-  text-align: left;
-}
-.emb .emb-tabela__kids {
-  font-family: var(--kof-display);
-  font-size: 1.25rem;
-}
-.emb .emb-tabela__adulto {
-  font-family: var(--emb-titulo);
-  font-size: 1.25rem;
-}
+/* ── Dúvidas, fechamento e status ──────────────────────────────────────────── */
 .emb .emb-duvidas {
   display: grid;
   gap: 12px;
@@ -805,9 +807,6 @@
 }
 
 @media (max-width: 520px) {
-  .emb .emb-topo-cta {
-    display: none;
-  }
   .emb .emb-marca span {
     padding-left: 0;
     border-left: 0;
@@ -817,11 +816,8 @@
   .emb .emb-nav__link {
     display: none;
   }
-  .emb .emb-publico__corpo {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .emb .emb-publico__imagem {
+  .emb .emb-segmento,
+  .emb .emb-segmento__opcao {
     width: 100%;
   }
 }
