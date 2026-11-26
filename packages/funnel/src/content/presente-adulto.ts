@@ -154,7 +154,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
       titulo: 'A explicação fica ao lado do que você está montando',
       paragrafos: [
         'Você assiste a um passo, pausa e faz no projeto. Cada parte é conferida antes da próxima, então você sabe se a regra funcionou antes de seguir.',
-        `As aulas são gravadas, sem horário de turma. Nos ${prazo.dias}, você entra quando tiver um tempo livre, inclusive à noite, depois do trabalho.`,
+        `As aulas são gravadas, sem horário de turma. Nos ${prazo.extenso}, você entra quando tiver um tempo livre, inclusive à noite, depois do trabalho.`,
       ],
       imagem: {
         src: `${IMG_KIDS}/tela-aula-estudio.webp`,
@@ -168,7 +168,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
       rotulo: 'MURAL ADULTO',
       titulo: 'Publique o jogo e mande o link para quem você quiser',
       paragrafos: [
-        `Nos ${prazo.dias}, você publica no Mural adulto o jogo que fez no curso. O link abre o jogo no navegador, sem conta, para os amigos jogarem.`,
+        `Nos ${prazo.extenso}, você publica no Mural adulto o jogo que fez no curso. O link abre o jogo no navegador, sem conta, para os amigos jogarem.`,
         'No Mural, você também joga o que outros adultos estão criando, comenta e reage.',
       ],
       imagem: {
@@ -208,10 +208,10 @@ export function presenteAdulto(prazo: PrazoDoCade) {
         {
           cor: 'verde',
           rotulo: 'R$ 0 · SEM CARTÃO',
-          texto: `Quando os ${prazo.dias} terminam, nenhuma cobrança começa.`,
+          texto: `Quando os ${prazo.extenso} terminam, nenhuma cobrança começa.`,
         },
       ] satisfies { cor: CorAdulto; rotulo: string; texto: string }[],
-      nota: `Quando os ${prazo.dias} terminam, o curso fecha para este presente, o Mural adulto continua aberto para você ver e jogar, e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
+      nota: `Quando os ${prazo.extenso} terminam, o curso fecha para este presente, o Mural adulto continua aberto para você ver e jogar, e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
       cta: 'Liberar o meu presente',
     },
     duvidas: {
@@ -228,7 +228,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
             'As aulas pedem o navegador de um computador, com mouse e teclado. O cadastro pode ser feito pelo celular.',
         },
         {
-          pergunta: `Quando os ${prazo.dias} começam?`,
+          pergunta: `Quando os ${prazo.extenso} começam?`,
           resposta: 'No cadastro. Faça quando tiver alguns dias livres pela frente.',
         },
         {
@@ -251,7 +251,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
     resgatar: {
       rotulo: 'PLAYER 1 · SEUS DADOS',
       titulo: 'Libere o seu presente e escolha a hora de começar',
-      texto: `O cadastro pede o seu nome e o seu e-mail; o telefone é opcional. O link de acesso chega no e-mail, e os ${prazo.dias} começam no cadastro.`,
+      texto: `O cadastro pede o seu nome e o seu e-mail; o telefone é opcional. O link de acesso chega no e-mail, e os ${prazo.extenso} começam no cadastro.`,
       previa:
         'O formulário aparece no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.',
     },
@@ -276,7 +276,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
       ended: {
         etiqueta: 'GAME OVER PARA ESTE LINK',
         titulo: 'Os cadastros por este link terminaram em {{data}}',
-        texto: `Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem recebeu o presente dentro do período mantém os ${prazo.dias} contados do cadastro.`,
+        texto: `Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem recebeu o presente dentro do período mantém os ${prazo.extenso} contados do cadastro.`,
       },
       endedSemData: 'Os cadastros por este link terminaram',
       retomar: {

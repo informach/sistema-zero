@@ -63,7 +63,7 @@ Os materiais finais ficam **nesta pasta do curso**:
 | `capa-apostila.png` | Capa da apostila, sem quantidade de aulas. |
 | `apostila.pdf` | Apostila completa de dez páginas. |
 | `certificado.png` | Fundo do certificado, com mãe e filho à esquerda e psicóloga à direita, junto ao rodapé. O centro fica livre para os dados dinâmicos. |
-| `certificado-demonstracao.pdf` e `.png` | Simulação pelo gerador real com nome longo, data, QR, número e duas assinaturas fictícias. Não são certificados emitidos. |
+| `certificado-demonstracao.pdf` e `.png` | Prévia emitida pelo gerador real para uma conta de ensaio, com dados simulados, data, QR, número e as duas assinaturas institucionais oficiais. O registro de ensaio foi revogado após a conferência. |
 | `prompts-das-artes.json` | Ferramenta, referências e prompts das imagens geradas. |
 | `publicacao-staging.json` e `publicacao-production.json` | IDs, vínculos dos vídeos, capas, apostila e configuração do certificado por ambiente. |
 | `cadastro-publicado-staging.json` e `cadastro-publicado-production.json` | Cópia do cadastro e dos documentos das aulas publicados. |

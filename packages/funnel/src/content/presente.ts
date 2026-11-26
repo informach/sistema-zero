@@ -316,7 +316,7 @@ export function presenteKids(prazo: PrazoDoCade) {
       ended: {
         etiqueta: 'Campanha encerrada',
         titulo: 'Os cadastros por este link terminaram em {{data}}',
-        texto: `Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem recebeu o presente dentro do período mantém os ${prazo.dias} contados do cadastro.`,
+        texto: `Quem começou o cadastro antes pode retomar com o mesmo e-mail. Quem recebeu o presente dentro do período mantém os ${prazo.extenso} contados do cadastro.`,
       },
       endedSemData: 'Os cadastros por este link terminaram',
       retomar: {
