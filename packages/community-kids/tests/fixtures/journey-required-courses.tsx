@@ -74,7 +74,10 @@ test('canonical required courses: enrollment remains required for the outside co
   expect(screen.getByText(bonus.title)).toBeTruthy()
   const link = screen
     .getAllByRole('link')
-    .find((item) => item.getAttribute('href') === 'https://example.test/aventura')
+    .find(
+      (item) =>
+        item.getAttribute('href') === 'https://example.test/aventura?lugar=crianca-curso-fechado',
+    )
   expect(link?.textContent).toContain('Mostrar ao responsável')
   expect(
     screen
