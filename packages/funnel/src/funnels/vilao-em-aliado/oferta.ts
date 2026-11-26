@@ -59,7 +59,7 @@ export function guiaPaisVenda(garantiaDias: number | null): GuiaPaisCopy & {
     barra: { titulo: '{{preco}}', texto: 'Pagamento único', cta: CTA },
     hero: {
       ...P.hero,
-      selo: 'Guia para pais',
+      selo: 'Workshop para pais',
       cta: CTA,
       beneficios: [
         P.hero.beneficios[0] ?? '',
