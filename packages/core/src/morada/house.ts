@@ -177,7 +177,18 @@ export function validateMoradaHouse(
       if (piece) {
         const c = Math.cos(instance.rotation),
           s = Math.sin(instance.rotation)
-        const margin = piece.kind === 'construction' ? 0.2 : 0.001
+        // Janela e porta ficam no plano da parede, que está na borda do cômodo: a moldura passa
+        // metade da espessura dela para fora. As do pacote de Natal têm 0,45 m (mais que os 0,2 m
+        // das outras peças de construção), e a casa com elas era recusada ao salvar.
+        const insert =
+          piece.kind === 'construction' &&
+          (piece.category === 'janelas' ||
+            piece.category === 'portas' ||
+            piece.category === 'encaixes')
+        const margin =
+          piece.kind === 'construction'
+            ? Math.max(0.2, insert ? (piece.max[2] - piece.min[2]) / 2 + 0.01 : 0)
+            : 0.001
         for (const x of [piece.min[0], piece.max[0]])
           for (const z of [piece.min[2], piece.max[2]]) {
             if (

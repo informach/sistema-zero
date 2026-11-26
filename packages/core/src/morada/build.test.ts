@@ -6,6 +6,7 @@ import {
   MORADA_BUILD_TYPES,
   MORADA_CATALOG,
   MORADA_HISTORY_LIMIT,
+  MORADA_INSERT_OPENINGS,
   type MoradaHouse,
   moradaBuildType,
   moradaInstanceCenter,
@@ -57,18 +58,76 @@ describe('modo construção: aberturas e encaixes', () => {
       true,
     )
   })
-  test('as lacunas do catálogo ficam vermelhas até a arte desenhar a parede que falta', () => {
-    // O vão da janela quadrada de 1 m (0,6 m) não tem janela que sirva…
+  test('cada janela e porta vai no vão que a arte desenhou para ela', () => {
+    // A tabela vem do `vao` da arte (scripts/morada/encaixes.ts) e todo par existe no catálogo.
+    const pairs = Object.entries(MORADA_INSERT_OPENINGS)
+    expect(pairs.length).toBeGreaterThan(80)
+    for (const [insert, { wall, index }] of pairs) {
+      const opening = moradaWallOpenings(piece(wall))[index]
+      expect(opening, `${insert} → ${wall}#${index}`).toBeDefined()
+      expect(moradaOpeningWallsFor(piece(insert))[0]?.wall.id, insert).toBe(wall)
+    }
+  })
+  test('a moldura que passa do vão encaixa: Natal na janela de 2 m, óculo na quadrada de 1 m', () => {
+    // A moldura da janela quadrada de Natal (1,5 m) e a do óculo (0,9 m) cobrem a borda do vão
+    // (1,2 m e 0,6 m), como a arte desenhou: não falta parede nenhuma no catálogo.
+    for (const [insert, wall] of [
+      ['construcao/janela_quadrada_natal', 'construcao/janela_2m'],
+      ['construcao/janela_oculo_branca', 'construcao/janela_quadrada_1m'],
+      ['construcao/janela_redonda_natal', 'construcao/janela_quadrada_1m'],
+    ] as const) {
+      const p = moradaPlace(createMoradaHouse(), insert, [-2.2, -2.6])
+      expect(p.valid, insert).toBe(true)
+      expect(
+        p.replace?.add.map((i) => i.pieceId),
+        insert,
+      ).toContain(wall)
+      const length = (p.replace?.add ?? []).reduce((sum, i) => sum + piece(i.pieceId).size[0], 0)
+      expect(length, insert).toBeCloseTo(4)
+      // A casa com ela passa na validação do servidor (a moldura funda do pacote de Natal sai
+      // metade para fora da parede da borda).
+      expect(validateMoradaHouse(applyMoradaPlacement(createMoradaHouse(), p)), insert).toEqual([])
+    }
+  })
+  test('trecho curto demais para a parede da janela diz que falta espaço, não que falta parede', () => {
+    // Abre o óculo no fundo (o trecho de 4 m vira 1 m com vão + 2 m + 1 m) e tenta a janela de
+    // Natal, cuja parede tem 2 m, num pedaço de 1 m que sobrou.
+    const house = createMoradaHouse()
+    const oculo = moradaPlace(house, 'construcao/janela_oculo_branca', [-3.5, -2.6])
+    expect(oculo.valid).toBe(true)
+    const after = applyMoradaPlacement(house, oculo)
+    const short = moradaWalls(after).find((w) => w.length === 1 && w.openings.length === 0)
+    expect(short).toBeDefined()
+    if (!short) return
+    const mid = short.length / 2
+    const point: [number, number] = [
+      short.start[0] + short.dir[0] * mid + short.inward[0] * 0.3,
+      short.start[1] + short.dir[1] * mid + short.inward[1] * 0.3,
+    ]
+    const natal = moradaPlace(after, 'construcao/janela_quadrada_natal', point)
+    expect(natal.valid).toBe(false)
+    expect(natal.reason).toMatch(/curto/)
+  })
+  test('o par da arte vence o tamanho: óculo não vai no vão em arco, porta em arco não vai na passagem', () => {
+    expect(moradaOpeningWallsFor(piece('construcao/janela_oculo_branca'))[0]?.wall.id).toBe(
+      'construcao/janela_quadrada_1m',
+    )
     expect(
-      Object.values(MORADA_CATALOG.pieces).some((p) =>
-        moradaOpeningWallsFor(p).some((o) => o.wall.id === 'construcao/janela_quadrada_1m'),
-      ),
-    ).toBe(false)
-    // …e a janela quadrada de Natal não cabe em nenhuma parede: o motivo diz isso.
-    expect(moradaOpeningWallsFor(piece('construcao/janela_quadrada_natal'))).toEqual([])
-    const p = moradaPlace(createMoradaHouse(), 'construcao/janela_quadrada_natal', [-2, -2.8])
-    expect(p.valid).toBe(false)
-    expect(p.reason).toMatch(/Ainda não tem parede/)
+      moradaOpeningWallsFor(piece('construcao/janela_oculo_branca')).map((o) => o.wall.id),
+    ).not.toContain('construcao/janela_arco_2m')
+    expect(moradaOpeningWallsFor(piece('construcao/porta_arco_branca'))[0]?.wall.id).toBe(
+      'construcao/arco_2m',
+    )
+    // A porta em arco de Natal (0,45 m de fundo) também salva.
+    const natal = moradaPlace(createMoradaHouse(), 'construcao/porta_arco_natal', [-2.2, -2.6])
+    expect(natal.valid).toBe(true)
+    expect(validateMoradaHouse(applyMoradaPlacement(createMoradaHouse(), natal))).toEqual([])
+    // A porta comum usa a parede de 2 m da arte (um trecho a menos que a de 1 m), mas cabe nas duas.
+    const door = moradaOpeningWallsFor(piece('construcao/porta_classica_2_branca')).map(
+      (o) => o.wall.id,
+    )
+    expect(door[0]).toBe('construcao/porta_2m')
+    expect(door).toContain('construcao/porta_1m')
   })
   test('uma parede nova com o vão certo entra sozinha na tabela (vem do catálogo)', () => {
     const wall = piece('construcao/janela_2m')
