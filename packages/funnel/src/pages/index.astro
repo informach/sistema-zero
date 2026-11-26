@@ -1,43 +1,78 @@
 ---
 import '../styles/kids-oferta.css'
-import { COMUNIDADE_ADULTO as adulto } from '../funnels/comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES as kids } from '../funnels/comunidade-dos-criadores'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { funnelLinkWithAttribution } from '../lib/lead-attribution'
 
-// Página da bio do Instagram @criecomhelenaejulio (Canvas `PaginaBio.html`, 19/10/2026): quem
-// somos, a frase "Criar jogos não tem idade." e dois caminhos, um para cada quiz. Sem atalho para
-// a oferta (decisão da dona): quem chega pela bio responde o quiz e recebe o resultado. Os links
-// preservam a atribuição sanitizada; a raiz não cria lead.
+// Página da bio do Instagram @criecomhelenaejulio (26/11/2026, proposta no Canvas "Página da bio"):
+// no estilo de uma página de links. A foto do perfil, o nome, o posicionamento e três botões, cada
+// um dizendo para quem é: o PRINCIPAL é o presente do guia para pais (pelo link da campanha
+// `vilao-em-aliado`, que abre a página do guia no modo presente); os dois secundários levam ao
+// Desafio do Primeiro Jogo Kids (para o filho) e adulto (para a própria pessoa). Cada link já leva
+// as UTMs da bio. Se a visita chegou com atribuição própria (anúncio, evento, cupom), ela vai
+// INTEIRA no lugar das UTMs da bio (`funnelLinkWithAttribution`), sem misturar as duas.
+// A raiz não cria lead.
 export const prerender = false
 Astro.response.headers.set('cache-control', 'no-store')
-const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
+
+const utm = (campanha: string, botao: string) =>
+  `utm_source=instagram&utm_medium=bio&utm_campaign=${campanha}&utm_content=${botao}`
+const atribuicaoDaVisita = funnelLinkWithAttribution('/', Astro.url) !== '/'
+const link = (pathComUtm: string) =>
+  atribuicaoDaVisita
+    ? funnelLinkWithAttribution(pathComUtm.split('?')[0] ?? pathComUtm, Astro.url)
+    : pathComUtm
+
+const LINKS_DA_BIO = {
+  guia: `/i/vilao-em-aliado?${utm('transformando-o-vilao-em-aliado', 'guia-pais-presente')}`,
+  desafioKids: `/kids/desafio-primeiro-jogo/oferta?${utm('desafio-primeiro-jogo', 'desafio-kids')}`,
+  desafioAdulto: `/pro/desafio-primeiro-jogo/oferta?${utm('desafio-primeiro-jogo-adulto', 'desafio-adulto')}`,
+} as const
+
+const seta = '<path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path>'
+const presente =
+  '<rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>'
 ---
-<BaseLayout title="Helena e Júlio | Sistema Zero" description="A gente ensina a fazer jogos. Criar jogos não tem idade. Escolha se é para você ou para o seu filho ou filha, e em 3 minutos a gente mostra por onde começar." htmlClass="theme-kids">
+<BaseLayout title="Helena e Júlio | Sistema Zero" description="Ajudamos pais a transformar parte do tempo de tela dos filhos em oportunidades de desenvolver habilidades cognitivas para a vida, por meio da criação de jogos." htmlClass="theme-kids">
   <main class="bio" id="bio">
     <div class="bio-coluna">
-      <div class="bio-topo">
+      <div class="bio-perfil">
         <img class="bio-foto" src={`${kids.imagesBase}/helena-julio-perfil.webp`} alt="Helena e Júlio" width="360" height="360" fetchpriority="high" />
-        <p class="bio-quem"><strong>Helena e Júlio</strong><span>A gente ensina a fazer jogos</span></p>
-        <h1 class="bio-titulo">Criar jogos não tem idade.</h1>
-        <p class="bio-lead">Escolha abaixo se é para você ou para o seu filho ou filha. Em 3 minutos, a gente mostra por onde começar.</p>
+        <h1 class="bio-nome">Helena e Júlio</h1>
+        <p class="bio-arroba">@criecomhelenaejulio</p>
+        <p class="bio-posicionamento">Ajudamos pais a transformar parte do tempo de tela dos filhos em oportunidades de desenvolver habilidades cognitivas para a vida, por meio da criação de jogos.</p>
       </div>
 
-      <nav class="bio-caminhos" aria-label="Para quem é">
-        <!-- O cartão adulto leva a classe do tema arcade só para ler os tokens `--cda-*`. -->
-        <a class="theme-arcade bio-cartao bio-cartao--adulto" href={link(`${adulto.basePath}/quiz`)} data-analytics-id="bio-quiz-adulto">
-          <span class="bio-cartao-texto">
-            <strong>É para mim</strong>
-            <span>Tenho 18 anos ou mais e sempre quis fazer um jogo.</span>
+      <nav class="bio-links" aria-label="Links">
+        <a class="bio-botao bio-botao--principal" href={link(LINKS_DA_BIO.guia)} data-analytics-id="bio-guia-pais-presente">
+          <span class="bio-botao-selo">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" set:html={presente} />
+            De presente para você
           </span>
-          <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+          <span class="bio-botao-texto">
+            <span class="bio-botao-para">Para você, mãe ou pai</span>
+            <strong>Guia Transformando o vilão em aliado</strong>
+            <span class="bio-botao-linha">Aulas curtas em vídeo para a tela trabalhar a favor do desenvolvimento do seu filho.</span>
+          </span>
+          <svg class="bio-botao-seta" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} />
         </a>
-        <a class="bio-cartao bio-cartao--kids" href={link(`${kids.basePath}/quiz`)} data-analytics-id="bio-quiz-infantil">
-          <span class="bio-cartao-texto">
-            <strong>É para meu filho ou filha</strong>
-            <span>De 9 a 17 anos, ou menor de 9 criando comigo.</span>
+
+        <a class="bio-botao" href={link(LINKS_DA_BIO.desafioKids)} data-analytics-id="bio-desafio-kids">
+          <span class="bio-botao-texto">
+            <span class="bio-botao-para">Para o seu filho, de 5 a 17 anos</span>
+            <strong>Desafio do Primeiro Jogo</strong>
+            <span class="bio-botao-linha">Ele cria o primeiro jogo dele em casa. Abaixo de 9 anos, com você junto.</span>
           </span>
-          <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+          <svg class="bio-botao-seta" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} />
+        </a>
+
+        <a class="bio-botao" href={link(LINKS_DA_BIO.desafioAdulto)} data-analytics-id="bio-desafio-adulto">
+          <span class="bio-botao-texto">
+            <span class="bio-botao-para">Para você, com 18 anos ou mais</span>
+            <strong>Desafio do Primeiro Jogo para adultos</strong>
+            <span class="bio-botao-linha">Para quem sempre quis criar o próprio jogo.</span>
+          </span>
+          <svg class="bio-botao-seta" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} />
         </a>
       </nav>
 
@@ -54,142 +89,157 @@ const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
   .bio {
     min-height: 100svh;
     box-sizing: border-box;
-    padding: 3rem 1.25rem 2.5rem;
+    padding: 2.75rem 1rem 2.25rem;
     display: flex;
     justify-content: center;
-    background:
-      radial-gradient(60% 45% at 50% -8%, color-mix(in oklab, var(--kof-lilas) 75%, transparent), transparent 72%),
-      radial-gradient(38% 40% at 100% 100%, color-mix(in oklab, var(--kof-menta) 70%, transparent), transparent 72%),
-      var(--kof-chao);
+    background: var(--kof-chao);
     color: var(--kof-tinta);
     font-family: var(--kof-corpo);
   }
   .bio-coluna {
     width: 100%;
-    max-width: 27.5rem;
+    max-width: 26rem;
     display: flex;
     flex-direction: column;
-    gap: 1.875rem;
+    gap: 1.75rem;
   }
-  .bio-topo {
+  /* Não é <header>: o `.theme-kids header` do global.css pintaria a faixa do topo do site. */
+  .bio-perfil {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.875rem;
     text-align: center;
   }
   .bio-foto {
-    width: 7.5rem;
-    height: 7.5rem;
+    width: 6.5rem;
+    height: 6.5rem;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid var(--kof-carta);
-    box-shadow: 0 6px 18px color-mix(in oklab, var(--kof-tinta) 14%, transparent);
+    border: 3px solid var(--kof-carta);
+    box-shadow: 0 0 0 3px var(--kof-tinta);
   }
-  .bio-quem {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
+  .bio-nome {
+    margin: 1rem 0 0;
+    font-family: var(--kof-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.1;
   }
-  .bio-quem strong {
-    font-size: 1.1875rem;
-  }
-  .bio-quem span {
+  .bio-arroba {
+    margin: 0.25rem 0 0;
     font-size: 0.9375rem;
     color: var(--kof-tinta-suave);
   }
-  .bio-titulo {
-    margin: 0.5rem 0 0;
-    font-family: "Bricolage Grotesque", system-ui, sans-serif;
-    font-weight: 800;
-    font-size: clamp(2.1rem, 9vw, 2.8rem);
-    line-height: 1.02;
-    text-wrap: balance;
-  }
-  .bio-lead {
-    margin: 0;
-    font-size: 1.0625rem;
+  .bio-posicionamento {
+    margin: 0.875rem 0 0;
+    font-size: 1rem;
     line-height: 1.5;
+    text-wrap: pretty;
   }
-  .bio-caminhos {
+  .bio-links {
     display: flex;
     flex-direction: column;
     gap: 0.875rem;
   }
-  .bio-cartao {
+  .bio-botao {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.375rem;
-    border: 3px solid;
-    border-radius: 22px;
+    gap: 0.875rem;
+    padding: 1rem 1.125rem;
+    min-height: 3.5rem;
+    border: 2px solid var(--kof-tinta);
+    border-radius: 18px;
+    background: var(--kof-carta);
+    color: var(--kof-tinta);
     text-decoration: none;
+    box-shadow: 0 3px 0 var(--kof-carta-degrau);
     transition:
       transform 120ms ease,
       box-shadow 120ms ease;
   }
-  .bio-cartao svg {
-    flex: 0 0 auto;
-  }
-  .bio-cartao-texto {
+  .bio-botao-texto {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.25rem;
   }
-  .bio-cartao-texto strong {
-    line-height: 1.05;
+  .bio-botao-para {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--kof-tinta-suave);
   }
-  .bio-cartao-texto span {
-    font-size: 1rem;
-    line-height: 1.4;
-  }
-  .bio-cartao--adulto {
-    background: var(--cda-fundo);
-    border-color: var(--cda-fundo);
-    color: var(--cda-branco);
-    box-shadow: 6px 6px 0 var(--cda-amarelo);
-  }
-  .bio-cartao--adulto strong {
-    font-family: var(--cda-titulo);
-    font-size: 1.625rem;
-  }
-  .bio-cartao--adulto .bio-cartao-texto span {
-    color: var(--cda-texto-suave);
-  }
-  .bio-cartao--kids {
-    background: var(--kof-carta);
-    border-color: var(--kof-tinta);
-    color: var(--kof-tinta);
-    box-shadow: 6px 6px 0 var(--kof-acao);
-  }
-  .bio-cartao--kids strong {
+  .bio-botao strong {
     font-family: var(--kof-display);
     font-weight: 800;
-    font-size: 1.6875rem;
+    font-size: 1.125rem;
+    line-height: 1.15;
   }
-  .bio-cartao:hover {
-    transform: translate(-1px, -1px);
+  .bio-botao-linha {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--kof-tinta-suave);
   }
-  .bio-cartao:active {
-    transform: translate(3px, 3px);
+  .bio-botao-seta {
+    flex: 0 0 auto;
+  }
+  /* O principal: a ação da marca, maior, com o selo do presente por cima da borda. */
+  .bio-botao--principal {
+    margin-top: 0.75rem;
+    padding: 1.625rem 1.25rem 1.375rem;
+    border-color: var(--kof-acao);
+    background: var(--kof-acao);
+    color: var(--kof-sobre-acao);
+    box-shadow: 0 5px 0 var(--kof-acao-degrau);
+  }
+  .bio-botao--principal strong {
+    font-size: 1.375rem;
+  }
+  .bio-botao--principal .bio-botao-para,
+  .bio-botao--principal .bio-botao-linha {
+    color: var(--kof-sobre-acao-suave);
+  }
+  .bio-botao-selo {
+    position: absolute;
+    top: 0;
+    left: 1.125rem;
+    transform: translateY(-55%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3125rem 0.75rem;
+    border: 2px solid var(--kof-tinta);
+    border-radius: 999px;
+    background: var(--kof-amarelo);
+    color: var(--kof-tinta);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .bio-botao:hover {
+    transform: translateY(-1px);
+  }
+  .bio-botao:active {
+    transform: translateY(3px);
     box-shadow: none;
   }
-  .bio-cartao:focus-visible {
+  .bio-botao:focus-visible {
     outline: 3px solid var(--kof-acao);
     outline-offset: 4px;
   }
+  .bio-botao--principal:focus-visible {
+    outline-color: var(--kof-tinta);
+  }
   .bio-pe {
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.625rem;
   }
   .bio-marca {
-    width: 6.875rem;
+    width: 6.5rem;
     height: auto;
     opacity: 0.85;
   }
@@ -209,7 +259,7 @@ const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
     color: var(--kof-tinta);
   }
   @media (prefers-reduced-motion: reduce) {
-    .bio-cartao {
+    .bio-botao {
       transition: none;
     }
   }

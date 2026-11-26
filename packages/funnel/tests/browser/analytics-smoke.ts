@@ -49,9 +49,9 @@ try {
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
   await page.getByRole('button', { name: 'Ativar métricas' }).click()
   await page.waitForResponse((r) => r.url().endsWith('/api/analytics/events') && r.status() === 200)
-  // A bio leva aos quizzes com a atribuição; a Como funciona virou redirecionamento (20/10/2026).
-  await page.locator('[data-analytics-id="bio-quiz-infantil"]').click()
-  await page.waitForURL('**/kids/comunidade-dos-criadores/quiz**')
+  // A bio (26/11/2026) leva ao presente do guia e às duas ofertas do Desafio com a atribuição.
+  await page.locator('[data-analytics-id="bio-desafio-kids"]').click()
+  await page.waitForURL('**/kids/desafio-primeiro-jogo/oferta**')
   assert.equal(new URL(page.url()).searchParams.get('utm_source'), 'qa_analytics')
   await page.goto(`${origin}/kids/comunidade-dos-criadores/oferta?utm_source=qa_analytics`)
   await page.locator('.c9-duvida summary').first().click()
