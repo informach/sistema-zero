@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import type { AcquisitionView, OriginReport } from '@sistemazero/core/referrals'
 import {
   buildCatalogOffers,
+  type CatalogOfferInfo,
   offerSummary,
   originOfferGroups,
 } from '../src/app/admin/embaixadores/ambassador-offer-catalog'
@@ -284,10 +285,13 @@ describe('ofertas dos embaixadores', () => {
     expect(swapItems(['A', 'B', 'C'], 0, 9)).toEqual(['A', 'B', 'C'])
   })
   test('duas ligadas do mesmo curso: o recado do referrals, antes de gravar', () => {
-    const catalog = new Map([
-      ['a', { name: 'Guia 1 ano', productSku: 'guia' }],
-      ['b', { name: 'Guia 15 dias', productSku: 'guia' }],
-    ] as never)
+    const catalog = new Map<string, CatalogOfferInfo>(
+      buildCatalogOffers(
+        [offer({ id: 'a', name: 'Guia 1 ano' }), offer({ id: 'b', name: 'Guia 15 dias' })],
+        [product({ sku: 'guia' })],
+        [],
+      ).map((o) => [o.id, o]),
+    )
     expect(
       sameCourseProblem(
         [
