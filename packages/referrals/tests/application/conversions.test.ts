@@ -590,6 +590,47 @@ describe('RecordConversionService', () => {
     expect(acquisitions.items.find((a) => a.paymentId === 'pay-2')!.kind).toBe('subscription')
   })
 
+  test.each([
+    false,
+    true,
+  ])('assinatura anterior de outro produto não tira o bônus da primeira Comunidade (slug conhecido: %s)', async (knownSlug) => {
+    const oldAt = new Date(PAID_AT.getTime() - 10 * DAY)
+    const otherOffer = {
+      id: '0ffe0000-0000-4000-8000-000000000099',
+      slug: 'estudio-mensal',
+      name: 'Estúdio mensal',
+      billingIntervalMonths: 1,
+      audience: 'kids' as const,
+    }
+    catalog.byId.set(otherOffer.id, otherOffer)
+    payments.subscriptionCreatedAt = oldAt
+    payments.byId.set(
+      'pay-other',
+      paymentSnapshot({
+        id: 'pay-other',
+        paidAt: oldAt,
+        subscriptionId: 'sub-other',
+        metadata: { offerId: otherOffer.id, billingAudience: 'kids' },
+      }),
+    )
+    expect((await service.execute(paidDelivery('pay-other'))).kind).toBe('ok')
+    if (knownSlug) {
+      const old = await acquisitions.findByPayment('pay-other')
+      expect(old).not.toBeNull()
+      await acquisitions.setOfferSlug(old!.id, otherOffer.slug)
+    }
+    payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 60_000)
+    await seedGift()
+
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(1)
+    expect(repo.conversions[0]).toMatchObject({
+      paymentId: 'pay-1',
+      status: 'pending',
+      bonusCents: 3000,
+    })
+  })
+
   test('oferta fora da allowlist (o Desafio) não vira conversão', async () => {
     await seedGift()
     payments.byId.set(

@@ -327,13 +327,7 @@ export class RecordConversionService {
       a.id !== input.acquisitionId &&
       a.paymentId !== input.paymentId &&
       a.acquiredAt.getTime() < input.paidAt.getTime()
-    if (
-      input.history.some(
-        (a) =>
-          before(a) &&
-          (a.kind === 'subscription' || (a.offerSlug !== null && slugs.includes(a.offerSlug))),
-      )
-    )
+    if (input.history.some((a) => before(a) && a.offerSlug !== null && slugs.includes(a.offerSlug)))
       return { kind: 'ok', found: true }
     let offerIds: string[]
     try {
@@ -345,9 +339,10 @@ export class RecordConversionService {
     } catch (error) {
       return { kind: 'retryable', reason: `histórico de compras indisponível: ${msg(error)}` }
     }
-    // As compras avulsas sem slug ainda (o sweep completa) entram pela oferta.
+    // Qualquer compra sem slug ainda (o sweep completa) entra pela oferta. Ser recorrente
+    // não prova que seja a Comunidade: outros produtos também podem ter assinatura.
     const unknown = input.history
-      .filter((a) => before(a) && a.kind === 'one_time' && a.offerSlug === null && a.offerId)
+      .filter((a) => before(a) && a.kind !== 'gift' && a.offerSlug === null && a.offerId)
       .map((a) => a.offerId as string)
     for (const offerId of new Set([...offerIds, ...unknown])) {
       const resolved = await this.resolveOffer(input.paymentId, offerId)
