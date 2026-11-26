@@ -63,7 +63,7 @@ const q1Images =
 ---
 
 {quiz.presentation === 'desafio-kids' ? (
-  <QuizConversaLayout title={`${DESAFIO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-fala.webp`, Astro.site ?? Astro.url).toString()} tema="kids">
+  <QuizConversaLayout title={`${DESAFIO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_QUIZ_ENTRY.description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} tema="kids">
     <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={desafioAdultQuizPath} />
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
@@ -73,7 +73,7 @@ const q1Images =
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
 ) : quiz.presentation === 'comunidade' ? (
-  <QuizConversaLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()} tema="kids">
+  <QuizConversaLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} tema="kids">
     <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={adultQuizPath} />
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>

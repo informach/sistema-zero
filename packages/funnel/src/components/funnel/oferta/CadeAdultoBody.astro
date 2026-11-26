@@ -13,6 +13,7 @@ import { prazoDaOferta } from '../../../content/presente-resgate'
 import { cadeAdultoVenda } from '../../../funnels/cade-adulto/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
@@ -57,6 +58,7 @@ const barra = cartao
   cta={P.topo.cta}
   indexavel={!presente}
   canonical={ofertaUrl}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   termosHref={`${f.basePath}/termos`}
 >
   <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={P.hero.tela.imagem.src} />
