@@ -14,7 +14,7 @@ test('benefício e campanha têm o mesmo contrato no editor, na borda e na publi
     { kind: 'gift', campaignCode: 'campanha-presente' },
     { kind: 'gift' },
     { kind: 'gift', benefitCode: 'vilao-em-aliado-cade', campaignCode: 'campanha-presente' },
-  ]) {
+  ] as const) {
     const legal = CommerceBlockSchema.safeParse(content).success
     expect(validator.Check(content)).toBe(legal)
     if (legal) {
