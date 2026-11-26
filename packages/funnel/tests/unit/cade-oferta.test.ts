@@ -161,8 +161,10 @@ describe('corpos e despacho', () => {
       expect(texto).toContain('{!presente && <PreCheckoutModal')
       expect(texto).toContain('alvo="oferta"')
       expect(texto).toContain('f.basePath}/termos`}')
-      // A copy é a da venda também no modo presente (decisão de 26/11/2026).
-      expect(texto).toContain('const P = venda')
+      // No presente, as seções em volta do cartão usam a copy aprovada do presente, com o prazo e o
+      // Mural da oferta do presente (nada de preço, pagamento ou "1 ano" da venda).
+      expect(texto).toMatch(/const P = presente\s+\? presente(Kids|Adulto)DaOferta\(isCadeGift\(/)
+      expect(texto).toContain(': venda')
     }
   })
 

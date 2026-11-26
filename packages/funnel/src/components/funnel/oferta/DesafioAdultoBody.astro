@@ -4,7 +4,7 @@ import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-gro
 import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
 import '../../../styles/comunidade-adulto.css'
 import '../../../styles/desafio-adulto.css'
-import { PAGINA_DESAFIO_ADULTO as P } from '../../../funnels/desafio-adulto/oferta/pagina'
+import { PAGINA_DESAFIO_ADULTO } from '../../../funnels/desafio-adulto/oferta/pagina'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -12,6 +12,7 @@ import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
+import { copyDoPresente } from '../../../server/presente-copy'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import '../../../styles/ofertas-adulto.css'
@@ -30,6 +31,8 @@ const communityUrl = (env.COMMUNITY_URL ?? '').replace(/\/$/, '')
 // MESMO cartão da venda com o preço riscado até R$ 0 e o cadastro numa janela.
 const cartao = presente ? cartaoDoPresente(presente, { communityUrl, priceReais }) : null
 const origem = cartao?.etiqueta ?? null
+// No presente, o que só vale para quem paga (preço, pagamento, garantia) sai da copy da página.
+const P = cartao ? copyDoPresente(PAGINA_DESAFIO_ADULTO, cartao) : PAGINA_DESAFIO_ADULTO
 const fill = (texto: string) => preencherPreco(texto, preco)
 const heroImg = P.hero.imagens[0]
 ---
@@ -632,7 +635,7 @@ const heroImg = P.hero.imagens[0]
       {P.oferta.titulo}
      </h2>
      <p class="cda-suave">
-      {P.oferta.paragrafos[0]}
+      {cartao ? cartao.texto : P.oferta.paragrafos[0]}
      </p>
      {!cartao && (
      <div class="cda-caixa cda-caixa--depois">

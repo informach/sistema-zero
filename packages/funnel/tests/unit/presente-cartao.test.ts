@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
+import { PAGINA_DESAFIO_ADULTO } from '../../src/funnels/desafio-adulto/oferta/pagina'
+import { PAGINA_DESAFIO_9A17 } from '../../src/funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
 import type { OfferGiftMode } from '../../src/server/offer-page'
 import { CTA_DO_PRESENTE, cartaoDoPresente } from '../../src/server/presente-cartao'
+import { copyDoPresente } from '../../src/server/presente-copy'
 
 // O cartão do modo presente (26/11/2026): a mesma página e o mesmo cartão da venda, com a etiqueta de
 // quem dá o presente, o preço riscado até R$ 0 e o cadastro numa janela.
@@ -107,5 +110,33 @@ describe('cartaoDoPresente', () => {
     expect(agendada.aberto).toBe(false)
     expect(agendada.retomavel).toBe(false)
     expect(agendada.estado?.titulo).toContain('/2026')
+  })
+})
+
+describe('copyDoPresente', () => {
+  const cartao = cartaoDoPresente(presente({ dias: 30 }), {
+    communityUrl: 'https://kids.example',
+    priceReais: 67,
+  })
+
+  test('as condições da venda viram a frase do presente e o prazo conta do cadastro', () => {
+    const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
+    expect(kids.condicoes).toBe(cartao.texto)
+    expect(kids.fim.texto).toBe(cartao.texto)
+    for (const pagina of [PAGINA_DESAFIO_9A17, PAGINA_DESAFIO_ADULTO]) {
+      expect(JSON.stringify(copyDoPresente(pagina, cartao))).not.toMatch(/aprovação do pagamento/)
+    }
+  })
+
+  test('as dúvidas sobre pagamento, garantia ou compra saem; o resto fica igual', () => {
+    const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
+    const adulto = copyDoPresente(PAGINA_DESAFIO_ADULTO, cartao)
+    for (const duvidas of [kids.faq, adulto.duvidas.itens]) {
+      expect(JSON.stringify(duvidas)).not.toMatch(/pagamento|garantia|reembolso|compra|\{\{preco/i)
+    }
+    expect(kids.faq.length).toBeLessThan(PAGINA_DESAFIO_9A17.faq.length)
+    expect(kids.hero).toEqual(PAGINA_DESAFIO_9A17.hero)
+    // O original não muda.
+    expect(PAGINA_DESAFIO_9A17.condicoes).toMatch(/pagamento único/i)
   })
 })

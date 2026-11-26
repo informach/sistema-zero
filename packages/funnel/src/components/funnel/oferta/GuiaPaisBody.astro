@@ -6,7 +6,11 @@
 // (`?presente=`, 26/11/2026): a mesma página de venda, com o selo de quem dá o presente e o MESMO
 // cartão com o preço riscado até R$ 0 e o cadastro do guia numa janela (`PresenteAcao`/`PresenteJanela`). O presente do fim do guia continua surpresa.
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
-import { comPreco, guiaPaisVenda } from '../../../funnels/vilao-em-aliado/oferta'
+import {
+  comPreco,
+  GUIA_PAIS_PRESENTE,
+  guiaPaisVenda,
+} from '../../../funnels/vilao-em-aliado/oferta'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
@@ -23,12 +27,13 @@ const preco = precoDoDesafio(priceReais, coupon)
 const venda = comPreco(guiaPaisVenda(access?.guaranteeDays ?? null), preco.preco)
 // Modo presente (`?presente=`, 26/11/2026): a página de venda inteira, com o selo de quem dá o
 // presente e o MESMO cartão com o preço riscado até R$ 0 e o cadastro numa janela.
-const P = venda
 const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
 const cartao = presente
   ? cartaoDoPresente(presente, { formulario: 'guia' as const, communityUrl: contaUrl, priceReais })
   : null
 const origem = cartao?.etiqueta ?? null
+// No presente, a copy aprovada do guia de presente (gratuito, prazo do presente) em volta do cartão.
+const P = cartao ? GUIA_PAIS_PRESENTE : venda
 // A página pública é `/kids/vilao-em-aliado`; o `/oferta` do funil aponta para ela.
 const canonical = new URL(f.basePath, Astro.site ?? Astro.url).toString()
 const barra = cartao

@@ -8,6 +8,7 @@
 // cadastro numa janela (`PresenteAcao` + `PresenteJanela`). O prazo e a garantia vêm do catálogo.
 import '../../../styles/desafio-adulto.css'
 import '../../../styles/ofertas-adulto.css'
+import { presenteAdultoDaOferta } from '../../../content/presente-adulto'
 import { prazoDaOferta } from '../../../content/presente-resgate'
 import { cadeAdultoVenda } from '../../../funnels/cade-adulto/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
@@ -15,6 +16,7 @@ import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
+import { isCadeGift } from '../../../server/referral-gift-page'
 import PresenteAdultoLayout from '../../referrals/PresenteAdultoLayout.astro'
 import PresenteAdultoOferta from '../../referrals/PresenteAdultoOferta.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
@@ -26,12 +28,16 @@ const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astr
 // O prazo é o da oferta de venda (1 ano); o do presente vai só no cartão (`cartaoDoPresente`).
 const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeAdultoVenda(prazo, access?.guaranteeDays ?? null)
-const P = venda
 const preco = precoDoDesafio(priceReais, coupon)
 const communityUrl = getDeps().env.COMMUNITY_URL.replace(/\/$/, '')
 const cartao = presente ? cartaoDoPresente(presente, { communityUrl, priceReais }) : null
 const origem = cartao ? cartao.etiqueta.toLocaleUpperCase('pt-BR') : null
-const cabeca = venda.oferta
+// No presente, as seções falam do presente (a copy aprovada da página do presente, com o prazo dele).
+const P = presente
+  ? presenteAdultoDaOferta(isCadeGift(presente.gift.gift) ? presente.gift.gift : undefined)
+  : venda
+// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
+const cabeca = cartao ? { ...venda.oferta, texto: cartao.texto } : venda.oferta
 const barra = cartao
   ? { titulo: cartao.etiqueta, texto: cartao.precoFinal, cta: cartao.cta, presente: cartao.aberto }
   : { titulo: preco.preco, texto: venda.barra.texto, cta: venda.barra.cta }
