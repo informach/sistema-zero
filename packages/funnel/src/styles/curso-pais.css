@@ -1,19 +1,48 @@
 /*
- * Página do guia para pais "Transformando o vilão em aliado" (proposta de 21/11/2026). Veste o
- * layout `.c917` do presente Kids; aqui ficam só as peças próprias, sempre por tokens. O tema do
- * guia (roxo, rosa e amarelo da ilustração) entra pelas classes de cor que o layout já tem.
+ * Páginas de venda dos cursos para pais (o guia "Transformando o vilão em aliado" e o curso da
+ * Vivianne; proposta de 26/11/2026). Vestem o layout `.c917` das outras páginas de venda; aqui ficam
+ * só as peças próprias, sempre por tokens. O tema de cada curso entra pelas classes de cor do layout.
  */
 
-/* O cadastro no topo, ao lado do título, com a etiqueta da surpresa no canto do formulário. */
-.c917 .cpv-heroi-form {
+/* A ilustração do topo, com o selo da surpresa do guia no canto. */
+.c917 .cpv-heroi-visual {
   position: relative;
-  padding-top: 14px;
 }
-.c917 .cpv-form-chip {
-  top: -8px;
-  right: -6px;
-  z-index: 1;
-  transform: rotate(3deg);
+/* No canto de baixo: o de cima é do rótulo da imagem. */
+.c917 .cpv-surpresa {
+  position: absolute;
+  right: -8px;
+  bottom: -16px;
+  z-index: 2;
+  transform: rotate(-3deg);
+}
+
+/* A cena da casa: o título de um lado e o texto do outro, no computador. */
+.c917 .cpv-cena-texto {
+  align-self: center;
+}
+
+/* Como funciona: os três cartões ao lado da capa da apostila. */
+.c917 .cpv-formato {
+  align-items: center;
+}
+.c917 .cpv-formato__texto {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.c917 .cpv-apostila {
+  flex: 0 1 300px;
+  min-width: 0;
+  margin: 0 auto;
+}
+.c917 .cpv-apostila img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--c9-tinta);
+  transform: rotate(-2deg);
 }
 
 /* A dúvida aberta não estica a vizinha fechada na mesma linha. */
@@ -56,8 +85,12 @@
   border-radius: 50%;
   background: var(--kof-amarelo-fundo);
 }
-/* Ilustrações complementares do curso da Vivianne, na moldura dos cursos para pais. */
-.c917 .cpv-ilustracoes {
-  display: grid;
-  gap: 42px;
+
+@media (max-width: 760px) {
+  .c917 .cpv-surpresa {
+    right: 0;
+  }
+  .c917 .cpv-apostila {
+    flex-basis: 220px;
+  }
 }

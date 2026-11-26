@@ -1,5 +1,51 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## A bio do Instagram no estilo Linktree (26/11/2026)
+
+`/` (`src/pages/index.astro`), proposta aprovada pela dona no Canvas da bio: foto do perfil
+(`helena-julio-perfil.webp`), "Helena e Júlio", @criecomhelenaejulio, a frase de posicionamento e TRÊS
+botões, cada um dizendo para quem é. O principal (azul cheio, selo "De presente para você") leva ao
+presente do guia dos pais pela campanha `vilao-em-aliado` (`/i/vilao-em-aliado`); os secundários
+(brancos, com contorno) levam ao Desafio Kids e ao Desafio adulto. UTMs da bio
+(`utm_source=instagram&utm_medium=bio`, `utm_campaign` por produto, `utm_content` por botão); a
+atribuição que a visita já traz (anúncio, evento, cupom) SUBSTITUI as da bio, sem misturar. Ids de
+métrica `bio-guia-pais-presente`, `bio-desafio-kids`, `bio-desafio-adulto`. A bio deixou de levar aos
+quizzes (a decisão de 20/10/2026 abaixo é história); os quizzes seguem no ar pelos próprios links.
+O botão flutuante "Privacidade" das métricas continua (é o controle de consentimento). Testes:
+`tests/unit/bio.test.ts`; os browsers `analytics-smoke.ts`/`analytics-panel.ts` usam `bio-desafio-kids`.
+
+## Modo presente = o cartão da venda + a janela do cadastro (26/11/2026)
+
+Decisão da dona: `?presente=<código>` abre a MESMA página e o MESMO cartão da venda. Como no modo
+cupom, só mudam a etiqueta ("Um presente de <primeiro nome> para você" / "Um presente da campanha
+<título> para você"), o preço da oferta riscado até R$ 0 e o botão "Quero o meu presente", que abre o
+cadastro numa janela (`islands/PresenteModal.tsx`, com o `BolsaResgate` e todos os estados dele; Esc,
+foco preso e devolvido como no `PreCheckoutModal`). Em volta do cartão, nada pode contradizer um
+presente gratuito (preço, pagamento, garantia, "1 ano"): Cadê usa a copy aprovada do presente
+(`presenteKidsDaOferta`/`presenteAdultoDaOferta`, prazo e Mural da oferta do presente), guia e Vivianne
+usam `GUIA_PAIS_PRESENTE`/`CURSO_PAIS_AUTISMO_PRESENTE`, e o Desafio (sem copy própria de presente)
+passa a copy da venda por `server/presente-copy.ts` (`copyDoPresente`: condições viram a frase do
+cartão, "aprovação do pagamento" vira "cadastro", as dúvidas de pagamento/garantia/compra saem).
+Peças compartilhadas: `server/presente-cartao.ts` (`cartaoDoPresente`: etiqueta, preço, prazo
+divulgado do presente, estado e props do resgate), `PresenteAcao.astro` (o botão com a classe do
+botão de compra da página, ou o estado da campanha com a retomada) e `PresenteJanela.astro` (a
+janela, DENTRO do `.c917`/`.cda`, que vestem o formulário). `styles/presente-modal.css` tira a moldura
+do `BolsaResgate` na janela e na retomada: nunca um cartão dentro do outro. A barra do celular abre a
+mesma janela (`barra.presente` / `AdultOfferBar presente`); o "Depois da compra" do Desafio adulto sai no
+presente. Usado por Cadê Kids/adulto, Desafio Kids/adulto, guia e curso da Vivianne; o
+`OfertaPresente` saiu. Testes: `tests/unit/presente-cartao.test.ts`, `cade-oferta.test.ts` e o browser
+`curso-pais-vilao.ts` (cadastro pela janela até o concluído).
+
+**Bloco de preço (26/11/2026, pedido da dona):** todo cartão de compra dessas seis páginas usa
+`PrecoDoCartao.astro` (`styles/preco-cartao.css`, `.c917`/`.cda`): selo do desconto em cima, "De
+~~R$ X~~ por" pequeno e apagado, o preço final grande e o sufixo NA LINHA DE BAIXO ("pagamento
+único"; no presente, `cartao.condicao` = "sem custo e sem cartão"). Sem desconto, preço e sufixo no
+mesmo ritmo. No presente, `cartao.texto` é só o prazo (embaixo do preço) e `cartao.frase` (prazo +
+"Sem custo e sem cartão.") vai fora do cartão (ao lado, topo e fim; `copyDoPresente`). Cupom que
+valeu não repete aviso dentro do cartão (o selo e o preço riscado já dizem); só o aviso de problema
+(`preco.aviso.alerta`) aparece ali. As assinaturas da Comunidade não usam o bloco (cupom sem preço
+riscado).
+
 ## Curso para pais da Vivianne com página de venda (25/11/2026)
 
 `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso

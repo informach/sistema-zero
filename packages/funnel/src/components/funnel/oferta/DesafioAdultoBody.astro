@@ -4,35 +4,42 @@ import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-gro
 import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
 import '../../../styles/comunidade-adulto.css'
 import '../../../styles/desafio-adulto.css'
-import { origemDoPresente } from '../../../content/presente-curso'
-import { PAGINA_DESAFIO_ADULTO as P } from '../../../funnels/desafio-adulto/oferta/pagina'
+import { PAGINA_DESAFIO_ADULTO } from '../../../funnels/desafio-adulto/oferta/pagina'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
-import { giftVariant } from '../../../server/referral-gift-page'
+import { cartaoDoPresente } from '../../../server/presente-cartao'
+import { copyDoPresente } from '../../../server/presente-copy'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import '../../../styles/ofertas-adulto.css'
 import AdultOfferBar from './AdultOfferBar.astro'
-import OfertaPresente from './OfertaPresente.astro'
 import OfferImage from './OfferImage.astro'
 import OfferImageZoom from './OfferImageZoom.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
+import PresenteAcao from './PresenteAcao.astro'
+import PresenteJanela from './PresenteJanela.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente } = Astro.props
 const preco = precoDoDesafio(priceReais, coupon)
-// Modo presente (`?presente=`): muda só o selo do topo e o bloco de compra (25/11/2026).
-const origem = presente
-  ? origemDoPresente(
-      presente.gift,
-      giftVariant(presente.gift.gift, presente.gift.audience) === 'pais' ? 'pais' : 'curso',
-    )
-  : null
 const { env } = getDeps()
 const communityUrl = (env.COMMUNITY_URL ?? '').replace(/\/$/, '')
+// Modo presente (`?presente=`, 26/11/2026): a mesma página, com o rótulo de quem dá o presente e o
+// MESMO cartão da venda com o preço riscado até R$ 0 e o cadastro numa janela.
+const cartao = presente
+  ? cartaoDoPresente(presente, {
+      communityUrl,
+      priceReais,
+      offerResolved: Astro.props.access != null,
+    })
+  : null
+const origem = cartao?.etiqueta ?? null
+// No presente, o que só vale para quem paga (preço, pagamento, garantia) sai da copy da página.
+const P = cartao ? copyDoPresente(PAGINA_DESAFIO_ADULTO, cartao) : PAGINA_DESAFIO_ADULTO
 const fill = (texto: string) => preencherPreco(texto, preco)
 const heroImg = P.hero.imagens[0]
 ---
@@ -635,8 +642,9 @@ const heroImg = P.hero.imagens[0]
       {P.oferta.titulo}
      </h2>
      <p class="cda-suave">
-      {P.oferta.paragrafos[0]}
+      {cartao ? cartao.frase : P.oferta.paragrafos[0]}
      </p>
+     {!cartao && (
      <div class="cda-caixa cda-caixa--depois">
       <h3 class="cda-rotulo cda-rotulo--pequeno cor-verde">
        {P.oferta.subtitulos[0]}
@@ -647,16 +655,22 @@ const heroImg = P.hero.imagens[0]
        <li  set:html={P.oferta.itens[2]} />
       </ol>
      </div>
+     )}
     </div>
-    {presente ? (
-     <OfertaPresente presente={presente} communityUrl={communityUrl} />
+    {cartao ? (
+    <div class="da-cartao">
+     <span class="da-cartao__selo">{P.oferta.rotulos[1]}</span>
+     <p class="cda-rotulo cor-verde">{cartao.etiqueta}</p>
+     <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
+     <p class="cda-suave">{cartao.texto}</p>
+     <PresenteAcao cartao={cartao} classeBotao="cda-btn cda-btn--grande" analyticsId="desafio-adulto-oferta-presente" />
+    </div>
     ) : (
     <div class="da-cartao">
      <span class="da-cartao__selo">
       {P.oferta.rotulos[1]}
      </span>
-     {preco.precoCheio && <del class="adult-price-before">{preco.precoCheio}</del>}
-     <p class="da-cartao__preco" set:html={fill(P.oferta.paragrafos[1])} />
+     <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={P.oferta.paragrafos[1]} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="pc-preco__desconto--arcade" />
      <p class="cda-suave">
       {P.oferta.paragrafos[2]}
      </p>
@@ -716,7 +730,7 @@ const heroImg = P.hero.imagens[0]
        </span>
       </li>
      </ul>
-     {preco.aviso && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
+     {preco.aviso && (preco.aviso.alerta || !preco.descontoPct) && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
         <button class="cda-btn cda-btn--grande" data-checkout-cta data-analytics-id="desafio-adulto-oferta-comprar" type="button">
       {P.oferta.acoes[0]}
      </button>
@@ -727,6 +741,7 @@ const heroImg = P.hero.imagens[0]
     </div>
     )}
    </div>
+   {cartao && <PresenteJanela cartao={cartao} />}
   </section>
   <section aria-labelledby="adult-depois" class="cda-secao cda-secao--fundo-2" id="depois">
    <div class="cda-wrap da-pilha">
@@ -788,8 +803,8 @@ const heroImg = P.hero.imagens[0]
    </div>
   </section>
  </main>
-{origem ? (
- <AdultOfferBar price={origem} detail="" action="Quero começar" />
+{cartao ? (
+ <AdultOfferBar price={cartao.etiqueta} detail={cartao.precoFinal} action={cartao.cta} presente={cartao.aberto} />
 ) : (
  <AdultOfferBar price={preco.preco} detail="Pagamento único · 30 dias" action="Quero começar" />
 )}

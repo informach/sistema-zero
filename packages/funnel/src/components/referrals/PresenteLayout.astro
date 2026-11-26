@@ -20,7 +20,13 @@ interface Props {
   /** Sem o corpo do presente (link inválido, referrals fora do ar): sem os atalhos das seções. */
   secoes?: boolean
   /** A barra fixa do celular com o prazo da oferta do presente (padrão: a do Cadê). */
-  barra?: { titulo: string; texto: string; cta: string }
+  barra?: {
+    titulo: string
+    texto: string
+    cta: string
+    /** Modo presente da página da oferta: o botão abre a janela do cadastro. */
+    presente?: boolean
+  }
   /** Atalhos do topo (padrão: as seções da página do Cadê). */
   links?: readonly { href: string; label: string }[]
   /** Texto do botão do topo (padrão: o do presente). */
@@ -42,7 +48,7 @@ const {
   description,
   ready = false,
   secoes = true,
-  barra = P.barra,
+  barra: barraRecebida,
   links = P.topo.links,
   cta = P.topo.cta,
   indexavel = false,
@@ -51,6 +57,7 @@ const {
   termosHref = `${COMUNIDADE_DOS_CRIADORES.basePath}/termos`,
   canonical,
 } = Astro.props
+const barra: NonNullable<Props['barra']> = barraRecebida ?? P.barra
 ---
 <BaseLayout title={title} description={description} noindex={!indexavel} ogImage={ogImage} canonical={canonical} htmlClass="theme-kids">
   <slot name="head" slot="head" />
@@ -73,7 +80,7 @@ const {
     {ready && (
       <div class="kof-mobar c9-barra" data-presente-barra data-alvo={alvo} aria-hidden="true">
         <span class="c9-barra__preco"><strong>{barra.titulo}</strong><span>{barra.texto}</span></span>
-        <a class="c9-btn" href={`#${alvo}`} tabindex="-1">{barra.cta}</a>
+        <a class="c9-btn" href={`#${alvo}`} tabindex="-1" data-presente-cta={barra.presente ? '' : undefined}>{barra.cta}</a>
       </div>
     )}
   </div>

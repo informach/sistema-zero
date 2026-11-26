@@ -476,12 +476,6 @@
 .c917 .d9-plano {
   flex: 1 1 380px;
 }
-.c917 .d9-cheio {
-  margin-right: 12px;
-  color: var(--c9-suave);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
 .c917 .d9-plano__btn {
   background: var(--c9-azul);
   color: var(--kof-carta);

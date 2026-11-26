@@ -54,6 +54,9 @@ describe('copy do curso da Vivianne', () => {
     expect(venda.duvidas.itens.map((i) => i.pergunta)).toContain(
       'O curso substitui o acompanhamento do meu filho?',
     )
+    // Quem conduz: a foto realista da Vivianne (26/11/2026), não a ilustração da capa.
+    expect(venda.quemConduz.foto.src).toBe('/img/como-ajudar-seu-filho-autista/vivianne-foto.webp')
+    expect(venda.quemConduz.foto.alt).toContain('Vivianne Lima')
   })
 
   test('nunca promete acabar com as crises nem acesso vitalício', () => {
@@ -94,7 +97,8 @@ describe('copy do curso da Vivianne', () => {
 
   test('as imagens existem no public', async () => {
     for (const caminho of [
-      CURSO_PAIS_AUTISMO_PRESENTE.oQueMuda.figura.imagem.src,
+      CURSO_PAIS_AUTISMO_PRESENTE.hero.figura.imagem.src,
+      CURSO_PAIS_AUTISMO_PRESENTE.formato.imagem.src,
       CURSO_PAIS_AUTISMO_PRESENTE.quemConduz.foto.src,
       CURSO_PAIS_AUTISMO_PRESENTE.ogImage,
       `${AUTISMO_FRUSTRACOES.imagesBase}/${AUTISMO_FRUSTRACOES.checkoutImage}`,

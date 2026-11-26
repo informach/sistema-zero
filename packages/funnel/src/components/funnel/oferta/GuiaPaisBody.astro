@@ -1,11 +1,11 @@
 ---
 // Página de venda do guia para pais "Transformando o vilão em aliado" (`kids/vilao-em-aliado`,
-// 25/11/2026). O corpo é o da página aprovada em 21/11/2026 (`CursoPaisOferta`, layout `.c917` e
-// `curso-pais.css`) com o bloco de compra no topo, no lugar do formulário. Venda: a copy de
+// 25/11/2026). O corpo é o `CursoPaisOferta` (proposta de 26/11/2026: a estrutura das outras páginas
+// de venda, layout `.c917` e `curso-pais.css`) com o bloco de compra na seção `#oferta`, embaixo,
+// como no Cadê. Venda: a copy de
 // `guiaPaisVenda` com o preço do catálogo (e o cupom já cotado) e o pré-checkout. Modo presente
-// (`?presente=`): a copy do guia gratuito, o selo de quem dá o presente e o `OfertaPresente` com o
-// formulário do guia. O presente do fim do guia continua surpresa.
-import { origemDoPresente } from '../../../content/presente-curso'
+// (`?presente=`, 26/11/2026): a mesma página de venda, com o selo de quem dá o presente e o MESMO
+// cartão com o preço riscado até R$ 0 e o cadastro do guia numa janela (`PresenteAcao`/`PresenteJanela`). O presente do fim do guia continua surpresa.
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import {
   comPreco,
@@ -15,26 +15,52 @@ import {
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
+import { cartaoDoPresente } from '../../../server/presente-cartao'
 import CursoPaisOferta from '../../referrals/CursoPaisOferta.astro'
 import PresenteLayout from '../../referrals/PresenteLayout.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
-import OfertaPresente from './OfertaPresente.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
+import PresenteAcao from './PresenteAcao.astro'
+import PresenteJanela from './PresenteJanela.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, coupon, presente, access } = Astro.props
 const preco = precoDoDesafio(priceReais, coupon)
 const venda = comPreco(guiaPaisVenda(access?.guaranteeDays ?? null), preco.preco)
-const P = presente ? GUIA_PAIS_PRESENTE : venda
-const origem = presente ? origemDoPresente(presente.gift, 'pais') : null
+// Modo presente (`?presente=`, 26/11/2026): a página de venda inteira, com o selo de quem dá o
+// presente e o MESMO cartão com o preço riscado até R$ 0 e o cadastro numa janela.
 const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
+const cartao = presente
+  ? cartaoDoPresente(presente, {
+      formulario: 'guia' as const,
+      communityUrl: contaUrl,
+      priceReais,
+      offerResolved: access != null,
+    })
+  : null
+const origem = cartao?.etiqueta ?? null
+// No presente, a copy aprovada do guia de presente (gratuito, prazo do presente) em volta do cartão.
+const P = cartao ? GUIA_PAIS_PRESENTE : venda
 // A página pública é `/kids/vilao-em-aliado`; o `/oferta` do funil aponta para ela.
 const canonical = new URL(f.basePath, Astro.site ?? Astro.url).toString()
-const barra = presente ? { ...P.barra, titulo: origem ?? P.barra.titulo } : venda.barra
+// A seção da oferta: o texto ao lado do cartão completa o cartão (o prazo, o preço e a condição
+// ficam só nele, na venda e no presente), sem repetir a linha dele.
+const cabeca = P.compra
+const barra = cartao
+  ? {
+      ...venda.barra,
+      titulo: cartao.etiqueta,
+      texto: cartao.precoFinal,
+      cta: cartao.cta,
+      presente: cartao.aberto,
+    }
+  : venda.barra
 ---
 <PresenteLayout
   title={P.seoTitle}
   description={P.description}
   ready
+  alvo="oferta"
   barra={barra}
   links={P.topo.links}
   cta={P.topo.cta}
@@ -44,22 +70,35 @@ const barra = presente ? { ...P.barra, titulo: origem ?? P.barra.titulo } : vend
   termosHref={`${f.basePath}/termos`}
 >
   <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={P.ogImage} />
-  <CursoPaisOferta copy={P} selo={origem ?? undefined} compra ready>
-    <Fragment slot="compra">
-      {presente ? (
-        <OfertaPresente presente={presente} communityUrl={contaUrl} formulario="guia" ancora={null} />
-      ) : (
+  <CursoPaisOferta copy={P} selo={origem ?? undefined}>
+    <section slot="compra" id="oferta" class="c9-sec pk-pontilhado" aria-labelledby="guia-oferta" data-analytics-id="guia-oferta-secao">
+      <div class="c9-wrap c9-lado c9-lado--topo">
+        <div class="c9-pilha c9-gap-14 c9-b420">
+          <span class="c9-tag c9-cor--amarelo">{cabeca.etiqueta}</span>
+          <h2 id="guia-oferta" class="c9-h2">{cabeca.titulo}</h2>
+          <p class="c9-p">{cabeca.texto}</p>
+          {!presente && preco.aviso && (preco.aviso.alerta || !preco.descontoPct) && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+        </div>
+        {cartao ? (
+        <article class="c9-plano" data-analytics-id="guia-oferta-presente">
+          <span class="c9-tag c9-cor--amarelo pm-etiqueta">{cartao.etiqueta}</span>
+          <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>
+          <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
+          <p class="c9-plano__texto">{cartao.texto}</p>
+          <PresenteAcao cartao={cartao} classeBotao="c9-plano__btn" analyticsId="guia-oferta-presente-abrir" />
+        </article>
+        ) : (
         <article class="c9-plano" data-analytics-id="guia-oferta">
-          <h2 class="c9-plano__nome">{venda.oferta.selo}</h2>
-          {preco.precoCheio && preco.descontoPct && <span class="c9-tag c9-cor--rosa">{preco.descontoPct}% de desconto</span>}
-          <p class="c9-plano__preco">{preco.precoCheio && <s>{preco.precoCheio}</s>}{preco.precoCheio && ' '}{preco.preco}<span> {venda.oferta.sufixo}</span></p>
+          <h3 class="c9-plano__nome">{venda.oferta.selo}</h3>
+          <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={venda.oferta.sufixo} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="c9-tag c9-cor--rosa" />
           <p class="c9-plano__texto">{venda.oferta.texto}</p>
-          {preco.aviso && <p class:list={['c9-cupom', { 'c9-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
           <button type="button" class="c9-plano__btn" data-checkout-cta data-analytics-id="guia-oferta-comprar">{venda.oferta.cta}</button>
           {venda.oferta.garantia && <p class="c9-plano__texto">{venda.oferta.garantia}</p>}
         </article>
-      )}
-    </Fragment>
+        )}
+      </div>
+    </section>
   </CursoPaisOferta>
+  {cartao && <PresenteJanela cartao={cartao} />}
   {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />}
 </PresenteLayout>

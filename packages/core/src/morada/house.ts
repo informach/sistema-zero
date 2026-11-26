@@ -3,7 +3,21 @@ import { MORADA_LIMITS, MoradaHouseSchema } from './schema'
 export { MORADA_LIMITS, MoradaHouseSchema } from './schema'
 
 import { MORADA_CATALOG } from './catalog.generated'
-import type { MoradaCatalog, MoradaHouse, MoradaVector } from './types'
+import type { MoradaCatalog, MoradaHouse, MoradaPiece, MoradaVector } from './types'
+
+/**
+ * A folga da borda do cômodo (ou do lote) para uma peça: móvel 1 mm; construção 0,2 m; janela e
+ * porta ficam no plano da parede da borda e passam metade do fundo delas para fora (as do pacote
+ * de Natal têm 0,45 m). Régua ÚNICA do servidor (`validateMoradaHouse`), do motor do modo
+ * construção (`moradaInsideRoom`) e do editor do quarto (`moradaFitsRoom`): com réguas diferentes,
+ * a janela de Natal na borda era aceita ao salvar e recusada ao trocar a cor (26/11/2026).
+ */
+export function moradaBoundaryMargin(piece: MoradaPiece): number {
+  if (piece.kind !== 'construction') return 0.001
+  const insert =
+    piece.category === 'janelas' || piece.category === 'portas' || piece.category === 'encaixes'
+  return Math.max(0.2, insert ? (piece.max[2] - piece.min[2]) / 2 + 0.01 : 0)
+}
 
 /** Dimensões XYZ na orientação escolhida, compartilhadas por encaixes e validação. */
 export function moradaFootprint(size: MoradaVector, rotation: number): MoradaVector {
@@ -177,7 +191,7 @@ export function validateMoradaHouse(
       if (piece) {
         const c = Math.cos(instance.rotation),
           s = Math.sin(instance.rotation)
-        const margin = piece.kind === 'construction' ? 0.2 : 0.001
+        const margin = moradaBoundaryMargin(piece)
         for (const x of [piece.min[0], piece.max[0]])
           for (const z of [piece.min[2], piece.max[2]]) {
             if (

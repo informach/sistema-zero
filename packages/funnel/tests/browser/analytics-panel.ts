@@ -122,7 +122,7 @@ try {
   assert.ok((await page.locator('svg circle').count()) >= 1)
   await mkdir('output/analytics', { recursive: true })
   await page.screenshot({ path: 'output/analytics/painel-mapa.png', fullPage: true })
-  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-quiz-infantil')
+  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-desafio-kids')
   await page.screenshot({ path: 'output/analytics/painel-recorte.png', fullPage: true })
   assert.deepEqual(errors, [])
   console.log(

@@ -3,49 +3,49 @@
 // oferta: o corpo é o da página do presente adulto (`PresenteAdultoOferta`, seções aprovadas, tema
 // arcade `.cda`) com o bloco de compra no slot `compra`, no cartão da oferta adulta do Desafio
 // (`.da-cartao`). Venda: a copy de `cadeAdultoVenda`, o preço do catálogo com o cupom já cotado e o
-// pré-checkout. Modo presente (`?presente=`): a copy do presente inteira, o rótulo de quem dá o
-// presente e o `OfertaPresente` no lugar do cartão. O prazo e a garantia vêm da oferta do catálogo.
+// pré-checkout. Modo presente (`?presente=`, 26/11/2026): a MESMA página e o MESMO cartão da venda,
+// com a etiqueta de quem dá o presente, o preço riscado até R$ 0 e "Quero o meu presente" abrindo o
+// cadastro numa janela (`PresenteAcao` + `PresenteJanela`). O prazo e a garantia vêm do catálogo.
 import '../../../styles/desafio-adulto.css'
 import '../../../styles/ofertas-adulto.css'
-import { presenteAdulto } from '../../../content/presente-adulto'
-import { prazoDaOferta, prazoDoCade } from '../../../content/presente-resgate'
+import { presenteAdulto, presenteAdultoDaOferta } from '../../../content/presente-adulto'
+import { prazoDaOferta } from '../../../content/presente-resgate'
 import { cadeAdultoVenda } from '../../../funnels/cade-adulto/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
+import { cartaoDoPresente } from '../../../server/presente-cartao'
+import { isCadeGift } from '../../../server/referral-gift-page'
 import PresenteAdultoLayout from '../../referrals/PresenteAdultoLayout.astro'
 import PresenteAdultoOferta from '../../referrals/PresenteAdultoOferta.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
-import OfertaPresente from './OfertaPresente.astro'
+import PrecoDoCartao from './PrecoDoCartao.astro'
+import PresenteAcao from './PresenteAcao.astro'
+import PresenteJanela from './PresenteJanela.astro'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon, presente, access } = Astro.props
-// Venda: o prazo da oferta de venda (1 ano). Presente: o prazo do presente, o divulgado
-// (`gift.accessDays`, 7 dias), que é outra oferta.
-// Presente sem prazo (oferta vitalícia, não usada pelas campanhas de presente): os marcadores do
-// prazo da página de venda, nunca "7 dias" escrito à mão.
-const prazo =
-  presente && presente.gift.gift.accessDays !== null
-    ? prazoDoCade(presente.gift.gift.accessDays)
-    : prazoDaOferta(access?.mode === 'fixed' ? access : null)
+// O prazo é o da oferta de venda (1 ano); o do presente vai só no cartão (`cartaoDoPresente`).
+const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeAdultoVenda(prazo, access?.guaranteeDays ?? null)
-const P = presente ? presenteAdulto(prazo) : venda
 const preco = precoDoDesafio(priceReais, coupon)
-const origem = presente
-  ? (presente.gift.source.kind !== 'campaign'
-      ? P.origem.pessoal
-      : presente.gift.source.context === 'event'
-        ? P.origem.evento
-        : P.origem.campanha
-    ).replace('{{nome}}', presente.gift.source.name.toLocaleUpperCase('pt-BR'))
-  : null
 const communityUrl = getDeps().env.COMMUNITY_URL.replace(/\/$/, '')
-const cabeca = presente
-  ? { etiqueta: P.resgatar.rotulo, titulo: P.resgatar.titulo, texto: P.resgatar.texto }
-  : venda.oferta
-const barra = presente
-  ? { titulo: origem ?? '', texto: P.barra.texto, cta: P.barra.cta }
+const cartao = presente
+  ? cartaoDoPresente(presente, { communityUrl, priceReais, offerResolved: access != null })
+  : null
+const origem = cartao ? cartao.etiqueta.toLocaleUpperCase('pt-BR') : null
+// No presente, as seções falam do presente (a copy aprovada da página do presente, com o prazo dele).
+const P = presente
+  ? isCadeGift(presente.gift.gift)
+    ? presenteAdultoDaOferta(presente.gift.gift)
+    : // Presente sem prazo em dias: os marcadores "sem prazo", nunca o "7 dias" do texto aprovado.
+      presenteAdulto(prazoDaOferta(null))
+  : venda
+// No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
+const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta
+const barra = cartao
+  ? { titulo: cartao.etiqueta, texto: cartao.precoFinal, cta: cartao.cta, presente: cartao.aberto }
   : { titulo: preco.preco, texto: venda.barra.texto, cta: venda.barra.cta }
 ---
 <PresenteAdultoLayout
@@ -68,20 +68,26 @@ const barra = presente
           <h2 id="cade-adulto-oferta" class="cda-h2">{cabeca.titulo}</h2>
           <p class="cda-suave">{cabeca.texto}</p>
         </div>
-        {presente ? (
-          <OfertaPresente presente={presente} communityUrl={communityUrl} />
+        {cartao ? (
+          <div class="da-cartao">
+            <span class="da-cartao__selo">{venda.oferta.selo}</span>
+            <p class="cda-rotulo cor-verde">{cartao.etiqueta}</p>
+            <PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />
+            <p class="cda-suave">{cartao.texto}</p>
+            <PresenteAcao cartao={cartao} classeBotao="cda-btn cda-btn--grande" analyticsId="cade-adulto-oferta-presente" />
+          </div>
         ) : (
           <div class="da-cartao">
             <span class="da-cartao__selo">{venda.oferta.selo}</span>
-            {preco.precoCheio && <del class="adult-price-before">{preco.precoCheio}</del>}
-            <p class="da-cartao__preco">{preco.preco}<span> {venda.oferta.sufixo}</span></p>
+            <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={venda.oferta.sufixo} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="pc-preco__desconto--arcade" />
             <p class="cda-suave">{venda.oferta.texto}</p>
-            {preco.aviso && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
+            {preco.aviso && (preco.aviso.alerta || !preco.descontoPct) && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
             <button class="cda-btn cda-btn--grande" data-checkout-cta data-analytics-id="cade-adulto-oferta-comprar" type="button">{venda.oferta.cta}</button>
             {venda.oferta.garantia && <p class="da-cartao__garantia">{venda.oferta.garantia}</p>}
           </div>
         )}
       </div>
+      {cartao && <PresenteJanela cartao={cartao} />}
     </section>
   </PresenteAdultoOferta>
   {!presente && <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} ofertaPadrao={Astro.props.offerPrimary ? undefined : Astro.props.offerSlug} couponCode={preco.codigo} />}

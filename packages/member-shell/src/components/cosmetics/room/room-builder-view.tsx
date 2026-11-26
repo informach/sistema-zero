@@ -1,10 +1,12 @@
 'use client'
 import {
   Armchair,
+  Check,
+  CloudOff,
   Frame,
-  LayoutGrid,
+  Hammer,
   Lightbulb,
-  Paintbrush,
+  Loader2,
   Palette,
   PawPrint,
   ShoppingBag,
@@ -27,8 +29,7 @@ const TABS: { id: RoomBuilderTab; label: string; icon: typeof Sofa }[] = [
   { id: 'trofeus', label: 'Troféus', icon: Trophy },
   { id: 'plantas', label: 'Plantas', icon: Sprout },
   { id: 'luzes', label: 'Luzes', icon: Lightbulb },
-  { id: 'piso', label: 'Piso', icon: LayoutGrid },
-  { id: 'parede', label: 'Parede', icon: Paintbrush },
+  // Piso e Parede foram para a aba Construir (modo construção, 26/11/2026).
   { id: 'clima', label: 'Clima', icon: Sun },
   { id: 'bichinho', label: 'Bichinho', icon: PawPrint },
   { id: 'tema', label: 'Tema', icon: Palette },
@@ -36,8 +37,45 @@ const TABS: { id: RoomBuilderTab; label: string; icon: typeof Sofa }[] = [
 
 const PANELS = [
   { id: 'decorar', label: 'Decorar', icon: ShoppingBag },
+  { id: 'construir', label: 'Construir', icon: Hammer },
   { id: 'quarto', label: 'No quarto', icon: Armchair },
 ] as const
+
+/** O selo do salvar sozinho, no lugar do botão Salvar (o mesmo jeito do avatar). */
+function SaveSeal({
+  state,
+  onRetry,
+}: {
+  state: NonNullable<MoradaRoomViewProps['saveState']>
+  onRetry(): void
+}) {
+  if (state === 'error')
+    return (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex h-11 items-center gap-2 rounded-full bg-(--sz-hot) px-4 font-bold text-(--sz-hot-fg) text-sm shadow-md"
+      >
+        <CloudOff className="size-4" aria-hidden="true" /> Não salvou. Tentar de novo
+      </button>
+    )
+  return (
+    <span
+      role="status"
+      className="inline-flex h-11 items-center gap-2 rounded-full bg-(--kids-lime-tint) px-4 font-bold text-sm shadow-md"
+    >
+      {state === 'saving' ? (
+        <>
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Salvando…
+        </>
+      ) : (
+        <>
+          <Check className="size-4" aria-hidden="true" /> Salvo
+        </>
+      )}
+    </span>
+  )
+}
 
 /**
  * A tela Kids do quarto (26/11/2026, pedido dela: "a cena do quarto, que é o mais importante,
@@ -69,17 +107,21 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
               </span>
             ) : null}
           </div>
-          <button
-            type="button"
-            onClick={props.onSave}
-            disabled={props.saving || !props.ready}
-            className={cn(
-              'sz-btn-gradient h-11 px-6 text-base',
-              (props.saving || !props.ready) && 'opacity-60',
-            )}
-          >
-            {props.saving ? 'Salvando…' : 'Salvar quarto'}
-          </button>
+          {props.saveState ? (
+            <SaveSeal state={props.saveState} onRetry={props.onSave} />
+          ) : (
+            <button
+              type="button"
+              onClick={props.onSave}
+              disabled={props.saving || !props.ready}
+              className={cn(
+                'sz-btn-gradient h-11 px-6 text-base',
+                (props.saving || !props.ready) && 'opacity-60',
+              )}
+            >
+              {props.saving ? 'Salvando…' : 'Salvar quarto'}
+            </button>
+          )}
         </div>
         {props.notice}
         <div className="flex flex-col gap-4 @min-[45rem]/quarto:grid @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:grid-cols-[minmax(0,1fr)_21.25rem] @min-[45rem]/quarto:grid-rows-[minmax(0,1fr)] @min-[62.5rem]/quarto:grid-cols-[minmax(0,1fr)_24rem]">
@@ -101,7 +143,10 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
               <div
                 role="group"
                 aria-label="Partes do painel"
-                className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1"
+                // "No quarto (N)" nunca quebra em duas linhas: a terceira coluna tem pelo menos a
+                // largura do texto com o número (em 1440 ela quebrava; revisão de 26/11/2026). Com
+                // o painel estreito (1024, menu aberto) os ícones saem e os nomes cabem inteiros.
+                className="@container/abas grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(max-content,1fr)] gap-1 rounded-full bg-muted p-1"
               >
                 {PANELS.map(({ id, label, icon: Icon }) => (
                   <button
@@ -110,13 +155,16 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
                     aria-pressed={panel === id}
                     onClick={() => choosePanel(id)}
                     className={cn(
-                      'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 [font-family:var(--font-display)] font-bold text-sm transition-colors',
+                      'inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 [font-family:var(--font-display)] font-bold text-sm transition-colors',
                       panel === id
                         ? 'bg-card text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
-                    <Icon className="size-4" aria-hidden="true" />
+                    <Icon
+                      className="hidden size-4 shrink-0 @min-[21rem]/abas:block"
+                      aria-hidden="true"
+                    />
                     {label}
                     {id === 'quarto' && placed ? (
                       <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs">
@@ -128,7 +176,7 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
               </div>
               {panel === 'decorar' ? (
                 <>
-                  <div role="group" aria-label="Categorias" className="grid grid-cols-5 gap-1.5">
+                  <div role="group" aria-label="Categorias" className="grid grid-cols-4 gap-1.5">
                     {TABS.map(({ id, label, icon: Icon }) => (
                       <button
                         key={id}
@@ -153,6 +201,10 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
                     {props.tray}
                   </div>
                 </>
+              ) : panel === 'construir' ? (
+                <div className="@container/bandeja relative @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-1 scrollbar-subtle">
+                  {props.build}
+                </div>
               ) : (
                 // `relative` no rolável pelo mesmo motivo da bandeja.
                 <div className="relative flex flex-col gap-4 @min-[45rem]/quarto:min-h-0 @min-[45rem]/quarto:flex-1 @min-[45rem]/quarto:overflow-y-auto @min-[45rem]/quarto:p-1 scrollbar-subtle">

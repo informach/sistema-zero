@@ -188,18 +188,6 @@ export function useAvatarEditor({
     }
   }, [load])
 
-  const tab: AvatarTab = avatarTab(tabId)
-  const allKinds: AvatarKind[] = useMemo(() => avatarKinds(C, tab), [tab])
-  const kinds = useMemo(
-    () => visibleAvatarKinds(C, tab, allKinds, filter ?? 'all', owned, slots, community),
-    [tab, allKinds, filter, owned, slots, community],
-  )
-  const kindId = kindByTab[tabId] ?? avatarKindOfWorn(kinds, tab, slots)
-  const kind = kinds.find((k) => k.id === kindId) ?? kinds[0]
-  const items = useMemo(
-    () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', owned, slots, community) : []),
-    [tab, kind, filter, owned, slots, community],
-  )
   // A peça paga que JÁ está no avatar guardado continua vestível sem estar no inventário (era
   // grátis quando foi gravada, ou veio na troca de avatar): não é prévia. Sem isso, a pessoa que
   // abria com uma peça assim nunca gravava nada e a Cabine ficava sem "Tirar foto" (relato de
@@ -210,6 +198,20 @@ export function useAvatarEditor({
       .filter((k): k is string => k !== null)
     return keys.length === 0 ? owned : new Set([...owned, ...keys])
   }, [owned, saved.slots])
+  const tab: AvatarTab = avatarTab(tabId)
+  const allKinds: AvatarKind[] = useMemo(() => avatarKinds(C, tab), [tab])
+  const kinds = useMemo(
+    () => visibleAvatarKinds(C, tab, allKinds, filter ?? 'all', wearable, slots, community),
+    [tab, allKinds, filter, wearable, slots, community],
+  )
+  const kindId = kindByTab[tabId] ?? avatarKindOfWorn(kinds, tab, slots)
+  const kind = kinds.find((k) => k.id === kindId) ?? kinds[0]
+  // A loja usa a mesma régua do "vestível": a peça do avatar guardado aparece como dela (sem preço
+  // nem compra), igual ao selo e ao salvar (revisão de 26/11/2026).
+  const items = useMemo(
+    () => (kind ? avatarShopItems(C, tab, kind, filter ?? 'all', wearable, slots, community) : []),
+    [tab, kind, filter, wearable, slots, community],
+  )
   const unowned = useMemo(() => avatarUnownedWorn(C, slots, wearable), [slots, wearable])
   // O que se grava: o avatar da tela, ou, com uma peça paga só de prévia, o avatar da tela sem
   // ela (`avatarWithoutPreview`: as mudanças de antes E de depois da prévia não se perdem; a peça

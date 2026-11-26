@@ -6,7 +6,7 @@ Importa móveis, construção, fazenda, os 24 gatos/cachorros e os oito troféus
 
 ## Preparar e conferir
 
-Na raiz: `bun run morada:migrar`, depois `bun run morada:conferir`. `ARTES_3D_DIR` altera a fonte (`../artes-3d` por padrão), `MORADA_OUTPUT_DIR` altera a pasta de preparação. A importação não muda a fonte da arte nem o banco.
+Na raiz: `bun run morada:migrar`, depois `bun --no-env-file scripts/morada/encaixes.ts` (o vão de cada janela e porta, do `vao` da arte, em `packages/core/src/morada/encaixes.generated.ts`; `--check` só confere) e `bun run morada:conferir`. `ARTES_3D_DIR` altera a fonte (`../artes-3d` por padrão), `MORADA_OUTPUT_DIR` altera a pasta de preparação. A importação não muda a fonte da arte nem o banco.
 
 O catálogo gerado tem arquivos por hash; extrai texturas compartilhadas para carregar sem imagens embutidas/blob no Kids. Mantém as origens e converte `dims` para XYZ. Paredes antigas recebem caixas calculadas pelos vãos autorais; batentes mantêm vãos livres; folhas sem dobradiça recebem pivô de abertura na cópia importada. Partes móveis usam colisões em coordenadas da peça em repouso, com `part` identificando o nó que as carrega.
 

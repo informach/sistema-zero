@@ -1,5 +1,64 @@
 # CLAUDE.md — @sistemazero/core
 
+## Modo construção da Morada: o motor compartilhado (26/11/2026)
+
+`morada/build.ts` (exportado por `@sistemazero/core/morada` e, para o jogo, pelo
+`@sistemazero/avatar-quarto/morada/catalog`) decide ONDE uma peça cai, para o quarto da plataforma
+e para o Arquipélago. Puro: recebe a casa e devolve a instância. Proposta aprovada: artifact
+"Modo construção" (https://claude.ai/artifact/JumYepv6zU68fEo8843m8t).
+
+- **Vãos pelas colisões** (`moradaWallOpenings`): o catálogo não tem medida de abertura; o vão é o
+  intervalo entre as colunas da altura toda, com o peitoril dando o chão e a verga o alto (sem
+  peitoril = porta). ⭐ **O par janela ↔ vão é o da ARTE** (`encaixes.generated.ts`, gerado por
+  `scripts/morada/encaixes.ts` do `vao` de cada janela, porta e encaixe; `--check` confere):
+  `moradaAuthoredOpening`, e `moradaOpeningFits` aceita qualquer abertura do MESMO tamanho da que a
+  arte desenhou. A moldura passa do vão de propósito (óculo 0,9 m no vão de 0,6 m; janela quadrada
+  de Natal 1,5 m no de 1,2 m): a régua só de tamanho errava 37 dos 88 pares (óculo no vão em arco,
+  porta em arco na passagem, a de Natal sem parede). A régua do tamanho fica para peça sem `vao`;
+  `moradaOpeningWallsFor` põe a parede da arte primeiro (a porta usa a de 2 m: um trecho a menos).
+- **`moradaPlace(house, pieceId, ponto, {rotation, base, roomId})`** → `{instance, replace?, valid,
+  reason?, wallId?}`: janela e porta grudam na face da parede mais perto (até
+  `MORADA_WALL_REACH`), viradas como ela; num vão que serve entram nele; numa parede lisa o trecho
+  troca pela parede com o vão do tamanho (`replace`), completado com paredes lisas e com as cores e
+  materiais do trecho; o que vai na parede gruda na face de dentro; o de chão anda pela grade de
+  0,5 m pelo CENTRO da caixa e não ocupa outra peça (tapete não bate). `reason` é a frase curta para
+  a criança. `applyMoradaPlacement` grava. `roomId` (padrão o da base ou `house.roomId`) serve ao
+  Arquipélago, que edita a casa inteira.
+- **`moradaRemove(house, id)`**: tira a peça e o que está apoiado nela; JANELA que sai fecha o vão
+  (o trecho volta a parede lisa, com as cores) quando nenhuma outra peça usa o trecho e o trecho só
+  tem vão de janela. ⚠️ Porta que sai DEIXA a passagem aberta (revisão de 26/11/2026: fechar o vão
+  da porta trancava o quarto, e o jogo recusava o acesso). Peça do quintal (sem `roomId`) não fecha
+  nada.
+- **Revisão de 26/11/2026 (full review do modo construção):**
+  - a troca de trecho (`replace`) só acontece numa parede LISA: trecho que já tem abertura recusa
+    com "Este trecho de parede já tem uma abertura. Leve até uma parede lisa." (antes a porta ou o
+    arco do trecho virava parede com janela e o quarto podia ficar sem saída);
+  - MOVER janela (`base` com id que já está na casa) fecha o vão de onde ela saiu (`closeOldOpening`,
+    só vão de janela; no mesmo trecho ou no mesmo vão nada muda), senão ficava o buraco antigo;
+  - `moradaRemoveProblem(house, id)`: tirar a ÚLTIMA parede com passagem (vão de porta) devolve
+    "Esta é a passagem do quarto. Deixe pelo menos uma porta." (o quarto recusa no cliente). ⚠️ A
+    regra de acesso do jogo (`moradaAccess` do Arquipélago, pela grade) continua só no jogo: levar
+    para o core/servidor custaria CPU por gravação e recusaria casas já guardadas sem saída;
+  - **`moradaBoundaryMargin(piece)`** é a folga da borda ÚNICA: `validateMoradaHouse`,
+    `moradaInsideRoom` e o `moradaFitsRoom` do member-shell usam a mesma (antes cada um tinha a sua
+    e a janela de Natal ficava verde na tela e era recusada ao salvar).
+- `moradaRotateAroundCenter` (o pivô das paredes é a PONTA; girar por ele as arrastava),
+  `moradaInstanceCenter`, `moradaWalls(house, catalog, roomId?)`, `moradaInsideRoom`,
+  `moradaOverlap`, o desfazer (`pushMoradaHistory` com `key` para juntar os passos de um arraste em
+  `MORADA_HISTORY_MERGE_MS`, até `MORADA_HISTORY_LIMIT` 60; `undo`/`redoMoradaHistory`) e os tipos do
+  catálogo de construção (`MORADA_BUILD_TYPES`, `moradaBuildType`).
+- As "lacunas" de 26/11/2026 (`janela_quadrada_1m` sem janela, `janela_quadrada_natal` sem parede)
+  eram do par por tamanho, não da arte: não falta peça. Rodou `morada:migrar`? Rode também
+  `scripts/morada/encaixes.ts` (e o `--check`).
+- `validateMoradaHouse`: janela e porta (`janelas`, `portas`, `encaixes`) ficam no plano da parede
+  da borda e passam metade da espessura para fora; a folga delas é `max(0,2, fundo/2 + 0,01)`. As do
+  pacote de Natal têm 0,45 m, e a casa com elas era recusada ao salvar ("peça fora da área").
+- Trecho curto demais para a parede da janela diz "Este trecho de parede é curto…", não "Ainda não
+  tem parede…" (essa fica só para peça sem nenhuma parede no catálogo).
+- Testes: `src/morada/build.test.ts` (vãos, encaixe, troca com cores, vão ocupado, parede lateral,
+  quadro, grade, tapete, fora do quarto, mover sem bater em si, fechar o vão, porta inicial, janela
+  dupla, desfazer e refazer).
+
 ## Origem `offer` e a oferta comercial completa (25/11/2026)
 
 `commerce/index.ts`: `CommerceOriginSchema` ganhou `{kind:'offer', offerRef}` (a página de um curso

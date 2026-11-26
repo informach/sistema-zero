@@ -225,6 +225,18 @@ Espaço (a conta, ou o da equipe) → Bibliotecas → Modelos
 
 ## Casa Morada (14/11/2026, implementação local)
 
+- **Revisão de 26/11/2026 (full review do modo construção):**
+  - `moradaBehaviorProblems`: uma instância por função do jogo (`behavior`) na casa inteira ("Um
+    projeto funcional só pode estar em um lugar.") e, com `scope: 'room'`, nenhuma função que a casa
+    guardada não tenha ("Esta função chega pelo jogo, não pelo quarto."): o Duplicar do quarto
+    copiava a geladeira do jogo;
+  - `presenceOwnedRemoved`: a peça paga que só era da criança por estar na casa guardada (fora do
+    inventário, sem ser função) e que a casa nova não tem mais ENTRA no `room_inventory` antes da
+    troca. Sem isto, tirar a peça (o salvar sozinho grava em 1 s) e desfazer a recusava para sempre
+    ("Peça ainda não comprada"). Não dá nada novo: a peça já tinha sido aceita;
+  - ⚠️ o Arquipélago compila o motor do core (`moradaPlace`) no bundle dele: mudar as regras do
+    core/members exige publicar o bundle do jogo junto (ver o CLAUDE.md do arquipelago).
+
 - Revisão de ownership: leitura e CAS usam a mesma chave de dados `(userId, audience)`.
   O `accountId` vem do contexto autenticado, não do documento, e é reparado na escrita para
   recuperar registros históricos que guardavam o id da criança no lugar do responsável.

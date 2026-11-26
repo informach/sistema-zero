@@ -22,6 +22,12 @@ export interface MoradaMaterial {
   map?: string
   emissiveMap?: string
 }
+/** O vão onde a arte desenhou uma janela ou porta: a parede com o vão e o índice dele. */
+export interface MoradaInsertOpening {
+  wall: string
+  index: number
+}
+
 export interface MoradaPiece {
   id: string
   label: string
