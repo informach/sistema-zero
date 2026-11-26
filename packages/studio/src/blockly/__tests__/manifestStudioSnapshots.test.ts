@@ -8,11 +8,13 @@ import {
 import { sanitizeProjectForHost } from '../../state/projectValidation'
 
 /**
- * O Jogo 3D é a extensão da Ilha do Farol inteira e da aula 2 do Jardim Secreto e dos Poderes do
+ * O Jogo 3D é a extensão da Ilha do Farol e da Patrulha Espacial inteiras e da aula 2 do Jardim Secreto e dos Poderes do
  * Faísca (todos fazem o jogo em 2D na aula 1 e o levam para o 3D na aula 2); o resto ensina o Jogo 2D.
  */
 function extensaoEnsinada(courseSlug: string, lessonSlug: string): 'game-2d' | 'game-3d' {
-  if (courseSlug === 'jornada-faisca-base-3d') return 'game-3d'
+  // A Patrulha Espacial (base 3D do Construtor, 24/11/2026) é toda em 3D.
+  if (courseSlug === 'jornada-faisca-base-3d' || courseSlug === 'jornada-construtor-base-3d')
+    return 'game-3d'
   if (
     (courseSlug === 'jornada-faisca-missao' || courseSlug.startsWith('jornada-faisca-poder-')) &&
     lessonSlug === 'aula-2'
@@ -52,6 +54,11 @@ test('lesson Studio projects retain their initial blocks and the extension taugh
     'ilha-aula-2.manifesto.json',
     'ilha-aula-3.manifesto.json',
     'moedas-aula-2.manifesto.json',
+    'patrulha-espacial-aula-1.manifesto.json',
+    'patrulha-espacial-aula-2.manifesto.json',
+    'patrulha-espacial-aula-3.manifesto.json',
+    'patrulha-espacial-aula-4.manifesto.json',
+    'patrulha-espacial-aula-5.manifesto.json',
     'ponte-aula-2.manifesto.json',
     'simbolos-aula-2.manifesto.json',
   ])
