@@ -121,12 +121,10 @@ describe('oferta da página: a principal do produto no catálogo (sem env, 25/11
     expect(await pageForOffer(gw.gateway, 'desafio-primeiro-jogo-30-dias', 'adult')).toBeNull()
   })
 
-  test('nenhuma env FUNNEL_OFFER_* sobra no código, no exemplo nem no Railway', () => {
-    for (const file of [
-      join(ROOT, 'src', 'lib', 'env.ts'),
-      join(ROOT, '.env.example'),
-      join(ROOT, '..', '..', '.railway', 'variables.ts'),
-    ])
+  test('a configuração do funil não lê nem pede as envs legadas de oferta', () => {
+    // O IaC preserva os valores existentes para réplicas antigas e rollback.
+    // O funil novo usa exclusivamente a oferta principal do catálogo.
+    for (const file of [join(ROOT, 'src', 'lib', 'env.ts'), join(ROOT, '.env.example')])
       expect(readFileSync(file, 'utf8')).not.toMatch(/FUNNEL_OFFER_[A-Z]/)
   })
 
