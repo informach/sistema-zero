@@ -65,8 +65,8 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       await conn.sql`insert into members.lesson_progress (user_id, lesson_id, course_id, updated_at)
         values (${account}, ${lesson}, ${courseId}, now())`
     }
-    await conn.sql`insert into members.lesson_completions (id, user_id, course_id, lesson_id)
-      values (${randomUUID()}, ${finishedAccount}, ${courseId}, ${active})`
+    await conn.sql`insert into members.lesson_completions (id, user_id, course_id, lesson_id, completed_at)
+      values (${randomUUID()}, ${finishedAccount}, ${courseId}, ${active}, now())`
 
     const progress = await loadCourseAccountProgress(conn.db, slug, [account, finishedAccount])
     expect(progress?.lessonCount).toBe(1)
