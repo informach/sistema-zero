@@ -300,3 +300,78 @@ test('sair com a gravação falhando devolve ok falso (a tela não sai calada)',
   expect(fim).toEqual({ ok: false, saved: false })
   await t.fechar()
 })
+
+// O avatar GUARDADO veste uma peça paga que o inventário não tem (peça que era grátis quando foi
+// gravada, ou que a troca de avatar deu sem passar pelo inventário). Relato da dona, 26/11/2026:
+// as mudanças a partir do avatar guardado não gravavam e o "Tirar foto" ficava desligado; depois
+// do "Surpreenda-me" (que só sorteia peça grátis) tudo voltava a funcionar.
+test('a peça paga que JÁ estava no avatar guardado não vira prévia: a mudança grava e a foto liga', async () => {
+  const chapeuPago = paga('chapeu')
+  estado = {
+    ...estado,
+    equipped: equipPart(C, drawAvatar(C, 'legado', { filter: 'boy' }), chapeuPago),
+  }
+  expect((estado.equipped as Record<string, string>).chapeu).toBe(chapeuPago)
+  const t = await montar()
+  expect(t.ed().status).toBe('saved')
+  const calcado = gratis('calcado')
+  await act(async () => t.ed().choose(item(calcado), avatarTab('calcado')))
+  await esperar(() => puts().length === 1, 4000)
+  const corpo = puts()[0]?.body as { slots: Record<string, string> }
+  expect(corpo.slots.calcado).toBe(calcado)
+  // A peça que ela já vestia continua no avatar gravado.
+  expect(corpo.slots.chapeu).toBe(chapeuPago)
+  await esperar(() => t.ed().status === 'saved')
+  await t.fechar()
+})
+
+// Repro da dona (26/11/2026): "Surpreenda-me" e depois uma mudança à mão.
+test('Surpreenda-me e depois uma peça GRÁTIS à mão: as duas gravam', async () => {
+  const t = await montar()
+  await act(async () => t.ed().randomize())
+  await esperar(() => puts().length === 1, 4000)
+  await esperar(() => t.ed().status === 'saved')
+  const rosto = C.rules.groups.rosto?.parts.find(
+    (id) => C.parts[id]?.tier === 'free' && id !== t.ed().slots.rosto,
+  )
+  if (!rosto) throw new Error('sem rosto grátis')
+  await act(async () => t.ed().choose(item(rosto), avatarTab('rosto')))
+  await esperar(() => puts().length === 2, 4000)
+  expect((puts()[1]?.body as { slots: Record<string, string> }).slots.rosto).toBe(rosto)
+  await t.fechar()
+})
+
+test('Surpreenda-me e depois uma peça PAGA à mão: fica de prévia, com a compra armada', async () => {
+  const t = await montar()
+  await act(async () => t.ed().randomize())
+  await esperar(() => puts().length === 1, 4000)
+  await act(async () => t.ed().choose(item(paga('cabelo')), avatarTab('cabelo')))
+  expect(t.ed().status).toBe('preview')
+  expect(t.ed().pending?.id).toBe(paga('cabelo'))
+  await t.fechar()
+})
+
+test('mudança grátis DEPOIS de experimentar uma peça paga também grava (sem a peça paga)', async () => {
+  const t = await montar()
+  await act(async () => t.ed().randomize())
+  await esperar(() => puts().length === 1, 4000)
+  const cabeloAntes = t.ed().slots.cabelo
+  await act(async () => t.ed().choose(item(paga('cabelo')), avatarTab('cabelo')))
+  const rosto = C.rules.groups.rosto?.parts.find(
+    (id) => C.parts[id]?.tier === 'free' && id !== t.ed().slots.rosto,
+  )
+  if (!rosto) throw new Error('sem rosto grátis')
+  await act(async () => t.ed().choose(item(rosto), avatarTab('rosto')))
+  expect(t.ed().status).toBe('preview')
+  await esperar(() => puts().length === 2, 4000)
+  const corpo = puts()[1]?.body as { slots: Record<string, string> }
+  expect(corpo.slots.rosto).toBe(rosto)
+  expect(corpo.slots.cabelo).toBe(cabeloAntes)
+  // Sair no meio da prévia não perde o rosto novo.
+  let fim: { ok: boolean; saved: boolean } | undefined
+  await act(async () => {
+    fim = await t.ed().finishBeforeExit()
+  })
+  expect(fim?.ok).toBe(true)
+  await t.fechar()
+})

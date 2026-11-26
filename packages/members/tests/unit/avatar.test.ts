@@ -177,3 +177,41 @@ describe('avatar do pack: escrita estrita', () => {
 function fail(): never {
   throw new Error('item ausente')
 }
+
+// 26/11/2026: o avatar GUARDADO com uma peça paga fora do inventário (era grátis quando foi gravada,
+// ou veio na troca de avatar) não pode travar as mudanças do resto; tirada, volta a ser cobrada.
+describe('avatar do pack: a peça paga que já estava no avatar guardado', () => {
+  const chapeu = pagaDo('chapeu')
+  const guardado = () =>
+    canonicalizeAvatarConfig(
+      { version: 3, style: 'cute-v1', slots: equipPart(C, base(), chapeu) },
+      'u',
+    )
+  const repo = (config: unknown) =>
+    ({
+      getConfig: async () => config,
+      listInventory: async () => [],
+      upsertConfig: async () => {},
+    }) as unknown as ConstructorParameters<typeof EquipAvatarService>[0]
+
+  test('mudar outra peça mantendo a peça guardada grava', async () => {
+    const atual = guardado()
+    const config = await new EquipAvatarService(repo(atual), () => new Date()).execute(
+      'u',
+      'a',
+      'kids',
+      { slots: equipPart(C, atual.slots, gratisDo('calcado')) },
+    )
+    expect(config.slots.chapeu).toBe(chapeu)
+  })
+
+  test('sem a peça no avatar guardado, ela continua cobrada', async () => {
+    const semChapeu = canonicalizeAvatarConfig({ version: 3, style: 'cute-v1', slots: base() }, 'u')
+    await expect(
+      new EquipAvatarService(repo(semChapeu), () => new Date()).execute('u', 'a', 'kids', {
+        slots: equipPart(C, semChapeu.slots, chapeu),
+      }),
+    ).rejects.toThrow(AvatarPartNotOwnedError)
+    expect(ownershipOf(C, chapeu)).toBe(chapeu)
+  })
+})
