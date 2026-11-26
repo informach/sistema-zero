@@ -1,5 +1,5 @@
 {
-  "verifiedAt": "2026-11-26T01:05:07.442Z",
+  "verifiedAt": "2026-11-26T08:14:22.146051Z",
   "course": {
     "audience": "kids",
     "learner": "parents",
@@ -547,18 +547,21 @@
     }
   },
   "aula1Parte2": {
-    "blocks": ["video", "materials"],
+    "blocks": ["video", "materials", "rich_text"],
     "materialsTitle": "Materiais da aula",
     "fileLabel": "Baixar apostila do curso",
     "book3DBlock": false,
     "bookPreviewPropertyAbsent": true,
-    "richTextBlocks": 0,
+    "richTextBlocks": 1,
+    "summaryTitle": "Para consultar",
+    "summaryPosition": "Depois dos materiais, na mesma coluna.",
     "environments": {
       "staging": {
         "environment": "staging",
-        "sectionKinds": ["video", "materials"],
+        "sectionKinds": ["video", "materials", "rich_text"],
         "book3D": false,
-        "consultationText": false,
+        "consultationText": true,
+        "summaryBelowMaterials": true,
         "oneColumn": true,
         "materialBelowVideo": true,
         "download": true,
@@ -566,15 +569,16 @@
       },
       "production": {
         "environment": "production",
-        "sectionKinds": ["video", "materials"],
+        "sectionKinds": ["video", "materials", "rich_text"],
         "book3D": false,
-        "consultationText": false,
+        "consultationText": true,
+        "summaryBelowMaterials": true,
         "oneColumn": true,
         "materialBelowVideo": true,
         "download": true,
         "mobileNoOverflow": true
       }
     },
-    "validation": "Aula validada e publicada pelo serviço canônico de autoria em cada ambiente; vídeos, anexos e conclusão preservados."
+    "validation": "Resumo original restaurado e aula validada e publicada pelo serviço canônico de autoria em cada ambiente; vídeos, anexos e conclusão preservados."
   }
 }
