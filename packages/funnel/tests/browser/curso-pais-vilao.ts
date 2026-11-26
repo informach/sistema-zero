@@ -229,18 +229,37 @@ try {
         .map((img) => img.src),
     )
     assert.deepEqual(quebradas, [], `${largura}: imagens`)
-    for (const id of ['o-que-muda', 'quem-conduz', 'duvidas'])
+    // A estrutura das outras páginas de venda (proposta de 26/11/2026).
+    for (const id of [
+      'na-sua-casa',
+      'o-que-muda',
+      'como-funciona',
+      'quem-conduz',
+      'duvidas',
+      'oferta',
+    ])
       assert.equal(await page.locator(`section#${id}`).count(), 1, `${largura}: seção ${id}`)
-    for (const id of ['por-que', 'para-quem', 'aulas', 'como-funciona', 'depoimentos'])
+    for (const id of ['por-que', 'para-quem', 'aulas', 'resgatar', 'depoimentos'])
       assert.equal(await page.locator(`#${id}`).count(), 0, `${largura}: sem a seção ${id}`)
     assert.equal(await page.locator('.c9-etapa').count(), 3, `${largura}: o que muda`)
     assert.equal(await page.locator('.c9-duvida').count(), 6, `${largura}: dúvidas`)
-    // O bloco de compra no topo: o preço do catálogo e o botão do pré-checkout, sem formulário.
-    const compra = page.locator('section.c9-heroi #resgatar')
+    // O topo sem cartão de compra; o bloco de compra na seção da oferta, com o preço do catálogo
+    // e o botão do pré-checkout, sem formulário.
+    assert.equal(
+      await page.locator('section.c9-heroi .c9-plano').count(),
+      0,
+      `${largura}: topo sem cartão`,
+    )
+    assert.equal(
+      await page.locator('section.c9-heroi a[href="#oferta"]').count(),
+      1,
+      `${largura}: botão do topo`,
+    )
+    const compra = page.locator('section#oferta')
     assert.match(await compra.innerText(), /R\$\s?27/, `${largura}: preço do catálogo`)
     assert.equal(await compra.locator('[data-checkout-cta]').count(), 1, `${largura}: comprar`)
     assert.equal(await compra.locator('input[name="email"]').count(), 0, `${largura}: sem cadastro`)
-    assert.equal(await page.locator('section.c9-fim a[href="#resgatar"]').count(), 1)
+    assert.equal(await page.locator('section.c9-fim a[href="#oferta"]').count(), 1)
     const corpo = await page.locator('body').innerText()
     assert.match(
       corpo,
@@ -293,7 +312,7 @@ try {
       `presente ${largura}: fora do índice`,
     )
     assert.match(await page.locator('.pk-origem').innerText(), /Encontro de pais/)
-    const cartao = page.locator('#resgatar .c9-plano')
+    const cartao = page.locator('#oferta .c9-plano')
     assert.match(
       await cartao.innerText(),
       /Um presente da campanha Encontro de pais para você[\s\S]*De R\$\s?27 por\s+R\$\s?0\s+sem custo e sem cartão\s+(?:Acesso ao guia|\d+ dias? de acesso ao guia)[^\n]*cadastro\.\s+Quero o meu presente/,
@@ -301,7 +320,7 @@ try {
     )
     // Um cartão só: nada de moldura do formulário dentro dele.
     assert.equal(
-      await page.locator('#resgatar .bz-card').count(),
+      await page.locator('#oferta .bz-card').count(),
       0,
       `presente ${largura}: sem formulário no cartão`,
     )
@@ -317,7 +336,7 @@ try {
   // Cadastro até o concluído: o guia abre na área dos pais e o resgate leva a oferta da página.
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto(presente)
-  await page.locator('#resgatar [data-presente-cta]').click()
+  await page.locator('#oferta [data-presente-cta]').click()
   const janela = page.getByRole('dialog')
   await janela.waitFor()
   await janela.locator('input[name="nome"]').fill('Paula Prado')
@@ -347,7 +366,7 @@ try {
   // Campanha pausada: fechada, com a retomada para quem já começou o cadastro.
   codigo = campanha({ state: 'paused', giftAvailable: false })
   await page.goto(presente)
-  assert.equal(await page.locator('#resgatar input[name="email"]').isVisible(), false)
+  assert.equal(await page.locator('#oferta input[name="email"]').isVisible(), false)
   assert.equal(await page.locator('details#retomar').count(), 1, 'pausada: retomada')
 
   // Presente de outra oferta: a página do presente decide para onde ir.

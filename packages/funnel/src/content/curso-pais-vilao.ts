@@ -1,10 +1,10 @@
-// Copy aprovada do guia para pais "Transformando o vilão em aliado" (`/kids/vilao-em-aliado`;
-// proposta do Canvas aprovada em 21/11/2026). A página é curta e desperta curiosidade: não resume
-// aula nem conta o que o guia ensina (as respostas, as cenas da casa e a história do André ficam
-// nas aulas), e as dúvidas falam só de como fazer o guia. O presente do fim é surpresa: nada aqui
-// diz o que ele é. Desde 25/11/2026 o guia é pago (funil `kids/vilao-em-aliado`): este texto, o do
-// guia gratuito, é o do modo presente; a venda troca o que falava de "gratuito"
-// (`funnels/vilao-em-aliado/oferta.ts`).
+// Copy do guia para pais "Transformando o vilão em aliado" (`/kids/vilao-em-aliado`). Proposta de
+// 26/11/2026: a página segue a estrutura das outras páginas de venda (topo com título, texto e botão,
+// sem cartão de compra; a cena da casa; o que muda; como funciona; quem conduz; dúvidas; a oferta;
+// o fechamento). Continua curta e desperta curiosidade: não resume aula nem conta o que o guia
+// ensina (as respostas, as cenas da casa e a história do André ficam nas aulas). O presente do fim é
+// surpresa: nada aqui diz o que ele é. Este texto, o do guia gratuito, é o do modo presente; a venda
+// troca o que falava de "gratuito" (`funnels/vilao-em-aliado/oferta.ts`).
 import type { EstadoPresente, ImagemPresente } from './presente'
 
 /** O curso do guia no Members. */
@@ -32,6 +32,13 @@ const ilustracao: ImagemPresente = {
   alt: 'Uma menina emburrada mexe num tablet. A sombra dela, na parede, comemora e aponta para blocos de programar e um jogo de plataforma.',
 }
 
+const apostila: ImagemPresente = {
+  src: `${IMAGENS}/apostila.webp`,
+  width: 720,
+  height: 1030,
+  alt: 'Capa da apostila do guia Transformando o vilão em aliado.',
+}
+
 export const CURSO_PAIS_VILAO = {
   seoTitle: 'Transformando o vilão em aliado: guia gratuito para pais | Sistema Zero',
   description:
@@ -40,6 +47,7 @@ export const CURSO_PAIS_VILAO = {
   topo: {
     links: [
       { href: '#o-que-muda', label: 'O que muda' },
+      { href: '#como-funciona', label: 'Como funciona' },
       { href: '#quem-conduz', label: 'Quem conduz' },
       { href: '#duvidas', label: 'Dúvidas' },
     ],
@@ -66,13 +74,23 @@ export const CURSO_PAIS_VILAO = {
     ],
     requisitos:
       'Para pais e responsáveis de filhos de 5 a 17 anos. Quem assiste às aulas é o adulto.',
+    cta: 'Quero assistir de graça',
+    link: 'Ver o que muda em casa',
+    figura: { rotulo: 'Transformando o vilão em aliado', imagem: ilustracao },
     surpresa: 'Uma surpresa na última aula',
+  },
+  cena: {
+    etiqueta: 'Na sua casa',
+    titulo: 'Na hora de desligar, a conversa vira briga.',
+    paragrafos: [
+      'Você pede para largar o tablet, ele pede mais cinco minutos, e os cinco minutos viram meia hora. Quando a tela finalmente sai, sobra cansaço dos dois lados.',
+      'Tirar a tela de vez quase nunca funciona, porque ela já faz parte da vida dele, da escola e dos amigos. O guia começa por outra pergunta, e é ela que muda o rumo dessa conversa.',
+    ],
   },
   oQueMuda: {
     titulo: 'O que muda na sua casa quando você coloca o guia em prática.',
     texto:
       'A mudança vem aos poucos, conforme a família leva para o dia a dia o que viu nas aulas.',
-    figura: { rotulo: 'Transformando o vilão em aliado', imagem: ilustracao },
     itens: [
       {
         icone: 'conversa',
@@ -92,6 +110,28 @@ export const CURSO_PAIS_VILAO = {
           'Ele começa a ver que as escolhas dele fazem diferença e sente orgulho do que construiu.',
       },
     ],
+  },
+  formato: {
+    etiqueta: 'Como funciona',
+    titulo: 'Um guia curto, para assistir no seu tempo.',
+    itens: [
+      {
+        titulo: '7 aulas em vídeo',
+        texto:
+          'São 23 partes de até 6 minutos. Dá para assistir a uma parte no intervalo do dia e voltar a qualquer uma depois.',
+      },
+      {
+        titulo: 'Apostila para consultar',
+        texto:
+          'Os pontos principais de cada aula num material para ler com calma, quando você quiser retomar uma ideia.',
+      },
+      {
+        titulo: 'Na área dos pais',
+        texto:
+          'O guia fica na sua conta do Sistema Zero Kids, no menu Cursos para pais, e termina com o certificado.',
+      },
+    ],
+    imagem: apostila,
   },
   quemConduz: {
     etiqueta: 'Quem conduz',
@@ -142,6 +182,12 @@ export const CURSO_PAIS_VILAO = {
           'Pelo prazo do seu acesso, que aparece no cadastro. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.',
       },
     ],
+  },
+  compra: {
+    etiqueta: 'Para começar',
+    titulo: 'O guia completo na sua conta',
+    texto:
+      'Você assiste no seu ritmo, revê qualquer parte quando quiser e consulta a apostila sempre que precisar.',
   },
   fim: {
     titulo: 'Comece pela primeira aula ainda hoje.',

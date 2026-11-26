@@ -130,10 +130,12 @@ try {
     const response = await page.goto(`${origin}/kids/${slug}`)
     assert.equal(response?.status(), 200)
     assert.equal(await page.locator('h1').count(), 1)
-    const buy = page.locator('section.c9-heroi #resgatar')
+    // Proposta de 26/11/2026: o topo sem cartão de compra; a compra na seção da oferta.
+    assert.equal(await page.locator('section.c9-heroi .c9-plano').count(), 0)
+    const buy = page.locator('section#oferta')
     assert.match(await buy.innerText(), /R\$\s?67/)
     assert.equal(await buy.locator('[data-checkout-cta]').count(), 1)
-    for (const id of ['o-que-muda', 'quem-conduz', 'duvidas'])
+    for (const id of ['na-sua-casa', 'o-que-muda', 'como-funciona', 'quem-conduz', 'duvidas'])
       assert.equal(await page.locator(`section#${id}`).count(), 1)
     await page.evaluate(async () => {
       for (let y = 0; y < document.documentElement.scrollHeight; y += 600) {
@@ -141,7 +143,10 @@ try {
         await new Promise((done) => setTimeout(done, 30))
       }
       window.scrollTo(0, 0)
-      await Promise.all(Array.from(document.images).map((img) => img.decode().catch(() => {})))
+      // Imagem preguiçosa fora da tela nunca termina o decode: carrega todas antes.
+      const imagens = Array.from(document.images)
+      for (const img of imagens) img.loading = 'eager'
+      await Promise.all(imagens.map((img) => img.decode().catch(() => {})))
     })
     assert.ok(
       await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
@@ -165,7 +170,8 @@ try {
   assert.match(decodeURIComponent(cookie!.value), /pais-laopa/)
   await page.goto(`${origin}/kids/${slug}?presente=pais-presente`)
   assert.equal(await page.locator('[data-checkout-cta]').count(), 0)
-  assert.equal(await page.locator('#resgatar input[name="email"]').count(), 1)
+  // Modo presente: o mesmo cartão, com o cadastro numa janela (26/11/2026).
+  assert.equal(await page.locator('#oferta [data-presente-cta]').count(), 1)
   assert.match(await page.locator('.pk-origem').innerText(), /Encontro Laopa/)
   assert.equal(
     await page.locator('meta[name="robots"]').getAttribute('content'),

@@ -1,57 +1,25 @@
 ---
-// Corpo da página pública do guia gratuito para pais "Transformando o vilão em aliado"
-// (`/kids/vilao-em-aliado`; proposta do Canvas aprovada em 21/11/2026). Vai dentro do
-// `PresenteLayout` (layout `.c917` e peças `.pk-*` do presente Kids) e só acrescenta as peças de
-// `curso-pais.css` (`.cpv-*`). Página curta e direta: o cadastro fica no topo, ao lado do título, e
-// os botões do menu, da barra do celular e da faixa final levam a ele. O formulário é o do presente
-// na variante `guia`; sem campanha aberta, a página continua no ar com o estado no lugar dele. O
-// presente do fim do guia é surpresa: nada aqui o revela.
+// Corpo das páginas de venda dos cursos para pais: o guia "Transformando o vilão em aliado"
+// (`/kids/vilao-em-aliado`) e o curso da Vivianne (`/kids/como-ajudar-seu-filho-autista-nas-frustracoes`).
+// Proposta de 26/11/2026: a MESMA estrutura das outras páginas de venda do funil Kids, no layout
+// `.c917` e com as peças de `curso-pais.css` (`.cpv-*`): o topo com título, texto, botão e a
+// ilustração (sem cartão de compra); a cena da casa; o que muda; como funciona; quem conduz; dúvidas;
+// o bloco de compra (slot `compra`, a seção `#oferta` do corpo, venda, cupom ou presente); o
+// fechamento. Curta e sem resumir aula. O presente do fim do guia é surpresa: só o selo da imagem.
 import '../../styles/curso-pais.css'
-import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
 import { DEPOIMENTOS_DE_PAIS, type DepoimentoDePais } from '../../content/curso-pais-vilao'
-import type { EstadoPresente } from '../../content/presente'
 import type { GuiaPaisCopy } from '../../funnels/vilao-em-aliado/oferta'
-import BolsaResgate from '../../islands/BolsaResgate'
 import OfferImage from '../funnel/oferta/OfferImage.astro'
 
 interface Props {
-  /** A copy da página: a de venda ou a do guia de presente (`funnels/vilao-em-aliado/oferta`). */
+  /** A copy da página: a de venda ou a do modo presente. */
   copy: GuiaPaisCopy
   /** O selo do topo no lugar do padrão (no modo presente, quem dá o presente). */
   selo?: string
-  /**
-   * Página da oferta (25/11/2026): o bloco de compra vem do slot `compra` (preço e botão, ou o
-   * resgate no modo presente), no lugar do formulário do topo.
-   */
-  compra?: boolean
-  /** Dados do formulário quando a campanha entrega este curso; ausente = sem cadastro. */
-  resgate?: {
-    code: string
-    referrerName: string
-    communityUrl: string
-    campaign: boolean
-    gift: ReferralGiftOfferView
-  }
-  /** Com o formulário aberto. */
-  ready: boolean
-  /** O que mostrar no lugar do formulário quando ele está fechado. */
-  estado?: EstadoPresente
-  /** Campanha pausada ou encerrada: quem começou o cadastro pode concluir. */
-  podeRetomar?: boolean
   /** Os depoimentos do curso (padrão: os do guia). A seção só aparece com ao menos um. */
   depoimentos?: readonly DepoimentoDePais[]
 }
-const {
-  copy: P,
-  selo,
-  compra = false,
-  resgate,
-  ready,
-  estado,
-  podeRetomar = false,
-  depoimentos = DEPOIMENTOS_DE_PAIS,
-} = Astro.props
-const formulario = resgate && ({ ...resgate, audience: 'kids', variante: 'guia' } as const)
+const { copy: P, selo, depoimentos = DEPOIMENTOS_DE_PAIS } = Astro.props
 const check = '<path d="M20 6 9 17l-5-5"></path>'
 const seta = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>'
 const presente =
@@ -65,6 +33,8 @@ const ICONES: Record<string, string> = {
 }
 const CORES_CHECKS = ['roxo', 'amarelo', 'rosa']
 const CORES_MUDA = ['roxo', 'amarelo', 'verde']
+const CORES_FORMATO = ['azul', 'rosa', 'verde']
+const figuraDoQueMuda = P.oQueMuda.figuras?.[0]
 ---
 <section class="c9-sec c9-sec--creme c9-heroi" aria-labelledby="cpv-titulo">
   <div class="c9-wrap c9-heroi__grade">
@@ -82,66 +52,60 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
           </li>
         ))}
       </ul>
+      <div class="c9-acao">
+        <a class="c9-btn c9-btn--grande" href="#oferta" data-analytics-id="cpv-topo-cta">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} /></a>
+        <a class="pk-link" href="#o-que-muda">{P.hero.link}</a>
+      </div>
       <span class="c9-heroi__requisitos">{P.hero.requisitos}</span>
     </div>
-    <div id="resgatar" class="pk-form cpv-heroi-form">
-      {compra ? (
-        <>
-          {P.hero.surpresa && (
-            <span class="c9-chip c9-cor--rosa cpv-form-chip">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
-              {P.hero.surpresa}
-            </span>
-          )}
-          <slot name="compra" />
-        </>
-      ) : ready && formulario ? (
-        <>
-          <span class="c9-chip c9-cor--rosa cpv-form-chip">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
-            {P.hero.surpresa}
-          </span>
-          <BolsaResgate client:load {...formulario} />
-        </>
-      ) : (
-        <div class="c9-pilha c9-gap-16">
-          {estado && (
-            <div class:list={['pk-estado', `c9-cor--${podeRetomar ? 'rosa' : 'azul-claro'}`]} role="status">
-              <span class="c9-tag">{estado.etiqueta}</span>
-              <h2 class="pk-estado__titulo">{estado.titulo}</h2>
-              <p class="c9-p">{estado.texto}</p>
-              <a class="pk-link" href="mailto:contato@sistemazero.com.br">{P.estados.contato}</a>
-            </div>
-          )}
-          {podeRetomar && formulario && (
-            <details id="retomar" class="pk-retomar">
-              <summary>{P.estados.retomar.botao}</summary>
-              <p>{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load {...formulario} retryOnly />
-            </details>
-          )}
-        </div>
+    <div class="pk-heroi__visual cpv-heroi-visual">
+      {P.hero.surpresa && (
+        <span class="c9-chip c9-cor--rosa cpv-surpresa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
+          {P.hero.surpresa}
+        </span>
       )}
+      <figure class="pk-figura">
+        <span class="pk-figura__rotulo">{P.hero.figura.rotulo}</span>
+        <OfferImage image={P.hero.figura.imagem} eager />
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="na-sua-casa" class="c9-sec c9-sec--branco" aria-labelledby="cpv-cena">
+  <div class="c9-wrap c9-lado">
+    <div class="c9-pilha c9-gap-14 c9-b520">
+      <span class="c9-tag c9-cor--amarelo">{P.cena.etiqueta}</span>
+      <h2 id="cpv-cena" class="c9-h2">{P.cena.titulo}</h2>
+    </div>
+    <div class="c9-pilha c9-gap-14 c9-b520 cpv-cena-texto">
+      {P.cena.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
     </div>
   </div>
 </section>
 
 <section id="o-que-muda" class="c9-sec c9-sec--creme" aria-labelledby="cpv-muda">
   <div class="c9-wrap c9-pilha c9-gap-26">
-    <div class="c9-lado">
-      <div class="c9-pilha c9-gap-14 c9-b460">
-        <h2 id="cpv-muda" class="c9-h2">{P.oQueMuda.titulo}</h2>
-        <p class="c9-p">{P.oQueMuda.texto}</p>
-      </div>
-      <div class:list={['pk-heroi__visual', { 'cpv-ilustracoes': P.oQueMuda.figuras }]}>
-        {(P.oQueMuda.figuras ?? [P.oQueMuda.figura]).map((figura) => (
+    {figuraDoQueMuda ? (
+      <div class="c9-lado">
+        <div class="c9-pilha c9-gap-14 c9-b460">
+          <h2 id="cpv-muda" class="c9-h2">{P.oQueMuda.titulo}</h2>
+          <p class="c9-p">{P.oQueMuda.texto}</p>
+        </div>
+        <div class="pk-heroi__visual">
           <figure class="pk-figura">
-            <span class="pk-figura__rotulo">{figura.rotulo}</span>
-            <OfferImage image={figura.imagem} />
+            <span class="pk-figura__rotulo">{figuraDoQueMuda.rotulo}</span>
+            <OfferImage image={figuraDoQueMuda.imagem} />
           </figure>
-        ))}
+        </div>
       </div>
-    </div>
+    ) : (
+      <div class="c9-cabeca">
+        <h2 id="cpv-muda" class="c9-h2">{P.oQueMuda.titulo}</h2>
+        <p class="c9-p pk-texto-largo">{P.oQueMuda.texto}</p>
+      </div>
+    )}
     <div class="c9-grade c9-min-200 c9-grade--20">
       {P.oQueMuda.itens.map((item, index) => (
         <article class:list={['c9-etapa', `c9-cor--${CORES_MUDA[index % CORES_MUDA.length]}`]}>
@@ -156,7 +120,29 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
   </div>
 </section>
 
-<section id="quem-conduz" class="c9-sec c9-sec--branco" aria-labelledby="cpv-quem">
+<section id="como-funciona" class="c9-sec c9-sec--branco" aria-labelledby="cpv-formato">
+  <div class="c9-wrap c9-lado cpv-formato">
+    <div class="c9-pilha c9-gap-20 cpv-formato__texto">
+      <div class="c9-pilha c9-gap-14">
+        <span class="c9-tag c9-cor--branco">{P.formato.etiqueta}</span>
+        <h2 id="cpv-formato" class="c9-h2">{P.formato.titulo}</h2>
+      </div>
+      <div class="c9-pilha c9-gap-14">
+        {P.formato.itens.map((item, index) => (
+          <article class:list={['c9-cartao', `c9-cor--${CORES_FORMATO[index % CORES_FORMATO.length]}`]}>
+            <h3 class="c9-cartao__titulo">{item.titulo}</h3>
+            <div class="c9-cartao__texto"><p>{item.texto}</p></div>
+          </article>
+        ))}
+      </div>
+    </div>
+    <figure class="cpv-apostila">
+      <OfferImage image={P.formato.imagem} />
+    </figure>
+  </div>
+</section>
+
+<section id="quem-conduz" class="c9-sec c9-sec--creme" aria-labelledby="cpv-quem">
   <div class="c9-wrap c9-lado">
     <div class="c9-pilha c9-gap-14 c9-b520">
       <span class="c9-tag c9-cor--amarelo">{P.quemConduz.etiqueta}</span>
@@ -170,7 +156,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
 </section>
 
 {depoimentos.length > 0 && (
-  <section id="depoimentos" class="c9-sec c9-sec--creme" aria-labelledby="cpv-depoimentos">
+  <section id="depoimentos" class="c9-sec c9-sec--branco" aria-labelledby="cpv-depoimentos">
     <div class="c9-wrap c9-pilha c9-gap-26">
       <div class="c9-cabeca">
         <span class="c9-tag c9-cor--branco">{P.depoimentos.etiqueta}</span>
@@ -202,14 +188,14 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
   </div>
 </section>
 
-{(ready || compra) && (
-  <section class="c9-fim" aria-labelledby="cpv-fim">
-    <div class="c9-wrap c9-fim__grade">
-      <div class="c9-pilha c9-gap-14 c9-b520">
-        <h2 id="cpv-fim" class="c9-h2 c9-h2--fim">{P.fim.titulo}</h2>
-        <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#resgatar">{P.fim.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} /></a>
-        <span class="c9-nota">{P.fim.nota}</span>
-      </div>
+<slot name="compra" />
+
+<section class="c9-fim" aria-labelledby="cpv-fim">
+  <div class="c9-wrap c9-fim__grade">
+    <div class="c9-pilha c9-gap-14 c9-b520">
+      <h2 id="cpv-fim" class="c9-h2 c9-h2--fim">{P.fim.titulo}</h2>
+      <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#oferta" data-analytics-id="cpv-fim-cta">{P.fim.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" set:html={seta} /></a>
+      <span class="c9-nota">{P.fim.nota}</span>
     </div>
-  </section>
-)}
+  </div>
+</section>
