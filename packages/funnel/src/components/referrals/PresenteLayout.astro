@@ -48,7 +48,7 @@ const {
   description,
   ready = false,
   secoes = true,
-  barra = P.barra,
+  barra: barraRecebida,
   links = P.topo.links,
   cta = P.topo.cta,
   indexavel = false,
@@ -57,6 +57,7 @@ const {
   termosHref = `${COMUNIDADE_DOS_CRIADORES.basePath}/termos`,
   canonical,
 } = Astro.props
+const barra: NonNullable<Props['barra']> = barraRecebida ?? P.barra
 ---
 <BaseLayout title={title} description={description} noindex={!indexavel} ogImage={ogImage} canonical={canonical} htmlClass="theme-kids">
   <slot name="head" slot="head" />

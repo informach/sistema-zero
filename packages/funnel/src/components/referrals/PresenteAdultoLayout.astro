@@ -42,7 +42,7 @@ const {
   title,
   description,
   ready = false,
-  barra = P.barra,
+  barra: barraRecebida,
   secoes = true,
   alvo = 'resgatar',
   cta = P.topo.cta,
@@ -50,6 +50,7 @@ const {
   indexavel = false,
   canonical,
 } = Astro.props
+const barra: NonNullable<Props['barra']> = barraRecebida ?? P.barra
 ---
 <BaseLayout title={title} description={description} noindex={!indexavel} canonical={canonical} htmlClass="theme-arcade">
   <slot name="head" slot="head" />
