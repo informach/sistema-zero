@@ -120,6 +120,8 @@ export function originFromCode(
       place,
       utm,
     }
+  if (code.ownerKind === 'benefit')
+    return { ...NO_ORIGIN, originKind: 'course', codeId: code.id, place, utm }
   return { ...NO_ORIGIN, codeId: code.id, place, utm }
 }
 
@@ -196,7 +198,7 @@ export function giftAcquisition(
     bonusTerms: giftBonusTerms(redemption, code, defaults),
     ...originFromCode(code, {
       campaignAmbassadorId: redemption.campaignReferral?.ambassadorId ?? null,
-      place: platform,
+      place: code.ownerKind === 'benefit' ? 'course_benefit' : platform,
       utm: redemption.attribution ?? null,
     }),
   }

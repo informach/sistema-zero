@@ -46,7 +46,7 @@ export class GetLessonService {
     audience?: CourseAudience,
   ): Promise<LessonDetailView> {
     if (audience === 'adult' && userId !== (accountId ?? userId)) throw new LessonNotFoundError()
-    const { course } = await this.checkAccess.requireBySlug(
+    const { course, entitlement } = await this.checkAccess.requireBySlug(
       accountId ?? userId,
       courseSlug,
       privileged,
@@ -122,7 +122,16 @@ export class GetLessonService {
       })
     }
 
+    const accessSource = entitlement.toSnapshot()
     const view = {
+      commerceAccessSource: privileged
+        ? null
+        : {
+            entitlementId: accessSource.id,
+            sourceKind: accessSource.sourceKind,
+            sourceId: accessSource.sourceId,
+            subscriptionId: accessSource.subscriptionId,
+          },
       ...toLessonDetailView(
         lesson,
         course.slug,

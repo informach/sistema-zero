@@ -15,6 +15,31 @@ import { referralLinkRedirect } from '../../src/server/referral-link'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
+test('link /i de benefício preservado não grava origem comercial nem libera presente público', async () => {
+  const response = await referralLinkRedirect(
+    new URL('https://funnel.test/i/guia-cade'),
+    { code: 'guia-cade' },
+    {
+      secureCookie: true,
+      gateway: {
+        ...createFakeGateway().gateway,
+        resolveReferralLink: async () => ({
+          status: 200,
+          body: {
+            kind: 'course_benefit',
+            code: 'guia-cade',
+            audience: 'kids',
+            courseSlug: 'transformando-o-vilao-em-aliado',
+          },
+        }),
+      },
+    },
+  )
+  expect(response.status).toBe(302)
+  expect(response.headers.get('location')).toBe('/bolsa/guia-cade')
+  expect(response.headers.get('set-cookie')).toBeNull()
+})
+
 const CONTACT = {
   nome: 'Ana Souza',
   email: 'ana@example.com',

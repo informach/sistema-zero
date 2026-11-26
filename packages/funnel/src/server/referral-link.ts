@@ -110,6 +110,20 @@ export async function referralLinkRedirect(
   // 4xx do referrals (404, validação) é link que não existe; só 5xx/timeout é "tente de novo".
   if (status >= 400 && status < 500)
     return text('Este link não existe ou não está mais ativo.', 404)
+  // O endereço antigo de um benefício leva ao curso autenticado via /bolsa. Não cria
+  // atribuição comercial nem permite resgate público fora do acesso ao curso de origem.
+  if (
+    status === 200 &&
+    body &&
+    typeof body === 'object' &&
+    'kind' in body &&
+    body.kind === 'course_benefit'
+  ) {
+    return new Response(null, {
+      status: 302,
+      headers: { ...HEADERS, location: `/bolsa/${encodeURIComponent(code)}` },
+    })
+  }
   const link = status === 200 ? parseReferralLinkView(body) : null
   if (!link) {
     deps.log?.('referral_link.resolve_failed', { status })

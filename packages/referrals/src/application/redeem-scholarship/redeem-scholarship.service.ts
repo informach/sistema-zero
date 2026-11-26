@@ -1,7 +1,9 @@
 import { randomBytes } from 'node:crypto'
+import { CommerceAccessSourceSchema } from '@sistemazero/core/commerce'
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import {
+  type CourseBenefitClaimSource,
   type GiftAttribution,
   type GiftAudience,
   type GiftMuralAccess,
@@ -22,6 +24,7 @@ import {
   GiftOfferChangedError,
 } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
+import { CourseBenefitUnavailableError } from '../../domain/course-benefit'
 import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
@@ -37,6 +40,7 @@ import {
 import { normalizePhone, splitName } from '../../domain/names'
 import type { AcquisitionRepository } from '../../domain/ports/acquisition-repository.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
+import type { CourseBenefitRepository } from '../../domain/ports/course-benefit-repository.port'
 import type {
   GatewayResult,
   ReferralsGateway,
@@ -48,6 +52,7 @@ import type {
   ReferralRepository,
 } from '../../domain/ports/referral-repository.port'
 import { giftSlotOf, MAIN_GIFT_SLOT } from '../../domain/ports/referral-repository.port'
+import { captureCourseBenefitContext } from './course-benefit-context'
 
 export interface RedeemInput {
   code: string
@@ -101,6 +106,7 @@ export interface RedeemOptions {
   giftOffers: GiftOfferCatalog
   leaseMs: number
   campaigns?: CampaignRepository
+  benefits?: Pick<CourseBenefitRepository, 'findById'>
   bonusAmounts?: ReferralBonusAmounts
   /**
    * Aquisições com origem (25/11/2026): o presente concluído vira aquisição `gift` com o acordo
@@ -349,7 +355,9 @@ export class RedeemScholarshipService {
     let existing: (typeof sameAudience)[number] | null
     if (fresh.kind === 'ok') {
       giftSlot =
-        ownerKind !== 'campaign' && fresh.value.course?.learner !== 'parents'
+        ownerKind !== 'campaign' &&
+        ownerKind !== 'benefit' &&
+        fresh.value.course?.learner !== 'parents'
           ? MAIN_GIFT_SLOT
           : giftSlotOf(fresh.value.course, fresh.value.offer.offerId)
       existing = sameAudience.find((r) => slotOf(r) === giftSlot) ?? null
@@ -419,13 +427,27 @@ export class RedeemScholarshipService {
 
   async execute(
     input: RedeemInput,
-    account?: { userId: string; audience: GiftAudience },
+    account?: { userId: string; audience: GiftAudience; benefitSource?: CourseBenefitClaimSource },
   ): Promise<RedeemResult> {
     const code = normalizeCode(input.code)
     if (!isValidCode(code)) return { kind: 'code_not_found' }
     const codeRecord = await this.repo.findCodeByCode(code)
     // 404 uniforme (inexistente OU desativado) — não vazar qual dos dois.
     if (codeRecord?.status !== 'active') return { kind: 'code_not_found' }
+    const benefit =
+      codeRecord.ownerKind === 'benefit' && codeRecord.benefitId
+        ? await this.opts.benefits?.findById(codeRecord.benefitId)
+        : null
+    if (
+      codeRecord.ownerKind === 'benefit' &&
+      (!benefit ||
+        benefit.status !== 'active' ||
+        !account?.benefitSource ||
+        benefit.courseSlug !== account.benefitSource.courseSlug ||
+        benefit.audience !== account.audience ||
+        !CommerceAccessSourceSchema.safeParse(account.benefitSource.accessSource).success)
+    )
+      return { kind: 'code_not_found' }
 
     const email = normalizeEmail(input.email)
     const name = input.name.trim().slice(0, 120)
@@ -437,6 +459,9 @@ export class RedeemScholarshipService {
         ? ((await this.opts.campaigns?.findById(codeRecord.campaignId)) ?? null)
         : null
     const audience = campaign?.audience ?? codeRecord.audience
+    const giftSelection = benefit
+      ? { kind: 'gift' as const, giftOfferId: benefit.giftOfferId }
+      : campaign
     if (account && account.audience !== audience) return { kind: 'code_not_found' }
 
     // Resgate novo só começa quando a oferta resolve e o curso está publicado. O 409 de um
@@ -447,7 +472,7 @@ export class RedeemScholarshipService {
     if (codeRecord.ownerKind === 'campaign' && !campaign) return { kind: 'code_not_found' }
     let ref: string | null
     try {
-      ref = await this.giftRefFor(campaign, audience, input.offer)
+      ref = await this.giftRefFor(giftSelection, audience, input.offer)
     } catch (error) {
       // Catálogo fora ao conferir a escolha do embaixador: "tente de novo", não "não existe".
       if (error instanceof GiftCatalogUnavailableError) return { kind: 'upstream_error' }
@@ -461,7 +486,7 @@ export class RedeemScholarshipService {
       audience,
       account?.userId,
       codeRecord.ownerKind,
-      campaign,
+      giftSelection,
       fresh,
     )
     let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
@@ -505,14 +530,30 @@ export class RedeemScholarshipService {
     // completed = 409; pending/failed = RETOMADA (o 1º claim vence o code_id).
     let claim: Awaited<ReturnType<ReferralRepository['insertRedemption']>>
     try {
+      const benefitContext =
+        existing?.benefitContext ??
+        (benefit && account?.benefitSource
+          ? await captureCourseBenefitContext({
+              benefit,
+              source: account.benefitSource,
+              account: { userId: account.userId, email },
+              acquisitions: this.opts.acquisitions,
+              campaigns: this.opts.campaigns,
+              referrals: this.repo,
+            })
+          : null)
       claim = await this.repo.insertRedemption({
+        benefitContext,
         codeId: codeRecord.id,
         email: existing?.email ?? email,
         audience,
         name,
         phone,
         sourceSnapshot: source,
-        bonusAmounts: codeRecord.ownerKind === 'campaign' ? undefined : this.opts.bonusAmounts,
+        bonusAmounts:
+          codeRecord.ownerKind === 'campaign' || codeRecord.ownerKind === 'benefit'
+            ? undefined
+            : this.opts.bonusAmounts,
         // Curso principal da oferta, para leitura e e-mail (quem concede é a oferta).
         courseSlug: plan?.offer.courseSlug ?? undefined,
         attribution: sanitizeGiftAttribution(input.attribution),
@@ -530,6 +571,7 @@ export class RedeemScholarshipService {
           : {}),
       })
     } catch (error) {
+      if (error instanceof CourseBenefitUnavailableError) return { kind: 'gift_unavailable' }
       if (error instanceof CampaignUnavailableError)
         return error.state === 'draft'
           ? { kind: 'code_not_found' }

@@ -25,9 +25,9 @@
 
 **Interfaces:** `benefitCode` no presente, `CourseBenefitContext` no resgate, `CourseBenefitView` e origem `course` nos relatórios.
 
-- [ ] Adicionar o modelo sem datas e ampliar os checks de donos de códigos/origens.
-- [ ] Gerar `bun run --filter @sistemazero/referrals db:generate` e conferir journal e snapshot.
-- [ ] Provar a conversão administrativa em PostgreSQL, mantendo os registros vinculados.
+- [x] Adicionar o modelo sem datas e ampliar os checks de donos de códigos/origens.
+- [x] Gerar `bun run --filter @sistemazero/referrals db:generate` e conferir journal e snapshot.
+- [x] Provar a conversão administrativa em PostgreSQL, mantendo os registros vinculados.
 
 ## Task 2: Ativação e cadeia de origem
 
@@ -35,10 +35,10 @@
 
 **Interfaces:** Matrícula autorizadora `{entitlementId,sourceKind,sourceId,subscriptionId}`; origem do bloco `{courseSlug,lessonId,blockId}`.
 
-- [ ] Propagar a matrícula real que autorizou a aula, sem usar o passe de prévia da equipe.
-- [ ] Exigir o bloco e curso correspondentes e recusar resgate público do código.
-- [ ] Gravar contexto e origem imediata `course`; resolver a origem anterior pelo pagamento/resgate da matrícula.
-- [ ] Provar conta/público/curso vencido, repetição, certificado independente e recuperação.
+- [x] Propagar a matrícula real que autorizou a aula, sem usar o passe de prévia da equipe.
+- [x] Exigir o bloco e curso correspondentes e recusar resgate público do código.
+- [x] Gravar contexto e origem imediata `course`; resolver a origem anterior pelo pagamento/resgate da matrícula.
+- [x] Provar conta/público/curso vencido, repetição, certificado independente e recuperação.
 
 ## Task 3: Admin, edição e entrega
 
@@ -46,7 +46,7 @@
 
 **Interfaces:** Benefícios do curso e relatório com as duas origens, sem calendário de disponibilidade.
 
-- [ ] Expor os benefícios no editor e no cadastro do curso e adicionar a origem ao relatório.
-- [ ] Conferir navegação, totais, pessoas, filtros por período e exportação.
+- [x] Expor os benefícios no editor e no cadastro do curso e adicionar a origem ao relatório.
+- [x] Conferir navegação, totais, pessoas, filtros por período e exportação.
 - [ ] Publicar serviços compatíveis depois do encerramento do PR 293; converter o bônus e atualizar os dois ambientes.
 - [ ] Confirmar duas campanhas, dois resgates preservados e links antigos funcionais; guardar recibos e integrar as correções à staging local.

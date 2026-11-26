@@ -97,6 +97,7 @@ export function parseGiftOffer(raw: unknown): ReferralGiftOfferView | undefined 
 export type ResolvedGiftView = ReferralGiftView & { audience: GiftAudience }
 
 export type ReferralGiftPage =
+  | { kind: 'course_benefit'; audience: GiftAudience; courseSlug: string }
   | {
       kind: 'ready' | 'preparing' | 'scheduled' | 'paused' | 'ended'
       referrerName: string
@@ -126,6 +127,17 @@ export async function resolveReferralGiftPage(
 
   const body = legacyGiftView(result.body as Partial<ReferralGiftView> | null)
   const audience: unknown = body?.audience ?? 'kids'
+  if (
+    body?.ownerKind === 'benefit' &&
+    body.source?.kind === 'benefit' &&
+    body.code === code &&
+    isGiftAudience(audience) &&
+    body.state === 'active' &&
+    body.giftAvailable === false &&
+    body.courseBenefit &&
+    /^[a-z0-9][a-z0-9-]{0,139}$/.test(body.courseBenefit.courseSlug)
+  )
+    return { kind: 'course_benefit', audience, courseSlug: body.courseBenefit.courseSlug }
   const offer = parseGiftOffer(body?.gift)
   if (
     offer === null ||

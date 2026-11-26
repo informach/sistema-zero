@@ -49,9 +49,10 @@ import {
 } from '@/lib/submission-counts'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 import { CourseFormDialog } from '../course-form-dialog'
+import { CourseBenefitsPanel } from './course-benefits-panel'
 import { CourseSubmissionsPanel } from './course-submissions-client'
 
-type CourseTab = 'estrutura' | 'projetos'
+type CourseTab = 'estrutura' | 'projetos' | 'beneficios'
 
 type Tree = CourseTreeView
 type TreeModule = Tree['modules'][number]
@@ -369,6 +370,7 @@ export function CourseEditorClient({
             [
               ['estrutura', 'Estrutura'],
               ['projetos', 'Projetos'],
+              ...(canWrite ? [['beneficios', 'Benefícios'] as const] : []),
             ] as const
           ).map(([key, label]) => (
             <button
@@ -389,7 +391,11 @@ export function CourseEditorClient({
         </div>
       )}
 
-      {notFound ? null : tab === 'projetos' ? (
+      {notFound ? null : tab === 'beneficios' ? (
+        tree ? (
+          <CourseBenefitsPanel courseSlug={tree.slug} audience={tree.audience} />
+        ) : null
+      ) : tab === 'projetos' ? (
         <CourseSubmissionsPanel courseId={courseId} audience={tree?.audience ?? 'kids'} />
       ) : loading ? (
         <Card className="py-10 text-center text-muted-foreground">
