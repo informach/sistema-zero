@@ -1,5 +1,39 @@
 # CLAUDE.md — @sistemazero/core
 
+## Modo construção da Morada: o motor compartilhado (26/11/2026)
+
+`morada/build.ts` (exportado por `@sistemazero/core/morada` e, para o jogo, pelo
+`@sistemazero/avatar-quarto/morada/catalog`) decide ONDE uma peça cai, para o quarto da plataforma
+e para o Arquipélago. Puro: recebe a casa e devolve a instância. Proposta aprovada: artifact
+"Modo construção" (https://claude.ai/artifact/JumYepv6zU68fEo8843m8t).
+
+- **Vãos pelas colisões** (`moradaWallOpenings`): o catálogo não tem medida de abertura; o vão é o
+  intervalo entre as colunas da altura toda, com o peitoril dando o chão e a verga o alto (sem
+  peitoril = porta). `moradaOpeningFits`/`moradaOpeningWallsFor` montam a tabela vão ↔ janela A
+  PARTIR DO CATÁLOGO: parede nova com vão (feita no Blender e importada) entra sozinha, sem código.
+- **`moradaPlace(house, pieceId, ponto, {rotation, base, roomId})`** → `{instance, replace?, valid,
+  reason?, wallId?}`: janela e porta grudam na face da parede mais perto (até
+  `MORADA_WALL_REACH`), viradas como ela; num vão que serve entram nele; numa parede lisa o trecho
+  troca pela parede com o vão do tamanho (`replace`), completado com paredes lisas e com as cores e
+  materiais do trecho; o que vai na parede gruda na face de dentro; o de chão anda pela grade de
+  0,5 m pelo CENTRO da caixa e não ocupa outra peça (tapete não bate). `reason` é a frase curta para
+  a criança. `applyMoradaPlacement` grava. `roomId` (padrão o da base ou `house.roomId`) serve ao
+  Arquipélago, que edita a casa inteira.
+- **`moradaRemove(house, id)`**: tira a peça e o que está apoiado nela; janela ou porta que sai
+  fecha o vão (o trecho volta a parede lisa, com as cores) quando nenhuma outra usa o trecho. Peça
+  do quintal (sem `roomId`) não fecha nada.
+- `moradaRotateAroundCenter` (o pivô das paredes é a PONTA; girar por ele as arrastava),
+  `moradaInstanceCenter`, `moradaWalls(house, catalog, roomId?)`, `moradaInsideRoom`,
+  `moradaOverlap`, o desfazer (`pushMoradaHistory` com `key` para juntar os passos de um arraste em
+  `MORADA_HISTORY_MERGE_MS`, até `MORADA_HISTORY_LIMIT` 60; `undo`/`redoMoradaHistory`) e os tipos do
+  catálogo de construção (`MORADA_BUILD_TYPES`, `moradaBuildType`).
+- ⚠️ Lacunas do catálogo ficam vermelhas até a arte desenhar a parede: `janela_quadrada_1m` (vão de
+  0,6 m, nenhuma janela cabe) e a `janela_quadrada_natal` (1,5 m, nenhuma parede tem o vão). O teste
+  `morada/build.test.ts` trava as duas; quando a parede nova chegar, troque a expectativa.
+- Testes: `src/morada/build.test.ts` (vãos, encaixe, troca com cores, vão ocupado, parede lateral,
+  quadro, grade, tapete, fora do quarto, mover sem bater em si, fechar o vão, porta inicial, janela
+  dupla, desfazer e refazer).
+
 ## Origem `offer` e a oferta comercial completa (25/11/2026)
 
 `commerce/index.ts`: `CommerceOriginSchema` ganhou `{kind:'offer', offerRef}` (a página de um curso

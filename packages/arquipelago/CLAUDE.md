@@ -1,5 +1,25 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+## Modo construção compartilhado com o quarto (26/11/2026)
+
+O editor da casa (`interface/morada.tsx`) usa o motor do core (`moradaPlace`, `applyMoradaPlacement`,
+`moradaRemove`, pelo `@sistemazero/avatar-quarto/morada/catalog`) quando há um cômodo escolhido:
+janela e porta grudam na parede e abrem o vão (a parede lisa troca pela com o vão, com as cores),
+quadro na face de dentro, móvel na grade pelo centro sem ocupar outro, e o motivo aparece na linha
+da dica. No quintal (sem cômodo) a grade de antes continua. As regras do jogo (`validateMoradaEdit`:
+acesso, horta, funções, posse) seguem por cima, no `edit` da loja.
+
+- Fantasma: `CenaMorada` recebe `onHover` e `ghost` (`FantasmaDaMorada`): a caixa da peça verde ou
+  vermelha onde o ponteiro está.
+- Tirar janela ou porta fecha o vão (`moradaRemove`).
+- Desfazer e **refazer** (`after` na loja, 60 passos; Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y). Um gesto novo
+  apaga o refazer.
+- **Salvar sozinho**: 1 s depois do último gesto, e na hora ao esconder a aba e no `pagehide`. O
+  "Pronto" só sai do Construir (grava o que falta). A linha de estado diz "Guardando…", "Guardando
+  em instantes", "Casa guardada" ou "Não guardou. Tentar de novo" (botão).
+- Teste: `tests/morada.test.ts` §"modo construção compartilhado com o quarto".
+- ⚠️ Não conferido no navegador do jogo (só o quarto foi conferido no Chromium).
+
 ## Composição pelas imagens: estado atual (16/11/2026)
 
 O `/macro` padrão monta o piloto completo para avaliação do conjunto: praça contínua de lajes do
