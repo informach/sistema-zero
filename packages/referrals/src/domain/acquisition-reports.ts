@@ -194,6 +194,7 @@ export function acquisitionView(
     campaignTitle: a.campaignId ? (names.campaigns.get(a.campaignId) ?? null) : null,
     ambassadorId: a.ambassadorId,
     ambassadorName: a.ambassadorId ? (names.ambassadors.get(a.ambassadorId) ?? null) : null,
+    accountUserId: a.accountUserId,
     place: a.place,
     utmSource: a.utm?.utmSource ?? null,
     status: a.status,

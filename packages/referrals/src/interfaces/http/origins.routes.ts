@@ -6,6 +6,7 @@ import { assertInternalCaller, requireAdmin } from './auth'
 
 const AUDIENCE = t.Union([t.Literal('kids'), t.Literal('adult')])
 const DAY_MS = 86_400_000
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** O relatório olha no máximo um ano (o painel é de acompanhamento, não de arquivo). */
 const MAX_PERIOD_DAYS = 366
 
@@ -41,11 +42,18 @@ export function originsRoutes(deps: {
           set.status = 400
           return envelope('PERIOD_INVALID', 'Escolha um período de até um ano.')
         }
-        return deps.reports.originReport({ audience: query.audience, from, to })
+        const offerIds = query.offers ? query.offers.split(',').filter(Boolean) : undefined
+        if (offerIds && (offerIds.length > 20 || offerIds.some((id) => !UUID.test(id)))) {
+          set.status = 400
+          return envelope('OFFERS_INVALID', 'Escolha até 20 ofertas.')
+        }
+        return deps.reports.originReport({ audience: query.audience, from, to, offerIds })
       },
       {
         query: t.Object({
           audience: t.Optional(AUDIENCE),
+          /** Ofertas separadas por vírgula (o filtro por produto do Admin). */
+          offers: t.Optional(t.String({ maxLength: 800 })),
           from: t.Optional(t.String({ format: 'date-time', maxLength: 40 })),
           to: t.Optional(t.String({ format: 'date-time', maxLength: 40 })),
         }),
@@ -53,7 +61,11 @@ export function originsRoutes(deps: {
     )
     .get(
       '/acquisitions',
-      async ({ query }) => ({ items: await deps.reports.accountAcquisitions(query.email) }),
+      async ({ query }) => ({
+        items: await deps.reports.accountAcquisitions(query.email),
+        // O "Bônus da assinatura" da ficha (sem a chave Pix do embaixador).
+        bonuses: await deps.reports.accountBonuses(query.email),
+      }),
       { query: t.Object({ email: t.String({ pattern: EMAIL_PATTERN, maxLength: 254 }) }) },
     )
     .get(

@@ -139,4 +139,29 @@ export class InMemoryAcquisitionRepository implements AcquisitionRepository {
     const normalized = email.trim().toLowerCase()
     return this.sorted(this.items.filter((a) => a.email === normalized))
   }
+
+  async giftCourseSlugs(redemptionIds: string[]) {
+    return new Map(
+      this.referrals.redemptions.flatMap((r) =>
+        redemptionIds.includes(r.id) && r.courseSlug ? [[r.id, r.courseSlug] as const] : [],
+      ),
+    )
+  }
+
+  async countAmbassadorAcquisitionsByOffer(audience: GiftAudience) {
+    const counts = new Map<
+      string,
+      { offerId: string; kind: AcquisitionRecord['kind']; count: number }
+    >()
+    for (const a of this.items) {
+      if (a.audience !== audience || a.originKind !== 'ambassador' || a.status !== 'active')
+        continue
+      if (!a.offerId) continue
+      const key = `${a.offerId}|${a.kind}`
+      const row = counts.get(key) ?? { offerId: a.offerId, kind: a.kind, count: 0 }
+      row.count++
+      counts.set(key, row)
+    }
+    return [...counts.values()]
+  }
 }

@@ -213,6 +213,42 @@ export class DrizzleAcquisitionRepository implements AcquisitionRepository {
     return this.read(eq(acquisitions.email, email.trim().toLowerCase()))
   }
 
+  async giftCourseSlugs(redemptionIds: string[]): Promise<Map<string, string>> {
+    if (redemptionIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ id: scholarshipRedemptions.id, courseSlug: scholarshipRedemptions.courseSlug })
+      .from(scholarshipRedemptions)
+      .where(
+        and(
+          inArray(scholarshipRedemptions.id, redemptionIds),
+          isNotNull(scholarshipRedemptions.courseSlug),
+        ),
+      )
+    return new Map(rows.flatMap((r) => (r.courseSlug ? [[r.id, r.courseSlug] as const] : [])))
+  }
+
+  async countAmbassadorAcquisitionsByOffer(audience: GiftAudience) {
+    const rows = await this.db
+      .select({
+        offerId: acquisitions.offerId,
+        kind: acquisitions.kind,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(acquisitions)
+      .where(
+        and(
+          eq(acquisitions.audience, audience),
+          eq(acquisitions.originKind, 'ambassador'),
+          eq(acquisitions.status, 'active'),
+          isNotNull(acquisitions.offerId),
+        ),
+      )
+      .groupBy(acquisitions.offerId, acquisitions.kind)
+    return rows.flatMap((r) =>
+      r.offerId ? [{ offerId: r.offerId, kind: r.kind, count: Number(r.count) }] : [],
+    )
+  }
+
   /** As MAIS NOVAS até o teto, devolvidas da mais antiga para a mais nova. */
   private async read(where: ReturnType<typeof and>): Promise<AcquisitionRecord[]> {
     const rows = await this.db

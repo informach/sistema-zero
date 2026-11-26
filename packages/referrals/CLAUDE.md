@@ -100,6 +100,16 @@ Serviços (Lote 2):
   `campaignResults`, `ambassadorDetail` e `campaignDetail` aceitam `audience` (o embaixador tem código
   nos dois públicos): a lista de embaixadores e de campanhas repassa o `audience` da consulta, e
   `GET …/results?audience=` filtra o detalhe. A listagem de bônus traz `ambassadorId`.
+- **Extra do Lote 7 (25/11/2026):** `AcquisitionView.accountUserId` e `OriginPersonView.accountUserId`
+  (o "Ver ficha" do Admin); o detalhe traz `giftCourses` (contas que entraram por PRESENTE da origem,
+  por `course_slug` do resgate, até 5000 por curso, via `giftCourseSlugs`), que o BFF do Admin troca
+  por `giftStarted` perguntando ao members (`POST /members/admin/course-starts`) e nunca manda ao
+  navegador; `GET /origins?offers=<ids>` (até 20) filtra o relatório por oferta ("pessoa nova" =
+  quem ENTROU por uma delas); `GET /ambassador-offers` traz `counts` (aquisições ativas
+  `origin_kind = 'ambassador'` por oferta: `gifts`/`purchases`/`subscriptions`, uma consulta
+  agrupada); `GET /acquisitions?email` traz `bonuses` (as conversões do e-mail fora as
+  substituídas, com embaixador e campanha, sem chave Pix). ⚠️ As duas consultas novas
+  (`giftCourseSlugs`, `countAmbassadorAcquisitionsByOffer`) não têm teste de banco.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

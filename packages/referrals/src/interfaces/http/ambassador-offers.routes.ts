@@ -1,3 +1,4 @@
+import type { AmbassadorOfferCounts, GiftAudience } from '@sistemazero/core/referrals'
 import { Elysia, t } from 'elysia'
 import type { AmbassadorOffersService } from '../../application/ambassador-offers/ambassador-offers.service'
 import { MAX_AMBASSADOR_OFFERS } from '../../domain/ambassador-offers'
@@ -12,6 +13,8 @@ const KIND = t.Union([t.Literal('gift'), t.Literal('referral')])
  */
 export function ambassadorOffersRoutes(deps: {
   offers: AmbassadorOffersService
+  /** Quanto cada oferta rendeu pelos embaixadores (contagens, sem valores). */
+  counts?: (audience: GiftAudience) => Promise<Record<string, AmbassadorOfferCounts>>
   requireAdminEnabled: boolean
   internalToken?: string
 }) {
@@ -22,9 +25,16 @@ export function ambassadorOffersRoutes(deps: {
         write: request.method !== 'GET' && request.method !== 'HEAD',
       })
     })
-    .get('', ({ query }) => deps.offers.list(query.audience), {
-      query: t.Object({ audience: AUDIENCE }),
-    })
+    .get(
+      '',
+      async ({ query }) => ({
+        ...(await deps.offers.list(query.audience)),
+        ...(deps.counts ? { counts: await deps.counts(query.audience) } : {}),
+      }),
+      {
+        query: t.Object({ audience: AUDIENCE }),
+      },
+    )
     .put(
       '',
       async ({ body }) => ({

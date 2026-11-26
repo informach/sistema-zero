@@ -138,6 +138,9 @@ export function createServer(deps: HttpDeps) {
         deps.ambassadorOffers
           ? ambassadorOffersRoutes({
               offers: deps.ambassadorOffers,
+              ...(deps.reports
+                ? { counts: deps.reports.ambassadorOfferCounts.bind(deps.reports) }
+                : {}),
               requireAdminEnabled: deps.requireAdminEnabled ?? true,
               internalToken: deps.internalToken,
             })

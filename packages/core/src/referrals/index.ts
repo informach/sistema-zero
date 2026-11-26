@@ -293,6 +293,12 @@ export interface AmbassadorOfferView extends AmbassadorOfferItem {
   position: number
   updatedAt: string
 }
+/** Quanto cada oferta já rendeu pelos links pessoais dos embaixadores (o painel das listas). */
+export interface AmbassadorOfferCounts {
+  gifts: number
+  purchases: number
+  subscriptions: number
+}
 export interface AmbassadorOffersInput {
   audience: GiftAudience
   kind: AmbassadorOfferKind
@@ -365,6 +371,8 @@ export interface AcquisitionView {
   campaignTitle: string | null
   ambassadorId: string | null
   ambassadorName: string | null
+  /** A conta da pessoa na plataforma (a ficha no Admin); nula sem conta. */
+  accountUserId?: string | null
   place: string | null
   utmSource: string | null
   status: 'active' | 'refunded'
@@ -445,12 +453,28 @@ export interface OriginPersonView {
   /** O que a pessoa adquiriu depois, de qualquer origem. */
   later: AcquisitionView[]
   conversion: { status: string; bonusCents: number; paidAt: string } | null
+  /** A conta da pessoa (a entrada ou o que veio depois); nula sem conta: sem "Ver ficha". */
+  accountUserId?: string | null
+}
+/**
+ * As contas que entraram por um PRESENTE desta origem, por curso do presente (25/11/2026): o
+ * Admin pergunta ao members quantas começaram o curso. Só no fio serviço→BFF; o BFF troca por
+ * `giftStarted` antes de responder ao navegador.
+ */
+export interface OriginGiftCourse {
+  courseSlug: string
+  /** Pessoas que entraram pelo presente deste curso (com ou sem conta). */
+  people: number
+  accountUserIds: string[]
 }
 export interface OriginDetail {
   results: OriginResults
   byOffer: OriginOfferRow[]
   people: OriginPersonView[]
   peopleTotal: number
+  giftCourses?: OriginGiftCourse[]
+  /** Montado pelo BFF do Admin: entraram pelo presente e começaram o curso dele. */
+  giftStarted?: { people: number; started: number } | null
 }
 
 /** Identificadores de mídia, nunca dados livres de uma família. */

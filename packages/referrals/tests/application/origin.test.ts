@@ -624,4 +624,110 @@ describe('manutenção e relatórios', () => {
     const detail = await reports.ambassadorDetail('amb-1', 0, 'adult')
     expect(detail.peopleTotal).toBe(1)
   })
+
+  test('extra do Lote 7: contas por curso do presente, ficha, filtro de oferta, contagens e bônus', async () => {
+    const { referrals, acquisitions, reports } = base()
+    referrals.redemptions.push(
+      ...([
+        { id: 'r1', email: 'a@x.com', audience: 'kids', courseSlug: 'cade-todo-mundo' },
+        { id: 'r2', email: 'b@x.com', audience: 'kids', courseSlug: 'cade-todo-mundo' },
+      ] as never[]),
+    )
+    const gift = (redemptionId: string, email: string, accountUserId: string | null) =>
+      acquisitions.insert({
+        email,
+        accountUserId,
+        audience: 'kids',
+        kind: 'gift',
+        offerId: COMMUNITY.offerId,
+        offerSlug: 'cade-15-dias',
+        amountCents: 0n,
+        paymentId: null,
+        subscriptionId: null,
+        redemptionId,
+        acquiredAt: now,
+        originKind: 'ambassador',
+        codeId: null,
+        campaignId: null,
+        ambassadorId: 'amb-1',
+        place: null,
+        utm: null,
+        bonusTerms: null,
+      })
+    await gift('r1', 'a@x.com', 'conta-a')
+    await gift('r2', 'b@x.com', null)
+    await acquisitions.insert({
+      email: 'c@x.com',
+      accountUserId: 'conta-c',
+      audience: 'kids',
+      kind: 'one_time',
+      offerId: DESAFIO.offerId,
+      offerSlug: DESAFIO.offerSlug,
+      amountCents: 6700n,
+      paymentId: 'p-c',
+      subscriptionId: null,
+      redemptionId: null,
+      acquiredAt: now,
+      originKind: 'ambassador',
+      codeId: null,
+      campaignId: null,
+      ambassadorId: 'amb-1',
+      place: null,
+      utm: null,
+      bonusTerms: null,
+    })
+    const detail = await reports.ambassadorDetail('amb-1')
+    // Todas as pessoas do presente, com e sem conta; só as contas vão ao members.
+    expect(detail.giftCourses).toEqual([
+      { courseSlug: 'cade-todo-mundo', people: 2, accountUserIds: ['conta-a'] },
+    ])
+    expect(detail.people.find((p) => p.email === 'c@x.com')?.accountUserId).toBe('conta-c')
+    expect(detail.people.find((p) => p.email === 'b@x.com')?.accountUserId).toBeNull()
+    // O filtro por oferta: só o Desafio.
+    const report = await reports.originReport({
+      audience: 'kids',
+      from: new Date(now.getTime() - DAY),
+      to: new Date(now.getTime() + DAY),
+      offerIds: [DESAFIO.offerId],
+    })
+    expect(report.totals).toMatchObject({ newPeople: 1, gifts: 0, purchases: 1 })
+    // As contagens do painel das listas.
+    expect(await reports.ambassadorOfferCounts('kids')).toEqual({
+      [COMMUNITY.offerId]: { gifts: 2, purchases: 0, subscriptions: 0 },
+      [DESAFIO.offerId]: { gifts: 0, purchases: 1, subscriptions: 0 },
+    })
+    expect(await reports.ambassadorOfferCounts('adult')).toEqual({})
+    // O bônus da ficha: a substituída sai, e a chave Pix nunca vai.
+    const conversion = {
+      id: 'conv-1',
+      redemptionId: null,
+      acquisitionId: null,
+      subscriberEmail: 'a@x.com',
+      audience: 'kids',
+      codeId: 'code',
+      ambassadorId: null,
+      paymentId: 'pay-1',
+      subscriptionId: 'sub-1',
+      offerSlug: COMMUNITY.offerSlug,
+      amountCents: 9700n,
+      bonusCents: 3000,
+      status: 'pending',
+      paidAt: now,
+      maturesAt: now,
+      eligibleAt: null,
+      notifiedAt: null,
+      paidMarkedAt: null,
+      paidMarkedBy: null,
+      note: null,
+      createdAt: now,
+    } as const
+    referrals.conversions.push(
+      { ...conversion },
+      { ...conversion, id: 'conv-2', paymentId: 'pay-2', status: 'superseded' },
+    )
+    const bonuses = await reports.accountBonuses('A@x.com')
+    expect(bonuses.map((b) => b.id)).toEqual(['conv-1'])
+    expect(bonuses[0]).toMatchObject({ status: 'pending', bonusCents: 3000, ambassadorName: null })
+    expect(JSON.stringify(bonuses)).not.toContain('pix')
+  })
 })

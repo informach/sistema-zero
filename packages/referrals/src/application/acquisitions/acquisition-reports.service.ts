@@ -1,7 +1,9 @@
 import type {
   AcquisitionView,
+  AmbassadorOfferCounts,
   GiftAudience,
   OriginDetail,
+  OriginGiftCourse,
   OriginPersonView,
   OriginRankingRow,
   OriginReport,
@@ -31,6 +33,24 @@ import type {
 const PEOPLE_PAGE = 25
 const LATEST = 20
 const RANKING = 5
+/** Contas por curso do presente no fio serviço→BFF (o BFF pergunta ao members em lotes). */
+const GIFT_ACCOUNTS_LIMIT = 5000
+
+/** O bônus da assinatura de uma pessoa, na ficha do Admin (nunca a chave Pix). */
+export interface AccountBonusView {
+  id: string
+  audience: GiftAudience | null
+  offerSlug: string
+  status: string
+  bonusCents: number
+  paidAt: string
+  maturesAt: string
+  paidMarkedAt: string | null
+  ambassadorId: string | null
+  ambassadorName: string | null
+  /** A campanha da aquisição que ganhou o bônus, quando veio por uma. */
+  campaignTitle: string | null
+}
 
 /**
  * Os relatórios de origem do Admin (25/11/2026): resultado por campanha e por embaixador, o
@@ -90,12 +110,71 @@ export class AcquisitionReportsService {
     return rows.map((a) => acquisitionView(a, names, firstIds))
   }
 
+  /**
+   * "Bônus da assinatura" da ficha (25/11/2026): as conversões do e-mail (fora as substituídas),
+   * com o embaixador e a campanha. Sem chave Pix nem e-mail do embaixador.
+   */
+  async accountBonuses(email: string): Promise<AccountBonusView[]> {
+    const normalized = email.trim().toLowerCase()
+    const conversions = (await this.referrals.listConversionsBySubscribers([normalized])).filter(
+      (c) => c.status !== 'superseded',
+    )
+    if (conversions.length === 0) return []
+    const rows = await this.acquisitions.listByEmail(normalized)
+    const byId = new Map(rows.map((a) => [a.id, a]))
+    const names = await this.names(rows)
+    const ambassadors = new Map(names.ambassadors)
+    for (const id of new Set(conversions.flatMap((c) => (c.ambassadorId ? [c.ambassadorId] : []))))
+      if (!ambassadors.has(id)) {
+        const ambassador = await this.referrals.findAmbassadorById(id)
+        if (ambassador) ambassadors.set(id, ambassador.name)
+      }
+    return conversions
+      .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
+      .map((c) => {
+        const campaignId = c.acquisitionId ? (byId.get(c.acquisitionId)?.campaignId ?? null) : null
+        return {
+          id: c.id,
+          audience: c.audience,
+          offerSlug: c.offerSlug,
+          status: c.status,
+          bonusCents: c.bonusCents,
+          paidAt: c.paidAt.toISOString(),
+          maturesAt: c.maturesAt.toISOString(),
+          paidMarkedAt: c.paidMarkedAt?.toISOString() ?? null,
+          ambassadorId: c.ambassadorId,
+          ambassadorName: c.ambassadorId ? (ambassadors.get(c.ambassadorId) ?? null) : null,
+          campaignTitle: campaignId ? (names.campaigns.get(campaignId) ?? null) : null,
+        }
+      })
+  }
+
+  /** O painel das listas: quanto cada oferta já rendeu pelos links pessoais dos embaixadores. */
+  async ambassadorOfferCounts(
+    audience: GiftAudience,
+  ): Promise<Record<string, AmbassadorOfferCounts>> {
+    const counts: Record<string, AmbassadorOfferCounts> = {}
+    for (const row of await this.acquisitions.countAmbassadorAcquisitionsByOffer(audience)) {
+      const entry = counts[row.offerId] ?? { gifts: 0, purchases: 0, subscriptions: 0 }
+      if (row.kind === 'gift') entry.gifts += row.count
+      else if (row.kind === 'one_time') entry.purchases += row.count
+      else entry.subscriptions += row.count
+      counts[row.offerId] = entry
+    }
+    return counts
+  }
+
   async originReport(input: {
     audience?: GiftAudience
     from: Date
     to: Date
+    /** Só estas ofertas (o filtro "Todas as ofertas" do Admin, por produto). */
+    offerIds?: readonly string[]
   }): Promise<OriginReport> {
-    const period = await this.acquisitions.listInPeriod(input)
+    const offers = input.offerIds?.length ? new Set(input.offerIds) : null
+    const ofOffer = (a: AcquisitionRecord) =>
+      !offers || (a.offerId !== null && offers.has(a.offerId))
+    const period = (await this.acquisitions.listInPeriod(input)).filter(ofOffer)
     // O histórico das pessoas do período, para saber a PRIMEIRA entrada de cada uma.
     const history: AcquisitionRecord[] = []
     for (const audience of input.audience ? [input.audience] : (['kids', 'adult'] as const)) {
@@ -103,7 +182,8 @@ export class AcquisitionReportsService {
       history.push(...(await this.acquisitions.listForEmails(audience, emails)))
     }
     history.sort((a, b) => a.acquiredAt.getTime() - b.acquiredAt.getTime())
-    const firsts = firstByPerson(history)
+    // Com o filtro de oferta, "pessoa nova" é quem ENTROU por uma dessas ofertas.
+    const firsts = new Map([...firstByPerson(history)].filter(([, first]) => ofOffer(first)))
     const firstsInPeriod = [...firsts.values()].filter(
       (f) => f.acquiredAt >= input.from && f.acquiredAt < input.to,
     )
@@ -167,6 +247,8 @@ export class AcquisitionReportsService {
         entry: acquisitionView(entry, names, firstIds),
         later: later.map((a) => acquisitionView(a, names, firstIds)),
         conversion: conversionOf(conversions, entry, rows),
+        accountUserId:
+          entry.accountUserId ?? later.find((a) => a.accountUserId)?.accountUserId ?? null,
       })
     }
     return {
@@ -174,7 +256,31 @@ export class AcquisitionReportsService {
       byOffer: resultsByOffer(rows),
       people,
       peopleTotal: entries.length,
+      giftCourses: await this.giftCourses(entries),
     }
+  }
+
+  /** Quem entrou por um presente desta origem, por curso do presente (todas as páginas). */
+  private async giftCourses(entries: AcquisitionRecord[]): Promise<OriginGiftCourse[]> {
+    const gifts = entries.filter((e) => e.kind === 'gift' && e.status === 'active')
+    const slugs = await this.acquisitions.giftCourseSlugs(
+      gifts.flatMap((g) => (g.redemptionId ? [g.redemptionId] : [])),
+    )
+    const byCourse = new Map<string, { people: number; accounts: Set<string> }>()
+    for (const gift of gifts) {
+      const slug = gift.redemptionId ? slugs.get(gift.redemptionId) : undefined
+      if (!slug) continue
+      const group = byCourse.get(slug) ?? { people: 0, accounts: new Set<string>() }
+      group.people++
+      if (gift.accountUserId && group.accounts.size < GIFT_ACCOUNTS_LIMIT)
+        group.accounts.add(gift.accountUserId)
+      byCourse.set(slug, group)
+    }
+    return [...byCourse].map(([courseSlug, g]) => ({
+      courseSlug,
+      people: g.people,
+      accountUserIds: [...g.accounts],
+    }))
   }
 
   private async names(rows: AcquisitionRecord[]) {

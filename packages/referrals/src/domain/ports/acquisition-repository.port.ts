@@ -60,6 +60,15 @@ export interface AcquisitionRepository {
   listForEmails(audience: GiftAudience, emails: string[]): Promise<AcquisitionRecord[]>
   /** A ficha da conta: todas as aquisições do e-mail, nos dois públicos. */
   listByEmail(email: string): Promise<AcquisitionRecord[]>
+  /** O curso de cada presente (o `course_slug` gravado no resgate), pelos ids dos resgates. */
+  giftCourseSlugs(redemptionIds: string[]): Promise<Map<string, string>>
+  /**
+   * Aquisições ATIVAS pelos links pessoais dos embaixadores (`origin_kind = 'ambassador'`) do
+   * público, contadas por oferta e tipo (uma consulta agrupada).
+   */
+  countAmbassadorAcquisitionsByOffer(
+    audience: GiftAudience,
+  ): Promise<{ offerId: string; kind: AcquisitionRecord['kind']; count: number }[]>
 }
 
 /** Uma leitura de relatório nunca traz mais que isto (o painel mostra o período, não a base). */
