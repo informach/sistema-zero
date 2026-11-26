@@ -143,7 +143,10 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
               <div
                 role="group"
                 aria-label="Partes do painel"
-                className="grid grid-cols-3 gap-1 rounded-full bg-muted p-1"
+                // "No quarto (N)" nunca quebra em duas linhas: a terceira coluna tem pelo menos a
+                // largura do texto com o número (em 1440 ela quebrava; revisão de 26/11/2026). Com
+                // o painel estreito (1024, menu aberto) os ícones saem e os nomes cabem inteiros.
+                className="@container/abas grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(max-content,1fr)] gap-1 rounded-full bg-muted p-1"
               >
                 {PANELS.map(({ id, label, icon: Icon }) => (
                   <button
@@ -152,13 +155,16 @@ export function RoomBuilderView(props: MoradaRoomViewProps) {
                     aria-pressed={panel === id}
                     onClick={() => choosePanel(id)}
                     className={cn(
-                      'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full px-2 [font-family:var(--font-display)] font-bold text-sm transition-colors',
+                      'inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-2 [font-family:var(--font-display)] font-bold text-sm transition-colors',
                       panel === id
                         ? 'bg-card text-foreground shadow-sm'
                         : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
-                    <Icon className="size-4" aria-hidden="true" />
+                    <Icon
+                      className="hidden size-4 shrink-0 @min-[21rem]/abas:block"
+                      aria-hidden="true"
+                    />
                     {label}
                     {id === 'quarto' && placed ? (
                       <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs">

@@ -5,6 +5,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   MORADA_AUTOSAVE_MS,
+  MORADA_KEEPALIVE_MAX_BYTES,
   useMoradaEditor,
 } from '../src/components/cosmetics/room/use-morada-editor'
 
@@ -24,7 +25,7 @@ interface Chamada {
 type Editor = ReturnType<typeof useMoradaEditor>
 let chamadas: Chamada[] = []
 let revisao = 3
-let resposta: 'ok' | 'falha' | 'conflito' = 'ok'
+let resposta: 'ok' | 'falha' | 'conflito' | 'motivo' = 'ok'
 /** Com uma promessa aqui, o PUT espera até ela resolver (a gravação "em voo"). */
 let segurar: Promise<void> | null = null
 const fetchOriginal = globalThis.fetch
@@ -46,6 +47,11 @@ beforeEach(() => {
     if (url.pathname === '/api/members/house' && method === 'PUT') {
       if (segurar) await segurar
       if (resposta === 'falha') return new Response('{}', { status: 503 })
+      if (resposta === 'motivo')
+        return Response.json(
+          { error: { code: 'MORADA_INVALID', message: 'Peça ainda não comprada: Cama azul.' } },
+          { status: 400 },
+        )
       if (resposta === 'conflito')
         return Response.json(
           { current: { house: createMoradaHouse(), revision: revisao + 10, owned: [] } },
@@ -195,4 +201,105 @@ test('o gesto feito durante a gravação fica na tela e sai na gravação seguin
   const atual = editor().draft
   expect(atual?.rooms.find((r) => r.id === atual.roomId)?.lighting).toBe('tarde')
   await desmontar()
+})
+
+// Revisão de 26/11/2026.
+test('o PUT leva só as peças do quarto; casa grande demais para o keepalive vai como pedido comum', async () => {
+  const { editor, desmontar } = await montar()
+  const tapete = 'moveis/tapetes/tapete_zigue_zague_rosa'
+  await act(async () =>
+    editor().update((h) => ({
+      ...h,
+      instances: [
+        ...h.instances,
+        ...Array.from({ length: 420 }, (_, i) => ({
+          id: `tapete-de-teste-com-um-nome-comprido-${i}`,
+          pieceId: tapete,
+          roomId: h.roomId,
+          position: [0, 0, 0] as [number, number, number],
+          rotation: 0,
+        })),
+      ],
+    })),
+  )
+  Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+  await act(async () => {
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+  await esperar(() => puts().length === 1)
+  const put = puts()[0]
+  expect(JSON.stringify(put?.body).length).toBeGreaterThan(MORADA_KEEPALIVE_MAX_BYTES)
+  expect(put?.keepalive).toBe(false)
+  expect(put?.body?.house?.instances.every((i) => i.roomId === put.body?.house?.roomId)).toBe(true)
+  await desmontar()
+})
+
+test('a recusa do servidor mostra o motivo, também com o salvar sozinho', async () => {
+  resposta = 'motivo'
+  const { editor, desmontar } = await montar()
+  await gesto(editor(), 'noite')
+  await esperar(() => editor().saveState === 'error')
+  expect(editor().message).toBe('Peça ainda não comprada: Cama azul.')
+  await desmontar()
+})
+
+test('desfazer de volta ao guardado tira o "Não salvou"', async () => {
+  resposta = 'falha'
+  const { editor, desmontar } = await montar()
+  const antes = editor().draft
+  await gesto(editor(), 'noite')
+  await esperar(() => editor().saveState === 'error')
+  await act(async () => editor().update(() => antes as MoradaHouse))
+  await esperar(() => editor().saveState === 'saved')
+  expect(editor().dirty).toBe(false)
+  await desmontar()
+})
+
+test('409 com um gesto pendente: não sai outra gravação com a revisão velha', async () => {
+  let soltar: () => void = () => {}
+  segurar = new Promise<void>((r) => {
+    soltar = r
+  })
+  resposta = 'conflito'
+  const { editor, desmontar } = await montar()
+  await gesto(editor(), 'noite')
+  await esperar(() => editor().saveState === 'saving')
+  await gesto(editor(), 'tarde')
+  await dormir(MORADA_AUTOSAVE_MS + 200)
+  segurar = null
+  await act(async () => soltar())
+  await esperar(() => editor().conflict !== null)
+  await dormir(300)
+  expect(puts()).toHaveLength(1)
+  await desmontar()
+})
+
+test('resolver o conflito troca a casa: a geração sobe (quem desfaz recomeça)', async () => {
+  resposta = 'conflito'
+  const { editor, desmontar } = await montar()
+  const geracao = editor().generation
+  await gesto(editor(), 'noite')
+  await esperar(() => editor().conflict !== null)
+  await act(async () => editor().resolveConflict(false))
+  expect(editor().generation).toBe(geracao + 1)
+  expect(editor().conflict).toBeNull()
+  await desmontar()
+})
+
+test('sair da tela com uma gravação no ar: o gesto de depois ainda sai, com keepalive', async () => {
+  let soltar: () => void = () => {}
+  segurar = new Promise<void>((r) => {
+    soltar = r
+  })
+  const { editor, desmontar } = await montar()
+  await gesto(editor(), 'noite')
+  await esperar(() => editor().saveState === 'saving')
+  await gesto(editor(), 'tarde')
+  await desmontar()
+  segurar = null
+  await act(async () => soltar())
+  await esperar(() => puts().length === 2)
+  expect(luz(puts()[1])).toBe('tarde')
+  expect(puts()[1]?.keepalive).toBe(true)
 })

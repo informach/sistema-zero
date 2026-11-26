@@ -19,6 +19,7 @@ import {
   moradaPlace,
   moradaPrice,
   moradaRemove,
+  moradaRemoveProblem,
   moradaRotateAroundCenter,
   pushMoradaHistory,
   redoMoradaHistory,
@@ -140,7 +141,10 @@ export function MoradaRoomBuilder({
     rotation: number
     base: MoradaInstance
     moving: boolean
+    /** Cada peça em andamento é uma sessão: só o primeiro clique que serve dela vale. */
+    session: number
   } | null>(null)
+  const sessions = useRef(0)
   const [hover, setHover] = useState<[number, number] | null>(null)
   const [history, setHistory] = useState(emptyMoradaHistory)
   const [wallsMode, setWallsMode] = useState<RoomWallsMode>('cut')
@@ -182,6 +186,13 @@ export function MoradaRoomBuilder({
     if (ok) place(piece, true)
   }
   const draft = editor.draft
+  // A casa foi trocada (abrir de novo, conflito resolvido): o desfazer recomeça. Voltar para uma
+  // casa de antes da troca gravaria por cima da versão mais nova.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recomeça a cada troca da casa.
+  useEffect(() => {
+    setHistory(emptyMoradaHistory())
+    setPlacing(null)
+  }, [editor.generation])
   const room = draft?.rooms.find((r) => r.id === draft.roomId)
   const selected = draft?.instances.find((i) => i.id === selectedId)
   const selectedPiece = selected ? MORADA_CATALOG.pieces[selected.pieceId] : undefined
@@ -218,7 +229,14 @@ export function MoradaRoomBuilder({
       position: [0, 0, 0],
       rotation: 0,
     }
-    setPlacing({ pieceId, rotation: instance.rotation, base: instance, moving })
+    sessions.current += 1
+    setPlacing({
+      pieceId,
+      rotation: instance.rotation,
+      base: instance,
+      moving,
+      session: sessions.current,
+    })
     const piece = MORADA_CATALOG.pieces[pieceId]
     setHover(base && piece ? moradaInstanceCenter(base, piece) : null)
     setStackPicker(false)
@@ -234,13 +252,15 @@ export function MoradaRoomBuilder({
     [placing, draft, hover],
   )
   /**
-   * Cada peça em andamento entra na casa UMA vez: o id dela é gasto no primeiro clique que serve.
-   * Dois `pointerup` do mesmo clique (ou um Enter junto) chegam com o mesmo `placing` ainda na
-   * mão, antes de a tela renderizar de novo; sem esta marca a segunda janela entrava por cima.
+   * Cada peça em andamento entra na casa UMA vez: a SESSÃO dela é gasta no primeiro clique que
+   * serve. Dois `pointerup` do mesmo clique (ou um Enter junto) chegam com o mesmo `placing` ainda
+   * na mão, antes de a tela renderizar de novo; sem esta marca a segunda janela entrava por cima.
+   * A marca é da sessão, não do id da peça: mover a MESMA peça de novo abre outra sessão (com o id
+   * gasto para sempre, o segundo Mover não fazia nada; revisão de 26/11/2026).
    */
-  const placedIds = useRef(new Set<string>())
+  const usedSession = useRef(0)
   const confirmPlacement = (point?: [number, number]) => {
-    if (!placing || !draft || placedIds.current.has(placing.base.id)) return
+    if (!placing || !draft || usedSession.current === placing.session) return
     const result = point
       ? moradaPlace(draft, placing.pieceId, point, {
           rotation: placing.rotation,
@@ -252,17 +272,19 @@ export function MoradaRoomBuilder({
       editor.setMessage(result.reason ?? 'Aqui não dá.')
       return
     }
-    placedIds.current.add(placing.base.id)
+    usedSession.current = placing.session
     commit((house) => applyMoradaPlacement(house, result))
     setSelectedId(result.instance.id)
     const piece = MORADA_CATALOG.pieces[placing.pieceId]
     // Parede, janela e piso continuam na mão (como no The Sims); móvel e peça movida soltam.
-    if (piece?.kind === 'construction' && !placing.moving)
+    if (piece?.kind === 'construction' && !placing.moving) {
+      sessions.current += 1
       setPlacing({
         ...placing,
         base: { ...placing.base, id: crypto.randomUUID() },
+        session: sessions.current,
       })
-    else setPlacing(null)
+    } else setPlacing(null)
   }
   const chip = adult
     ? 'sz-cos-chip'
@@ -333,22 +355,29 @@ export function MoradaRoomBuilder({
     updateSelected({ rotation: next.rotation, position: next.position })
   }
   const remove = () => {
-    // Tirar janela ou porta fecha o vão (o trecho volta a parede lisa, com as cores).
-    if (selected) commit((h) => moradaRemove(h, selected.id))
+    if (!selected || !draft) return
+    // A última parede com passagem não sai: o quarto ficaria sem saída.
+    const problem = moradaRemoveProblem(draft, selected.id)
+    if (problem) {
+      editor.setMessage(problem)
+      return
+    }
+    // Tirar janela fecha o vão (o trecho volta a parede lisa, com as cores); porta deixa a passagem.
+    commit((h) => moradaRemove(h, selected.id))
     setSelectedId(null)
   }
   const duplicate = () => {
     if (!selected || !selectedPiece || selected.parentId) return
-    startPlacing(selected.pieceId, {
-      ...selected,
-      id: crypto.randomUUID(),
-    })
+    // A cópia é só a peça: a função do jogo (`behavior`, a geladeira que o jogo deu) não se copia.
+    // Copiada, ela virava peça paga de graça e travava a edição da casa no Arquipélago.
+    const { behavior: _function, ...look } = selected
+    startPlacing(selected.pieceId, { ...look, id: crypto.randomUUID() })
   }
   const pasteLook = () => {
     if (!copiedLook || !selected) return
     updateSelected({ colors: copiedLook.colors, materials: copiedLook.materials })
   }
-  const keyDown = (event: KeyboardEvent<HTMLElement>) => {
+  const keyDown = (event: KeyboardEvent<HTMLElement>, fromPage = false) => {
     const target = event.target as HTMLElement
     if (locked || target.matches('input,select,textarea') || target.isContentEditable) return
     const mod = event.ctrlKey || event.metaKey
@@ -380,8 +409,9 @@ export function MoradaRoomBuilder({
       ArrowDown: () => move(2, 0.5),
       r: rotate,
       R: rotate,
-      Delete: remove,
-      Backspace: remove,
+      // Apagar só com o foco no construtor: com o foco solto na página, um Backspace perdido
+      // tirava a peça escolhida (e o salvar sozinho gravava em 1 s).
+      ...(fromPage ? {} : { Delete: remove, Backspace: remove }),
       Escape: () => setSelectedId(null),
     }
     const action = actions[event.key]
@@ -401,7 +431,7 @@ export function MoradaRoomBuilder({
       // A seção já trata as teclas dela; fora dela (o corpo da página, um botão da barra) também vale.
       if (target?.closest('section[aria-label]') || target?.matches?.('input,select,textarea'))
         return
-      keyRef.current(event as unknown as KeyboardEvent<HTMLElement>)
+      keyRef.current(event as unknown as KeyboardEvent<HTMLElement>, true)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
