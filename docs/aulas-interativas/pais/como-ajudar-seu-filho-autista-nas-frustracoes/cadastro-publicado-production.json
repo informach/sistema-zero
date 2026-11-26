@@ -1,6 +1,6 @@
 {
   "environment": "production",
-  "readAt": "2026-11-26T08:14:22.146051Z",
+  "readAt": "2026-11-26T08:50:52.499695Z",
   "course": {
     "id": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
     "version": 3,
@@ -529,7 +529,7 @@
         "estimatedMinutes": 7,
         "isPublished": true
       },
-      "revision": "da554e50-033f-4f80-8292-759aeae06b64",
+      "revision": "8e1f5e27-4be5-46d6-89b3-ccf3de90d688",
       "published": true,
       "document": {
         "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
@@ -579,6 +579,16 @@
               "title": "Certificado de conclusão",
               "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
               "introLine": "Certificamos que",
+              "signatures": [
+                {
+                  "name": "Helena Oliveira",
+                  "imageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/13db18d1b9dee4439582e89c91eef47bf9c6d40804f67ab4ab038158bc7d7335/file.webp"
+                },
+                {
+                  "name": "Júlio Felipe",
+                  "imageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/cf91909b6c7f1a2ab83755db62c66b8ff27367e229d03036947861ee37e5a695/file.webp"
+                }
+              ],
               "accentColor": "#38204e",
               "baseImageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/26ba4c0cea5c60042eb538ca4b3f6e2bf56513c4e4d6e1f3ac5c56fc10d0894e/file.png",
               "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises"

@@ -239,6 +239,16 @@
       "title": "Certificado de conclusão",
       "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
       "introLine": "Certificamos que",
+      "signatures": [
+        {
+          "name": "Helena Oliveira",
+          "imageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/bc2e3cce-edc3-4f29-9e04-dcfb3992eacd.webp"
+        },
+        {
+          "name": "Júlio Felipe",
+          "imageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/7ee8a78c-3b38-4417-9d64-83b9a4ddcd1b.webp"
+        }
+      ],
       "accentColor": "#38204e",
       "baseImageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/30e85a03867342461b250692c0567344fff03c7cfe4cc29056d46cbadf26ca6e.png",
       "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises"
@@ -249,5 +259,5 @@
     "url": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b.png"
   },
   "pending": [],
-  "verifiedAt": "2026-11-26T01:11:11.416Z"
+  "verifiedAt": "2026-11-26T08:50:52.499695Z"
 }

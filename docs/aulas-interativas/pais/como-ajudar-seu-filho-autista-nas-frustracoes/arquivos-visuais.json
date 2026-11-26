@@ -26,13 +26,13 @@
   },
   {
     "file": "certificado-demonstracao.pdf",
-    "bytes": 1529302,
-    "sha256": "68641435f0d24ed58612322e5a2c95b491a5bf72b25c6260425ce34e64b2c596"
+    "bytes": 2048185,
+    "sha256": "03dc1220748c6b966f11bd4c192e082d9b290dd5d921fe66fc3d4b540674faee"
   },
   {
     "file": "certificado-demonstracao.png",
-    "bytes": 1434507,
-    "sha256": "0bce8fbaca910294a5e2c8fc6cd86ac3be8bdd0904223b4aca61c6dd0be4d01d"
+    "bytes": 996795,
+    "sha256": "adb7fb68e9344deec94935ed5652a53c7dd3996f6484fd6dcc6cf1de430e9a5c"
   },
   {
     "file": "capas-das-aulas/aula-01-parte-01.png",
@@ -93,5 +93,15 @@
     "file": "capas-das-aulas/aula-05-parte-03.png",
     "bytes": 1197964,
     "sha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e"
+  },
+  {
+    "file": "assinaturas/helena-oliveira.webp",
+    "bytes": 57090,
+    "sha256": "03e20c41c4d6d54cf2e5f843fe6b11896d12cee43319fa9fcbbc8a4b4ce21c35"
+  },
+  {
+    "file": "assinaturas/julio-felipe.webp",
+    "bytes": 86292,
+    "sha256": "be0df79f3c6c1ac6e8a6f0d00b13156a1327906a22a7c5e0f3f38ab35e6502b6"
   }
 ]

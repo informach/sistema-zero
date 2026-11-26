@@ -1,5 +1,5 @@
 {
-  "verifiedAt": "2026-11-26T08:14:22.146051Z",
+  "verifiedAt": "2026-11-26T08:50:52.499695Z",
   "course": {
     "audience": "kids",
     "learner": "parents",
@@ -62,7 +62,29 @@
       ]
     },
     "realEmissionChecked": ["staging", "production"],
-    "syntheticCertificatesRevoked": true
+    "syntheticCertificatesRevoked": true,
+    "platformSignatures": {
+      "names": ["Helena Oliveira", "Júlio Felipe"],
+      "files": ["assinaturas/helena-oliveira.webp", "assinaturas/julio-felipe.webp"],
+      "realIssuance": {
+        "staging": {
+          "issued": true,
+          "pdfBytes": 2048380,
+          "embeddedImages": 4,
+          "cachedDownloadIdentical": true,
+          "qaCertificateRevoked": true
+        },
+        "production": {
+          "issued": true,
+          "pdfBytes": 2048185,
+          "embeddedImages": 4,
+          "cachedDownloadIdentical": true,
+          "qaCertificateRevoked": true
+        }
+      },
+      "productionExistingPdfCacheRefreshed": 1,
+      "issuedRecordsPreserved": true
+    }
   },
   "checks": {
     "parentsEditorialTests": {
