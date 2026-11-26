@@ -2,10 +2,10 @@
   "base": "fed288d8e78620e1224259b4f6b9081e3083413a",
   "auditedStagingHead": "a60e25b0f932b3b706f61eea44521edfa084d88b",
   "candidateBranch": "review/promocao-campanhas-20261125",
-  "candidateCommit": "6f349e0a2f74949cb8c9efc63bfbc59be2698a31",
-  "candidateParentMustEqualBase": true,
-  "publication": "local; sem push ou deploy da frente comercial",
-  "use": "Usar o commit candidato sobre a base. As listas registram proveniência, não uma sequência automática de cherry-pick.",
+  "candidateCommit": "fa103eb324fe9ff62b097d342d7436a195229463",
+  "candidateParentMustEqualBase": false,
+  "publication": "produção: quatro ondas manuais concluídas a pedido da responsável; estado do processo normal e segunda leva no recibo",
+  "use": "A árvore aprovada contém a frente comercial e o commit de avatar615329078 solicitado. A staging inteira não foi promovida. Conferir recibo para SHAs finais de merge/publicação.",
   "partialPrelude": {
     "commit": "249b9c54fde20cdf1608c341200bf20fa636dd7b",
     "paths": [
@@ -109,7 +109,7 @@
     }
   ],
   "excludedOtherWork": "Demais commits da staging; alterações de apelido e seções correspondentes de documentação não foram incorporadas.",
-  "fileCount": 398,
+  "fileCount": 424,
   "files": [
     ".github/workflows/ci.yml",
     ".railway/variables.ts",
@@ -121,6 +121,9 @@
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/apostila.pdf",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/arquivos-visuais.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/arte-base.png",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/assinaturas/assinaturas.json",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/assinaturas/helena-oliveira.webp",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/assinaturas/julio-felipe.webp",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/cadastro-publicado-production.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/cadastro-publicado-staging.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/capa-apostila.png",
@@ -140,13 +143,24 @@
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/certificado-demonstracao.pdf",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/certificado-demonstracao.png",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/certificado.png",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/README.md",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/checkout-capa.png",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/checkout-capa.webp",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/imagens.json",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/oferta-acolher.png",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/oferta-acolher.webp",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/oferta-antecipar.png",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/oferta-antecipar.webp",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/comercial/prompts.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.manifesto.json",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.manifesto.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/conferencia-slides-2026-11-25.md",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/modulos.md",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/origem-dos-videos.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/prompts-das-artes.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/publicacao-production.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/publicacao-staging.json",
+    "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/troca-video-aula-05-parte-02-2026-11-26.json",
     "docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/verificacao-publicacao.json",
     "docs/operations/publicacao-frustracoes-e-crises-2026-11-25.md",
     "packages/admin/CLAUDE.md",
@@ -245,7 +259,10 @@
     "packages/funnel/public/img/como-ajudar-seu-filho-autista/apostila.webp",
     "packages/funnel/public/img/como-ajudar-seu-filho-autista/capa-do-curso.webp",
     "packages/funnel/public/img/como-ajudar-seu-filho-autista/certificado.webp",
+    "packages/funnel/public/img/como-ajudar-seu-filho-autista/checkout-capa.webp",
     "packages/funnel/public/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+    "packages/funnel/public/img/como-ajudar-seu-filho-autista/oferta-acolher.webp",
+    "packages/funnel/public/img/como-ajudar-seu-filho-autista/oferta-antecipar.webp",
     "packages/funnel/public/img/como-ajudar-seu-filho-autista/vivianne.webp",
     "packages/funnel/src/analytics/page-context.ts",
     "packages/funnel/src/components/funnel/OfertaPage.astro",
@@ -344,6 +361,7 @@
     "packages/funnel/src/server/referral-gift-page.ts",
     "packages/funnel/src/server/referral-link.ts",
     "packages/funnel/src/server/referrals.ts",
+    "packages/funnel/src/styles/curso-pais.css",
     "packages/funnel/src/styles/embaixador.css",
     "packages/funnel/tests/browser/comunidade-oferta.ts",
     "packages/funnel/tests/browser/curso-pais-autismo.ts",
@@ -354,6 +372,7 @@
     "packages/funnel/tests/browser/retired-funnel-routes.ts",
     "packages/funnel/tests/fakes/fake-db.ts",
     "packages/funnel/tests/fakes/fake-gateway.ts",
+    "packages/funnel/tests/integration/api-checkout.test.ts",
     "packages/funnel/tests/integration/api-subscription.test.ts",
     "packages/funnel/tests/integration/checkout-page-sellable.test.ts",
     "packages/funnel/tests/integration/member-commerce-postgres.test.ts",
@@ -372,11 +391,14 @@
     "packages/funnel/tests/unit/referrals-handlers.test.ts",
     "packages/member-shell/CLAUDE.md",
     "packages/member-shell/package.json",
+    "packages/member-shell/qa/avatar-editor-hook.fixture.tsx",
     "packages/member-shell/src/components/commerce/commerce-card.tsx",
     "packages/member-shell/src/components/commerce/commerce-copy.ts",
     "packages/member-shell/src/components/commerce/commerce-panel.tsx",
     "packages/member-shell/src/components/commerce/pending-purchases.tsx",
     "packages/member-shell/src/components/commerce/purchase-form.tsx",
+    "packages/member-shell/src/components/cosmetics/avatar3d/configurator.tsx",
+    "packages/member-shell/src/components/cosmetics/avatar3d/use-avatar-editor.ts",
     "packages/member-shell/src/lib/commerce.ts",
     "packages/member-shell/src/lib/types.ts",
     "packages/member-shell/src/lib/use-lesson-tabs-height.ts",
@@ -389,6 +411,7 @@
     "packages/member-shell/tests/fixtures/commerce-card.fixture.tsx",
     "packages/member-shell/tests/page-sellable.test.ts",
     "packages/members/CLAUDE.md",
+    "packages/members/src/application/avatar/equip-avatar.service.ts",
     "packages/members/src/application/content-admin/content-admin.service.ts",
     "packages/members/src/application/grant-entitlement/grant-entitlement.service.ts",
     "packages/members/src/application/grant-manual-entitlement/grant-manual-entitlement.service.ts",
@@ -417,6 +440,7 @@
     "packages/members/tests/application/list-catalog.test.ts",
     "packages/members/tests/db/challenge-lifecycle.repository.test.ts",
     "packages/members/tests/db/course-reminders.repository.test.ts",
+    "packages/members/tests/db/renewal-reminder.repository.test.ts",
     "packages/members/tests/fakes/in-memory.ts",
     "packages/members/tests/helpers.ts",
     "packages/members/tests/integration/course-starts.test.ts",
@@ -424,6 +448,7 @@
     "packages/members/tests/integration/parents-course.test.ts",
     "packages/members/tests/unit/access-ended-messages.test.ts",
     "packages/members/tests/unit/advertised-days.test.ts",
+    "packages/members/tests/unit/avatar.test.ts",
     "packages/members/tests/unit/catalog-http-gateway.test.ts",
     "packages/members/tests/unit/course-reminders.test.ts",
     "packages/members/tests/unit/message-templates-contract.test.ts",
@@ -506,19 +531,20 @@
     "packages/referrals/tests/unit/gift-offer-catalog-client.test.ts",
     "packages/referrals/tests/unit/message-templates-contract.test.ts",
     "packages/referrals/tests/unit/payments-http-client.test.ts",
+    "packages/studio/e2e/migration-interrupted.spec.ts",
     "packages/ui/CLAUDE.md",
     "packages/ui/src/components/ui/dialog.tsx",
     "packages/ui/src/styles/creator-theme.css"
   ],
   "verification": {
-    "status": "concluída localmente; publicação integrada pendente",
+    "status": "verificação local e smoke integrado de produção aprovados; CI e integrações finais no recibo",
     "biome": {
       "files": 313,
       "errors": 0,
       "warnings": 15
     },
     "database": "PostgreSQL 17 descartável em loopback; variáveis específicas por suíte; nenhum banco remoto",
-    "liveIntegratedSmoke": "pendente da publicação em staging; pagamento e envio de mensagens não foram executados por esta revisão",
+    "liveIntegratedSmoke": "produção real: páginas, preços, imagens, links, origem e mini checkout aprovados; sem cobrança ou mensagem de teste",
     "typecheck": {
       "exitCode": 0,
       "packages": [
@@ -578,7 +604,39 @@
       "parentsCourse": "pass: build real, quatro larguras, imagens, preço, origem /i/ com cookie HttpOnly e modo presente",
       "externalBoundaries": "simuladas; sem mensagens ou cobranças reais"
     },
-    "candidateParentEqualsBase": true,
-    "testDatabaseContainer": "zero-review-origens-20261125; parado ao finalizar, sem remover volumes"
-  }
+    "candidateParentEqualsBase": false,
+    "testDatabaseContainer": "zero-review-origens-20261125; parado ao finalizar, sem remover volumes",
+    "candidateBaseIsAncestor": true,
+    "artworkFunnel": {
+      "pass": 745,
+      "fail": 0,
+      "skip": 6,
+      "buildExit": 0,
+      "typeErrors": 0,
+      "browserWidths": [320, 390, 768, 1440]
+    },
+    "renewalFixture": {
+      "freshDatabaseBefore": {
+        "pass": 0,
+        "fail": 6
+      },
+      "after": {
+        "pass": 6,
+        "fail": 0
+      },
+      "broaderSql": {
+        "pass": 194,
+        "fail": 0,
+        "skip": 523
+      }
+    }
+  },
+  "updatedAt": "2026-11-26T13:19:12.266Z",
+  "candidateBaseMustBeAncestor": true,
+  "requestedAvatarCommit": "6153290789b4a7dee50d58a246d20324c2b26cb1",
+  "secondRequestedCommits": [
+    "7a630ea527ce1c2366c11d813e09bc280b5b66df",
+    "6e0858525cb8c09140c608c291357e6286f0b15e"
+  ],
+  "publicationReceipt": "publicacao-producao-2026-11-26.json"
 }
