@@ -22,7 +22,8 @@ const root = resolve(import.meta.dirname, '../../..'),
 const d = (process.argv[2] ?? '2d') as JardimDimensao,
   scenario = process.argv[3] ?? 'correto'
 if (!['2d', '3d'].includes(d)) throw Error('Dimensão inválida')
-const dir = resolve(root, `.cache/jardim-check-${d}-${scenario}`)
+// `regador:x,z` tem dois-pontos, que o Windows não aceita em nome de pasta.
+const dir = resolve(root, `.cache/jardim-check-${d}-${scenario.replace(/[^\w-]+/g, '_')}`)
 mkdirSync(dir, { recursive: true })
 const driver = Bun.resolveSync(
   'playwright-core',
@@ -51,6 +52,31 @@ if (scenario === 'sem-decisao') js = js.replace(/if \(temRegador\)/g, 'if (true)
 if (scenario === 'renomeada') js = js.replaceAll('temRegador', 'pegouOObjeto')
 // Sem a guarda da partida (só 3D): a volta à flor repete o florescer.
 if (scenario === 'sem-guarda') js = js.replace('if (!ganhou) {', 'if (true) {')
+// 26/11/2026, caso real de produção (o executor encostava às vezes): a coleta dentro de uma guarda
+// ("Se temRegador = falso") e o regador em outros lugares do chão. `regador:x,z` muda só o lugar
+// (3D); `guardado` põe a guarda; `jeffrey` faz os dois, com o regador em (-4, -2).
+const guard = (s: string) =>
+  s.replace(
+    // 3D: `onTouch(personagem, regador, () => {`; 2D: `onOverlap(() => personagem, () => regador, …`.
+    /(SZGame[23]D\.on(?:Touch|Overlap)\((?:\(\) => )?personagem, (?:\(\) => )?regador, \(\) => \{\n)([\s\S]*?)(\n {2}\}(?:, "[^"]*")?\);)/,
+    (_m, open: string, body: string, close: string) =>
+      `${open}    if (temRegador === false) {\n${body.replace(/^/gm, '  ')}\n    }${close}`,
+  )
+const place = (s: string, x: number, z: number) =>
+  s.replace(
+    /SZGame3D\.setPosition\(regador, [^,]+, ([^,]+), [^)]+\);/,
+    (_m, y: string) => `SZGame3D.setPosition(regador, ${x}, ${y}, ${z});`,
+  )
+const lugar = scenario.match(/^regador:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/)
+if (lugar) {
+  if (d !== '3d') throw Error('regador:x,z é do 3D')
+  js = place(js, Number(lugar[1]), Number(lugar[2]))
+}
+if (scenario === 'guardado') js = guard(js)
+if (scenario === 'jeffrey') {
+  if (d !== '3d') throw Error('jeffrey é do 3D')
+  js = place(guard(js), -4, -2)
+}
 if (scenario !== 'correto' && js === p.files['script.js']) throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
