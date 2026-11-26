@@ -308,6 +308,25 @@ describe('actual Railway boundary without remote I/O', () => {
     expect(JSON.stringify(f.logs)).not.toContain('sensitive quota body')
   })
 
+  test('a limited active refresh waits before sending its single deployment mutation', async () => {
+    let armed = false
+    let limited = false
+    const f = transport({
+      reply(query) {
+        if (armed && query.includes('activeDeployments') && !limited) {
+          limited = true
+          return new Response('', { status: 429, headers: { 'retry-after': '120' } })
+        }
+      },
+    })
+    await f.ports.preflight()
+    armed = true
+    await f.ports.deploy('members', 180_000)
+    expect(limited).toBe(true)
+    expect(f.elapsed()).toBe(120_000)
+    expect(f.queries.filter((query) => query.startsWith('mutation'))).toHaveLength(1)
+  })
+
   test('a quota wait cannot extend the absolute retirement deadline or authorize migration', async () => {
     const f = transport({
       retire: true,
@@ -438,7 +457,18 @@ describe('actual Railway boundary without remote I/O', () => {
       },
     })
     await f.ports.preflight()
-    await expect(f.ports.deploy('members', 100)).rejects.toThrow('limite')
+    let failure: unknown
+    try {
+      await f.ports.deploy('members', 100)
+    } catch (error) {
+      failure = error
+    }
+    expect(failure).toBeDefined()
+    expect(describeKidsJourneyRolloutFailure(failure)).toMatchObject({
+      step: 'members-adoption-deployment',
+      reason: 'read-deadline',
+      mutationOutcome: 'not-attempted',
+    })
     expect(f.queries.some((query) => query.includes('deployments(input:'))).toBe(false)
     expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
   })
