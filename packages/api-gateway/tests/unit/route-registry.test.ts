@@ -546,7 +546,7 @@ describe('RouteRegistry', () => {
       ['/referrals/admin/campaigns/c1/results', 'referrals-admin-campaign-results-read'],
       ['/referrals/admin/ambassadors/a1/results', 'referrals-admin-ambassador-results-read'],
       ['/referrals/admin/conversions', 'referrals-admin-conversions-read'],
-    ])
+    ] as const)
       expect(registry.resolve('GET', path, 'v1')?.route.id).toBe(id)
     expect(registry.resolve('GET', '/referrals/admin/ambassador-offers', 'v1')?.route.id).toBe(
       'referrals-admin-read',
@@ -596,7 +596,9 @@ describe('RouteRegistry', () => {
 })
 
 test('Lote 7: "começaram o curso do presente" é POST staff+ do members, com corpo pequeno', () => {
-  const registry = new RouteRegistry(realConfig.routes)
+  const registry = new RouteRegistry(
+    realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+  )
   const route = registry.resolve('POST', '/members/admin/course-starts', 'v1')?.route
   expect(route).toMatchObject({
     id: 'members-admin-course-starts',
