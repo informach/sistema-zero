@@ -22,10 +22,15 @@ const check = (
   rule: SectionStructureRule,
   hint: string,
 ): SectionProjectCheck => ({ id, label, rule, hint })
-const uses = (pattern: Pattern, area?: 'start' | 'events' | 'loops'): SectionStructureRule => ({
+const uses = (
+  pattern: Pattern,
+  area?: 'start' | 'events' | 'loops',
+  withinBlock?: string,
+): SectionStructureRule => ({
   type: 'usesBlock',
   ...pattern,
   ...(area ? { area } : {}),
+  ...(withinBlock ? { withinBlock } : {}),
 })
 const variable = (name: string) => p('sz_val_variable', { NAME: name })
 const playing = (body?: Pattern | Pattern[]) =>
@@ -371,7 +376,7 @@ export function criterios2D(etapa: string): SectionProjectCheck[] {
       check(
         'resultado-unico',
         'Pergunte pelas vidas primeiro; no senão, confira a vitória.',
-        { ...uses(outcome, 'loops'), withinBlock: 'sz_g2d_update_each_frame' },
+        uses(outcome, 'loops', 'sz_g2d_update_each_frame'),
         'A pergunta das vidas abraça a pergunta da vitória no seu senão; as duas não ficam soltas.',
       ),
     )

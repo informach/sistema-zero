@@ -30,7 +30,10 @@ export interface ConstrutorTrecho {
   /** Bloco interativo completo, com scene/setup/goals oficiais existentes. */
   experience?: InteractiveBlock
   /** Quiz nativo completo; conteúdo/demonstração usam o contrato oficial. */
-  quiz?: Extract<NonNullable<LearningManifest['blocks'][number]['content']>, { kind: 'quiz' }>
+  quiz?: Extract<
+    Extract<LearningManifest['blocks'][number], { content: unknown }>['content'],
+    { kind: 'quiz' }
+  >
 }
 
 export interface ConstrutorAula {

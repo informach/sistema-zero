@@ -53,7 +53,7 @@ interface Block {
 }
 type Project = {
   blocksState: unknown
-  assets?: { name: string; dataUrl: string }[]
+  assets?: Parameters<typeof exampleHarness>[0]['assets']
 }
 
 beforeAll(() => {
@@ -75,7 +75,8 @@ function manifest(lesson: Lesson): LearningManifest {
   return value
 }
 function examples(lesson: Lesson) {
-  const studio = manifest(lesson).blocks.find((block) => block.key === 'projeto')?.content
+  const block = manifest(lesson).blocks.find((b) => b.key === 'projeto')
+  const studio = block && 'content' in block ? block.content : undefined
   if (studio?.kind !== 'studio') throw new Error(`Studio block missing: ${lesson}`)
   const parsed = readManifestStudioProjectExamples(studio.projectExamples)
   if (parsed.kind !== 'valid') throw new Error(`Invalid project examples: ${lesson}`)
@@ -94,10 +95,10 @@ function entry(lesson: Lesson, key: string) {
   return id ? (structuredClone(all.examples[id]) as unknown as Project) : undefined
 }
 const structureChecks = (checks: readonly SectionProjectCheck[]) =>
-  checks.filter((check) => {
+  checks.flatMap((check) => {
     if (check.programmingLanguage === 'python')
       throw new Error('This editorial fixture requires JavaScript objectives')
-    return !isExecutionRule(check.rule)
+    return isExecutionRule(check.rule) ? [] : [check]
   })
 function roundTrip(project: Project) {
   const workspace = new Blockly.Workspace()
@@ -150,7 +151,7 @@ const press = (g: ExampleHarness, key: string) => {
 const tiros = (g: ExampleHarness) => (g.groups.length >= 2 ? g.groups.at(-2)! : g.groups[0]!)
 const asteroides = (g: ExampleHarness) => g.groups.at(-1)!
 // A nave é o sprite 56×64 (o painel das telas tem 704×176); o reinício cria outra, a mais nova.
-const nave = (g: ExampleHarness) => g.sprites.findLast((s) => s.w === 56 && s.h === 64)!
+const nave = (g: ExampleHarness) => [...g.sprites].reverse().find((s) => s.w === 56 && s.h === 64)!
 const clear = (g: ExampleHarness) => {
   for (const group of g.groups) g.api.clearGroup(group)
 }
