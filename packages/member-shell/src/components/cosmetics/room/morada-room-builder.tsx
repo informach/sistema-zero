@@ -14,11 +14,15 @@ import {
 import {
   ArrowDownToLine,
   ArrowUpToLine,
+  BrickWall,
   Loader2,
   Lock,
   RefreshCw,
   RotateCw,
+  Scan,
   Trash2,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { type ComponentType, type KeyboardEvent, type ReactNode, useMemo, useState } from 'react'
@@ -31,10 +35,11 @@ import {
 import { KidsMascot } from '../presentation'
 import { adultPrice, adultUnlock } from '../skin'
 import { moradaFitsRoom, moradaSurfaceOptions, removeMoradaInstance } from './morada-editor-model'
-import type { MoradaRoomViewProps } from './morada-room-view'
+import type { MoradaRoomViewProps, RoomPanel } from './morada-room-view'
 import { moradaTrophyHint } from './morada-trophy-hint'
 import type { RoomBuilderTab } from './room-builder-model'
 import { RoomBuilderView } from './room-builder-view'
+import { ROOM_ZOOM_MAX, type RoomZoomRequest } from './room-zoom'
 import { useMoradaEditor } from './use-morada-editor'
 
 const Scene = dynamic(
@@ -101,6 +106,12 @@ export function MoradaRoomBuilder({
   const [page, setPage] = useState(0)
   const [stackPicker, setStackPicker] = useState(false)
   const [cutaway, setCutaway] = useState(true)
+  /** Só o Kids (26/11/2026): a aba do painel, o pedido dos botões de zoom e o zoom atual. */
+  const [panel, setPanel] = useState<RoomPanel>('decorar')
+  const [zoomRequest, setZoomRequest] = useState<RoomZoomRequest | null>(null)
+  const [zoomFactor, setZoomFactor] = useState(1)
+  const askZoom = (kind: RoomZoomRequest['kind']) =>
+    setZoomRequest((last) => ({ id: (last?.id ?? 0) + 1, kind }))
   const pieces = useMemo(() => Object.values(MORADA_CATALOG.pieces), [])
   // A posse do servidor (troféus, estante, compradas e o que já está na casa); as grátis entram
   // pela régua do core (`moradaPieceAllowed`).
@@ -135,6 +146,9 @@ export function MoradaRoomBuilder({
   const select = (instance: MoradaInstance) => {
     setSelectedId(instance.id)
     setStackPicker(false)
+    // Tocar numa peça do quarto (ou na lista dela) abre o ajuste dela no painel. Pôr uma peça
+    // nova pela loja NÃO passa por aqui: a criança continua na loja.
+    setPanel('quarto')
   }
   const updateSelected = (change: Partial<MoradaInstance>) => {
     if (!selected || !draft || locked) return
@@ -425,9 +439,12 @@ export function MoradaRoomBuilder({
               }))
           }}
           cutaway={cutaway}
+          zoomable={!adult}
+          zoom={zoomRequest}
+          onZoomChange={setZoomFactor}
           className="absolute inset-0 size-full"
         />
-        {avatarPhotoUrl ? (
+        {adult && avatarPhotoUrl ? (
           <img
             src={avatarPhotoUrl}
             alt="Meu avatar"
@@ -512,135 +529,141 @@ export function MoradaRoomBuilder({
       </button>
     </div>
   ) : null
-  const extras = (
-    <div className="space-y-2">
-      {stackPicker && selected ? (
-        <div
-          className={
-            adult
-              ? 'sz-cos-room-stack'
-              : 'flex flex-wrap gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5'
-          }
-        >
-          <span className="text-sm">Colocar em cima de:</span>
-          {surfaces.map(({ parent, slot }) => (
+  /** "Colocar em cima de:", aberto pelo botão "Em cima…" da peça escolhida. */
+  const stackPanel =
+    stackPicker && selected ? (
+      <div
+        className={
+          adult
+            ? 'sz-cos-room-stack'
+            : 'flex flex-wrap gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5'
+        }
+      >
+        <span className="text-sm">Colocar em cima de:</span>
+        {surfaces.map(({ parent, slot }) => (
+          <button
+            type="button"
+            key={`${parent.id}:${slot.id}`}
+            className={
+              trophyOnShelf && parent.pieceId === MORADA_TROPHY_SHELF
+                ? `${chip} border-primary bg-primary/10`
+                : chip
+            }
+            onClick={() => {
+              updateSelected({
+                parentId: parent.id,
+                slotId: slot.id,
+                position: [0, 0, 0],
+              })
+              setStackPicker(false)
+            }}
+          >
+            {parent.pieceId === MORADA_TROPHY_SHELF ? '🏆 ' : ''}
+            {MORADA_CATALOG.pieces[parent.pieceId]?.label}
+          </button>
+        ))}
+        {!surfaces.length ? (
+          <p className="text-sm">Não há um espaço livre que caiba esta peça.</p>
+        ) : null}
+      </div>
+    ) : null
+  /** O ajuste fino da peça escolhida: andar meio passo, cores e texturas. */
+  const adjustFields =
+    selected && selectedPiece ? (
+      <fieldset disabled={locked} className={adult ? 'mt-3 space-y-3' : 'space-y-3'}>
+        <div className="flex flex-wrap gap-2">
+          {[
+            ['Esquerda', 0, -0.5],
+            ['Direita', 0, 0.5],
+            ['Fundo', 2, -0.5],
+            ['Frente', 2, 0.5],
+            ['Subir', 1, 0.5],
+            ['Descer', 1, -0.5],
+          ].map(([label, axis, delta]) => (
             <button
               type="button"
-              key={`${parent.id}:${slot.id}`}
-              className={
-                trophyOnShelf && parent.pieceId === MORADA_TROPHY_SHELF
-                  ? `${chip} border-primary bg-primary/10`
-                  : chip
-              }
-              onClick={() => {
-                updateSelected({
-                  parentId: parent.id,
-                  slotId: slot.id,
-                  position: [0, 0, 0],
-                })
-                setStackPicker(false)
-              }}
+              key={label}
+              className={chip}
+              disabled={Boolean(selected.parentId)}
+              onClick={() => move(Number(axis), Number(delta))}
             >
-              {parent.pieceId === MORADA_TROPHY_SHELF ? '🏆 ' : ''}
-              {MORADA_CATALOG.pieces[parent.pieceId]?.label}
+              {label}
             </button>
           ))}
-          {!surfaces.length ? (
-            <p className="text-sm">Não há um espaço livre que caiba esta peça.</p>
-          ) : null}
         </div>
-      ) : null}
-      {selected && selectedPiece ? (
+        <div className="flex flex-wrap gap-3">
+          {selectedPiece.colors.map((name) => (
+            <label key={name} className="flex min-h-11 items-center gap-2 text-sm">
+              {name.replaceAll('_', ' ')}
+              <input
+                type="color"
+                aria-label={`Cor ${name}`}
+                value={selected.colors?.[name] ?? MORADA_CATALOG.palette[name]?.hex ?? '#ffffff'}
+                onChange={(event) =>
+                  updateSelected({ colors: { ...selected.colors, [name]: event.target.value } })
+                }
+              />
+            </label>
+          ))}
+        </div>
+        {selectedPiece.materials
+          .filter((m) => m.name !== 'atlas')
+          .map((m) => (
+            <div key={m.name} className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-2 text-sm">
+                {MATERIAL_LABELS[m.name] ?? m.name.replaceAll('_', ' ')}
+                <input
+                  type="color"
+                  value={selected.materials?.[m.name]?.color ?? '#ffffff'}
+                  onChange={(e) =>
+                    updateSelected({
+                      materials: { ...selected.materials, [m.name]: { color: e.target.value } },
+                    })
+                  }
+                />
+              </label>
+              <select
+                aria-label={`Textura ${MATERIAL_LABELS[m.name] ?? m.name}`}
+                className={input}
+                value={selected.materials?.[m.name]?.texture ?? ''}
+                onChange={(e) =>
+                  updateSelected({
+                    materials: {
+                      ...selected.materials,
+                      [m.name]: e.target.value ? { texture: e.target.value } : {},
+                    },
+                  })
+                }
+              >
+                <option value="">Textura original</option>
+                {Object.values(MORADA_CATALOG.textures).map((texture) => (
+                  <option key={texture.id} value={texture.id}>
+                    {texture.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        <button
+          type="button"
+          className={chip}
+          onClick={() => updateSelected({ colors: undefined, materials: undefined })}
+        >
+          Restaurar cores e texturas
+        </button>
+      </fieldset>
+    ) : null
+  const extras = (
+    <div className="space-y-2">
+      {stackPanel}
+      {adjustFields && selectedPiece ? (
         <details
           className={adult ? 'sz-cos-room-stack' : 'rounded-2xl border-2 border-border bg-card p-3'}
         >
           <summary className="cursor-pointer font-semibold text-sm">
             Ajustar {selectedPiece.label}
           </summary>
-          <fieldset disabled={locked} className="mt-3 space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {[
-                ['Esquerda', 0, -0.5],
-                ['Direita', 0, 0.5],
-                ['Fundo', 2, -0.5],
-                ['Frente', 2, 0.5],
-                ['Subir', 1, 0.5],
-                ['Descer', 1, -0.5],
-              ].map(([label, axis, delta]) => (
-                <button
-                  type="button"
-                  key={label}
-                  className={chip}
-                  disabled={Boolean(selected.parentId)}
-                  onClick={() => move(Number(axis), Number(delta))}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {selectedPiece.colors.map((name) => (
-                <label key={name} className="flex min-h-11 items-center gap-2 text-sm">
-                  {name.replaceAll('_', ' ')}
-                  <input
-                    type="color"
-                    aria-label={`Cor ${name}`}
-                    value={
-                      selected.colors?.[name] ?? MORADA_CATALOG.palette[name]?.hex ?? '#ffffff'
-                    }
-                    onChange={(event) =>
-                      updateSelected({ colors: { ...selected.colors, [name]: event.target.value } })
-                    }
-                  />
-                </label>
-              ))}
-            </div>
-            {selectedPiece.materials
-              .filter((m) => m.name !== 'atlas')
-              .map((m) => (
-                <div key={m.name} className="flex flex-wrap items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    {MATERIAL_LABELS[m.name] ?? m.name.replaceAll('_', ' ')}
-                    <input
-                      type="color"
-                      value={selected.materials?.[m.name]?.color ?? '#ffffff'}
-                      onChange={(e) =>
-                        updateSelected({
-                          materials: { ...selected.materials, [m.name]: { color: e.target.value } },
-                        })
-                      }
-                    />
-                  </label>
-                  <select
-                    aria-label={`Textura ${MATERIAL_LABELS[m.name] ?? m.name}`}
-                    className={input}
-                    value={selected.materials?.[m.name]?.texture ?? ''}
-                    onChange={(e) =>
-                      updateSelected({
-                        materials: {
-                          ...selected.materials,
-                          [m.name]: e.target.value ? { texture: e.target.value } : {},
-                        },
-                      })
-                    }
-                  >
-                    <option value="">Textura original</option>
-                    {Object.values(MORADA_CATALOG.textures).map((texture) => (
-                      <option key={texture.id} value={texture.id}>
-                        {texture.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-            <button
-              type="button"
-              className={chip}
-              onClick={() => updateSelected({ colors: undefined, materials: undefined })}
-            >
-              Restaurar cores e texturas
-            </button>
-          </fieldset>
+          {adjustFields}
         </details>
       ) : null}
       <label className="flex min-h-11 items-center gap-2 text-muted-foreground text-xs">
@@ -649,6 +672,74 @@ export function MoradaRoomBuilder({
       </label>
     </div>
   )
+  // Kids (26/11/2026): o zoom e as paredes moram POR CIMA do quarto, no canto de baixo. Os botões
+  // não roubam o foco (as setas continuam movendo a peça escolhida).
+  const keepFocus = (event: { preventDefault(): void }) => event.preventDefault()
+  const toolButton =
+    'inline-flex size-11 items-center justify-center rounded-full border-2 border-border bg-card text-foreground shadow-md transition-colors hover:border-primary disabled:opacity-50'
+  const stageTools = adult ? null : (
+    <>
+      <div className="absolute bottom-2 left-2 flex gap-2">
+        <button
+          type="button"
+          aria-pressed={!cutaway}
+          aria-label="Mostrar todas as paredes"
+          title="Mostrar todas as paredes"
+          onMouseDown={keepFocus}
+          onClick={() => setCutaway((value) => !value)}
+          className={`${toolButton} ${!cutaway ? 'border-primary bg-primary/10' : ''}`}
+        >
+          <BrickWall className="size-5" aria-hidden="true" />
+        </button>
+      </div>
+      <div
+        role="group"
+        aria-label="Zoom do quarto"
+        className="absolute right-2 bottom-2 flex gap-2 @min-[45rem]/quarto:flex-col"
+      >
+        <button
+          type="button"
+          aria-label="Aproximar"
+          title="Aproximar"
+          disabled={zoomFactor >= ROOM_ZOOM_MAX - 0.01}
+          onMouseDown={keepFocus}
+          onClick={() => askZoom('in')}
+          className={toolButton}
+        >
+          <ZoomIn className="size-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          aria-label="Afastar"
+          title="Afastar"
+          disabled={zoomFactor <= 1.01}
+          onMouseDown={keepFocus}
+          onClick={() => askZoom('out')}
+          className={toolButton}
+        >
+          <ZoomOut className="size-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          aria-label="Ver o quarto todo"
+          title="Ver o quarto todo"
+          onMouseDown={keepFocus}
+          onClick={() => askZoom('reset')}
+          className={toolButton}
+        >
+          <Scan className="size-5" aria-hidden="true" />
+        </button>
+      </div>
+    </>
+  )
+  const avatar =
+    !adult && avatarPhotoUrl ? (
+      <img
+        src={avatarPhotoUrl}
+        alt="Meu avatar"
+        className="size-11 shrink-0 rounded-full border-2 border-border bg-card object-cover object-top shadow-md"
+      />
+    ) : null
   // A tira original lista os objetos decorados. Pisos e paredes têm suas próprias
   // abas e não devem ocupar a tira nem empurrar a bandeja para baixo no celular.
   const placed =
@@ -820,6 +911,14 @@ export function MoradaRoomBuilder({
         extras={extras}
         tray={tray}
         notice={editor.message || editor.conflict || toBuy ? notice : null}
+        avatar={avatar}
+        stageTools={stageTools}
+        stack={stackPanel}
+        adjust={adjustFields}
+        placedCount={placed.length}
+        selectedLabel={selected ? (selectedPiece?.label ?? 'Peça') : null}
+        panel={panel}
+        onPanel={setPanel}
       />
     </section>
   )

@@ -47,7 +47,10 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
   test('as dez abas permanecem no painel, depois do Salvar na ordem de leitura', () => {
     render(<RoomBuilderView {...viewProps()} />)
     const panel = screen.getByRole('region', { name: 'Itens do quarto' })
-    expect(within(panel).getAllByRole('button')).toHaveLength(10)
+    // 26/11/2026: o painel ganhou "Decorar" e "No quarto"; as dez categorias moram em Decorar.
+    expect(
+      within(panel).getByRole('group', { name: 'Categorias' }).querySelectorAll('button'),
+    ).toHaveLength(10)
     expect(within(panel).getByRole('button', { name: 'Móveis' })).toBeDefined()
     expect(within(panel).getByRole('button', { name: 'Tema' })).toBeDefined()
     const save = screen.getByRole('button', { name: 'Salvar quarto' })
@@ -55,6 +58,20 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
     expect(save.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
   test('os roláveis internos contêm os sr-only (a página não rola por causa deles)', () => {
+    // Bandeja (aba Decorar, a primeira)
+    const decorar = render(
+      <RoomBuilderView
+        {...viewProps()}
+        tray={<span className="sr-only">moedas da bandeja</span>}
+      />,
+    )
+    {
+      let el = screen.getByText('moedas da bandeja').parentElement
+      while (el && !/overflow-y-auto/.test(el.className)) el = el.parentElement
+      expect(el).not.toBeNull()
+      expect((el as HTMLElement).classList.contains('relative')).toBe(true)
+    }
+    decorar.unmount()
     // 24/11/2026: sem `relative` no rolável, os `sr-only` (absolute) dos cartões se
     // posicionavam pela seção de fora, escapavam do recorte e esticavam a página. O happy-dom
     // não mede layout: a classe é o guarda (o mecanismo foi medido no Chromium).
@@ -63,13 +80,41 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
         {...viewProps()}
         tray={<span className="sr-only">moedas da bandeja</span>}
         pieces={<span className="sr-only">peça colocada</span>}
+        placedCount={1}
       />,
     )
-    for (const text of ['moedas da bandeja', 'peça colocada']) {
+    // As peças colocadas moram na aba "No quarto".
+    fireEvent.click(screen.getByRole('button', { name: /No quarto/ }))
+    expect(screen.getByText('peça colocada')).toBeDefined()
+    for (const text of ['peça colocada']) {
       let el = screen.getByText(text).parentElement
       while (el && !/overflow-y-auto/.test(el.className)) el = el.parentElement
       expect(el).not.toBeNull()
       expect((el as HTMLElement).classList.contains('relative')).toBe(true)
     }
+  })
+  test('o quarto Kids: Decorar e No quarto, avatar na barra, ferramentas por cima do quarto', () => {
+    const onPanel = mock(() => {})
+    render(
+      <RoomBuilderView
+        {...viewProps()}
+        avatar={<img alt="Meu avatar" src="/a.png" />}
+        stageTools={<button type="button">Aproximar</button>}
+        placedCount={2}
+        pieces={<button type="button">Cama</button>}
+        selectedLabel="Cama"
+        adjust={<p>ajuste da cama</p>}
+        onPanel={onPanel}
+      />,
+    )
+    const line = screen.getByRole('button', { name: 'Salvar quarto' }).parentElement
+    expect(line?.contains(screen.getByRole('img', { name: 'Meu avatar' }))).toBe(true)
+    const panel = screen.getByRole('region', { name: 'Itens do quarto' })
+    expect(panel.contains(screen.getByRole('button', { name: 'Aproximar' }))).toBe(false)
+    expect(screen.queryByText('ajuste da cama')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /No quarto/ }))
+    expect(onPanel).toHaveBeenCalledWith('quarto')
+    expect(screen.getByRole('heading', { name: 'Ajustar Cama' })).toBeDefined()
+    expect(screen.getByText('ajuste da cama')).toBeDefined()
   })
 })
