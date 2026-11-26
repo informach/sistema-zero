@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
-import { resolveCouponOfferPath } from '../../server/coupon-link'
+import { originCookie } from '../../lib/lead-origin'
+import { resolveCouponCampaignOrigin, resolveCouponOfferPath } from '../../server/coupon-link'
 import { getDeps } from '../../server/deps'
 import { PageOfferUnavailableError } from '../../server/page-offer'
 
@@ -11,7 +12,7 @@ export const GET: APIRoute = async ({ params, url }) => {
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' }
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,59}$/.test(code))
     return new Response('Cupom inválido.', { status: 400, headers })
-  const { gateway } = getDeps()
+  const { gateway, env } = getDeps()
   let path: string | null
   try {
     path = await resolveCouponOfferPath(gateway, slug, audience)
@@ -31,9 +32,22 @@ export const GET: APIRoute = async ({ params, url }) => {
   target.searchParams.set('cupom', code.toUpperCase())
   const event = url.searchParams.get('event_code')
   if (event && /^[a-z0-9-]{4,32}$/.test(event)) target.searchParams.set('event_code', event)
+  const origin = await resolveCouponCampaignOrigin(gateway, event, audience)
+  if (origin) target.searchParams.set('indicacao', origin)
   // Mesmo expirado, o código chega à página: ela mostra o aviso e o preço normal.
   return new Response(null, {
     status: 302,
-    headers: { ...headers, location: `${target.pathname}${target.search}` },
+    headers: {
+      ...headers,
+      location: `${target.pathname}${target.search}`,
+      ...(origin
+        ? {
+            'set-cookie': originCookie(
+              { version: 1, code: origin, place: null },
+              env.NODE_ENV === 'production',
+            ),
+          }
+        : {}),
+    },
   })
 }
