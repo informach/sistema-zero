@@ -47,7 +47,7 @@ const barra = presente ? { ...P.barra, titulo: origem ?? P.barra.titulo } : vend
   <CursoPaisOferta copy={P} selo={origem ?? undefined} compra ready>
     <Fragment slot="compra">
       {presente ? (
-        <OfertaPresente presente={presente} communityUrl={contaUrl} formulario="guia" ancora={null} />
+        <OfertaPresente presente={presente} communityUrl={contaUrl} formulario="guia" ancora={null} embutido />
       ) : (
         <article class="c9-plano" data-analytics-id="guia-oferta">
           <h2 class="c9-plano__nome">{venda.oferta.selo}</h2>
