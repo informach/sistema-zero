@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { RoomBuilderTab } from './room-builder-model'
 
 /** As duas abas do painel do quarto Kids (26/11/2026): a loja e as peças que já estão nele. */
-export type RoomPanel = 'decorar' | 'quarto'
+export type RoomPanel = 'decorar' | 'construir' | 'quarto'
 
 /** As peles existentes recebem conteúdo, sem conhecer o formato da casa ou suas regras. */
 export interface MoradaRoomViewProps {
@@ -33,4 +33,8 @@ export interface MoradaRoomViewProps {
   selectedLabel?: string | null
   panel?: RoomPanel
   onPanel?(panel: RoomPanel): void
+  /** Modo construção (26/11/2026): o catálogo de construção por tipo, na aba "Construir". */
+  build?: ReactNode
+  /** O selo do salvar sozinho (Kids): sem ele, a pele mostra o botão "Salvar". */
+  saveState?: 'idle' | 'saving' | 'saved' | 'error'
 }
