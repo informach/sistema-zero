@@ -17,12 +17,19 @@ export const PORTRAIT_SHARE = 0.45
  * verdade. O retrato antigo usava uma distância fixa a partir do centro e, num canvas mais alto
  * que largo (celular), cortava o topo de um cabelo alto.
  */
-export function framePhoto(
-  cam: PerspectiveCamera,
+/** O enquadramento da foto: `face` = do peito para cima (a foto automática), `body` = a pose inteira. */
+export type PhotoFraming = 'face' | 'body'
+
+/**
+ * Onde a câmera fica e para onde olha (de frente), para a região caber no quadrado central do
+ * canvas com folga. A MESMA conta serve à foto (`framePhoto`) e à prévia da Cabine
+ * (`CameraManager`), então a prévia mostra o que vai sair na foto (26/11/2026).
+ */
+export function photoFrame(
   box: Box3,
   canvas: { width: number; height: number },
   portrait: boolean,
-): void {
+): { position: [number, number, number]; target: [number, number, number] } {
   const h = Math.max(0.001, box.max.y - box.min.y)
   const cw = Math.max(1, canvas.width)
   const ch = Math.max(1, canvas.height)
@@ -33,10 +40,20 @@ export function framePhoto(
   const cz = (box.min.z + box.max.z) / 2
   // A altura visível do canvas inteiro precisa ser `region / FILL` vezes a fração do quadrado.
   const dist = (region * ch) / (2 * Math.tan((FOV * Math.PI) / 360) * FILL * square)
+  return { position: [cx, centerY, box.max.z + dist], target: [cx, centerY, cz] }
+}
+
+export function framePhoto(
+  cam: PerspectiveCamera,
+  box: Box3,
+  canvas: { width: number; height: number },
+  portrait: boolean,
+): void {
+  const { position, target } = photoFrame(box, canvas, portrait)
   cam.fov = FOV
-  cam.aspect = cw / ch
-  cam.position.set(cx, centerY, box.max.z + dist)
-  cam.lookAt(cx, centerY, cz)
+  cam.aspect = Math.max(1, canvas.width) / Math.max(1, canvas.height)
+  cam.position.set(...position)
+  cam.lookAt(...target)
   cam.updateMatrixWorld()
   cam.updateProjectionMatrix()
 }

@@ -31,6 +31,7 @@ import { KidsBackButton, KidsMascot, ZappyCoin } from '../presentation'
 import { AVATAR_MESSAGES, type CosmeticsSkin } from '../skin'
 import { AvatarScene } from './avatar-scene'
 import type { AdultAvatarConfiguratorProps } from './configurator-adult'
+import type { PhotoFraming } from './photo-framing'
 import { SeasonalAvatarChoices } from './seasonal-choices'
 import { type AvatarEditor, type SaveStatus, useAvatarEditor } from './use-avatar-editor'
 
@@ -356,7 +357,7 @@ export function AvatarConfigurator({
           {mode === 'photo' ? (
             <button
               type="button"
-              onClick={() => void editor.takePhoto()}
+              onClick={() => void editor.takePhoto({ framing: editor.photoFraming })}
               disabled={!state || editor.photoBusy || status === 'preview'}
               aria-label="Tirar foto"
               className="sz-btn-gradient inline-flex h-11 items-center gap-2 rounded-full px-4 font-bold text-primary-foreground text-sm shadow-md transition-transform active:scale-95 disabled:opacity-60"
@@ -392,6 +393,7 @@ export function AvatarConfigurator({
                 dark={dark}
                 mode={mode}
                 pose={mode === 'photo' ? editor.pose : undefined}
+                framing={mode === 'photo' ? editor.photoFraming : undefined}
                 poseTake={editor.poseTake}
               />
             ) : (
@@ -438,6 +440,10 @@ export function AvatarConfigurator({
                 ) : (
                   <div className="flex flex-col gap-2">
                     <PendingPurchase editor={editor} inBooth />
+                    <PhotoFramingChoice
+                      value={editor.photoFraming}
+                      onChange={editor.choosePhotoFraming}
+                    />
                     <p className="text-center font-semibold text-muted-foreground text-xs @min-[45rem]/avatar:text-left @min-[45rem]/avatar:text-sm">
                       Escolha a pose e clique em <strong>Tirar foto</strong> lá em cima 📸
                     </p>
@@ -528,6 +534,48 @@ function PendingPurchase({ editor, inBooth = false }: { editor: AvatarEditor; in
         )}
       </div>
     </div>
+  )
+}
+
+/**
+ * "Rosto" ou "Corpo inteiro" na Cabine de fotos (26/11/2026). Um grupo de rádio de verdade (as
+ * setas trocam), com a cara dos botões de modo ao lado. A prévia acompanha a escolha.
+ */
+function PhotoFramingChoice({
+  value,
+  onChange,
+}: {
+  value: PhotoFraming
+  onChange: (f: PhotoFraming) => void
+}) {
+  return (
+    <fieldset className="grid grid-cols-2 gap-2">
+      <legend className="sr-only">Enquadramento da foto</legend>
+      {(
+        [
+          ['face', 'Rosto'],
+          ['body', 'Corpo inteiro'],
+        ] as const
+      ).map(([f, label]) => (
+        <label
+          key={f}
+          className={cn(
+            'flex min-h-11 cursor-pointer items-center justify-center rounded-2xl px-3 font-bold text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2',
+            value === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+          )}
+        >
+          <input
+            type="radio"
+            name="avatar-photo-framing"
+            value={f}
+            checked={value === f}
+            onChange={() => onChange(f)}
+            className="sr-only"
+          />
+          {label}
+        </label>
+      ))}
+    </fieldset>
   )
 }
 

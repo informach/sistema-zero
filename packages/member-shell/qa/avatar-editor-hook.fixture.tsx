@@ -8,7 +8,13 @@ import {
   useAvatarEditor,
 } from '../src/components/cosmetics/avatar3d/use-avatar-editor'
 import { AVATAR_MESSAGES } from '../src/components/cosmetics/skin'
-import { type AvatarShopItem, avatarTab, isAvatarItemOwned } from '../src/lib/avatar-pack'
+import {
+  AVATAR_IDLE_POSE,
+  type AvatarShopItem,
+  avatarPoses,
+  avatarTab,
+  isAvatarItemOwned,
+} from '../src/lib/avatar-pack'
 
 /**
  * O salvar sozinho do "Meu avatar" (`useAvatarEditor`) num navegador de mentira: o servidor é um
@@ -373,5 +379,45 @@ test('mudança grátis DEPOIS de experimentar uma peça paga também grava (sem 
     fim = await t.ed().finishBeforeExit()
   })
   expect(fim?.ok).toBe(true)
+  await t.fechar()
+})
+
+// Cabine: "Rosto" ou "Corpo inteiro" (26/11/2026).
+test('Cabine: sem pose o padrão é rosto; com uma pose, corpo inteiro; a foto sai no enquadramento', async () => {
+  const t = await montar()
+  expect(t.ed().photoFraming).toBe('face')
+  const pose = avatarPoses(C).find((p) => p.id !== AVATAR_IDLE_POSE)
+  if (!pose) throw new Error('sem pose')
+  await act(async () => t.ed().setPose(pose.id))
+  expect(t.ed().photoFraming).toBe('body')
+  t.fotos.length = 0
+  await act(async () => t.ed().takePhoto({ framing: t.ed().photoFraming }))
+  expect(t.fotos.at(-1)).toBe(false)
+  await act(async () => t.ed().takePhoto({ framing: 'face' }))
+  expect(t.fotos.at(-1)).toBe(true)
+  // Sem a escolha, nada de enquadramento vai ao servidor.
+  expect(puts().every((c) => !(c.body as Record<string, unknown>).framing)).toBe(true)
+  await t.fechar()
+})
+
+test('Cabine: a escolha grava no perfil e vale mesmo trocando a pose', async () => {
+  const t = await montar()
+  await act(async () => t.ed().choosePhotoFraming('face'))
+  const pose = avatarPoses(C).find((p) => p.id !== AVATAR_IDLE_POSE)
+  if (!pose) throw new Error('sem pose')
+  await act(async () => t.ed().setPose(pose.id))
+  expect(t.ed().photoFraming).toBe('face')
+  await esperar(() => puts().length === 1, 4000)
+  expect((puts()[0]?.body as { framing?: string }).framing).toBe('face')
+  await t.fechar()
+})
+
+test('Cabine: abre com a última escolha guardada', async () => {
+  estado = { ...estado, photoFraming: 'body' }
+  const t = await montar()
+  expect(t.ed().photoFraming).toBe('body')
+  // Abrir com a escolha guardada não grava nada.
+  await act(async () => new Promise((r) => setTimeout(r, 1300)))
+  expect(puts()).toHaveLength(0)
   await t.fechar()
 })

@@ -14,7 +14,7 @@ import { recoverWebGLContext } from '../../../lib/webgl-recovery'
 import { useReducedMotion } from '../room/use-reduced-motion'
 import { CameraManager, type CamMode } from './camera-manager'
 import { measureCharacter } from './measure'
-import { framePhoto } from './photo-framing'
+import { framePhoto, type PhotoFraming } from './photo-framing'
 
 type Slots = AvatarSlots
 /** `portrait`: força um retrato de rosto (de frente), independente do enquadramento na tela. */
@@ -202,6 +202,7 @@ function SceneContents({
   mode,
   dark,
   onReady,
+  framing,
 }: {
   slots: Slots
   pose: string
@@ -209,6 +210,7 @@ function SceneContents({
   mode: CamMode
   dark: boolean
   onReady: (c: CaptureFn) => void
+  framing?: PhotoFraming
 }) {
   const charRef = useRef<THREE.Group>(null)
   const completeRef = useRef(false)
@@ -267,7 +269,13 @@ function SceneContents({
       <ContactShadows position={[0, 0.005, 0]} opacity={0.45} scale={1.1} blur={2.4} far={1.2} />
       <TeleporterBeam loading={loading} />
 
-      <CameraManager mode={mode} ready={ready} />
+      <CameraManager
+        mode={mode}
+        ready={ready}
+        framing={framing}
+        charRef={charRef}
+        pose={`${pose}:${poseTake ?? 0}`}
+      />
       <SnapshotBridge
         onReady={onReady}
         canCapture={canCapture}
@@ -290,6 +298,7 @@ export function AvatarScene({
   mode = 'customize',
   pose = PACK_IDLE_POSE,
   poseTake,
+  framing,
 }: {
   slots: Slots
   onReady: (c: CaptureFn) => void
@@ -298,6 +307,8 @@ export function AvatarScene({
   pose?: string
   /** Muda a cada escolha de pose: a mesma pose escolhida de novo repete o movimento. */
   poseTake?: number
+  /** Cabine: o enquadramento escolhido, que a prévia mostra antes da foto. */
+  framing?: PhotoFraming
 }) {
   return (
     <Canvas
@@ -316,6 +327,7 @@ export function AvatarScene({
         mode={mode}
         dark={dark}
         onReady={onReady}
+        framing={framing}
       />
     </Canvas>
   )

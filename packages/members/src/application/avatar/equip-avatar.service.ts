@@ -8,6 +8,7 @@ import {
 } from '@sistemazero/core/avatar'
 import {
   type AvatarConfig,
+  type AvatarPhotoFraming,
   assertEquippableConfig,
   canonicalizeAvatarConfig,
 } from '../../domain/avatar/avatar-config'
@@ -19,6 +20,8 @@ export interface EquipAvatarInput {
   slots: AvatarSlots
   /** Menina, menino ou todos. Ausente = mantém o que estava. */
   filter?: AvatarFilter
+  /** O enquadramento da Cabine de fotos. Ausente = mantém o que estava. */
+  framing?: AvatarPhotoFraming
 }
 
 function mesmasPecas(a: AvatarSlots, b: AvatarSlots): boolean {
@@ -69,6 +72,9 @@ export class EquipAvatarService {
         slots,
         ...(filter ? { filter } : {}),
         ...(atual.customized || mudou ? { customized: true } : {}),
+        ...((input.framing ?? atual.photoFraming)
+          ? { photoFraming: input.framing ?? atual.photoFraming }
+          : {}),
       },
       userId,
     )
