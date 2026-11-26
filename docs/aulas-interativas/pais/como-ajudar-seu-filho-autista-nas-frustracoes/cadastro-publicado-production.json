@@ -1,0 +1,689 @@
+{
+  "environment": "production",
+  "readAt": "2026-11-26T01:11:57.009Z",
+  "course": {
+    "id": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+    "version": 3,
+    "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+    "title": "Como ajudar seu filho autista a lidar com frustrações e evitar crises",
+    "subtitle": "Cuidados para apoiar seu filho antes, durante e depois das crises.",
+    "description": "Entenda o que pode levar à crise e como preparar a rotina, reduzir a sobrecarga e apoiar seu filho, com a psicóloga Vivianne Lima.",
+    "coverImageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/7dcdf31448481ad33f0bf4d2bbd4eb6f6107b88f003b97b09475571fccd3e38b/file.png",
+    "salesPageUrl": null,
+    "status": "published",
+    "audience": "kids",
+    "level": "iniciante",
+    "track": "2d",
+    "careerSlot": null,
+    "journeyRole": "reward",
+    "sequentialLock": true,
+    "videoBeforeActivity": false,
+    "modality": "recorded",
+    "learner": "parents",
+    "studioUnlockBlocks": [],
+    "clonedFrom": null,
+    "createdAt": "2026-11-26T00:44:19.627Z",
+    "updatedAt": "2026-11-26T01:00:56.415Z",
+    "modules": [
+      {
+        "id": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "title": "Entender a crise e saber o que fazer",
+        "summary": "Entenda a frustração e conheça cuidados para preparar a rotina, acolher durante a crise e ajustar os apoios depois.",
+        "animation": null,
+        "sortOrder": 0,
+        "lessons": [
+          {
+            "id": "4e733c39-9738-5798-a1ed-f64bb4683d70",
+            "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+            "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+            "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+            "title": "Crise não é desobediência, é comunicação",
+            "sortOrder": 0,
+            "estimatedMinutes": 5,
+            "isPublished": true
+          },
+          {
+            "id": "8eb52a80-0fb3-51aa-a7ba-7f8baf1ccda6",
+            "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+            "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+            "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+            "title": "De onde vem a frustração",
+            "sortOrder": 1,
+            "estimatedMinutes": 5,
+            "isPublished": true
+          },
+          {
+            "id": "8d576869-81a7-56a1-a73e-182e2945d198",
+            "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+            "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+            "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+            "title": "Antes da crise: de pais reativos a pais estrategistas",
+            "sortOrder": 2,
+            "estimatedMinutes": 6,
+            "isPublished": true
+          },
+          {
+            "id": "3c6319a3-8c4d-5fb9-ae1b-86d2b52a8023",
+            "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+            "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+            "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+            "title": "Durante a crise: a intervenção inteligente",
+            "sortOrder": 3,
+            "estimatedMinutes": 5,
+            "isPublished": true
+          },
+          {
+            "id": "7c644260-9b91-5284-a463-1409203c3fb1",
+            "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+            "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+            "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+            "title": "Depois da crise: onde a magia acontece",
+            "sortOrder": 4,
+            "estimatedMinutes": 7,
+            "isPublished": true
+          }
+        ]
+      }
+    ]
+  },
+  "lessons": [
+    {
+      "lesson": {
+        "id": "4e733c39-9738-5798-a1ed-f64bb4683d70",
+        "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+        "title": "Crise não é desobediência, é comunicação",
+        "sortOrder": 0,
+        "estimatedMinutes": 5,
+        "isPublished": true
+      },
+      "revision": "50d54ece-b0e1-456e-993c-90bc69976ba0",
+      "published": true,
+      "document": {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+        "title": "Crise não é desobediência, é comunicação",
+        "blocks": [
+          {
+            "id": "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185515?h=24322939b3",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/f7a84f238efb88e2dc5eca05d074e799f1ecbc1150e96e37e6e3f97ad54fbca8/file.png",
+              "durationSeconds": 105
+            }
+          },
+          {
+            "id": "13146b44-b364-5942-a161-6559ee1b0619",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185730?h=bb91229350",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/0eb9e43a31554ac2fff7faf28add120d1c6d55ccf3db4dbd22c4364e479d64ae/file.png",
+              "durationSeconds": 143
+            }
+          },
+          {
+            "id": "b2c7a1aa-42ec-5f5b-a0f1-bf982502bc94",
+            "content": {
+              "kind": "materials",
+              "items": [
+                {
+                  "id": "apostila-do-curso",
+                  "kind": "file",
+                  "label": "Baixar apostila do curso",
+                  "attachmentId": "cf4dd07c-7ca9-56ed-ab37-c1af2170dea2"
+                }
+              ],
+              "title": "Materiais da aula"
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "5a4019d2-935e-5200-a844-67a09c9de072",
+            "title": "Boas-vindas",
+            "intent": "explanation",
+            "blockIds": [
+              "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"
+            ],
+            "objective": "Acolher mães, pais e responsáveis, apresentar a Vivi, partir da hora de parar uma brincadeira e explicar o caminho das cinco aulas e o objetivo de antecipar, prevenir e intervir.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "02b585d9-098e-57b0-ac0a-78d2372c2f8b",
+            "title": "O que ninguém te contou sobre a crise",
+            "intent": "explanation",
+            "blockIds": [
+              "13146b44-b364-5942-a161-6559ee1b0619",
+              "b2c7a1aa-42ec-5f5b-a0f1-bf982502bc94"
+            ],
+            "objective": "Desenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "13146b44-b364-5942-a161-6559ee1b0619"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          }
+        ],
+        "attachments": [
+          {
+            "id": "cf4dd07c-7ca9-56ed-ab37-c1af2170dea2",
+            "url": "r2priv:admin/course-publication/f66a99a88972a7534f531837c1373914a13a2bd39c25ad01953749187e581d9d/file.pdf",
+            "label": "Apostila do curso: Frustrações e crises",
+            "fileType": "application/pdf",
+            "sizeBytes": 946916,
+            "zappyStudentNotebook": true
+          }
+        ],
+        "plannedVideos": [
+          {
+            "blockId": "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0",
+            "videoId": "1250185515",
+            "instructions": "Título: Boas-vindas\n\nAcolher mães, pais e responsáveis, apresentar a Vivi, partir da hora de parar uma brincadeira e explicar o caminho das cinco aulas e o objetivo de antecipar, prevenir e intervir. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 1."
+          },
+          {
+            "blockId": "13146b44-b364-5942-a161-6559ee1b0619",
+            "videoId": "1250185730",
+            "instructions": "Título: O que ninguém te contou sobre a crise\n\nDesenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-1.roteiro.md, Parte 2."
+          }
+        ],
+        "estimatedMinutes": 5
+      }
+    },
+    {
+      "lesson": {
+        "id": "8eb52a80-0fb3-51aa-a7ba-7f8baf1ccda6",
+        "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+        "title": "De onde vem a frustração",
+        "sortOrder": 1,
+        "estimatedMinutes": 5,
+        "isPublished": true
+      },
+      "revision": "aaab1b07-0cff-401e-8ee8-2bbf0393b60c",
+      "published": true,
+      "document": {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+        "title": "De onde vem a frustração",
+        "blocks": [
+          {
+            "id": "a9ebf39e-4541-5a22-a8bf-fec656a67c93",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185417?h=e6a578661e",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/592d18ef860f656da0c9cac7d71db22310058710d04a705b1b85b852d4d31ba7/file.png",
+              "durationSeconds": 139
+            }
+          },
+          {
+            "id": "5bd3f419-eda5-5349-aa2b-ba50d7cf82ce",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185296?h=7b5a3abbcc",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/7ab6798b922d87f444f37b7bec8e1d076bd02a58b0304061c09e8dd73b5afab6/file.png",
+              "durationSeconds": 135
+            }
+          },
+          {
+            "id": "42a69606-a19d-59c8-a83a-f5e093b52067",
+            "content": {
+              "kind": "rich_text",
+              "markdown": "## Para consultar\n\n- **Autorregulação:** a criança pode precisar de ajuda para desenvolver recursos para lidar com o que sente e se reorganizar.\n- **Comunicação funcional:** conseguir expressar necessidades de um jeito que o outro compreenda. Uma dificuldade para pedir ajuda pode aumentar a frustração.\n- **Previsibilidade:** saber o que vai acontecer. Uma mudança sem aviso pode ser difícil de acompanhar.\n- **Sensibilidade sensorial:** sons, luzes, cheiros e outros estímulos podem incomodar. Mais de um fator pode estar presente.\n- **Função:** o que o comportamento pode produzir naquela situação. Observe o que aconteceu antes, o que a criança fez e o que aconteceu depois; não adivinhe intenções."
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "0f70fd07-c56d-5eaa-a196-3876b2723a00",
+            "title": "As quatro raízes da frustração",
+            "intent": "explanation",
+            "blockIds": [
+              "a9ebf39e-4541-5a22-a8bf-fec656a67c93"
+            ],
+            "objective": "Explicar autorregulação, comunicação funcional, previsibilidade e sensibilidade sensorial com exemplos da brincadeira e da rotina, sem tratar os quatro fatores como lista exaustiva.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "a9ebf39e-4541-5a22-a8bf-fec656a67c93"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "fb7f14ef-b081-5c1c-a722-6f7de14f32ae",
+            "title": "Função ou julgamento?",
+            "intent": "explanation",
+            "blockIds": [
+              "5bd3f419-eda5-5349-aa2b-ba50d7cf82ce",
+              "42a69606-a19d-59c8-a83a-f5e093b52067"
+            ],
+            "objective": "Ligar fatores internos e externos à situação e explicar função do comportamento com perguntas sobre o antes, o comportamento e o depois.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "5bd3f419-eda5-5349-aa2b-ba50d7cf82ce"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          }
+        ],
+        "attachments": [],
+        "plannedVideos": [
+          {
+            "blockId": "a9ebf39e-4541-5a22-a8bf-fec656a67c93",
+            "videoId": "1250185417",
+            "instructions": "Título: As quatro raízes da frustração\n\nExplicar autorregulação, comunicação funcional, previsibilidade e sensibilidade sensorial com exemplos da brincadeira e da rotina, sem tratar os quatro fatores como lista exaustiva. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 1."
+          },
+          {
+            "blockId": "5bd3f419-eda5-5349-aa2b-ba50d7cf82ce",
+            "videoId": "1250185296",
+            "instructions": "Título: Função ou julgamento?\n\nLigar fatores internos e externos à situação e explicar função do comportamento com perguntas sobre o antes, o comportamento e o depois. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-2.roteiro.md, Parte 2."
+          }
+        ],
+        "estimatedMinutes": 5
+      }
+    },
+    {
+      "lesson": {
+        "id": "8d576869-81a7-56a1-a73e-182e2945d198",
+        "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+        "title": "Antes da crise: de pais reativos a pais estrategistas",
+        "sortOrder": 2,
+        "estimatedMinutes": 6,
+        "isPublished": true
+      },
+      "revision": "8b6261c3-d196-45dd-af3c-5b1f5df5dd20",
+      "published": true,
+      "document": {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+        "title": "Antes da crise: de pais reativos a pais estrategistas",
+        "blocks": [
+          {
+            "id": "480b566e-070b-5f0f-a27b-03a32450076a",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185363?h=5c4dc1c2f1",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/984a56f975283b964214d95ccbcd18bdfc49fce1d563bb99b22d8d6b991ef904/file.png",
+              "durationSeconds": 111
+            }
+          },
+          {
+            "id": "d6ed7523-619c-5d62-aaa2-8240eedf373e",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185580?h=90c662d65b",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/8145cb4481bbffacc93576c234b31f88c975bdf46f58816ff987ee84b9c642d8/file.png",
+              "durationSeconds": 131
+            }
+          },
+          {
+            "id": "d0de94d4-2de0-5095-a542-2fd8373b5d09",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185461?h=f288e1d888",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/6f6ac8d7b02131a06f0a1cb7d0cf9a72dc7752739698ab6a575a78e7cbb9cc52/file.png",
+              "durationSeconds": 117
+            }
+          },
+          {
+            "id": "2fe72284-6f0a-5c71-a78f-3fc8516ae88a",
+            "content": {
+              "kind": "rich_text",
+              "markdown": "## Para consultar\n\n- **Rotina visual:** use quadros, agendas ou cartões para mostrar o que está acontecendo e o que vem depois.\n- **Transições:** avise e mostre antes da mudança. Exemplo: \"Faltam cinco minutos para parar de brincar e jantar.\" Adapte o aviso e o tempo à criança.\n- **Pequenas frustrações:** pratique uma espera breve e possível numa situação tranquila. Dez segundos são um exemplo; o tempo pode ser menor. Reconheça o que a criança conseguiu e aumente aos poucos, conforme ela participa.\n- **Comunicação:** ensine mensagens como \"preciso de ajuda\", \"estou nervoso\" e \"posso esperar\", usando fala, figuras ou sinais. PECS é um sistema estruturado de comunicação por troca de figuras.\n- Pratique os pedidos em momentos tranquilos e responda quando a criança os usar. A equipe ajuda a escolher e ensinar recursos adequados."
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "5978d25d-091d-5518-a926-a86da2943fc2",
+            "title": "Rotina visual e clareza do que vai acontecer",
+            "intent": "explanation",
+            "blockIds": [
+              "480b566e-070b-5f0f-a27b-03a32450076a"
+            ],
+            "objective": "Explicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "480b566e-070b-5f0f-a27b-03a32450076a"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "ab62b083-3fab-5f3b-a571-b92d2a31388a",
+            "title": "Treino de pequenas frustrações",
+            "intent": "explanation",
+            "blockIds": [
+              "d6ed7523-619c-5d62-aaa2-8240eedf373e"
+            ],
+            "objective": "Desenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "d6ed7523-619c-5d62-aaa2-8240eedf373e"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "f86abf60-4cb7-5e37-a8c1-e72018255a80",
+            "title": "Ensinar um jeito de pedir",
+            "intent": "explanation",
+            "blockIds": [
+              "d0de94d4-2de0-5095-a542-2fd8373b5d09",
+              "2fe72284-6f0a-5c71-a78f-3fc8516ae88a"
+            ],
+            "objective": "Ligar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "d0de94d4-2de0-5095-a542-2fd8373b5d09"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          }
+        ],
+        "attachments": [],
+        "plannedVideos": [
+          {
+            "blockId": "480b566e-070b-5f0f-a27b-03a32450076a",
+            "videoId": "1250185363",
+            "instructions": "Título: Rotina visual e clareza do que vai acontecer\n\nExplicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 1."
+          },
+          {
+            "blockId": "d6ed7523-619c-5d62-aaa2-8240eedf373e",
+            "videoId": "1250185580",
+            "instructions": "Título: Treino de pequenas frustrações\n\nDesenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 2."
+          },
+          {
+            "blockId": "d0de94d4-2de0-5095-a542-2fd8373b5d09",
+            "videoId": "1250185461",
+            "instructions": "Título: Ensinar um jeito de pedir\n\nLigar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-3.roteiro.md, Parte 3."
+          }
+        ],
+        "estimatedMinutes": 6
+      }
+    },
+    {
+      "lesson": {
+        "id": "3c6319a3-8c4d-5fb9-ae1b-86d2b52a8023",
+        "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+        "title": "Durante a crise: a intervenção inteligente",
+        "sortOrder": 3,
+        "estimatedMinutes": 5,
+        "isPublished": true
+      },
+      "revision": "b9320537-aeeb-42b9-8314-4f4c7663ef60",
+      "published": true,
+      "document": {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+        "title": "Durante a crise: a intervenção inteligente",
+        "blocks": [
+          {
+            "id": "840d3cef-def0-5a16-a6e3-1ba34d1c1e21",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185550?h=765ef1199f",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/bdf1ae9fbf7e493e7668678bc103335c71626fdc56de89c14d7d4c7583f484c7/file.png",
+              "durationSeconds": 157
+            }
+          },
+          {
+            "id": "54fae27d-af04-5562-aab4-fef5c544e3c4",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185244?h=0bb35232ab",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/ee09d7aa39e7d9b7f29e5e9e370343c348852cc667351c46e8edfc7fed5db835/file.png",
+              "durationSeconds": 107
+            }
+          },
+          {
+            "id": "01c306d4-20b6-5e84-aa20-4a41cd9bd0e3",
+            "content": {
+              "kind": "rich_text",
+              "markdown": "## Para consultar\n\n- **Segurança primeiro:** afaste vidro, objetos pesados ou pontudos e pessoas muito próximas. Se a criança bate a cabeça, algo macio pode ajudar a proteger, se for possível agir com segurança. Fique por perto sem segurar com força.\n- **Ambiente:** reduza o que está sobrecarregando, como televisão, luz e muitas pessoas falando.\n- **Tom e palavras:** respire, fale baixo e use frases curtas, dando tempo para a criança se reorganizar.\n- **No auge:** evite negociação, sermão, ameaças, promessas e muitas perguntas. Uma explicação longa pode ser difícil de acompanhar naquele momento.\n- Se as crises trazem risco de se machucar, prepare um plano específico de proteção com a equipe que acompanha o seu filho."
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "68d447d1-44d8-5bac-abda-3a170a943499",
+            "title": "O ambiente e o seu tom",
+            "intent": "explanation",
+            "blockIds": [
+              "840d3cef-def0-5a16-a6e3-1ba34d1c1e21"
+            ],
+            "objective": "Retomar que a crise pode acontecer mesmo com prevenção e desenvolver segurança, controle do ambiente e regulação pelo modelo com exemplos concretos.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "840d3cef-def0-5a16-a6e3-1ba34d1c1e21"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "f68840dd-4737-5c31-a534-93e6ada1dbb1",
+            "title": "O que não fazer no auge",
+            "intent": "explanation",
+            "blockIds": [
+              "54fae27d-af04-5562-aab4-fef5c544e3c4",
+              "01c306d4-20b6-5e84-aa20-4a41cd9bd0e3"
+            ],
+            "objective": "Explicar por que evitar negociação, sermão e explicações longas no auge, mostrando o que o adulto pode fazer para oferecer apoio.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "54fae27d-af04-5562-aab4-fef5c544e3c4"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          }
+        ],
+        "attachments": [],
+        "plannedVideos": [
+          {
+            "blockId": "840d3cef-def0-5a16-a6e3-1ba34d1c1e21",
+            "videoId": "1250185550",
+            "instructions": "Título: O ambiente e o seu tom\n\nRetomar que a crise pode acontecer mesmo com prevenção e desenvolver segurança, controle do ambiente e regulação pelo modelo com exemplos concretos. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 1."
+          },
+          {
+            "blockId": "54fae27d-af04-5562-aab4-fef5c544e3c4",
+            "videoId": "1250185244",
+            "instructions": "Título: O que não fazer no auge\n\nExplicar por que evitar negociação, sermão e explicações longas no auge, mostrando o que o adulto pode fazer para oferecer apoio. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-4.roteiro.md, Parte 2."
+          }
+        ],
+        "estimatedMinutes": 5
+      }
+    },
+    {
+      "lesson": {
+        "id": "7c644260-9b91-5284-a463-1409203c3fb1",
+        "moduleId": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",
+        "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+        "title": "Depois da crise: onde a magia acontece",
+        "sortOrder": 4,
+        "estimatedMinutes": 7,
+        "isPublished": true
+      },
+      "revision": "da554e50-033f-4f80-8292-759aeae06b64",
+      "published": true,
+      "document": {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+        "title": "Depois da crise: onde a magia acontece",
+        "blocks": [
+          {
+            "id": "ffd60f99-d901-583e-a575-0f6f3c7d9936",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185650?h=ddd72ec066",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/e395e8f0fcf3f187f74ba756b0513e67871078b45df4ac4ddd50dfdb5ab5f8e1/file.png",
+              "durationSeconds": 108
+            }
+          },
+          {
+            "id": "c008e6d6-628a-53d5-ab88-80f9020bffb5",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185700?h=e346b4ad54",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/b61b0022254e54a19d50187bbe1d42d8b8a66ed617e768dbb87cf926d215eeca/file.png",
+              "durationSeconds": 149
+            }
+          },
+          {
+            "id": "57f10085-ef0b-5925-afd2-2dbbe470ad5e",
+            "content": {
+              "src": "https://player.vimeo.com/video/1250185210?h=1c0995efd3",
+              "kind": "video",
+              "provider": "vimeo",
+              "posterUrl": "https://cdn.sistemazero.com.br/admin/course-publication/52c58760fc84f8dd6972b18a70ab52f553511a29a71abfda30b1a72a02f815d2/file.png",
+              "durationSeconds": 112
+            }
+          },
+          {
+            "id": "0d1911d3-40be-5625-a0fb-2ec510f24101",
+            "content": {
+              "kind": "rich_text",
+              "markdown": "## Para consultar\n\n- **Depois da recuperação:** procure um momento em que a criança consiga participar. Acolha o sentimento e retome um pedido de ajuda ou outra resposta que ela está aprendendo.\n- **Observe a sequência:** o que aconteceu antes, o que a criança fez e o que aconteceu depois. Consequência quer dizer o que veio depois, não um castigo.\n- **Registre e ajuste:** observações repetidas dão pistas para conversar com a equipe; uma situação sozinha não confirma a função. Ajuste a transição, o ambiente ou o apoio à comunicação.\n- **Treino sistemático:** pratique aos poucos, em momentos tranquilos, a habilidade que precisa de apoio. Mantenha o cuidado durante o sofrimento.\n- **Para levar:** antes, preparar; durante, proteger e reduzir sobrecarga; depois, acolher, observar e ajustar. A pergunta é: o que ficou difícil e como posso ajudar?"
+            }
+          },
+          {
+            "id": "b3607aaa-2e50-527e-acfa-b7233a38e4c3",
+            "content": {
+              "kind": "certificate",
+              "title": "Certificado de conclusão",
+              "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
+              "introLine": "Certificamos que",
+              "accentColor": "#38204e",
+              "baseImageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/26ba4c0cea5c60042eb538ca4b3f6e2bf56513c4e4d6e1f3ac5c56fc10d0894e/file.png",
+              "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises"
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "c8c3a9e3-05ef-5293-a688-2693f35ff8b2",
+            "title": "Acolher e ensinar para a próxima vez",
+            "intent": "explanation",
+            "blockIds": [
+              "ffd60f99-d901-583e-a575-0f6f3c7d9936"
+            ],
+            "objective": "Respeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "ffd60f99-d901-583e-a575-0f6f3c7d9936"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "b97d39e8-0101-5395-a5df-0d300798294f",
+            "title": "O gatilho, a consequência e os ajustes",
+            "intent": "explanation",
+            "blockIds": [
+              "c008e6d6-628a-53d5-ab88-80f9020bffb5"
+            ],
+            "objective": "Desenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "c008e6d6-628a-53d5-ab88-80f9020bffb5"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          },
+          {
+            "id": "2629e98e-d988-573f-a318-fde82705bbb7",
+            "title": "Hoje eu escuto melhor",
+            "intent": "delivery",
+            "blockIds": [
+              "57f10085-ef0b-5925-afd2-2dbbe470ad5e",
+              "0d1911d3-40be-5625-a0fb-2ec510f24101",
+              "b3607aaa-2e50-527e-acfa-b7233a38e4c3"
+            ],
+            "objective": "Retomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado.",
+            "completion": {
+              "version": 1,
+              "blockIds": [
+                "57f10085-ef0b-5925-afd2-2dbbe470ad5e",
+                "b3607aaa-2e50-527e-acfa-b7233a38e4c3"
+              ]
+            },
+            "externalTool": null,
+            "pendingMedia": [],
+            "workspaceBlockId": null
+          }
+        ],
+        "attachments": [],
+        "plannedVideos": [
+          {
+            "blockId": "ffd60f99-d901-583e-a575-0f6f3c7d9936",
+            "videoId": "1250185650",
+            "instructions": "Título: Acolher e ensinar para a próxima vez\n\nRespeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 1."
+          },
+          {
+            "blockId": "c008e6d6-628a-53d5-ab88-80f9020bffb5",
+            "videoId": "1250185700",
+            "instructions": "Título: O gatilho, a consequência e os ajustes\n\nDesenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 2."
+          },
+          {
+            "blockId": "57f10085-ef0b-5925-afd2-2dbbe470ad5e",
+            "videoId": "1250185210",
+            "instructions": "Título: Hoje eu escuto melhor\n\nRetomar a situação da brincadeira com os apoios de antes, durante e depois, compartilhar o cuidado com família, escola e equipe e encerrar com a mensagem final e o certificado. Fala completa em como-ajudar-seu-filho-autista-nas-frustracoes-aula-5.roteiro.md, Parte 3."
+          }
+        ],
+        "estimatedMinutes": 7
+      }
+    }
+  ]
+}

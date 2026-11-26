@@ -51,20 +51,40 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 5. O bloco `apostila` fica na Aula 1, como no outro curso para pais.
 6. O bloco `certificado` fica na Aula 5 e registra a conclusão.
 
-## Estado desta entrega
+## Arquivos para publicação e restauração
 
-Roteiros, resumos de aula, textos para o ElevenLabs e manifestos escritos em 19/11/2026 e revisados em 20/11/2026, na direção aprovada pela responsável. A abertura recebe os pais e apresenta o curso antes de introduzir uma situação cotidiana; as cinco aulas desenvolvem perguntas com contexto e explicações ligadas entre si. Todos os tópicos dos slides permanecem nas cinco aulas e nos mesmos 12 clipes. Faltam a conferência da Vivianne, a geração da voz e dos vídeos, a importação no Admin e a publicação.
+Os materiais finais ficam **nesta pasta do curso**:
 
-**Apostila (revisão de 20/11/2026):** 10 páginas de consulta, sem campos para preencher: o mapa das aulas, uma ou duas folhas por aula e um resumo final de antes, durante e depois. Só traz o que está nas falas. O texto mora em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/caderno-conteudo.json`; para gerar o PDF, `bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts`. Mudou uma fala? Confira se a apostila precisa acompanhar.
+| Arquivo | Uso |
+| --- | --- |
+| `arte-base.png` | Imagem original fornecida pela responsável. |
+| `capa-do-curso.png` | Ilustração centralizada, sem texto, para o cartão do curso. |
+| `capas-das-aulas/aula-0N-parte-0M.png` | As 12 capas dos vídeos, com título e numeração da parte. |
+| `capa-apostila.png` | Capa da apostila, sem quantidade de aulas. |
+| `apostila.pdf` | Apostila completa de dez páginas. |
+| `certificado.png` | Fundo do certificado, com mãe e filho à esquerda e psicóloga à direita, junto ao rodapé. O centro fica livre para os dados dinâmicos. |
+| `certificado-demonstracao.pdf` e `.png` | Simulação pelo gerador real com nome longo, data, QR, número e duas assinaturas fictícias. Não são certificados emitidos. |
+| `prompts-das-artes.json` | Ferramenta, referências e prompts das imagens geradas. |
+| `publicacao-staging.json` e `publicacao-production.json` | IDs, vínculos dos vídeos, capas, apostila e configuração do certificado por ambiente. |
+| `cadastro-publicado-staging.json` e `cadastro-publicado-production.json` | Cópia do cadastro e dos documentos das aulas publicados. |
+| `conferencia-slides-2026-11-25.md` | Conferência dos nove slides com as falas dos roteiros. |
 
-**Tema visual:** a capa foi desenhada para este curso, a pedido da dona: a tempestade que vira calmaria, com um adulto e uma criança de mãos dadas, a partir da mensagem final da Vivianne. Dela saem as cores: azul-petróleo, verde-água e amarelo. O desenho de origem é o `capa.svg`, na pasta do gerador, exportado para `docs/aulas-interativas-tecnico/recursos/caderno-visual/arte/capa-como-ajudar-seu-filho-autista-nas-frustracoes.jpg`. Se vier uma ilustração nova, basta trocar esse arquivo e gerar de novo.
+### Posição dos materiais
 
-## Revisão didática de 20/11/2026
+A apostila é mencionada no fim da **Aula 1, Parte 2, O que ninguém te contou sobre a crise**. O bloco `apostila`, com o título **Materiais da aula**, fica imediatamente abaixo desse vídeo, em uma única coluna. Ele contém somente o PDF para baixar, sem bloco de livro 3D ou texto de resumo. O download é opcional e não bloqueia a conclusão. O certificado fica na **Aula 5, Parte 3, Hoje eu escuto melhor**, e integra a conclusão.
 
-A revisão mantém a ordem e os tópicos dos slides, com a cobertura atualizada em [Fontes](fontes.md). A situação de parar uma brincadeira para jantar aparece na abertura, ajuda a explicar os conceitos e volta no fechamento com os cuidados de antes, durante e depois.
+### Como refazer
 
-As perguntas abstratas e as sequências de frases de efeito deram lugar a explicações desenvolvidas com exemplos. Os textos da página e a apostila acompanham as mesmas explicações. As notas de edição foram refeitas a partir da fala de cada clipe, incluindo o encaminhamento final para emitir o certificado e concluir a aula.
+Os geradores ficam em `docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/`:
 
-Conferência clínica da Vivianne, geração e escuta da voz, edição dos vídeos, importação no Admin e publicação continuam pendentes. A comparação de estilo nesta revisão foi textual, com a transcrição local usada na edição do MP3 de referência.
+```powershell
+bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-capas.ts
+python docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/renderizar-capas.py
+bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts
+```
 
-**Conferência local da revisão:** os 20 tópicos da matriz de cobertura permanecem nas falas. IDs, ordem, cinco aulas, 12 clipes e critérios de conclusão foram comparados com a versão anterior e preservados. Os 32 testes existentes dos cursos para pais passaram; o validador dos roteiros conferiu os 12 clipes sem erros; os dez derivados de voz/edição foram gerados e conferidos. O validador geral aprovou os 51 manifestos das crianças, e os dois validadores Como Fazer passaram com sugestões editoriais preexistentes. A apostila foi regenerada, suas dez páginas foram inspecionadas visualmente e a extração não encontrou blocos de texto fora dos limites. Essas verificações não substituem a conferência clínica ou a escuta da voz produzida.
+As capas das partes usam a imagem original. A capa do curso foi recomposta com os personagens centralizados, sem texto. A capa da apostila segue a receita visual dos cursos Kids e usa esse mesmo enquadramento. A apostila mantém o conteúdo de consulta em `caderno-conteudo.json`, na pasta do gerador.
+
+Para restaurar o cadastro, use os cinco manifestos editoriais, os arquivos finais e os vínculos do recibo do ambiente. Os documentos `cadastro-publicado-*.json` são cópias de segurança para consulta, não são os arquivos de importação do editor. Os vídeos originais continuam na pasta de Downloads informada pela responsável; seus arquivos não foram duplicados no repositório.
+
+O fluxo de publicação é staging e depois promoção para produção pelo operador canônico de [publicação de cursos](../../../operations/cursos-passo-a-passo.md). Este curso tem audiência Kids e `learner=parents`, fica fora da Jornada e não é copiado para a comunidade adulta.

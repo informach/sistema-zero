@@ -1,0 +1,255 @@
+{
+  "environment": "staging",
+  "courseId": "45da87d0-c2d2-400c-889d-5d4bbe1c868f",
+  "moduleIds": [
+    "a4967f7e-5246-49ca-a389-82f27293524f"
+  ],
+  "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+  "status": "published",
+  "audience": "kids",
+  "learner": "parents",
+  "modality": "recorded",
+  "careerSlot": null,
+  "courseUrl": "https://community-kids-staging.up.railway.app/pais/cursos/como-ajudar-seu-filho-autista-nas-frustracoes",
+  "lessons": [
+    {
+      "id": "644b41fb-f8f8-4e45-89ce-9405050251ca",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
+      "title": "Crise não é desobediência, é comunicação",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "080727aa-667c-481d-acf0-79e81bdae35e",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-2",
+      "title": "De onde vem a frustração",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "83500e6a-4ce5-4002-a43f-47be5001b561",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-3",
+      "title": "Antes da crise: de pais reativos a pais estrategistas",
+      "published": true,
+      "sections": 3
+    },
+    {
+      "id": "2262e685-039f-4911-9573-f951ecfb11ae",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-4",
+      "title": "Durante a crise: a intervenção inteligente",
+      "published": true,
+      "sections": 2
+    },
+    {
+      "id": "35228715-28f4-40f3-92d4-da784dc9aa8a",
+      "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-5",
+      "title": "Depois da crise: onde a magia acontece",
+      "published": true,
+      "sections": 3
+    }
+  ],
+  "parts": [
+    {
+      "aula": 1,
+      "parte": 1,
+      "title": "Boas-vindas",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184262?h=2b4539d387",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e.png",
+        "durationSeconds": 105
+      },
+      "coverFile": "capas-das-aulas/aula-01-parte-01.png",
+      "coverSha256": "cf1339d774e83239037dc69b4aaa53423f8502192cf006796785aed0d121018e"
+    },
+    {
+      "aula": 1,
+      "parte": 2,
+      "title": "O que ninguém te contou sobre a crise",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184261?h=7fcae7605a",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b.png",
+        "durationSeconds": 143
+      },
+      "coverFile": "capas-das-aulas/aula-01-parte-02.png",
+      "coverSha256": "878b8d9fd4a132d700a94b32a3478849726dbda401023a8e05f6c154eba8315b"
+    },
+    {
+      "aula": 2,
+      "parte": 1,
+      "title": "As quatro raízes da frustração",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184263?h=92d948f1f5",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1.png",
+        "durationSeconds": 139
+      },
+      "coverFile": "capas-das-aulas/aula-02-parte-01.png",
+      "coverSha256": "de25a8c6736f73b5ff172fec23a8eaa34118f71c5dcfcc7aa9356212bd7ab4b1"
+    },
+    {
+      "aula": 2,
+      "parte": 2,
+      "title": "Função ou julgamento?",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184340?h=a8f0893b51",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2.png",
+        "durationSeconds": 135
+      },
+      "coverFile": "capas-das-aulas/aula-02-parte-02.png",
+      "coverSha256": "9faca82d6ae0b734c2f9806b9fddf5dc6af48ba8a5cb14f2b6967c9d3f1001b2"
+    },
+    {
+      "aula": 3,
+      "parte": 1,
+      "title": "Rotina visual e clareza do que vai acontecer",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184344?h=35f58b4f74",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31.png",
+        "durationSeconds": 111
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-01.png",
+      "coverSha256": "3648f405474be9992147297eec8e059f8a6fe1f60f2fdd77e4e0d604c9265e31"
+    },
+    {
+      "aula": 3,
+      "parte": 2,
+      "title": "Treino de pequenas frustrações",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184360?h=7cc8d6cbf5",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689.png",
+        "durationSeconds": 131
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-02.png",
+      "coverSha256": "b82f7ade701f7176d974dbca76989146c6ade6758a38eb33d0ea4a31d2930689"
+    },
+    {
+      "aula": 3,
+      "parte": 3,
+      "title": "Ensinar um jeito de pedir",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184409?h=589714f5bd",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f.png",
+        "durationSeconds": 117
+      },
+      "coverFile": "capas-das-aulas/aula-03-parte-03.png",
+      "coverSha256": "a2ca48e9c1a7dee55d540606f95dbd180ccb3fb7e500da00527d494b555ac09f"
+    },
+    {
+      "aula": 4,
+      "parte": 1,
+      "title": "O ambiente e o seu tom",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184411?h=c3d72ac671",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441.png",
+        "durationSeconds": 157
+      },
+      "coverFile": "capas-das-aulas/aula-04-parte-01.png",
+      "coverSha256": "65bde37e17bea7d2d2c958d717fe0438f67b08e4c548e6497d0712bfac4c1441"
+    },
+    {
+      "aula": 4,
+      "parte": 2,
+      "title": "O que não fazer no auge",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184446?h=f23c071099",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472.png",
+        "durationSeconds": 107
+      },
+      "coverFile": "capas-das-aulas/aula-04-parte-02.png",
+      "coverSha256": "6d0b2063dc8d936922708b8ff4769c9ddc1976a450b75f2d61afad386cbad472"
+    },
+    {
+      "aula": 5,
+      "parte": 1,
+      "title": "Acolher e ensinar para a próxima vez",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184475?h=5491390d23",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35.png",
+        "durationSeconds": 108
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-01.png",
+      "coverSha256": "bd2cbf36aab73db95433203f967d4239e6355c5f3a1aaccbd689f7e8f7211b35"
+    },
+    {
+      "aula": 5,
+      "parte": 2,
+      "title": "O gatilho, a consequência e os ajustes",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184501?h=b5fa5a42c9",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179.png",
+        "durationSeconds": 149
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-02.png",
+      "coverSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179"
+    },
+    {
+      "aula": 5,
+      "parte": 3,
+      "title": "Hoje eu escuto melhor",
+      "video": {
+        "src": "https://player.vimeo.com/video/1250184507?h=e0042c001c",
+        "kind": "video",
+        "provider": "vimeo",
+        "posterUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e.png",
+        "durationSeconds": 112
+      },
+      "coverFile": "capas-das-aulas/aula-05-parte-03.png",
+      "coverSha256": "61997b8bda3d6140cfdd7de2bea10b70e92d616b394b7c2ef816527655c9ee4e"
+    }
+  ],
+  "apostila": {
+    "aula": 1,
+    "parte": 2,
+    "file": "apostila.pdf",
+    "sha256": "09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed",
+    "attachment": {
+      "id": "787b03b4-9df9-4e3f-b5d7-cefc5f5518e3",
+      "url": "r2priv:admin/frustracoes-20261125/09b58debc29354f694cab1be7f2a104395b7e9aa87a71f252b31892dba77b1ed.pdf",
+      "label": "Apostila do curso: Frustrações e crises",
+      "fileType": "application/pdf",
+      "sizeBytes": 946916,
+      "zappyStudentNotebook": true
+    }
+  },
+  "certificate": {
+    "aula": 5,
+    "parte": 3,
+    "file": "certificado.png",
+    "config": {
+      "kind": "certificate",
+      "title": "Certificado de conclusão",
+      "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
+      "introLine": "Certificamos que",
+      "accentColor": "#38204e",
+      "baseImageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/30e85a03867342461b250692c0567344fff03c7cfe4cc29056d46cbadf26ca6e.png",
+      "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises"
+    }
+  },
+  "courseCover": {
+    "file": "capa-do-curso.png",
+    "url": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b.png"
+  },
+  "pending": [],
+  "verifiedAt": "2026-11-26T01:11:11.416Z"
+}
