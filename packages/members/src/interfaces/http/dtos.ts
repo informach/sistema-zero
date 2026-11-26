@@ -1342,6 +1342,13 @@ const CommercePresentation = {
 const GiftBlockSchema = t.Object({
   kind: t.Literal('gift'),
   campaignCode: t.String({ pattern: '^[a-z0-9-]{4,32}$' }),
+  benefitCode: t.Optional(t.Never()),
+  ...CommercePresentation,
+})
+const CourseBenefitBlockSchema = t.Object({
+  kind: t.Literal('gift'),
+  benefitCode: t.String({ pattern: '^[a-z0-9-]{4,32}$' }),
+  campaignCode: t.Optional(t.Never()),
   ...CommercePresentation,
 })
 const PurchaseBlockSchema = t.Object({
@@ -1352,6 +1359,7 @@ const PurchaseBlockSchema = t.Object({
 
 export const LessonBlockContentSchema = t.Union([
   GiftBlockSchema,
+  CourseBenefitBlockSchema,
   PurchaseBlockSchema,
   InteractiveBlockSchema,
   RichTextBlockSchema,

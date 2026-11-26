@@ -55,6 +55,7 @@ export interface BlockForm {
   kind: LessonBlockKind
   commerceOfferRef: string
   commerceCampaignCode: string
+  commerceBenefitCode: string
   commerceDescription: string
   commerceButtonLabel: string
   /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
@@ -149,6 +150,7 @@ export const EMPTY_BLOCK: BlockForm = {
   kind: 'rich_text',
   commerceOfferRef: '',
   commerceCampaignCode: '',
+  commerceBenefitCode: '',
   commerceDescription: '',
   commerceButtonLabel: '',
   dialoguePose: 'speaking',
@@ -313,7 +315,9 @@ export function buildContent(
     case 'gift':
       return {
         kind: 'gift',
-        campaignCode: f.commerceCampaignCode.trim(),
+        ...(f.commerceBenefitCode.trim()
+          ? { benefitCode: f.commerceBenefitCode.trim() }
+          : { campaignCode: f.commerceCampaignCode.trim() }),
         ...(opt(f.title) ? { title: f.title.trim() } : {}),
         ...(opt(f.commerceDescription) ? { description: f.commerceDescription.trim() } : {}),
         ...(opt(f.commerceButtonLabel) ? { buttonLabel: f.commerceButtonLabel.trim() } : {}),
@@ -468,9 +472,9 @@ export function buildContent(
 export function validateBlock(f: LessonFormSnapshot<BlockForm>): string | null {
   switch (f.kind) {
     case 'gift':
-      return /^[a-z0-9-]{4,32}$/.test(f.commerceCampaignCode.trim())
+      return /^[a-z0-9-]{4,32}$/.test((f.commerceBenefitCode || f.commerceCampaignCode).trim())
         ? null
-        : 'Escolha a campanha do presente.'
+        : 'Escolha o benefício ou a campanha do presente.'
     case 'purchase':
       return /^[a-zA-Z0-9][a-zA-Z0-9-]{0,139}$/.test(f.commerceOfferRef.trim())
         ? null

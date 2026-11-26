@@ -1,4 +1,5 @@
 import type {
+  CourseBenefitContext,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -7,7 +8,7 @@ import type {
 import type { CampaignReferralSnapshot } from '../campaign-referral'
 
 export type AmbassadorStatus = 'active' | 'disabled'
-export type CodeOwnerKind = 'ambassador' | 'account' | 'campaign'
+export type CodeOwnerKind = 'ambassador' | 'account' | 'campaign' | 'benefit'
 export type RedemptionStatus = 'pending' | 'completed' | 'failed'
 export type InviteStatus = 'pending' | 'sent' | 'failed'
 
@@ -33,6 +34,7 @@ export interface CodeRecord {
   ambassadorId: string | null
   accountUserId: string | null
   campaignId?: string | null
+  benefitId?: string | null
   displayName: string
   ownerEmail: string | null
   status: string
@@ -41,6 +43,7 @@ export interface CodeRecord {
 }
 
 export interface RedemptionRecord {
+  benefitContext?: CourseBenefitContext | null
   id: string
   codeId: string
   email: string
@@ -308,6 +311,7 @@ export interface ReferralRepository {
    * conferida sob o lock da campanha: precisa ser a dela (ou a padrão, se ela não tem oferta).
    */
   insertRedemption(input: {
+    benefitContext?: CourseBenefitContext | null
     bonusAmounts?: ReferralBonusAmounts
     codeId: string
     email: string

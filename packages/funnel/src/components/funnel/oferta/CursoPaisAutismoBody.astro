@@ -3,6 +3,7 @@ import {
   CURSO_PAIS_AUTISMO_PRESENTE,
   DEPOIMENTOS_CURSO_AUTISMO,
 } from '../../../content/curso-pais-autismo'
+import { prazoDaOferta } from '../../../content/presente-resgate'
 // Página de venda do curso para pais "Como ajudar seu filho autista a lidar com frustrações e evitar
 // crises" (`kids/como-ajudar-seu-filho-autista-nas-frustracoes`, 25/11/2026), com a psicóloga
 // Vivianne Lima. Mesmo corpo do guia para pais (`CursoPaisOferta`, proposta de 26/11/2026: a estrutura
@@ -13,6 +14,7 @@ import { cursoAutismoVenda } from '../../../funnels/autismo-frustracoes/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import { comPreco } from '../../../funnels/vilao-em-aliado/oferta'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
@@ -26,7 +28,12 @@ import PresenteJanela from './PresenteJanela.astro'
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, coupon, presente, access } = Astro.props
 const preco = precoDoDesafio(priceReais, coupon)
-const venda = comPreco(cursoAutismoVenda(access?.guaranteeDays ?? null), preco.preco)
+// O prazo da oferta do catálogo ("6 meses"); sem prazo em meses, as frases saem sem prazo.
+const prazo =
+  access?.mode === 'fixed' && access.durationUnit === 'months' && access.durationValue
+    ? prazoDaOferta(access).dias
+    : null
+const venda = comPreco(cursoAutismoVenda(access?.guaranteeDays ?? null, prazo), preco.preco)
 // Modo presente (`?presente=`, 26/11/2026): a página de venda inteira, com o selo de quem dá o
 // presente e o MESMO cartão com o preço riscado até R$ 0 e o cadastro numa janela.
 const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
@@ -63,12 +70,12 @@ const barra = cartao
   barra={barra}
   links={P.topo.links}
   cta={P.topo.cta}
-  ogImage={P.ogImage}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   indexavel={!presente}
   canonical={canonical}
   termosHref={`${f.basePath}/termos`}
 >
-  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={P.ogImage} />
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={funnelOgImage(f, Astro.site ?? Astro.url)} />
   <CursoPaisOferta copy={P} selo={origem ?? undefined} depoimentos={DEPOIMENTOS_CURSO_AUTISMO}>
     <section slot="compra" id="oferta" class="c9-sec pk-pontilhado" aria-labelledby="curso-autismo-oferta" data-analytics-id="curso-autismo-oferta-secao">
       <div class="c9-wrap c9-lado c9-lado--topo">

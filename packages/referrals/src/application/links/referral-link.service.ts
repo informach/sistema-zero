@@ -3,6 +3,7 @@ import { campaignState } from '../../domain/campaign'
 import { giftOfferRef } from '../../domain/gift-policy'
 import type { CampaignCouponCatalog } from '../../domain/ports/campaign-coupon-catalog.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
+import type { CourseBenefitRepository } from '../../domain/ports/course-benefit-repository.port'
 import type { GiftOfferCatalog } from '../../domain/ports/gift-offer-catalog.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import type { AmbassadorOffersService } from '../ambassador-offers/ambassador-offers.service'
@@ -28,6 +29,10 @@ export interface LinkResolution {
 
 export type LinkResult =
   | { kind: 'ok'; link: LinkResolution }
+  | {
+      kind: 'course_benefit'
+      link: { kind: 'course_benefit'; code: string; audience: GiftAudience; courseSlug: string }
+    }
   | { kind: 'not_found' }
   | { kind: 'upstream_error' }
 
@@ -39,6 +44,7 @@ export class ReferralLinkService {
     private readonly offers: AmbassadorOffersService,
     private readonly couponCatalog?: CampaignCouponCatalog,
     private readonly now: () => Date = () => new Date(),
+    private readonly benefits?: Pick<CourseBenefitRepository, 'findById'>,
   ) {}
 
   async resolve(
@@ -48,6 +54,20 @@ export class ReferralLinkService {
   ): Promise<LinkResult> {
     const code = await this.repo.findCodeByCode(codeValue)
     if (code?.status !== 'active') return { kind: 'not_found' }
+
+    if (code.ownerKind === 'benefit') {
+      const benefit = code.benefitId ? await this.benefits?.findById(code.benefitId) : null
+      if (!benefit || benefit.status !== 'active') return { kind: 'not_found' }
+      return {
+        kind: 'course_benefit',
+        link: {
+          kind: 'course_benefit',
+          code: code.code,
+          audience: benefit.audience,
+          courseSlug: benefit.courseSlug,
+        },
+      }
+    }
 
     if (code.ownerKind === 'campaign' && code.campaignId) {
       const campaign = await this.campaigns.findById(code.campaignId)
@@ -121,7 +141,8 @@ export class ReferralLinkService {
   ): Promise<LinkResult> {
     const code = await this.repo.findCodeByCode(codeValue)
     if (code?.status !== 'active') return { kind: 'not_found' }
-    if (code.ownerKind === 'campaign') return this.resolve(codeValue, null, checkout)
+    if (code.ownerKind === 'campaign' || code.ownerKind === 'benefit')
+      return this.resolve(codeValue, null, checkout)
     if (code.ownerKind !== 'ambassador') return { kind: 'not_found' }
     const wanted = new Set(productSkus)
     let options: Awaited<ReturnType<AmbassadorOffersService['optionsOrThrow']>>

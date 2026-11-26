@@ -62,6 +62,8 @@ function setup() {
   let user: SessionUser | null = buyer
   let block: CommerceBlock | null = { kind: 'gift', campaignCode: 'curso-presente' }
   let authStatus = 200
+  let lessonStatus = 200
+  let commerceAccessSource: import('@sistemazero/core/commerce').CommerceAccessSource | null = null
   let accessStatus = 200
   let access: CommerceAccess[] = []
   let recovery: { status: number; body: unknown } = { status: 404, body: null }
@@ -78,18 +80,22 @@ function setup() {
     auth: { getMe: async () => reply({ user: buyer }, authStatus) },
     members: {
       getLesson: async () =>
-        reply({
-          id: lessonId,
-          slug: 'aula',
-          title: 'Aula',
-          moduleId: 'module',
-          courseSlug: 'curso-pais',
-          estimatedMinutes: null,
-          completed: false,
-          positionSeconds: null,
-          attachments: [],
-          blocks: block ? [{ id: blockId, kind: block.kind, content: block, sortOrder: 0 }] : [],
-        }),
+        reply(
+          {
+            id: lessonId,
+            slug: 'aula',
+            title: 'Aula',
+            moduleId: 'module',
+            courseSlug: 'curso-pais',
+            estimatedMinutes: null,
+            completed: false,
+            positionSeconds: null,
+            attachments: [],
+            commerceAccessSource,
+            blocks: block ? [{ id: blockId, kind: block.kind, content: block, sortOrder: 0 }] : [],
+          },
+          lessonStatus,
+        ),
     },
     payments: {
       listMySubscriptions: async () => reply({ items: [] }),
@@ -154,6 +160,12 @@ function setup() {
     setUser: (value: SessionUser | null) => {
       user = value
     },
+    setLessonStatus: (value: number) => {
+      lessonStatus = value
+    },
+    setLessonAccess: (value: typeof commerceAccessSource) => {
+      commerceAccessSource = value
+    },
     setBlock: (value: CommerceBlock | null) => {
       block = value
     },
@@ -169,6 +181,39 @@ function setup() {
   }
 }
 describe('blocos e cards comerciais autenticados', () => {
+  test('benefício usa a matrícula servida pelo members e ignora a origem enviada pelo navegador', async () => {
+    const q = setup()
+    const access = {
+      entitlementId: '10000000-0000-4000-8000-000000000008',
+      sourceKind: 'payment' as const,
+      sourceId: 'pay-real',
+      subscriptionId: null,
+    }
+    q.setBlock({ kind: 'gift', benefitCode: 'guia-cade' })
+    q.setLessonAccess(access)
+    expect(
+      (
+        await q.routes.commerce.POST(
+          request({
+            action: 'redeem',
+            origin,
+            data: { accessSource: { sourceId: 'fake' }, benefitCode: 'fake' },
+          }),
+        )
+      ).status,
+    ).toBe(200)
+    expect(q.calls.at(-1)?.body).toMatchObject({
+      code: 'guia-cade',
+      sourceLesson: { courseSlug: origin.courseSlug, lessonId, blockId, accessSource: access },
+    })
+  })
+  test('acesso encerrado à aula impede resgatar benefício e não chama referrals', async () => {
+    const q = setup()
+    q.setBlock({ kind: 'gift', benefitCode: 'guia-cade' })
+    q.setLessonStatus(403)
+    expect((await q.routes.commerce.POST(request({ action: 'redeem', origin }))).status).toBe(404)
+    expect(q.calls).toHaveLength(0)
+  })
   test('recusa CSRF, perfil infantil e sessão de suporte sem conceder ou cobrar', async () => {
     const q = setup()
     expect((await q.routes.commerce.POST(request({ action: 'redeem', origin }, true))).status).toBe(

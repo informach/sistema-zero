@@ -1,4 +1,5 @@
 import type {
+  CourseBenefitContext,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -12,6 +13,7 @@ import {
   GiftOfferChangedError,
 } from '../../../domain/campaign'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
+import { CourseBenefitUnavailableError } from '../../../domain/course-benefit'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
@@ -40,6 +42,7 @@ import {
   campaigns,
   codes,
   conversions,
+  courseBenefits,
   invites,
   scholarshipRedemptions,
 } from './schema'
@@ -124,6 +127,7 @@ export function toCode(row: CodeRow): CodeRecord {
     code: row.code,
     ownerKind: row.ownerKind as CodeRecord['ownerKind'],
     campaignId: row.campaignId,
+    benefitId: row.benefitId,
     ambassadorId: row.ambassadorId,
     accountUserId: row.accountUserId,
     displayName: row.displayName,
@@ -142,6 +146,7 @@ export function toRedemption(row: RedemptionRow): RedemptionRecord {
     name: row.name,
     phone: row.phone,
     sourceSnapshot: row.sourceSnapshot,
+    benefitContext: row.benefitContext ?? null,
     campaignReferral: row.campaignReferral,
     bonusAmounts: row.bonusAmounts,
     courseSlug: row.courseSlug,
@@ -667,6 +672,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }
 
   async insertRedemption(input: {
+    benefitContext?: CourseBenefitContext | null
     bonusAmounts?: ReferralBonusAmounts
     codeId: string
     email: string
@@ -690,6 +696,25 @@ export class DrizzleReferralRepository implements ReferralRepository {
       if (previous) return { created: false, redemption: toRedemption(previous) }
       const [code] = await tx.select().from(codes).where(eq(codes.id, input.codeId))
       if (!code) throw new Error('Código de resgate inexistente')
+      if (code.ownerKind === 'benefit') {
+        if (!code.benefitId) throw new CourseBenefitUnavailableError()
+        const [benefit] = await tx
+          .select()
+          .from(courseBenefits)
+          .where(eq(courseBenefits.id, code.benefitId))
+          .for('update')
+        if (
+          !benefit ||
+          benefit.status !== 'active' ||
+          code.status !== 'active' ||
+          benefit.audience !== input.audience ||
+          benefit.courseSlug !== input.benefitContext?.courseSlug ||
+          benefit.id !== input.benefitContext?.benefitId ||
+          !input.benefitContext.accessSource
+        )
+          throw new CourseBenefitUnavailableError()
+        if (input.gift?.offerId !== benefit.giftOfferId) throw new GiftOfferChangedError()
+      }
       let sourceSnapshot = input.sourceSnapshot
       let campaignReferral: CampaignReferralSnapshot | null = null
       let acceptedAt = new Date()
@@ -751,6 +776,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
           name: input.name,
           phone: input.phone,
           sourceSnapshot,
+          benefitContext: input.benefitContext ?? null,
           campaignReferral,
           bonusAmounts: input.bonusAmounts,
           courseSlug: input.courseSlug,

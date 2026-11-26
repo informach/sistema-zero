@@ -7,6 +7,7 @@ import type { AcquisitionReportsService } from '../../application/acquisitions/a
 import type { AmbassadorOffersService } from '../../application/ambassador-offers/ambassador-offers.service'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
+import type { CourseBenefitAdminService } from '../../application/course-benefits/course-benefit-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
 import type { ReferralLinkService } from '../../application/links/referral-link.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
@@ -20,10 +21,12 @@ import {
   CampaignValidationError,
   GiftCatalogUnavailableError,
 } from '../../domain/campaign'
+import { CourseBenefitConversionError } from '../../domain/course-benefit'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
 import { ambassadorOffersRoutes } from './ambassador-offers.routes'
 import { campaignsRoutes } from './campaigns.routes'
+import { courseBenefitsRoutes } from './course-benefits.routes'
 import { internalRoutes } from './internal.routes'
 import { meRoutes } from './me.routes'
 import { memberGiftRoutes } from './member-gifts.routes'
@@ -37,6 +40,7 @@ export interface HttpDeps {
   invite: CreateInviteService
   ambassadors: AmbassadorAdminService
   campaigns?: CampaignAdminService
+  benefits?: CourseBenefitAdminService
   /** Origem por aquisição (25/11/2026): listas, links e relatórios. */
   ambassadorOffers?: AmbassadorOffersService
   links?: ReferralLinkService
@@ -105,6 +109,10 @@ export function createServer(deps: HttpDeps) {
           set.status = 400
           return envelope('CAMPAIGN_INVALID', error.message)
         }
+        if (error instanceof CourseBenefitConversionError) {
+          set.status = 409
+          return envelope('COURSE_BENEFIT_CONFLICT', error.message)
+        }
         if (error instanceof UnauthorizedError) {
           set.status = 401
           return envelope('UNAUTHORIZED', error.message)
@@ -125,6 +133,16 @@ export function createServer(deps: HttpDeps) {
         }
         return undefined
       })
+      .use(
+        deps.benefits && deps.reports
+          ? courseBenefitsRoutes({
+              benefits: deps.benefits,
+              reports: deps.reports,
+              internalToken: deps.internalToken,
+              requireAdminEnabled: deps.requireAdminEnabled ?? true,
+            })
+          : new Elysia(),
+      )
       .use(
         adminRoutes({
           ambassadors: deps.ambassadors,
@@ -166,6 +184,7 @@ export function createServer(deps: HttpDeps) {
       )
       .use(
         internalRoutes({
+          benefits: deps.benefits?.repo,
           repo: deps.repo,
           redeem: deps.redeem,
           invite: deps.invite,
@@ -191,6 +210,7 @@ export function createServer(deps: HttpDeps) {
       )
       .use(
         memberGiftRoutes({
+          benefits: deps.benefits?.repo,
           repo: deps.repo,
           redeem: deps.redeem,
           campaigns: deps.campaigns,

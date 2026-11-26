@@ -37,6 +37,8 @@ interface Props {
   /** Página pública e indexável (padrão: fora dos buscadores, como todo link de presente). */
   indexavel?: boolean
   canonical?: string
+  /** A imagem de compartilhamento (sem ela, o cartão do site). */
+  ogImage?: string
 }
 const {
   title,
@@ -49,10 +51,11 @@ const {
   termosHref = P.legal.termos.href,
   indexavel = false,
   canonical,
+  ogImage,
 } = Astro.props
 const barra: NonNullable<Props['barra']> = barraRecebida ?? P.barra
 ---
-<BaseLayout title={title} description={description} noindex={!indexavel} canonical={canonical} htmlClass="theme-arcade">
+<BaseLayout title={title} description={description} noindex={!indexavel} canonical={canonical} ogImage={ogImage} htmlClass="theme-arcade">
   <slot name="head" slot="head" />
   {[bricolageTitulo, atkinsonCorpo, silkscreenPixel].map((href) => <link slot="head" rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
   <div class="cda pa-corpo">

@@ -1,6 +1,6 @@
 'use client'
 
-import type { CampaignView } from '@sistemazero/core/referrals'
+import type { CampaignView, CourseBenefitSummary } from '@sistemazero/core/referrals'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -22,6 +22,7 @@ export function CommerceBlockFields({
     | 'kind'
     | 'commerceOfferRef'
     | 'commerceCampaignCode'
+    | 'commerceBenefitCode'
     | 'commerceDescription'
     | 'commerceButtonLabel'
     | 'title'
@@ -32,6 +33,7 @@ export function CommerceBlockFields({
 }) {
   const [offers, setOffers] = useState<OfferListItem[]>([])
   const [campaigns, setCampaigns] = useState<CampaignView[]>([])
+  const [benefits, setBenefits] = useState<CourseBenefitSummary[]>([])
   const [query, setQuery] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -58,10 +60,17 @@ export function CommerceBlockFields({
             { signal: controller.signal },
           )
         : Promise.resolve({ items: [] as CampaignView[] }),
+      gift && courseSlug
+        ? apiGet<{ items: CourseBenefitSummary[] }>(
+            `/api/admin/referrals/course-benefits?${new URLSearchParams({ audience, courseSlug })}`,
+            { signal: controller.signal },
+          )
+        : Promise.resolve({ items: [] as CourseBenefitSummary[] }),
     ])
-      .then(([o, c]) => {
+      .then(([o, c, b]) => {
         setOffers(o.items)
         setCampaigns(c.items)
+        setBenefits(b.items)
       })
       .catch(() => {
         if (!controller.signal.aborted)
@@ -71,10 +80,13 @@ export function CommerceBlockFields({
         if (!controller.signal.aborted) setLoading(false)
       })
     return () => controller.abort()
-  }, [audience, gift, query])
+  }, [audience, gift, query, courseSlug])
   const campaign = campaigns.find((c) => c.code === form.commerceCampaignCode)
+  const benefit = benefits.find((b) => b.code === form.commerceBenefitCode)
   const selected =
-    form.commerceOfferRef || offers.find((o) => o.id === campaign?.giftOfferId)?.slug || ''
+    form.commerceOfferRef ||
+    offers.find((o) => o.id === (benefit?.giftOfferId ?? campaign?.giftOfferId))?.slug ||
+    ''
   const offer = offers.find((o) => o.slug === selected)
   const available = campaigns.filter((c) => c.giftOfferId === offer?.id)
   function newCampaign() {
@@ -119,7 +131,11 @@ export function CommerceBlockFields({
         ...current.filter((c) => c.id !== result.campaign.id),
         result.campaign,
       ])
-      onChange({ commerceOfferRef: offer.slug, commerceCampaignCode: result.campaign.code })
+      onChange({
+        commerceOfferRef: offer.slug,
+        commerceCampaignCode: result.campaign.code,
+        commerceBenefitCode: '',
+      })
       setCreating(false)
     } catch (err) {
       setError(
@@ -135,7 +151,7 @@ export function CommerceBlockFields({
     <div className="flex flex-col gap-4 rounded-xl border border-border p-4">
       <p className="text-sm text-muted-foreground">
         {gift
-          ? 'A campanha define a oferta concedida, sem cobrança, para a conta que estiver logada.'
+          ? 'Um benefício acompanha o acesso ao curso. Uma campanha aceita resgates durante o período cadastrado. Ambos concedem a oferta sem cobrança para a conta logada.'
           : 'O preço, os benefícios e as formas de pagamento vêm da oferta. O comprador permanece na plataforma.'}
       </p>
       <Field label="Buscar oferta">
@@ -152,7 +168,7 @@ export function CommerceBlockFields({
           onChange={(e) =>
             onChange({
               commerceOfferRef: e.target.value,
-              ...(gift ? { commerceCampaignCode: '' } : {}),
+              ...(gift ? { commerceCampaignCode: '', commerceBenefitCode: '' } : {}),
             })
           }
         >
@@ -169,14 +185,45 @@ export function CommerceBlockFields({
             ))}
         </Select>
       </Field>
-      {gift ? (
+      {gift && (benefits.length > 0 || form.commerceBenefitCode) ? (
+        <Field
+          label="Benefício permanente do curso"
+          hint="Disponível enquanto a pessoa tem acesso a este curso. O presente conserva o prazo de acesso da oferta."
+        >
+          <Select
+            value={form.commerceBenefitCode}
+            disabled={loading}
+            onChange={(e) =>
+              onChange({
+                commerceBenefitCode: e.target.value,
+                commerceCampaignCode: '',
+                commerceOfferRef: '',
+              })
+            }
+          >
+            <option value="">Usar campanha com período</option>
+            {form.commerceBenefitCode &&
+            !benefits.some((b) => b.code === form.commerceBenefitCode) ? (
+              <option value={form.commerceBenefitCode}>{form.commerceBenefitCode}</option>
+            ) : null}
+            {benefits.map((b) => (
+              <option key={b.id} value={b.code}>
+                {b.name} — {b.status === 'active' ? 'ativo' : 'desativado'}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      ) : null}
+      {gift && !form.commerceBenefitCode ? (
         <Field
           label="Campanha do presente"
           hint="Selecione uma campanha da oferta escolhida. Campanhas pausadas ou encerradas não permitem novas ativações."
         >
           <Select
             value={form.commerceCampaignCode}
-            onChange={(e) => onChange({ commerceCampaignCode: e.target.value })}
+            onChange={(e) =>
+              onChange({ commerceCampaignCode: e.target.value, commerceBenefitCode: '' })
+            }
             disabled={loading || !offer}
           >
             <option value="">Selecione a campanha</option>

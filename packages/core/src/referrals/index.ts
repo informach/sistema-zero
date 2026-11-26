@@ -1,4 +1,6 @@
 /** Contratos de transporte de convites e campanhas; sem dependência de serviço. */
+
+import type { CommerceAccessSource } from '../commerce'
 import type { CampaignSchedule } from './campaign-schedule'
 
 export { type CampaignSchedule, campaignScheduleWindows } from './campaign-schedule'
@@ -34,7 +36,7 @@ export interface GiftAttribution {
   utmContent: string | null
 }
 export interface GiftSource {
-  kind: 'ambassador' | 'account' | 'campaign'
+  kind: 'ambassador' | 'account' | 'campaign' | 'benefit'
   name: string
   campaignId?: string
   context?: CampaignContext
@@ -43,7 +45,62 @@ export interface GiftSource {
 /** Nome para o convite público: pessoas usam só o primeiro nome; campanhas mantêm o título. */
 export function publicGiftSourceName(source: Pick<GiftSource, 'kind' | 'name'>): string {
   const name = source.name.trim()
-  return source.kind === 'campaign' ? name : (name.split(/\s+/u)[0] ?? '')
+  return source.kind === 'campaign' || source.kind === 'benefit'
+    ? name
+    : (name.split(/\s+/u)[0] ?? '')
+}
+
+/** Benefício de um curso: disponibilidade sem calendário, prazo do acesso vindo da oferta. */
+export interface CourseBenefitView {
+  id: string
+  code: string
+  name: string
+  audience: GiftAudience
+  courseSlug: string
+  giftOfferId: string
+  status: 'active' | 'disabled'
+  createdAt: string
+}
+
+export interface CourseBenefitSummary extends CourseBenefitView {
+  results: OriginResults
+}
+export interface CourseBenefitReport {
+  benefit: CourseBenefitView
+  results: OriginResults
+  detail: OriginDetail
+  period: { from: string | null; to: string | null }
+}
+
+export interface CourseAccessOriginView {
+  acquisitionId: string
+  originKind: AcquisitionOriginKind
+  campaignId: string | null
+  campaignTitle: string | null
+  ambassadorId: string | null
+  ambassadorName: string | null
+  offerSlug: string | null
+  utmSource: string | null
+  acquiredAt: string
+}
+
+/** Capturado no primeiro resgate; retomada e cookies posteriores não substituem a origem. */
+export interface CourseBenefitContext {
+  benefitId: string
+  benefitName: string
+  courseSlug: string
+  lessonId: string | null
+  blockId: string | null
+  accessSource: CommerceAccessSource | null
+  accessOrigin: CourseAccessOriginView | null
+}
+
+/** Prova encaminhada exclusivamente pelo BFF depois de reler a aula autenticada. */
+export interface CourseBenefitClaimSource {
+  courseSlug: string
+  lessonId: string
+  blockId: string
+  accessSource: CommerceAccessSource
 }
 /**
  * O que o presente entrega (15/11/2026): a OFERTA do catálogo escolhida pela campanha (ou a
@@ -83,6 +140,8 @@ export interface ReferralGiftView {
   audience?: GiftAudience
   /** Ausente quando a oferta do presente não pôde ser resolvida (ou em respostas antigas). */
   gift?: ReferralGiftOfferView
+  /** Link legado de benefício leva ao curso autenticado; não concede presente publicamente. */
+  courseBenefit?: { courseSlug: string; name: string }
 }
 /** Os links públicos do embaixador, um por público (`/bolsa/<code>`). */
 export interface AmbassadorShareUrls {
@@ -311,10 +370,17 @@ export interface AmbassadorOffersInput {
  * campanha (com ou sem embaixador); `platform` = botão dentro da plataforma (`place`);
  * `ads` = marcas de anúncio (UTM); `none` = sem indicação.
  */
-export type AcquisitionOriginKind = 'ambassador' | 'campaign' | 'platform' | 'ads' | 'none'
+export type AcquisitionOriginKind =
+  | 'ambassador'
+  | 'campaign'
+  | 'platform'
+  | 'course'
+  | 'ads'
+  | 'none'
 export const ACQUISITION_ORIGIN_KINDS: readonly AcquisitionOriginKind[] = [
   'ambassador',
   'campaign',
+  'course',
   'platform',
   'ads',
   'none',
@@ -358,6 +424,7 @@ export const PAYMENT_ORIGIN_SOURCE_KEY = 'origemFonte'
 
 /** Uma aquisição como o Admin a mostra (ficha da conta, últimas aquisições, pessoas). */
 export interface AcquisitionView {
+  courseBenefit?: CourseBenefitContext | null
   id: string
   email: string
   audience: GiftAudience

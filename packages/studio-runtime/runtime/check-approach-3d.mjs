@@ -6,6 +6,12 @@ export class NavigationBlocked extends Error {}
 const CRUISE_MIN = 1.2
 // Pause between position reads while the arrow is held (the read itself waits for a frame).
 const CRUISE_POLL_MS = 20
+// The end of the walk: the boxes must overlap by this much on both axes (same box rule as the
+// Jogo 3D touch), nudged by short pulses, then a few frames for the game's touch to start.
+const CONTACT_DEPTH = 0.1
+const CONTACT_PULSES = 12
+const CONTACT_PULSE_MS = 60
+const CONTACT_FRAMES_MAX_MS = 700
 export function planApproach3d(actor, target, walkable, avoid = []) {
   const unit = 0.25,
     margin = 0.12
@@ -260,8 +266,53 @@ export async function approachObject3d(page, step, readMany) {
         throw Error('O personagem não chegou ao alvo no tempo do teste.')
       }
     }
-    await page.waitForTimeout(80)
+    await ensureContact()
+    await waitFrames(2)
   } finally {
     await release()
+  }
+
+  // "Chegou" pela tolerância da rota (0,22) não é o mesmo que ENCOSTAR: com o alvo num lugar novo
+  // do chão, a caixa do personagem parava a centésimos da do alvo e o encontro do jogo às vezes não
+  // começava (caso real do Jardim Secreto, 26/11/2026). Depois da rota, pequenos pulsos na direção
+  // do centro do alvo até as caixas se sobreporem com folga, pela mesma régua de caixas do Jogo 3D.
+  async function ensureContact() {
+    for (let i = 0; i < CONTACT_PULSES && Date.now() < deadline; i++) {
+      const [x, z, tx, tz] = await numbers([
+        `${step.actorPath}.position.x`,
+        `${step.actorPath}.position.z`,
+        `${step.targetPath}.position.x`,
+        `${step.targetPath}.position.z`,
+      ])
+      const depthX = actor.hw + target.hw - Math.abs(x - tx),
+        depthZ = actor.hd + target.hd - Math.abs(z - tz)
+      if (depthX >= CONTACT_DEPTH && depthZ >= CONTACT_DEPTH) return
+      const alongX = depthX < depthZ
+      const key = alongX ? (tx > x ? 'ArrowRight' : 'ArrowLeft') : tz > z ? 'ArrowDown' : 'ArrowUp'
+      await release()
+      held = key
+      await page.keyboard.down(key)
+      await page.waitForTimeout(CONTACT_PULSE_MS)
+      await release()
+    }
+  }
+  // O encontro do jogo só começa num quadro em que as caixas já se sobrepõem: espera o mundo andar
+  // alguns quadros (sem placa de vídeo, ~170 ms cada), com teto, antes do próximo passo do teste.
+  async function waitFrames(n) {
+    const first = await numbers([framePath])
+      .then(([value]) => value)
+      .catch(() => null)
+    if (first === null) {
+      await page.waitForTimeout(80)
+      return
+    }
+    const until = Math.min(deadline, Date.now() + CONTACT_FRAMES_MAX_MS)
+    while (Date.now() < until) {
+      await page.waitForTimeout(CRUISE_POLL_MS)
+      const frame = await numbers([framePath])
+        .then(([value]) => value)
+        .catch(() => null)
+      if (frame === null || frame - first >= n) return
+    }
   }
 }

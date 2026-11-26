@@ -25,7 +25,8 @@ import { isRateLimitedGetPath } from '../../src/lib/rate-limit-paths'
 
 const src = (path: string) => Bun.file(new URL(`../../${path}`, import.meta.url)).text()
 const PATH = '/kids/como-ajudar-seu-filho-autista-nas-frustracoes'
-const venda = comPreco(cursoAutismoVenda(7), 'R$ 67')
+// O prazo vem da oferta do catálogo: 6 meses desde 26/11/2026 (pedido da Vivianne).
+const venda = comPreco(cursoAutismoVenda(7, '6 meses'), 'R$ 67')
 
 /** Todos os textos de uma copy, sem as perguntas das dúvidas (a pergunta é legítima ali). */
 function textos(valor: unknown, chave = ''): string[] {
@@ -72,12 +73,21 @@ describe('copy do curso da Vivianne', () => {
     expect(venda.hero.surpresa).toBe('')
   })
 
-  test('a venda mostra o preço do catálogo, 1 ano e a garantia da oferta', () => {
+  test('a venda mostra o preço do catálogo, o prazo da oferta e a garantia', () => {
     const tudo = JSON.stringify(venda)
     expect(tudo).not.toContain('{{preco}}')
     expect(tudo).not.toMatch(/gratuit|de graça|sem cartão|presente/i)
     expect(venda.barra.titulo).toBe('R$ 67')
-    expect(venda.hero.beneficios[1]).toBe('Pagamento único, com 1 ano de acesso')
+    expect(venda.hero.beneficios[1]).toBe('Pagamento único, com 6 meses de acesso')
+    expect(venda.oferta.texto).toContain('por 6 meses')
+    expect(tudo).toContain('Por 6 meses, contados da aprovação do pagamento')
+    expect(tudo).not.toMatch(/1 ano|12 meses|um ano/)
+    // Com a oferta antiga (12 meses) a página continua de pé, com o prazo dela.
+    const antiga = JSON.stringify(comPreco(cursoAutismoVenda(7, '1 ano'), 'R$ 67'))
+    expect(antiga).toContain('Por 1 ano, contado da aprovação do pagamento')
+    // Sem prazo em meses no catálogo, nenhuma frase inventa um prazo.
+    const semPrazo = JSON.stringify(comPreco(cursoAutismoVenda(7, null), 'R$ 67'))
+    expect(semPrazo).not.toMatch(/\d+ meses|1 ano/)
     expect(venda.oferta.garantia).toContain('7 dias de garantia')
     expect(comPreco(cursoAutismoVenda(null), 'R$ 67').oferta.garantia).toBeNull()
     // A assinatura Kids inclui os cursos para pais.
@@ -111,7 +121,7 @@ describe('copy do curso da Vivianne', () => {
 })
 
 describe('funil do curso da Vivianne', () => {
-  test('registrado com a página pública, 1 ano de acesso, Termo próprio e apelido', () => {
+  test('registrado com a página pública, prazo em meses do catálogo, Termo próprio e apelido', () => {
     expect(getFunnelByKey('kids/como-ajudar-seu-filho-autista-nas-frustracoes')).toBe(
       AUTISMO_FRUSTRACOES,
     )
@@ -120,8 +130,9 @@ describe('funil do curso da Vivianne', () => {
     expect(AUTISMO_FRUSTRACOES.offerContract).toMatchObject({
       pricingMode: 'one_time',
       accessMode: 'fixed',
-      accessDurationValue: 12,
+      accessDurationValue: null,
       accessDurationUnit: 'months',
+      anyDuration: true,
     })
     expect(AUTISMO_FRUSTRACOES.lifetimeAccess).toBe(false)
     expect(funnelsByApelido('frustracoes')).toEqual([AUTISMO_FRUSTRACOES])
@@ -131,13 +142,14 @@ describe('funil do curso da Vivianne', () => {
     expect(funnelForGiftCourse(CURSO_PAIS_AUTISMO_SLUG, 'adult')).toBeNull()
   })
 
-  test('o Termo é do curso, diz 1 ano e que não substitui o acompanhamento', () => {
+  test('o Termo é do curso, diz 6 meses e que não substitui o acompanhamento', () => {
     const termo = JSON.stringify(AUTISMO_FRUSTRACOES.legal.termos)
     expect(AUTISMO_FRUSTRACOES.legal.termos.titulo).toContain('Como ajudar seu filho autista')
-    expect(termo).toContain('1 (um) ano')
+    expect(termo).toContain('6 (seis) meses')
+    expect(termo).not.toContain('1 (um) ano')
     expect(termo).toContain('não substitui o acompanhamento da criança')
     expect(termo).not.toMatch(/vitalíc|sem prazo|\bguia\b|vilão/i)
-    expect(AUTISMO_FRUSTRACOES.legal.termsVersion).toBe('curso-autismo-2026-11-25')
+    expect(AUTISMO_FRUSTRACOES.legal.termsVersion).toBe('curso-autismo-2026-11-26')
   })
 
   test('a oferta despacha o corpo próprio e a página pública usa o funil', async () => {
@@ -198,11 +210,11 @@ describe('painel do embaixador', () => {
       ...base,
       kind: 'referral',
       accessDays: null,
-      accessMonths: 12,
+      accessMonths: 6,
       checkoutLink: 'https://sistemazero.com.br/i/maria-x7k2/frustracoes/pagamento',
     })
     expect(indicacao.estilo).toBe('pais')
-    expect(indicacao.texto).toContain('1 ano de acesso')
+    expect(indicacao.texto).toContain('6 meses de acesso')
     expect(indicacao.mensagem).not.toMatch(/presente|gratuito/i)
   })
 })

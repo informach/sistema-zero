@@ -25,6 +25,7 @@ import {
   REPORT_ROW_LIMIT,
 } from '../../domain/ports/acquisition-repository.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
+import type { CourseBenefitRepository } from '../../domain/ports/course-benefit-repository.port'
 import type {
   ConversionRecord,
   ReferralRepository,
@@ -62,7 +63,58 @@ export class AcquisitionReportsService {
     private readonly acquisitions: AcquisitionRepository,
     private readonly campaigns: Pick<CampaignRepository, 'findById'>,
     private readonly referrals: ReferralRepository,
+    private readonly benefits?: CourseBenefitRepository,
   ) {}
+
+  async courseBenefits(audience: GiftAudience, courseSlug?: string) {
+    const benefits = this.benefits
+    if (!benefits) return []
+    const list = await benefits.list(audience, courseSlug)
+    return Promise.all(
+      list.map(async (b) => ({
+        id: b.id,
+        code: b.code,
+        name: b.name,
+        audience: b.audience,
+        courseSlug: b.courseSlug,
+        giftOfferId: b.giftOfferId,
+        status: b.status,
+        createdAt: b.createdAt.toISOString(),
+        results: originResults(await benefits.acquisitions(b.id)),
+      })),
+    )
+  }
+
+  async courseBenefitDetail(
+    id: string,
+    audience: GiftAudience,
+    offset = 0,
+    from?: Date,
+    to?: Date,
+  ) {
+    const benefits = this.benefits
+    if (!benefits) return null
+    const benefit = await benefits.findById(id)
+    if (!benefit || benefit.audience !== audience) return null
+    const rows = (await benefits.acquisitions(id)).filter(
+      (r) => (!from || r.acquiredAt >= from) && (!to || r.acquiredAt < to),
+    )
+    return {
+      benefit: {
+        id: benefit.id,
+        code: benefit.code,
+        name: benefit.name,
+        audience: benefit.audience,
+        courseSlug: benefit.courseSlug,
+        giftOfferId: benefit.giftOfferId,
+        status: benefit.status,
+        createdAt: benefit.createdAt.toISOString(),
+      },
+      results: originResults(rows),
+      detail: await this.detail(rows, offset),
+      period: { from: from?.toISOString() ?? null, to: to?.toISOString() ?? null },
+    }
+  }
 
   /**
    * `audience` (25/11/2026, revisão do Lote 7): os números de UMA comunidade. O embaixador tem
@@ -294,7 +346,10 @@ export class AcquisitionReportsService {
       const ambassador = await this.referrals.findAmbassadorById(id)
       if (ambassador) ambassadors.set(id, ambassador.name)
     }
-    return { campaigns, ambassadors }
+    const benefits = await this.benefits?.contexts(
+      rows.flatMap((a) => (a.redemptionId ? [a.redemptionId] : [])),
+    )
+    return { campaigns, ambassadors, benefits }
   }
 }
 

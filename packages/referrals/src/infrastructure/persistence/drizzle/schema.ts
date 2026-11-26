@@ -5,6 +5,7 @@ import type {
   CampaignInput,
   CampaignKind,
   CampaignLinkTarget,
+  CourseBenefitContext,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -35,6 +36,28 @@ import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral
  * o mesmo código do membro serve à landing de bolsa e à atribuição `?ref`.
  */
 export const referralsSchema = pgSchema('referrals')
+
+export const courseBenefits = referralsSchema.table(
+  'course_benefits',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    name: varchar({ length: 160 }).notNull(),
+    audience: varchar({ length: 16 }).$type<GiftAudience>().notNull(),
+    courseSlug: varchar({ length: 140 }).notNull(),
+    giftOfferId: uuid().notNull(),
+    status: varchar({ length: 16 }).notNull().default('active'),
+    /** Conversão explícita de um cadastro legado; nunca usada como calendário do benefício. */
+    legacyCampaign: jsonb().$type<Record<string, unknown>>(),
+    legacyHistory: jsonb().$type<unknown[]>(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('course_benefits_course_idx').on(t.audience, t.courseSlug),
+    check('course_benefits_audience_check', sql`${t.audience} in ('kids','adult')`),
+    check('course_benefits_status_check', sql`${t.status} in ('active','disabled')`),
+  ],
+)
 
 export const campaigns = referralsSchema.table(
   'campaigns',
@@ -163,6 +186,7 @@ export const codes = referralsSchema.table(
     ownerKind: varchar({ length: 16 }).notNull(),
     ambassadorId: uuid().references(() => ambassadors.id),
     campaignId: uuid().references(() => campaigns.id),
+    benefitId: uuid().references(() => courseBenefits.id),
     /** Conta do auth (snapshot) — SEM FK cross-schema (regra do monorepo). */
     accountUserId: uuid(),
     /** O "quem indicou" exibido na landing (snapshot). */
@@ -192,10 +216,11 @@ export const codes = referralsSchema.table(
       .where(sql`ambassador_id is not null`),
     uniqueIndex('codes_account_uq').on(t.accountUserId).where(sql`account_user_id is not null`),
     uniqueIndex('codes_campaign_uq').on(t.campaignId).where(sql`campaign_id is not null`),
+    uniqueIndex('codes_benefit_uq').on(t.benefitId).where(sql`benefit_id is not null`),
     check('codes_audience_check', sql`${t.audience} in ('kids','adult')`),
     check(
       'codes_owner_check',
-      sql`(owner_kind = 'ambassador' and ambassador_id is not null and account_user_id is null and campaign_id is null) or (owner_kind = 'account' and account_user_id is not null and ambassador_id is null and campaign_id is null) or (owner_kind = 'campaign' and campaign_id is not null and ambassador_id is null and account_user_id is null)`,
+      sql`(owner_kind = 'ambassador' and ambassador_id is not null and account_user_id is null and campaign_id is null and benefit_id is null) or (owner_kind = 'account' and account_user_id is not null and ambassador_id is null and campaign_id is null and benefit_id is null) or (owner_kind = 'campaign' and campaign_id is not null and ambassador_id is null and account_user_id is null and benefit_id is null) or (owner_kind = 'benefit' and benefit_id is not null and ambassador_id is null and account_user_id is null and campaign_id is null)`,
     ),
   ],
 )
@@ -203,6 +228,7 @@ export const codes = referralsSchema.table(
 export const scholarshipRedemptions = referralsSchema.table(
   'scholarship_redemptions',
   {
+    benefitContext: jsonb().$type<CourseBenefitContext>(),
     id: uuid().primaryKey().defaultRandom(),
     /** Código pelo qual a bolsa entrou — o 1º claim vence a atribuição. */
     codeId: uuid()
@@ -448,7 +474,7 @@ export const acquisitions = referralsSchema.table(
     check('acquisitions_kind_check', sql`${t.kind} in ('gift','one_time','subscription')`),
     check(
       'acquisitions_origin_check',
-      sql`${t.originKind} in ('ambassador','campaign','platform','ads','none')`,
+      sql`${t.originKind} in ('ambassador','campaign','platform','course','ads','none')`,
     ),
     check('acquisitions_status_check', sql`${t.status} in ('active','refunded')`),
     check(
@@ -479,6 +505,7 @@ export const processedWebhooks = referralsSchema.table(
 )
 
 export const schema = {
+  courseBenefits,
   campaigns,
   campaignHistory,
   ambassadors,

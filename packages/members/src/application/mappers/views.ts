@@ -882,6 +882,7 @@ export interface EbookDownloadView {
 }
 
 export interface LessonDetailView {
+  commerceAccessSource?: import('@sistemazero/core/commerce').CommerceAccessSource | null
   requirements?: LessonRequirement[]
   sections?: (Pick<
     LessonSection,

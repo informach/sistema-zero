@@ -42,6 +42,7 @@ export function percent(part: number, whole: number): string {
 export const ORIGIN_LABELS: Record<AcquisitionOriginKind, string> = {
   ambassador: 'Link de embaixador',
   campaign: 'Campanhas',
+  course: 'Dentro de cursos',
   platform: 'Botões da plataforma',
   ads: 'Anúncios e redes',
   none: 'Sem indicação',
@@ -49,6 +50,7 @@ export const ORIGIN_LABELS: Record<AcquisitionOriginKind, string> = {
 export const ORIGIN_SHORT_LABELS: Record<AcquisitionOriginKind, string> = {
   ambassador: 'Embaixador',
   campaign: 'Campanha',
+  course: 'Dentro do curso',
   platform: 'Botão',
   ads: 'Anúncio',
   none: 'Sem indicação',
@@ -57,6 +59,7 @@ export const ORIGIN_SHORT_LABELS: Record<AcquisitionOriginKind, string> = {
 export const ORIGIN_CHART_LABELS: Record<AcquisitionOriginKind, string> = {
   ambassador: 'Embaixadores',
   campaign: 'Campanhas',
+  course: 'Dentro de cursos',
   platform: 'Botões da plataforma',
   ads: 'Anúncios e redes',
   none: 'Sem indicação',
@@ -73,6 +76,7 @@ export const ACQUISITION_KIND_LABELS: Record<AcquisitionKind, string> = {
  * do Kids). Lugar novo sem nome aparece com a etiqueta crua.
  */
 const PLACE_LABELS: Record<string, string> = {
+  course_benefit: 'Benefício dentro do curso',
   'pais-inicio': 'Área dos pais · cartão do Início',
   'pais-cursos': 'Área dos pais · cursos para pais',
   'pais-curso-fechado': 'Área dos pais · curso fechado',
@@ -135,6 +139,11 @@ export function acquisitionOrigin(item: AcquisitionView): { label: string; detai
       }
     case 'ambassador':
       return { label: ORIGIN_SHORT_LABELS.ambassador, detail: item.ambassadorName ?? null }
+    case 'course':
+      return {
+        label: ORIGIN_SHORT_LABELS.course,
+        detail: item.courseBenefit?.benefitName ?? 'Benefício do curso',
+      }
     case 'platform':
       return { label: ORIGIN_SHORT_LABELS.platform, detail: placeLabel(item.place) }
     case 'ads':
@@ -142,6 +151,20 @@ export function acquisitionOrigin(item: AcquisitionView): { label: string; detai
     default:
       return { label: ORIGIN_SHORT_LABELS.none, detail: null }
   }
+}
+
+/** Origem do acesso ao curso, separada da origem do resgate do benefício. */
+export function courseAccessOrigin(item: AcquisitionView): string | null {
+  if (!item.courseBenefit) return null
+  const parent = item.courseBenefit.accessOrigin
+  if (!parent) return 'Origem não identificada'
+  if (parent.originKind === 'campaign')
+    return `Campanha: ${parent.campaignTitle ?? 'não identificada'}`
+  if (parent.originKind === 'ambassador')
+    return `Embaixador: ${parent.ambassadorName ?? 'não identificado'}`
+  if (parent.originKind === 'ads')
+    return `Anúncio ou rede: ${parent.utmSource ?? 'não identificado'}`
+  return ORIGIN_SHORT_LABELS[parent.originKind]
 }
 
 /**

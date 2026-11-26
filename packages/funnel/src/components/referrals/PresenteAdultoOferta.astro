@@ -15,7 +15,7 @@ interface Props {
    * página de venda (`compra`), que não tem quem dá o presente.
    */
   gift?: CadeGiftView
-  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  kind?: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable' | 'course_benefit'>
   /** Base do app adulto (`COMMUNITY_URL`), sem a barra final. */
   communityUrl?: string
   preview?: boolean

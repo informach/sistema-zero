@@ -5,6 +5,8 @@ import type {
   AmbassadorOfferView,
   CampaignDetailView,
   CampaignView,
+  CourseBenefitReport,
+  CourseBenefitSummary,
   OriginDetail,
   OriginReport,
 } from '@sistemazero/core/referrals'
@@ -17,6 +19,26 @@ import type {
   ConversionStatus,
 } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
+
+export function listCourseBenefits(
+  audience: string,
+  courseSlug?: string,
+): Promise<GatewayResponse<{ items: CourseBenefitSummary[] }>> {
+  return gatewayFetch('/referrals/admin/course-benefits', { query: { audience, courseSlug } })
+}
+export function getCourseBenefitResults(
+  id: string,
+  query: {
+    audience: string
+    offset?: number
+    from?: string
+    to?: string
+  },
+): Promise<GatewayResponse<CourseBenefitReport>> {
+  return gatewayFetch(`/referrals/admin/course-benefits/${encodeURIComponent(id)}/results`, {
+    query,
+  })
+}
 
 export function listCampaigns(
   p: ListAmbassadorsParams,

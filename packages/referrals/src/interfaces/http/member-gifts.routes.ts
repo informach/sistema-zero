@@ -1,12 +1,15 @@
 import { envelope, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import { campaignState } from '../../domain/campaign'
+import type { CourseBenefitRepository } from '../../domain/ports/course-benefit-repository.port'
 import { assertInternalCaller } from './auth'
 import type { InternalRoutesDeps } from './internal.routes'
 
 /** Somente o BFF member-shell, autenticado por HMAC no gateway, fornece esta identidade. */
 export function memberGiftRoutes(
-  deps: Pick<InternalRoutesDeps, 'repo' | 'redeem' | 'campaigns' | 'internalToken'>,
+  deps: Pick<InternalRoutesDeps, 'repo' | 'redeem' | 'campaigns' | 'internalToken'> & {
+    benefits?: Pick<CourseBenefitRepository, 'findById'>
+  },
 ) {
   return new Elysia().post(
     '/referrals/internal/member-gifts',
@@ -19,6 +22,28 @@ export function memberGiftRoutes(
         return envelope('GIFT_UNAVAILABLE', 'Presente não encontrado.')
       }
       const campaign = code.campaignId ? await deps.campaigns?.repo.findById(code.campaignId) : null
+      const benefit =
+        code.ownerKind === 'benefit' && code.benefitId
+          ? await deps.benefits?.findById(code.benefitId)
+          : null
+      if (
+        code.ownerKind === 'benefit' &&
+        (!benefit ||
+          benefit.status !== 'active' ||
+          body.originKind !== 'lesson' ||
+          !body.sourceLesson?.accessSource ||
+          body.sourceLesson.courseSlug !== benefit.courseSlug ||
+          benefit.audience !== body.account.audience)
+      ) {
+        set.status = 404
+        return envelope(
+          'GIFT_UNAVAILABLE',
+          'Este benefício é ativado na aula do curso correspondente.',
+        )
+      }
+      const giftSelection = benefit
+        ? { kind: 'gift' as const, giftOfferId: benefit.giftOfferId }
+        : campaign
       const audience = campaign?.audience ?? code.audience
       if (audience !== body.account.audience || (code.ownerKind === 'campaign' && !campaign)) {
         set.status = 404
@@ -26,13 +51,13 @@ export function memberGiftRoutes(
       }
       if (body.action === 'inspect') {
         const own = await deps.redeem.inspectAccountGift(
-          campaign ?? null,
+          giftSelection ?? null,
           audience,
           code.ownerKind,
           body.account,
         )
         if (own) return { ...own, state: campaign ? campaignState(campaign) : 'active' }
-        const plan = await deps.redeem.publicGift(campaign ?? null, audience)
+        const plan = await deps.redeem.publicGift(giftSelection ?? null, audience)
         if (plan.availability !== 'available') {
           set.status = plan.availability === 'upstream_error' ? 503 : 410
           return envelope('GIFT_UNAVAILABLE', 'Não foi possível consultar este presente agora.')
@@ -56,7 +81,18 @@ export function memberGiftRoutes(
             utmContent: body.blockId ?? null,
           },
         },
-        { userId: body.account.userId, audience },
+        {
+          userId: body.account.userId,
+          audience,
+          ...(body.sourceLesson?.accessSource
+            ? {
+                benefitSource: {
+                  ...body.sourceLesson,
+                  accessSource: body.sourceLesson.accessSource,
+                },
+              }
+            : {}),
+        },
       )
       if (
         result.kind === 'completed' ||
@@ -91,6 +127,25 @@ export function memberGiftRoutes(
         originKind: t.String({ maxLength: 20 }),
         originId: t.String({ maxLength: 100 }),
         blockId: t.Optional(t.String({ maxLength: 100 })),
+        sourceLesson: t.Optional(
+          t.Object({
+            courseSlug: t.String({ minLength: 1, maxLength: 140 }),
+            lessonId: t.String({ format: 'uuid' }),
+            blockId: t.String({ format: 'uuid' }),
+            accessSource: t.Nullable(
+              t.Object({
+                entitlementId: t.String({ format: 'uuid' }),
+                sourceKind: t.Union([
+                  t.Literal('payment'),
+                  t.Literal('subscription'),
+                  t.Literal('manual'),
+                ]),
+                sourceId: t.String({ minLength: 1, maxLength: 200 }),
+                subscriptionId: t.Nullable(t.String({ maxLength: 200 })),
+              }),
+            ),
+          }),
+        ),
       }),
     },
   )

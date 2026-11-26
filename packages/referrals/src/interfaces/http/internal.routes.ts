@@ -15,6 +15,7 @@ import type { RedeemScholarshipService } from '../../application/redeem-scholars
 import { campaignRedirectActive, campaignSource, campaignState } from '../../domain/campaign'
 import { EMAIL_PATTERN, isValidCode, normalizeCode } from '../../domain/codes'
 import { CHECKOUT_SEGMENT, referralLinkUrl, scholarshipShareUrl } from '../../domain/links'
+import type { CourseBenefitRepository } from '../../domain/ports/course-benefit-repository.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { assertInternalCaller } from './auth'
 
@@ -22,6 +23,7 @@ const TOKEN_PATTERN = '^[A-Za-z0-9_-]{16,64}$'
 const AUDIENCE = t.Union([t.Literal('kids'), t.Literal('adult')])
 
 export interface InternalRoutesDeps {
+  benefits?: Pick<CourseBenefitRepository, 'findById'>
   repo: ReferralRepository
   redeem: RedeemScholarshipService
   invite: CreateInviteService
@@ -169,6 +171,25 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         if (record?.status !== 'active') {
           set.status = 404
           return envelope('CODE_NOT_FOUND', 'Código não encontrado')
+        }
+        if (record.ownerKind === 'benefit') {
+          const benefit = record.benefitId ? await deps.benefits?.findById(record.benefitId) : null
+          if (!benefit || benefit.status !== 'active') {
+            set.status = 404
+            return envelope('CODE_NOT_FOUND', 'Código não encontrado')
+          }
+          return {
+            code: record.code,
+            displayName: benefit.name,
+            ownerKind: 'benefit',
+            source: { kind: 'benefit', name: benefit.name },
+            state: 'active',
+            startsAt: null,
+            endsAt: null,
+            giftAvailable: false,
+            audience: benefit.audience,
+            courseBenefit: { courseSlug: benefit.courseSlug, name: benefit.name },
+          }
         }
         const campaign =
           record.ownerKind === 'campaign' && record.campaignId

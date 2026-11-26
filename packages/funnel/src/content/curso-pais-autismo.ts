@@ -62,7 +62,7 @@ export const CURSO_PAIS_AUTISMO_PRESENTE: GuiaPaisCopy = {
   },
   barra: { titulo: 'Curso de presente', texto: 'Sem cartão', cta: 'Quero assistir de graça' },
   hero: {
-    selo: 'Curso para pais',
+    selo: 'Workshop para pais',
     titulo: {
       antes: 'Na hora da crise, o seu filho está ',
       destaque: 'pedindo ajuda',

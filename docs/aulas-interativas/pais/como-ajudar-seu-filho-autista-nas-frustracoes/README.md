@@ -50,6 +50,7 @@ Curso bônus do Sistema Zero **para pais e responsáveis**, apresentado por Vivi
 4. Os vídeos estão como `plannedVideo`. Vincular as gravações.
 5. O bloco `apostila` fica na Aula 1, como no outro curso para pais.
 6. O bloco `certificado` fica na Aula 5 e registra a conclusão.
+7. Em **Oferta de venda**, selecionar `como-ajudar-seu-filho-autista-nas-frustracoes-1-ano`: R$ 67, pagamento único e 6 meses de acesso (pedido da Vivianne em 26/11/2026; a oferta nasceu com 12 meses e manteve o slug `-1-ano`, porque o curso e o produto apontam para ele). O curso não tem oferta de presente. Em produção, a página de venda é `https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta`. Os dados comerciais e o link pessoal da Vivianne estão no [recibo comercial](comercial/publicacao-producao-2026-11-26.json).
 
 ## Arquivos para publicação e restauração
 

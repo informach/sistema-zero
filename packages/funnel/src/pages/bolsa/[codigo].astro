@@ -30,6 +30,11 @@ const escolhida = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/.test(escolhidaRaw)
   ? escolhidaRaw
   : undefined
 const page = await resolveReferralGiftPage(gateway, codigo, escolhida)
+if (page.kind === 'course_benefit') {
+  const base = page.audience === 'adult' ? env.COMMUNITY_URL : env.KIDS_COMMUNITY_URL
+  const path = `${page.audience === 'adult' ? '' : '/pais'}/cursos/${encodeURIComponent(page.courseSlug)}`
+  return Astro.redirect(`${base.replace(/\/$/, '')}${path}`, 302)
+}
 // Uma página por curso (25/11/2026): o presente de um curso que tem página de venda abre nela,
 // no modo presente (mesmo sendo outra oferta do catálogo, a de 15 dias). Esta página só fica
 // para curso sem página de venda.

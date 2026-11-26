@@ -47,7 +47,7 @@ describe('copy da página do curso para pais', () => {
 
   test('o curso se chama guia; "Cursos para pais" só como o nome do menu', () => {
     expect(texto).not.toMatch(/\bcursos?\b(?! para pais)|minicurso/i)
-    expect(CURSO_PAIS_VILAO.hero.selo).toBe('Guia gratuito para pais')
+    expect(CURSO_PAIS_VILAO.hero.selo).toBe('Workshop gratuito para pais')
     expect(CURSO_PAIS_VILAO.seoTitle).toContain('guia gratuito para pais')
   })
 
@@ -131,7 +131,7 @@ describe('venda do guia', () => {
   test('a venda não diz gratuito e mostra o preço do catálogo', () => {
     expect(textoVenda).not.toMatch(/gratuit|de graça|sem cartão/i)
     expect(textoVenda).not.toContain('{{preco}}')
-    expect(venda.hero.selo).toBe('Guia para pais')
+    expect(venda.hero.selo).toBe('Workshop para pais')
     expect(venda.barra.titulo).toBe('R$ 27')
     expect(venda.duvidas.itens.map((item) => item.pergunta)).toContain('Quanto custa?')
     expect(venda.oferta.garantia).toContain('7 dias de garantia')

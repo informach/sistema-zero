@@ -18,7 +18,7 @@ export function cadeAdultoVenda(prazo: PrazoDoCade, garantiaDias: number | null)
   return {
     ...base,
     seoTitle: 'Cadê Todo Mundo: o seu primeiro jogo | Sistema Zero',
-    description: `Em ${prazo.dias}, o seu primeiro jogo funcionando no navegador, com o Cadê Todo Mundo na versão adulta e o Mural adulto. Pagamento único, para quem tem 18 anos ou mais.`,
+    description: `O seu primeiro jogo funcionando no navegador, com o Cadê Todo Mundo na versão adulta: ${prazo.dias} de curso e de Mural adulto. Pagamento único, para quem tem 18 anos ou mais.`,
     topo: { ...base.topo, cta: CTA },
     hero: {
       ...base.hero,

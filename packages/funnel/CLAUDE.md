@@ -1,5 +1,20 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Prévia ao compartilhar (WhatsApp e redes, 26/11/2026)
+
+Regra única no `BaseLayout`: toda página manda `og:image` ABSOLUTA (sem `ogImage`, o cartão do site
+`/img/compartilhar.jpg`), com `og:image:secure_url`, `type`, `alt`, `twitter:image` e, nos cartões
+do funil, `width`/`height` 1200×630. Cada funil tem o cartão JPEG em `${imagesBase}/compartilhar.jpg`
+(`funnelOgImage`; gerados das capas por `bun scripts/gerar-cartoes-compartilhar.ts`, fundo desfocado,
+≤ 300 KB): as capas WebP do checkout não aparecem com segurança no WhatsApp, e o guia e o curso da
+Vivianne mandavam caminho relativo. O TEXTO compartilhado (`og:title`/`og:description`/`twitter:*`)
+vem de `content/compartilhamento.ts` (aprovado pela dona, por chave de funil + `bio`): a venda, as
+subpáginas da oferta, o checkout e o obrigado de cada produto compartilham o MESMO texto, e nenhum
+diz "Pagamento" ou "oferta" (`PALAVRAS_PROIBIDAS`; nas outras páginas, título com essas palavras cai
+no texto do site). O `<title>` do checkout passou a `<produto> | Sistema Zero`. Teste:
+`tests/unit/share-image.test.ts`. O WhatsApp guarda a prévia por URL: link já compartilhado pode
+mostrar a antiga por um tempo (outra query string força a nova).
+
 ## A bio do Instagram no estilo Linktree (26/11/2026)
 
 `/` (`src/pages/index.astro`), proposta aprovada pela dona no Canvas da bio: foto do perfil
@@ -47,6 +62,14 @@ valeu não repete aviso dentro do cartão (o selo e o preço riscado já dizem);
 riscado).
 
 ## Curso para pais da Vivianne com página de venda (25/11/2026)
+
+**Prazo de 6 meses (26/11/2026, pedido da Vivianne; só este curso, guia e Cadê seguem com 1 ano):**
+o contrato virou `fixed` + `months` + `anyDuration` (a duração vem da oferta do catálogo) e toda frase
+de prazo da venda sai de `cursoAutismoVenda(garantia, prazo)`, com `prazo = prazoDaOferta(access).dias`
+no corpo (sem prazo em meses no catálogo, as frases saem sem prazo). O obrigado diz "pelo prazo do
+acesso". Termo `curso-autismo-2026-11-26` com 6 (seis) meses. A oferta do catálogo mantém o slug
+`como-ajudar-seu-filho-autista-nas-frustracoes-1-ano` (curso e produto apontam para ele) e passa a
+6 meses no Admin de staging e de produção. O texto abaixo que fala em 1 ano é história.
 
 `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso
 "Como ajudar seu filho autista a lidar com frustrações e evitar crises", com a psicóloga Vivianne Lima,

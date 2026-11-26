@@ -33,6 +33,7 @@ import type { Platform } from '@/lib/platform'
 import {
   ACQUISITION_KIND_LABELS,
   acquisitionOrigin,
+  courseAccessOrigin,
   downloadCsv,
   isOriginReport,
   moneyFromCents,
@@ -176,7 +177,15 @@ function OriginForCommunity({
                   moneyFromCents(row.revenueCents),
                 ]),
                 [],
-                ['Quando', 'E-mail', 'O que', 'Valor', 'Origem', 'Detalhe'],
+                [
+                  'Quando',
+                  'E-mail',
+                  'O que',
+                  'Valor',
+                  'Origem',
+                  'Detalhe',
+                  'Origem do acesso ao curso',
+                ],
                 ...report.latest.map((a) => {
                   const origin = acquisitionOrigin(a)
                   return [
@@ -186,6 +195,7 @@ function OriginForCommunity({
                     moneyFromCents(a.amountCents),
                     origin.label,
                     origin.detail ?? '',
+                    courseAccessOrigin(a) ?? '',
                   ]
                 }),
               ])
@@ -516,6 +526,11 @@ function OriginForCommunity({
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">{origin.label}</div>
+                        {courseAccessOrigin(a) ? (
+                          <div className="text-xs text-muted-foreground">
+                            Acesso ao curso: {courseAccessOrigin(a)}
+                          </div>
+                        ) : null}
                         {origin.detail ? (
                           <div className="text-xs text-muted-foreground">{origin.detail}</div>
                         ) : null}
