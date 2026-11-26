@@ -1,9 +1,6 @@
 import { expect, mock, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
-mock.module('../src/server/gateway', () => ({
-  gatewayFetch: async () => ({ status: 500, body: null }),
-}))
 
 const { withGiftStarted } = await import('../src/server/referrals')
 
