@@ -27,6 +27,14 @@ describe('capa da parte na troca do vídeo', () => {
     ).rejects.toThrow('503')
   })
 
+  test('capa gravada com caminho relativo vira um erro que diz qual é, sem baixar nada', async () => {
+    await expect(
+      capaDaParteConfere('/admin/course-publication/recurso/file.png', digest, async () => {
+        throw new Error('Não deveria baixar')
+      }),
+    ).rejects.toThrow(/não é um endereço completo \(\/admin\/course-publication/)
+  })
+
   test('preserva as capas endereçadas pelo hash dos próprios bytes', async () => {
     expect(
       await capaDaParteConfere(`https://example.com/admin/${digest}.png`, digest, async () => {
