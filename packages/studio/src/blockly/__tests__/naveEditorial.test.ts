@@ -3,11 +3,13 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
-import { isLearningManifest, type SectionProjectCheck } from '@sistemazero/core/learning'
 import {
-  type Block,
-  courseProjects,
-} from '../../../../../docs/aulas-interativas-tecnico/qa/nave-contra-asteroides-projetos-qa'
+  isExecutionRule,
+  isLearningManifest,
+  type LearningManifest,
+  readManifestStudioProjectExamples,
+  type SectionProjectCheck,
+} from '@sistemazero/core/learning'
 import {
   type ExampleHarness,
   exampleHarness,
@@ -19,49 +21,121 @@ import { buildIRFromWorkspace } from '../buildIR'
 import { evaluateStudioSectionProject } from '../projectCheckAuthoring'
 import { ensureBlocklyInitialized } from '../setup'
 
-function javascriptChecks(checks: readonly SectionProjectCheck[]) {
-  return checks.map((check) => {
-    if (check.programmingLanguage === 'python')
-      throw new Error('This editorial fixture requires JavaScript objectives')
-    return check
-  })
+/**
+ * Nave Contra Asteroides na autoria de 24/11/2026 (9 aulas, base Construtor 2D). As soluções de
+ * cada parte vêm do PRÓPRIO manifesto (`projectExamples`), não da fixture histórica
+ * `nave-contra-asteroides-projetos-qa.ts` (que ficou para Meu Jeito e Desafio e descreve o curso
+ * antigo de 5 dias, com nave desenhada, `spawn_bullet`, `spawn_asteroid` e `every_frames`).
+ * Aqui: a solução sobrevive ao Blockly, cumpre os objetivos de estrutura da parte e joga como a
+ * aula promete no runtime 2D. Os objetivos de EXECUÇÃO (`behavior`) são do `studio-runtime` e da
+ * QA do curso (`docs/aulas-interativas-tecnico/qa`), não deste teste.
+ */
+const LESSONS = [
+  'primeira-nave',
+  'dia-1',
+  'dia-2',
+  'chuva-de-asteroides',
+  'dia-3',
+  'pontos',
+  'dia-4',
+  'comecar-partida',
+  'dia-5',
+] as const
+type Lesson = (typeof LESSONS)[number]
+const reached = (lesson: Lesson, milestone: Lesson) =>
+  LESSONS.indexOf(lesson) >= LESSONS.indexOf(milestone)
+
+interface Block {
+  type: string
+  fields?: Record<string, unknown>
+  inputs?: Record<string, { block?: Block; shadow?: Block }>
+  next?: { block: Block }
+}
+type Project = {
+  blocksState: unknown
+  assets?: { name: string; dataUrl: string }[]
 }
 
 beforeAll(() => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
 })
-const projects = courseProjects()
-function manifest(day: number) {
+
+function manifest(lesson: Lesson): LearningManifest {
   const value: unknown = JSON.parse(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-${lesson}.manifesto.json`,
       ),
       'utf8',
     ),
   )
-  if (!isLearningManifest(value)) throw new Error('Invalid authored manifest')
+  if (!isLearningManifest(value)) throw new Error(`Invalid authored manifest: ${lesson}`)
   return value
 }
-function gameFor(day: number) {
+function examples(lesson: Lesson) {
+  const studio = manifest(lesson).blocks.find((block) => block.key === 'projeto')?.content
+  if (studio?.kind !== 'studio') throw new Error(`Studio block missing: ${lesson}`)
+  const parsed = readManifestStudioProjectExamples(studio.projectExamples)
+  if (parsed.kind !== 'valid') throw new Error(`Invalid project examples: ${lesson}`)
+  return parsed.value
+}
+/** A solução autorada da parte (entrada e saída de cada passo da aula). */
+function solution(lesson: Lesson, key = 'entrega') {
+  const all = examples(lesson)
+  const binding = all.sections[key]
+  if (!binding?.solutionExampleId) throw new Error(`No solution for ${lesson}/${key}`)
+  return structuredClone(all.examples[binding.solutionExampleId]) as unknown as Project
+}
+function entry(lesson: Lesson, key: string) {
+  const all = examples(lesson)
+  const id = all.sections[key]?.entryExampleId
+  return id ? (structuredClone(all.examples[id]) as unknown as Project) : undefined
+}
+const structureChecks = (checks: readonly SectionProjectCheck[]) =>
+  checks.filter((check) => {
+    if (check.programmingLanguage === 'python')
+      throw new Error('This editorial fixture requires JavaScript objectives')
+    return !isExecutionRule(check.rule)
+  })
+function roundTrip(project: Project) {
   const workspace = new Blockly.Workspace()
   try {
-    Blockly.serialization.workspaces.load(projects[day]!.blocksState, workspace)
-    const saved = { blocksState: Blockly.serialization.workspaces.save(workspace) }
-    for (const section of manifest(day).sections)
-      if (section.completion?.projectChecks)
-        expect(
-          evaluateStudioSectionProject(
-            javascriptChecks(section.completion.projectChecks),
-            saved,
-          ).filter((c) => !c.passed),
-        ).toEqual([])
-    return exampleHarness({ ...asteroidsExample, ir: buildIRFromWorkspace(workspace) }, () => 0.1)
+    Blockly.serialization.workspaces.load(project.blocksState as never, workspace)
+    return {
+      saved: { ...project, blocksState: Blockly.serialization.workspaces.save(workspace) },
+      ir: buildIRFromWorkspace(workspace),
+    }
   } finally {
     workspace.dispose()
   }
+}
+function failedStructure(lesson: Lesson, key: string, project: Project) {
+  const section = manifest(lesson).sections.find((s) => s.key === key)
+  const checks = section?.completion?.projectChecks
+  if (!checks) throw new Error(`No checks for ${lesson}/${key}`)
+  return evaluateStudioSectionProject(structureChecks(checks), project, entry(lesson, key))
+    .filter((check) => !check.passed)
+    .map((check) => check.checkId)
+}
+
+test.each(
+  LESSONS,
+)('%s: every authored part survives Blockly and meets its structure objectives', (lesson) => {
+  const parts = manifest(lesson).sections.filter((s) => s.completion?.projectChecks?.length)
+  expect(parts.length).toBeGreaterThan(0)
+  for (const part of parts) {
+    const { saved } = roundTrip(solution(lesson, part.key))
+    expect(failedStructure(lesson, part.key, saved as Project), `${lesson}/${part.key}`).toEqual([])
+  }
+})
+
+// ── O jogo da entrega de cada aula, no runtime 2D ──
+function gameFor(lesson: Lesson) {
+  const project = solution(lesson)
+  const { ir } = roundTrip(project)
+  return exampleHarness({ ...asteroidsExample, assets: project.assets ?? [], ir }, () => 0.1)
 }
 const advance = (g: ExampleHarness, n: number) => {
   for (let i = 0; i < n; i++) g.nextFrame()
@@ -71,123 +145,158 @@ const press = (g: ExampleHarness, key: string) => {
   g.fireKey(key)
   g.fireKey(key, 'keyup')
 }
+// Grupos criados em Ao iniciar, nesta ordem: tiros (aula dia-1) e asteroides (chuva). O reinício
+// cria o par de novo, e o capturado guarda os antigos: valem os dois mais novos.
+const tiros = (g: ExampleHarness) => (g.groups.length >= 2 ? g.groups.at(-2)! : g.groups[0]!)
+const asteroides = (g: ExampleHarness) => g.groups.at(-1)!
+// A nave é o sprite 56×64 (o painel das telas tem 704×176); o reinício cria outra, a mais nova.
+const nave = (g: ExampleHarness) => g.sprites.findLast((s) => s.w === 56 && s.h === 64)!
 const clear = (g: ExampleHarness) => {
   for (const group of g.groups) g.api.clearGroup(group)
 }
 function hitShip(g: ExampleHarness) {
-  const ship = g.sprites.at(-1)!
-  const stone = g.api.spawn(g.groups.at(-1)!, { x: ship.x, y: ship.y, w: 40, h: 40, vx: 0, vy: 0 })!
+  const ship = nave(g)
+  const stone = g.api.spawn(asteroides(g), { x: ship.x, y: ship.y, w: 48, h: 48, vx: 0, vy: 0 })!
   g.nextFrame()
-  expect(g.groups.at(-1)!.items.includes(stone)).toBe(false)
+  expect(asteroides(g).items.includes(stone)).toBe(false)
 }
 function scorePoint(g: ExampleHarness) {
   clear(g)
-  press(g, 'Space')
-  const bullet = g.groups.at(-2)!.items[0]!
-  bullet.x = 100
-  bullet.y = 110
-  const stone = g.api.spawn(g.groups.at(-1)!, { x: 100, y: 100, w: 40, h: 40, vx: 0, vy: 0 })!
+  const bullet = g.api.spawn(tiros(g), { x: 100, y: 110, w: 10, h: 28, vx: 0, vy: 0 })!
+  const stone = g.api.spawn(asteroides(g), { x: 90, y: 100, w: 48, h: 48, vx: 0, vy: 0 })!
   g.nextFrame()
-  expect(g.groups.at(-2)!.items.includes(bullet)).toBe(false)
-  expect(g.groups.at(-1)!.items.includes(stone)).toBe(false)
+  expect(tiros(g).items.includes(bullet)).toBe(false)
+  expect(asteroides(g).items.includes(stone)).toBe(false)
 }
-test.each([
-  1, 2, 3, 4, 5,
-])('day %i: authored project survives Blockly and runs its expected behavior', (day) => {
-  const g = gameFor(day)
-  if (day === 5) {
-    advance(g, 120)
-    press(g, 'Space')
-    expect(g.groups[0]!.items).toHaveLength(0)
-    expect(g.groups.at(-1)!.items).toHaveLength(0)
-    expect(g.api.sceneIs('inicio')).toBe(true)
-    press(g, 'Enter')
-    expect(g.api.sceneIs('jogando')).toBe(true)
-  }
-  const ship = g.sprites.at(-1)!,
-    before = ship.x
+
+test.each(LESSONS)('%s: the delivered game plays what the lesson builds', (lesson) => {
+  const g = gameFor(lesson)
+  const ship = nave(g)
+  expect(ship.w).toBe(56)
+  // A abertura vem pronta: antes de Enter, nada se move e Espaço não dispara.
+  let before = ship.x
   g.fireKey('ArrowRight')
   advance(g, 2)
   g.fireKey('ArrowRight', 'keyup')
-  expect(ship.x).toBeGreaterThan(before)
+  expect(ship.x).toBe(before)
+  if (reached(lesson, 'dia-1')) {
+    press(g, 'Space')
+    expect(tiros(g).items).toHaveLength(0)
+  }
+  if (reached(lesson, 'chuva-de-asteroides')) {
+    advance(g, 120)
+    expect(asteroides(g).items).toHaveLength(0)
+  }
+  press(g, 'Enter')
+  expect(g.api.sceneIs('jogando')).toBe(true)
+
+  // primeira-nave: setas com passinho 5 e a borda da tela.
+  before = ship.x
+  g.fireKey('ArrowRight')
+  advance(g, 2)
+  g.fireKey('ArrowRight', 'keyup')
+  expect(ship.x).toBe(before + 10)
   g.fireKey('ArrowLeft')
   advance(g, 150)
   g.fireKey('ArrowLeft', 'keyup')
   expect(ship.x).toBe(0)
-  if (day >= 2) {
+
+  if (reached(lesson, 'dia-1')) {
+    // dia-1: um laser por toque, nascendo no centro da nave; na aula dia-1 ele ainda fica parado.
     clear(g)
     press(g, 'Space')
-    const bullet = g.groups[0]!.items[0]!
-    expect(bullet.x + bullet.w / 2).toBe(ship.x + ship.w / 2)
-    const y = bullet.y
+    expect(tiros(g).items).toHaveLength(1)
+    const laser = tiros(g).items[0]!
+    expect(laser.x + laser.w / 2).toBe(ship.x + ship.w / 2)
+    const y = laser.y
     g.nextFrame()
-    expect(bullet.y).toBeLessThan(y)
-    advance(g, 80)
-    expect(g.groups[0]!.items.includes(bullet)).toBe(false)
+    if (!reached(lesson, 'dia-2')) expect(laser.y).toBe(y)
+    else {
+      // dia-2: o laser sobe e sai do grupo ao deixar a tela.
+      expect(laser.y).toBeLessThan(y)
+      advance(g, 120)
+      expect(tiros(g).items.includes(laser)).toBe(false)
+    }
   }
-  if (day >= 3) {
+  if (reached(lesson, 'chuva-de-asteroides')) {
+    // chuva: uma pedra a cada 1,5 segundo, na posição sorteada, caindo e saindo ao escapar.
     clear(g)
-    const incoming = g.api.spawn(g.groups.at(-1)!, { x: 80, y: -80, w: 40, h: 40, vx: 0, vy: 3 })!
+    advance(g, 95)
+    expect(asteroides(g).items.length).toBeGreaterThan(0)
+    const stone = asteroides(g).items[0]!
+    const y = stone.y
     g.nextFrame()
-    expect(g.groups.at(-1)!.items.includes(incoming)).toBe(true)
-    incoming.y = 600
+    expect(stone.y).toBeGreaterThan(y)
+    stone.y = 700
     g.nextFrame()
-    expect(g.groups.at(-1)!.items.includes(incoming)).toBe(false)
+    expect(asteroides(g).items.includes(stone)).toBe(false)
+  }
+  if (reached(lesson, 'dia-3')) {
     scorePoint(g)
-    if (day >= 4) expect(g.scores['Pontos:']).toBe(1)
+    // pontos: o placar começa em zero e soma um por acerto.
+    if (reached(lesson, 'pontos')) expect(g.scores['Acertos:']).toBe(1)
   }
-  if (day >= 4) {
+  if (reached(lesson, 'dia-4')) {
+    // dia-4: três vidas, dano de uma por batida e um respiro antes do próximo dano.
+    clear(g)
+    expect(g.api.getHealth(ship)).toBe(3)
+    hitShip(g)
+    expect(g.api.getHealth(ship)).toBe(2)
+    hitShip(g)
+    expect(g.api.getHealth(ship)).toBe(2)
+    advance(g, 61)
     clear(g)
     hitShip(g)
-    expect(ship.hp).toBe(2)
-    hitShip(g)
-    expect(ship.hp).toBe(2)
-    advance(g, 46)
-    clear(g)
-    hitShip(g)
-    expect(ship.hp).toBe(1)
+    expect(g.api.getHealth(ship)).toBe(1)
   }
   expect(g.errors).toEqual([])
   expect(g.warnings).toEqual([])
 })
-test('day 5: loss, clean restart, a second Enter and real scoring to 26', () => {
-  const g = gameFor(5)
+
+test('dia-5: defeat, restart to the opening, a clean second match and victory at the goal of 20', () => {
+  const g = gameFor('dia-5')
   press(g, 'Enter')
   for (let i = 0; i < 3; i++) {
     clear(g)
     hitShip(g)
-    if (i < 2) advance(g, 46)
+    if (i < 2) advance(g, 61)
   }
-  expect(g.api.sceneIs('fim')).toBe(true)
+  g.nextFrame()
+  expect(g.api.sceneIs('derrota')).toBe(true)
   press(g, 'Space')
-  expect(g.groups[0]!.items).toHaveLength(0)
+  expect(tiros(g).items).toHaveLength(0)
   press(g, 'Enter')
   g.nextFrame()
   expect(g.api.sceneIs('inicio')).toBe(true)
-  expect(g.sprites.at(-1)!.hp).toBe(3)
-  expect(g.groups.slice(-2).every((group) => group.items.length === 0)).toBe(true)
+  expect(g.api.getHealth(nave(g))).toBe(3)
+  expect([tiros(g), asteroides(g)].every((group) => group.items.length === 0)).toBe(true)
   press(g, 'Enter')
   g.nextFrame()
-  expect(g.scores['Pontos:']).toBe(0)
-  for (let i = 1; i <= 26; i++) {
+  expect(g.scores['Acertos:']).toBe(0)
+  for (let i = 1; i <= 20; i++) {
     scorePoint(g)
-    expect(g.scores['Pontos:']).toBe(i)
+    expect(g.scores['Acertos:']).toBe(i)
   }
+  g.nextFrame()
   expect(g.api.sceneIs('vitoria')).toBe(true)
   press(g, 'Enter')
   g.nextFrame()
   expect(g.api.sceneIs('inicio')).toBe(true)
   expect(g.errors).toEqual([])
 })
-test('day 5: the later loss condition wins when the last life and target coincide', () => {
-  const g = gameFor(5)
+
+test('dia-5: defeat is checked first when the last life and the goal coincide', () => {
+  const g = gameFor('dia-5')
   press(g, 'Enter')
-  for (let i = 0; i < 25; i++) scorePoint(g)
-  g.sprites[0]!.hp = 0
+  for (let i = 0; i < 19; i++) scorePoint(g)
+  nave(g).hp = 0
   scorePoint(g)
-  expect(g.scores['Pontos:']).toBe(26)
-  expect(g.api.sceneIs('fim')).toBe(true)
+  g.nextFrame()
+  expect(g.scores['Acertos:']).toBe(20)
+  expect(g.api.sceneIs('derrota')).toBe(true)
 })
+
+// ── Escolhas criativas aceitas e erros recusados pelos objetivos de estrutura ──
 function all(value: unknown): Block[] {
   if (!value || typeof value !== 'object') return []
   if (Array.isArray(value)) return value.flatMap(all)
@@ -197,161 +306,106 @@ function all(value: unknown): Block[] {
     ...Object.values(object).flatMap(all),
   ]
 }
-const creativeChoices = [
-  {
-    day: 2,
-    name: 'shot event plays jump instead of shoot',
-    edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_play_fx' && b.fields?.FX === 'shoot')!.fields!.FX =
-        'jump'
-    },
-  },
-  {
-    day: 3,
-    name: 'collision plays shoot instead of explosion',
-    edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_play_fx' && b.fields?.FX === 'explosion')!.fields!.FX =
-        'shoot'
-    },
-  },
-]
-function deliveryResults(day: number, project: (typeof projects)[number]) {
-  const workspace = new Blockly.Workspace()
-  try {
-    Blockly.serialization.workspaces.load(project.blocksState, workspace)
-    return evaluateStudioSectionProject(
-      javascriptChecks(
-        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
-      ),
-      { blocksState: Blockly.serialization.workspaces.save(workspace) },
-    )
-  } finally {
-    workspace.dispose()
-  }
+function find(nodes: Block[], predicate: (block: Block) => boolean, what: string) {
+  const found = nodes.find(predicate)
+  if (!found) throw new Error(`Authored block not found: ${what}`)
+  return found
 }
-test.each(creativeChoices)('accepts creative choice: $name', ({ day, edit }) => {
-  const project = structuredClone(projects[day]!)
-  edit(all(project))
-  expect(deliveryResults(day, project).filter((check) => !check.passed)).toEqual([])
-})
-test.each([
-  { day: 2, fx: 'shoot', checkId: 'efeito-tiro' },
-  { day: 3, fx: 'explosion', checkId: 'efeito-explosao' },
-])('day $day: $checkId requires an effect in its own event', ({ day, fx, checkId }) => {
-  const project = structuredClone(projects[day]!)
-  const nodes = all(project)
-  const effect = nodes.find((block) => block.type === 'sz_g2d_play_fx' && block.fields?.FX === fx)
-  const prior = nodes.find((block) => block.next?.block === effect)
-  if (!effect || !prior) throw new Error('Expected an authored effect in a statement chain')
-  // Remove only the effect, keeping every following statement connected.
-  if (effect.next) prior.next = effect.next
-  else delete prior.next
-  delete effect.next
-  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
-    passed: false,
-  })
+const fx = (name: string) => (b: Block) => b.type === 'sz_g2d_play_fx' && b.fields?.FX === name
 
-  const events = nodes.find((block) => block.type === 'sz_frame_events')
-  let lastEvent = events?.inputs?.CHILDREN?.block
-  if (!lastEvent) throw new Error('Expected the authored events area')
-  while (lastEvent.next) lastEvent = lastEvent.next.block
-  lastEvent.next = {
-    block: {
-      type: 'sz_g2d_on_key',
-      fields: { KEY: 'Enter' },
-      inputs: { BODY: { block: effect } },
-    },
-  }
-  // The identical effect on Enter cannot fulfill the shot or collision objective.
-  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
-    passed: false,
-  })
-})
-const mistakes = [
+// Na autoria nova a escolha criativa é a APARÊNCIA (nave, cenário, asteroide e laser entre as três
+// opções de cada, aulas primeira-nave e comecar-partida): "a personalização é opcional e muda
+// somente imagens". Os objetivos preservam o funcionamento e aceitam qualquer combinação.
+const imageOf = (type: string, extra?: (b: Block) => boolean) => (b: Block) =>
+  b.type === type && (extra?.(b) ?? true)
+test.each([
   {
-    day: 5,
-    name: 'victory checked after defeat reverses the simultaneous outcome',
+    name: 'another ship',
     edit: (nodes: Block[]) => {
-      const victory = nodes.find(
-        (b) => b.type === 'sz_js_if_else' && b.inputs?.COND?.block?.type === 'sz_val_compare',
-      )!
-      const defeat = victory.next!.block
-      const prior = nodes.find((b) => b.next?.block === victory)!
-      prior.next = { block: defeat }
-      delete victory.next
-      defeat.next = { block: victory }
+      find(nodes, imageOf('sz_g2d_create_image_sprite'), 'ship').fields!.IMAGE = 'nave-arraia-lilas'
     },
   },
   {
-    day: 2,
-    name: 'fixed shot x',
+    name: 'another backdrop',
     edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_spawn_bullet')!.inputs!.X = {
-        shadow: { type: 'sz_val_number', fields: { NUM: 400 } },
-      }
+      find(nodes, imageOf('sz_g2d_set_backdrop'), 'backdrop').fields!.IMAGE = 'cenario-nebulosa'
     },
   },
   {
-    day: 3,
-    name: 'positive starting y confused with velocity',
+    name: 'another laser and asteroid',
     edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_spawn_asteroid')!.inputs!.VY = {
-        shadow: { type: 'sz_val_number', fields: { NUM: -30 } },
-      }
+      const spawn = (group: string) =>
+        imageOf('sz_g2d_spawn_image_in_group', (b) => b.fields?.GROUP === group)
+      find(nodes, spawn('tiros'), 'laser').fields!.IMAGE = 'laser-dourado'
+      find(nodes, spawn('asteroides'), 'asteroid').fields!.IMAGE = 'asteroide-cristal-violeta'
     },
   },
-  {
-    day: 4,
-    name: 'literal score instead of reading points',
-    edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_draw_score')!.inputs!.VALUE = {
-        shadow: { type: 'sz_val_number', fields: { NUM: 0 } },
-      }
-    },
-  },
-  {
-    day: 4,
-    name: 'wrong victim of damage',
-    edit: (nodes: Block[]) => {
-      nodes.find((b) => b.type === 'sz_g2d_damage_sprite')!.fields!.SPRITE = 'inimigo'
-    },
-  },
-  {
-    day: 5,
-    name: 'unguarded shot event',
-    edit: (nodes: Block[]) => {
-      const e = nodes.find((b) => b.type === 'sz_g2d_on_key' && b.fields?.KEY === 'Space')!
-      e.inputs!.BODY = e.inputs!.BODY!.block!.inputs!.THEN!
-    },
-  },
-  {
-    day: 5,
-    name: 'unguarded asteroid clock',
-    edit: (nodes: Block[]) => {
-      const e = nodes.find((b) => b.type === 'sz_g2d_every_frames')!
-      e.inputs!.BODY = e.inputs!.BODY!.block!.inputs!.THEN!
-    },
-  },
-  {
-    day: 5,
-    name: 'restart merely changes scene without clearing memory',
-    edit: (nodes: Block[]) => {
-      for (const node of nodes.filter((b) => b.type === 'sz_g2d_restart')) {
-        node.type = 'sz_g2d_set_scene'
-        node.fields = { SCENE: 'inicio' }
-      }
-    },
-  },
-]
-test.each(mistakes)('rejects learner error: $name', ({ day, edit }) => {
-  const project = structuredClone(projects[day])
+])('accepts creative choice: $name', ({ edit }) => {
+  const project = solution('dia-5')
   edit(all(project))
-  expect(
-    evaluateStudioSectionProject(
-      javascriptChecks(
-        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
-      ),
-      project,
-    ).some((c) => !c.passed),
-  ).toBe(true)
+  expect(failedStructure('dia-5', 'entrega', roundTrip(project).saved as Project)).toEqual([])
+})
+
+const guard = (key: string) => (b: Block) => b.type === 'sz_g2d_on_key' && b.fields?.KEY === key
+function unwrapGuard(owner: Block) {
+  const wrapped = owner.inputs!.BODY!.block!
+  if (wrapped.type !== 'sz_js_if_else') throw new Error('Expected the authored scene guard')
+  owner.inputs!.BODY = wrapped.inputs!.THEN!
+}
+test.each([
+  {
+    lesson: 'dia-1' as Lesson,
+    name: 'unguarded shot event',
+    checkId: 'evento-protegido',
+    edit: (nodes: Block[]) => unwrapGuard(find(nodes, guard('Space'), 'Space event')),
+  },
+  {
+    lesson: 'chuva-de-asteroides' as Lesson,
+    name: 'unguarded asteroid clock',
+    checkId: 'intervalo-asteroides',
+    edit: (nodes: Block[]) =>
+      unwrapGuard(find(nodes, (b) => b.type === 'sz_g2d_every_seconds', 'asteroid clock')),
+  },
+  // O som deixou de ser escolha livre: a autoria nova o fixa nos objetivos ("toque o efeito de
+  // tiro", "mantenha explosão e som"), então trocá-lo é recusado (antes era aceito).
+  {
+    lesson: 'dia-1' as Lesson,
+    name: 'shot event plays jump instead of shoot',
+    checkId: 'evento-protegido',
+    edit: (nodes: Block[]) => {
+      find(nodes, fx('shoot'), 'shoot fx').fields!.FX = 'jump'
+    },
+  },
+  {
+    lesson: 'dia-3' as Lesson,
+    name: 'collision plays shoot instead of explosion',
+    checkId: 'retirar-o-par',
+    edit: (nodes: Block[]) => {
+      find(nodes, fx('explosion'), 'explosion fx').fields!.FX = 'shoot'
+    },
+  },
+  {
+    lesson: 'dia-3' as Lesson,
+    name: 'collision removes only the asteroid',
+    checkId: 'retirar-o-par',
+    edit: (nodes: Block[]) => {
+      const pair = find(nodes, (b) => b.type === 'sz_g2d_on_group_overlap', 'pair')
+      const first = pair.inputs!.BODY!.block!
+      if (first.type !== 'sz_g2d_remove_from_group') throw new Error('Expected the removal')
+      pair.inputs!.BODY = { block: first.next!.block }
+    },
+  },
+  {
+    lesson: 'dia-4' as Lesson,
+    name: 'wrong victim of damage',
+    checkId: 'dano-e-protecao',
+    edit: (nodes: Block[]) => {
+      find(nodes, (b) => b.type === 'sz_g2d_damage_sprite', 'damage').fields!.SPRITE =
+        'painelMensagem'
+    },
+  },
+])('rejects learner error: $name', ({ lesson, checkId, edit }) => {
+  const project = solution(lesson)
+  edit(all(project))
+  expect(failedStructure(lesson, 'entrega', project)).toContain(checkId)
 })
