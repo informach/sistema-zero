@@ -25,10 +25,10 @@ const IMAGENS = '/img/como-ajudar-seu-filho-autista'
 export const DEPOIMENTOS_CURSO_AUTISMO: DepoimentoDePais[] = []
 
 const ilustracao: ImagemPresente = {
-  src: `${IMAGENS}/capa-do-curso.webp`,
-  width: 1200,
-  height: 675,
-  alt: 'A psicóloga Vivianne, sentada num banquinho, conversa com uma mãe sentada no tapete. Ao lado delas, o filho, de óculos, está encolhido num pufe, triste.',
+  src: `${IMAGENS}/oferta-antecipar.webp`,
+  width: 1536,
+  height: 1024,
+  alt: 'Mãe mostra ao filho uma rotina visual com cartões de brincadeira, refeição e hora de dormir.',
 }
 
 export const CURSO_PAIS_AUTISMO_PRESENTE: GuiaPaisCopy = {
@@ -73,6 +73,18 @@ export const CURSO_PAIS_AUTISMO_PRESENTE: GuiaPaisCopy = {
     texto:
       'A mudança vem aos poucos, e cada criança tem o seu jeito. A equipe que acompanha o seu filho pode ajudar você a adaptar o que viu nas aulas.',
     figura: { rotulo: 'Antes, durante e depois da crise', imagem: ilustracao },
+    figuras: [
+      { rotulo: 'Preparar a próxima transição', imagem: ilustracao },
+      {
+        rotulo: 'Acolher e ensinar a pedir ajuda',
+        imagem: {
+          src: `${IMAGENS}/oferta-acolher.webp`,
+          width: 1536,
+          height: 1024,
+          alt: 'Mãe escuta o filho com calma enquanto ele mostra um cartão visual para pedir ajuda.',
+        },
+      },
+    ],
     itens: [
       {
         icone: 'conversa',

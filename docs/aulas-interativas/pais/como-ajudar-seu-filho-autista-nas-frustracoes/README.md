@@ -101,3 +101,7 @@ A prévia `certificado-demonstracao.pdf` foi emitida pelo próprio curso com os 
 Em 26/11/2026, o arquivo corrigido fornecido pela responsável substituiu a versão anterior de **O gatilho, a consequência e os ajustes** em staging e produção. A capa dessa parte foi enviada e ativada novamente em cada ambiente. A conferência verificou a versão ativa no Vimeo e a reprodução da parte, inclusive no trecho final, pela página do curso.
 
 A pasta original dos vídeos em Downloads já contém o arquivo corrigido. A versão anterior ficou em `historico-videos/2026-11-26/aula-05-parte-02-anterior.mp4`, dentro dela. Os hashes, caminhos e versões estão no recibo da troca e em `origem-dos-videos.json`. A troca preservou os IDs dos vídeos e dos blocos da aula.
+
+## Imagens comerciais
+
+Os originais, as cópias WebP e os prompts das imagens da oferta e do checkout estão em [comercial/README.md](comercial/README.md). As artes não incluem preço nem quantidade de aulas.

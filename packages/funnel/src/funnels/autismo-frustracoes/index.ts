@@ -83,7 +83,7 @@ export const AUTISMO_FRUSTRACOES: FunnelDef = {
   productSku: CURSO_PAIS_AUTISMO_SLUG,
   apelido: 'frustracoes',
   imagesBase: '/img/como-ajudar-seu-filho-autista',
-  checkoutImage: 'capa-do-curso.webp',
+  checkoutImage: 'checkout-capa.webp',
   byline: 'Vivianne Lima · Sistema Zero',
   seoTitle: `${CURSO_PAIS_AUTISMO_TITULO}: curso para pais | Sistema Zero`,
   seoDescription:

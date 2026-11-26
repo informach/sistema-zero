@@ -56,3 +56,8 @@
   border-radius: 50%;
   background: var(--kof-amarelo-fundo);
 }
+/* Ilustrações complementares do curso da Vivianne, na moldura dos cursos para pais. */
+.c917 .cpv-ilustracoes {
+  display: grid;
+  gap: 42px;
+}
