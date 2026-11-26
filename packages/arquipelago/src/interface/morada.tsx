@@ -4,12 +4,16 @@ import {
   type Semente,
 } from '@sistemazero/arquipelago-contracts'
 import {
+  applyMoradaPlacement,
   MORADA_CATALOG,
   type MoradaHouse,
   type MoradaInstance,
+  type MoradaPlacement,
   moradaFileUrl,
+  moradaPlace,
+  moradaRemove,
 } from '@sistemazero/avatar-quarto/morada/catalog'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { casaMoradaStore, PAINEL_DA_MORADA, useCasaMorada } from '../estado/morada'
 import { CenaMorada } from '../mundo/morada'
@@ -91,6 +95,9 @@ export function CasaMorada() {
   const [pendingBehavior, setPendingBehavior] = useState<string | undefined>()
   const [tool, setTool] = useState('movel')
   const [active, setActive] = useState<MoradaInstance | null>(null)
+  /** O ponteiro sobre o lote (mundo) e o recado do último lugar que não serviu. */
+  const [hover, setHover] = useState<[number, number] | null>(null)
+  const [notice, setNotice] = useState('')
   const visit = useEstado((s) => s.visita)
   const readonly = useEstado((s) => s.acesso.somenteLeitura || s.visita !== null)
   const panel = useEstado((s) => s.painelAberto)
@@ -148,6 +155,78 @@ export function CasaMorada() {
         .slice(0, 100),
     [catalog, category, query, tool],
   )
+  /**
+   * O modo construção compartilhado com o quarto da plataforma (26/11/2026, `moradaPlace` do core):
+   * num cômodo, a peça cai pelas mesmas regras (janela e porta grudam na parede e abrem o vão,
+   * quadro na face de dentro, móvel na grade sem ocupar outro). No quintal segue a grade de antes.
+   */
+  const placementAt = (
+    point: [number, number],
+  ): (MoradaPlacement & { origin: [number, number, number] }) | null => {
+    const current = state.house
+    const room = current?.rooms.find((r) => r.id === roomId)
+    if (!current || !room || !pieceId) return null
+    const local: [number, number] = [point[0] - room.origin[0], point[1] - room.origin[2]]
+    const result = moradaPlace(current, pieceId, local, {
+      rotation,
+      roomId: room.id,
+      ...(height > 0
+        ? {
+            base: {
+              id: crypto.randomUUID().replaceAll('-', '').slice(0, 18),
+              pieceId,
+              roomId: room.id,
+              position: [0, height, 0] as [number, number, number],
+              rotation,
+            },
+          }
+        : {}),
+    })
+    return { ...result, origin: [room.origin[0], room.origin[1], room.origin[2]] }
+  }
+  const ghost =
+    state.editing && hover && pieceId && roomId && tool !== 'apagar' ? placementAt(hover) : null
+  // Salvar sozinho (26/11/2026): 1 s depois do último gesto; esconder a aba grava na hora.
+  const saveRef = useRef(store.getState().save)
+  saveRef.current = store.getState().save
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a casa recomeça a contagem a cada gesto.
+  useEffect(() => {
+    if (!state.open || !state.editing || !state.dirty) return
+    if (state.status === 'conflict' || state.status === 'saving' || state.status === 'error') return
+    const timer = setTimeout(() => void saveRef.current(), 1000)
+    return () => clearTimeout(timer)
+  }, [state.open, state.editing, state.dirty, state.status, state.house])
+  useEffect(() => {
+    if (!state.open) return
+    const flush = () => {
+      if (store.getState().dirty) void saveRef.current()
+    }
+    const hidden = () => {
+      if (document.visibilityState === 'hidden') flush()
+    }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', hidden)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', hidden)
+    }
+  }, [state.open, store])
+  // Ctrl+Z desfaz, Ctrl+Shift+Z (ou Ctrl+Y) refaz.
+  useEffect(() => {
+    if (!state.open || !state.editing) return
+    const key = (e: KeyboardEvent) => {
+      const target = e.target
+      if (target instanceof HTMLElement && target.matches('input,select,textarea')) return
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && (e.key === 'z' || e.key === 'Z' || e.key === 'y')) {
+        e.preventDefault()
+        if (e.key === 'y' || e.shiftKey) store.getState().redo()
+        else store.getState().undo()
+      }
+    }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
+  }, [state.open, state.editing, store])
   if (!state.open) return null
   const house = state.house
   function change(next: MoradaHouse) {
@@ -162,6 +241,25 @@ export function CasaMorada() {
   }
   function place(x: number, z: number) {
     if (!house || !pieceId || !state.editing) return
+    const placement = placementAt([x, z])
+    if (placement) {
+      if (!placement.valid) {
+        setNotice(placement.reason ?? 'Aqui não dá.')
+        return
+      }
+      const { origin: _, ...result } = placement
+      const instance = pendingBehavior
+        ? { ...result.instance, behavior: pendingBehavior }
+        : result.instance
+      if (store.getState().edit(applyMoradaPlacement(house, { ...result, instance }))) {
+        setNotice('')
+        setSelection(instance.id)
+        // Parede, janela e piso continuam na mão (como no quarto); o resto solta.
+        if (MORADA_CATALOG.pieces[pieceId]?.kind !== 'construction') setPieceId('')
+        setPendingBehavior(undefined)
+      }
+      return
+    }
     const room = house.rooms.find((r) => r.id === roomId)
     const instance: MoradaInstance = {
       id: crypto.randomUUID().replaceAll('-', '').slice(0, 18),
@@ -183,24 +281,8 @@ export function CasaMorada() {
   }
   function remove(instance: MoradaInstance) {
     if (!house) return
-    const ids = new Set([instance.id])
-    let changed = true
-    while (changed) {
-      changed = false
-      for (const i of house.instances) {
-        if (i.parentId && ids.has(i.parentId) && !ids.has(i.id)) {
-          ids.add(i.id)
-          changed = true
-        }
-      }
-    }
-    if (
-      store.getState().edit({
-        ...house,
-        instances: house.instances.filter((i) => !ids.has(i.id)),
-      })
-    )
-      setSelection(null)
+    // Leva junto o que está apoiado; janela ou porta que sai fecha o vão (regra do core).
+    if (store.getState().edit(moradaRemove(house, instance.id))) setSelection(null)
   }
   function select(instance: MoradaInstance) {
     if (panel !== PAINEL_DA_MORADA) return
@@ -254,7 +336,18 @@ export function CasaMorada() {
       {house ? (
         <div className="arq-morada-layout">
           <div className="arq-morada-scene">
-            <CenaMorada house={house} editing={state.editing} onSelect={select} onPlace={place} />
+            <CenaMorada
+              house={house}
+              editing={state.editing}
+              onSelect={select}
+              onPlace={place}
+              onHover={(x, z) => setHover([x, z])}
+              ghost={
+                ghost
+                  ? { instance: ghost.instance, valid: ghost.valid, origin: ghost.origin }
+                  : null
+              }
+            />
             {!photographing && !state.editing && active && !moradaFunction(active) ? (
               <div className="arq-obra arq-morada-acoes">
                 <strong>{MORADA_CATALOG.pieces[active.pieceId]?.label}</strong>
@@ -287,16 +380,32 @@ export function CasaMorada() {
                 <p className="arq-obra-dica" aria-live="polite">
                   {tool === 'apagar'
                     ? 'Toque na peça que quer retirar.'
-                    : pieceId
-                      ? 'Toque no chão para colocar a peça. A grade mede meio metro.'
-                      : 'Escolha uma ferramenta e uma peça. Toque na casa para ajustar.'}
+                    : ghost && !ghost.valid
+                      ? ghost.reason
+                      : notice
+                        ? notice
+                        : pieceId
+                          ? roomId
+                            ? 'Leve a peça até onde ela cabe e toque para colocar.'
+                            : 'Toque no chão para colocar a peça. A grade mede meio metro.'
+                          : 'Escolha uma ferramenta e uma peça. Toque na casa para ajustar.'}
                 </p>
                 <small>
-                  {state.status === 'saving'
-                    ? 'Guardando…'
-                    : state.dirty
-                      ? 'Mudanças no aparelho'
-                      : 'Casa guardada'}
+                  {state.status === 'saving' ? (
+                    'Guardando…'
+                  ) : state.status === 'error' && state.dirty ? (
+                    <button
+                      type="button"
+                      className="arq-botao"
+                      onClick={() => void store.getState().save()}
+                    >
+                      Não guardou. Tentar de novo
+                    </button>
+                  ) : state.dirty ? (
+                    'Guardando em instantes'
+                  ) : (
+                    'Casa guardada'
+                  )}
                 </small>
               </div>
               <fieldset className="arq-obra-ferramentas">
@@ -427,6 +536,14 @@ export function CasaMorada() {
                   disabled={!state.before.length}
                 >
                   Desfazer
+                </button>
+                <button
+                  type="button"
+                  className="arq-botao"
+                  onClick={() => store.getState().redo()}
+                  disabled={!state.after.length}
+                >
+                  Refazer
                 </button>
                 <button
                   type="button"
