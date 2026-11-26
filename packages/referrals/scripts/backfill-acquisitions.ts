@@ -119,6 +119,7 @@ try {
         windowDays: env.BONUS_WINDOW_DAYS,
       },
       repairWindowDays: 3650,
+      legacyBefore: env.ORIGIN_LEGACY_BEFORE ? new Date(env.ORIGIN_LEGACY_BEFORE) : null,
       batchSize: 500,
       conversionOfferSlugs: env.CONVERSION_OFFER_SLUGS,
     },
