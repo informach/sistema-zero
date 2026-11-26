@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import { LEVEL_INFO } from '@/lib/level-info'
+import { comLugar } from '@/lib/links'
 import type { CatalogCourseView, MyCourseView } from '@/lib/types'
 import { CourseAccessExpiry } from './course-access-expiry'
 import { CourseBadgeChip } from './course-badge-chip'
@@ -353,7 +354,7 @@ function CardShell({
     // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
     return (
       <a
-        href={salesUrl}
+        href={comLugar(salesUrl, 'crianca-curso-fechado')}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${course.title}. Mostrar ao responsável. Abre página externa em nova aba.`}

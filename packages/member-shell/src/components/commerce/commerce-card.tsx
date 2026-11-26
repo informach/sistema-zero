@@ -384,7 +384,74 @@ export function CommerceLessonBlock({
     />
   )
 }
-export function CommercePromotions() {
+/**
+ * O botão de compra sozinho (25/11/2026): abre a mesma janela do mini checkout que o cartão, para
+ * uma página que desenha a própria oferta (o curso fechado na área dos pais).
+ */
+export function CommercePurchaseButton({
+  origin,
+  offer,
+  label,
+  place,
+  imageUrl,
+  next,
+  className,
+}: {
+  origin: CommerceOrigin
+  offer: CommerceCatalogOffer
+  label: string
+  place?: string
+  imageUrl?: string
+  next?: CommerceNextStep
+  className?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const updated = useCallback(() => {
+    router.refresh()
+    window.dispatchEvent(new Event('sz-commerce-updated'))
+  }, [router])
+  return (
+    <>
+      <Button
+        className={className ?? 'h-12 w-full rounded-full font-extrabold'}
+        onClick={() => setOpen(true)}
+      >
+        {label}
+      </Button>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={purchaseDialogTitle(offer)}
+        className="max-w-[900px] rounded-[28px]"
+        bodyClassName="p-0"
+      >
+        {open ? (
+          <CommercePanel
+            origin={origin}
+            onUpdated={updated}
+            onClose={() => setOpen(false)}
+            place={place}
+            imageUrl={imageUrl}
+            next={next}
+          />
+        ) : null}
+      </Dialog>
+    </>
+  )
+}
+
+/**
+ * As ofertas da Início. `only` separa o destaque da Comunidade (coluna principal) dos outros
+ * cartões (a lateral); `skipManaged` esconde o que a conta já tem (quem assina não vê a oferta).
+ */
+export function CommercePromotions({
+  only,
+  skipManaged = false,
+}: {
+  only?: 'community' | 'others'
+  skipManaged?: boolean
+} = {}) {
   const [items, setItems] = useState<PromotionCardView[]>([])
   const [unavailable, setUnavailable] = useState(false)
   const [revision, setRevision] = useState(0)
@@ -422,9 +489,14 @@ export function CommercePromotions() {
         </button>
       </p>
     )
+  const shown = items.filter((item) => {
+    if (skipManaged && item.decision.kind === 'manage') return false
+    const community = Boolean(item.offer && isCommunityProduct(item.offer))
+    return only === 'community' ? community : only === 'others' ? !community : true
+  })
   return (
     <>
-      {items.map(({ origin, offerRef, promotion, decision, offer, plans }) => (
+      {shown.map(({ origin, offerRef, promotion, decision, offer, plans }) => (
         <CommerceCard
           key={offerRef}
           origin={origin ?? { kind: 'promotion', offerRef }}

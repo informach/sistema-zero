@@ -11,7 +11,7 @@ import type {
   ModuleWithLessons,
 } from '../../domain/course/course'
 import { CreatorSeedMetadataSchema } from '../../domain/course/creator-seed-metadata'
-import { resolveSalesPageUrl, resolveStudioUnlockBlocks } from './views'
+import { resolveSalesOfferRef, resolveSalesPageUrl, resolveStudioUnlockBlocks } from './views'
 
 /** Views ADMIN de AUTORIA (CRUD de conteúdo). Datas → ISO. */
 
@@ -26,6 +26,8 @@ export interface CourseView {
   coverImageUrl: string | null
   /** Página de vendas (funil) — de `metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
+  /** A oferta de venda do curso no catálogo (`metadata.salesOfferRef`); `null` sem ela. */
+  salesOfferRef: string | null
   status: string
   /** Slug do curso de ORIGEM quando este é um clone (`metadata.clonedFrom`); senão null. */
   clonedFrom: string | null
@@ -79,6 +81,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     description: c.description,
     coverImageUrl: c.coverImageUrl,
     salesPageUrl: resolveSalesPageUrl(c),
+    salesOfferRef: resolveSalesOfferRef(c),
     status: c.status,
     audience: c.audience,
     level: c.level,

@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/members
 
+## Oferta de venda do curso para pais (25/11/2026, Lote 6)
+
+`metadata.salesOfferRef` (jsonb, sem migration): o slug da oferta de venda no catálogo que a área
+dos pais vende no curso fechado, pelo mini checkout. DTO do curso `salesOfferRef` (slug ou vazio);
+no PATCH AUSENTE preserva (régua do `studioUnlockBlocks`), `null`/vazio limpa; o create grava pelo
+`buildCourseMetadata`. `CourseView.salesOfferRef` e `CatalogCourseView.salesOfferRef` +
+`description`; o catálogo dos pais (`learner=parents`) traz também `lessonsCount` (aulas publicadas,
+`countPublishedLessonsByCourseIds` numa consulta). O preço NÃO é resolvido aqui: o member-shell lê
+a oferta no catálogo. Testes: fim de `tests/integration/parents-course.test.ts`.
+
+
 
 ## Lembretes do curso (25/11/2026)
 

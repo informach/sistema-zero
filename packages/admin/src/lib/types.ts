@@ -435,6 +435,8 @@ export interface CourseView {
   coverImageUrl: string | null
   /** Página de vendas (funil) — destino do cadeado no catálogo do community. */
   salesPageUrl: string | null
+  /** A oferta de venda do curso para pais (25/11/2026); ausente em members antigo. */
+  salesOfferRef?: string | null
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience

@@ -1,5 +1,32 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Área dos pais: os cursos para pais à venda (25/11/2026, Lote 6)
+
+Canvas "pais-inicio", "pais-cursos" e "pais-curso-fechado" (frente de embaixadores).
+- **O curso aponta para a oferta**: `salesOfferRef` do curso (Admin › curso para pais › "Oferta de
+  venda"). `server/parent-course-offers.ts` (`loadParentSaleOffers`) lê do catálogo a oferta de cada
+  curso FECHADO (só avulsa; falha deixa o curso sem compra).
+- **Lista** (`/pais/cursos`): cartão com capa sobre um tom (`COURSE_BANDS`), selo "Curso para pais",
+  "N aulas", o primeiro selo do curso, o preço da oferta (fechado) e "Ver o curso" / "Abrir o curso".
+- **Curso fechado**: capa com a promessa, "O que muda", "Quem conduz" e "Liberar este curso" (preço,
+  `accessText`, `guaranteeText` da oferta e o `CommercePurchaseButton` na origem `offer`, lugar
+  `pais-curso-fechado`). O conteúdo de cada curso mora em `cursos/parent-course-pages.ts`
+  (`PARENT_COURSE_PAGES` por slug; curso sem entrada mostra só a capa, a descrição e a compra). Sem
+  oferta, os caminhos de antes (Comunidade e página de venda). A foto da Helena é
+  `public/pais/helena-julio-perfil.webp` (a mesma do funil).
+- **Início**: o destaque da Comunidade (`CommercePromotions only="community" skipManaged`) acima do
+  resto, só para quem não assina; no Início de quem comprou só um curso ele fica no lugar dos filhos
+  (o `FamilyInvite` saiu). Na lateral, sem curso para pais liberado, o cartão de venda do primeiro
+  curso fechado com oferta (`ParentSaleCourseCard`, lugar `pais-inicio`).
+- **Área da criança**: os links de venda levam `?lugar=` (`comLugar` em `lib/links.ts`):
+  `crianca-curso-fechado` no cartão do curso e `crianca-produto-fechado` na tela de ferramenta
+  fechada. Sem compra aqui.
+- Selos sem fundo: os `--kids-*-bg` (que não existem) viraram `--band-lilas|menta|rosa`.
+- ⚠️ "Todos os cursos para pais" saiu do destaque da Comunidade até a dona confirmar que a assinatura
+  Kids os inclui (o "Como liberar" sem oferta ainda diz isso, como antes).
+- Testes: `tests/parent-courses.test.tsx` (Lote 6), `catalog-course-card-cta`, `copy-produto-bloqueado`.
+
+
 ## A criança edita o próprio apelido (24/11/2026)
 
 Pedido da dona: em "Meu perfil" (`app/(app)/perfil/profile-client.tsx`, "Editar perfil") a

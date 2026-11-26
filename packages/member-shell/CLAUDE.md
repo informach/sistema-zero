@@ -1,5 +1,17 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Curso fechado vendido na área dos pais (25/11/2026, Lote 6)
+
+- `members.getSaleOfferReadonly(ref)` (`server/clients.ts`): a oferta do catálogo
+  (`/catalog/offers/:ref`, só disponível e do público do app; senão `null`).
+- `CommercePurchaseButton` (`commerce-card.tsx`): o botão com a janela do mini checkout, para uma
+  página que desenha a própria oferta (o curso fechado). `CommercePromotions({only, skipManaged})`:
+  `only='community'` só o destaque da Comunidade, `'others'` o resto; `skipManaged` esconde o que a
+  conta já tem.
+- `components/commerce/commerce-copy` entrou no mapa de `exports` (é `.ts`, fora do `./components/*`).
+- `CatalogCourseView` ganhou `salesOfferRef?`, `description?` e `lessonsCount?`.
+
+
 ## Mini checkout da área dos pais (25/11/2026, Lote 5 da frente de embaixadores)
 
 Canvas `pais-checkout` (assinatura) e `pais-checkout-curso` (curso). Tudo em

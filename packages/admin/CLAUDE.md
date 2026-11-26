@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Oferta de venda do curso para pais (25/11/2026, Lote 6)
+
+Formulário do curso, só no curso para pais: "Oferta de venda" (`course-sale-offer-field.tsx`), um
+seletor das ofertas AVULSAS ativas da plataforma (`/api/catalog/offers?audience=&status=active`),
+com "Sem venda na plataforma". Vai SEMPRE no payload como `salesOfferRef` (fora do curso para pais,
+`null`). Oferta guardada que saiu das ativas segue escolhida, com o aviso. Teste:
+`tests/course-sale-offer.test.tsx`.
+
+
 ## Oferta vendável na página do produto (25/11/2026)
 
 Formulário da oferta (Catálogo › Ofertas): caixa "Pode ser vendida na página do produto"

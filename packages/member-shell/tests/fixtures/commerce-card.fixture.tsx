@@ -23,7 +23,9 @@ mock.module('../../src/lib/api', () => ({
   apiGet: async () => ({ items: [] }),
 }))
 mock.module('next/navigation', () => ({ useRouter: () => ({ refresh() {} }) }))
-const { CommerceCard } = await import('../../src/components/commerce/commerce-card')
+const { CommerceCard, CommercePurchaseButton } = await import(
+  '../../src/components/commerce/commerce-card'
+)
 let host = document.createElement('div')
 let root = createRoot(host)
 const included: Extract<CommerceView, { mode: 'included' }> = {
@@ -390,4 +392,28 @@ test('revisão: o plano escolhido continua quando a oferta muda e a tela recarre
     requestAt(2).reject({ code: 'OFFER_CHANGED', message: 'As condições da oferta mudaram.' }),
   )
   expect(requestAt(3).body).toMatchObject({ action: 'inspect', offerRef: annual.slug })
+})
+test('Lote 6: o botão de compra sozinho abre o mini checkout da oferta com o lugar', async () => {
+  await act(async () =>
+    root.render(
+      <CommercePurchaseButton
+        origin={{ kind: 'offer', offerRef: course.slug }}
+        offer={course}
+        label="Comprar este curso"
+        place="pais-curso-fechado"
+      />,
+    ),
+  )
+  expect(pending.length).toBe(0)
+  await act(async () =>
+    [...host.querySelectorAll('button')]
+      .find((b) => b.textContent === 'Comprar este curso')
+      ?.click(),
+  )
+  expect(text()).toContain('Comprar o curso')
+  expect(requestAt(0).body).toMatchObject({
+    action: 'inspect',
+    origin: { kind: 'offer', offerRef: course.slug },
+    place: 'pais-curso-fechado',
+  })
 })

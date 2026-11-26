@@ -1,7 +1,7 @@
 import type { JourneyLevelSlug } from '@sistemazero/core/journey'
 import { Lock, Sparkles } from 'lucide-react'
 import { levelInfo } from '@/lib/level-info'
-import { comunidadeContinuarUrl } from '@/lib/links'
+import { comLugar, comunidadeContinuarUrl } from '@/lib/links'
 import { KidsClosingCard } from './kids-closing-card'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
@@ -107,7 +107,10 @@ export function KidsLockedProduct({
           description={lockedProductText(product, opensAt, earned)}
           action={
             <a
-              href={comunidadeContinuarUrl(`ferramenta-${info.slug}`)}
+              href={comLugar(
+                comunidadeContinuarUrl(`ferramenta-${info.slug}`),
+                'crianca-produto-fechado',
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className="sz-btn-gradient h-12 px-6 text-base"

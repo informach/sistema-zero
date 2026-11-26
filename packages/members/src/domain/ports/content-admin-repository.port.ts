@@ -30,6 +30,11 @@ export interface CourseFields {
   /** Página de vendas (funil) — persiste em `metadata.salesPageUrl` (jsonb). */
   salesPageUrl: string | null
   /**
+   * A oferta de venda do curso (slug no catálogo), em `metadata.salesOfferRef`. AUSENTE
+   * (`undefined`) preserva a atual; `null` limpa.
+   */
+  salesOfferRef?: string | null
+  /**
    * Blocos que este curso LIBERA no Estúdio livre após conclusão, sem exigir Mural. Persiste em
    * `metadata.studioUnlockBlocks` (jsonb, sem migração).
    * ⚠️ AUSENTE (`undefined`) **PRESERVA** a lista atual (régua do `audience`/`level`,

@@ -1,5 +1,9 @@
 'use client'
-import { CommercePromotions } from '@sistemazero/member-shell/components/commerce/commerce-card'
+import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
+import {
+  CommerceCard,
+  CommercePromotions,
+} from '@sistemazero/member-shell/components/commerce/commerce-card'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { BookOpen, ChevronRight, Info } from 'lucide-react'
@@ -19,7 +23,7 @@ import {
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
-import type { MyCourseView, ProfileView } from '@/lib/types'
+import type { CatalogCourseView, MyCourseView, ProfileView } from '@/lib/types'
 import { FamilyAiCredits } from './_components/ai-credits-card'
 import { AttentionList, attentionItems } from './_components/attention-list'
 import { ChildSummaryRow } from './_components/child-card'
@@ -32,6 +36,7 @@ import {
 } from './_components/parent-ui'
 import { useChildrenStats } from './_components/use-children-stats'
 import { VoiceNewsCard } from './_components/voice-news-card'
+import { lessonsChip, PARENT_COURSE_PAGES } from './cursos/parent-course-pages'
 import {
   childHref,
   NEW_CHILD_HREF,
@@ -40,22 +45,42 @@ import {
   studentEntryFor,
 } from './parent-routes'
 
+/** Um curso para pais fechado com a oferta de venda dele (a lateral do Início vende por ele). */
+export interface ParentSaleCourse {
+  course: CatalogCourseView
+  offer: CommerceCatalogOffer
+}
+
 /**
- * Quem comprou só um curso para pais (15/11/2026): no lugar dos filhos, o convite para a
- * Comunidade, em tom de convite (sem cobrança). O link sai com a origem no UTM.
+ * O curso para pais à venda na lateral do Início (Canvas "pais-inicio", 25/11/2026): capa, selo,
+ * "Para você", aulas, preço da oferta e o mini checkout, no lugar `pais-inicio`.
  */
-function FamilyInvite() {
+function ParentSaleCourseCard({ sale }: { sale: ParentSaleCourse }) {
+  const { course, offer } = sale
+  const page = PARENT_COURSE_PAGES[course.courseSlug]
+  const chips = [lessonsChip(course.lessonsCount), ...(page?.cardChips ?? [])].filter(
+    (chip): chip is string => Boolean(chip),
+  )
   return (
-    <section aria-labelledby="family-invite" className="kids-carta flex flex-col gap-3 p-5 sm:p-6">
-      <h2 id="family-invite" className="sz-display text-[1.375rem] leading-tight">
-        Seus filhos também podem criar
-      </h2>
-      <p className="max-w-2xl text-muted-foreground text-sm">
-        Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar os
-        próprios jogos, com aulas, o Estúdio e a nossa equipe por perto. Quem assina também tem
-        todos os cursos para pais.
-      </p>
-    </section>
+    <CommerceCard
+      origin={{ kind: 'offer', offerRef: offer.slug }}
+      mode="purchase"
+      variant="course"
+      offer={offer}
+      title={course.title}
+      description={course.subtitle ?? undefined}
+      badge="Curso para pais"
+      eyebrow="Para você"
+      chips={chips}
+      imageUrl={course.coverImageUrl ?? undefined}
+      buttonLabel="Comprar o curso"
+      place="pais-inicio"
+      next={{
+        href: parentCourseHref(course.courseSlug),
+        label: 'Começar o curso',
+        text: `${course.title} já está na área dos pais, em Cursos para pais.`,
+      }}
+    />
   )
 }
 
@@ -131,6 +156,7 @@ export function ParentsClient({
   studentDestination,
   voiceAvailable = false,
   parentCourse = null,
+  saleCourse = null,
   purpose = 'filhos',
 }: {
   accountId: string
@@ -146,6 +172,8 @@ export function ParentsClient({
   voiceAvailable?: boolean
   /** O curso para pais em andamento (ou o primeiro liberado); `null` convida a conhecer. */
   parentCourse?: MyCourseView | null
+  /** Sem curso para pais liberado: um curso fechado com venda, para a lateral. */
+  saleCourse?: ParentSaleCourse | null
   /** Para quem é esta área (`parentPurpose`): o guia e o miolo do Início seguem a compra. */
   purpose?: ParentPurpose
 }) {
@@ -373,9 +401,14 @@ export function ParentsClient({
         photoByProfile={avatarPhotoByProfile}
         studentDestination={studentDestination}
       />
+      {/* O destaque da Comunidade (Canvas "pais-inicio"): só para quem não assina. No Início de
+          quem comprou só um curso para pais ele fica no lugar dos filhos, logo abaixo. */}
+      {soCurso ? null : <CommercePromotions only="community" skipManaged />}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {soCurso ? (
-          <FamilyInvite />
+          <div className="flex min-w-0 flex-col gap-6">
+            <CommercePromotions only="community" skipManaged />
+          </div>
         ) : (
           <ParentSection
             title="Seus filhos esta semana"
@@ -414,8 +447,12 @@ export function ParentsClient({
           </ParentSection>
         )}
         <aside className="flex flex-col gap-6">
-          <CommercePromotions />
-          <ParentCourseCard course={parentCourse} />
+          <CommercePromotions only="others" />
+          {!parentCourse && saleCourse ? (
+            <ParentSaleCourseCard sale={saleCourse} />
+          ) : (
+            <ParentCourseCard course={parentCourse} />
+          )}
           <FamilyAiCredits />
         </aside>
       </div>

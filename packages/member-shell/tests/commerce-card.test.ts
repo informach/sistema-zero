@@ -14,7 +14,7 @@ test('cartão comercial preserva a identidade e a ordem das conferências', asyn
       new Response(child.stderr).text(),
     ])
     expect(code, out + err).toBe(0)
-    expect(out + err).toContain('13 pass')
+    expect(out + err).toContain('14 pass')
   } finally {
     clearTimeout(timer)
     if (child.exitCode === null) child.kill()
