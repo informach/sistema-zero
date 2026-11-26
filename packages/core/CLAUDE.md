@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/core
 
+## `collectionMemory`: a memória gravada dentro de uma guarda do encontro (26/11/2026)
+
+Caso real do Jardim Secreto em produção: a criança guardou `temRegador = verdadeiro` dentro de
+`Se temRegador = falso` no encontro com o regador (pega uma vez só), e o objetivo "lembrar" reprovava
+sempre. `evaluatesCollectionMemory` (`learning/collection-memory.ts`) agora procura a gravação também
+nos ramos de `if` do corpo do encontro com o item (até 4 níveis) que podem rodar com a memória ainda
+FALSA: `condition(cond, nome, false, constantes)` escolhe o ramo (verdadeiro → então, falso → senão,
+desconhecido → os dois). Não contam: `Se falso`, a variável que nunca muda, um `Se temRegador` (só
+abre depois de pegar) e o senão de uma guarda verdadeira; a gravação continua presa ao encontro com o
+item. Testes: `collection-memory.test.ts` (bloco "memória gravada dentro de uma guarda") e
+`docs/aulas-interativas-tecnico/qa/jardim-secreto.test.ts` ("lembrar" com a guarda, 2D e 3D).
+Chega às aulas com o deploy do members (avaliador do servidor) e dos apps que avaliam no cliente.
+
 ## Modo construção da Morada: o motor compartilhado (26/11/2026)
 
 `morada/build.ts` (exportado por `@sistemazero/core/morada` e, para o jogo, pelo

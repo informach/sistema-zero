@@ -145,18 +145,29 @@ export function evaluatesCollectionMemory(rule: CollectionMemoryRule, project: u
           (s.otherVar === rule.actor && s.objVar === target))
   const constants = constantBools(b)
   const collected = new Set<string>()
+  // A memória pode ser gravada dentro de uma guarda do próprio encontro (26/11/2026, caso real do
+  // Jardim Secreto): `Se temRegador = falso` → esconder o regador e `temRegador = verdadeiro`, para
+  // pegar uma vez só. Os ramos que podem rodar quando a memória ainda é FALSA (o primeiro encontro)
+  // também contam; um ramo que nunca roda (`Se falso`, uma variável que nunca muda, ou um `Se
+  // temRegador` que só abre depois de pegar) não conta. A gravação continua presa ao corpo do
+  // encontro com o item.
+  const sets = (body: unknown, name: string, depth: number): boolean =>
+    Array.isArray(body) &&
+    depth <= 4 &&
+    body.filter(active).some((s) => {
+      if (s.type === 'assign')
+        return (
+          s.name === name && record(s.value) && s.value.type === 'bool' && s.value.value === true
+        )
+      if (s.type !== 'if') return false
+      const opens = condition(s.cond, name, false, constants)
+      if (opens === true) return sets(s.then, name, depth + 1)
+      if (opens === false) return sets(s.else, name, depth + 1)
+      return sets(s.then, name, depth + 1) || sets(s.else, name, depth + 1)
+    })
   for (const e of b.events.filter(active))
     if (encounter(e, rule.item) && Array.isArray(e.body))
-      for (const s of e.body.filter(active))
-        if (
-          s.type === 'assign' &&
-          typeof s.name === 'string' &&
-          names.includes(s.name) &&
-          record(s.value) &&
-          s.value.type === 'bool' &&
-          s.value.value === true
-        )
-          collected.add(s.name)
+      for (const name of names) if (sets(e.body, name, 0)) collected.add(name)
   const reaction = (s: unknown) =>
     active(s) &&
     (rule.dimension === '2d'
