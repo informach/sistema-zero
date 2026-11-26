@@ -10,7 +10,7 @@
  * Itens: `map`, `box` (`tone`, `icon`), `note`, `steps` (com `title` opcional), `delivery`,
  * `compare` (dois cards lado a lado), `quote` e `pairs`.
  *
- * A ilustração da capa nasce de `capa.svg`, nesta pasta, exportada em JPEG para
+ * A ilustração da capa vem de `capa-do-curso.png`, na pasta editorial do curso, convertida em JPEG para
  * `../caderno-visual/arte/`.
  *
  * Uso: bun docs/aulas-interativas-tecnico/recursos/como-ajudar-seu-filho-autista-nas-frustracoes/gerar-caderno.ts
@@ -145,22 +145,21 @@ const cover = capaHtml({
   linha1: 'Frustrações',
   linha2: 'e crises',
   frase: 'Como ajudar seu filho autista a lidar com frustrações e evitar crises.',
-  fraseBaixo: 'Com Vivianne Lima, psicóloga da Laopa. Cinco aulas.',
+  fraseBaixo: 'Com Vivianne Lima, psicóloga da Laopa.',
   tema: 'capa--crises',
   selo: material,
 })
-// Tema visual do curso (19/11/2026), puxado da ilustração da capa: azul-petróleo da tempestade,
-// verde-água da calmaria e o amarelo do sol. Os temas por aula variam dentro dessa paleta.
+// Tema atualizado em 25/11/2026: lilás, creme e amarelo da imagem fornecida pela responsável.
 const cursoCss = `
-body { --fundo: #f8fbfa; --tinta: #14324a; --texto: #43525c; --destaque: #1f6f86; --destaque-claro: #e1f1f4; --caminho: #1f6f86;
+body { --fundo: #fcf8f4; --tinta: #38204e; --texto: #43525c; --destaque: #785099; --destaque-claro: #f1e7f7; --caminho: #785099;
   --numero-raio: 9px; --numero-fundo: var(--destaque-claro); --numero-cor: var(--destaque);
-  --entrega-fundo: #14324a; --entrega-borda: #14324a; --entrega-texto: #e6f3f4; --entrega-rotulo: #14324a; --entrega-rotulo-fundo: #ffd45e; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #ffd45e; }
-.tema-azul { --destaque: #1f6f86; --destaque-claro: #e1f1f4; }
-.tema-verde { --destaque: #1f8577; --destaque-claro: #e0f3ee; }
+  --entrega-fundo: #38204e; --entrega-borda: #38204e; --entrega-texto: #e6f3f4; --entrega-rotulo: #38204e; --entrega-rotulo-fundo: #ffd45e; --entrega-rotulo-espaco: 1.6mm 4mm; --entrega-forte: #ffd45e; }
+.tema-azul { --destaque: #785099; --destaque-claro: #f1e7f7; }
+.tema-verde { --destaque: #785099; --destaque-claro: #e0f3ee; }
 .tema-ambar { --destaque: #9a6b00; --destaque-claro: #fdf1cf; }
 .tema-roxo { --destaque: #2b5a8c; --destaque-claro: #e3edf8; }
-.tema-vermelho { --destaque: #1f6f86; --destaque-claro: #e1f1f4; }
-.capa--crises { --capa-painel: #10283b; --capa-amarelo: #ffd45e; --capa-frase: #cfe6ea; --selo-fundo: #1f8577; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 520px; }
+.tema-vermelho { --destaque: #785099; --destaque-claro: #f1e7f7; }
+.capa--crises { --capa-painel: #38204e; --capa-amarelo: #ffd45e; --capa-frase: #eedff4; --selo-fundo: #785099; --selo-topo: 592px; --selo-altura: 73px; --selo-largura: 470px; --selo-letra: 24px; --titulo-topo: 692px; --frase-largura: 520px; }
 .capa--crises .capa-arte { height: 550px; }
 .capa--crises .capa-painel { top: 544px; }
 .capa--crises .capa-painel::before { display: none; }
@@ -174,11 +173,11 @@ body { --fundo: #f8fbfa; --tinta: #14324a; --texto: #43525c; --destaque: #1f6f86
 .mapa-card h3 { font-size: 12.6pt; margin-bottom: .6mm; }
 .mapa-card p { font-size: 10pt; font-weight: 700; line-height: 1.4; color: #4a5250; }
 .mapa-numero { flex: none; width: 9mm; height: 9mm; display: grid; place-items: center; background: #fff; border-radius: 9px; font-family: 'Baloo 2', Arial, sans-serif; font-weight: 800; font-size: 12pt; }
-.mapa-card--azul { background: #e1f1f4; border-color: #bcdde3; color: #1f6f86; }
-.mapa-card--verde { background: #e0f3ee; border-color: #b9e0d6; color: #1f8577; }
+.mapa-card--azul { background: #f1e7f7; border-color: #bcdde3; color: #785099; }
+.mapa-card--verde { background: #e0f3ee; border-color: #b9e0d6; color: #785099; }
 .mapa-card--ambar { background: #fdf1cf; border-color: #f0dca0; color: #9a6b00; }
 .mapa-card--roxo { background: #e3edf8; border-color: #c2d5ec; color: #2b5a8c; }
-.mapa-card--vermelho { background: #e1f1f4; border-color: #bcdde3; color: #1f6f86; }
+.mapa-card--vermelho { background: #f1e7f7; border-color: #bcdde3; color: #785099; }
 .comparar { display: grid; grid-template-columns: 1fr 8mm 1fr; align-items: stretch; gap: 2mm; }
 .comparar-lado { border-radius: 14px; padding: 3.6mm 4.6mm; border: 1px solid #dfe6ee; background: #fff; }
 .comparar-lado h3 { font-size: 12.6pt; margin-bottom: 1.4mm; }

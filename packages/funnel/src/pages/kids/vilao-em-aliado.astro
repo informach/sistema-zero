@@ -1,22 +1,22 @@
 ---
-// Página pública do guia gratuito para pais "Transformando o vilão em aliado" (18/11/2026; texto e
-// layout novos em 21/11/2026). Avulsa, fora do registry (curso gratuito não tem oferta de
-// checkout). O cadastro reaproveita o fluxo do presente: lê a campanha fixa `CODIGO_DA_CAMPANHA` no
-// referrals e, se ela entrega este curso para pais e está aberta, mostra no topo o formulário
-// `BolsaResgate` na variante `guia`. Em
-// qualquer outro caso (campanha ainda não criada, fora do período, referrals fora do ar, oferta de
-// outro curso) a página continua no ar, com o estado no lugar do formulário: é indexável e não
-// pode responder 404 nem prometer um cadastro que não entrega.
-import CursoPaisOferta from '../../components/referrals/CursoPaisOferta.astro'
-import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
-import { cursoPaisVilaoView } from '../../server/curso-pais-vilao'
-import { getDeps } from '../../server/deps'
+// Página pública e indexável do guia para pais "Transformando o vilão em aliado" (25/11/2026): a
+// página de venda do funil `kids/vilao-em-aliado` (o mesmo corpo de `/kids/vilao-em-aliado/oferta`).
+// O guia virou curso pago normal; o presente sai pelos links de campanha e de embaixador, que abrem
+// esta página no modo presente (`?presente=`). O endereço antigo da campanha do guia é tratado pelo
+// redirecionamento genérico de campanha (middleware), sem código fixo aqui.
+import OfertaPage from '../../components/funnel/OfertaPage.astro'
+import { resolveOfferPage } from '../../server/offer-page'
+
 export const prerender = false
-Astro.response.headers.set('cache-control', 'private, no-store')
-const { gateway, env } = getDeps()
-const view = await cursoPaisVilaoView(gateway, env.KIDS_COMMUNITY_URL)
-const P = view.copy
+const page = await resolveOfferPage(
+  { audience: 'kids', produto: 'vilao-em-aliado' },
+  Astro.url,
+  Astro.site,
+)
+if (page instanceof Response) return page
+Astro.response.headers.set(
+  'cache-control',
+  page.noStore ? 'no-store' : 'public, max-age=60, stale-while-revalidate=300',
+)
 ---
-<PresenteLayout title={P.seoTitle} description={P.description} ready={view.ready} barra={P.barra} links={P.topo.links} cta={P.topo.cta} ogImage={P.ogImage} indexavel>
-  <CursoPaisOferta resgate={view.resgate} ready={view.ready} estado={view.estado} podeRetomar={view.podeRetomar} />
-</PresenteLayout>
+<OfertaPage {...page} />

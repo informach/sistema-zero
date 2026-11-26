@@ -13,7 +13,7 @@ const SEED = readFileSync(
   'utf8',
 )
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url))
-const KEY = /'((?:gift|subscription|challenge|renewal|weekly)-[a-z0-9-]+)'/g
+const KEY = /'((?:gift|subscription|challenge|renewal|weekly|course)-[a-z0-9-]+)'/g
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

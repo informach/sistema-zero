@@ -16,13 +16,34 @@ import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
 import { PRESENTE_KIDS, presenteKidsDaOferta } from '../../content/presente'
 import { presenteAdultoDaOferta } from '../../content/presente-adulto'
 import { presenteCursoCopy } from '../../content/presente-curso'
+import { funnelForGiftCourse } from '../../funnels/registry'
 import { getDeps } from '../../server/deps'
 import { giftVariant, isCadeGift, resolveReferralGiftPage } from '../../server/referral-gift-page'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
 const codigo = (Astro.params.codigo ?? '').trim().toLowerCase()
 const { gateway, env } = getDeps()
-const page = await resolveReferralGiftPage(gateway, codigo)
+// O presente escolhido pelo embaixador (`?oferta=`, link `/i/<código>/<oferta>` de oferta sem
+// página de venda): a leitura e o resgate usam essa oferta, se ela estiver na lista do público.
+const escolhidaRaw = Astro.url.searchParams.get('oferta') ?? ''
+const escolhida = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/.test(escolhidaRaw)
+  ? escolhidaRaw
+  : undefined
+const page = await resolveReferralGiftPage(gateway, codigo, escolhida)
+// Uma página por curso (25/11/2026): o presente de um curso que tem página de venda abre nela,
+// no modo presente (mesmo sendo outra oferta do catálogo, a de 15 dias). Esta página só fica
+// para curso sem página de venda.
+if ('gift' in page && page.gift.gift) {
+  const funnel = funnelForGiftCourse(page.gift.gift.courseSlug, page.audience)
+  if (funnel) {
+    const target = new URL(`${funnel.basePath}/oferta`, Astro.url)
+    target.searchParams.set('presente', codigo)
+    if (escolhida) target.searchParams.set('oferta-presente', escolhida)
+    for (const [key, value] of Astro.url.searchParams)
+      if (key.startsWith('utm_') || key === 'event_code') target.searchParams.set(key, value)
+    return Astro.redirect(`${target.pathname}${target.search}`, 302)
+  }
+}
 if (page.kind === 'not_found') Astro.response.status = 404
 if (page.kind === 'unavailable') Astro.response.status = 503
 const semBarra = (url: string) => url.replace(/\/$/, '')
@@ -48,20 +69,20 @@ const cadeAdulto = presenteAdultoDaOferta(ofertaCade)
   page.audience === 'adult' ? (
     curso ? (
       <PresenteAdultoLayout title={curso.copy.seoTitle} description={curso.copy.description} ready={page.kind === 'ready'} barra={curso.copy.barra} secoes={false}>
-        <PresenteCursoOferta gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} variante={curso.variante} />
+        <PresenteCursoOferta oferta={escolhida} gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} variante={curso.variante} />
       </PresenteAdultoLayout>
     ) : (
       <PresenteAdultoLayout title={cadeAdulto.seoTitle} description={cadeAdulto.description} ready={page.kind === 'ready'} barra={cadeAdulto.barra}>
-        <PresenteAdultoOferta gift={{ ...page.gift, gift: ofertaCade }} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} />
+        <PresenteAdultoOferta oferta={escolhida} gift={{ ...page.gift, gift: ofertaCade }} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} />
       </PresenteAdultoLayout>
     )
   ) : curso ? (
     <PresenteLayout title={curso.copy.seoTitle} description={curso.copy.description} ready={page.kind === 'ready'} barra={curso.copy.barra} secoes={false}>
-      <PresenteCursoOferta gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} variante={curso.variante} />
+      <PresenteCursoOferta oferta={escolhida} gift={curso.gift} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} variante={curso.variante} />
     </PresenteLayout>
   ) : (
     <PresenteLayout title={cadeKids.seoTitle} description={cadeKids.description} ready={page.kind === 'ready'} barra={cadeKids.barra}>
-      <PresenteOferta gift={{ ...page.gift, gift: ofertaCade }} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} />
+      <PresenteOferta oferta={escolhida} gift={{ ...page.gift, gift: ofertaCade }} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} />
     </PresenteLayout>
   )
 ) : (

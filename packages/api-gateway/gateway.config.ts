@@ -1544,6 +1544,17 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'passthrough',
       rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
+    // Leitura pública do produto pelo SKU (25/11/2026): o funil abre a página de venda pela
+    // oferta principal do produto. Rota própria (slug e SKU são espaços de nome separados).
+    {
+      id: 'catalog-product-by-sku',
+      methods: ['GET'],
+      pathPattern: '/catalog/products/by-sku/:sku',
+      service: 'catalog',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
     {
       id: 'catalog-products-write',
       methods: ['POST'],
@@ -3617,6 +3628,19 @@ const config: GatewayConfigInput = {
     // Analytics de aprendizado (LEITURA staff+): overview por curso + funil por aula.
     // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não colidem
     // com `/members/admin/members*` nem com a autoria `/members/admin/courses*`.
+    // "Começaram o curso do presente" da campanha (25/11/2026): POST porque leva o lote de contas
+    // (até 500 por pedido). Literal de 3 segmentos, sem colidir com a autoria `/courses*`.
+    {
+      id: 'members-admin-course-starts',
+      methods: ['POST'],
+      pathPattern: '/members/admin/course-starts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
     {
       id: 'members-admin-analytics-overview',
       methods: ['GET'],
@@ -5118,6 +5142,63 @@ const config: GatewayConfigInput = {
       transforms: referralsInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Origem das vendas (25/11/2026): as leituras trazem o e-mail de cada pessoa e o
+    // faturamento por origem. Mesma régua da listagem de bônus: admin+, rotas literais
+    // (vencem o wildcard staff+ por especificidade).
+    {
+      id: 'referrals-admin-origins-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/origins',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-acquisitions-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/acquisitions',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-campaign-results-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/campaigns/:id/results',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-ambassador-results-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/ambassadors/:id/results',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // Listas de ofertas dos embaixadores: PUT (troca a lista inteira) não cai no
+    // wildcard de escrita (só POST/PATCH).
+    {
+      id: 'referrals-admin-ambassador-offers-write',
+      methods: ['PUT'],
+      pathPattern: '/referrals/admin/ambassador-offers',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     {
       id: 'referrals-admin-read',
       methods: ['GET'],
@@ -5208,6 +5289,64 @@ const config: GatewayConfigInput = {
       // cortava o fluxo no meio em upstream frio (o funil espera até 45s).
       timeoutMs: 45_000,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    // Links de indicação `/i/<código>[/<oferta>][/pagamento]` e endereço antigo de campanha
+    // (25/11/2026): leituras do funil, no balde agregado das landings (ver codes/:code).
+    {
+      id: 'referrals-internal-link',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-link-offer',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code/:offer',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-link-target',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/links/:code/:offer/:target',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-redirects',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/redirects',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
     },
     {
       // Chave Pix do bônus, cadastrada pelo PRÓPRIO embaixador na página

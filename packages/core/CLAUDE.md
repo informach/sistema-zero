@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/core
 
+## Origem `offer` e a oferta comercial completa (25/11/2026)
+
+`commerce/index.ts`: `CommerceOriginSchema` ganhou `{kind:'offer', offerRef}` (a página de um curso
+na área dos pais). O lugar do botão nunca entra na origem: viaja ao lado (`place`).
+`CommerceCatalogOfferSchema` lê também `guaranteeDays` e, no `content`, `allowsCoupon` e
+`pageSellable` (todos opcionais). Consumidores com `switch` na origem precisam do caso novo
+(funil `commerceOriginKey` e `store.recover`, member-shell `originConfig`).
+
 ## Restrições compartilhadas com Python (22/11/2026)
 
 `scripts/pinta-scene-python-schema.ts` deriva a tabela estrutural do cabeçalho

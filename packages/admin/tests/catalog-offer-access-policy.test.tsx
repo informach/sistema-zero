@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  mergeOfferContent,
   offerAccessSummary,
   validateOfferAccessPolicyForm,
 } from '../src/app/admin/catalogo/ofertas/offers-client'
@@ -138,5 +139,26 @@ describe('política de acesso da oferta no admin', () => {
     })
     expect(result.payload).toBeNull()
     expect(result.errors.accessMode).toContain('Vitalício ou Prazo fixo')
+  })
+})
+
+describe('prazo divulgado no conteúdo da oferta', () => {
+  test('mescla sem apagar os outros campos e remove quando vazio', () => {
+    const base = { badge: 'Novo', advertisedAccessDays: 7, maxProfiles: 2 }
+    expect(mergeOfferContent(base, 2, null, 7)).toEqual({
+      badge: 'Novo',
+      maxProfiles: 2,
+      advertisedAccessDays: 7,
+    })
+    expect(mergeOfferContent(base, 2, null, null)).toEqual({ badge: 'Novo', maxProfiles: 2 })
+    expect(mergeOfferContent({ advertisedAccessDays: 7 }, null, null, null)).toBeNull()
+  })
+
+  test('marca "pode ser vendida na página": liga com true, desmarcar remove do content', () => {
+    expect(mergeOfferContent({ badge: 'Novo' }, null, null, null, true)).toEqual({
+      badge: 'Novo',
+      pageSellable: true,
+    })
+    expect(mergeOfferContent({ pageSellable: true }, null, null, null, false)).toBeNull()
   })
 })

@@ -102,7 +102,19 @@ export interface AmbassadorPageView {
   /** Um link por público (20/10/2026); `null` enquanto aquele link não existe. */
   shareUrls?: import('@sistemazero/core/referrals').AmbassadorShareUrls
   campaigns?: import('@sistemazero/core/referrals').AmbassadorCampaignPage
-  stats: { redemptionsCompleted: number; invitesSent: number }
+  /**
+   * Só quantidades (25/11/2026): `people`, `gifts` e `purchases` contam quem entrou pelos links;
+   * ausentes (ou `null`) no referrals anterior. Nunca valores de venda.
+   */
+  stats: {
+    redemptionsCompleted: number
+    invitesSent: number
+    people?: number | null
+    gifts?: number | null
+    purchases?: number | null
+  }
+  /** As ofertas das listas do Admin, com os links prontos (25/11/2026). */
+  offers?: import('../content/embaixador').OfertaDoEmbaixador[]
 }
 
 /** Corpo de `POST /messaging/send` (gateway → @sistemazero/messaging). */
@@ -301,6 +313,18 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         timeoutMs,
       )
     },
+    /**
+     * GET /catalog/products/by-sku/:sku — produto público pelo SKU (a página de venda do funil),
+     * com `primaryOfferSlug`. Rota própria: slug e SKU são espaços de nome separados.
+     */
+    async getProductBySku(sku: string): Promise<GatewayResult> {
+      const path = `/catalog/products/by-sku/${encodeURIComponent(sku)}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
     async getOffer(slug: string): Promise<GatewayResult> {
       const path = `/catalog/offers/${encodeURIComponent(slug)}`
       return requestJson(
@@ -469,9 +493,61 @@ export function createGatewayClient(opts: GatewayClientOptions) {
 
     // ── Indicações e bolsas (@sistemazero/referrals, via gateway) ────────────
 
-    /** GET /referrals/internal/codes/:code — resolve o "quem indicou" da landing /bolsa. */
-    async resolveReferralCode(code: string): Promise<GatewayResult> {
+    /**
+     * GET /referrals/internal/codes/:code — resolve o "quem indicou" da landing /bolsa. `offer`:
+     * o presente escolhido pelo embaixador (a página da oferta no modo presente).
+     */
+    async resolveReferralCode(code: string, offer?: string | null): Promise<GatewayResult> {
       const path = `/referrals/internal/codes/${encodeURIComponent(code)}`
+      return requestJson(
+        `${opts.baseUrl}${path}${offer ? `?offer=${encodeURIComponent(offer)}` : ''}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /**
+     * GET /referrals/internal/links/:code[/:oferta][/pagamento] — o que o link `/i/...` abre
+     * (25/11/2026): presente ou venda, a oferta, o destino e o estado da campanha.
+     */
+    async resolveReferralLink(
+      code: string,
+      offerSlug: string | null,
+      checkout: boolean,
+    ): Promise<GatewayResult> {
+      const segments = [code, ...(offerSlug ? [offerSlug] : []), ...(checkout ? ['pagamento'] : [])]
+      const path = `/referrals/internal/links/${segments.map(encodeURIComponent).join('/')}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /**
+     * GET /referrals/internal/links/:code?product=&kind=[&checkout=1] — o link curto por curso
+     * (`/i/<código>/<apelido>`): a oferta da lista do tipo pedido cujo produto é um dos `skus`.
+     * O HMAC assina o pathname, sem a query.
+     */
+    async resolveReferralLinkForProduct(
+      code: string,
+      kind: 'gift' | 'referral',
+      skus: string[],
+      checkout: boolean,
+    ): Promise<GatewayResult> {
+      const path = `/referrals/internal/links/${encodeURIComponent(code)}`
+      const query = new URLSearchParams({ product: skus.join(','), kind })
+      if (checkout) query.set('checkout', '1')
+      return requestJson(
+        `${opts.baseUrl}${path}?${query.toString()}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /** GET /referrals/internal/redirects — os endereços antigos de campanha ainda no prazo. */
+    async resolveCampaignRedirects(): Promise<GatewayResult> {
+      const path = '/referrals/internal/redirects'
       return requestJson(
         `${opts.baseUrl}${path}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
@@ -499,6 +575,9 @@ export function createGatewayClient(opts: GatewayClientOptions) {
         name: string
         email: string
         audience?: import('@sistemazero/core/referrals').GiftAudience
+        /** A oferta da lista do público (presente escolhido ou indicação, 25/11/2026). */
+        offer?: string
+        kind?: 'gift' | 'referral'
       },
     ): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
@@ -530,6 +609,8 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       name: string
       email: string
       phone?: string
+      /** O presente escolhido pelo embaixador (slug da lista do público). */
+      offer?: string
       attribution?: import('@sistemazero/core/referrals').GiftAttribution | null
     }): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)

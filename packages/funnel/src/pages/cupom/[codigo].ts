@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro'
 import { resolveCouponOfferPath } from '../../server/coupon-link'
 import { getDeps } from '../../server/deps'
+import { PageOfferUnavailableError } from '../../server/page-offer'
 
 export const prerender = false
 export const GET: APIRoute = async ({ params, url }) => {
@@ -10,8 +11,17 @@ export const GET: APIRoute = async ({ params, url }) => {
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' }
   if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,59}$/.test(code))
     return new Response('Cupom inválido.', { status: 400, headers })
-  const { env, gateway } = getDeps()
-  const path = await resolveCouponOfferPath(env, gateway, slug, audience)
+  const { gateway } = getDeps()
+  let path: string | null
+  try {
+    path = await resolveCouponOfferPath(gateway, slug, audience)
+  } catch (error) {
+    if (!(error instanceof PageOfferUnavailableError)) throw error
+    return new Response('Não foi possível abrir esta oferta agora. Tente de novo em instantes.', {
+      status: 503,
+      headers,
+    })
+  }
   if (!path)
     return new Response('Esta oferta não tem uma página de compra disponível neste link.', {
       status: 404,

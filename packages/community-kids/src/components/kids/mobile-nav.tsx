@@ -3,10 +3,11 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
 import { LessonMobileTopbar } from '@sistemazero/member-shell/components/lesson-ui/mobile-topbar'
+import { useLessonTabsHeight } from '@sistemazero/member-shell/lib/use-lesson-tabs-height'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { HelpShortcut } from './help-shortcut'
@@ -145,6 +146,10 @@ export function MobileTabbar({
   // A gaveta aberta (a aba com destinos por dentro). Fecha ao navegar: no celular a
   // página nova já é a resposta do toque.
   const [gaveta, setGaveta] = useState<string | null>(null)
+  // O rodapé fixo da aula fica logo acima desta barra: ela publica a altura MEDIDA (~65px com o
+  // ícone, o rótulo e a borda; o `3.5rem` de reserva do tema deixava o rodapé 9px por baixo dela).
+  const barra = useRef<HTMLElement>(null)
+  useLessonTabsHeight(barra)
   // biome-ignore lint/correctness/useExhaustiveDependencies: navegar fecha a gaveta
   useEffect(() => setGaveta(null), [pathname])
   // ⚠️ A barra é `md:hidden`, então a partir de 768px a gaveta SOME da tela — mas o
@@ -175,6 +180,7 @@ export function MobileTabbar({
         />
       ) : null}
       <nav
+        ref={barra}
         aria-label="Navegação principal"
         className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-(--menu-2) border-t bg-(--menu) pb-[env(safe-area-inset-bottom)] md:hidden"
       >

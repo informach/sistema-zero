@@ -43,8 +43,17 @@ export interface PurchaseView {
   payment: {
     status: string
     pix?: { copiaECola: string; imagemQrcodeBase64?: string; expiresAt: string | null } | null
+    /** O que esta cobrança cobra de fato (com o cupom), congelado no pagamento pelo funil. */
+    charge?: {
+      listPriceCents: number
+      discountCents: number
+      chargedPriceCents: number
+      couponCode: string | null
+    }
   } | null
   cardConfig?: SubscriptionCardConfigView
+  /** Os dois planos do mesmo produto (mensal e anual), quando a oferta tem o alternador. */
+  plans?: CommerceCatalogOffer[]
   termsUrl: string
   privacyUrl: string
   termsVersion: string
@@ -66,4 +75,7 @@ export interface PromotionCardView {
   offerRef: string
   promotion: MemberPromotion
   decision: { kind: string; giftEndsAt?: string | null; manageUrl?: string }
+  /** A oferta do cartão (preço, perfis e garantia) e, na assinatura, os dois planos. */
+  offer?: CommerceCatalogOffer
+  plans?: CommerceCatalogOffer[]
 }

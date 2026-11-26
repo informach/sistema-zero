@@ -1,5 +1,11 @@
 'use client'
-import { CommercePromotions } from '@sistemazero/member-shell/components/commerce/commerce-card'
+import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
+import {
+  CommerceCard,
+  CommercePromotionList,
+  selectPromotions,
+  useCommercePromotions,
+} from '@sistemazero/member-shell/components/commerce/commerce-card'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { BookOpen, ChevronRight, Info } from 'lucide-react'
@@ -19,7 +25,7 @@ import {
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import { familyAccessReady } from '@/lib/study-access-view'
-import type { MyCourseView, ProfileView } from '@/lib/types'
+import type { CatalogCourseView, MyCourseView, ProfileView } from '@/lib/types'
 import { FamilyAiCredits } from './_components/ai-credits-card'
 import { AttentionList, attentionItems } from './_components/attention-list'
 import { ChildSummaryRow } from './_components/child-card'
@@ -32,6 +38,7 @@ import {
 } from './_components/parent-ui'
 import { useChildrenStats } from './_components/use-children-stats'
 import { VoiceNewsCard } from './_components/voice-news-card'
+import { lessonsChip, PARENT_COURSE_PAGES } from './cursos/parent-course-pages'
 import {
   childHref,
   NEW_CHILD_HREF,
@@ -41,8 +48,9 @@ import {
 } from './parent-routes'
 
 /**
- * Quem comprou só um curso para pais (15/11/2026): no lugar dos filhos, o convite para a
- * Comunidade, em tom de convite (sem cobrança). O link sai com a origem no UTM.
+ * O convite de antes, de reserva (revisão do Lote 6, 25/11/2026): no Início de quem comprou só um
+ * curso para pais, quando não há destaque da Comunidade para mostrar (a promoção não está no ar ou
+ * a leitura falhou), o lugar dos filhos não fica vazio.
  */
 function FamilyInvite() {
   return (
@@ -56,6 +64,45 @@ function FamilyInvite() {
         todos os cursos para pais.
       </p>
     </section>
+  )
+}
+
+/** Um curso para pais fechado com a oferta de venda dele (a lateral do Início vende por ele). */
+export interface ParentSaleCourse {
+  course: CatalogCourseView
+  offer: CommerceCatalogOffer
+}
+
+/**
+ * O curso para pais à venda na lateral do Início (Canvas "pais-inicio", 25/11/2026): capa, selo,
+ * "Para você", aulas, preço da oferta e o mini checkout, no lugar `pais-inicio`.
+ */
+function ParentSaleCourseCard({ sale }: { sale: ParentSaleCourse }) {
+  const { course, offer } = sale
+  const page = PARENT_COURSE_PAGES[course.courseSlug]
+  const chips = [lessonsChip(course.lessonsCount), ...(page?.cardChips ?? [])].filter(
+    (chip): chip is string => Boolean(chip),
+  )
+  return (
+    <CommerceCard
+      origin={{ kind: 'offer', offerRef: offer.slug }}
+      mode="purchase"
+      variant="course"
+      offer={offer}
+      title={course.title}
+      description={course.subtitle ?? undefined}
+      badge="Curso para pais"
+      eyebrow="Para você"
+      chips={chips}
+      imageUrl={course.coverImageUrl ?? undefined}
+      buttonLabel="Comprar o curso"
+      place="pais-inicio"
+      next={{
+        href: parentCourseHref(course.courseSlug),
+        label: 'Começar o curso',
+        text: `${course.title} já está na área dos pais, em Cursos para pais.`,
+      }}
+    />
   )
 }
 
@@ -131,6 +178,7 @@ export function ParentsClient({
   studentDestination,
   voiceAvailable = false,
   parentCourse = null,
+  saleCourse = null,
   purpose = 'filhos',
 }: {
   accountId: string
@@ -146,10 +194,23 @@ export function ParentsClient({
   voiceAvailable?: boolean
   /** O curso para pais em andamento (ou o primeiro liberado); `null` convida a conhecer. */
   parentCourse?: MyCourseView | null
+  /** Sem curso para pais liberado: um curso fechado com venda, para a lateral. */
+  saleCourse?: ParentSaleCourse | null
   /** Para quem é esta área (`parentPurpose`): o guia e o miolo do Início seguem a compra. */
   purpose?: ParentPurpose
 }) {
   const soCurso = purpose === 'curso'
+  // Uma leitura das promoções para os dois recortes (o destaque e a lateral).
+  const promotions = useCommercePromotions()
+  const community = promotions.unavailable
+    ? []
+    : selectPromotions(promotions.items, { only: 'community' })
+  const communityHighlight = community.some((item) => item.decision.kind !== 'manage')
+  // Quem já assina a Comunidade não recebe o convite para conhecê-la.
+  const showFamilyInvite =
+    promotions.loaded &&
+    !communityHighlight &&
+    !community.some((item) => item.decision.kind === 'manage')
   const profiles = initialProfiles
   const access = initialAccess
   const [guideOpen, setGuideOpen] = useState(false)
@@ -373,9 +434,23 @@ export function ParentsClient({
         photoByProfile={avatarPhotoByProfile}
         studentDestination={studentDestination}
       />
+      {/* O destaque da Comunidade (Canvas "pais-inicio"): só para quem não assina. No Início de
+          quem comprou só um curso para pais ele fica no lugar dos filhos, logo abaixo. */}
+      {soCurso ? null : <CommercePromotionList state={promotions} only="community" skipManaged />}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {soCurso ? (
-          <FamilyInvite />
+          <div className="flex min-w-0 flex-col gap-6">
+            {communityHighlight ? (
+              <CommercePromotionList
+                state={promotions}
+                only="community"
+                skipManaged
+                showUnavailable={false}
+              />
+            ) : showFamilyInvite ? (
+              <FamilyInvite />
+            ) : null}
+          </div>
         ) : (
           <ParentSection
             title="Seus filhos esta semana"
@@ -414,8 +489,12 @@ export function ParentsClient({
           </ParentSection>
         )}
         <aside className="flex flex-col gap-6">
-          <CommercePromotions />
-          <ParentCourseCard course={parentCourse} />
+          <CommercePromotionList state={promotions} only="others" showUnavailable={false} />
+          {!parentCourse && saleCourse ? (
+            <ParentSaleCourseCard sale={saleCourse} />
+          ) : (
+            <ParentCourseCard course={parentCourse} />
+          )}
           <FamilyAiCredits />
         </aside>
       </div>

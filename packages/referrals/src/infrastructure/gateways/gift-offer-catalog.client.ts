@@ -21,7 +21,15 @@ const offerSchema = z.object({
   accessMode: z.enum(['fixed', 'lifetime', 'billing_cycle']),
   accessDurationValue: z.number().int().positive().nullable(),
   accessDurationUnit: z.enum(['days', 'months']).nullable(),
-  product: z.object({ audience: z.string() }).partial().optional(),
+  product: z.object({ audience: z.string(), sku: z.string() }).partial().optional(),
+  content: z
+    .object({
+      advertisedAccessDays: z.number().int().positive().optional(),
+      pageSellable: z.boolean().optional(),
+    })
+    .partial()
+    .nullable()
+    .optional(),
 })
 
 /** `GET /catalog/offers/:ref/entitlements` (S2S, token interno: o manifesto de entrega). */
@@ -97,10 +105,20 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
       name: view.name,
       status: view.status,
       audience: audience === 'kids' || audience === 'adult' ? audience : null,
+      productSku: view.product?.sku ?? null,
       accessMode: view.accessMode,
       accessDurationValue: view.accessDurationValue,
       accessDurationUnit: view.accessDurationUnit,
+      // O catálogo já confere a regra; aqui só vale abaixo de um prazo real em dias.
+      advertisedAccessDays:
+        view.accessMode === 'fixed' &&
+        view.accessDurationUnit === 'days' &&
+        view.accessDurationValue !== null &&
+        (view.content?.advertisedAccessDays ?? Number.POSITIVE_INFINITY) < view.accessDurationValue
+          ? (view.content?.advertisedAccessDays ?? null)
+          : null,
       courseSlug: primaryCourse?.fulfillment?.courseRef ?? null,
+      pageSellable: view.content?.pageSellable === true,
       includesMural: resolved.items.some(
         (item) =>
           item.fulfillment?.accessType === 'community' &&
@@ -111,5 +129,16 @@ export class GiftOfferCatalogHttpClient implements GiftOfferCatalog {
     this.cache.set(key, { at: now, offer })
     this.cache.set(offer.offerId, { at: now, offer })
     return offer
+  }
+
+  /** `GET /catalog/products/by-sku/:sku` (leitura pública): o slug da oferta principal. */
+  async primaryOfferSlugOf(productSku: string): Promise<string | null> {
+    const doFetch = this.options.fetchImpl ?? fetch
+    const url = `${this.options.baseUrl.replace(/\/$/, '')}/catalog/products/by-sku/${encodeURIComponent(productSku)}`
+    const res = await doFetch(url, { signal: AbortSignal.timeout(this.options.timeoutMs) })
+    if (res.status === 404) return null
+    if (!res.ok) throw new Error(`catálogo respondeu ${res.status}`)
+    const body = (await res.json()) as { primaryOfferSlug?: unknown }
+    return typeof body.primaryOfferSlug === 'string' ? body.primaryOfferSlug : null
   }
 }

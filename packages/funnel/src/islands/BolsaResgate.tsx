@@ -42,6 +42,11 @@ export interface BolsaResgateProps {
    */
   gift?: ReferralGiftOfferView
   variante?: VarianteResgate
+  /**
+   * O presente que o embaixador escolheu (slug da oferta da página, 25/11/2026). Vai no resgate;
+   * o referrals só aceita oferta ligada na lista do público.
+   */
+  oferta?: string
 }
 
 type Phase = 'form' | 'processing' | 'done'
@@ -58,6 +63,7 @@ export default function BolsaResgate({
   campaign = false,
   retryOnly = false,
   gift,
+  oferta,
   variante = 'cade',
 }: BolsaResgateProps) {
   const t = resgateCopy(audience, gift, variante)
@@ -128,6 +134,7 @@ export default function BolsaResgate({
         nome: nome.trim(),
         email: email.trim(),
         ...(telefone.trim() ? { telefone: telefone.trim() } : {}),
+        ...(oferta ? { oferta } : {}),
         attribution: {
           utmSource: params.get('utm_source'),
           utmMedium: params.get('utm_medium'),

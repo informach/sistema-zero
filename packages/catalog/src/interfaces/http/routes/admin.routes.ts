@@ -103,6 +103,8 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           items: body.items,
         })
         deps.offerCache.clear()
+        // A oferta principal publicada no produto depende do estado da oferta.
+        deps.productCache.clear()
         set.status = 201
         return view
       },
@@ -137,6 +139,8 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           items: body.items,
         })
         deps.offerCache.clear()
+        // A oferta principal publicada no produto depende do estado da oferta.
+        deps.productCache.clear()
         return result
       },
       { body: UpdateOfferBody },

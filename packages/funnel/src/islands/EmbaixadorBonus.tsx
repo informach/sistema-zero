@@ -89,10 +89,7 @@ export default function EmbaixadorBonus({ token, bonus }: EmbaixadorBonusProps) 
             : T.semValor}
           {T.depois}
         </p>
-        <p className="emb-ajuda">
-          Bônus único pela primeira contratação, sem comissão nas renovações. Indicações anteriores
-          mantêm o acordo aceito no resgate; campanhas seguem suas condições específicas.
-        </p>
+        <p className="emb-ajuda">{T.regras}</p>
         {bonus.items.length > 0 ? (
           <ul className="emb-bonus__lista">
             {bonus.items.map((item) => (

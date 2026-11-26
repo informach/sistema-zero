@@ -18,8 +18,8 @@ import { funnelOgImage } from '../../../lib/seo'
 import { getActiveOffer } from '../../../server/catalog'
 import { resolveCouponPresentation } from '../../../server/coupon-presentation'
 import { getDeps } from '../../../server/deps'
-import { resolveOfferSlug } from '../../../server/offer'
 import { checkOfferContract } from '../../../server/offer-contract'
+import { resolvePageOffer } from '../../../server/page-offer'
 
 export const prerender = false
 
@@ -102,9 +102,16 @@ const initialContact = {
 }
 
 // Preço/nome vêm do catálogo (fonte da verdade); fallback p/ rótulos do funil se fora.
-// Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout/cobrança.
-const offerSlug = resolveOfferSlug(env, f.key)
-const offer = await getActiveOffer(gateway, offerSlug, { log })
+// A oferta vem do CATÁLOGO (a principal do produto da página, ou `?oferta=` de outra oferta do
+// mesmo produto dentro do contrato; a irmã do alternador segue a principal). MESMA régua da
+// cobrança (`resolveChosenOffer`).
+const page = await resolvePageOffer(gateway, f, sp.get('oferta'), { log })
+if (!page) {
+  log('checkout.page_without_primary_offer', { funnel: f.key, productSku: f.productSku })
+  return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+}
+const offerSlug = page.slug
+const offer = page.offer
 const contractCheck = checkOfferContract(f.offerContract, offer)
 if (!contractCheck.ok) {
   log('checkout.offer_contract_mismatch', {

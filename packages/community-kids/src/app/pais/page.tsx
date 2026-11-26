@@ -1,14 +1,18 @@
+import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { requestedStudyDestination } from '@/lib/entry-destination'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
+import type { CatalogCourseView } from '@/lib/types'
 import { listFamilyGrantsReadonly } from '@/server/family-access'
 import {
   getProfileAllowanceReadonly,
   listAvatarsByProfileIdsReadonly,
+  listParentCatalog,
   listParentCourses,
 } from '@/server/members'
+import { loadParentSaleOffers } from '@/server/parent-course-offers'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { resolveParentArea } from './parent-access'
@@ -57,6 +61,19 @@ export default async function ParentsPage({
     courses.find((course) => course.progress.percent > 0 && course.progress.percent < 100) ??
     courses.find((course) => course.progress.percent < 100) ??
     null
+  // Sem curso para pais liberado, a lateral vende o primeiro curso fechado que tem oferta de
+  // venda no catálogo (melhor esforço: sem ele, o convite de sempre para conhecer os cursos).
+  let saleCourse: { course: CatalogCourseView; offer: CommerceCatalogOffer } | null = null
+  if (!parentCourse) {
+    const catalog = await listParentCatalog().catch(() => null)
+    const closed =
+      catalog?.status === 200
+        ? (catalog.body?.courses ?? []).filter((course) => !course.hasAccess)
+        : []
+    const offers = await loadParentSaleOffers(closed)
+    const course = closed.find((item) => offers[item.courseSlug])
+    if (course) saleCourse = { course, offer: offers[course.courseSlug] as CommerceCatalogOffer }
+  }
   const photos = Object.fromEntries(
     Object.entries(avatars?.status === 200 ? (avatars.body?.avatars ?? {}) : {}).map(
       ([id, view]) => [id, view.photoUrl ?? null],
@@ -73,6 +90,7 @@ export default async function ParentsPage({
       studentDestination={studentDestination}
       voiceAvailable={isVoiceInputConfigured()}
       parentCourse={parentCourse}
+      saleCourse={saleCourse}
       purpose={purpose}
     />
   )

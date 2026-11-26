@@ -39,6 +39,7 @@ import {
   type CourseView,
   type Paginated,
 } from '@/lib/types'
+import { CourseSaleOfferField } from './course-sale-offer-field'
 
 /** Pré-preenchimento ao criar um curso já mirando uma posição da jornada. */
 export interface CoursePrefill {
@@ -59,6 +60,8 @@ interface FormState {
   description: string
   coverImageUrl: string
   salesPageUrl: string
+  /** A oferta de venda do curso para pais (slug no catálogo); vazio = sem venda na plataforma. */
+  salesOfferRef: string
   status: string
   audience: string
   /** Gravado ou ao vivo. Ao vivo não ocupa posição na Jornada. */
@@ -83,6 +86,7 @@ const EMPTY: FormState = {
   description: '',
   coverImageUrl: '',
   salesPageUrl: '',
+  salesOfferRef: '',
   status: 'draft',
   // A operação hoje é Kids-first; Adult continua disponível no seletor.
   audience: 'kids',
@@ -127,6 +131,7 @@ function formFromCourse(c: CourseView): FormState {
     description: c.description ?? '',
     coverImageUrl: c.coverImageUrl ?? '',
     salesPageUrl: c.salesPageUrl ?? '',
+    salesOfferRef: c.salesOfferRef ?? '',
     status: c.status,
     audience: c.audience ?? 'adult',
     modality: courseModalityOf(c.modality),
@@ -382,6 +387,9 @@ export function CourseFormDialog({
         description: form.description.trim() ? form.description.trim() : null,
         coverImageUrl: form.coverImageUrl.trim() ? form.coverImageUrl.trim() : null,
         salesPageUrl: form.salesPageUrl.trim() ? form.salesPageUrl.trim() : null,
+        // SEMPRE enviado: a venda do curso para pais pelo mini checkout. Fora do curso para pais
+        // vai `null` (o curso da criança não é vendido pela área dos pais).
+        salesOfferRef: isParents && form.salesOfferRef ? form.salesOfferRef : null,
         status: form.status,
         // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
         audience: form.audience,
@@ -840,6 +848,14 @@ export function CourseFormDialog({
             onChange={(e) => setForm((f) => ({ ...f, salesPageUrl: e.target.value }))}
           />
         </Field>
+        {isParents ? (
+          <CourseSaleOfferField
+            audience={form.audience}
+            courseSlug={form.slug}
+            value={form.salesOfferRef}
+            onChange={(salesOfferRef) => setForm((f) => ({ ...f, salesOfferRef }))}
+          />
+        ) : null}
       </div>
     </Dialog>
   )

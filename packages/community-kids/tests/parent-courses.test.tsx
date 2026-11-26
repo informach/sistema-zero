@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import { isLessonPath } from '@sistemazero/member-shell/lib/lesson-path'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { HelpContent } from '../src/app/pais/ajuda/help-content'
@@ -37,6 +38,70 @@ globalThis.fetch = Object.assign(
   ),
   { preconnect: originalFetch.preconnect },
 )
+
+/** A oferta de venda do guia (Lote 6, 25/11/2026): o preço e a garantia dos cartões. */
+const saleOffer: CommerceCatalogOffer = {
+  id: '40000000-0000-4000-8000-000000000010',
+  slug: 'guia-pais-1-ano',
+  name: 'Transformando o vilão em aliado (1 ano)',
+  status: 'active',
+  isAvailable: true,
+  priceCents: 2700,
+  pricingMode: 'one_time',
+  billingIntervalMonths: null,
+  installmentsMax: 3,
+  accessMode: 'fixed',
+  accessDurationValue: 12,
+  accessDurationUnit: 'months',
+  guaranteeDays: 7,
+  product: {
+    id: '50000000-0000-4000-8000-000000000010',
+    audience: 'kids',
+    sku: 'guia-pais',
+    name: 'Transformando o vilão em aliado',
+    status: 'active',
+    kind: 'course',
+  },
+  content: { allowsCoupon: true },
+  includes: [],
+}
+/** O destaque da Comunidade que a Início recebe de /api/commerce/promotions. */
+function communityPromotion(decision: 'purchase' | 'manage' = 'purchase') {
+  return {
+    origin: { kind: 'community' },
+    offerRef: 'comunidade-mensal',
+    promotion: {
+      enabled: true,
+      mode: 'purchase',
+      location: 'parent_home',
+      title: 'Seus filhos também podem criar os próprios jogos',
+      description: 'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem.',
+      buttonLabel: 'Assinar a Comunidade',
+    },
+    decision: { kind: decision, manageUrl: '/pais/conta' },
+    offer: {
+      ...saleOffer,
+      id: '40000000-0000-4000-8000-000000000020',
+      slug: 'comunidade-mensal',
+      name: 'Comunidade mensal',
+      priceCents: 9700,
+      pricingMode: 'subscription',
+      billingIntervalMonths: 1,
+      installmentsMax: null,
+      accessMode: 'billing_cycle',
+      accessDurationValue: null,
+      accessDurationUnit: null,
+      product: {
+        ...saleOffer.product,
+        id: '50000000-0000-4000-8000-000000000020',
+        sku: 'comunidade-dos-criadores',
+        name: 'Comunidade dos Criadores',
+        kind: 'bundle',
+      },
+      content: { maxProfiles: 2 },
+    },
+  }
+}
 
 const progress = (completedLessons: number, totalLessons: number) => ({
   completedLessons,
@@ -147,8 +212,33 @@ describe('Cursos para pais', () => {
   test('quem não assina vê o curso fechado, sem a frase da assinatura', () => {
     render(<ParentCoursesView catalog={[catalog({ hasAccess: false })]} mine={[]} failed={false} />)
     const main = screen.getByRole('main')
-    expect(within(main).getByText('Fechado')).toBeTruthy()
+    expect(within(main).getByText('Ver o curso')).toBeTruthy()
     expect(within(main).queryByText(/incluídos na sua assinatura/)).toBeNull()
+  })
+
+  test('Lote 6: o cartão do curso fechado mostra as aulas e o preço da oferta de venda', () => {
+    render(
+      <ParentCoursesView
+        catalog={[
+          catalog({
+            hasAccess: false,
+            courseSlug: 'transformando-o-vilao-em-aliado',
+            title: 'Transformando o vilão em aliado',
+            lessonsCount: 7,
+            salesOfferRef: saleOffer.slug,
+          }),
+        ]}
+        offers={{ 'transformando-o-vilao-em-aliado': saleOffer }}
+        mine={[]}
+        failed={false}
+      />,
+    )
+    const main = screen.getByRole('main')
+    const text = (main.textContent ?? '').replace(/\u00a0/g, ' ')
+    expect(text).toContain('7 aulas')
+    expect(text).toContain('Apostila e certificado')
+    expect(text).toContain('R$ 27')
+    expect(text).toContain('Curso para pais')
   })
 
   test('falha na leitura vira recado, não erro', () => {
@@ -156,6 +246,42 @@ describe('Cursos para pais', () => {
     expect(
       screen.getByText('Não conseguimos carregar os cursos agora. Tente de novo daqui a pouco.'),
     ).toBeTruthy()
+  })
+})
+
+describe('o curso fechado com a oferta de venda (Lote 6, 25/11/2026)', () => {
+  const guia = () =>
+    catalog({
+      hasAccess: false,
+      courseSlug: 'transformando-o-vilao-em-aliado',
+      title: 'Transformando o vilão em aliado',
+      lessonsCount: 7,
+      salesOfferRef: saleOffer.slug,
+    })
+  test('capa com a promessa, o que muda, quem conduz e a compra pelo mini checkout', () => {
+    render(<ParentCourseClosed course={guia()} offer={saleOffer} />)
+    const main = screen.getByRole('main')
+    const text = (main.textContent ?? '').replace(/\u00a0/g, ' ')
+    expect(within(main).getByRole('heading', { level: 1 }).textContent).toBe(
+      'Transformando o vilão em aliado',
+    )
+    expect(text).toContain('7 aulas curtas em vídeo')
+    expect(text).toContain('O erro pesa menos')
+    expect(text).toContain('Eu sou a Helena')
+    expect(within(main).getByRole('heading', { name: 'Liberar este curso' })).toBeTruthy()
+    expect(text).toContain('R$ 27')
+    expect(text).toContain('pagamento único, sem assinatura')
+    expect(text).toContain('Acesso por 1 ano')
+    expect(text).toContain('7 dias de garantia')
+    expect(within(main).getByRole('button', { name: 'Comprar este curso' })).toBeTruthy()
+    // A compra é na plataforma: nada de link para a página de venda nem promessa de vitalício.
+    expect(text).not.toMatch(/vitalíci|sem prazo/i)
+    expect(within(main).queryByRole('link', { name: /Comprar este curso/ })).toBeNull()
+  })
+  test('sem oferta de venda, os caminhos de antes', () => {
+    render(<ParentCourseClosed course={guia()} offer={null} />)
+    expect(screen.getByRole('heading', { name: 'Como liberar este curso' })).toBeTruthy()
+    expect(screen.getByText(/A assinatura libera todos os cursos para pais/)).toBeTruthy()
   })
 })
 
@@ -314,25 +440,41 @@ describe('o Início de quem comprou só um curso para pais', () => {
     )
 
   afterEach(() => localStorage.clear())
+  let promotions: unknown[] = [communityPromotion()]
+  let failPromotions = false
+  const fetchPromotions = mock(async (input: RequestInfo | URL) =>
+    String(input).startsWith('/api/commerce/promotions')
+      ? failPromotions
+        ? Response.json({ error: { code: 'X', message: 'fora' } }, { status: 502 })
+        : Response.json({ items: promotions })
+      : Response.json({ profiles: [] }),
+  )
+  const promotionCalls = () =>
+    fetchPromotions.mock.calls.filter(([input]) =>
+      String(input).startsWith('/api/commerce/promotions'),
+    ).length
   beforeEach(() => {
+    promotions = [communityPromotion()]
+    failPromotions = false
+    fetchPromotions.mockClear()
     // O menu lê os filhos em /api/profiles: esta conta não tem nenhum.
-    globalThis.fetch = Object.assign(
-      mock(async (input: RequestInfo | URL) =>
-        Response.json(
-          String(input).startsWith('/api/commerce/promotions') ? { items: [] } : { profiles: [] },
-        ),
-      ),
-      { preconnect: originalFetch.preconnect },
-    )
+    globalThis.fetch = Object.assign(fetchPromotions, { preconnect: originalFetch.preconnect })
   })
 
-  test('o guia leva ao curso e o convite toma o lugar dos filhos', async () => {
+  test('o guia leva ao curso e o destaque da Comunidade toma o lugar dos filhos', async () => {
     inicio()
     const guia = await screen.findByRole('region', { name: 'Seu curso está pronto' })
     expect(within(guia).getByRole('link', { name: 'Começar o curso' }).getAttribute('href')).toBe(
       '/pais/cursos/ajudar-sem-fazer-por-eles/aulas/l1',
     )
-    expect(screen.getByRole('region', { name: 'Seus filhos também podem criar' })).toBeTruthy()
+    expect(await screen.findByText('Seus filhos também podem criar os próprios jogos')).toBeTruthy()
+    expect(
+      screen.getByText('Até 2 perfis de criança na mesma conta, um para cada filho'),
+    ).toBeTruthy()
+    // A assinatura Kids inclui os cursos para pais (confirmado pela dona, 25/11/2026).
+    expect(
+      screen.getByText('Todos os cursos para pais, inclusive os próximos que forem lançados'),
+    ).toBeTruthy()
     expect(screen.queryByText('Seus filhos esta semana')).toBeNull()
     // Nada de cadastrar filho nem autorizar aparelho.
     expect(screen.queryByText(/Vamos preparar/)).toBeNull()
@@ -348,13 +490,74 @@ describe('o Início de quem comprou só um curso para pais', () => {
     expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
     primeiro.unmount()
     inicio()
-    await waitFor(() => expect(screen.getByText('Seus filhos também podem criar')).toBeTruthy())
+    await screen.findByText('Seus filhos também podem criar os próprios jogos')
     expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
     localStorage.clear()
     cleanup()
     inicio({ parentCourse: mine() })
-    await waitFor(() => expect(screen.getByText('Seus filhos também podem criar')).toBeTruthy())
+    await screen.findByText('Seus filhos também podem criar os próprios jogos')
     expect(screen.queryByRole('region', { name: 'Seu curso está pronto' })).toBeNull()
+  })
+
+  test('Lote 6: quem já assina não vê o destaque da Comunidade', async () => {
+    promotions = [communityPromotion('manage')]
+    inicio()
+    await screen.findByRole('region', { name: 'Seu curso está pronto' })
+    await waitFor(() => expect(promotionCalls()).toBe(1))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(screen.queryByText('Seus filhos também podem criar os próprios jogos')).toBeNull()
+    // Quem assina também não recebe o convite para conhecer a Comunidade.
+    expect(screen.queryByRole('heading', { name: 'Seus filhos também podem criar' })).toBeNull()
+  })
+
+  test('revisão do Lote 6: uma leitura das promoções para o destaque e a lateral', async () => {
+    inicio()
+    await screen.findByText('Seus filhos também podem criar os próprios jogos')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(promotionCalls()).toBe(1)
+  })
+
+  test('revisão do Lote 6: sem destaque da Comunidade, o convite de antes fica no lugar', async () => {
+    promotions = []
+    inicio()
+    expect(
+      await screen.findByRole('heading', { name: 'Seus filhos também podem criar' }),
+    ).toBeTruthy()
+    expect(document.body.textContent ?? '').toContain(
+      'Quem assina também tem todos os cursos para pais.',
+    )
+  })
+
+  test('revisão do Lote 6: a leitura falhou, o convite de antes fica no lugar', async () => {
+    failPromotions = true
+    inicio()
+    expect(
+      await screen.findByRole('heading', { name: 'Seus filhos também podem criar' }),
+    ).toBeTruthy()
+  })
+
+  test('Lote 6: sem curso liberado, a lateral vende o curso fechado pela oferta', async () => {
+    promotions = []
+    inicio({
+      parentCourse: null,
+      purpose: 'filhos',
+      saleCourse: {
+        course: catalog({
+          hasAccess: false,
+          courseSlug: 'transformando-o-vilao-em-aliado',
+          title: 'Transformando o vilão em aliado',
+          subtitle: 'A tela que hoje vira briga em casa pode ser sua aliada.',
+          lessonsCount: 7,
+        }),
+        offer: saleOffer,
+      },
+    })
+    const text = (document.body.textContent ?? '').replace(/\u00a0/g, ' ')
+    expect(text).toContain('Para você')
+    expect(text).toContain('7 aulas')
+    expect(text).toContain('Com a Helena')
+    expect(text).toContain('R$ 27')
+    expect(screen.getByRole('button', { name: 'Comprar o curso' })).toBeTruthy()
   })
 })
 

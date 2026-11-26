@@ -1,5 +1,109 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Campanhas, embaixadores e Origem das vendas (25/11/2026, Lote 7)
+
+Extra do Lote 7 (25/11/2026): a campanha mostra "Começaram o curso do presente"
+(`withGiftStarted` em `server/referrals.ts`, lotes de 500 ao members; members fora = recado no
+lugar do número; as contas nunca vão ao navegador, nem no detalhe do embaixador); "Ver ficha" na
+tabela de pessoas (`/admin/membros/<accountUserId>`, sem conta não há link); o painel das listas
+mostra quanto cada oferta rendeu pelos embaixadores (`ambassadorCountLabel`); a Origem das vendas
+filtra por produto (`originOfferGroups`: um grupo por produto e "Cursos para pais"); a aba "Compras
+e origem" mostra o "Bônus da assinatura" (`bonusLine`, sem chave Pix).
+
+Revisão do Lote 7: os resultados (lista e detalhe de embaixador e campanha) levam o `audience` da
+lente até o referrals (números de UMA comunidade); "Veio por" casa pelo `ambassadorId` do bônus (o
+nome só quando o referrals ainda não manda o id); as setas das listas de ofertas trocam com a
+vizinha do MESMO grupo (`swapItems`); `pageEligible` exige `isAvailable !== false` (a régua do
+member-shell); a Origem das vendas guarda o período de cada relatório (trocar o período limpa a
+tela; a planilha leva o período que contém).
+
+Canvas `admin-campanhas`, `admin-campanha-nova`, `admin-campanha-detalhe`, `admin-embaixadores`,
+`admin-embaixador-detalhe`, `admin-ofertas`, `admin-origem` e `admin-ficha`. Tudo lê o referrals pelo
+BFF (`server/referrals.ts` + `app/api/admin/referrals/{ambassador-offers,origins,acquisitions,
+campaigns/[id]/results,ambassadors/[id]/results}`); números e listas vêm de lá, nada é calculado de
+novo aqui além das somas da tela. As réguas puras moram em `lib/referral-origin.ts` (dinheiro em
+string, períodos, nomes das origens e dos lugares, "Veio por", planilha CSV, `isOriginReport` e
+`isOriginDetail`, que fazem uma resposta fora do formato virar "não carregou").
+
+- **Abas** (`convites-client.tsx`): Campanhas, Embaixadores e Ofertas dos embaixadores, com
+  `tabAfterKey` (setas giram pela posição, Home e End vão às pontas).
+- **Campanhas:** a lista inteira é lida (`loadAllPages`) e o tipo e a situação filtram aqui (o
+  referrals só busca por texto). Colunas Tipo, O que entrega, Cadastros, Compras, Assinaturas e
+  Faturamento (só com `results.revenueCents`, admin+). Os cartões do período vêm da linha `campaign`
+  da Origem das vendas (admin+); "Último ano" substitui o "Desde o início" do Canvas (o relatório
+  aceita até 366 dias).
+- **Formulário em passos** (`campaign-editor.tsx`): o que a campanha faz (`kind` gift/sale, trava
+  fora do rascunho ou com cadastros), sobre a campanha (código, endereço antigo com `redirectPath` +
+  `redirectUntil`, padrão 30 dias, normalizado por `normalizeRedirectPath`), o presente ou a oferta à
+  venda (só ofertas com página: principal do produto ou `pageSellable`; `linkTarget` page/checkout),
+  desconto, calendário, embaixador e bônus (prazo padrão 45 dias ao ligar) e situação, com o resumo
+  ao lado. Duplicar zera o endereço antigo (é de uma campanha só). As peças comuns estão em
+  `campaign-shared.tsx`.
+- **Detalhe** (`campaign-detail.tsx`): números de `/campaigns/:id/results`, do cadastro à
+  assinatura, o que foi vendido, presente/desconto/embaixador, divulgação (link, QR, cartões),
+  pessoas (`PeopleTable` de `components/admin/origin-parts.tsx`, 25 por página do referrals, filtro e
+  planilha da página aberta) e o histórico. Sem acesso aos resultados (staff), os contadores de
+  cadastro de sempre.
+- **Embaixadores** (`embaixadores-client.tsx`): a lista inteira com `results` (ordem por
+  assinaturas, faturamento ou recentes), os cartões do período (linha `ambassador`) e o bônus por
+  pessoa (`bonusTotalsByEmail`, das conversões, admin+). Detalhe com os números, vendas por oferta,
+  links que mais trouxeram gente, página e pessoas. Bônus ganhou "Veio por" (`bonusCameBy`: a
+  primeira aquisição ativa da pessoa com o embaixador do bônus, lida de `/acquisitions?email`, quatro
+  por vez).
+- **Ofertas dos embaixadores** (`ambassador-offers-panel.tsx` + `ambassador-offer-catalog.ts`):
+  presentes e ofertas para indicar do público, ligar e desligar, ordem, adicionar e tirar; cada
+  mudança grava a lista inteira (PUT). No Kids, "Para os filhos" e "Para os pais" pelo `learner` do
+  curso que o produto entrega. Duas ligadas do mesmo produto dão o recado do referrals antes de
+  gravar (`sameCourseProblem`).
+- **Origem das vendas** (`/admin/origem-das-vendas`, Negócio, só admin no menu e no proxy, segue a
+  lente): números, barras empilhadas por semana e origem (`origin-chart.tsx`, Recharts no molde do
+  `sales-chart`), por origem, botões da plataforma, caminho até a assinatura, rankings, últimas
+  aquisições e o aviso do `truncated`. Planilha com as origens e as aquisições.
+- **Ficha da conta:** a aba Pagamentos virou "Compras e origem" (`purchases-origin-tab.tsx`): como
+  chegou, tudo o que recebeu ou comprou com a origem (admin+) e a tabela de pagamentos embaixo.
+- **Fora do Canvas, por falta de dado:** "Começaram o curso do presente", o contador de resgates por
+  oferta na lista dos embaixadores, o filtro de oferta e "Primeira entrada" da Origem e o "Ver ficha"
+  das pessoas (as aquisições não trazem o id da conta).
+- Testes: `tests/referral-origin.test.ts`, `tests/campaigns-lote7.test.tsx`, os de sempre
+  (`campaign-audience`, `campaigns-client`, `ambassador-copy`, `nav`) e o navegador
+  `tests/campaign-browser.mjs`.
+
+## Oferta de venda do curso para pais (25/11/2026, Lote 6)
+
+Formulário do curso, só no curso para pais: "Oferta de venda" (`course-sale-offer-field.tsx`). Lê
+TODAS as páginas de ofertas e produtos da plataforma e lista só as que a área dos pais consegue vender
+(`saleOffersForCourse`, a régua do BFF do mini checkout mais a entrega do curso): avulsa e disponível,
+de um produto ATIVO que entrega ESTE curso (`fulfillment.courseRef`), e principal do produto ou
+marcada `pageSellable`. Com "Sem venda na plataforma". Vai SEMPRE no payload como `salesOfferRef`
+(fora do curso para pais, `null`). A oferta guardada aparece sempre, mesmo fora da régua ou com o
+catálogo fora do ar (revisão do Lote 6). Teste: `tests/course-sale-offer.test.tsx`.
+
+
+## Oferta vendável na página do produto (25/11/2026)
+
+Formulário da oferta (Catálogo › Ofertas): caixa "Pode ser vendida na página do produto"
+(`content.pageSellable`, `mergeOfferContent` 5º argumento). Além da oferta principal do produto e da
+irmã do alternador, o funil só abre e cobra pelo `?oferta=` as ofertas marcadas; ofertas de presente
+ficam desmarcadas. Teste em `tests/catalog-offer-access-policy.test.tsx`.
+
+## Oferta principal da página de venda (25/11/2026)
+
+Formulário do produto (`/admin/catalogo/produtos/[id]`, `product-form-client.tsx`): cartão "Oferta
+principal da página de venda" com as ofertas não arquivadas do PRÓPRIO produto
+(`/api/catalog/offers?productId=`); "Sem página de venda" limpa. Vai no PATCH completo como
+`primaryOfferId` (o catálogo recusa oferta de outro produto). Substitui as envs `FUNNEL_OFFER_*`
+do funil: antes do deploy do funil, marcar a oferta principal de cada página em staging e em
+produção. Teste: `tests/product-primary-offer.test.ts`.
+
+
+
+## Prazo divulgado da oferta (25/11/2026)
+
+Catálogo › Ofertas: no prazo fixo em DIAS aparece "Prazo divulgado (dias)" (`content.advertisedAccessDays`,
+mesclado por `mergeOfferContent` sem apagar o resto do `content`; some fora do prazo fixo em dias).
+Precisa ser menor que a duração (o catálogo confere de novo). Página e e-mails mostram o divulgado; os
+dias extras chegam num e-mail de surpresa do members no fim do prazo divulgado.
+
 ## Cenários 3D: atalho para a oficina na plataforma (16/11/2026)
 
 A oficina de cenários mora na plataforma (`/molda/cenarios` no Kids e na comunidade adulta) e

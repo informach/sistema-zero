@@ -1,7 +1,7 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { type GiftAudience, publicGiftSourceName } from '@sistemazero/core/referrals'
 import { normalizeEmail } from '../../domain/codes'
-import { scholarshipShareUrl } from '../../domain/links'
+import { referralLinkUrl, scholarshipShareUrl } from '../../domain/links'
 import { splitName } from '../../domain/names'
 import type { ReferralsGateway } from '../../domain/ports/gateway.port'
 import type { CodeRecord, ReferralRepository } from '../../domain/ports/referral-repository.port'
@@ -13,6 +13,21 @@ export interface CreateInviteInput {
   email: string
   /** Público do presente convidado; ausente = `kids`. */
   audience?: GiftAudience
+  /**
+   * A oferta da lista do público (slug, 25/11/2026): o presente escolhido (`kind: 'gift'`) ou a
+   * oferta indicada (`kind: 'referral'`). Ausente = o convite do presente padrão de sempre.
+   */
+  offer?: string | null
+  kind?: 'gift' | 'referral'
+}
+
+/** Templates do convite por oferta (contrato com o seed do Messaging: nome, indicador, oferta, link). */
+const OFFER_INVITE_TEMPLATE: Record<'gift' | 'referral', Record<GiftAudience, string>> = {
+  gift: { kids: 'referrals-offer-gift-invite', adult: 'referrals-offer-gift-invite-adult' },
+  referral: {
+    kids: 'referrals-offer-referral-invite',
+    adult: 'referrals-offer-referral-invite-adult',
+  },
 }
 
 /** Template do convite por público (contrato com o seed do Messaging). */
@@ -29,6 +44,8 @@ export type CreateInviteResult =
   | { kind: 'daily_limit' }
   /** O presente do público não está configurado (adulto sem `COMMUNITY_URL`). */
   | { kind: 'gift_unavailable' }
+  /** A oferta pedida não está ligada na lista do público. */
+  | { kind: 'offer_unavailable' }
   | { kind: 'upstream_error' }
 
 export interface CreateInviteOptions {
@@ -39,6 +56,20 @@ export interface CreateInviteOptions {
    * recusado ANTES de criar código ou enviar e-mail (fail-closed, como o resgate).
    */
   adultGiftEnabled: boolean
+  /** As listas do Admin (convite por oferta). Sem elas, só o convite do presente padrão. */
+  ambassadorOffers?: {
+    allowed(
+      audience: GiftAudience,
+      kind: 'gift' | 'referral',
+      offerRef: string,
+    ): Promise<{ offerSlug: string; name: string; courseSlug: string | null } | null>
+  }
+}
+
+/** O Cadê de cada público: o presente dele usa o convite aprovado de sempre, com a oferta no link. */
+const CADE_COURSES: Record<GiftAudience, string> = {
+  kids: 'cade-todo-mundo',
+  adult: 'cade-todo-mundo-adulto',
 }
 
 /**
@@ -72,6 +103,13 @@ export class CreateInviteService {
 
     const email = normalizeEmail(input.email)
     const name = input.name.trim().slice(0, 120)
+    const kind = input.kind ?? 'gift'
+    const wanted = input.offer?.trim()
+    let offer: { offerSlug: string; name: string; courseSlug: string | null } | null = null
+    if (wanted) {
+      offer = (await this.opts.ambassadorOffers?.allowed(audience, kind, wanted)) ?? null
+      if (!offer) return { kind: 'offer_unavailable' }
+    }
 
     // Cap diário = janela móvel de 24h (simples e sem fuso).
     const since = new Date(this.now().getTime() - 24 * 3600_000)
@@ -82,7 +120,9 @@ export class CreateInviteService {
     // Só bolsa CONCLUÍDA barra o convite — pending/failed é resgate que não
     // aconteceu (upstream fora, desistiu no meio): o e-mail com o link é
     // justamente o empurrão pra retomada.
-    if (existingRedemption?.status === 'completed') return { kind: 'already_redeemed' }
+    // A indicação de oferta à venda não depende de presente: quem já resgatou pode comprar.
+    if (kind === 'gift' && existingRedemption?.status === 'completed')
+      return { kind: 'already_redeemed' }
     if (sentToday >= this.opts.dailyLimit) return { kind: 'daily_limit' }
 
     const { created, invite } = await this.repo.insertInvite({
@@ -95,16 +135,38 @@ export class CreateInviteService {
     if (!created && invite.status === 'sent') return { kind: 'already_invited' }
 
     const seq = await this.repo.bumpInviteSend(invite.id)
+    const indicador = publicGiftSourceName({ kind: 'ambassador', name: ambassador.name })
+    // Presente do Cadê escolhido na lista: o e-mail aprovado do Cadê, com o link que leva a
+    // oferta escolhida (a de 15 dias, por exemplo), nunca a padrão.
+    const cadeGift =
+      offer !== null && kind === 'gift' && offer.courseSlug === CADE_COURSES[audience]
     const res = await this.gateway.sendEmail(
-      {
-        templateKey: INVITE_TEMPLATE[audience],
-        recipient: { name: splitName(name).firstName, email },
-        variables: {
-          nome: splitName(name).firstName,
-          indicador: publicGiftSourceName({ kind: 'ambassador', name: ambassador.name }),
-          link: scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
-        },
-      },
+      offer && !cadeGift
+        ? {
+            templateKey: OFFER_INVITE_TEMPLATE[kind][audience],
+            recipient: { name: splitName(name).firstName, email },
+            variables: {
+              nome: splitName(name).firstName,
+              indicador,
+              oferta: offer.name,
+              link: referralLinkUrl(this.opts.funnelPublicUrl, codeRecord.code, {
+                offerSlug: offer.offerSlug,
+              }),
+            },
+          }
+        : {
+            templateKey: INVITE_TEMPLATE[audience],
+            recipient: { name: splitName(name).firstName, email },
+            variables: {
+              nome: splitName(name).firstName,
+              indicador,
+              link: offer
+                ? referralLinkUrl(this.opts.funnelPublicUrl, codeRecord.code, {
+                    offerSlug: offer.offerSlug,
+                  })
+                : scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
+            },
+          },
       `ambassador-invite:${invite.id}:${seq}`,
     )
     if (res.status === 202 || res.status === 200) {

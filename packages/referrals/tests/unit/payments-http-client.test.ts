@@ -32,3 +32,36 @@ test('consulta data da assinatura pelo contrato interno e recusa data ausente/in
     globalThis.fetch = originalFetch
   }
 })
+
+test('ofertas já pagas: manda e-mail, data e o pagamento de fora; recusa resposta ou rota ausente', async () => {
+  const originalFetch = globalThis.fetch
+  const urls: string[] = []
+  let response = Response.json({ offerIds: ['offer-1'] })
+  globalThis.fetch = (async (url: unknown) => {
+    urls.push(String(url))
+    return response
+  }) as typeof fetch
+  try {
+    const client = new PaymentsHttpClient({ baseUrl: 'http://payments.test', timeoutMs: 5000 })
+    const input = {
+      email: 'ana+teste@example.com',
+      before: new Date('2026-11-25T12:00:00Z'),
+      excludePaymentId: 'pay-1',
+    }
+    expect(await client.listPaidOfferIds(input)).toEqual(['offer-1'])
+    const url = new URL(urls[0]!)
+    expect(url.pathname).toBe('/payments/internal/customers/paid-offers')
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      email: 'ana+teste@example.com',
+      before: '2026-11-25T12:00:00.000Z',
+      exclude: 'pay-1',
+    })
+    // Payments sem a rota (antigo) não vira "sem histórico".
+    response = new Response(null, { status: 404 })
+    await expect(client.listPaidOfferIds(input)).rejects.toThrow()
+    response = Response.json({ offerIds: [1] })
+    await expect(client.listPaidOfferIds(input)).rejects.toThrow()
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})

@@ -13,9 +13,14 @@ export const GET: APIRoute = ({ request, params }) => {
   return pixStatus(request, params.paymentId ?? '', {
     repo,
     gateway,
-    resolveOffer: makeResolveOffer(env),
+    resolveOffer: makeResolveOffer(gateway, log),
     fulfill: makeFulfill({ repo, gateway, log }),
-    grantMembers: makeGrantMembers({ gateway, resolveOffer: makeResolveOffer(env), repo, log }),
+    grantMembers: makeGrantMembers({
+      gateway,
+      resolveOffer: makeResolveOffer(gateway, log),
+      repo,
+      log,
+    }),
     sendWelcome: makeSendWelcome({
       gateway,
       communityUrl: env.COMMUNITY_URL,

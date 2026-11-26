@@ -243,6 +243,12 @@ gateway — private networking direto. Log `payments.internal_read`.
 
 `GET /payments/internal/subscriptions/:id` usa o mesmo token interno e devolve somente `{id, createdAt}`. Referrals consulta a data original para não atribuir a um presente posterior a renovação de uma assinatura antiga. Continua fora do gateway público; não expõe cartão nem dados do cliente. Teste de autorização e contrato em `tests/integration/http-server.test.ts`.
 
+`GET /payments/internal/customers/paid-offers?email&before&exclude` (25/11/2026, mesmo token
+interno, fora do gateway): os ids distintos de `metadata.offerId` dos pagamentos `PAID` do e-mail
+(`lower(customer->>'email')`) com `paid_at` antes de `before`, fora o `exclude`, até 50
+(`PaidOffersReader`, implementado pelo `DrizzlePaymentMyReadRepository`). É o histórico da
+"primeira assinatura" do bônus do referrals. SQL em `tests/db/paid-offers-read.test.ts`.
+
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
 em memória/por instância — troque por Redis p/ limite global) + rate limit **GLOBAL
 dos webhooks** (`WEBHOOK_RATE_LIMIT_PER_MINUTE`, chave única — backpressure, a auth é

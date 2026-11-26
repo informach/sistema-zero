@@ -1,6 +1,8 @@
 'use client'
 
-import { BookOpen, Check, Gift, Lock } from 'lucide-react'
+import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
+import { money } from '@sistemazero/member-shell/components/commerce/commerce-copy'
+import { ArrowRight, BookOpen, Check, Gift, Lock } from 'lucide-react'
 import Link from 'next/link'
 import type { CatalogCourseView, MyCourseView } from '@/lib/types'
 import { ParentShell } from '../_components/parent-shell'
@@ -11,6 +13,7 @@ import {
   SECONDARY_ACTION,
 } from '../_components/parent-ui'
 import { parentCourseHref } from '../parent-routes'
+import { COURSE_BANDS, lessonsChip, PARENT_COURSE_PAGES } from './parent-course-pages'
 
 /** A capa do curso, ou um ladrilho calmo quando o curso ainda não tem imagem. */
 export function ParentCourseCover({
@@ -32,42 +35,90 @@ export function ParentCourseCover({
   )
 }
 
-function CourseCard({ course, mine }: { course: CatalogCourseView; mine?: MyCourseView }) {
+function CourseCard({
+  course,
+  mine,
+  offer,
+  index,
+}: {
+  course: CatalogCourseView
+  mine?: MyCourseView
+  offer?: CommerceCatalogOffer
+  index: number
+}) {
   const done = mine?.progress.percent === 100
   const started = Boolean(mine && mine.progress.percent > 0 && !done)
   const gift = (mine?.accessReason ?? course.accessReason) === 'gift'
+  const lessons = lessonsChip(course.lessonsCount)
+  const page = PARENT_COURSE_PAGES[course.courseSlug]
+  const chips = [lessons, ...(page?.chips.slice(0, 1) ?? [])].filter((chip): chip is string =>
+    Boolean(chip),
+  )
   return (
     <li className="flex">
       <Link
         href={parentCourseHref(course.courseSlug)}
-        className="kids-carta flex w-full flex-col gap-3 p-4 text-foreground transition-transform hover:-translate-y-0.5"
+        className="kids-carta flex w-full flex-col overflow-hidden p-0 text-foreground"
       >
-        <ParentCourseCover url={course.coverImageUrl} className="h-40" />
-        <div className="flex flex-wrap gap-2">
-          {!course.hasAccess ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 font-bold text-muted-foreground text-xs">
-              <Lock className="size-3.5" aria-hidden="true" /> Fechado
-            </span>
-          ) : gift ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-(--kids-lilas-bg) px-2.5 py-0.5 font-bold text-xs">
-              <Gift className="size-3.5" aria-hidden="true" /> Presente
-            </span>
-          ) : null}
-          {done ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-(--kids-menta-bg) px-2.5 py-0.5 font-bold text-xs">
-              <Check className="size-3.5" aria-hidden="true" /> Concluído
-            </span>
-          ) : null}
+        <div className={`relative h-[180px] ${COURSE_BANDS[index % COURSE_BANDS.length]}`}>
+          {course.coverImageUrl ? (
+            <img src={course.coverImageUrl} alt="" className="block h-full w-full object-cover" />
+          ) : (
+            <div
+              aria-hidden="true"
+              className="flex h-full items-center justify-center text-primary"
+            >
+              <BookOpen className="size-12" strokeWidth={1.5} />
+            </div>
+          )}
+          <span className="absolute top-3.5 left-3.5 inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1 font-extrabold text-[13px] shadow-sm">
+            {!course.hasAccess ? <Lock className="size-3.5" aria-hidden="true" /> : null}
+            Curso para pais
+          </span>
         </div>
-        <h3 className="sz-display text-xl leading-tight">{course.title}</h3>
-        {course.subtitle ? (
-          <p className="text-muted-foreground text-sm">{course.subtitle}</p>
-        ) : null}
-        {started && mine ? (
-          <p className="mt-auto font-bold text-sm">
-            {mine.progress.completedLessons} de {mine.progress.totalLessons} aulas concluídas
-          </p>
-        ) : null}
+        <div className="flex flex-1 flex-col gap-2 px-5 pt-[18px] pb-5">
+          <h3 className="sz-display text-[1.375rem] leading-tight">{course.title}</h3>
+          {course.subtitle ? (
+            <p className="text-muted-foreground text-sm leading-normal">{course.subtitle}</p>
+          ) : null}
+          {chips.length || gift || done ? (
+            <span className="flex flex-wrap gap-1.5">
+              {gift ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-(--band-lilas) px-2.5 py-1 font-bold text-xs">
+                  <Gift className="size-3.5" aria-hidden="true" /> Presente
+                </span>
+              ) : null}
+              {done ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-(--band-menta) px-2.5 py-1 font-bold text-xs">
+                  <Check className="size-3.5" aria-hidden="true" /> Concluído
+                </span>
+              ) : null}
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full bg-muted px-2.5 py-1 font-bold text-muted-foreground text-xs"
+                >
+                  {chip}
+                </span>
+              ))}
+            </span>
+          ) : null}
+          <span className="mt-auto flex items-center justify-between gap-2.5 border-(--linha-carta) border-t-2 border-dashed pt-3.5">
+            {started && mine ? (
+              <span className="font-bold text-sm">
+                {mine.progress.completedLessons} de {mine.progress.totalLessons} aulas concluídas
+              </span>
+            ) : !course.hasAccess && offer ? (
+              <strong className="sz-display text-[1.375rem]">{money(offer.priceCents)}</strong>
+            ) : (
+              <span />
+            )}
+            <span className="inline-flex items-center gap-1.5 font-extrabold text-[15px] text-primary">
+              {course.hasAccess ? 'Abrir o curso' : 'Ver o curso'}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </span>
+          </span>
+        </div>
       </Link>
     </li>
   )
@@ -80,11 +131,14 @@ function CourseCard({ course, mine }: { course: CatalogCourseView; mine?: MyCour
 export function ParentCoursesView({
   parentName,
   catalog,
+  offers = {},
   mine,
   failed,
 }: {
   parentName?: string
   catalog: CatalogCourseView[]
+  /** A oferta de venda de cada curso fechado, pelo slug do curso (o preço do cartão). */
+  offers?: Readonly<Record<string, CommerceCatalogOffer>>
   mine: MyCourseView[]
   failed: boolean
 }) {
@@ -134,12 +188,14 @@ export function ParentCoursesView({
       ) : null}
       <ParentSection title="Todos os cursos" id="all-courses">
         {catalog.length ? (
-          <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {catalog.map((course) => (
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-6">
+            {catalog.map((course, index) => (
               <CourseCard
                 key={course.courseSlug}
                 course={course}
                 mine={bySlug.get(course.courseSlug)}
+                offer={offers[course.courseSlug]}
+                index={index}
               />
             ))}
           </ul>

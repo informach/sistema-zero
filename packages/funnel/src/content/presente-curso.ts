@@ -2,6 +2,7 @@ import {
   type GiftAudience,
   giftDurationLabel,
   type ReferralGiftOfferView,
+  type ReferralGiftView,
 } from '@sistemazero/core/referrals'
 import type { EstadoPresente, EstadosPresente } from './presente'
 import { PRESENTE_KIDS } from './presente'
@@ -215,4 +216,23 @@ export function presenteCursoCopy(
     barra,
     estados,
   }
+}
+
+/**
+ * O selo de quem dá o presente na página da oferta no modo presente (25/11/2026): a mesma frase
+ * do topo da página do presente ("Um presente de Mariana para você", ou o título da campanha).
+ */
+export function origemDoPresente(
+  gift: ReferralGiftView & { gift: ReferralGiftOfferView },
+  variante: 'pais' | 'curso',
+): string {
+  const audience = gift.audience === 'adult' ? 'adult' : 'kids'
+  const P = presenteCursoCopy(audience, gift.gift, variante)
+  const origem =
+    gift.source.kind !== 'campaign'
+      ? P.origem.pessoal
+      : gift.source.context === 'event'
+        ? P.origem.evento
+        : P.origem.campanha
+  return origem.replace('{{nome}}', gift.source.name)
 }

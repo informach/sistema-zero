@@ -1,5 +1,88 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Janela de compra aberta segura o cartão (25/11/2026, revisão do Lote 7)
+
+`useCommerceDialogRefresh(key)` registra a compra com a janela aberta (`OPEN_PURCHASES`, por slug
+da oferta): `selectPromotions(..., {skipManaged})` não tira esse cartão mesmo depois de virar "já
+tem", então o "Pronto" fica na tela; fechar a janela solta o cartão, relê as promoções e dá o
+`router.refresh()`. Se o cartão sair da tela com a compra pendente, a limpeza do efeito faz o
+refresh. `otherPlan` trata o marcador `'unavailable'` (catálogo fora) como "sem irmã".
+
+## Curso fechado vendido na área dos pais (25/11/2026, Lote 6)
+
+- `members.getSaleOfferReadonly(ref)` (`server/clients.ts`): a oferta do catálogo
+  (`/catalog/offers/:ref`, só disponível e do público do app; senão `null`).
+- `CommercePurchaseButton` (`commerce-card.tsx`): o botão com a janela do mini checkout, para uma
+  página que desenha a própria oferta (o curso fechado). `CommercePromotions({only, skipManaged})`:
+  `only='community'` só o destaque da Comunidade, `'others'` o resto; `skipManaged` esconde o que a
+  conta já tem.
+- `components/commerce/commerce-copy` entrou no mapa de `exports` (é `.ts`, fora do `./components/*`).
+- `CatalogCourseView` ganhou `salesOfferRef?`, `description?` e `lessonsCount?`.
+- **Revisão do Lote 6 (25/11/2026):**
+  - a régua única de "vende na página" é `server/page-sellable.ts` (`pageSellableStatus`: oferta
+    disponível, produto ativo, principal do produto ou `content.pageSellable`), usada pela origem
+    `offer` do BFF e pelo `getSaleOfferReadonly`; a principal (`/catalog/products/by-sku`) fica 60 s
+    na memória do processo (`primaryOfferSlugFor`, só 200/404; `clearPrimaryOfferCache` nos testes).
+    ⚠️ A entrega do curso pelo produto não é conferida aqui (a oferta pública não traz o
+    `fulfillment`); quem confere é o seletor do Admin;
+  - `useCommerceDialogRefresh`: o `sz-commerce-updated` sai na hora, o `router.refresh()` só quando a
+    janela fecha (o Pronto não some ao liberar o curso);
+  - `useCommercePromotions` + `CommercePromotionList` + `selectPromotions`: uma leitura para a página
+    com dois recortes; `CommercePromotions` continua para quem usa um só;
+  - os três passos e "Ir para Família" do Pronto só para a Comunidade Kids (outra assinatura Kids vai
+    a `/pais`).
+
+
+## Mini checkout da área dos pais (25/11/2026, Lote 5 da frente de embaixadores)
+
+Canvas `pais-checkout` (assinatura) e `pais-checkout-curso` (curso). Tudo em
+`components/commerce/`:
+- **`commerce-copy.ts`** (puro): as frases e os números, sempre da oferta (`money`, `intervalText`,
+  `planName`, `renewalText`, `accessText` "Acesso por 1 ano", `guaranteeText` do `guaranteeDays`,
+  `profilesText` do `content.maxProfiles`, `annualSavingsCents`, `perMonthCents`, `payButtonText`).
+  Nada de preço, garantia ou perfis escritos à mão; nunca promete acesso vitalício.
+- **`PurchaseForm`** desenha as duas colunas (formulário + `OrderSummary`): "Escolha o plano" (só
+  com `view.plans`, anual primeiro, "Economize" calculado), "Seus dados" (pede só o que falta:
+  "Falta só o seu CPF"; "Corrigir" abre os três campos), "Como pagar" (Pix desligado no mensal,
+  cartão com "Validade" MM/AAAA num campo e as parcelas consultadas no blur do número), o cupom
+  (só compra avulsa com `content.allowsCoupon`; `onQuote` cota no funil e o valor cotado vai como
+  `expectedPriceCents` + `couponCode`), os termos e o botão com o valor.
+- **`CommercePanel`**: etapas (`aria-current="step"`), a tela do Pix (QR, copia e cola com
+  "Copiar", "Válido até", "Já paguei, conferir", "Pode fechar e voltar depois") e o "Pronto"
+  (assinatura Kids: "A <produto> está liberada" + os três passos + "Ir para Família"; curso: "O
+  curso já é seu" com `next` opcional `{href, label, text}` para "Começar a primeira aula").
+  Props novas: `onClose`, `place`, `imageUrl`, `next`. Trocar de plano = `inspect` com `offerRef`
+  da irmã; `pay`/`restart` mandam o `offerRef` do plano aberto (sem ele o BFF cobraria a principal).
+- **`CommerceCard`** ganhou `variant`: `community` (imagem ao lado, o que entra, perfis da oferta,
+  "R$ X por mês ou R$ Y por ano", garantia da oferta) e `course` (capa, selo, `eyebrow`, `chips`,
+  preço com "pagamento único"); `default` é o de sempre (blocos de aula, presentes). O diálogo de
+  compra usa `bodyClassName="p-0"` (prop nova do `Dialog` do ui) e 900px.
+- **BFF (`routes/commerce.ts`)**: origem nova `{kind:'offer', offerRef}` (só a principal do produto,
+  lida em `/catalog/products/by-sku/:sku`, ou oferta `content.pageSellable`; catálogo fora = 503);
+  `place` ao lado da origem, conferido em `COMMERCE_PLACES` (`pais-inicio|pais-cursos|
+  pais-curso-fechado`; adulto sem o `pais-`; aula = `aula`) e repassado ao funil; `offerRef` no corpo
+  troca de plano só para a irmã do alternador (`siblingOffers`, mesmo produto); `inspect` devolve
+  `plans`; ação `quote` vai ao funil (o BFF nunca cota no catálogo). As promoções trazem `offer` e
+  `plans`, e o destaque padrão da Comunidade Kids usa a copy do Canvas e `/ilustra/criando.webp`.
+- Testes: `tests/commerce-purchase-form.test.tsx`, `tests/commerce-routes.test.ts` (seção Lote 5) e
+  a fixture `tests/fixtures/commerce-card.fixture.tsx` (destaque, curso, Pix, Pronto).
+- **Revisão do Lote 5 (25/11/2026):**
+  - a tela do Pix mostra o valor cobrado e o cupom (`payment.charge`, do funil) no `OrderSummary`;
+  - o texto da Comunidade (o que entra, o "Pronto", o cartão `community`) só vale para o produto da
+    Comunidade (`isCommunityProduct`, pelos SKUs `comunidade-dos-criadores[-adulto]`); outra assinatura
+    diz "Sua assinatura está ativa";
+  - "todos os cursos para pais" voltou à copy (cartão, destaque e "Pronto"): a dona confirmou em
+    25/11/2026 que a assinatura Kids da Comunidade os inclui (só no produto da Comunidade);
+  - `perMonthCents` arredonda para cima;
+  - o plano escolhido (`chosenPlan`) volta como `offerRef` no recarregar do `OFFER_CHANGED`;
+  - o BFF não roda o `recover` quando o `inspect` traz `offerRef` (trocar de plano nunca abre a compra
+    de outro plano);
+  - o alternador acha a irmã nos dois sentidos (`otherPlan`: o `altOffer` desta ou a principal do
+    produto que aponta para esta);
+  - "Curso", "Comprar o curso" e "O curso já é seu" só com `product.kind === 'course'` (campo novo,
+    opcional, no `CommerceCatalogOfferSchema`); fora disso "Produto", "Finalizar a compra" e "Compra
+    confirmada".
+
 ## O cartão dos objetivos aquece o executor (23/11/2026)
 
 O `ObjectivesCard` (`components/studio/section-project-check.tsx`), com objetivo que roda o jogo

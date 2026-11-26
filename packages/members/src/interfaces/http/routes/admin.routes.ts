@@ -24,6 +24,7 @@ import type { GetMemberToolUsageService } from '../../../application/tool-usage/
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { ContentNotFoundError } from '../../../domain/course/course.errors'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
+import type { CourseStartsReader } from '../../../domain/ports/course-starts.port'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import {
   assertInternalCaller,
@@ -102,7 +103,12 @@ export interface AdminRoutesDeps {
   creationCleanup: CreationCleanupService
   /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
   hub: HubGateway
+  /** "Começaram o curso do presente" da campanha no Admin. Opcional nos testes. */
+  courseStarts?: CourseStartsReader
 }
+
+/** Contas por pedido do "começaram o curso" (o BFF manda em lotes). */
+const COURSE_STARTS_MAX = 500
 
 /**
  * Rotas ADMIN da área de membros (gestão de acesso pelo painel). O RBAC real é do
@@ -228,6 +234,33 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.listMemberRatings.execute(params.userId, query)
         },
         { params: UserIdParams, query: AdminCourseHistoryQuery },
+      )
+      // "Começaram o curso do presente" (25/11/2026, staff+ no gateway): entre as contas
+      // pedidas, as que começaram o curso, pela régua dos lembretes (perfil→conta + a conta).
+      .post(
+        '/course-starts',
+        async ({ body, headers, set }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          if (!deps.courseStarts) {
+            set.status = 424
+            return { started: [] as string[] }
+          }
+          const started = await deps.courseStarts.startedAccounts(body.courseSlug, [
+            ...new Set(body.userIds),
+          ])
+          if (started === null) throw new ContentNotFoundError('Curso não encontrado')
+          return { started }
+        },
+        {
+          body: t.Object({
+            courseSlug: t.String({
+              minLength: 1,
+              maxLength: 200,
+              pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+            }),
+            userIds: t.Array(t.String({ format: 'uuid' }), { maxItems: COURSE_STARTS_MAX }),
+          }),
+        },
       )
       // Analytics de aprendizado: overview por curso (conclusão) + funil por aula.
       // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não

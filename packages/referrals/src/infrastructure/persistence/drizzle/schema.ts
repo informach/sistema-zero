@@ -1,5 +1,10 @@
 import type {
+  AcquisitionKind,
+  AcquisitionOriginKind,
+  AmbassadorOfferKind,
   CampaignInput,
+  CampaignKind,
+  CampaignLinkTarget,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -20,6 +25,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import type { AcquisitionBonusTerms } from '../../../domain/acquisition'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
 
 /**
@@ -56,11 +62,32 @@ export const campaigns = referralsSchema.table(
      * Nula só em campanhas antigas, que o `scripts/backfill-gift-offer.ts` liga à oferta padrão.
      */
     giftOfferId: uuid(),
+    /** Tipo (0013): `gift` dá `gift_offer_id`; `sale` leva à venda de `sale_offer_id`. */
+    kind: varchar({ length: 8 }).$type<CampaignKind>().notNull().default('gift'),
+    saleOfferId: uuid(),
+    /** Destino do link da campanha de venda (0013): a página da oferta ou o pagamento. */
+    linkTarget: varchar({ length: 16 }).$type<CampaignLinkTarget>().notNull().default('page'),
+    /** Endereço antigo do funil redirecionado para a campanha até `redirect_until` (0013). */
+    redirectPath: varchar({ length: 120 }),
+    redirectUntil: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index('campaigns_ambassador_idx').on(t.ambassadorId),
+    uniqueIndex('campaigns_redirect_path_uq')
+      .on(t.redirectPath)
+      .where(sql`redirect_path is not null`),
+    check('campaigns_kind_check', sql`${t.kind} in ('gift','sale')`),
+    check('campaigns_link_target_check', sql`${t.linkTarget} in ('page','checkout')`),
+    check(
+      'campaigns_kind_offer_check',
+      sql`(${t.kind} = 'gift' and ${t.saleOfferId} is null) or (${t.kind} = 'sale' and ${t.saleOfferId} is not null and ${t.giftOfferId} is null)`,
+    ),
+    check(
+      'campaigns_redirect_check',
+      sql`(${t.redirectPath} is null) = (${t.redirectUntil} is null)`,
+    ),
     check(
       'campaigns_annual_commission_check',
       sql`${t.commissionAnnualAmountCents} is null or (${t.commissionEnabled} = true and ${t.commissionAnnualAmountCents} between 1 and 100000000)`,
@@ -217,6 +244,11 @@ export const scholarshipRedemptions = referralsSchema.table(
      */
     accessDurationDays: integer(),
     /**
+     * Prazo DIVULGADO no resgate (25/11/2026): o que a pessoa vê e o members avisa; gravado no
+     * claim (a oferta pode mudar depois). Null = sem divulgado (vê o real).
+     */
+    advertisedDays: integer(),
+    /**
      * Null legado; visitor = só visita; trial = participação no prazo do curso + visita depois;
      * offer (0010) = o members concede a oferta `gift_offer_id` (curso, prazo e Mural dela).
      */
@@ -284,9 +316,16 @@ export const conversions = referralsSchema.table(
   'conversions',
   {
     id: uuid().primaryKey().defaultRandom(),
-    redemptionId: uuid()
-      .notNull()
-      .references(() => scholarshipRedemptions.id),
+    /**
+     * Resgate de onde veio o embaixador. Desde a 0013 é opcional: a venda pelo link (sem
+     * presente) atribui pela AQUISIÇÃO (`acquisition_id`).
+     */
+    redemptionId: uuid().references(() => scholarshipRedemptions.id),
+    /** Aquisição com a origem que ganhou o bônus (0013); nula nas conversões anteriores. */
+    acquisitionId: uuid().references(() => acquisitions.id),
+    /** Quem assinou (lower) e o público (0013): "uma primeira assinatura por pessoa e público". */
+    subscriberEmail: text(),
+    audience: varchar({ length: 16 }).$type<GiftAudience>(),
     codeId: uuid()
       .notNull()
       .references(() => codes.id),
@@ -321,10 +360,101 @@ export const conversions = referralsSchema.table(
       .on(t.redemptionId)
       .where(sql`status not in ('canceled', 'superseded')`),
     uniqueIndex('conversions_payment_uq').on(t.paymentId),
+    uniqueIndex('conversions_subscriber_uq')
+      .on(t.subscriberEmail, t.audience)
+      .where(sql`subscriber_email is not null and status not in ('canceled', 'superseded')`),
     index('conversions_status_matures_idx').on(t.status, t.maturesAt),
     index('conversions_ambassador_status_idx').on(t.ambassadorId, t.status),
     /** Etapas no detalhe do embaixador lista por código (FK não indexa sozinha). */
     index('conversions_code_idx').on(t.codeId),
+  ],
+)
+
+/**
+ * Ofertas que os embaixadores podem mandar (0013), por público e tipo. A lista vale para todos
+ * os embaixadores do público; `position` é a ordem na página do embaixador. UUID sem FK: a
+ * oferta é do catálogo (outro schema).
+ */
+export const ambassadorOffers = referralsSchema.table(
+  'ambassador_offers',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    audience: varchar({ length: 16 }).$type<GiftAudience>().notNull(),
+    kind: varchar({ length: 16 }).$type<AmbassadorOfferKind>().notNull(),
+    offerId: uuid().notNull(),
+    position: integer().notNull(),
+    enabled: boolean().notNull().default(true),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('ambassador_offers_offer_uq').on(t.audience, t.kind, t.offerId),
+    check('ambassador_offers_audience_check', sql`${t.audience} in ('kids','adult')`),
+    check('ambassador_offers_kind_check', sql`${t.kind} in ('gift','referral')`),
+  ],
+)
+
+/**
+ * Aquisições com origem (0013): cada presente resgatado, compra avulsa e PRIMEIRA cobrança de
+ * assinatura, com de onde veio. "Por onde a pessoa entrou" é a mais antiga; o bônus olha as
+ * aquisições com embaixador dentro do prazo. Renovação não entra. O valor é o pago de fato.
+ */
+export const acquisitions = referralsSchema.table(
+  'acquisitions',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    /** Normalizado (lower/trim) na aplicação. */
+    email: text().notNull(),
+    accountUserId: uuid(),
+    audience: varchar({ length: 16 }).$type<GiftAudience>().notNull(),
+    kind: varchar({ length: 16 }).$type<AcquisitionKind>().notNull(),
+    /** Oferta do catálogo; nula em presente histórico sem oferta gravada. */
+    offerId: uuid(),
+    /** Preenchido pelo catálogo quando disponível (exibição); nunca é chave. */
+    offerSlug: varchar({ length: 80 }),
+    amountCents: bigint({ mode: 'bigint' }).notNull().default(sql`0`),
+    paymentId: text(),
+    subscriptionId: text(),
+    redemptionId: uuid().references(() => scholarshipRedemptions.id),
+    originKind: varchar({ length: 16 }).$type<AcquisitionOriginKind>().notNull(),
+    codeId: uuid().references(() => codes.id),
+    campaignId: uuid().references(() => campaigns.id),
+    ambassadorId: uuid().references(() => ambassadors.id),
+    /** Etiqueta do botão da plataforma (`platform`). */
+    place: varchar({ length: 48 }),
+    utm: jsonb().$type<GiftAttribution>(),
+    /**
+     * Acordo do bônus capturado NA HORA da aquisição (embaixador, valores, prazo). Editar a
+     * campanha ou o padrão depois não muda o que já foi aceito. Nulo sem embaixador.
+     */
+    bonusTerms: jsonb().$type<AcquisitionBonusTerms>(),
+    /** active | refunded */
+    status: varchar({ length: 16 }).notNull().default('active'),
+    acquiredAt: timestamp({ withTimezone: true }).notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('acquisitions_payment_uq').on(t.paymentId).where(sql`payment_id is not null`),
+    uniqueIndex('acquisitions_redemption_uq')
+      .on(t.redemptionId)
+      .where(sql`redemption_id is not null`),
+    index('acquisitions_email_audience_idx').on(t.email, t.audience, t.acquiredAt),
+    index('acquisitions_account_idx').on(t.accountUserId).where(sql`account_user_id is not null`),
+    index('acquisitions_campaign_idx').on(t.campaignId),
+    index('acquisitions_ambassador_idx').on(t.ambassadorId),
+    index('acquisitions_acquired_idx').on(t.acquiredAt),
+    check('acquisitions_audience_check', sql`${t.audience} in ('kids','adult')`),
+    check('acquisitions_kind_check', sql`${t.kind} in ('gift','one_time','subscription')`),
+    check(
+      'acquisitions_origin_check',
+      sql`${t.originKind} in ('ambassador','campaign','platform','ads','none')`,
+    ),
+    check('acquisitions_status_check', sql`${t.status} in ('active','refunded')`),
+    check(
+      'acquisitions_source_check',
+      sql`(${t.kind} = 'gift' and ${t.redemptionId} is not null) or (${t.kind} <> 'gift' and ${t.paymentId} is not null)`,
+    ),
   ],
 )
 
@@ -356,5 +486,7 @@ export const schema = {
   scholarshipRedemptions,
   invites,
   conversions,
+  ambassadorOffers,
+  acquisitions,
   processedWebhooks,
 }

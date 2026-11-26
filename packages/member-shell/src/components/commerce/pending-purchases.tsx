@@ -60,7 +60,8 @@ export function PendingPurchases() {
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
         title={selected?.title ?? 'Sua compra'}
-        className="max-w-xl"
+        className="max-w-[900px] rounded-[28px]"
+        bodyClassName="p-0"
       >
         {selected ? (
           <CommercePanel
@@ -68,6 +69,7 @@ export function PendingPurchases() {
             checkoutId={selected.checkoutId}
             title={selected.title}
             onUpdated={refresh}
+            onClose={() => setSelected(null)}
           />
         ) : null}
       </Dialog>

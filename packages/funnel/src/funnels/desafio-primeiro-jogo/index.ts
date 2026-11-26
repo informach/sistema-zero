@@ -10,6 +10,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   basePath: '/kids/desafio-primeiro-jogo',
   productName: 'Desafio do Primeiro Jogo',
   productSku: 'desafio-primeiro-jogo',
+  apelido: 'desafio',
   imagesBase: '/img/desafio-primeiro-jogo',
   checkoutImage: 'farol-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
@@ -26,6 +27,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  giftCourses: ['desafio-primeiro-jogo'],
   legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-10-21' },
   content: {
     copy: DESAFIO_PRODUTO,

@@ -1,18 +1,25 @@
 import {
   type AmbassadorCampaignPage,
+  CAMPAIGN_KINDS,
+  CAMPAIGN_LINK_TARGETS,
   type CampaignCouponPolicy,
   type CampaignCouponView,
   type CampaignDetailView,
   type CampaignInput,
+  type CampaignKind,
+  type CampaignLinkTarget,
   type CampaignUpdateInput,
   type CampaignView,
   campaignScheduleWindows,
   type GiftAudience,
+  isCampaignRedirectPath,
   isGiftAudience,
+  type OriginResults,
 } from '@sistemazero/core/referrals'
 import {
   CampaignAudienceLockedError,
   CampaignGiftOfferLockedError,
+  CampaignKindLockedError,
   type CampaignRecord,
   CampaignValidationError,
   campaignState,
@@ -21,17 +28,26 @@ import {
 import { requiresActiveCampaignAmbassador } from '../../domain/campaign-referral'
 import { isValidCode } from '../../domain/codes'
 import { giftOfferProblem, scholarshipExpiresAt } from '../../domain/gift-policy'
-import { scholarshipShareUrl } from '../../domain/links'
+import { referralLinkUrl } from '../../domain/links'
 import type { CampaignCouponCatalog } from '../../domain/ports/campaign-coupon-catalog.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type { GiftOfferCatalog } from '../../domain/ports/gift-offer-catalog.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
+import type { AcquisitionReportsService } from '../acquisitions/acquisition-reports.service'
 
 /** Entrada validada: o público sempre resolvido (ausente = `kids`). */
 export type ValidatedCampaignInput = CampaignInput & {
   audience: GiftAudience
   giftOfferId: string | null
+  kind: CampaignKind
+  saleOfferId: string | null
+  linkTarget: CampaignLinkTarget
+  redirectPath: string | null
+  redirectUntil: string | null
 }
+
+/** Endereço antigo redireciona por no máximo um ano (evita endereço preso para sempre). */
+const MAX_REDIRECT_DAYS = 366
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -48,7 +64,22 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
   }
   if (input.audience !== undefined && !isGiftAudience(input.audience))
     throw new CampaignValidationError('Escolha o público do presente: Kids ou adulto.')
+  const kind = input.kind ?? 'gift'
+  if (!CAMPAIGN_KINDS.includes(kind))
+    throw new CampaignValidationError('Escolha o tipo da campanha: presente ou venda.')
+  const linkTarget = kind === 'sale' ? (input.linkTarget ?? 'page') : 'page'
+  if (!CAMPAIGN_LINK_TARGETS.includes(linkTarget))
+    throw new CampaignValidationError(
+      'Escolha para onde o link leva: a página da oferta ou o pagamento.',
+    )
+  const redirectPath = input.redirectPath?.trim() ? input.redirectPath.trim() : null
+  const redirectUntil = redirectPath ? (input.redirectUntil ?? null) : null
   const result: ValidatedCampaignInput = {
+    kind,
+    saleOfferId: kind === 'sale' ? (input.saleOfferId ?? null) : null,
+    linkTarget,
+    redirectPath,
+    redirectUntil,
     name: input.name.trim(),
     publicTitle: input.publicTitle.trim(),
     description: input.description.trim(),
@@ -61,7 +92,8 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     status: input.status,
     context: input.context,
     audience: input.audience ?? 'kids',
-    giftOfferId: input.giftOfferId ?? null,
+    // Campanha de venda não dá presente (CHECK `campaigns_kind_offer_check`).
+    giftOfferId: kind === 'sale' ? null : (input.giftOfferId ?? null),
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,
     commissionAmountCents: input.commissionEnabled ? (input.commissionAmountCents ?? null) : null,
@@ -79,6 +111,21 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     throw new CampaignValidationError('Escolha um embaixador válido.')
   if (result.giftOfferId !== null && !UUID.test(result.giftOfferId))
     throw new CampaignValidationError('Escolha uma oferta válida para o presente.')
+  if (kind === 'sale' && (!result.saleOfferId || !UUID.test(result.saleOfferId)))
+    throw new CampaignValidationError('Escolha a oferta que a campanha vende.')
+  if (redirectPath !== null) {
+    const until = redirectUntil ? new Date(redirectUntil) : null
+    if (
+      !isCampaignRedirectPath(redirectPath) ||
+      !until ||
+      !Number.isFinite(until.getTime()) ||
+      !/(Z|[+-]\d\d:\d\d)$/.test(redirectUntil ?? '')
+    )
+      throw new CampaignValidationError(
+        'Informe o endereço antigo (ex.: /kids/vilao-em-aliado) e até quando ele redireciona.',
+      )
+    result.redirectUntil = until.toISOString()
+  }
   if (
     result.commissionEnabled &&
     (!result.ambassadorId ||
@@ -136,9 +183,11 @@ export class CampaignAdminService {
     private readonly couponCatalog?: CampaignCouponCatalog,
     /** Confere a oferta do presente (resolve, pagamento único e mesmo público). */
     private readonly giftOffers?: GiftOfferCatalog,
+    /** Resultados por origem (cadastros, compras, assinaturas e faturamento). */
+    private readonly reports?: AcquisitionReportsService,
   ) {}
 
-  async view(campaign: CampaignRecord): Promise<CampaignView> {
+  async view(campaign: CampaignRecord, results?: OriginResults): Promise<CampaignView> {
     const ambassador = campaign.ambassadorId
       ? await this.referrals.findAmbassadorById(campaign.ambassadorId)
       : null
@@ -149,17 +198,40 @@ export class CampaignAdminService {
       state: campaignState(campaign, this.now()),
       startsAt: campaign.startsAt.toISOString(),
       endsAt: campaign.endsAt.toISOString(),
+      redirectUntil: campaign.redirectUntil?.toISOString() ?? null,
       createdAt: campaign.createdAt.toISOString(),
       updatedAt: campaign.updatedAt.toISOString(),
-      shareUrl: scholarshipShareUrl(this.funnelUrl, campaign.code),
+      shareUrl: this.campaignLink(campaign),
       stats: await this.repo.stats(campaign.id),
+      ...(results ? { results } : await this.resultsOf(campaign.id)),
     }
+  }
+
+  private async resultsOf(id: string): Promise<{ results?: OriginResults }> {
+    if (!this.reports) return {}
+    const results = (await this.reports.campaignResults([id])).get(id)
+    return results ? { results } : {}
+  }
+
+  /** O link público da campanha (`/i/<code>`, ou `/i/<code>/pagamento` na venda direta). */
+  campaignLink(campaign: Pick<CampaignRecord, 'code' | 'kind' | 'linkTarget'>): string {
+    return referralLinkUrl(this.funnelUrl, campaign.code, {
+      checkout: campaign.kind === 'sale' && campaign.linkTarget === 'checkout',
+    })
   }
 
   async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
     const result = await this.repo.list(opts)
+    const results = this.reports
+      ? await this.reports.campaignResults(
+          result.items.map((c) => c.id),
+          opts.audience,
+        )
+      : new Map<string, OriginResults>()
     return {
-      items: await Promise.all(result.items.map((campaign) => this.view(campaign))),
+      items: await Promise.all(
+        result.items.map((campaign) => this.view(campaign, results.get(campaign.id))),
+      ),
       total: result.total,
     }
   }
@@ -185,7 +257,7 @@ export class CampaignAdminService {
                 state,
                 startsAt: campaign.startsAt.toISOString(),
                 endsAt: campaign.endsAt.toISOString(),
-                shareUrl: scholarshipShareUrl(this.funnelUrl, campaign.code),
+                shareUrl: this.campaignLink(campaign),
                 commissionEnabled: campaign.commissionEnabled ?? false,
                 commissionAmountCents: campaign.commissionEnabled
                   ? (campaign.commissionAmountCents ?? null)
@@ -218,19 +290,49 @@ export class CampaignAdminService {
       if (!previous) throw new CampaignValidationError('A campanha original não foi encontrada.')
       if (previous.code === validated.code)
         throw new CampaignValidationError('Uma nova edição precisa de outro código.')
-      // A duplicata herda o público e a oferta da original quando o corpo não escolhe outros.
+      // A duplicata herda o público, o tipo e a oferta da original quando o corpo não escolhe
+      // outros. O endereço antigo NÃO é herdado (ele é de uma campanha só).
       if (input.audience === undefined) validated = { ...validated, audience: previous.audience }
-      if (input.giftOfferId === undefined)
+      if (input.kind === undefined)
+        validated = {
+          ...validated,
+          kind: previous.kind,
+          linkTarget: input.linkTarget ?? previous.linkTarget,
+          saleOfferId:
+            previous.kind === 'sale' ? (input.saleOfferId ?? previous.saleOfferId) : null,
+        }
+      if (input.giftOfferId === undefined && validated.kind === 'gift')
         validated = { ...validated, giftOfferId: previous.giftOfferId ?? null }
     }
-    // Campanha nova sempre escolhe a oferta do presente (as antigas sem oferta só são lidas).
-    if (!validated.giftOfferId)
-      throw new CampaignValidationError(
-        'Escolha a oferta do catálogo que a campanha dá de presente.',
-      )
-    await this.validateGiftOffer(validated.giftOfferId, validated.audience)
+    this.validateRedirectWindow(validated)
+    if (validated.kind === 'sale') {
+      if (!validated.saleOfferId)
+        throw new CampaignValidationError('Escolha a oferta que a campanha vende.')
+      await this.validateSaleOffer(validated.saleOfferId, validated.audience)
+    } else {
+      // Campanha de presente nova sempre escolhe a oferta (as antigas sem oferta só são lidas).
+      if (!validated.giftOfferId)
+        throw new CampaignValidationError(
+          'Escolha a oferta do catálogo que a campanha dá de presente.',
+        )
+      await this.validateGiftOffer(validated.giftOfferId, validated.audience)
+    }
     const created = await this.repo.create(validated, actor, duplicatedFrom)
     return created ? this.view(created) : null
+  }
+
+  /** O endereço antigo redireciona até uma data futura, por no máximo um ano. */
+  private validateRedirectWindow(input: ValidatedCampaignInput, previous?: CampaignRecord) {
+    if (!input.redirectPath || !input.redirectUntil) return
+    const until = new Date(input.redirectUntil).getTime()
+    const unchanged =
+      previous?.redirectPath === input.redirectPath &&
+      previous.redirectUntil?.toISOString() === input.redirectUntil
+    const now = this.now().getTime()
+    if (!unchanged && until <= now)
+      throw new CampaignValidationError('A data do redirecionamento precisa estar no futuro.')
+    if (until > now + MAX_REDIRECT_DAYS * 86_400_000)
+      throw new CampaignValidationError('O endereço antigo redireciona por no máximo um ano.')
   }
 
   async update(
@@ -248,6 +350,15 @@ export class CampaignAdminService {
       schedule: input.schedule === undefined ? previous.schedule : input.schedule,
       coupon: input.coupon === undefined ? previous.coupon : input.coupon,
       audience: input.audience ?? previous.audience,
+      // Omitidos conservam o gravado (clientes anteriores a 25/11/2026 não mandam estes campos).
+      kind: input.kind ?? previous.kind,
+      saleOfferId: input.saleOfferId === undefined ? previous.saleOfferId : input.saleOfferId,
+      linkTarget: input.linkTarget ?? previous.linkTarget,
+      redirectPath: input.redirectPath === undefined ? previous.redirectPath : input.redirectPath,
+      redirectUntil:
+        input.redirectUntil === undefined
+          ? (previous.redirectUntil?.toISOString() ?? null)
+          : input.redirectUntil,
       // Omitida conserva a oferta gravada.
       giftOfferId: input.giftOfferId === undefined ? previous.giftOfferId : input.giftOfferId,
       ambassadorId: input.ambassadorId === undefined ? previous.ambassadorId : input.ambassadorId,
@@ -297,8 +408,36 @@ export class CampaignAdminService {
       if (stats.redemptions + stats.pending + stats.failed > 0)
         throw new CampaignAudienceLockedError()
     }
-    const previousOffer = previous.giftOfferId ?? null
-    if (previousOffer && !validated.giftOfferId)
+    this.validateRedirectWindow(validated, previous)
+    if (validated.kind !== previous.kind) {
+      // Mesma régua do público: só em rascunho sem cadastros (o repo confere sob o lock).
+      if (previous.status !== 'draft') throw new CampaignKindLockedError()
+      const stats = await this.repo.stats(id)
+      if (
+        stats.redemptions + stats.pending + stats.failed > 0 ||
+        (await this.repo.hasAcquisitions(id))
+      )
+        throw new CampaignKindLockedError()
+    }
+    if (validated.kind === 'sale') {
+      if (!validated.saleOfferId)
+        throw new CampaignValidationError('Escolha a oferta que a campanha vende.')
+      if (validated.saleOfferId !== previous.saleOfferId) {
+        if (previous.saleOfferId && previous.status !== 'draft')
+          throw new CampaignGiftOfferLockedError()
+        if (previous.saleOfferId && (await this.repo.hasAcquisitions(id)))
+          throw new CampaignGiftOfferLockedError()
+      }
+      if (
+        validated.saleOfferId !== previous.saleOfferId ||
+        validated.audience !== previous.audience
+      )
+        await this.validateSaleOffer(validated.saleOfferId, validated.audience)
+      const updated = await this.repo.update(id, validated, actor, input.expectedUpdatedAt)
+      return updated ? this.view(updated) : null
+    }
+    const previousOffer = previous.kind === 'gift' ? (previous.giftOfferId ?? null) : null
+    if ((previousOffer || previous.kind === 'sale') && !validated.giftOfferId)
       throw new CampaignValidationError(
         'Escolha a oferta do catálogo que a campanha dá de presente.',
       )
@@ -420,6 +559,44 @@ export class CampaignAdminService {
       throw new CampaignValidationError('A oferta do presente não foi encontrada no Catálogo.')
     const problem = giftOfferProblem(offer, audience)
     if (problem) throw new CampaignValidationError(problem)
+  }
+
+  /**
+   * A oferta à venda precisa existir, não estar arquivada e ser do público da campanha. Ter
+   * página de venda é conferido no Admin (o funil sabe a página; o referrals não).
+   */
+  private async validateSaleOffer(offerId: string, audience: GiftAudience) {
+    if (!this.giftOffers) throw new GiftCatalogUnavailableError()
+    let offer: Awaited<ReturnType<GiftOfferCatalog['resolve']>>
+    try {
+      offer = await this.giftOffers.resolve(offerId)
+    } catch {
+      throw new GiftCatalogUnavailableError()
+    }
+    if (!offer)
+      throw new CampaignValidationError('A oferta à venda não foi encontrada no Catálogo.')
+    if (offer.status === 'archived')
+      throw new CampaignValidationError('A oferta à venda está arquivada no Catálogo.')
+    if (offer.audience !== audience)
+      throw new CampaignValidationError(
+        audience === 'adult'
+          ? 'Escolha uma oferta do público adulto, o mesmo da campanha.'
+          : 'Escolha uma oferta do público Kids, o mesmo da campanha.',
+      )
+    // A página de venda só abre a principal do produto ou oferta marcada para a página: a de
+    // presente nunca é vendida, e o link da campanha cairia numa página que não vende a oferta.
+    if (offer.pageSellable) return
+    if (!this.giftOffers.primaryOfferSlugOf || !offer.productSku) return
+    let primary: string | null
+    try {
+      primary = await this.giftOffers.primaryOfferSlugOf(offer.productSku)
+    } catch {
+      throw new GiftCatalogUnavailableError()
+    }
+    if (primary !== offer.offerSlug)
+      throw new CampaignValidationError(
+        'A oferta à venda precisa ser a principal do produto ou estar marcada, no Catálogo, como "Pode ser vendida na página do produto".',
+      )
   }
 
   private async validateAmbassador(input: CampaignInput) {

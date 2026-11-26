@@ -1,11 +1,41 @@
 # CLAUDE.md — @sistemazero/catalog
 
+## Oferta principal da página de venda (25/11/2026)
+
+`products.primary_offer_id` (uuid, nulo; migration `0013_product_primary_offer`, sem FK porque
+`offers` já referencia `products`): a oferta com que o funil abre a página de venda do produto.
+`PATCH /catalog/products/:id` aceita `primaryOfferId` (uuid ou null); o `UpdateProductService`
+recusa (400) oferta de outro produto ou arquivada. A view admin traz `primaryOfferId`; a pública
+`GET /catalog/products/:slug` traz `primaryOfferSlug` (null sem marca, com oferta rascunho ou de
+outro produto). O funil lê pelo SKU em rota PRÓPRIA, `GET /catalog/products/by-sku/:sku`
+(gateway `catalog-product-by-sku`): slug e SKU são espaços de nome separados, e o fallback antigo do
+slug para o SKU podia abrir a página com o produto errado. Só oferta ATIVA vira `primaryOfferSlug`
+(pausada/arquivada sai null e a página responde "indisponível"); criar/editar oferta também limpa o
+cache de produto. O PATCH confere `primaryOfferId` só quando ele MUDA (o formulário manda o payload
+inteiro; uma principal arquivada depois não trava a edição do resto). `content.pageSellable`
+(opt-in na OFERTA): a oferta pode ser vendida na página do produto pelo `?oferta=` (além da
+principal e da irmã do alternador); oferta de presente fica sem a marca.
+Substitui as envs `FUNNEL_OFFER_*` do funil. ⚠️ Operação: antes do deploy do funil sem as envs,
+marcar a oferta principal de CADA página no Admin de staging e de produção (Comunidade Kids e
+adulta, Desafio Kids e adulto, Cadê Kids e adulto, guia dos pais); página sem marca responde 503.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, jose,
 > Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender padrões**,
 > use o **MCP do Octocode** em repositórios GitHub relevantes. Faça certo e atualizado — não "de cabeça".
 
 Guia operacional para trabalhar neste package. Leia antes de editar.
+
+## Prazo divulgado da oferta (25/11/2026)
+
+`content.advertisedAccessDays` (inteiro de dias): o prazo que página, confirmação e e-mails
+mostram, MENOR que o prazo real (`fixed` em `days`); a diferença chega de surpresa (o members
+avisa os dias extras no fim do prazo divulgado). O agregado recusa em oferta vitalícia, em meses,
+igual ou maior que o real, e também quando uma edição do prazo real o deixa abaixo do divulgado
+(`assertAdvertisedAccessDays`, estado consolidado). Sai no `content` da leitura pública
+(`GET /catalog/offers/:ref`) e no topo de `GET /catalog/offers/:ref/entitlements`
+(`advertisedAccessDays`, null sem o campo), ao lado da política de acesso.
 
 ## O que é
 

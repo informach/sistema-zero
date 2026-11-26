@@ -75,7 +75,7 @@ const LEGENDA_KIDS = 'Tela da versão Kids do curso. Na área adulta, a aparênc
  * O texto editorial do Cadê com o prazo do presente nos marcadores (`prazo`, de `prazoDoCade`).
  * `PRESENTE_ADULTO` é o texto aprovado, o dos sete dias; `presenteAdultoDaOferta` usa o prazo da oferta.
  */
-function presenteAdulto(prazo: PrazoDoCade) {
+export function presenteAdulto(prazo: PrazoDoCade) {
   return {
     seoTitle: 'Seu primeiro jogo de presente | Sistema Zero',
     description: `Em ${prazo.dias}, o seu primeiro jogo funcionando no navegador, com o Cadê Todo Mundo na versão adulta e o Mural adulto. Presente gratuito, sem cartão, para quem tem 18 anos ou mais.`,

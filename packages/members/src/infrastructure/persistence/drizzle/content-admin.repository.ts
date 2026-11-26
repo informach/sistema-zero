@@ -184,6 +184,7 @@ function uniqueViolationConstraint(error: unknown): string | null {
 function buildCourseMetadata(fields: CourseFields): Record<string, unknown> | null {
   const metadata: Record<string, unknown> = {}
   if (fields.salesPageUrl) metadata.salesPageUrl = fields.salesPageUrl
+  if (fields.salesOfferRef) metadata.salesOfferRef = fields.salesOfferRef
   // ⚠️ TRIM antes de guardar (e não só p/ filtrar): um id com espaço sobreviveria aqui e
   // nunca casaria com o catálogo do studio — bloco que a criança ganhou e nunca aparece.
   // Espelha o `normalizeUnlockBlocks` do caminho de UPDATE.

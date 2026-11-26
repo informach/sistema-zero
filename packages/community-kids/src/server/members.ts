@@ -6,6 +6,7 @@ export const {
   listCatalog,
   listParentCourses,
   listParentCatalog,
+  getSaleOfferReadonly,
   checkStudioAccessReadonly,
   checkChallengeAccessReadonly,
   checkPensaAccessReadonly,

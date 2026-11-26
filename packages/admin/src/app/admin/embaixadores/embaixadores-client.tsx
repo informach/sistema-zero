@@ -1,5 +1,6 @@
 'use client'
 
+import type { AcquisitionView, OriginDetail, OriginReport } from '@sistemazero/core/referrals'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -17,17 +18,31 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { Copy, Eye, Gift, Mail, Plus, Search } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Copy, Gift, Mail, Plus, Search } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
+import { ByOfferTable, PeopleTable, useOfferNames } from '@/components/admin/origin-parts'
+import { OverviewCard } from '@/components/admin/overview-card'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import type { ApiError } from '@/lib/api'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
 import { formatCents, formatCentsStr, formatDate } from '@/lib/format'
+import { loadAllPages } from '@/lib/load-all-pages'
 import type { Platform } from '@/lib/platform'
+import {
+  bonusCameBy,
+  isOriginDetail,
+  isOriginReport,
+  moneyFromCents,
+  moneyRounded,
+  ORIGIN_PERIOD_LABELS,
+  type OriginPeriod,
+  originPeriodQuery,
+  percent,
+} from '@/lib/referral-origin'
 import type {
   AmbassadorDetailView,
   AmbassadorListItemView,
@@ -41,11 +56,47 @@ const PAGE_SIZE = 25
 const WRITE_ROLES = new Set(['superadmin', 'admin'])
 
 /**
- * Embaixadores do curso Cadê Todo Mundo?: pessoas (com ou sem conta) que
- * distribuem acessos ao curso por indicação. Criar = nome + e-mail → o referrals gera o
- * código + a página (capability-URL) e envia o magic-link por e-mail.
+ * Embaixadores (25/11/2026, Canvas "admin-embaixadores"): quem manda presentes e indica ofertas
+ * com o próprio link, com o que cada um trouxe nesta comunidade (o `results` da lista, que conta
+ * também as campanhas ligadas à pessoa) e o bônus a pagar. Criar = nome + e-mail → o referrals
+ * gera o código + a página (capability-URL) e envia o magic-link por e-mail.
  */
 export const EmbaixadoresClient = communityPage<{ currentRole: string }>(EmbaixadoresForCommunity)
+
+type AmbassadorSort = 'subscriptions' | 'revenue' | 'recent'
+
+/** A soma dos bônus de cada embaixador (pelo e-mail): a pagar, na garantia e pagos. */
+export interface AmbassadorBonusTotals {
+  toPay: number
+  pending: number
+  paid: number
+}
+export function bonusTotalsByEmail(
+  conversions: ConversionAdminView[],
+): Map<string, AmbassadorBonusTotals> {
+  const totals = new Map<string, AmbassadorBonusTotals>()
+  for (const c of conversions) {
+    if (!c.ambassadorEmail) continue
+    const key = c.ambassadorEmail.toLowerCase()
+    const row = totals.get(key) ?? { toPay: 0, pending: 0, paid: 0 }
+    if (c.status === 'eligible') row.toPay += c.bonusCents
+    else if (c.status === 'pending') row.pending += c.bonusCents
+    else if (c.status === 'paid') row.paid += c.bonusCents
+    totals.set(key, row)
+  }
+  return totals
+}
+
+/** A ordem da lista: mais assinaturas, mais faturamento ou mais recentes primeiro. */
+export function sortAmbassadors(items: AmbassadorListItemView[], sort: AmbassadorSort) {
+  const value = (i: AmbassadorListItemView) =>
+    sort === 'subscriptions'
+      ? (i.results?.subscriptions ?? 0)
+      : sort === 'revenue'
+        ? Number(i.results?.revenueCents ?? 0)
+        : Date.parse(i.createdAt)
+  return [...items].sort((a, b) => value(b) - value(a))
+}
 
 function EmbaixadoresForCommunity({
   currentRole,
@@ -57,12 +108,16 @@ function EmbaixadoresForCommunity({
   const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const canWrite = WRITE_ROLES.has(currentRole)
   const { confirm, confirmDialog } = useConfirm()
+  const offerNames = useOfferNames(audience)
 
   const [items, setItems] = useState<AmbassadorListItemView[]>([])
-  const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<AmbassadorSort>('subscriptions')
+  const [period, setPeriod] = useState<OriginPeriod>('30d')
+  const [report, setReport] = useState<OriginReport | null>(null)
+  const [bonus, setBonus] = useState<Map<string, AmbassadorBonusTotals> | null>(null)
   const [loading, setLoading] = useState(true)
 
   const [createOpen, setCreateOpen] = useState(false)
@@ -72,24 +127,60 @@ function EmbaixadoresForCommunity({
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
-      if (search) params.set('q', search)
-      const data = await apiGet<{ items: AmbassadorListItemView[]; total: number }>(
-        `/api/admin/referrals/ambassadors?${params.toString()}`,
-      )
-      setItems(data.items)
-      setTotal(data.total)
+      // A lista inteira: a ordem por assinaturas ou faturamento é feita aqui.
+      const all = await loadAllPages((pageOffset, limit) => {
+        const params = new URLSearchParams({ limit: String(limit), offset: String(pageOffset) })
+        if (search) params.set('q', search)
+        return apiGet<{ items: AmbassadorListItemView[]; total: number }>(
+          `/api/admin/referrals/ambassadors?${params.toString()}`,
+        )
+      })
+      setItems(all)
     } catch (err) {
       if (isCanceledCommunityRequest(err)) return
       toast.error((err as ApiError).message)
     } finally {
       setLoading(false)
     }
-  }, [apiGet, offset, search])
+  }, [apiGet, search])
 
   useEffect(() => {
     void load()
   }, [load])
+
+  // O período (Origem das vendas) e os bônus são leituras admin+ (e-mails e valores).
+  useEffect(() => {
+    if (!canWrite) return
+    let alive = true
+    apiGet<OriginReport>(`/api/admin/referrals/origins?${originPeriodQuery(period)}`)
+      .then((next) => {
+        if (alive) setReport(isOriginReport(next) ? next : null)
+      })
+      .catch(() => {
+        if (alive) setReport(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [apiGet, canWrite, period])
+  useEffect(() => {
+    if (!canWrite) return
+    let alive = true
+    loadAllPages((pageOffset, limit) =>
+      apiGet<{ items: ConversionAdminView[]; total: number }>(
+        `/api/admin/referrals/conversions?${new URLSearchParams({ limit: String(limit), offset: String(pageOffset) })}`,
+      ),
+    )
+      .then((all) => {
+        if (alive) setBonus(bonusTotalsByEmail(all))
+      })
+      .catch(() => {
+        if (alive) setBonus(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [apiGet, canWrite])
 
   async function openDetail(id: string) {
     try {
@@ -102,7 +193,7 @@ function EmbaixadoresForCommunity({
     }
   }
 
-  async function resendLink(row: AmbassadorListItemView) {
+  async function resendLink(row: { id: string; email: string }) {
     try {
       const res = await apiSend<{ sent: boolean }>(
         `/api/admin/referrals/ambassadors/${row.id}/resend-link`,
@@ -117,13 +208,13 @@ function EmbaixadoresForCommunity({
     }
   }
 
-  function toggleStatus(row: AmbassadorListItemView) {
+  function toggleStatus(row: { id: string; name: string; status: 'active' | 'disabled' }) {
     const disabling = row.status === 'active'
     confirm({
       title: disabling ? 'Desativar embaixador?' : 'Reativar embaixador?',
       message: disabling
-        ? `A página e o link de bolsa de ${row.name} param de funcionar. Nas campanhas vinculadas, novos cadastros continuam recebendo o presente, mas sem comissão. A alteração vale para Kids e Adultos. As bolsas e os acordos já aceitos continuam valendo.`
-        : `A página e o link de bolsa de ${row.name} voltam a funcionar nas duas comunidades. Campanhas com comissão habilitada voltam a gerar comissão para novos cadastros.`,
+        ? `A página e os links de ${row.name} param de funcionar. Nas campanhas vinculadas, novos cadastros continuam recebendo o presente, mas sem bônus. A alteração vale para Kids e Adultos. Os presentes e os acordos já aceitos continuam valendo.`
+        : `A página e os links de ${row.name} voltam a funcionar nas duas comunidades. Campanhas com bônus voltam a gerar bônus para novos cadastros.`,
       confirmText: disabling ? 'Desativar' : 'Reativar',
       confirmVariant: disabling ? 'destructive' : 'default',
       onConfirm: async () => {
@@ -132,6 +223,7 @@ function EmbaixadoresForCommunity({
             status: disabling ? 'disabled' : 'active',
           })
           toast.success(disabling ? 'Embaixador desativado.' : 'Embaixador reativado.')
+          setDetailOpen(false)
           void load()
         } catch (err) {
           if (isCanceledCommunityRequest(err)) return
@@ -141,28 +233,96 @@ function EmbaixadoresForCommunity({
     })
   }
 
+  const sorted = useMemo(() => sortAmbassadors(items, sort), [items, sort])
+  const page = sorted.slice(offset, offset + PAGE_SIZE)
+  const showRevenue = items.some((i) => i.results?.revenueCents != null)
+  const showBonus = bonus !== null
+  const columns = 7 + (showRevenue ? 1 : 0) + (showBonus ? 1 : 0)
+  const activeCount = items.filter((i) => i.status === 'active').length
+  const disabledCount = items.length - activeCount
+  const ambassadorRow = report?.byOrigin.find((row) => row.origin === 'ambassador')
+  const bonusTotal = bonus
+    ? [...bonus.values()].reduce(
+        (acc, row) => ({ toPay: acc.toPay + row.toPay, pending: acc.pending + row.pending }),
+        { toPay: 0, pending: 0 },
+      )
+    : null
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-xl font-bold">Embaixadores</h2>
           <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
-            {audience === 'kids'
-              ? 'Quem indica o curso Cadê Todo Mundo sem custo para a família convidada.'
-              : 'Quem indica o curso Cadê Todo Mundo na versão adulta sem custo para a pessoa convidada.'}{' '}
-            Os convites e resultados seguem a comunidade escolhida; a conta do embaixador é
-            compartilhada.
+            Quem manda presentes e indica ofertas com o próprio link. O cadastro do embaixador vale
+            para Kids e Adultos; os números abaixo são desta comunidade e contam também as campanhas
+            ligadas a cada pessoa.
           </p>
         </div>
-        {canWrite ? (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="size-4" aria-hidden /> Novo embaixador
-          </Button>
+        <div className="flex flex-wrap items-end gap-2">
+          {canWrite ? (
+            <Select
+              aria-label="Período"
+              value={period}
+              className="w-auto"
+              onChange={(e) => setPeriod(e.target.value as OriginPeriod)}
+            >
+              {(['30d', '90d', 'year'] as const).map((p) => (
+                <option key={p} value={p}>
+                  {ORIGIN_PERIOD_LABELS[p]}
+                </option>
+              ))}
+            </Select>
+          ) : null}
+          {canWrite ? (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="size-4" aria-hidden /> Novo embaixador
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <OverviewCard
+          title="Embaixadores ativos"
+          value={loading ? '…' : activeCount}
+          description={`${disabledCount} ${disabledCount === 1 ? 'desativado' : 'desativados'}`}
+        />
+        {ambassadorRow ? (
+          <>
+            <OverviewCard
+              title="Pessoas que entraram"
+              value={ambassadorRow.newPeople}
+              description={`${ambassadorRow.gifts} por presente`}
+            />
+            <OverviewCard
+              title="Compras"
+              value={ambassadorRow.purchases}
+              description="cursos e ofertas, fora a assinatura"
+            />
+            <OverviewCard
+              title="Assinaturas"
+              value={ambassadorRow.subscriptions}
+              description={`${percent(ambassadorRow.subscriptions, ambassadorRow.newPeople)} de quem entrou`}
+            />
+            <OverviewCard
+              title="Faturamento"
+              value={moneyRounded(ambassadorRow.revenueCents)}
+              description="valor pago, sem estornos"
+            />
+          </>
+        ) : null}
+        {bonusTotal ? (
+          <OverviewCard
+            title="Bônus a pagar"
+            value={moneyRounded(bonusTotal.toPay)}
+            description={`${moneyFromCents(bonusTotal.pending)} na garantia`}
+          />
         ) : null}
       </div>
 
       <form
-        className="flex items-center gap-2"
+        className="flex flex-wrap items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           setOffset(0)
@@ -182,6 +342,19 @@ function EmbaixadoresForCommunity({
             aria-label="Buscar embaixadores"
           />
         </div>
+        <Select
+          aria-label="Ordenar"
+          value={sort}
+          className="w-auto"
+          onChange={(e) => {
+            setSort(e.target.value as AmbassadorSort)
+            setOffset(0)
+          }}
+        >
+          <option value="subscriptions">Mais assinaturas primeiro</option>
+          {showRevenue ? <option value="revenue">Mais faturamento primeiro</option> : null}
+          <option value="recent">Mais recentes primeiro</option>
+        </Select>
         <Button type="submit" variant="outline">
           Buscar
         </Button>
@@ -191,60 +364,91 @@ function EmbaixadoresForCommunity({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Quem indica</TableHead>
-              <TableHead>Código</TableHead>
-              <TableHead className="text-right">Bolsas resgatadas</TableHead>
-              <TableHead className="text-right">Convites</TableHead>
+              <TableHead>Embaixador</TableHead>
+              <TableHead className="text-right">Entraram</TableHead>
+              <TableHead className="text-right">Presentes</TableHead>
+              <TableHead className="text-right">Compras</TableHead>
+              <TableHead className="text-right">Assinaturas</TableHead>
+              {showRevenue ? <TableHead className="text-right">Faturamento</TableHead> : null}
+              {showBonus ? <TableHead>Bônus</TableHead> : null}
               <TableHead>Situação</TableHead>
-              <TableHead>Desde</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableSkeletonRows rows={5} columns={7} />
-            ) : items.length === 0 ? (
+              <TableSkeletonRows rows={5} columns={columns} />
+            ) : page.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={columns} className="py-10 text-center text-muted-foreground">
                   <Gift className="mx-auto mb-2 size-6" aria-hidden />
                   Nenhum embaixador ainda. Crie o primeiro e envie o link da página dele.
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>
-                    <div className="font-medium">{row.name}</div>
-                    <div className="text-xs text-muted-foreground">{row.email}</div>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">{row.code || '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {row.redemptionsCompleted}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{row.invitesSent}</TableCell>
-                  <TableCell>
-                    {row.status === 'active' ? (
-                      <Badge className="bg-success/15 text-success-foreground">Ativo</Badge>
-                    ) : (
-                      <Badge variant="muted">Desativado</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatDate(row.createdAt)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Detalhes e resgates"
-                        aria-label={`Detalhes e resgates de ${row.name}`}
-                        onClick={() => void openDetail(row.id)}
-                      >
-                        <Eye className="size-4" aria-hidden />
-                      </Button>
-                      {canWrite && (
-                        <>
+              page.map((row) => {
+                const totals = bonus?.get(row.email.toLowerCase())
+                return (
+                  <TableRow key={row.id}>
+                    <TableCell>
+                      <div className="font-medium">{row.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {row.email} · <span className="font-mono">{row.code || '—'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {row.results?.people ?? row.redemptionsCompleted}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {row.results?.gifts ?? row.redemptionsCompleted}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {row.results?.purchases ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {row.results?.subscriptions ?? '—'}
+                    </TableCell>
+                    {showRevenue ? (
+                      <TableCell className="text-right tabular-nums">
+                        {row.results?.revenueCents != null
+                          ? moneyFromCents(row.results.revenueCents)
+                          : '—'}
+                      </TableCell>
+                    ) : null}
+                    {showBonus ? (
+                      <TableCell className="text-sm">
+                        {totals && totals.toPay > 0 ? (
+                          <div className="font-medium">{moneyFromCents(totals.toPay)} a pagar</div>
+                        ) : totals && totals.pending > 0 ? (
+                          <div>{moneyFromCents(totals.pending)} na garantia</div>
+                        ) : (
+                          <div className="text-muted-foreground">Nada a pagar</div>
+                        )}
+                        {totals && totals.paid > 0 ? (
+                          <div className="text-xs text-muted-foreground">
+                            {moneyFromCents(totals.paid)} pagos
+                          </div>
+                        ) : null}
+                      </TableCell>
+                    ) : null}
+                    <TableCell>
+                      {row.status === 'active' ? (
+                        <Badge className="bg-success/15 text-success-foreground">Ativo</Badge>
+                      ) : (
+                        <Badge variant="muted">Desativado</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Detalhes de ${row.name}`}
+                          onClick={() => void openDetail(row.id)}
+                        >
+                          Detalhes
+                        </Button>
+                        {canWrite && row.status === 'active' ? (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -254,36 +458,35 @@ function EmbaixadoresForCommunity({
                           >
                             <Mail className="size-4" aria-hidden />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleStatus(row)}
-                            title={row.status === 'active' ? 'Desativar' : 'Reativar'}
-                          >
-                            {row.status === 'active' ? 'Desativar' : 'Reativar'}
+                        ) : null}
+                        {canWrite && row.status !== 'active' ? (
+                          <Button variant="ghost" size="sm" onClick={() => toggleStatus(row)}>
+                            Reativar
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
       </Card>
 
       <Pagination
-        total={total}
+        total={sorted.length}
         limit={PAGE_SIZE}
         offset={offset}
         onChange={(next: number) => setOffset(next)}
       />
 
-      {/* A listagem de bônus carrega chave Pix + e-mail do bolsista: o gateway
-          restringe a admin+ (`referrals-admin-conversions-read`). Esconder aqui
-          evita oferecer ao staff uma seção que responderia 403. */}
-      {canWrite ? <BonusSection audience={audience} canWrite={canWrite} /> : null}
+      {/* A listagem de bônus carrega chave Pix + e-mail de quem assinou: o gateway restringe a
+          admin+ (`referrals-admin-conversions-read`). Esconder aqui evita oferecer ao staff uma
+          seção que responderia 403. */}
+      {canWrite ? (
+        <BonusSection audience={audience} canWrite={canWrite} offerNames={offerNames} />
+      ) : null}
 
       {createOpen && (
         <CreateAmbassadorDialog
@@ -306,8 +509,14 @@ function EmbaixadoresForCommunity({
       {detailOpen && detail && (
         <AmbassadorDetailDialog
           detail={detail}
+          audience={audience}
+          canWrite={canWrite}
+          offerNames={offerNames}
+          bonus={bonus?.get(detail.ambassador.email.toLowerCase()) ?? null}
           onClose={() => setDetailOpen(false)}
           onCopy={copyToClipboard}
+          onResend={() => void resendLink(detail.ambassador)}
+          onToggle={() => toggleStatus(detail.ambassador)}
         />
       )}
 
@@ -380,7 +589,15 @@ function ConversionStatusBadge({ c }: { c: ConversionAdminView }) {
  * Criadores. Passada a garantia de 7 dias o bônus fica "Aguardando Pix": você
  * paga por fora (Pix manual, sem saldo no produto) e marca como pago aqui.
  */
-function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Platform }) {
+function BonusSection({
+  canWrite,
+  audience,
+  offerNames,
+}: {
+  canWrite: boolean
+  audience: Platform
+  offerNames: ReadonlyMap<string, string>
+}) {
   const { get: apiGet, send: apiSend } = useCommunityRequests(audience)
   const { confirm, confirmDialog } = useConfirm()
   const [items, setItems] = useState<ConversionAdminView[]>([])
@@ -422,6 +639,33 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
   useEffect(() => {
     void load()
   }, [load])
+
+  // "Veio por": as aquisições de cada pessoa da página (uma leitura por e-mail, quatro por vez).
+  const [cameBy, setCameBy] = useState<Map<string, AcquisitionView[]>>(new Map())
+  useEffect(() => {
+    let alive = true
+    const emails = [...new Set(items.map((row) => row.redemptionEmail.toLowerCase()))]
+    const queue = [...emails]
+    const found = new Map<string, AcquisitionView[]>()
+    const worker = async () => {
+      for (let email = queue.shift(); email; email = queue.shift()) {
+        try {
+          const result = await apiGet<{ items: AcquisitionView[] }>(
+            `/api/admin/referrals/acquisitions?${new URLSearchParams({ email })}`,
+          )
+          found.set(email, result.items)
+        } catch {
+          // Sem a leitura, a coluna fica com o traço: o bônus continua na tela.
+        }
+      }
+    }
+    void Promise.all([worker(), worker(), worker(), worker()]).then(() => {
+      if (alive) setCameBy(found)
+    })
+    return () => {
+      alive = false
+    }
+  }, [apiGet, items])
 
   function markPaid(row: ConversionAdminView) {
     confirm({
@@ -478,7 +722,7 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
         <div>
           <h2 className="font-display text-xl font-bold">Bônus de indicação</h2>
           <p className="text-sm text-muted-foreground">
-            Bolsistas que assinaram a Comunidade dos Criadores. Depois da garantia de 7 dias, o
+            Quem veio por um embaixador e assinou a Comunidade. Depois da garantia de 7 dias, o
             bônus fica aguardando o seu Pix manual.
           </p>
         </div>
@@ -506,7 +750,8 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
           <TableHeader>
             <TableRow>
               <TableHead>Quem indicou</TableHead>
-              <TableHead>Bolsista que assinou</TableHead>
+              <TableHead>Quem assinou</TableHead>
+              <TableHead>Veio por</TableHead>
               <TableHead>Assinou em</TableHead>
               <TableHead className="text-right">Bônus</TableHead>
               <TableHead>Chave Pix</TableHead>
@@ -516,10 +761,10 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableSkeletonRows rows={3} columns={canWrite ? 7 : 6} />
+              <TableSkeletonRows rows={3} columns={canWrite ? 8 : 7} />
             ) : failed ? (
               <TableRow>
-                <TableCell colSpan={canWrite ? 7 : 6} className="py-8 text-center">
+                <TableCell colSpan={canWrite ? 8 : 7} className="py-8 text-center">
                   <p className="text-sm text-destructive">
                     Não consegui carregar os bônus agora. Isto não quer dizer que não há nenhum.
                   </p>
@@ -531,12 +776,12 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={canWrite ? 7 : 6}
+                  colSpan={canWrite ? 8 : 7}
                   className="py-8 text-center text-muted-foreground"
                 >
                   {status
                     ? 'Nenhum bônus nessa situação agora. Escolha "Todos" para ver a lista inteira.'
-                    : 'Nenhum bônus por aqui ainda. Quando um bolsista assinar a Comunidade, ele aparece nesta lista.'}
+                    : 'Nenhum bônus por aqui ainda. Quando alguém que veio por um embaixador assinar a Comunidade, aparece nesta lista.'}
                 </TableCell>
               </TableRow>
             ) : (
@@ -550,10 +795,28 @@ function BonusSection({ canWrite, audience }: { canWrite: boolean; audience: Pla
                     <div className="text-sm">{row.redemptionName}</div>
                     <div className="text-xs text-muted-foreground">{row.redemptionEmail}</div>
                   </TableCell>
+                  <TableCell className="text-sm">
+                    {(() => {
+                      const origin = bonusCameBy(
+                        cameBy.get(row.redemptionEmail.toLowerCase()) ?? [],
+                        { id: row.ambassadorId, name: row.ambassadorName },
+                        offerNames,
+                      )
+                      return origin ? (
+                        <>
+                          <div>{origin.label}</div>
+                          <div className="text-xs text-muted-foreground">{origin.detail}</div>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )
+                    })()}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     <div>{formatDate(row.subscribedAt)}</div>
                     <div className="text-xs">
-                      {row.offerSlug} · {formatCentsStr(row.amountCents)}
+                      {offerNames.get(row.offerSlug) ?? row.offerSlug} ·{' '}
+                      {formatCentsStr(row.amountCents)}
                     </div>
                   </TableCell>
                   <TableCell className="text-right tabular-nums font-medium">
@@ -718,29 +981,199 @@ function CreateAmbassadorDialog({
   )
 }
 
+function DetailKpi({
+  title,
+  value,
+  hint,
+}: {
+  title: string
+  value: string | number
+  hint?: string
+}) {
+  return (
+    <Card className="flex min-w-0 flex-[1_1_8rem] flex-col gap-1 p-3">
+      <p className="text-muted-foreground text-xs">{title}</p>
+      <p className="font-mono text-xl font-bold tracking-tight">{value}</p>
+      {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+    </Card>
+  )
+}
+
+/**
+ * O detalhe do embaixador (25/11/2026, Canvas "admin-embaixador-detalhe"): os números dele nesta
+ * comunidade, as vendas por oferta, os links que mais trouxeram gente, a página e as pessoas que
+ * vieram por ele (`/ambassadors/:id/results`, admin+). Os resgates pelo código continuam embaixo,
+ * para conferir um cadastro preso.
+ */
 function AmbassadorDetailDialog({
   detail,
+  audience,
+  canWrite,
+  offerNames,
+  bonus,
   onClose,
   onCopy,
+  onResend,
+  onToggle,
 }: {
   detail: AmbassadorDetailView
+  audience: Platform
+  canWrite: boolean
+  offerNames: ReadonlyMap<string, string>
+  bonus: AmbassadorBonusTotals | null
   onClose: () => void
   onCopy: (text: string, label: string) => Promise<void>
+  onResend: () => void
+  onToggle: () => void
 }) {
   const a = detail.ambassador
+  const { get } = useCommunityRequests(audience)
+  const [results, setResults] = useState<OriginDetail | null>(null)
+  const [failed, setFailed] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const sequence = useRef(0)
+  useEffect(() => {
+    if (!canWrite) return
+    const current = ++sequence.current
+    setFailed(false)
+    get<OriginDetail>(`/api/admin/referrals/ambassadors/${a.id}/results?offset=${offset}`)
+      .then((next) => {
+        if (current !== sequence.current) return
+        if (isOriginDetail(next)) setResults(next)
+        else setFailed(true)
+      })
+      .catch((err) => {
+        if (isCanceledCommunityRequest(err) || current !== sequence.current) return
+        setFailed(true)
+      })
+  }, [get, a.id, offset, canWrite])
+  const numbers = results?.results
+  const showRevenue = numbers?.revenueCents != null
+  const firstName = a.name.split(' ')[0] ?? a.name
+  // Os links que trouxeram gente: as entradas por presente e por compra, oferta a oferta.
+  const links = (results?.byOffer ?? [])
+    .filter((row) => row.kind !== 'subscription')
+    .sort((x, y) => y.count - x.count)
   return (
-    <Dialog open onClose={onClose} title={a.name} className="max-w-2xl">
+    <Dialog open onClose={onClose} title={a.name} className="max-w-4xl">
       <div className="space-y-5">
-        <div className="space-y-2 text-sm">
-          <p className="text-muted-foreground">{a.email}</p>
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          {a.status === 'active' ? (
+            <Badge className="bg-success/15 text-success-foreground">Ativo</Badge>
+          ) : (
+            <Badge variant="muted">Desativado</Badge>
+          )}
+          <span className="text-muted-foreground">
+            {a.email} · embaixador desde {formatDate(a.createdAt)}
+          </span>
+          {canWrite ? (
+            <span className="ml-auto flex gap-2">
+              {a.status === 'active' ? (
+                <Button variant="outline" size="sm" onClick={onResend}>
+                  Reenviar o link da página
+                </Button>
+              ) : null}
+              <Button variant="outline" size="sm" onClick={onToggle}>
+                {a.status === 'active' ? 'Desativar' : 'Reativar'}
+              </Button>
+            </span>
+          ) : null}
+        </div>
+
+        {numbers ? (
+          <div className="flex flex-wrap gap-3">
+            <DetailKpi
+              title="Pessoas que entraram"
+              value={numbers.people}
+              hint={`${numbers.gifts} por presente`}
+            />
+            <DetailKpi title="Compras" value={numbers.purchases} hint="fora a assinatura" />
+            <DetailKpi title="Assinaturas" value={numbers.subscriptions} />
+            {showRevenue ? (
+              <DetailKpi
+                title="Faturamento"
+                value={moneyRounded(numbers.revenueCents)}
+                hint="sem estornos"
+              />
+            ) : null}
+            {bonus ? (
+              <DetailKpi
+                title="Bônus"
+                value={moneyRounded(bonus.toPay)}
+                hint={`a pagar · ${moneyFromCents(bonus.paid)} já pagos`}
+              />
+            ) : null}
+          </div>
+        ) : null}
+        {failed ? (
+          <p role="alert" className="text-destructive text-sm">
+            Os resultados não carregaram agora.
+          </p>
+        ) : null}
+
+        {results ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <section aria-labelledby="vendas-por-oferta" className="space-y-2">
+              <h3 id="vendas-por-oferta" className="font-display font-bold">
+                Vendas por oferta
+              </h3>
+              <ByOfferTable detail={results} names={offerNames} showRevenue={showRevenue} />
+            </section>
+            <section aria-labelledby="links-gente" className="space-y-2">
+              <h3 id="links-gente" className="font-display font-bold">
+                Links que mais trouxeram gente
+              </h3>
+              {links.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Ninguém entrou pelos links ainda.</p>
+              ) : (
+                <ul className="space-y-1 text-sm">
+                  {links.map((row) => (
+                    <li
+                      key={`${row.kind}:${row.offerSlug}`}
+                      className="flex justify-between gap-3 border-b py-1"
+                    >
+                      <span>
+                        {row.kind === 'gift' ? 'Presente' : 'Indicação'} ·{' '}
+                        {offerNames.get(row.offerSlug ?? '') ?? row.offerSlug}
+                      </span>
+                      <span className="font-mono">{row.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {numbers?.people ? (
+                <p className="text-muted-foreground text-xs">
+                  {numbers.subscriptions} das {numbers.people} pessoas assinaram (
+                  {percent(numbers.subscriptions, numbers.people)}).
+                </p>
+              ) : null}
+            </section>
+          </div>
+        ) : null}
+
+        <section aria-labelledby="pagina-pagamento" className="space-y-2 text-sm">
+          <h3 id="pagina-pagamento" className="font-display font-bold">
+            Página e pagamento
+          </h3>
+          {a.pageUrl ? (
+            <LinkRow
+              label={`Página de ${firstName} (só para ${firstName})`}
+              value={a.pageUrl}
+              onCopy={onCopy}
+            />
+          ) : null}
           <p className="text-xs text-muted-foreground">
             {a.linkEmailSentAt
-              ? `E-mail do link enviado em ${formatDate(a.linkEmailSentAt)}.`
-              : 'O e-mail do link ainda não foi enviado. Copie a página abaixo e mande por fora.'}
+              ? `E-mail com o link enviado em ${formatDate(a.linkEmailSentAt)}.`
+              : 'O e-mail do link ainda não foi enviado. Copie a página acima e mande por fora.'}
           </p>
-          {a.shareUrl && (
-            <>
-              <LinkRow label="Link de bolsa (compartilhável)" value={a.shareUrl} onCopy={onCopy} />
+          {a.shareUrl ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <LinkRow
+                label="Link de presente (compartilhável)"
+                value={a.shareUrl}
+                onCopy={onCopy}
+              />
               <ShareCard
                 url={a.shareUrl}
                 title="Um presente para criar em família"
@@ -748,25 +1181,40 @@ function AmbassadorDetailDialog({
                 description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
                 notice="Acesse o link e faça o cadastro como responsável pela criança."
               />
-            </>
-          )}
-          {a.pageUrl && (
-            <LinkRow
-              label="Página do embaixador (chave de acesso, só para ele)"
-              value={a.pageUrl}
-              onCopy={onCopy}
-            />
-          )}
-        </div>
+            </div>
+          ) : null}
+          {a.code ? (
+            <p>
+              <span className="text-muted-foreground text-xs">Código </span>
+              <span className="font-mono">{a.code}</span>
+            </p>
+          ) : null}
+        </section>
 
-        <div>
-          <h3 className="mb-2 text-sm font-semibold">
+        {results ? (
+          <section aria-labelledby="pessoas-embaixador" className="space-y-2">
+            <h3 id="pessoas-embaixador" className="font-display font-bold">
+              Pessoas que vieram por {firstName}
+            </h3>
+            <PeopleTable
+              detail={results}
+              names={offerNames}
+              offset={offset}
+              onOffset={setOffset}
+              personLabel="Pessoa"
+              filename={`embaixador-${a.code ?? a.id}-pessoas.csv`}
+            />
+          </section>
+        ) : null}
+
+        <details className="rounded-xl border p-3">
+          <summary className="cursor-pointer font-semibold text-sm">
             Resgates pelo código ({detail.redemptions.length})
-          </h3>
+          </summary>
           {detail.redemptions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum resgate ainda.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Nenhum resgate ainda.</p>
           ) : (
-            <div className="max-h-72 overflow-y-auto rounded-lg border">
+            <div className="mt-2 max-h-72 overflow-y-auto rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -793,7 +1241,7 @@ function AmbassadorDetailDialog({
                         ) : (
                           <Badge variant="muted">Pendente</Badge>
                         )}
-                        {r.status !== 'completed' && r.lastError && (
+                        {r.status !== 'completed' && r.lastError ? (
                           <div
                             className="mt-1 max-w-52 truncate text-xs text-muted-foreground"
                             title={r.lastError}
@@ -803,7 +1251,7 @@ function AmbassadorDetailDialog({
                               ? ` · ${r.attemptCount} ${r.attemptCount === 1 ? 'tentativa' : 'tentativas'}`
                               : ''}
                           </div>
-                        )}
+                        ) : null}
                       </TableCell>
                       <TableCell>
                         <StageBadge r={r} />
@@ -817,7 +1265,7 @@ function AmbassadorDetailDialog({
               </Table>
             </div>
           )}
-        </div>
+        </details>
 
         <div className="flex justify-end">
           <Button variant="outline" onClick={onClose}>

@@ -25,6 +25,7 @@ function baseLead(id: string): Lead {
     perfilResultado: null,
     funnel: null,
     attribution: null,
+    origin: null,
     lastStep: 'entrou_landing',
     paymentId: null,
     paidPaymentId: null,

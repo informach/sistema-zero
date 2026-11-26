@@ -11,7 +11,9 @@ export interface GrantMembersDeps {
    * `lead.offerRef` (gravado no checkout). Lead legado sem funil cai no default;
    * chave desconhecida continua lançando (não inventa oferta).
    */
-  resolveOffer: (funnel: string | null) => { offerSlug: string }
+  resolveOffer: (
+    funnel: string | null,
+  ) => { offerSlug: string } | null | Promise<{ offerSlug: string } | null>
   /** Marca a concessão concluída (one-shot) — poll repetido após pago não re-chama o members. */
   repo: Pick<FunnelRepo, 'setMembersGranted' | 'accessPeriodForPayment' | 'paymentContext'>
   log?: (msg: string, meta?: Record<string, unknown>) => void
@@ -37,10 +39,13 @@ async function buildGrantInput(
   paidAtIso?: string | null,
 ): Promise<GrantMembersInput> {
   const leadPaidAt = lead.paidAt ? lead.paidAt.toISOString() : undefined
+  // Oferta efetivamente comprada (gravada no checkout); fallback: a principal da página do funil.
+  const offerRef = lead.offerRef ?? (await deps.resolveOffer(lead.funnel))?.offerSlug
+  // Sem oferta (página sem principal marcada): retry, nunca uma concessão sem oferta.
+  if (!offerRef) throw new GrantRetryError(503)
   const input: GrantMembersInput = {
     userId: lead.buyerUserId as string,
-    // Oferta efetivamente comprada (gravada no checkout); fallback resolve pelo funil.
-    offerRef: lead.offerRef ?? deps.resolveOffer(lead.funnel).offerSlug,
+    offerRef,
     paymentId,
     paidAt: paidAtIso === null ? undefined : (paidAtIso ?? leadPaidAt),
   }

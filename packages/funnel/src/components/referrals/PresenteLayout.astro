@@ -28,6 +28,14 @@ interface Props {
   /** Página pública e indexável (padrão: fora dos buscadores, como todo link de presente). */
   indexavel?: boolean
   ogImage?: string
+  /**
+   * O id da seção a que o botão do topo e a barra levam (padrão: o formulário `resgatar`). As
+   * páginas de venda (25/11/2026) levam ao bloco de compra `oferta`.
+   */
+  alvo?: string
+  /** O Termo do rodapé (padrão: o da Comunidade Kids, como o aceite do presente). */
+  termosHref?: string
+  canonical?: string
 }
 const {
   title,
@@ -39,9 +47,13 @@ const {
   cta = P.topo.cta,
   indexavel = false,
   ogImage,
+  alvo = 'resgatar',
+  termosHref = `${COMUNIDADE_DOS_CRIADORES.basePath}/termos`,
+  canonical,
 } = Astro.props
 ---
-<BaseLayout title={title} description={description} noindex={!indexavel} ogImage={ogImage} htmlClass="theme-kids">
+<BaseLayout title={title} description={description} noindex={!indexavel} ogImage={ogImage} canonical={canonical} htmlClass="theme-kids">
+  <slot name="head" slot="head" />
   <div class="c917 pk-corpo">
     <a class="c9-pular" href="#conteudo">{P.pular}</a>
     <header class="c9-topo">
@@ -52,25 +64,28 @@ const {
         {(secoes || ready) && (
           <nav class="c9-nav" aria-label={P.topo.navAria}>
             {secoes && links.map((link) => <a class="c9-nav__link" href={link.href}>{link.label}</a>)}
-            {ready && <a class="c9-btn c9-btn--topo pk-topo-cta" href="#resgatar">{cta}</a>}
+            {ready && <a class="c9-btn c9-btn--topo pk-topo-cta" href={`#${alvo}`}>{cta}</a>}
           </nav>
         )}
       </div>
     </header>
     <main id="conteudo"><slot /></main>
     {ready && (
-      <div class="kof-mobar c9-barra" data-presente-barra aria-hidden="true">
+      <div class="kof-mobar c9-barra" data-presente-barra data-alvo={alvo} aria-hidden="true">
         <span class="c9-barra__preco"><strong>{barra.titulo}</strong><span>{barra.texto}</span></span>
-        <a class="c9-btn" href="#resgatar" tabindex="-1">{barra.cta}</a>
+        <a class="c9-btn" href={`#${alvo}`} tabindex="-1">{barra.cta}</a>
       </div>
     )}
   </div>
   <!-- O mesmo Termo do aceite no formulário do presente (`BolsaResgate`): as regras de uso da área
        Kids estão no Termo da Comunidade Kids. Um Termo próprio do presente fica para a revisão jurídica. -->
-  <Footer audience="kids" termosHref={`${COMUNIDADE_DOS_CRIADORES.basePath}/termos`} />
+  <Footer audience="kids" termosHref={termosHref} />
   {secoes && <OfferImageZoom />}
 </BaseLayout>
 <script>
   import { ligarBarraFixa } from '../../lib/barra-fixa'
-  ligarBarraFixa('[data-presente-barra]', 'resgatar')
+  ligarBarraFixa(
+    '[data-presente-barra]',
+    document.querySelector('[data-presente-barra]')?.getAttribute('data-alvo') ?? 'resgatar',
+  )
 </script>

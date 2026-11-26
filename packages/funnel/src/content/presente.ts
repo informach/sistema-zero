@@ -40,7 +40,7 @@ export interface EstadosPresente {
  * O texto editorial do Cadê com o prazo do presente nos marcadores (`prazo`, de `prazoDoCade`).
  * `PRESENTE_KIDS` é o texto aprovado, o dos sete dias; `presenteKidsDaOferta` usa o prazo da oferta.
  */
-function presenteKids(prazo: PrazoDoCade) {
+export function presenteKids(prazo: PrazoDoCade) {
   return {
     seoTitle: 'Presente Cadê Todo Mundo | Sistema Zero',
     description: `Conheça o Cadê Todo Mundo: ${prazo.extenso} gratuitos para seu filho praticar planejamento, raciocínio e comunicação criando um jogo, com orientação.`,

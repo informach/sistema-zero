@@ -1,9 +1,13 @@
 import { createLogger, type Logger, serializeError } from '@sistemazero/core/logging'
+import { AcquisitionMaintenanceService } from './application/acquisitions/acquisition-maintenance.service'
+import { AcquisitionReportsService } from './application/acquisitions/acquisition-reports.service'
+import { AmbassadorOffersService } from './application/ambassador-offers/ambassador-offers.service'
 import { AmbassadorAdminService } from './application/ambassadors/ambassador-admin.service'
 import { CampaignAdminService } from './application/campaigns/campaign-admin.service'
 import { RecordConversionService } from './application/conversions/record-conversion.service'
 import { SweepConversionsService } from './application/conversions/sweep-conversions.service'
 import { CreateInviteService } from './application/invites/create-invite.service'
+import { ReferralLinkService } from './application/links/referral-link.service'
 import { RedeemScholarshipService } from './application/redeem-scholarship/redeem-scholarship.service'
 import type { Env } from './infrastructure/config/env'
 import { CampaignCouponCatalogHttpClient } from './infrastructure/gateways/campaign-coupon-catalog.client'
@@ -15,6 +19,8 @@ import {
 import { GiftOfferCatalogHttpClient } from './infrastructure/gateways/gift-offer-catalog.client'
 import { PaymentsHttpClient } from './infrastructure/gateways/payments-http.client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAcquisitionRepository } from './infrastructure/persistence/drizzle/acquisition.repository'
+import { DrizzleAmbassadorOfferRepository } from './infrastructure/persistence/drizzle/ambassador-offer.repository'
 import { DrizzleCampaignRepository } from './infrastructure/persistence/drizzle/campaign.repository'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleProcessedWebhookStore } from './infrastructure/persistence/drizzle/processed-webhook.store'
@@ -35,8 +41,15 @@ export function createApplication(env: Env): Application {
   const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
   const repo = new DrizzleReferralRepository(connection.db)
   const campaignRepo = new DrizzleCampaignRepository(connection.db)
+  const acquisitionRepo = new DrizzleAcquisitionRepository(connection.db)
+  const reports = new AcquisitionReportsService(acquisitionRepo, campaignRepo, repo)
   // A oferta do presente vem do catálogo direto (rede privada + token interno), como o cupom.
   const giftOffers = new GiftOfferCatalogHttpClient({
+    baseUrl: env.CATALOG_BASE_URL,
+    internalToken: env.CATALOG_INTERNAL_TOKEN,
+    timeoutMs: env.S2S_TIMEOUT_MS,
+  })
+  const couponCatalog = new CampaignCouponCatalogHttpClient({
     baseUrl: env.CATALOG_BASE_URL,
     internalToken: env.CATALOG_INTERNAL_TOKEN,
     timeoutMs: env.S2S_TIMEOUT_MS,
@@ -46,12 +59,9 @@ export function createApplication(env: Env): Application {
     repo,
     env.FUNNEL_PUBLIC_URL,
     undefined,
-    new CampaignCouponCatalogHttpClient({
-      baseUrl: env.CATALOG_BASE_URL,
-      internalToken: env.CATALOG_INTERNAL_TOKEN,
-      timeoutMs: env.S2S_TIMEOUT_MS,
-    }),
+    couponCatalog,
     giftOffers,
+    reports,
   )
 
   // Todas as integrações via gateway (consumer HMAC `referrals`). Sem
@@ -68,6 +78,11 @@ export function createApplication(env: Env): Application {
   // Sem o app adulto o presente adulto responde "indisponível"; o Kids segue normal.
   if (!env.COMMUNITY_URL) logger.warn('referrals.adult_gift_disabled', { missing: 'COMMUNITY_URL' })
 
+  const ambassadorOffers = new AmbassadorOffersService(
+    new DrizzleAmbassadorOfferRepository(connection.db),
+    giftOffers,
+    logger,
+  )
   const redeem = new RedeemScholarshipService(
     repo,
     gateway,
@@ -78,8 +93,19 @@ export function createApplication(env: Env): Application {
       leaseMs: env.REDEMPTION_LEASE_MS,
       campaigns: campaignRepo,
       bonusAmounts: { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS },
+      acquisitions: acquisitionRepo,
+      legacyBonusCents: env.BONUS_AMOUNT_CENTS,
+      bonusWindowDays: env.BONUS_WINDOW_DAYS,
+      ambassadorOffers,
     },
     logger,
+  )
+  const links = new ReferralLinkService(
+    repo,
+    campaignRepo,
+    giftOffers,
+    ambassadorOffers,
+    couponCatalog,
   )
   const invite = new CreateInviteService(
     repo,
@@ -88,6 +114,7 @@ export function createApplication(env: Env): Application {
       funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
       dailyLimit: env.INVITE_DAILY_LIMIT,
       adultGiftEnabled: Boolean(env.COMMUNITY_URL),
+      ambassadorOffers,
     },
     logger,
   )
@@ -100,20 +127,48 @@ export function createApplication(env: Env): Application {
 
   // ── Consumer do payments (conversões da bolsa → bônus do embaixador) ──────
   const consumerEnabled = Boolean(env.PAYMENTS_WEBHOOK_HMAC_SECRET)
+  const catalog = new CatalogHttpClient({
+    baseUrl: env.CATALOG_BASE_URL,
+    timeoutMs: env.S2S_TIMEOUT_MS,
+  })
+  const bonusAmounts = { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS }
+  const maintenance = new AcquisitionMaintenanceService(
+    acquisitionRepo,
+    catalog,
+    {
+      defaults: {
+        amounts: bonusAmounts,
+        legacyCents: env.BONUS_AMOUNT_CENTS,
+        windowDays: env.BONUS_WINDOW_DAYS,
+      },
+      // Presentes de antes de 25/11/2026 tinham acordo sem prazo (ver o serviço).
+      repairWindowDays: LEGACY_GIFT_WINDOW_DAYS,
+      legacyBefore: env.ORIGIN_LEGACY_BEFORE ? new Date(env.ORIGIN_LEGACY_BEFORE) : null,
+      batchSize: 100,
+      conversionOfferSlugs: env.CONVERSION_OFFER_SLUGS,
+    },
+    logger,
+  )
   const recordConversion = new RecordConversionService(
     repo,
+    acquisitionRepo,
+    campaignRepo,
     new PaymentsHttpClient({
       baseUrl: env.PAYMENTS_BASE_URL,
       internalToken: env.PAYMENTS_INTERNAL_TOKEN,
       timeoutMs: env.S2S_TIMEOUT_MS,
     }),
-    new CatalogHttpClient({ baseUrl: env.CATALOG_BASE_URL, timeoutMs: env.S2S_TIMEOUT_MS }),
+    catalog,
     {
       conversionOfferSlugs: env.CONVERSION_OFFER_SLUGS,
       bonusAmountCents: env.BONUS_AMOUNT_CENTS,
+      bonusAmounts,
+      bonusWindowDays: env.BONUS_WINDOW_DAYS,
       matureHours: env.BONUS_MATURE_HOURS,
     },
     logger,
+    // Antes de escolher o embaixador, os presentes da pessoa que ainda não viraram aquisição.
+    maintenance,
   )
   const sweep = new SweepConversionsService(
     repo,
@@ -132,6 +187,9 @@ export function createApplication(env: Env): Application {
     invite,
     ambassadors,
     campaigns,
+    ambassadorOffers,
+    links,
+    reports,
     funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
     bonusAmountCents: env.BONUS_AMOUNT_CENTS,
     bonusAnnualAmountCents: env.BONUS_ANNUAL_AMOUNT_CENTS,
@@ -177,6 +235,13 @@ export function createApplication(env: Env): Application {
       logger.error('referrals.conversion_sweep_failed', { error: serializeError(error) })
     }
     try {
+      // Aquisições: repara presentes sem aquisição e completa o slug das compras.
+      await maintenance.repairGifts()
+      await maintenance.fillOfferSlugs()
+    } catch (error) {
+      logger.error('referrals.acquisition_maintenance_failed', { error: serializeError(error) })
+    }
+    try {
       // Retenção do dedupe do consumer (padrão fiscal): 30 dias, muito acima
       // do lease + janela de re-entrega do outbox do payments (~63min até DEAD).
       // ⚠️ try PRÓPRIO: um soluço no sweep não pode cancelar a poda — sem ela a
@@ -213,3 +278,5 @@ export function createApplication(env: Env): Application {
 }
 
 const PROCESSED_WEBHOOK_RETENTION_DAYS = 30
+/** Prazo do acordo dos presentes anteriores a 25/11/2026 (o link pessoal não tinha prazo). */
+const LEGACY_GIFT_WINDOW_DAYS = 3650

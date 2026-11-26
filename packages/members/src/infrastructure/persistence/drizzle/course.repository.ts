@@ -477,10 +477,12 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select({ courseId: lessons.courseId, c: count() })
       .from(lessons)
+      .innerJoin(modules, eq(modules.id, lessons.moduleId))
       .where(
         and(
           inArray(lessons.courseId, courseIds),
           isNull(lessons.archivedAt),
+          isNull(modules.archivedAt),
           eq(lessons.isPublished, true),
         ),
       )

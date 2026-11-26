@@ -1,5 +1,219 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Curso para pais da Vivianne com página de venda (25/11/2026)
+
+`kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso
+"Como ajudar seu filho autista a lidar com frustrações e evitar crises", com a psicóloga Vivianne Lima,
+da Laopa (curso `como-ajudar-seu-filho-autista-nas-frustracoes`, R$ 67 no catálogo, 1 ano de acesso,
+contrato `one_time` + `fixed`/12/`months` + `anyGuarantee`, apelido `frustracoes`). Mesmo molde do
+guia: a página pública `/kids/como-ajudar-seu-filho-autista-nas-frustracoes` renderiza a oferta do
+funil (`CursoPaisAutismoBody`, dentro do `CursoPaisOferta`), com venda (`cursoAutismoVenda`, preço
+por `comPreco`) e modo presente (`CURSO_PAIS_AUTISMO_PRESENTE`, `content/curso-pais-autismo.ts`; o
+`OfertaPresente` sem `formulario`, isto é, a variante `pais`). `CursoPaisOferta` ganhou
+`depoimentos` (padrão: os do guia) e só mostra o selo da surpresa quando `hero.surpresa` não é vazio
+(este curso não tem presente no fim). Termo `termos-curso-autismo.ts` (`curso-autismo-2026-11-25`),
+que diz que o curso não substitui o acompanhamento da criança. A copy nunca promete acabar com as
+crises. Imagens WebP em `public/img/como-ajudar-seu-filho-autista/` (capa, apostila, certificado, a
+ilustração da Vivianne recortada da capa e o `compartilhar.jpg`). Pontos de extensão: registry (por
+último), `OfertaPage`, `analyticsPage`, `rate-limit-paths`, sitemap, `content/embaixador.ts`
+(cartão `pais` e mensagens) e `PAGE_PRIMARIES` dos browsers. ⚠️ Sem a oferta principal marcada no
+Admin, a página fica 503. Teste: `tests/unit/curso-pais-autismo.test.ts`.
+
+## Mini checkout da conta: origem da oferta, lugar e cupom (25/11/2026, Lote 5)
+
+`server/member-commerce.ts` (S2S do member-shell):
+- origem `{kind:'offer', offerRef}` (a página de um curso na área dos pais): chave
+  `offer:<slug>` (`commerceOriginKey`), recuperada também pelo `offerRef` (`store.recover`);
+- `place` no corpo (saneado por `sanitizeOriginPlace`): no `pay`, dentro da trava do produto e antes
+  de preparar a cobrança, vira `lead.origin = {version:1, code:null, place}`, então o metadata leva
+  `origemLugar` e o fingerprint do Pix o inclui (a cobrança da conta não tem o cookie do funil);
+- ação `quote` (`quoteMemberOffer`): só oferta disponível, avulsa e com `content.allowsCoupon`; senão
+  422 `COUPON_NOT_ALLOWED`; código vazio 422 `INVALID_COUPON`; cotação por `resolveCharge` e resposta
+  `{listPriceCents, discountCents, finalPriceCents, couponCode}`. No `pay`, cupom em assinatura ou em
+  oferta sem a marca também é 422 `COUPON_NOT_ALLOWED`; o `expectedPriceCents` é o valor cotado.
+- Trocar de plano: o BFF manda o `offerRef` da irmã e o `inspect` prepara a compra daquela oferta
+  (uma por conta e oferta), sem mexer na outra.
+- O estado da compra (`memberCheckoutState`) traz `payment.charge` `{listPriceCents, discountCents,
+  chargedPriceCents, couponCode}`, lido do `offer_snapshot` da cobrança em `lead_payments`: a tela do
+  Pix mostra o valor cobrado com o cupom (revisão de 25/11/2026).
+- Testes: o bloco "mini checkout da área dos pais" de `tests/integration/member-commerce.test.ts`.
+
+## Oferta de cada página no CATÁLOGO e links curtos por curso (25/11/2026)
+
+**Sem env de oferta.** As `FUNNEL_OFFER_*` saíram de vez (código, `.env.example`, `.railway/variables.ts`,
+testes): a oferta de cada página é a **oferta principal do PRODUTO** da página (`FunnelDef.productSku`),
+marcada no Admin (Catálogo › Produto › "Oferta principal da página de venda"; coluna
+`catalog.products.primary_offer_id`, `PATCH /catalog/products/:id {primaryOfferId}`). O funil lê
+`GET /catalog/products/by-sku/:sku` → `primaryOfferSlug` (`gateway.getProductBySku`)
+em `server/page-offer.ts` (`primaryOfferSlug`, cache de 60 s por SKU; 404/sem principal → `null` também
+em cache; falha não-200 usa o valor antigo). Todos os consumidores passam por ali: `oferta`/`checkout`
+(`resolvePageOffer`), a cobrança e o grant (`makeResolveOffer(gateway)`, agora assíncrono e `null` sem
+principal), `/cupom`, `/api/oferta-link`, `/i/`, `/renovar` (`pageForOffer`) e o commerce interno
+(`defaultOfferRef`, `termsForOffer` pelo `offer.product.sku`).
+- **Sem principal marcada:** a página e o checkout respondem 503 "temporariamente indisponível"
+  (eventos `offer.page_without_primary_offer` / `checkout.page_without_primary_offer`; log
+  `page_offer.no_primary_offer`), a cobrança 503 `OFFER_UNAVAILABLE` e o grant sem `offerRef` re-tenta
+  (`GrantRetryError(503)`). O boot NUNCA falha por isso. O modo presente (`?presente=`) segue sem
+  depender da principal.
+- **`?oferta=<slug>`** na página e no checkout escolhe OUTRA oferta do MESMO produto, se ela estiver
+  disponível e passar no `offerContract` da página; senão vale a principal (sem erro). A irmã do
+  alternador continua indo ao checkout. No `POST` da cobrança o conjunto aceito é a principal, a
+  irmã do alternador e as ofertas do mesmo produto dentro do contrato; slug forjado segue 400
+  `INVALID_OFFER`. O cupom é cotado contra a oferta mostrada. `CatalogOfferView.productSku` vem do
+  `product.sku` da oferta.
+- **Links curtos por curso:** `FunnelDef.apelido` (`comunidade`, `desafio`, `cade`, `guia`; único por
+  público, o mesmo nos dois públicos porque o público vem do código) e `funnelsByApelido` /
+  `apelidoDoProduto` no registry. `/i/<código>/<apelido>` (página de venda),
+  `/i/<código>/<apelido>/pagamento` (checkout) e `/i/<código>/<apelido>/presente` (presente):
+  `referralLinkRedirect` pede ao referrals `GET /referrals/internal/links/:code?product=<skus>&kind=
+  gift|referral[&checkout=1]` (`gateway.resolveReferralLinkForProduct`; o HMAC assina o pathname, sem a
+  query) com os SKUs das páginas desse apelido; o referrals devolve a oferta da lista do embaixador
+  daquele tipo para o produto. O presente segue `/bolsa/<código>?oferta=` → a página do curso com
+  `?presente=&oferta-presente=`. Código de campanha ignora o apelido (vale a oferta da campanha).
+  `/presente` depois de um slug de oferta é 404. Os links antigos (`/i/<código>`,
+  `/i/<código>/<oferta>[/pagamento]`) continuam iguais; a venda que não é a principal vai com
+  `?oferta=` (campanhas inclusive).
+- **Painel do embaixador:** `server/ambassador-links.ts` (`comLinksCurtos`, aplicado no
+  `[token].astro`) troca o `link`/`checkoutLink` das ofertas pelo link curto quando o produto tem
+  apelido e aparece uma vez naquele tipo e público; senão fica o link do referrals. As ofertas
+  chegam com `productSku` do referrals.
+- Testes: `tests/unit/offer.test.ts` (principal, cache, `?oferta=`, contrato, `pageForOffer`, nenhuma
+  `FUNNEL_OFFER_*` sobrando), `tests/unit/ambassador-links.test.ts`, `referral-origin.test.ts` (link
+  curto). No fake: `setProductPrimary(sku, slug|null)` e `setOfferConfig(slug, { productSku })`; nos
+  browsers, `tests/browser/helpers/page-primaries.ts` (`productResponse`).
+- **Correções da revisão (25/11/2026):** o produto é lido por `GET /catalog/products/by-sku/:sku`
+  (`gateway.getProductBySku`; slug e SKU não se misturam). `?oferta=` e a cobrança só aceitam,
+  além da principal e da irmã do alternador, oferta do mesmo produto MARCADA no Admin "Pode ser
+  vendida na página do produto" (`content.pageSellable`, `CatalogOfferView.pageSellable`) e no
+  contrato: oferta de presente nunca abre à venda. A oferta da página que não é a principal vai ao
+  checkout por todo CTA (`PreCheckoutModal ofertaPadrao`, de `bodyProps.offerPrimary/offerSlug`).
+  `primaryOfferLookup` distingue `none` de `unavailable` (catálogo fora sem cópia em cache):
+  `pageForOffer` LANÇA `PageOfferUnavailableError`, e `/i/` responde 502, `/cupom` e `/renovar`
+  503, `/api/oferta-link` 503 `CATALOG_UNAVAILABLE` ("tente de novo", nunca "não existe"). Todo
+  `makeResolveOffer` recebe o `log`. No fake: `setOfferConfig(slug, { pageSellable })` e
+  `setProductResult(503)`.
+- ⚠️ **Antes do deploy** (staging e produção): marcar no Admin a oferta principal de cada uma das sete
+  páginas; sem isso a página fica 503. Os parágrafos abaixo que falam de `FUNNEL_OFFER_*` são história.
+
+## Origem de cada compra e links `/i/` (25/11/2026, Lote 3 da frente de embaixadores)
+
+Plano no `CLAUDE.md` do referrals (seção "Origem por aquisição").
+- **Cookie `funil_origem`** (`lib/lead-origin.ts`, HttpOnly, 30 dias, `Secure` pelo
+  `NODE_ENV` de runtime): `c:<código>` gravado pelo link `/i/...` e pelo middleware em qualquer GET
+  de página com `?indicacao=` (a página que o `/i/` abriu, inclusive copiada para outro navegador),
+  ou `p:<lugar>` com `?lugar=` (botões da plataforma; o código vence o lugar). O último link ou
+  botão vence; o middleware não sobrescreve o cookie que a própria resposta (o `/i/`) grava. Diferente de `leads.attribution` (mídia,
+  primeiro toque, nunca sobrescrita).
+- **`leads.origin`** (migration `0024_lead_origin`): os handlers de Pix, cartão e assinatura copiam
+  o cookie para o lead (`syncLeadOrigin`) antes da cobrança. `leadMetadata` grava as chaves planas
+  `origemCodigo`, `origemLugar` (do lead) e `origemFonte` (`attribution.utmSource`, saneada); o
+  referrals lê do `GET /payments/internal/payments/:id` e grava a aquisição. O BOLETO vai sem elas
+  (chave de idempotência fixa por lead). O Pix põe no fingerprint tudo o que a origem leva ao
+  metadata (código, lugar e fonte); lead sem nada disso mantém a chave de antes.
+- **`/i/<código>[/<oferta>][/pagamento]`** (`server/referral-link.ts`, rotas finas em
+  `pages/i/`): resolve no referrals (`resolveReferralLink`), grava o cookie e responde 302
+  `no-store`. Presente → `/bolsa/<código>` (até o Lote 4 trocar pela página da oferta em modo
+  presente). Venda → página da oferta ou o checkout, sempre com `?indicacao=` (impede o laço do
+  endereço antigo) e o cupom da campanha e as UTMs; a irmã do alternador (`altOffer`) vai sempre
+  ao checkout com `?oferta=`, porque a página da oferta mostra e cota a principal. Slug até 80;
+  4xx do referrals = 404. A página certa vem de `resolveOfferFunnel`
+  (`server/coupon-link.ts`, também usado pelo `/cupom`). 404 uniforme; referrals fora = 502.
+  Entrou no teto de GET por IP (`rate-limit-paths.ts`).
+- **Endereço antigo de campanha** (`server/campaign-redirect.ts`, instância em `getDeps()`): o
+  funil guarda a LISTA dos endereços ativos (`GET /referrals/internal/redirects` sem `path`), uma
+  chamada por minuto e por instância qualquer que seja o tráfego (renova em segundo plano; só a
+  primeira visita da instância espera, até 1,5 s; falha também espera o próximo ciclo). O
+  middleware só monta as dependências para caminhos que podem ser endereço antigo
+  (`isCampaignRedirectPath`, sem `presente`/`indicacao`/`cupom`) e confere localmente. Ativo →
+  302 para o `/i/` da campanha com a query da visita menos `lugar`; só aceita destino `/i/...`.
+  Erro ou nada → a página abre.
+- Testes: `tests/integration/referral-origin.test.ts`.
+
+**Uma página por oferta, modo presente (Lote 4, 25/11/2026).** `?presente=<código>` na página da
+oferta (`server/offer-page.ts`) resolve o presente com a oferta da página (`resolveReferralGiftPage(
+gateway, código, slug)`, que manda `?offer=` ao referrals). Presente DESTA oferta → `bodyProps.presente`
+e a resposta vira `no-store`; presente de outra oferta (campanha) → 302 `/bolsa/<código>`; código
+inválido ou referrals fora → a venda normal. No modo presente muda só o selo do topo
+(`origemDoPresente`, a frase da página do presente) e o bloco de compra: `OfertaPresente.astro`
+(o `BolsaResgate` com `oferta`, ou o estado da campanha com a retomada) no lugar do cartão de preço,
+sem `PreCheckoutModal`, sem aviso de cupom; a barra do celular mostra a origem. Aplicado em
+`Desafio917Body` e `DesafioAdultoBody` (os únicos vendidos que podem ser presente; assinatura não é
+presente). `/bolsa/<código>` redireciona à página da oferta quando o presente tem página de venda
+(`resolveOfferFunnel`, irmã do alternador não); senão segue nos corpos de presente de sempre, que
+agora repassam `?oferta=` (a escolha do embaixador) ao resgate. O `/i/` de presente faz o mesmo:
+página da oferta com `?presente=` ou `/bolsa/<código>[?oferta=]`. `BolsaResgate` aceita `oferta`
+(vai como `oferta` ao `/api/bolsa/resgatar` e como `offer` ao referrals, que só aceita oferta ligada
+na lista do público).
+
+## Cadê Todo Mundo e guia para pais com página de venda (25/11/2026, Lote 4 parte 2)
+
+Uma página por oferta: as três ofertas que só tinham página de presente viraram funis do registry.
+- **`kids/cade-todo-mundo`** (`CadeKidsBody`) e **`pro/cade-todo-mundo`** (`CadeAdultoBody`, tema
+  arcade): o corpo é o da página do presente (`PresenteOferta`/`PresenteAdultoOferta`, seções
+  aprovadas) com o bloco de compra no slot `compra` (prop `compra`; sem ela, as páginas do presente
+  seguem iguais). Venda: `cadeKidsVenda`/`cadeAdultoVenda` (`funnels/cade-*/oferta.ts`) trocam só o
+  topo, as condições, as dúvidas que falavam do presente e o bloco de compra; preço e cupom pelo
+  `precoDoDesafio`, `PreCheckoutModal`, barra do celular para `#oferta`. Modo presente
+  (`?presente=`): a copy do presente inteira (`presenteKids`/`presenteAdulto`, agora exportadas) e o
+  `OfertaPresente`. O PRAZO e a GARANTIA vêm da oferta do catálogo (`bodyProps.access`, novo em
+  `resolveOfferPage`, junto com `offerSlug`): nada de "7 dias" escrito à mão. O contrato da VENDA exige
+  pagamento único com prazo fixo em MESES (1 ano; `FunnelOfferContract.anyDuration`/`anyGuarantee`);
+  o presente é outra oferta, de dias.
+- **`kids/vilao-em-aliado`** (`GuiaPaisBody`): o guia é curso pago (R$ 27, 1 ano de acesso; contrato
+  `one_time` + `fixed`/12/`months`, garantia da oferta). `/kids/vilao-em-aliado` renderiza a oferta do funil
+  (o `/oferta` do funil é o mesmo corpo, com canonical na página pública). `CursoPaisOferta`
+  recebe a copy (`copy`) e o slot `compra` no lugar do formulário do topo; venda pela
+  `guiaPaisVenda` (sem "gratuito", `{{preco}}` trocado por `comPreco`), presente pela copy aprovada
+  do guia gratuito (`GUIA_PAIS_PRESENTE`) e o `OfertaPresente` com `formulario="guia"`. Saíram
+  `server/curso-pais-vilao.ts` e `CODIGO_DA_CAMPANHA`: o presente do guia sai por link de campanha
+  ou de embaixador, e o endereço antigo pelo redirecionamento genérico de campanha. A métrica da
+  página passou a `kind: 'oferta'` do funil, com o mesmo id.
+- `PresenteLayout`/`PresenteAdultoLayout` ganharam `alvo` (o id do botão do topo e da barra),
+  `termosHref`, `canonical`, `indexavel` (adulto) e o slot `head`. Termos próprios:
+  `termos-cade-kids.ts`, `termos-cade-adulto.ts`, `termos-guia-pais.ts` (versões
+  `cade-kids-2026-11-25`, `cade-adulto-2026-11-25`, `guia-pais-2026-11-25`).
+- ⚠️ (Até 25/11/2026; hoje a oferta é a principal do produto no catálogo, ver o topo.) **Envs obrigatórias (fail-fast) antes do deploy**, staging e produção:
+  `FUNNEL_OFFER_KIDS_CADE_TODO_MUNDO` (a oferta do Cadê, hoje `cade-todo-mundo-7-dias`),
+  `FUNNEL_OFFER_PRO_CADE_TODO_MUNDO` (`cade-todo-mundo-adulto-7-dias`) e
+  `FUNNEL_OFFER_KIDS_VILAO_EM_ALIADO` (a oferta vitalícia do guia). Declaradas em
+  `.railway/variables.ts`. Com a env do Cadê apontando para a oferta do presente, o `/bolsa` dos
+  presentes do Cadê passa a abrir esta página no modo presente.
+- Testes: `tests/unit/cade-oferta.test.ts` e `tests/unit/curso-pais-vilao.test.tsx`. Os browsers
+  `tests/browser/curso-pais-vilao.ts` e `presente.ts` ainda descrevem o fluxo anterior (formulário
+  da campanha fixa; `/bolsa` do Cadê sem redirecionar) e precisam ser revistos.
+
+## Painel do embaixador novo (25/11/2026, Lote 4 da frente de embaixadores)
+
+`/embaixador/<token>` segue o Canvas da frente (quadro embaixador-painel): três números (pessoas
+que entraram pelos links, com presentes e compras; convites; assinaturas que viraram bônus), passo
+1 "Dar um presente" ou "Indicar uma oferta", passo 2 com as ofertas das listas do Admin (o
+`offers` do `GET by-token`, Kids, pais e adulto em cartões próprios; "Pode render um bônus para
+você" na assinatura) e passo 3 com o link (na oferta, "Página da oferta" ou "Direto para o
+pagamento", o `checkoutLink`), o cartão, a mensagem de WhatsApp e o convite por e-mail. Depois vêm
+Bônus, Minhas campanhas, as dúvidas do Canvas (`PAINEL_DUVIDAS`) e o fechamento; saíram "Para quem
+o presente faz sentido" e a tabela "O que o presente inclui". A copy de cada oferta mora em
+`content/embaixador.ts` (`opcaoDeOferta`: a assinatura por público, os cursos conhecidos pelo
+`courseSlug`, o resto montado do nome e do prazo), sem preço escrito (o preço é do catálogo).
+Sem lista do Admin, o presente padrão de cada público com os `shareUrls` de sempre. O convite por
+e-mail manda `offer` + `kind` (`POST /api/embaixador/convites`); o presente do Cadê vai sem a
+oferta, no e-mail aprovado do Cadê. `OFFER_NOT_FOUND` tem mensagem própria. Só quantidades:
+nenhum valor de venda chega ao embaixador. Testes: `referral-gift-copy.test.tsx`,
+`referrals-handlers.test.ts` e os browsers `presente.ts` (painel e o `/bolsa` do Cadê que vai à
+página de venda no modo presente) e `curso-pais-vilao.ts` (a página de venda do guia, o modo
+presente com a oferta no resgate, pausada e presente de outra oferta).
+
+**Prazos (decisão de 25/11/2026).** Guia dos pais e Cadê VENDIDO: 1 ano (oferta de venda
+`fixed`/12/`months`; o guia tem contrato rígido e o Cadê lê os meses da oferta). Desafio: 30 dias.
+Presentes: 7 dias divulgados e 15 reais (`advertisedAccessDays` no catálogo; a copy do presente
+usa `gift.accessDays`, o divulgado). Comunidade: enquanto a assinatura estiver ativa. Nada promete
+acesso vitalício nem "sem prazo". Curso vendido e dado de presente tem DUAS ofertas no catálogo
+(venda de 1 ano na env do funil; presente de 15 dias nas listas dos embaixadores), mas UMA página:
+a página é escolhida pelo CURSO (`FunnelDef.giftCourses` + `funnelForGiftCourse`), nunca pela
+oferta. `/bolsa/<código>` e o `/i/` de presente só redirecionam à página do curso com
+`?presente=<código>` (e `&oferta-presente=<slug>` quando o embaixador escolheu a oferta, que vai
+ao resgate); `/bolsa` só desenha corpo para curso sem página de venda. `prazoDaOferta` (`content/presente-resgate.ts`) dá
+"1 ano" no rótulo e "12 meses" nas frases com artigo.
+
 ## Comunidade Kids: oferta única de 5 a 17 anos (19/11/2026)
 
 A dona confirmou a unificação da oferta Kids: `/kids/comunidade-dos-criadores/oferta` cobre 5 a 17 anos, com acompanhante abaixo de 9. A copy destaca habilidades cognitivas para a vida, funções executivas, escolhas com causa e consequência e tolerância à frustração, mantendo exemplos observáveis e apoio conforme a criança. `pagina-9a17.ts` e `Comunidade917Body` mantêm os nomes internos históricos; a continuidade compartilha a copy e muda somente a headline.
@@ -308,7 +522,7 @@ As respostas do quiz vão para o JSON `quiz_answers` (chave snake_case → valor
 `repo.mergeQuizAnswers` (merge atômico) — **genérico: cada funil tem o seu quiz, com perguntas
 diferentes** (não há mais colunas por pergunta).
 
-**Oferta de cada funil = 100% por ENV, uma por funil (sem slug no código, sem fallback — 28/06):**
+**Oferta de cada funil (28/06 a 25/11/2026 por ENV; HOJE é a principal do produto no catálogo, ver o topo deste arquivo):**
 o `catalogOfferSlug` SAIU do `FunnelDef`. Cada funil lê a sua oferta da env **`FUNNEL_OFFER_<KEY>`**
 (`offerEnvKey(key)` em `lib/env.ts`: key em MAIÚSCULAS, não-alfanumérico→`_`; ex.:
 `pro/no-comando-da-ia`→`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`,
@@ -1374,9 +1588,8 @@ determinística + auto-retry da ilha). Envs de runtime: `DATABASE_URL=${{Postgre
 egress/ida à internet; a borda pública também funciona), `FUNNEL_HMAC_SECRET`/
 `FUNNEL_INTERNAL_TOKEN` (os MESMOS do gateway, ≥16 — fail-fast), `COMMUNITY_URL` (app adulto) +
 **`KIDS_COMMUNITY_URL`** (app kids — destino do funil `kids/*`: botão da /obrigado E link de senha
-do welcome; ausente cai no COMMUNITY_URL, então **setar em prod/staging**), **`FUNNEL_OFFER_<KEY>`
-de CADA funil** (oferta por funil — OBRIGATÓRIA, sem ela o boot/healthcheck falha; ex.:
-`FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`, `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`), `SENTRY_DSN`
+do welcome; ausente cai no COMMUNITY_URL, então **setar em prod/staging**), (as antigas `FUNNEL_OFFER_<KEY>` saíram em 25/11/2026: a oferta é a principal do produto no
+catálogo), `SENTRY_DSN`
 (projeto sistema-zero-funnel; ausente = desligado), **`NODE_ENV=production`** (controla o `Secure`
 dos cookies!), **`TRUST_PROXY=true`** (obrigatório explicitar em prod) e **`HOST=::`** (standalone
 lê HOST/PORT do ambiente; `::` p/ dual-stack). ⚠️ **Envs de BUILD** (inlined pelo Vite no `astro

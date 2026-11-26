@@ -1,0 +1,21 @@
+---
+// Página pública e indexável do curso para pais "Como ajudar seu filho autista a lidar com
+// frustrações e evitar crises" (25/11/2026): a página de venda do funil
+// `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (o mesmo corpo do `/oferta` dele). O presente
+// sai pelos links de campanha e de embaixador, que abrem esta página no modo presente (`?presente=`).
+import OfertaPage from '../../components/funnel/OfertaPage.astro'
+import { resolveOfferPage } from '../../server/offer-page'
+
+export const prerender = false
+const page = await resolveOfferPage(
+  { audience: 'kids', produto: 'como-ajudar-seu-filho-autista-nas-frustracoes' },
+  Astro.url,
+  Astro.site,
+)
+if (page instanceof Response) return page
+Astro.response.headers.set(
+  'cache-control',
+  page.noStore ? 'no-store' : 'public, max-age=60, stale-while-revalidate=300',
+)
+---
+<OfertaPage {...page} />

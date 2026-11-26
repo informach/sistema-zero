@@ -70,7 +70,10 @@ export interface OfferListItemView extends OfferAccessPolicyView {
   productId: string
   productName: string | null
   items: { productId: string; sortOrder: number }[]
-  /** Conteúdo comercial (badge/cta/cupom/maxProfiles) — o admin edita sem apagar os demais campos. */
+  /**
+   * Conteúdo comercial (badge/cta/cupom/maxProfiles/advertisedAccessDays) — o admin edita sem
+   * apagar os demais campos.
+   */
   content: OfferContent | null
   createdAt: string
   updatedAt: string

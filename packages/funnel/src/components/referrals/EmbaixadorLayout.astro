@@ -1,6 +1,6 @@
 ---
 // Layout do painel do embaixador (Canvas "Presente Kids e adulto · proposta", Embaixador,
-// 20/10/2026): um painel neutro para os dois públicos, com o chão e os cartões da paleta Kids e as
+// 20/10/2026; atalhos do topo do Canvas de 25/11/2026): um painel neutro para os dois públicos, com o chão e os cartões da paleta Kids e as
 // peças de cada público na língua dele (embaixador.css, `.emb`). O rodapé é o institucional, com o
 // índice dos Termos (o painel serve aos dois públicos).
 import '../../styles/kids-oferta.css'
@@ -38,10 +38,10 @@ const {
         </a>
         {painel && (
           <nav class="emb-nav" aria-label={P.topo.navAria}>
-            {campanhas && <a class="emb-nav__link" href="#minhas-campanhas">Minhas campanhas</a>}
+            <a class="emb-nav__link" href="#painel">{P.topo.links}</a>
             {bonus && <a class="emb-nav__link" href="#bonus">{P.topo.bonus}</a>}
-            <a class="emb-nav__link" href="#inclui">{P.topo.inclui}</a>
-            <a class="emb-btn emb-topo-cta" href="#painel">{P.topo.cta}</a>
+            {campanhas && <a class="emb-nav__link" href="#minhas-campanhas">{P.topo.campanhas}</a>}
+            <a class="emb-nav__link" href="#duvidas">{P.topo.duvidas}</a>
           </nav>
         )}
       </div>

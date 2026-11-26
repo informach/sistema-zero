@@ -1,7 +1,13 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
-import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
+import {
+  assertInternalCaller,
+  canSeeRevenue,
+  decodeIdentityHeader,
+  requireAdmin,
+  revenueFor,
+} from './auth'
 
 const campaignBody = t.Object({
   coupon: t.Optional(
@@ -43,6 +49,15 @@ const campaignBody = t.Object({
    * do Elysia apaga campo fora dele.
    */
   giftOfferId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+  /** Tipo (25/11/2026): ausente = `gift` na criação; na edição mantém o gravado. */
+  kind: t.Optional(t.Union([t.Literal('gift'), t.Literal('sale')])),
+  /** Oferta à venda da campanha `sale` (UUID do catálogo). */
+  saleOfferId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+  /** Destino do link da venda: a página da oferta ou direto o pagamento. */
+  linkTarget: t.Optional(t.Union([t.Literal('page'), t.Literal('checkout')])),
+  /** Endereço antigo redirecionado até `redirectUntil` (validação completa no serviço). */
+  redirectPath: t.Optional(t.Nullable(t.String({ maxLength: 120 }))),
+  redirectUntil: t.Optional(t.Nullable(t.String({ maxLength: 40 }))),
   ambassadorId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
   commissionEnabled: t.Optional(t.Boolean()),
   commissionAmountCents: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 }))),
@@ -74,13 +89,16 @@ export function campaignsRoutes(deps: {
     })
     .get(
       '',
-      ({ query }) =>
-        deps.campaigns.list({
+      async ({ query, headers }) => {
+        const page = await deps.campaigns.list({
           audience: query.audience,
           q: query.q,
           limit: query.limit ?? 25,
           offset: query.offset ?? 0,
-        }),
+        })
+        const revenue = canSeeRevenue(headers)
+        return { ...page, items: page.items.map((item) => revenueFor(item, revenue)) }
+      },
       {
         query: t.Object({
           audience: audienceQuery,

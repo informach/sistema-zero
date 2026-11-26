@@ -6,11 +6,11 @@ import { makeResolveOffer } from '../../../server/offer'
 export const prerender = false
 
 export const POST: APIRoute = ({ request }) => {
-  const { repo, gateway, env, log } = getDeps()
+  const { repo, gateway, log } = getDeps()
   return startPix(request, {
     repo,
     gateway,
-    resolveOffer: makeResolveOffer(env),
+    resolveOffer: makeResolveOffer(gateway, log),
     log,
   })
 }

@@ -413,6 +413,30 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     })
   })
 
+  test('presente com prazo divulgado: o acesso vai até o prazo real e o snapshot guarda o divulgado', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('cade-todo-mundo-15-dias', {
+      ...offerWithMural('cade-todo-mundo-15-dias', course.slug),
+      accessPolicy: { mode: 'fixed', durationValue: 15, durationUnit: 'days' },
+      advertisedAccessDays: 7,
+    })
+    const raw = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'cade-todo-mundo-15-dias',
+      sourceId: 'scholarship:red-15',
+      useOfferAccessPolicy: true,
+      anchorAt: '2026-11-15T12:00:00.000Z',
+      audience: 'kids',
+    })
+    expect((await post(app, raw, 'gm-oferta-15')).status).toBe(200)
+    const todas = (await entitlements.listByUserId(USER)).map((e) => e.toSnapshot())
+    const curso = todas.find((snap) => snap.courseRef === course.slug)
+    expect(curso?.expiresAt?.toISOString()).toBe('2026-11-30T12:00:00.000Z')
+    expect(curso?.snapshot.advertisedAccessDays).toBe(7)
+  })
+
   test('presente de oferta vitalícia sem Mural: só o curso, sem prazo e sem visita', async () => {
     const { app, courses, catalog, entitlements } = buildApp()
     const course = seedSampleCourse(courses)

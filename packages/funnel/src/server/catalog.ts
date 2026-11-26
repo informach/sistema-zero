@@ -22,6 +22,8 @@ export interface CatalogOfferView {
   guaranteeDays: number | null
   installmentsMax: number | null
   productName: string
+  /** SKU do produto da oferta: a página que a vende é a do mesmo produto (25/11/2026). */
+  productSku: string
   /** Opt-in (de `offer.content.allowsCoupon`): se o checkout deve exibir o cupom. */
   allowsCoupon: boolean
   /** `one_time` (pagamento único) ou `subscription` (recorrente). */
@@ -34,6 +36,11 @@ export interface CatalogOfferView {
   billingIntervalMonths: number | null
   /** Oferta IRMÃ do alternador mensal↔anual (de `content.altOffer`); null = sem alternador. */
   altOffer: { slug: string; label: string | null } | null
+  /**
+   * `content.pageSellable` (25/11/2026): a oferta pode ser vendida na página do produto pelo
+   * `?oferta=` (além da principal e da irmã do alternador). Oferta de presente fica sem a marca.
+   */
+  pageSellable: boolean
   includes: { name: string; isPrimary: boolean }[]
 }
 
@@ -287,7 +294,7 @@ export function clearOfferCache(): void {
  * conhecida (stale) ou null — a página de checkout cai para os rótulos do env.
  */
 export async function getActiveOffer(
-  gateway: GatewayClient,
+  gateway: Pick<GatewayClient, 'getOffer'>,
   offerSlug: string,
   opts?: { ttlMs?: number; now?: number; log?: CatalogLog },
 ): Promise<CatalogOfferView | null> {
@@ -341,12 +348,14 @@ export function parseCatalogOffer(
     guaranteeDays: typeof o.guaranteeDays === 'number' ? o.guaranteeDays : null,
     installmentsMax: typeof o.installmentsMax === 'number' ? o.installmentsMax : null,
     productName: typeof product.name === 'string' ? product.name : '',
+    productSku: typeof product.sku === 'string' ? product.sku : '',
     allowsCoupon: content.allowsCoupon === true,
     pricingMode,
     ...accessPolicy,
     billingIntervalMonths:
       typeof o.billingIntervalMonths === 'number' ? o.billingIntervalMonths : null,
     altOffer,
+    pageSellable: content.pageSellable === true,
     includes: includesRaw.map((i) => ({
       name: typeof i.name === 'string' ? i.name : '',
       isPrimary: i.isPrimary === true,

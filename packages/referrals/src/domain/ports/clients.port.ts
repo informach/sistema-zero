@@ -19,6 +19,16 @@ export interface PaymentsClient {
   getPayment(paymentId: string): Promise<PaymentSnapshot | null>
   /** Data da assinatura original; renovação de compra anterior não é aquisição. */
   getSubscriptionCreatedAt(subscriptionId: string): Promise<Date | null>
+  /**
+   * `GET /payments/internal/customers/paid-offers` (25/11/2026): as ofertas que o e-mail já
+   * PAGOU antes de `before` (fora `excludePaymentId`). O bônus é só da primeira assinatura, e o
+   * histórico de antes da 0013 só existe no payments.
+   */
+  listPaidOfferIds(input: {
+    email: string
+    before: Date
+    excludePaymentId: string
+  }): Promise<string[]>
 }
 
 export interface OfferSnapshot {
@@ -26,6 +36,8 @@ export interface OfferSnapshot {
   slug: string
   name: string
   billingIntervalMonths?: number | null
+  /** Público do produto principal (`product.audience`); null quando a view não traz. */
+  audience?: 'kids' | 'adult' | null
 }
 
 export interface CatalogClient {

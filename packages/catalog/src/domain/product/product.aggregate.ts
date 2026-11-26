@@ -36,6 +36,8 @@ export interface ProductSnapshot {
   fulfillment: FulfillmentSpec | null
   metadata: Record<string, unknown> | null
   components: ProductComponent[]
+  /** Oferta principal da página de venda (25/11/2026); null = página indisponível. */
+  primaryOfferId: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -81,6 +83,8 @@ interface ProductProps {
   fulfillment: FulfillmentSpec | null
   metadata: Record<string, unknown> | null
   components: ProductComponent[]
+  /** Oferta principal da página de venda (25/11/2026); null = página indisponível. */
+  primaryOfferId: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -119,6 +123,7 @@ export class ProductAggregate extends AggregateRoot<string> {
       fulfillment: input.fulfillment ?? null,
       metadata: input.metadata ?? null,
       components,
+      primaryOfferId: null,
       createdAt: now,
       updatedAt: now,
     })
@@ -130,7 +135,7 @@ export class ProductAggregate extends AggregateRoot<string> {
   static restore(snapshot: ProductSnapshot): ProductAggregate {
     catalogAudience(snapshot.audience)
     const { id, ...rest } = snapshot
-    return new ProductAggregate(id, { ...rest })
+    return new ProductAggregate(id, { ...rest, primaryOfferId: rest.primaryOfferId ?? null })
   }
 
   toSnapshot(): ProductSnapshot {
@@ -158,6 +163,18 @@ export class ProductAggregate extends AggregateRoot<string> {
     this.props.components = normalizeComponents(this.id, components)
     this.touch(now)
     this.addEvent(new ProductUpdatedEvent(this.id, 'components'))
+  }
+
+  /** A oferta principal da página de venda (quem confere que é do produto é o serviço). */
+  setPrimaryOffer(offerId: string | null, now?: Date): void {
+    if (offerId === this.props.primaryOfferId) return
+    this.props.primaryOfferId = offerId
+    this.touch(now)
+    this.addEvent(new ProductUpdatedEvent(this.id, 'primary-offer'))
+  }
+
+  get primaryOfferId(): string | null {
+    return this.props.primaryOfferId
   }
 
   setStatus(status: ProductStatus, now?: Date): void {

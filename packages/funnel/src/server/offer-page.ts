@@ -3,8 +3,20 @@ import { formatBRLFromCents, formatBRLFromCents2 } from '../lib/money'
 import { getActiveOffer, type OfferPlans } from './catalog'
 import { resolveCouponPresentation } from './coupon-presentation'
 import { getDeps } from './deps'
-import { resolveOfferSlug } from './offer'
 import { checkOfferContract } from './offer-contract'
+import { resolvePageOffer } from './page-offer'
+import { type ReferralGiftPage, resolveReferralGiftPage } from './referral-gift-page'
+
+/** A página da oferta no modo PRESENTE (`?presente=<código>`, 25/11/2026). */
+export type OfferGiftMode = Extract<ReferralGiftPage, { gift: unknown }> & {
+  gift: { gift: NonNullable<Extract<ReferralGiftPage, { gift: unknown }>['gift']['gift']> }
+  /** O presente escolhido pelo embaixador (`?oferta-presente=`), repassado ao resgate. */
+  chosenOffer: string | null
+}
+
+const OFFER_SLUG = /^(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+const GIFT_CODE = /^[a-z0-9-]{4,32}$/
 
 // Resolve no servidor; somente as rotas podem devolver Responses HTTP.
 export async function resolveOfferPage(
@@ -17,11 +29,45 @@ export async function resolveOfferPage(
   if (!f) return new Response(null, { status: 404 })
 
   const { env, gateway, log } = getDeps()
-  // Oferta vem da env do funil (FUNNEL_OFFER_<KEY>). MESMA fonte do checkout.
-  const offerSlug = resolveOfferSlug(env, f.key)
-  const offer = await getActiveOffer(gateway, offerSlug, { log })
+  // A oferta da página vem do CATÁLOGO (a principal do produto, ou `?oferta=` de outra oferta do
+  // mesmo produto dentro do contrato, 25/11/2026). MESMA régua do checkout.
+  const page = await resolvePageOffer(gateway, f, url.searchParams.get('oferta'), { log })
+  const offerSlug = page?.slug ?? ''
+  const offer = page?.offer ?? null
+  // Modo presente (uma página por CURSO, resolvido ANTES da oferta de venda: o presente só
+  // depende do referrals, e a venda fora do ar não pode derrubar o resgate): o código dá de presente um curso desta página
+  // (`giftCourses`), qualquer que seja a oferta do presente (a de 15 dias, a escolhida pelo
+  // embaixador em `?oferta-presente=`). Presente de outro curso → `/bolsa/<código>`, que só
+  // redireciona à página certa. Código inválido ou referrals fora: a venda normal.
+  const presenteCode = url.searchParams.get('presente')?.trim().toLowerCase() ?? ''
+  const chosenRaw = url.searchParams.get('oferta-presente')?.trim() ?? ''
+  const chosenOffer = OFFER_SLUG.test(chosenRaw) ? chosenRaw : null
+  let presente: OfferGiftMode | null = null
+  if (GIFT_CODE.test(presenteCode)) {
+    const gift = await resolveReferralGiftPage(gateway, presenteCode, chosenOffer)
+    if ('gift' in gift && gift.gift.gift) {
+      const course = gift.gift.gift.courseSlug
+      if (course && (f.giftCourses ?? []).includes(course))
+        presente = { ...gift, chosenOffer } as OfferGiftMode
+      else if (course) {
+        const target = new URL(`/bolsa/${presenteCode}`, url)
+        if (chosenOffer) target.searchParams.set('oferta', chosenOffer)
+        return new Response(null, {
+          status: 302,
+          headers: { location: `${target.pathname}${target.search}`, 'cache-control': 'no-store' },
+        })
+      }
+    }
+  }
+
+  // Sem oferta principal marcada no catálogo: a venda fica indisponível (o presente não cobra).
+  if (!page && !presente) {
+    log('offer.page_without_primary_offer', { funnel: f.key, productSku: f.productSku })
+    return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
+  }
   const contractCheck = checkOfferContract(f.offerContract, offer)
-  if (!contractCheck.ok) {
+  // A venda fora do contrato fecha a página, mas não o PRESENTE (ele não cobra nada).
+  if (!contractCheck.ok && !presente) {
     log('offer.contract_mismatch', {
       funnel: f.key,
       offerSlug,
@@ -79,8 +125,23 @@ export async function resolveOfferPage(
     }
   }
 
+  // A política de acesso publicada pelo catálogo: as páginas que leem o prazo da própria oferta
+  // (o Cadê, 25/11/2026) e a garantia. `null` com o catálogo fora (o contrato já barrou a venda).
+  const access = offer
+    ? {
+        mode: offer.accessMode,
+        durationValue: offer.accessDurationValue,
+        durationUnit: offer.accessDurationUnit,
+        guaranteeDays: offer.guaranteeDays,
+      }
+    : null
+
   const bodyProps = {
     f,
+    offerSlug,
+    /** A oferta da página é a principal do produto (sem `?oferta=`). */
+    offerPrimary: page?.primary ?? true,
+    access,
     productName,
     priceLabel,
     priceLabelShort,
@@ -90,8 +151,10 @@ export async function resolveOfferPage(
     quer,
     ofertaUrl,
     coupon,
+    presente,
   }
-  return { bodyProps, plans }
+  // O modo presente depende do código na URL (e do estado da campanha): nunca em cache público.
+  return { bodyProps, plans, noStore: presenteCode !== '' }
 }
 
 export type OfferPageData = Exclude<Awaited<ReturnType<typeof resolveOfferPage>>, Response>

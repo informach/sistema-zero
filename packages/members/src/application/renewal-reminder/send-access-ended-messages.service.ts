@@ -6,6 +6,8 @@ import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port
 import {
   type AccessEndedKind,
   type AccessEndedMessagesRepository,
+  BONUS_DAYS_KIND,
+  type BonusDaysEntitlement,
   type EndedSubscriptionEntitlement,
   expiresOnKey,
   type GiftLifecycleEntitlement,
@@ -18,6 +20,10 @@ export interface AccessEndedMessagesOptions {
   windowMs?: number
   /** Teto de grupos por tipo e por ciclo (o próximo ciclo continua). */
   batchLimit?: number
+  /** Base do app Kids (o responsável entra para a criança continuar). Sem ela, a continuidade. */
+  kidsAppUrl?: string
+  /** Base do app adulto (`/cursos`). Sem ela, a continuidade adulta. */
+  adultAppUrl?: string
 }
 
 /**
@@ -37,7 +43,12 @@ const ADULT_CONTINUITY_PATH = '/pro/comunidade-dos-criadores/oferta/continuar'
 export function accessEndedLink(
   funnelUrl: string,
   audience: 'kids' | 'adult',
-  campaign: 'fim-do-presente' | 'assinatura-encerrada' | 'desafio-concluido' | 'desafio-encerrado',
+  campaign:
+    | 'fim-do-presente'
+    | 'assinatura-encerrada'
+    | 'desafio-concluido'
+    | 'desafio-encerrado'
+    | 'curso-concluido',
   content?: '2-dias' | 'no-dia',
 ): string {
   const url = new URL(
@@ -135,6 +146,14 @@ export class SendAccessEndedMessagesService {
     ))
       this.count(totals, await this.sendGift(group))
 
+    // Dias de surpresa (25/11/2026): no fim do prazo divulgado, ainda com acesso.
+    const bonus = await this.repository.listBonusDaysEntitlements(now, windowMs, limit)
+    for (const group of groupBy(
+      bonus,
+      (row) => `${row.userId}|${row.sourceId}|${row.expiresAt.toISOString()}`,
+    ))
+      this.count(totals, await this.sendBonusDays(group))
+
     const ended = await this.repository.listEndedCommunitySubscriptions(now, windowMs, limit)
     for (const group of groupBy(
       ended,
@@ -190,6 +209,36 @@ export class SendAccessEndedMessagesService {
         kind: row.messageKind,
       })),
       logContext: { entitlementId: first.id, messageKind: first.messageKind },
+    })
+  }
+
+  /**
+   * `gift-bonus-days` (Kids, ao responsável) ou `gift-bonus-days-adult`: "você ganhou mais N dias".
+   * `data` é o fim REAL; o link leva ao app (Kids: entrada do responsável; adulto: `/cursos`).
+   */
+  private async sendBonusDays(group: BonusDaysEntitlement[]) {
+    const first = group[0]
+    if (!first || first.extraDays < 1) return 'skipped' as const
+    const adult = first.audience === 'adult'
+    const templateKey = adult ? 'gift-bonus-days-adult' : 'gift-bonus-days'
+    const appBase = (adult ? this.opts.adultAppUrl : this.opts.kidsAppUrl)?.replace(/\/+$/, '')
+    const link = appBase
+      ? `${appBase}${adult ? '/cursos' : '/login/responsavel'}`
+      : accessEndedLink(this.opts.funnelUrl, adult ? 'adult' : 'kids', 'fim-do-presente')
+    const curso = first.courseTitle ?? UNKNOWN_GIFT_COURSE
+    const dias = first.extraDays === 1 ? '1 dia' : `${first.extraDays} dias`
+    return this.deliver({
+      userId: first.userId,
+      templateKey,
+      fallbackName: adult ? 'Aluno(a)' : 'Responsável',
+      variables: (nome) => ({ nome, curso, dias, data: ddmmyyyySaoPaulo(first.expiresAt), link }),
+      idempotency: [first.userId, first.sourceId, expiresOnKey(first.expiresAt), BONUS_DAYS_KIND],
+      marks: group.map((row) => ({
+        id: row.id,
+        expiresOn: expiresOnKey(row.expiresAt),
+        kind: BONUS_DAYS_KIND,
+      })),
+      logContext: { entitlementId: first.id, messageKind: BONUS_DAYS_KIND },
     })
   }
 

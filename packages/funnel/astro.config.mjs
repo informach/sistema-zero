@@ -40,11 +40,16 @@ export default defineConfig({
         `${site}/pro/comunidade-dos-criadores/oferta`,
         `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
         `${site}/pro/desafio-primeiro-jogo/oferta`,
+        `${site}/pro/cade-todo-mundo/oferta`,
+        `${site}/kids/cade-todo-mundo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
-        // Minicurso gratuito para pais (página avulsa, SSR).
+        // Guia para pais: a página pública do funil `kids/vilao-em-aliado` (o `/oferta` aponta para
+        // ela no canonical).
         `${site}/kids/vilao-em-aliado`,
+        // Curso para pais com a psicóloga Vivianne Lima (o `/oferta` aponta para ela no canonical).
+        `${site}/kids/como-ajudar-seu-filho-autista-nas-frustracoes`,
         // Páginas legais (SSR, não enumeradas sozinhas): o índice dos Termos, a Política única e
         // o Termo de cada oferta.
         `${site}/termos`,
@@ -53,6 +58,10 @@ export default defineConfig({
         `${site}/kids/desafio-primeiro-jogo/termos`,
         `${site}/kids/comunidade-dos-criadores/termos`,
         `${site}/pro/desafio-primeiro-jogo/termos`,
+        `${site}/kids/cade-todo-mundo/termos`,
+        `${site}/pro/cade-todo-mundo/termos`,
+        `${site}/kids/vilao-em-aliado/termos`,
+        `${site}/kids/como-ajudar-seu-filho-autista-nas-frustracoes/termos`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>

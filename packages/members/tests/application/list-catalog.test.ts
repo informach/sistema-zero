@@ -141,6 +141,8 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       milestones: { completed: false, showcased: false },
       hasAccess: true,
       salesPageUrl: null,
+      salesOfferRef: null,
+      description: null,
       createdAt: '2026-06-01T00:00:00.000Z',
     })
   })

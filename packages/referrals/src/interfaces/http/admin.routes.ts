@@ -1,5 +1,6 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
+import type { AcquisitionReportsService } from '../../application/acquisitions/acquisition-reports.service'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import { EMAIL_PATTERN } from '../../domain/codes'
 import type {
@@ -9,7 +10,13 @@ import type {
   ReferralRepository,
 } from '../../domain/ports/referral-repository.port'
 import { CONVERSION_STATUSES } from '../../domain/ports/referral-repository.port'
-import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
+import {
+  assertInternalCaller,
+  canSeeRevenue,
+  decodeIdentityHeader,
+  requireAdmin,
+  revenueFor,
+} from './auth'
 
 // String (não RegExp.source): o `pattern` do TypeBox compila SEM flags — um /i
 // perdido rejeitaria uuid maiúsculo com 422.
@@ -21,6 +28,8 @@ export interface AdminRoutesDeps {
   repo: ReferralRepository
   requireAdminEnabled: boolean
   internalToken?: string
+  /** Resultados por origem de cada embaixador da página (25/11/2026). */
+  reports?: AcquisitionReportsService
 }
 
 /** Resgates no detalhe do embaixador (e-mail COMPLETO — visão admin). */
@@ -61,6 +70,7 @@ function toConversionView(c: ConversionListItem) {
     paidMarkedAt: c.paidMarkedAt?.toISOString() ?? null,
     paidMarkedBy: c.paidMarkedBy,
     note: c.note,
+    ambassadorId: c.ambassadorId,
     ambassadorName: c.ambassadorName,
     ambassadorEmail: c.ambassadorEmail,
     ambassadorPixKey: c.ambassadorPixKey,
@@ -124,12 +134,24 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             limit: Math.min(query.limit ?? 25, 100),
             offset: query.offset ?? 0,
           })
+          // Os números da comunidade da lista (o embaixador tem código nos dois públicos).
+          const results = await deps.reports?.ambassadorResults(
+            items.map((i) => i.id),
+            query.audience,
+          )
+          const revenue = canSeeRevenue(headers)
           return {
-            items: items.map((i) => ({
-              ...i,
-              linkEmailSentAt: i.linkEmailSentAt?.toISOString() ?? null,
-              createdAt: i.createdAt.toISOString(),
-            })),
+            items: items.map((i) =>
+              revenueFor(
+                {
+                  ...i,
+                  ...(results?.get(i.id) ? { results: results.get(i.id) } : {}),
+                  linkEmailSentAt: i.linkEmailSentAt?.toISOString() ?? null,
+                  createdAt: i.createdAt.toISOString(),
+                },
+                revenue,
+              ),
+            ),
             total,
           }
         },

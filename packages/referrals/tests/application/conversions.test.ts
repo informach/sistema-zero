@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
+import type { GiftAudience } from '@sistemazero/core/referrals'
 import {
   type RecordConversionConfig,
   RecordConversionService,
 } from '../../src/application/conversions/record-conversion.service'
 import { SweepConversionsService } from '../../src/application/conversions/sweep-conversions.service'
+import { giftAcquisition } from '../../src/domain/acquisition'
 import type {
   CatalogClient,
   OfferSnapshot,
@@ -11,13 +13,20 @@ import type {
   PaymentsClient,
 } from '../../src/domain/ports/clients.port'
 import type { SendEmailInput } from '../../src/domain/ports/gateway.port'
+import type { RedemptionRecord } from '../../src/domain/ports/referral-repository.port'
+import { InMemoryAcquisitionRepository } from '../fakes/acquisitions'
+import { InMemoryCampaignRepository } from '../fakes/campaigns'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
 const CONFIG: RecordConversionConfig = {
   conversionOfferSlugs: ['comunidade-dos-criadores-mensal', 'comunidade-dos-criadores-anual'],
   bonusAmountCents: 3000,
+  bonusAmounts: { monthly: 3000, annual: 8000 },
+  bonusWindowDays: 45,
   matureHours: 180,
 }
+const DEFAULTS = { amounts: CONFIG.bonusAmounts ?? null, legacyCents: 3000, windowDays: 45 }
+const DAY = 86_400_000
 
 class FakePaymentsClient implements PaymentsClient {
   byId = new Map<string, PaymentSnapshot>()
@@ -31,12 +40,21 @@ class FakePaymentsClient implements PaymentsClient {
     if (this.fail) throw new Error('ECONNREFUSED')
     return this.byId.get(paymentId) ?? null
   }
+  /** Ofertas já pagas por e-mail (o histórico de antes da origem por aquisição). */
+  paidOffers = new Map<string, string[]>()
+  failPaidOffers = false
+  async listPaidOfferIds(input: { email: string }) {
+    if (this.fail || this.failPaidOffers) throw new Error('ECONNREFUSED')
+    return this.paidOffers.get(input.email) ?? []
+  }
 }
 
 class FakeCatalogClient implements CatalogClient {
   byId = new Map<string, OfferSnapshot>()
   fail = false
+  calls = 0
   async getOfferById(offerId: string): Promise<OfferSnapshot | null> {
+    this.calls++
     if (this.fail) throw new Error('ECONNREFUSED')
     return this.byId.get(offerId) ?? null
   }
@@ -51,7 +69,7 @@ function paymentSnapshot(overrides: Partial<PaymentSnapshot> = {}): PaymentSnaps
     amountInCents: 9700n,
     paidAt: PAID_AT,
     customer: { name: 'Paula Prado', email: 'Paula@Example.com' },
-    metadata: { offerId: 'offer-uuid-1' },
+    metadata: { offerId: '0ffe0000-0000-4000-8000-000000000001', billingAudience: 'kids' },
     subscriptionId: 'sub-1',
     ...overrides,
   }
@@ -59,42 +77,81 @@ function paymentSnapshot(overrides: Partial<PaymentSnapshot> = {}): PaymentSnaps
 
 describe('RecordConversionService', () => {
   let repo: InMemoryReferralRepository
+  let acquisitions: InMemoryAcquisitionRepository
+  let campaigns: InMemoryCampaignRepository
   let payments: FakePaymentsClient
   let catalog: FakeCatalogClient
   let service: RecordConversionService
 
-  /** Semeia embaixador + código + resgate COMPLETED de paula@example.com. */
-  async function seedRedeemedScholarship() {
+  async function ambassador(name = 'Vó Cida', email = 'cida@example.com', code = 'cida-x7k2') {
     const created = await repo.createAmbassadorWithCode({
-      name: 'Vó Cida',
-      email: 'cida@example.com',
-      pageToken: 't'.repeat(43),
-      code: 'cida-x7k2',
+      name,
+      email,
+      pageToken: `${code}-${'t'.repeat(40)}`.slice(0, 43),
+      code,
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
+    return created
+  }
+
+  /**
+   * Um presente concluído de paula@example.com, gravado como aquisição como o resgate faz.
+   * `tweak` muda o resgate ANTES da aquisição (o acordo é capturado nela).
+   */
+  async function seedGift(
+    opts: {
+      daysBefore?: number
+      tweak?: (r: RedemptionRecord) => void
+      seller?: Awaited<ReturnType<typeof ambassador>>
+      audience?: GiftAudience
+    } = {},
+  ) {
+    const seller = opts.seller ?? (await ambassador())
     const { redemption } = await repo.insertRedemption({
-      audience: 'kids',
-      codeId: created.code.id,
+      audience: opts.audience ?? 'kids',
+      codeId: seller.code.id,
       email: 'paula@example.com',
       name: 'Paula Prado',
       phone: null,
     })
     await repo.markRedemptionGranted(redemption.id, PAID_AT)
-    redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
-    return { code: created.code, ambassador: created.ambassador, redemption }
+    redemption.createdAt = new Date(PAID_AT.getTime() - (opts.daysBefore ?? 1) * DAY)
+    redemption.bonusAmounts = { monthly: 3000, annual: 8000 }
+    opts.tweak?.(redemption)
+    const code = repo.codes.find((c) => c.id === redemption.codeId)!
+    await acquisitions.insert(giftAcquisition(redemption, code, redemption.createdAt, DEFAULTS))
+    return { ...seller, redemption }
   }
 
   beforeEach(async () => {
     repo = new InMemoryReferralRepository()
+    acquisitions = new InMemoryAcquisitionRepository(repo)
+    campaigns = new InMemoryCampaignRepository(repo)
     payments = new FakePaymentsClient()
     catalog = new FakeCatalogClient()
-    catalog.byId.set('offer-uuid-1', {
-      id: 'offer-uuid-1',
+    catalog.byId.set('0ffe0000-0000-4000-8000-000000000001', {
+      id: '0ffe0000-0000-4000-8000-000000000001',
       slug: 'comunidade-dos-criadores-mensal',
       name: 'Comunidade (mensal)',
+      billingIntervalMonths: 1,
+      audience: 'kids',
+    })
+    catalog.byId.set('0ffe0000-0000-4000-8000-0000000000de', {
+      id: '0ffe0000-0000-4000-8000-0000000000de',
+      slug: 'desafio-primeiro-jogo-30-dias',
+      name: 'Desafio',
+      audience: 'kids',
     })
     payments.byId.set('pay-1', paymentSnapshot())
-    service = new RecordConversionService(repo, payments, catalog, CONFIG, silentLogger)
+    service = new RecordConversionService(
+      repo,
+      acquisitions,
+      campaigns,
+      payments,
+      catalog,
+      CONFIG,
+      silentLogger,
+    )
   })
 
   const paidDelivery = (paymentId = 'pay-1') => ({
@@ -102,52 +159,99 @@ describe('RecordConversionService', () => {
     eventName: 'payment.paid',
     payload: { paymentId },
   })
+  const refund = (paymentId = 'pay-1') => ({
+    deliveryId: `r-${paymentId}`,
+    eventName: 'payment.refunded',
+    payload: { paymentId },
+  })
+
+  test.each([
+    false,
+    true,
+  ])('estorno antes do INSERT não deixa compra avulsa ativa (com embaixador: %s)', async (withAmbassador) => {
+    if (withAmbassador) await seedGift()
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({
+        subscriptionId: null,
+        metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000de', billingAudience: 'kids' },
+      }),
+    )
+    const insert = acquisitions.insert.bind(acquisitions)
+    acquisitions.insert = async (input) => {
+      // A entrega do estorno termina depois da leitura PAID e antes da aquisição existir.
+      payments.byId.set('pay-1', { ...payments.byId.get('pay-1')!, status: 'REFUNDED' })
+      expect((await service.execute(refund())).kind).toBe('ok')
+      expect(await acquisitions.findByPayment('pay-1')).toBeNull()
+      return insert(input)
+    }
+
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(await acquisitions.findByPayment('pay-1')).toMatchObject({ status: 'refunded' })
+    expect(repo.conversions).toHaveLength(0)
+  })
 
   test.each([
     1, 12,
-  ])('bônus direto por ciclo %s usa o acordo aceito, mesmo com desconto', async (cycle) => {
-    const { redemption } = await seedRedeemedScholarship()
-    redemption.bonusAmounts = { monthly: 3000, annual: 8000 }
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+  ])('presente pessoal + assinatura no ciclo %s: bônus do acordo aceito', async (cycle) => {
+    await seedGift()
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = cycle
     payments.byId.get('pay-1')!.amountInCents = 1000n
     await service.execute(paidDelivery())
     await service.execute(paidDelivery())
     expect(repo.conversions).toHaveLength(1)
-    expect(repo.conversions[0]!.bonusCents).toBe(cycle === 12 ? 8000 : 3000)
+    expect(repo.conversions[0]).toMatchObject({
+      bonusCents: cycle === 12 ? 8000 : 3000,
+      status: 'pending',
+      subscriberEmail: 'paula@example.com',
+      audience: 'kids',
+    })
+    // A assinatura também virou aquisição, com o valor pago.
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-1')).toMatchObject({
+      kind: 'subscription',
+      amountCents: 1000n,
+      offerSlug: 'comunidade-dos-criadores-mensal',
+    })
   })
 
   test.each([
     1, 12,
   ])('campanha por ciclo %s conserva os dois valores do snapshot', async (cycle) => {
-    const { redemption, code, ambassador } = await seedRedeemedScholarship()
-    code.ownerKind = 'campaign'
-    redemption.campaignReferral = {
-      ambassadorId: ambassador.id,
-      ambassadorName: ambassador.name,
-      ambassadorEmail: ambassador.email,
-      commissionEnabled: true,
-      commissionAmountCents: 3500,
-      commissionAnnualAmountCents: 8500,
-      commissionWindowDays: 30,
-    }
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+    const seller = await ambassador()
+    await seedGift({
+      seller,
+      tweak: (r) => {
+        const code = repo.codes.find((c) => c.id === r.codeId)!
+        code.ownerKind = 'campaign'
+        r.campaignReferral = {
+          ambassadorId: seller.ambassador.id,
+          ambassadorName: seller.ambassador.name,
+          ambassadorEmail: seller.ambassador.email,
+          commissionEnabled: true,
+          commissionAmountCents: 3500,
+          commissionAnnualAmountCents: 8500,
+          commissionWindowDays: 30,
+        }
+      },
+    })
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = cycle
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(cycle === 12 ? 8500 : 3500)
   })
 
   test('ciclo desconhecido em acordo por plano retoma sem presumir um bônus', async () => {
-    const { redemption } = await seedRedeemedScholarship()
-    redemption.bonusAmounts = { monthly: 3000, annual: 8000 }
+    await seedGift()
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = null
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = 12
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(8000)
   })
 
-  test('aceite direto legado mantém o bônus único no anual', async () => {
-    await seedRedeemedScholarship()
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+  test('aceite direto legado (sem valores por plano) mantém o bônus único no anual', async () => {
+    await seedGift({ tweak: (r) => (r.bonusAmounts = null) })
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = 12
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(3000)
   })
@@ -155,24 +259,30 @@ describe('RecordConversionService', () => {
   test.each([
     true,
     false,
-  ])('campanha mantém beneficiário e comissão explícita %s', async (enabled) => {
-    const { code, ambassador, redemption } = await seedRedeemedScholarship()
-    code.ownerKind = 'campaign'
-    code.ambassadorId = null
-    code.ownerEmail = null
-    redemption.campaignReferral = {
-      ambassadorId: ambassador.id,
-      ambassadorName: ambassador.name,
-      ambassadorEmail: ambassador.email,
-      commissionEnabled: enabled,
-      commissionAmountCents: enabled ? 4500 : null,
-      commissionWindowDays: enabled ? 30 : null,
-    }
+  ])('campanha com embaixador e comissão %s: atribui, paga só com comissão', async (enabled) => {
+    const seller = await ambassador()
+    await seedGift({
+      seller,
+      tweak: (r) => {
+        const code = repo.codes.find((c) => c.id === r.codeId)!
+        code.ownerKind = 'campaign'
+        code.ambassadorId = null
+        code.ownerEmail = null
+        r.campaignReferral = {
+          ambassadorId: seller.ambassador.id,
+          ambassadorName: seller.ambassador.name,
+          ambassadorEmail: seller.ambassador.email,
+          commissionEnabled: enabled,
+          commissionAmountCents: enabled ? 4500 : null,
+          commissionWindowDays: enabled ? 30 : null,
+        }
+      },
+    })
     await service.execute(paidDelivery())
     await service.execute(paidDelivery())
     expect(repo.conversions).toHaveLength(1)
     expect(repo.conversions[0]).toMatchObject({
-      ambassadorId: ambassador.id,
+      ambassadorId: seller.ambassador.id,
       bonusCents: enabled ? 4500 : 0,
       status: enabled ? 'pending' : 'unrewarded',
     })
@@ -181,42 +291,303 @@ describe('RecordConversionService', () => {
     )
   })
 
-  test.each([
-    'expired',
-    'self',
-  ] as const)('campanha registra assinatura sem premiar %s', async (reason) => {
-    const { code, ambassador, redemption } = await seedRedeemedScholarship()
-    code.ownerKind = 'campaign'
-    code.ambassadorId = null
-    code.ownerEmail = null
-    redemption.campaignReferral = {
-      ambassadorId: ambassador.id,
-      ambassadorName: ambassador.name,
-      ambassadorEmail: reason === 'self' ? 'PAULA@example.com' : ambassador.email,
-      commissionEnabled: true,
-      commissionAmountCents: 4500,
-      commissionWindowDays: reason === 'expired' ? 1 : 30,
-    }
+  test('autoindicação: o embaixador assina com o próprio e-mail → self_blocked, bônus 0', async () => {
+    const seller = await ambassador('Paula Prado', 'paula@example.com', 'paula-x7k2')
+    await seedGift({ seller })
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions[0]).toMatchObject({ status: 'self_blocked', bonusCents: 0 })
+  })
+
+  test('autoindicação pela CONTA: o embaixador paga com outro e-mail → self_blocked', async () => {
+    const seller = await ambassador()
+    repo.ambassadors.find((a) => a.id === seller.ambassador.id)!.accountUserId = 'conta-cida'
+    await seedGift({ seller })
+    payments.byId.get('pay-1')!.metadata.accountUserId = 'conta-cida'
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions[0]).toMatchObject({ status: 'self_blocked', bonusCents: 0 })
+  })
+
+  test('primeira assinatura só: quem já assinou antes (aquisição) não rende bônus', async () => {
+    await seedGift()
+    await acquisitions.insert({
+      email: 'paula@example.com',
+      accountUserId: null,
+      audience: 'kids',
+      kind: 'subscription',
+      offerId: '0ffe0000-0000-4000-8000-000000000001',
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+      paymentId: 'pay-antiga',
+      subscriptionId: 'sub-antiga',
+      redemptionId: null,
+      acquiredAt: new Date(PAID_AT.getTime() - 200 * DAY),
+      originKind: 'none',
+      codeId: null,
+      campaignId: null,
+      ambassadorId: null,
+      place: null,
+      utm: null,
+      bonusTerms: null,
+    })
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+    // A assinatura nova continua sendo uma aquisição (conta nos resultados).
+    expect(acquisitions.items.some((a) => a.paymentId === 'pay-1')).toBe(true)
+  })
+
+  test('primeira assinatura só: o histórico de antes da 0013 vem do payments', async () => {
+    await seedGift()
+    payments.paidOffers.set('paula@example.com', [
+      '0ffe0000-0000-4000-8000-0000000000de',
+      '0ffe0000-0000-4000-8000-000000000001',
+    ])
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+  })
+
+  test('histórico de compras fora do ar: a entrega volta, sem bônus presumido', async () => {
+    await seedGift()
+    payments.failPaidOffers = true
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    expect(repo.conversions).toHaveLength(0)
+    payments.failPaidOffers = false
+    payments.paidOffers.set('paula@example.com', ['0ffe0000-0000-4000-8000-0000000000de'])
     await service.execute(paidDelivery())
+    expect(repo.conversions[0]).toMatchObject({ status: 'pending', bonusCents: 3000 })
+  })
+
+  test('mesma conta, outro e-mail com conversão ativa: a vaga da conta já foi usada', async () => {
+    const seller = await ambassador()
+    await seedGift({ seller, tweak: (r) => (r.userId = 'conta-paula') })
+    await repo.insertConversion({
+      redemptionId: null,
+      subscriberEmail: 'paula.trabalho@example.com',
+      audience: 'kids',
+      codeId: seller.code.id,
+      ambassadorId: seller.ambassador.id,
+      paymentId: 'pay-outro-email',
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+      bonusCents: 3000,
+      status: 'pending',
+      paidAt: new Date(PAID_AT.getTime() - DAY),
+      maturesAt: PAID_AT,
+    })
+    acquisitions.items.find((a) => a.kind === 'gift')!.accountUserId = 'conta-paula'
+    acquisitions.items.find((a) => a.kind === 'gift')!.email = 'paula.trabalho@example.com'
+    payments.byId.get('pay-1')!.metadata.accountUserId = 'conta-paula'
+    await service.execute(paidDelivery())
+    expect(repo.conversions.filter((c) => c.paymentId === 'pay-1')).toHaveLength(0)
+  })
+
+  test('fora do prazo de 45 dias do link pessoal: conta como venda, sem bônus', async () => {
+    await seedGift({ daysBefore: 46 })
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+    expect(acquisitions.items.some((a) => a.paymentId === 'pay-1')).toBe(true)
+  })
+
+  test('dois embaixadores no prazo: o bônus é do PRIMEIRO; o primeiro fora do prazo cede', async () => {
+    const mariana = await ambassador('Mariana Lopes', 'mariana@example.com', 'mari-x7k2')
+    const rafael = await ambassador('Rafael Souza', 'rafael@example.com', 'rafa-p3m9')
+    // Mariana vendeu o Desafio há 30 dias pelo link dela; Rafael deu um presente há 10.
+    await acquisitions.insert({
+      email: 'paula@example.com',
+      accountUserId: null,
+      audience: 'kids',
+      kind: 'one_time',
+      offerId: '0ffe0000-0000-4000-8000-0000000000de',
+      amountCents: 6700n,
+      paymentId: 'pay-desafio',
+      subscriptionId: null,
+      redemptionId: null,
+      acquiredAt: new Date(PAID_AT.getTime() - 30 * DAY),
+      originKind: 'ambassador',
+      codeId: mariana.code.id,
+      campaignId: null,
+      ambassadorId: mariana.ambassador.id,
+      place: null,
+      utm: null,
+      bonusTerms: {
+        ambassadorId: mariana.ambassador.id,
+        ambassadorEmail: 'mariana@example.com',
+        enabled: true,
+        monthlyCents: 3000,
+        annualCents: 8000,
+        fixedCents: null,
+        windowDays: 45,
+      },
+    })
+    await seedGift({ seller: rafael, daysBefore: 10 })
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.ambassadorId).toBe(mariana.ambassador.id)
+
+    // Se a da Mariana tivesse 3 meses (fora do prazo), o bônus seria do Rafael.
+    repo.conversions.length = 0
+    acquisitions.items.find((a) => a.paymentId === 'pay-desafio')!.acquiredAt = new Date(
+      PAID_AT.getTime() - 90 * DAY,
+    )
+    acquisitions.items.splice(
+      acquisitions.items.findIndex((a) => a.paymentId === 'pay-1'),
+      1,
+    )
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.ambassadorId).toBe(rafael.ambassador.id)
+  })
+
+  test('venda pelo link, SEM presente: a assinatura direta rende bônus ao embaixador', async () => {
+    const seller = await ambassador()
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-000000000001',
+          billingAudience: 'kids',
+          origemCodigo: 'CIDA-X7K2',
+        },
+      }),
+    )
+    payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 60_000)
+    await service.execute(paidDelivery())
+    expect(acquisitions.items[0]).toMatchObject({
+      originKind: 'ambassador',
+      ambassadorId: seller.ambassador.id,
+      codeId: seller.code.id,
+    })
     expect(repo.conversions[0]).toMatchObject({
-      ambassadorId: ambassador.id,
-      bonusCents: 0,
-      status: reason === 'self' ? 'self_blocked' : 'unrewarded',
+      redemptionId: null,
+      acquisitionId: acquisitions.items[0]!.id,
+      bonusCents: 3000,
+      status: 'pending',
     })
   })
 
-  test('renovação de assinatura anterior ao presente não atribui conversão nem bônus', async () => {
-    const { redemption, code } = await seedRedeemedScholarship()
-    payments.subscriptionCreatedAt = new Date(redemption.createdAt.getTime() - 1)
+  test('curso comprado pelo link só marca a origem; a assinatura depois rende o bônus', async () => {
+    const seller = await ambassador()
+    payments.byId.set(
+      'pay-desafio',
+      paymentSnapshot({
+        id: 'pay-desafio',
+        subscriptionId: null,
+        amountInCents: 6700n,
+        paidAt: new Date(PAID_AT.getTime() - 5 * DAY),
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
+          billingAudience: 'kids',
+          origemCodigo: 'cida-x7k2',
+        },
+      }),
+    )
+    await service.execute(paidDelivery('pay-desafio'))
+    expect(repo.conversions).toHaveLength(0)
+    expect(acquisitions.items[0]).toMatchObject({ kind: 'one_time', originKind: 'ambassador' })
+    // Assinou sozinha 5 dias depois (sem link): o embaixador do curso ganha o bônus.
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.ambassadorId).toBe(seller.ambassador.id)
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-1')?.originKind).toBe('none')
+  })
+
+  test('compra sem indicação: aquisição registrada sem consultar o catálogo', async () => {
+    catalog.fail = true
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+    expect(acquisitions.items[0]).toMatchObject({ originKind: 'none', offerSlug: null })
+    expect(catalog.calls).toBe(0)
+  })
+
+  test('oferta que não é uuid (outro produtor no fan-out) é consumida sem aquisição', async () => {
+    payments.byId.set(
+      'pay-x',
+      paymentSnapshot({
+        id: 'pay-x',
+        metadata: { offerId: 'nao-e-uuid', billingAudience: 'kids' },
+      }),
+    )
+    const delivery = { ...paidDelivery(), payload: { paymentId: 'pay-x' } }
+    expect((await service.execute(delivery)).kind).toBe('ok')
+    expect(acquisitions.items).toHaveLength(0)
+  })
+
+  test('botão da plataforma e fonte de mídia viram a origem da compra', async () => {
+    payments.byId.set(
+      'pay-2',
+      paymentSnapshot({
+        id: 'pay-2',
+        subscriptionId: null,
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
+          billingAudience: 'kids',
+          origemLugar: 'pais-curso-fechado',
+        },
+      }),
+    )
+    payments.byId.set(
+      'pay-3',
+      paymentSnapshot({
+        id: 'pay-3',
+        subscriptionId: null,
+        customer: { email: 'outra@example.com' },
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
+          billingAudience: 'kids',
+          origemFonte: 'instagram',
+        },
+      }),
+    )
+    await service.execute(paidDelivery('pay-2'))
+    await service.execute(paidDelivery('pay-3'))
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-2')).toMatchObject({
+      originKind: 'platform',
+      place: 'pais-curso-fechado',
+    })
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-3')).toMatchObject({
+      originKind: 'ads',
+      utm: { utmSource: 'instagram' },
+    })
+  })
+
+  test('sem `billingAudience` o público vem do catálogo (e falha dele pede reentrega)', async () => {
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({ metadata: { offerId: '0ffe0000-0000-4000-8000-000000000001' } }),
+    )
+    catalog.fail = true
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    catalog.fail = false
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(acquisitions.items[0]!.audience).toBe('kids')
+  })
+
+  test('renovação (outra cobrança da mesma assinatura) não vira aquisição nem bônus', async () => {
+    await seedGift()
+    await service.execute(paidDelivery())
+    payments.byId.set(
+      'pay-ciclo',
+      paymentSnapshot({ id: 'pay-ciclo', paidAt: new Date(PAID_AT.getTime() + 30 * DAY) }),
+    )
+    expect((await service.execute(paidDelivery('pay-ciclo'))).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(1)
+    expect(acquisitions.items.some((a) => a.paymentId === 'pay-ciclo')).toBe(false)
+  })
+
+  test('renovação de assinatura anterior a 0013 (cobrança muito depois de criada) é ignorada', async () => {
+    await seedGift()
+    payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 60 * DAY)
     expect(await service.execute(paidDelivery())).toEqual({ kind: 'ok' })
     expect(repo.conversions).toHaveLength(0)
-    code.ownerKind = 'campaign'
+    expect(acquisitions.items.some((a) => a.paymentId === 'pay-1')).toBe(false)
+  })
+
+  test('assinatura criada antes da entrada pelo embaixador não é dele', async () => {
+    await seedGift()
+    payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 2 * DAY)
     expect(await service.execute(paidDelivery())).toEqual({ kind: 'ok' })
     expect(repo.conversions).toHaveLength(0)
   })
 
   test('data da assinatura indisponível pede reentrega e não inventa atribuição', async () => {
-    await seedRedeemedScholarship()
+    await seedGift()
     payments.subscriptionCreatedAt = null
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
@@ -225,123 +596,87 @@ describe('RecordConversionService', () => {
     expect(repo.conversions).toHaveLength(1)
   })
 
-  test('bolsista completed + oferta da Comunidade → conversão pending com bônus fixo', async () => {
-    await seedRedeemedScholarship()
-    const result = await service.execute(paidDelivery())
-    expect(result.kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(1)
-    const c = repo.conversions[0]!
-    expect(c.status).toBe('pending')
-    expect(c.bonusCents).toBe(3000)
-    expect(c.amountCents).toBe(9700n)
-    expect(c.offerSlug).toBe('comunidade-dos-criadores-mensal')
-    expect(c.maturesAt.getTime()).toBe(PAID_AT.getTime() + 180 * 3600_000)
-    expect(c.ambassadorId).not.toBeNull()
-  })
-
-  test('anual à vista (SEM subscriptionId) também converte', async () => {
-    await seedRedeemedScholarship()
-    catalog.byId.set('offer-uuid-2', {
-      id: 'offer-uuid-2',
+  test('anual à vista (SEM subscriptionId) também converte e vira assinatura', async () => {
+    await seedGift()
+    catalog.byId.set('0ffe0000-0000-4000-8000-000000000002', {
+      id: '0ffe0000-0000-4000-8000-000000000002',
       slug: 'comunidade-dos-criadores-anual',
       name: 'Comunidade (anual)',
+      billingIntervalMonths: 12,
     })
-    payments.byId.set('pay-2', {
-      ...paymentSnapshot({ id: 'pay-2', subscriptionId: null }),
-      metadata: { offerId: 'offer-uuid-2' },
-      amountInCents: 79700n,
-    })
+    payments.byId.set(
+      'pay-2',
+      paymentSnapshot({
+        id: 'pay-2',
+        subscriptionId: null,
+        amountInCents: 97000n,
+        metadata: { offerId: '0ffe0000-0000-4000-8000-000000000002', billingAudience: 'kids' },
+      }),
+    )
     expect((await service.execute(paidDelivery('pay-2'))).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(1)
-    expect(repo.conversions[0]!.offerSlug).toBe('comunidade-dos-criadores-anual')
-    expect(repo.conversions[0]!.bonusCents).toBe(3000) // fixo, qualquer plano
-  })
-
-  test('compra anterior ao cadastro não é atribuída à indicação', async () => {
-    const { redemption } = await seedRedeemedScholarship()
-    redemption.createdAt = new Date(PAID_AT.getTime() + 1)
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(0)
-  })
-
-  test('campanha registra conversão sem bônus, não entra no Pix e estorno a cancela', async () => {
-    const { code } = await seedRedeemedScholarship()
-    code.ownerKind = 'campaign'
-    code.ambassadorId = null
-    code.campaignId = 'campaign-1'
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions[0]).toMatchObject({
-      status: 'unrewarded',
-      bonusCents: 0,
-      ambassadorId: null,
+      offerSlug: 'comunidade-dos-criadores-anual',
+      bonusCents: 8000,
     })
-    expect((await repo.listConversions({ limit: 25, offset: 0 })).total).toBe(0)
-    await service.execute({
-      deliveryId: 'refund-campaign',
-      eventName: 'payment.refunded',
-      payload: { paymentId: 'pay-1' },
-    })
-    expect(repo.conversions[0]?.status).toBe('canceled')
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-2')!.kind).toBe('subscription')
   })
 
-  test('oferta fora da allowlist (ex.: Desafio avulso) → skip sem conversão', async () => {
-    await seedRedeemedScholarship()
-    catalog.byId.set('offer-uuid-1', {
-      id: 'offer-uuid-1',
-      slug: 'desafio-primeiro-jogo',
-      name: 'Desafio',
-    })
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(0)
-  })
+  test.each([
+    false,
+    true,
+  ])('assinatura anterior de outro produto não tira o bônus da primeira Comunidade (slug conhecido: %s)', async (knownSlug) => {
+    const oldAt = new Date(PAID_AT.getTime() - 10 * DAY)
+    const otherOffer = {
+      id: '0ffe0000-0000-4000-8000-000000000099',
+      slug: 'estudio-mensal',
+      name: 'Estúdio mensal',
+      billingIntervalMonths: 1,
+      audience: 'kids' as const,
+    }
+    catalog.byId.set(otherOffer.id, otherOffer)
+    payments.subscriptionCreatedAt = oldAt
+    payments.byId.set(
+      'pay-other',
+      paymentSnapshot({
+        id: 'pay-other',
+        paidAt: oldAt,
+        subscriptionId: 'sub-other',
+        metadata: { offerId: otherOffer.id, billingAudience: 'kids' },
+      }),
+    )
+    expect((await service.execute(paidDelivery('pay-other'))).kind).toBe('ok')
+    if (knownSlug) {
+      const old = await acquisitions.findByPayment('pay-other')
+      expect(old).not.toBeNull()
+      await acquisitions.setOfferSlug(old!.id, otherOffer.slug)
+    }
+    payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 60_000)
+    await seedGift()
 
-  test('comprador sem bolsa (veio direto da oferta) → skip', async () => {
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(0)
-  })
-
-  test('resgate ainda pending (não completed) → skip', async () => {
-    const seeded = await seedRedeemedScholarship()
-    const r = repo.redemptions.find((x) => x.id === seeded.redemption.id)!
-    r.status = 'pending'
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(0)
-  })
-
-  test('autoindicação (dono do código assina com o mesmo e-mail) → self_blocked, bônus 0', async () => {
-    const created = await repo.createAmbassadorWithCode({
-      name: 'Paula Prado',
-      email: 'paula@example.com',
-      pageToken: 't'.repeat(43),
-      code: 'paula-x7k2',
-    })
-    if (created.kind !== 'created') throw new Error('seed falhou')
-    const { redemption } = await repo.insertRedemption({
-      audience: 'kids',
-      codeId: created.code.id,
-      email: 'paula@example.com',
-      name: 'Paula Prado',
-      phone: null,
-    })
-    await repo.markRedemptionGranted(redemption.id, PAID_AT)
-
-    redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions).toHaveLength(1)
-    expect(repo.conversions[0]!.status).toBe('self_blocked')
-    expect(repo.conversions[0]!.bonusCents).toBe(0)
+    expect(repo.conversions[0]).toMatchObject({
+      paymentId: 'pay-1',
+      status: 'pending',
+      bonusCents: 3000,
+    })
   })
 
-  test('ciclo de renovação (payment novo, mesma redemption) NÃO duplica', async () => {
-    await seedRedeemedScholarship()
-    await service.execute(paidDelivery())
-    payments.byId.set('pay-ciclo', paymentSnapshot({ id: 'pay-ciclo' }))
-    expect((await service.execute(paidDelivery('pay-ciclo'))).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(1) // "só a primeira" por construção
+  test('oferta fora da allowlist (o Desafio) não vira conversão', async () => {
+    await seedGift()
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({
+        subscriptionId: null,
+        metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000de', billingAudience: 'kids' },
+      }),
+    )
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
   })
 
-  test('falha ao conferir estorno após INSERT pede retry; reentrega estornada cancela a conversão', async () => {
-    await seedRedeemedScholarship()
+  test('falha ao conferir estorno após INSERT pede retry; reentrega estornada cancela', async () => {
+    await seedGift()
     const originalGet = payments.getPayment.bind(payments)
     let calls = 0
     payments.getPayment = async (id) => {
@@ -353,94 +688,75 @@ describe('RecordConversionService', () => {
     payments.byId.set('pay-1', paymentSnapshot({ status: 'REFUNDED' }))
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions[0]?.status).toBe('canceled')
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-1')?.status).toBe('refunded')
   })
 
-  test('payments/catalog indisponíveis ou oferta 404 → retryable (502 re-entrega)', async () => {
-    await seedRedeemedScholarship()
+  test('payments/catalog indisponíveis ou oferta 404 → retryable (quando há embaixador)', async () => {
+    await seedGift()
     payments.fail = true
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     payments.fail = false
     catalog.fail = true
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     catalog.fail = false
-    catalog.byId.delete('offer-uuid-1')
+    catalog.byId.delete('0ffe0000-0000-4000-8000-000000000001')
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
   })
 
-  test('estorno na garantia cancela a pending; depois de elegível NÃO reverte', async () => {
-    await seedRedeemedScholarship()
+  test('estorno na garantia cancela a pending e a aquisição; depois de elegível NÃO reverte', async () => {
+    await seedGift()
     await service.execute(paidDelivery())
-    const refund = {
-      deliveryId: 'd-r',
-      eventName: 'payment.refunded',
-      payload: { paymentId: 'pay-1' },
-    }
-    expect((await service.execute(refund)).kind).toBe('ok')
+    expect((await service.execute(refund())).kind).toBe('ok')
     expect(repo.conversions[0]!.status).toBe('canceled')
-
-    // Reconstrói elegível e estorna de novo: fica como está (aflora no log).
+    expect(acquisitions.items.find((a) => a.paymentId === 'pay-1')?.status).toBe('refunded')
     repo.conversions[0]!.status = 'eligible'
-    expect((await service.execute(refund)).kind).toBe('ok')
+    expect((await service.execute(refund())).kind).toBe('ok')
     expect(repo.conversions[0]!.status).toBe('eligible')
   })
 
-  test('alerta de "estorno após bônus" SÓ para eligible/paid — self_blocked e re-entrega são mudos', async () => {
+  test('alerta de "estorno após bônus" SÓ para eligible/paid', async () => {
     const errors: string[] = []
-    const capturing = {
-      ...silentLogger,
-      error: (msg: string) => {
-        errors.push(msg)
-      },
-    }
-    const svc = new RecordConversionService(repo, payments, catalog, CONFIG, capturing)
-    await seedRedeemedScholarship()
+    const capturing = { ...silentLogger, error: (msg: string) => void errors.push(msg) }
+    const svc = new RecordConversionService(
+      repo,
+      acquisitions,
+      campaigns,
+      payments,
+      catalog,
+      CONFIG,
+      capturing,
+    )
+    await seedGift()
     await svc.execute(paidDelivery())
     repo.conversions[0]!.status = 'self_blocked'
-    const refund = {
-      deliveryId: 'd-r',
-      eventName: 'payment.refunded',
-      payload: { paymentId: 'pay-1' },
-    }
-    // Autoindicação estornada: bônus nunca existiu — alerta seria falso.
-    expect((await svc.execute(refund)).kind).toBe('ok')
+    expect((await svc.execute(refund())).kind).toBe('ok')
     expect(errors).toHaveLength(0)
-
-    // Re-entrega de um estorno já aplicado (canceled): também muda.
     repo.conversions[0]!.status = 'canceled'
-    expect((await svc.execute(refund)).kind).toBe('ok')
+    expect((await svc.execute(refund())).kind).toBe('ok')
     expect(errors).toHaveLength(0)
-
-    // Bônus já prometido: aí sim aflora ao humano.
     repo.conversions[0]!.status = 'eligible'
-    expect((await svc.execute(refund)).kind).toBe('ok')
+    expect((await svc.execute(refund())).kind).toBe('ok')
     expect(errors).toEqual(['referrals.refund_after_bonus_eligible'])
   })
 
-  test('estornou na garantia e assinou DE NOVO meses depois → converte de novo (canceled não ocupa a vaga)', async () => {
-    await seedRedeemedScholarship()
+  test('estornou na garantia e assinou de novo no prazo → converte de novo', async () => {
+    await seedGift()
     await service.execute(paidDelivery())
-    const refund = {
-      deliveryId: 'd-r',
-      eventName: 'payment.refunded',
-      payload: { paymentId: 'pay-1' },
-    }
-    await service.execute(refund)
+    await service.execute(refund())
     expect(repo.conversions[0]!.status).toBe('canceled')
-
-    payments.byId.set('pay-volta', paymentSnapshot({ id: 'pay-volta' }))
+    payments.byId.set('pay-volta', paymentSnapshot({ id: 'pay-volta', subscriptionId: 'sub-2' }))
     expect((await service.execute(paidDelivery('pay-volta'))).kind).toBe('ok')
     expect(repo.conversions).toHaveLength(2)
-    expect(repo.conversions[1]!.status).toBe('pending')
-    expect(repo.conversions[1]!.paymentId).toBe('pay-volta')
+    expect(repo.conversions[1]).toMatchObject({ status: 'pending', paymentId: 'pay-volta' })
   })
 
-  test('não-bolsista com catalog FORA → skip barato (sem retry storm)', async () => {
-    // O filtro local (redemption por e-mail) roda ANTES do catalog: entrega de
-    // quem nunca resgatou bolsa consome sem depender do catálogo de pé.
-    catalog.fail = true
-    expect((await service.execute(paidDelivery())).kind).toBe('ok')
-    expect(repo.conversions).toHaveLength(0)
+  test('uma primeira assinatura por pessoa e público: outra assinatura não paga de novo', async () => {
+    await seedGift()
+    await service.execute(paidDelivery())
+    payments.byId.set('pay-outra', paymentSnapshot({ id: 'pay-outra', subscriptionId: 'sub-3' }))
+    await service.execute(paidDelivery('pay-outra'))
+    expect(repo.conversions.filter((c) => c.status === 'pending')).toHaveLength(1)
   })
 })
 
@@ -470,6 +786,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',
@@ -525,6 +843,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',
@@ -569,6 +889,8 @@ describe('SweepConversionsService', () => {
     })
     await repo.insertConversion({
       redemptionId: redemption.id,
+      subscriberEmail: redemption.email,
+      audience: redemption.audience,
       codeId: created.code.id,
       ambassadorId: created.ambassador.id,
       paymentId: 'pay-1',

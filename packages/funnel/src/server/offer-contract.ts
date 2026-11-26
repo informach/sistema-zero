@@ -28,9 +28,11 @@ export function checkOfferContract(
   const matches =
     offer.pricingMode === contract.pricingMode &&
     offer.accessMode === contract.accessMode &&
-    offer.accessDurationValue === contract.accessDurationValue &&
+    (contract.anyDuration
+      ? offer.accessDurationValue !== null
+      : offer.accessDurationValue === contract.accessDurationValue) &&
     offer.accessDurationUnit === contract.accessDurationUnit &&
-    offer.guaranteeDays === contract.guaranteeDays
+    (contract.anyGuarantee || offer.guaranteeDays === contract.guaranteeDays)
   return matches
     ? { ok: true }
     : { ok: false, reason: 'policy_mismatch', expected: contract, actual: offer }

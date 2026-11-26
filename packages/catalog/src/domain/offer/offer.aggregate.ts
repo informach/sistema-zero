@@ -43,6 +43,20 @@ export interface OfferContent {
    */
   maxProfiles?: number
   /**
+   * PRAZO DIVULGADO em dias (25/11/2026): o que a página, a confirmação e os e-mails mostram,
+   * menor que o prazo real da oferta. A diferença chega de surpresa (o members avisa por e-mail no
+   * fim do prazo divulgado: "você ganhou mais N dias"). Só em oferta `fixed` em dias, inteiro ≥ 1 e
+   * menor que `accessDurationValue`.
+   */
+  advertisedAccessDays?: number
+  /**
+   * PODE SER VENDIDA NA PÁGINA DO PRODUTO (25/11/2026, opt-in): além da oferta principal do
+   * produto e da irmã do alternador, o funil só aceita no `?oferta=` (e na cobrança) as ofertas
+   * do mesmo produto marcadas aqui. Ofertas de presente ficam sem a marca, então nunca são
+   * compradas pela página.
+   */
+  pageSellable?: boolean
+  /**
    * OFERTA IRMÃ do alternador do checkout ("economize no anual"): a mensal aponta
    * a anual e vice-versa. `slug` = a oferta alvo (o funil VALIDA o slug escolhido
    * contra este link — anti-forja); `label` = o texto do alternador (ausente → o
@@ -217,6 +231,7 @@ export class OfferAggregate extends AggregateRoot<string> {
       updatedAt: now,
     })
     assertSubscriptionInterval(offer.props)
+    assertAdvertisedAccessDays(offer.props)
     offer.addEvent(
       new OfferCreatedEvent(
         offer.id,
@@ -293,6 +308,9 @@ export class OfferAggregate extends AggregateRoot<string> {
     assertAvailabilityWindow(this.props.availableFrom, this.props.availableUntil)
     if (details.content !== undefined) this.props.content = details.content
     if (details.metadata !== undefined) this.props.metadata = details.metadata
+    // Sobre o estado CONSOLIDADO: trocar a política (de 15 para 7 dias, por exemplo) também
+    // invalida um prazo divulgado que deixou de ser menor que o real.
+    assertAdvertisedAccessDays(this.props)
     this.touch(details.now)
     this.addEvent(new OfferUpdatedEvent(this.id, 'details'))
   }
@@ -466,6 +484,22 @@ function assertSubscriptionInterval(props: OfferProps): void {
       'Oferta de assinatura ativa exige o intervalo de cobrança (mensal = 1, anual = 12)',
     )
   }
+}
+
+/** O prazo divulgado só existe abaixo de um prazo real em dias (ver `OfferContent`). */
+function assertAdvertisedAccessDays(props: OfferProps): void {
+  const advertised = props.content?.advertisedAccessDays
+  if (advertised === undefined || advertised === null) return
+  if (!Number.isInteger(advertised) || advertised < 1)
+    throw new ValidationError('Prazo divulgado deve ser um número inteiro de dias, a partir de 1')
+  if (
+    props.accessMode !== 'fixed' ||
+    props.accessDurationUnit !== 'days' ||
+    props.accessDurationValue === null
+  )
+    throw new ValidationError('Prazo divulgado só vale para oferta com prazo fixo em dias')
+  if (advertised >= props.accessDurationValue)
+    throw new ValidationError('Prazo divulgado precisa ser menor que o prazo real da oferta')
 }
 
 function accessPolicyOf(props: OfferProps): OfferAccessPolicy {

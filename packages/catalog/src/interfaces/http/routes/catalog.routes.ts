@@ -124,6 +124,19 @@ export function catalogRoutes(deps: CatalogRoutesDeps) {
         },
         { body: QuoteOfferBody },
       )
+      .get('/products/by-sku/:sku', async ({ params, set }) => {
+        const key = `sku:${params.sku.trim().toLowerCase()}`
+        let product = productCache.get(key)
+        if (product === undefined) {
+          product = await deps.getProduct.getPublicBySku(params.sku)
+          productCache.set(key, product)
+        }
+        if (!product) {
+          set.status = 404
+          return envelope('PRODUCT_NOT_FOUND', 'Produto não encontrado')
+        }
+        return product
+      })
       .get('/products/:slug', async ({ params, set }) => {
         const key = params.slug.trim().toLowerCase()
         let product = productCache.get(key)

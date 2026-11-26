@@ -42,7 +42,8 @@ describe('CTA do cartão de curso', () => {
       />,
     )
     const link = getByRole('link', { name: /Cadê Todo Mundo/ })
-    expect(link.getAttribute('href')).toBe('https://example.com/oferta')
+    // O botão da plataforma vai como `?lugar=` (a Origem das vendas no Admin).
+    expect(link.getAttribute('href')).toBe('https://example.com/oferta?lugar=crianca-curso-fechado')
     expect(link.getAttribute('target')).toBe('_blank')
     expect(link.getAttribute('rel')).toContain('noopener')
     expect(getByText('Mostrar ao responsável')).toBeTruthy()

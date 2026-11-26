@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import { serializeError } from '@sistemazero/core/logging'
 import {
   type GiftAttribution,
   type GiftAudience,
@@ -11,17 +12,20 @@ import {
   type ReferralGiftOfferView,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
+import { giftAcquisition } from '../../domain/acquisition'
 import {
   type CampaignRecord,
   CampaignUnavailableError,
   campaignSource,
   campaignState,
+  GiftCatalogUnavailableError,
   GiftOfferChangedError,
 } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
 import {
   DEFAULT_GIFT_OFFER_SLUGS,
   giftAccessDays,
+  giftAdvertisedDays,
   giftGuidanceText,
   giftMuralText,
   giftOfferProblem,
@@ -31,6 +35,7 @@ import {
   scholarshipExpiresAt,
 } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
+import type { AcquisitionRepository } from '../../domain/ports/acquisition-repository.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type {
   GatewayResult,
@@ -50,6 +55,11 @@ export interface RedeemInput {
   email: string
   phone?: string
   attribution?: GiftAttribution | null
+  /**
+   * O presente que o embaixador escolheu na lista do público (slug ou id, 25/11/2026). Vale só
+   * para código de embaixador e só se a oferta está ligada na lista; campanha usa a dela.
+   */
+  offer?: string | null
 }
 
 export type RedeemResult =
@@ -92,6 +102,22 @@ export interface RedeemOptions {
   leaseMs: number
   campaigns?: CampaignRepository
   bonusAmounts?: ReferralBonusAmounts
+  /**
+   * Aquisições com origem (25/11/2026): o presente concluído vira aquisição `gift` com o acordo
+   * do bônus capturado. Best-effort: uma falha aqui não desfaz o presente; o sweep repara.
+   */
+  acquisitions?: AcquisitionRepository
+  /** Valor único legado e prazo do link pessoal (para o acordo capturado). */
+  legacyBonusCents?: number
+  bonusWindowDays?: number
+  /** As listas do Admin: o presente que o embaixador pode escolher (sem ela, só o padrão). */
+  ambassadorOffers?: {
+    allowed(
+      audience: GiftAudience,
+      kind: 'gift',
+      offerRef: string,
+    ): Promise<{ offerId: string } | null>
+  }
 }
 
 /** O curso principal do presente, como o members o publica. */
@@ -254,27 +280,56 @@ export class RedeemScholarshipService {
    * que a oferta entrega. `gift` só quando a oferta resolve e o presente está disponível.
    */
   async publicGift(
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     audience: GiftAudience,
+    requested?: string | null,
   ): Promise<{
     availability: 'available' | 'unavailable' | 'upstream_error'
     gift?: ReferralGiftOfferView
   }> {
-    const result = await this.planGift(audience, giftOfferRef(campaign, audience))
+    let ref: string | null
+    try {
+      ref = await this.giftRefFor(campaign, audience, requested)
+    } catch (error) {
+      if (error instanceof GiftCatalogUnavailableError) return { availability: 'upstream_error' }
+      throw error
+    }
+    if (!ref) return { availability: 'unavailable' }
+    const result = await this.planGift(audience, ref)
     if (result.kind !== 'ok') return { availability: result.kind }
     const { offer, course } = result.value
     return {
       availability: 'available',
       gift: {
         offerId: offer.offerId,
+        offerSlug: offer.offerSlug,
         offerTitle: offer.name,
         courseSlug: offer.courseSlug,
         courseTitle: course?.title ?? null,
         learner: course?.learner ?? null,
-        accessDays: giftAccessDays(offer),
+        accessDays: giftAdvertisedDays(offer),
         includesMural: offer.includesMural,
       },
     }
+  }
+
+  /**
+   * A oferta que o código dá de presente: a da campanha (campanha de VENDA não dá presente:
+   * `null`), a escolhida pelo embaixador quando está ligada na lista do público, ou a padrão.
+   * Escolha fora da lista também é `null` (o link não existe).
+   */
+  async giftRefFor(
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
+    audience: GiftAudience,
+    requested?: string | null,
+  ): Promise<string | null> {
+    if (campaign) return campaign.kind === 'sale' ? null : giftOfferRef(campaign, audience)
+    const wanted = requested?.trim()
+    if (wanted && this.opts.ambassadorOffers) {
+      const option = await this.opts.ambassadorOffers.allowed(audience, 'gift', wanted)
+      return option?.offerId ?? null
+    }
+    return giftOfferRef(null, audience)
   }
 
   /** Consulta a mesma vaga da execução, sem claim, concessão ou envio de email. */
@@ -283,7 +338,7 @@ export class RedeemScholarshipService {
     audience: GiftAudience,
     userId: string | undefined,
     ownerKind: string,
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     fresh: Availability<GiftPlan>,
   ) {
     const fromEmail = await this.repo.listRedemptionsByEmail(email, audience)
@@ -323,12 +378,15 @@ export class RedeemScholarshipService {
   }
 
   async inspectAccountGift(
-    campaign: Pick<CampaignRecord, 'giftOfferId'> | null,
+    campaign: Pick<CampaignRecord, 'giftOfferId' | 'kind'> | null,
     audience: GiftAudience,
     ownerKind: string,
     account: { userId: string; email: string },
+    requested?: string | null,
   ) {
-    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    const ref = await this.giftRefFor(campaign, audience, requested)
+    if (!ref) return null
+    const fresh = await this.planGift(audience, ref)
     const { existing } = await this.findExistingGift(
       normalizeEmail(account.email),
       audience,
@@ -343,7 +401,8 @@ export class RedeemScholarshipService {
     return {
       redemption: {
         status: existing.status,
-        expiresAt: expiresAt?.toISOString() ?? null,
+        // A data mostrada é a do prazo divulgado; a retomada segue o prazo real.
+        expiresAt: this.shownExpiresAtOf(existing)?.toISOString() ?? null,
         canResume: existing.status !== 'completed' && !this.windowElapsed(expiresAt),
       },
       gift: {
@@ -352,7 +411,7 @@ export class RedeemScholarshipService {
         courseSlug: existing.courseSlug ?? context.course?.slug ?? '',
         courseTitle: context.course?.title ?? null,
         learner: context.course?.learner ?? null,
-        accessDays: existing.accessDurationDays,
+        accessDays: this.shownDaysOf(existing),
         includesMural: context.offer?.includesMural ?? false,
       } satisfies ReferralGiftOfferView,
     }
@@ -385,7 +444,18 @@ export class RedeemScholarshipService {
     // "Já resgatado" é por público: o mesmo e-mail pode ter um presente Kids e um adulto.
     // E por VAGA (18/11/2026): curso para pais não ocupa a vaga do presente do público, então a
     // oferta deste código é resolvida primeiro para saber em que vaga procurar o resgate.
-    const fresh = await this.planGift(audience, giftOfferRef(campaign, audience))
+    if (codeRecord.ownerKind === 'campaign' && !campaign) return { kind: 'code_not_found' }
+    let ref: string | null
+    try {
+      ref = await this.giftRefFor(campaign, audience, input.offer)
+    } catch (error) {
+      // Catálogo fora ao conferir a escolha do embaixador: "tente de novo", não "não existe".
+      if (error instanceof GiftCatalogUnavailableError) return { kind: 'upstream_error' }
+      throw error
+    }
+    // Campanha de venda, ou escolha fora da lista do público: o link de presente não existe.
+    if (!ref) return { kind: 'code_not_found' }
+    const fresh = await this.planGift(audience, ref)
     const { giftSlot, existing } = await this.findExistingGift(
       email,
       audience,
@@ -452,6 +522,9 @@ export class RedeemScholarshipService {
               gift: {
                 offerId: plan.offer.offerId,
                 accessDurationDays: giftAccessDays(plan.offer),
+                // O divulgado de AGORA fica no resgate: mudar a oferta depois não muda a data
+                // que esta pessoa já viu (nem a do members, que gravou o seu na concessão).
+                advertisedDays: shownAdvertised(plan.offer),
               },
             }
           : {}),
@@ -491,7 +564,7 @@ export class RedeemScholarshipService {
       }
       return {
         kind: 'already_redeemed',
-        expiresAt: this.expiresAtOf(redemption)?.toISOString() ?? null,
+        expiresAt: this.shownExpiresAtOf(redemption)?.toISOString() ?? null,
       }
     }
 
@@ -559,6 +632,22 @@ export class RedeemScholarshipService {
     return scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
   }
 
+  /**
+   * Os dias que as pessoas VEEM (25/11/2026): o prazo divulgado da oferta, quando há um e é menor
+   * que os dias gravados no resgate; senão, os gravados. O acesso e a retomada seguem os gravados.
+   */
+  private shownDaysOf(redemption: RedemptionRecord): number | null {
+    const real = redemption.accessDurationDays
+    // O divulgado GRAVADO no resgate (nunca o da oferta de hoje).
+    const advertised = redemption.advertisedDays
+    return real !== null && advertised !== null && advertised < real ? advertised : real
+  }
+
+  /** A data de fim que as pessoas VEEM (a do prazo divulgado). */
+  private shownExpiresAtOf(redemption: RedemptionRecord): Date | null {
+    return scholarshipExpiresAt(redemption.createdAt, this.shownDaysOf(redemption))
+  }
+
   private windowElapsed(expiresAt: Date | null): boolean {
     return expiresAt !== null && this.now().getTime() >= expiresAt.getTime()
   }
@@ -568,6 +657,27 @@ export class RedeemScholarshipService {
     const slug = redemption.courseSlug ?? context.course?.slug
     if (!slug) throw new Error('resgate antigo sem curso gravado')
     return slug
+  }
+
+  /** O presente concluído vira aquisição `gift` (idempotente por resgate; falha não derruba). */
+  private async recordGiftAcquisition(redemption: RedemptionRecord): Promise<void> {
+    if (!this.opts.acquisitions) return
+    try {
+      const code = await this.repo.findCodeById(redemption.codeId)
+      if (!code) return
+      await this.opts.acquisitions.insert(
+        giftAcquisition(redemption, code, this.now(), {
+          amounts: this.opts.bonusAmounts ?? null,
+          legacyCents: this.opts.legacyBonusCents ?? 3000,
+          windowDays: this.opts.bonusWindowDays ?? 45,
+        }),
+      )
+    } catch (error) {
+      this.logger.warn('referrals.gift_acquisition_failed', {
+        redemptionId: redemption.id,
+        error: serializeError(error),
+      })
+    }
   }
 
   private async runSteps(
@@ -742,6 +852,7 @@ export class RedeemScholarshipService {
     }
 
     await this.repo.markRedemptionGranted(redemption.id, this.now())
+    await this.recordGiftAcquisition({ ...redemption, userId })
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.
@@ -756,7 +867,7 @@ export class RedeemScholarshipService {
         : 'none'
     return {
       kind: 'completed',
-      expiresAt: expiresAt?.toISOString() ?? null,
+      expiresAt: this.shownExpiresAtOf(redemption)?.toISOString() ?? null,
       emailStatus,
       muralAccess,
     }
@@ -803,13 +914,16 @@ export class RedeemScholarshipService {
       // Presente por oferta e o `trial` antigo usam os mesmos e-mails (curso, prazo e Mural
       // chegam prontos nas variáveis).
       const giftTemplates = offerPolicy || redemption.muralVisitorPolicy === 'trial'
-      const validade = expiresAt ? formatValidade(expiresAt) : ''
+      // O e-mail mostra o prazo DIVULGADO (os dias a mais chegam de surpresa, pelo members).
+      const shownDays = this.shownDaysOf(redemption)
+      const shownExpiresAt = this.shownExpiresAtOf(redemption)
+      const validade = shownExpiresAt ? formatValidade(shownExpiresAt) : ''
       // O Messaging não tem condicional: curso, prazo e a frase do Mural vão prontos.
       const giftVariables = {
         curso: context.course?.title ?? UNKNOWN_COURSE_TITLE,
         prazo:
-          expiresAt && redemption.accessDurationDays !== null
-            ? `por ${giftDurationLabel(redemption.accessDurationDays)}, até ${validade} (horário de Brasília)`
+          shownExpiresAt && shownDays !== null
+            ? `por ${giftDurationLabel(shownDays)}, até ${validade} (horário de Brasília)`
             : 'sem prazo para terminar',
         mural: giftMuralText({
           audience: redemption.audience,
@@ -1010,4 +1124,11 @@ function formatValidade(date: Date): string {
     dateStyle: 'long',
     timeStyle: 'short',
   })
+}
+
+/** O prazo divulgado da oferta, só quando é menor que o real (o que o resgate grava). */
+function shownAdvertised(offer: GiftOffer): number | null {
+  const real = giftAccessDays(offer)
+  const advertised = offer.advertisedAccessDays
+  return real !== null && advertised !== null && advertised < real ? advertised : null
 }

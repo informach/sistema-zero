@@ -8,12 +8,22 @@
 // presente do fim do guia é surpresa: nada aqui o revela.
 import '../../styles/curso-pais.css'
 import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
-import { DEPOIMENTOS_DE_PAIS, CURSO_PAIS_VILAO as P } from '../../content/curso-pais-vilao'
+import { DEPOIMENTOS_DE_PAIS, type DepoimentoDePais } from '../../content/curso-pais-vilao'
 import type { EstadoPresente } from '../../content/presente'
+import type { GuiaPaisCopy } from '../../funnels/vilao-em-aliado/oferta'
 import BolsaResgate from '../../islands/BolsaResgate'
 import OfferImage from '../funnel/oferta/OfferImage.astro'
 
 interface Props {
+  /** A copy da página: a de venda ou a do guia de presente (`funnels/vilao-em-aliado/oferta`). */
+  copy: GuiaPaisCopy
+  /** O selo do topo no lugar do padrão (no modo presente, quem dá o presente). */
+  selo?: string
+  /**
+   * Página da oferta (25/11/2026): o bloco de compra vem do slot `compra` (preço e botão, ou o
+   * resgate no modo presente), no lugar do formulário do topo.
+   */
+  compra?: boolean
   /** Dados do formulário quando a campanha entrega este curso; ausente = sem cadastro. */
   resgate?: {
     code: string
@@ -28,14 +38,25 @@ interface Props {
   estado?: EstadoPresente
   /** Campanha pausada ou encerrada: quem começou o cadastro pode concluir. */
   podeRetomar?: boolean
+  /** Os depoimentos do curso (padrão: os do guia). A seção só aparece com ao menos um. */
+  depoimentos?: readonly DepoimentoDePais[]
 }
-const { resgate, ready, estado, podeRetomar = false } = Astro.props
+const {
+  copy: P,
+  selo,
+  compra = false,
+  resgate,
+  ready,
+  estado,
+  podeRetomar = false,
+  depoimentos = DEPOIMENTOS_DE_PAIS,
+} = Astro.props
 const formulario = resgate && ({ ...resgate, audience: 'kids', variante: 'guia' } as const)
 const check = '<path d="M20 6 9 17l-5-5"></path>'
 const seta = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>'
 const presente =
   '<rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M12 8v13"></path><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>'
-const ICONES: Record<(typeof P.oQueMuda.itens)[number]['icone'], string> = {
+const ICONES: Record<string, string> = {
   conversa: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>',
   recomecar:
     '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path>',
@@ -48,7 +69,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
 <section class="c9-sec c9-sec--creme c9-heroi" aria-labelledby="cpv-titulo">
   <div class="c9-wrap c9-heroi__grade">
     <div class="c9-heroi__texto">
-      <span class="c9-selo pk-origem">{P.hero.selo}</span>
+      <span class="c9-selo pk-origem">{selo ?? P.hero.selo}</span>
       <h1 id="cpv-titulo" class="c9-h1">{P.hero.titulo.antes}<span class="c9-h1__destaque">{P.hero.titulo.destaque}</span>{P.hero.titulo.depois}</h1>
       <p class="c9-heroi__lead">{P.hero.texto.antes}<strong>{P.hero.texto.nome}</strong>{P.hero.texto.depois}</p>
       <ul class="c9-checks">
@@ -64,7 +85,17 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
       <span class="c9-heroi__requisitos">{P.hero.requisitos}</span>
     </div>
     <div id="resgatar" class="pk-form cpv-heroi-form">
-      {ready && formulario ? (
+      {compra ? (
+        <>
+          {P.hero.surpresa && (
+            <span class="c9-chip c9-cor--rosa cpv-form-chip">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
+              {P.hero.surpresa}
+            </span>
+          )}
+          <slot name="compra" />
+        </>
+      ) : ready && formulario ? (
         <>
           <span class="c9-chip c9-cor--rosa cpv-form-chip">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
@@ -136,7 +167,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
   </div>
 </section>
 
-{DEPOIMENTOS_DE_PAIS.length > 0 && (
+{depoimentos.length > 0 && (
   <section id="depoimentos" class="c9-sec c9-sec--creme" aria-labelledby="cpv-depoimentos">
     <div class="c9-wrap c9-pilha c9-gap-26">
       <div class="c9-cabeca">
@@ -144,7 +175,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
         <h2 id="cpv-depoimentos" class="c9-h2">{P.depoimentos.titulo}</h2>
       </div>
       <div class="c9-grade c9-min-300 c9-grade--20">
-        {DEPOIMENTOS_DE_PAIS.map((depoimento) => (
+        {depoimentos.map((depoimento) => (
           <figure class="cpv-citacao">
             <blockquote>{depoimento.texto}</blockquote>
             <figcaption>{depoimento.autor}</figcaption>
@@ -169,7 +200,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
   </div>
 </section>
 
-{ready && (
+{(ready || compra) && (
   <section class="c9-fim" aria-labelledby="cpv-fim">
     <div class="c9-wrap c9-fim__grade">
       <div class="c9-pilha c9-gap-14 c9-b520">

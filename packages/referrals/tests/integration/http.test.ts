@@ -717,6 +717,7 @@ describe('borda HTTP do referrals', () => {
         // Código de embaixador: a oferta padrão do público.
         gift: {
           offerId: KIDS_GIFT_OFFER.offerId,
+          offerSlug: KIDS_GIFT_OFFER.offerSlug,
           offerTitle: KIDS_GIFT_OFFER.name,
           courseSlug: 'cade-todo-mundo',
           courseTitle: 'Cadê Todo Mundo?',

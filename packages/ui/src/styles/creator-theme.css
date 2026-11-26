@@ -1891,8 +1891,15 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     1.5rem
   );
 }
+/* A barra de abas entra pela MESMA medida do rodapé (`--sz-lesson-tabs-height`, que a barra publica
+   e que a moldura sem abas declara 0): com o `3.5rem` cravado, a barra da chamada da sala adulta
+   (sem abas) ficava solta 56px acima do rodapé. */
 .kids-aula .sz-live-controls {
-  bottom: calc(var(--sz-lesson-nav-height, 0px) + 3.5rem + env(safe-area-inset-bottom) + 0.5rem);
+  bottom: calc(
+    var(--sz-lesson-nav-height, 0px) +
+    var(--sz-lesson-tabs-height, calc(3.5rem + env(safe-area-inset-bottom))) +
+    0.5rem
+  );
 }
 @media (min-width: 768px) {
   .kids-aula {

@@ -496,6 +496,7 @@ export function createApplication(env: Env): Application {
     getAdminPayment,
     listSubscriptions,
     getAdminSubscription,
+    paidOffers: paymentsMyRead,
     getPaymentsStats,
     getDailyPaymentsStats,
     getSubscriptionStats,
