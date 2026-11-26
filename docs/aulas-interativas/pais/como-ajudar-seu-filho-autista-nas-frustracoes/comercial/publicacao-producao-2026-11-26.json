@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T13:19:12.266Z",
+  "updatedAt": "2026-11-26T15:25:33.280Z",
   "environment": "production",
   "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
   "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
@@ -8,22 +8,26 @@
   "approvedCommercialSource": "fa103eb324fe9ff62b097d342d7436a195229463",
   "firstPullRequest": {
     "headRefOid": "fa103eb324fe9ff62b097d342d7436a195229463",
-    "mergeCommit": null,
-    "state": "OPEN",
+    "mergeCommit": {
+      "oid": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5"
+    },
+    "state": "MERGED",
     "url": "https://github.com/informach/sistema-zero/pull/290"
   },
   "secondPullRequest": {
     "headRefOid": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
-    "mergeCommit": null,
-    "state": "OPEN",
+    "mergeCommit": {
+      "oid": "027f895b8a67300a4bae28f86423953893a1a289"
+    },
+    "state": "MERGED",
     "url": "https://github.com/informach/sistema-zero/pull/291"
   },
   "runs": [
     {
       "id": 45824448955,
-      "conclusion": "",
+      "conclusion": "success",
       "headSha": "fa103eb324fe9ff62b097d342d7436a195229463",
-      "status": "in_progress",
+      "status": "completed",
       "url": "https://github.com/informach/sistema-zero/actions/runs/45824448955"
     },
     {
@@ -35,9 +39,9 @@
     },
     {
       "id": 45823780172,
-      "conclusion": "",
+      "conclusion": "success",
       "headSha": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
-      "status": "in_progress",
+      "status": "completed",
       "url": "https://github.com/informach/sistema-zero/actions/runs/45823780172"
     },
     {
@@ -139,44 +143,316 @@
     "stage": "first",
     "pr": 290,
     "head": "fa103eb324fe9ff62b097d342d7436a195229463",
-    "ci": "in_progress",
+    "ci": "completed",
     "plan": "success",
     "services": "members,auth,catalog,payments,messaging,referrals,api-gateway,admin,community,community-kids,funnel",
-    "state": "WAITING_CI",
-    "startedAt": "2026-11-26T13:06:31.362Z",
+    "state": "OFFICIAL_DEPLOY_PASSED",
+    "startedAt": "2026-11-26T14:00:49.164Z",
     "events": [
       {
         "state": "WAITING_CI",
-        "at": "2026-11-26T13:06:34.592Z",
-        "ci": "in_progress",
-        "passed": 8,
+        "at": "2026-11-26T14:00:52.497Z",
+        "ci": "completed",
+        "passed": 13,
         "plan": "success"
       },
       {
-        "state": "WAITING_CI",
-        "at": "2026-11-26T13:13:50.392Z",
-        "ci": "in_progress",
-        "passed": 9,
-        "plan": "success"
+        "state": "CI_AND_PLAN_PASSED",
+        "at": "2026-11-26T14:00:52.501Z"
+      },
+      {
+        "state": "MERGED_EXACT_TREE",
+        "at": "2026-11-26T14:00:55.764Z",
+        "mergeSha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+        "tree": "79019c1fbea5152697059f88c5bf024a0446f439"
+      },
+      {
+        "state": "DISPATCHING_OFFICIAL_DEPLOY",
+        "at": "2026-11-26T14:00:58.258Z",
+        "dispatchAt": "2026-11-26T14:00:58.258Z"
+      },
+      {
+        "state": "DISPATCH_ACKNOWLEDGED",
+        "at": "2026-11-26T14:01:00.604Z"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-26T14:01:01.918Z",
+        "runId": 45834759877,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45834759877"
+      },
+      {
+        "state": "FAILED_REQUIRES_INSPECTION",
+        "at": "2026-11-26T14:01:02.482Z",
+        "failure": "Command failed: gh run view 45834759877 --json status,conclusion,headSha\nfailed to get run: HTTP 404: Not Found (https://api.github.com/repos/informach/sistema-zero/actions/runs/45834759877?exclude_pull_requests=true)\n"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-26T14:02:04.448Z",
+        "monitoringResumed": true,
+        "repeatedDispatch": false
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "at": "2026-11-26T14:25:39.879Z",
+        "completedAt": "2026-11-26T14:25:39.879Z"
       }
     ],
-    "passed": 9
+    "passed": 13,
+    "mergeSha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+    "tree": "79019c1fbea5152697059f88c5bf024a0446f439",
+    "dispatchAt": "2026-11-26T14:00:58.258Z",
+    "runId": 45834759877,
+    "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45834759877",
+    "monitoringResumed": true,
+    "repeatedDispatch": false,
+    "completedAt": "2026-11-26T14:25:39.879Z",
+    "officialResult": {
+      "state": "PRODUCTION_WAVE_PASSED",
+      "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+      "publishedVersion": 4,
+      "qualifiedSource": {
+        "kind": "production-promoted-source",
+        "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+        "approvedHead": "fa103eb324fe9ff62b097d342d7436a195229463",
+        "tree": "79019c1fbea5152697059f88c5bf024a0446f439",
+        "ci": {
+          "run": 45824448955,
+          "attempt": 1,
+          "passedJobs": 9
+        },
+        "planArtifact": {
+          "id": 15118698772,
+          "run": 45824448947
+        }
+      },
+      "deployments": [
+        {
+          "name": "members",
+          "id": "8a2f41c2-ef55-4d39-a3a9-d053f04299cc"
+        },
+        {
+          "name": "auth",
+          "id": "b0f79c16-6eb8-40aa-ac89-8f02e9e24300"
+        },
+        {
+          "name": "catalog",
+          "id": "aacbde86-7d24-422b-865d-bc38d9934918"
+        },
+        {
+          "name": "payments",
+          "id": "e9f980a1-6e35-406b-8825-da431b4eb985"
+        },
+        {
+          "name": "referrals",
+          "id": "916b4a7a-4f1d-42a9-8acd-506d4d5963e2"
+        },
+        {
+          "name": "messaging",
+          "id": "7d7e9a76-6fdc-4e27-bffc-fa3f7783e138"
+        },
+        {
+          "name": "api-gateway",
+          "id": "17604ef0-bf57-460e-83be-8f8df2a480f5"
+        },
+        {
+          "name": "admin",
+          "id": "f09c09ba-a33d-4702-a77d-2716f5699ff6"
+        },
+        {
+          "name": "community",
+          "id": "48bbbf42-7b96-47b1-b23e-b479ce75b2cb"
+        },
+        {
+          "name": "community-kids",
+          "id": "011e9129-26f5-4d49-aefa-2c5c1e30e093"
+        },
+        {
+          "name": "funnel",
+          "id": "150c3927-a91e-4716-bc52-b2335daa7368"
+        }
+      ]
+    }
   },
   "normalSecond": {
     "stage": "second",
     "pr": 291,
     "head": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
-    "ci": 45823780172,
-    "plan": 45823779952,
-    "services": "members,auth,admin,community,community-kids",
-    "state": "WAITING_FIRST_OFFICIAL_DEPLOY",
-    "startedAt": "2026-11-26T13:08:02.562Z",
+    "ci": "completed",
+    "plan": "success",
+    "services": "members,auth",
+    "state": "FAILED_REQUIRES_INSPECTION",
+    "startedAt": "2026-11-26T14:02:22.747Z",
     "events": [
       {
         "state": "WAITING_FIRST_OFFICIAL_DEPLOY",
-        "at": "2026-11-26T13:08:02.563Z"
+        "at": "2026-11-26T14:02:22.748Z"
+      },
+      {
+        "state": "WAITING_CI",
+        "at": "2026-11-26T14:25:58.356Z",
+        "ci": "completed",
+        "passed": 13,
+        "plan": "success"
+      },
+      {
+        "state": "CI_AND_PLAN_PASSED",
+        "at": "2026-11-26T14:25:58.358Z"
+      },
+      {
+        "state": "MERGED_EXACT_TREE",
+        "at": "2026-11-26T14:26:08.512Z",
+        "mergeSha": "027f895b8a67300a4bae28f86423953893a1a289",
+        "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359"
+      },
+      {
+        "state": "DISPATCHING_OFFICIAL_DEPLOY",
+        "at": "2026-11-26T14:26:09.886Z",
+        "dispatchAt": "2026-11-26T14:26:09.886Z"
+      },
+      {
+        "state": "DISPATCH_ACKNOWLEDGED",
+        "at": "2026-11-26T14:26:12.077Z"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-26T14:26:44.808Z",
+        "runId": 45838983875,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45838983875"
+      },
+      {
+        "state": "FAILED_REQUIRES_INSPECTION",
+        "at": "2026-11-26T14:43:47.669Z",
+        "failure": "Deploy oficial terminou failure"
+      },
+      {
+        "state": "DISPATCHING_OFFICIAL_COMPLEMENT",
+        "at": "2026-11-26T14:50:34.139Z",
+        "dispatchAt": "2026-11-26T14:50:34.138Z",
+        "complementReason": "Todos os cinco deployments originais foram reconferidos sem mutação; repetir a onda canônica pelo workflow oficial para concluir o registro operacional."
+      },
+      {
+        "state": "DISPATCH_ACKNOWLEDGED",
+        "at": "2026-11-26T14:50:36.192Z"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-26T14:50:37.823Z",
+        "runId": 45843053362,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45843053362"
+      },
+      {
+        "state": "FAILED_REQUIRES_INSPECTION",
+        "at": "2026-11-26T14:52:13.490Z",
+        "failure": "Deploy oficial terminou failure"
       }
-    ]
+    ],
+    "passed": 13,
+    "mergeSha": "027f895b8a67300a4bae28f86423953893a1a289",
+    "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359",
+    "dispatchAt": "2026-11-26T14:50:34.138Z",
+    "initialAttempt": {
+      "runId": 45838983875,
+      "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45838983875",
+      "services": "members,auth,admin,community,community-kids",
+      "workflowConclusion": "failure",
+      "failure": "Deploy oficial terminou failure",
+      "readOnlyVerification": {
+        "state": "READ_ONLY_RECOVERY_VERIFIED",
+        "verifiedAt": "2026-11-26T14:49:03.241Z",
+        "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+        "source": {
+          "kind": "production-promoted-source",
+          "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+          "approvedHead": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
+          "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359",
+          "ci": {
+            "run": 45823780172,
+            "attempt": 1,
+            "passedJobs": 9
+          },
+          "planArtifact": {
+            "id": 15118772697,
+            "run": 45823779952
+          }
+        },
+        "canonical": {
+          "status": "published",
+          "version": 4
+        },
+        "deployments": [
+          {
+            "name": "members",
+            "id": "3e84b05b-bebd-4230-bb91-08e5d78ed31d",
+            "status": "SUCCESS",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "previousId": "8a2f41c2-ef55-4d39-a3a9-d053f04299cc",
+            "previousStatus": "REMOVED"
+          },
+          {
+            "name": "auth",
+            "id": "5be4e269-a6d1-489e-a27b-3f5740d20a25",
+            "status": "SUCCESS",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "previousId": "b0f79c16-6eb8-40aa-ac89-8f02e9e24300",
+            "previousStatus": "REMOVED"
+          },
+          {
+            "name": "admin",
+            "id": "784df78d-e90d-4866-bd4b-093e081f0637",
+            "status": "SUCCESS",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "previousId": "f09c09ba-a33d-4702-a77d-2716f5699ff6",
+            "previousStatus": "REMOVED"
+          },
+          {
+            "name": "community",
+            "id": "47d826e8-4b90-44d0-9e90-1b0e606da8ac",
+            "status": "SUCCESS",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "previousId": "48bbbf42-7b96-47b1-b23e-b479ce75b2cb",
+            "previousStatus": "REMOVED"
+          },
+          {
+            "name": "community-kids",
+            "id": "70d48906-3440-4185-9765-b25d84b3348f",
+            "status": "SUCCESS",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "previousId": "011e9129-26f5-4d49-aefa-2c5c1e30e093",
+            "previousStatus": "REMOVED"
+          }
+        ],
+        "configurationChanges": 0,
+        "nativeTriggersDisabled": true,
+        "newDeploymentsSent": 0,
+        "events": [
+          {
+            "stage": "members-first-poll",
+            "deployment": "3e84b05b-bebd-4230-bb91-08e5d78ed31d"
+          },
+          {
+            "stage": "auth-first-poll",
+            "deployment": "5be4e269-a6d1-489e-a27b-3f5740d20a25"
+          },
+          {
+            "stage": "admin-first-poll",
+            "deployment": "784df78d-e90d-4866-bd4b-093e081f0637"
+          },
+          {
+            "stage": "community-first-poll",
+            "deployment": "47d826e8-4b90-44d0-9e90-1b0e606da8ac"
+          },
+          {
+            "stage": "community-kids-first-poll",
+            "deployment": "70d48906-3440-4185-9765-b25d84b3348f"
+          }
+        ]
+      }
+    },
+    "complementReason": "Todos os cinco deployments originais foram reconferidos sem mutação; repetir a onda canônica pelo workflow oficial para concluir o registro operacional.",
+    "runId": 45843053362,
+    "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45843053362",
+    "failure": "Deploy oficial terminou failure"
   },
   "ambassador": {
     "name": "Vivianne Lima",
@@ -248,7 +524,7 @@
   "checks": {
     "public": {
       "target": "production",
-      "verifiedAt": "2026-11-26T12:56:18.938Z",
+      "verifiedAt": "2026-11-26T14:27:40.582Z",
       "results": [
         {
           "path": "/kids/comunidade-dos-criadores/oferta",
@@ -327,7 +603,7 @@
       ]
     },
     "legacyLinks": {
-      "verifiedAt": "2026-11-26T12:54:14.137Z",
+      "verifiedAt": "2026-11-26T14:27:38.416Z",
       "results": [
         {
           "path": "/kids/vilao-em-aliado?utm_source=deploy-proof",
@@ -379,7 +655,7 @@
     },
     "miniCheckout": {
       "target": "production",
-      "verifiedAt": "2026-11-26T12:56:34.978Z",
+      "verifiedAt": "2026-11-26T14:48:34.012Z",
       "closedParentsCourse": true,
       "miniCheckoutOpened": true,
       "priceCents": 6700,
@@ -399,7 +675,77 @@
       "staffStatus": 403
     },
     "paymentSubmitted": false,
-    "testMessagesSent": false
+    "testMessagesSent": false,
+    "referralsAfterOfficialDeploy": {
+      "verifiedAt": "2026-11-26T14:24:28.298Z",
+      "paymentsHistoryEndpoint": true,
+      "catalogOfferResolved": true,
+      "counts": [
+        {
+          "acquisitions": 24,
+          "ambassador_offers": 11,
+          "conversions": 0
+        }
+      ],
+      "originReport": {
+        "status": 200,
+        "totals": {
+          "newPeople": 23,
+          "gifts": 23,
+          "purchases": 0,
+          "subscriptions": 0,
+          "revenueCents": "0",
+          "referralShare": 0
+        },
+        "truncated": false,
+        "staffDenied": true
+      },
+      "policy": {
+        "monthlyCents": 3000,
+        "annualCents": 8000,
+        "personalWindowDays": 45,
+        "matureHours": 180,
+        "legacyBefore": "2026-11-26T12:28:15.681Z"
+      },
+      "offer": {
+        "offerId": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+        "audience": "kids",
+        "productSku": "como-ajudar-seu-filho-autista-nas-frustracoes"
+      }
+    },
+    "avatarAfterSecondDeploy": {
+      "verifiedAt": "2026-11-26T14:32:28.218Z",
+      "target": "production",
+      "subject": "synthetic-customer",
+      "readOnly": true,
+      "avatarStatus": 200,
+      "photoFramingContract": true,
+      "framing": null,
+      "syntheticAccountRemainsBlocked": true
+    },
+    "checkoutArtwork": {
+      "verifiedAt": "2026-11-26T13:11:23.461Z",
+      "results": [
+        {
+          "width": 1440,
+          "artworkLoaded": true,
+          "noHorizontalOverflow": true
+        },
+        {
+          "width": 390,
+          "artworkLoaded": true,
+          "noHorizontalOverflow": true
+        }
+      ],
+      "noPaymentSubmitted": true
+    },
+    "stagingVivianneCatalog": {
+      "verifiedAt": "2026-11-26T13:39:09.211Z",
+      "paidOffers": 1,
+      "priceCents": 6700,
+      "giftOffers": 0
+    }
   },
   "artwork": {
     "stagingLocalCommit": "8ce00dedb",
@@ -413,5 +759,69 @@
     "Histórico importado depende dos registros de resgates/conversões existentes, sem inventar origem de vendas antigas.",
     "Checkout de produção conferido sem enviar pagamento; emissão e entrega por pagamento cobertas nas suítes.",
     "A rota legada de boleto preserva o payload anterior para idempotência; novos checkouts usam Pix/cartão."
-  ]
+  ],
+  "controllerFix": {
+    "pullRequest": 292,
+    "url": "https://github.com/informach/sistema-zero/pull/292",
+    "head": "49c60358f44f084bfeeeb2a249466691f489e706",
+    "stagingLocalCommit": "da3a17030",
+    "ciRun": 45848643226,
+    "planRun": 45848643481,
+    "files": 4,
+    "localChecks": {
+      "baselineFailures": 5,
+      "operationalTestsPassed": 367,
+      "operationalTestsFailed": 0
+    },
+    "cause": {
+      "provider": "Railway API",
+      "httpStatus": 429,
+      "remaining": 0,
+      "retryAfterSeconds": 60,
+      "phase": "native-trigger-check",
+      "defect": "O prazo não era encaminhado ao transporte de consultas com espera limitada."
+    },
+    "realDiagnostics": {
+      "before": {
+        "run": 45844349028,
+        "result": "429 no primeiro read, nenhuma publicação"
+      },
+      "after": {
+        "run": 45846185800,
+        "result": "todas as leituras e a barreira canônica aprovadas, nenhuma publicação"
+      }
+    },
+    "publication": {
+      "stage": "third",
+      "pr": 292,
+      "head": "49c60358f44f084bfeeeb2a249466691f489e706",
+      "ci": "in_progress",
+      "plan": "success",
+      "services": "funnel",
+      "state": "WAITING_CI",
+      "startedAt": "2026-11-26T15:24:30.485Z",
+      "events": [
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:24:33.656Z",
+          "ci": "in_progress",
+          "passed": 0,
+          "plan": "in_progress"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:25:06.873Z",
+          "ci": "in_progress",
+          "passed": 0,
+          "plan": "success"
+        }
+      ],
+      "passed": 0
+    }
+  },
+  "completion": {
+    "featuresPublishedAndVerified": true,
+    "secondDeploymentsReadOnlyVerified": true,
+    "operationalProcessCompleted": false
+  }
 }

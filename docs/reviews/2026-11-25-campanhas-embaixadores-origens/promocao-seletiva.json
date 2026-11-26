@@ -631,12 +631,71 @@
       }
     }
   },
-  "updatedAt": "2026-11-26T13:19:12.266Z",
+  "updatedAt": "2026-11-26T15:25:33.280Z",
   "candidateBaseMustBeAncestor": true,
   "requestedAvatarCommit": "6153290789b4a7dee50d58a246d20324c2b26cb1",
   "secondRequestedCommits": [
     "7a630ea527ce1c2366c11d813e09bc280b5b66df",
     "6e0858525cb8c09140c608c291357e6286f0b15e"
   ],
-  "publicationReceipt": "publicacao-producao-2026-11-26.json"
+  "publicationReceipt": "publicacao-producao-2026-11-26.json",
+  "controllerFix": {
+    "pullRequest": 292,
+    "url": "https://github.com/informach/sistema-zero/pull/292",
+    "head": "49c60358f44f084bfeeeb2a249466691f489e706",
+    "stagingLocalCommit": "da3a17030",
+    "ciRun": 45848643226,
+    "planRun": 45848643481,
+    "files": 4,
+    "localChecks": {
+      "baselineFailures": 5,
+      "operationalTestsPassed": 367,
+      "operationalTestsFailed": 0
+    },
+    "cause": {
+      "provider": "Railway API",
+      "httpStatus": 429,
+      "remaining": 0,
+      "retryAfterSeconds": 60,
+      "phase": "native-trigger-check",
+      "defect": "O prazo não era encaminhado ao transporte de consultas com espera limitada."
+    },
+    "realDiagnostics": {
+      "before": {
+        "run": 45844349028,
+        "result": "429 no primeiro read, nenhuma publicação"
+      },
+      "after": {
+        "run": 45846185800,
+        "result": "todas as leituras e a barreira canônica aprovadas, nenhuma publicação"
+      }
+    },
+    "publication": {
+      "stage": "third",
+      "pr": 292,
+      "head": "49c60358f44f084bfeeeb2a249466691f489e706",
+      "ci": "in_progress",
+      "plan": "success",
+      "services": "funnel",
+      "state": "WAITING_CI",
+      "startedAt": "2026-11-26T15:24:30.485Z",
+      "events": [
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:24:33.656Z",
+          "ci": "in_progress",
+          "passed": 0,
+          "plan": "in_progress"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:25:06.873Z",
+          "ci": "in_progress",
+          "passed": 0,
+          "plan": "success"
+        }
+      ],
+      "passed": 0
+    }
+  }
 }

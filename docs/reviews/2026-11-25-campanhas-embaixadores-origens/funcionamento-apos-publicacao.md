@@ -73,7 +73,7 @@ O link pessoal escolhido para a Vivianne é **https://sistemazero.com.br/i/vivia
 1. Divulgar **https://sistemazero.com.br/i/vivianne-e8ez/frustracoes**.
 2. A pessoa vê a apresentação e a oferta anual de R$ 67. O checkout oferece as formas de pagamento e o cupom permitidos pela oferta.
 3. A identificação da Vivianne acompanha a navegação por esse link. A origem válida mais recente da compra prevalece conforme a regra de atribuição.
-4. Acompanhar em **Admin → Origem das vendas**, escolhendo o curso e o período para conferir origens e o ranking de embaixadores, ou abrir os resultados da Vivianne no painel de Campanhas. URL do relatório: https://admin.sistemazero.com.br/admin/origem-das-vendas.
+4. Acompanhar em **Admin → Origem das vendas**, selecionando o público Kids, o curso e o período para conferir origens e o ranking de embaixadores, ou abrir os resultados da Vivianne no painel de Campanhas. URL do relatório: https://admin.sistemazero.com.br/admin/origem-das-vendas.
 
 O link pessoal não tem data final. A responsável decidiu não criar campanha neste momento. Se futuramente criar uma campanha, ela terá calendário, oferta e eventual acordo próprios. O curso avulso registra a origem da venda; o bônus automático existente é da primeira assinatura elegível da Comunidade, conforme a seção Bônus.
 
@@ -112,7 +112,7 @@ A conferência focada passou com 37 testes do cliente, 15 do servidor, os tipos 
 
 ## Segunda leva: quarto e enquadramento da Cabine
 
-Os commits solicitados `7a630ea52` e `6e0858525` estão isolados na segunda promoção, que aguarda a conclusão da primeira publicação oficial. O recibo informa o estado efetivo de CI, merge e deploy dessa leva.
+Os commits solicitados `7a630ea52` e `6e0858525` já foram publicados e os cinco serviços foram reconferidos em produção no SHA esperado, com as versões anteriores retiradas. A correção da conferência do controlador está em qualificação no PR 292; os detalhes e limites estão no recibo.
 
 - O quarto Kids reserva a cena à esquerda e as abas Decorar e No quarto à direita. Os ajustes da peça ficam no painel, com uma foto pequena do avatar.
 - O zoom responde aos botões, à rodinha e à pinça. É possível voltar ao enquadramento inicial; as larguras menores mantêm a cena e os controles dentro da tela.
@@ -139,6 +139,13 @@ Nos fluxos de compra atuais, a origem segue Pix, cartão e assinatura. A rota le
 - A data de corte legado de produção é **2026-11-26T12:28:15.681Z**. Ela permanece fixa em novas publicações.
 
 
+## Limite da API durante a conferência final
+
+Os cinco serviços da segunda leva foram publicados no SHA `027f895b8a67300a4bae28f86423953893a1a289`, ficaram saudáveis e tiveram os predecessores retirados. O workflow terminou com falha ao atingir HTTP 429 na conferência final. Uma execução complementar parou antes de criar novos deployments. A reconferência somente de leitura confirmou os cinco serviços, os triggers desligados, a configuração sem alterações e a versão canônica 4; o checkout real também passou.
+
+O diagnóstico com a credencial do GitHub confirmou cota restante zero e `Retry-After: 60`. Algumas consultas não encaminhavam o prazo à camada de espera, encerrando imediatamente em vez de respeitar o limite. A correção do [PR 292](https://github.com/informach/sistema-zero/pull/292) passa o prazo às leituras e identifica a fase segura da falha; as mutações continuam sem repetição automática. Cinco regressões falharam antes e passaram depois; a suíte operacional completa passou com 367 testes. O diagnóstico real com a correção também passou, sem criar deployments. O recibo informa o estado da qualificação e publicação dessa correção.
+
+
 ## Recibo e integração pelo GitHub
 
-[Recibo da publicação](publicacao-producao-2026-11-26.json). Primeira promoção: [PR 290](https://github.com/informach/sistema-zero/pull/290), open. Segunda promoção: [PR 291](https://github.com/informach/sistema-zero/pull/291), open. O recibo distingue a publicação manual já concluída da integração normal e da segunda leva.
+[Recibo da publicação](publicacao-producao-2026-11-26.json). Primeira promoção: [PR 290](https://github.com/informach/sistema-zero/pull/290), merged. Segunda promoção: [PR 291](https://github.com/informach/sistema-zero/pull/291), merged. O recibo distingue a publicação manual já concluída da integração normal e da segunda leva.
