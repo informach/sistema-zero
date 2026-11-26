@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-11-26T20:10:11.689Z",
+  "updatedAt": "2026-11-26T21:28:54.579Z",
   "productionPublished": true,
-  "normalRegularizationComplete": false,
+  "normalRegularizationComplete": true,
   "source": {
     "reviewed": true,
     "pr": 295,
@@ -34,7 +34,7 @@
     "ciRun": 45886332315,
     "planRun": 45886332411,
     "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
-    "state": "WAITING_MANUAL_AND_CI",
+    "state": "OFFICIAL_DEPLOY_PASSED",
     "startedAt": "2026-11-26T19:55:57.775Z",
     "events": [
       {
@@ -90,13 +90,76 @@
         "passed": 10,
         "plan": "success",
         "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:13:08.710Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 11,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:17:00.216Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 12,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T21:00:08.589Z",
+        "worker": "PASS",
+        "ci": "completed",
+        "passed": 13,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "CI_PLAN_AND_MANUAL_PASSED",
+        "at": "2026-11-26T21:00:09.382Z"
+      },
+      {
+        "state": "MERGED_EXACT_TREE",
+        "at": "2026-11-26T21:00:16.734Z",
+        "mergeSha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+        "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4"
+      },
+      {
+        "state": "DISPATCHING_OFFICIAL_DEPLOY",
+        "at": "2026-11-26T21:00:18.166Z",
+        "dispatchAt": "2026-11-26T21:00:18.166Z"
+      },
+      {
+        "state": "DISPATCH_ACKNOWLEDGED",
+        "at": "2026-11-26T21:00:20.159Z"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-26T21:00:21.594Z",
+        "runId": 45895045759,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45895045759"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "at": "2026-11-26T21:28:11.709Z",
+        "completedAt": "2026-11-26T21:28:11.709Z"
       }
     ],
     "worker": "PASS",
-    "ci": "in_progress",
-    "passed": 10,
+    "ci": "completed",
+    "passed": 13,
     "plan": "success",
-    "manual": "PRODUCTION_WAVE_PASSED"
+    "manual": "PRODUCTION_WAVE_PASSED",
+    "mergeSha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+    "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+    "dispatchAt": "2026-11-26T21:00:18.166Z",
+    "runId": 45895045759,
+    "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45895045759",
+    "completedAt": "2026-11-26T21:28:11.709Z"
   },
   "originalNormal": {
     "pr": 295,
@@ -183,7 +246,242 @@
       "reason": "Promoção seletiva consolidada da árvore mais recente; impedir que publicações anteriores sobrescrevam os ajustes novos"
     }
   },
-  "official": null,
+  "official": {
+    "kind": "production-owned-release",
+    "source": {
+      "kind": "production-promoted-source",
+      "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+      "approvedHead": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+      "ci": {
+        "run": 45886332315,
+        "attempt": 1,
+        "passedJobs": 9
+      },
+      "planArtifact": {
+        "id": 15149038297,
+        "run": 45886332411
+      }
+    },
+    "state": "PRODUCTION_WAVE_PASSED",
+    "initialApplications": [],
+    "events": [
+      {
+        "stage": "preflight",
+        "at": "2026-11-26T21:01:30.992Z"
+      },
+      {
+        "stage": "members-deploy",
+        "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+        "at": "2026-11-26T21:01:32.782Z"
+      },
+      {
+        "stage": "members-active-refresh",
+        "at": "2026-11-26T21:01:32.938Z"
+      },
+      {
+        "stage": "members-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:01:33.781Z"
+      },
+      {
+        "stage": "members-deploy-ack",
+        "deployment": "ff716dfb-2e46-4266-a7ef-a4922e1e91a9",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:01:34.581Z"
+      },
+      {
+        "stage": "members-first-poll",
+        "deployment": "ff716dfb-2e46-4266-a7ef-a4922e1e91a9",
+        "at": "2026-11-26T21:01:34.582Z"
+      },
+      {
+        "stage": "members-migrate-initialize",
+        "deployment": "ff716dfb-2e46-4266-a7ef-a4922e1e91a9",
+        "at": "2026-11-26T21:03:56.949Z"
+      },
+      {
+        "stage": "auth-deploy-and-retire",
+        "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+        "at": "2026-11-26T21:03:59.526Z"
+      },
+      {
+        "stage": "auth-active-refresh",
+        "at": "2026-11-26T21:03:59.526Z"
+      },
+      {
+        "stage": "auth-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:04:00.593Z"
+      },
+      {
+        "stage": "auth-deploy-ack",
+        "deployment": "2ddc63d4-a357-46dc-aa9e-333110699087",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:04:01.326Z"
+      },
+      {
+        "stage": "auth-first-poll",
+        "deployment": "2ddc63d4-a357-46dc-aa9e-333110699087",
+        "at": "2026-11-26T21:04:01.327Z"
+      },
+      {
+        "stage": "BACKEND_BARRIER_PASSED",
+        "publishedVersion": 4,
+        "at": "2026-11-26T21:06:45.069Z"
+      },
+      {
+        "stage": "referrals-active-refresh",
+        "at": "2026-11-26T21:06:45.070Z"
+      },
+      {
+        "stage": "referrals-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:06:45.915Z"
+      },
+      {
+        "stage": "referrals-deploy-ack",
+        "deployment": "bb74e01f-e334-41b4-89ed-6666b4a0a0ef",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:06:47.104Z"
+      },
+      {
+        "stage": "referrals-first-poll",
+        "deployment": "bb74e01f-e334-41b4-89ed-6666b4a0a0ef",
+        "at": "2026-11-26T21:06:47.105Z"
+      },
+      {
+        "stage": "api-gateway-active-refresh",
+        "at": "2026-11-26T21:13:11.365Z"
+      },
+      {
+        "stage": "api-gateway-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:13:12.261Z"
+      },
+      {
+        "stage": "api-gateway-deploy-ack",
+        "deployment": "711282d5-dd1f-45fc-a22d-1ad15579b89c",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:13:13.098Z"
+      },
+      {
+        "stage": "admin-active-refresh",
+        "at": "2026-11-26T21:13:13.099Z"
+      },
+      {
+        "stage": "admin-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:13:13.740Z"
+      },
+      {
+        "stage": "admin-deploy-ack",
+        "deployment": "99a45b49-4bb4-4855-832f-7f319e539f88",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:13:14.821Z"
+      },
+      {
+        "stage": "community-active-refresh",
+        "at": "2026-11-26T21:13:14.822Z"
+      },
+      {
+        "stage": "community-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:13:15.543Z"
+      },
+      {
+        "stage": "community-deploy-ack",
+        "deployment": "6b404b1f-db84-46c4-bfc3-ce4e87ab948c",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:13:16.576Z"
+      },
+      {
+        "stage": "community-kids-active-refresh",
+        "at": "2026-11-26T21:13:16.577Z"
+      },
+      {
+        "stage": "community-kids-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:13:17.295Z"
+      },
+      {
+        "stage": "community-kids-deploy-ack",
+        "deployment": "6ea154f3-0c9a-4e9e-b3c2-b8caf633c01f",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:13:18.075Z"
+      },
+      {
+        "stage": "funnel-active-refresh",
+        "at": "2026-11-26T21:13:18.076Z"
+      },
+      {
+        "stage": "funnel-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-26T21:13:18.761Z"
+      },
+      {
+        "stage": "funnel-deploy-ack",
+        "deployment": "1b4a8e63-a49c-4c3f-8199-fb7b07fded67",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-26T21:13:19.601Z"
+      },
+      {
+        "stage": "api-gateway-first-poll",
+        "deployment": "711282d5-dd1f-45fc-a22d-1ad15579b89c",
+        "at": "2026-11-26T21:13:19.601Z"
+      },
+      {
+        "stage": "admin-first-poll",
+        "deployment": "99a45b49-4bb4-4855-832f-7f319e539f88",
+        "at": "2026-11-26T21:13:19.602Z"
+      },
+      {
+        "stage": "community-first-poll",
+        "deployment": "6b404b1f-db84-46c4-bfc3-ce4e87ab948c",
+        "at": "2026-11-26T21:13:19.602Z"
+      },
+      {
+        "stage": "community-kids-first-poll",
+        "deployment": "6ea154f3-0c9a-4e9e-b3c2-b8caf633c01f",
+        "at": "2026-11-26T21:13:19.603Z"
+      },
+      {
+        "stage": "funnel-first-poll",
+        "deployment": "1b4a8e63-a49c-4c3f-8199-fb7b07fded67",
+        "at": "2026-11-26T21:13:19.603Z"
+      }
+    ],
+    "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+    "target": "production",
+    "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+    "publishedVersion": 4,
+    "deployments": [
+      {
+        "name": "referrals",
+        "id": "bb74e01f-e334-41b4-89ed-6666b4a0a0ef"
+      },
+      {
+        "name": "api-gateway",
+        "id": "711282d5-dd1f-45fc-a22d-1ad15579b89c"
+      },
+      {
+        "name": "admin",
+        "id": "99a45b49-4bb4-4855-832f-7f319e539f88"
+      },
+      {
+        "name": "community",
+        "id": "6b404b1f-db84-46c4-bfc3-ce4e87ab948c"
+      },
+      {
+        "name": "community-kids",
+        "id": "6ea154f3-0c9a-4e9e-b3c2-b8caf633c01f"
+      },
+      {
+        "name": "funnel",
+        "id": "1b4a8e63-a49c-4c3f-8199-fb7b07fded67"
+      }
+    ]
+  },
   "catalog": {
     "offerId": "98049085-2891-4aa0-8fa4-28c61bf0b354",
     "offerSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
@@ -199,7 +497,7 @@
   },
   "verification": {
     "state": "PASS",
-    "verifiedAt": "2026-11-26T20:07:47.764Z",
+    "verifiedAt": "2026-11-26T21:28:44.872Z",
     "pages": [
       {
         "path": "/",

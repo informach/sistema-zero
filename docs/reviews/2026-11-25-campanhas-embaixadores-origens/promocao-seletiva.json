@@ -631,7 +631,7 @@
       }
     }
   },
-  "updatedAt": "2026-11-26T20:15:44.377Z",
+  "updatedAt": "2026-11-26T21:28:55.313Z",
   "candidateBaseMustBeAncestor": true,
   "requestedAvatarCommit": "6153290789b4a7dee50d58a246d20324c2b26cb1",
   "secondRequestedCommits": [
@@ -709,17 +709,70 @@
     "source": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
     "pullRequest": 295,
     "productionPublished": true,
-    "normalRegularizationComplete": false,
+    "normalRegularizationComplete": true,
     "receipt": "publicacao-workshop-2026-11-26.json"
   },
-  "currentProductionMain": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+  "currentProductionMain": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
   "consolidatedRelease": {
     "source": "fd8923232b6a73e925c176261664d5f652c0b891",
     "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
     "pullRequest": 296,
     "productionPublished": true,
-    "normalRegularizationComplete": false,
-    "official": null,
+    "normalRegularizationComplete": true,
+    "official": {
+      "state": "PRODUCTION_WAVE_PASSED",
+      "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+      "source": {
+        "kind": "production-promoted-source",
+        "sha": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+        "approvedHead": "fd8923232b6a73e925c176261664d5f652c0b891",
+        "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+        "ci": {
+          "run": 45886332315,
+          "attempt": 1,
+          "passedJobs": 9
+        },
+        "planArtifact": {
+          "id": 15149038297,
+          "run": 45886332411
+        }
+      },
+      "publishedVersion": 4,
+      "deployments": [
+        {
+          "name": "members",
+          "id": "ff716dfb-2e46-4266-a7ef-a4922e1e91a9"
+        },
+        {
+          "name": "auth",
+          "id": "2ddc63d4-a357-46dc-aa9e-333110699087"
+        },
+        {
+          "name": "referrals",
+          "id": "bb74e01f-e334-41b4-89ed-6666b4a0a0ef"
+        },
+        {
+          "name": "api-gateway",
+          "id": "711282d5-dd1f-45fc-a22d-1ad15579b89c"
+        },
+        {
+          "name": "admin",
+          "id": "99a45b49-4bb4-4855-832f-7f319e539f88"
+        },
+        {
+          "name": "community",
+          "id": "6b404b1f-db84-46c4-bfc3-ce4e87ab948c"
+        },
+        {
+          "name": "community-kids",
+          "id": "6ea154f3-0c9a-4e9e-b3c2-b8caf633c01f"
+        },
+        {
+          "name": "funnel",
+          "id": "1b4a8e63-a49c-4c3f-8199-fb7b07fded67"
+        }
+      ]
+    },
     "receipt": "publicacao-consolidada-2026-11-26.json"
   },
   "supersededPullRequests": [294, 295],
@@ -727,20 +780,192 @@
     "localIntegrated": true,
     "publicationOwnedByOtherSession": true,
     "lastObservation": {
-      "observedAt": "2026-11-26T20:12:25.908Z",
+      "observedAt": "2026-11-26T21:26:06.114Z",
+      "state": "READY",
+      "ci": {
+        "conclusion": "success",
+        "databaseId": 45886165574,
+        "headSha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+        "status": "completed"
+      },
       "observations": [
         {
           "name": "members",
-          "id": "e875d10c-1f23-4059-9a5a-d76f79a76c6d",
+          "id": "c266c26e-75d3-4045-9577-d10f71008c21",
           "status": "SUCCESS",
-          "sha": "4051c6691b9f1534cb90fdb185c195af55ae4950"
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "auth",
+          "id": "ac514f36-c3f5-4531-9cbe-9abb3df3620d",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "referrals",
+          "id": "e6a75624-b211-4f83-a464-c3f31d4d6768",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "api-gateway",
+          "id": "bccb6083-eab4-4d7c-9ecf-716d5270a8d3",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "admin",
+          "id": "a34d012f-5e8b-4397-968f-f8a00fc2f375",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "community",
+          "id": "17dc28c4-cede-4f61-b61d-0d87f9b3d073",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "community-kids",
+          "id": "ff947c9f-b747-4bda-83ae-f4a344601afa",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
+        },
+        {
+          "name": "funnel",
+          "id": "5514f0d8-e556-4622-a18a-ed87c72ab915",
+          "status": "SUCCESS",
+          "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "previousStatus": "REMOVED",
+          "compatible": true
         }
-      ],
-      "state": "WAITING_NEW_CODE"
+      ]
     },
-    "remoteBusinessRegistrationVerified": false,
-    "registration": null,
-    "pendingState": "WAITING_COMPATIBLE_STAGING",
+    "remoteBusinessRegistrationVerified": true,
+    "registration": {
+      "state": "PASS",
+      "startedAt": "2026-11-26T20:14:39.283Z",
+      "environmentId": "f634cff6-aafb-4804-8b69-172fad4e946e",
+      "codeDeploymentOwnedByOtherSession": true,
+      "ci": {
+        "conclusion": "success",
+        "databaseId": 45886165574,
+        "headSha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+        "status": "completed"
+      },
+      "completedAt": "2026-11-26T21:26:19.861Z",
+      "readiness": {
+        "observedAt": "2026-11-26T21:26:06.114Z",
+        "state": "READY",
+        "ci": {
+          "conclusion": "success",
+          "databaseId": 45886165574,
+          "headSha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+          "status": "completed"
+        },
+        "observations": [
+          {
+            "name": "members",
+            "id": "c266c26e-75d3-4045-9577-d10f71008c21",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "auth",
+            "id": "ac514f36-c3f5-4531-9cbe-9abb3df3620d",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "referrals",
+            "id": "e6a75624-b211-4f83-a464-c3f31d4d6768",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "api-gateway",
+            "id": "bccb6083-eab4-4d7c-9ecf-716d5270a8d3",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "admin",
+            "id": "a34d012f-5e8b-4397-968f-f8a00fc2f375",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "community",
+            "id": "17dc28c4-cede-4f61-b61d-0d87f9b3d073",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "community-kids",
+            "id": "ff947c9f-b747-4bda-83ae-f4a344601afa",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          },
+          {
+            "name": "funnel",
+            "id": "5514f0d8-e556-4622-a18a-ed87c72ab915",
+            "status": "SUCCESS",
+            "sha": "b95aa95d1eccee9c9acb6dd6dd959c2d20c70ca7",
+            "previousStatus": "REMOVED",
+            "compatible": true
+          }
+        ]
+      },
+      "benefit": {
+        "state": "COURSE_BENEFIT_CONVERTED_AND_VERIFIED",
+        "id": "89f47efb-069e-44dc-b3e7-5f8053b54051",
+        "code": "vilao-em-aliado-cade",
+        "originalRedemptionsPreserved": 11,
+        "archivedHistoryRows": 1
+      },
+      "manifest": {
+        "state": "GUIDE_BENEFIT_BLOCK_PUBLISHED",
+        "courseId": "780b2167-c74a-4f87-8dc7-305455b0230c",
+        "lessonId": "15b1dd95-c98c-40ab-b9ad-d078888af6a2",
+        "blockId": "12b2bc7f-6a5a-5933-ab43-5adad2fa2fd5"
+      },
+      "catalog": {
+        "id": "5447734f-d36a-4428-88bd-a4448dd3ebea",
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+        "months": 6,
+        "priceCents": 6700
+      },
+      "noCodeDeploymentPerformed": true
+    },
+    "pendingState": null,
     "originalCourseAssetsAndCorrectedVideoPreviouslyVerifiedInBothEnvironments": true
   }
 }

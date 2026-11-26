@@ -1,6 +1,6 @@
 # Levantamento da publicação — 26/11/2026
 
-Recursos publicados e conferidos em produção. A publicação manual está concluída e conferida. O CI completo, o merge protegido e a publicação oficial do PR 296 continuam em andamento. [Recibo consolidado](publicacao-consolidada-2026-11-26.json).
+Recursos publicados e conferidos em produção. O CI completo, o merge protegido e a publicação oficial do PR 296 terminaram. [Recibo consolidado](publicacao-consolidada-2026-11-26.json).
 
 ## Curso da Vivianne e link pessoal
 
@@ -56,9 +56,9 @@ A promoção foi seletiva. Os commits solicitados e os ajustes revisados de camp
 
 As três variáveis novas do serviço de indicações foram cadastradas. O benefício permanente não exige variável nova. A configuração de infraestrutura desta leva tem zero alterações, mantém os disparos nativos de produção desligados e a versão canônica 4. Os leitores e escritores compatíveis sobem antes da conversão administrativa dos dados.
 
-Os PRs 290, 291, 292 e 293 possuem seus recibos. O PR 293 concluiu a publicação oficial no run 45869619738, com CI aprovado. O benefício do guia e a atribuição dos links antigos de cupom estão publicados manualmente no commit 6c245bf73; a fonte ca7d5c6b2 difere somente no teste da última aula. O PR 294 foi substituído pelo PR 296, que reúne a fonte mais recente; o estado atual está no fechamento abaixo. O teste Windows expirou ao iniciar um processo auxiliar em 500 ms; passou localmente, e a repetição completa do CI está programada para manter as nove verificações na mesma tentativa. Falhas históricas de acompanhamento que tiveram recuperação somente leitura ficam preservadas na auditoria; nenhuma mutação foi repetida para obter um recibo verde.
+Os PRs 290, 291, 292 e 293 possuem seus recibos. O PR 293 concluiu a publicação oficial no run 45869619738, com CI aprovado. O benefício do guia e a atribuição dos links antigos de cupom estão publicados manualmente no commit 6c245bf73; a fonte ca7d5c6b2 difere somente no teste da última aula. O PR 294 foi substituído pelo PR 296, que reúne a fonte mais recente; o estado atual está no fechamento abaixo. O CI do PR 294 teve uma falha Windows ao iniciar um processo auxiliar em 500 ms; a repetição foi cancelada para consolidar a promoção. O CI completo do PR 296 passou nas treze etapas, incluindo as nove verificações exigidas, antes do merge protegido e da publicação oficial. Falhas históricas de acompanhamento que tiveram recuperação somente leitura ficam preservadas na auditoria; nenhuma mutação foi repetida para obter um recibo verde.
 
-Os commits desta frente foram integrados à staging local para a publicação coordenada pela outra sessão. A conversão do novo benefício e seu manifesto na staging remota aguardam essa publicação; o curso, as imagens, o certificado e o vídeo corrigido já haviam sido conferidos nos dois ambientes.
+Os commits desta frente foram integrados à staging local para a publicação coordenada pela outra sessão. O benefício, seu manifesto e a oferta de seis meses foram conferidos na staging remota após essa publicação; o curso, as imagens, o certificado e o vídeo corrigido já haviam sido conferidos nos dois ambientes.
 
 ## Validação
 
@@ -74,15 +74,15 @@ O Funil foi publicado no commit `2237b3ea61118badaf0494bfcfe2325c78cc50d2`, depl
 
 Os selos dos cursos para pais dizem “Workshop para pais”. Onze páginas e sete cartões JPEG de compartilhamento foram conferidos; oferta e checkout reais mostram seis meses em 390 e 1440 px. Os textos de compartilhamento aprovados chegam também ao robô do WhatsApp, inclusive no endereço exato `/i/vivianne-e8ez/frustracoes/pagamento`, sem “Pagamento”. A variante `?utm_content=whatsapp-20261126` conserva a origem da Vivianne e o destino do checkout; pode ser testada em uma mensagem nova para solicitar outra prévia. Não foi feita verificação dentro do aplicativo WhatsApp, nem envio de mensagem.
 
-A publicação manual está concluída. O CI completo, o merge protegido e a publicação oficial da promoção consolidada ainda estão em andamento. O build manual desta atualização selecionou somente `funnel`. A regularização dos PRs 294 e 295 foi consolidada no PR 296, que contém os ajustes mais recentes. [Recibo desta atualização](publicacao-workshop-2026-11-26.json).
+O CI completo, o merge protegido e a publicação oficial da promoção consolidada também terminaram. O build manual desta atualização selecionou somente `funnel`. A regularização dos PRs 294 e 295 foi consolidada no PR 296, que contém os ajustes mais recentes. [Recibo desta atualização](publicacao-workshop-2026-11-26.json).
 
 
 ## Promoção consolidada e Jardim Secreto
 
-A publicação manual está concluída e conferida. O CI completo, o merge protegido e a publicação oficial do PR 296 continuam em andamento. Os PRs 294 e 295 foram fechados e substituídos pelo [PR 296](https://github.com/informach/sistema-zero/pull/296), que reúne as mudanças selecionadas na fonte `fd8923232b6a73e925c176261664d5f652c0b891`. Os resultados anteriores e os cancelamentos ficam preservados no [recibo consolidado](publicacao-consolidada-2026-11-26.json). A staging inteira não foi promovida.
+O CI completo, o merge protegido e a publicação oficial do PR 296 terminaram. Os PRs 294 e 295 foram fechados e substituídos pelo [PR 296](https://github.com/informach/sistema-zero/pull/296), que reúne as mudanças selecionadas na fonte `fd8923232b6a73e925c176261664d5f652c0b891`. Os resultados anteriores e os cancelamentos ficam preservados no [recibo consolidado](publicacao-consolidada-2026-11-26.json). A staging inteira não foi promovida.
 
 O objetivo do regador agora reconhece a memória gravada dentro de uma condição que pode abrir no primeiro encontro. No executor 3D, o personagem termina a aproximação com as caixas sobrepostas e aguarda os quadros do encontro. Os cenários corretos e os controles sem memória/sem guarda passaram localmente. O cenário de produção com o regador em outra posição e a coleta protegida passou nos cinco objetivos no próprio Worker de produção, sem alterar progresso de aluno.
 
 A imagem Linux qualificada foi publicada nas duas classes de contêiner, com o mesmo digest dos testes. O primeiro envio expirou após publicar o código do Worker; o estado parcial foi inspecionado, e a retomada conhecida terminou com as duas imagens saudáveis. Os dois aquecimentos reais também passaram. A conferência de sete variáveis públicas não encontrou alterações; os segredos foram preservados.
 
-As cinco aplicações da etapa final no Railway passaram pela saúde, pela retirada das versões anteriores e pela barreira canônica 4. As páginas, o checkout de seis meses e os links antigos foram reconferidos. Nenhum pagamento real ou mensagem de ensaio foi enviado. O código e a correção de tipo foram integrados à staging local; o registro remoto do novo benefício e dos seis meses continua dependendo da publicação da outra frente.
+As cinco aplicações da etapa final no Railway passaram pela saúde, pela retirada das versões anteriores e pela barreira canônica 4. As páginas, o checkout de seis meses e os links antigos foram reconferidos. Nenhum pagamento real ou mensagem de ensaio foi enviado. O código e a correção de tipo foram integrados à staging local. Após a publicação compatível pela outra frente, o novo benefício, seu manifesto e os seis meses também foram conferidos na staging remota.
