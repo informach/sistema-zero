@@ -1026,12 +1026,22 @@ export class DrizzleReferralRepository implements ReferralRepository {
     status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
+    accountUserId?: string | null
+    personEmails?: readonly string[]
   }): Promise<{ created: boolean }> {
+    const { accountUserId = null, personEmails = [], ...values } = input
+    const otherEmails = [...new Set(personEmails)].filter((e) => e !== input.subscriberEmail)
     try {
       return await this.db.transaction(async (tx) => {
         // A vaga é da PESSOA no público (uma primeira assinatura), com ou sem resgate: serializa
         // por (e-mail, público) num advisory lock de duas chaves (espaço distinto dos locks de
-        // uma chave do sweep e da poda).
+        // uma chave do sweep e da poda). Com conta, a CONTA trava antes (sempre conta, depois
+        // e-mail, uma de cada por transação: sem ciclo): dois pagamentos da mesma conta com
+        // e-mails diferentes não passam juntos pela conferência abaixo.
+        if (accountUserId)
+          await tx.execute(
+            sql`select pg_advisory_xact_lock(${CONVERSION_SLOT_LOCK_CLASS}::int, hashtext(${`account:${accountUserId}|${input.audience}`}))`,
+          )
         await tx.execute(
           sql`select pg_advisory_xact_lock(${CONVERSION_SLOT_LOCK_CLASS}::int, hashtext(${`${input.subscriberEmail}|${input.audience}`}))`,
         )
@@ -1040,6 +1050,21 @@ export class DrizzleReferralRepository implements ReferralRepository {
           .from(conversions)
           .where(eq(conversions.paymentId, input.paymentId))
         if (seen) return { created: false }
+        // A mesma CONTA com outro e-mail de cobrança já tem a primeira assinatura no público.
+        if (otherEmails.length > 0) {
+          const [sibling] = await tx
+            .select({ id: conversions.id })
+            .from(conversions)
+            .where(
+              and(
+                inArray(conversions.subscriberEmail, otherEmails),
+                eq(conversions.audience, input.audience),
+                sql`${conversions.status} not in ('canceled', 'superseded')`,
+              ),
+            )
+            .limit(1)
+          if (sibling) return { created: false }
+        }
         // Conversões anteriores à 0013 não têm `subscriber_email` (o backfill preenche): a vaga
         // também é ocupada pela do mesmo resgate.
         const [current] = await tx
@@ -1079,7 +1104,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         // vaga se o paymentId já foi atribuído por outra transação.
         await tx
           .insert(conversions)
-          .values({ ...input, acquisitionId: input.acquisitionId ?? null })
+          .values({ ...values, acquisitionId: input.acquisitionId ?? null })
         return { created: true }
       })
     } catch (error) {

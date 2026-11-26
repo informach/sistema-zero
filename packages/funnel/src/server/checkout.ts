@@ -373,7 +373,13 @@ function subscriptionInterval(offer: CatalogOfferView | null): number | null {
  * — antes, mudar cupom/dados pessoais no mesmo lead travava o Pix p/ sempre.
  * Com o fingerprint: payload idêntico → mesma chave → MESMA cobrança (retry não
  * duplica transação); payload diferente → chave nova → cobrança nova (a antiga
- * só expira). Campos: valor + cupom + dados pessoais (o que muda o payload).
+ * só expira). Campos: valor, cupom, nome, e-mail, CPF e, quando há, a origem (código,
+ * lugar do botão e fonte de mídia). ⚠️ NÃO entram o telefone, a oferta (`offerId`), o nome
+ * do produto nem o contexto da conta (`memberContext`): mudar SÓ um deles no mesmo lead
+ * reusa a chave com outro corpo e o payments responde 409 IDEMPOTENCY_CONFLICT. Hoje isso
+ * não acontece no fluxo normal (o lead nasce numa página, para uma oferta e um contexto, e o
+ * valor costuma mudar junto com a oferta); quem precisar trocar esses campos no mesmo lead
+ * tem de pô-los aqui, sabendo que a chave dos Pix já gerados muda.
  */
 export async function pixContentFingerprint(input: {
   amountInCents: number
@@ -456,7 +462,8 @@ export async function preparePix(
   // Idempotência determinística por lead+CONTEÚDO → retry com os mesmos dados
   // aponta p/ a MESMA cobrança Pix (não duplica transação); dados diferentes
   // (cupom novo, CPF corrigido) geram cobrança nova em vez de 409 CONFLICT.
-  // Tudo o que a origem põe no metadata entra na chave (código, lugar e fonte de mídia).
+  // A origem que vai ao metadata entra na chave (código, lugar e fonte de mídia); o que fica
+  // de fora está no comentário do `pixContentFingerprint`.
   const leadOrigin = sanitizeLeadOrigin(lead.origin)
   const originKey = [
     leadOrigin ? originCookieValue(leadOrigin) : '',

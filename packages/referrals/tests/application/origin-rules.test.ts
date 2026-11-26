@@ -49,6 +49,7 @@ function setup(opts: { legacyBefore?: Date | null } = {}) {
         return payments.get(id) ?? null
       },
       getSubscriptionCreatedAt: async () => new Date(PAID_AT.getTime() - 60_000),
+      listPaidOfferIds: async () => [],
     },
     catalog,
     {

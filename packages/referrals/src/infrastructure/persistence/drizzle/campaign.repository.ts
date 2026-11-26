@@ -4,7 +4,7 @@ import type {
   CampaignView,
   GiftAudience,
 } from '@sistemazero/core/referrals'
-import { and, count, desc, eq, ilike, ne, or, sql } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, inArray, ne, or, sql } from 'drizzle-orm'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
@@ -24,7 +24,6 @@ import {
   campaignHistory,
   campaigns,
   codes,
-  conversions,
   scholarshipRedemptions,
 } from './schema'
 
@@ -343,24 +342,45 @@ export class DrizzleCampaignRepository implements CampaignRepository {
   }
 
   async stats(id: string): Promise<CampaignView['stats']> {
-    const [row] = await this.db
-      .select({
-        redemptions: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'completed')`,
-        pending: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'pending')`,
-        failed: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'failed')`,
-        conversions: sql<number>`count(distinct ${conversions.id}) filter (where ${conversions.status} not in ('canceled', 'superseded'))`,
-      })
+    // Duas leituras separadas (revisão final, 25/11/2026): juntar resgates e conversões no mesmo
+    // FROM multiplicava as linhas (cada resgate × cada conversão do código). "Assinaram" vem das
+    // AQUISIÇÕES, não das conversões: campanha sem embaixador não gera conversão. Conta a pessoa
+    // que assinou pelo link da campanha OU que entrou por um presente dela e assinou depois, no
+    // mesmo público (uma vez por pessoa).
+    const campaignCode = this.db
+      .select({ id: codes.id })
       .from(codes)
-      .leftJoin(scholarshipRedemptions, eq(scholarshipRedemptions.codeId, codes.id))
-      // Pelo código, não pelo resgate: a venda direta pelo link (campanha de venda) gera
-      // conversão sem resgate.
-      .leftJoin(conversions, eq(conversions.codeId, codes.id))
       .where(and(eq(codes.ownerKind, 'campaign'), eq(codes.campaignId, id)))
+    const [[gifts], [subscriptions]] = await Promise.all([
+      this.db
+        .select({
+          redemptions: sql<number>`count(*) filter (where ${scholarshipRedemptions.status} = 'completed')`,
+          pending: sql<number>`count(*) filter (where ${scholarshipRedemptions.status} = 'pending')`,
+          failed: sql<number>`count(*) filter (where ${scholarshipRedemptions.status} = 'failed')`,
+        })
+        .from(scholarshipRedemptions)
+        .where(inArray(scholarshipRedemptions.codeId, campaignCode)),
+      this.db
+        .select({ n: sql<number>`count(distinct ${acquisitions.email})` })
+        .from(acquisitions)
+        .where(
+          and(
+            eq(acquisitions.kind, 'subscription'),
+            eq(acquisitions.status, 'active'),
+            or(
+              eq(acquisitions.campaignId, id),
+              // ⚠️ A linha de fora vai qualificada à mão: numa seleção de uma tabela só o drizzle
+              // escreve `"audience"` sem a tabela, e o Postgres a resolveria na de DENTRO.
+              sql`exists (select 1 from ${acquisitions} as gift where gift.campaign_id = ${id} and gift.kind = 'gift' and gift.status = 'active' and gift.audience = "acquisitions"."audience" and gift.email = "acquisitions"."email" and gift.acquired_at <= "acquisitions"."acquired_at")`,
+            ),
+          ),
+        ),
+    ])
     return {
-      redemptions: Number(row?.redemptions ?? 0),
-      pending: Number(row?.pending ?? 0),
-      failed: Number(row?.failed ?? 0),
-      conversions: Number(row?.conversions ?? 0),
+      redemptions: Number(gifts?.redemptions ?? 0),
+      pending: Number(gifts?.pending ?? 0),
+      failed: Number(gifts?.failed ?? 0),
+      conversions: Number(subscriptions?.n ?? 0),
     }
   }
 

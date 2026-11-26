@@ -616,8 +616,23 @@ export class InMemoryReferralRepository implements ReferralRepository {
     status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
+    accountUserId?: string | null
+    personEmails?: readonly string[]
   }): Promise<{ created: boolean }> {
+    const { accountUserId: _account, personEmails = [], ...values } = input
     if (this.conversions.some((c) => c.paymentId === input.paymentId)) return { created: false }
+    const others = new Set(personEmails.filter((e) => e !== input.subscriberEmail))
+    if (
+      this.conversions.some(
+        (c) =>
+          c.subscriberEmail !== null &&
+          others.has(c.subscriberEmail) &&
+          c.audience === input.audience &&
+          c.status !== 'canceled' &&
+          c.status !== 'superseded',
+      )
+    )
+      return { created: false }
     // A vaga é da pessoa no público (e, nas conversões antigas sem e-mail, a do resgate).
     const current = this.conversions.find(
       (c) =>
@@ -640,7 +655,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
     }
     this.conversions.push({
       id: randomUUID(),
-      ...input,
+      ...values,
       acquisitionId: input.acquisitionId ?? null,
       eligibleAt: null,
       notifiedAt: null,

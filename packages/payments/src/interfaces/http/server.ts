@@ -27,6 +27,7 @@ import type { ListRecoveryReviewService } from '../../application/subscription-r
 import type { RecoveryPolicyService } from '../../application/subscription-recovery/recovery-policy.service'
 import type { ReviewHistoricalAdmissionService } from '../../application/subscription-recovery/review-historical-admission.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
+import type { PaidOffersReader } from '../../domain/ports/paid-offers-read.port'
 import type { Env } from '../../infrastructure/config/env'
 import type { Logger } from '../../infrastructure/logging/logger'
 import type { MetricsSnapshot } from '../../infrastructure/persistence/drizzle/metrics.repository'
@@ -76,6 +77,8 @@ export interface HttpDeps {
   getAdminPayment: GetAdminPaymentService
   listSubscriptions: ListSubscriptionsService
   getAdminSubscription: GetAdminSubscriptionService
+  /** Ofertas já pagas por um e-mail (rota interna do referrals). */
+  paidOffers?: PaidOffersReader
   getPaymentsStats: GetPaymentsStatsService
   getDailyPaymentsStats: GetDailyPaymentsStatsService
   getSubscriptionStats: GetSubscriptionStatsService
@@ -248,6 +251,7 @@ export function createServer(deps: HttpDeps) {
         internalToken: deps.internalToken,
         getPayment: deps.getAdminPayment,
         getSubscription: deps.getAdminSubscription,
+        ...(deps.paidOffers ? { paidOffers: deps.paidOffers } : {}),
         logger: deps.logger,
       }),
     )

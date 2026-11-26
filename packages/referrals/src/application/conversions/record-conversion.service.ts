@@ -226,22 +226,28 @@ export class RecordConversionService {
       )
     if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
 
-    // A mesma CONTA com outro e-mail de cobrança (cancelou e assinou de novo pela plataforma):
-    // a vaga do bônus é por e-mail, então confere as conversões ativas dos e-mails da pessoa.
-    if (accountUserId) {
-      const emails = [...new Set([email, ...history.map((item) => item.email)])]
-      const earlier = (await this.repo.listConversionsBySubscribers(emails)).find(
-        (c) =>
-          c.audience === audience &&
-          c.paymentId !== paymentId &&
-          c.status !== 'canceled' &&
-          c.status !== 'superseded',
-      )
-      if (earlier) return { kind: 'ok' }
-    }
+    // O bônus é só da PRIMEIRA assinatura da pessoa no público (revisão final, 25/11/2026):
+    // quem já assinou antes (cancelou e voltou, ou renova o anual à vista com outra compra) não
+    // rende bônus, mesmo entrando agora por um embaixador.
+    const earlier = await this.hadEarlierSubscription({
+      paymentId,
+      email,
+      audience,
+      paidAt,
+      acquisitionId: acquisition.id,
+      history,
+    })
+    if (earlier.kind === 'retryable') return earlier
+    if (earlier.found) return { kind: 'ok' }
 
     const terms = winner.bonusTerms
-    const selfBlocked = terms.ambassadorEmail !== '' && terms.ambassadorEmail === email
+    // Autoindicação pelo e-mail OU pela conta do embaixador (o e-mail de cobrança pode ser
+    // outro: o embaixador que paga a própria assinatura com o e-mail do cônjuge).
+    let selfBlocked = terms.ambassadorEmail !== '' && terms.ambassadorEmail === email
+    if (!selfBlocked && accountUserId) {
+      const ambassador = await this.repo.findAmbassadorById(terms.ambassadorId)
+      selfBlocked = ambassador?.accountUserId === accountUserId
+    }
     const unrewarded = !terms.enabled
     const perPlan = terms.monthlyCents !== null && terms.annualCents !== null
     if (
@@ -277,6 +283,10 @@ export class RecordConversionService {
       status: unrewarded ? 'unrewarded' : selfBlocked ? 'self_blocked' : 'pending',
       paidAt,
       maturesAt: new Date(paidAt.getTime() + this.config.matureHours * 3600_000),
+      // A mesma CONTA com outro e-mail de cobrança (cancelou e assinou de novo pela plataforma):
+      // a conferência das conversões dos outros e-mails da pessoa roda sob a trava da vaga.
+      accountUserId,
+      personEmails: [...new Set([email, ...history.map((item) => item.email)])],
     })
     if (created) {
       this.logger.info('referrals.conversion_recorded', {
@@ -290,6 +300,58 @@ export class RecordConversionService {
     // sem conversão para cancelar. Reconfere aqui, inclusive na reentrega após
     // falha de rede: o INSERT anterior já pode ter concluído.
     return this.cancelIfNoLongerPaid(paymentId)
+  }
+
+  /**
+   * A pessoa já tinha uma assinatura da Comunidade neste público antes desta compra? Olha as
+   * aquisições (e-mail ou conta; a assinatura que tem slug ou é recorrente) e, para o histórico
+   * de antes da origem por aquisição, as compras pagas do e-mail no payments. Só roda no
+   * caminho do bônus, então o custo extra não pesa no agregado.
+   */
+  private async hadEarlierSubscription(input: {
+    paymentId: string
+    email: string
+    audience: GiftAudience
+    paidAt: Date
+    acquisitionId: string
+    history: AcquisitionRecord[]
+  }): Promise<{ kind: 'ok'; found: boolean } | { kind: 'retryable'; reason: string }> {
+    const slugs = this.config.conversionOfferSlugs
+    const before = (a: AcquisitionRecord) =>
+      a.id !== input.acquisitionId &&
+      a.paymentId !== input.paymentId &&
+      a.acquiredAt.getTime() < input.paidAt.getTime()
+    if (
+      input.history.some(
+        (a) =>
+          before(a) &&
+          (a.kind === 'subscription' || (a.offerSlug !== null && slugs.includes(a.offerSlug))),
+      )
+    )
+      return { kind: 'ok', found: true }
+    let offerIds: string[]
+    try {
+      offerIds = await this.payments.listPaidOfferIds({
+        email: input.email,
+        before: input.paidAt,
+        excludePaymentId: input.paymentId,
+      })
+    } catch (error) {
+      return { kind: 'retryable', reason: `histórico de compras indisponível: ${msg(error)}` }
+    }
+    // As compras avulsas sem slug ainda (o sweep completa) entram pela oferta.
+    const unknown = input.history
+      .filter((a) => before(a) && a.kind === 'one_time' && a.offerSlug === null && a.offerId)
+      .map((a) => a.offerId as string)
+    for (const offerId of new Set([...offerIds, ...unknown])) {
+      const resolved = await this.resolveOffer(input.paymentId, offerId)
+      if (resolved.kind === 'retryable') return resolved
+      const offer = resolved.offer
+      if (!slugs.includes(offer.slug)) continue
+      if ((offer.audience ?? offerGiftAudience(offer.slug)) === input.audience)
+        return { kind: 'ok', found: true }
+    }
+    return { kind: 'ok', found: false }
   }
 
   private async resolveOffer(

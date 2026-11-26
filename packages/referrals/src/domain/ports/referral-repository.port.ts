@@ -395,6 +395,13 @@ export interface ReferralRepository {
     status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
+    /**
+     * A CONTA de quem pagou e os outros e-mails dela no público (revisão final, 25/11/2026):
+     * a vaga também é da conta. Sob a mesma trava, uma conversão ativa de outro e-mail da
+     * pessoa impede a nova (cancelou e assinou de novo com outro e-mail de cobrança).
+     */
+    accountUserId?: string | null
+    personEmails?: readonly string[]
   }): Promise<{ created: boolean }>
   /**
    * Estorno cancela pending e estados sem bônus, inclusive autoindicação.

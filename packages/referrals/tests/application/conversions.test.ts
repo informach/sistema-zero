@@ -40,6 +40,13 @@ class FakePaymentsClient implements PaymentsClient {
     if (this.fail) throw new Error('ECONNREFUSED')
     return this.byId.get(paymentId) ?? null
   }
+  /** Ofertas já pagas por e-mail (o histórico de antes da origem por aquisição). */
+  paidOffers = new Map<string, string[]>()
+  failPaidOffers = false
+  async listPaidOfferIds(input: { email: string }) {
+    if (this.fail || this.failPaidOffers) throw new Error('ECONNREFUSED')
+    return this.paidOffers.get(input.email) ?? []
+  }
 }
 
 class FakeCatalogClient implements CatalogClient {
@@ -263,6 +270,86 @@ describe('RecordConversionService', () => {
     await seedGift({ seller })
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions[0]).toMatchObject({ status: 'self_blocked', bonusCents: 0 })
+  })
+
+  test('autoindicação pela CONTA: o embaixador paga com outro e-mail → self_blocked', async () => {
+    const seller = await ambassador()
+    repo.ambassadors.find((a) => a.id === seller.ambassador.id)!.accountUserId = 'conta-cida'
+    await seedGift({ seller })
+    payments.byId.get('pay-1')!.metadata.accountUserId = 'conta-cida'
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions[0]).toMatchObject({ status: 'self_blocked', bonusCents: 0 })
+  })
+
+  test('primeira assinatura só: quem já assinou antes (aquisição) não rende bônus', async () => {
+    await seedGift()
+    await acquisitions.insert({
+      email: 'paula@example.com',
+      accountUserId: null,
+      audience: 'kids',
+      kind: 'subscription',
+      offerId: 'offer-uuid-1',
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+      paymentId: 'pay-antiga',
+      subscriptionId: 'sub-antiga',
+      redemptionId: null,
+      acquiredAt: new Date(PAID_AT.getTime() - 200 * DAY),
+      originKind: 'none',
+      codeId: null,
+      campaignId: null,
+      ambassadorId: null,
+      place: null,
+      utm: null,
+      bonusTerms: null,
+    })
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+    // A assinatura nova continua sendo uma aquisição (conta nos resultados).
+    expect(acquisitions.items.some((a) => a.paymentId === 'pay-1')).toBe(true)
+  })
+
+  test('primeira assinatura só: o histórico de antes da 0013 vem do payments', async () => {
+    await seedGift()
+    payments.paidOffers.set('paula@example.com', ['offer-desafio', 'offer-uuid-1'])
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+  })
+
+  test('histórico de compras fora do ar: a entrega volta, sem bônus presumido', async () => {
+    await seedGift()
+    payments.failPaidOffers = true
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    expect(repo.conversions).toHaveLength(0)
+    payments.failPaidOffers = false
+    payments.paidOffers.set('paula@example.com', ['offer-desafio'])
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]).toMatchObject({ status: 'pending', bonusCents: 3000 })
+  })
+
+  test('mesma conta, outro e-mail com conversão ativa: a vaga da conta já foi usada', async () => {
+    const seller = await ambassador()
+    await seedGift({ seller, tweak: (r) => (r.userId = 'conta-paula') })
+    await repo.insertConversion({
+      redemptionId: null,
+      subscriberEmail: 'paula.trabalho@example.com',
+      audience: 'kids',
+      codeId: seller.code.id,
+      ambassadorId: seller.ambassador.id,
+      paymentId: 'pay-outro-email',
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+      bonusCents: 3000,
+      status: 'pending',
+      paidAt: new Date(PAID_AT.getTime() - DAY),
+      maturesAt: PAID_AT,
+    })
+    acquisitions.items.find((a) => a.kind === 'gift')!.accountUserId = 'conta-paula'
+    acquisitions.items.find((a) => a.kind === 'gift')!.email = 'paula.trabalho@example.com'
+    payments.byId.get('pay-1')!.metadata.accountUserId = 'conta-paula'
+    await service.execute(paidDelivery())
+    expect(repo.conversions.filter((c) => c.paymentId === 'pay-1')).toHaveLength(0)
   })
 
   test('fora do prazo de 45 dias do link pessoal: conta como venda, sem bônus', async () => {

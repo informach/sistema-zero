@@ -168,9 +168,25 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       redemptions: rows.filter((r) => r.status === 'completed').length,
       pending: rows.filter((r) => r.status === 'pending').length,
       failed: rows.filter((r) => r.status === 'failed').length,
-      conversions: this.referrals.conversions.filter(
-        (c) => c.codeId === code?.id && c.status !== 'canceled' && c.status !== 'superseded',
-      ).length,
+      conversions: new Set(
+        this.referrals.acquisitions
+          .filter(
+            (a) =>
+              a.kind === 'subscription' &&
+              a.status === 'active' &&
+              (a.campaignId === id ||
+                this.referrals.acquisitions.some(
+                  (g) =>
+                    g.campaignId === id &&
+                    g.kind === 'gift' &&
+                    g.status === 'active' &&
+                    g.audience === a.audience &&
+                    g.email === a.email &&
+                    g.acquiredAt <= a.acquiredAt,
+                )),
+          )
+          .map((a) => a.email),
+      ).size,
     }
   }
   async history(id: string) {

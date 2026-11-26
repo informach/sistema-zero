@@ -134,6 +134,28 @@ Correções da revisão do Lote 2 (25/11/2026):
 - Relatórios: passando de 20.000 linhas ficam as MAIS NOVAS e a Origem das vendas traz
   `truncated: true`. Slugs: cursor por ciclo, oferta que o catálogo não resolve não trava a fila.
 - `stats.conversions` da campanha junta pelo código (a venda direta não tem resgate).
+
+Correções da revisão final (25/11/2026):
+- **Bônus só da PRIMEIRA assinatura** (`hadEarlierSubscription`, no caminho do bônus): a pessoa
+  que já tinha assinatura no público (aquisição `subscription` ou com slug de conversão, por e-mail
+  ou conta, antes desta compra) não rende bônus, mesmo entrando agora por um embaixador. O histórico
+  de antes da 0013 vem do payments: `GET /payments/internal/customers/paid-offers?email&before&exclude`
+  (`PaymentsClient.listPaidOfferIds`, ids das ofertas PAGAS do e-mail; cada uma resolvida no
+  catálogo, só conta slug de conversão do mesmo público). Payments fora ou sem a rota = reentrega,
+  nunca "sem histórico". ⚠️ Deploy do PAYMENTS antes do referrals.
+- **Autoindicação também pela CONTA**: `accountUserId` do pagamento igual ao
+  `ambassadors.account_user_id` do embaixador → `self_blocked`.
+- **Mesma conta com outro e-mail, dentro da trava**: `insertConversion` recebe `accountUserId` e
+  `personEmails`; trava a conta (`account:<id>|<público>`) e depois o e-mail, e recusa se outro
+  e-mail da pessoa já tem conversão ativa no público.
+- **`stats` da campanha em duas leituras** (resgates; assinaturas). `stats.conversions` = pessoas
+  com aquisição `subscription` ativa pelo link da campanha OU depois de um presente dela, no mesmo
+  público (as conversões não servem: campanha sem embaixador não gera conversão). ⚠️ SQL sem teste
+  de banco; os `tests/db` de campanha ainda contam pela régua antiga.
+- **Backfill**: o `subscriber_email` (e o e-mail da aquisição `subscription`) é o de quem PAGOU,
+  lido no payments; sem o pagamento, o do resgate (`payerEmailFallbacks` no relatório).
+- `.railway/variables.ts` declara `BONUS_ANNUAL_AMOUNT_CENTS`, `BONUS_WINDOW_DAYS` e
+  `ORIGIN_LEGACY_BEFORE`: criar no painel do Railway (staging e produção) antes do deploy.
 - Listas de campanhas e embaixadores: `results.revenueCents` é `null` para staff.
 
 ⚠️ Seção "Banco" abaixo está desatualizada em dois pontos: o resgate é UNIQUE

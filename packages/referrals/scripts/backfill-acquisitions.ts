@@ -2,9 +2,10 @@
  * Backfill da origem por aquisição (0013, 25/11/2026). Modos: `plan` (padrão, só conta) e
  * `apply` (grava). Idempotente: cada passo só toca o que ainda falta.
  *
- * 1. Conversões antigas ganham `subscriber_email` + `audience` (do resgate), a vaga "uma
- *    primeira assinatura por pessoa e público". Conflito com outra conversão ativa da mesma
- *    pessoa fica de fora (relatado) em vez de derrubar o lote.
+ * 1. Conversões antigas ganham `subscriber_email` (o e-mail de QUEM PAGOU, lido no payments, a
+ *    mesma régua das conversões novas; sem o pagamento, o e-mail do resgate) + `audience` (do
+ *    resgate), a vaga "uma primeira assinatura por pessoa e público". Conflito com outra
+ *    conversão ativa da mesma pessoa fica de fora (relatado) em vez de derrubar o lote.
  * 2. Presentes concluídos viram aquisição `gift` (o mesmo reparo do sweep; acordo sem prazo).
  * 3. Conversões viram aquisição `subscription` (a primeira assinatura de quem veio do
  *    presente), com a origem do código.
@@ -24,6 +25,7 @@ import { DEFAULT_GIFT_OFFER_SLUGS } from '../src/domain/gift-policy'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { CatalogHttpClient } from '../src/infrastructure/gateways/catalog-http.client'
 import { GiftOfferCatalogHttpClient } from '../src/infrastructure/gateways/gift-offer-catalog.client'
+import { PaymentsHttpClient } from '../src/infrastructure/gateways/payments-http.client'
 import { DrizzleAcquisitionRepository } from '../src/infrastructure/persistence/drizzle/acquisition.repository'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { isUniqueViolation } from '../src/infrastructure/persistence/drizzle/pg-errors'
@@ -46,12 +48,33 @@ const logger = createLogger({ level: 'info' })
 const connection = createDbConnection(env.DATABASE_URL, { max: 1 })
 const db = connection.db
 const report: Record<string, number | string> = { mode }
+const payments = new PaymentsHttpClient({
+  baseUrl: env.PAYMENTS_BASE_URL,
+  internalToken: env.PAYMENTS_INTERNAL_TOKEN,
+  timeoutMs: env.S2S_TIMEOUT_MS,
+})
+const payerEmails = new Map<string, string | null>()
+let payerFallbacks = 0
+
+/** O e-mail de quem pagou (lower/trim); sem o pagamento ou sem e-mail, o do resgate. */
+async function payerEmail(paymentId: string, fallback: string): Promise<string> {
+  if (!payerEmails.has(paymentId)) {
+    const snapshot = await payments.getPayment(paymentId)
+    const email = snapshot?.customer?.email?.trim().toLowerCase() ?? ''
+    payerEmails.set(paymentId, email || null)
+  }
+  const email = payerEmails.get(paymentId)
+  if (email) return email
+  payerFallbacks++
+  return fallback
+}
 
 try {
   // 1) A vaga por pessoa e público nas conversões antigas.
   const pendingEmails = await db
     .select({
       id: conversions.id,
+      paymentId: conversions.paymentId,
       email: scholarshipRedemptions.email,
       audience: scholarshipRedemptions.audience,
     })
@@ -66,7 +89,10 @@ try {
       try {
         await db
           .update(conversions)
-          .set({ subscriberEmail: row.email, audience: row.audience })
+          .set({
+            subscriberEmail: await payerEmail(row.paymentId, row.email),
+            audience: row.audience,
+          })
           .where(and(eq(conversions.id, row.id), isNull(conversions.subscriberEmail)))
         filled++
       } catch (error) {
@@ -130,7 +156,7 @@ try {
     for (const row of pendingSubs) {
       const code = toCode(row.code)
       const result = await acquisitionRepo.insert({
-        email: row.redemption.email,
+        email: await payerEmail(row.conversion.paymentId, row.redemption.email),
         accountUserId: row.redemption.userId,
         audience: row.redemption.audience,
         kind: 'subscription',
@@ -154,6 +180,7 @@ try {
         await acquisitionRepo.markRefundedByPayment(row.conversion.paymentId)
     }
   report.subscriptionAcquisitionsCreated = subsCreated
+  report.payerEmailFallbacks = payerFallbacks
 
   // 4) O presente padrão nas listas dos embaixadores.
   const giftCatalog = new GiftOfferCatalogHttpClient({

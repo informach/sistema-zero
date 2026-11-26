@@ -572,7 +572,11 @@ describe('presente adulto: conversões', () => {
       repo,
       new InMemoryAcquisitionRepository(repo),
       new InMemoryCampaignRepository(repo),
-      { getPayment: async () => payment, getSubscriptionCreatedAt: async () => null },
+      {
+        getPayment: async () => payment,
+        getSubscriptionCreatedAt: async () => null,
+        listPaidOfferIds: async () => [],
+      },
       {
         getOfferById: async () => ({
           id: 'offer-adulto',

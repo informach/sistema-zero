@@ -27,7 +27,10 @@ const common: Record<string, string[]> = {
   referrals: [
     'APP_ENV',
     'BONUS_AMOUNT_CENTS',
+    'BONUS_ANNUAL_AMOUNT_CENTS',
     'BONUS_MATURE_HOURS',
+    // Origem por aquisição (25/11/2026): criar no painel antes do deploy da 0013.
+    'BONUS_WINDOW_DAYS',
     'CATALOG_BASE_URL',
     'CATALOG_INTERNAL_TOKEN',
     'COMMUNITY_URL',
@@ -40,6 +43,7 @@ const common: Record<string, string[]> = {
     'KIDS_COMMUNITY_URL',
     'METRICS_TOKEN',
     'NODE_ENV',
+    'ORIGIN_LEGACY_BEFORE',
     'PAYMENTS_BASE_URL',
     'PAYMENTS_INTERNAL_TOKEN',
     'PAYMENTS_WEBHOOK_HMAC_SECRET',

@@ -1,5 +1,10 @@
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq, lt, ne, sql } from 'drizzle-orm'
 import { PaymentAggregate } from '../../../domain/payment/payment.aggregate'
+import {
+  PAID_OFFERS_LIMIT,
+  type PaidOffersQuery,
+  type PaidOffersReader,
+} from '../../../domain/ports/paid-offers-read.port'
 import type {
   MyPaymentsFilter,
   PaymentMyReadRepository,
@@ -13,8 +18,27 @@ import { payments } from './schema'
  * SELECTs escopados por `lower(customer->>'email')` — casa o índice de expressão
  * `payments_customer_email_idx`. Fora do hot-path de escrita.
  */
-export class DrizzlePaymentMyReadRepository implements PaymentMyReadRepository {
+export class DrizzlePaymentMyReadRepository implements PaymentMyReadRepository, PaidOffersReader {
   constructor(private readonly db: Database) {}
+
+  /** Ofertas já pagas pelo e-mail antes da data (o histórico da primeira assinatura). */
+  async listPaidOfferIds(query: PaidOffersQuery): Promise<string[]> {
+    const offerId = sql<string>`${payments.metadata} ->> 'offerId'`
+    const rows = await this.db
+      .selectDistinct({ offerId })
+      .from(payments)
+      .where(
+        and(
+          emailMatches(query.email),
+          eq(payments.status, 'PAID'),
+          lt(payments.paidAt, query.before),
+          sql`${payments.metadata} ? 'offerId'`,
+          query.excludePaymentId ? ne(payments.id, query.excludePaymentId) : undefined,
+        ),
+      )
+      .limit(PAID_OFFERS_LIMIT)
+    return rows.flatMap((row) => (row.offerId ? [row.offerId] : []))
+  }
 
   async listByEmail(
     filter: MyPaymentsFilter,
