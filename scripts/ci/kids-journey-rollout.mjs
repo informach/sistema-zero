@@ -637,21 +637,28 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     now,
     log,
     async requireNativeDisabled(services, deadline = Number.POSITIVE_INFINITY) {
-      if (
-        !applications ||
-        !Array.isArray(services) ||
-        services.some((service) => !Object.hasOwn(applications, service))
-      )
-        throw new Error('Inventário de triggers de produção inválido')
-      for (const service of services) {
-        checkTime(deadline)
-        const data = await gql(
-          'query($p:String!,$e:String!,$s:String!){serviceInstanceAutoDeployStatus(projectId:$p,environmentId:$e,serviceId:$s){enabled}}',
-          { p: target.project, e: target.environment, s: target[service] },
+      let step = 'native-trigger-inventory'
+      try {
+        if (
+          !applications ||
+          !Array.isArray(services) ||
+          services.some((service) => !Object.hasOwn(applications, service))
         )
-        checkTime(deadline)
-        if (data.serviceInstanceAutoDeployStatus?.enabled !== false)
-          throw new Error('Trigger nativo ativo ou desconhecido; nenhuma nova mutação permitida')
+          throw new Error('Inventário de triggers de produção inválido')
+        for (const service of services) {
+          checkTime(deadline)
+          step = `${service}-native-trigger-read`
+          const data = await gql(
+            'query($p:String!,$e:String!,$s:String!){serviceInstanceAutoDeployStatus(projectId:$p,environmentId:$e,serviceId:$s){enabled}}',
+            { p: target.project, e: target.environment, s: target[service] },
+            deadline,
+          )
+          checkTime(deadline)
+          if (data.serviceInstanceAutoDeployStatus?.enabled !== false)
+            throw new Error('Trigger nativo ativo ou desconhecido; nenhuma nova mutação permitida')
+        }
+      } catch (error) {
+        throw rolloutFailure(error, { step, ...failureDetails(error) })
       }
     },
     async preflightApplications(services, deadline = Number.POSITIVE_INFINITY, initial = []) {
@@ -678,7 +685,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       for (const service of services) {
         checkTime(deadline)
         if (initial.includes(service)) {
-          const rows = await active(service)
+          const rows = await active(service, deadline)
           if (rows.length !== 0)
             throw new Error('Serviço já tem deployment ativo; inicialização recusada')
           await requireNoPending(service, deadline)
@@ -727,7 +734,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         if (adoption) {
           step = `${label}-adoption-deployment`
           log({ stage: step, deployment: adoption.id, mutationOutcome })
-          const current = await deployment(adoption.id)
+          const current = await deployment(adoption.id, deadline)
           checkTime(deadline)
           if (
             !matchesContext(current, service, adoption.id) ||
@@ -737,7 +744,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           )
             throw new Error('Deployment existente não corresponde à adoção')
           step = `${label}-adoption-active`
-          const rows = await active(service)
+          const rows = await active(service, deadline)
           checkTime(deadline)
           if (
             rows.length !== 1 ||
@@ -750,7 +757,9 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           step = `${label}-adoption-pending`
           await requireNoPending(service, deadline)
           step = `${label}-adoption-predecessors`
-          const old = await Promise.all(adoption.previousIds.map((oldId) => deployment(oldId)))
+          const old = await Promise.all(
+            adoption.previousIds.map((oldId) => deployment(oldId, deadline)),
+          )
           checkTime(deadline)
           if (
             old.some(
@@ -775,7 +784,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         // Refresh immediately before the mutation; preflight may precede a long Members wave.
         if (targetName === 'production' && !before.has(service))
           throw new Error('Preflight do serviço de produção ausente')
-        const currentActive = await active(service)
+        const currentActive = await active(service, deadline)
         if (initialApplications.has(service) && currentActive.length !== 0)
           throw new Error('Deployment concorrente impede inicialização do serviço')
         before.set(service, [
