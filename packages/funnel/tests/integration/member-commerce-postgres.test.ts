@@ -177,4 +177,15 @@ describe.skipIf(!url)('comércio autenticado com PostgreSQL real e pool de uma c
       attempt_phase: 'recorded',
     })
   }, 30_000)
+
+  test('origem do lead (0024): jsonb nulo no lead novo, gravado e trocado pelo updateLead', async () => {
+    const repo = createFunnelRepo(db)
+    const { id } = await repo.createLead('kids-cade', null, null)
+    expect((await repo.getLead(id))?.origin ?? null).toBeNull()
+    await repo.updateLead(id, { origin: { version: 1, code: 'cida-x7k2', place: null } })
+    expect((await repo.getLead(id))?.origin).toEqual({ version: 1, code: 'cida-x7k2', place: null })
+    await repo.updateLead(id, { origin: { version: 1, code: null, place: 'pais-curso-fechado' } })
+    const [row] = await sql`select origin from funil.leads where id = ${id}`
+    expect(row?.origin).toEqual({ version: 1, code: null, place: 'pais-curso-fechado' })
+  })
 })
