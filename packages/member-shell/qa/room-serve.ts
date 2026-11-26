@@ -114,7 +114,9 @@ Bun.serve({
     }
     if (p === '/api/members/house' && req.method === 'GET') return Response.json(state)
     if (p === '/api/members/house' && req.method === 'PUT') {
-      const body = (await req.json()) as { house: MoradaHouse }
+      const body = (await req.json()) as { house: MoradaHouse; revision: number }
+      if (body.revision !== state.revision)
+        return Response.json({ current: state }, { status: 409 })
       state = { ...state, house: body.house, revision: state.revision + 1 }
       return Response.json(state)
     }
