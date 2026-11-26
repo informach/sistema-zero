@@ -360,9 +360,14 @@ test('Origem das vendas: números, aviso do teto e a equipe sem acesso', async (
     latest: [],
     truncated: true,
   }
-  const calls = mockFetch((call) =>
-    call.url.startsWith('/api/admin/referrals/origins') ? Response.json(report) : undefined,
-  )
+  // A primeira leitura (30 dias) responde; a seguinte (o período novo) falha: a tela não pode
+  // seguir com os números do período anterior.
+  let originReads = 0
+  const calls = mockFetch((call) => {
+    if (!call.url.startsWith('/api/admin/referrals/origins')) return undefined
+    originReads++
+    return originReads === 1 ? Response.json(report) : new Response('falha', { status: 502 })
+  })
   const { root } = await mount(
     <PlatformProvider initialPlatform="kids">
       <OriginClient currentRole="admin" />
@@ -375,6 +380,14 @@ test('Origem das vendas: números, aviso do teto e a equipe sem acesso', async (
     expect(text).toContain('Área dos pais · curso fechado')
     expect(text).toContain('Escolha um período menor')
     expect(calls.some((c) => c.url.includes('audience=kids'))).toBe(true)
+    // Trocou o período e o novo falhou: os números de antes saem da tela.
+    const select = [...document.querySelectorAll('select')].find((el) =>
+      [...el.options].some((o) => o.value === '7d'),
+    ) as HTMLSelectElement
+    await setValue(select, '7d')
+    await act(async () => new Promise((r) => setTimeout(r, 0)))
+    const after = (document.body.textContent ?? '').replace(/\s/g, ' ')
+    expect(after.includes('Pessoas novas612')).toBe(false)
   } finally {
     await act(async () => root.unmount())
   }

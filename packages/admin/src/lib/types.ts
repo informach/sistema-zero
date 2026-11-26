@@ -1523,6 +1523,8 @@ export interface ConversionAdminView {
   paidMarkedAt: string | null
   paidMarkedBy: string | null
   note: string | null
+  /** O embaixador do bônus (o "Veio por" casa por ele; ausente no referrals anterior). */
+  ambassadorId?: string | null
   ambassadorName: string | null
   ambassadorEmail: string | null
   ambassadorPixKey: string | null

@@ -150,11 +150,17 @@ export function acquisitionOrigin(item: AcquisitionView): { label: string; detai
  */
 export function bonusCameBy(
   acquisitions: AcquisitionView[],
-  ambassadorName: string | null,
+  ambassador: { id?: string | null; name: string | null },
   names: ReadonlyMap<string, string>,
 ): { label: string; detail: string } | null {
+  // Pelo id do embaixador (dois embaixadores podem ter o mesmo nome); o nome só vale quando o
+  // referrals ainda não manda o id.
+  const sameAmbassador = (a: AcquisitionView) =>
+    ambassador.id
+      ? a.ambassadorId === ambassador.id
+      : Boolean(a.ambassadorName) && a.ambassadorName === ambassador.name
   const entry = acquisitions
-    .filter((a) => a.status === 'active' && a.ambassadorName && a.ambassadorName === ambassadorName)
+    .filter((a) => a.status === 'active' && sameAmbassador(a))
     .sort((a, b) => a.acquiredAt.localeCompare(b.acquiredAt))[0]
   if (!entry) return null
   const what =

@@ -100,7 +100,10 @@ function OriginForCommunity({
   const { get } = useCommunityRequests(audience)
   const offerNames = useOfferNames(audience)
   const [period, setPeriod] = useState<OriginPeriod>('30d')
-  const [report, setReport] = useState<OriginReport | null>(null)
+  // O relatório guarda o PERÍODO dele: trocar o período limpa a tela até o novo chegar, e a
+  // planilha leva o nome do período que ela de fato contém.
+  const [loaded, setLoaded] = useState<{ period: OriginPeriod; report: OriginReport } | null>(null)
+  const report = loaded?.period === period ? loaded.report : null
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [query, setQuery] = useState('')
   const [originFilter, setOriginFilter] = useState<'all' | AcquisitionOriginKind>('all')
@@ -108,6 +111,7 @@ function OriginForCommunity({
   const load = useCallback(async () => {
     if (!allowed) return
     const current = ++sequence.current
+    const requested = period
     setState('loading')
     try {
       const next = await get<OriginReport>(
@@ -118,7 +122,7 @@ function OriginForCommunity({
         setState('error')
         return
       }
-      setReport(next)
+      setLoaded({ period: requested, report: next })
       setState('ready')
     } catch (err) {
       if (isCanceledCommunityRequest(err) || current !== sequence.current) return
@@ -147,7 +151,7 @@ function OriginForCommunity({
           <Button
             variant="outline"
             onClick={() =>
-              downloadCsv(`origem-das-vendas-${period}.csv`, [
+              downloadCsv(`origem-das-vendas-${loaded?.period ?? period}.csv`, [
                 ['Origem', 'Pessoas novas', 'Presentes', 'Compras', 'Assinaturas', 'Faturamento'],
                 ...report.byOrigin.map((row) => [
                   ORIGIN_LABELS[row.origin],

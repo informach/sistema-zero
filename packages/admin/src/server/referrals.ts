@@ -173,8 +173,10 @@ export function getOriginDetail(
   kind: 'campaigns' | 'ambassadors',
   id: string,
   offset?: number,
+  /** A comunidade da lente: o embaixador tem código nos dois públicos. */
+  audience?: string,
 ): Promise<GatewayResponse<OriginDetail>> {
   return gatewayFetch(`/referrals/admin/${kind}/${encodeURIComponent(id)}/results`, {
-    query: { offset },
+    query: { offset, audience },
   })
 }

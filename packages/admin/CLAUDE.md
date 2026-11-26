@@ -2,6 +2,13 @@
 
 ## Campanhas, embaixadores e Origem das vendas (25/11/2026, Lote 7)
 
+Revisão do Lote 7: os resultados (lista e detalhe de embaixador e campanha) levam o `audience` da
+lente até o referrals (números de UMA comunidade); "Veio por" casa pelo `ambassadorId` do bônus (o
+nome só quando o referrals ainda não manda o id); as setas das listas de ofertas trocam com a
+vizinha do MESMO grupo (`swapItems`); `pageEligible` exige `isAvailable !== false` (a régua do
+member-shell); a Origem das vendas guarda o período de cada relatório (trocar o período limpa a
+tela; a planilha leva o período que contém).
+
 Canvas `admin-campanhas`, `admin-campanha-nova`, `admin-campanha-detalhe`, `admin-embaixadores`,
 `admin-embaixador-detalhe`, `admin-ofertas`, `admin-origem` e `admin-ficha`. Tudo lê o referrals pelo
 BFF (`server/referrals.ts` + `app/api/admin/referrals/{ambassador-offers,origins,acquisitions,

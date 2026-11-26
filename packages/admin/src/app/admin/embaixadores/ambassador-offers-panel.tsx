@@ -238,12 +238,11 @@ function OfferList({
           ['Para os pais', true],
         ] as const)
       : ([['', null]] as const)
-  const move = (index: number, delta: number) => {
-    const next = [...items]
-    const [item] = next.splice(index, 1)
-    if (!item) return
-    next.splice(index + delta, 0, item)
-    onChange(next)
+  // Subir e descer andam DENTRO do grupo visível ("Para os filhos" / "Para os pais"): trocam a
+  // linha com a vizinha do mesmo grupo, onde quer que ela esteja na lista gravada.
+  const move = (index: number, target: number | undefined) => {
+    if (target === undefined) return
+    onChange(swapItems(items, index, target))
   }
   return (
     <Card className="space-y-4 rounded-2xl p-5">
@@ -298,7 +297,7 @@ function OfferList({
                 </p>
               ) : (
                 <ul className="space-y-2">
-                  {rows.map(({ item, index, offer }) => (
+                  {rows.map(({ item, index, offer }, position) => (
                     <li
                       key={item.offerId}
                       className="flex flex-wrap items-center gap-3 rounded-xl border p-3"
@@ -348,8 +347,8 @@ function OfferList({
                             variant="ghost"
                             size="icon"
                             aria-label={`Subir ${offer?.name ?? 'oferta'}`}
-                            disabled={busy || index === 0}
-                            onClick={() => move(index, -1)}
+                            disabled={busy || position === 0}
+                            onClick={() => move(index, rows[position - 1]?.index)}
                           >
                             <ArrowUp className="size-4" aria-hidden />
                           </Button>
@@ -358,8 +357,8 @@ function OfferList({
                             variant="ghost"
                             size="icon"
                             aria-label={`Descer ${offer?.name ?? 'oferta'}`}
-                            disabled={busy || index === items.length - 1}
-                            onClick={() => move(index, 1)}
+                            disabled={busy || position === rows.length - 1}
+                            onClick={() => move(index, rows[position + 1]?.index)}
                           >
                             <ArrowDown className="size-4" aria-hidden />
                           </Button>
@@ -430,4 +429,15 @@ function OfferList({
       </section>
     </Card>
   )
+}
+
+/** Troca duas linhas da lista gravada (a ordem de cada grupo segue a ordem da lista). */
+export function swapItems<T>(items: readonly T[], from: number, to: number): T[] {
+  const next = [...items]
+  const a = next[from]
+  const b = next[to]
+  if (a === undefined || b === undefined || from === to) return next
+  next[from] = b
+  next[to] = a
+  return next
 }

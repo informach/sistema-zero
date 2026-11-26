@@ -93,8 +93,11 @@ export function buildCatalogOffers(
       priceCents: offer.priceCents,
       summary: offerSummary(offer),
       giftEligible: usable && offer.pricingMode === 'one_time' && giftIds.has(offer.id),
+      // A MESMA régua do member-shell (`pageSellableStatus`) e do funil: oferta ativa E
+      // disponível agora (esgotada ou fora da janela de venda não abre a página).
       pageEligible:
         offer.status === 'active' &&
+        offer.isAvailable !== false &&
         product?.status === 'active' &&
         (product.primaryOfferId === offer.id || offer.content?.pageSellable === true),
       forParents: courseRef ? parentsCourses.has(courseRef) : false,

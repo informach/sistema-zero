@@ -799,7 +799,7 @@ function BonusSection({
                     {(() => {
                       const origin = bonusCameBy(
                         cameBy.get(row.redemptionEmail.toLowerCase()) ?? [],
-                        row.ambassadorName,
+                        { id: row.ambassadorId, name: row.ambassadorName },
                         offerNames,
                       )
                       return origin ? (

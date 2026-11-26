@@ -4,7 +4,7 @@ import {
   buildCatalogOffers,
   offerSummary,
 } from '../src/app/admin/embaixadores/ambassador-offer-catalog'
-import { sameCourseProblem } from '../src/app/admin/embaixadores/ambassador-offers-panel'
+import { sameCourseProblem, swapItems } from '../src/app/admin/embaixadores/ambassador-offers-panel'
 import { normalizeRedirectPath } from '../src/app/admin/embaixadores/campaign-shared'
 import { filterCampaigns, tabAfterKey } from '../src/app/admin/embaixadores/convites-client'
 import {
@@ -136,14 +136,22 @@ describe('bônus: "Veio por"', () => {
         offerSlug: 'desafio',
       }),
     ]
-    expect(bonusCameBy(items, 'Patrícia Ramos', names)).toEqual({
+    expect(bonusCameBy(items, { id: 'p1', name: 'Patrícia Ramos' }, names)).toEqual({
       label: 'Link pessoal',
       detail: 'comprou Desafio do Primeiro Jogo em 30/10',
     })
-    expect(bonusCameBy(items, 'Outra pessoa', names)).toBeNull()
+    expect(bonusCameBy(items, { id: 'p2', name: 'Outra pessoa' }, names)).toBeNull()
+  })
+  test('casa pelo id: outra embaixadora com o mesmo nome não leva o "Veio por"', () => {
+    const items = [acq({ ambassadorId: 'p9', ambassadorName: 'Patrícia Ramos' })]
+    expect(bonusCameBy(items, { id: 'p1', name: 'Patrícia Ramos' }, names)).toBeNull()
+    // Referrals anterior (sem o id no bônus): o nome ainda serve.
+    expect(bonusCameBy(items, { id: null, name: 'Patrícia Ramos' }, names)).not.toBeNull()
   })
   test('estornada não conta', () => {
-    expect(bonusCameBy([acq({ status: 'refunded' })], 'Patrícia Ramos', names)).toBeNull()
+    expect(
+      bonusCameBy([acq({ status: 'refunded' })], { id: 'p1', name: 'Patrícia Ramos' }, names),
+    ).toBeNull()
   })
 })
 
@@ -257,6 +265,20 @@ describe('ofertas dos embaixadores', () => {
     expect(gift).toMatchObject({ pageEligible: false, giftEligible: true })
     expect(parents).toMatchObject({ pageEligible: true, forParents: true, productSku: 'vilao' })
     expect(offerSummary(offer({})).replace(/\s/g, ' ')).toBe('Pagamento único R$ 67,00 · 30 dias')
+  })
+  test('oferta principal esgotada ou fora da janela de venda não tem página (a régua do member-shell)', () => {
+    const [soldOut] = buildCatalogOffers(
+      [offer({ id: 'o', isAvailable: false })],
+      [product({})],
+      [],
+    )
+    expect(soldOut?.pageEligible).toBe(false)
+  })
+  test('subir e descer trocam com a vizinha do MESMO grupo, onde quer que ela esteja', () => {
+    // [filho A, pais B, filho C]: subir o filho C troca com o filho A, não com o pais B.
+    expect(swapItems(['A', 'B', 'C'], 2, 0)).toEqual(['C', 'B', 'A'])
+    expect(swapItems(['A', 'B', 'C'], 1, 1)).toEqual(['A', 'B', 'C'])
+    expect(swapItems(['A', 'B', 'C'], 0, 9)).toEqual(['A', 'B', 'C'])
   })
   test('duas ligadas do mesmo curso: o recado do referrals, antes de gravar', () => {
     const catalog = new Map([
