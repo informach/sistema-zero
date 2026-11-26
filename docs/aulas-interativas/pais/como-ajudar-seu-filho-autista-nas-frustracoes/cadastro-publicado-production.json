@@ -1,15 +1,16 @@
 {
   "environment": "production",
-  "readAt": "2026-11-26T08:50:52.499695Z",
+  "readAt": "2026-11-26T13:30:56.664Z",
   "course": {
     "id": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
-    "version": 3,
+    "version": 4,
     "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
     "title": "Como ajudar seu filho autista a lidar com frustrações e evitar crises",
     "subtitle": "Cuidados para apoiar seu filho antes, durante e depois das crises.",
     "description": "Entenda o que pode levar à crise e como preparar a rotina, reduzir a sobrecarga e apoiar seu filho, com a psicóloga Vivianne Lima.",
     "coverImageUrl": "https://cdn.sistemazero.com.br/admin/course-publication/7dcdf31448481ad33f0bf4d2bbd4eb6f6107b88f003b97b09475571fccd3e38b/file.png",
-    "salesPageUrl": null,
+    "salesPageUrl": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta",
+    "salesOfferRef": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
     "status": "published",
     "audience": "kids",
     "level": "iniciante",
@@ -23,7 +24,7 @@
     "studioUnlockBlocks": [],
     "clonedFrom": null,
     "createdAt": "2026-11-26T00:44:19.627Z",
-    "updatedAt": "2026-11-26T01:00:56.415Z",
+    "updatedAt": "2026-11-26T12:55:38.806Z",
     "modules": [
       {
         "id": "e5bef4a4-faf7-58fa-a46c-e5cf39d90885",

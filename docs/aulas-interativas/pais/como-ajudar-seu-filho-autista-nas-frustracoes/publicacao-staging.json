@@ -259,7 +259,7 @@
     "url": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b.png"
   },
   "pending": [],
-  "verifiedAt": "2026-11-26T08:50:52.499695Z",
+  "verifiedAt": "2026-11-26T13:30:56.622Z",
   "videoReplacements": [
     {
       "part": "5-2",
@@ -279,5 +279,8 @@
       "tailAudioDecoded": true,
       "sameVideoId": true
     }
-  ]
+  ],
+  "courseVersion": 6,
+  "salesOfferRef": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+  "salesPageUrl": null
 }
