@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-11-26T12:26:30.867Z",
+  "generator": "built-in imagegen",
+  "processing": "WebP encoding only; original composition retained",
+  "assets": [
+    {
+      "name": "checkout-capa",
+      "source": "C:/Users/tocha/.codex/generated_images/01a2153c-d067-7ed2-8096-3e9e7f4f1e56/exec-75f7be68-2016-43c5-be7f-1ca1427b1585.png",
+      "width": 1254,
+      "height": 1254,
+      "pngBytes": 2219409,
+      "webpBytes": 213830,
+      "pngSha256": "c8d4fd6d711752f665423bcf5495fece2eebb25ce5e0f259a6b6878cfa1dcf59",
+      "webpSha256": "b53434968513a02ed4782b626bfb222102c7bcd1aae598adfd769eefaee66f6d"
+    },
+    {
+      "name": "oferta-antecipar",
+      "source": "C:/Users/tocha/.codex/generated_images/01a2153c-d067-7ed2-8096-3e9e7f4f1e56/exec-04b29438-ba72-4bd6-9986-ce5fc3edbab0.png",
+      "width": 1536,
+      "height": 1024,
+      "pngBytes": 2250051,
+      "webpBytes": 226732,
+      "pngSha256": "291b02dacf21e48f27915d14012624d5d6cee8329aaa4bc630d41ec6ea0fd440",
+      "webpSha256": "f28a364705501efdb4f9064ffd920a729a941d650212a21336962857ccc85ada"
+    },
+    {
+      "name": "oferta-acolher",
+      "source": "C:/Users/tocha/.codex/generated_images/01a2153c-d067-7ed2-8096-3e9e7f4f1e56/exec-deb62c00-7927-49af-8062-db4777a42e05.png",
+      "width": 1536,
+      "height": 1024,
+      "pngBytes": 2200353,
+      "webpBytes": 201704,
+      "pngSha256": "f0d6fb59739e20a2b91b59340268b02b676b12b87ec0dcc54ed3588860aa0f80",
+      "webpSha256": "011465010884cd12ad4dacfc4b2ba24d151dd7c6398ff274f7e606286fbb1b0e"
+    }
+  ]
+}

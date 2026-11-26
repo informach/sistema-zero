@@ -133,11 +133,13 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
         <h2 id="cpv-muda" class="c9-h2">{P.oQueMuda.titulo}</h2>
         <p class="c9-p">{P.oQueMuda.texto}</p>
       </div>
-      <div class="pk-heroi__visual">
-        <figure class="pk-figura">
-          <span class="pk-figura__rotulo">{P.oQueMuda.figura.rotulo}</span>
-          <OfferImage image={P.oQueMuda.figura.imagem} />
-        </figure>
+      <div class:list={['pk-heroi__visual', { 'cpv-ilustracoes': P.oQueMuda.figuras }]}>
+        {(P.oQueMuda.figuras ?? [P.oQueMuda.figura]).map((figura) => (
+          <figure class="pk-figura">
+            <span class="pk-figura__rotulo">{figura.rotulo}</span>
+            <OfferImage image={figura.imagem} />
+          </figure>
+        ))}
       </div>
     </div>
     <div class="c9-grade c9-min-200 c9-grade--20">

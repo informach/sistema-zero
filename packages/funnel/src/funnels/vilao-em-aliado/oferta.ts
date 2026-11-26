@@ -18,6 +18,7 @@ type Raso<T> = T extends string
 /** A copy do guia (as duas versões têm a mesma forma). */
 export type GuiaPaisCopy = Raso<Omit<typeof CURSO_PAIS_VILAO, 'estados'>> & {
   quemConduz: { foto: ImagemPresente }
+  oQueMuda: { figuras?: readonly { rotulo: string; imagem: ImagemPresente }[] }
   estados: {
     emBreve: EstadoPresente
     fechado: EstadoPresente
