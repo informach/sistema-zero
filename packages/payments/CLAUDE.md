@@ -247,7 +247,7 @@ gateway — private networking direto. Log `payments.internal_read`.
 interno, fora do gateway): os ids distintos de `metadata.offerId` dos pagamentos `PAID` do e-mail
 (`lower(customer->>'email')`) com `paid_at` antes de `before`, fora o `exclude`, até 50
 (`PaidOffersReader`, implementado pelo `DrizzlePaymentMyReadRepository`). É o histórico da
-"primeira assinatura" do bônus do referrals. ⚠️ O SQL não tem teste de banco.
+"primeira assinatura" do bônus do referrals. SQL em `tests/db/paid-offers-read.test.ts`.
 
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
 em memória/por instância — troque por Redis p/ limite global) + rate limit **GLOBAL
