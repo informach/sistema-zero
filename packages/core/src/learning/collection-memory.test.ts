@@ -33,7 +33,7 @@ function fixture(name = 'lembrete', invert = false) {
     type: 'g2d:onOverlap',
     aVar: 'p',
     bVar: 'item',
-    body: [{ type: 'assign', name, value: { type: 'bool', value: true } }],
+    body: [{ type: 'assign', name, value: { type: 'bool', value: true } }] as unknown[],
   }
   return {
     start,
@@ -166,7 +166,7 @@ describe('memória ligada à coleta e à decisão', () => {
     })
     const comColeta = (body: unknown[], extraStart: unknown[] = []) => {
       const f = fixture('pegou')
-      f.collection.body = body as typeof f.collection.body
+      f.collection.body = body
       f.project.ir.behavior.start.push(
         ...(extraStart as (typeof f.project.ir.behavior.start)[number][]),
       )
@@ -235,7 +235,7 @@ describe('memória ligada à coleta e à decisão', () => {
     test('a guarda num encontro com outra coisa continua recusada', () => {
       const f = fixture('pegou')
       f.collection.bVar = 'outro'
-      f.collection.body = [se(igualFalso('pegou'), [gravar('pegou')])] as typeof f.collection.body
+      f.collection.body = [se(igualFalso('pegou'), [gravar('pegou')])]
       expect(evaluatesCollectionMemory(rule, f.project)).toBe(false)
     })
   })
