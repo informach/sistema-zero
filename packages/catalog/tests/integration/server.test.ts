@@ -136,11 +136,11 @@ describe('catalog HTTP', () => {
     expect((await patch(alheia.id)).status).toBe(400)
     const ok = await patch(anual.id)
     expect(ok.status).toBe(200)
-    expect((await ok.json()).primaryOfferId).toBe(anual.id)
+    expect(await ok.json()).toMatchObject({ primaryOfferId: anual.id })
     // O funil lê pelo SKU, em rota própria: slug e SKU são espaços de nome separados.
     const pub = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
     expect(pub.status).toBe(200)
-    expect((await pub.json()).primaryOfferSlug).toBe('cade-1-ano')
+    expect(await pub.json()).toMatchObject({ primaryOfferSlug: 'cade-1-ano' })
     expect((await app.handle(req('GET', '/catalog/products/cade-todo-mundo'))).status).toBe(404)
     expect((await app.handle(req('GET', '/catalog/products/cade-pagina'))).status).toBe(200)
 
@@ -150,7 +150,7 @@ describe('catalog HTTP', () => {
     )
     expect(archived.status).toBe(200)
     const after = await app.handle(req('GET', '/catalog/products/by-sku/cade-todo-mundo'))
-    expect((await after.json()).primaryOfferSlug).toBeNull()
+    expect(await after.json()).toMatchObject({ primaryOfferSlug: null })
     const rename = await app.handle(
       req('PATCH', `/catalog/products/${cade.id}`, {
         headers: ADMIN,
@@ -188,7 +188,7 @@ describe('catalog HTTP', () => {
     )
     expect(res.status).toBe(200)
     const pub = await app.handle(req('GET', '/catalog/offers/marca-pagina-6m'))
-    expect((await pub.json()).content.pageSellable).toBe(true)
+    expect(await pub.json()).toMatchObject({ content: { pageSellable: true } })
   })
 
   it('cards do Início respeitam público, disponibilidade, publicação e local configurado', async () => {
