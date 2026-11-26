@@ -30,7 +30,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, toque num esconderijo. Tá vendo? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.
+[engaging, energetic, conversational voice] No Estúdio, aqui do lado da aula, deixe o seu jogo à vista. Agora, toque num esconderijo. Tá vendo? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O toque só deixava o esconderijo invisível quando a reação estava ligada a ele. Agora a gente vai fazer isso com os esconderijos do seu jogo!
 
