@@ -53,10 +53,10 @@ export function cadeAdultoVenda(prazo: PrazoDoCade, garantiaDias: number | null)
         {
           cor: 'verde',
           rotulo: 'PAGAMENTO ÚNICO',
-          texto: `Quando os ${prazo.dias} terminam, nenhuma cobrança começa.`,
+          texto: `Quando os ${prazo.extenso} terminam, nenhuma cobrança começa.`,
         },
       ],
-      nota: `Quando os ${prazo.dias} terminam, o curso fecha, o Mural adulto continua aberto para você ver e jogar, e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
+      nota: `Quando os ${prazo.extenso} terminam, o curso fecha, o Mural adulto continua aberto para você ver e jogar, e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
       cta: CTA,
     },
     duvidas: {
@@ -65,7 +65,7 @@ export function cadeAdultoVenda(prazo: PrazoDoCade, garantiaDias: number | null)
         nuncaProgramei!,
         celular!,
         {
-          pergunta: `Quando os ${prazo.dias} começam?`,
+          pergunta: `Quando os ${prazo.extenso} começam?`,
           resposta:
             'Quando o pagamento é aprovado. Compre quando tiver alguns dias livres pela frente.',
         },
