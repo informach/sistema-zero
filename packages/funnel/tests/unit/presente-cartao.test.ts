@@ -53,7 +53,7 @@ describe('cartaoDoPresente', () => {
   test('pessoa: a etiqueta com o primeiro nome, o preço do catálogo riscado até R$ 0 e o prazo divulgado', () => {
     const c = cartaoDoPresente(presente(), opts)
     expect(c.etiqueta).toBe('Um presente de Marta para você')
-    expect(c.precoCheio.replace(/\s/g, ' ')).toBe('R$ 37')
+    expect(c.precoCheio?.replace(/\s/g, ' ')).toBe('R$ 37')
     expect(c.precoFinal.replace(/\s/g, ' ')).toBe('R$ 0')
     // O cartão diz o prazo; a condição vai na linha embaixo do "R$ 0" (sem repetir).
     expect(c.texto).toBe('7 dias de acesso ao curso e ao Mural, contados do cadastro.')
@@ -86,7 +86,7 @@ describe('cartaoDoPresente', () => {
       priceReais: '27.00',
       formulario: 'guia',
     })
-    expect(guia.precoCheio.replace(/\s/g, ' ')).toBe('R$ 27')
+    expect(guia.precoCheio?.replace(/\s/g, ' ')).toBe('R$ 27')
     expect(guia.texto).toBe('7 dias de acesso ao guia, contados do cadastro.')
     expect(guia.resgate.variante).toBe('guia')
     const adulto = cartaoDoPresente(presente({ audience: 'adult' }), opts)
@@ -119,7 +119,7 @@ describe('cartaoDoPresente', () => {
 describe('copyDoPresente', () => {
   const cartao = cartaoDoPresente(presente({ dias: 30 }), {
     communityUrl: 'https://kids.example',
-    priceReais: 67,
+    priceReais: '67',
   })
 
   test('as condições da venda viram a frase do presente e o prazo conta do cadastro', () => {

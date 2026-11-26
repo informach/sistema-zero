@@ -52,6 +52,12 @@ function converter(valor: unknown, cartao: CartaoDoPresente): unknown {
 }
 
 /** A copy da página com o que só vale para a venda trocado pelo presente (cópia; o original fica). */
-export function copyDoPresente<T>(copy: T, cartao: CartaoDoPresente): T {
-  return converter(copy, cartao) as T
+export type CopyDoPresente<T> = T extends string
+  ? string
+  : T extends object
+    ? { [K in keyof T]: CopyDoPresente<T[K]> }
+    : T
+
+export function copyDoPresente<T>(copy: T, cartao: CartaoDoPresente): CopyDoPresente<T> {
+  return converter(copy, cartao) as CopyDoPresente<T>
 }
