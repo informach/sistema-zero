@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: 027f895b8a67300a4bae28f86423953893a1a289
+          ref: e0d5b0a71194f9486e3ce7a9a62e0aa8270afbb7
       - uses: ./.github/actions/setup-railway
       - name: Conferir leituras sem publicar servicos
         env:
