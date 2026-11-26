@@ -506,6 +506,17 @@ describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
     ).json()
     expect(lone.plans).toBeUndefined()
   })
+  test('revisão do Lote 7: catálogo fora não vira a leitura de uma oferta chamada "unavailable"', async () => {
+    const q = setup()
+    clearPrimaryOfferCache()
+    q.addOffer(offer)
+    q.setProduct(503, null)
+    const res = await q.routes.commerce.POST(
+      request({ action: 'inspect', origin: { kind: 'community' } }),
+    )
+    expect(res.status).toBeLessThan(500)
+    expect(q.reads).not.toContain('/catalog/offers/unavailable')
+  })
   test('revisão: trocar de plano nunca abre a compra em andamento de outro plano', async () => {
     const q = setup()
     const anual: CommerceCatalogOffer = {

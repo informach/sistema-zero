@@ -68,7 +68,17 @@ function PriceLine({
  * ela aberta trocava a página (o curso fechado vira o curso liberado) e a tela de "Pronto" sumia
  * antes de a pessoa ler; num build novo o refresh ainda vira recarregamento.
  */
-export function useCommerceDialogRefresh() {
+/**
+ * As compras com a janela ABERTA (por oferta): a lista de promoções não tira esse cartão enquanto
+ * a janela está aberta, mesmo depois de a oferta passar a "já tem" (o "Pronto" continua na tela).
+ * Revisão do Lote 7 (25/11/2026).
+ */
+const OPEN_PURCHASES = new Set<string>()
+export function isPurchaseDialogOpen(key: string | undefined): boolean {
+  return key !== undefined && OPEN_PURCHASES.has(key)
+}
+
+export function useCommerceDialogRefresh(key?: string) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const pending = useRef(false)
@@ -76,14 +86,36 @@ export function useCommerceDialogRefresh() {
     pending.current = true
     window.dispatchEvent(new Event('sz-commerce-updated'))
   }, [])
+  const openDialog = useCallback(() => {
+    if (key) OPEN_PURCHASES.add(key)
+    setOpen(true)
+  }, [key])
   const close = useCallback(() => {
     setOpen(false)
+    if (key) OPEN_PURCHASES.delete(key)
     if (pending.current) {
       pending.current = false
+      // A lista volta a filtrar o que a conta já tem, e a página do servidor atualiza.
+      window.dispatchEvent(new Event('sz-commerce-updated'))
       router.refresh()
     }
-  }, [router])
-  return { open, openDialog: () => setOpen(true), close, updated }
+  }, [key, router])
+  // O cartão saiu da tela com a compra pendente (a página mudou por baixo): a atualização não
+  // pode se perder junto com ele. O router vai por referência: a limpeza roda só ao desmontar
+  // (ou ao trocar de oferta), nunca a cada render.
+  const routerRef = useRef(router)
+  routerRef.current = router
+  useEffect(
+    () => () => {
+      if (key) OPEN_PURCHASES.delete(key)
+      if (pending.current) {
+        pending.current = false
+        routerRef.current.refresh()
+      }
+    },
+    [key],
+  )
+  return { open, openDialog, close, updated }
 }
 
 export function CommerceCard({
@@ -129,7 +161,7 @@ export function CommerceCard({
   place?: string
   next?: CommerceNextStep
 }) {
-  const { open, openDialog, close, updated } = useCommerceDialogRefresh()
+  const { open, openDialog, close, updated } = useCommerceDialogRefresh(offer?.slug)
   const originKey = JSON.stringify(origin)
   const giftIdentity = mode === 'gift' && !preview ? originKey : null
   const [inclusion, setInclusion] = useState<{
@@ -516,7 +548,13 @@ export function selectPromotions(
   { only, skipManaged = false }: { only?: 'community' | 'others'; skipManaged?: boolean } = {},
 ): PromotionCardView[] {
   return items.filter((item) => {
-    if (skipManaged && item.decision.kind === 'manage') return false
+    // A compra que acabou de virar "já tem" fica enquanto a janela dela está aberta.
+    if (
+      skipManaged &&
+      item.decision.kind === 'manage' &&
+      !isPurchaseDialogOpen(item.offer?.slug ?? item.offerRef)
+    )
+      return false
     const community = Boolean(item.offer && isCommunityProduct(item.offer))
     return only === 'community' ? community : only === 'others' ? !community : true
   })

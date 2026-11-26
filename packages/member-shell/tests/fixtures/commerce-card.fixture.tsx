@@ -30,9 +30,8 @@ mock.module('next/navigation', () => ({
     },
   }),
 }))
-const { CommerceCard, CommercePurchaseButton } = await import(
-  '../../src/components/commerce/commerce-card'
-)
+const { CommerceCard, CommercePurchaseButton, selectPromotions, useCommerceDialogRefresh } =
+  await import('../../src/components/commerce/commerce-card')
 let host = document.createElement('div')
 let root = createRoot(host)
 const included: Extract<CommerceView, { mode: 'included' }> = {
@@ -468,4 +467,33 @@ test('Lote 6: o botão de compra sozinho abre o mini checkout da oferta com o lu
     origin: { kind: 'offer', offerRef: course.slug },
     place: 'pais-curso-fechado',
   })
+})
+
+test('revisão do Lote 7: a compra que virou "já tem" fica enquanto a janela dela está aberta', async () => {
+  const managed = {
+    offerRef: 'comunidade-mensal',
+    promotion: { mode: 'purchase', title: 'Comunidade' },
+    decision: { kind: 'manage' },
+    offer: { slug: 'comunidade-mensal', product: { sku: 'comunidade-dos-criadores' } },
+  } as never
+  expect(selectPromotions([managed], { skipManaged: true })).toHaveLength(0)
+  let api: ReturnType<typeof useCommerceDialogRefresh> | null = null
+  function Probe() {
+    api = useCommerceDialogRefresh('comunidade-mensal')
+    return null
+  }
+  await act(async () => root.render(<Probe />))
+  await act(async () => api?.openDialog())
+  expect(selectPromotions([managed], { skipManaged: true })).toHaveLength(1)
+  const before = refreshes
+  await act(async () => api?.updated())
+  // Fechar a janela solta o cartão e atualiza a página.
+  await act(async () => api?.close())
+  expect(selectPromotions([managed], { skipManaged: true })).toHaveLength(0)
+  expect(refreshes).toBe(before + 1)
+  // Saiu da tela com a compra pendente: a atualização não se perde.
+  await act(async () => api?.openDialog())
+  await act(async () => api?.updated())
+  await act(async () => root.render(null))
+  expect(refreshes).toBe(before + 2)
 })

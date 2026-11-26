@@ -189,7 +189,9 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
     }
     if (!isSubscription(target)) return null
     const primary = await primaryOfferSlugFor(productBySku, target.product.sku)
-    if (typeof primary !== 'string' || primary === target.slug) return null
+    // `'unavailable'` é o marcador de catálogo fora, não um slug: sem a irmã, segue sem trocar.
+    if (typeof primary !== 'string' || primary === 'unavailable' || primary === target.slug)
+      return null
     const other = await offer(primary)
     return other?.isAvailable &&
       other.content?.altOffer?.slug === target.slug &&

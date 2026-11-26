@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Janela de compra aberta segura o cartão (25/11/2026, revisão do Lote 7)
+
+`useCommerceDialogRefresh(key)` registra a compra com a janela aberta (`OPEN_PURCHASES`, por slug
+da oferta): `selectPromotions(..., {skipManaged})` não tira esse cartão mesmo depois de virar "já
+tem", então o "Pronto" fica na tela; fechar a janela solta o cartão, relê as promoções e dá o
+`router.refresh()`. Se o cartão sair da tela com a compra pendente, a limpeza do efeito faz o
+refresh. `otherPlan` trata o marcador `'unavailable'` (catálogo fora) como "sem irmã".
+
 ## Curso fechado vendido na área dos pais (25/11/2026, Lote 6)
 
 - `members.getSaleOfferReadonly(ref)` (`server/clients.ts`): a oferta do catálogo
