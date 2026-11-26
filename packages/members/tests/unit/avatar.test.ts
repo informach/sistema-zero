@@ -225,18 +225,18 @@ describe('avatar do pack: o enquadramento da Cabine de fotos', () => {
     }) as unknown as ConstructorParameters<typeof EquipAvatarService>[0]
 
   test('grava a escolha e a mantém quando o pedido não a traz', async () => {
-    let gravado: { photoFraming?: string } | null = null
+    let gravado: unknown = null
     const svc = () =>
       new EquipAvatarService(
-        repo(gravado, (c) => (gravado = c as never)),
+        repo(gravado, (c) => (gravado = c)),
         () => new Date(),
       )
     await svc().execute('u', 'a', 'kids', { slots: base(), framing: 'body' })
-    expect(gravado?.photoFraming).toBe('body')
+    expect(gravado).toMatchObject({ photoFraming: 'body' })
     await svc().execute('u', 'a', 'kids', { slots: base() })
-    expect(gravado?.photoFraming).toBe('body')
+    expect(gravado).toMatchObject({ photoFraming: 'body' })
     await svc().execute('u', 'a', 'kids', { slots: base(), framing: 'face' })
-    expect(gravado?.photoFraming).toBe('face')
+    expect(gravado).toMatchObject({ photoFraming: 'face' })
   })
 
   test('a leitura guarda a escolha válida e ignora lixo', () => {

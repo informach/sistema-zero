@@ -151,6 +151,21 @@ describe('Avatar do pack: compra', () => {
 })
 
 describe('Avatar do pack: gravar', () => {
+  test('a escolha da Cabine atravessa PUT/GET e pedidos antigos não a apagam', async () => {
+    const { app } = buildApp()
+    const slots = (await readJson(await getAvatar(app))).equipped
+    const put = await putAvatar(app, { slots, framing: 'face' })
+    expect(put.status).toBe(200)
+    expect((await readJson(put)).photoFraming).toBe('face')
+    expect((await readJson(await getAvatar(app))).photoFraming).toBe('face')
+    expect((await putAvatar(app, { slots })).status).toBe(200)
+    expect((await readJson(await getAvatar(app))).photoFraming).toBe('face')
+    expect((await putAvatar(app, { slots, framing: 'perto' })).status).toBe(400)
+    expect((await readJson(await getAvatar(app))).photoFraming).toBe('face')
+    expect((await putAvatar(app, { slots, framing: 'body' })).status).toBe(200)
+    expect((await readJson(await getAvatar(app))).photoFraming).toBe('body')
+  })
+
   test('grava o que a pessoa montou, com o filtro, e passa a contar como personalizado', async () => {
     const { app } = buildApp()
     const slots = equipPart(C, base(), pecaDe('roupa_cima', 'free'))
