@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { kidsJourneyTargets, productionApplicationIds } from '../release/kids-journey-targets.mjs'
-import { createRailwayPorts } from './kids-journey-rollout.mjs'
+import { createRailwayPorts, describeKidsJourneyRolloutFailure } from './kids-journey-rollout.mjs'
 import {
   productionCiJobs,
   resolveProductionSource,
@@ -520,6 +520,22 @@ describe('one production owner and canonical V1 barrier', () => {
       runProductionRelease({ sha, services: 'admin', plan }, fixture.ports),
     ).rejects.toThrow('main drift')
   })
+  test('main advancing during the final native quota wait cannot receive a PASS', async () => {
+    const fixture = wave()
+    let nativeReads = 0
+    let mainChanged = false
+    const native = fixture.ports.backend.requireNativeDisabled
+    fixture.ports.backend.requireNativeDisabled = async () => {
+      await native()
+      if (++nativeReads === 2) mainChanged = true
+    }
+    fixture.ports.checkSource = async () => {
+      if (mainChanged) throw Error('main advanced during quota wait')
+    }
+    await expect(
+      runProductionRelease({ sha, services: 'admin', plan }, fixture.ports),
+    ).rejects.toThrow('main advanced during quota wait')
+  })
   test.each([
     'all',
     'members',
@@ -533,6 +549,74 @@ describe('one production owner and canonical V1 barrier', () => {
 })
 
 describe('actual Railway ports read the native toggle and deployment identity', () => {
+  test.each([
+    false,
+    true,
+  ])('native quota recovery still validates enabled=%s and never mutates', async (enabled) => {
+    let elapsed = 0
+    const queries: string[] = []
+    const logs: unknown[] = []
+    const ports = createRailwayPorts(sha, env, 'inert', {
+      target: 'production',
+      applications: true,
+      now: () => elapsed,
+      sleep: async (ms: number) => {
+        elapsed += ms
+      },
+      log: (entry: unknown) => logs.push(entry),
+      fetch: async (_url: string, request: { body: string }) => {
+        queries.push(JSON.parse(request.body).query)
+        return queries.length === 1
+          ? new Response('private quota payload', {
+              status: 429,
+              headers: { 'retry-after': '120' },
+            })
+          : Response.json({ data: { serviceInstanceAutoDeployStatus: { enabled } } })
+      },
+    })
+    const result = ports.requireNativeDisabled(['admin'], 180_000)
+    if (enabled) await expect(result).rejects.toThrow('Trigger nativo')
+    else await result
+    expect(elapsed).toBe(120_000)
+    expect(queries).toHaveLength(2)
+    expect(queries.every((query) => query.startsWith('query'))).toBe(true)
+    expect(logs).toContainEqual({
+      stage: 'railway-read-backoff',
+      reason: 'api-rate-limited',
+      waitMs: 120_000,
+    })
+    expect(JSON.stringify(logs)).not.toContain('private quota payload')
+  })
+  test('native quota cannot extend the deadline and reports the safe failing phase', async () => {
+    let elapsed = 0
+    let reads = 0
+    const ports = createRailwayPorts(sha, env, 'inert', {
+      target: 'production',
+      applications: true,
+      now: () => elapsed,
+      sleep: async (ms: number) => {
+        elapsed += ms
+      },
+      log: () => {},
+      fetch: async () => {
+        reads++
+        return new Response('', { status: 429, headers: { 'retry-after': '120' } })
+      },
+    })
+    let failure: unknown
+    try {
+      await ports.requireNativeDisabled(['admin'], 60_000)
+    } catch (error) {
+      failure = error
+    }
+    expect(failure).toBeDefined()
+    expect(elapsed).toBe(60_000)
+    expect(reads).toBe(1)
+    expect(describeKidsJourneyRolloutFailure(failure)).toMatchObject({
+      step: 'admin-native-trigger-read',
+      reason: 'read-deadline',
+    })
+  })
   test.each([
     true,
     null,
