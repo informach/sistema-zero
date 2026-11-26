@@ -36,3 +36,11 @@ A pedido da responsável, a parte passou a conter somente `video` e `materials`,
 A promoção completa desta rodada falhou durante a preparação, antes de aplicar a alteração no destino. A mesma mudança de conteúdo, já validada em staging, foi então aplicada e publicada diretamente na Aula 1 de produção pelo serviço canônico de autoria. Vídeos, anexos e critérios de conclusão foram comparados antes e depois e preservados. O manifesto local e as cópias dos cadastros dos dois ambientes refletem a alteração.
 
 Conferência no navegador em staging e produção: vídeo e materiais na mesma coluna, material abaixo do vídeo, ausência do livro 3D e do resumo, download do PDF funcionando e versão móvel sem rolagem horizontal. Os 32 testes editoriais e os 43 testes existentes da divisão de colunas passaram. Contas e concessões sintéticas foram encerradas novamente após a conferência.
+
+## Restauração do resumo em 26/11/2026
+
+Após conferir a intenção do bloco original, a responsável escolheu manter uma única coluna na Aula 1, Parte 2: vídeo, materiais da aula e o resumo **Para consultar**, nessa ordem. O texto original do bloco `resumo-a1` foi restaurado abaixo do PDF. O livro 3D permanece ausente, assim como a propriedade `bookPreview`.
+
+A alteração foi validada e publicada pelo serviço canônico de autoria em staging e produção. Foram preservados os vídeos, o planejamento de mídia, os anexos e os critérios de conclusão. O manifesto, as cópias de segurança e a verificação desta pasta refletem a nova composição.
+
+Conferência nos dois ambientes com navegador real em desktop e celular: resumo abaixo dos materiais, uma coluna, ausência do livro 3D, PDF disponível para baixar e nenhuma rolagem horizontal no celular. Os 32 testes editoriais passaram. As contas sintéticas foram bloqueadas e as concessões de ensaio revogadas novamente após a conferência.

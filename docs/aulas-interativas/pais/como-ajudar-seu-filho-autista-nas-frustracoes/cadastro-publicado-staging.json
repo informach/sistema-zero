@@ -1,6 +1,6 @@
 {
   "environment": "staging",
-  "readAt": "2026-11-26T01:11:11.399Z",
+  "readAt": "2026-11-26T08:14:22.146051Z",
   "course": {
     "id": "45da87d0-c2d2-400c-889d-5d4bbe1c868f",
     "version": 5,
@@ -99,7 +99,7 @@
         "estimatedMinutes": 5,
         "isPublished": true
       },
-      "revision": "eab177fa-d25f-4739-afc3-a4b32455b9a1",
+      "revision": "9c91cdb6-f6ca-4243-afb6-dbad06c4c840",
       "published": true,
       "document": {
         "slug": "como-ajudar-seu-filho-autista-nas-frustracoes-aula-1",
@@ -139,6 +139,13 @@
               ],
               "title": "Materiais da aula"
             }
+          },
+          {
+            "id": "015992d4-9962-4961-8fea-c93faf30c8fe",
+            "content": {
+              "kind": "rich_text",
+              "markdown": "## Para consultar\n\n- Crise não é desobediência. É comunicação: pode expressar uma dificuldade que a criança não está conseguindo enfrentar.\n- Mudanças inesperadas, excesso de estímulos ou uma barreira podem contribuir para a crise. Observar a situação ajuda a entender o que ficou difícil.\n- Nem toda fala é verbal. O olhar, o silêncio, o grito e a tentativa de se afastar podem dar pistas; não são uma tradução pronta do que toda criança sente.\n- Antes de corrigir ou chamar de birra, pergunte: o que ficou difícil para o meu filho nessa situação?\n- O curso segue por cinco aulas: entender a crise, conhecer fatores da frustração e cuidar do antes, do durante e do depois."
+            }
           }
         ],
         "sections": [
@@ -162,7 +169,8 @@
             "intent": "explanation",
             "blockIds": [
               "ad4c6a2c-c8e1-5343-a557-a5fdf546ba1d",
-              "52e45b01-578b-5a7c-adb7-88a4d0eef1ef"
+              "52e45b01-578b-5a7c-adb7-88a4d0eef1ef",
+              "015992d4-9962-4961-8fea-c93faf30c8fe"
             ],
             "objective": "Desenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar.",
             "completion": {

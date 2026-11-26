@@ -71,7 +71,7 @@ Os materiais finais ficam **nesta pasta do curso**:
 
 ### Posição dos materiais
 
-A apostila é mencionada no fim da **Aula 1, Parte 2, O que ninguém te contou sobre a crise**. O bloco `apostila`, com o título **Materiais da aula**, fica imediatamente abaixo desse vídeo, em uma única coluna. Ele contém somente o PDF para baixar, sem bloco de livro 3D ou texto de resumo. O download é opcional e não bloqueia a conclusão. O certificado fica na **Aula 5, Parte 3, Hoje eu escuto melhor**, e integra a conclusão.
+A apostila é mencionada no fim da **Aula 1, Parte 2, O que ninguém te contou sobre a crise**. O bloco `apostila`, com o título **Materiais da aula**, fica imediatamente abaixo desse vídeo, em uma única coluna. Ele contém o PDF para baixar. Logo abaixo fica o resumo **Para consultar**, com as ideias principais da aula, mantendo uma única coluna e sem livro 3D. O download é opcional e não bloqueia a conclusão. O certificado fica na **Aula 5, Parte 3, Hoje eu escuto melhor**, e integra a conclusão.
 
 ### Como refazer
 
