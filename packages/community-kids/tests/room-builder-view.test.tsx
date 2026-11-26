@@ -24,8 +24,8 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
   test('não libera salvamento durante erro e mantém as abas acessíveis', () => {
     const onTab = mock(() => {})
     render(<RoomBuilderView {...viewProps()} ready={false} onTab={onTab} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Piso' }))
-    expect(onTab).toHaveBeenCalledWith('piso')
+    fireEvent.click(screen.getByRole('button', { name: 'Clima' }))
+    expect(onTab).toHaveBeenCalledWith('clima')
     expect(screen.getByRole('button', { name: 'Salvar quarto' }).hasAttribute('disabled')).toBe(
       true,
     )
@@ -44,13 +44,14 @@ describe('RoomBuilderView — pele preservada com o documento Morada', () => {
     view.rerender(<RoomBuilderView {...viewProps()} saving />)
     expect(screen.getByRole('button', { name: 'Salvando…' }).hasAttribute('disabled')).toBe(true)
   })
-  test('as dez abas permanecem no painel, depois do Salvar na ordem de leitura', () => {
+  test('as oito categorias de Decorar ficam no painel, depois do Salvar na ordem de leitura', () => {
     render(<RoomBuilderView {...viewProps()} />)
     const panel = screen.getByRole('region', { name: 'Itens do quarto' })
-    // 26/11/2026: o painel ganhou "Decorar" e "No quarto"; as dez categorias moram em Decorar.
+    // 26/11/2026: o painel ganhou "Decorar", "Construir" e "No quarto"; Piso e Parede foram
+    // para Construir (modo construção), e as outras oito categorias moram em Decorar.
     expect(
       within(panel).getByRole('group', { name: 'Categorias' }).querySelectorAll('button'),
-    ).toHaveLength(10)
+    ).toHaveLength(8)
     expect(within(panel).getByRole('button', { name: 'Móveis' })).toBeDefined()
     expect(within(panel).getByRole('button', { name: 'Tema' })).toBeDefined()
     const save = screen.getByRole('button', { name: 'Salvar quarto' })

@@ -1,12 +1,17 @@
 'use client'
-import { Grid, OrbitControls } from '@react-three/drei'
+import { Edges, Grid, OrbitControls } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import { MoradaHouseView } from '@sistemazero/avatar-quarto/morada/house'
 import {
+  applyMoradaPlacement,
   MORADA_CATALOG,
   type MoradaHouse,
   type MoradaInstance,
+  type MoradaPlacement,
   type MoradaVector,
+  moradaInsertKind,
+  moradaInstanceCenter,
+  moradaWalls,
 } from '@sistemazero/core/morada'
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { type OrthographicCamera, PCFShadowMap } from 'three'
@@ -90,6 +95,33 @@ function RoomCameraRig({
   return null
 }
 
+/** As paredes no modo construção, como no The Sims: levantadas, cortadas na frente ou baixas. */
+export type RoomWallsMode = 'up' | 'cut' | 'down'
+
+/** A peça "fantasma" que segue o ponteiro (verde onde cabe, vermelha onde não cabe). */
+function PlacementGhost({ placement }: { placement: MoradaPlacement }) {
+  const piece = MORADA_CATALOG.pieces[placement.instance.pieceId]
+  if (!piece) return null
+  const { instance } = placement
+  const color = placement.valid ? '#22c55e' : '#ef4444'
+  return (
+    <group position={instance.position} rotation={[0, instance.rotation, 0]}>
+      <mesh
+        position={[
+          (piece.min[0] + piece.max[0]) / 2,
+          (piece.min[1] + piece.max[1]) / 2,
+          (piece.min[2] + piece.max[2]) / 2,
+        ]}
+        renderOrder={10}
+      >
+        <boxGeometry args={[piece.size[0] + 0.04, piece.size[1] + 0.04, piece.size[2] + 0.04]} />
+        <meshBasicMaterial color={color} opacity={0.22} transparent depthWrite={false} />
+        <Edges color={color} lineWidth={2} />
+      </mesh>
+    </group>
+  )
+}
+
 export function MoradaRoomScene({
   house,
   selectedId,
@@ -101,6 +133,11 @@ export function MoradaRoomScene({
   zoom,
   onZoomChange,
   className,
+  wallsMode,
+  showGrid = true,
+  placement,
+  onFloorHover,
+  onFloorClick,
 }: {
   house: MoradaHouse
   selectedId?: string | null
@@ -114,6 +151,13 @@ export function MoradaRoomScene({
   zoom?: RoomZoomRequest | null
   onZoomChange?: (factor: number) => void
   className?: string
+  /** O modo construção (26/11/2026): paredes levantadas/cortadas/baixas; manda no `cutaway`. */
+  wallsMode?: RoomWallsMode
+  showGrid?: boolean
+  /** A peça que está sendo posta ou movida (fantasma); com ela, o chão recebe o ponteiro. */
+  placement?: MoradaPlacement | null
+  onFloorHover?: (point: [number, number]) => void
+  onFloorClick?: (point: [number, number]) => void
 }) {
   const reducedMotion = useReducedMotion()
   const room = house.rooms.find((r) => r.id === house.roomId)
@@ -122,30 +166,68 @@ export function MoradaRoomScene({
   const piece = selected ? MORADA_CATALOG.pieces[selected.pieceId] : undefined
   const extent = Math.max(...(room?.size ?? [8, 6]))
   const lighting = lightingPreset(room?.lighting ?? 'dia')
-  // Recorte só da prévia: paredes e porta continuam no documento usado pelo jogo.
-  const preview = useMemo(
-    () => ({
-      ...house,
-      instances: house.instances.filter((instance) => {
-        if (!cutaway || !room || instance.roomId !== room.id || instance.parentId) return true
-        const model = MORADA_CATALOG.pieces[instance.pieceId]
-        if (
-          model?.kind !== 'construction' ||
-          model.size[1] < 1.5 ||
-          Math.min(model.size[0], model.size[2]) > 0.5
-        )
-          return true
-        const x = (model.min[0] + model.max[0]) / 2,
-          z = (model.min[2] + model.max[2]) / 2
-        const centerX =
-          instance.position[0] + x * Math.cos(instance.rotation) + z * Math.sin(instance.rotation)
-        const centerZ =
-          instance.position[2] - x * Math.sin(instance.rotation) + z * Math.cos(instance.rotation)
-        return centerX < room.size[0] / 2 - 0.3 && centerZ < room.size[1] / 2 - 0.3
-      }),
-    }),
-    [house, room, cutaway],
+  const mode: RoomWallsMode = wallsMode ?? (cutaway ? 'cut' : 'up')
+  // Recorte só da prévia: paredes e porta continuam no documento usado pelo jogo. Com a peça em
+  // andamento, a prévia já mostra a parede trocada (a janela no vão novo).
+  const shown = useMemo(
+    () =>
+      placement
+        ? applyMoradaPlacement(
+            house,
+            placement.valid ? placement : { ...placement, replace: undefined },
+          )
+        : house,
+    [house, placement],
   )
+  const walls = useMemo(() => moradaWalls(shown), [shown])
+  const preview = useMemo(() => {
+    const keep = (instance: MoradaInstance) => {
+      if (mode === 'up' || !room || instance.roomId !== room.id || instance.parentId) return true
+      const model = MORADA_CATALOG.pieces[instance.pieceId]
+      if (
+        model?.kind !== 'construction' ||
+        model.size[1] < 1.5 ||
+        Math.min(model.size[0], model.size[2]) > 0.5
+      )
+        return true
+      if (mode === 'down') return false
+      const x = (model.min[0] + model.max[0]) / 2,
+        z = (model.min[2] + model.max[2]) / 2
+      const centerX =
+        instance.position[0] + x * Math.cos(instance.rotation) + z * Math.sin(instance.rotation)
+      const centerZ =
+        instance.position[2] - x * Math.sin(instance.rotation) + z * Math.cos(instance.rotation)
+      return centerX < room.size[0] / 2 - 0.3 && centerZ < room.size[1] / 2 - 0.3
+    }
+    const hiddenWalls = new Set(walls.filter((w) => !keep(w.instance)).map((w) => w.instance.id))
+    return {
+      ...shown,
+      instances: shown.instances.filter((instance) => {
+        if (placement && instance.id === placement.instance.id) return true
+        const model = MORADA_CATALOG.pieces[instance.pieceId]
+        // Janela e porta acompanham a parede delas: parede cortada ou baixa leva junto.
+        if (
+          model &&
+          moradaInsertKind(model) &&
+          room &&
+          instance.roomId === room.id &&
+          mode !== 'up'
+        ) {
+          const [x, z] = moradaInstanceCenter(instance, model)
+          const wall = walls.find((w) => {
+            const along = (x - w.start[0]) * w.dir[0] + (z - w.start[1]) * w.dir[1]
+            const off = Math.abs((x - w.start[0]) * w.dir[1] - (z - w.start[1]) * w.dir[0])
+            return off < 0.2 && along > -0.05 && along < w.length + 0.05
+          })
+          if (wall && hiddenWalls.has(wall.instance.id)) return false
+        }
+        return keep(instance)
+      }),
+    }
+  }, [shown, walls, room, mode, placement])
+  /** Com as paredes baixas, fica o rodapé de cada trecho (como no The Sims). */
+  const stubs = mode === 'down' && room ? walls.filter((w) => w.instance.roomId === room.id) : []
+  const press = useRef<[number, number] | null>(null)
   return (
     <Canvas
       orthographic
@@ -193,15 +275,59 @@ export function MoradaRoomScene({
           house={preview}
           roomId={house.roomId}
           paused={staticView || reducedMotion}
-          interactive={!staticView}
+          interactive={!staticView && !placement}
           onSelect={onSelect}
           onMove={onMove}
         />
       </Suspense>
-      {!staticView ? (
+      {stubs.map((wall) => (
+        <mesh
+          key={wall.instance.id}
+          position={[
+            origin[0] + wall.start[0] + (wall.dir[0] * wall.length) / 2,
+            origin[1] + 0.09,
+            origin[2] + wall.start[1] + (wall.dir[1] * wall.length) / 2,
+          ]}
+          rotation={[0, wall.instance.rotation, 0]}
+        >
+          <boxGeometry args={[wall.length, 0.18, wall.thickness]} />
+          <meshStandardMaterial color="#e9d6c4" />
+        </mesh>
+      ))}
+      {placement ? (
+        <group position={origin}>
+          <PlacementGhost placement={placement} />
+        </group>
+      ) : null}
+      {onFloorHover || onFloorClick ? (
+        <mesh
+          position={[origin[0], origin[1] + 0.001, origin[2]]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          onPointerMove={(event) => {
+            event.stopPropagation()
+            onFloorHover?.([event.point.x - origin[0], event.point.z - origin[2]])
+          }}
+          // O clique é o apertar e soltar sem arrastar (arrastar gira a vista).
+          onPointerDown={(event) => {
+            if (event.button === 0) press.current = [event.clientX, event.clientY]
+          }}
+          onPointerUp={(event) => {
+            const start = press.current
+            press.current = null
+            if (!start || Math.hypot(event.clientX - start[0], event.clientY - start[1]) > 6) return
+            event.stopPropagation()
+            onFloorClick?.([event.point.x - origin[0], event.point.z - origin[2]])
+          }}
+        >
+          <planeGeometry args={[40, 40]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      ) : null}
+      {!staticView && showGrid ? (
         <Grid
           args={room?.size ?? [8, 6]}
-          position={[origin[0], origin[1] - 0.015, origin[2]]}
+          // No modo construção a grade fica por cima do piso (antes ela sumia embaixo dele).
+          position={[origin[0], origin[1] + (zoomable ? 0.012 : -0.015), origin[2]]}
           cellSize={0.5}
           cellThickness={0.5}
           sectionSize={2}
@@ -230,7 +356,8 @@ export function MoradaRoomScene({
       <OrbitControls
         makeDefault
         target={[origin[0], origin[1] + 1.2, origin[2]]}
-        enablePan={false}
+        // O modo construção arrasta a vista com o botão direito (ou dois dedos).
+        enablePan={zoomable && !staticView}
         // Rodinha e pinça aproximam (para onde o cursor aponta); o OrbitControls cancela a
         // rolagem da página sobre o quarto. Na vista parada (perfil) nada se mexe.
         enableZoom={zoomable && !staticView}

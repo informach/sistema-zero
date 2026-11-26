@@ -1,31 +1,59 @@
 'use client'
 import {
+  applyMoradaPlacement,
+  emptyMoradaHistory,
   isMoradaAdultOnly,
   isMoradaTrophyTier,
+  MORADA_BUILD_TYPES,
   MORADA_CATALOG,
   MORADA_TROPHY_SHELF,
+  type MoradaBuildType,
+  type MoradaHouse,
   type MoradaInstance,
   type MoradaPiece,
   type MoradaRoom,
+  moradaBuildType,
   moradaFileUrl,
+  moradaInstanceCenter,
   moradaPieceAllowed,
+  moradaPlace,
   moradaPrice,
+  moradaRemove,
+  moradaRotateAroundCenter,
+  pushMoradaHistory,
+  redoMoradaHistory,
+  undoMoradaHistory,
 } from '@sistemazero/core/morada'
 import {
   ArrowDownToLine,
   ArrowUpToLine,
   BrickWall,
+  Copy,
+  Grid3x3,
   Loader2,
   Lock,
+  Move,
+  Pipette,
+  Redo2,
   RefreshCw,
   RotateCw,
   Scan,
+  Scissors,
   Trash2,
+  Undo2,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { type ComponentType, type KeyboardEvent, type ReactNode, useMemo, useState } from 'react'
+import {
+  type ComponentType,
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   LIGHTING_PRESETS,
   ROOM_THEME_INFO,
@@ -34,7 +62,8 @@ import {
 } from '../../../lib/room-catalog'
 import { KidsMascot } from '../presentation'
 import { adultPrice, adultUnlock } from '../skin'
-import { moradaFitsRoom, moradaSurfaceOptions, removeMoradaInstance } from './morada-editor-model'
+import { moradaFitsRoom, moradaSurfaceOptions } from './morada-editor-model'
+import type { RoomWallsMode } from './morada-room-scene'
 import type { MoradaRoomViewProps, RoomPanel } from './morada-room-view'
 import { moradaTrophyHint } from './morada-trophy-hint'
 import type { RoomBuilderTab } from './room-builder-model'
@@ -99,8 +128,28 @@ export function MoradaRoomBuilder({
   avatarPhotoUrl?: string | null
   trophyHints?: Readonly<Record<string, string>>
 }) {
-  const editor = useMoradaEditor(adult ? 'adult' : 'kids')
+  const editor = useMoradaEditor(adult ? 'adult' : 'kids', { autosave: !adult })
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  /**
+   * O modo construção (26/11/2026): a peça em andamento (nova, movida ou duplicada) segue o
+   * ponteiro como fantasma e só entra na casa com o clique num lugar que serve; o desfazer guarda
+   * a casa antes de cada gesto.
+   */
+  const [placing, setPlacing] = useState<{
+    pieceId: string
+    rotation: number
+    base: MoradaInstance
+    moving: boolean
+  } | null>(null)
+  const [hover, setHover] = useState<[number, number] | null>(null)
+  const [history, setHistory] = useState(emptyMoradaHistory)
+  const [wallsMode, setWallsMode] = useState<RoomWallsMode>('cut')
+  const [showGrid, setShowGrid] = useState(true)
+  const [buildType, setBuildType] = useState<MoradaBuildType>('paredes')
+  const [buildQuery, setBuildQuery] = useState('')
+  const [copiedLook, setCopiedLook] = useState<Pick<MoradaInstance, 'colors' | 'materials'> | null>(
+    null,
+  )
   const [tab, setTab] = useState<RoomBuilderTab>('moveis')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(0)
@@ -124,7 +173,7 @@ export function MoradaRoomBuilder({
   const [toBuy, setToBuy] = useState<MoradaPiece | null>(null)
   /** `comprada`: acabou de comprar (o `owned` ainda não renderizou de novo). */
   const place = (piece: MoradaPiece, comprada = false) =>
-    piece.kind === 'pet' ? editor.update((h) => ({ ...h, pet: piece.id })) : add(piece.id, comprada)
+    piece.kind === 'pet' ? commit((h) => ({ ...h, pet: piece.id })) : add(piece.id, comprada)
   const confirmBuy = async () => {
     const piece = toBuy
     if (!piece) return
@@ -136,7 +185,85 @@ export function MoradaRoomBuilder({
   const room = draft?.rooms.find((r) => r.id === draft.roomId)
   const selected = draft?.instances.find((i) => i.id === selectedId)
   const selectedPiece = selected ? MORADA_CATALOG.pieces[selected.pieceId] : undefined
-  const locked = editor.status === 'saving' || Boolean(editor.conflict)
+  const locked = (adult && editor.status === 'saving') || Boolean(editor.conflict)
+  /** Toda mudança da casa passa por aqui: guarda o passo do desfazer e salva sozinho depois. */
+  const commit = (change: (house: MoradaHouse) => MoradaHouse, key: string | null = null) => {
+    if (!draft || locked) return
+    const before = draft
+    setHistory((h) => pushMoradaHistory(h, before, key))
+    editor.update(change)
+  }
+  const undo = () => {
+    if (!draft || locked) return
+    const step = undoMoradaHistory(history, draft)
+    if (!step) return
+    setHistory(step.history)
+    setPlacing(null)
+    editor.update(() => step.house)
+  }
+  const redo = () => {
+    if (!draft || locked) return
+    const step = redoMoradaHistory(history, draft)
+    if (!step) return
+    setHistory(step.history)
+    setPlacing(null)
+    editor.update(() => step.house)
+  }
+  const startPlacing = (pieceId: string, base?: MoradaInstance, moving = false) => {
+    if (!draft || locked) return
+    const instance: MoradaInstance = base ?? {
+      id: crypto.randomUUID(),
+      pieceId,
+      roomId: draft.roomId,
+      position: [0, 0, 0],
+      rotation: 0,
+    }
+    setPlacing({ pieceId, rotation: instance.rotation, base: instance, moving })
+    const piece = MORADA_CATALOG.pieces[pieceId]
+    setHover(base && piece ? moradaInstanceCenter(base, piece) : null)
+    setStackPicker(false)
+  }
+  const placement = useMemo(
+    () =>
+      placing && draft && hover
+        ? moradaPlace(draft, placing.pieceId, hover, {
+            rotation: placing.rotation,
+            base: placing.base,
+          })
+        : null,
+    [placing, draft, hover],
+  )
+  /**
+   * Cada peça em andamento entra na casa UMA vez: o id dela é gasto no primeiro clique que serve.
+   * Dois `pointerup` do mesmo clique (ou um Enter junto) chegam com o mesmo `placing` ainda na
+   * mão, antes de a tela renderizar de novo; sem esta marca a segunda janela entrava por cima.
+   */
+  const placedIds = useRef(new Set<string>())
+  const confirmPlacement = (point?: [number, number]) => {
+    if (!placing || !draft || placedIds.current.has(placing.base.id)) return
+    const result = point
+      ? moradaPlace(draft, placing.pieceId, point, {
+          rotation: placing.rotation,
+          base: placing.base,
+        })
+      : placement
+    if (!result) return
+    if (!result.valid) {
+      editor.setMessage(result.reason ?? 'Aqui não dá.')
+      return
+    }
+    placedIds.current.add(placing.base.id)
+    commit((house) => applyMoradaPlacement(house, result))
+    setSelectedId(result.instance.id)
+    const piece = MORADA_CATALOG.pieces[placing.pieceId]
+    // Parede, janela e piso continuam na mão (como no The Sims); móvel e peça movida soltam.
+    if (piece?.kind === 'construction' && !placing.moving)
+      setPlacing({
+        ...placing,
+        base: { ...placing.base, id: crypto.randomUUID() },
+      })
+    else setPlacing(null)
+  }
   const chip = adult
     ? 'sz-cos-chip'
     : 'inline-flex min-h-11 items-center justify-center gap-1 rounded-full border-2 border-border bg-card px-3 py-1.5 font-semibold text-xs hover:border-primary disabled:opacity-50'
@@ -157,29 +284,37 @@ export function MoradaRoomBuilder({
       editor.setMessage('A peça precisa caber dentro do quarto.')
       return
     }
-    editor.update((house) => ({
-      ...house,
-      instances: house.instances.map((i) => (i.id === selected.id ? next : i)),
-    }))
+    commit(
+      (house) => ({
+        ...house,
+        instances: house.instances.map((i) => (i.id === selected.id ? next : i)),
+      }),
+      `ajuste:${selected.id}:${Object.keys(change).join(',')}`,
+    )
   }
   const add = (pieceId: string, comprada = false) => {
     const piece = MORADA_CATALOG.pieces[pieceId]
     if (!draft || !piece || locked || !(comprada || owned.has(pieceId))) return
-    const instance: MoradaInstance = {
-      id: crypto.randomUUID(),
-      pieceId,
-      position: [0, piece.mount === 'wall' ? 1 : piece.mount === 'ceiling' ? 3 : 0, 0],
-      rotation: 0,
-      roomId: draft.roomId,
-    }
-    if (!moradaFitsRoom(draft, instance)) {
-      editor.setMessage(
-        'Esta peça é maior que o quarto. Ela pode ser usada numa área maior da casa.',
-      )
+    if (adult) {
+      const instance: MoradaInstance = {
+        id: crypto.randomUUID(),
+        pieceId,
+        position: [0, piece.mount === 'wall' ? 1 : piece.mount === 'ceiling' ? 3 : 0, 0],
+        rotation: 0,
+        roomId: draft.roomId,
+      }
+      if (!moradaFitsRoom(draft, instance)) {
+        editor.setMessage(
+          'Esta peça é maior que o quarto. Ela pode ser usada numa área maior da casa.',
+        )
+        return
+      }
+      commit((h) => ({ ...h, instances: [...h.instances, instance] }))
+      setSelectedId(instance.id)
       return
     }
-    editor.update((h) => ({ ...h, instances: [...h.instances, instance] }))
-    setSelectedId(instance.id)
+    // Kids: a peça vem no ponteiro e cai onde a criança clicar.
+    startPlacing(pieceId)
   }
   const move = (axis: number, delta: number) => {
     if (!selected || selected.parentId) return
@@ -187,17 +322,57 @@ export function MoradaRoomBuilder({
     position[axis] = Math.round(((position[axis] ?? 0) + delta) * 2) / 2
     updateSelected({ position })
   }
-  const rotate = () =>
-    selected &&
-    updateSelected({ rotation: (selected.rotation + Math.PI / 2 + Math.PI * 2) % (Math.PI * 2) })
+  const rotate = () => {
+    if (placing) {
+      setPlacing({ ...placing, rotation: (placing.rotation + Math.PI / 2) % (Math.PI * 2) })
+      return
+    }
+    if (!selected || !selectedPiece) return
+    // Gira em volta do centro da peça (a parede girava pela ponta e saía do lugar).
+    const next = moradaRotateAroundCenter(selected, selectedPiece)
+    updateSelected({ rotation: next.rotation, position: next.position })
+  }
   const remove = () => {
-    if (selected) editor.update((h) => removeMoradaInstance(h, selected.id))
+    // Tirar janela ou porta fecha o vão (o trecho volta a parede lisa, com as cores).
+    if (selected) commit((h) => moradaRemove(h, selected.id))
     setSelectedId(null)
+  }
+  const duplicate = () => {
+    if (!selected || !selectedPiece || selected.parentId) return
+    startPlacing(selected.pieceId, {
+      ...selected,
+      id: crypto.randomUUID(),
+    })
+  }
+  const pasteLook = () => {
+    if (!copiedLook || !selected) return
+    updateSelected({ colors: copiedLook.colors, materials: copiedLook.materials })
   }
   const keyDown = (event: KeyboardEvent<HTMLElement>) => {
     const target = event.target as HTMLElement
-    if (!selected || locked || target.matches('input,select,textarea') || target.isContentEditable)
+    if (locked || target.matches('input,select,textarea') || target.isContentEditable) return
+    const mod = event.ctrlKey || event.metaKey
+    if (mod && (event.key === 'z' || event.key === 'Z' || event.key === 'y')) {
+      event.preventDefault()
+      if (event.key === 'y' || event.shiftKey) redo()
+      else undo()
       return
+    }
+    if (placing) {
+      const placingActions: Record<string, () => void> = {
+        r: rotate,
+        R: rotate,
+        Escape: () => setPlacing(null),
+        Enter: () => confirmPlacement(),
+      }
+      const action = placingActions[event.key]
+      if (action) {
+        event.preventDefault()
+        action()
+      }
+      return
+    }
+    if (!selected) return
     const actions: Record<string, () => void> = {
       ArrowLeft: () => move(0, -0.5),
       ArrowRight: () => move(0, 0.5),
@@ -215,13 +390,29 @@ export function MoradaRoomBuilder({
       action()
     }
   }
+  // O foco costuma ficar na página (o clique no quarto 3D não foca nada): as teclas do modo
+  // construção também valem com o foco no corpo da página.
+  const keyRef = useRef(keyDown)
+  keyRef.current = keyDown
+  useEffect(() => {
+    if (adult) return
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      // A seção já trata as teclas dela; fora dela (o corpo da página, um botão da barra) também vale.
+      if (target?.closest('section[aria-label]') || target?.matches?.('input,select,textarea'))
+        return
+      keyRef.current(event as unknown as KeyboardEvent<HTMLElement>)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [adult])
   const applyLighting = (lighting: NonNullable<MoradaRoom['lighting']>) =>
-    editor.update((house) => ({
+    commit((house) => ({
       ...house,
       rooms: house.rooms.map((r) => (r.id === house.roomId ? { ...r, lighting } : r)),
     }))
   const applySurface = (kind: 'piso' | 'parede', value: { texture?: string; color?: string }) =>
-    editor.update((house) => ({
+    commit((house) => ({
       ...house,
       instances: house.instances.map((instance) => {
         if (instance.roomId !== house.roomId || instance.parentId) return instance
@@ -246,7 +437,7 @@ export function MoradaRoomBuilder({
   const applyTheme = (id: string) => {
     const theme = THEME_PRESETS[id]
     if (!theme) return
-    editor.update((house) => ({
+    commit((house) => ({
       ...house,
       rooms: house.rooms.map((r) =>
         r.id === house.roomId ? { ...r, lighting: theme.lighting as MoradaRoom['lighting'] } : r,
@@ -427,17 +618,29 @@ export function MoradaRoomBuilder({
       >
         <Scene
           house={draft}
-          selectedId={selectedId}
-          onSelect={select}
-          onMove={(instance, position) => {
-            if (!draft || locked) return
-            const next = { ...instance, position }
-            if (moradaFitsRoom(draft, next))
-              editor.update((house) => ({
-                ...house,
-                instances: house.instances.map((i) => (i.id === instance.id ? next : i)),
-              }))
-          }}
+          selectedId={placing ? null : selectedId}
+          onSelect={placing ? undefined : select}
+          onMove={
+            placing || !adult
+              ? undefined
+              : (instance, position) => {
+                  if (!draft || locked) return
+                  const next = { ...instance, position }
+                  if (moradaFitsRoom(draft, next))
+                    commit(
+                      (house) => ({
+                        ...house,
+                        instances: house.instances.map((i) => (i.id === instance.id ? next : i)),
+                      }),
+                      `mover:${instance.id}`,
+                    )
+                }
+          }
+          placement={placement}
+          onFloorHover={placing ? setHover : undefined}
+          onFloorClick={placing ? (point) => confirmPlacement(point) : undefined}
+          wallsMode={adult ? undefined : wallsMode}
+          showGrid={adult ? true : showGrid}
           cutaway={cutaway}
           zoomable={!adult}
           zoom={zoomRequest}
@@ -515,6 +718,39 @@ export function MoradaRoomBuilder({
       >
         <RotateCw className="size-3.5" /> Girar
       </button>
+      {adult ? null : (
+        <>
+          <button
+            type="button"
+            disabled={locked || Boolean(selected.parentId)}
+            className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+            onClick={() => startPlacing(selected.pieceId, selected, true)}
+          >
+            <Move className="size-3.5" /> Mover
+          </button>
+          <button
+            type="button"
+            disabled={locked || Boolean(selected.parentId)}
+            className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+            onClick={duplicate}
+          >
+            <Copy className="size-3.5" /> Duplicar
+          </button>
+          <button
+            type="button"
+            disabled={locked}
+            aria-pressed={Boolean(copiedLook)}
+            className="inline-flex min-h-11 items-center gap-1 rounded-full bg-card px-3 py-2.5 font-bold text-foreground text-xs shadow"
+            onClick={() =>
+              copiedLook
+                ? pasteLook()
+                : setCopiedLook({ colors: selected.colors, materials: selected.materials })
+            }
+          >
+            <Pipette className="size-3.5" /> {copiedLook ? 'Colar cores' : 'Copiar cores'}
+          </button>
+        </>
+      )}
       <button
         type="button"
         disabled={locked}
@@ -677,19 +913,88 @@ export function MoradaRoomBuilder({
   const keepFocus = (event: { preventDefault(): void }) => event.preventDefault()
   const toolButton =
     'inline-flex size-11 items-center justify-center rounded-full border-2 border-border bg-card text-foreground shadow-md transition-colors hover:border-primary disabled:opacity-50'
+  const WALLS: { id: RoomWallsMode; label: string; icon: typeof BrickWall }[] = [
+    { id: 'up', label: 'Paredes de pé', icon: BrickWall },
+    { id: 'cut', label: 'Paredes da frente cortadas', icon: Scissors },
+    { id: 'down', label: 'Paredes baixas', icon: ArrowDownToLine },
+  ]
+  const placingPiece = placing ? MORADA_CATALOG.pieces[placing.pieceId] : undefined
   const stageTools = adult ? null : (
     <>
-      <div className="absolute bottom-2 left-2 flex gap-2">
+      <div
+        role="group"
+        aria-label="Desfazer e refazer"
+        className="absolute top-2 left-2 flex gap-2"
+      >
         <button
           type="button"
-          aria-pressed={!cutaway}
-          aria-label="Mostrar todas as paredes"
-          title="Mostrar todas as paredes"
+          aria-label="Desfazer"
+          title="Desfazer (Ctrl+Z)"
+          disabled={!history.past.length || locked}
           onMouseDown={keepFocus}
-          onClick={() => setCutaway((value) => !value)}
-          className={`${toolButton} ${!cutaway ? 'border-primary bg-primary/10' : ''}`}
+          onClick={undo}
+          className={toolButton}
         >
-          <BrickWall className="size-5" aria-hidden="true" />
+          <Undo2 className="size-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          aria-label="Refazer"
+          title="Refazer (Ctrl+Shift+Z)"
+          disabled={!history.future.length || locked}
+          onMouseDown={keepFocus}
+          onClick={redo}
+          className={toolButton}
+        >
+          <Redo2 className="size-5" aria-hidden="true" />
+        </button>
+      </div>
+      {placing && placingPiece ? (
+        <div
+          role="status"
+          className={`absolute top-2 left-1/2 max-w-[calc(100%-14rem)] -translate-x-1/2 rounded-full px-4 py-2 text-center font-bold text-sm shadow-md ${placement && !placement.valid ? 'bg-(--sz-hot) text-(--sz-hot-fg)' : 'bg-card text-foreground'}`}
+        >
+          {placement && !placement.valid
+            ? placement.reason
+            : placement?.replace
+              ? `Clique para pôr ${placingPiece.label.toLocaleLowerCase('pt-BR')}: a parede ganha o vão`
+              : `Clique para pôr · R gira · Esc cancela`}
+        </div>
+      ) : null}
+      <div className="absolute bottom-2 left-2 flex gap-2">
+        <div
+          role="group"
+          aria-label="Paredes"
+          className="flex gap-1 rounded-full border-2 border-border bg-card p-1 shadow-md"
+        >
+          {WALLS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={wallsMode === id}
+              aria-label={label}
+              title={label}
+              onMouseDown={keepFocus}
+              onClick={() => {
+                setWallsMode(id)
+                setCutaway(id !== 'up')
+              }}
+              className={`inline-flex size-9 items-center justify-center rounded-full ${wallsMode === id ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted'}`}
+            >
+              <Icon className="size-4" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          aria-pressed={showGrid}
+          aria-label="Mostrar a grade"
+          title="Mostrar a grade"
+          onMouseDown={keepFocus}
+          onClick={() => setShowGrid((value) => !value)}
+          className={`${toolButton} ${showGrid ? 'border-primary bg-primary/10' : ''}`}
+        >
+          <Grid3x3 className="size-5" aria-hidden="true" />
         </button>
       </div>
       <div
@@ -761,6 +1066,76 @@ export function MoradaRoomBuilder({
       {MORADA_CATALOG.pieces[instance.pieceId]?.label ?? 'Peça'}
     </button>
   ))
+  const buildPieces = pieces.filter(
+    (p) =>
+      moradaBuildType(p) === buildType &&
+      p.label.toLocaleLowerCase('pt-BR').includes(buildQuery.toLocaleLowerCase('pt-BR')),
+  )
+  const build = adult ? null : (
+    <fieldset disabled={locked} className="space-y-3">
+      <legend className="sr-only">Construir</legend>
+      <div role="group" aria-label="Tipos de construção" className="grid grid-cols-3 gap-1.5">
+        {MORADA_BUILD_TYPES.map((type) => (
+          <button
+            key={type.id}
+            type="button"
+            aria-pressed={buildType === type.id}
+            onClick={() => {
+              setBuildType(type.id)
+              setBuildQuery('')
+            }}
+            className={`min-h-11 rounded-2xl border-2 px-2 font-semibold text-xs ${buildType === type.id ? 'border-primary bg-primary/10' : 'border-border'}`}
+          >
+            {type.label}
+          </button>
+        ))}
+      </div>
+      {buildType === 'paredes' ? (
+        <div className="flex flex-wrap gap-2">
+          {ROOM_WALL_PALETTE.map((color) => (
+            <button
+              key={color.hex}
+              type="button"
+              className="min-h-11 min-w-11 rounded-full border-2 border-border"
+              aria-label={`Pintar parede de ${color.labelPt}`}
+              style={{ background: color.hex }}
+              onClick={() => applySurface('parede', { color: color.hex })}
+            />
+          ))}
+        </div>
+      ) : null}
+      <input
+        type="search"
+        aria-label="Buscar na construção"
+        placeholder="Buscar"
+        className={input}
+        value={buildQuery}
+        onChange={(e) => setBuildQuery(e.target.value)}
+      />
+      <div className="grid grid-cols-3 gap-2 @min-[20rem]/bandeja:grid-cols-4">
+        {buildPieces.slice(0, 60).map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            aria-pressed={placing?.pieceId === p.id && !placing.moving}
+            onClick={() => startPlacing(p.id)}
+            className={`flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 p-2 text-xs transition-colors hover:border-primary ${placing?.pieceId === p.id && !placing.moving ? 'border-primary bg-primary/10' : 'border-border'}`}
+          >
+            <img
+              src={moradaFileUrl(p.thumb)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="size-14 object-contain"
+            />
+            <span className="max-w-full truncate font-semibold" title={p.label}>
+              {p.label}
+            </span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  )
   const textures = Object.values(MORADA_CATALOG.textures).filter(
     (texture) => texture.kind === (tab === 'piso' ? 'piso' : 'parede'),
   )
@@ -854,7 +1229,7 @@ export function MoradaRoomBuilder({
               type="button"
               className={chip}
               aria-pressed={!draft?.pet}
-              onClick={() => editor.update((h) => ({ ...h, pet: null }))}
+              onClick={() => commit((h) => ({ ...h, pet: null }))}
             >
               Sem bichinho
             </button>
@@ -899,6 +1274,8 @@ export function MoradaRoomBuilder({
         saving={editor.status === 'saving'}
         ready={Boolean(draft) && !locked}
         onSave={() => void editor.save()}
+        saveState={adult ? undefined : editor.saveState}
+        build={build}
         tab={tab}
         onTab={(next) => {
           setTab(next)

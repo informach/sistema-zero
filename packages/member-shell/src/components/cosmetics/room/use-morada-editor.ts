@@ -26,7 +26,14 @@ export function readMoradaEnvelope(value: unknown): MoradaHouseEnvelope {
   return { house, revision: Number(data.revision), owned: data.owned }
 }
 
-export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
+/** O salvar sozinho do quarto (26/11/2026, o mesmo do avatar): 1 s depois do último gesto. */
+export const MORADA_AUTOSAVE_MS = 1000
+export type MoradaSaveState = 'idle' | 'saving' | 'saved' | 'error'
+
+export function useMoradaEditor(
+  skin: CosmeticsSkin = 'kids',
+  { autosave = false }: { autosave?: boolean } = {},
+) {
   const [saved, setSaved] = useState<MoradaHouseEnvelope | null>(null)
   const [draft, setDraft] = useState<MoradaHouse | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'saving' | 'error'>('loading')
@@ -38,6 +45,14 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
   const alive = useRef(true)
   const draftRef = useRef(draft)
   draftRef.current = draft
+  const savedRef = useRef(saved)
+  savedRef.current = saved
+  const conflictRef = useRef(conflict)
+  conflictRef.current = conflict
+  const [saveState, setSaveState] = useState<MoradaSaveState>('idle')
+  /** Uma gravação por vez; o gesto que chega durante ela pede outra logo depois. */
+  const inflight = useRef(false)
+  const again = useRef(false)
   const load = useCallback(async () => {
     setStatus('loading')
     try {
@@ -80,24 +95,37 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
     }
   }, [load])
   const update = (change: (house: MoradaHouse) => MoradaHouse) => {
-    if (status === 'saving' || conflict) return
+    // Com o salvar sozinho a criança continua mexendo enquanto grava (o gesto entra na próxima).
+    if ((!autosave && status === 'saving') || conflict) return
     setMessage('')
     setDraft((house) => (house ? change(house) : house))
   }
-  const save = async () => {
-    if (!saved || !draft || conflict || status === 'saving') return
+  const save = async ({ keepalive = false }: { keepalive?: boolean } = {}) => {
+    const draft = draftRef.current
+    const saved = savedRef.current
+    if (!saved || !draft || conflictRef.current) return
+    if (inflight.current) {
+      again.current = true
+      return
+    }
+    if (JSON.stringify(saved.house) === JSON.stringify(draft)) return
     const errors = validateMoradaHouse(draft)
     if (errors.length) {
+      setSaveState('error')
       setMessage(
         'Uma peça não cabe no espaço ou no apoio escolhido. Ajuste o arranjo e tente novamente.',
       )
       return
     }
+    inflight.current = true
     setStatus('saving')
-    setMessage('')
+    setSaveState('saving')
+    if (!autosave) setMessage('')
+    const sent = JSON.stringify(draft)
     try {
       const response = await sessionFetch('/api/members/house', {
         method: 'PUT',
+        keepalive,
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ house: draft, revision: saved.revision, scope: 'room' }),
       })
@@ -112,21 +140,33 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
           throw new Error('Sua casa mudou em outro lugar. Abra novamente antes de salvar.')
         setConflict(current)
         setStatus('ready')
+        setSaveState('idle')
         return
       }
       if (!response.ok)
         throw new Error('Não foi possível salvar. Seu arranjo continua aqui para tentar novamente.')
       const envelope = readMoradaEnvelope(body)
       setSaved(envelope)
-      setDraft(envelope.house)
+      savedRef.current = envelope
+      // O gesto feito DURANTE a gravação fica na tela (e sai na próxima).
+      if (JSON.stringify(draftRef.current) === sent) setDraft(envelope.house)
       setStatus('ready')
-      setMessage(ROOM_MESSAGES[skin].saved)
+      setSaveState('saved')
+      if (!autosave) setMessage(ROOM_MESSAGES[skin].saved)
     } catch (error) {
       if (alive.current) {
         setStatus('ready')
-        setMessage(
-          error instanceof Error ? error.message : 'Não foi possível salvar. Tente novamente.',
-        )
+        setSaveState('error')
+        if (!autosave)
+          setMessage(
+            error instanceof Error ? error.message : 'Não foi possível salvar. Tente novamente.',
+          )
+      }
+    } finally {
+      inflight.current = false
+      if (again.current && alive.current) {
+        again.current = false
+        void save()
       }
     }
   }
@@ -184,14 +224,38 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
     }
   }
   const dirty = Boolean(saved && draft && JSON.stringify(saved.house) !== JSON.stringify(draft))
+  // Salvar sozinho: 1 s depois do último gesto (os passos de um arraste viram uma gravação só).
+  const saveRef = useRef(save)
+  saveRef.current = save
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o `draft` recomeça a contagem a cada gesto.
   useEffect(() => {
-    if (!dirty) return
+    if (!autosave || !dirty || conflict) return
+    const timer = setTimeout(() => void saveRef.current(), MORADA_AUTOSAVE_MS)
+    return () => clearTimeout(timer)
+  }, [autosave, dirty, draft, conflict])
+  // Sair da página, esconder a aba ou fechar a tela grava o que falta na hora.
+  useEffect(() => {
+    if (!autosave) return
+    const flush = () => void saveRef.current({ keepalive: true })
+    const hidden = () => {
+      if (document.visibilityState === 'hidden') flush()
+    }
+    window.addEventListener('pagehide', flush)
+    document.addEventListener('visibilitychange', hidden)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      document.removeEventListener('visibilitychange', hidden)
+      flush()
+    }
+  }, [autosave])
+  useEffect(() => {
+    if (!dirty || (autosave && saveState !== 'error')) return
     const handler = (event: BeforeUnloadEvent) => {
       event.preventDefault()
     }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [dirty])
+  }, [dirty, autosave, saveState])
   return {
     saved,
     wallet,
@@ -202,6 +266,7 @@ export function useMoradaEditor(skin: CosmeticsSkin = 'kids') {
     dirty,
     update,
     save,
+    saveState,
     load,
     resolveConflict,
     setMessage,

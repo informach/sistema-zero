@@ -151,12 +151,12 @@ function roomProps(): ComponentProps<typeof RoomBuilderView> {
 }
 
 describe('as duas telas do espaço', () => {
-  test('a pele Kids conserva o gradiente, as dez abas e o painel ao lado', () => {
+  test('a pele Kids conserva o gradiente, as categorias e o painel ao lado', () => {
     const html = renderToStaticMarkup(<RoomBuilderView {...roomProps()} />)
     expect(html).toContain('Salvar quarto')
     expect(html).toContain('Em cima…')
     expect(html).toContain('sz-btn-gradient')
-    expect(html).toContain('grid-cols-5')
+    expect(html).toContain('grid-cols-4')
     expect(html).toContain('Itens do quarto')
     expect(html).not.toContain('sz-cos-')
     expect(html).not.toContain('Comprar por')
