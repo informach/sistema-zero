@@ -323,10 +323,40 @@ describe('GET /i/<código>[/<oferta>][/pagamento]', () => {
 describe('endereço antigo de campanha', () => {
   const LIST = {
     items: [
-      { path: '/kids/vilao-em-aliado', url: 'https://sistemazero.com.br/i/guia-pais', until: null },
-      { path: '/kids/golpe', url: 'https://golpe.example/x', until: null },
+      {
+        path: '/kids/vilao-em-aliado',
+        url: 'https://sistemazero.com.br/i/guia-pais',
+        until: new Date(86_400_000).toISOString(),
+      },
+      {
+        path: '/kids/golpe',
+        url: 'https://golpe.example/x',
+        until: new Date(86_400_000).toISOString(),
+      },
     ],
   }
+
+  test('prazo do redirecionamento vence no cache, mesmo com o serviço fora', async () => {
+    const gw = createFakeGateway()
+    gw.setRedirectResult(200, {
+      items: [
+        {
+          path: '/kids/vilao-em-aliado',
+          url: 'https://sistemazero.com.br/i/guia-pais',
+          until: new Date(10_000).toISOString(),
+        },
+      ],
+    })
+    let now = 1_000
+    const redirects = createCampaignRedirects({ gateway: gw.gateway, now: () => now })
+    const url = new URL('http://f/kids/vilao-em-aliado')
+    expect(await redirects.lookup(url)).toBe('/i/guia-pais')
+    gw.setRedirectResult(503)
+    now = 10_000
+    expect(await redirects.lookup(url)).toBeNull()
+    now = 100_000
+    expect(await redirects.lookup(url)).toBeNull()
+  })
 
   test('só caminhos possíveis e sem parâmetros de link (sem laço)', () => {
     expect(redirectCandidate(new URL('http://f/kids/vilao-em-aliado/'))).toBe(
