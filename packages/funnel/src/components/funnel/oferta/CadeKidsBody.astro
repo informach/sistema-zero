@@ -6,7 +6,7 @@
 // (`?presente=`, 26/11/2026): a MESMA página e o MESMO cartão da venda, com a etiqueta de quem dá o
 // presente, o preço riscado até R$ 0 e "Quero o meu presente" abrindo o cadastro numa janela
 // (`PresenteAcao` + `PresenteJanela`), sem pré-checkout. O prazo e a garantia vêm do catálogo.
-import { presenteKidsDaOferta } from '../../../content/presente'
+import { presenteKids, presenteKidsDaOferta } from '../../../content/presente'
 import { prazoDaOferta } from '../../../content/presente-resgate'
 import { cadeKidsVenda } from '../../../funnels/cade-todo-mundo/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
@@ -30,12 +30,21 @@ const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeKidsVenda(prazo, access?.guaranteeDays ?? null)
 const preco = precoDoDesafio(priceReais, coupon)
 const contaUrl = getDeps().env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
-const cartao = presente ? cartaoDoPresente(presente, { communityUrl: contaUrl, priceReais }) : null
+const cartao = presente
+  ? cartaoDoPresente(presente, {
+      communityUrl: contaUrl,
+      priceReais,
+      offerResolved: access != null,
+    })
+  : null
 const origem = cartao?.etiqueta ?? null
 // No presente, as seções falam do presente (a copy aprovada da página do presente, com o prazo dele):
 // nada de preço, pagamento ou "1 ano" da venda contradizendo um presente gratuito.
 const P = presente
-  ? presenteKidsDaOferta(isCadeGift(presente.gift.gift) ? presente.gift.gift : undefined)
+  ? isCadeGift(presente.gift.gift)
+    ? presenteKidsDaOferta(presente.gift.gift)
+    : // Presente sem prazo em dias: os marcadores "sem prazo", nunca o "7 dias" do texto aprovado.
+      presenteKids(prazoDaOferta(null))
   : venda
 // No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
 const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta

@@ -39,7 +39,11 @@ const contaUrl = getDeps().env.KIDS_COMMUNITY_URL
 // Modo presente (`?presente=`, 26/11/2026): a mesma página, com o selo de quem dá o presente e o
 // MESMO cartão da venda com o preço riscado até R$ 0 e o cadastro numa janela.
 const cartao = presente
-  ? cartaoDoPresente(presente, { communityUrl: contaUrl.replace(/\/$/, ''), priceReais })
+  ? cartaoDoPresente(presente, {
+      communityUrl: contaUrl.replace(/\/$/, ''),
+      priceReais,
+      offerResolved: Astro.props.access != null,
+    })
   : null
 const origem = cartao?.etiqueta ?? null
 // No presente, o que só vale para quem paga (preço, pagamento, garantia) sai da copy da página.
@@ -316,7 +320,7 @@ const CAMINHO = [
             <h2 id="d9-fim" class="c9-h2 c9-h2--fim">{P.fim.titulo}</h2>
             <p class="d9-fim__texto">{fill(P.fim.texto)}</p>
             {cartao ? (
-              <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#oferta" data-analytics-id="desafio-convite-presente">{cartao.cta}</a>
+              <a class="c9-btn c9-btn--grande c9-btn--amarelo" href="#oferta" data-presente-cta={cartao.aberto ? '' : undefined} data-analytics-id="desafio-convite-presente">{cartao.cta}</a>
             ) : (
               <button type="button" class="c9-btn c9-btn--grande c9-btn--amarelo" data-checkout-cta data-analytics-id="desafio-convite-comprar">{P.fim.cta}</button>
             )}

@@ -30,7 +30,13 @@ const { env } = getDeps()
 const communityUrl = (env.COMMUNITY_URL ?? '').replace(/\/$/, '')
 // Modo presente (`?presente=`, 26/11/2026): a mesma página, com o rótulo de quem dá o presente e o
 // MESMO cartão da venda com o preço riscado até R$ 0 e o cadastro numa janela.
-const cartao = presente ? cartaoDoPresente(presente, { communityUrl, priceReais }) : null
+const cartao = presente
+  ? cartaoDoPresente(presente, {
+      communityUrl,
+      priceReais,
+      offerResolved: Astro.props.access != null,
+    })
+  : null
 const origem = cartao?.etiqueta ?? null
 // No presente, o que só vale para quem paga (preço, pagamento, garantia) sai da copy da página.
 const P = cartao ? copyDoPresente(PAGINA_DESAFIO_ADULTO, cartao) : PAGINA_DESAFIO_ADULTO
@@ -724,7 +730,7 @@ const heroImg = P.hero.imagens[0]
        </span>
       </li>
      </ul>
-     {preco.aviso?.alerta && <p class="adult-coupon" role="alert">{preco.aviso.texto}</p>}
+     {preco.aviso && (preco.aviso.alerta || !preco.descontoPct) && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
         <button class="cda-btn cda-btn--grande" data-checkout-cta data-analytics-id="desafio-adulto-oferta-comprar" type="button">
       {P.oferta.acoes[0]}
      </button>

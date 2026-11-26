@@ -15,7 +15,7 @@ const { cartao } = Astro.props
 ---
 {cartao.aberto && (
   <PresenteModal
-    client:idle
+    client:load
     resgate={cartao.resgate}
     titulo={cartao.janela.titulo}
     texto={cartao.janela.texto}

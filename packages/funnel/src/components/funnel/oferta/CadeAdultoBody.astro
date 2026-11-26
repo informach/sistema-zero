@@ -8,7 +8,7 @@
 // cadastro numa janela (`PresenteAcao` + `PresenteJanela`). O prazo e a garantia vêm do catálogo.
 import '../../../styles/desafio-adulto.css'
 import '../../../styles/ofertas-adulto.css'
-import { presenteAdultoDaOferta } from '../../../content/presente-adulto'
+import { presenteAdulto, presenteAdultoDaOferta } from '../../../content/presente-adulto'
 import { prazoDaOferta } from '../../../content/presente-resgate'
 import { cadeAdultoVenda } from '../../../funnels/cade-adulto/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
@@ -31,11 +31,16 @@ const prazo = prazoDaOferta(access?.mode === 'fixed' ? access : null)
 const venda = cadeAdultoVenda(prazo, access?.guaranteeDays ?? null)
 const preco = precoDoDesafio(priceReais, coupon)
 const communityUrl = getDeps().env.COMMUNITY_URL.replace(/\/$/, '')
-const cartao = presente ? cartaoDoPresente(presente, { communityUrl, priceReais }) : null
+const cartao = presente
+  ? cartaoDoPresente(presente, { communityUrl, priceReais, offerResolved: access != null })
+  : null
 const origem = cartao ? cartao.etiqueta.toLocaleUpperCase('pt-BR') : null
 // No presente, as seções falam do presente (a copy aprovada da página do presente, com o prazo dele).
 const P = presente
-  ? presenteAdultoDaOferta(isCadeGift(presente.gift.gift) ? presente.gift.gift : undefined)
+  ? isCadeGift(presente.gift.gift)
+    ? presenteAdultoDaOferta(presente.gift.gift)
+    : // Presente sem prazo em dias: os marcadores "sem prazo", nunca o "7 dias" do texto aprovado.
+      presenteAdulto(prazoDaOferta(null))
   : venda
 // No presente, o texto ao lado do cartão diz o prazo do PRESENTE (não o "1 ano" da venda).
 const cabeca = cartao ? { ...venda.oferta, texto: cartao.frase } : venda.oferta
@@ -76,7 +81,7 @@ const barra = cartao
             <span class="da-cartao__selo">{venda.oferta.selo}</span>
             <PrecoDoCartao de={preco.precoCheio} valor={preco.preco} sufixo={venda.oferta.sufixo} desconto={preco.precoCheio && preco.descontoPct ? `${preco.descontoPct}% de desconto` : null} classeDesconto="pc-preco__desconto--arcade" />
             <p class="cda-suave">{venda.oferta.texto}</p>
-            {preco.aviso?.alerta && <p class="adult-coupon" role="alert">{preco.aviso.texto}</p>}
+            {preco.aviso && (preco.aviso.alerta || !preco.descontoPct) && <p class="adult-coupon" role={preco.aviso.alerta ? 'alert' : 'status'}>{preco.aviso.texto}</p>}
             <button class="cda-btn cda-btn--grande" data-checkout-cta data-analytics-id="cade-adulto-oferta-comprar" type="button">{venda.oferta.cta}</button>
             {venda.oferta.garantia && <p class="da-cartao__garantia">{venda.oferta.garantia}</p>}
           </div>

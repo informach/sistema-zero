@@ -163,7 +163,9 @@ describe('corpos e despacho', () => {
       expect(texto).toContain('f.basePath}/termos`}')
       // No presente, as seções em volta do cartão usam a copy aprovada do presente, com o prazo e o
       // Mural da oferta do presente (nada de preço, pagamento ou "1 ano" da venda).
-      expect(texto).toMatch(/const P = presente\s+\? presente(Kids|Adulto)DaOferta\(isCadeGift\(/)
+      expect(texto).toMatch(
+        /const P = presente\s+\? isCadeGift\(presente\.gift\.gift\)\s+\? presente(Kids|Adulto)DaOferta\(/,
+      )
       expect(texto).toContain(': venda')
     }
   })
