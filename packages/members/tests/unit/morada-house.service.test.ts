@@ -338,7 +338,7 @@ describe('casa canônica Members', () => {
     a.house.instances.push(livro)
     expect((await adulto.service.save('pessoa', 'conta', 'adult', a)).revision).toBe(1)
   })
-  test('depois de salvar, a posse é a da casa salva (a que saiu e não foi comprada sai)', async () => {
+  test('a peça paga que só era dela por estar na casa vira posse ao sair (desfazer não a perde)', async () => {
     const paga = Object.keys(MORADA_PRICES).find((id) => {
       const p = MORADA_CATALOG.pieces[id]
       return (
@@ -349,7 +349,21 @@ describe('casa canônica Members', () => {
       )
     })
     if (!paga) throw new Error('sem peça paga')
-    const { repo, service } = setup()
+    const inventario: string[] = []
+    const repo = new MemoryHouses()
+    const service = new MoradaHouseService(
+      repo,
+      {
+        ...room,
+        listInventory: async () => [...inventario],
+        addToInventory: async (_u, _a, id) => {
+          const added = !inventario.includes(id)
+          if (added) inventario.push(id)
+          return { added }
+        },
+      },
+      () => new Date('2026-11-14T12:00:00Z'),
+    )
     const antiga = createMoradaHouse()
     antiga.instances.push({
       id: 'antiga',
@@ -363,7 +377,47 @@ describe('casa canônica Members', () => {
     expect(lida.owned).toContain(paga)
     lida.house.instances = lida.house.instances.filter((i) => i.id !== 'antiga')
     const salva = await service.save('pessoa', 'conta', 'kids', lida)
-    expect(salva.owned).not.toContain(paga)
+    // Saiu da casa: entrou no inventário, então continua dela e o desfazer volta sem recusa.
+    expect(inventario).toEqual([paga])
+    expect(salva.owned).toContain(paga)
+    const volta = { house: antiga, revision: salva.revision }
+    expect((await service.save('pessoa', 'conta', 'kids', volta)).revision).toBe(salva.revision + 1)
+  })
+  test('função do jogo: uma por casa; o quarto não cria função nova (Duplicar)', async () => {
+    const geladeira = MORADA_PECAS_DAS_FUNCOES.geladeira![0]!
+    const { repo, service } = setup()
+    const base = createMoradaHouse()
+    base.instances.push({
+      id: 'geladeira',
+      pieceId: geladeira,
+      behavior: 'objeto:geladeira',
+      position: [1, 0, 1],
+      rotation: 0,
+      roomId: base.roomId,
+    })
+    repo.rows.set('pessoa:kids', { house: base, revision: 1 })
+    // Copiar a geladeira com a função: recusado (duas no mesmo lugar).
+    const dupla = structuredClone(base)
+    dupla.instances.push({ ...dupla.instances.at(-1)!, id: 'copia', position: [-1, 0, 1] })
+    await expect(
+      service.save('pessoa', 'conta', 'kids', { house: dupla, revision: 1, scope: 'room' }),
+    ).rejects.toThrow(/só pode estar em um lugar/)
+    // Função que a casa guardada não tem, pelo quarto: recusada; pelo jogo, passa.
+    const nova = structuredClone(base)
+    nova.instances.push({
+      id: 'forno',
+      pieceId: MORADA_PECAS_DAS_FUNCOES.forno![0]!,
+      behavior: 'objeto:forno',
+      position: [-1, 0, 1],
+      rotation: 0,
+      roomId: base.roomId,
+    })
+    await expect(
+      service.save('pessoa', 'conta', 'kids', { house: nova, revision: 1, scope: 'room' }),
+    ).rejects.toThrow(/chega pelo jogo/)
+
+    const peloJogo = await service.save('pessoa', 'conta', 'kids', { house: nova, revision: 1 })
+    expect(peloJogo.revision).toBe(2)
   })
   test('moradaOwned: troféus, estante, compradas e as da casa; nunca as grátis', () => {
     const house = createMoradaHouse()
