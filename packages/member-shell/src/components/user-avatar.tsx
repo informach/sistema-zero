@@ -16,6 +16,11 @@ export interface UserAvatarProps {
   lastName?: string | null
   email?: string | null
   size?: keyof typeof SIZES
+  /**
+   * `menu`: o círculo das iniciais sobre um menu ESCURO (o da área dos pais no Kids). O padrão,
+   * translúcido com a tinta escura, some ali; este usa a cor clara da casa com a tinta do menu.
+   */
+  tone?: 'surface' | 'menu'
   className?: string
 }
 
@@ -29,6 +34,7 @@ export function UserAvatar({
   lastName,
   email,
   size = 'sm',
+  tone = 'surface',
   className,
 }: UserAvatarProps) {
   const base = cn(
@@ -47,7 +53,15 @@ export function UserAvatar({
     )
   }
   return (
-    <span aria-hidden="true" className={cn(base, 'bg-primary/15 font-semibold text-foreground')}>
+    <span
+      aria-hidden="true"
+      className={cn(
+        base,
+        tone === 'menu'
+          ? 'bg-(--band-amarelo) font-extrabold text-(--menu)'
+          : 'bg-primary/15 font-semibold text-foreground',
+      )}
+    >
       {getUserInitials(firstName, lastName, email)}
     </span>
   )

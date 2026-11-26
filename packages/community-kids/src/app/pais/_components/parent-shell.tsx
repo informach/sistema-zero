@@ -146,6 +146,7 @@ function MenuSections({
                 {/* O nome já vem escrito ao lado: a foto não repete no leitor de tela. */}
                 <span aria-hidden="true" className="shrink-0">
                   <UserAvatar
+                    tone="menu"
                     firstName={child.name}
                     avatarUrl={photos[child.id] ?? null}
                     size="sm"
@@ -275,7 +276,7 @@ export function ParentShell({
           )}
           <div className="flex flex-col gap-1 rounded-[0.875rem] bg-(--menu-2) p-2">
             <div className="flex items-center gap-2.5 px-2 py-1.5">
-              <UserAvatar firstName={name} avatarUrl={null} size="sm" />
+              <UserAvatar firstName={name} avatarUrl={null} size="sm" tone="menu" />
               <span className="flex min-w-0 flex-col leading-tight">
                 <strong className="truncate text-white">{name}</strong>
                 <span className="text-(--menu-icone) text-xs">Responsável</span>
@@ -385,7 +386,7 @@ export function ParentShell({
             </button>
           </div>
           <div className="flex items-center gap-2.5 px-2 py-2">
-            <UserAvatar firstName={name} avatarUrl={null} size="sm" />
+            <UserAvatar firstName={name} avatarUrl={null} size="sm" tone="menu" />
             <strong className="text-white">{name}</strong>
           </div>
           <nav aria-label="Mais" className="flex flex-col gap-1">
