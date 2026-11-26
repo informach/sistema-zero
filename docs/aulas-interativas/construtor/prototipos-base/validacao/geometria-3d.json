@@ -1,18 +1,11 @@
 {
   "method": "Exact existing gallery geometry packaged as GLB, reloaded by the official Three GLTFLoader; 3 native model blocks per project and no procedural art configuration",
-  "projects": [
-    "patrulha-espacial-3d-completo",
-    "patrulha-espacial-3d-inicial"
-  ],
+  "projects": ["patrulha-espacial-3d-completo", "patrulha-espacial-3d-inicial"],
   "results": [
     {
       "asset": "patrulha-nave-provisoria",
       "bytes": 10764,
-      "dimensions": [
-        3,
-        0.44,
-        2.15
-      ],
+      "dimensions": [3, 0.44, 2.15],
       "meshes": 4,
       "embedded": true,
       "noExternalTextures": true,
@@ -21,11 +14,7 @@
     {
       "asset": "patrulha-asteroide-provisorio",
       "bytes": 25012,
-      "dimensions": [
-        1.8,
-        1.8,
-        1.8
-      ],
+      "dimensions": [1.8, 1.8, 1.8],
       "meshes": 1,
       "embedded": true,
       "noExternalTextures": true,
@@ -34,11 +23,7 @@
     {
       "asset": "patrulha-laser-provisorio",
       "bytes": 2188,
-      "dimensions": [
-        0.16,
-        0.16,
-        0.9
-      ],
+      "dimensions": [0.16, 0.16, 0.9],
       "meshes": 1,
       "embedded": true,
       "noExternalTextures": true,

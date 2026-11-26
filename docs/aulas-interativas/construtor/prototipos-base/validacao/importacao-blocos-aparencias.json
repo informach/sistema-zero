@@ -63,13 +63,7 @@
         "maxDepth": 46
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     },
     {
       "file": "nave-2d-inicial.szproject.json",
@@ -81,13 +75,7 @@
         "maxDepth": 32
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     },
     {
       "file": "nave-2d-nebulosa.szproject.json",
@@ -99,13 +87,7 @@
         "maxDepth": 46
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     },
     {
       "file": "nave-2d-orbita.szproject.json",
@@ -117,13 +99,7 @@
         "maxDepth": 46
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     },
     {
       "file": "patrulha-espacial-3d-completo.szproject.json",
@@ -135,13 +111,7 @@
         "maxDepth": 66
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     },
     {
       "file": "patrulha-espacial-3d-inicial.szproject.json",
@@ -153,13 +123,7 @@
         "maxDepth": 56
       },
       "formatVersion": 2,
-      "preserved": [
-        "files",
-        "ir",
-        "blocksState",
-        "assets",
-        "installedExtensions"
-      ]
+      "preserved": ["files", "ir", "blocksState", "assets", "installedExtensions"]
     }
   ],
   "roundtrip": [
@@ -211,12 +175,7 @@
       "ok": true,
       "rule": "IR differs only in four visual choices",
       "variantsPerElement": 3,
-      "elements": [
-        "nave",
-        "cenario",
-        "asteroide",
-        "laser"
-      ]
+      "elements": ["nave", "cenario", "asteroide", "laser"]
     },
     {
       "dimension": "3d",
