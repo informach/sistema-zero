@@ -55,7 +55,7 @@ export const CURSO_PAIS_VILAO = {
   },
   barra: { titulo: 'Guia gratuito', texto: 'Sem cartão', cta: 'Quero assistir de graça' },
   hero: {
-    selo: 'Guia gratuito para pais',
+    selo: 'Workshop gratuito para pais',
     titulo: {
       antes: 'A tela que hoje vira briga em casa pode ser ',
       destaque: 'sua aliada',
