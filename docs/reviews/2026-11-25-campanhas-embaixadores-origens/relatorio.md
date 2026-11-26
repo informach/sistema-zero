@@ -65,7 +65,7 @@ Os casos de regressão das experiências retiradas da Nave foram guardados como 
 
 O Cadê da última aula do guia foi convertido e conferido em produção como benefício do curso, preservando os dois resgates originais, seus termos e o histórico. A produção tem somente Laopa de 13/11 e Guia de presente como campanhas. O bloco da aula usa benefitCode e depende do acesso autenticado ao guia. O relatório separa a origem do resgate da origem do acesso que abriu o guia; dados históricos ausentes continuam não identificados.
 
-Os oito serviços da leva manual estão online e os onze testes de links passaram. A publicação manual está concluída, mas a regularização do PR 294 ainda aguarda CI completo, merge protegido e publicação oficial. [Funcionamento atualizado](funcionamento-apos-publicacao.md) e [recibo atual](beneficio-permanente-guia.json). A staging local recebeu os commits; a publicação remota continua coordenada pela outra frente.
+Os oito serviços da leva manual estão online e os onze testes de links passaram. A regularização das mudanças do PR 294 foi consolidada no PR 296, conforme o fechamento abaixo. [Funcionamento atualizado](funcionamento-apos-publicacao.md) e [recibo atual](beneficio-permanente-guia.json). A staging local recebeu os commits; a publicação remota continua coordenada pela outra frente.
 
 
 ## Workshop da Vivianne: seis meses e compartilhamento
@@ -74,4 +74,15 @@ O Funil foi publicado no commit `2237b3ea61118badaf0494bfcfe2325c78cc50d2`, depl
 
 Os selos dos cursos para pais dizem “Workshop para pais”. Onze páginas e sete cartões JPEG de compartilhamento foram conferidos; oferta e checkout reais mostram seis meses em 390 e 1440 px. Os textos de compartilhamento aprovados chegam também ao robô do WhatsApp, inclusive no endereço exato `/i/vivianne-e8ez/frustracoes/pagamento`, sem “Pagamento”. A variante `?utm_content=whatsapp-20261126` conserva a origem da Vivianne e o destino do checkout; pode ser testada em uma mensagem nova para solicitar outra prévia. Não foi feita verificação dentro do aplicativo WhatsApp, nem envio de mensagem.
 
-A publicação manual está concluída. O CI completo, o merge protegido e a publicação oficial do PR 295 ainda estão em andamento. O PR 294 seleciona os outros sete serviços; esta leva seleciona somente `funnel`, evitando sobrescrever a versão nova. [Recibo desta atualização](publicacao-workshop-2026-11-26.json).
+A publicação manual está concluída. O CI completo, o merge protegido e a publicação oficial da promoção consolidada ainda estão em andamento. O build manual desta atualização selecionou somente `funnel`. A regularização dos PRs 294 e 295 foi consolidada no PR 296, que contém os ajustes mais recentes. [Recibo desta atualização](publicacao-workshop-2026-11-26.json).
+
+
+## Promoção consolidada e Jardim Secreto
+
+A publicação manual está concluída e conferida. O CI completo, o merge protegido e a publicação oficial do PR 296 continuam em andamento. Os PRs 294 e 295 foram fechados e substituídos pelo [PR 296](https://github.com/informach/sistema-zero/pull/296), que reúne as mudanças selecionadas na fonte `fd8923232b6a73e925c176261664d5f652c0b891`. Os resultados anteriores e os cancelamentos ficam preservados no [recibo consolidado](publicacao-consolidada-2026-11-26.json). A staging inteira não foi promovida.
+
+O objetivo do regador agora reconhece a memória gravada dentro de uma condição que pode abrir no primeiro encontro. No executor 3D, o personagem termina a aproximação com as caixas sobrepostas e aguarda os quadros do encontro. Os cenários corretos e os controles sem memória/sem guarda passaram localmente. O cenário de produção com o regador em outra posição e a coleta protegida passou nos cinco objetivos no próprio Worker de produção, sem alterar progresso de aluno.
+
+A imagem Linux qualificada foi publicada nas duas classes de contêiner, com o mesmo digest dos testes. O primeiro envio expirou após publicar o código do Worker; o estado parcial foi inspecionado, e a retomada conhecida terminou com as duas imagens saudáveis. Os dois aquecimentos reais também passaram. A conferência de sete variáveis públicas não encontrou alterações; os segredos foram preservados.
+
+As cinco aplicações da etapa final no Railway passaram pela saúde, pela retirada das versões anteriores e pela barreira canônica 4. As páginas, o checkout de seis meses e os links antigos foram reconferidos. Nenhum pagamento real ou mensagem de ensaio foi enviado. O código e a correção de tipo foram integrados à staging local; o registro remoto do novo benefício e dos seis meses continua dependendo da publicação da outra frente.

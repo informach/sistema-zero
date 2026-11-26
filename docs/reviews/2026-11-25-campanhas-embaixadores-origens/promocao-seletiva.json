@@ -631,7 +631,7 @@
       }
     }
   },
-  "updatedAt": "2026-11-26T15:25:33.280Z",
+  "updatedAt": "2026-11-26T20:15:44.377Z",
   "candidateBaseMustBeAncestor": true,
   "requestedAvatarCommit": "6153290789b4a7dee50d58a246d20324c2b26cb1",
   "secondRequestedCommits": [
@@ -711,5 +711,36 @@
     "productionPublished": true,
     "normalRegularizationComplete": false,
     "receipt": "publicacao-workshop-2026-11-26.json"
+  },
+  "currentProductionMain": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+  "consolidatedRelease": {
+    "source": "fd8923232b6a73e925c176261664d5f652c0b891",
+    "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+    "pullRequest": 296,
+    "productionPublished": true,
+    "normalRegularizationComplete": false,
+    "official": null,
+    "receipt": "publicacao-consolidada-2026-11-26.json"
+  },
+  "supersededPullRequests": [294, 295],
+  "staging": {
+    "localIntegrated": true,
+    "publicationOwnedByOtherSession": true,
+    "lastObservation": {
+      "observedAt": "2026-11-26T20:12:25.908Z",
+      "observations": [
+        {
+          "name": "members",
+          "id": "e875d10c-1f23-4059-9a5a-d76f79a76c6d",
+          "status": "SUCCESS",
+          "sha": "4051c6691b9f1534cb90fdb185c195af55ae4950"
+        }
+      ],
+      "state": "WAITING_NEW_CODE"
+    },
+    "remoteBusinessRegistrationVerified": false,
+    "registration": null,
+    "pendingState": "WAITING_COMPATIBLE_STAGING",
+    "originalCourseAssetsAndCorrectedVideoPreviouslyVerifiedInBothEnvironments": true
   }
 }

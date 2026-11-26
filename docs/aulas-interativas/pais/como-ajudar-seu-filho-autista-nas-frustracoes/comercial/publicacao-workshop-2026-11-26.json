@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T19:39:52.540Z",
+  "updatedAt": "2026-11-26T20:10:11.689Z",
   "productionPublished": true,
   "normalRegularizationComplete": false,
   "source": {
@@ -29,12 +29,82 @@
   ],
   "manualCompletedAt": "2026-11-26T19:35:31.458Z",
   "normal": {
+    "pr": 296,
+    "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+    "ciRun": 45886332315,
+    "planRun": 45886332411,
+    "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
+    "state": "WAITING_MANUAL_AND_CI",
+    "startedAt": "2026-11-26T19:55:57.775Z",
+    "events": [
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T19:56:00.819Z",
+        "worker": "pending",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:00:25.967Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:01:32.454Z",
+        "worker": "REGRESSION_FAILED_REQUIRES_INSPECTION",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:03:46.170Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:06:31.565Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 9,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:08:43.786Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 10,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      }
+    ],
+    "worker": "PASS",
+    "ci": "in_progress",
+    "passed": 10,
+    "plan": "success",
+    "manual": "PRODUCTION_WAVE_PASSED"
+  },
+  "originalNormal": {
     "pr": 295,
     "head": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
     "ciRun": 45883785338,
     "planRun": 45883785199,
     "services": "funnel",
-    "state": "WAITING_MANUAL_AND_CI",
+    "state": "SUPERSEDED_BY_PR296",
     "startedAt": "2026-11-26T19:33:08.213Z",
     "events": [
       {
@@ -84,12 +154,34 @@
         "passed": 8,
         "plan": "success",
         "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T19:43:09.817Z",
+        "ci": "in_progress",
+        "passed": 9,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T19:47:39.661Z",
+        "ci": "in_progress",
+        "passed": 10,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
       }
     ],
     "ci": "in_progress",
-    "passed": 8,
+    "passed": 10,
     "plan": "success",
-    "manual": "PRODUCTION_WAVE_PASSED"
+    "manual": "PRODUCTION_WAVE_PASSED",
+    "supersededBy": {
+      "pr": 296,
+      "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "at": "2026-11-26T19:48:38.006Z",
+      "reason": "Promoção seletiva consolidada da árvore mais recente; impedir que publicações anteriores sobrescrevam os ajustes novos"
+    }
   },
   "official": null,
   "catalog": {
@@ -107,7 +199,7 @@
   },
   "verification": {
     "state": "PASS",
-    "verifiedAt": "2026-11-26T19:36:07.358Z",
+    "verifiedAt": "2026-11-26T20:07:47.764Z",
     "pages": [
       {
         "path": "/",
@@ -313,7 +405,17 @@
       "community",
       "community-kids"
     ],
-    "newOfficialServices": ["funnel"],
+    "newOfficialServices": [
+      "members",
+      "auth",
+      "referrals",
+      "api-gateway",
+      "admin",
+      "community",
+      "community-kids",
+      "funnel"
+    ],
+    "consolidatedPullRequest": 296,
     "previousServicesDoNotIncludeFunnel": true
   },
   "staging": {

@@ -20,3 +20,5 @@ O [recibo de publicação em produção](publicacao-producao-2026-11-26.json) re
 ## Atualização de seis meses e prévia
 
 A oferta de R$ 67 passou a seis meses em produção em 26/11/2026, mantendo o identificador antigo. O cartão JPEG 1200 × 630 usado na prévia do WhatsApp está em [compartilhar.jpg](compartilhar.jpg). O [recibo da atualização](publicacao-workshop-2026-11-26.json) distingue a publicação manual do estado do CI e da publicação oficial.
+
+O [recibo consolidado](publicacao-consolidada-2026-11-26.json) reúne esta publicação, os ajustes seguintes e o estado do processo normal pelo GitHub.

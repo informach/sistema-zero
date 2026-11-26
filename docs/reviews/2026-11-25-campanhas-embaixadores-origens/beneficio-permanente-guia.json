@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T18:51:29.922Z",
+  "updatedAt": "2026-11-26T20:15:44.377Z",
   "productionFeaturePublished": true,
   "normalRegularizationComplete": false,
   "manualSource": "6c245bf73cf028237937f4a5b137a12f84f35cee",
@@ -49,7 +49,7 @@
   },
   "linksVerified": {
     "state": "PASS",
-    "verifiedAt": "2026-11-26T18:50:45.392Z",
+    "verifiedAt": "2026-11-26T20:07:43.501Z",
     "results": [
       {
         "path": "/kids/vilao-em-aliado?utm_source=release-proof",
@@ -184,11 +184,107 @@
     }
   },
   "staging": {
-    "localMerged": true,
+    "localIntegrated": true,
+    "publicationOwnedByOtherSession": true,
+    "lastObservation": {
+      "observedAt": "2026-11-26T20:12:25.908Z",
+      "observations": [
+        {
+          "name": "members",
+          "id": "e875d10c-1f23-4059-9a5a-d76f79a76c6d",
+          "status": "SUCCESS",
+          "sha": "4051c6691b9f1534cb90fdb185c195af55ae4950"
+        }
+      ],
+      "state": "WAITING_NEW_CODE"
+    },
     "remoteBusinessRegistrationVerified": false,
-    "publicationOwnedByOtherSession": true
+    "registration": null,
+    "pendingState": "WAITING_COMPATIBLE_STAGING",
+    "originalCourseAssetsAndCorrectedVideoPreviouslyVerifiedInBothEnvironments": true
   },
   "backupSha256": "5cfcd0c8aee7b2680d5739504472f178ef8f7c923abd24e3d0dbc05dbc25f83c",
   "paymentSubmitted": false,
-  "testMessagesSent": false
+  "testMessagesSent": false,
+  "normalViaPullRequest": 296,
+  "normal": {
+    "pr": 296,
+    "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+    "ciRun": 45886332315,
+    "planRun": 45886332411,
+    "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
+    "state": "WAITING_MANUAL_AND_CI",
+    "startedAt": "2026-11-26T19:55:57.775Z",
+    "events": [
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T19:56:00.819Z",
+        "worker": "pending",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:00:25.967Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:01:32.454Z",
+        "worker": "REGRESSION_FAILED_REQUIRES_INSPECTION",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:03:46.170Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 8,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:06:31.565Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 9,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:08:43.786Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 10,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-26T20:13:08.710Z",
+        "worker": "PASS",
+        "ci": "in_progress",
+        "passed": 11,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      }
+    ],
+    "worker": "PASS",
+    "ci": "in_progress",
+    "passed": 11,
+    "plan": "success",
+    "manual": "PRODUCTION_WAVE_PASSED"
+  },
+  "official": null
 }

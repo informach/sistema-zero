@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T15:25:33.280Z",
+  "updatedAt": "2026-11-26T20:15:44.377Z",
   "environment": "production",
   "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
   "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
@@ -210,8 +210,7 @@
     "officialResult": {
       "state": "PRODUCTION_WAVE_PASSED",
       "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
-      "publishedVersion": 4,
-      "qualifiedSource": {
+      "source": {
         "kind": "production-promoted-source",
         "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
         "approvedHead": "fa103eb324fe9ff62b097d342d7436a195229463",
@@ -226,6 +225,7 @@
           "run": 45824448947
         }
       },
+      "publishedVersion": 4,
       "deployments": [
         {
           "name": "members",
@@ -603,32 +603,33 @@
       ]
     },
     "legacyLinks": {
-      "verifiedAt": "2026-11-26T14:27:38.416Z",
+      "state": "PASS",
+      "verifiedAt": "2026-11-26T20:07:43.501Z",
       "results": [
         {
-          "path": "/kids/vilao-em-aliado?utm_source=deploy-proof",
+          "path": "/kids/vilao-em-aliado?utm_source=release-proof",
           "status": 302,
-          "location": "/i/vilao-em-aliado?utm_source=deploy-proof"
+          "location": "/i/vilao-em-aliado?utm_source=release-proof"
         },
         {
-          "path": "/bolsa/vilao-em-aliado?utm_source=deploy-proof",
+          "path": "/bolsa/laopa-20261113",
           "status": 302,
-          "location": "/kids/vilao-em-aliado/oferta?presente=vilao-em-aliado&utm_source=deploy-proof"
+          "location": "/kids/cade-todo-mundo/oferta?presente=laopa-20261113"
         },
         {
-          "path": "/bolsa/vilao-em-aliado-cade?utm_source=deploy-proof",
+          "path": "/i/laopa-20261113",
           "status": 302,
-          "location": "/kids/cade-todo-mundo/oferta?presente=vilao-em-aliado-cade&utm_source=deploy-proof"
+          "location": "/bolsa/laopa-20261113"
         },
         {
-          "path": "/bolsa/laopa-20261113?utm_source=deploy-proof",
+          "path": "/bolsa/vilao-em-aliado",
           "status": 302,
-          "location": "/kids/cade-todo-mundo/oferta?presente=laopa-20261113&utm_source=deploy-proof"
+          "location": "/kids/vilao-em-aliado/oferta?presente=vilao-em-aliado"
         },
         {
-          "path": "/cupom/LAOPA131126?oferta=desafio-primeiro-jogo-30-dias&publico=kids",
+          "path": "/i/vivianne-e8ez/cade",
           "status": 302,
-          "location": "/kids/desafio-primeiro-jogo/oferta?cupom=LAOPA131126"
+          "location": "/kids/cade-todo-mundo/oferta?indicacao=vivianne-e8ez"
         },
         {
           "path": "/i/vivianne-s4mx/cade",
@@ -636,9 +637,19 @@
           "location": "/pro/cade-todo-mundo/oferta?indicacao=vivianne-s4mx"
         },
         {
-          "path": "/i/vivianne-e8ez/cade",
+          "path": "/cupom/LAOPA131126?oferta=desafio-primeiro-jogo-30-dias&publico=kids&event_code=laopa-20261113",
           "status": 302,
-          "location": "/kids/cade-todo-mundo/oferta?indicacao=vivianne-e8ez"
+          "location": "/kids/desafio-primeiro-jogo/oferta?cupom=LAOPA131126&event_code=laopa-20261113&indicacao=laopa-20261113"
+        },
+        {
+          "path": "/bolsa/vilao-em-aliado-cade",
+          "status": 302,
+          "location": "https://kids.sistemazero.com.br/pais/cursos/transformando-o-vilao-em-aliado"
+        },
+        {
+          "path": "/i/vilao-em-aliado-cade",
+          "status": 302,
+          "location": "/bolsa/vilao-em-aliado-cade"
         },
         {
           "path": "/i/vivianne-e8ez/frustracoes",
@@ -648,10 +659,14 @@
         {
           "path": "/i/vivianne-e8ez/frustracoes/presente",
           "status": 404,
-          "reason": "Somente oferta de compra"
+          "location": null
         }
       ],
-      "ambassadorOriginCookie": true
+      "couponCampaignOrigin": true,
+      "couponDiscount3350": true,
+      "courseBenefitRequiresAuthenticatedCourse": true,
+      "vivianneNoGift": true,
+      "paymentSubmitted": false
     },
     "miniCheckout": {
       "target": "production",
@@ -745,6 +760,57 @@
       "paidOffers": 1,
       "priceCents": 6700,
       "giftOffers": 0
+    },
+    "historicalLegacyLinks": {
+      "verifiedAt": "2026-11-26T14:27:38.416Z",
+      "results": [
+        {
+          "path": "/kids/vilao-em-aliado?utm_source=deploy-proof",
+          "status": 302,
+          "location": "/i/vilao-em-aliado?utm_source=deploy-proof"
+        },
+        {
+          "path": "/bolsa/vilao-em-aliado?utm_source=deploy-proof",
+          "status": 302,
+          "location": "/kids/vilao-em-aliado/oferta?presente=vilao-em-aliado&utm_source=deploy-proof"
+        },
+        {
+          "path": "/bolsa/vilao-em-aliado-cade?utm_source=deploy-proof",
+          "status": 302,
+          "location": "/kids/cade-todo-mundo/oferta?presente=vilao-em-aliado-cade&utm_source=deploy-proof"
+        },
+        {
+          "path": "/bolsa/laopa-20261113?utm_source=deploy-proof",
+          "status": 302,
+          "location": "/kids/cade-todo-mundo/oferta?presente=laopa-20261113&utm_source=deploy-proof"
+        },
+        {
+          "path": "/cupom/LAOPA131126?oferta=desafio-primeiro-jogo-30-dias&publico=kids",
+          "status": 302,
+          "location": "/kids/desafio-primeiro-jogo/oferta?cupom=LAOPA131126"
+        },
+        {
+          "path": "/i/vivianne-s4mx/cade",
+          "status": 302,
+          "location": "/pro/cade-todo-mundo/oferta?indicacao=vivianne-s4mx"
+        },
+        {
+          "path": "/i/vivianne-e8ez/cade",
+          "status": 302,
+          "location": "/kids/cade-todo-mundo/oferta?indicacao=vivianne-e8ez"
+        },
+        {
+          "path": "/i/vivianne-e8ez/frustracoes",
+          "status": 302,
+          "location": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez"
+        },
+        {
+          "path": "/i/vivianne-e8ez/frustracoes/presente",
+          "status": 404,
+          "reason": "Somente oferta de compra"
+        }
+      ],
+      "ambassadorOriginCookie": true
     }
   },
   "artwork": {
@@ -795,10 +861,10 @@
       "stage": "third",
       "pr": 292,
       "head": "49c60358f44f084bfeeeb2a249466691f489e706",
-      "ci": "in_progress",
+      "ci": "completed",
       "plan": "success",
-      "services": "funnel",
-      "state": "WAITING_CI",
+      "services": "referrals",
+      "state": "OFFICIAL_DEPLOY_PASSED",
       "startedAt": "2026-11-26T15:24:30.485Z",
       "events": [
         {
@@ -814,15 +880,179 @@
           "ci": "in_progress",
           "passed": 0,
           "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:25:40.194Z",
+          "ci": "in_progress",
+          "passed": 1,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:26:13.380Z",
+          "ci": "in_progress",
+          "passed": 2,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:27:19.823Z",
+          "ci": "in_progress",
+          "passed": 3,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:28:26.339Z",
+          "ci": "in_progress",
+          "passed": 4,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:29:33.297Z",
+          "ci": "in_progress",
+          "passed": 5,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:30:39.902Z",
+          "ci": "in_progress",
+          "passed": 6,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:31:46.706Z",
+          "ci": "in_progress",
+          "passed": 7,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:37:19.625Z",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:39:32.884Z",
+          "ci": "in_progress",
+          "passed": 9,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:45:09.368Z",
+          "ci": "in_progress",
+          "passed": 10,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:45:49.056Z",
+          "ci": "in_progress",
+          "passed": 11,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T15:49:43.939Z",
+          "ci": "in_progress",
+          "passed": 12,
+          "plan": "success"
+        },
+        {
+          "state": "WAITING_CI",
+          "at": "2026-11-26T16:52:22.998Z",
+          "ci": "completed",
+          "passed": 13,
+          "plan": "success"
+        },
+        {
+          "state": "CI_AND_PLAN_PASSED",
+          "at": "2026-11-26T16:52:23.001Z"
+        },
+        {
+          "state": "MERGED_EXACT_TREE",
+          "at": "2026-11-26T16:52:25.331Z",
+          "mergeSha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+          "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4"
+        },
+        {
+          "state": "DISPATCHING_OFFICIAL_DEPLOY",
+          "at": "2026-11-26T16:52:26.781Z",
+          "dispatchAt": "2026-11-26T16:52:26.781Z"
+        },
+        {
+          "state": "DISPATCH_ACKNOWLEDGED",
+          "at": "2026-11-26T16:52:28.662Z"
+        },
+        {
+          "state": "OFFICIAL_DEPLOY_RUNNING",
+          "at": "2026-11-26T16:52:30.091Z",
+          "runId": 45862730855,
+          "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45862730855"
+        },
+        {
+          "state": "OFFICIAL_DEPLOY_PASSED",
+          "at": "2026-11-26T16:58:10.821Z",
+          "completedAt": "2026-11-26T16:58:10.821Z"
         }
       ],
-      "passed": 0
+      "passed": 13,
+      "selectionChange": {
+        "before": "funnel",
+        "after": "referrals",
+        "at": "2026-11-26T16:52:19.687Z",
+        "reason": "Validar controlador com serviço fora da nova leva manual, sem sobrescrever o Funil novo.",
+        "beforeAnyDispatch": true
+      },
+      "mergeSha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+      "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4",
+      "dispatchAt": "2026-11-26T16:52:26.781Z",
+      "runId": 45862730855,
+      "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45862730855",
+      "completedAt": "2026-11-26T16:58:10.821Z",
+      "officialResult": {
+        "state": "PRODUCTION_WAVE_PASSED",
+        "sha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+        "source": {
+          "kind": "production-promoted-source",
+          "sha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+          "approvedHead": "49c60358f44f084bfeeeb2a249466691f489e706",
+          "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4",
+          "ci": {
+            "run": 45848643226,
+            "attempt": 1,
+            "passedJobs": 9
+          },
+          "planArtifact": {
+            "id": 15132451414,
+            "run": 45848643481
+          }
+        },
+        "publishedVersion": 4,
+        "deployments": [
+          {
+            "name": "referrals",
+            "id": "ac30926d-04ff-496a-bbea-d0f3e4b1c53f"
+          }
+        ]
+      }
     }
   },
   "completion": {
     "featuresPublishedAndVerified": true,
     "secondDeploymentsReadOnlyVerified": true,
-    "operationalProcessCompleted": false
+    "operationalProcessCompleted": false,
+    "productionIncludingAdditionalRequestsComplete": true,
+    "latestNormalPullRequest": 296,
+    "latestOfficialSource": null,
+    "stagingBusinessRegistrationVerified": false
   },
   "permanentBenefit": {
     "updatedAt": "2026-11-26T18:51:29.922Z",
@@ -1019,7 +1249,7 @@
     "testMessagesSent": false
   },
   "workshopRelease": {
-    "updatedAt": "2026-11-26T19:39:52.540Z",
+    "updatedAt": "2026-11-26T20:10:11.689Z",
     "productionPublished": true,
     "normalRegularizationComplete": false,
     "source": {
@@ -1049,12 +1279,82 @@
     ],
     "manualCompletedAt": "2026-11-26T19:35:31.458Z",
     "normal": {
+      "pr": 296,
+      "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "ciRun": 45886332315,
+      "planRun": 45886332411,
+      "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
+      "state": "WAITING_MANUAL_AND_CI",
+      "startedAt": "2026-11-26T19:55:57.775Z",
+      "events": [
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:56:00.819Z",
+          "worker": "pending",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:00:25.967Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:01:32.454Z",
+          "worker": "REGRESSION_FAILED_REQUIRES_INSPECTION",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:03:46.170Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:06:31.565Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 9,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:08:43.786Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 10,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        }
+      ],
+      "worker": "PASS",
+      "ci": "in_progress",
+      "passed": 10,
+      "plan": "success",
+      "manual": "PRODUCTION_WAVE_PASSED"
+    },
+    "originalNormal": {
       "pr": 295,
       "head": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
       "ciRun": 45883785338,
       "planRun": 45883785199,
       "services": "funnel",
-      "state": "WAITING_MANUAL_AND_CI",
+      "state": "SUPERSEDED_BY_PR296",
       "startedAt": "2026-11-26T19:33:08.213Z",
       "events": [
         {
@@ -1104,12 +1404,34 @@
           "passed": 8,
           "plan": "success",
           "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:43:09.817Z",
+          "ci": "in_progress",
+          "passed": 9,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:47:39.661Z",
+          "ci": "in_progress",
+          "passed": 10,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
         }
       ],
       "ci": "in_progress",
-      "passed": 8,
+      "passed": 10,
       "plan": "success",
-      "manual": "PRODUCTION_WAVE_PASSED"
+      "manual": "PRODUCTION_WAVE_PASSED",
+      "supersededBy": {
+        "pr": 296,
+        "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+        "at": "2026-11-26T19:48:38.006Z",
+        "reason": "Promoção seletiva consolidada da árvore mais recente; impedir que publicações anteriores sobrescrevam os ajustes novos"
+      }
     },
     "official": null,
     "catalog": {
@@ -1127,7 +1449,7 @@
     },
     "verification": {
       "state": "PASS",
-      "verifiedAt": "2026-11-26T19:36:07.358Z",
+      "verifiedAt": "2026-11-26T20:07:47.764Z",
       "pages": [
         {
           "path": "/",
@@ -1333,7 +1655,17 @@
         "community",
         "community-kids"
       ],
-      "newOfficialServices": ["funnel"],
+      "newOfficialServices": [
+        "members",
+        "auth",
+        "referrals",
+        "api-gateway",
+        "admin",
+        "community",
+        "community-kids",
+        "funnel"
+      ],
+      "consolidatedPullRequest": 296,
       "previousServicesDoNotIncludeFunnel": true
     },
     "staging": {
@@ -1349,7 +1681,1347 @@
     "accessMonths": 6,
     "priceCents": 6700,
     "guaranteeDays": 7,
-    "giftAvailable": false,
-    "updatedAt": "2026-11-26T19:35:55.729Z"
+    "giftAvailable": false
+  },
+  "consolidatedRelease": {
+    "updatedAt": "2026-11-26T20:15:44.377Z",
+    "environment": "production",
+    "productionRequestsPublishedAndVerified": true,
+    "normalRegularizationComplete": false,
+    "currentMain": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+    "approvedSource": {
+      "reviewed": true,
+      "pr": 296,
+      "sha": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+      "ciRun": 45886332315,
+      "planRun": 45886332411,
+      "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
+      "checks": {
+        "coreTests": 3357,
+        "coreTypecheck": "pass",
+        "jardimGuards": 11,
+        "approachTests": 12,
+        "runtimeTestsPassed": 442,
+        "runtimeTestsSkipped": 56,
+        "configurationChanges": 0,
+        "workerQualification": {
+          "coreTests": 3357,
+          "runtimeTests": 442,
+          "coreTypes": "pass",
+          "runtimeTypes": "pass",
+          "jardimGuards": 11,
+          "approachTests": 12,
+          "dockerImage": "sistemazero-jardim-release:20261126",
+          "imageSmoke": "pass",
+          "validationSmoke": "pass",
+          "templatesSmoke": "pass",
+          "threeObjectivesSmoke": "pass",
+          "browserScenarios": ["guardado", "jeffrey", "regador:-4,-2", "sem-memoria", "sem-guarda"]
+        }
+      },
+      "manualServices": "members,auth,admin,community,community-kids",
+      "previousMain": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+      "previousPullRequest": 293,
+      "supersededPullRequests": [294, 295],
+      "workerRequiredProfile": "720ddc18e570aa87898fab13b073ab54edb30ffec15a354465976aeca444923c"
+    },
+    "normal": {
+      "pr": 296,
+      "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "ciRun": 45886332315,
+      "planRun": 45886332411,
+      "services": "members,auth,referrals,api-gateway,admin,community,community-kids,funnel",
+      "state": "WAITING_MANUAL_AND_CI",
+      "startedAt": "2026-11-26T19:55:57.775Z",
+      "events": [
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:56:00.819Z",
+          "worker": "pending",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:00:25.967Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:01:32.454Z",
+          "worker": "REGRESSION_FAILED_REQUIRES_INSPECTION",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:03:46.170Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:06:31.565Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 9,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:08:43.786Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 10,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T20:13:08.710Z",
+          "worker": "PASS",
+          "ci": "in_progress",
+          "passed": 11,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        }
+      ],
+      "worker": "PASS",
+      "ci": "in_progress",
+      "passed": 11,
+      "plan": "success",
+      "manual": "PRODUCTION_WAVE_PASSED"
+    },
+    "official": null,
+    "manual": {
+      "state": "PRODUCTION_WAVE_PASSED",
+      "source": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "tree": "66a1c5883ccaa9421e381c55e13f92ec2cb4fcb4",
+      "completedAt": "2026-11-26T20:06:19.159Z",
+      "deployments": [
+        {
+          "name": "members",
+          "id": "48fd9856-3326-4fbf-93b0-06e6a497089c"
+        },
+        {
+          "name": "auth",
+          "id": "d7be94c1-a5ed-46c2-9c6a-e5da12cde653"
+        },
+        {
+          "name": "admin",
+          "id": "9e167dd9-0678-4aae-beb8-6cab0fcf9bc4"
+        },
+        {
+          "name": "community",
+          "id": "c999105d-2f45-4fbd-bc25-877666938f10"
+        },
+        {
+          "name": "community-kids",
+          "id": "9e645958-b5ce-4d5a-934a-724a9d59ef72"
+        }
+      ],
+      "publishedVersion": 4
+    },
+    "worker": {
+      "state": "PASS",
+      "verifiedAt": "2026-11-26T19:59:53.710Z",
+      "source": "fd8923232b6a73e925c176261664d5f652c0b891",
+      "profile": "720ddc18e570aa87898fab13b073ab54edb30ffec15a354465976aeca444923c",
+      "workerVersion": "5df90fce-6396-4e52-81e3-ec56f57a7b0c",
+      "workerDeployment": "0dff02f7-0a00-4b75-b8b1-444ac22a4294",
+      "percentage": 100,
+      "images": {
+        "state": "PASS",
+        "at": "2026-11-26T19:59:21.624Z",
+        "imageDigest": "sha256:096f5368eb8c8018087671f039ae04d08894d7a9df98db152539d762288c2a1b",
+        "qualifiedLocalImageMatchesBothPublishedImages": true,
+        "apps": [
+          {
+            "id": "a03f07be-3a1a-4bb8-82bc-5d2c3c01c057",
+            "name": "sistemazero-studio-runtime-probuildsandbox",
+            "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-probuildsandbox@sha256:096f5368eb8c8018087671f039ae04d08894d7a9df98db152539d762288c2a1b",
+            "version": 16,
+            "updatedAt": "2026-11-26T19:58:26.756Z",
+            "healthy": 5,
+            "errors": 0
+          },
+          {
+            "id": "a038f0a1-9723-4c1e-9fe4-1ff277a748e6",
+            "name": "sistemazero-studio-runtime-threedchecksandbox",
+            "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-threedchecksandbox@sha256:096f5368eb8c8018087671f039ae04d08894d7a9df98db152539d762288c2a1b",
+            "version": 9,
+            "updatedAt": "2026-11-26T19:58:14.508999936Z",
+            "healthy": 5,
+            "errors": 0
+          }
+        ]
+      },
+      "qualification": {
+        "coreTests": 3357,
+        "runtimeTests": 442,
+        "coreTypes": "pass",
+        "runtimeTypes": "pass",
+        "jardimGuards": 11,
+        "approachTests": 12,
+        "dockerImage": "sistemazero-jardim-release:20261126",
+        "imageSmoke": "pass",
+        "validationSmoke": "pass",
+        "templatesSmoke": "pass",
+        "threeObjectivesSmoke": "pass",
+        "browserScenarios": ["guardado", "jeffrey", "regador:-4,-2", "sem-memoria", "sem-guarda"]
+      },
+      "healthStatus": 200,
+      "warmChecks": [
+        {
+          "threeD": false,
+          "status": 200,
+          "ok": true,
+          "skipped": false,
+          "ms": 4612
+        },
+        {
+          "threeD": true,
+          "status": 200,
+          "ok": true,
+          "skipped": false,
+          "ms": 4664
+        }
+      ],
+      "variableChanges": 0,
+      "partialUploadFailurePreserved": {
+        "state": "KNOWN_PARTIAL_DEPLOYMENT_INSPECTED",
+        "at": "2026-11-26T19:55:07.862Z",
+        "source": "fd8923232b6a73e925c176261664d5f652c0b891",
+        "workerVersionAcknowledged": "87dfd046-483d-4b8f-8d07-f6fab404957a",
+        "workerDeploymentAcknowledged": "28acdd2f-6d94-49a6-89f2-782cb3616f95",
+        "failurePhase": "content-addressed-container-image-push",
+        "reason": "timeout awaiting response headers",
+        "nextAction": "Uma retomada explícita pelo Wrangler após confirmar a versão ativa; camadas por digest reutilizadas; código e variáveis iguais"
+      },
+      "testMessagesSent": false,
+      "paymentSubmitted": false,
+      "liveRegression": {
+        "state": "PASS",
+        "verifiedAt": "2026-11-26T20:03:17.479Z",
+        "source": "fd8923232b6a73e925c176261664d5f652c0b891",
+        "scenario": "3d-jeffrey",
+        "status": 200,
+        "durationMs": 77902,
+        "documentBytes": 1707992,
+        "results": [
+          {
+            "id": "andar",
+            "passed": true
+          },
+          {
+            "id": "coletar",
+            "passed": true
+          },
+          {
+            "id": "sem-regador",
+            "passed": true
+          },
+          {
+            "id": "com-regador",
+            "passed": true
+          },
+          {
+            "id": "uma-vez",
+            "passed": true
+          }
+        ],
+        "code": null,
+        "message": null,
+        "accountProgressWritten": false,
+        "paymentSubmitted": false,
+        "testMessagesSent": false
+      }
+    },
+    "publicVerification": {
+      "state": "PASS",
+      "verifiedAt": "2026-11-26T20:07:47.764Z",
+      "pages": [
+        {
+          "path": "/",
+          "status": 200,
+          "title": "Helena e Júlio: criação de jogos para a família",
+          "image": "https://sistemazero.com.br/img/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta",
+          "status": 200,
+          "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+          "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+          "status": 200,
+          "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+          "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/vilao-em-aliado/oferta",
+          "status": 200,
+          "title": "Workshop para pais: a tela que vira briga em casa pode ser sua aliada",
+          "image": "https://sistemazero.com.br/img/transformando-o-vilao-em-aliado/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/vilao-em-aliado/checkout",
+          "status": 200,
+          "title": "Workshop para pais: a tela que vira briga em casa pode ser sua aliada",
+          "image": "https://sistemazero.com.br/img/transformando-o-vilao-em-aliado/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/cade-todo-mundo/oferta",
+          "status": 200,
+          "title": "Cadê Todo Mundo: o primeiro jogo do seu filho",
+          "image": "https://sistemazero.com.br/img/cade-todo-mundo/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/cade-todo-mundo/oferta",
+          "status": 200,
+          "title": "Cadê Todo Mundo: o seu primeiro jogo em duas aulas",
+          "image": "https://sistemazero.com.br/img/cade-todo-mundo/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/desafio-primeiro-jogo/oferta",
+          "status": 200,
+          "title": "Desafio do Primeiro Jogo: seu filho cria o primeiro jogo dele em casa",
+          "image": "https://sistemazero.com.br/img/desafio-primeiro-jogo/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/desafio-primeiro-jogo/oferta",
+          "status": 200,
+          "title": "Desafio do Primeiro Jogo: crie o seu primeiro jogo",
+          "image": "https://sistemazero.com.br/img/desafio-primeiro-jogo/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/comunidade-dos-criadores/oferta",
+          "status": 200,
+          "title": "Comunidade dos Criadores: seu filho criando jogos com orientação",
+          "image": "https://sistemazero.com.br/img/comunidade-dos-criadores/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/comunidade-dos-criadores/oferta",
+          "status": 200,
+          "title": "Comunidade dos Criadores: tire suas ideias de jogo do papel",
+          "image": "https://sistemazero.com.br/img/comunidade-adulto/compartilhar.jpg"
+        }
+      ],
+      "imagesVerified": 7,
+      "ambassadorOriginPreserved": true,
+      "browser": [
+        {
+          "step": "oferta",
+          "width": 390,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "checkout",
+          "width": 390,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "oferta",
+          "width": 1440,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "checkout",
+          "width": 1440,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        }
+      ],
+      "paymentSubmitted": false,
+      "testMessagesSent": false
+    },
+    "linksVerified": {
+      "state": "PASS",
+      "verifiedAt": "2026-11-26T20:07:43.501Z",
+      "results": [
+        {
+          "path": "/kids/vilao-em-aliado?utm_source=release-proof",
+          "status": 302,
+          "location": "/i/vilao-em-aliado?utm_source=release-proof"
+        },
+        {
+          "path": "/bolsa/laopa-20261113",
+          "status": 302,
+          "location": "/kids/cade-todo-mundo/oferta?presente=laopa-20261113"
+        },
+        {
+          "path": "/i/laopa-20261113",
+          "status": 302,
+          "location": "/bolsa/laopa-20261113"
+        },
+        {
+          "path": "/bolsa/vilao-em-aliado",
+          "status": 302,
+          "location": "/kids/vilao-em-aliado/oferta?presente=vilao-em-aliado"
+        },
+        {
+          "path": "/i/vivianne-e8ez/cade",
+          "status": 302,
+          "location": "/kids/cade-todo-mundo/oferta?indicacao=vivianne-e8ez"
+        },
+        {
+          "path": "/i/vivianne-s4mx/cade",
+          "status": 302,
+          "location": "/pro/cade-todo-mundo/oferta?indicacao=vivianne-s4mx"
+        },
+        {
+          "path": "/cupom/LAOPA131126?oferta=desafio-primeiro-jogo-30-dias&publico=kids&event_code=laopa-20261113",
+          "status": 302,
+          "location": "/kids/desafio-primeiro-jogo/oferta?cupom=LAOPA131126&event_code=laopa-20261113&indicacao=laopa-20261113"
+        },
+        {
+          "path": "/bolsa/vilao-em-aliado-cade",
+          "status": 302,
+          "location": "https://kids.sistemazero.com.br/pais/cursos/transformando-o-vilao-em-aliado"
+        },
+        {
+          "path": "/i/vilao-em-aliado-cade",
+          "status": 302,
+          "location": "/bolsa/vilao-em-aliado-cade"
+        },
+        {
+          "path": "/i/vivianne-e8ez/frustracoes",
+          "status": 302,
+          "location": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez"
+        },
+        {
+          "path": "/i/vivianne-e8ez/frustracoes/presente",
+          "status": 404,
+          "location": null
+        }
+      ],
+      "couponCampaignOrigin": true,
+      "couponDiscount3350": true,
+      "courseBenefitRequiresAuthenticatedCourse": true,
+      "vivianneNoGift": true,
+      "paymentSubmitted": false
+    },
+    "campaigns": [
+      {
+        "code": "laopa-20261113",
+        "name": "Laopa - palestra de 13 de novembro de 2026, às 20h",
+        "ends_at": "2026-12-13 03:00:00+00"
+      },
+      {
+        "code": "vilao-em-aliado",
+        "name": "Guia para pais — acesso de presente ao minicurso",
+        "ends_at": "2030-01-01 03:00:00+00"
+      }
+    ],
+    "courseBenefit": {
+      "state": "COURSE_BENEFIT_CONVERTED_AND_VERIFIED",
+      "verifiedAt": "2026-11-26T18:29:32.110Z",
+      "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+      "benefitId": "fd741378-dffd-478e-ac5c-f89c948b7f9e",
+      "code": "vilao-em-aliado-cade",
+      "converted": true,
+      "originalRedemptionsPreserved": 2,
+      "originalAcquisitionsPreserved": 2,
+      "fingerprints": {
+        "redemptions": "33d241e1fa287d99a5e606ae2787acf0f6865fdf4deff5190cc56c31878c5bf2",
+        "acquisitions": "8666824713211db5cd654d6a40554b89275694d7585bb7fb1c8c4fe5d794a532"
+      },
+      "archivedHistoryRows": 2,
+      "totalGifts": 2,
+      "reportStatus": 200,
+      "staffStatus": 403,
+      "publicRedemptionAvailable": false,
+      "campaigns": [
+        {
+          "code": "laopa-20261113",
+          "name": "Laopa - palestra de 13 de novembro de 2026, às 20h",
+          "ends_at": "2026-12-13 03:00:00+00"
+        },
+        {
+          "code": "vilao-em-aliado",
+          "name": "Guia para pais — acesso de presente ao minicurso",
+          "ends_at": "2030-01-01 03:00:00+00"
+        }
+      ],
+      "courseId": "3edc936c-5b72-4dd9-9c33-0b66e44d5a8b",
+      "lessonId": "0947bc6e-ec79-4a8b-a390-e58764ab4cf6",
+      "blockId": "142105fd-0a3f-5066-af79-3e8e56ce92a8",
+      "manifestPublished": true,
+      "immediateOrigin": "course",
+      "upstreamOriginSeparate": true,
+      "historicalUnknownPreserved": true,
+      "availability": "enquanto houver acesso ao guia; o presente concede quinze dias reais, sete divulgados",
+      "backupSha256": "5cfcd0c8aee7b2680d5739504472f178ef8f7c923abd24e3d0dbc05dbc25f83c"
+    },
+    "historicalReleases": {
+      "initial": {
+        "stage": "first",
+        "pr": 290,
+        "head": "fa103eb324fe9ff62b097d342d7436a195229463",
+        "ci": "completed",
+        "plan": "success",
+        "services": "members,auth,catalog,payments,messaging,referrals,api-gateway,admin,community,community-kids,funnel",
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "startedAt": "2026-11-26T14:00:49.164Z",
+        "events": [
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T14:00:52.497Z",
+            "ci": "completed",
+            "passed": 13,
+            "plan": "success"
+          },
+          {
+            "state": "CI_AND_PLAN_PASSED",
+            "at": "2026-11-26T14:00:52.501Z"
+          },
+          {
+            "state": "MERGED_EXACT_TREE",
+            "at": "2026-11-26T14:00:55.764Z",
+            "mergeSha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+            "tree": "79019c1fbea5152697059f88c5bf024a0446f439"
+          },
+          {
+            "state": "DISPATCHING_OFFICIAL_DEPLOY",
+            "at": "2026-11-26T14:00:58.258Z",
+            "dispatchAt": "2026-11-26T14:00:58.258Z"
+          },
+          {
+            "state": "DISPATCH_ACKNOWLEDGED",
+            "at": "2026-11-26T14:01:00.604Z"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T14:01:01.918Z",
+            "runId": 45834759877,
+            "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45834759877"
+          },
+          {
+            "state": "FAILED_REQUIRES_INSPECTION",
+            "at": "2026-11-26T14:01:02.482Z",
+            "failure": "Command failed: gh run view 45834759877 --json status,conclusion,headSha\nfailed to get run: HTTP 404: Not Found (https://api.github.com/repos/informach/sistema-zero/actions/runs/45834759877?exclude_pull_requests=true)\n"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T14:02:04.448Z",
+            "monitoringResumed": true,
+            "repeatedDispatch": false
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_PASSED",
+            "at": "2026-11-26T14:25:39.879Z",
+            "completedAt": "2026-11-26T14:25:39.879Z"
+          }
+        ],
+        "passed": 13,
+        "mergeSha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+        "tree": "79019c1fbea5152697059f88c5bf024a0446f439",
+        "dispatchAt": "2026-11-26T14:00:58.258Z",
+        "runId": 45834759877,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45834759877",
+        "monitoringResumed": true,
+        "repeatedDispatch": false,
+        "completedAt": "2026-11-26T14:25:39.879Z",
+        "official": {
+          "state": "PRODUCTION_WAVE_PASSED",
+          "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+          "source": {
+            "kind": "production-promoted-source",
+            "sha": "8e24c452c8ff41e4f70548d0d0f06b2a0e7601a5",
+            "approvedHead": "fa103eb324fe9ff62b097d342d7436a195229463",
+            "tree": "79019c1fbea5152697059f88c5bf024a0446f439",
+            "ci": {
+              "run": 45824448955,
+              "attempt": 1,
+              "passedJobs": 9
+            },
+            "planArtifact": {
+              "id": 15118698772,
+              "run": 45824448947
+            }
+          },
+          "publishedVersion": 4,
+          "deployments": [
+            {
+              "name": "members",
+              "id": "8a2f41c2-ef55-4d39-a3a9-d053f04299cc"
+            },
+            {
+              "name": "auth",
+              "id": "b0f79c16-6eb8-40aa-ac89-8f02e9e24300"
+            },
+            {
+              "name": "catalog",
+              "id": "aacbde86-7d24-422b-865d-bc38d9934918"
+            },
+            {
+              "name": "payments",
+              "id": "e9f980a1-6e35-406b-8825-da431b4eb985"
+            },
+            {
+              "name": "referrals",
+              "id": "916b4a7a-4f1d-42a9-8acd-506d4d5963e2"
+            },
+            {
+              "name": "messaging",
+              "id": "7d7e9a76-6fdc-4e27-bffc-fa3f7783e138"
+            },
+            {
+              "name": "api-gateway",
+              "id": "17604ef0-bf57-460e-83be-8f8df2a480f5"
+            },
+            {
+              "name": "admin",
+              "id": "f09c09ba-a33d-4702-a77d-2716f5699ff6"
+            },
+            {
+              "name": "community",
+              "id": "48bbbf42-7b96-47b1-b23e-b479ce75b2cb"
+            },
+            {
+              "name": "community-kids",
+              "id": "011e9129-26f5-4d49-aefa-2c5c1e30e093"
+            },
+            {
+              "name": "funnel",
+              "id": "150c3927-a91e-4716-bc52-b2335daa7368"
+            }
+          ]
+        }
+      },
+      "second": {
+        "stage": "second",
+        "pr": 291,
+        "head": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
+        "ci": "completed",
+        "plan": "success",
+        "services": "members,auth",
+        "state": "FAILED_REQUIRES_INSPECTION",
+        "startedAt": "2026-11-26T14:02:22.747Z",
+        "events": [
+          {
+            "state": "WAITING_FIRST_OFFICIAL_DEPLOY",
+            "at": "2026-11-26T14:02:22.748Z"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T14:25:58.356Z",
+            "ci": "completed",
+            "passed": 13,
+            "plan": "success"
+          },
+          {
+            "state": "CI_AND_PLAN_PASSED",
+            "at": "2026-11-26T14:25:58.358Z"
+          },
+          {
+            "state": "MERGED_EXACT_TREE",
+            "at": "2026-11-26T14:26:08.512Z",
+            "mergeSha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359"
+          },
+          {
+            "state": "DISPATCHING_OFFICIAL_DEPLOY",
+            "at": "2026-11-26T14:26:09.886Z",
+            "dispatchAt": "2026-11-26T14:26:09.886Z"
+          },
+          {
+            "state": "DISPATCH_ACKNOWLEDGED",
+            "at": "2026-11-26T14:26:12.077Z"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T14:26:44.808Z",
+            "runId": 45838983875,
+            "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45838983875"
+          },
+          {
+            "state": "FAILED_REQUIRES_INSPECTION",
+            "at": "2026-11-26T14:43:47.669Z",
+            "failure": "Deploy oficial terminou failure"
+          },
+          {
+            "state": "DISPATCHING_OFFICIAL_COMPLEMENT",
+            "at": "2026-11-26T14:50:34.139Z",
+            "dispatchAt": "2026-11-26T14:50:34.138Z",
+            "complementReason": "Todos os cinco deployments originais foram reconferidos sem mutação; repetir a onda canônica pelo workflow oficial para concluir o registro operacional."
+          },
+          {
+            "state": "DISPATCH_ACKNOWLEDGED",
+            "at": "2026-11-26T14:50:36.192Z"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T14:50:37.823Z",
+            "runId": 45843053362,
+            "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45843053362"
+          },
+          {
+            "state": "FAILED_REQUIRES_INSPECTION",
+            "at": "2026-11-26T14:52:13.490Z",
+            "failure": "Deploy oficial terminou failure"
+          }
+        ],
+        "passed": 13,
+        "mergeSha": "027f895b8a67300a4bae28f86423953893a1a289",
+        "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359",
+        "dispatchAt": "2026-11-26T14:50:34.138Z",
+        "initialAttempt": {
+          "runId": 45838983875,
+          "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45838983875",
+          "services": "members,auth,admin,community,community-kids",
+          "workflowConclusion": "failure",
+          "failure": "Deploy oficial terminou failure",
+          "readOnlyVerification": {
+            "state": "READ_ONLY_RECOVERY_VERIFIED",
+            "verifiedAt": "2026-11-26T14:49:03.241Z",
+            "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+            "source": {
+              "kind": "production-promoted-source",
+              "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+              "approvedHead": "873a9c59ef4c653e363d8789f076ff9ad08225aa",
+              "tree": "3a40e057c51d46e1870cb071e12eef1d7e261359",
+              "ci": {
+                "run": 45823780172,
+                "attempt": 1,
+                "passedJobs": 9
+              },
+              "planArtifact": {
+                "id": 15118772697,
+                "run": 45823779952
+              }
+            },
+            "canonical": {
+              "status": "published",
+              "version": 4
+            },
+            "deployments": [
+              {
+                "name": "members",
+                "id": "3e84b05b-bebd-4230-bb91-08e5d78ed31d",
+                "status": "SUCCESS",
+                "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+                "previousId": "8a2f41c2-ef55-4d39-a3a9-d053f04299cc",
+                "previousStatus": "REMOVED"
+              },
+              {
+                "name": "auth",
+                "id": "5be4e269-a6d1-489e-a27b-3f5740d20a25",
+                "status": "SUCCESS",
+                "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+                "previousId": "b0f79c16-6eb8-40aa-ac89-8f02e9e24300",
+                "previousStatus": "REMOVED"
+              },
+              {
+                "name": "admin",
+                "id": "784df78d-e90d-4866-bd4b-093e081f0637",
+                "status": "SUCCESS",
+                "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+                "previousId": "f09c09ba-a33d-4702-a77d-2716f5699ff6",
+                "previousStatus": "REMOVED"
+              },
+              {
+                "name": "community",
+                "id": "47d826e8-4b90-44d0-9e90-1b0e606da8ac",
+                "status": "SUCCESS",
+                "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+                "previousId": "48bbbf42-7b96-47b1-b23e-b479ce75b2cb",
+                "previousStatus": "REMOVED"
+              },
+              {
+                "name": "community-kids",
+                "id": "70d48906-3440-4185-9765-b25d84b3348f",
+                "status": "SUCCESS",
+                "sha": "027f895b8a67300a4bae28f86423953893a1a289",
+                "previousId": "011e9129-26f5-4d49-aefa-2c5c1e30e093",
+                "previousStatus": "REMOVED"
+              }
+            ],
+            "configurationChanges": 0,
+            "nativeTriggersDisabled": true,
+            "newDeploymentsSent": 0,
+            "events": [
+              {
+                "stage": "members-first-poll",
+                "deployment": "3e84b05b-bebd-4230-bb91-08e5d78ed31d"
+              },
+              {
+                "stage": "auth-first-poll",
+                "deployment": "5be4e269-a6d1-489e-a27b-3f5740d20a25"
+              },
+              {
+                "stage": "admin-first-poll",
+                "deployment": "784df78d-e90d-4866-bd4b-093e081f0637"
+              },
+              {
+                "stage": "community-first-poll",
+                "deployment": "47d826e8-4b90-44d0-9e90-1b0e606da8ac"
+              },
+              {
+                "stage": "community-kids-first-poll",
+                "deployment": "70d48906-3440-4185-9765-b25d84b3348f"
+              }
+            ]
+          }
+        },
+        "complementReason": "Todos os cinco deployments originais foram reconferidos sem mutação; repetir a onda canônica pelo workflow oficial para concluir o registro operacional.",
+        "runId": 45843053362,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45843053362",
+        "failure": "Deploy oficial terminou failure"
+      },
+      "controllerFix": {
+        "stage": "third",
+        "pr": 292,
+        "head": "49c60358f44f084bfeeeb2a249466691f489e706",
+        "ci": "completed",
+        "plan": "success",
+        "services": "referrals",
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "startedAt": "2026-11-26T15:24:30.485Z",
+        "events": [
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:24:33.656Z",
+            "ci": "in_progress",
+            "passed": 0,
+            "plan": "in_progress"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:25:06.873Z",
+            "ci": "in_progress",
+            "passed": 0,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:25:40.194Z",
+            "ci": "in_progress",
+            "passed": 1,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:26:13.380Z",
+            "ci": "in_progress",
+            "passed": 2,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:27:19.823Z",
+            "ci": "in_progress",
+            "passed": 3,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:28:26.339Z",
+            "ci": "in_progress",
+            "passed": 4,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:29:33.297Z",
+            "ci": "in_progress",
+            "passed": 5,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:30:39.902Z",
+            "ci": "in_progress",
+            "passed": 6,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:31:46.706Z",
+            "ci": "in_progress",
+            "passed": 7,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:37:19.625Z",
+            "ci": "in_progress",
+            "passed": 8,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:39:32.884Z",
+            "ci": "in_progress",
+            "passed": 9,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:45:09.368Z",
+            "ci": "in_progress",
+            "passed": 10,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:45:49.056Z",
+            "ci": "in_progress",
+            "passed": 11,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T15:49:43.939Z",
+            "ci": "in_progress",
+            "passed": 12,
+            "plan": "success"
+          },
+          {
+            "state": "WAITING_CI",
+            "at": "2026-11-26T16:52:22.998Z",
+            "ci": "completed",
+            "passed": 13,
+            "plan": "success"
+          },
+          {
+            "state": "CI_AND_PLAN_PASSED",
+            "at": "2026-11-26T16:52:23.001Z"
+          },
+          {
+            "state": "MERGED_EXACT_TREE",
+            "at": "2026-11-26T16:52:25.331Z",
+            "mergeSha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+            "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4"
+          },
+          {
+            "state": "DISPATCHING_OFFICIAL_DEPLOY",
+            "at": "2026-11-26T16:52:26.781Z",
+            "dispatchAt": "2026-11-26T16:52:26.781Z"
+          },
+          {
+            "state": "DISPATCH_ACKNOWLEDGED",
+            "at": "2026-11-26T16:52:28.662Z"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T16:52:30.091Z",
+            "runId": 45862730855,
+            "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45862730855"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_PASSED",
+            "at": "2026-11-26T16:58:10.821Z",
+            "completedAt": "2026-11-26T16:58:10.821Z"
+          }
+        ],
+        "passed": 13,
+        "selectionChange": {
+          "before": "funnel",
+          "after": "referrals",
+          "at": "2026-11-26T16:52:19.687Z",
+          "reason": "Validar controlador com serviço fora da nova leva manual, sem sobrescrever o Funil novo.",
+          "beforeAnyDispatch": true
+        },
+        "mergeSha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+        "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4",
+        "dispatchAt": "2026-11-26T16:52:26.781Z",
+        "runId": 45862730855,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45862730855",
+        "completedAt": "2026-11-26T16:58:10.821Z",
+        "official": {
+          "state": "PRODUCTION_WAVE_PASSED",
+          "sha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+          "source": {
+            "kind": "production-promoted-source",
+            "sha": "920fc09abb9e249130d99b4d266cf2a0c8d844ea",
+            "approvedHead": "49c60358f44f084bfeeeb2a249466691f489e706",
+            "tree": "e0c97aabfc0ff0209377e06e2899cc51cfd708f4",
+            "ci": {
+              "run": 45848643226,
+              "attempt": 1,
+              "passedJobs": 9
+            },
+            "planArtifact": {
+              "id": 15132451414,
+              "run": 45848643481
+            }
+          },
+          "publishedVersion": 4,
+          "deployments": [
+            {
+              "name": "referrals",
+              "id": "ac30926d-04ff-496a-bbea-d0f3e4b1c53f"
+            }
+          ]
+        }
+      },
+      "constructionAndPages": {
+        "pr": 293,
+        "head": "8b47c56cd614ee94b424de01f307ed052fa0d4b9",
+        "ciRun": 45861524903,
+        "planRun": 45861524875,
+        "services": "members,auth,arquipelago-api,community,community-kids,funnel",
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "startedAt": "2026-11-26T16:54:44.609Z",
+        "events": [
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T16:54:47.872Z",
+            "ci": "in_progress",
+            "passed": 8,
+            "plan": "success",
+            "manual": "PREPARING"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:03:04.816Z",
+            "ci": "in_progress",
+            "passed": 9,
+            "plan": "success",
+            "manual": "PREPARING"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:05:17.916Z",
+            "ci": "in_progress",
+            "passed": 10,
+            "plan": "success",
+            "manual": "PREPARING"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:08:36.607Z",
+            "ci": "in_progress",
+            "passed": 11,
+            "plan": "success",
+            "manual": "PREPARING"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:11:56.002Z",
+            "ci": "in_progress",
+            "passed": 12,
+            "plan": "success",
+            "manual": "PREPARING"
+          },
+          {
+            "state": "FAILED_REQUIRES_INSPECTION",
+            "at": "2026-11-26T17:17:27.261Z",
+            "failure": "Publicação manual exige inspeção"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:24:41.451Z",
+            "ci": "in_progress",
+            "passed": 12,
+            "plan": "success",
+            "manual": "PRODUCTION_WAVE_PASSED"
+          },
+          {
+            "state": "WAITING_MANUAL_AND_CI",
+            "at": "2026-11-26T17:39:39.430Z",
+            "ci": "completed",
+            "passed": 13,
+            "plan": "success",
+            "manual": "PRODUCTION_WAVE_PASSED"
+          },
+          {
+            "state": "CI_PLAN_AND_MANUAL_PASSED",
+            "at": "2026-11-26T17:39:40.137Z"
+          },
+          {
+            "state": "MERGED_EXACT_TREE",
+            "at": "2026-11-26T17:39:47.532Z",
+            "mergeSha": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+            "tree": "597b1154d673030b95a5accbb9da3d18f4c848df"
+          },
+          {
+            "state": "DISPATCHING_OFFICIAL_DEPLOY",
+            "at": "2026-11-26T17:39:48.915Z",
+            "dispatchAt": "2026-11-26T17:39:48.915Z"
+          },
+          {
+            "state": "DISPATCH_ACKNOWLEDGED",
+            "at": "2026-11-26T17:39:50.752Z"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_RUNNING",
+            "at": "2026-11-26T17:39:52.041Z",
+            "runId": 45869619738,
+            "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45869619738"
+          },
+          {
+            "state": "OFFICIAL_DEPLOY_PASSED",
+            "at": "2026-11-26T18:03:36.587Z",
+            "completedAt": "2026-11-26T18:03:36.587Z"
+          }
+        ],
+        "ci": "completed",
+        "passed": 13,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED",
+        "inspectedRecovery": "manual-readonly-recovery.json",
+        "mergeSha": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+        "tree": "597b1154d673030b95a5accbb9da3d18f4c848df",
+        "dispatchAt": "2026-11-26T17:39:48.915Z",
+        "runId": 45869619738,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45869619738",
+        "completedAt": "2026-11-26T18:03:36.587Z",
+        "official": {
+          "state": "PRODUCTION_WAVE_PASSED",
+          "sha": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+          "source": {
+            "kind": "production-promoted-source",
+            "sha": "6b102721d54ad848c1337da3e4270ff2d4342b57",
+            "approvedHead": "8b47c56cd614ee94b424de01f307ed052fa0d4b9",
+            "tree": "597b1154d673030b95a5accbb9da3d18f4c848df",
+            "ci": {
+              "run": 45861524903,
+              "attempt": 1,
+              "passedJobs": 9
+            },
+            "planArtifact": {
+              "id": 15137768112,
+              "run": 45861524875
+            }
+          },
+          "publishedVersion": 4,
+          "deployments": [
+            {
+              "name": "members",
+              "id": "a2a468e6-d0e4-41b1-b64b-456185a732e8"
+            },
+            {
+              "name": "auth",
+              "id": "e16cd6b3-9937-4cfb-bba4-46d394de627e"
+            },
+            {
+              "name": "arquipelago-api",
+              "id": "24c83e30-f0db-4058-91fa-1ac9403497ba"
+            },
+            {
+              "name": "community",
+              "id": "0b567305-00db-49be-94c1-f5ec0f06c749"
+            },
+            {
+              "name": "community-kids",
+              "id": "c41470d4-4bf6-410a-a556-6bff38edfb88"
+            },
+            {
+              "name": "funnel",
+              "id": "0deafb41-69f0-4230-838d-79986e3e376a"
+            }
+          ]
+        }
+      },
+      "benefit": {
+        "manualSource": "6c245bf73cf028237937f4a5b137a12f84f35cee",
+        "normal": {
+          "pr": 294,
+          "head": "ca7d5c6b226e4c97c01f0498aeb60178fa0a98f3",
+          "ciRun": 45876725356,
+          "planRun": 45876725338,
+          "services": "members,auth,referrals,api-gateway,admin,community,community-kids",
+          "state": "SUPERSEDED_BY_PR296",
+          "startedAt": "2026-11-26T19:45:05.300Z",
+          "events": [
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:45:08.509Z",
+              "ci": "queued",
+              "passed": 0,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:45:42.692Z",
+              "ci": "in_progress",
+              "passed": 0,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:46:50.177Z",
+              "ci": "in_progress",
+              "passed": 1,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:47:56.762Z",
+              "ci": "in_progress",
+              "passed": 2,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            }
+          ],
+          "manualRuntimeSource": "6c245bf73cf028237937f4a5b137a12f84f35cee",
+          "runtimeEquivalentChanges": ["docs/aulas-interativas-tecnico/qa/curso-para-pais.test.ts"],
+          "ci": "in_progress",
+          "passed": 2,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED",
+          "supersededBy": {
+            "pr": 296,
+            "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+            "at": "2026-11-26T19:48:38.005Z",
+            "reason": "Promoção seletiva consolidada da árvore mais recente; impedir que publicações anteriores sobrescrevam os ajustes novos"
+          }
+        },
+        "supersededBy": 296
+      },
+      "workshop": {
+        "manualSource": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
+        "normal": {
+          "pr": 295,
+          "head": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
+          "ciRun": 45883785338,
+          "planRun": 45883785199,
+          "services": "funnel",
+          "state": "SUPERSEDED_BY_PR296",
+          "startedAt": "2026-11-26T19:33:08.213Z",
+          "events": [
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:33:11.571Z",
+              "ci": "in_progress",
+              "passed": 4,
+              "plan": "success",
+              "manual": "PREPARING"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:33:45.135Z",
+              "ci": "in_progress",
+              "passed": 5,
+              "plan": "success",
+              "manual": "PREPARING"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:34:51.622Z",
+              "ci": "in_progress",
+              "passed": 6,
+              "plan": "success",
+              "manual": "PREPARING"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:35:25.061Z",
+              "ci": "in_progress",
+              "passed": 7,
+              "plan": "success",
+              "manual": "PREPARING"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:35:58.299Z",
+              "ci": "in_progress",
+              "passed": 7,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:37:04.748Z",
+              "ci": "in_progress",
+              "passed": 8,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:43:09.817Z",
+              "ci": "in_progress",
+              "passed": 9,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            },
+            {
+              "state": "WAITING_MANUAL_AND_CI",
+              "at": "2026-11-26T19:47:39.661Z",
+              "ci": "in_progress",
+              "passed": 10,
+              "plan": "success",
+              "manual": "PRODUCTION_WAVE_PASSED"
+            }
+          ],
+          "ci": "in_progress",
+          "passed": 10,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED",
+          "supersededBy": {
+            "pr": 296,
+            "head": "fd8923232b6a73e925c176261664d5f652c0b891",
+            "at": "2026-11-26T19:48:38.006Z",
+            "reason": "Promoção seletiva consolidada da árvore mais recente; impedir que publicações anteriores sobrescrevam os ajustes novos"
+          }
+        },
+        "supersededBy": 296
+      }
+    },
+    "supersededPullRequests": [294, 295],
+    "supersededCi": {
+      "run45876725356": {
+        "attempt1": "Falhou somente no teste Windows de prazo de 500 ms; a etapa principal passou",
+        "attempt2": "Cancelada para consolidar a promoção na fonte mais recente"
+      },
+      "run45883785338": "Cancelado para consolidar a promoção na fonte mais recente",
+      "skippedDeployStagingIsNotFailure": true
+    },
+    "currentCommercialTerms": {
+      "sku": "como-ajudar-seu-filho-autista-nas-frustracoes",
+      "accessMonths": 6,
+      "priceCents": 6700,
+      "guaranteeDays": 7,
+      "giftAvailable": false
+    },
+    "staging": {
+      "localIntegrated": true,
+      "publicationOwnedByOtherSession": true,
+      "lastObservation": {
+        "observedAt": "2026-11-26T20:12:25.908Z",
+        "observations": [
+          {
+            "name": "members",
+            "id": "e875d10c-1f23-4059-9a5a-d76f79a76c6d",
+            "status": "SUCCESS",
+            "sha": "4051c6691b9f1534cb90fdb185c195af55ae4950"
+          }
+        ],
+        "state": "WAITING_NEW_CODE"
+      },
+      "remoteBusinessRegistrationVerified": false,
+      "registration": null,
+      "pendingState": "WAITING_COMPATIBLE_STAGING",
+      "originalCourseAssetsAndCorrectedVideoPreviouslyVerifiedInBothEnvironments": true
+    },
+    "paymentSubmitted": false,
+    "testMessagesSent": false
   }
 }
