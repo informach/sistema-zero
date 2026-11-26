@@ -71,6 +71,7 @@ import type {
   PaymentRow,
 } from '@/lib/types'
 import { PAYMENT_METHOD_LABELS, PRODUCT_KIND_LABELS, roleLabel } from '@/lib/types'
+import { PurchasesOriginTab } from './purchases-origin-tab'
 
 const SOURCE_LABELS: Record<string, string> = {
   payment: 'Pagamento',
@@ -96,7 +97,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'activity', label: 'Atividade' },
   { id: 'certificates', label: 'Certificados' },
   { id: 'ratings', label: 'Avaliações' },
-  { id: 'payments', label: 'Pagamentos' },
+  // A aba Pagamentos virou Compras e origem (25/11/2026), com os pagamentos embaixo.
+  { id: 'payments', label: 'Compras e origem' },
 ]
 
 /** Abas em que o aprendiz importa (dados por perfil no kids) — inclui a Visão geral. */
@@ -483,7 +485,14 @@ export function MemberDetailClient({
               historyQuery={memberHistoryQuery(learner)}
             />
           ) : null}
-          {tab === 'payments' ? <PaymentsTab email={user?.email ?? null} /> : null}
+          {tab === 'payments' ? (
+            <PurchasesOriginTab
+              email={user?.email ?? null}
+              platform={platform}
+              canReadOrigin={canWrite}
+              payments={<PaymentsTab email={user?.email ?? null} />}
+            />
+          ) : null}
         </>
       )}
 

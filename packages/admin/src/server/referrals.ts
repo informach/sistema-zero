@@ -1,5 +1,13 @@
 import 'server-only'
-import type { CampaignDetailView, CampaignView } from '@sistemazero/core/referrals'
+import type {
+  AcquisitionView,
+  AmbassadorOfferKind,
+  AmbassadorOfferView,
+  CampaignDetailView,
+  CampaignView,
+  OriginDetail,
+  OriginReport,
+} from '@sistemazero/core/referrals'
 import type {
   AmbassadorDetailView,
   AmbassadorListItemView,
@@ -123,5 +131,50 @@ export function markConversionPaid(
 export function matureConversionNow(id: string): Promise<GatewayResponse<{ ok: true }>> {
   return gatewayFetch(`/referrals/admin/conversions/${encodeURIComponent(id)}/mature-now`, {
     method: 'POST',
+  })
+}
+
+// ── Origem por aquisição (25/11/2026, Lote 7): leituras admin+ e as listas dos embaixadores ──
+
+/** As listas de ofertas dos embaixadores do público (`gift` e `referral`), staff+. */
+export function listAmbassadorOffers(
+  audience?: string,
+): Promise<GatewayResponse<Record<AmbassadorOfferKind, AmbassadorOfferView[]>>> {
+  return gatewayFetch('/referrals/admin/ambassador-offers', { query: { audience } })
+}
+
+/** Troca UMA lista inteira (`{audience, kind, items}`), admin+. */
+export function saveAmbassadorOffers(
+  body: unknown,
+): Promise<GatewayResponse<{ items: AmbassadorOfferView[] }>> {
+  return gatewayFetch('/referrals/admin/ambassador-offers', { method: 'PUT', body })
+}
+
+/** "Origem das vendas" do período (`from`/`to` ISO, até 366 dias), admin+. */
+export function getOriginReport(p: {
+  audience?: string
+  from?: string
+  to?: string
+}): Promise<GatewayResponse<OriginReport>> {
+  return gatewayFetch('/referrals/admin/origins', {
+    query: { audience: p.audience, from: p.from, to: p.to },
+  })
+}
+
+/** Tudo o que um e-mail recebeu ou comprou, com a origem (ficha da conta), admin+. */
+export function listAcquisitions(
+  email: string,
+): Promise<GatewayResponse<{ items: AcquisitionView[] }>> {
+  return gatewayFetch('/referrals/admin/acquisitions', { query: { email } })
+}
+
+/** Resultado de uma campanha ou de um embaixador: números, vendas por oferta e pessoas. */
+export function getOriginDetail(
+  kind: 'campaigns' | 'ambassadors',
+  id: string,
+  offset?: number,
+): Promise<GatewayResponse<OriginDetail>> {
+  return gatewayFetch(`/referrals/admin/${kind}/${encodeURIComponent(id)}/results`, {
+    query: { offset },
   })
 }

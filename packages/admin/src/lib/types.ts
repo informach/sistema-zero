@@ -1474,6 +1474,11 @@ export interface AmbassadorListItemView {
   invitesSent: number
   linkEmailSentAt: string | null
   createdAt: string
+  /**
+   * O que a pessoa trouxe nesta comunidade, contando as campanhas ligadas a ela (25/11/2026).
+   * `revenueCents` é `null` para quem não é admin; ausente em referrals anterior.
+   */
+  results?: import('@sistemazero/core/referrals').OriginResults
 }
 
 export type ConversionStatus =

@@ -203,7 +203,9 @@ test('campanha vincula embaixador com comissão explícita e remove vínculo sem
   )
   try {
     await act(async () => button('Editar').click())
-    let toggle = document.querySelector<HTMLInputElement>('[role="dialog"] input[type="checkbox"]')!
+    let toggle = document.querySelector<HTMLInputElement>(
+      '[role="dialog"] input[name="campaign-commission"]',
+    )!
     expect(toggle.checked).toBe(false)
     expect(toggle.disabled).toBe(true)
     await act(async () => button('Buscar embaixador').click())
@@ -218,7 +220,7 @@ test('campanha vincula embaixador com comissão explícita e remove vínculo sem
     })
     await act(async () => toggle.click())
     const amounts = document.querySelectorAll<HTMLInputElement>(
-      '[role="dialog"] input[type="number"]',
+      '[role="dialog"] input[name^="campaign-commission-"]',
     )
     expect(amounts[0]!.value).toBe('30')
     expect(amounts[1]!.value).toBe('80')
@@ -239,7 +241,9 @@ test('campanha vincula embaixador com comissão explícita e remove vínculo sem
       commissionWindowDays: 30,
     })
     await act(async () => button('Remover vínculo').click())
-    toggle = document.querySelector<HTMLInputElement>('[role="dialog"] input[type="checkbox"]')!
+    toggle = document.querySelector<HTMLInputElement>(
+      '[role="dialog"] input[name="campaign-commission"]',
+    )!
     expect(toggle.checked).toBe(false)
     expect(toggle.disabled).toBe(true)
     await submit()
@@ -271,7 +275,9 @@ test('editor preserva beneficiário e comissão habilitada ao editar outros camp
   try {
     await act(async () => button('Editar').click())
     expect(document.body.textContent).toContain('Vinculado: Viviane')
-    expect(document.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true)
+    expect(
+      document.querySelector<HTMLInputElement>('input[name="campaign-commission"]')?.checked,
+    ).toBe(true)
     await submit()
     expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
       ambassadorId: '11111111-1111-4111-8111-111111111111',
@@ -285,17 +291,19 @@ test('editor preserva beneficiário e comissão habilitada ao editar outros camp
   }
 })
 
-test('a lista mostra o público, e campanha antiga sem o campo é Kids', async () => {
+test('a lista mostra o tipo, e campanha antiga sem o campo é de presente', async () => {
   const { container, root } = await mount(
     [campaign(), campaign({ id: 'c2', name: 'Feira', code: 'feira', audience: undefined })],
     () => Response.json({}),
   )
+  // Lote 7 (25/11/2026): a lista é da comunidade da lente; a coluna mostra o tipo, e campanha
+  // anterior ao tipo é de presente.
   const headers = [...container.querySelectorAll('th')].map((th) => th.textContent)
-  expect(headers.slice(0, 3)).toEqual(['Campanha', 'Público', 'Situação'])
+  expect(headers.slice(0, 4)).toEqual(['Campanha', 'Tipo', 'O que entrega', 'Situação'])
   const rows = [...container.querySelectorAll('tbody tr')]
-  expect(rows[0]!.children[1]!.textContent).toBe('Adulto')
-  expect(rows[1]!.children[1]!.textContent).toBe('Kids')
-  expect(container.textContent).toContain('seu público e seu prazo para novos cadastros')
+  expect(rows[0]!.children[1]!.textContent).toBe('Presente')
+  expect(rows[1]!.children[1]!.textContent).toBe('Presente')
+  expect(container.textContent).toContain('o seu público e o seu prazo para novos cadastros')
   await act(async () => root.unmount())
 })
 
@@ -315,7 +323,7 @@ test('separar o mensal de um acordo legado conserva o anual exibido', async () =
   try {
     await act(async () => button('Editar').click())
     const amounts = document.querySelectorAll<HTMLInputElement>(
-      '[role="dialog"] input[type="number"]',
+      '[role="dialog"] input[name^="campaign-commission-"]',
     )
     expect(amounts[1]!.value).toBe('45')
     await act(async () => {
@@ -338,7 +346,9 @@ test('separar o mensal de um acordo legado conserva o anual exibido', async () =
 test('nova campanha nasce na comunidade selecionada e envia o público explícito', async () => {
   const { calls, root } = await mount([], () => Response.json({ campaign: campaign() }))
   await act(async () => button('Nova campanha').click())
-  expect(document.body.textContent).toContain('Público do presente')
+  expect(document.body.textContent).toContain(
+    'Comunidade Sistema Zero · pessoas de 18 anos ou mais.',
+  )
   expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Adulto')
   expect(document.querySelector('input[name="campaign-audience"]')).toBeNull()
   await choose(OFFER_ADULT)
@@ -448,7 +458,7 @@ test('a lista e o detalhe mostram a oferta, e a campanha antiga mostra a oferta 
   )
   try {
     const headers = [...container.querySelectorAll('th')].map((th) => th.textContent)
-    const column = headers.indexOf('Presente')
+    const column = headers.indexOf('O que entrega')
     const rows = [...container.querySelectorAll('tbody tr')]
     expect(rows[0]!.children[column]!.textContent).toBe(
       'Vilão em aliadoTransformando o vilão em aliado · sem prazo',
@@ -457,7 +467,7 @@ test('a lista e o detalhe mostram a oferta, e a campanha antiga mostra a oferta 
 
     await act(async () => button('Detalhes').click())
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain(
-      'Presente: Vilão em aliado (Transformando o vilão em aliado · sem prazo).',
+      'O presenteVilão em aliado (Transformando o vilão em aliado · sem prazo).',
     )
     await act(async () => button('Duplicar como nova edição').click())
     expect(giftSelect().value).toBe(OFFER_PARENTS)

@@ -42,6 +42,7 @@ describe('nav — grupos e helpers de seção', () => {
       'Notas fiscais',
       'Catálogo',
       'Campanhas',
+      'Origem das vendas',
       'Zappy e Pensa',
       'Atendimento',
       'Auditoria',
@@ -110,10 +111,18 @@ describe('nav — grupos e helpers de seção', () => {
     expect(negocioStaff?.items.map((i) => i.label)).not.toContain('Auditoria')
     const admin = visibleGroups('admin')
     expect(admin.find((g) => g.id === 'negocio')?.items.map((i) => i.label)).toContain('Auditoria')
+    // Origem das vendas tem e-mails e faturamento: só a administração (25/11/2026).
+    expect(negocioStaff?.items.map((i) => i.label)).not.toContain('Origem das vendas')
+    expect(admin.find((g) => g.id === 'negocio')?.items.map((i) => i.label)).toContain(
+      'Origem das vendas',
+    )
   })
 
-  test('canAccessSection + pathIsRoleRestricted: hoje só Auditoria restringe', () => {
+  test('canAccessSection + pathIsRoleRestricted: Auditoria e Origem das vendas restringem', () => {
     expect(pathIsRoleRestricted('/admin/auditoria')).toBe(true)
+    expect(pathIsRoleRestricted('/admin/origem-das-vendas')).toBe(true)
+    expect(canAccessSection('staff', '/admin/origem-das-vendas')).toBe(false)
+    expect(canAccessSection('admin', '/admin/origem-das-vendas')).toBe(true)
     expect(pathIsRoleRestricted('/admin/membros')).toBe(false)
     expect(pathIsRoleRestricted('/admin/professor/entregas')).toBe(false)
     expect(canAccessSection('staff', '/admin/auditoria')).toBe(false)
@@ -164,6 +173,7 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/pagamentos/transacoes')).toBe(true)
     expect(pathIsPlatformScoped('/admin/catalogo/produtos')).toBe(true)
     expect(pathIsPlatformScoped('/admin/embaixadores')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/origem-das-vendas')).toBe(true)
     expect(pathIsPlatformScoped('/admin/pagamentos/assinaturas')).toBe(true)
     expect(pathIsPlatformScoped('/admin/comunidade/servidores')).toBe(false)
     expect(pathIsPlatformScoped('/admin/auditoria')).toBe(false)

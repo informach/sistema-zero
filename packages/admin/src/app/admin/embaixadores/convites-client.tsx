@@ -1,23 +1,17 @@
 'use client'
 
-import {
-  type CampaignDetailView,
-  type CampaignInput,
-  type CampaignState,
-  type CampaignView,
-  campaignCouponPromotion,
-  campaignScheduleWindows,
-  DEFAULT_REFERRAL_BONUS,
-  type GiftAudience,
-  isGiftAudience,
+import type {
+  CampaignDetailView,
+  CampaignKind,
+  CampaignState,
+  CampaignView,
+  OriginReport,
 } from '@sistemazero/core/referrals'
-import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
-import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Pagination } from '@sistemazero/ui/pagination'
-import { ShareCard } from '@sistemazero/ui/share-card'
+import { Select } from '@sistemazero/ui/select'
 import {
   Table,
   TableBody,
@@ -26,121 +20,74 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
-import { campaignIsoDate, campaignLocalDate } from '@/lib/campaign-dates'
+import { useOfferNames } from '@/components/admin/origin-parts'
+import { OverviewCard } from '@/components/admin/overview-card'
+import { campaignLocalDate } from '@/lib/campaign-dates'
 import { cn } from '@/lib/cn'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
+import { loadAllPages } from '@/lib/load-all-pages'
 import type { Platform } from '@/lib/platform'
-import { type CampaignCouponDraft, CampaignCouponDraftSchema } from '@/lib/prepare-campaign-coupon'
-import { CampaignCouponFields } from './campaign-coupon-fields'
 import {
-  campaignGiftOfferName,
-  GIFT_CATALOG_UNAVAILABLE_MESSAGE,
-  GIFT_OFFER_LOCKED_MESSAGE,
-  GIFT_OFFER_REQUIRED_MESSAGE,
-  GiftOfferField,
-  type GiftOffersState,
-  giftOfferIncludes,
-  giftOfferShareDescription,
-  useGiftOffers,
-} from './campaign-gift-offer'
-import { CampaignScheduleFields } from './campaign-schedule-fields'
+  isOriginReport,
+  moneyFromCents,
+  moneyRounded,
+  ORIGIN_PERIOD_LABELS,
+  type OriginPeriod,
+  originPeriodQuery,
+  percent,
+} from '@/lib/referral-origin'
+import { type CatalogOffersState, useCatalogOffers } from './ambassador-offer-catalog'
+import { AmbassadorOffersPanel } from './ambassador-offers-panel'
+import { CampaignDetailDialog } from './campaign-detail'
+import { CampaignEditor } from './campaign-editor'
+import { type GiftOffersState, useGiftOffers } from './campaign-gift-offer'
+import {
+  AUDIENCE_LOCKED_MESSAGE,
+  dateLabel,
+  type Editing,
+  emptyCampaign,
+  errorMessage,
+  GiftOfferSummary,
+  KindBadge,
+  kindOf,
+  previewUrl,
+  STATE_LABELS,
+} from './campaign-shared'
 import { EmbaixadoresClient } from './embaixadores-client'
 
-const PAGE_SIZE = 25
-/**
- * A situação da campanha com o mesmo nome no formulário e na lista: "Ativa" (o formulário dizia
- * "Ativa (respeita as datas)" e a lista dizia "Aberta").
- */
-const labels: Record<CampaignState, string> = {
-  draft: 'Rascunho',
-  scheduled: 'Agendada',
-  active: 'Ativa',
-  paused: 'Pausada',
-  ended: 'Encerrada',
-}
-/**
- * Público do presente (20/10/2026). O texto de cada cartão é o do Canvas "Presente Kids e adulto":
- * define a página, o curso, o Mural e os e-mails de quem se cadastra pelo link.
- */
-export const AUDIENCE_LOCKED_MESSAGE =
-  'O público só muda enquanto a campanha está em rascunho. Para trocar, duplique a campanha como nova edição.'
-/** Campanha anterior a 20/10/2026 (ou serviço antigo) chega sem `audience`: é Kids. */
-const audienceOf = (value: { audience?: unknown }): GiftAudience =>
-  isGiftAudience(value.audience) ? value.audience : 'kids'
-function AudienceBadge({ audience }: { audience: GiftAudience }) {
-  return (
-    <Badge variant={audience === 'adult' ? 'outline' : 'default'}>
-      {audience === 'adult' ? 'Adulto' : 'Kids'}
-    </Badge>
-  )
-}
-const dateLabel = (value: string) =>
-  new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-const cardDateLabel = (value: string) =>
-  new Date(value)
-    .toLocaleString('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      dateStyle: 'short',
-      timeStyle: 'short',
-    })
-    .replace(',', '')
-const moneyLabel = (cents: number) =>
-  (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-const conversionLabels: Record<string, string> = {
-  pending: 'Aguardando garantia',
-  eligible: 'Comissão disponível',
-  paid: 'Comissão paga',
-  canceled: 'Pagamento estornado',
-  self_blocked: 'Autoindicação sem comissão',
-  unrewarded: 'Sem comissão',
-  superseded: 'Compra substituída por uma anterior elegível',
-}
-const codeMessages: Record<string, string> = {
-  CAMPAIGN_AUDIENCE_LOCKED: AUDIENCE_LOCKED_MESSAGE,
-  CAMPAIGN_GIFT_OFFER_LOCKED: GIFT_OFFER_LOCKED_MESSAGE,
-  CATALOG_UNAVAILABLE: GIFT_CATALOG_UNAVAILABLE_MESSAGE,
-}
-const message = (err: unknown) => {
-  const code =
-    err && typeof err === 'object' && 'code' in err && typeof err.code === 'string' ? err.code : ''
-  if (codeMessages[code]) return codeMessages[code]
-  return err && typeof err === 'object' && 'message' in err
-    ? String(err.message)
-    : 'Não deu certo. Tente de novo.'
-}
-type Editing = {
-  value: CampaignInput
-  id?: string
-  duplicate?: boolean
-  expectedUpdatedAt?: string
-}
-const empty = (audience: Platform): CampaignInput => ({
-  schedule: {
-    eventDate: campaignLocalDate(new Date().toISOString()).slice(0, 10),
-    giftClaimDays: 3,
-    couponClaimDays: 7,
-  },
-  name: '',
-  publicTitle: '',
-  description: '',
-  context: 'ad',
-  code: '',
-  channel: '',
-  status: 'draft',
-  audience,
-  startsAt: new Date().toISOString(),
-  endsAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
-})
+export { AUDIENCE_LOCKED_MESSAGE, previewUrl }
 
-const TABS = [
-  { value: 'campaigns', label: 'Campanhas de presente' },
+const PAGE_SIZE = 25
+const WRITE_ROLES = ['admin', 'superadmin']
+
+/** As três abas da área (Canvas "admin-campanhas"); as setas andam pela posição. */
+export const CAMPAIGN_TABS = [
+  { value: 'campaigns', label: 'Campanhas' },
   { value: 'people', label: 'Embaixadores' },
+  { value: 'offers', label: 'Ofertas dos embaixadores' },
 ] as const
+export type CampaignTab = (typeof CAMPAIGN_TABS)[number]['value']
+
+/** A aba para onde a tecla leva (setas giram; Home e End vão às pontas). */
+export function tabAfterKey(current: CampaignTab, key: string): CampaignTab | null {
+  const index = CAMPAIGN_TABS.findIndex((t) => t.value === current)
+  const last = CAMPAIGN_TABS.length - 1
+  const next =
+    key === 'ArrowRight'
+      ? (index + 1) % CAMPAIGN_TABS.length
+      : key === 'ArrowLeft'
+        ? (index - 1 + CAMPAIGN_TABS.length) % CAMPAIGN_TABS.length
+        : key === 'Home'
+          ? 0
+          : key === 'End'
+            ? last
+            : null
+  return next === null ? null : (CAMPAIGN_TABS[next]?.value ?? null)
+}
 
 export const ConvitesClient = communityPage<{ currentRole: string }>(ConvitesForCommunity)
 
@@ -151,22 +98,21 @@ function ConvitesForCommunity({
   currentRole: string
   audience: Platform
 }) {
-  const [tab, setTab] = useState<'campaigns' | 'people'>('campaigns')
+  const [tab, setTab] = useState<CampaignTab>('campaigns')
   const id = useId()
+  const canWrite = WRITE_ROLES.includes(currentRole)
   return (
     <div className="space-y-6">
       <AdminHeader
         title="Campanhas"
-        description="Os links de presente para anúncios e eventos, e quem indica o curso pelo programa de embaixadores."
+        description="Links de presente e de venda para anúncios, eventos e parcerias, os embaixadores e o que cada um trouxe para a plataforma."
       />
-      {/* Abas com o mesmo desenho das abas de área (SectionTabs), mas trocando o painel aqui
-          mesmo: as duas listas moram na mesma rota. */}
       <div
         role="tablist"
-        aria-label="Campanhas e embaixadores"
+        aria-label="Seções de Campanhas"
         className="flex flex-wrap items-center gap-1 border-b border-border"
       >
-        {TABS.map((t) => {
+        {CAMPAIGN_TABS.map((t) => {
           const active = tab === t.value
           return (
             <button
@@ -179,9 +125,9 @@ function ConvitesForCommunity({
               tabIndex={active ? 0 : -1}
               onClick={() => setTab(t.value)}
               onKeyDown={(event) => {
-                if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
+                const next = tabAfterKey(tab, event.key)
+                if (!next) return
                 event.preventDefault()
-                const next = tab === 'campaigns' ? 'people' : 'campaigns'
                 setTab(next)
                 document.getElementById(`${id}-tab-${next}`)?.focus()
               }}
@@ -199,22 +145,65 @@ function ConvitesForCommunity({
       </div>
       <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
         {tab === 'campaigns' ? (
-          <Campaigns audience={audience} canWrite={['admin', 'superadmin'].includes(currentRole)} />
-        ) : (
+          <Campaigns audience={audience} canWrite={canWrite} />
+        ) : tab === 'people' ? (
           <EmbaixadoresClient currentRole={currentRole} />
+        ) : (
+          <AmbassadorOffersPanel audience={audience} canWrite={canWrite} />
         )}
       </div>
     </div>
   )
 }
 
+type KindFilter = 'all' | CampaignKind
+type StateFilter = 'all' | CampaignState
+
+/** O recorte da lista por tipo, situação e busca (na lista inteira, antes de paginar). */
+export function filterCampaigns(
+  items: CampaignView[],
+  { kind, state }: { kind: KindFilter; state: StateFilter },
+): CampaignView[] {
+  return items.filter(
+    (item) =>
+      (kind === 'all' || kindOf(item) === kind) && (state === 'all' || item.state === state),
+  )
+}
+
+/** O que a campanha entrega, na coluna "O que entrega". */
+function Delivers({
+  campaign,
+  giftOffers,
+  catalog,
+}: {
+  campaign: CampaignView
+  giftOffers: GiftOffersState
+  catalog: CatalogOffersState
+}) {
+  if (kindOf(campaign) === 'gift')
+    return <GiftOfferSummary campaign={campaign} offers={giftOffers} />
+  const offer = campaign.saleOfferId ? catalog.byId.get(campaign.saleOfferId) : undefined
+  return (
+    <>
+      <div>{offer?.name ?? 'Oferta do Catálogo'}</div>
+      <div className="text-xs text-muted-foreground">
+        {campaign.linkTarget === 'checkout' ? 'Direto para o pagamento' : 'Página de venda'}
+        {offer ? ` · ${offer.summary}` : ''}
+      </div>
+    </>
+  )
+}
+
 function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platform }) {
   const { get: apiGet } = useCommunityRequests(audience)
   const [items, setItems] = useState<CampaignView[]>([])
-  const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
+  const [kind, setKind] = useState<KindFilter>('all')
+  const [state, setState] = useState<StateFilter>('all')
+  const [period, setPeriod] = useState<OriginPeriod>('30d')
+  const [report, setReport] = useState<OriginReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [editing, setEditing] = useState<Editing | null>(null)
@@ -222,28 +211,31 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
   const loadSequence = useRef(0)
   const detailSequence = useRef(0)
   const giftOffers = useGiftOffers(audience)
+  const catalog = useCatalogOffers(audience)
+  const offerNames = useOfferNames(audience)
   const load = useCallback(async () => {
     const sequence = ++loadSequence.current
     setLoading(true)
     setError('')
     try {
-      const result = await apiGet<{ items: CampaignView[]; total: number }>(
-        `/api/admin/referrals/campaigns?${new URLSearchParams({ q: search, limit: String(PAGE_SIZE), offset: String(offset) })}`,
+      // A lista inteira: o tipo e a situação filtram aqui (o referrals só busca por texto).
+      const all = await loadAllPages((pageOffset, limit) =>
+        apiGet<{ items: CampaignView[]; total: number }>(
+          `/api/admin/referrals/campaigns?${new URLSearchParams({ q: search, limit: String(limit), offset: String(pageOffset) })}`,
+        ),
       )
       if (sequence !== loadSequence.current) return
-      setItems(result.items)
-      setTotal(result.total)
+      setItems(all)
     } catch (err) {
       if (isCanceledCommunityRequest(err)) return
       if (sequence === loadSequence.current) {
         setItems([])
-        setTotal(0)
-        setError(message(err))
+        setError(errorMessage(err))
       }
     } finally {
       if (sequence === loadSequence.current) setLoading(false)
     }
-  }, [apiGet, search, offset])
+  }, [apiGet, search])
   useEffect(() => {
     void load()
     return () => {
@@ -251,6 +243,22 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
       detailSequence.current++
     }
   }, [load])
+  // O resultado do período vem da Origem das vendas (admin+): a equipe sem acesso não vê os
+  // números do período, só a lista.
+  useEffect(() => {
+    if (!canWrite) return
+    let alive = true
+    apiGet<OriginReport>(`/api/admin/referrals/origins?${originPeriodQuery(period)}`)
+      .then((next) => {
+        if (alive) setReport(isOriginReport(next) ? next : null)
+      })
+      .catch(() => {
+        if (alive) setReport(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [apiGet, canWrite, period])
   async function open(id: string) {
     const sequence = ++detailSequence.current
     try {
@@ -258,26 +266,84 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
       if (sequence === detailSequence.current) setDetail(result)
     } catch (err) {
       if (isCanceledCommunityRequest(err)) return
-      if (sequence === detailSequence.current) toast.error(message(err))
+      if (sequence === detailSequence.current) toast.error(errorMessage(err))
     }
   }
+  const filtered = useMemo(() => filterCampaigns(items, { kind, state }), [items, kind, state])
+  const page = filtered.slice(offset, offset + PAGE_SIZE)
+  const showRevenue = items.some((item) => item.results?.revenueCents != null)
+  const campaignRow = report?.byOrigin.find((row) => row.origin === 'campaign')
+  const active = items.filter((item) => item.state === 'active').length
+  const scheduled = items.filter((item) => item.state === 'scheduled').length
+  const ended = items.filter((item) => item.state === 'ended').length
+  const columns = showRevenue ? 10 : 9
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold">Campanhas de presente</h2>
+          <h2 className="font-display text-xl font-bold">Resultado das campanhas</h2>
           <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
-            Anúncios, palestras e outras ações do Sistema Zero. Cada campanha tem seu link, seu
-            público e seu prazo para novos cadastros. Quem se cadastra recebe a oferta de presente
-            escolhida na campanha, com o prazo dela contado a partir do cadastro.
+            Cada campanha tem o seu link, o seu público e o seu prazo para novos cadastros. Quem
+            entra pelo link ganha o presente ou vê a oferta à venda escolhida na campanha.
           </p>
         </div>
-        {canWrite && (
-          <Button onClick={() => setEditing({ value: empty(audience) })}>Nova campanha</Button>
-        )}
+        <div className="flex flex-wrap items-end gap-2">
+          {canWrite ? (
+            <label className="space-y-1 text-sm font-semibold">
+              <span className="block">Período</span>
+              <Select
+                value={period}
+                onChange={(event) => setPeriod(event.target.value as OriginPeriod)}
+                className="w-auto"
+              >
+                {(['30d', '7d', '90d', 'year'] as const).map((p) => (
+                  <option key={p} value={p}>
+                    {ORIGIN_PERIOD_LABELS[p]}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          ) : null}
+          {canWrite ? (
+            <Button onClick={() => setEditing({ value: emptyCampaign(audience) })}>
+              Nova campanha
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <OverviewCard
+          title="Campanhas ativas"
+          value={loading ? '…' : active}
+          description={`${scheduled} ${scheduled === 1 ? 'agendada' : 'agendadas'} · ${ended} ${ended === 1 ? 'encerrada' : 'encerradas'}`}
+        />
+        {campaignRow ? (
+          <>
+            <OverviewCard
+              title="Cadastros"
+              value={campaignRow.newPeople}
+              description="presentes resgatados e compras pelo link"
+            />
+            <OverviewCard
+              title="Compras"
+              value={campaignRow.purchases}
+              description="cursos e ofertas, fora a assinatura"
+            />
+            <OverviewCard
+              title="Assinaturas"
+              value={campaignRow.subscriptions}
+              description={`${percent(campaignRow.subscriptions, campaignRow.newPeople)} dos cadastros`}
+            />
+            <OverviewCard
+              title="Faturamento"
+              value={moneyRounded(campaignRow.revenueCents)}
+              description="valor pago, sem estornos"
+            />
+          </>
+        ) : null}
       </div>
       <form
-        className="flex gap-2"
+        className="flex flex-wrap gap-2"
         onSubmit={(event) => {
           event.preventDefault()
           setOffset(0)
@@ -290,64 +356,110 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
           placeholder="Nome, título ou código"
           aria-label="Buscar campanhas"
           maxLength={120}
+          className="w-full max-w-sm"
         />
+        <Select
+          aria-label="Tipo"
+          value={kind}
+          className="w-auto"
+          onChange={(event) => {
+            setKind(event.target.value as KindFilter)
+            setOffset(0)
+          }}
+        >
+          <option value="all">Presente e venda</option>
+          <option value="gift">Só presente</option>
+          <option value="sale">Só venda</option>
+        </Select>
+        <Select
+          aria-label="Situação"
+          value={state}
+          className="w-auto"
+          onChange={(event) => {
+            setState(event.target.value as StateFilter)
+            setOffset(0)
+          }}
+        >
+          <option value="all">Todas as situações</option>
+          {(['active', 'scheduled', 'paused', 'ended', 'draft'] as const).map((s) => (
+            <option key={s} value={s}>
+              {STATE_LABELS[s]}
+            </option>
+          ))}
+        </Select>
         <Button variant="outline" type="submit">
           Buscar
         </Button>
-        <Button variant="outline" type="button" disabled={loading} onClick={() => void load()}>
-          Atualizar
-        </Button>
       </form>
-      {error && (
+      {error ? (
         <p role="alert" className="text-destructive">
           {error}{' '}
           <button type="button" className="underline" onClick={() => void load()}>
             Tentar de novo
           </button>
         </p>
-      )}
+      ) : null}
       <Card className="overflow-hidden rounded-2xl p-0">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Campanha</TableHead>
-              <TableHead>Público</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>O que entrega</TableHead>
               <TableHead>Situação</TableHead>
-              <TableHead>Presente</TableHead>
-              <TableHead>Inscrições até (Brasília)</TableHead>
-              <TableHead className="text-right">Resgates</TableHead>
-              <TableHead className="text-right">Conversões</TableHead>
+              <TableHead>Cadastros até</TableHead>
+              <TableHead className="text-right">Cadastros</TableHead>
+              <TableHead className="text-right">Compras</TableHead>
+              <TableHead className="text-right">Assinaturas</TableHead>
+              {showRevenue ? <TableHead className="text-right">Faturamento</TableHead> : null}
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-6 text-muted-foreground" role="status">
+                <TableCell colSpan={columns} className="py-6 text-muted-foreground" role="status">
                   Carregando campanhas…
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item) => (
+              page.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
                     <div className="font-medium">{item.name}</div>
                     <div className="text-xs text-muted-foreground">{item.code}</div>
+                    {item.ambassadorName ? (
+                      <div className="text-xs text-muted-foreground">
+                        Embaixador: {item.ambassadorName}
+                      </div>
+                    ) : null}
                   </TableCell>
                   <TableCell>
-                    <AudienceBadge audience={audienceOf(item)} />
+                    <KindBadge kind={kindOf(item)} />
                   </TableCell>
-                  <TableCell>{labels[item.state]}</TableCell>
                   <TableCell>
-                    <GiftOfferSummary campaign={item} offers={giftOffers} />
+                    <Delivers campaign={item} giftOffers={giftOffers} catalog={catalog} />
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{dateLabel(item.endsAt)}</TableCell>
+                  <TableCell>{STATE_LABELS[item.state]}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {dateLabel(new Date(Date.parse(item.endsAt) - 1).toISOString())}
+                  </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {item.stats.redemptions}
+                    {item.results?.people ?? item.stats.redemptions}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {item.stats.conversions}
+                    {item.results?.purchases ?? ''}
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {item.results?.subscriptions ?? item.stats.conversions}
+                  </TableCell>
+                  {showRevenue ? (
+                    <TableCell className="text-right tabular-nums">
+                      {item.results?.revenueCents != null
+                        ? moneyFromCents(item.results.revenueCents)
+                        : ''}
+                    </TableCell>
+                  ) : null}
                   <TableCell>
                     <div className="flex justify-end gap-2">
                       <Button
@@ -358,7 +470,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                       >
                         Detalhes
                       </Button>
-                      {canWrite && (
+                      {canWrite ? (
                         <Button
                           variant="outline"
                           size="sm"
@@ -373,34 +485,36 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                         >
                           Editar
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
               ))
             )}
-            {!loading && !error && items.length === 0 && (
+            {!loading && !error && page.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                  Ainda não há campanhas com essa busca. Crie uma para divulgar o presente com um
-                  link próprio.
+                <TableCell colSpan={columns} className="py-10 text-center text-muted-foreground">
+                  Ainda não há campanhas com essa busca. Crie uma para divulgar um presente ou uma
+                  oferta com um link próprio.
                 </TableCell>
               </TableRow>
-            )}
+            ) : null}
           </TableBody>
         </Table>
       </Card>
-      <Pagination total={total} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
+      <Pagination total={filtered.length} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
       <p className="text-xs text-muted-foreground">
-        Resgates são cadastros com os acessos concedidos. Conversões são as primeiras compras
-        elegíveis da Comunidade após o presente, excluindo estornos. Comissão só é gerada quando
-        habilitada na campanha, conforme as condições do cadastro. Nas campanhas Kids, esses números
-        contam contas de responsáveis, não crianças.
+        Cadastros são as pessoas que ganharam o presente ou compraram pelo link da campanha. Compras
+        são os cursos e ofertas que elas pagaram, fora a assinatura. Assinaturas são as primeiras
+        assinaturas da Comunidade dessas pessoas. Faturamento é o valor pago de fato, com o desconto
+        do cupom e sem estornos. Nas campanhas Kids, os números contam contas de responsáveis, não
+        crianças.
       </p>
-      {editing && (
+      {editing ? (
         <CampaignEditor
           audience={audience}
           giftOffers={giftOffers}
+          catalog={catalog}
           editing={editing}
           onClose={() => setEditing(null)}
           onSaved={(value) => {
@@ -409,974 +523,59 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
             void open(value.id)
           }}
         />
-      )}
-      {detail && (
-        <Dialog
-          open
+      ) : null}
+      {detail ? (
+        <CampaignDetailDialog
+          detail={detail}
+          audience={audience}
+          canWrite={canWrite}
+          giftOffers={giftOffers}
+          catalog={catalog}
+          offerNames={offerNames}
           onClose={() => {
             detailSequence.current++
             setDetail(null)
           }}
-          title={detail.campaign.name}
-          className="max-w-4xl"
-        >
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-md bg-muted px-3 py-2 text-sm">
-                {labels[detail.campaign.state]}
-              </span>
-              <AudienceBadge audience={audienceOf(detail.campaign)} />
-              {canWrite && (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditing({
-                        id: detail.campaign.id,
-                        value: detail.campaign,
-                        expectedUpdatedAt: detail.campaign.updatedAt,
-                      })
-                      setDetail(null)
-                    }}
-                  >
-                    Editar campanha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEditing({
-                        id: detail.campaign.id,
-                        duplicate: true,
-                        // O público viaja com a edição nova (`...detail.campaign`): duplicar é o
-                        // jeito de trocar de público, e o editor deixa mudar no rascunho.
-                        value: {
-                          ...detail.campaign,
-                          audience: audienceOf(detail.campaign),
-                          name: `${detail.campaign.name} · nova edição`.slice(0, 120),
-                          code: '',
-                          status: 'draft',
-                          schedule: detail.campaign.schedule
-                            ? {
-                                ...detail.campaign.schedule,
-                                eventDate: campaignLocalDate(new Date().toISOString()).slice(0, 10),
-                              }
-                            : null,
-                          coupon: null,
-                          commissionEnabled: false,
-                          commissionAmountCents: null,
-                          commissionAnnualAmountCents: null,
-                          commissionWindowDays: null,
-                          startsAt: empty(audience).startsAt,
-                          endsAt: empty(audience).endsAt,
-                        },
-                      })
-                      setDetail(null)
-                    }}
-                  >
-                    Duplicar como nova edição
-                  </Button>
-                </>
-              )}
-            </div>
-            <p className="text-sm">
-              Presente: <GiftOfferSummary campaign={detail.campaign} offers={giftOffers} inline />
-            </p>
-            <p className="text-sm">
-              Início: {dateLabel(detail.campaign.startsAt)} · Encerramento:{' '}
-              {dateLabel(detail.campaign.endsAt)} (Brasília). Pausar ou encerrar impede novos
-              cadastros; os acessos já aceitos mantêm seu vencimento.
-            </p>
-            <p className="text-sm">
-              Embaixador: {detail.campaign.ambassadorName ?? 'Sem vínculo'}.{' '}
-              {detail.campaign.commissionEnabled
-                ? `Bônus único: ${moneyLabel(detail.campaign.commissionAmountCents ?? 0)} no mensal e ${moneyLabel(detail.campaign.commissionAnnualAmountCents ?? detail.campaign.commissionAmountCents ?? 0)} no anual. Primeira assinatura paga em até ${detail.campaign.commissionWindowDays} dias após o cadastro.`
-                : 'Comissão desativada.'}{' '}
-              Edições valem para novos cadastros; os anteriores mantêm as condições aceitas.
-            </p>
-            <div className="space-y-3">
-              <label className="block text-sm font-semibold" htmlFor="campaign-link">
-                Link público para divulgar
-              </label>
-              <Input
-                id="campaign-link"
-                readOnly
-                value={detail.campaign.shareUrl}
-                onFocus={(event) => event.target.select()}
-              />
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void copyToClipboard(detail.campaign.shareUrl, 'Link público')}
-                >
-                  Copiar link
-                </Button>
-                <a
-                  className="text-sm underline"
-                  href={previewUrl(detail.campaign)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Prévia sem cadastro
-                </a>
-                <a
-                  className="text-sm underline"
-                  href={detail.campaign.shareUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Abrir link público
-                </a>
-                <a
-                  className="text-sm underline"
-                  href={`/api/admin/referrals/campaigns/${detail.campaign.id}/qr`}
-                >
-                  Baixar QR Code
-                </a>
-                <ShareCard
-                  url={detail.campaign.shareUrl}
-                  title={detail.campaign.publicTitle}
-                  subtitle={
-                    detail.campaign.audience === 'adult'
-                      ? 'Um presente para adultos'
-                      : 'Um presente para famílias · Kids'
-                  }
-                  description={giftOfferShareDescription(
-                    detail.campaign.giftOfferId
-                      ? (giftOffers.byId.get(detail.campaign.giftOfferId) ?? null)
-                      : null,
-                    !detail.campaign.giftOfferId,
-                  )}
-                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${cardDateLabel(detail.campaign.startsAt)} até ${cardDateLabel(new Date(Date.parse(detail.campaign.endsAt) - 1).toISOString())} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para pessoas de 18 anos ou mais.' : 'Para crianças de 5 a 17 anos; abaixo de 9, com acompanhante. Cadastro pelo responsável.'}`}
-                />
-              </div>
-              {detail.campaign.state === 'draft' && (
-                <p className="text-sm text-muted-foreground">
-                  Rascunho: o link público ainda não aceita cadastros. Use a prévia para conferir a
-                  página.
-                </p>
-              )}
-            </div>
-            {detail.campaign.couponView && (
-              <section
-                className="space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4"
-                aria-label="Cupom da campanha"
-              >
-                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                  Benefício separado · desconto
-                </p>
-                <h2 className="text-xl font-bold">
-                  {
-                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
-                      .title
-                  }
-                </h2>
-                <p className="text-sm">
-                  {
-                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
-                      .description
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {
-                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
-                      .notice
-                  }
-                </p>
-                <Badge variant="outline">
-                  {detail.campaign.couponView.state === 'unavailable'
-                    ? 'Indisponível'
-                    : labels[detail.campaign.couponView.state]}
-                </Badge>
-                <Input
-                  readOnly
-                  aria-label="Link do cupom"
-                  value={detail.campaign.couponView.shareUrl}
-                  onFocus={(event) => event.target.select()}
-                />
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      void copyToClipboard(detail.campaign.couponView!.shareUrl, 'Link do cupom')
+          onEdit={() => {
+            setEditing({
+              id: detail.campaign.id,
+              value: detail.campaign,
+              expectedUpdatedAt: detail.campaign.updatedAt,
+            })
+            setDetail(null)
+          }}
+          onDuplicate={() => {
+            setEditing({
+              id: detail.campaign.id,
+              duplicate: true,
+              // O público viaja com a edição nova: duplicar é o jeito de trocar de público.
+              value: {
+                ...detail.campaign,
+                name: `${detail.campaign.name} · nova edição`.slice(0, 120),
+                code: '',
+                status: 'draft',
+                schedule: detail.campaign.schedule
+                  ? {
+                      ...detail.campaign.schedule,
+                      eventDate: campaignLocalDate(new Date().toISOString()).slice(0, 10),
                     }
-                  >
-                    Copiar link do cupom
-                  </Button>
-                  {['active', 'scheduled'].includes(detail.campaign.couponView.state) && (
-                    <ShareCard
-                      {...campaignCouponPromotion(
-                        detail.campaign.couponView,
-                        detail.campaign.audience,
-                      )}
-                      label="Cartão do cupom"
-                    />
-                  )}
-                  <a
-                    className="text-sm underline"
-                    href={detail.campaign.couponView.shareUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Abrir oferta
-                  </a>
-                </div>
-              </section>
-            )}
-            {detail.campaign.coupon && !detail.campaign.couponView && (
-              <p role="status" className="rounded-lg bg-warning-tint p-3 text-sm">
-                Há um cupom vinculado, mas seus termos não puderam ser conferidos agora. Atualize
-                para tentar novamente antes de divulgar.
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {Object.entries({
-                'Resgates concluídos': detail.campaign.stats.redemptions,
-                'Em andamento': detail.campaign.stats.pending,
-                'Com falha': detail.campaign.stats.failed,
-                Conversões: detail.campaign.stats.conversions,
-              }).map(([label, value]) => (
-                <Card key={label} className="p-4">
-                  <p className="text-2xl font-bold">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                </Card>
-              ))}
-            </div>
-            <section>
-              <h2 className="font-bold">Últimos cadastros (até 200)</h2>
-              <div className="mt-3 max-h-72 overflow-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr>
-                      <th className="p-2">
-                        {audienceOf(detail.campaign) === 'adult' ? 'Pessoa' : 'Responsável'}
-                      </th>
-                      <th className="p-2">Situação</th>
-                      <th className="p-2">Curso até</th>
-                      <th className="p-2">Origem de mídia</th>
-                      <th className="p-2">Assinatura e comissão</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {detail.redemptions.map((row) => (
-                      <tr key={row.id} className="border-t">
-                        <td className="p-2">
-                          {row.name}
-                          <p className="text-xs text-muted-foreground">{row.email}</p>
-                          {row.userId && (
-                            <a
-                              className="mt-1 inline-block text-xs underline"
-                              href={`/admin/membros/${encodeURIComponent(row.userId)}`}
-                            >
-                              {audienceOf(detail.campaign) === 'adult'
-                                ? 'Ver conta e progresso'
-                                : 'Ver conta e progresso dos perfis'}
-                            </a>
-                          )}
-                        </td>
-                        <td className="p-2">
-                          {(
-                            {
-                              completed: 'Concluído',
-                              pending: 'Em andamento',
-                              failed: 'Não deu certo',
-                            } as Record<string, string>
-                          )[row.status] ?? row.status}
-                          {row.lastError && (
-                            <p className="text-xs text-destructive">{row.lastError}</p>
-                          )}
-                        </td>
-                        <td className="p-2">
-                          {row.expiresAt ? dateLabel(row.expiresAt) : 'Sem vencimento'}
-                        </td>
-                        <td className="p-2 text-xs">
-                          {row.attribution
-                            ? Object.values(row.attribution).filter(Boolean).join(' / ')
-                            : 'Não informada'}
-                        </td>
-                        <td className="p-2 text-xs">
-                          {row.ambassadorName && <p>{row.ambassadorName}</p>}
-                          {row.conversion ? (
-                            <>
-                              <p>Pagamento: {dateLabel(row.conversion.paidAt)}</p>
-                              <p>
-                                {conversionLabels[row.conversion.status] ?? row.conversion.status}
-                              </p>
-                              {row.conversion.bonusCents > 0 && (
-                                <p>{moneyLabel(row.conversion.bonusCents)}</p>
-                              )}
-                            </>
-                          ) : (
-                            'Ainda não assinou'
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {detail.redemptions.length === 0 && (
-                  <p className="py-3 text-sm text-muted-foreground">Ainda não houve cadastros.</p>
-                )}
-              </div>
-            </section>
-            <section>
-              <h2 className="font-bold">Histórico de alterações</h2>
-              <p className="mt-2 text-xs text-muted-foreground">
-                O relatório acima mede resgates e compras atribuídas. Visitas à página, ativação em
-                sete dias e conclusão por campanha ainda não são indicadores consolidados. Consulte
-                a ficha da conta para verificar o progresso real de cada perfil.
-              </p>
-              <ol className="mt-3 space-y-3 text-sm">
-                {detail.history.map((entry) => (
-                  <li key={entry.id} className="rounded-lg border p-3">
-                    <p>
-                      {dateLabel(entry.createdAt)} · {entry.actor}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {entry.action === 'created'
-                        ? 'Criada'
-                        : entry.action === 'duplicated'
-                          ? 'Nova edição criada'
-                          : 'Atualizada'}
-                    </p>
-                    <details>
-                      <summary className="cursor-pointer">Ver valores registrados</summary>
-                      <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs">
-                        {JSON.stringify(entry.changes, null, 2)}
-                      </pre>
-                    </details>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          </div>
-        </Dialog>
-      )}
-    </div>
-  )
-}
-
-/** A oferta de presente da campanha: nome e, quando conhecida, o que inclui e o prazo. */
-function GiftOfferSummary({
-  campaign,
-  offers,
-  inline = false,
-}: {
-  campaign: Pick<CampaignView, 'giftOfferId'>
-  offers: GiftOffersState
-  inline?: boolean
-}) {
-  const option = campaign.giftOfferId ? offers.byId.get(campaign.giftOfferId) : undefined
-  const name = campaignGiftOfferName(campaign, offers)
-  const details = option ? `${giftOfferIncludes(option)} · ${option.duration}` : null
-  if (inline) return <>{details ? `${name} (${details}).` : `${name}.`}</>
-  return (
-    <>
-      <div>{name}</div>
-      {details ? <div className="text-xs text-muted-foreground">{details}</div> : null}
-    </>
-  )
-}
-
-export function previewUrl(campaign: CampaignView) {
-  const url = new URL('/bolsa/previa', campaign.shareUrl)
-  url.search = new URLSearchParams({
-    // A prévia escolhe a página Kids ou adulta pelo público (o funil trata ausente como Kids).
-    audience: audienceOf(campaign),
-    title: campaign.publicTitle,
-    description: campaign.description,
-    context: campaign.context,
-    startsAt: campaign.startsAt,
-    endsAt: campaign.endsAt,
-  }).toString()
-  return url.href
-}
-
-function CampaignEditor({
-  audience,
-  giftOffers,
-  editing,
-  onClose,
-  onSaved,
-}: {
-  audience: Platform
-  giftOffers: GiftOffersState
-  editing: Editing
-  onClose: () => void
-  onSaved: (value: CampaignView) => void
-}) {
-  const [value, setValue] = useState<CampaignInput>({
-    ...editing.value,
-    commissionAmountCents: editing.value.commissionAmountCents ?? DEFAULT_REFERRAL_BONUS.monthly,
-    commissionAnnualAmountCents:
-      editing.value.commissionAnnualAmountCents ??
-      (editing.value.commissionAmountCents != null ? null : DEFAULT_REFERRAL_BONUS.annual),
-  })
-  const [commissionAmount, setCommissionAmount] = useState(
-    editing.value.commissionAmountCents == null
-      ? String(DEFAULT_REFERRAL_BONUS.monthly / 100)
-      : String(editing.value.commissionAmountCents / 100),
-  )
-  const [commissionAnnualAmount, setCommissionAnnualAmount] = useState(
-    String(
-      (editing.value.commissionAnnualAmountCents ??
-        editing.value.commissionAmountCents ??
-        DEFAULT_REFERRAL_BONUS.annual) / 100,
-    ),
-  )
-  const { send: apiSend, get: apiGet } = useCommunityRequests(audience)
-  const [partnerQuery, setPartnerQuery] = useState('')
-  const [partners, setPartners] = useState<
-    { id: string; name: string; email: string; status: string }[]
-  >([])
-  const [partnerTotal, setPartnerTotal] = useState(0)
-  const [partnerOffset, setPartnerOffset] = useState(0)
-  const [partnerName, setPartnerName] = useState(
-    (editing.value as CampaignView).ambassadorName ?? '',
-  )
-  const [partnerLoading, setPartnerLoading] = useState(false)
-  const [partnerSearched, setPartnerSearched] = useState(false)
-  const [partnerError, setPartnerError] = useState('')
-  const partnerRequest = useRef(0)
-  async function searchPartners(offset = 0) {
-    const request = ++partnerRequest.current
-    setPartnerLoading(true)
-    setPartnerError('')
-    try {
-      const params = new URLSearchParams({
-        q: partnerQuery.trim(),
-        limit: '25',
-        offset: String(offset),
-      })
-      const result = await apiGet<{ items: typeof partners; total: number }>(
-        `/api/admin/referrals/ambassadors?${params}`,
-      )
-      if (request !== partnerRequest.current) return
-      setPartners(result.items)
-      setPartnerSearched(true)
-      setPartnerTotal(result.total)
-      setPartnerOffset(offset)
-    } catch (err) {
-      if (request !== partnerRequest.current || isCanceledCommunityRequest(err)) return
-      setPartners([])
-      setPartnerTotal(0)
-      setPartnerError(message(err))
-    } finally {
-      if (request === partnerRequest.current) setPartnerLoading(false)
-    }
-  }
-  // Campanha antiga (gravada sem oferta) segue com a oferta padrão do Cadê até escolher outra.
-  // A duplicata precisa de oferta: o referrals não aceita campanha nova sem ela.
-  const giftOfferLegacy = Boolean(editing.id) && !editing.duplicate && !editing.value.giftOfferId
-  const original = editing.value as Partial<CampaignView>
-  const giftOfferLocked =
-    Boolean(editing.id) &&
-    !editing.duplicate &&
-    Boolean(editing.value.giftOfferId) &&
-    (original.status !== 'draft' ||
-      (original.stats?.redemptions ?? 0) +
-        (original.stats?.pending ?? 0) +
-        (original.stats?.failed ?? 0) >
-        0)
-  const [start, setStart] = useState(campaignLocalDate(value.startsAt))
-  const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
-  const [saving, setSaving] = useState(false)
-  const [savedCampaign, setSavedCampaign] = useState<CampaignView | null>(null)
-  const [couponDraft, setCouponDraft] = useState<CampaignCouponDraft | null>(null)
-  const [error, setError] = useState('')
-  const change = <K extends keyof CampaignInput>(key: K, next: CampaignInput[K]) =>
-    setValue((current) => ({ ...current, [key]: next }))
-  async function submit() {
-    if (saving) return
-    setSaving(true)
-    setError('')
-    try {
-      if (value.commissionEnabled && (commissionAmount === '' || commissionAnnualAmount === ''))
-        throw new Error('Informe a comissão dos planos mensal e anual.')
-      if (!value.giftOfferId && !giftOfferLegacy) throw new Error(GIFT_OFFER_REQUIRED_MESSAGE)
-      if (couponDraft) {
-        if (!value.schedule)
-          throw new Error('Ative o calendário da campanha para cadastrar seu cupom.')
-        const valid = CampaignCouponDraftSchema.safeParse({
-          ...couponDraft,
-          audience,
-          expectedUpdatedAt: new Date().toISOString(),
-        })
-        if (!valid.success) throw new Error('Confira o código, o desconto e a oferta do cupom.')
-      }
-      const windows = value.schedule ? campaignScheduleWindows(value.schedule) : null
-      const body: CampaignInput = {
-        schedule: value.schedule ?? null,
-        coupon: editing.duplicate ? null : (value.coupon ?? null),
-        name: value.name,
-        publicTitle: value.publicTitle,
-        description: value.description,
-        context: value.context,
-        code: value.code,
-        channel: value.channel,
-        status: value.status,
-        // Sempre explícito: um PATCH sem o campo não pode virar Kids por omissão.
-        audience,
-        // Vazia só na campanha antiga: omitida, o referrals conserva a gravada (nenhuma).
-        giftOfferId: value.giftOfferId || undefined,
-        startsAt: windows?.startsAt ?? campaignIsoDate(start),
-        endsAt: windows?.giftEndsAt ?? campaignIsoDate(end),
-        ambassadorId: value.ambassadorId ?? null,
-        commissionEnabled: value.commissionEnabled ?? false,
-        commissionAmountCents: value.commissionEnabled
-          ? (value.commissionAmountCents ?? null)
-          : null,
-        commissionWindowDays: value.commissionEnabled ? (value.commissionWindowDays ?? null) : null,
-        commissionAnnualAmountCents: value.commissionEnabled
-          ? (value.commissionAnnualAmountCents ?? null)
-          : null,
-      }
-      if (body.endsAt <= body.startsAt)
-        throw new Error('O encerramento precisa vir depois do início.')
-      const effectiveId = savedCampaign?.id ?? editing.id
-      const duplicate = editing.duplicate && !savedCampaign
-      const suffix = effectiveId ? `/${effectiveId}${duplicate ? '/duplicate' : ''}` : ''
-      let result = await apiSend<{ campaign: CampaignView }>(
-        `/api/admin/referrals/campaigns${suffix}`,
-        effectiveId && !duplicate ? 'PATCH' : 'POST',
-        effectiveId && !duplicate
-          ? { ...body, expectedUpdatedAt: savedCampaign?.updatedAt ?? editing.expectedUpdatedAt }
-          : body,
-      )
-      setSavedCampaign(result.campaign)
-      if (couponDraft) {
-        result = await apiSend<{ campaign: CampaignView }>(
-          `/api/admin/referrals/campaigns/${result.campaign.id}/coupon`,
-          'POST',
-          {
-            ...couponDraft,
-            audience,
-            expectedUpdatedAt: result.campaign.updatedAt,
-          },
-        )
-      }
-      toast.success('Campanha salva.')
-      onSaved(result.campaign)
-    } catch (err) {
-      if (isCanceledCommunityRequest(err)) return
-      setError(message(err))
-    } finally {
-      setSaving(false)
-    }
-  }
-  return (
-    <Dialog
-      open
-      onClose={() => {
-        if (!saving) onClose()
-      }}
-      title={
-        editing.duplicate
-          ? 'Nova edição da campanha'
-          : editing.id
-            ? 'Editar campanha'
-            : 'Nova campanha'
-      }
-      className="max-w-2xl"
-    >
-      <form
-        className="space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void submit()
-        }}
-      >
-        <fieldset disabled={saving} className="min-w-0 space-y-4">
-          <fieldset className="min-w-0 space-y-2" aria-describedby="campaign-audience-help">
-            <legend className="mb-1 text-sm font-semibold">Público do presente</legend>
-            <AudienceBadge audience={audience} />
-            <p className="text-sm text-muted-foreground">
-              {audience === 'kids'
-                ? 'Comunidade Kids: famílias com criança de 5 a 17 anos. O presente pode ser um curso da criança ou um curso para os pais.'
-                : 'Comunidade adulta: pessoas de 18 anos ou mais.'}
-            </p>
-            <p id="campaign-audience-help" className="text-sm text-muted-foreground">
-              Esta campanha pertence à comunidade selecionada no Admin. Para criar para outro
-              público, troque a comunidade antes de abrir o formulário.
-            </p>
-          </fieldset>
-          <GiftOfferField
-            value={value.giftOfferId}
-            onChange={(next) => change('giftOfferId', next)}
-            offers={giftOffers}
-            legacy={giftOfferLegacy}
-            locked={giftOfferLocked}
-          />
-          <p className="text-sm text-muted-foreground">
-            O nome é interno. O título e a apresentação aparecem para quem recebe o link. O código
-            permanece fixo depois de criado.
-          </p>
-          {(
-            [
-              { key: 'name', label: 'Nome interno', max: 120 },
-              { key: 'publicTitle', label: 'Título público', max: 160 },
-              {
-                key: 'code',
-                label: 'Código do link (4 a 32 letras minúsculas, números e hífens)',
-                max: 32,
+                  : null,
+                coupon: null,
+                // O endereço antigo é de uma campanha só: a nova edição nasce sem ele.
+                redirectPath: null,
+                redirectUntil: null,
+                commissionEnabled: false,
+                commissionAmountCents: null,
+                commissionAnnualAmountCents: null,
+                commissionWindowDays: null,
+                startsAt: emptyCampaign(audience).startsAt,
+                endsAt: emptyCampaign(audience).endsAt,
               },
-              { key: 'channel', label: 'Canal de divulgação (interno)', max: 100 },
-            ] as const
-          ).map((field) => (
-            <label key={field.key} className="block space-y-1 text-sm font-semibold">
-              <span>{field.label}</span>
-              <Input
-                value={value[field.key]}
-                onChange={(event) => change(field.key, event.target.value)}
-                required={field.key !== 'channel'}
-                maxLength={field.max}
-                minLength={field.key === 'code' ? 4 : field.key === 'channel' ? 0 : 2}
-                pattern={field.key === 'code' ? '[a-z0-9-]{4,32}' : undefined}
-                disabled={field.key === 'code' && Boolean(editing.id) && !editing.duplicate}
-              />
-            </label>
-          ))}
-          <label className="block space-y-1 text-sm font-semibold">
-            <span>Apresentação pública (opcional)</span>
-            <textarea
-              className="min-h-24 w-full rounded-md border bg-background p-3 font-normal"
-              value={value.description}
-              maxLength={600}
-              onChange={(event) => change('description', event.target.value)}
-            />
-          </label>
-          <fieldset className="min-w-0 space-y-3 rounded-lg border p-4">
-            <legend className="px-1 text-sm font-semibold">Embaixador e comissão</legend>
-            <p className="text-sm text-muted-foreground">
-              Vincule um embaixador para acompanhar os resultados desta ação, mesmo sem comissão.
-              Cadastre a pessoa na aba Embaixadores antes de selecioná-la aqui. Se ela for
-              desativada, novos cadastros ficam sem comissão; os acordos anteriores são preservados.
-            </p>
-            <p className="text-sm" role="status">
-              {value.ambassadorId
-                ? `Vinculado: ${partnerName || value.ambassadorId}`
-                : 'Sem embaixador vinculado'}
-            </p>
-            <label className="block space-y-1 text-sm font-semibold">
-              <span>Buscar embaixador por nome ou e-mail</span>
-              <Input
-                value={partnerQuery}
-                onChange={(event) => setPartnerQuery(event.target.value)}
-                maxLength={120}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    void searchPartners()
-                  }
-                }}
-              />
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={partnerLoading}
-                onClick={() => void searchPartners()}
-              >
-                Buscar embaixador
-              </Button>
-              {value.ambassadorId && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setValue((current) => ({
-                      ...current,
-                      ambassadorId: null,
-                      commissionEnabled: false,
-                      commissionAmountCents: null,
-                      commissionAnnualAmountCents: null,
-                      commissionWindowDays: null,
-                    }))
-                    setPartnerName('')
-                    setCommissionAmount(String(DEFAULT_REFERRAL_BONUS.monthly / 100))
-                    setCommissionAnnualAmount(String(DEFAULT_REFERRAL_BONUS.annual / 100))
-                  }}
-                >
-                  Remover vínculo
-                </Button>
-              )}
-            </div>
-            {partnerError && (
-              <p role="alert" className="text-sm text-destructive">
-                {partnerError}
-              </p>
-            )}
-            {partners.length > 0 && (
-              <ul className="max-h-48 space-y-2 overflow-auto">
-                {partners.map((partner) => (
-                  <li key={partner.id}>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-auto w-full justify-start whitespace-normal break-all text-left"
-                      disabled={partner.status !== 'active'}
-                      onClick={() => {
-                        if (partner.id === value.ambassadorId) return
-                        setValue((current) => ({
-                          ...current,
-                          ambassadorId: partner.id,
-                          commissionEnabled: false,
-                          commissionAmountCents: null,
-                          commissionAnnualAmountCents: null,
-                          commissionWindowDays: null,
-                        }))
-                        setPartnerName(partner.name)
-                        setCommissionAmount(String(DEFAULT_REFERRAL_BONUS.monthly / 100))
-                        setCommissionAnnualAmount(String(DEFAULT_REFERRAL_BONUS.annual / 100))
-                      }}
-                    >
-                      {partner.name} · {partner.email}
-                      {partner.status !== 'active' ? ' (desativado)' : ''}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {partnerSearched && !partnerLoading && !partnerError && partners.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Nenhum embaixador encontrado. Cadastre a pessoa na aba Embaixadores.
-              </p>
-            )}
-            {partnerTotal > 25 && (
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={partnerLoading || partnerOffset === 0}
-                  onClick={() => void searchPartners(partnerOffset - 25)}
-                >
-                  Anteriores
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={partnerLoading || partnerOffset + 25 >= partnerTotal}
-                  onClick={() => void searchPartners(partnerOffset + 25)}
-                >
-                  Próximos
-                </Button>
-              </div>
-            )}
-            <label className="flex items-center gap-2 text-sm font-semibold">
-              <input
-                type="checkbox"
-                checked={value.commissionEnabled ?? false}
-                disabled={!value.ambassadorId}
-                onChange={(event) => {
-                  const enabled = event.target.checked
-                  setValue((current) => ({
-                    ...current,
-                    commissionEnabled: enabled,
-                    commissionAmountCents:
-                      current.commissionAmountCents ?? DEFAULT_REFERRAL_BONUS.monthly,
-                    commissionAnnualAmountCents:
-                      current.commissionAnnualAmountCents ??
-                      Math.round(Number(commissionAnnualAmount) * 100),
-                  }))
-                }}
-              />
-              Habilitar comissão para novos cadastros
-            </label>
-            <p className="text-sm text-muted-foreground">
-              {value.commissionEnabled
-                ? `Bônus único pela primeira contratação, sem comissão nas renovações. Padrão: ${moneyLabel(DEFAULT_REFERRAL_BONUS.monthly)} no mensal e ${moneyLabel(DEFAULT_REFERRAL_BONUS.annual)} no anual. Ajuste conforme o acordo. Pagamento manual após a garantia.`
-                : 'Comissão desativada. O vínculo acompanha resultados sem gerar valor a pagar.'}
-            </p>
-            {value.commissionEnabled && (
-              <div className="grid gap-4 sm:grid-cols-3">
-                <label className="space-y-1 text-sm font-semibold">
-                  <span>Bônus único no plano mensal (R$)</span>
-                  <Input
-                    type="number"
-                    required
-                    min="0.01"
-                    max="1000000"
-                    step="0.01"
-                    value={commissionAmount}
-                    onChange={(event) => {
-                      setCommissionAmount(event.target.value)
-                      const amount = event.target.value
-                      setValue((current) => ({
-                        ...current,
-                        commissionAmountCents:
-                          amount === '' ? null : Math.round(Number(amount) * 100),
-                        // Ao separar um acordo legado, preserve o anual que o editor mostra.
-                        commissionAnnualAmountCents:
-                          current.commissionAnnualAmountCents ??
-                          Math.round(Number(commissionAnnualAmount) * 100),
-                      }))
-                    }}
-                  />
-                </label>
-                <label className="space-y-1 text-sm font-semibold">
-                  <span>Bônus único no plano anual (R$)</span>
-                  <Input
-                    type="number"
-                    required
-                    min="0.01"
-                    max="1000000"
-                    step="0.01"
-                    value={commissionAnnualAmount}
-                    onChange={(event) => {
-                      setCommissionAnnualAmount(event.target.value)
-                      change(
-                        'commissionAnnualAmountCents',
-                        event.target.value === ''
-                          ? null
-                          : Math.round(Number(event.target.value) * 100),
-                      )
-                    }}
-                  />
-                </label>
-                <label className="space-y-1 text-sm font-semibold">
-                  <span>Prazo para comissão após cadastro (dias)</span>
-                  <Input
-                    type="number"
-                    required
-                    min="1"
-                    max="3650"
-                    step="1"
-                    value={value.commissionWindowDays ?? ''}
-                    onChange={(event) =>
-                      change(
-                        'commissionWindowDays',
-                        event.target.value === '' ? null : Number(event.target.value),
-                      )
-                    }
-                  />
-                </label>
-              </div>
-            )}
-            <p className="text-sm text-muted-foreground">
-              A primeira cobrança precisa ser paga antes de completar o prazo informado. Mudanças
-              afetam apenas novos cadastros. Quem já recebeu o presente mantém a atribuição
-              original.
-            </p>
-          </fieldset>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1 text-sm font-semibold">
-              <span>Tipo</span>
-              <select
-                className="w-full rounded-md border bg-background p-2"
-                value={value.context}
-                onChange={(event) =>
-                  change('context', event.target.value as CampaignInput['context'])
-                }
-              >
-                <option value="ad">Anúncio</option>
-                <option value="event">Palestra ou evento</option>
-                <option value="other">Outra ação</option>
-              </select>
-            </label>
-            <label className="space-y-1 text-sm font-semibold">
-              <span>Situação</span>
-              <select
-                className="w-full rounded-md border bg-background p-2"
-                value={value.status}
-                onChange={(event) =>
-                  change('status', event.target.value as CampaignInput['status'])
-                }
-              >
-                <option value="draft">{labels.draft}</option>
-                <option value="active">{labels.active}</option>
-                <option value="paused">{labels.paused}</option>
-                <option value="ended">{labels.ended}</option>
-              </select>
-              {value.status === 'active' ? (
-                <span className="block text-xs font-normal text-muted-foreground">
-                  Respeita as datas de início e de encerramento
-                </span>
-              ) : null}
-            </label>
-          </div>
-          {!value.schedule && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                change('schedule', {
-                  eventDate: start.slice(0, 10),
-                  giftClaimDays: 3,
-                  couponClaimDays: 7,
-                })
-              }
-            >
-              Calcular prazos a partir da data da campanha
-            </Button>
-          )}
-          {value.schedule ? (
-            <CampaignScheduleFields
-              value={value.schedule}
-              onChange={(next) => change('schedule', next)}
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1 text-sm font-semibold">
-                <span>Início (Brasília)</span>
-                <Input
-                  type="datetime-local"
-                  value={start}
-                  required
-                  onChange={(event) => setStart(event.target.value)}
-                />
-              </label>
-              <label className="space-y-1 text-sm font-semibold">
-                <span>Encerramento (Brasília)</span>
-                <Input
-                  type="datetime-local"
-                  value={end}
-                  required
-                  onChange={(event) => setEnd(event.target.value)}
-                />
-              </label>
-            </div>
-          )}
-          {value.coupon && !editing.duplicate && (
-            <div className="rounded-lg border p-3 text-sm">
-              <p>
-                Esta campanha já tem um cupom vinculado. O calendário acima controla sua validade.
-                Marque abaixo para cadastrar outro código, se quiser substituir a oferta ou o
-                desconto.
-              </p>
-              <Button type="button" variant="ghost" onClick={() => change('coupon', null)}>
-                Desvincular cupom para novos usos
-              </Button>
-            </div>
-          )}
-          <CampaignCouponFields audience={audience} value={couponDraft} onChange={setCouponDraft} />
-          {savedCampaign && error && (
-            <p role="status" className="rounded-lg bg-warning-tint p-3 text-sm">
-              A campanha foi salva, mas o cupom ainda precisa ser concluído. Corrija o problema e
-              salve novamente; o mesmo cadastro será retomado.
-            </p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            O prazo acima controla novos cadastros. Cada cadastro aceito mantém o prazo da oferta de
-            presente, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não
-            confere presença no evento. A comissão tem seu próprio prazo, definido acima.
-          </p>
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" disabled={saving} onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? 'Salvando…' : 'Salvar campanha'}
-            </Button>
-          </div>
-        </fieldset>
-      </form>
-    </Dialog>
+            })
+            setDetail(null)
+          }}
+        />
+      ) : null}
+    </div>
   )
 }
