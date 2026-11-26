@@ -1302,6 +1302,78 @@ export const seeds = [
       footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
     }),
   },
+  // Curso para pais da Vivianne ("Como ajudar seu filho autista a lidar com frustrações e evitar
+  // crises", 25/11/2026): os três e-mails falam do conteúdo dele, sem prometer o fim das crises.
+  {
+    key: 'course-not-started-autismo-frustracoes',
+    channel: 'email' as const,
+    name: 'Curso da Vivianne: ainda não começou (e-mail)',
+    subject: '{{nome}}, a primeira aula com a Vivianne já está na área dos pais',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'São 5 aulas curtas, para assistir no celular ou no computador.',
+      title: 'A primeira aula do curso',
+      content: [
+        p(
+          'Olá, {{nome}}. O curso <strong>Como ajudar seu filho autista a lidar com frustrações e evitar crises</strong> está liberado na sua conta, em Cursos para pais.',
+        ),
+        p(
+          'Na primeira aula, a psicóloga Vivianne Lima parte de uma cena conhecida, a hora de parar uma brincadeira, para mostrar o que a crise pode estar dizendo. As aulas são curtas, e dá para assistir no celular ou no computador.',
+        ),
+        ctaButton('Assistir à primeira aula', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-stalled-autismo-frustracoes',
+    channel: 'email' as const,
+    name: 'Curso da Vivianne: parou no meio (e-mail)',
+    subject: '{{nome}}, o curso da Vivianne continua de onde você parou',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'As aulas são curtas, e a apostila ajuda a lembrar o que você já viu.',
+      title: 'O curso continua de onde você parou',
+      content: [
+        p(
+          'Olá, {{nome}}. Você começou o curso <strong>Como ajudar seu filho autista a lidar com frustrações e evitar crises</strong>, e ele continua na área dos pais, de onde você parou.',
+        ),
+        p(
+          'As próximas aulas seguem o caminho de antes, durante e depois de uma crise, com exemplos do dia a dia. A apostila ajuda a lembrar o que você já viu.',
+        ),
+        ctaButton('Continuar o curso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
+  {
+    key: 'course-completed-autismo-frustracoes',
+    channel: 'email' as const,
+    name: 'Curso da Vivianne: concluído (e-mail)',
+    subject: '{{nome}}, você concluiu o curso com a Vivianne',
+    variables: ['nome', 'link', 'comunidade'],
+    body: emailLayout({
+      preheader: 'Parabéns por ter chegado até o fim do curso.',
+      title: 'Curso concluído',
+      content: [
+        p(
+          'Olá, {{nome}}. Você concluiu o curso <strong>Como ajudar seu filho autista a lidar com frustrações e evitar crises</strong>. Parabéns por ter chegado até o fim.',
+        ),
+        p(
+          'As aulas e a apostila continuam na área dos pais para você rever quando precisar, e o certificado fica na última aula.',
+        ),
+        ctaButton('Abrir o curso', '{{link}}'),
+        p(
+          'Na Comunidade dos Criadores, o seu filho cria jogos com orientação, de 5 a 17 anos, e a assinatura inclui os cursos para pais. Ele planeja, testa, erra e ajusta, com os cursos, o Estúdio e o Mural.',
+        ),
+        ctaButton('Conhecer a Comunidade', '{{comunidade}}'),
+        fallbackLink('{{comunidade}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem um curso para pais liberado na sua conta.',
+    }),
+  },
   {
     key: 'course-not-started-pais',
     channel: 'email' as const,

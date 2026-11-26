@@ -8,7 +8,7 @@
 // presente do fim do guia é surpresa: nada aqui o revela.
 import '../../styles/curso-pais.css'
 import type { ReferralGiftOfferView } from '@sistemazero/core/referrals'
-import { DEPOIMENTOS_DE_PAIS } from '../../content/curso-pais-vilao'
+import { DEPOIMENTOS_DE_PAIS, type DepoimentoDePais } from '../../content/curso-pais-vilao'
 import type { EstadoPresente } from '../../content/presente'
 import type { GuiaPaisCopy } from '../../funnels/vilao-em-aliado/oferta'
 import BolsaResgate from '../../islands/BolsaResgate'
@@ -38,8 +38,19 @@ interface Props {
   estado?: EstadoPresente
   /** Campanha pausada ou encerrada: quem começou o cadastro pode concluir. */
   podeRetomar?: boolean
+  /** Os depoimentos do curso (padrão: os do guia). A seção só aparece com ao menos um. */
+  depoimentos?: readonly DepoimentoDePais[]
 }
-const { copy: P, selo, compra = false, resgate, ready, estado, podeRetomar = false } = Astro.props
+const {
+  copy: P,
+  selo,
+  compra = false,
+  resgate,
+  ready,
+  estado,
+  podeRetomar = false,
+  depoimentos = DEPOIMENTOS_DE_PAIS,
+} = Astro.props
 const formulario = resgate && ({ ...resgate, audience: 'kids', variante: 'guia' } as const)
 const check = '<path d="M20 6 9 17l-5-5"></path>'
 const seta = '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>'
@@ -76,10 +87,12 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
     <div id="resgatar" class="pk-form cpv-heroi-form">
       {compra ? (
         <>
-          <span class="c9-chip c9-cor--rosa cpv-form-chip">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
-            {P.hero.surpresa}
-          </span>
+          {P.hero.surpresa && (
+            <span class="c9-chip c9-cor--rosa cpv-form-chip">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={presente} />
+              {P.hero.surpresa}
+            </span>
+          )}
           <slot name="compra" />
         </>
       ) : ready && formulario ? (
@@ -154,7 +167,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
   </div>
 </section>
 
-{DEPOIMENTOS_DE_PAIS.length > 0 && (
+{depoimentos.length > 0 && (
   <section id="depoimentos" class="c9-sec c9-sec--creme" aria-labelledby="cpv-depoimentos">
     <div class="c9-wrap c9-pilha c9-gap-26">
       <div class="c9-cabeca">
@@ -162,7 +175,7 @@ const CORES_MUDA = ['roxo', 'amarelo', 'verde']
         <h2 id="cpv-depoimentos" class="c9-h2">{P.depoimentos.titulo}</h2>
       </div>
       <div class="c9-grade c9-min-300 c9-grade--20">
-        {DEPOIMENTOS_DE_PAIS.map((depoimento) => (
+        {depoimentos.map((depoimento) => (
           <figure class="cpv-citacao">
             <blockquote>{depoimento.texto}</blockquote>
             <figcaption>{depoimento.autor}</figcaption>

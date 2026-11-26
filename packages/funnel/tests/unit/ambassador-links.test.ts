@@ -20,7 +20,7 @@ const oferta = (o: Partial<OfertaDoEmbaixador>): OfertaDoEmbaixador => ({
 })
 
 describe('links curtos do painel do embaixador (25/11/2026)', () => {
-  test('apelido único por público, e as sete páginas têm apelido', () => {
+  test('apelido único por público, e as oito páginas têm apelido', () => {
     for (const audience of ['kids', 'pro']) {
       const apelidos = Object.values(FUNNELS)
         .filter((f) => f.audience === audience && f.apelido)
@@ -35,6 +35,7 @@ describe('links curtos do painel do embaixador (25/11/2026)', () => {
       'kids/cade',
       'kids/comunidade',
       'kids/desafio',
+      'kids/frustracoes',
       'kids/guia',
       'pro/cade',
       'pro/comunidade',

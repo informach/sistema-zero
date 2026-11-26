@@ -9,6 +9,8 @@ export const PAGE_PRIMARIES: Record<string, string> = {
   'cade-todo-mundo': 'cade-todo-mundo-1-ano',
   'cade-todo-mundo-adulto': 'cade-todo-mundo-adulto-1-ano',
   'transformando-o-vilao-em-aliado': 'transformando-o-vilao-em-aliado-1-ano',
+  'como-ajudar-seu-filho-autista-nas-frustracoes':
+    'como-ajudar-seu-filho-autista-nas-frustracoes-1-ano',
 }
 
 /** O corpo de `GET /catalog/products/by-sku/:sku`, ou null se o caminho não é esse. */

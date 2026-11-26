@@ -250,6 +250,12 @@ const IMAGENS = {
     width: 1049,
     height: 711,
   },
+  autismo: {
+    src: '/img/como-ajudar-seu-filho-autista/capa-do-curso.webp',
+    alt: '',
+    width: 1200,
+    height: 675,
+  },
   comunidadeKids: { src: `${IMG_KIDS}/hero.webp`, alt: '', width: 940, height: 1366 },
   desafio: { src: '/img/desafio-primeiro-jogo/farol-capa.webp', alt: '', width: 1280, height: 960 },
   comunidadeAdulto: {
@@ -261,6 +267,9 @@ const IMAGENS = {
 } satisfies Record<string, ImagemPresente>
 
 const CURSO_PAIS = 'transformando-o-vilao-em-aliado'
+const CURSO_PAIS_AUTISMO = 'como-ajudar-seu-filho-autista-nas-frustracoes'
+/** Os cursos para pais: o cartão leva o estilo `pais` (quem assiste é o adulto). */
+const CURSOS_PARA_PAIS: readonly string[] = [CURSO_PAIS, CURSO_PAIS_AUTISMO]
 
 /** Os cursos de que o Canvas tem a copy própria (a frase do curso, sem prazo e sem custo). */
 const CURSOS: Record<
@@ -281,6 +290,12 @@ const CURSOS: Record<
     titulo: 'Transformando o vilão em aliado',
     texto: 'Um curso para o pai ou a mãe usar a seu favor o tempo de tela que o filho já tem.',
     imagem: IMAGENS.vilao,
+  },
+  [CURSO_PAIS_AUTISMO]: {
+    titulo: 'Como ajudar seu filho autista a lidar com frustrações e evitar crises',
+    texto:
+      'Um curso para o pai ou a mãe de uma criança autista, com a psicóloga Vivianne Lima, sobre o que fazer antes, durante e depois de uma crise.',
+    imagem: IMAGENS.autismo,
   },
   'desafio-primeiro-jogo': {
     titulo: 'Desafio do Primeiro Jogo',
@@ -309,6 +324,12 @@ const MENSAGENS: Record<string, Partial<Record<ModoEmbaixador, (prazo: string) =
     presente: () =>
       'Oi. Lembrei de você quando falamos sobre tempo de tela em casa. Quero te dar de presente um curso curto do Sistema Zero, para pais e mães, sobre como a tela pode ajudar o filho a planejar e lidar com o erro. É gratuito para você. O cadastro é por este link: {{link}}',
   },
+  [CURSO_PAIS_AUTISMO]: {
+    presente: () =>
+      'Oi. Lembrei de você: quero te dar de presente um curso curto do Sistema Zero, para pais e mães de crianças autistas, com a psicóloga Vivianne Lima. Ela mostra o que fazer antes, durante e depois de uma crise. É gratuito para você. O cadastro é por este link: {{link}}',
+    oferta: () =>
+      'Oi. Lembrei de você: no Sistema Zero tem um curso curto para pais e mães de crianças autistas, com a psicóloga Vivianne Lima, sobre o que fazer antes, durante e depois de uma crise. Dá uma olhada por este link: {{link}}',
+  },
   'desafio-primeiro-jogo': {
     oferta: (prazo) =>
       `Oi. Lembrei de vocês: no Desafio do Primeiro Jogo, do Sistema Zero, a criança faz o primeiro jogo dela em ${prazo}, no computador, com as aulas ao lado. Dá uma olhada por este link: {{link}}`,
@@ -335,7 +356,7 @@ export function opcaoDeOferta(oferta: OfertaDoEmbaixador): OpcaoDoEmbaixador {
   const adulto = oferta.audience === 'adult'
   const estilo: EstiloDeOpcao = adulto
     ? 'adult'
-    : oferta.courseSlug === CURSO_PAIS
+    : oferta.courseSlug && CURSOS_PARA_PAIS.includes(oferta.courseSlug)
       ? 'pais'
       : 'kids'
   const prazo = prazoDe(oferta.accessDays, oferta.accessMonths)

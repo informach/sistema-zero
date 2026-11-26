@@ -4,7 +4,8 @@ import { AUDIENCES } from '../funnels/registry'
 // - oferta/checkout/resultado antigos e multi-funil (`/<audience>/<produto>/...`);
 // - /api/checkout/:id, /api/leads e admin;
 // - /bolsa/<code> e /embaixador/<token> (cada hit SSR = 1 chamada assinada ao gateway);
-// - /kids/vilao-em-aliado (a página do curso para pais lê a campanha no gateway a cada hit).
+// - /kids/vilao-em-aliado e /kids/como-ajudar-seu-filho-autista-nas-frustracoes (as páginas dos
+//   cursos para pais leem a oferta e o presente no gateway a cada hit).
 // - /i/<código>[/<oferta>][/pagamento] (cada hit = 1 a 2 chamadas assinadas ao gateway).
 // As audiências vêm do registry (fonte da verdade) — um público novo entra no teto sozinho.
 const RATE_LIMITED_GET = new RegExp(
@@ -15,6 +16,6 @@ export function isRateLimitedGetPath(pathname: string): boolean {
   return (
     RATE_LIMITED_GET.test(pathname) ||
     /^\/kids\/comunidade-dos-criadores\/oferta\/[^/]+\/?$/.test(pathname) ||
-    /^\/kids\/vilao-em-aliado\/?$/.test(pathname)
+    /^\/kids\/(?:vilao-em-aliado|como-ajudar-seu-filho-autista-nas-frustracoes)\/?$/.test(pathname)
   )
 }

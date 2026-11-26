@@ -50,6 +50,34 @@ export const PARENT_COURSE_PAGES: Readonly<Record<string, ParentCoursePage>> = {
       alt: 'Helena e Júlio',
     },
   },
+  'como-ajudar-seu-filho-autista-nas-frustracoes': {
+    promessa: {
+      antes: 'Na hora da crise, o seu filho está ',
+      destaque: 'pedindo ajuda',
+      depois: ' do jeito que consegue.',
+    },
+    chips: ['Apostila e certificado', 'Para pais de crianças autistas'],
+    cardChips: ['Apostila e certificado', 'Com a Vivianne'],
+    inclui: [
+      'Assista quando der, aqui na área dos pais',
+      'Apostila para consultar e certificado no final',
+    ],
+    oQueMuda: {
+      titulo: 'O que muda na sua casa quando você coloca o curso em prática',
+      itens: [
+        { titulo: 'Você entende o que ficou difícil', icone: 'conversa' },
+        { titulo: 'A mudança chega com aviso', icone: 'recomecar' },
+        { titulo: 'Depois da crise, vocês aprendem juntos', icone: 'trofeu' },
+      ],
+      nota: 'A mudança vem aos poucos, e cada criança tem o seu jeito. A equipe que acompanha o seu filho pode ajudar você a adaptar o que viu nas aulas.',
+    },
+    quemConduz: {
+      titulo: 'Quem conversa com você é a Vivi, a psicóloga Vivianne Lima.',
+      quem: 'Psicóloga da Laopa.',
+      foto: '/pais/vivianne.webp',
+      alt: 'Ilustração da psicóloga Vivianne Lima',
+    },
+  },
 }
 
 /** "7 aulas curtas em vídeo" (no cartão da lista, "7 aulas"). */

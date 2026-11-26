@@ -1,5 +1,24 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Curso para pais da Vivianne com página de venda (25/11/2026)
+
+`kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso
+"Como ajudar seu filho autista a lidar com frustrações e evitar crises", com a psicóloga Vivianne Lima,
+da Laopa (curso `como-ajudar-seu-filho-autista-nas-frustracoes`, R$ 67 no catálogo, 1 ano de acesso,
+contrato `one_time` + `fixed`/12/`months` + `anyGuarantee`, apelido `frustracoes`). Mesmo molde do
+guia: a página pública `/kids/como-ajudar-seu-filho-autista-nas-frustracoes` renderiza a oferta do
+funil (`CursoPaisAutismoBody`, dentro do `CursoPaisOferta`), com venda (`cursoAutismoVenda`, preço
+por `comPreco`) e modo presente (`CURSO_PAIS_AUTISMO_PRESENTE`, `content/curso-pais-autismo.ts`; o
+`OfertaPresente` sem `formulario`, isto é, a variante `pais`). `CursoPaisOferta` ganhou
+`depoimentos` (padrão: os do guia) e só mostra o selo da surpresa quando `hero.surpresa` não é vazio
+(este curso não tem presente no fim). Termo `termos-curso-autismo.ts` (`curso-autismo-2026-11-25`),
+que diz que o curso não substitui o acompanhamento da criança. A copy nunca promete acabar com as
+crises. Imagens WebP em `public/img/como-ajudar-seu-filho-autista/` (capa, apostila, certificado, a
+ilustração da Vivianne recortada da capa e o `compartilhar.jpg`). Pontos de extensão: registry (por
+último), `OfertaPage`, `analyticsPage`, `rate-limit-paths`, sitemap, `content/embaixador.ts`
+(cartão `pais` e mensagens) e `PAGE_PRIMARIES` dos browsers. ⚠️ Sem a oferta principal marcada no
+Admin, a página fica 503. Teste: `tests/unit/curso-pais-autismo.test.ts`.
+
 ## Mini checkout da conta: origem da oferta, lugar e cupom (25/11/2026, Lote 5)
 
 `server/member-commerce.ts` (S2S do member-shell):

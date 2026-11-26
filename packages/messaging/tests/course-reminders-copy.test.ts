@@ -28,6 +28,9 @@ const CONTRACTS = {
   'course-not-started-pais': ['nome', 'curso', 'link'],
   'course-stalled-pais': ['nome', 'curso', 'link'],
   'course-completed-pais': ['nome', 'curso', 'link', 'comunidade'],
+  'course-not-started-autismo-frustracoes': ['nome', 'link'],
+  'course-stalled-autismo-frustracoes': ['nome', 'link'],
+  'course-completed-autismo-frustracoes': ['nome', 'link', 'comunidade'],
 } as const
 
 describe('lembretes do curso', () => {
@@ -96,5 +99,27 @@ describe('lembretes do curso', () => {
       expect(readable(key)).not.toMatch(/presente|Cadê/i)
     }
     expect(readable('course-not-started-vilao-em-aliado')).toContain('Helena')
+  })
+
+  test('curso da Vivianne: fala do conteúdo dele com o responsável, sem prometer o fim das crises', () => {
+    for (const key of [
+      'course-not-started-autismo-frustracoes',
+      'course-stalled-autismo-frustracoes',
+    ]) {
+      expect(readable(key)).toContain('área dos pais')
+      expect(readable(key)).not.toMatch(/Comunidade|criança|criando jogos/)
+    }
+    for (const key of [
+      'course-not-started-autismo-frustracoes',
+      'course-stalled-autismo-frustracoes',
+      'course-completed-autismo-frustracoes',
+    ]) {
+      expect(readable(key)).toContain('Como ajudar seu filho autista')
+      expect(readable(key)).not.toMatch(/acabar com|nunca mais|sem crises|cura/i)
+    }
+    expect(readable('course-not-started-autismo-frustracoes')).toContain('Vivianne Lima')
+    expect(block('course-completed-autismo-frustracoes')).toContain(
+      "ctaButton('Conhecer a Comunidade', '{{comunidade}}')",
+    )
   })
 })

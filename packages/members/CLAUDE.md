@@ -54,6 +54,8 @@ três e-mails, escritos para o conteúdo dele (`PARENTS_COURSE_TEMPLATES` em
 `send-course-reminders.service.ts`; o guia usa `course-{not-started,stalled,completed}-vilao-em-aliado`).
 Curso para pais novo sem os próprios cai nos neutros `course-*-pais`. Curso novo para pais =
 escrever os três no seed do Messaging e acrescentar o slug no mapa.
+O curso da Vivianne (`como-ajudar-seu-filho-autista-nas-frustracoes`) usa
+`course-{not-started,stalled,completed}-autismo-frustracoes` (25/11/2026).
 
 ## Dias de surpresa do prazo divulgado (25/11/2026)
 

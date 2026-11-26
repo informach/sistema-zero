@@ -1,4 +1,5 @@
 ---
+import { AUTISMO_FRUSTRACOES } from '../../funnels/autismo-frustracoes'
 import { CADE_ADULTO } from '../../funnels/cade-adulto'
 import { CADE_TODO_MUNDO } from '../../funnels/cade-todo-mundo'
 import { COMUNIDADE_ADULTO } from '../../funnels/comunidade-adulto'
@@ -15,6 +16,7 @@ import Comunidade917Body from './oferta/Comunidade917Body.astro'
 import ComunidadeAdultoContinuarBody from './oferta/ComunidadeAdultoContinuarBody.astro'
 import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
 import ComunidadeContinuarBody from './oferta/ComunidadeContinuarBody.astro'
+import CursoPaisAutismoBody from './oferta/CursoPaisAutismoBody.astro'
 import Desafio917Body from './oferta/Desafio917Body.astro'
 import DesafioAdultoBody from './oferta/DesafioAdultoBody.astro'
 import GuiaPaisBody from './oferta/GuiaPaisBody.astro'
@@ -44,7 +46,9 @@ const corpo =
               ? 'cade-adulto'
               : f.key === VILAO_EM_ALIADO.key
                 ? 'guia-pais'
-                : null
+                : f.key === AUTISMO_FRUSTRACOES.key
+                  ? 'curso-autismo'
+                  : null
 if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
@@ -69,6 +73,8 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
     <CadeAdultoBody {...bodyProps} />
   ) : corpo === 'guia-pais' ? (
     <GuiaPaisBody {...bodyProps} />
+  ) : corpo === 'curso-autismo' ? (
+    <CursoPaisAutismoBody {...bodyProps} />
   ) : (
     <Desafio917Body {...bodyProps} />
   )

@@ -26,6 +26,15 @@ export function analyticsPage(path: string): PageContext | null {
       funnel: 'kids/vilao-em-aliado',
       publicText: true,
     }
+  // O curso para pais da Vivianne (25/11/2026): a página pública é a oferta do funil.
+  if (normalized === '/kids/como-ajudar-seu-filho-autista-nas-frustracoes')
+    return {
+      id: 'kids/como-ajudar-seu-filho-autista-nas-frustracoes',
+      path: normalized,
+      kind: 'oferta',
+      funnel: 'kids/como-ajudar-seu-filho-autista-nas-frustracoes',
+      publicText: true,
+    }
   const [, audience, product, step, ...variant] = normalized.split('/')
   const f = getFunnel(audience, product)
   if (

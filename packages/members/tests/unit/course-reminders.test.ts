@@ -214,6 +214,25 @@ describe('envio dos lembretes', () => {
     expect(sent[0]?.templateKey).toBe('course-not-started-pais')
   })
 
+  test('o curso da Vivianne usa os e-mails dele e leva à página dele na área dos pais', async () => {
+    const { service, sent } = setup(
+      [
+        candidate({
+          entitlementId: 'ent-autismo',
+          courseRef: 'como-ajudar-seu-filho-autista-nas-frustracoes',
+          courseTitle: 'Como ajudar seu filho autista a lidar com frustrações e evitar crises',
+          learner: 'parents',
+        }),
+      ],
+      { 'conta-1': identity('conta-1') },
+    )
+    await service.runCycle()
+    expect(sent[0]?.templateKey).toBe('course-not-started-autismo-frustracoes')
+    expect(sent[0]?.variables?.link).toBe(
+      'https://kids.sistemazero.com.br/pais/cursos/como-ajudar-seu-filho-autista-nas-frustracoes',
+    )
+  })
+
   test('conclusão adulta: /cursos e a Comunidade adulta com as UTMs', async () => {
     const { service, sent } = setup(
       [

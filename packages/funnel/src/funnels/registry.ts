@@ -17,6 +17,7 @@ import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
 export type { QuizAnswers } from '../lib/quiz-types'
 
+import { AUTISMO_FRUSTRACOES } from './autismo-frustracoes'
 import { CADE_ADULTO } from './cade-adulto'
 import { CADE_TODO_MUNDO } from './cade-todo-mundo'
 import { COMUNIDADE_ADULTO } from './comunidade-adulto'
@@ -305,6 +306,8 @@ export const FUNNELS: Record<string, FunnelDef> = {
   // muda).
   [CADE_TODO_MUNDO.key]: CADE_TODO_MUNDO,
   [VILAO_EM_ALIADO.key]: VILAO_EM_ALIADO,
+  // Curso para pais com a psicóloga Vivianne Lima (25/11/2026), também por último.
+  [AUTISMO_FRUSTRACOES.key]: AUTISMO_FRUSTRACOES,
 }
 
 /** Chaves válidas de funil (p/ validar `{ funnel }` recebido do cliente em /api/leads). */

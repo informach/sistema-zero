@@ -47,6 +47,11 @@ const PARENTS_COURSE_TEMPLATES: Record<string, Record<CourseReminderKind, string
     course_stalled: 'course-stalled-vilao-em-aliado',
     course_completed: 'course-completed-vilao-em-aliado',
   },
+  'como-ajudar-seu-filho-autista-nas-frustracoes': {
+    course_not_started: 'course-not-started-autismo-frustracoes',
+    course_stalled: 'course-stalled-autismo-frustracoes',
+    course_completed: 'course-completed-autismo-frustracoes',
+  },
 }
 const PARENTS_DEFAULT_TEMPLATES: Record<CourseReminderKind, string> = {
   course_not_started: 'course-not-started-pais',
