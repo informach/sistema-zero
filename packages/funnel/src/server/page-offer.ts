@@ -30,7 +30,7 @@ export type PrimaryOfferLookup =
   | { kind: 'unavailable' }
 
 export async function primaryOfferLookup(
-  gateway: CatalogGateway,
+  gateway: Pick<GatewayClient, 'getProductBySku'>,
   productSku: string,
   opts?: { now?: number; log?: Log },
 ): Promise<PrimaryOfferLookup> {
@@ -59,7 +59,7 @@ export async function primaryOfferLookup(
 
 /** O slug da oferta principal do produto, ou null (sem principal ou catálogo fora). */
 export async function primaryOfferSlug(
-  gateway: CatalogGateway,
+  gateway: Pick<GatewayClient, 'getProductBySku'>,
   productSku: string,
   opts?: { now?: number; log?: Log },
 ): Promise<string | null> {

@@ -294,7 +294,7 @@ export function clearOfferCache(): void {
  * conhecida (stale) ou null — a página de checkout cai para os rótulos do env.
  */
 export async function getActiveOffer(
-  gateway: GatewayClient,
+  gateway: Pick<GatewayClient, 'getOffer'>,
   offerSlug: string,
   opts?: { ttlMs?: number; now?: number; log?: CatalogLog },
 ): Promise<CatalogOfferView | null> {
