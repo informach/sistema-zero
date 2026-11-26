@@ -1,5 +1,19 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## A bio do Instagram no estilo Linktree (26/11/2026)
+
+`/` (`src/pages/index.astro`), proposta aprovada pela dona no Canvas da bio: foto do perfil
+(`helena-julio-perfil.webp`), "Helena e Júlio", @criecomhelenaejulio, a frase de posicionamento e TRÊS
+botões, cada um dizendo para quem é. O principal (azul cheio, selo "De presente para você") leva ao
+presente do guia dos pais pela campanha `vilao-em-aliado` (`/i/vilao-em-aliado`); os secundários
+(brancos, com contorno) levam ao Desafio Kids e ao Desafio adulto. UTMs da bio
+(`utm_source=instagram&utm_medium=bio`, `utm_campaign` por produto, `utm_content` por botão); a
+atribuição que a visita já traz (anúncio, evento, cupom) SUBSTITUI as da bio, sem misturar. Ids de
+métrica `bio-guia-pais-presente`, `bio-desafio-kids`, `bio-desafio-adulto`. A bio deixou de levar aos
+quizzes (a decisão de 20/10/2026 abaixo é história); os quizzes seguem no ar pelos próprios links.
+O botão flutuante "Privacidade" das métricas continua (é o controle de consentimento). Testes:
+`tests/unit/bio.test.ts`; os browsers `analytics-smoke.ts`/`analytics-panel.ts` usam `bio-desafio-kids`.
+
 ## Modo presente = o cartão da venda + a janela do cadastro (26/11/2026)
 
 Decisão da dona: `?presente=<código>` abre a MESMA página e o MESMO cartão da venda. Como no modo
