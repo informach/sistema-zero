@@ -320,6 +320,10 @@ test('a peça paga que JÁ estava no avatar guardado não vira prévia: a mudan�
   expect((estado.equipped as Record<string, string>).chapeu).toBe(chapeuPago)
   const t = await montar()
   expect(t.ed().status).toBe('saved')
+  // Na loja ela aparece como dela (sem preço nem compra), a mesma régua do selo.
+  await act(async () => t.ed().chooseTab('chapeu'))
+  await esperar(() => t.ed().items.some((i) => i.id === chapeuPago))
+  expect(t.ed().items.find((i) => i.id === chapeuPago)?.owned).toBe(true)
   const calcado = gratis('calcado')
   await act(async () => t.ed().choose(item(calcado), avatarTab('calcado')))
   await esperar(() => puts().length === 1, 4000)
