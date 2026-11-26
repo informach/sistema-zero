@@ -180,6 +180,7 @@ test('ofertas dos embaixadores: ligar outra do mesmo curso dá o recado sem grav
           },
         ],
         referral: [],
+        counts: { [GUIA_ANO]: { gifts: 212, purchases: 0, subscriptions: 0 } },
       })
     if (call.url.includes('/ambassador-offers') && call.method === 'PUT')
       return Response.json({
@@ -206,6 +207,9 @@ test('ofertas dos embaixadores: ligar outra do mesmo curso dá o recado sem grav
   try {
     expect(document.body.textContent).toContain('Para os pais')
     expect(document.body.textContent).toContain('Guia 1 ano')
+    // O contador de cada oferta (o referrals conta pelos links pessoais).
+    expect(document.body.textContent).toContain('212 resgates pelos embaixadores')
+    expect(document.body.textContent).toContain('0 resgates pelos embaixadores')
     // Ligar o Guia 15 dias: o mesmo produto do Guia 1 ano.
     const toggle = document.getElementById(`oferta-gift-${GUIA_15}`) as HTMLButtonElement
     await act(async () => toggle.click())

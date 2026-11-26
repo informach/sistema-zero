@@ -192,13 +192,34 @@ export function CampaignDetailDialog({
             <h3 id="caminho" className="font-display font-bold">
               Do cadastro à assinatura
             </h3>
-            <ol className="grid gap-2 sm:grid-cols-3">
+            <ol
+              className={`grid gap-2 ${kind === 'gift' && results.giftStarted !== undefined ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}
+            >
               <li className="rounded-xl border p-3">
                 <p className="text-muted-foreground text-xs">
                   {kind === 'gift' ? 'Entraram pelo presente' : 'Entraram pelo link'}
                 </p>
                 <p className="font-mono text-xl font-bold">{numbers.people}</p>
               </li>
+              {kind === 'gift' && results.giftStarted !== undefined ? (
+                <li className="rounded-xl border p-3">
+                  <p className="text-muted-foreground text-xs">Começaram o curso do presente</p>
+                  {results.giftStarted ? (
+                    <p className="font-mono text-xl font-bold">
+                      {results.giftStarted.started}
+                      {results.giftStarted.people ? (
+                        <span className="ml-1 font-normal text-muted-foreground text-sm">
+                          · {percent(results.giftStarted.started, results.giftStarted.people)}
+                        </span>
+                      ) : null}
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      Não deu para conferir agora. Abra a campanha de novo daqui a pouco.
+                    </p>
+                  )}
+                </li>
+              ) : null}
               <li className="rounded-xl border p-3">
                 <p className="text-muted-foreground text-xs">Compraram alguma oferta</p>
                 <p className="font-mono text-xl font-bold">

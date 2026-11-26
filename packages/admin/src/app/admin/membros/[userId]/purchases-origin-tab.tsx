@@ -17,7 +17,9 @@ import { type ApiError, apiGet } from '@/lib/api'
 import type { Platform } from '@/lib/platform'
 import {
   ACQUISITION_KIND_LABELS,
+  type AccountBonusView,
   acquisitionOrigin,
+  bonusLine,
   dayDate,
   moneyFromCents,
   offerName,
@@ -77,17 +79,20 @@ export function PurchasesOriginTab({
 }) {
   const names = useOfferNames(platform)
   const [items, setItems] = useState<AcquisitionView[] | null>(null)
+  const [bonuses, setBonuses] = useState<AccountBonusView[]>([])
   const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     if (!email || !canReadOrigin) return
     let alive = true
     setItems(null)
     setError(null)
-    apiGet<{ items: AcquisitionView[] }>(
+    apiGet<{ items: AcquisitionView[]; bonuses?: AccountBonusView[] }>(
       `/api/admin/referrals/acquisitions?${new URLSearchParams({ email })}`,
     )
       .then((result) => {
-        if (alive) setItems(result.items)
+        if (!alive) return
+        setItems(result.items)
+        setBonuses(result.bonuses ?? [])
       })
       .catch((err) => {
         if (alive) setError((err as ApiError).message ?? 'Não conseguimos carregar a origem.')
@@ -123,6 +128,21 @@ export function PurchasesOriginTab({
                 </p>
               )}
             </Card>
+            {bonuses.length ? (
+              <Card className="space-y-2 p-4">
+                <p className="text-muted-foreground text-xs">Bônus da assinatura</p>
+                {bonuses.map((b) => (
+                  <div key={b.id}>
+                    <p className="font-semibold">{bonusLine(b)}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {offerName(b.offerSlug, names)}
+                      {b.campaignTitle ? ` · pela campanha ${b.campaignTitle}` : ''} · assinou em{' '}
+                      {dayDate(b.paidAt)}
+                    </p>
+                  </div>
+                ))}
+              </Card>
+            ) : null}
             {sorted.length ? (
               <Card className="overflow-hidden p-0">
                 <div className="border-border border-b p-3">

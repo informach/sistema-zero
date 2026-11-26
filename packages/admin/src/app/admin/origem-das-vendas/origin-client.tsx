@@ -19,6 +19,10 @@ import {
 } from '@sistemazero/ui/table'
 import Link from 'next/link'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  originOfferGroups,
+  useCatalogOffers,
+} from '@/app/admin/embaixadores/ambassador-offer-catalog'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { communityPage, useCommunityRequests } from '@/components/admin/community-page'
 import { LoadError } from '@/components/admin/empty-state'
@@ -102,8 +106,17 @@ function OriginForCommunity({
   const [period, setPeriod] = useState<OriginPeriod>('30d')
   // O relatório guarda o PERÍODO dele: trocar o período limpa a tela até o novo chegar, e a
   // planilha leva o nome do período que ela de fato contém.
-  const [loaded, setLoaded] = useState<{ period: OriginPeriod; report: OriginReport } | null>(null)
-  const report = loaded?.period === period ? loaded.report : null
+  const catalog = useCatalogOffers(audience)
+  const groups = useMemo(() => originOfferGroups(catalog.offers), [catalog.offers])
+  const [offerGroup, setOfferGroup] = useState('all')
+  const offersParam = (groups.find((g) => g.key === offerGroup)?.offerIds ?? []).join(',')
+  const filterKey = `${period}|${offerGroup}`
+  const [loaded, setLoaded] = useState<{
+    key: string
+    period: OriginPeriod
+    report: OriginReport
+  } | null>(null)
+  const report = loaded?.key === filterKey ? loaded.report : null
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [query, setQuery] = useState('')
   const [originFilter, setOriginFilter] = useState<'all' | AcquisitionOriginKind>('all')
@@ -111,24 +124,25 @@ function OriginForCommunity({
   const load = useCallback(async () => {
     if (!allowed) return
     const current = ++sequence.current
-    const requested = period
+    const requested = { key: filterKey, period }
     setState('loading')
     try {
+      const offers = offersParam ? `&offers=${offersParam}` : ''
       const next = await get<OriginReport>(
-        `/api/admin/referrals/origins?${originPeriodQuery(period)}`,
+        `/api/admin/referrals/origins?${originPeriodQuery(period)}${offers}`,
       )
       if (current !== sequence.current) return
       if (!isOriginReport(next)) {
         setState('error')
         return
       }
-      setLoaded({ period: requested, report: next })
+      setLoaded({ ...requested, report: next })
       setState('ready')
     } catch (err) {
       if (isCanceledCommunityRequest(err) || current !== sequence.current) return
       setState('error')
     }
-  }, [get, period, allowed])
+  }, [get, period, allowed, filterKey, offersParam])
   useEffect(() => {
     void load()
   }, [load])
@@ -211,6 +225,23 @@ function OriginForCommunity({
             ))}
           </Select>
         </label>
+        {groups.length ? (
+          <label className="space-y-1 text-sm font-semibold">
+            <span className="block">Ofertas</span>
+            <Select
+              value={offerGroup}
+              className="w-auto"
+              onChange={(e) => setOfferGroup(e.target.value)}
+            >
+              <option value="all">Todas as ofertas</option>
+              {groups.map((g) => (
+                <option key={g.key} value={g.key}>
+                  {g.label}
+                </option>
+              ))}
+            </Select>
+          </label>
+        ) : null}
       </div>
       {state === 'error' ? (
         <LoadError what="a origem das vendas" onRetry={() => void load()} />

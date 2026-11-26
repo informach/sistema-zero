@@ -239,3 +239,68 @@ export function isOriginDetail(value: unknown): value is OriginDetail {
     v && typeof v === 'object' && v.results && Array.isArray(v.byOffer) && Array.isArray(v.people),
   )
 }
+
+/** O que cada conversão é, em palavras (o bônus da tabela de pessoas e da ficha). */
+export const CONVERSION_LABELS: Record<string, string> = {
+  pending: 'Na garantia',
+  eligible: 'Aguardando Pix',
+  paid: 'Pago',
+  canceled: 'Assinatura estornada',
+  self_blocked: 'Autoindicação',
+  unrewarded: 'Sem bônus',
+  superseded: 'Substituída',
+}
+
+/** O bônus da assinatura de uma pessoa (a ficha; nunca a chave Pix do embaixador). */
+export interface AccountBonusView {
+  id: string
+  audience: 'kids' | 'adult' | null
+  offerSlug: string
+  status: string
+  bonusCents: number
+  paidAt: string
+  maturesAt: string
+  paidMarkedAt: string | null
+  ambassadorId: string | null
+  ambassadorName: string | null
+  campaignTitle: string | null
+}
+
+/** "Patrícia Ramos · R$ 80,00 · na garantia até 25/11/2026" (Canvas "admin-ficha"). */
+export function bonusLine(b: AccountBonusView): string {
+  const who = b.ambassadorName ?? 'Embaixador'
+  const status =
+    b.status === 'pending'
+      ? `na garantia até ${dayDate(b.maturesAt)}`
+      : b.status === 'paid' && b.paidMarkedAt
+        ? `pago em ${dayDate(b.paidMarkedAt)}`
+        : (CONVERSION_LABELS[b.status] ?? b.status).toLowerCase()
+  return `${who} · ${moneyFromCents(b.bonusCents)} · ${status}`
+}
+
+/** O contador de cada oferta no painel das listas ("212 resgates pelos embaixadores"). */
+export function ambassadorCountLabel(
+  kind: 'gift' | 'referral',
+  subscription: boolean,
+  counts: { gifts: number; purchases: number; subscriptions: number } | undefined,
+): string {
+  const n =
+    kind === 'gift'
+      ? (counts?.gifts ?? 0)
+      : subscription
+        ? (counts?.subscriptions ?? 0)
+        : (counts?.purchases ?? 0)
+  const word =
+    kind === 'gift'
+      ? n === 1
+        ? 'resgate'
+        : 'resgates'
+      : subscription
+        ? n === 1
+          ? 'assinatura'
+          : 'assinaturas'
+        : n === 1
+          ? 'compra'
+          : 'compras'
+  return `${n.toLocaleString('pt-BR')} ${word} pelos embaixadores`
+}

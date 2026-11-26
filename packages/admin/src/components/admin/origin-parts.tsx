@@ -19,6 +19,7 @@ import type { Platform } from '@/lib/platform'
 import {
   ACQUISITION_KIND_LABELS,
   acquisitionOrigin,
+  CONVERSION_LABELS,
   dayDate,
   downloadCsv,
   moneyFromCents,
@@ -96,16 +97,6 @@ export function ByOfferTable({
       </TableBody>
     </Table>
   )
-}
-
-const CONVERSION_LABELS: Record<string, string> = {
-  pending: 'Na garantia',
-  eligible: 'Aguardando Pix',
-  paid: 'Pago',
-  canceled: 'Assinatura estornada',
-  self_blocked: 'Autoindicação',
-  unrewarded: 'Sem bônus',
-  superseded: 'Substituída',
 }
 
 export type PeopleFilter = 'all' | 'subscribed' | 'bought' | 'gift'
@@ -211,7 +202,17 @@ export function PeopleTable({
               const origin = acquisitionOrigin(p.entry)
               return (
                 <TableRow key={p.entry.id}>
-                  <TableCell className="break-all">{p.email}</TableCell>
+                  <TableCell className="break-all">
+                    <div>{p.email}</div>
+                    {p.accountUserId ? (
+                      <a
+                        className="text-xs underline"
+                        href={`/admin/membros/${encodeURIComponent(p.accountUserId)}`}
+                      >
+                        Ver ficha
+                      </a>
+                    ) : null}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {dayDate(p.entry.acquiredAt)}
                   </TableCell>

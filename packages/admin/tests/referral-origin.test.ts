@@ -3,6 +3,7 @@ import type { AcquisitionView, OriginReport } from '@sistemazero/core/referrals'
 import {
   buildCatalogOffers,
   offerSummary,
+  originOfferGroups,
 } from '../src/app/admin/embaixadores/ambassador-offer-catalog'
 import { sameCourseProblem, swapItems } from '../src/app/admin/embaixadores/ambassador-offers-panel'
 import { normalizeRedirectPath } from '../src/app/admin/embaixadores/campaign-shared'
@@ -18,7 +19,9 @@ import {
 import { originChartPoints, weekLabel } from '../src/app/admin/origem-das-vendas/origin-chart'
 import {
   acquisitionOrigin,
+  ambassadorCountLabel,
   bonusCameBy,
+  bonusLine,
   isOriginDetail,
   isOriginReport,
   moneyFromCents,
@@ -333,5 +336,51 @@ describe('Origem das vendas e a ficha', () => {
       'Ganhou Cadê Todo Mundo? · 7 dias de presente. A campanha tem o embaixador Patrícia Ramos.',
     )
     expect(firstAcquisition([])).toBeNull()
+  })
+})
+
+describe('extra do Lote 7: contadores, filtro por produto e bônus da ficha', () => {
+  test('o contador de cada oferta fala do que ela rende', () => {
+    expect(
+      ambassadorCountLabel('gift', false, { gifts: 212, purchases: 0, subscriptions: 0 }),
+    ).toBe('212 resgates pelos embaixadores')
+    expect(
+      ambassadorCountLabel('referral', true, { gifts: 0, purchases: 3, subscriptions: 1 }),
+    ).toBe('1 assinatura pelos embaixadores')
+    expect(ambassadorCountLabel('referral', false, undefined)).toBe('0 compras pelos embaixadores')
+  })
+  test('o filtro junta as ofertas por produto e os cursos para pais num grupo só', () => {
+    const info = (id: string, productId: string, productName: string, forParents = false) =>
+      ({ id, productId, productName, name: id, forParents }) as never
+    const groups = originOfferGroups([
+      info('mensal', 'p-com', 'Comunidade dos Criadores'),
+      info('anual', 'p-com', 'Comunidade dos Criadores'),
+      info('desafio', 'p-des', 'Desafio do Primeiro Jogo'),
+      info('guia', 'p-guia', 'Guia', true),
+    ])
+    expect(groups.map((g) => [g.label, g.offerIds])).toEqual([
+      ['Comunidade dos Criadores', ['mensal', 'anual']],
+      ['Desafio do Primeiro Jogo', ['desafio']],
+      ['Cursos para pais', ['guia']],
+    ])
+  })
+  test('o bônus da ficha: quem, quanto e a situação', () => {
+    const bonus = {
+      id: 'c',
+      audience: 'kids',
+      offerSlug: 'comunidade-anual',
+      status: 'pending',
+      bonusCents: 8000,
+      paidAt: '2026-11-18T12:00:00.000Z',
+      maturesAt: '2026-11-25T15:00:00.000Z',
+      paidMarkedAt: null,
+      ambassadorId: 'a',
+      ambassadorName: 'Patrícia Ramos',
+      campaignTitle: null,
+    } as const
+    expect(bonusLine(bonus).replace(/\s/g, ' ')).toBe(
+      'Patrícia Ramos · R$ 80,00 · na garantia até 25/11/2026',
+    )
+    expect(bonusLine({ ...bonus, status: 'eligible' })).toContain('aguardando pix')
   })
 })

@@ -151,3 +151,36 @@ export function useCatalogOffers(audience: Platform): CatalogOffersState {
   const byId = useMemo(() => new Map(offers.map((o) => [o.id, o])), [offers])
   return { status, offers, byId, reload }
 }
+
+/** Um grupo do filtro "Todas as ofertas" da Origem das vendas: as ofertas de um produto. */
+export interface OriginOfferGroup {
+  key: string
+  label: string
+  offerIds: string[]
+}
+
+/**
+ * Os grupos do filtro (Canvas "admin-origem"): um por produto que não é curso para pais e um só
+ * "Cursos para pais" juntando os deles. O referrals aceita até 20 ofertas por filtro.
+ */
+export function originOfferGroups(offers: readonly CatalogOfferInfo[]): OriginOfferGroup[] {
+  const byProduct = new Map<string, OriginOfferGroup>()
+  const parents: string[] = []
+  for (const offer of offers) {
+    if (offer.forParents) {
+      parents.push(offer.id)
+      continue
+    }
+    const key = `produto:${offer.productId}`
+    const group = byProduct.get(key) ?? {
+      key,
+      label: offer.productName ?? offer.name,
+      offerIds: [],
+    }
+    group.offerIds.push(offer.id)
+    byProduct.set(key, group)
+  }
+  const groups = [...byProduct.values()].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'))
+  if (parents.length) groups.push({ key: 'pais', label: 'Cursos para pais', offerIds: parents })
+  return groups.map((g) => ({ ...g, offerIds: g.offerIds.slice(0, 20) }))
+}

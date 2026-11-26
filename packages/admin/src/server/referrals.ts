@@ -8,6 +8,7 @@ import type {
   OriginDetail,
   OriginReport,
 } from '@sistemazero/core/referrals'
+import type { AccountBonusView } from '@/lib/referral-origin'
 import type {
   AmbassadorDetailView,
   AmbassadorListItemView,
@@ -155,17 +156,65 @@ export function getOriginReport(p: {
   audience?: string
   from?: string
   to?: string
+  /** Ofertas separadas por vírgula (o filtro por produto). */
+  offers?: string
 }): Promise<GatewayResponse<OriginReport>> {
   return gatewayFetch('/referrals/admin/origins', {
-    query: { audience: p.audience, from: p.from, to: p.to },
+    query: { audience: p.audience, from: p.from, to: p.to, offers: p.offers },
   })
 }
 
 /** Tudo o que um e-mail recebeu ou comprou, com a origem (ficha da conta), admin+. */
 export function listAcquisitions(
   email: string,
-): Promise<GatewayResponse<{ items: AcquisitionView[] }>> {
+): Promise<GatewayResponse<{ items: AcquisitionView[]; bonuses?: AccountBonusView[] }>> {
   return gatewayFetch('/referrals/admin/acquisitions', { query: { email } })
+}
+
+/** Contas por pedido ao members (o teto da rota `/members/admin/course-starts`). */
+const COURSE_STARTS_BATCH = 500
+
+/**
+ * "Começaram o curso do presente" (25/11/2026): o referrals manda as contas que entraram por um
+ * presente da origem, por curso; o members diz quais começaram. As contas nunca vão ao navegador:
+ * o corpo sai com `giftStarted` (ou `null` se o members não respondeu) e sem `giftCourses`.
+ */
+export async function withGiftStarted(
+  detail: GatewayResponse<OriginDetail>,
+  ask: (courseSlug: string, userIds: string[]) => Promise<GatewayResponse<unknown>> = (
+    courseSlug,
+    userIds,
+  ) =>
+    gatewayFetch('/members/admin/course-starts', {
+      method: 'POST',
+      body: { courseSlug, userIds },
+    }),
+): Promise<GatewayResponse<OriginDetail>> {
+  if (detail.status >= 400 || !detail.body) return detail
+  const { giftCourses, ...body } = detail.body
+  if (!giftCourses?.length) return { status: detail.status, body }
+  let people = 0
+  let started = 0
+  try {
+    for (const group of giftCourses) {
+      people += group.people
+      for (let at = 0; at < group.accountUserIds.length; at += COURSE_STARTS_BATCH) {
+        const res = await ask(
+          group.courseSlug,
+          group.accountUserIds.slice(at, at + COURSE_STARTS_BATCH),
+        )
+        const list = (res.body as { started?: unknown } | null)?.started
+        // Curso que não existe mais conta como ninguém começou; outra falha esconde o número.
+        if (res.status === 404) continue
+        if (res.status >= 400 || !Array.isArray(list))
+          throw new Error(`course-starts ${res.status}`)
+        started += list.length
+      }
+    }
+  } catch {
+    return { status: detail.status, body: { ...body, giftStarted: null } }
+  }
+  return { status: detail.status, body: { ...body, giftStarted: { people, started } } }
 }
 
 /** Resultado de uma campanha ou de um embaixador: números, vendas por oferta e pessoas. */

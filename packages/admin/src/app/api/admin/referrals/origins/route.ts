@@ -9,6 +9,7 @@ export async function GET(req: Request) {
       audience: params.get('audience') ?? undefined,
       from: params.get('from') ?? undefined,
       to: params.get('to') ?? undefined,
+      offers: params.get('offers') ?? undefined,
     }),
   )
 }

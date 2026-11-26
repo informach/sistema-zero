@@ -2,6 +2,14 @@
 
 ## Campanhas, embaixadores e Origem das vendas (25/11/2026, Lote 7)
 
+Extra do Lote 7 (25/11/2026): a campanha mostra "Começaram o curso do presente"
+(`withGiftStarted` em `server/referrals.ts`, lotes de 500 ao members; members fora = recado no
+lugar do número; as contas nunca vão ao navegador, nem no detalhe do embaixador); "Ver ficha" na
+tabela de pessoas (`/admin/membros/<accountUserId>`, sem conta não há link); o painel das listas
+mostra quanto cada oferta rendeu pelos embaixadores (`ambassadorCountLabel`); a Origem das vendas
+filtra por produto (`originOfferGroups`: um grupo por produto e "Cursos para pais"); a aba "Compras
+e origem" mostra o "Bônus da assinatura" (`bonusLine`, sem chave Pix).
+
 Revisão do Lote 7: os resultados (lista e detalhe de embaixador e campanha) levam o `audience` da
 lente até o referrals (números de UMA comunidade); "Veio por" casa pelo `ambassadorId` do bônus (o
 nome só quando o referrals ainda não manda o id); as setas das listas de ofertas trocam com a

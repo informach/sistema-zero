@@ -1,6 +1,7 @@
 'use client'
 
 import type {
+  AmbassadorOfferCounts,
   AmbassadorOfferItem,
   AmbassadorOfferKind,
   AmbassadorOfferView,
@@ -17,6 +18,7 @@ import { useCommunityRequests } from '@/components/admin/community-page'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
 import type { Platform } from '@/lib/platform'
+import { ambassadorCountLabel } from '@/lib/referral-origin'
 import {
   type CatalogOfferInfo,
   type CatalogOffersState,
@@ -67,6 +69,8 @@ export function sameCourseProblem(
   return null
 }
 
+type OfferCounts = Record<string, AmbassadorOfferCounts>
+
 const toItems = (views: AmbassadorOfferView[]): AmbassadorOfferItem[] =>
   [...views]
     .sort((a, b) => a.position - b.position)
@@ -87,6 +91,8 @@ export function AmbassadorOffersPanel({
   const { get, send } = useCommunityRequests(audience)
   const catalog = useCatalogOffers(audience)
   const [lists, setLists] = useState<Lists | null>(null)
+  // Quanto cada oferta rendeu pelos links pessoais (o referrals conta; sem os números, some a linha).
+  const [counts, setCounts] = useState<OfferCounts | null>(null)
   const [failed, setFailed] = useState(false)
   const [saving, setSaving] = useState<AmbassadorOfferKind | null>(null)
   const [problem, setProblem] = useState<Record<AmbassadorOfferKind, string>>({
@@ -98,11 +104,12 @@ export function AmbassadorOffersPanel({
     const current = ++sequence.current
     setFailed(false)
     try {
-      const result = await get<Record<AmbassadorOfferKind, AmbassadorOfferView[]>>(
-        '/api/admin/referrals/ambassador-offers',
-      )
+      const result = await get<
+        Record<AmbassadorOfferKind, AmbassadorOfferView[]> & { counts?: OfferCounts }
+      >('/api/admin/referrals/ambassador-offers')
       if (current !== sequence.current) return
       setLists({ gift: toItems(result.gift ?? []), referral: toItems(result.referral ?? []) })
+      setCounts(result.counts ?? null)
     } catch (err) {
       if (isCanceledCommunityRequest(err) || current !== sequence.current) return
       setFailed(true)
@@ -182,6 +189,7 @@ export function AmbassadorOffersPanel({
               audience={audience}
               items={lists[kind]}
               catalog={catalog}
+              counts={counts}
               canWrite={canWrite}
               busy={saving !== null}
               problem={problem[kind]}
@@ -206,6 +214,7 @@ function OfferList({
   audience,
   items,
   catalog,
+  counts,
   canWrite,
   busy,
   problem,
@@ -215,6 +224,7 @@ function OfferList({
   audience: Platform
   items: AmbassadorOfferItem[]
   catalog: CatalogOffersState
+  counts: OfferCounts | null
   canWrite: boolean
   busy: boolean
   problem: string
@@ -322,6 +332,15 @@ function OfferList({
                             <Badge variant="muted">Sem página de venda</Badge>
                           ) : null}
                         </div>
+                        {counts ? (
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {ambassadorCountLabel(
+                              kind,
+                              offer?.pricingMode === 'subscription',
+                              counts[item.offerId],
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                       <label
                         htmlFor={`oferta-${kind}-${item.offerId}`}
