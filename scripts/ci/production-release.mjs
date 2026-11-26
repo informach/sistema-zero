@@ -220,8 +220,9 @@ export async function runProductionRelease(input, ports) {
     const failure = results.find((result) => result.status === 'rejected')
     if (failure) throw failure.reason
   }
-  await bounded(() => ports.checkSource())
+  // Native reads may wait for quota; main must still match after that wait.
   await bounded(() => ports.backend.requireNativeDisabled(Object.keys(ports.ids), deadline))
+  await bounded(() => ports.checkSource())
   return {
     state: 'PRODUCTION_WAVE_PASSED',
     sha: input.sha,
@@ -320,8 +321,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         applications: true,
         log,
         async beforeDeploy(service, deadline) {
-          await freshMain()
           await backend.requireNativeDisabled([service], deadline)
+          await freshMain()
         },
       })
       const result = await runProductionRelease(

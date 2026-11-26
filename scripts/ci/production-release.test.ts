@@ -520,6 +520,22 @@ describe('one production owner and canonical V1 barrier', () => {
       runProductionRelease({ sha, services: 'admin', plan }, fixture.ports),
     ).rejects.toThrow('main drift')
   })
+  test('main advancing during the final native quota wait cannot receive a PASS', async () => {
+    const fixture = wave()
+    let nativeReads = 0
+    let mainChanged = false
+    const native = fixture.ports.backend.requireNativeDisabled
+    fixture.ports.backend.requireNativeDisabled = async () => {
+      await native()
+      if (++nativeReads === 2) mainChanged = true
+    }
+    fixture.ports.checkSource = async () => {
+      if (mainChanged) throw Error('main advanced during quota wait')
+    }
+    await expect(
+      runProductionRelease({ sha, services: 'admin', plan }, fixture.ports),
+    ).rejects.toThrow('main advanced during quota wait')
+  })
   test.each([
     'all',
     'members',
