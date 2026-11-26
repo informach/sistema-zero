@@ -1,5 +1,22 @@
+import { sanitizeReferralCode } from '@sistemazero/core/referrals'
 import type { GatewayClient } from '../lib/gateway-client'
 import { pageForOffer } from './page-offer'
+
+/** O event_code dos links antigos de cupom identifica a campanha desta aquisição. */
+export async function resolveCouponCampaignOrigin(
+  gateway: Pick<GatewayClient, 'resolveReferralLink'>,
+  rawCode: string | null,
+  audience: string,
+): Promise<string | null> {
+  const code = sanitizeReferralCode(rawCode)
+  if (!code) return null
+  const { status, body } = await gateway.resolveReferralLink(code, null, false)
+  if (status !== 200 || !body || typeof body !== 'object') return null
+  const link = body as Record<string, unknown>
+  return link.code === code && link.sourceKind === 'campaign' && link.audience === audience
+    ? code
+    : null
+}
 
 /**
  * O funil que vende a oferta exata no público pedido: o do PRODUTO da oferta (25/11/2026; a
