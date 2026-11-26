@@ -9,9 +9,9 @@ CLAUDE.md de lá); aqui fica a tela, só na pele Kids (a adulta segue o editor d
 - `morada-room-builder.tsx`: a peça em andamento (`placing`: nova, movida ou duplicada) segue o
   ponteiro como fantasma (`moradaPlace` sobre o `hover`), verde ou vermelha com o motivo; clique (ou
   Enter) põe, R gira, Esc desiste. Parede, janela e piso continuam na mão; móvel e peça movida
-  soltam. ⚠️ Cada peça em andamento entra UMA vez: o id dela é gasto no primeiro clique que serve
-  (`placedIds`); dois `pointerup` do mesmo clique chegavam antes do novo render e punham duas
-  janelas (a espera de 300 ms do protótipo saiu). Tirar usa `moradaRemove` (fecha o vão). Mover,
+  soltam. ⚠️ Cada peça em andamento entra UMA vez: a sessão dela é gasta no primeiro clique que
+  serve (`usedSession`); dois `pointerup` do mesmo clique chegavam antes do novo render e punham duas
+  janelas (a espera de 300 ms do protótipo saiu). Tirar usa `moradaRemove` (fecha o vão da janela; a porta deixa a passagem). Mover,
   Duplicar, Copiar/Colar cores; Desfazer/Refazer (`commit` guarda o passo com `pushMoradaHistory`;
   Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, também com o foco no corpo da página).
 - `morada-room-scene.tsx`: o chão de clique (apertar e soltar sem arrastar: arrastar gira a vista),
@@ -24,14 +24,37 @@ CLAUDE.md de lá); aqui fica a tela, só na pele Kids (a adulta segue o editor d
   desmontar. `saveState` (`idle|saving|saved|error`) vira o selo "Salvando…/Salvo/Não salvou. Tentar
   de novo" no lugar do botão "Salvar quarto". Falha não tenta sozinha sem parar; 409 abre o conflito
   de sempre e para de gravar. Só casa válida vai (o fantasma vermelho nunca entra).
+- **Revisão de 26/11/2026 (full review):**
+  - a marca de "já entrou" é da SESSÃO da peça em andamento (`placing.session`, `usedSession`), não
+    do id: com o id gasto para sempre, o segundo Mover da mesma peça não fazia nada;
+  - Duplicar copia só a peça: tira o `behavior` (a função do jogo), senão virava peça paga de graça
+    e travava a casa no Arquipélago (o members também recusa, ver o CLAUDE.md de lá);
+  - Delete/Backspace só com o foco DENTRO do construtor (o ouvinte da página não apaga);
+  - tirar a última parede com passagem é recusado com a frase do core (`moradaRemoveProblem`);
+  - `useMoradaEditor` devolve `generation`, que sobe quando a casa da tela é TROCADA (abrir de novo,
+    conflito resolvido): o construtor zera o desfazer e a peça na mão (desfazer para antes gravaria
+    por cima da versão nova). O 409 marca `conflictRef` na hora (a gravação seguinte não sai com a
+    revisão velha); desfazer de volta ao guardado tira o "Não salvou";
+  - o corpo do PUT é só o QUARTO (`moradaRoomPutBody`: cômodos, lote e as peças do cômodo; o
+    servidor, com `scope: 'room'`, só usa isso). O `keepalive` só vai com corpo até
+    `MORADA_KEEPALIVE_MAX_BYTES` (60 000; o navegador recusa acima de 64 KiB e o `fetch` lançava);
+    acima disso vai como pedido comum, e o aviso de sair da página segura enquanto houver mudança;
+  - a recusa do servidor aparece com o MOTIVO (`{error: {message}}`, "Peça ainda não comprada…"),
+    também com o salvar sozinho;
+  - sair da página com uma gravação no ar manda a casa de agora com `keepalive` na hora; o gesto
+    feito durante a gravação sai mesmo com a tela já fechada (`keepalive` ao desmontar).
+- A aba "No quarto (N)" nunca quebra linha (a terceira coluna tem a largura do texto; com o painel
+  estreito, 1024 com o menu aberto, os ícones das abas saem). Conferido na prévia local em 1440,
+  1366, 1024 e 390.
 - Testes: `tests/morada-editor-hook.test.ts` (roda `qa/morada-editor-hook.fixture.tsx` num navegador
   de mentira: espera de 1 s, gestos seguidos, aba escondida, desmontar, conflito, falha e nova
-  tentativa, gesto durante a gravação), `tests/cosmetics-skin.test.tsx` e, no Kids,
+  tentativa, gesto durante a gravação, corpo grande sem `keepalive`, motivo do servidor, conflito
+  com gesto pendente, `generation`), `tests/cosmetics-skin.test.tsx` e, no Kids,
   `tests/room-builder-view.test.tsx`. No Chromium, com a prévia local
   (`bun packages/member-shell/qa/room-serve.ts`): `community-kids/scripts/room-build-smoke.ts`
   (compilar para Node no Windows: `bun build --target=node --external @playwright/test
-  --external playwright-core`); põe a janela na parede, confere o vão, uma janela só, desfazer e
-  refazer gravados. Não roda no CI (as peças da Morada não estão no git).
+  --external playwright-core`); põe a janela na parede, confere o vão, uma janela só, MOVE a mesma
+  janela duas vezes (um vão só no fim), desfazer e refazer gravados. Não roda no CI (as peças da Morada não estão no git).
 
 ## Janela de compra aberta segura o cartão (25/11/2026, revisão do Lote 7)
 
@@ -370,7 +393,8 @@ os repasses do rig antigo) SAIU da plataforma; o jogo ainda usa o de `avatar-qua
   "Nenhum" primeiro, grátis, pagas da mais barata à mais cara; fantasia como CONJUNTO com o preço
   dele; a peça vestida aparece mesmo fora do filtro), `applyAvatarItem` (as regras do core),
   `avatarRemovedBy` (o aviso "Para vestir X, saiu: Y"; a fantasia conta uma vez),
-  `avatarUnownedWorn` (o que está só de prévia) e as poses da Cabine (`AVATAR_POSES`, sem
+  `avatarUnownedWorn` (o que está só de prévia; desde 26/11/2026 a loja recebe o mesmo
+  "vestível" do editor, inventário mais a peça do avatar guardado, e a mostra como dela) e as poses da Cabine (`AVATAR_POSES`, sem
   `pulo_no_ar` e `correr_frente`: o clipe leva o boneco para fora da foto).
 - **`avatar3d/use-avatar-editor.ts`**: a lógica das DUAS peles. ⭐ **Salva sozinho**: 1 s depois da
   última mudança, `PUT /api/members/avatar` `{slots, filter}`, uma gravação de cada vez. Com peça

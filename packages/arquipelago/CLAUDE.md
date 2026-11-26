@@ -19,6 +19,15 @@ acesso, horta, funções, posse) seguem por cima, no `edit` da loja.
   em instantes", "Casa guardada" ou "Não guardou. Tentar de novo" (botão).
 - Teste: `tests/morada.test.ts` §"modo construção compartilhado com o quarto".
 - ⚠️ Não conferido no navegador do jogo (só o quarto foi conferido no Chromium).
+- ⚠️⚠️ **Ordem de deploy (revisão de 26/11/2026):** o motor (`moradaPlace`, `moradaRemove`, a folga
+  `moradaBoundaryMargin`) vem do core compilado DENTRO do bundle do jogo. Mudou o motor no core ou a
+  validação da casa no members? Publique o bundle do Arquipélago junto (staging e produção): com o
+  bundle velho o jogo põe a peça pela régua antiga e o servidor recusa ao salvar. As regras novas de
+  26/11: porta que sai deixa a passagem, mover janela fecha o vão antigo, troca de trecho só em
+  parede lisa, e o servidor recusa função (`behavior`) repetida.
+- O salvar da casa no jogo não usa `keepalive` (a plataforma grava com pedido comum): o teto de
+  64 KiB do `keepalive` não se aplica, e um envio cortado na saída não perde nada, porque cada gesto
+  já fica guardado no aparelho (`guard`, `morada:casa:v1:*`) e volta ao abrir de novo.
 
 ## Composição pelas imagens: estado atual (16/11/2026)
 

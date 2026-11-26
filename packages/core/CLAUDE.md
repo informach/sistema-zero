@@ -24,9 +24,24 @@ e para o Arquipélago. Puro: recebe a casa e devolve a instância. Proposta apro
   0,5 m pelo CENTRO da caixa e não ocupa outra peça (tapete não bate). `reason` é a frase curta para
   a criança. `applyMoradaPlacement` grava. `roomId` (padrão o da base ou `house.roomId`) serve ao
   Arquipélago, que edita a casa inteira.
-- **`moradaRemove(house, id)`**: tira a peça e o que está apoiado nela; janela ou porta que sai
-  fecha o vão (o trecho volta a parede lisa, com as cores) quando nenhuma outra usa o trecho. Peça
-  do quintal (sem `roomId`) não fecha nada.
+- **`moradaRemove(house, id)`**: tira a peça e o que está apoiado nela; JANELA que sai fecha o vão
+  (o trecho volta a parede lisa, com as cores) quando nenhuma outra peça usa o trecho e o trecho só
+  tem vão de janela. ⚠️ Porta que sai DEIXA a passagem aberta (revisão de 26/11/2026: fechar o vão
+  da porta trancava o quarto, e o jogo recusava o acesso). Peça do quintal (sem `roomId`) não fecha
+  nada.
+- **Revisão de 26/11/2026 (full review do modo construção):**
+  - a troca de trecho (`replace`) só acontece numa parede LISA: trecho que já tem abertura recusa
+    com "Este trecho de parede já tem uma abertura. Leve até uma parede lisa." (antes a porta ou o
+    arco do trecho virava parede com janela e o quarto podia ficar sem saída);
+  - MOVER janela (`base` com id que já está na casa) fecha o vão de onde ela saiu (`closeOldOpening`,
+    só vão de janela; no mesmo trecho ou no mesmo vão nada muda), senão ficava o buraco antigo;
+  - `moradaRemoveProblem(house, id)`: tirar a ÚLTIMA parede com passagem (vão de porta) devolve
+    "Esta é a passagem do quarto. Deixe pelo menos uma porta." (o quarto recusa no cliente). ⚠️ A
+    regra de acesso do jogo (`moradaAccess` do Arquipélago, pela grade) continua só no jogo: levar
+    para o core/servidor custaria CPU por gravação e recusaria casas já guardadas sem saída;
+  - **`moradaBoundaryMargin(piece)`** é a folga da borda ÚNICA: `validateMoradaHouse`,
+    `moradaInsideRoom` e o `moradaFitsRoom` do member-shell usam a mesma (antes cada um tinha a sua
+    e a janela de Natal ficava verde na tela e era recusada ao salvar).
 - `moradaRotateAroundCenter` (o pivô das paredes é a PONTA; girar por ele as arrastava),
   `moradaInstanceCenter`, `moradaWalls(house, catalog, roomId?)`, `moradaInsideRoom`,
   `moradaOverlap`, o desfazer (`pushMoradaHistory` com `key` para juntar os passos de um arraste em
