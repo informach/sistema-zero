@@ -1,9 +1,7 @@
 {
   "environment": "production",
   "courseId": "a7a54037-60a3-5f81-aea4-d1ed6c95856b",
-  "moduleIds": [
-    "e5bef4a4-faf7-58fa-a46c-e5cf39d90885"
-  ],
+  "moduleIds": ["e5bef4a4-faf7-58fa-a46c-e5cf39d90885"],
   "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
   "status": "published",
   "audience": "kids",
