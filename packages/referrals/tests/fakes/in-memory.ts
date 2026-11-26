@@ -260,7 +260,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
 
   async listConversionsByRedemptions(redemptionIds: string[]) {
     return this.conversions
-      .filter((c) => redemptionIds.includes(c.redemptionId))
+      .filter((c) => c.redemptionId !== null && redemptionIds.includes(c.redemptionId))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 

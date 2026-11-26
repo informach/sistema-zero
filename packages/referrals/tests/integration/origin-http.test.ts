@@ -97,6 +97,7 @@ function buildApp() {
     links,
     reports,
     funnelPublicUrl: FUNNEL_URL,
+    bonusAmountCents: 3000,
     requireAdminEnabled: true,
     internalToken: TOKEN,
     readiness: async () => {},
@@ -137,7 +138,7 @@ describe('rotas da origem por aquisição', () => {
       get('/referrals/admin/ambassador-offers?audience=kids', admin('staff')),
     )
     expect(read.status).toBe(200)
-    expect((await read.json()).referral).toHaveLength(1)
+    expect(((await read.json()) as { referral: unknown[] }).referral).toHaveLength(1)
   })
 
   test('link do embaixador: 404 uniforme para código inexistente e oferta fora da lista', async () => {
@@ -219,13 +220,13 @@ describe('rotas da origem por aquisição', () => {
       get('/referrals/internal/redirects?path=/kids/vilao-em-aliado', internal),
     )
     expect(hit.status).toBe(200)
-    expect((await hit.json()).url).toBe(`${FUNNEL_URL}/i/guia-pais-presente`)
+    expect(((await hit.json()) as { url: string }).url).toBe(`${FUNNEL_URL}/i/guia-pais-presente`)
     expect(
       (await app.handle(get('/referrals/internal/redirects?path=/kids/outra', internal))).status,
     ).toBe(404)
     // Sem `path`: a lista dos ativos, que o funil guarda por um minuto.
     const list = await (await app.handle(get('/referrals/internal/redirects', internal))).json()
-    expect(list.items).toEqual([
+    expect((list as { items: unknown[] }).items).toEqual([
       expect.objectContaining({
         path: '/kids/vilao-em-aliado',
         url: `${FUNNEL_URL}/i/guia-pais-presente`,
@@ -268,9 +269,13 @@ describe('rotas da origem por aquisição', () => {
       },
       'Helena',
     )
-    const read = async (role: string) =>
-      (await (await app.handle(get('/referrals/admin/campaigns', admin(role)))).json()).items[0]
-        .results
+    const read = async (role: string) => {
+      const response = await app.handle(get('/referrals/admin/campaigns', admin(role)))
+      const body = (await response.json()) as {
+        items: { results: { revenueCents: string | null } }[]
+      }
+      return body.items[0]!.results
+    }
     expect((await read('staff')).revenueCents).toBeNull()
     expect((await read('admin')).revenueCents).toBe('0')
   })
@@ -334,7 +339,9 @@ describe('rotas da origem por aquisição', () => {
       get(`/referrals/internal/codes/mari-x7k2?offer=${DESAFIO.offerSlug}`, internal),
     )
     expect(chosen.status).toBe(200)
-    expect((await chosen.json()).gift.offerSlug).toBe(DESAFIO.offerSlug)
+    expect(((await chosen.json()) as { gift: { offerSlug: string } }).gift.offerSlug).toBe(
+      DESAFIO.offerSlug,
+    )
     expect(
       (await app.handle(get('/referrals/internal/codes/mari-x7k2?offer=fora-da-lista', internal)))
         .status,

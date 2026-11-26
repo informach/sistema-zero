@@ -198,6 +198,7 @@ export class CampaignAdminService {
       state: campaignState(campaign, this.now()),
       startsAt: campaign.startsAt.toISOString(),
       endsAt: campaign.endsAt.toISOString(),
+      redirectUntil: campaign.redirectUntil?.toISOString() ?? null,
       createdAt: campaign.createdAt.toISOString(),
       updatedAt: campaign.updatedAt.toISOString(),
       shareUrl: this.campaignLink(campaign),

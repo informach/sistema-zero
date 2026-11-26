@@ -160,6 +160,18 @@ describe.skipIf(!url)('origem por aquisição — PostgreSQL real', () => {
     )
   })
 
+  test('corrida na aquisição do pagamento cria uma linha; reentrega não revive o estorno', async () => {
+    const input = { email: 'paula@example.com', kind: 'one_time' as const, paymentId: 'pay-race' }
+    const results = await Promise.all([acquisition(input), acquisition(input)])
+    expect(results.filter((r) => r.created)).toHaveLength(1)
+    expect(new Set(results.map((r) => r.acquisition.id)).size).toBe(1)
+    await acquisitions.markRefundedByPayment(input.paymentId)
+    expect((await acquisition(input)).acquisition.status).toBe('refunded')
+    expect(
+      await acquisitions.listActiveForPerson({ email: input.email, audience: 'kids' }),
+    ).toEqual([])
+  })
+
   test('pessoa: e-mail OU conta, só ativas e do público, da mais antiga para a mais nova; estorno sai', async () => {
     await acquisition({
       email: 'b@example.com',
@@ -236,12 +248,11 @@ describe.skipIf(!url)('origem por aquisição — PostgreSQL real', () => {
       b.redemption.id,
       crypto.randomUUID(),
     ])
-    expect([...slugs.entries()].sort()).toEqual(
-      [
-        [a.redemption.id, 'cade-todo-mundo'],
-        [b.redemption.id, 'cade-todo-mundo'],
-      ].sort(),
-    )
+    const expectedSlugs: [string, string][] = [
+      [a.redemption.id, 'cade-todo-mundo'],
+      [b.redemption.id, 'cade-todo-mundo'],
+    ]
+    expect([...slugs.entries()].sort()).toEqual(expectedSlugs.sort())
     expect((await acquisitions.giftCourseSlugs([])).size).toBe(0)
   })
 
@@ -480,8 +491,8 @@ describe.skipIf(!url)('origem por aquisição — PostgreSQL real', () => {
     expect([[OFFER_B], [OFFER_B, OFFER_A]]).toContainEqual(gift.map((o) => o.offerId))
     expect(gift.map((o) => o.position)).toEqual(gift.map((_, i) => i))
     expect((await offers.list('kids')).map((o) => o.kind)).toEqual([
-      ...gift.map(() => 'gift'),
-      'referral',
+      ...gift.map(() => 'gift' as const),
+      'referral' as const,
     ])
     expect((await offers.list('adult')).map((o) => [o.offerId, o.enabled])).toEqual([
       [OFFER_B, true],
