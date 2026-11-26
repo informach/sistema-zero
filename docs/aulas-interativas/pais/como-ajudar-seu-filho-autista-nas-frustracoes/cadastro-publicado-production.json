@@ -146,15 +146,11 @@
             "id": "5a4019d2-935e-5200-a844-67a09c9de072",
             "title": "Boas-vindas",
             "intent": "explanation",
-            "blockIds": [
-              "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"
-            ],
+            "blockIds": ["a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"],
             "objective": "Acolher mães, pais e responsáveis, apresentar a Vivi, partir da hora de parar uma brincadeira e explicar o caminho das cinco aulas e o objetivo de antecipar, prevenir e intervir.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"
-              ]
+              "blockIds": ["a6f3eeb6-e8a6-5af8-acb0-2e3aa8b125b0"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -171,9 +167,7 @@
             "objective": "Desenvolver a ideia de crise como comunicação com uma situação cotidiana e mostrar como observar mudanças, estímulos e dificuldades antes de corrigir ou julgar.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "13146b44-b364-5942-a161-6559ee1b0619"
-              ]
+              "blockIds": ["13146b44-b364-5942-a161-6559ee1b0619"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -255,15 +249,11 @@
             "id": "0f70fd07-c56d-5eaa-a196-3876b2723a00",
             "title": "As quatro raízes da frustração",
             "intent": "explanation",
-            "blockIds": [
-              "a9ebf39e-4541-5a22-a8bf-fec656a67c93"
-            ],
+            "blockIds": ["a9ebf39e-4541-5a22-a8bf-fec656a67c93"],
             "objective": "Explicar autorregulação, comunicação funcional, previsibilidade e sensibilidade sensorial com exemplos da brincadeira e da rotina, sem tratar os quatro fatores como lista exaustiva.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "a9ebf39e-4541-5a22-a8bf-fec656a67c93"
-              ]
+              "blockIds": ["a9ebf39e-4541-5a22-a8bf-fec656a67c93"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -280,9 +270,7 @@
             "objective": "Ligar fatores internos e externos à situação e explicar função do comportamento com perguntas sobre o antes, o comportamento e o depois.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "5bd3f419-eda5-5349-aa2b-ba50d7cf82ce"
-              ]
+              "blockIds": ["5bd3f419-eda5-5349-aa2b-ba50d7cf82ce"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -365,15 +353,11 @@
             "id": "5978d25d-091d-5518-a926-a86da2943fc2",
             "title": "Rotina visual e clareza do que vai acontecer",
             "intent": "explanation",
-            "blockIds": [
-              "480b566e-070b-5f0f-a27b-03a32450076a"
-            ],
+            "blockIds": ["480b566e-070b-5f0f-a27b-03a32450076a"],
             "objective": "Explicar a passagem de reagir a planejar e demonstrar rotina visual e aviso antes da transição de brincar para jantar, incluindo o exemplo dos cinco minutos.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "480b566e-070b-5f0f-a27b-03a32450076a"
-              ]
+              "blockIds": ["480b566e-070b-5f0f-a27b-03a32450076a"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -383,15 +367,11 @@
             "id": "ab62b083-3fab-5f3b-a571-b92d2a31388a",
             "title": "Treino de pequenas frustrações",
             "intent": "explanation",
-            "blockIds": [
-              "d6ed7523-619c-5d62-aaa2-8240eedf373e"
-            ],
+            "blockIds": ["d6ed7523-619c-5d62-aaa2-8240eedf373e"],
             "objective": "Desenvolver uma pequena espera numa brincadeira, o reconhecimento positivo e o limiar de frustração, esclarecendo que dez segundos são um exemplo a adaptar.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "d6ed7523-619c-5d62-aaa2-8240eedf373e"
-              ]
+              "blockIds": ["d6ed7523-619c-5d62-aaa2-8240eedf373e"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -408,9 +388,7 @@
             "objective": "Ligar a dificuldade de pedir ajuda a mensagens e recursos de comunicação, incluindo fala, figuras, PECS e sinais, com prática em momento tranquilo.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "d0de94d4-2de0-5095-a542-2fd8373b5d09"
-              ]
+              "blockIds": ["d0de94d4-2de0-5095-a542-2fd8373b5d09"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -488,15 +466,11 @@
             "id": "68d447d1-44d8-5bac-abda-3a170a943499",
             "title": "O ambiente e o seu tom",
             "intent": "explanation",
-            "blockIds": [
-              "840d3cef-def0-5a16-a6e3-1ba34d1c1e21"
-            ],
+            "blockIds": ["840d3cef-def0-5a16-a6e3-1ba34d1c1e21"],
             "objective": "Retomar que a crise pode acontecer mesmo com prevenção e desenvolver segurança, controle do ambiente e regulação pelo modelo com exemplos concretos.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "840d3cef-def0-5a16-a6e3-1ba34d1c1e21"
-              ]
+              "blockIds": ["840d3cef-def0-5a16-a6e3-1ba34d1c1e21"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -513,9 +487,7 @@
             "objective": "Explicar por que evitar negociação, sermão e explicações longas no auge, mostrando o que o adulto pode fazer para oferecer apoio.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "54fae27d-af04-5562-aab4-fef5c544e3c4"
-              ]
+              "blockIds": ["54fae27d-af04-5562-aab4-fef5c544e3c4"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -610,15 +582,11 @@
             "id": "c8c3a9e3-05ef-5293-a688-2693f35ff8b2",
             "title": "Acolher e ensinar para a próxima vez",
             "intent": "explanation",
-            "blockIds": [
-              "ffd60f99-d901-583e-a575-0f6f3c7d9936"
-            ],
+            "blockIds": ["ffd60f99-d901-583e-a575-0f6f3c7d9936"],
             "objective": "Respeitar a recuperação depois da crise, validar o sentimento e retomar um pedido de ajuda com a fala, uma figura ou um sinal que a criança está aprendendo.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "ffd60f99-d901-583e-a575-0f6f3c7d9936"
-              ]
+              "blockIds": ["ffd60f99-d901-583e-a575-0f6f3c7d9936"]
             },
             "externalTool": null,
             "pendingMedia": [],
@@ -628,15 +596,11 @@
             "id": "b97d39e8-0101-5395-a5df-0d300798294f",
             "title": "O gatilho, a consequência e os ajustes",
             "intent": "explanation",
-            "blockIds": [
-              "c008e6d6-628a-53d5-ab88-80f9020bffb5"
-            ],
+            "blockIds": ["c008e6d6-628a-53d5-ab88-80f9020bffb5"],
             "objective": "Desenvolver gatilho, comportamento, consequência, registros, ajustes estratégicos e treino sistemático em momentos tranquilos, sem concluir a função a partir de um caso isolado.",
             "completion": {
               "version": 1,
-              "blockIds": [
-                "c008e6d6-628a-53d5-ab88-80f9020bffb5"
-              ]
+              "blockIds": ["c008e6d6-628a-53d5-ab88-80f9020bffb5"]
             },
             "externalTool": null,
             "pendingMedia": [],

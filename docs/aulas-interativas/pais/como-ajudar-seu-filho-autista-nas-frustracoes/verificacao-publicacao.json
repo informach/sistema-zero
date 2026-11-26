@@ -61,10 +61,7 @@
         }
       ]
     },
-    "realEmissionChecked": [
-      "staging",
-      "production"
-    ],
+    "realEmissionChecked": ["staging", "production"],
     "syntheticCertificatesRevoked": true
   },
   "checks": {
@@ -550,10 +547,7 @@
     }
   },
   "aula1Parte2": {
-    "blocks": [
-      "video",
-      "materials"
-    ],
+    "blocks": ["video", "materials"],
     "materialsTitle": "Materiais da aula",
     "fileLabel": "Baixar apostila do curso",
     "book3DBlock": false,
@@ -562,10 +556,7 @@
     "environments": {
       "staging": {
         "environment": "staging",
-        "sectionKinds": [
-          "video",
-          "materials"
-        ],
+        "sectionKinds": ["video", "materials"],
         "book3D": false,
         "consultationText": false,
         "oneColumn": true,
@@ -575,10 +566,7 @@
       },
       "production": {
         "environment": "production",
-        "sectionKinds": [
-          "video",
-          "materials"
-        ],
+        "sectionKinds": ["video", "materials"],
         "book3D": false,
         "consultationText": false,
         "oneColumn": true,
