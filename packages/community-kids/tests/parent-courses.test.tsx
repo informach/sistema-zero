@@ -442,24 +442,23 @@ describe('o Início de quem comprou só um curso para pais', () => {
   afterEach(() => localStorage.clear())
   let promotions: unknown[] = [communityPromotion()]
   let failPromotions = false
+  const fetchPromotions = mock(async (input: RequestInfo | URL) =>
+    String(input).startsWith('/api/commerce/promotions')
+      ? failPromotions
+        ? Response.json({ error: { code: 'X', message: 'fora' } }, { status: 502 })
+        : Response.json({ items: promotions })
+      : Response.json({ profiles: [] }),
+  )
   const promotionCalls = () =>
-    (globalThis.fetch as ReturnType<typeof mock>).mock.calls.filter(([input]) =>
+    fetchPromotions.mock.calls.filter(([input]) =>
       String(input).startsWith('/api/commerce/promotions'),
     ).length
   beforeEach(() => {
     promotions = [communityPromotion()]
     failPromotions = false
+    fetchPromotions.mockClear()
     // O menu lê os filhos em /api/profiles: esta conta não tem nenhum.
-    globalThis.fetch = Object.assign(
-      mock(async (input: RequestInfo | URL) =>
-        String(input).startsWith('/api/commerce/promotions')
-          ? failPromotions
-            ? Response.json({ error: { code: 'X', message: 'fora' } }, { status: 502 })
-            : Response.json({ items: promotions })
-          : Response.json({ profiles: [] }),
-      ),
-      { preconnect: originalFetch.preconnect },
-    )
+    globalThis.fetch = Object.assign(fetchPromotions, { preconnect: originalFetch.preconnect })
   })
 
   test('o guia leva ao curso e o destaque da Comunidade toma o lugar dos filhos', async () => {
