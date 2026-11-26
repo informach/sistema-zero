@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/members
 
+## "Começaram o curso do presente" (25/11/2026, Admin)
+
+`POST /members/admin/course-starts` `{courseSlug, userIds (até 500)}` → `{started}` (staff+, rota
+`members-admin-course-starts` no gateway; curso inexistente 404). A régua de progresso por CONTA
+saiu dos lembretes para `loadCourseAccountProgress` (`course-reminders.repository.ts`: perfil→conta
+pelo `loadOwnerClaims` + a própria conta), que `DrizzleCourseStartsRepository` e os lembretes usam.
+Teste da rota: `tests/integration/course-starts.test.ts`. ⚠️ O SQL segue sem teste de banco.
+
 ## Oferta de venda do curso para pais (25/11/2026, Lote 6)
 
 `metadata.salesOfferRef` (jsonb, sem migration): o slug da oferta de venda no catálogo que a área

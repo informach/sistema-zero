@@ -3628,6 +3628,19 @@ const config: GatewayConfigInput = {
     // Analytics de aprendizado (LEITURA staff+): overview por curso + funil por aula.
     // `/analytics/courses` (3 seg) e `/analytics/courses/:courseId` (4 seg) não colidem
     // com `/members/admin/members*` nem com a autoria `/members/admin/courses*`.
+    // "Começaram o curso do presente" da campanha (25/11/2026): POST porque leva o lote de contas
+    // (até 500 por pedido). Literal de 3 segmentos, sem colidir com a autoria `/courses*`.
+    {
+      id: 'members-admin-course-starts',
+      methods: ['POST'],
+      pathPattern: '/members/admin/course-starts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
     {
       id: 'members-admin-analytics-overview',
       methods: ['GET'],

@@ -594,3 +594,16 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/payments/a%20b', 'v1')?.params.id).toBe('a b')
   })
 })
+
+test('Lote 7: "começaram o curso do presente" é POST staff+ do members, com corpo pequeno', () => {
+  const registry = new RouteRegistry(realConfig.routes)
+  const route = registry.resolve('POST', '/members/admin/course-starts', 'v1')?.route
+  expect(route).toMatchObject({
+    id: 'members-admin-course-starts',
+    service: 'members',
+    authorize: { roles: ['superadmin', 'admin', 'staff'] },
+  })
+  expect(registry.resolve('GET', '/members/admin/course-starts', 'v1')?.route.id).not.toBe(
+    'members-admin-course-starts',
+  )
+})

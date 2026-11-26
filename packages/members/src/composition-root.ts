@@ -194,7 +194,10 @@ import { DrizzleContentAdminRepository } from './infrastructure/persistence/driz
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCoursePublicationRepository } from './infrastructure/persistence/drizzle/course-publication.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
-import { DrizzleCourseRemindersRepository } from './infrastructure/persistence/drizzle/course-reminders.repository'
+import {
+  DrizzleCourseRemindersRepository,
+  DrizzleCourseStartsRepository,
+} from './infrastructure/persistence/drizzle/course-reminders.repository'
 import { DrizzleCreationCleanupRepository } from './infrastructure/persistence/drizzle/creation-cleanup.repository'
 import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle/creations.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -1604,6 +1607,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getMemberActivity,
       listMemberCertificates,
       listMemberRatings,
+      courseStarts: new DrizzleCourseStartsRepository(db),
       getGamification,
       ranking,
       analytics,

@@ -180,6 +180,8 @@ export function buildApp(
     requireAdmin?: boolean
     /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
     aiLimits?: { daily: number; monthly: number }
+    /** O leitor do "começaram o curso do presente" (Admin). */
+    courseStarts?: import('../src/domain/ports/course-starts.port').CourseStartsReader
     /** Probe do /readyz (default: pronto). */
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
     coursePromotion?: Parameters<typeof createServer>[0]['coursePromotion']
@@ -914,6 +916,7 @@ export function buildApp(
       ),
       listMemberCertificates: new ListMemberCertificatesService(certificates, courses),
       listMemberRatings: new ListMemberRatingsService(ratings, courses),
+      ...(opts.courseStarts ? { courseStarts: opts.courseStarts } : {}),
       getGamification: new GetGamificationService(
         gamification,
         clock,
