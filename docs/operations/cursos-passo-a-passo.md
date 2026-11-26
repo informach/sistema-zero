@@ -289,7 +289,8 @@ $arquivos = '--videos', 'C:/Users/<você>/Downloads/O Jardim Secreto/Finalizadas
    ```
 
 2. **Checar** (sem tocar em nada): cada arquivo tem a sua parte, a duração de cada vídeo e a capa da
-   pasta igual à gravada na aula (o nome da capa no R2 é o sha256 dela). Para trocar só algumas
+   pasta igual à gravada na aula. A conferência usa o hash da imagem: quando a promoção usa outra
+   chave no R2, o script baixa a capa publicada e compara seus bytes. Para trocar só algumas
    partes, use `--partes 1-2,2-3`.
 
    ```powershell

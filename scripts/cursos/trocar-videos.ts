@@ -35,6 +35,7 @@ import {
 } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { capaDaParteConfere } from './lib/capa-da-parte'
 import { duracaoDoMp4 } from './lib/mp4'
 import { AMBIENTES, type Ambiente, noServico, variaveis } from './lib/railway'
 
@@ -171,7 +172,7 @@ async function vimeo<T = any>(caminho: string, metodo = 'GET', corpo?: unknown):
 }
 
 /** As partes com vídeo, cruzando a inspeção com os arquivos novos e as capas. */
-function partesDoCurso(): Parte[] {
+async function partesDoCurso(): Promise<Parte[]> {
   const inspecao = lerJson<Inspecao>('inspecao.json')
   if (!op.videos) throw new Error('--videos <pasta com "AulaNN - Parte N.mp4">')
   const arquivos = new Map<string, string>()
@@ -195,8 +196,8 @@ function partesDoCurso(): Parte[] {
         ? join(op.capas, `aula-${dois(a.aula)}-parte-${dois(p.parte)}.png`)
         : null
       if (capa && !existsSync(capa)) throw new Error(`Falta a capa ${capa}`)
-      // A capa da parte na aula (posterUrl) é a mesma imagem: no R2 o nome do arquivo é o sha256 dela.
-      if (capa && v.posterUrl && !v.posterUrl.includes(sha(readFileSync(capa))))
+      // Staging usa o hash dos bytes; a promoção pode usar a identidade do recurso na chave.
+      if (capa && v.posterUrl && !(await capaDaParteConfere(v.posterUrl, sha(readFileSync(capa)))))
         throw new Error(`Parte ${chave}: a capa da pasta não é a gravada na aula (${v.posterUrl})`)
       partes.push({
         chave,
@@ -354,7 +355,7 @@ if (passo === 'inspecionar') {
   }
   console.log(`Inspeção gravada em ${arq('inspecao.json')}`)
 } else if (passo === 'checar') {
-  for (const p of partesDoCurso())
+  for (const p of await partesDoCurso())
     console.log(
       JSON.stringify({
         parte: p.chave,
@@ -366,7 +367,7 @@ if (passo === 'inspecionar') {
       }),
     )
 } else if (passo === 'enviar') {
-  const partes = partesDoCurso()
+  const partes = await partesDoCurso()
   const nomeDoCurso = lerJson<Inspecao>('inspecao.json').curso.titulo
   const fila = [...partes]
   const r = await Promise.allSettled(
@@ -380,7 +381,7 @@ if (passo === 'inspecionar') {
   console.log(JSON.stringify({ ambiente, videos: partes.length, prontos }))
 } else if (passo === 'duracao') {
   const duracoes: Record<string, number> = {}
-  for (const p of partesDoCurso()) {
+  for (const p of await partesDoCurso()) {
     const e = estado.partes[p.chave]
     if (e?.fase !== 'pronto' || !Number.isFinite(e.duracaoVimeo))
       throw new Error(`Parte ainda não pronta: ${p.chave} (rode enviar)`)
@@ -390,7 +391,7 @@ if (passo === 'inspecionar') {
   gravarJson('duracao.json', r)
   console.log(JSON.stringify(r.resumo))
 } else if (passo === 'verificar') {
-  const partes = partesDoCurso()
+  const partes = await partesDoCurso()
   const linhas = []
   for (const p of partes) {
     const e = estado.partes[p.chave]
@@ -494,7 +495,7 @@ if (passo === 'inspecionar') {
   else console.log('Base do Zappy em dia para este curso.')
 } else if (passo === 'descartar') {
   if (!op.partes) throw new Error('descartar exige --partes (as partes travadas)')
-  for (const p of partesDoCurso()) {
+  for (const p of await partesDoCurso()) {
     const e = estado.partes[p.chave]
     if (!e?.versao) {
       console.log(JSON.stringify({ parte: p.chave, descartada: false, motivo: 'sem versão nova' }))
