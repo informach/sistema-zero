@@ -7,7 +7,7 @@
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-917.css'
 import '../../../styles/desafio-917.css'
-import { PAGINA_DESAFIO_9A17 as P } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
+import { PAGINA_DESAFIO_9A17 } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -16,6 +16,7 @@ import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
+import { copyDoPresente } from '../../../server/presente-copy'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import DesafioFigura from './DesafioFigura.astro'
@@ -40,6 +41,8 @@ const cartao = presente
   ? cartaoDoPresente(presente, { communityUrl: contaUrl.replace(/\/$/, ''), priceReais })
   : null
 const origem = cartao?.etiqueta ?? null
+// No presente, o que só vale para quem paga (preço, pagamento, garantia) sai da copy da página.
+const P = cartao ? copyDoPresente(PAGINA_DESAFIO_9A17, cartao) : PAGINA_DESAFIO_9A17
 
 const CORES_HEROI = ['verde', 'amarelo', 'azul-claro']
 const CORES_ETAPAS = ['azul-claro', 'rosa', 'verde', 'amarelo']

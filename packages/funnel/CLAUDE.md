@@ -6,7 +6,12 @@ Decisão da dona: `?presente=<código>` abre a MESMA página e o MESMO cartão d
 cupom, só mudam a etiqueta ("Um presente de <primeiro nome> para você" / "Um presente da campanha
 <título> para você"), o preço da oferta riscado até R$ 0 e o botão "Quero o meu presente", que abre o
 cadastro numa janela (`islands/PresenteModal.tsx`, com o `BolsaResgate` e todos os estados dele; Esc,
-foco preso e devolvido como no `PreCheckoutModal`). A copy da página é a da venda também no presente.
+foco preso e devolvido como no `PreCheckoutModal`). Em volta do cartão, nada pode contradizer um
+presente gratuito (preço, pagamento, garantia, "1 ano"): Cadê usa a copy aprovada do presente
+(`presenteKidsDaOferta`/`presenteAdultoDaOferta`, prazo e Mural da oferta do presente), guia e Vivianne
+usam `GUIA_PAIS_PRESENTE`/`CURSO_PAIS_AUTISMO_PRESENTE`, e o Desafio (sem copy própria de presente)
+passa a copy da venda por `server/presente-copy.ts` (`copyDoPresente`: condições viram a frase do
+cartão, "aprovação do pagamento" vira "cadastro", as dúvidas de pagamento/garantia/compra saem).
 Peças compartilhadas: `server/presente-cartao.ts` (`cartaoDoPresente`: etiqueta, preço, prazo
 divulgado do presente, estado e props do resgate), `PresenteAcao.astro` (o botão com a classe do
 botão de compra da página, ou o estado da campanha com a retomada) e `PresenteJanela.astro` (a
