@@ -146,11 +146,12 @@ test('Moedas: nova partida conserva descobertas e sumiço desligado no progresso
 })
 
 describe('⚠️⚠️ o servidor abre a cena no CASO do professor, como o player', () => {
+  // Caso da regressão preservado de 47bc721b9^: a autoria atual da Nave já retirou esse bloco.
+  // A prova do replay deve sobreviver à reorganização do curso que revelou o problema.
   const dia1 = () =>
-    blocoDoManifesto(
-      'nave-contra-asteroides-primeira-nave.manifesto.json',
-      'experiencia-coordenadas',
-    )
+    JSON.parse(
+      readFileSync(new URL('../fixtures/coordenadas-caso-professor.json', import.meta.url), 'utf8'),
+    ) as InteractiveBlock
 
   test('Primeira nave de Nave Contra Asteroides: o percurso dos três objetivos conclui no caso do professor', async () => {
     const content = dia1()

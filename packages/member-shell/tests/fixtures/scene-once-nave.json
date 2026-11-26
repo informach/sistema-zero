@@ -1,0 +1,52 @@
+{
+  "kind": "interactive",
+  "required": true,
+  "title": "Uma vez ou sempre?",
+  "instructions": "Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+  "hints": [
+    "Observe quantas vezes a nave anda enquanto os quadros passam.",
+    "Compare o que a nave faz depois do primeiro quadro nos dois jeitos.",
+    "Escolha Uma vez, no começo, e clique em Começar o jogo. Depois escolha Sempre, em todo quadro, e clique em Começar o jogo de novo."
+  ],
+  "semPerguntaFinal": true,
+  "activity": {
+    "type": "experimentation",
+    "scene": "once-vs-always",
+    "cast": {
+      "hero": {
+        "name": "nave",
+        "gender": "f"
+      },
+      "obstacle": {
+        "name": "asteroide",
+        "gender": "m"
+      }
+    },
+    "cenario": "nave",
+    "setup": {
+      "freeExploration": true,
+      "preset": {
+        "id": "duas-caixas-nave",
+        "areas": ["start", "loop"],
+        "cards": [
+          {
+            "id": "move",
+            "kind": "move",
+            "label": "Mover a nave um pouquinho"
+          }
+        ]
+      },
+      "goals": ["once", "always"],
+      "goalCopy": {
+        "once": {
+          "label": "Uma vez, no começo: a nave andou um pouquinho e parou",
+          "pedido": "Escolha Uma vez, no começo, clique em Começar o jogo e observe a nave e os quadros."
+        },
+        "always": {
+          "label": "Sempre, em todo quadro: a nave continuou andando",
+          "pedido": "Escolha Sempre, em todo quadro, clique em Começar o jogo e observe a nave e os quadros."
+        }
+      }
+    }
+  }
+}

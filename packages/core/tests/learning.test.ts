@@ -276,7 +276,7 @@ const MANIFESTOS = listarArquivosAulas()
   .sort()
 describe('os manifestos atuais das aulas', () => {
   test('o inventário distingue os cursos, incluindo o novo Desafio e Cadê Todo Mundo?', () => {
-    expect(MANIFESTOS).toHaveLength(51)
+    expect(MANIFESTOS).toHaveLength(56)
     // O Jardim Secreto (Faísca) usa os nomes curtos da pasta própria.
     expect(MANIFESTOS.filter((name) => /^aula-\d+\.manifesto\.json$/.test(name))).toHaveLength(2)
     expect(MANIFESTOS.filter((name) => name.startsWith('ilha-aula-'))).toHaveLength(3)
@@ -290,6 +290,7 @@ describe('os manifestos atuais das aulas', () => {
     expect(MANIFESTOS.filter((name) => name.startsWith('desafio-'))).toHaveLength(4)
     expect(MANIFESTOS.filter((name) => name.startsWith('nave-contra-asteroides-'))).toHaveLength(9)
     expect(MANIFESTOS.filter((name) => name.startsWith('meu-jeito-'))).toHaveLength(8)
+    expect(MANIFESTOS.filter((name) => name.startsWith('patrulha-espacial-'))).toHaveLength(5)
   })
   test('os cinco identificadores anteriores de Nave preservam a identidade; o certificado fica no Desafio', () => {
     for (const day of [1, 2, 3, 4, 5]) {
@@ -329,11 +330,10 @@ describe('os manifestos atuais das aulas', () => {
       }
     }
   })
-  test('a aula de movimento prepara setas, limite e camadas em experiências sem pergunta redundante', () => {
-    const arquivo = 'nave-contra-asteroides-dia-1.manifesto.json'
-    const manifest = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8')) as {
-      blocks: Array<{ key: string; content?: InteractiveBlock }>
-    }
+  test('a primeira aula prepara movimento e limite sem pergunta redundante', () => {
+    const manifest = JSON.parse(
+      readFileSync(caminhoAula('nave-contra-asteroides-primeira-nave.manifesto.json'), 'utf8'),
+    ) as { blocks: Array<{ key: string; content?: InteractiveBlock }> }
     const experiments = manifest.blocks.flatMap((entry) =>
       entry.content?.kind === 'interactive' && entry.content.activity.type === 'experimentation'
         ? [entry.content]
@@ -341,20 +341,11 @@ describe('os manifestos atuais das aulas', () => {
     )
     expect(
       experiments.map((b) => b.activity.type === 'experimentation' && b.activity.scene),
-      // A câmera lenta, o tamanho do passinho (02/11/2026), a beirada e as camadas.
-    ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'lighthouse-walk', 'layers'])
-    for (const experiment of experiments) expect(blockCheckpoint(experiment)).toBeUndefined()
-    const source = JSON.parse(
-      readFileSync(caminhoAula('nave-contra-asteroides-primeira-nave.manifesto.json'), 'utf8'),
-    )
-    const coordinates = source.blocks.find(
-      (entry: { content?: InteractiveBlock }) =>
-        entry.content?.kind === 'interactive' &&
-        entry.content.activity.type === 'experimentation' &&
-        entry.content.activity.scene === 'coordinates',
-    )
-    expect(coordinates?.content.activity.scene).toBe('coordinates')
-    expect(blockCheckpoint(coordinates.content)).toBeUndefined()
+    ).toEqual(['lighthouse-walk', 'lighthouse-walk'])
+    for (const experiment of experiments) {
+      expect(blockCheckpoint(experiment)).toBeUndefined()
+      expect(experiment.semPerguntaFinal).toBe(true)
+    }
   })
   for (const arquivo of MANIFESTOS)
     test(arquivo, () => {
@@ -427,62 +418,87 @@ describe('progressão inicial de Nave Contra Asteroides', () => {
     if (!isLearningManifest(m)) throw new Error(slug)
     return m
   }
-  test('movimento, limpeza, limite e estrelas conservam a ordem de execução verificada', () => {
-    const m = read('dia-1')
-    const rule = (section: string, id: string) =>
-      m.sections.find((s) => s.key === section)?.completion?.projectChecks?.find((c) => c.id === id)
-        ?.rule
-    expect(rule('setas', 'setas')).toMatchObject({ beforeBlock: 'sz_g2d_draw_sprite' })
-    expect(rule('limpeza', 'borracha')).toMatchObject({ beforeBlock: 'sz_g2d_arrows_x' })
-    expect(rule('borda', 'setas-antes-do-limite')).toMatchObject({
-      beforeBlock: 'sz_g2d_clamp_to_screen',
+  test('o movimento só vale na partida e o limite vem depois de ler as setas', () => {
+    const m = read('primeira-nave')
+    const rule = m.sections
+      .find((s) => s.key === 'borda')
+      ?.completion?.projectChecks?.find((c) => c.id === 'movimento-na-partida')?.rule
+    expect(rule).toMatchObject({
+      type: 'usesBlock',
+      blockType: 'sz_g2d_update_each_frame',
+      area: 'loops',
+      inputBlocks: {
+        BODY: {
+          blockType: 'sz_js_if_else',
+          inputBlocks: {
+            COND: { blockType: 'sz_g2d_scene_is', fields: { SCENE: 'jogando' } },
+            THEN: {
+              blockType: 'sz_g2d_arrows_x',
+              fields: { SPRITE: 'nave' },
+              inputs: { SPEED: 5 },
+              beforePattern: { blockType: 'sz_g2d_clamp_to_screen', fields: { SPRITE: 'nave' } },
+            },
+          },
+        },
+      },
     })
-    expect(rule('borda', 'limite')).toMatchObject({ beforeBlock: 'sz_g2d_draw_sprite' })
-    expect(rule('fundo-estrelado', 'borracha-primeiro')).toMatchObject({
-      beforeBlock: 'sz_g2d_starfield',
-    })
-    expect(rule('fundo-estrelado', 'estrelas')).toMatchObject({ beforeBlock: 'sz_g2d_arrows_x' })
     const order = m.sections.map((s) => s.key)
+    expect(order.indexOf('setas')).toBeGreaterThan(-1)
     expect(order.indexOf('setas')).toBeLessThan(order.indexOf('borda'))
-    expect(order.indexOf('borda')).toBeLessThan(order.indexOf('fundo-estrelado'))
   })
-  test('coordenadas está na primeira aula e convida às três comparações sem ditar a ordem', () => {
+  test('o caso de movimento pede comparar os quadros, a seta solta e o voo rápido', () => {
     const m = read('primeira-nave')
-    const entry = m.blocks.find((b) => b.key === 'experiencia-coordenadas')
-    const bloco = entry && 'content' in entry ? entry.content : undefined
-    if (!isInteractiveBlock(bloco)) throw new Error('Coordenadas ausentes')
-    expect(bloco.instructions).toMatch(/quando o x muda/)
-    expect(bloco.instructions).toMatch(/quando o y muda/)
-    expect(bloco.instructions).toMatch(/dois números em zero/)
-    expect(bloco.instructions).toMatch(/O Zappy te mostra o que testar/)
-    expect(publicInteractiveBlock(bloco).prediction).toBeUndefined()
-    expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
-    expect(evaluateLearning(bloco, {}).passed).toBe(false)
+    const entry = m.blocks.find((b) => b.key === 'experiencia-seta-e-velocidade')
+    const block = entry && 'content' in entry ? entry.content : undefined
+    if (!isInteractiveBlock(block) || block.activity.type !== 'experimentation')
+      throw new Error('Experiência de movimento ausente')
+    expect(block.activity.setup?.goals).toEqual([
+      'moves-each-frame',
+      'stopped-after-release',
+      'walked-real-speed',
+    ])
+    expect(block.activity.setup?.freeExploration).toBe(true)
+    expect(publicInteractiveBlock(block).prediction).toBeUndefined()
+    expect(publicInteractiveBlock(block).checkpoint).toBeUndefined()
+    expect(evaluateLearning(block, {}).passed).toBe(false)
   })
-  test('o curso começa pelo jogo pronto, seguido do caderno sem download obrigatório', () => {
+  test('o curso começa pelo jogo pronto, seguido dos materiais sem download obrigatório', () => {
     const m = read('primeira-nave')
-    expect(m.sections[0]?.blockKeys).toContain('jogo-pronto')
-    expect(m.sections[1]?.blockKeys).toContain('caderno')
-    expect(m.sections[1]?.completion?.blockIds).not.toContain('caderno')
-    const entry = m.blocks.find((b) => b.key === 'jogo-pronto')
+    expect(m.sections[0]?.blockKeys).toContain('jogo-pronto-abertura')
+    expect(m.sections[1]?.blockKeys).toContain('materiais')
+    expect(m.sections[1]?.completion?.blockIds).not.toContain('materiais')
+    const entry = m.blocks.find((b) => b.key === 'jogo-pronto-abertura')
     const game = entry && 'content' in entry ? entry.content : undefined
     if (!isInteractiveBlock(game)) throw new Error('Jogo ausente')
     expect(evaluateLearning(game, { participated: true }).passed).toBe(true)
   })
-  test('a comparação do reinício vem antes de ampliar Enter e do quiz final', () => {
+  test('a comparação do reinício vem antes do quiz e da entrega final', () => {
     const m = read('dia-5')
     const order = m.sections.map((s) => s.key)
-    expect(order.indexOf('reiniciar')).toBeLessThan(order.indexOf('enter'))
-    expect(order.indexOf('enter')).toBeLessThan(order.indexOf('quiz-final'))
+    expect(order.indexOf('reiniciar')).toBeGreaterThan(-1)
+    expect(order.indexOf('reiniciar')).toBeLessThan(order.indexOf('quiz-final'))
+    expect(order.indexOf('quiz-final')).toBeLessThan(order.indexOf('entrega'))
     expect(m.sections.find((s) => s.key === 'reiniciar')?.blockKeys).toContain(
       'experiencia-reiniciar',
     )
-    expect(m.sections.find((s) => s.key === 'enter')?.blockKeys).toContain('video-enter')
   })
 })
 
 /** Percursos dos casos autorais que mudam a montagem ou as metas da cena padrão. */
 const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
+  'patrulha-espacial-aula-1.manifesto.json/experiencia-tres-direcoes': [
+    { type: 'island-axis', axis: 'x', value: 4 },
+    { type: 'island-axis', axis: 'x', value: -4 },
+    { type: 'island-axis', axis: 'y', value: 4 },
+    { type: 'island-axis', axis: 'y', value: 0 },
+    { type: 'island-axis', axis: 'z', value: 4 },
+    { type: 'island-axis', axis: 'z', value: -4 },
+  ],
+  'patrulha-espacial-aula-3.manifesto.json/experiencia-encontro-no-espaco': [
+    { type: 'island-test' },
+    { type: 'island-axis', axis: 'y', value: 1 },
+    { type: 'island-test' },
+  ],
   'ilha-aula-2.manifesto.json/experiencia-posicao-3d': [
     { type: 'island-axis', axis: 'x', value: 4 },
     { type: 'island-axis', axis: 'x', value: -4 },
@@ -680,10 +696,14 @@ describe('o cenário das cenas dos cursos', () => {
       .map((c) => `${c.aula} ${c.chave}`)
     expect(sem).toEqual([])
     const ilha = cenasDosCursos().filter((c) => c.cena === 'island-3d')
-    expect(ilha).toHaveLength(3)
-    expect(ilha.every((c) => c.curso === 'jornada-faisca-base-3d' && c.cenario === undefined)).toBe(
-      true,
-    )
+    expect(ilha).toHaveLength(5)
+    expect(
+      ilha.every(
+        (c) =>
+          ['jornada-faisca-base-3d', 'jornada-construtor-base-3d'].includes(c.curso) &&
+          c.cenario === undefined,
+      ),
+    ).toBe(true)
   })
 
   test('⭐⭐ e o cenário declarado é o do CURSO', () => {

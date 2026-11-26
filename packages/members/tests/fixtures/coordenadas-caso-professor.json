@@ -1,0 +1,53 @@
+{
+  "kind": "interactive",
+  "required": true,
+  "title": "Onde fica a nave?",
+  "instructions": "Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. O Zappy te mostra o que testar, e você pode repetir quando quiser.",
+  "hints": [
+    "Mude um número só e compare o lugar novo da nave com o de antes.",
+    "Depois de testar o x, faça o mesmo com o y. E onde será que fica o zero dos dois?",
+    "Aumente o x e observe a nave. Depois aumente o y e observe de novo. Por último, coloque 0 no x e 0 no y."
+  ],
+  "semPerguntaFinal": true,
+  "activity": {
+    "type": "experimentation",
+    "scene": "coordinates",
+    "cast": {
+      "hero": {
+        "name": "nave",
+        "gender": "f"
+      }
+    },
+    "cenario": "nave",
+    "setup": {
+      "freeExploration": true,
+      "actions": [
+        {
+          "type": "stage",
+          "width": 800,
+          "height": 480
+        },
+        {
+          "type": "place",
+          "x": 400,
+          "y": 40
+        }
+      ],
+      "goals": ["right", "down", "origin"],
+      "goalCopy": {
+        "right": {
+          "label": "Um x maior levou a nave para a direita",
+          "pedido": "Aumente só o x e observe para onde a nave vai."
+        },
+        "down": {
+          "label": "Um y maior levou a nave para baixo",
+          "pedido": "Aumente só o y e observe para onde a nave vai."
+        },
+        "origin": {
+          "label": "O x 0 com o y 0 é o canto de cima, à esquerda",
+          "pedido": "Coloque 0 no x e 0 no y e observe em que canto a nave fica."
+        }
+      }
+    }
+  }
+}

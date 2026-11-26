@@ -141,41 +141,44 @@
         "sz_g2d_clamp_to_screen",
         "sz_g2d_clear",
         "sz_g2d_create_group",
-        "sz_g2d_create_ship",
+        "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
+        "sz_g2d_draw_bar",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
+        "sz_g2d_fit_screen",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
-        "sz_g2d_random_x",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
         "sz_g2d_scene_is",
+        "sz_g2d_set_backdrop",
         "sz_g2d_set_health",
+        "sz_g2d_set_hitbox_scale",
         "sz_g2d_set_scene",
+        "sz_g2d_set_stage_description",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
-        "sz_g2d_starfield",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
-        "sz_js_const_create",
         "sz_js_if_else",
         "sz_js_var_create",
         "sz_js_var_increment",
+        "sz_math_arithmetic",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ]
@@ -1506,7 +1509,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_play_fx", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-bolotas-para-o-alto",
@@ -1578,7 +1587,13 @@
         "sz_g2d_spawn_bullet",
         "sz_g2d_sprite_y"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-quebrar-as-pinhas",
@@ -1646,7 +1661,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_shake", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-tres-vidas",
@@ -1718,7 +1739,13 @@
         "sz_g2d_play_fx",
         "sz_g2d_set_health"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-fim-e-outra-partida",
@@ -1786,7 +1813,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_health_depleted", "sz_g2d_restart", "sz_val_compare"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-corrida-dos-bichos",
@@ -1866,7 +1899,7 @@
         "sz_js_var_assign",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras",
@@ -1922,7 +1955,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite",
@@ -1974,7 +2007,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x", "sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar",
@@ -2046,7 +2079,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "bosque-chuva-de-pinhas-adulto",
@@ -2115,7 +2148,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_play_fx", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-bolotas-para-o-alto-adulto",
@@ -2187,7 +2226,13 @@
         "sz_g2d_spawn_bullet",
         "sz_g2d_sprite_y"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-quebrar-as-pinhas-adulto",
@@ -2255,7 +2300,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_shake", "sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-tres-vidas-adulto",
@@ -2327,7 +2378,13 @@
         "sz_g2d_play_fx",
         "sz_g2d_set_health"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-fim-e-outra-partida-adulto",
@@ -2395,7 +2452,13 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_health_depleted", "sz_g2d_restart", "sz_val_compare"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": [
+        "sz_g2d_every_frames",
+        "sz_g2d_shake",
+        "sz_g2d_show_screen",
+        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_bullet"
+      ]
     },
     {
       "slug": "bosque-corrida-dos-bichos-adulto",
@@ -2475,7 +2538,7 @@
         "sz_js_var_assign",
         "sz_val_compare"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras-adulto",
@@ -2531,7 +2594,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite-adulto",
@@ -2583,7 +2646,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x", "sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar-adulto",
@@ -2655,7 +2718,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
     },
     {
       "slug": "vila-doce-corrida-do-entregador-pulo",
@@ -5950,7 +6013,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-ninho-atingido",
@@ -6004,7 +6067,7 @@
         "sz_g2d_remove_from_group",
         "sz_g2d_restart"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-alcance-da-torre",
@@ -6060,7 +6123,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-ondas-que-crescem",
@@ -6112,7 +6175,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_math_arithmetic"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-mais-cinzas",
@@ -6165,7 +6228,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-dois-pontos",
@@ -6218,7 +6281,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-ondas-contadas",
@@ -6271,7 +6334,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-onda-limpa",
@@ -6324,7 +6387,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-onda-de-cinza-adulto",
@@ -6431,7 +6494,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-ninho-atingido-adulto",
@@ -6485,7 +6548,7 @@
         "sz_g2d_remove_from_group",
         "sz_g2d_restart"
       ],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-alcance-da-torre-adulto",
@@ -6541,7 +6604,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-ondas-que-crescem-adulto",
@@ -6593,7 +6656,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_math_arithmetic"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-mais-cinzas-adulto",
@@ -6646,7 +6709,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-dois-pontos-adulto",
@@ -6699,7 +6762,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-ondas-contadas-adulto",
@@ -6752,7 +6815,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "vale-guardiao-onda-limpa-adulto",
@@ -6805,7 +6868,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": []
+      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
     },
     {
       "slug": "nuvens-plantar-com-moedas",

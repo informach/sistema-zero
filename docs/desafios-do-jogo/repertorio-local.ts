@@ -31,7 +31,7 @@ const ler = (caminho: string): unknown =>
   JSON.parse(readFileSync(new URL(caminho, import.meta.url), 'utf8'))
 function listaDeBlocos(pasta: string): string[] {
   const lista = ler(`../aulas-interativas/${pasta}/blocos.json`) as Record<string, string[]>
-  return [...(lista.blocks ?? lista['2d'] ?? []), ...(lista['3d'] ?? [])]
+  return [...(lista.allowBlocks ?? lista.blocks ?? lista['2d'] ?? []), ...(lista['3d'] ?? [])]
 }
 function tipos(valor: unknown): string[] {
   if (Array.isArray(valor)) return valor.flatMap(tipos)

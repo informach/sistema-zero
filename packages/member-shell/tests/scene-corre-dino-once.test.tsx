@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { isLearningManifest } from '@sistemazero/core/learning'
+import { isInteractiveBlock, isLearningManifest } from '@sistemazero/core/learning'
 import { openScene, sceneStart } from '@sistemazero/core/learning/scene'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { caminhoAula } from '../../../docs/aulas-interativas-tecnico/qa/caminhos'
@@ -16,6 +16,8 @@ for (const [file, figure, description] of [
       readFileSync(caminhoAula(`${file}.manifesto.json`), 'utf8'),
     )
     if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
+    // A autoria atual da Nave retirou esta experiência. O teste de renderização conserva
+    // o caso original de 47bc721b9^; o Dino continua conferindo o manifesto atual.
     const entry = manifest.blocks.find(
       (b) =>
         'content' in b &&
@@ -23,8 +25,15 @@ for (const [file, figure, description] of [
         b.content.activity.type === 'experimentation' &&
         b.content.activity.scene === 'once-vs-always',
     )
-    const content = entry && 'content' in entry ? entry.content : undefined
-    if (content?.kind !== 'interactive' || content.activity.type !== 'experimentation')
+    const content =
+      file === 'nave-contra-asteroides-primeira-nave'
+        ? JSON.parse(
+            readFileSync(new URL('./fixtures/scene-once-nave.json', import.meta.url), 'utf8'),
+          )
+        : entry && 'content' in entry
+          ? entry.content
+          : undefined
+    if (!isInteractiveBlock(content) || content.activity.type !== 'experimentation')
       throw new Error('Experiência ausente')
     const activity = content.activity
     const preset = activity.setup?.preset
