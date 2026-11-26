@@ -108,8 +108,8 @@ Serviços (Lote 2):
   quem ENTROU por uma delas); `GET /ambassador-offers` traz `counts` (aquisições ativas
   `origin_kind = 'ambassador'` por oferta: `gifts`/`purchases`/`subscriptions`, uma consulta
   agrupada); `GET /acquisitions?email` traz `bonuses` (as conversões do e-mail fora as
-  substituídas, com embaixador e campanha, sem chave Pix). ⚠️ As duas consultas novas
-  (`giftCourseSlugs`, `countAmbassadorAcquisitionsByOffer`) não têm teste de banco.
+  substituídas, com embaixador e campanha, sem chave Pix). As duas consultas
+  (`giftCourseSlugs`, `countAmbassadorAcquisitionsByOffer`) estão em `tests/db/origin.repository.test.ts`.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores
@@ -150,8 +150,15 @@ Correções da revisão final (25/11/2026):
   e-mail da pessoa já tem conversão ativa no público.
 - **`stats` da campanha em duas leituras** (resgates; assinaturas). `stats.conversions` = pessoas
   com aquisição `subscription` ativa pelo link da campanha OU depois de um presente dela, no mesmo
-  público (as conversões não servem: campanha sem embaixador não gera conversão). ⚠️ SQL sem teste
-  de banco; os `tests/db` de campanha ainda contam pela régua antiga.
+  público (as conversões não servem: campanha sem embaixador não gera conversão). SQL conferido em
+  `tests/db/origin.repository.test.ts` e `tests/db/campaign-review.test.ts` (modelo novo).
+- **Conferência em Postgres real (25/11/2026):** migrations do zero e `tests/db` inteiro verdes.
+  Achados: (1) a compra com a oferta já resolvida na gravação (sem `billingAudience`) e slug da
+  Comunidade nascia `one_time` (o anual à vista ficava fora de "assinaram"): o `kind` agora sai do
+  slug também ali; (2) `offerId` do metadata que não é uuid quebrava o INSERT (coluna uuid) e a
+  entrega voltava para sempre: é consumido sem aquisição; (3) o cursor de `listMissingOfferSlug`
+  voltava como Date (ms) contra `created_at` em µs e repetia a última linha da página: ordem e
+  comparação usam `date_trunc('milliseconds', created_at)`.
 - **Backfill**: o `subscriber_email` (e o e-mail da aquisição `subscription`) é o de quem PAGOU,
   lido no payments; sem o pagamento, o do resgate (`payerEmailFallbacks` no relatório).
 - `.railway/variables.ts` declara `BONUS_ANNUAL_AMOUNT_CENTS`, `BONUS_WINDOW_DAYS` e

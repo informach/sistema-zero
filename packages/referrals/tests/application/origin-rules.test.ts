@@ -10,7 +10,7 @@ const DAY = 86_400_000
 const PAID_AT = new Date('2026-12-10T12:00:00.000Z')
 const DEFAULTS = { amounts: { monthly: 3000, annual: 8000 }, legacyCents: 3000, windowDays: 45 }
 const COMMUNITY: OfferSnapshot = {
-  id: 'offer-comunidade',
+  id: '0ffe0000-0000-4000-8000-0000000000c0',
   slug: 'comunidade-dos-criadores-mensal',
   name: 'Comunidade',
   billingIntervalMonths: 1,
@@ -150,7 +150,10 @@ describe('correções da revisão do Lote 2', () => {
     for (const id of ['p1', 'p2', 'p3'])
       await ctx.pay(id, {
         subscriptionId: null,
-        metadata: { offerId: id === 'p3' ? COMMUNITY.id : 'arquivada', billingAudience: 'kids' },
+        metadata: {
+          offerId: id === 'p3' ? COMMUNITY.id : '0ffe0000-0000-4000-8000-0000000000a0',
+          billingAudience: 'kids',
+        },
       })
     // Lote de 2: o 1º ciclo só vê as duas arquivadas; o 2º alcança a terceira.
     expect(await ctx.maintenance.fillOfferSlugs()).toBe(0)

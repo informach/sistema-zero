@@ -69,7 +69,7 @@ function paymentSnapshot(overrides: Partial<PaymentSnapshot> = {}): PaymentSnaps
     amountInCents: 9700n,
     paidAt: PAID_AT,
     customer: { name: 'Paula Prado', email: 'Paula@Example.com' },
-    metadata: { offerId: 'offer-uuid-1', billingAudience: 'kids' },
+    metadata: { offerId: '0ffe0000-0000-4000-8000-000000000001', billingAudience: 'kids' },
     subscriptionId: 'sub-1',
     ...overrides,
   }
@@ -129,15 +129,15 @@ describe('RecordConversionService', () => {
     campaigns = new InMemoryCampaignRepository(repo)
     payments = new FakePaymentsClient()
     catalog = new FakeCatalogClient()
-    catalog.byId.set('offer-uuid-1', {
-      id: 'offer-uuid-1',
+    catalog.byId.set('0ffe0000-0000-4000-8000-000000000001', {
+      id: '0ffe0000-0000-4000-8000-000000000001',
       slug: 'comunidade-dos-criadores-mensal',
       name: 'Comunidade (mensal)',
       billingIntervalMonths: 1,
       audience: 'kids',
     })
-    catalog.byId.set('offer-desafio', {
-      id: 'offer-desafio',
+    catalog.byId.set('0ffe0000-0000-4000-8000-0000000000de', {
+      id: '0ffe0000-0000-4000-8000-0000000000de',
       slug: 'desafio-primeiro-jogo-30-dias',
       name: 'Desafio',
       audience: 'kids',
@@ -174,7 +174,7 @@ describe('RecordConversionService', () => {
       'pay-1',
       paymentSnapshot({
         subscriptionId: null,
-        metadata: { offerId: 'offer-desafio', billingAudience: 'kids' },
+        metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000de', billingAudience: 'kids' },
       }),
     )
     const insert = acquisitions.insert.bind(acquisitions)
@@ -195,7 +195,7 @@ describe('RecordConversionService', () => {
     1, 12,
   ])('presente pessoal + assinatura no ciclo %s: bônus do acordo aceito', async (cycle) => {
     await seedGift()
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = cycle
     payments.byId.get('pay-1')!.amountInCents = 1000n
     await service.execute(paidDelivery())
     await service.execute(paidDelivery())
@@ -234,24 +234,24 @@ describe('RecordConversionService', () => {
         }
       },
     })
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = cycle
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(cycle === 12 ? 8500 : 3500)
   })
 
   test('ciclo desconhecido em acordo por plano retoma sem presumir um bônus', async () => {
     await seedGift()
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = null
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = null
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = 12
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(8000)
   })
 
   test('aceite direto legado (sem valores por plano) mantém o bônus único no anual', async () => {
     await seedGift({ tweak: (r) => (r.bonusAmounts = null) })
-    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+    catalog.byId.get('0ffe0000-0000-4000-8000-000000000001')!.billingIntervalMonths = 12
     await service.execute(paidDelivery())
     expect(repo.conversions[0]!.bonusCents).toBe(3000)
   })
@@ -314,7 +314,7 @@ describe('RecordConversionService', () => {
       accountUserId: null,
       audience: 'kids',
       kind: 'subscription',
-      offerId: 'offer-uuid-1',
+      offerId: '0ffe0000-0000-4000-8000-000000000001',
       offerSlug: 'comunidade-dos-criadores-mensal',
       amountCents: 9700n,
       paymentId: 'pay-antiga',
@@ -337,7 +337,10 @@ describe('RecordConversionService', () => {
 
   test('primeira assinatura só: o histórico de antes da 0013 vem do payments', async () => {
     await seedGift()
-    payments.paidOffers.set('paula@example.com', ['offer-desafio', 'offer-uuid-1'])
+    payments.paidOffers.set('paula@example.com', [
+      '0ffe0000-0000-4000-8000-0000000000de',
+      '0ffe0000-0000-4000-8000-000000000001',
+    ])
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions).toHaveLength(0)
   })
@@ -348,7 +351,7 @@ describe('RecordConversionService', () => {
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
     payments.failPaidOffers = false
-    payments.paidOffers.set('paula@example.com', ['offer-desafio'])
+    payments.paidOffers.set('paula@example.com', ['0ffe0000-0000-4000-8000-0000000000de'])
     await service.execute(paidDelivery())
     expect(repo.conversions[0]).toMatchObject({ status: 'pending', bonusCents: 3000 })
   })
@@ -394,7 +397,7 @@ describe('RecordConversionService', () => {
       accountUserId: null,
       audience: 'kids',
       kind: 'one_time',
-      offerId: 'offer-desafio',
+      offerId: '0ffe0000-0000-4000-8000-0000000000de',
       amountCents: 6700n,
       paymentId: 'pay-desafio',
       subscriptionId: null,
@@ -438,7 +441,11 @@ describe('RecordConversionService', () => {
     payments.byId.set(
       'pay-1',
       paymentSnapshot({
-        metadata: { offerId: 'offer-uuid-1', billingAudience: 'kids', origemCodigo: 'CIDA-X7K2' },
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-000000000001',
+          billingAudience: 'kids',
+          origemCodigo: 'CIDA-X7K2',
+        },
       }),
     )
     payments.subscriptionCreatedAt = new Date(PAID_AT.getTime() - 60_000)
@@ -465,7 +472,11 @@ describe('RecordConversionService', () => {
         subscriptionId: null,
         amountInCents: 6700n,
         paidAt: new Date(PAID_AT.getTime() - 5 * DAY),
-        metadata: { offerId: 'offer-desafio', billingAudience: 'kids', origemCodigo: 'cida-x7k2' },
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
+          billingAudience: 'kids',
+          origemCodigo: 'cida-x7k2',
+        },
       }),
     )
     await service.execute(paidDelivery('pay-desafio'))
@@ -485,6 +496,19 @@ describe('RecordConversionService', () => {
     expect(catalog.calls).toBe(0)
   })
 
+  test('oferta que não é uuid (outro produtor no fan-out) é consumida sem aquisição', async () => {
+    payments.byId.set(
+      'pay-x',
+      paymentSnapshot({
+        id: 'pay-x',
+        metadata: { offerId: 'nao-e-uuid', billingAudience: 'kids' },
+      }),
+    )
+    const delivery = { ...paidDelivery(), payload: { paymentId: 'pay-x' } }
+    expect((await service.execute(delivery)).kind).toBe('ok')
+    expect(acquisitions.items).toHaveLength(0)
+  })
+
   test('botão da plataforma e fonte de mídia viram a origem da compra', async () => {
     payments.byId.set(
       'pay-2',
@@ -492,7 +516,7 @@ describe('RecordConversionService', () => {
         id: 'pay-2',
         subscriptionId: null,
         metadata: {
-          offerId: 'offer-desafio',
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
           billingAudience: 'kids',
           origemLugar: 'pais-curso-fechado',
         },
@@ -504,7 +528,11 @@ describe('RecordConversionService', () => {
         id: 'pay-3',
         subscriptionId: null,
         customer: { email: 'outra@example.com' },
-        metadata: { offerId: 'offer-desafio', billingAudience: 'kids', origemFonte: 'instagram' },
+        metadata: {
+          offerId: '0ffe0000-0000-4000-8000-0000000000de',
+          billingAudience: 'kids',
+          origemFonte: 'instagram',
+        },
       }),
     )
     await service.execute(paidDelivery('pay-2'))
@@ -520,7 +548,10 @@ describe('RecordConversionService', () => {
   })
 
   test('sem `billingAudience` o público vem do catálogo (e falha dele pede reentrega)', async () => {
-    payments.byId.set('pay-1', paymentSnapshot({ metadata: { offerId: 'offer-uuid-1' } }))
+    payments.byId.set(
+      'pay-1',
+      paymentSnapshot({ metadata: { offerId: '0ffe0000-0000-4000-8000-000000000001' } }),
+    )
     catalog.fail = true
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     catalog.fail = false
@@ -567,8 +598,8 @@ describe('RecordConversionService', () => {
 
   test('anual à vista (SEM subscriptionId) também converte e vira assinatura', async () => {
     await seedGift()
-    catalog.byId.set('offer-uuid-2', {
-      id: 'offer-uuid-2',
+    catalog.byId.set('0ffe0000-0000-4000-8000-000000000002', {
+      id: '0ffe0000-0000-4000-8000-000000000002',
       slug: 'comunidade-dos-criadores-anual',
       name: 'Comunidade (anual)',
       billingIntervalMonths: 12,
@@ -579,7 +610,7 @@ describe('RecordConversionService', () => {
         id: 'pay-2',
         subscriptionId: null,
         amountInCents: 97000n,
-        metadata: { offerId: 'offer-uuid-2', billingAudience: 'kids' },
+        metadata: { offerId: '0ffe0000-0000-4000-8000-000000000002', billingAudience: 'kids' },
       }),
     )
     expect((await service.execute(paidDelivery('pay-2'))).kind).toBe('ok')
@@ -637,7 +668,7 @@ describe('RecordConversionService', () => {
       'pay-1',
       paymentSnapshot({
         subscriptionId: null,
-        metadata: { offerId: 'offer-desafio', billingAudience: 'kids' },
+        metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000de', billingAudience: 'kids' },
       }),
     )
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
@@ -668,7 +699,7 @@ describe('RecordConversionService', () => {
     catalog.fail = true
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     catalog.fail = false
-    catalog.byId.delete('offer-uuid-1')
+    catalog.byId.delete('0ffe0000-0000-4000-8000-000000000001')
     expect((await service.execute(paidDelivery())).kind).toBe('retryable')
     expect(repo.conversions).toHaveLength(0)
   })

@@ -562,7 +562,7 @@ describe('presente adulto: conversões', () => {
     amountInCents: 4700n,
     paidAt: PAID_AT,
     customer: { email: 'ana@example.com' },
-    metadata: { offerId: 'offer-adulto', billingAudience: 'adult' },
+    metadata: { offerId: '0ffe0000-0000-4000-8000-0000000000ad', billingAudience: 'adult' },
     subscriptionId: null,
   }
   const DEFAULTS = { amounts: null, legacyCents: 3000, windowDays: 45 }
@@ -579,7 +579,7 @@ describe('presente adulto: conversões', () => {
       },
       {
         getOfferById: async () => ({
-          id: 'offer-adulto',
+          id: '0ffe0000-0000-4000-8000-0000000000ad',
           slug: 'comunidade-dos-criadores-adulto-mensal',
           name: 'Comunidade adulta',
           audience: 'adult',

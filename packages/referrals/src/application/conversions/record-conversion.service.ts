@@ -57,6 +57,7 @@ export interface RecordConversionConfig {
  * aquisição nem gera bônus.
  */
 const FIRST_CHARGE_MAX_DAYS = 20
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const DAY_MS = 86_400_000
 
 /**
@@ -129,7 +130,12 @@ export class RecordConversionService {
     if (snapshot.status !== 'PAID' || !snapshot.paidAt) return { kind: 'ok' }
     const paidAt = snapshot.paidAt
     const email = normalizeEmail(snapshot.customer?.email ?? '')
-    const offerId = typeof snapshot.metadata.offerId === 'string' ? snapshot.metadata.offerId : null
+    // A oferta vai para uma coluna uuid da aquisição: um id que não é uuid (pagamento de outro
+    // produtor no fan-out) quebraria o INSERT e a entrega voltaria para sempre.
+    const offerId =
+      typeof snapshot.metadata.offerId === 'string' && UUID.test(snapshot.metadata.offerId)
+        ? snapshot.metadata.offerId
+        : null
     // Sem e-mail ou sem oferta não há pessoa nem o que classificar — consumir.
     if (!email || !offerId) return { kind: 'ok' }
 
