@@ -185,7 +185,7 @@ describe('correções da revisão do Lote 2', () => {
     expect(ctx.repo.conversions.filter((c) => c.status === 'pending')).toHaveLength(1)
   })
 
-  test('fonte de mídia com sublinhado vira anúncio; compra sem bônus não relê o pagamento', async () => {
+  test('fonte de mídia com sublinhado vira anúncio; compra sem bônus reconfere o pagamento', async () => {
     const ctx = setup()
     await ctx.pay('pay-ads', {
       subscriptionId: null,
@@ -195,6 +195,6 @@ describe('correções da revisão do Lote 2', () => {
       originKind: 'ads',
       utm: { utmSource: 'google_ads' },
     })
-    expect(ctx.getPaymentCalls).toBe(1)
+    expect(ctx.getPaymentCalls).toBe(2)
   })
 })

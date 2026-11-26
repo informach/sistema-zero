@@ -209,9 +209,9 @@ export class RecordConversionService {
         }),
         startedAt,
       )
-    // Sem bônus em jogo, não há o que reconferir: um estorno que chegue agora encontra a
-    // aquisição já gravada (onRefunded a marca) — só a conversão paga a ida extra ao payments.
-    if (!winner?.bonusTerms) return { kind: 'ok' }
+    // O estorno pode ter sido consumido antes do INSERT da aquisição. Todo caminho que
+    // conclui uma compra reconfere o pagamento, inclusive quando ela não gera bônus.
+    if (!winner?.bonusTerms) return this.cancelIfNoLongerPaid(paymentId)
 
     if (!offer) {
       const resolved = await this.resolveOffer(paymentId, offerId)
@@ -224,7 +224,8 @@ export class RecordConversionService {
         offer.slug,
         this.config.conversionOfferSlugs.includes(offer.slug),
       )
-    if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
+    if (!this.config.conversionOfferSlugs.includes(offer.slug))
+      return this.cancelIfNoLongerPaid(paymentId)
 
     // A mesma CONTA com outro e-mail de cobrança (cancelou e assinou de novo pela plataforma):
     // a vaga do bônus é por e-mail, então confere as conversões ativas dos e-mails da pessoa.
@@ -237,7 +238,7 @@ export class RecordConversionService {
           c.status !== 'canceled' &&
           c.status !== 'superseded',
       )
-      if (earlier) return { kind: 'ok' }
+      if (earlier) return this.cancelIfNoLongerPaid(paymentId)
     }
 
     const terms = winner.bonusTerms
@@ -260,7 +261,7 @@ export class RecordConversionService {
         ? (terms.annualCents ?? 0)
         : (terms.monthlyCents ?? 0)
       : (terms.fixedCents ?? 0)
-    if (!winner.codeId) return { kind: 'ok' }
+    if (!winner.codeId) return this.cancelIfNoLongerPaid(paymentId)
 
     const { created } = await this.repo.insertConversion({
       redemptionId: winner.redemptionId,

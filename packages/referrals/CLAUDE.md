@@ -126,8 +126,8 @@ Correções da revisão do Lote 2 (25/11/2026):
 - Prazo do reparo por corte FIXO, não pela idade: `ORIGIN_LEGACY_BEFORE` (ISO, setar no Railway
   com o instante do deploy da 0013). Presente concluído antes = prazo longo (3650 dias, o acordo
   antigo não tinha prazo); depois = prazo de hoje. Sem a env, todo reparo ganha o prazo longo.
-- A releitura do pagamento (`cancelIfNoLongerPaid`) só roda no caminho que grava conversão; a
-  compra sem bônus não paga a ida extra (o "custo zero no agregado" de sempre).
+- A releitura do pagamento (`cancelIfNoLongerPaid`) roda em toda compra concluída, inclusive sem
+  bônus: um estorno pode chegar entre a leitura PAID e o INSERT da aquisição (revisão independente).
 - Mesma CONTA com outro e-mail de cobrança: antes de gravar, confere as conversões ativas dos
   e-mails da pessoa no público (a vaga do UNIQUE é por e-mail).
 - `origemFonte` usa `sanitizeOriginSource` (aceita `_`, `.` e `+` do `utm_source`).
