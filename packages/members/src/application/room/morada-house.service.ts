@@ -131,7 +131,19 @@ export class MoradaHouseService {
     }
     if (house.pet && !moradaPieceAllowed(house.pet, owned))
       errors.push('Bichinho ainda não comprado.')
+    errors.push(...moradaBehaviorProblems(current.house, house, input.scope ?? 'house'))
     if (errors.length) throw new MoradaInvalidError(errors.join('; '))
+    // A posse "por estar na casa" vira posse de verdade quando a peça SAI da casa guardada: senão
+    // tirar a peça (com o salvar sozinho, em 1 s) e desfazer a recusava para sempre ("Peça ainda
+    // não comprada"). A peça foi aceita antes (casa convertida, posta antes de haver preço), então
+    // guardá-la no inventário não dá nada novo. Antes da troca: falhar aqui não perde a casa.
+    const keep = presenceOwnedRemoved(
+      current.house,
+      house,
+      await this.rooms.listInventory(userId, audience),
+    )
+    for (const pieceId of keep)
+      await this.rooms.addToInventory(userId, audience, pieceId, this.clock())
     const saved = await this.houses.compareAndSwap(
       userId,
       accountId,
@@ -174,4 +186,62 @@ export function moradaOwned(inventory: readonly string[], house: MoradaHouse): s
   if (house.pet && MORADA_CATALOG.pieces[house.pet] && !isMoradaFree(house.pet))
     owned.add(house.pet)
   return [...owned]
+}
+
+/**
+ * As funções do jogo (`behavior: objeto:<id>`, a geladeira, o fliperama…): uma instância por função
+ * na casa inteira, e o editor do QUARTO (`scope: 'room'`) não cria função nova, só mexe nas que a
+ * casa guardada já tem (quem dá a função é o jogo, `scope: 'house'`). Sem isto, o "Duplicar" do
+ * quarto copiava a geladeira do jogo: peça paga de graça e a edição da casa travada no Arquipélago
+ * ("Um projeto funcional só pode estar em um lugar"; revisão de 26/11/2026).
+ */
+export function moradaBehaviorProblems(
+  before: MoradaHouse,
+  next: MoradaHouse,
+  scope: 'room' | 'house',
+): string[] {
+  const errors: string[] = []
+  const known = new Set(before.instances.flatMap((i) => (i.behavior ? [i.behavior] : [])))
+  const seen = new Set<string>()
+  for (const instance of next.instances) {
+    if (!instance.behavior) continue
+    if (seen.has(instance.behavior)) errors.push('Um projeto funcional só pode estar em um lugar.')
+    seen.add(instance.behavior)
+    if (scope === 'room' && !known.has(instance.behavior))
+      errors.push('Esta função chega pelo jogo, não pelo quarto.')
+  }
+  return errors
+}
+
+/**
+ * As peças pagas que só eram da criança por estarem na casa guardada (fora do inventário, sem ser
+ * função do jogo) e que a casa nova não tem mais: essas entram no inventário ao salvar.
+ */
+export function presenceOwnedRemoved(
+  before: MoradaHouse,
+  next: MoradaHouse,
+  inventory: readonly string[],
+): string[] {
+  const stored = new Set(inventory)
+  const still = new Set(next.instances.map((i) => i.pieceId))
+  if (next.pet) still.add(next.pet)
+  const out = new Set<string>()
+  for (const instance of before.instances)
+    if (
+      MORADA_CATALOG.pieces[instance.pieceId] &&
+      !isMoradaFree(instance.pieceId) &&
+      !isMoradaFunctionInstance(instance) &&
+      !stored.has(instance.pieceId) &&
+      !still.has(instance.pieceId)
+    )
+      out.add(instance.pieceId)
+  if (
+    before.pet &&
+    MORADA_CATALOG.pieces[before.pet] &&
+    !isMoradaFree(before.pet) &&
+    !stored.has(before.pet) &&
+    !still.has(before.pet)
+  )
+    out.add(before.pet)
+  return [...out]
 }
