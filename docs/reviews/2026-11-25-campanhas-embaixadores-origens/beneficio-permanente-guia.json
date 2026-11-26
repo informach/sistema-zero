@@ -1,0 +1,194 @@
+{
+  "updatedAt": "2026-11-26T18:51:29.922Z",
+  "productionFeaturePublished": true,
+  "normalRegularizationComplete": false,
+  "manualSource": "6c245bf73cf028237937f4a5b137a12f84f35cee",
+  "approvedNormalSource": "ca7d5c6b226e4c97c01f0498aeb60178fa0a98f3",
+  "normalPullRequest": 294,
+  "normalCiRun": 45876725356,
+  "normalObservedState": "WAITING_MANUAL_AND_CI",
+  "normalStatus": "aguardando CI completo, merge protegido e publicação oficial; falha de prazo do teste Windows investigada, com repetição completa programada",
+  "courseBenefit": {
+    "state": "COURSE_BENEFIT_CONVERTED_AND_VERIFIED",
+    "verifiedAt": "2026-11-26T18:29:32.110Z",
+    "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+    "benefitId": "fd741378-dffd-478e-ac5c-f89c948b7f9e",
+    "code": "vilao-em-aliado-cade",
+    "converted": true,
+    "originalRedemptionsPreserved": 2,
+    "originalAcquisitionsPreserved": 2,
+    "fingerprints": {
+      "redemptions": "33d241e1fa287d99a5e606ae2787acf0f6865fdf4deff5190cc56c31878c5bf2",
+      "acquisitions": "8666824713211db5cd654d6a40554b89275694d7585bb7fb1c8c4fe5d794a532"
+    },
+    "archivedHistoryRows": 2,
+    "totalGifts": 2,
+    "reportStatus": 200,
+    "staffStatus": 403,
+    "publicRedemptionAvailable": false,
+    "campaigns": [
+      {
+        "code": "laopa-20261113",
+        "name": "Laopa - palestra de 13 de novembro de 2026, às 20h",
+        "ends_at": "2026-12-13 03:00:00+00"
+      },
+      {
+        "code": "vilao-em-aliado",
+        "name": "Guia para pais — acesso de presente ao minicurso",
+        "ends_at": "2030-01-01 03:00:00+00"
+      }
+    ],
+    "courseId": "3edc936c-5b72-4dd9-9c33-0b66e44d5a8b",
+    "lessonId": "0947bc6e-ec79-4a8b-a390-e58764ab4cf6",
+    "blockId": "142105fd-0a3f-5066-af79-3e8e56ce92a8",
+    "manifestPublished": true,
+    "immediateOrigin": "course",
+    "upstreamOriginSeparate": true,
+    "historicalUnknownPreserved": true,
+    "availability": "enquanto houver acesso ao guia; sem calendário próprio"
+  },
+  "linksVerified": {
+    "state": "PASS",
+    "verifiedAt": "2026-11-26T18:50:45.392Z",
+    "results": [
+      {
+        "path": "/kids/vilao-em-aliado?utm_source=release-proof",
+        "status": 302,
+        "location": "/i/vilao-em-aliado?utm_source=release-proof"
+      },
+      {
+        "path": "/bolsa/laopa-20261113",
+        "status": 302,
+        "location": "/kids/cade-todo-mundo/oferta?presente=laopa-20261113"
+      },
+      {
+        "path": "/i/laopa-20261113",
+        "status": 302,
+        "location": "/bolsa/laopa-20261113"
+      },
+      {
+        "path": "/bolsa/vilao-em-aliado",
+        "status": 302,
+        "location": "/kids/vilao-em-aliado/oferta?presente=vilao-em-aliado"
+      },
+      {
+        "path": "/i/vivianne-e8ez/cade",
+        "status": 302,
+        "location": "/kids/cade-todo-mundo/oferta?indicacao=vivianne-e8ez"
+      },
+      {
+        "path": "/i/vivianne-s4mx/cade",
+        "status": 302,
+        "location": "/pro/cade-todo-mundo/oferta?indicacao=vivianne-s4mx"
+      },
+      {
+        "path": "/cupom/LAOPA131126?oferta=desafio-primeiro-jogo-30-dias&publico=kids&event_code=laopa-20261113",
+        "status": 302,
+        "location": "/kids/desafio-primeiro-jogo/oferta?cupom=LAOPA131126&event_code=laopa-20261113&indicacao=laopa-20261113"
+      },
+      {
+        "path": "/bolsa/vilao-em-aliado-cade",
+        "status": 302,
+        "location": "https://kids.sistemazero.com.br/pais/cursos/transformando-o-vilao-em-aliado"
+      },
+      {
+        "path": "/i/vilao-em-aliado-cade",
+        "status": 302,
+        "location": "/bolsa/vilao-em-aliado-cade"
+      },
+      {
+        "path": "/i/vivianne-e8ez/frustracoes",
+        "status": 302,
+        "location": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez"
+      },
+      {
+        "path": "/i/vivianne-e8ez/frustracoes/presente",
+        "status": 404,
+        "location": null
+      }
+    ],
+    "couponCampaignOrigin": true,
+    "couponDiscount3350": true,
+    "courseBenefitRequiresAuthenticatedCourse": true,
+    "vivianneNoGift": true,
+    "paymentSubmitted": false
+  },
+  "checks": {
+    "core": {
+      "pass": 3353,
+      "fail": 0
+    },
+    "memberShell": {
+      "pass": 2819,
+      "skip": 2,
+      "fail": 0
+    },
+    "members": {
+      "pass": 2447,
+      "skip": 778,
+      "fail": 0
+    },
+    "admin": {
+      "pass": 1038,
+      "fail": 0
+    },
+    "funnel": {
+      "pass": 759,
+      "skip": 6,
+      "fail": 0
+    },
+    "referralsRealPostgres": {
+      "pass": 330,
+      "fail": 0
+    },
+    "gateway": {
+      "pass": 336,
+      "skip": 2,
+      "fail": 0
+    },
+    "types": {
+      "core": "pass",
+      "memberShell": "pass",
+      "members": "pass",
+      "admin": "pass",
+      "referrals": "pass",
+      "gateway": "pass",
+      "funnel": "pass"
+    },
+    "funnelBuild": "pass",
+    "editorAndHttpAdditional": {
+      "pass": 2,
+      "fail": 0
+    },
+    "courseBenefitDtoAndDraft": {
+      "pass": 20,
+      "fail": 0
+    },
+    "benefitRealDatabase": {
+      "pass": 4,
+      "expectations": 34,
+      "fail": 0
+    },
+    "browserWidths": [390, 1440],
+    "originsSeparated": true,
+    "unknownOriginPreserved": true,
+    "dateFiltersAndCsv": true,
+    "canonicalVersion": 4,
+    "configurationChanges": 0,
+    "newEnvironmentVariables": 0,
+    "paymentSubmitted": false,
+    "testMessagesSent": false,
+    "courseGuards": {
+      "pass": 919,
+      "fail": 0
+    }
+  },
+  "staging": {
+    "localMerged": true,
+    "remoteBusinessRegistrationVerified": false,
+    "publicationOwnedByOtherSession": true
+  },
+  "backupSha256": "5cfcd0c8aee7b2680d5739504472f178ef8f7c923abd24e3d0dbc05dbc25f83c",
+  "paymentSubmitted": false,
+  "testMessagesSent": false
+}

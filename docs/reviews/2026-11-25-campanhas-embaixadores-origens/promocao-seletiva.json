@@ -697,5 +697,12 @@
       ],
       "passed": 0
     }
+  },
+  "permanentBenefit": {
+    "receipt": "beneficio-permanente-guia.json",
+    "productionFeaturePublished": true,
+    "normalRegularizationComplete": false,
+    "head": "ca7d5c6b226e4c97c01f0498aeb60178fa0a98f3",
+    "pullRequest": 294
   }
 }

@@ -1,151 +1,68 @@
-# Campanhas, embaixadores e origem das aquisições
+# Levantamento da publicação — 26/11/2026
 
-Publicação manual urgente concluída em produção em 26/11/2026, a pedido da responsável. As quatro ondas passaram pelas verificações de saúde, origem, configuração e preservação canônica. A integração pelo CI e pelo controlador normal do GitHub continua registrada nos recibos de publicação abaixo.
+Recursos publicados e conferidos em produção. A regularização final do benefício pelo GitHub ainda está em andamento no [PR 294](https://github.com/informach/sistema-zero/pull/294); este registro não declara esse CI, merge ou deploy oficial concluídos. [Recibo atual](beneficio-permanente-guia.json).
 
-O link pessoal escolhido para a Vivianne é **https://sistemazero.com.br/i/vivianne-e8ez/frustracoes**. Ele abre a oferta de R$ 67, identifica a embaixadora e não exige campanha nem data de encerramento. Não foi criada campanha nova para ela.
+## Curso da Vivianne e link pessoal
 
-## Curso e compra na área dos pais
+Link sem data final: **https://sistemazero.com.br/i/vivianne-e8ez/frustracoes**. É da Vivianne Lima, já cadastrada como embaixadora, e identifica as vendas do curso para acompanhamento no Admin. Nenhuma campanha foi criada para esse link, e não há oferta de presente do curso da Vivianne.
 
-- O curso da Vivianne tem página de venda própria, por R$ 67 e com 12 meses de acesso. Entrega o curso publicado para o responsável, com vídeos, apostila e certificado.
-- O guia Transformando o vilão em aliado também tem venda avulsa, por R$ 27 e com 12 meses de acesso.
-- O curso fechado mostra a oferta correspondente na área dos pais. O responsável pode comprar em uma janela dentro da conta, com os dados já conhecidos preenchidos, Pix/cartão conforme a oferta, cupom quando permitido e indicação do valor final.
-- Depois da aprovação, a janela mostra a confirmação e o caminho para começar. A atualização da página espera o fechamento da janela, preservando a confirmação na tela.
-- A assinatura Kids da Comunidade inclui os cursos para pais, conforme a regra confirmada pela responsável. A compra avulsa continua sendo uma alternativa de acesso ao curso escolhido.
+O curso está cadastrado para responsáveis, fora da Jornada da criança, nos dois ambientes: cinco aulas e doze partes, com vídeos, capas e descrições resumidas. A Aula 1, Parte 2 fica em uma coluna: vídeo, materiais com a apostila para baixar e o resumo original. O bloco do livro 3D foi removido.
 
-## Campanhas
+Capas do curso e das partes, apostila, certificado, imagens do checkout e três ilustrações da oferta ficam em `docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/`, com os manifestos, roteiros, originais e cópias para a web. A capa do curso é limpa e com enquadramento ajustado; a da apostila não fixa a quantidade de aulas. O PDF tem dez páginas; os nove miolos foram preservados. O certificado tem duas composições laterais baixas, espaço para os dados dinâmicos e as assinaturas oficiais de Helena Oliveira e Júlio Felipe, conferidas no serviço real nos dois ambientes. Registros de certificados antigos foram preservados na regeneração dos PDFs.
 
-- Há campanhas de presente e de venda. O formulário permite escolher público, oferta, página ou checkout como destino, cupom, calendário, embaixador, regras de bônus e situação.
-- O código identifica a campanha e, se houver vínculo, a embaixadora também é registrada. Isso permite distinguir essa origem dos links pessoais e dos outros caminhos. A venda inicial da Vivianne usa seu link pessoal, conforme a decisão da responsável.
-- O calendário controla novas entradas e preserva os termos já capturados. Tipo de campanha e público têm travas depois do uso, evitando transformar o histórico de uma ação em outra.
-- Endereços antigos podem redirecionar para a campanha até uma data definida. O prazo é conferido mesmo quando existe cache.
-- O detalhe reúne divulgação, links, QR, cartões, pessoas e resultados. Os cartões de cupom podem ser baixados como PNG.
-
-## Embaixadores e suas ofertas
-
-- A plataforma controla listas de presentes e de ofertas à venda para cada público. É possível adicionar, tirar, ordenar, ligar e desligar opções.
-- Cada lista admite uma oferta ligada por produto; presente e indicação são listas independentes. A separação Kids inclui ofertas para os filhos e para os pais.
-- O painel do embaixador usa as opções liberadas e gera links por curso, com variantes de apresentação, pagamento e presente. Links antigos continuam sendo reconhecidos.
-- A campanha escolhe sua própria oferta. Vincular a embaixadora à campanha permite identificar essa participação sem depender de a família ter recebido um presente antes.
-
-## Origem de cada aquisição
-
-- Cada presente, compra avulsa e primeira cobrança de assinatura tem um registro próprio. As origens distinguem campanha, embaixador, botão da plataforma, anúncio e ausência de origem identificável.
-- A origem da compra acompanha o último link ou botão rastreado. O cookie correspondente dura 30 dias e é substituído por outro link ou botão válido. As UTMs de primeiro contato e a primeira entrada da pessoa são informações diferentes e continuam separadas.
-- Os botões internos identificam lugares como início da área dos pais, catálogo, curso fechado e aula.
-- Uma mesma pessoa pode ter aquisições com origens diferentes. A primeira entrada ajuda a entender o histórico; não transforma automaticamente todas as compras futuras em vendas daquela primeira origem.
-- Renovações não inflam a contagem de novas aquisições e não geram um novo bônus de primeira assinatura.
-
-## Relatórios e ficha da conta
-
-- Origem das vendas reúne período, público, produto, grupos de cursos para pais, evolução semanal, origens, botões da plataforma, caminho até a assinatura, rankings e aquisições recentes.
-- Campanhas e embaixadores têm resultados próprios, com pessoas, presentes, compras, assinaturas e faturamento. O detalhe pode mostrar quantas contas começaram o curso do presente.
-- A ficha da conta tem Compras e origem, com a trajetória, o que foi recebido ou comprado e os pagamentos.
-- Há exportações CSV. O período do arquivo corresponde ao período efetivamente exibido. Dados financeiros e relatórios detalhados ficam restritos ao perfil administrativo autorizado.
-
-## Bônus
-
-- O bônus automático é da primeira assinatura elegível da Comunidade, não de toda compra avulsa de curso.
-- Para o link pessoal, a configuração atual é R$ 30 na mensal, R$ 80 na anual, janela de 45 dias e maturação de 180 horas. Campanhas com acordo explícito usam os termos capturados daquela campanha; sem acordo, não se cria comissão automática.
-- O histórico de pagamentos ajuda a impedir um novo bônus para quem já assinava a mesma Comunidade. Assinatura anterior de outro produto não consome essa vaga.
-- A primeira aquisição elegível com embaixador dentro do prazo determina o crédito. O código protege contra autoindicação e duplicidade pela mesma conta, inclusive com e-mails de cobrança diferentes.
-- Estornos retiram a aquisição ativa e cancelam o bônus correspondente. A conferência cobre também estornos que chegam enquanto a compra está sendo registrada.
-- O backfill preserva os acordos anteriores à entrada da nova estrutura. A data de corte de produção deve constar no recibo da operação.
-
-## Comunicação e progresso
-
-- Os lembretes de curso contemplam quem não começou depois de dois dias, quem começou e ficou sete dias sem atividade e quem concluiu. A janela de envio e a deduplicação impedem repetir o mesmo lembrete por conta e curso.
-- Cursos para pais têm mensagens próprias. O curso da Vivianne e o guia têm seus próprios textos e o retorno leva à área dos pais.
-- Os presentes do Cadê e do guia já estão configurados com 15 dias reais de acesso. A pessoa vê 7 dias e, ao terminar esse prazo, recebe o aviso dos 8 extras, conforme a escolha confirmada pela responsável. O prazo real decide o acesso; o divulgado decide a apresentação e o aviso. Os termos já capturados nos resgates anteriores são preservados. O curso da Vivianne fica somente com a oferta de compra; não haverá oferta de presente por enquanto.
-- O presente não inicia cobrança no fim do prazo. Nas compras avulsas, o pagamento é único e o acesso dura um ano; não começa renovação automática ao terminar esse ano.
-- Aulas e módulos arquivados deixam de interferir no início, na contagem e na conclusão do curso.
-- Na Aula 1, Parte 2 do curso da Vivianne, a composição confirmada é vídeo, materiais e resumo Para consultar, em uma coluna e sem livro 3D. O resumo original foi restaurado e conferido em staging e produção, sem alterar vídeos, anexos ou conclusão.
-
-## Catálogo e operação
-
-- A página usa a oferta principal do produto, configurada no Catálogo. Uma oferta alternativa precisa pertencer ao mesmo produto e respeitar o contrato da página.
-- O registro de produção contém oito páginas de venda: Comunidade, Desafio e Cadê nos dois públicos, guia e curso da Vivianne. As oito ofertas principais foram configuradas; Comunidade e Desafio mantêm suas ofertas existentes e os quatro cursos avulsos usam as novas ofertas anuais.
-- O guia foi alinhado ao identificador `transformando-o-vilao-em-aliado`, com o mesmo produto e histórico. Os dois ambientes usam os slugs de venda para pais terminados em `-1-ano`.
-- Os cinco valores antigos de oferta ficam preservados na infraestrutura para a transição e rollback; o código novo lê o catálogo.
-- A primeira promoção usa uma branch baseada na produção, com esta frente, os materiais do curso e a correção de avatar `615329078` pedida expressamente. As alterações de autoria da Nave/Patrulha e de apelido da staging ficam fora. Os commits `7a630ea52` (quarto) e `6e0858525` (enquadramento da Cabine) foram pedidos para uma segunda promoção, sem interromper a primeira.
-
-## Para vender pelo link pessoal da Vivianne
-
-1. Divulgar **https://sistemazero.com.br/i/vivianne-e8ez/frustracoes**.
-2. A pessoa vê a apresentação e a oferta anual de R$ 67. O checkout oferece as formas de pagamento e o cupom permitidos pela oferta.
-3. A identificação da Vivianne acompanha a navegação por esse link. A origem válida mais recente da compra prevalece conforme a regra de atribuição.
-4. Acompanhar em **Admin → Origem das vendas**, selecionando o público Kids, o curso e o período para conferir origens e o ranking de embaixadores, ou abrir os resultados da Vivianne no painel de Campanhas. URL do relatório: https://admin.sistemazero.com.br/admin/origem-das-vendas.
-
-O link pessoal não tem data final. A responsável decidiu não criar campanha neste momento. Se futuramente criar uma campanha, ela terá calendário, oferta e eventual acordo próprios. O curso avulso registra a origem da venda; o bônus automático existente é da primeira assinatura elegível da Comunidade, conforme a seção Bônus.
+A Aula 5, Parte 2 foi substituída pelo MP4 corrigido em staging e produção, conservando os IDs do Vimeo e reaplicando as capas. A conferência dos roteiros cobriu os vinte tópicos dos nove slides apresentados no arquivo da aula dos pais.
 
 ## Ofertas e acesso
 
-| Produto | Oferta de compra | Valor | Prazo |
-| --- | --- | --- | --- |
-| Cadê Kids | `cade-todo-mundo-1-ano` | R$ 37 | Curso e Mural Kids por um ano; depois, visitante no Mural. |
-| Cadê adulto | `cade-todo-mundo-adulto-1-ano` | R$ 37 | Curso e Mural adulto por um ano; depois, visitante no Mural. |
-| Transformando o vilão em aliado | `transformando-o-vilao-em-aliado-1-ano` | R$ 27 | Curso para pais por um ano. |
-| Como ajudar seu filho autista nas frustrações | `como-ajudar-seu-filho-autista-nas-frustracoes-1-ano` | R$ 67 | Curso para pais por um ano. |
+| Oferta de venda | Valor | Acesso |
+| --- | ---: | --- |
+| Cadê Todo Mundo Kids | R$ 37 | Um ano, com Mural Kids |
+| Cadê Todo Mundo adulto | R$ 37 | Um ano, com Mural adulto |
+| Transformando o vilão em aliado | R$ 27 | Um ano |
+| Curso da Vivianne sobre frustrações | R$ 67 | Um ano |
 
-As quatro ofertas pagas têm sete dias de garantia e aceitam cupom. O catálogo resolve os entregáveis de cada oferta. No Cadê, o Mural é do mesmo público do curso. Durante o prazo completo, a pessoa pode publicar e interagir; depois, continua vendo e jogando como visitante. Os dois textos adultos que diziam que o Mural fecharia foram corrigidos. O Kids já descrevia essa regra.
+As vendas têm garantia de sete dias, aceitam cupom e não renovam automaticamente. Ao terminar o Cadê, o curso fecha e o Mural correspondente continua como visitante, para ver e jogar. Nos presentes com prazo, são quinze dias reais, sete divulgados e o aviso dos oito extras; os termos já registrados em resgates antigos são preservados.
 
-As campanhas existentes continuam apontando às ofertas de presente do Cadê com os slugs históricos `cade-todo-mundo-7-dias` e `cade-todo-mundo-adulto-7-dias`. O identificador não muda quando a duração passa para 15 dias reais. O presente do guia mantém a oferta já usada pela campanha. O curso da Vivianne tem apenas a oferta paga, por decisão confirmada pela responsável. Ofertas de presente ficam fora da venda normal da página.
+As ofertas principais das páginas foram marcadas no catálogo, e os dois cursos dos pais têm sua Oferta de venda preenchida. As listas dos embaixadores têm as ofertas do público correto. Checkout e páginas usam as imagens do curso e preços do catálogo. A operação mantém onze opções nas listas de embaixadores e vinte e um modelos de mensagens ativos.
 
-## Certificado e material guardado em Docs
+## Campanhas e benefício do guia
 
-O certificado do curso da Vivianne recebeu os dois nomes e as imagens oficiais de assinatura de Helena Oliveira e Júlio Felipe. A conferência usou emissões novas pelo serviço real em staging e produção, examinou o PDF e repetiu o download em cache. Um cache antigo de produção foi retirado para permitir a regeneração com as assinaturas, preservando o registro emitido e seus dados.
+Em produção ficaram somente as campanhas reais Laopa de 13/11 e Guia de presente. A Laopa de 6/11 inexistente foi excluída do banco com backup e conferência de zero resgates, vendas, conversões e convites ligados a ela.
 
-As capas, apostila final, fundo do certificado, assinaturas, prévia, manifestos e cópias de segurança continuam na pasta do curso em `docs/aulas-interativas/pais/como-ajudar-seu-filho-autista-nas-frustracoes/`. A Aula 1, Parte 2 contém vídeo, materiais para download e o resumo original Para consultar, em uma única coluna e sem livro 3D.
+O Cadê da última aula do guia é um benefício permanente do curso, sem calendário de campanha. Quem tem acesso ao guia, comprado ou recebido de presente, pode ativar o benefício na conta autenticada. A ativação concede o prazo da oferta do Cadê e não renova ao revisitar a aula. Não depende do certificado.
 
-As três artes comerciais novas também estão nessa pasta, em `comercial/`, com PNGs originais, WebPs, prompts e hashes. Uma composição quadrada identifica o curso no checkout e na confirmação; duas ilustrações mostram antecipação com rotina visual e acolhimento com pedido de ajuda. Seguem os personagens e a paleta da imagem base, sem texto ou quantidade de aulas. Oferta e checkout reais foram conferidos em quatro larguras.
+A conversão preserva o código `vilao-em-aliado-cade`, os resgates e seus termos, arquiva o histórico e tira a campanha interna da lista de campanhas. O manifesto usa `benefitCode`. Os endereços antigos desse benefício levam ao curso autenticado, sem liberar resgate avulso público.
 
-A conferência da apresentação de slides encontrou os 20 tópicos de conteúdo nos roteiros falados das aulas, sem lacunas. O relatório distingue essa comparação editorial de uma auditoria da transcrição integral dos vídeos. A apostila é mencionada no final da Aula 1, Parte 2; o PDF fica nos materiais dessa parte. Há outro lembrete na Aula 5, Parte 3.
+## Onde acompanhar e quais origens aparecem
 
-A Aula 5, Parte 2 recebeu a versão corrigida com a música no final em staging e produção. A capa foi reenviada e ativada nos dois ambientes. Os mesmos identificadores de vídeo foram mantidos, preservando os links das aulas; houve conferência de reprodução no final e áudio decodificado no navegador. O arquivo original da pasta de produção do curso também foi atualizado, com a versão anterior guardada em `historico-videos/2026-11-26/`. O recibo, os hashes e as verificações estão na pasta do curso em Docs.
+Em **Admin → Origem das vendas**, selecionar o Cadê permite comparar resgates por campanha, link de embaixador e dentro do curso. Cada aquisição guarda sua própria origem; o primeiro contato do funil continua sendo outra informação.
 
-## Avatar e Cabine: commit solicitado para produção
+No cadastro do guia, a aba **Benefícios** mostra totais, quem resgatou, quando, filtro por período, ficha da conta e exportação da página de resultados. O período filtra a consulta; não limita a disponibilidade do benefício.
 
-O commit `615329078` foi incluído isoladamente, a pedido da responsável. Ao experimentar uma peça paga e depois fazer mudanças gratuitas, o editor salva essas mudanças com a peça de prévia voltando à anterior. Uma combinação inválida continua sendo recusada; a prévia não vira uma compra.
+Há duas informações separadas: a origem imediata do resgate do Cadê e a origem do acesso ao guia. A segunda usa a matrícula que realmente abriu a aula, ligada ao pagamento, resgate ou assinatura correspondente. Quando falta referência histórica, aparece “Origem não identificada”. O benefício não herda uma campanha ou embaixador por suposição. Dados pessoais e faturamento ficam restritos à administração.
 
-A peça que já estava no avatar salvo pode continuar sendo usada mesmo quando não aparece no inventário, como nas peças legadas ou recebidas em uma troca. Depois de tirada e salva, volta a precisar de posse para equipar novamente. A mesma regra vale no servidor. A Cabine passa a mostrar a peça pendente e os botões de compra ou adiamento, explicando por que a foto aguarda.
+O link pessoal atribui a venda do curso à Vivianne. A comissão automática continua seguindo a regra da primeira Comunidade elegível; comprar um curso avulso não cria automaticamente essa comissão. O prazo de atribuição por link é trinta dias, com a última origem válida registrada para aquela aquisição.
 
-A conferência focada passou com 37 testes do cliente, 15 do servidor, os tipos de Member Shell e Members e o lint dos cinco arquivos. Os demais trabalhos de avatar da staging não foram incluídos por esse pedido.
+## Links que já foram divulgados
 
-## Segunda leva: quarto e enquadramento da Cabine
+- `/kids/vilao-em-aliado`: até 26/12/2026 às 9h52 (Brasília), leva à campanha de presente; depois, à oferta paga do guia. São trinta dias de redirecionamento a partir da configuração.
+- `/i/vilao-em-aliado`: continua seguindo o cadastro da campanha, até 31/12/2029.
+- `/bolsa/laopa-20261113`: continua encaminhando ao presente do Cadê. Resgates até 12/12/2026 às 23h59 (Brasília).
+- Link completo do cupom Laopa, com `oferta`, `publico` e `event_code`: continua encaminhando à oferta com desconto, com validade até 19/12/2026 às 23h59 (Brasília). A campanha identificada pelo evento também chega à origem da compra.
 
-Os commits solicitados `7a630ea52` e `6e0858525` já foram publicados e os cinco serviços foram reconferidos em produção no SHA esperado, com as versões anteriores retiradas. A correção da conferência do controlador está em qualificação no PR 292; os detalhes e limites estão no recibo.
+## Código, infraestrutura e publicação
 
-- O quarto Kids reserva a cena à esquerda e as abas Decorar e No quarto à direita. Os ajustes da peça ficam no painel, com uma foto pequena do avatar.
-- O zoom responde aos botões, à rodinha e à pinça. É possível voltar ao enquadramento inicial; as larguras menores mantêm a cena e os controles dentro da tela.
-- A Cabine Kids oferece Rosto e Corpo inteiro, mostra o enquadramento e guarda a preferência no perfil. Clientes antigos que não enviam o novo campo preservam a escolha já salva.
-- A revisão encontrou a prévia antiga depois de girar ou redimensionar a tela. A câmera agora acompanha o tamanho real da cena. A comparação visual registrou diferença de 58 px antes e 1 px depois entre girar e reescolher Rosto.
-- Foram preservadas as demais alterações paralelas de apelido e construção do quarto que não pertenciam aos dois commits pedidos. A prova local usou componentes reais, API de ensaio, quatro larguras, zoom/reset e seleção por clique/teclado; as provas HTTP conferiram persistência e cliente antigo.
+A promoção foi seletiva. Os commits solicitados e os ajustes revisados de campanhas, ofertas, quarto, construção, páginas do guia/Vivianne e bio foram levados à produção sem promover a staging inteira. A revisão corrigiu problemas de reembolso/atribuição, expiração de cache, assinaturas de outro produto, origem financeira, navegação e salvamento do quarto. As mudanças da Nave e demais trabalhos não selecionados da outra frente ficaram fora dessa promoção.
 
-## Limites do histórico e dos relatórios
+As três variáveis novas do serviço de indicações foram cadastradas. O benefício permanente não exige variável nova. A configuração de infraestrutura desta leva tem zero alterações, mantém os disparos nativos de produção desligados e a versão canônica 4. Os leitores e escritores compatíveis sobem antes da conversão administrativa dos dados.
 
-O histórico importado vem dos presentes concluídos e das conversões que já estavam gravadas. O deploy não inventa a origem de uma venda antiga sem esse registro. A visão de aquisições conta presentes, compras avulsas e a primeira cobrança de assinatura; renovações não são novas aquisições, e o relatório não substitui o financeiro de todas as cobranças.
+Os PRs 290, 291, 292 e 293 possuem seus recibos. O PR 293 concluiu a publicação oficial no run 45869619738, com CI aprovado. O benefício do guia e a atribuição dos links antigos de cupom estão publicados manualmente no commit 6c245bf73; a fonte ca7d5c6b2 difere somente no teste da última aula. O PR 294 ainda aguarda a conclusão do CI completo, merge protegido e publicação oficial. O teste Windows expirou ao iniciar um processo auxiliar em 500 ms; passou localmente, e a repetição completa do CI está programada para manter as nove verificações na mesma tentativa. Falhas históricas de acompanhamento que tiveram recuperação somente leitura ficam preservadas na auditoria; nenhuma mutação foi repetida para obter um recibo verde.
 
-Nos fluxos de compra atuais, a origem segue Pix, cartão e assinatura. A rota legada de boleto mantém seu payload antigo para preservar a idempotência dos reenvios; não recebe as novas chaves de origem de link e botão. Os checkouts novos deste lançamento usam Pix e cartão.
+Os commits desta frente foram integrados à staging local para a publicação coordenada pela outra sessão. A conversão do novo benefício e seu manifesto na staging remota aguardam essa publicação; o curso, as imagens, o certificado e o vídeo corrigido já haviam sido conferidos nos dois ambientes.
 
-## Conferência real da ativação
+## Validação
 
-- Oito páginas de oferta e o checkout do curso responderam com os preços esperados; conferidos em 26/11/2026. Oferta do curso em 320, 390, 768 e 1.440 px sem rolagem horizontal.
-- Link pessoal da Vivianne leva à oferta correta, abre o pré-checkout e conserva a origem no checkout. Cookie de origem HttpOnly e Secure. A variante de presente do curso responde 404, como esperado pela decisão comercial.
-- Nove verificações de endereços legados e pessoais aprovadas, incluindo `/bolsa`, `/cupom` e o endereço antigo do guia. O redirecionamento especial do guia vale até **26/12/2026 às 12:52:08 UTC** (09:52:08 em Brasília).
-- Os dois cursos para pais estão vinculados às suas ofertas anuais; a releitura não encontrou ajustes pendentes. Identificadores, vídeos, materiais e certificados foram preservados.
-- Mini checkout real da área dos pais abriu com R$ 67, Pix, cartão e cupom; celular sem rolagem horizontal. Nenhum pagamento foi enviado. A conta sintética foi bloqueada novamente e a concessão temporária revogada.
-- Onze opções de ofertas habilitadas para embaixadores, sem presente para a Vivianne; 21 templates ativos conferidos após o novo serviço. Nenhum e-mail de ensaio foi enviado a terceiros.
-- Plano/aplicação/replano do histórico não encontraram registros faltantes. Na conferência havia 23 aquisições de presente e nenhuma conversão antiga gravada; o serviço já havia reconciliado os resgates disponíveis. Não se inventou origem para compras anteriores sem esse histórico.
-- O relatório real de origens respondeu 200 para administrador e 403 para staff. Integrações Referrals → Payments e Referrals → Catálogo responderam corretamente.
-- A data de corte legado de produção é **2026-11-26T12:28:15.681Z**. Ela permanece fixa em novas publicações.
+Mais de onze mil testes nas sete suítes envolvidas, checagem de tipos dos sete pacotes e build do Funil. PostgreSQL real provou migração, concorrência, preservação de histórico e idempotência. O conversor operacional foi ensaiado pela API real em banco isolado. O navegador conferiu materiais, checkout sem cobrar, imagens, origens, filtros, CSV, bio e navegação/salvamento do quarto. Nenhum pagamento real nem mensagem de ensaio foi enviado.
 
 
-## Limite da API durante a conferência final
-
-Os cinco serviços da segunda leva foram publicados no SHA `027f895b8a67300a4bae28f86423953893a1a289`, ficaram saudáveis e tiveram os predecessores retirados. O workflow terminou com falha ao atingir HTTP 429 na conferência final. Uma execução complementar parou antes de criar novos deployments. A reconferência somente de leitura confirmou os cinco serviços, os triggers desligados, a configuração sem alterações e a versão canônica 4; o checkout real também passou.
-
-O diagnóstico com a credencial do GitHub confirmou cota restante zero e `Retry-After: 60`. Algumas consultas não encaminhavam o prazo à camada de espera, encerrando imediatamente em vez de respeitar o limite. A correção do [PR 292](https://github.com/informach/sistema-zero/pull/292) passa o prazo às leituras e identifica a fase segura da falha; as mutações continuam sem repetição automática. Cinco regressões falharam antes e passaram depois; a suíte operacional completa passou com 367 testes. O diagnóstico real com a correção também passou, sem criar deployments. O recibo informa o estado da qualificação e publicação dessa correção.
-
-
-## Recibo e integração pelo GitHub
-
-[Recibo da publicação](publicacao-producao-2026-11-26.json). Primeira promoção: [PR 290](https://github.com/informach/sistema-zero/pull/290), merged. Segunda promoção: [PR 291](https://github.com/informach/sistema-zero/pull/291), merged. O recibo distingue a publicação manual já concluída da integração normal e da segunda leva.
+[Registro do benefício e das duas origens](beneficio-permanente-guia.json). Backups com dados pessoais ficam fora do Git; o recibo registra somente hashes de integridade. Nenhum pagamento real ou e-mail de ensaio foi enviado.

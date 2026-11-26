@@ -59,3 +59,10 @@ As últimas provas de banco corrigiram fixtures que dependiam da ordem de execu�
 O inventário de repertório ignorava o novo campo `allowBlocks`; a leitura e os artefatos foram corrigidos. A autoria atual usa blocos diferentes de alguns desafios antigos. O inventário agora explicita a falta de fonte local na trilha para Corrida dos bichos (`every_frames`, `random_x`), Pedras (`every_frames`) e Relógio da onda (`spawn_asteroid`), nos dois públicos. Esses projetos ainda precisam de uma revisão editorial própria. A exceção já documentada do desafio opcional noturno foi preservada.
 
 Os casos de regressão das experiências retiradas da Nave foram guardados como fixtures com a origem indicada. Os testes do currículo atual passaram a conferir o movimento, o limite, os materiais e o reinício na organização atual, e os percursos da Patrulha foram acrescentados.
+
+
+## Benefício permanente do guia e links antigos
+
+O Cadê da última aula do guia foi convertido e conferido em produção como benefício do curso, preservando os dois resgates originais, seus termos e o histórico. A produção tem somente Laopa de 13/11 e Guia de presente como campanhas. O bloco da aula usa benefitCode e depende do acesso autenticado ao guia. O relatório separa a origem do resgate da origem do acesso que abriu o guia; dados históricos ausentes continuam não identificados.
+
+Os oito serviços da leva manual estão online e os onze testes de links passaram. A publicação manual está concluída, mas a regularização do PR 294 ainda aguarda CI completo, merge protegido e publicação oficial. [Funcionamento atualizado](funcionamento-apos-publicacao.md) e [recibo atual](beneficio-permanente-guia.json). A staging local recebeu os commits; a publicação remota continua coordenada pela outra frente.
