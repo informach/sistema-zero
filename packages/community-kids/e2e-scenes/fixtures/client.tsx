@@ -7,9 +7,7 @@ import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import naveDia1 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json'
 import naveDia5 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
-import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
 import ilha1 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json'
 import ilha2 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json'
 import ilha3 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
@@ -35,10 +33,12 @@ import dino10 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre
 import dino11 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-11.manifesto.json'
 import dino12 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-12.manifesto.json'
 import dino13 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-13.manifesto.json'
+import naveLegado from './nave-experiencias-legado.json'
 
 const params = new URLSearchParams(location.search)
-// Desde a reestruturação da Nave (05/10/2026), as experiências do antigo Dia 1 ficaram em
-// "primeira-nave"; a de camadas continua no Dia 1.
+// As experiências da Nave de antes da nova autoria do Construtor (24/11/2026) ficam congeladas em
+// `nave-experiencias-legado.json`: estes testes conferem o player (layout, ampliar, palpite), não o
+// conteúdo do curso, e a reautoria trocou as experiências que eles usavam.
 // Os quatro Poderes da Faísca (02/11/2026): a experiência de cada um é o bloco `experiencia` da
 // aula 1, escolhido por `?course=<poder>`.
 type BlocoDoManifesto = { key: string; content?: unknown }
@@ -77,12 +77,7 @@ const blocks: BlocoDoManifesto[] =
         ? DINO
         : curso === 'ilha'
           ? ([...ilha1.blocks, ...ilha2.blocks, ...ilha3.blocks] as BlocoDoManifesto[])
-          : (PODERES[curso] ??
-            ([
-              ...navePrimeira.blocks,
-              ...naveDia1.blocks,
-              ...naveDia5.blocks,
-            ] as BlocoDoManifesto[]))
+          : (PODERES[curso] ?? ([...naveLegado.blocks, ...naveDia5.blocks] as BlocoDoManifesto[]))
 const source = blocks.find(
   (block) =>
     block.key === (params.get('block') ?? (PODERES[curso] ? 'experiencia' : 'experiencia-areas')),

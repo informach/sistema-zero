@@ -12,7 +12,9 @@ import type {
 } from '@sistemazero/member-shell/lib/types'
 import { createEmptyProject } from '@sistemazero/studio'
 import { createRoot } from 'react-dom/client'
-import manifesto from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
+// A experiência de coordenadas da Nave de antes da reautoria do Construtor (24/11/2026), congelada
+// como dado de teste: o teste confere o layout da aula, não o conteúdo do curso.
+import manifesto from '../../e2e-scenes/fixtures/nave-experiencias-legado.json'
 
 // Standalone authoring preview: real components and CSS, no learner identity or remote services.
 const studio: StudioBlock = {
