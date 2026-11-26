@@ -26,6 +26,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleRenewalReminderRepository no Postgres 
     `)
     await conn.sql.unsafe(`
       alter table members.entitlements
+        add column if not exists product_id uuid not null default gen_random_uuid(),
         add column if not exists snapshot jsonb not null default '{}'::jsonb,
         add column if not exists status text not null default 'active',
         add column if not exists source_kind text not null default 'payment',
