@@ -19,8 +19,12 @@ export const CONDICAO_DO_PRESENTE = 'sem custo e sem cartão'
 export interface CartaoDoPresente {
   /** "Um presente de Marta para você" ou "Um presente da campanha <título> para você". */
   etiqueta: string
-  /** O preço da oferta da página, riscado ("De R$ 27"), vindo do catálogo. */
-  precoCheio: string
+  /**
+   * O preço da oferta da página, riscado ("De R$ 27"), vindo do catálogo. `null` quando a oferta de
+   * venda não resolveu (sem principal, catálogo fora, fora do contrato) ou custa zero: o cartão mostra
+   * só o "R$ 0", nunca o preço de reserva de outro produto (revisão de 26/11/2026).
+   */
+  precoCheio: string | null
   /** O preço do presente. */
   precoFinal: string
   /** O que o presente dá e por quanto tempo (só o prazo; a condição vai embaixo do preço). */
@@ -30,6 +34,8 @@ export interface CartaoDoPresente {
   /** O prazo com a condição, para o texto fora do cartão (ao lado dele, no topo e no fim). */
   frase: string
   cta: string
+  /** O prazo do presente em dias (`null` sem prazo), para a copy em volta do cartão. */
+  dias: number | null
   /** Formulário aberto: o botão abre a janela do cadastro. */
   aberto: boolean
   /** Pausada ou encerrada: quem já começou o cadastro pode concluir. */
@@ -52,6 +58,8 @@ export function cartaoDoPresente(
     priceReais: string
     /** O formulário do guia para pais ("guia" no lugar de "curso"). */
     formulario?: 'guia'
+    /** A oferta de VENDA da página resolveu no catálogo (padrão: sim). Sem ela, sem preço riscado. */
+    offerResolved?: boolean
   },
 ): CartaoDoPresente {
   const { gift, kind } = presente
@@ -90,16 +98,23 @@ export function cartaoDoPresente(
     dias === null
       ? `Acesso ${alvo}, sem custo e sem cartão.`
       : `${texto} ${CONDICAO_DO_PRESENTE.replace(/^s/, 'S')}.`
+  const centavos = Math.round(Number(opts.priceReais) * 100)
   return {
-    etiqueta: campanha
-      ? `Um presente da campanha ${nome} para você`
-      : `Um presente de ${nome} para você`,
-    precoCheio: formatarPreco(Math.round(Number(opts.priceReais) * 100)),
+    // Evento ("Feira de Ciências") e pessoa: "Um presente de …"; campanha: "da campanha …".
+    etiqueta:
+      campanha && gift.source.context !== 'event'
+        ? `Um presente da campanha ${nome} para você`
+        : `Um presente de ${nome} para você`,
+    precoCheio:
+      opts.offerResolved !== false && Number.isFinite(centavos) && centavos > 0
+        ? formatarPreco(centavos)
+        : null,
     precoFinal: formatarPreco(0),
     texto,
     condicao: CONDICAO_DO_PRESENTE,
     frase,
     cta: CTA_DO_PRESENTE,
+    dias,
     aberto,
     retomavel,
     estado,

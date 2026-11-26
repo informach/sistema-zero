@@ -74,7 +74,8 @@ describe('cartaoDoPresente', () => {
       presente({ campanha: true, escolhida: 'cade-todo-mundo-7-dias' }),
       opts,
     )
-    expect(c.etiqueta).toBe('Um presente da campanha Feira de Ciências para você')
+    // Evento: "Um presente de <evento>" (sem "da campanha"), como o selo antigo do evento.
+    expect(c.etiqueta).toBe('Um presente de Feira de Ciências para você')
     expect(c.resgate.campaign).toBe(true)
     expect(c.resgate.oferta).toBe('cade-todo-mundo-7-dias')
   })
@@ -134,11 +135,39 @@ describe('copyDoPresente', () => {
     const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
     const adulto = copyDoPresente(PAGINA_DESAFIO_ADULTO, cartao)
     for (const duvidas of [kids.faq, adulto.duvidas.itens]) {
-      expect(JSON.stringify(duvidas)).not.toMatch(/pagamento|garantia|reembolso|compra|\{\{preco/i)
+      // Só a PERGUNTA decide: respostas que citam a compra de passagem ficam (com o texto trocado).
+      const perguntas = duvidas.map((d: { pergunta: string }) => d.pergunta).join(' ')
+      expect(perguntas).not.toMatch(/pagamento|garantia|reembolso|compra|\{\{preco/i)
+      expect(JSON.stringify(duvidas)).not.toMatch(/aprovação do pagamento|\{\{preco/i)
     }
     expect(kids.faq.length).toBeLessThan(PAGINA_DESAFIO_9A17.faq.length)
     expect(kids.hero).toEqual(PAGINA_DESAFIO_9A17.hero)
     // O original não muda.
     expect(PAGINA_DESAFIO_9A17.condicoes).toMatch(/pagamento único/i)
+  })
+})
+
+describe('revisão do modo presente (26/11/2026)', () => {
+  const opts = { communityUrl: 'https://kids.example', priceReais: '37.00' }
+
+  test('sem a oferta de venda (ou de preço zero), o cartão não mostra preço riscado', () => {
+    expect(cartaoDoPresente(presente(), opts).precoCheio).toMatch(/^R\$\s37$/)
+    expect(cartaoDoPresente(presente(), { ...opts, offerResolved: false }).precoCheio).toBeNull()
+    expect(cartaoDoPresente(presente(), { ...opts, priceReais: '0.00' }).precoCheio).toBeNull()
+  })
+
+  test('presente de 7 dias no Desafio: a página fala de 7 dias, não dos 30 da venda', () => {
+    const cartao = cartaoDoPresente(presente({ dias: 7 }), opts)
+    const texto = JSON.stringify(copyDoPresente(PAGINA_DESAFIO_9A17, cartao))
+    expect(texto).not.toMatch(/\b30 dias\b/)
+    expect(texto).toContain('7 dias')
+  })
+
+  test('dúvida que só cita a compra de passagem fica (equipamento), com o texto trocado', () => {
+    const cartao = cartaoDoPresente(presente({ dias: 30 }), opts)
+    const kids = copyDoPresente(PAGINA_DESAFIO_9A17, cartao)
+    const equipamento = kids.faq.find((d: { pergunta: string }) => /equipamento/i.test(d.pergunta))
+    expect(equipamento).toBeDefined()
+    expect(JSON.stringify(equipamento)).not.toMatch(/A compra e o cadastro/)
   })
 })
