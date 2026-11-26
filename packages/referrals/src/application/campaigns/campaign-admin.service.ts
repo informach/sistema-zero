@@ -222,7 +222,10 @@ export class CampaignAdminService {
   async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
     const result = await this.repo.list(opts)
     const results = this.reports
-      ? await this.reports.campaignResults(result.items.map((c) => c.id))
+      ? await this.reports.campaignResults(
+          result.items.map((c) => c.id),
+          opts.audience,
+        )
       : new Map<string, OriginResults>()
     return {
       items: await Promise.all(

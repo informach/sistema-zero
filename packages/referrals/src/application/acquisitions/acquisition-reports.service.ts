@@ -44,22 +44,42 @@ export class AcquisitionReportsService {
     private readonly referrals: ReferralRepository,
   ) {}
 
-  async campaignResults(campaignIds: string[]): Promise<Map<string, OriginResults>> {
-    const rows = await this.acquisitions.listByCampaigns(campaignIds)
+  /**
+   * `audience` (25/11/2026, revisão do Lote 7): os números de UMA comunidade. O embaixador tem
+   * código nos dois públicos; sem o filtro, a lente Kids somava as assinaturas adultas.
+   */
+  async campaignResults(
+    campaignIds: string[],
+    audience?: GiftAudience,
+  ): Promise<Map<string, OriginResults>> {
+    const rows = ofAudience(await this.acquisitions.listByCampaigns(campaignIds), audience)
     return groupResults(campaignIds, rows, (a) => a.campaignId)
   }
 
-  async ambassadorResults(ambassadorIds: string[]): Promise<Map<string, OriginResults>> {
-    const rows = await this.acquisitions.listByAmbassadors(ambassadorIds)
+  async ambassadorResults(
+    ambassadorIds: string[],
+    audience?: GiftAudience,
+  ): Promise<Map<string, OriginResults>> {
+    const rows = ofAudience(await this.acquisitions.listByAmbassadors(ambassadorIds), audience)
     return groupResults(ambassadorIds, rows, (a) => a.ambassadorId)
   }
 
-  async campaignDetail(campaignId: string, offset = 0): Promise<OriginDetail> {
-    return this.detail(await this.acquisitions.listByCampaigns([campaignId]), offset)
+  async campaignDetail(
+    campaignId: string,
+    offset = 0,
+    audience?: GiftAudience,
+  ): Promise<OriginDetail> {
+    const rows = await this.acquisitions.listByCampaigns([campaignId])
+    return this.detail(ofAudience(rows, audience), offset)
   }
 
-  async ambassadorDetail(ambassadorId: string, offset = 0): Promise<OriginDetail> {
-    return this.detail(await this.acquisitions.listByAmbassadors([ambassadorId]), offset)
+  async ambassadorDetail(
+    ambassadorId: string,
+    offset = 0,
+    audience?: GiftAudience,
+  ): Promise<OriginDetail> {
+    const rows = await this.acquisitions.listByAmbassadors([ambassadorId])
+    return this.detail(ofAudience(rows, audience), offset)
   }
 
   /** Tudo o que o e-mail recebeu ou comprou, nos dois públicos, com a origem de cada um. */
@@ -213,4 +233,9 @@ function conversionOf(
   return match
     ? { status: match.status, bonusCents: match.bonusCents, paidAt: match.paidAt.toISOString() }
     : null
+}
+
+/** Só as aquisições da comunidade pedida (sem `audience`, as duas). */
+function ofAudience(rows: AcquisitionRecord[], audience?: GiftAudience): AcquisitionRecord[] {
+  return audience ? rows.filter((a) => a.audience === audience) : rows
 }

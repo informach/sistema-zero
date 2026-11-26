@@ -70,6 +70,7 @@ function toConversionView(c: ConversionListItem) {
     paidMarkedAt: c.paidMarkedAt?.toISOString() ?? null,
     paidMarkedBy: c.paidMarkedBy,
     note: c.note,
+    ambassadorId: c.ambassadorId,
     ambassadorName: c.ambassadorName,
     ambassadorEmail: c.ambassadorEmail,
     ambassadorPixKey: c.ambassadorPixKey,
@@ -133,7 +134,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             limit: Math.min(query.limit ?? 25, 100),
             offset: query.offset ?? 0,
           })
-          const results = await deps.reports?.ambassadorResults(items.map((i) => i.id))
+          // Os números da comunidade da lista (o embaixador tem código nos dois públicos).
+          const results = await deps.reports?.ambassadorResults(
+            items.map((i) => i.id),
+            query.audience,
+          )
           const revenue = canSeeRevenue(headers)
           return {
             items: items.map((i) =>

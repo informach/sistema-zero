@@ -96,6 +96,10 @@ Serviços (Lote 2):
   (`upstream_error`, nunca "link não existe"). A campanha de VENDA só salva com oferta que seja a
   principal do produto (`GiftOfferCatalog.primaryOfferSlugOf`, `GET /catalog/products/by-sku/:sku`)
   ou marcada `content.pageSellable` no Catálogo: a página de venda não abre outra oferta.
+- **Resultados por comunidade (revisão do Lote 7, 25/11/2026):** `ambassadorResults`,
+  `campaignResults`, `ambassadorDetail` e `campaignDetail` aceitam `audience` (o embaixador tem código
+  nos dois públicos): a lista de embaixadores e de campanhas repassa o `audience` da consulta, e
+  `GET …/results?audience=` filtra o detalhe. A listagem de bônus traz `ambassadorId`.
 - **Relatórios** (`AcquisitionReportsService`, admin+ no gateway e no serviço porque trazem
   e-mails e faturamento): `GET /referrals/admin/origins`, `/acquisitions?email`,
   `/campaigns/:id/results`, `/ambassadors/:id/results`. A lista de campanhas e de embaixadores

@@ -58,18 +58,26 @@ export function originsRoutes(deps: {
     )
     .get(
       '/campaigns/:id/results',
-      ({ params, query }) => deps.reports.campaignDetail(params.id, query.offset ?? 0),
+      ({ params, query }) =>
+        deps.reports.campaignDetail(params.id, query.offset ?? 0, query.audience),
       {
         params: t.Object({ id: t.String({ format: 'uuid' }) }),
-        query: t.Object({ offset: t.Optional(t.Numeric({ minimum: 0, maximum: 100_000 })) }),
+        query: t.Object({
+          offset: t.Optional(t.Numeric({ minimum: 0, maximum: 100_000 })),
+          audience: t.Optional(AUDIENCE),
+        }),
       },
     )
     .get(
       '/ambassadors/:id/results',
-      ({ params, query }) => deps.reports.ambassadorDetail(params.id, query.offset ?? 0),
+      ({ params, query }) =>
+        deps.reports.ambassadorDetail(params.id, query.offset ?? 0, query.audience),
       {
         params: t.Object({ id: t.String({ format: 'uuid' }) }),
-        query: t.Object({ offset: t.Optional(t.Numeric({ minimum: 0, maximum: 100_000 })) }),
+        query: t.Object({
+          offset: t.Optional(t.Numeric({ minimum: 0, maximum: 100_000 })),
+          audience: t.Optional(AUDIENCE),
+        }),
       },
     )
 }

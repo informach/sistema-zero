@@ -592,4 +592,36 @@ describe('manutenção e relatórios', () => {
     expect(detail.peopleTotal).toBe(2)
     expect(detail.people.find((p) => p.email === 'a@x.com')?.later).toHaveLength(1)
   })
+
+  test('resultados por comunidade: o embaixador tem código nos dois públicos e a lente não soma', async () => {
+    const { acquisitions, reports } = base()
+    const row = (paymentId: string, audience: 'kids' | 'adult', email: string) =>
+      acquisitions.insert({
+        email,
+        accountUserId: null,
+        audience,
+        kind: 'subscription',
+        offerId: COMMUNITY.offerId,
+        offerSlug: COMMUNITY.offerSlug,
+        amountCents: 9700n,
+        paymentId,
+        subscriptionId: `sub-${paymentId}`,
+        redemptionId: null,
+        acquiredAt: now,
+        originKind: 'ambassador',
+        codeId: null,
+        campaignId: null,
+        ambassadorId: 'amb-1',
+        place: null,
+        utm: null,
+        bonusTerms: null,
+      })
+    await row('k1', 'kids', 'a@x.com')
+    await row('k2', 'kids', 'b@x.com')
+    await row('a1', 'adult', 'c@x.com')
+    expect((await reports.ambassadorResults(['amb-1'])).get('amb-1')?.subscriptions).toBe(3)
+    expect((await reports.ambassadorResults(['amb-1'], 'kids')).get('amb-1')?.subscriptions).toBe(2)
+    const detail = await reports.ambassadorDetail('amb-1', 0, 'adult')
+    expect(detail.peopleTotal).toBe(1)
+  })
 })
