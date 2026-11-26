@@ -277,7 +277,8 @@ try {
   )
   await page.screenshot({ path: resolve(output, 'barra-390.png') })
 
-  // Modo presente: o selo de quem dá, o formulário do guia, fora do índice.
+  // Modo presente (26/11/2026): a mesma página, o mesmo cartão com o preço riscado até R$ 0 e
+  // "Quero o meu presente" abrindo o cadastro numa janela; fora do índice.
   const presente = `${url}?presente=${CODIGO}`
   for (const largura of [390, 1440]) {
     await page.setViewportSize({ width: largura, height: 1000 })
@@ -292,10 +293,22 @@ try {
       `presente ${largura}: fora do índice`,
     )
     assert.match(await page.locator('.pk-origem').innerText(), /Encontro de pais/)
+    const cartao = page.locator('#resgatar .c9-plano')
+    assert.match(
+      await cartao.innerText(),
+      /Um presente da campanha Encontro de pais para você[\s\S]*R\$\s?27\s+R\$\s?0[\s\S]*Quero o meu presente/,
+      `presente ${largura}: cartão`,
+    )
+    // Um cartão só: nada de moldura do formulário dentro dele.
     assert.equal(
-      await page.locator('#resgatar input[name="email"]').count(),
-      1,
-      `presente ${largura}: formulário`,
+      await page.locator('#resgatar .bz-card').count(),
+      0,
+      `presente ${largura}: sem formulário no cartão`,
+    )
+    assert.equal(
+      await page.locator('.pm-painel').isVisible(),
+      false,
+      `presente ${largura}: janela fechada`,
     )
     assert.equal(await page.locator('[data-checkout-cta]').count(), 0, `presente ${largura}`)
     await page.screenshot({ path: resolve(output, `presente-${largura}.png`), fullPage: true })
@@ -304,11 +317,19 @@ try {
   // Cadastro até o concluído: o guia abre na área dos pais e o resgate leva a oferta da página.
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto(presente)
-  await page.locator('#resgatar input[name="nome"]').fill('Paula Prado')
-  await page.locator('#resgatar input[name="email"]').fill('paula@example.com')
-  await page.locator('#resgatar button[type="submit"]').click()
+  await page.locator('#resgatar [data-presente-cta]').click()
+  const janela = page.getByRole('dialog')
+  await janela.waitFor()
+  await janela.locator('input[name="nome"]').fill('Paula Prado')
+  await janela.locator('input[name="email"]').fill('paula@example.com')
+  await janela.locator('button[type="submit"]').click()
   await page.getByRole('link', { name: 'Abrir o guia' }).waitFor()
-  assert.match(await page.locator('#resgatar').innerText(), /O seu guia está liberado/)
+  assert.match(await janela.innerText(), /O seu guia está liberado/)
+  // A janela tem uma moldura só: o formulário não desenha a dele.
+  assert.equal(
+    await janela.locator('.bz-card').evaluate((el) => getComputedStyle(el).borderTopWidth),
+    '0px',
+  )
   assert.equal(
     await page.getByRole('link', { name: 'Abrir o guia' }).getAttribute('href'),
     `https://kids.qa.local/pais/cursos/${SLUG}`,
@@ -319,7 +340,9 @@ try {
   // Campanha: o resgate não leva oferta (vale a da campanha); só a escolha do embaixador
   // (`?oferta-presente=`) vai no resgate (uma página por curso, 25/11/2026).
   assert.equal(resgates[0]?.offer, undefined)
-  await page.locator('#resgatar').screenshot({ path: resolve(output, 'concluido.png') })
+  await janela.screenshot({ path: resolve(output, 'concluido.png') })
+  await page.keyboard.press('Escape')
+  assert.equal(await page.locator('.pm-painel').isVisible(), false, 'Esc fecha a janela')
 
   // Campanha pausada: fechada, com a retomada para quem já começou o cadastro.
   codigo = campanha({ state: 'paused', giftAvailable: false })

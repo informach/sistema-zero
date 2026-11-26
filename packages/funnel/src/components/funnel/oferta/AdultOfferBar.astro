@@ -3,12 +3,14 @@ interface Props {
   price: string
   detail: string
   action: string
+  /** Modo presente: o botão abre a janela do cadastro do presente. */
+  presente?: boolean
 }
-const { price, detail, action } = Astro.props
+const { price, detail, action, presente = false } = Astro.props
 ---
 <aside class="adult-mobile" data-adult-offer-bar aria-label="Resumo da oferta" aria-hidden="true" inert>
   <div><strong>{price}</strong><span class="adult-mobile-detail">{detail}</span></div>
-  <a class="cda-btn cda-btn--barra" href="#oferta">{action}</a>
+  <a class="cda-btn cda-btn--barra" href="#oferta" data-presente-cta={presente ? '' : undefined}>{action}</a>
 </aside>
 <script>
   const bar = document.querySelector<HTMLElement>('[data-adult-offer-bar]')

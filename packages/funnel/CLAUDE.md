@@ -1,5 +1,22 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Modo presente = o cartão da venda + a janela do cadastro (26/11/2026)
+
+Decisão da dona: `?presente=<código>` abre a MESMA página e o MESMO cartão da venda. Como no modo
+cupom, só mudam a etiqueta ("Um presente de <primeiro nome> para você" / "Um presente da campanha
+<título> para você"), o preço da oferta riscado até R$ 0 e o botão "Quero o meu presente", que abre o
+cadastro numa janela (`islands/PresenteModal.tsx`, com o `BolsaResgate` e todos os estados dele; Esc,
+foco preso e devolvido como no `PreCheckoutModal`). A copy da página é a da venda também no presente.
+Peças compartilhadas: `server/presente-cartao.ts` (`cartaoDoPresente`: etiqueta, preço, prazo
+divulgado do presente, estado e props do resgate), `PresenteAcao.astro` (o botão com a classe do
+botão de compra da página, ou o estado da campanha com a retomada) e `PresenteJanela.astro` (a
+janela, DENTRO do `.c917`/`.cda`, que vestem o formulário). `styles/presente-modal.css` tira a moldura
+do `BolsaResgate` na janela e na retomada: nunca um cartão dentro do outro. A barra do celular abre a
+mesma janela (`barra.presente` / `AdultOfferBar presente`); o "Depois da compra" do Desafio adulto sai no
+presente. Usado por Cadê Kids/adulto, Desafio Kids/adulto, guia e curso da Vivianne; o
+`OfertaPresente` saiu. Testes: `tests/unit/presente-cartao.test.ts`, `cade-oferta.test.ts` e o browser
+`curso-pais-vilao.ts` (cadastro pela janela até o concluído).
+
 ## Curso para pais da Vivianne com página de venda (25/11/2026)
 
 `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso

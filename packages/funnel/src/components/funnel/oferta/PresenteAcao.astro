@@ -1,0 +1,57 @@
+---
+// A ação do cartão de compra no MODO PRESENTE (26/11/2026), no lugar do botão de compra: o botão
+// "Quero o meu presente" (`data-presente-cta`, abre a janela do `PresenteJanela`) com a MESMA classe
+// do botão de compra da página; ou, fora do prazo, o estado da campanha, com a retomada para quem já
+// começou o cadastro (pausada ou encerrada). Kids (`.c9-*`/`.pk-*`) ou adulto (`.cda-*`/`.pa-*`).
+import '../../../styles/presente-kids.css'
+import '../../../styles/presente-adulto.css'
+import '../../../styles/presente-modal.css'
+import BolsaResgate from '../../../islands/BolsaResgate'
+import type { CartaoDoPresente } from '../../../server/presente-cartao'
+
+interface Props {
+  cartao: CartaoDoPresente
+  /** A classe do botão de compra da página (o botão do presente usa a mesma). */
+  classeBotao: string
+  analyticsId: string
+}
+const { cartao, classeBotao, analyticsId } = Astro.props
+const { estado, adulto } = cartao
+---
+{cartao.aberto ? (
+  <button type="button" class={classeBotao} data-presente-cta data-analytics-id={analyticsId}>{cartao.cta}</button>
+) : adulto ? (
+  <div class="cda-coluna">
+    {estado && (
+      <div class:list={['pa-estado', `cor-${cartao.retomavel ? 'rosa' : 'azul'}`]} role="status">
+        <span class="pa-estado__selo">{estado.etiqueta}</span>
+        <h3 class="pa-estado__titulo">{estado.titulo}</h3>
+        <p class="cda-suave">{estado.texto}</p>
+      </div>
+    )}
+    {cartao.retomavel && (
+      <details id="retomar" class="pa-retomar pm-retomar">
+        <summary>{cartao.retomar.botao}</summary>
+        <p class="cda-suave">{cartao.retomar.texto}</p>
+        <BolsaResgate client:load {...cartao.resgate} retryOnly />
+      </details>
+    )}
+  </div>
+) : (
+  <div class="c9-pilha c9-gap-16">
+    {estado && (
+      <div class:list={['pk-estado', `c9-cor--${cartao.retomavel ? 'rosa' : 'azul-claro'}`]} role="status">
+        <span class="c9-tag">{estado.etiqueta}</span>
+        <h3 class="pk-estado__titulo">{estado.titulo}</h3>
+        <p class="c9-p">{estado.texto}</p>
+      </div>
+    )}
+    {cartao.retomavel && (
+      <details id="retomar" class="pk-retomar pm-retomar">
+        <summary>{cartao.retomar.botao}</summary>
+        <p>{cartao.retomar.texto}</p>
+        <BolsaResgate client:load {...cartao.resgate} retryOnly />
+      </details>
+    )}
+  </div>
+)}
