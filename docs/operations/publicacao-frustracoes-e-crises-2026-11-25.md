@@ -44,3 +44,11 @@ Após conferir a intenção do bloco original, a responsável escolheu manter um
 A alteração foi validada e publicada pelo serviço canônico de autoria em staging e produção. Foram preservados os vídeos, o planejamento de mídia, os anexos e os critérios de conclusão. O manifesto, as cópias de segurança e a verificação desta pasta refletem a nova composição.
 
 Conferência nos dois ambientes com navegador real em desktop e celular: resumo abaixo dos materiais, uma coluna, ausência do livro 3D, PDF disponível para baixar e nenhuma rolagem horizontal no celular. Os 32 testes editoriais passaram. As contas sintéticas foram bloqueadas e as concessões de ensaio revogadas novamente após a conferência.
+
+## Assinaturas institucionais em 26/11/2026
+
+O bloco publicado não tinha o campo `signatures`. Foram cadastrados Helena Oliveira e Júlio Felipe, com as imagens oficiais usadas no certificado do Cadê Todo Mundo de cada ambiente. A Aula 5 foi validada e publicada em staging e produção, preservando todo o conteúdo restante.
+
+Uma emissão real com conta sintética nova em cada ambiente confirmou os dois nomes e quatro imagens no PDF: fundo, duas assinaturas e QR. A inspeção visual confirmou as posições e o download repetido devolveu os mesmos bytes. As contas foram bloqueadas e os certificados e concessões de ensaio revogados após a conferência.
+
+Em produção, foi removido somente o cache PDF de um certificado ativo deste curso, para que o próximo download use as assinaturas. Registro, número, titular e data foram preservados. As imagens das assinaturas, a prévia real atualizada, os manifestos, hashes e cópias dos dois cadastros estão na pasta editorial.

@@ -30,7 +30,17 @@
         "title": "Certificado de conclusão",
         "introLine": "Certificamos que",
         "coursePhrase": "concluiu o curso Como ajudar seu filho autista a lidar com frustrações e evitar crises",
-        "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela."
+        "bodyText": "Conheceu como entender a crise como comunicação e o que fazer antes, durante e depois dela.",
+        "signatures": [
+          {
+            "name": "Helena Oliveira",
+            "imageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/bc2e3cce-edc3-4f29-9e04-dcfb3992eacd.webp"
+          },
+          {
+            "name": "Júlio Felipe",
+            "imageUrl": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/7ee8a78c-3b38-4417-9d64-83b9a4ddcd1b.webp"
+          }
+        ]
       }
     }
   ],

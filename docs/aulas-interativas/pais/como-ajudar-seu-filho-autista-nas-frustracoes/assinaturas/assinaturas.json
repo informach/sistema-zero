@@ -1,0 +1,26 @@
+{
+  "source": "Assinaturas institucionais do certificado publicado do Cadê Todo Mundo nos dois ambientes.",
+  "verifiedAt": "2026-11-26T08:50:52.499695Z",
+  "signatures": [
+    {
+      "name": "Helena Oliveira",
+      "file": "assinaturas/helena-oliveira.webp",
+      "bytes": 57090,
+      "sha256": "03e20c41c4d6d54cf2e5f843fe6b11896d12cee43319fa9fcbbc8a4b4ce21c35",
+      "urls": {
+        "staging": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/bc2e3cce-edc3-4f29-9e04-dcfb3992eacd.webp",
+        "production": "https://cdn.sistemazero.com.br/admin/course-publication/13db18d1b9dee4439582e89c91eef47bf9c6d40804f67ab4ab038158bc7d7335/file.webp"
+      }
+    },
+    {
+      "name": "Júlio Felipe",
+      "file": "assinaturas/julio-felipe.webp",
+      "bytes": 86292,
+      "sha256": "be0df79f3c6c1ac6e8a6f0d00b13156a1327906a22a7c5e0f3f38ab35e6502b6",
+      "urls": {
+        "staging": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/blocks/7ee8a78c-3b38-4417-9d64-83b9a4ddcd1b.webp",
+        "production": "https://cdn.sistemazero.com.br/admin/course-publication/cf91909b6c7f1a2ab83755db62c66b8ff27367e229d03036947861ee37e5a695/file.webp"
+      }
+    }
+  ]
+}

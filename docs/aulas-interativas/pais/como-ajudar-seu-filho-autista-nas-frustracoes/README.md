@@ -88,3 +88,9 @@ As capas das partes usam a imagem original. A capa do curso foi recomposta com o
 Para restaurar o cadastro, use os cinco manifestos editoriais, os arquivos finais e os vínculos do recibo do ambiente. Os documentos `cadastro-publicado-*.json` são cópias de segurança para consulta, não são os arquivos de importação do editor. Os vídeos originais continuam na pasta de Downloads informada pela responsável; seus arquivos não foram duplicados no repositório.
 
 O fluxo de publicação é staging e depois promoção para produção pelo operador canônico de [publicação de cursos](../../../operations/cursos-passo-a-passo.md). Este curso tem audiência Kids e `learner=parents`, fica fora da Jornada e não é copiado para a comunidade adulta.
+
+### Assinaturas do certificado
+
+O cadastro publicado usa as assinaturas institucionais de **Helena Oliveira** e **Júlio Felipe**, com as imagens oficiais. As duas ficam na pasta `assinaturas/`; `assinaturas.json` registra os arquivos, hashes e URLs de cada ambiente. O manifesto da Aula 5 usa as referências da autoria em staging, e as cópias publicadas guardam as referências específicas de cada ambiente.
+
+A prévia `certificado-demonstracao.pdf` foi emitida pelo próprio curso com os dois nomes e imagens, a partir de uma conta de ensaio. O registro de demonstração foi revogado após a conferência. Na restauração, confira os dois campos de assinatura do bloco, além da imagem de fundo.
