@@ -139,6 +139,43 @@ describe('O Jardim Secreto', () => {
       }
     })
   }
+  // 26/11/2026, caso real de produção: a criança guardou a memória dentro de uma guarda do encontro
+  // com o regador ("Se temRegador = falso" → esconder, temRegador = verdadeiro, mudar o aviso), para
+  // pegar uma vez só. O objetivo "lembrar" reprovava esse jeito certo.
+  for (const d of ['2d', '3d'] as const) {
+    test(`${d}: "lembrar" aceita a memória gravada dentro da guarda do encontro com o regador`, () => {
+      const p = montarProjetoJardim(d, 'decisao')
+      const behavior = (p.ir as { behavior: { events: Record<string, unknown>[] } }).behavior
+      const coleta = behavior.events.find((e) =>
+        d === '3d'
+          ? e.type === 'g3d:onTouch' && e.otherVar === 'regador'
+          : e.type === 'g2d:onOverlap' && (e.bVar === 'regador' || e.aVar === 'regador'),
+      )
+      expect(coleta, 'encontro com o regador').toBeDefined()
+      const corpo = coleta!.body as unknown[]
+      coleta!.body = [
+        {
+          type: 'if',
+          cond: {
+            type: 'binop',
+            op: '===',
+            left: { type: 'var', name: 'temRegador' },
+            right: { type: 'bool', value: false },
+          },
+          // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+          then: corpo,
+          else: [],
+        },
+      ]
+      const lembrar = jardimChecks(d, 'decisao').filter((c) => c.id === 'lembrar')
+      expect(lembrar).toHaveLength(1)
+      expect(evaluateStudioSectionProject(lembrar, p)[0]?.passed).toBe(true)
+      // Controle: a guarda que só abre DEPOIS de pegar nunca grava a memória.
+      ;(coleta!.body as { cond: unknown }[])[0]!.cond = { type: 'var', name: 'temRegador' }
+      expect(evaluateStudioSectionProject(lembrar, p)[0]?.passed).toBe(false)
+    })
+  }
+  // O quiz saiu das aulas em 24/11/2026; o arquivo continua, porque a prévia do Jardim o usa.
   test('quiz misto mantém resposta única, demonstrações 1/3/4 e pergunta 2 sem cena', () => {
     expect(isManifestQuiz(jardimQuiz)).toBe(true)
     expect(validatePredictionQuiz(jardimQuiz.questions)).toBeNull()

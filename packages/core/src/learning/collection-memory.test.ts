@@ -143,6 +143,102 @@ describe('memória ligada à coleta e à decisão', () => {
     ]
     expect(evaluatesCollectionMemory(rule, byMemory.project)).toBe(false)
   })
+  // 26/11/2026, caso real do Jardim Secreto: a criança guarda a memória dentro de uma guarda do
+  // próprio encontro ("Se temRegador = falso"), para pegar o regador uma vez só.
+  describe('memória gravada dentro de uma guarda do encontro', () => {
+    const gravar = (name: string) => ({
+      type: 'assign',
+      name,
+      value: { type: 'bool', value: true },
+    })
+    const se = (cond: unknown, then: unknown[], otherwise: unknown[] = []) => ({
+      type: 'if',
+      cond,
+      // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
+      then,
+      else: otherwise,
+    })
+    const igualFalso = (name: string) => ({
+      type: 'binop',
+      op: '===',
+      left: { type: 'var', name },
+      right: { type: 'bool', value: false },
+    })
+    const comColeta = (body: unknown[], extraStart: unknown[] = []) => {
+      const f = fixture('pegou')
+      f.collection.body = body as typeof f.collection.body
+      f.project.ir.behavior.start.push(
+        ...(extraStart as (typeof f.project.ir.behavior.start)[number][]),
+      )
+      return f.project
+    }
+
+    test('guarda que só abre antes de pegar (Se pegou = falso) conta', () => {
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([se(igualFalso('pegou'), [{ type: 'g2d:hide' }, gravar('pegou')])]),
+        ),
+      ).toBe(true)
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([
+            se({ type: 'logicalNot', value: { type: 'var', name: 'pegou' } }, [gravar('pegou')]),
+          ]),
+        ),
+      ).toBe(true)
+    })
+    test('Se dentro de Se e o senão de uma guarda que não lê a memória contam', () => {
+      const outra = { type: 'var', name: 'outra' }
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([se(outra, [se(igualFalso('pegou'), [gravar('pegou')])])]),
+        ),
+      ).toBe(true)
+      expect(evaluatesCollectionMemory(rule, comColeta([se(outra, [], [gravar('pegou')])]))).toBe(
+        true,
+      )
+    })
+    test('ramo que nunca roda não conta (Se falso, constante, Se pegou antes de pegar)', () => {
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([se({ type: 'bool', value: false }, [gravar('pegou')])]),
+        ),
+      ).toBe(false)
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta(
+            [se({ type: 'var', name: 'podeAgir' }, [gravar('pegou')])],
+            [{ type: 'var', name: 'podeAgir', value: { type: 'bool', value: false } }],
+          ),
+        ),
+      ).toBe(false)
+      // Só abre DEPOIS de pegar: a memória nunca é gravada a partir do falso.
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([se({ type: 'var', name: 'pegou' }, [gravar('pegou')])]),
+        ),
+      ).toBe(false)
+      // O senão de uma guarda verdadeira nunca roda.
+      expect(
+        evaluatesCollectionMemory(
+          rule,
+          comColeta([se({ type: 'bool', value: true }, [], [gravar('pegou')])]),
+        ),
+      ).toBe(false)
+    })
+    test('a guarda num encontro com outra coisa continua recusada', () => {
+      const f = fixture('pegou')
+      f.collection.bVar = 'outro'
+      f.collection.body = [se(igualFalso('pegou'), [gravar('pegou')])] as typeof f.collection.body
+      expect(evaluatesCollectionMemory(rule, f.project)).toBe(false)
+    })
+  })
   test('posição exige mudança finita em pelo menos um eixo do chão', () => {
     const r = {
       type: 'changedGamePosition' as const,
