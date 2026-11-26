@@ -1959,6 +1959,8 @@ export const seeds = [
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
     }),
   },
   {
@@ -2009,6 +2011,8 @@ export const seeds = [
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
     }),
   },
   {
