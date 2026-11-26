@@ -137,7 +137,8 @@ describe('Aula 7: jornada autenticada e identidade infantil', () => {
   test('presente nativo não é requisito para concluir a aula', () => {
     const presente = manifesto.blocks.find((bloco) => bloco.key === 'presente')
     expect(presente?.content?.kind).toBe('gift')
-    expect(presente?.content?.campaignCode).toBe('vilao-em-aliado-cade')
+    // Desde fe0bb71fb o presente da Aula 7 é um benefício permanente do curso (`benefitCode`).
+    expect(presente?.content?.benefitCode).toBe('vilao-em-aliado-cade')
     for (const secao of manifesto.sections) {
       expect((secao.completion as { blockIds: string[] }).blockIds).not.toContain('presente')
     }
