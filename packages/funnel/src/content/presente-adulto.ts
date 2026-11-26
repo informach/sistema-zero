@@ -211,7 +211,7 @@ export function presenteAdulto(prazo: PrazoDoCade) {
           texto: `Quando os ${prazo.dias} terminam, nenhuma cobrança começa.`,
         },
       ] satisfies { cor: CorAdulto; rotulo: string; texto: string }[],
-      nota: `Quando os ${prazo.dias} terminam, o curso e o Mural fecham para este presente e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
+      nota: `Quando os ${prazo.dias} terminam, o curso fecha para este presente, o Mural adulto continua aberto para você ver e jogar, e os projetos ficam guardados na conta. O link do jogo que você publicou continua funcionando enquanto a publicação estiver disponível. Outros cursos, o Estúdio livre e a opção de fazer a sua versão de um jogo do Mural fazem parte da assinatura.`,
       cta: 'Liberar o meu presente',
     },
     duvidas: {
