@@ -14,6 +14,7 @@ O [levantamento funcional completo](funcionamento-apos-publicacao.md) descreve a
 | Aulas ou módulos arquivados interferiam no início, na conclusão e na contagem de aulas. | As consultas usam apenas aulas publicadas do currículo ativo, incluindo os filtros de posição de vídeo e entregas. Prova com PostgreSQL. |
 | Dois convites Kids por oferta geravam literalmente `undefined` no rodapé. | Rodapé preenchido. O teste importa os quatro templates realmente renderizados pelo seed, sem executar o acesso ao banco. |
 | Contratos incompletos impediam verificações estritas de tipos. | Portas de leitura menores no funil, data serializada no DTO da campanha, resgate opcional tratado, cenários HTTP e mocks tipados e configuração do gateway validada antes do registro. |
+| Consultas do controlador encerravam imediatamente ao atingir o limite da API Railway. | O prazo é encaminhado às leituras para respeitar `Retry-After`, com espera limitada. A main é reconferida depois da espera, antes da mutação e antes do resultado final. As mutações continuam sem repetição automática. Cinco regressões falharam antes da correção e passaram depois; a suíte operacional passou com 367 testes. |
 
 As correções e provas SQL recebidas da outra sessão também foram conferidas: primeira assinatura histórica pelo Payments, autoindicação por conta, vaga do bônus por conta/público, contadores e origem, oferta principal por SKU e paginação de lembretes sem perder a precisão de microssegundos do PostgreSQL.
 
