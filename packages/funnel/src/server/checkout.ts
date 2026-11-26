@@ -40,6 +40,7 @@ import {
   resolveCharge,
 } from './catalog'
 import { checkOfferContract } from './offer-contract'
+import { isPageOffer } from './page-offer'
 import { paymentApprovedAt } from './payment-approved-at'
 import { applyPaymentContextToLead } from './payment-context'
 import {
@@ -316,19 +317,16 @@ async function resolveChosenOffer(
     if (contractError) return { ok: false, response: contractError }
     return { ok: true, ...principal, offer }
   }
+  // A irmã do alternador OU outra oferta do MESMO produto MARCADA para a página (`pageSellable`)
+  // e dentro do contrato: a MESMA régua da página (`isPageOffer`). Slug qualquer no corpo (uma
+  // oferta de presente, de campanha, de outro produto) continua 400.
   const principalOffer = await getActiveOffer(deps.gateway, principal.offerSlug, { log: deps.log })
-  // A irmã do alternador OU outra oferta do MESMO produto dentro do contrato da página (a página
-  // aceita `?oferta=`, 25/11/2026). Slug qualquer no corpo continua 400.
-  const sameProduct =
-    principalOffer?.altOffer?.slug !== requestedSlug
-      ? await getActiveOffer(deps.gateway, requestedSlug, { log: deps.log })
-      : null
-  const allowedSibling =
+  const funnelDef = getFunnelByKey(funnel)
+  const allowed =
     principalOffer?.altOffer?.slug === requestedSlug ||
-    (sameProduct !== null &&
-      sameProduct.productSku === principal.productSku &&
-      checkOfferContract(principal.offerContract, sameProduct).ok)
-  if (!allowedSibling) {
+    (funnelDef !== null &&
+      (await isPageOffer(deps.gateway, funnelDef, requestedSlug, { log: deps.log })))
+  if (!allowed) {
     return {
       ok: false,
       response: jsonError('Oferta inválida para este checkout.', 400, 'INVALID_OFFER'),
@@ -341,7 +339,8 @@ async function resolveChosenOffer(
     productName: offer?.productName || principal.productName,
     productSku: principal.productSku,
     offer,
-    offerContract: undefined,
+    // O contrato da página vale também para a outra oferta (a cotação final confere de novo).
+    offerContract: principal.offerContract,
   }
 }
 
