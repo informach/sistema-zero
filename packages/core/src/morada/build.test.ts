@@ -8,11 +8,14 @@ import {
   MORADA_HISTORY_LIMIT,
   MORADA_INSERT_OPENINGS,
   type MoradaHouse,
+  moradaBoundaryMargin,
   moradaBuildType,
+  moradaInsideRoom,
   moradaInstanceCenter,
   moradaOpeningWallsFor,
   moradaPlace,
   moradaRemove,
+  moradaRemoveProblem,
   moradaRotateAroundCenter,
   moradaWallOpenings,
   moradaWalls,
@@ -193,10 +196,41 @@ describe('modo construção: onde a peça cai', () => {
     expect(p.instance.rotation).toBeCloseTo(Math.PI / 2)
   })
   test('porta no vão de porta que já existe e está vazio', () => {
+    // Tirar a porta deixa a passagem aberta: a porta nova entra no mesmo vão, sem trocar parede.
     const empty = moradaRemove(house, 'porta-entrada')
-    // Sem a porta, o vão fechou: a porta nova abre de novo o trecho.
     const p = moradaPlace(empty, DOOR, [-1, 2.8])
     expect(p.valid).toBe(true)
+    expect(p.replace).toBeUndefined()
+  })
+  test('janela perto de uma parede com vão (porta, passagem) não troca a parede', () => {
+    // A parede da porta inicial tem vão de porta: soltar uma janela ali apagaria a passagem.
+    const empty = moradaRemove(house, 'porta-entrada')
+    const p = moradaPlace(empty, WINDOW, [-1, 2.8])
+    expect(p.valid).toBe(false)
+    expect(p.replace).toBeUndefined()
+    expect(p.reason).toMatch(/parede lisa/)
+  })
+  test('mover a janela para outro trecho fecha o vão de onde ela saiu', () => {
+    const placed = applyMoradaPlacement(house, moradaPlace(house, WINDOW, [-2.2, -2.6]))
+    const window = placed.instances.find((i) => i.pieceId === WINDOW)
+    if (!window) throw new Error('janela')
+    const moved = moradaPlace(placed, WINDOW, [3.8, 1.2], { base: window })
+    expect(moved.valid).toBe(true)
+    const next = applyMoradaPlacement(placed, moved)
+    // Só um trecho com vão de janela (o da parede nova); o antigo voltou a ser parede lisa.
+    expect(pieceIds(next).filter((id) => id === 'construcao/janela_2m')).toHaveLength(1)
+    expect(pieceIds(next).filter((id) => id === WINDOW)).toHaveLength(1)
+    expect(wallLength(next)).toBeCloseTo(wallLength(house))
+    expect(validateMoradaHouse(next)).toEqual([])
+  })
+  test('mover a janela dentro do mesmo vão não fecha nada', () => {
+    const placed = applyMoradaPlacement(house, moradaPlace(house, WINDOW, [-2.2, -2.6]))
+    const window = placed.instances.find((i) => i.pieceId === WINDOW)
+    if (!window) throw new Error('janela')
+    const center = moradaInstanceCenter(window, piece(WINDOW))
+    const same = moradaPlace(placed, WINDOW, center, { base: window })
+    expect(same.valid).toBe(true)
+    expect(same.replace).toBeUndefined()
   })
   test('longe das paredes, a janela fica vermelha com o motivo', () => {
     const p = moradaPlace(house, WINDOW, [0, 0])
@@ -273,10 +307,19 @@ describe('modo construção: tirar janela e porta fecha o vão', () => {
     ).toBe(true)
     expect(validateMoradaHouse(back)).toEqual([])
   })
-  test('tirar a porta da casa inicial fecha o vão da porta', () => {
+  test('tirar a porta da casa inicial deixa a passagem aberta (o quarto não fica sem saída)', () => {
     const back = moradaRemove(house, 'porta-entrada')
-    expect(pieceIds(back)).not.toContain('construcao/porta_2m')
+    expect(pieceIds(back)).toContain('construcao/porta_2m')
+    expect(pieceIds(back)).not.toContain(DOOR)
     expect(wallLength(back)).toBeCloseTo(wallLength(house))
+  })
+  test('a última parede com passagem não sai; a folha da porta e as paredes lisas saem', () => {
+    const doorWall = house.instances.find((i) => i.pieceId === 'construcao/porta_2m')
+    if (!doorWall) throw new Error('parede da porta')
+    expect(moradaRemoveProblem(house, doorWall.id)).toMatch(/passagem do quarto/)
+    expect(moradaRemoveProblem(house, 'porta-entrada')).toBeNull()
+    expect(moradaRemoveProblem(house, 'parede-fundo-esq')).toBeNull()
+    expect(moradaRemoveProblem(house, 'cama-inicial')).toBeNull()
   })
   test('com outra janela no mesmo trecho, o vão fica', () => {
     const base = moradaRemove(house, 'parede-fundo-esq')
@@ -347,5 +390,23 @@ describe('modo construção: desfazer', () => {
     expect(pushMoradaHistory(undo.history, c, null, 999_999).future).toEqual([])
     expect(undoMoradaHistory(emptyMoradaHistory(), a)).toBeNull()
     expect(redoMoradaHistory(emptyMoradaHistory(), a)).toBeNull()
+  })
+})
+
+describe('modo construção: a folga da borda é uma só', () => {
+  test('móvel 1 mm, construção 0,2 m, janela e porta com metade do fundo', () => {
+    expect(moradaBoundaryMargin(piece(BED))).toBeCloseTo(0.001)
+    expect(moradaBoundaryMargin(piece('construcao/parede_4m'))).toBeCloseTo(0.2)
+    const natal = piece('construcao/janela_quadrada_natal')
+    expect(moradaBoundaryMargin(natal)).toBeCloseTo((natal.max[2] - natal.min[2]) / 2 + 0.01)
+    expect(moradaBoundaryMargin(natal)).toBeGreaterThan(0.2)
+  })
+  test('a janela de Natal na borda cabe para o motor e para o servidor', () => {
+    const house = createMoradaHouse()
+    const p = moradaPlace(house, 'construcao/janela_quadrada_natal', [-2.2, -2.6])
+    expect(p.valid).toBe(true)
+    const next = applyMoradaPlacement(house, p)
+    expect(moradaInsideRoom(next, p.instance)).toBe(true)
+    expect(validateMoradaHouse(next)).toEqual([])
   })
 })

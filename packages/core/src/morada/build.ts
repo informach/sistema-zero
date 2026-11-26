@@ -10,7 +10,7 @@
  */
 import { MORADA_CATALOG } from './catalog.generated'
 import { MORADA_INSERT_OPENINGS } from './encaixes.generated'
-import { moradaFootprint } from './house'
+import { moradaBoundaryMargin, moradaFootprint } from './house'
 import type { MoradaCatalog, MoradaHouse, MoradaInstance, MoradaPiece, MoradaVector } from './types'
 
 type XZ = [number, number]
@@ -272,7 +272,7 @@ export function moradaInsideRoom(
   const room = house.rooms.find((r) => r.id === instance.roomId)
   if (!piece || !room) return false
   if (instance.parentId) return true
-  const margin = piece.kind === 'construction' ? 0.2 : 0.001
+  const margin = moradaBoundaryMargin(piece)
   return [piece.min[0], piece.max[0]].every((x) =>
     [piece.min[2], piece.max[2]].every((z) => {
       const [ox, oz] = local(x, z, instance.rotation)
@@ -398,6 +398,34 @@ function insertsOn(
 }
 
 /**
+ * Mover uma janela que já está na casa para OUTRO trecho fecha o vão de onde ela saiu (a mesma
+ * régua de tirar): sem isto, o buraco ficava aberto na parede antiga e era salvo assim.
+ */
+function closeOldOpening(
+  house: MoradaHouse,
+  base: MoradaInstance,
+  placement: MoradaPlacement,
+  catalog: MoradaCatalog,
+): MoradaPlacement {
+  const old = house.instances.find((i) => i.id === base.id)
+  if (!old) return placement
+  const close = closeWindowOpening(house, old, catalog)
+  if (
+    !close ||
+    close.wallId === placement.wallId ||
+    placement.replace?.remove.includes(close.wallId)
+  )
+    return placement
+  return {
+    ...placement,
+    replace: {
+      remove: [...(placement.replace?.remove ?? []), close.wallId],
+      add: [...(placement.replace?.add ?? []), ...close.closed],
+    },
+  }
+}
+
+/**
  * Onde a peça cai com o ponteiro em `point` (no chão do cômodo):
  * - **janela e porta** grudam na parede mais perto, viradas como ela, no vão que serve; numa parede
  *   lisa, o trecho vira a parede com a abertura certa e o resto continua liso;
@@ -480,7 +508,12 @@ export function moradaPlace(
               valid: false,
               reason: 'Este vão já tem uma janela ou porta.',
             }
-          : { instance, wallId: wall.instance.id, valid: true }
+          : closeOldOpening(
+              house,
+              base,
+              { instance, wallId: wall.instance.id, valid: true },
+              catalog,
+            )
       }
       // Parede lisa (ou com outro vão): o trecho troca pela parede com a abertura desta peça.
       const options = moradaOpeningWallsFor(piece, catalog)
@@ -499,12 +532,14 @@ export function moradaPlace(
             : `Ainda não tem parede com o vão do tamanho desta ${kind}.`,
         }
       }
-      if (insertsOn(house, wall, catalog, base.id).length)
+      // Só a parede LISA troca: a que já tem um vão (porta, passagem, arco, outra janela) fica.
+      // Trocá-la apagava a passagem e podia fechar o quarto (revisão de 26/11/2026).
+      if (wall.openings.length)
         return {
           instance: placeAt(clamp(near.along, 0, wall.length)),
           wallId: wall.instance.id,
           valid: false,
-          reason: 'Este trecho de parede já tem uma abertura. Escolha outro trecho.',
+          reason: 'Este trecho de parede já tem uma abertura. Leve até uma parede lisa.',
         }
       const openingCenter = (option.opening.from + option.opening.to) / 2
       const start = clamp(
@@ -525,19 +560,24 @@ export function moradaPlace(
         ...(wall.instance.materials ? { materials: wall.instance.materials } : {}),
         ...(wall.instance.colors ? { colors: wall.instance.colors } : {}),
       }
-      return {
-        instance: placeAt(start + openingCenter),
-        wallId: wall.instance.id,
-        valid: true,
-        replace: {
-          remove: [wall.instance.id],
-          add: [
-            ...fillWall(0, start, wall, catalog),
-            opened,
-            ...fillWall(start + option.wall.size[0], wall.length, wall, catalog),
-          ],
+      return closeOldOpening(
+        house,
+        base,
+        {
+          instance: placeAt(start + openingCenter),
+          wallId: wall.instance.id,
+          valid: true,
+          replace: {
+            remove: [wall.instance.id],
+            add: [
+              ...fillWall(0, start, wall, catalog),
+              opened,
+              ...fillWall(start + option.wall.size[0], wall.length, wall, catalog),
+            ],
+          },
         },
-      }
+        catalog,
+      )
     }
     // Peça de parede: de costas para a face de dentro, no passo de 25 cm.
     const facing = Math.atan2(wall.inward[0], wall.inward[1])
@@ -594,9 +634,40 @@ export function moradaPlace(
 }
 
 /**
- * Tira uma peça (e o que está apoiado nela). Janela ou porta que sai deixa o vão dela fechado: o
- * trecho de parede com a abertura volta a ser parede lisa, com as mesmas cores, quando nenhuma
- * outra janela ou porta usa aquele trecho (o contrário da troca do `moradaPlace`).
+ * O vão de JANELA onde esta janela estava, e o trecho liso que fecha esse vão (com as cores e os
+ * materiais da parede), quando nenhuma outra janela ou porta usa o trecho. Vão de porta, passagem
+ * e arco nunca fecham: tirar ou mover a porta deixa a passagem aberta, senão o quarto ficava sem
+ * saída (revisão de 26/11/2026). `null` = nada a fechar.
+ */
+function closeWindowOpening(
+  house: MoradaHouse,
+  target: MoradaInstance,
+  catalog: MoradaCatalog,
+): { wallId: string; closed: MoradaInstance[] } | null {
+  const piece = catalog.pieces[target.pieceId]
+  // Peça do quintal (sem cômodo) não tem parede de cômodo para fechar.
+  if (!target.roomId || !piece || target.parentId || moradaInsertKind(piece) !== 'janela')
+    return null
+  const [x, z] = moradaInstanceCenter(target, piece)
+  for (const w of moradaWalls(house, catalog, target.roomId)) {
+    const along = (x - w.start[0]) * w.dir[0] + (z - w.start[1]) * w.dir[1]
+    const off = Math.abs((x - w.start[0]) * w.dir[1] - (z - w.start[1]) * w.dir[0])
+    if (off >= 0.2) continue
+    const opening = w.openings.find((o) => along >= o.from - 0.05 && along <= o.to + 0.05)
+    if (!opening) continue
+    if (opening.kind !== 'janela' || w.openings.some((o) => o.kind !== 'janela')) return null
+    if (insertsOn(house, w, catalog, target.id).length) return null
+    const closed = fillWall(0, w.length, w, catalog)
+    return closed.length ? { wallId: w.instance.id, closed } : null
+  }
+  return null
+}
+
+/**
+ * Tira uma peça (e o que está apoiado nela). Janela que sai deixa o vão dela fechado: o trecho de
+ * parede com a abertura volta a ser parede lisa, com as mesmas cores, quando nenhuma outra janela
+ * ou porta usa aquele trecho (o contrário da troca do `moradaPlace`). Porta que sai deixa a
+ * passagem aberta.
  */
 export function moradaRemove(
   house: MoradaHouse,
@@ -612,23 +683,34 @@ export function moradaRemove(
   }
   const next = { ...house, instances: house.instances.filter((i) => !removed.has(i.id)) }
   const target = house.instances.find((i) => i.id === id)
-  const piece = target ? catalog.pieces[target.pieceId] : undefined
-  // Peça do quintal (sem cômodo) não tem parede de cômodo para fechar.
-  if (!target?.roomId || !piece || target.parentId || !moradaInsertKind(piece)) return next
-  const [x, z] = moradaInstanceCenter(target, piece)
-  const wall = moradaWalls(next, catalog, target.roomId).find((w) => {
-    if (!w.openings.length) return false
-    const along = (x - w.start[0]) * w.dir[0] + (z - w.start[1]) * w.dir[1]
-    const off = Math.abs((x - w.start[0]) * w.dir[1] - (z - w.start[1]) * w.dir[0])
-    return off < 0.2 && w.openings.some((o) => along >= o.from - 0.05 && along <= o.to + 0.05)
-  })
-  if (!wall || insertsOn(next, wall, catalog).length) return next
-  const closed = fillWall(0, wall.length, wall, catalog)
-  if (!closed.length) return next
+  const close = target ? closeWindowOpening(house, target, catalog) : null
+  if (!close) return next
   return {
     ...next,
-    instances: [...next.instances.filter((i) => i.id !== wall.instance.id), ...closed],
+    instances: [...next.instances.filter((i) => i.id !== close.wallId), ...close.closed],
   }
+}
+
+/**
+ * Tirar esta peça deixaria o cômodo sem nenhuma passagem (porta, passagem ou arco)? Devolve a
+ * frase para a criança, ou `null` quando pode tirar. Só paredes com vão de porta contam: tirar a
+ * porta (a folha) deixa a passagem aberta.
+ */
+export function moradaRemoveProblem(
+  house: MoradaHouse,
+  id: string,
+  catalog: MoradaCatalog = MORADA_CATALOG,
+): string | null {
+  const target = house.instances.find((i) => i.id === id)
+  const piece = target ? catalog.pieces[target.pieceId] : undefined
+  if (!target?.roomId || !piece || target.parentId || !isMoradaWall(piece)) return null
+  if (!moradaWallOpenings(piece).some((o) => o.kind === 'porta')) return null
+  const doorways = moradaWalls(house, catalog, target.roomId).filter((w) =>
+    w.openings.some((o) => o.kind === 'porta'),
+  )
+  return doorways.length <= 1 && doorways[0]?.instance.id === id
+    ? 'Esta é a passagem do quarto. Deixe pelo menos uma porta.'
+    : null
 }
 
 /** Grava a peça (nova ou movida) e a troca de paredes na casa. */
