@@ -1,5 +1,20 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Prévia ao compartilhar (WhatsApp e redes, 26/11/2026)
+
+Regra única no `BaseLayout`: toda página manda `og:image` ABSOLUTA (sem `ogImage`, o cartão do site
+`/img/compartilhar.jpg`), com `og:image:secure_url`, `type`, `alt`, `twitter:image` e, nos cartões
+do funil, `width`/`height` 1200×630. Cada funil tem o cartão JPEG em `${imagesBase}/compartilhar.jpg`
+(`funnelOgImage`; gerados das capas por `bun scripts/gerar-cartoes-compartilhar.ts`, fundo desfocado,
+≤ 300 KB): as capas WebP do checkout não aparecem com segurança no WhatsApp, e o guia e o curso da
+Vivianne mandavam caminho relativo. O TEXTO compartilhado (`og:title`/`og:description`/`twitter:*`)
+vem de `content/compartilhamento.ts` (aprovado pela dona, por chave de funil + `bio`): a venda, as
+subpáginas da oferta, o checkout e o obrigado de cada produto compartilham o MESMO texto, e nenhum
+diz "Pagamento" ou "oferta" (`PALAVRAS_PROIBIDAS`; nas outras páginas, título com essas palavras cai
+no texto do site). O `<title>` do checkout passou a `<produto> | Sistema Zero`. Teste:
+`tests/unit/share-image.test.ts`. O WhatsApp guarda a prévia por URL: link já compartilhado pode
+mostrar a antiga por um tempo (outra query string força a nova).
+
 ## A bio do Instagram no estilo Linktree (26/11/2026)
 
 `/` (`src/pages/index.astro`), proposta aprovada pela dona no Canvas da bio: foto do perfil

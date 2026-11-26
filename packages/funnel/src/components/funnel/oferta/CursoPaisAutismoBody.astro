@@ -13,6 +13,7 @@ import { cursoAutismoVenda } from '../../../funnels/autismo-frustracoes/oferta'
 import { precoDoDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import { comPreco } from '../../../funnels/vilao-em-aliado/oferta'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import { cartaoDoPresente } from '../../../server/presente-cartao'
@@ -63,12 +64,12 @@ const barra = cartao
   barra={barra}
   links={P.topo.links}
   cta={P.topo.cta}
-  ogImage={P.ogImage}
+  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
   indexavel={!presente}
   canonical={canonical}
   termosHref={`${f.basePath}/termos`}
 >
-  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={P.ogImage} />
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={canonical} image={funnelOgImage(f, Astro.site ?? Astro.url)} />
   <CursoPaisOferta copy={P} selo={origem ?? undefined} depoimentos={DEPOIMENTOS_CURSO_AUTISMO}>
     <section slot="compra" id="oferta" class="c9-sec pk-pontilhado" aria-labelledby="curso-autismo-oferta" data-analytics-id="curso-autismo-oferta-secao">
       <div class="c9-wrap c9-lado c9-lado--topo">
