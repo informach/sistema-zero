@@ -1,6 +1,6 @@
 'use client'
 import { Grid, OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { MoradaHouseView } from '@sistemazero/avatar-quarto/morada/house'
 import {
   MORADA_CATALOG,
@@ -8,15 +8,85 @@ import {
   type MoradaInstance,
   type MoradaVector,
 } from '@sistemazero/core/morada'
-import { Suspense, useMemo } from 'react'
-import { PCFShadowMap } from 'three'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { type OrthographicCamera, PCFShadowMap } from 'three'
 import { lightingPreset } from '../../../lib/room-catalog'
 import { recoverWebGLContext } from '../../../lib/webgl-recovery'
+import { ROOM_ZOOM_MAX, ROOM_ZOOM_STEP, type RoomZoomRequest } from './room-zoom'
 import { useReducedMotion } from './use-reduced-motion'
-import { useResponsiveZoom } from './use-responsive-zoom'
 
-function ResponsiveRoomFrame({ size }: { size: [number, number] }) {
-  useResponsiveZoom((size[0] + size[1]) * 0.9, (size[0] + size[1]) * 0.7)
+/**
+ * A câmera ortográfica encaixa o quarto no espaço que ele tem (a mesma conta do
+ * `useResponsiveZoom`) e guarda o zoom da criança POR CIMA do encaixe: redimensionar a janela
+ * ou abrir o menu reencaixa sem perder o zoom. A rodinha e o gesto de pinça são do
+ * OrbitControls (limitados entre o encaixe e `ROOM_ZOOM_MAX`); os botões chegam por `request`.
+ */
+function RoomCameraRig({
+  size,
+  request,
+  onZoomChange,
+}: {
+  size: [number, number]
+  request?: RoomZoomRequest | null
+  onZoomChange?: (factor: number) => void
+}) {
+  const camera = useThree((s) => s.camera) as OrthographicCamera
+  const width = useThree((s) => s.size.width)
+  const height = useThree((s) => s.size.height)
+  const controls = useThree((s) => s.controls) as unknown as {
+    minZoom: number
+    maxZoom: number
+    update(): void
+    reset(): void
+    addEventListener(type: 'change', fn: () => void): void
+    removeEventListener(type: 'change', fn: () => void): void
+  } | null
+  const invalidate = useThree((s) => s.invalidate)
+  const fit = useRef(1)
+  const factor = useRef(1)
+  const notify = useRef(onZoomChange)
+  notify.current = onZoomChange
+  const worldW = (size[0] + size[1]) * 0.9
+  const worldH = (size[0] + size[1]) * 0.7
+  useEffect(() => {
+    fit.current = Math.max(8, Math.min(width / worldW, height / worldH) * 0.94)
+    camera.zoom = fit.current * factor.current
+    camera.updateProjectionMatrix()
+    if (controls) {
+      controls.minZoom = fit.current
+      controls.maxZoom = fit.current * ROOM_ZOOM_MAX
+    }
+    invalidate()
+  }, [camera, controls, width, height, worldW, worldH, invalidate])
+  useEffect(() => {
+    if (!controls) return
+    const changed = () => {
+      const next = camera.zoom / fit.current
+      if (Math.abs(next - factor.current) < 0.005) return
+      factor.current = next
+      notify.current?.(next)
+    }
+    controls.addEventListener('change', changed)
+    return () => controls.removeEventListener('change', changed)
+  }, [camera, controls])
+  const lastRequest = useRef(request?.id)
+  useEffect(() => {
+    if (!request || request.id === lastRequest.current) return
+    lastRequest.current = request.id
+    if (request.kind === 'reset') {
+      // Volta o ângulo e o centro do começo (o zoom para o cursor também anda com a câmera).
+      controls?.reset()
+      factor.current = 1
+    } else {
+      const step = request.kind === 'in' ? ROOM_ZOOM_STEP : 1 / ROOM_ZOOM_STEP
+      factor.current = Math.min(ROOM_ZOOM_MAX, Math.max(1, factor.current * step))
+    }
+    camera.zoom = fit.current * factor.current
+    camera.updateProjectionMatrix()
+    controls?.update()
+    notify.current?.(factor.current)
+    invalidate()
+  }, [request, camera, controls, invalidate])
   return null
 }
 
@@ -27,6 +97,9 @@ export function MoradaRoomScene({
   onMove,
   staticView = false,
   cutaway = true,
+  zoomable = false,
+  zoom,
+  onZoomChange,
   className,
 }: {
   house: MoradaHouse
@@ -35,6 +108,11 @@ export function MoradaRoomScene({
   onMove?: (instance: MoradaInstance, position: MoradaVector) => void
   staticView?: boolean
   cutaway?: boolean
+  /** Rodinha, pinça e os botões de zoom (o quarto Kids, 26/11/2026). Desligado = como antes. */
+  zoomable?: boolean
+  /** Os botões de zoom da tela (aproximar, afastar, ver o quarto todo). */
+  zoom?: RoomZoomRequest | null
+  onZoomChange?: (factor: number) => void
   className?: string
 }) {
   const reducedMotion = useReducedMotion()
@@ -87,7 +165,11 @@ export function MoradaRoomScene({
       }}
       className={className}
     >
-      <ResponsiveRoomFrame size={room?.size ?? [8, 6]} />
+      <RoomCameraRig
+        size={room?.size ?? [8, 6]}
+        request={zoomable ? zoom : null}
+        onZoomChange={onZoomChange}
+      />
       <color attach="background" args={[lighting.background]} />
       <ambientLight intensity={lighting.ambient.intensity} color={lighting.ambient.color} />
       <directionalLight
@@ -149,7 +231,11 @@ export function MoradaRoomScene({
         makeDefault
         target={[origin[0], origin[1] + 1.2, origin[2]]}
         enablePan={false}
-        enableZoom={false}
+        // Rodinha e pinça aproximam (para onde o cursor aponta); o OrbitControls cancela a
+        // rolagem da página sobre o quarto. Na vista parada (perfil) nada se mexe.
+        enableZoom={zoomable && !staticView}
+        zoomToCursor
+        zoomSpeed={0.8}
         enableDamping={false}
         rotateSpeed={0.5}
         minPolarAngle={0.85}
