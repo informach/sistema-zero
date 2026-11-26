@@ -246,6 +246,8 @@ describe('AdultAvatarConfigurator', () => {
     dismissNotice: noop,
     randomize: noop,
     chooseFilter: noop,
+    photoFraming: 'body',
+    choosePhotoFraming: noop,
     takePhoto: async () => {},
     finishBeforeExit: async () => ({ ok: true, saved: false }),
     ...over,
