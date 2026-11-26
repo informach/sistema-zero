@@ -6,7 +6,7 @@
 `members-admin-course-starts` no gateway; curso inexistente 404). A régua de progresso por CONTA
 saiu dos lembretes para `loadCourseAccountProgress` (`course-reminders.repository.ts`: perfil→conta
 pelo `loadOwnerClaims` + a própria conta), que `DrizzleCourseStartsRepository` e os lembretes usam.
-Teste da rota: `tests/integration/course-starts.test.ts`. ⚠️ O SQL segue sem teste de banco.
+Teste da rota: `tests/integration/course-starts.test.ts`; SQL em `tests/db/course-reminders.repository.test.ts`.
 
 ## Oferta de venda do curso para pais (25/11/2026, Lote 6)
 
@@ -44,8 +44,11 @@ Dedupe em `entitlement_lifecycle_messages_sent` (coluna text, sem migration) com
 `expires_on` = a data da concessão. Templates `course-not-started|stalled|completed[-adult]`
 (`nome`, `curso`, `link`; a conclusão também `comunidade` = continuidade com
 `utm_campaign=curso-concluido`). Link: Kids `<KIDS_COMMUNITY_URL>/login/responsavel`, guia dos pais
-`<KIDS_COMMUNITY_URL>/pais/cursos/<slug>`, adulto `<COMMUNITY_URL>/cursos`. ⚠️ O SQL não tem teste de
-banco (sem Postgres local): conferir num banco descartável antes da staging.
+`<KIDS_COMMUNITY_URL>/pais/cursos/<slug>`, adulto `<COMMUNITY_URL>/cursos`. SQL conferido no histórico
+real de migrations em `tests/db/course-reminders.repository.test.ts` (`COURSE_REMINDERS_TEST_DATABASE_URL`,
+banco local `kids_journey_*`, declarada no CI). ⚠️ O cursor volta como Date do JS (ms) e `granted_at` tem
+µs: o keyset compara e ordena por `date_trunc('milliseconds', granted_at)`, senão as matrículas do mesmo
+milissegundo da fronteira da página eram PULADAS (achado do banco real, 25/11/2026).
 
 ## Lembretes dos cursos para pais (25/11/2026)
 
@@ -71,8 +74,8 @@ CURSO ativa cujo fim divulgado (fim real menos os dias a mais) passou há até 7
 migration). O grant grava também `snapshot.advertisedEndsAt` (fim divulgado calculado do fim
 real DAQUELA concessão): a consulta usa essa data, então estender o acesso depois não move o
 e-mail; os `dias` são os que faltam dela ao fim real de agora. Matrícula sem o campo cai na conta
-antiga (fim real menos a diferença de prazos). Vale para presente e compra de prazo fixo. ⚠️ A consulta SQL nova não tem teste de banco
-(os `tests/db` pedem Postgres local): conferir num banco descartável antes da staging.
+antiga (fim real menos a diferença de prazos). Vale para presente e compra de prazo fixo. SQL conferido em
+`tests/db/course-reminders.repository.test.ts` (fim gravado e calculado, janela, dedupe, público).
 ## Aquecer o contêiner do "Verificar projeto" (23/11/2026)
 
 `POST /members/lessons/:lessonId/sections/:sectionId/project-check/warm` `{revision}` →

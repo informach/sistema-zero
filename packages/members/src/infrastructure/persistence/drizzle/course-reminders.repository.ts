@@ -249,6 +249,8 @@ export async function loadCourseAccountProgress(
  * Desafio (`loadOwnerClaims`: só colunas `account_id` autoritativas; perfil ligado a duas contas
  * fica de fora); a própria conta também conta, para o guia dos pais (o responsável estuda).
  */
+const grantedAtMs = sql`date_trunc('milliseconds', ${entitlements.grantedAt})`
+
 export class DrizzleCourseRemindersRepository implements CourseRemindersRepository {
   constructor(private readonly db: Database) {}
 
@@ -284,19 +286,22 @@ export class DrizzleCourseRemindersRepository implements CourseRemindersReposito
                and other.course_ref = ${entitlements.courseRef}
                and sent.message_kind = 'course_completed'
           )`,
-          // Página seguinte (keyset na mesma ordem do `orderBy`).
+          // Página seguinte (keyset na mesma ordem do `orderBy`). ⚠️ O cursor volta como Date do
+          // JS (milissegundos) e o Postgres guarda microssegundos: comparar com `granted_at` cru
+          // PULAVA as matrículas do mesmo milissegundo da fronteira. Ordem e comparação usam o
+          // instante truncado ao milissegundo.
           after
             ? or(
-                sql`${entitlements.grantedAt} < ${after.grantedAt.toISOString()}::timestamptz`,
+                sql`${grantedAtMs} < ${after.grantedAt.toISOString()}::timestamptz`,
                 and(
-                  sql`${entitlements.grantedAt} = ${after.grantedAt.toISOString()}::timestamptz`,
+                  sql`${grantedAtMs} = ${after.grantedAt.toISOString()}::timestamptz`,
                   sql`${entitlements.id} < ${after.entitlementId}::uuid`,
                 ),
               )
             : undefined,
         ),
       )
-      .orderBy(desc(entitlements.grantedAt), desc(entitlements.id))
+      .orderBy(desc(grantedAtMs), desc(entitlements.id))
       .limit(limit)
     const last = rows.at(-1)
     const next =

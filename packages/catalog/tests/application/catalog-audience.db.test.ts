@@ -11,6 +11,7 @@ import { ListCouponsService } from '../../src/application/list-coupons/list-coup
 import { ListOffersService } from '../../src/application/list-offers/list-offers.service'
 import { ListProductsService } from '../../src/application/list-products/list-products.service'
 import { ResolveOfferEntitlementsService } from '../../src/application/resolve-offer-entitlements/resolve-offer-entitlements.service'
+import { UpdateProductService } from '../../src/application/update-product/update-product.service'
 import { DrizzleCouponRepository } from '../../src/infrastructure/persistence/drizzle/coupon.repository'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleOfferRepository } from '../../src/infrastructure/persistence/drizzle/offer.repository'
@@ -180,5 +181,34 @@ describe.skipIf(!url)('comunidade do catálogo em PostgreSQL real', () => {
       expect(first.items[0]?.id).not.toBe(second.items[0]?.id)
       expect(first.items[0]?.id).not.toBe(adult.items[0]?.id)
     }
+  })
+
+  test('oferta principal (0013) grava no produto e volta pelo SKU; limpar devolve null', async () => {
+    const products = new DrizzleProductRepository(connection!.db),
+      offers = new DrizzleOfferRepository(connection!.db)
+    const logger = createLogger({ level: 'error' })
+    const resolver = new ResolveOfferEntitlementsService(products)
+    const product = await new CreateProductService(products, logger).execute({
+      audience: 'kids',
+      sku: 'curso-principal',
+      slug: 'curso-principal',
+      name: 'Curso',
+    })
+    const createOffer = new CreateOfferService(offers, products, resolver, logger)
+    const offer = await createOffer.execute({
+      productId: product.id,
+      code: 'curso-1-ano',
+      slug: 'curso-1-ano',
+      name: '1 ano',
+      priceCents: 3700,
+    })
+    const update = new UpdateProductService(products, logger, offers)
+    await update.execute({ id: product.id, primaryOfferId: offer.id })
+    expect((await products.findBySku('curso-principal'))?.primaryOfferId).toBe(offer.id)
+    const [row] = await connection!
+      .sql`select primary_offer_id from catalog.products where id = ${product.id}`
+    expect(row?.primary_offer_id).toBe(offer.id)
+    await update.execute({ id: product.id, primaryOfferId: null })
+    expect((await products.findBySku('curso-principal'))?.primaryOfferId).toBeNull()
   })
 })
