@@ -30,8 +30,8 @@ describe.skipIf(!url)('lembretes do curso e dias de surpresa: Postgres real', ()
     randomUUID(),
     randomUUID(),
     randomUUID(),
-  ]
-  const acc = Array.from({ length: 12 }, () => randomUUID())
+  ] as const
+  const acc: string[] = Array.from({ length: 12 }, () => randomUUID())
   const profile = randomUUID()
   const shared = randomUUID() // perfil ligado a DUAS contas: fica de fora
 
@@ -53,18 +53,18 @@ describe.skipIf(!url)('lembretes do curso e dias de surpresa: Postgres real', ()
     // acc[0]: o perfil dele navegou (começou). acc[1]: nada. acc[2]: concluiu pelo perfil.
     // acc[3]: o perfil compartilhado com acc[4] (posse ambígua, não conta para ninguém).
     await sql`insert into members.gamification_profiles (id, user_id, account_id, created_at, updated_at)
-      values (${randomUUID()}, ${profile}, ${acc[2]}, now(), now()),
-             (${randomUUID()}, ${shared}, ${acc[3]}, now(), now())`
+      values (${randomUUID()}, ${profile}, ${acc[2]!}, now(), now()),
+             (${randomUUID()}, ${shared}, ${acc[3]!}, now(), now())`
     await sql`insert into members.lesson_navigation (user_id, account_id, lesson_id, section_id, updated_at)
-      values (${randomUUID()}, ${acc[0]}, ${lesson1}, ${randomUUID()}, ${new Date(NOW.getTime() - 9 * DAY).toISOString()}),
-             (${shared}, ${acc[4]}, ${lesson1}, ${randomUUID()}, now())`
+      values (${randomUUID()}, ${acc[0]!}, ${lesson1}, ${randomUUID()}, ${new Date(NOW.getTime() - 9 * DAY).toISOString()}),
+             (${shared}, ${acc[4]!}, ${lesson1}, ${randomUUID()}, now())`
     await sql`insert into members.gamification_profiles (id, user_id, account_id, created_at, updated_at)
       select ${randomUUID()}, user_id, account_id, now(), now()
-        from members.lesson_navigation where account_id = ${acc[0]}`
+        from members.lesson_navigation where account_id = ${acc[0]!}`
     await sql`insert into members.lesson_completions (id, user_id, lesson_id, course_id, completed_at)
       values (${randomUUID()}, ${profile}, ${lesson1}, ${course.id}, ${new Date(NOW.getTime() - 3 * DAY).toISOString()}),
              (${randomUUID()}, ${profile}, ${lesson2}, ${course.id}, ${new Date(NOW.getTime() - 2 * DAY).toISOString()}),
-             (${randomUUID()}, ${acc[5]}, ${parentsLesson}, ${parents.id}, ${new Date(NOW.getTime() - DAY).toISOString()})`
+             (${randomUUID()}, ${acc[5]!}, ${parentsLesson}, ${parents.id}, ${new Date(NOW.getTime() - DAY).toISOString()})`
   })
 
   afterAll(async () => {
@@ -199,7 +199,7 @@ describe.skipIf(!url)('lembretes do curso e dias de surpresa: Postgres real', ()
     // "Começaram o curso do presente": entre as contas pedidas, as que começaram.
     const starts = new DrizzleCourseStartsRepository(conn.db)
     expect(
-      (await starts.startedAccounts(course.slug, [acc[0]!, acc[1]!, acc[2]!, acc[3]!])).sort(),
+      (await starts.startedAccounts(course.slug, [acc[0]!, acc[1]!, acc[2]!, acc[3]!]))?.sort(),
     ).toEqual([acc[0]!, acc[2]!].sort())
     expect(await starts.startedAccounts('nao-existe', [acc[0]!])).toBeNull()
     expect(await starts.startedAccounts(course.slug, [])).toEqual([])
