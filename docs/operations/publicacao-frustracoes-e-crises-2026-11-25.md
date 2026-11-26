@@ -52,3 +52,11 @@ O bloco publicado não tinha o campo `signatures`. Foram cadastrados Helena Oliv
 Uma emissão real com conta sintética nova em cada ambiente confirmou os dois nomes e quatro imagens no PDF: fundo, duas assinaturas e QR. A inspeção visual confirmou as posições e o download repetido devolveu os mesmos bytes. As contas foram bloqueadas e os certificados e concessões de ensaio revogados após a conferência.
 
 Em produção, foi removido somente o cache PDF de um certificado ativo deste curso, para que o próximo download use as assinaturas. Registro, número, titular e data foram preservados. As imagens das assinaturas, a prévia real atualizada, os manifestos, hashes e cópias dos dois cadastros estão na pasta editorial.
+
+## Vídeo corrigido da Aula 5, Parte 2, em 26/11/2026
+
+O arquivo `C:\Users\tocha\Downloads\Aula 05 - Parte 2.mp4`, corrigido pela responsável para restaurar a música de fundo no final, foi enviado como nova versão dos vídeos existentes: `1250184501` em staging e `1250185700` em produção. As duas capas foram enviadas novamente e confirmadas ativas. A duração permanece em 149,2 segundos, sem mudança nos dados da aula.
+
+A conferência no Vimeo validou versão nova ativa, capa, privacidade e domínios. A conferência na página do curso validou a reprodução, inclusive no trecho final com áudio decodificado. As contas sintéticas foram bloqueadas e as concessões de ensaio revogadas. O recibo `troca-video-aula-05-parte-02-2026-11-26.json` e os registros de origem estão na pasta do curso.
+
+A pasta original dos vídeos contém a versão corrigida, com a anterior guardada em `historico-videos/2026-11-26/`. O conferidor de capas do operador foi corrigido para comparar os bytes quando a chave de produção usa a identidade do recurso em vez do hash da imagem. Quatro testes, a checagem de tipos do script e a conferência real de produção passaram.

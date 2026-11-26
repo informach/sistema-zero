@@ -61,11 +61,20 @@
         }
       ]
     },
-    "realEmissionChecked": ["staging", "production"],
+    "realEmissionChecked": [
+      "staging",
+      "production"
+    ],
     "syntheticCertificatesRevoked": true,
     "platformSignatures": {
-      "names": ["Helena Oliveira", "Júlio Felipe"],
-      "files": ["assinaturas/helena-oliveira.webp", "assinaturas/julio-felipe.webp"],
+      "names": [
+        "Helena Oliveira",
+        "Júlio Felipe"
+      ],
+      "files": [
+        "assinaturas/helena-oliveira.webp",
+        "assinaturas/julio-felipe.webp"
+      ],
       "realIssuance": {
         "staging": {
           "issued": true,
@@ -569,7 +578,11 @@
     }
   },
   "aula1Parte2": {
-    "blocks": ["video", "materials", "rich_text"],
+    "blocks": [
+      "video",
+      "materials",
+      "rich_text"
+    ],
     "materialsTitle": "Materiais da aula",
     "fileLabel": "Baixar apostila do curso",
     "book3DBlock": false,
@@ -580,7 +593,11 @@
     "environments": {
       "staging": {
         "environment": "staging",
-        "sectionKinds": ["video", "materials", "rich_text"],
+        "sectionKinds": [
+          "video",
+          "materials",
+          "rich_text"
+        ],
         "book3D": false,
         "consultationText": true,
         "summaryBelowMaterials": true,
@@ -591,7 +608,11 @@
       },
       "production": {
         "environment": "production",
-        "sectionKinds": ["video", "materials", "rich_text"],
+        "sectionKinds": [
+          "video",
+          "materials",
+          "rich_text"
+        ],
         "book3D": false,
         "consultationText": true,
         "summaryBelowMaterials": true,
@@ -602,5 +623,13 @@
       }
     },
     "validation": "Resumo original restaurado e aula validada e publicada pelo serviço canônico de autoria em cada ambiente; vídeos, anexos e conclusão preservados."
+  },
+  "videoReplacement5Part2": {
+    "receipt": "troca-video-aula-05-parte-02-2026-11-26.json",
+    "staging": true,
+    "production": true,
+    "posterReuploadedBoth": true,
+    "playbackAndTailAudioBoth": true,
+    "sourceSha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e"
   }
 }
