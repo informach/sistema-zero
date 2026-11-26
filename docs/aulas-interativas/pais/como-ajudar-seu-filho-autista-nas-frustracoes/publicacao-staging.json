@@ -1,7 +1,9 @@
 {
   "environment": "staging",
   "courseId": "45da87d0-c2d2-400c-889d-5d4bbe1c868f",
-  "moduleIds": ["a4967f7e-5246-49ca-a389-82f27293524f"],
+  "moduleIds": [
+    "a4967f7e-5246-49ca-a389-82f27293524f"
+  ],
   "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
   "status": "published",
   "audience": "kids",
@@ -259,5 +261,25 @@
     "url": "https://pub-02366636d03f4612aae5881ac9c585d8.r2.dev/admin/frustracoes-20261125/0195834dff1d4c96027aad0147210706a1437186563247597d14fce06dba974b.png"
   },
   "pending": [],
-  "verifiedAt": "2026-11-26T08:50:52.499695Z"
+  "verifiedAt": "2026-11-26T08:50:52.499695Z",
+  "videoReplacements": [
+    {
+      "part": "5-2",
+      "date": "2026-11-26T10:59:07.012Z",
+      "receipt": "troca-video-aula-05-parte-02-2026-11-26.json",
+      "sourceSha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e",
+      "videoId": "1250184501",
+      "versionUri": "/videos/1250184501/versions/1258173432",
+      "posterUri": "/videos/1250184501/pictures/2230893264",
+      "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+      "versionActive": true,
+      "posterReuploaded": true,
+      "private": true,
+      "durationSeconds": 149,
+      "browserVerifiedAt": "2026-11-26T10:51:53.395Z",
+      "playbackWithoutError": true,
+      "tailAudioDecoded": true,
+      "sameVideoId": true
+    }
+  ]
 }

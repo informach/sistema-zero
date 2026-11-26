@@ -74,9 +74,12 @@
     {
       "part": "5-2",
       "file": "Aula 05 - Parte 2.mp4",
-      "bytes": 137923162,
-      "sha256": "ac238c34267b99b0964f4004beee618d161b33786a202314403872d66000a3fd",
-      "durationSeconds": 149.2
+      "bytes": 138214865,
+      "sha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e",
+      "durationSeconds": 149.2,
+      "replacedAt": "2026-11-26T10:59:07.012Z",
+      "replacementReceipt": "troca-video-aula-05-parte-02-2026-11-26.json",
+      "previousSourceBackup": "C:\\Users\\tocha\\Downloads\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES-20261126T002231Z-1-001\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES\\historico-videos\\2026-11-26\\aula-05-parte-02-anterior.mp4"
     },
     {
       "part": "5-3",

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "part": "5-2",
+  "reason": "Arquivo corrigido fornecido pela responsável para restaurar a música de fundo no final.",
+  "verifiedAt": "2026-11-26T10:59:07.012Z",
+  "sourceFile": "C:/Users/tocha/Downloads/Aula 05 - Parte 2.mp4",
+  "canonicalSourceFile": "C:\\Users\\tocha\\Downloads\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES-20261126T002231Z-1-001\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES\\Aula 05 - Parte 2.mp4",
+  "previousSourceBackup": "C:\\Users\\tocha\\Downloads\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES-20261126T002231Z-1-001\\COMO AJUDAR SEU FILHO AUTISTA NAS FRUSTRAÇÔES\\historico-videos\\2026-11-26\\aula-05-parte-02-anterior.mp4",
+  "source": {
+    "bytes": 138214865,
+    "sha256": "e4f5faa71eec9b33877413fb4a2111a0a02ed3c04a6fb3bc3c9541bee60f148e",
+    "durationSeconds": 149.2
+  },
+  "previousSource": {
+    "bytes": 137923162,
+    "sha256": "ac238c34267b99b0964f4004beee618d161b33786a202314403872d66000a3fd",
+    "durationSeconds": 149.2
+  },
+  "coverFile": "capas-das-aulas/aula-05-parte-02.png",
+  "environments": {
+    "staging": {
+      "videoId": "1250184501",
+      "versionUri": "/videos/1250184501/versions/1258173432",
+      "posterUri": "/videos/1250184501/pictures/2230893264",
+      "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+      "versionActive": true,
+      "posterReuploaded": true,
+      "private": true,
+      "durationSeconds": 149,
+      "browserVerifiedAt": "2026-11-26T10:51:53.395Z",
+      "playbackWithoutError": true,
+      "tailAudioDecoded": true,
+      "sameVideoId": true
+    },
+    "production": {
+      "videoId": "1250185700",
+      "versionUri": "/videos/1250185700/versions/1258176144",
+      "posterUri": "/videos/1250185700/pictures/2230896339",
+      "posterSha256": "dccf9ac190bdb88b5ef0170eb3b7a54d249f9b48fd80028ec6e0f70bf18f5179",
+      "versionActive": true,
+      "posterReuploaded": true,
+      "private": true,
+      "durationSeconds": 149,
+      "browserVerifiedAt": "2026-11-26T10:57:53.529Z",
+      "playbackWithoutError": true,
+      "tailAudioDecoded": true,
+      "sameVideoId": true
+    }
+  }
+}
