@@ -14,16 +14,17 @@ Canvas "pais-inicio", "pais-cursos" e "pais-curso-fechado" (frente de embaixador
   (`PARENT_COURSE_PAGES` por slug; curso sem entrada mostra só a capa, a descrição e a compra). Sem
   oferta, os caminhos de antes (Comunidade e página de venda). A foto da Helena é
   `public/pais/helena-julio-perfil.webp` (a mesma do funil).
-- **Início**: o destaque da Comunidade (`CommercePromotions only="community" skipManaged`) acima do
-  resto, só para quem não assina; no Início de quem comprou só um curso ele fica no lugar dos filhos
-  (o `FamilyInvite` saiu). Na lateral, sem curso para pais liberado, o cartão de venda do primeiro
+- **Início**: o destaque da Comunidade acima do resto, só para quem não assina; no Início de quem
+  comprou só um curso ele fica no lugar dos filhos. Uma leitura das promoções para os dois recortes
+  (`useCommercePromotions` + `CommercePromotionList`). Sem destaque (promoção fora do ar ou leitura
+  falhou) e sem assinatura, o `FamilyInvite` de antes fica no lugar. Na lateral, sem curso para pais liberado, o cartão de venda do primeiro
   curso fechado com oferta (`ParentSaleCourseCard`, lugar `pais-inicio`).
 - **Área da criança**: os links de venda levam `?lugar=` (`comLugar` em `lib/links.ts`):
   `crianca-curso-fechado` no cartão do curso e `crianca-produto-fechado` na tela de ferramenta
   fechada. Sem compra aqui.
 - Selos sem fundo: os `--kids-*-bg` (que não existem) viraram `--band-lilas|menta|rosa`.
-- ⚠️ "Todos os cursos para pais" saiu do destaque da Comunidade até a dona confirmar que a assinatura
-  Kids os inclui (o "Como liberar" sem oferta ainda diz isso, como antes).
+- A assinatura Kids da Comunidade inclui todos os cursos para pais (confirmado pela dona em
+  25/11/2026): o destaque, o "Pronto", o `FamilyInvite` e o "Como liberar" sem oferta dizem isso.
 - Testes: `tests/parent-courses.test.tsx` (Lote 6), `catalog-course-card-cta`, `copy-produto-bloqueado`.
 
 

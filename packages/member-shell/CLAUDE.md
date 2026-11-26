@@ -10,6 +10,19 @@
   conta já tem.
 - `components/commerce/commerce-copy` entrou no mapa de `exports` (é `.ts`, fora do `./components/*`).
 - `CatalogCourseView` ganhou `salesOfferRef?`, `description?` e `lessonsCount?`.
+- **Revisão do Lote 6 (25/11/2026):**
+  - a régua única de "vende na página" é `server/page-sellable.ts` (`pageSellableStatus`: oferta
+    disponível, produto ativo, principal do produto ou `content.pageSellable`), usada pela origem
+    `offer` do BFF e pelo `getSaleOfferReadonly`; a principal (`/catalog/products/by-sku`) fica 60 s
+    na memória do processo (`primaryOfferSlugFor`, só 200/404; `clearPrimaryOfferCache` nos testes).
+    ⚠️ A entrega do curso pelo produto não é conferida aqui (a oferta pública não traz o
+    `fulfillment`); quem confere é o seletor do Admin;
+  - `useCommerceDialogRefresh`: o `sz-commerce-updated` sai na hora, o `router.refresh()` só quando a
+    janela fecha (o Pronto não some ao liberar o curso);
+  - `useCommercePromotions` + `CommercePromotionList` + `selectPromotions`: uma leitura para a página
+    com dois recortes; `CommercePromotions` continua para quem usa um só;
+  - os três passos e "Ir para Família" do Pronto só para a Comunidade Kids (outra assinatura Kids vai
+    a `/pais`).
 
 
 ## Mini checkout da área dos pais (25/11/2026, Lote 5 da frente de embaixadores)
@@ -50,8 +63,8 @@ Canvas `pais-checkout` (assinatura) e `pais-checkout-curso` (curso). Tudo em
   - o texto da Comunidade (o que entra, o "Pronto", o cartão `community`) só vale para o produto da
     Comunidade (`isCommunityProduct`, pelos SKUs `comunidade-dos-criadores[-adulto]`); outra assinatura
     diz "Sua assinatura está ativa";
-  - "todos os cursos para pais" saiu da copy no ar (cartão, destaque e "Pronto") até a dona confirmar
-    que a assinatura Kids os inclui;
+  - "todos os cursos para pais" voltou à copy (cartão, destaque e "Pronto"): a dona confirmou em
+    25/11/2026 que a assinatura Kids da Comunidade os inclui (só no produto da Comunidade);
   - `perMonthCents` arredonda para cima;
   - o plano escolhido (`chosenPlan`) volta como `offerRef` no recarregar do `OFFER_CHANGED`;
   - o BFF não roda o `recover` quando o `inspect` traz `offerRef` (trocar de plano nunca abre a compra

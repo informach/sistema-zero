@@ -851,6 +851,7 @@ export function CourseFormDialog({
         {isParents ? (
           <CourseSaleOfferField
             audience={form.audience}
+            courseSlug={form.slug}
             value={form.salesOfferRef}
             onChange={(salesOfferRef) => setForm((f) => ({ ...f, salesOfferRef }))}
           />

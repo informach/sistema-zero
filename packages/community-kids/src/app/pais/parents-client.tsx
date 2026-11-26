@@ -2,7 +2,9 @@
 import type { CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import {
   CommerceCard,
-  CommercePromotions,
+  CommercePromotionList,
+  selectPromotions,
+  useCommercePromotions,
 } from '@sistemazero/member-shell/components/commerce/commerce-card'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
@@ -44,6 +46,26 @@ import {
   parentCourseHref,
   studentEntryFor,
 } from './parent-routes'
+
+/**
+ * O convite de antes, de reserva (revisão do Lote 6, 25/11/2026): no Início de quem comprou só um
+ * curso para pais, quando não há destaque da Comunidade para mostrar (a promoção não está no ar ou
+ * a leitura falhou), o lugar dos filhos não fica vazio.
+ */
+function FamilyInvite() {
+  return (
+    <section aria-labelledby="family-invite" className="kids-carta flex flex-col gap-3 p-5 sm:p-6">
+      <h2 id="family-invite" className="sz-display text-[1.375rem] leading-tight">
+        Seus filhos também podem criar
+      </h2>
+      <p className="max-w-2xl text-muted-foreground text-sm">
+        Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar os
+        próprios jogos, com aulas, o Estúdio e a nossa equipe por perto. Quem assina também tem
+        todos os cursos para pais.
+      </p>
+    </section>
+  )
+}
 
 /** Um curso para pais fechado com a oferta de venda dele (a lateral do Início vende por ele). */
 export interface ParentSaleCourse {
@@ -178,6 +200,17 @@ export function ParentsClient({
   purpose?: ParentPurpose
 }) {
   const soCurso = purpose === 'curso'
+  // Uma leitura das promoções para os dois recortes (o destaque e a lateral).
+  const promotions = useCommercePromotions()
+  const community = promotions.unavailable
+    ? []
+    : selectPromotions(promotions.items, { only: 'community' })
+  const communityHighlight = community.some((item) => item.decision.kind !== 'manage')
+  // Quem já assina a Comunidade não recebe o convite para conhecê-la.
+  const showFamilyInvite =
+    promotions.loaded &&
+    !communityHighlight &&
+    !community.some((item) => item.decision.kind === 'manage')
   const profiles = initialProfiles
   const access = initialAccess
   const [guideOpen, setGuideOpen] = useState(false)
@@ -403,11 +436,20 @@ export function ParentsClient({
       />
       {/* O destaque da Comunidade (Canvas "pais-inicio"): só para quem não assina. No Início de
           quem comprou só um curso para pais ele fica no lugar dos filhos, logo abaixo. */}
-      {soCurso ? null : <CommercePromotions only="community" skipManaged />}
+      {soCurso ? null : <CommercePromotionList state={promotions} only="community" skipManaged />}
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {soCurso ? (
           <div className="flex min-w-0 flex-col gap-6">
-            <CommercePromotions only="community" skipManaged />
+            {communityHighlight ? (
+              <CommercePromotionList
+                state={promotions}
+                only="community"
+                skipManaged
+                showUnavailable={false}
+              />
+            ) : showFamilyInvite ? (
+              <FamilyInvite />
+            ) : null}
           </div>
         ) : (
           <ParentSection
@@ -447,7 +489,7 @@ export function ParentsClient({
           </ParentSection>
         )}
         <aside className="flex flex-col gap-6">
-          <CommercePromotions only="others" />
+          <CommercePromotionList state={promotions} only="others" showUnavailable={false} />
           {!parentCourse && saleCourse ? (
             <ParentSaleCourseCard sale={saleCourse} />
           ) : (

@@ -1,9 +1,13 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import type { CommerceBlock, CommerceCatalogOffer } from '@sistemazero/core/commerce'
 import type { CommerceAccess } from '../src/lib/commerce-eligibility'
 import type { SessionUser } from '../src/lib/types'
 import { type CommerceRouteDeps, createCommerceRoutes } from '../src/routes/commerce'
 import type { CallOpts, GatewayResponse } from '../src/server/gateway'
+import { clearPrimaryOfferCache } from '../src/server/page-sellable'
+
+// A oferta principal fica 60 s na memória do processo: cada teste começa sem ela.
+beforeEach(() => clearPrimaryOfferCache())
 
 const accountId = '10000000-0000-4000-8000-000000000001'
 const lessonId = '20000000-0000-4000-8000-000000000001'
@@ -412,6 +416,8 @@ describe('mini checkout da área dos pais (Lote 5, 25/11/2026)', () => {
     const refused = await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse }))
     expect(refused.status).toBe(404)
     expect(funnelCall(q, 'inspect')).toBeUndefined()
+    // A principal fica 60 s na memória: o catálogo fora só aparece numa leitura nova.
+    clearPrimaryOfferCache()
     q.setProduct(503, null)
     expect(
       (await q.routes.commerce.POST(request({ action: 'inspect', origin: fromCourse }))).status,

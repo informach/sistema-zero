@@ -659,15 +659,15 @@ function PurchaseDone({
             : 'Sua assinatura está ativa'}
         </h3>
         <p className="m-0 max-w-[30rem] text-base text-muted-foreground">
-          {/* "E você ganhou todos os cursos para pais" volta quando a dona confirmar que a
-              assinatura Kids inclui os cursos para pais. */}
           {community
             ? kids
-              ? 'Os cursos de criação de jogos, o Estúdio e o Mural já estão liberados para os seus filhos.'
+              ? 'Os cursos de criação de jogos, o Estúdio e o Mural já estão liberados para os seus filhos. E você ganhou todos os cursos para pais.'
               : 'Os cursos, o Estúdio e o Mural já estão liberados na sua conta.'
             : `O acesso a ${offer.product.name} já está liberado ${kids ? 'para os seus filhos' : 'na sua conta'}.`}
         </p>
-        {kids ? (
+        {/* Os três passos e "Ir para Família" são da Comunidade Kids (perfis da criança e
+            aparelho autorizado); outra assinatura Kids não promete isso. */}
+        {kids && community ? (
           <ol className="m-0 box-border w-full rounded-2xl bg-muted py-4 pr-5 pl-9 text-left text-[15px] leading-relaxed">
             <li>Em Família, crie o perfil do seu filho ou confira o que já existe.</li>
             <li>Autorize o computador em que ele vai usar a plataforma.</li>
@@ -682,9 +682,11 @@ function PurchaseDone({
           {close}
           {next
             ? go(next.href, next.label)
-            : kids
+            : kids && community
               ? go('/pais/familia', 'Ir para Família')
-              : go('/cursos', 'Ir para os cursos')}
+              : kids
+                ? go('/pais', 'Ir para o início')
+                : go('/cursos', 'Ir para os cursos')}
         </Actions>
       </div>
     )

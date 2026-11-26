@@ -19,6 +19,7 @@ import {
 import { isSameOriginRequest } from '../lib/csrf'
 import type { AuthClient, MembersClient, PaymentsClient } from '../server/clients'
 import type { GatewayModule } from '../server/gateway'
+import { pageSellableStatus, primaryOfferSlugFor } from '../server/page-sellable'
 import type { SessionModule } from '../server/session'
 
 export interface CommerceRouteDeps {
@@ -93,6 +94,11 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       audience: deps.audience,
     }
   }
+  /** O produto pelo SKU (oferta principal), pelo cache curto de `page-sellable.ts`. */
+  const productBySku = (sku: string) =>
+    deps.gateway.gatewayFetch<{ primaryOfferSlug?: unknown }>(
+      `/catalog/products/by-sku/${encodeURIComponent(sku)}`,
+    )
   async function offer(ref: string): Promise<CommerceCatalogOffer | null> {
     const found = await deps.gateway.gatewayFetch(`/catalog/offers/${encodeURIComponent(ref)}`)
     const parsed = CommerceCatalogOfferSchema.safeParse(found.body)
@@ -129,14 +135,10 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       // A página do curso só vende a oferta principal do produto ou uma marcada no Admin
       // "Pode ser vendida na página do produto": a oferta de presente nunca abre à venda.
       const target = await offer(origin.offerRef)
-      if (!target?.isAvailable || target.product.status !== 'active') return null
-      if (target.content?.pageSellable !== true) {
-        const product = await deps.gateway.gatewayFetch<{ primaryOfferSlug?: unknown }>(
-          `/catalog/products/by-sku/${encodeURIComponent(target.product.sku)}`,
-        )
-        if (product.status !== 200 && product.status !== 404) return 'unavailable' as const
-        if (product.status !== 200 || product.body?.primaryOfferSlug !== target.slug) return null
-      }
+      if (!target) return null
+      const sellable = await pageSellableStatus(target, productBySku)
+      if (sellable === 'unavailable') return 'unavailable' as const
+      if (sellable !== 'sellable') return null
       return {
         config: { kind: 'purchase' as const, offerRef: target.slug },
         expectedOfferId: target.id,
@@ -186,10 +188,7 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
       return other?.isAvailable && siblingOffers(target, other) ? other : null
     }
     if (!isSubscription(target)) return null
-    const product = await deps.gateway.gatewayFetch<{ primaryOfferSlug?: unknown }>(
-      `/catalog/products/by-sku/${encodeURIComponent(target.product.sku)}`,
-    )
-    const primary = product.status === 200 ? product.body?.primaryOfferSlug : null
+    const primary = await primaryOfferSlugFor(productBySku, target.product.sku)
     if (typeof primary !== 'string' || primary === target.slug) return null
     const other = await offer(primary)
     return other?.isAvailable &&
@@ -511,9 +510,7 @@ export function createCommerceRoutes(deps: CommerceRouteDeps) {
                   ? {
                       title: 'Seus filhos também podem criar os próprios jogos',
                       description:
-                        'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar jogos, com aulas, o Estúdio e a nossa equipe por perto.',
-                      // "E você fica com todos os cursos para pais" volta quando a dona confirmar
-                      // que a assinatura Kids inclui os cursos para pais.
+                        'Na Comunidade dos Criadores, crianças e adolescentes de 5 a 17 anos aprendem a criar jogos, com aulas, o Estúdio e a nossa equipe por perto. E você fica com todos os cursos para pais.',
                       buttonLabel: 'Assinar a Comunidade',
                       // A ilustração da criança criando um jogo (`public/ilustra` do app Kids).
                       imageUrl: '/ilustra/criando.webp',

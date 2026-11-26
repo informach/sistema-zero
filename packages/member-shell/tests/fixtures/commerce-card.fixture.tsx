@@ -22,7 +22,14 @@ mock.module('../../src/lib/api', () => ({
     new Promise<CommerceView>((resolve, reject) => pending.push({ resolve, reject, body })),
   apiGet: async () => ({ items: [] }),
 }))
-mock.module('next/navigation', () => ({ useRouter: () => ({ refresh() {} }) }))
+let refreshes = 0
+mock.module('next/navigation', () => ({
+  useRouter: () => ({
+    refresh() {
+      refreshes++
+    },
+  }),
+}))
 const { CommerceCard, CommercePurchaseButton } = await import(
   '../../src/components/commerce/commerce-card'
 )
@@ -67,6 +74,7 @@ afterEach(async () => {
   host = document.createElement('div')
   root = createRoot(host)
   pending.length = 0
+  refreshes = 0
 })
 test('trocar presente por compra remove o acesso incluído anterior', async () => {
   await render()
@@ -267,6 +275,50 @@ test('Pronto: o curso já é seu, sem exclamação', async () => {
   const done = host.querySelector('[role="status"]')?.textContent ?? ''
   expect(done).not.toContain('!')
 })
+test('revisão do Lote 6: o Pronto fica até a janela fechar; só então a página atualiza', async () => {
+  let updates = 0
+  const onUpdate = () => updates++
+  window.addEventListener('sz-commerce-updated', onUpdate)
+  try {
+    await openCourse()
+    await act(async () =>
+      requestAt(0).resolve(
+        purchase(course, {
+          status: 'PENDING',
+          payment: {
+            status: 'PENDING',
+            pix: { copiaECola: '00020126pix', expiresAt: '2026-11-26T02:59:00.000Z' },
+          },
+        }),
+      ),
+    )
+    const conferir = [...host.querySelectorAll('button')].find(
+      (b) => b.textContent === 'Já paguei, conferir',
+    )
+    await act(async () => conferir?.click())
+    await act(async () =>
+      requestAt(1).resolve(purchase(course, { status: 'PAID', accessGranted: true })),
+    )
+    // O aviso sai na hora (os cartões relêem), mas a página não troca com o Pronto na tela.
+    expect(updates > 0).toBe(true)
+    expect(refreshes).toBe(0)
+    expect(text()).toContain('O curso já é seu')
+    const fechar = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Fechar')
+    expect(fechar !== undefined).toBe(true)
+    await act(async () => fechar?.click())
+    expect(refreshes).toBe(1)
+  } finally {
+    window.removeEventListener('sz-commerce-updated', onUpdate)
+  }
+})
+test('revisão do Lote 6: fechar sem comprar não atualiza a página', async () => {
+  await openCourse()
+  const fechar = [...document.querySelectorAll('button')].find(
+    (b) => b.getAttribute('aria-label') === 'Fechar' || b.textContent === 'Fechar',
+  )
+  await act(async () => fechar?.click())
+  expect(refreshes).toBe(0)
+})
 
 // Revisão do Lote 5 (25/11/2026).
 async function openCommunity() {
@@ -311,14 +363,14 @@ test('revisão: a tela do Pix mostra o valor cobrado com o cupom', async () => {
   expect(summary.replace(/ /g, ' ')).toContain('PAIS10 · − R$ 7')
   expect(summary.replace(/ /g, ' ')).toContain('R$ 20')
 })
-test('revisão: o Pronto da Comunidade não promete os cursos para pais', async () => {
+test('o Pronto da Comunidade Kids dá os cursos para pais', async () => {
   await openCommunity()
   await act(async () =>
     requestAt(0).resolve(purchase(monthly, { status: 'PAID', accessGranted: true })),
   )
   expect(text()).toContain('A Comunidade dos Criadores está liberada')
   expect(text()).toContain('o Estúdio e o Mural já estão liberados para os seus filhos')
-  expect(text()).not.toContain('cursos para pais')
+  expect(text()).toContain('E você ganhou todos os cursos para pais.')
 })
 test('revisão: outra assinatura e outro produto avulso não falam da Comunidade nem de curso', async () => {
   const tool: CommerceCatalogOffer = {

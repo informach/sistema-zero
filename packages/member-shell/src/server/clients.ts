@@ -95,6 +95,7 @@ import type {
   ZappyStoredResponseView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
+import { pageSellableStatus } from './page-sellable'
 import { createPensaClient } from './pensa-client'
 import type { AuthTokens } from './session'
 
@@ -573,12 +574,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         .gatewayFetchReadonly(`/catalog/offers/${encodeURIComponent(ref)}`)
         .catch(() => null)
       const parsed = CommerceCatalogOfferSchema.safeParse(found?.body)
-      return found?.status === 200 &&
-        parsed.success &&
-        parsed.data.isAvailable &&
-        parsed.data.product.audience === audience
-        ? parsed.data
-        : null
+      if (
+        found?.status !== 200 ||
+        !parsed.success ||
+        !parsed.data.isAvailable ||
+        parsed.data.product.audience !== audience
+      )
+        return null
+      // A MESMA régua do mini checkout (origem `offer`): o cartão só mostra preço e compra quando
+      // a compra vai abrir. Catálogo fora ao conferir: sem compra (nunca preço que não vende).
+      const sellable = await pageSellableStatus(parsed.data, (sku) =>
+        gw.gatewayFetchReadonly(`/catalog/products/by-sku/${encodeURIComponent(sku)}`),
+      )
+      return sellable === 'sellable' ? parsed.data : null
     },
 
     getCreatorMasteriesReadonly(): Promise<GatewayResponse<CreatorMasteriesResponse>> {

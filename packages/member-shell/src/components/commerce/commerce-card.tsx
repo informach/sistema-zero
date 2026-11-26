@@ -8,7 +8,7 @@ import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Check, CheckCircle2, Gift, ShoppingBag, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { apiGet, apiSend } from '../../lib/api'
 import type { CommerceView, PromotionCardView } from '../../lib/commerce'
 import { useLessonPlayer } from '../lesson-player-context'
@@ -32,8 +32,11 @@ import { type CommerceNextStep, CommercePanel } from './commerce-panel'
  */
 export type CommerceCardVariant = 'community' | 'course' | 'default'
 
-// "Todos os cursos para pais" fica de fora até a dona confirmar que a assinatura Kids os inclui.
-const COMMUNITY_KIDS_INCLUDES = ['Todos os cursos de criação de jogos, o Estúdio e o Mural']
+// A assinatura Kids da Comunidade inclui os cursos para pais (confirmado pela dona, 25/11/2026).
+const COMMUNITY_KIDS_INCLUDES = [
+  'Todos os cursos de criação de jogos, o Estúdio e o Mural',
+  'Todos os cursos para pais, inclusive os próximos que forem lançados',
+]
 
 function PriceLine({
   offer,
@@ -57,6 +60,30 @@ function PriceLine({
       <strong className="text-xl">{money(offer.priceCents)}</strong> {intervalText(offer)}
     </p>
   )
+}
+
+/**
+ * A janela do mini checkout e a atualização da página (revisão do Lote 6, 25/11/2026): o aviso
+ * `sz-commerce-updated` sai na hora, mas o `router.refresh()` espera a janela fechar. Atualizar com
+ * ela aberta trocava a página (o curso fechado vira o curso liberado) e a tela de "Pronto" sumia
+ * antes de a pessoa ler; num build novo o refresh ainda vira recarregamento.
+ */
+export function useCommerceDialogRefresh() {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const pending = useRef(false)
+  const updated = useCallback(() => {
+    pending.current = true
+    window.dispatchEvent(new Event('sz-commerce-updated'))
+  }, [])
+  const close = useCallback(() => {
+    setOpen(false)
+    if (pending.current) {
+      pending.current = false
+      router.refresh()
+    }
+  }, [router])
+  return { open, openDialog: () => setOpen(true), close, updated }
 }
 
 export function CommerceCard({
@@ -102,7 +129,7 @@ export function CommerceCard({
   place?: string
   next?: CommerceNextStep
 }) {
-  const [open, setOpen] = useState(false)
+  const { open, openDialog, close, updated } = useCommerceDialogRefresh()
   const originKey = JSON.stringify(origin)
   const giftIdentity = mode === 'gift' && !preview ? originKey : null
   const [inclusion, setInclusion] = useState<{
@@ -150,11 +177,6 @@ export function CommerceCard({
       window.removeEventListener('sz-commerce-updated', inspect)
     }
   }, [giftIdentity])
-  const router = useRouter()
-  const updated = useCallback(() => {
-    router.refresh()
-    window.dispatchEvent(new Event('sz-commerce-updated'))
-  }, [router])
   const Icon = included ? CheckCircle2 : mode === 'gift' ? Gift : ShoppingBag
   const purchase = mode === 'purchase' && !included
   const dialogTitle = purchase && offer ? purchaseDialogTitle(offer) : title
@@ -177,7 +199,7 @@ export function CommerceCard({
           : 'h-12 self-start rounded-full px-6 font-extrabold'
       }
       disabled={preview}
-      onClick={() => setOpen(true)}
+      onClick={openDialog}
     >
       {buttonLabel || (mode === 'gift' ? 'Ativar presente' : 'Ver oferta e continuar')}
     </Button>
@@ -190,7 +212,7 @@ export function CommerceCard({
   const dialog = (
     <Dialog
       open={open}
-      onClose={() => setOpen(false)}
+      onClose={close}
       title={dialogTitle}
       className={purchase ? 'max-w-[900px] rounded-[28px]' : 'max-w-xl'}
       bodyClassName="p-0"
@@ -200,7 +222,7 @@ export function CommerceCard({
           origin={origin}
           title={title}
           onUpdated={updated}
-          onClose={() => setOpen(false)}
+          onClose={close}
           place={place}
           imageUrl={imageUrl}
           next={next}
@@ -405,23 +427,18 @@ export function CommercePurchaseButton({
   next?: CommerceNextStep
   className?: string
 }) {
-  const [open, setOpen] = useState(false)
-  const router = useRouter()
-  const updated = useCallback(() => {
-    router.refresh()
-    window.dispatchEvent(new Event('sz-commerce-updated'))
-  }, [router])
+  const { open, openDialog, close, updated } = useCommerceDialogRefresh()
   return (
     <>
       <Button
         className={className ?? 'h-12 w-full rounded-full font-extrabold'}
-        onClick={() => setOpen(true)}
+        onClick={openDialog}
       >
         {label}
       </Button>
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={close}
         title={purchaseDialogTitle(offer)}
         className="max-w-[900px] rounded-[28px]"
         bodyClassName="p-0"
@@ -430,7 +447,7 @@ export function CommercePurchaseButton({
           <CommercePanel
             origin={origin}
             onUpdated={updated}
-            onClose={() => setOpen(false)}
+            onClose={close}
             place={place}
             imageUrl={imageUrl}
             next={next}
@@ -441,18 +458,23 @@ export function CommercePurchaseButton({
   )
 }
 
+/** As promoções da Início, lidas uma vez e relidas a cada `sz-commerce-updated`. */
+export interface CommercePromotionsState {
+  items: PromotionCardView[]
+  /** `true` depois da primeira resposta (com ou sem itens). */
+  loaded: boolean
+  unavailable: boolean
+  retry: () => void
+}
+
 /**
- * As ofertas da Início. `only` separa o destaque da Comunidade (coluna principal) dos outros
- * cartões (a lateral); `skipManaged` esconde o que a conta já tem (quem assina não vê a oferta).
+ * Uma leitura de `/api/commerce/promotions` para a página inteira (revisão do Lote 6, 25/11/2026):
+ * o Início dos pais mostra o destaque da Comunidade e os outros cartões em dois lugares, e cada
+ * `CommercePromotions` buscava a mesma lista.
  */
-export function CommercePromotions({
-  only,
-  skipManaged = false,
-}: {
-  only?: 'community' | 'others'
-  skipManaged?: boolean
-} = {}) {
+export function useCommercePromotions(): CommercePromotionsState {
   const [items, setItems] = useState<PromotionCardView[]>([])
+  const [loaded, setLoaded] = useState(false)
   const [unavailable, setUnavailable] = useState(false)
   const [revision, setRevision] = useState(0)
   useEffect(() => {
@@ -473,27 +495,58 @@ export function CommercePromotions({
         if (!controller.signal.aborted) {
           setItems(result.items)
           setUnavailable(false)
+          setLoaded(true)
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted) setUnavailable(true)
+        if (!controller.signal.aborted) {
+          setUnavailable(true)
+          setLoaded(true)
+        }
       })
     return () => controller.abort()
   }, [revision])
-  if (unavailable)
-    return (
-      <p role="status" className="text-sm text-muted-foreground">
-        Não foi possível conferir as ofertas agora.{' '}
-        <button type="button" className="underline" onClick={() => setRevision((r) => r + 1)}>
-          Tentar novamente
-        </button>
-      </p>
-    )
-  const shown = items.filter((item) => {
+  const retry = useCallback(() => setRevision((r) => r + 1), [])
+  return { items, loaded, unavailable, retry }
+}
+
+/** O recorte de `only`/`skipManaged` (o destaque da Comunidade ou o resto). */
+export function selectPromotions(
+  items: PromotionCardView[],
+  { only, skipManaged = false }: { only?: 'community' | 'others'; skipManaged?: boolean } = {},
+): PromotionCardView[] {
+  return items.filter((item) => {
     if (skipManaged && item.decision.kind === 'manage') return false
     const community = Boolean(item.offer && isCommunityProduct(item.offer))
     return only === 'community' ? community : only === 'others' ? !community : true
   })
+}
+
+/**
+ * Os cartões de uma leitura já feita (`useCommercePromotions`). `showUnavailable` desligado não
+ * repete o "Não foi possível conferir as ofertas" quando a página tem dois recortes.
+ */
+export function CommercePromotionList({
+  state,
+  only,
+  skipManaged = false,
+  showUnavailable = true,
+}: {
+  state: CommercePromotionsState
+  only?: 'community' | 'others'
+  skipManaged?: boolean
+  showUnavailable?: boolean
+}) {
+  if (state.unavailable)
+    return showUnavailable ? (
+      <p role="status" className="text-sm text-muted-foreground">
+        Não foi possível conferir as ofertas agora.{' '}
+        <button type="button" className="underline" onClick={state.retry}>
+          Tentar novamente
+        </button>
+      </p>
+    ) : null
+  const shown = selectPromotions(state.items, { only, skipManaged })
   return (
     <>
       {shown.map(({ origin, offerRef, promotion, decision, offer, plans }) => (
@@ -526,4 +579,20 @@ export function CommercePromotions({
       ))}
     </>
   )
+}
+
+/**
+ * As ofertas da Início, com a leitura própria. `only` separa o destaque da Comunidade (coluna
+ * principal) dos outros cartões (a lateral); `skipManaged` esconde o que a conta já tem. Página
+ * com dois recortes usa `useCommercePromotions` + `CommercePromotionList` (uma leitura só).
+ */
+export function CommercePromotions({
+  only,
+  skipManaged = false,
+}: {
+  only?: 'community' | 'others'
+  skipManaged?: boolean
+} = {}) {
+  const state = useCommercePromotions()
+  return <CommercePromotionList state={state} only={only} skipManaged={skipManaged} />
 }

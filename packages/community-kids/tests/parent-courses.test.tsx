@@ -281,6 +281,7 @@ describe('o curso fechado com a oferta de venda (Lote 6, 25/11/2026)', () => {
   test('sem oferta de venda, os caminhos de antes', () => {
     render(<ParentCourseClosed course={guia()} offer={null} />)
     expect(screen.getByRole('heading', { name: 'Como liberar este curso' })).toBeTruthy()
+    expect(screen.getByText(/A assinatura libera todos os cursos para pais/)).toBeTruthy()
   })
 })
 
@@ -440,16 +441,22 @@ describe('o Início de quem comprou só um curso para pais', () => {
 
   afterEach(() => localStorage.clear())
   let promotions: unknown[] = [communityPromotion()]
+  let failPromotions = false
+  const promotionCalls = () =>
+    (globalThis.fetch as ReturnType<typeof mock>).mock.calls.filter(([input]) =>
+      String(input).startsWith('/api/commerce/promotions'),
+    ).length
   beforeEach(() => {
     promotions = [communityPromotion()]
+    failPromotions = false
     // O menu lê os filhos em /api/profiles: esta conta não tem nenhum.
     globalThis.fetch = Object.assign(
       mock(async (input: RequestInfo | URL) =>
-        Response.json(
-          String(input).startsWith('/api/commerce/promotions')
-            ? { items: promotions }
-            : { profiles: [] },
-        ),
+        String(input).startsWith('/api/commerce/promotions')
+          ? failPromotions
+            ? Response.json({ error: { code: 'X', message: 'fora' } }, { status: 502 })
+            : Response.json({ items: promotions })
+          : Response.json({ profiles: [] }),
       ),
       { preconnect: originalFetch.preconnect },
     )
@@ -462,8 +469,13 @@ describe('o Início de quem comprou só um curso para pais', () => {
       '/pais/cursos/ajudar-sem-fazer-por-eles/aulas/l1',
     )
     expect(await screen.findByText('Seus filhos também podem criar os próprios jogos')).toBeTruthy()
-    expect(screen.getByText('Até 2 perfis de criança na mesma conta, um para cada filho'))
-    expect(screen.queryByText(/cursos para pais, inclusive/)).toBeNull()
+    expect(
+      screen.getByText('Até 2 perfis de criança na mesma conta, um para cada filho'),
+    ).toBeTruthy()
+    // A assinatura Kids inclui os cursos para pais (confirmado pela dona, 25/11/2026).
+    expect(
+      screen.getByText('Todos os cursos para pais, inclusive os próximos que forem lançados'),
+    ).toBeTruthy()
     expect(screen.queryByText('Seus filhos esta semana')).toBeNull()
     // Nada de cadastrar filho nem autorizar aparelho.
     expect(screen.queryByText(/Vamos preparar/)).toBeNull()
@@ -492,8 +504,37 @@ describe('o Início de quem comprou só um curso para pais', () => {
     promotions = [communityPromotion('manage')]
     inicio()
     await screen.findByRole('region', { name: 'Seu curso está pronto' })
-    await waitFor(() => expect((globalThis.fetch as ReturnType<typeof mock>).mock.calls.length > 0))
+    await waitFor(() => expect(promotionCalls()).toBe(1))
+    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(screen.queryByText('Seus filhos também podem criar os próprios jogos')).toBeNull()
+    // Quem assina também não recebe o convite para conhecer a Comunidade.
+    expect(screen.queryByRole('heading', { name: 'Seus filhos também podem criar' })).toBeNull()
+  })
+
+  test('revisão do Lote 6: uma leitura das promoções para o destaque e a lateral', async () => {
+    inicio()
+    await screen.findByText('Seus filhos também podem criar os próprios jogos')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(promotionCalls()).toBe(1)
+  })
+
+  test('revisão do Lote 6: sem destaque da Comunidade, o convite de antes fica no lugar', async () => {
+    promotions = []
+    inicio()
+    expect(
+      await screen.findByRole('heading', { name: 'Seus filhos também podem criar' }),
+    ).toBeTruthy()
+    expect(document.body.textContent ?? '').toContain(
+      'Quem assina também tem todos os cursos para pais.',
+    )
+  })
+
+  test('revisão do Lote 6: a leitura falhou, o convite de antes fica no lugar', async () => {
+    failPromotions = true
+    inicio()
+    expect(
+      await screen.findByRole('heading', { name: 'Seus filhos também podem criar' }),
+    ).toBeTruthy()
   })
 
   test('Lote 6: sem curso liberado, a lateral vende o curso fechado pela oferta', async () => {
