@@ -19,7 +19,7 @@ A Aula 5, Parte 2 foi substituída pelo MP4 corrigido em staging e produção, c
 | Cadê Todo Mundo Kids | R$ 37 | Um ano, com Mural Kids |
 | Cadê Todo Mundo adulto | R$ 37 | Um ano, com Mural adulto |
 | Transformando o vilão em aliado | R$ 27 | Um ano |
-| Curso da Vivianne sobre frustrações | R$ 67 | Um ano |
+| Curso da Vivianne sobre frustrações | R$ 67 | Seis meses |
 
 As vendas têm garantia de sete dias, aceitam cupom e não renovam automaticamente. Ao terminar o Cadê, o curso fecha e o Mural correspondente continua como visitante, para ver e jogar. Nos presentes com prazo, são quinze dias reais, sete divulgados e o aviso dos oito extras; os termos já registrados em resgates antigos são preservados.
 
@@ -66,3 +66,12 @@ Mais de onze mil testes nas sete suítes envolvidas, checagem de tipos dos sete 
 
 
 [Registro do benefício e das duas origens](beneficio-permanente-guia.json). Backups com dados pessoais ficam fora do Git; o recibo registra somente hashes de integridade. Nenhum pagamento real ou e-mail de ensaio foi enviado.
+
+
+## Workshop da Vivianne: seis meses e compartilhamento
+
+O Funil foi publicado no commit `2237b3ea61118badaf0494bfcfe2325c78cc50d2`, deployment `d709a4b8-55e2-4b62-baa6-cf2cf9de6a32`. Após a saúde confirmada e retirada da versão anterior, a oferta existente passou de doze para seis meses, preservando identificador, preço de R$ 67 e garantia de sete dias. Nenhum pagamento ou acesso já concedido foi alterado. O nome técnico `-1-ano` foi mantido para preservar os vínculos; o prazo exibido e concedido às novas compras vem do catálogo.
+
+Os selos dos cursos para pais dizem “Workshop para pais”. Onze páginas e sete cartões JPEG de compartilhamento foram conferidos; oferta e checkout reais mostram seis meses em 390 e 1440 px. Os textos de compartilhamento aprovados chegam também ao robô do WhatsApp, inclusive no endereço exato `/i/vivianne-e8ez/frustracoes/pagamento`, sem “Pagamento”. A variante `?utm_content=whatsapp-20261126` conserva a origem da Vivianne e o destino do checkout; pode ser testada em uma mensagem nova para solicitar outra prévia. Não foi feita verificação dentro do aplicativo WhatsApp, nem envio de mensagem.
+
+A publicação manual está concluída. O CI completo, o merge protegido e a publicação oficial do PR 295 ainda estão em andamento. O PR 294 seleciona os outros sete serviços; esta leva seleciona somente `funnel`, evitando sobrescrever a versão nova. [Recibo desta atualização](publicacao-workshop-2026-11-26.json).

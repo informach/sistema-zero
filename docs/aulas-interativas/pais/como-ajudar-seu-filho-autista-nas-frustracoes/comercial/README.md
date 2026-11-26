@@ -15,3 +15,8 @@ A definição do funil aponta `checkoutImage` para `checkout-capa.webp`. As duas
 Para publicar novamente, manter os três WebP no diretório público, a referência do checkout em `funnels/autismo-frustracoes/index.ts` e as duas referências em `content/curso-pais-autismo.ts`. A página e o checkout devem ser conferidos no computador e no celular após a publicação.
 
 O [recibo de publicação em produção](publicacao-producao-2026-11-26.json) registra as fontes, ofertas, acesso, link pessoal da Vivianne e verificações. O [levantamento funcional](../../../../reviews/2026-11-25-campanhas-embaixadores-origens/funcionamento-apos-publicacao.md) explica a operação comercial. O link pessoal não exige campanha nem data de encerramento.
+
+
+## Atualização de seis meses e prévia
+
+A oferta de R$ 67 passou a seis meses em produção em 26/11/2026, mantendo o identificador antigo. O cartão JPEG 1200 × 630 usado na prévia do WhatsApp está em [compartilhar.jpg](compartilhar.jpg). O [recibo da atualização](publicacao-workshop-2026-11-26.json) distingue a publicação manual do estado do CI e da publicação oficial.

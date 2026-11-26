@@ -1017,5 +1017,339 @@
     "backupSha256": "5cfcd0c8aee7b2680d5739504472f178ef8f7c923abd24e3d0dbc05dbc25f83c",
     "paymentSubmitted": false,
     "testMessagesSent": false
+  },
+  "workshopRelease": {
+    "updatedAt": "2026-11-26T19:39:52.540Z",
+    "productionPublished": true,
+    "normalRegularizationComplete": false,
+    "source": {
+      "reviewed": true,
+      "pr": 295,
+      "sha": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
+      "tree": "ae05f99400f4694e627facd94cf927e9d50c1ef5",
+      "ciRun": 45883785338,
+      "planRun": 45883785199,
+      "services": "funnel",
+      "checks": {
+        "testsPassed": 766,
+        "testsFailed": 0,
+        "testsSkipped": 6,
+        "typeErrors": 0,
+        "build": "pass",
+        "browserWidths": [320, 390, 768, 1440],
+        "configurationChanges": 0
+      }
+    },
+    "sourceStagingCommits": ["841df0d59", "ce86a01d5", "6db1b97c0", "499ae7dc5"],
+    "deployments": [
+      {
+        "name": "funnel",
+        "id": "d709a4b8-55e2-4b62-baa6-cf2cf9de6a32"
+      }
+    ],
+    "manualCompletedAt": "2026-11-26T19:35:31.458Z",
+    "normal": {
+      "pr": 295,
+      "head": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
+      "ciRun": 45883785338,
+      "planRun": 45883785199,
+      "services": "funnel",
+      "state": "WAITING_MANUAL_AND_CI",
+      "startedAt": "2026-11-26T19:33:08.213Z",
+      "events": [
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:33:11.571Z",
+          "ci": "in_progress",
+          "passed": 4,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:33:45.135Z",
+          "ci": "in_progress",
+          "passed": 5,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:34:51.622Z",
+          "ci": "in_progress",
+          "passed": 6,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:35:25.061Z",
+          "ci": "in_progress",
+          "passed": 7,
+          "plan": "success",
+          "manual": "PREPARING"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:35:58.299Z",
+          "ci": "in_progress",
+          "passed": 7,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        },
+        {
+          "state": "WAITING_MANUAL_AND_CI",
+          "at": "2026-11-26T19:37:04.748Z",
+          "ci": "in_progress",
+          "passed": 8,
+          "plan": "success",
+          "manual": "PRODUCTION_WAVE_PASSED"
+        }
+      ],
+      "ci": "in_progress",
+      "passed": 8,
+      "plan": "success",
+      "manual": "PRODUCTION_WAVE_PASSED"
+    },
+    "official": null,
+    "catalog": {
+      "offerId": "98049085-2891-4aa0-8fa4-28c61bf0b354",
+      "offerSlug": "como-ajudar-seu-filho-autista-nas-frustracoes-1-ano",
+      "previousMonths": 12,
+      "currentMonths": 6,
+      "durationUnit": "months",
+      "priceCents": 6700,
+      "guaranteeDays": 7,
+      "identifierPreserved": true,
+      "activatedAt": "2026-11-26T19:35:55.729Z",
+      "paymentRecordsChanged": false,
+      "existingAccessGrantsChanged": false
+    },
+    "verification": {
+      "state": "PASS",
+      "verifiedAt": "2026-11-26T19:36:07.358Z",
+      "pages": [
+        {
+          "path": "/",
+          "status": 200,
+          "title": "Helena e Júlio: criação de jogos para a família",
+          "image": "https://sistemazero.com.br/img/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta",
+          "status": 200,
+          "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+          "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+          "status": 200,
+          "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+          "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/vilao-em-aliado/oferta",
+          "status": 200,
+          "title": "Workshop para pais: a tela que vira briga em casa pode ser sua aliada",
+          "image": "https://sistemazero.com.br/img/transformando-o-vilao-em-aliado/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/vilao-em-aliado/checkout",
+          "status": 200,
+          "title": "Workshop para pais: a tela que vira briga em casa pode ser sua aliada",
+          "image": "https://sistemazero.com.br/img/transformando-o-vilao-em-aliado/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/cade-todo-mundo/oferta",
+          "status": 200,
+          "title": "Cadê Todo Mundo: o primeiro jogo do seu filho",
+          "image": "https://sistemazero.com.br/img/cade-todo-mundo/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/cade-todo-mundo/oferta",
+          "status": 200,
+          "title": "Cadê Todo Mundo: o seu primeiro jogo em duas aulas",
+          "image": "https://sistemazero.com.br/img/cade-todo-mundo/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/desafio-primeiro-jogo/oferta",
+          "status": 200,
+          "title": "Desafio do Primeiro Jogo: seu filho cria o primeiro jogo dele em casa",
+          "image": "https://sistemazero.com.br/img/desafio-primeiro-jogo/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/desafio-primeiro-jogo/oferta",
+          "status": 200,
+          "title": "Desafio do Primeiro Jogo: crie o seu primeiro jogo",
+          "image": "https://sistemazero.com.br/img/desafio-primeiro-jogo/compartilhar.jpg"
+        },
+        {
+          "path": "/kids/comunidade-dos-criadores/oferta",
+          "status": 200,
+          "title": "Comunidade dos Criadores: seu filho criando jogos com orientação",
+          "image": "https://sistemazero.com.br/img/comunidade-dos-criadores/compartilhar.jpg"
+        },
+        {
+          "path": "/pro/comunidade-dos-criadores/oferta",
+          "status": 200,
+          "title": "Comunidade dos Criadores: tire suas ideias de jogo do papel",
+          "image": "https://sistemazero.com.br/img/comunidade-adulto/compartilhar.jpg"
+        }
+      ],
+      "imagesVerified": 7,
+      "ambassadorOriginPreserved": true,
+      "browser": [
+        {
+          "step": "oferta",
+          "width": 390,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "checkout",
+          "width": 390,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "oferta",
+          "width": 1440,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        },
+        {
+          "step": "checkout",
+          "width": 1440,
+          "sixMonths": true,
+          "price67": true,
+          "noOldDuration": true
+        }
+      ],
+      "paymentSubmitted": false,
+      "testMessagesSent": false
+    },
+    "whatsapp": {
+      "crawlerChecks": {
+        "state": "PASS",
+        "verifiedAt": "2026-11-26T19:37:22.057Z",
+        "checks": [
+          {
+            "ua": "WhatsApp/2.26.20.80 A",
+            "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "no-store",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          },
+          {
+            "ua": "WhatsApp/2.26.20.80 A",
+            "path": "/i/vivianne-e8ez/frustracoes",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "public, max-age=60, stale-while-revalidate=300",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          },
+          {
+            "ua": "WhatsApp/2.26.20.80 A",
+            "path": "/i/vivianne-e8ez/frustracoes?utm_content=whatsapp-20261126",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez&utm_content=whatsapp-20261126",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "public, max-age=60, stale-while-revalidate=300",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          },
+          {
+            "ua": "facebookexternalhit/1.1",
+            "path": "/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "no-store",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          },
+          {
+            "ua": "facebookexternalhit/1.1",
+            "path": "/i/vivianne-e8ez/frustracoes",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "public, max-age=60, stale-while-revalidate=300",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          },
+          {
+            "ua": "facebookexternalhit/1.1",
+            "path": "/i/vivianne-e8ez/frustracoes?utm_content=whatsapp-20261126",
+            "status": 200,
+            "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/oferta?indicacao=vivianne-e8ez&utm_content=whatsapp-20261126",
+            "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+            "description": "Workshop para pais com a psicóloga Vivianne Lima, da Laopa. Em aulas curtas, você entende o que pesa para o seu filho e aprende o que fazer antes, durante e depois de uma crise.",
+            "image": "https://sistemazero.com.br/img/como-ajudar-seu-filho-autista/compartilhar.jpg",
+            "cacheControl": "public, max-age=60, stale-while-revalidate=300",
+            "age": null,
+            "cfCache": "DYNAMIC"
+          }
+        ]
+      },
+      "exactPaymentLink": {
+        "state": "PASS",
+        "verifiedAt": "2026-11-26T19:38:27.963Z",
+        "url": "https://sistemazero.com.br/i/vivianne-e8ez/frustracoes/pagamento?utm_content=whatsapp-20261126",
+        "final": "https://sistemazero.com.br/kids/como-ajudar-seu-filho-autista-nas-frustracoes/checkout?indicacao=vivianne-e8ez&utm_content=whatsapp-20261126",
+        "title": "Workshop sobre como ajudar seu filho autista a lidar com frustrações e evitar crises",
+        "status": 200,
+        "ambassadorOriginPreserved": true
+      },
+      "cacheInference": "A resposta atual com User-Agent do WhatsApp tem os textos novos; não houve observação direta do aplicativo. Prévia antiga é compatível com cache do WhatsApp.",
+      "versionedLinkRetainsCheckoutAndAttribution": true
+    },
+    "coordination": {
+      "previousPullRequest": 294,
+      "previousOfficialServices": [
+        "members",
+        "auth",
+        "referrals",
+        "api-gateway",
+        "admin",
+        "community",
+        "community-kids"
+      ],
+      "newOfficialServices": ["funnel"],
+      "previousServicesDoNotIncludeFunnel": true
+    },
+    "staging": {
+      "codeAlreadyOnLocalBranch": true,
+      "remoteCatalogActivationNotClaimed": true,
+      "publicationOwnedByOtherSession": true
+    },
+    "paymentSubmitted": false,
+    "testMessagesSent": false
+  },
+  "currentCommercialTerms": {
+    "sku": "como-ajudar-seu-filho-autista-nas-frustracoes",
+    "accessMonths": 6,
+    "priceCents": 6700,
+    "guaranteeDays": 7,
+    "giftAvailable": false,
+    "updatedAt": "2026-11-26T19:35:55.729Z"
   }
 }

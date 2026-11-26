@@ -704,5 +704,12 @@
     "normalRegularizationComplete": false,
     "head": "ca7d5c6b226e4c97c01f0498aeb60178fa0a98f3",
     "pullRequest": 294
+  },
+  "workshopRelease": {
+    "source": "2237b3ea61118badaf0494bfcfe2325c78cc50d2",
+    "pullRequest": 295,
+    "productionPublished": true,
+    "normalRegularizationComplete": false,
+    "receipt": "publicacao-workshop-2026-11-26.json"
   }
 }
