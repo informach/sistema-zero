@@ -22,6 +22,16 @@ presente. Usado por Cadê Kids/adulto, Desafio Kids/adulto, guia e curso da Vivi
 `OfertaPresente` saiu. Testes: `tests/unit/presente-cartao.test.ts`, `cade-oferta.test.ts` e o browser
 `curso-pais-vilao.ts` (cadastro pela janela até o concluído).
 
+**Bloco de preço (26/11/2026, pedido da dona):** todo cartão de compra dessas seis páginas usa
+`PrecoDoCartao.astro` (`styles/preco-cartao.css`, `.c917`/`.cda`): selo do desconto em cima, "De
+~~R$ X~~ por" pequeno e apagado, o preço final grande e o sufixo NA LINHA DE BAIXO ("pagamento
+único"; no presente, `cartao.condicao` = "sem custo e sem cartão"). Sem desconto, preço e sufixo no
+mesmo ritmo. No presente, `cartao.texto` é só o prazo (embaixo do preço) e `cartao.frase` (prazo +
+"Sem custo e sem cartão.") vai fora do cartão (ao lado, topo e fim; `copyDoPresente`). Cupom que
+valeu não repete aviso dentro do cartão (o selo e o preço riscado já dizem); só o aviso de problema
+(`preco.aviso.alerta`) aparece ali. As assinaturas da Comunidade não usam o bloco (cupom sem preço
+riscado).
+
 ## Curso para pais da Vivianne com página de venda (25/11/2026)
 
 `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso

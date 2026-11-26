@@ -182,6 +182,13 @@ describe('corpos e despacho', () => {
       expect(texto, corpo).toContain('<PresenteAcao cartao={cartao}')
       expect(texto, corpo).toContain('<PresenteJanela cartao={cartao} />')
       expect(texto, corpo).not.toContain('OfertaPresente')
+      // O mesmo bloco de preço na venda, no cupom e no presente: "De R$ X por", o preço grande e o
+      // sufixo na linha de baixo; no presente, "sem custo e sem cartão" (26/11/2026).
+      expect(texto, corpo).toContain(
+        '<PrecoDoCartao de={cartao.precoCheio} valor={cartao.precoFinal} sufixo={cartao.condicao} />',
+      )
+      expect(texto, corpo).toContain('<PrecoDoCartao de={preco.precoCheio} valor={preco.preco}')
+      expect(texto, corpo).not.toMatch(/adult-price-before|d9-cheio|class="c9-plano__preco"/)
     }
     // O "Depois da compra" da venda adulta sai no modo presente.
     const adulto = await src('components/funnel/oferta/DesafioAdultoBody.astro')

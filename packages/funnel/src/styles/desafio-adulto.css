@@ -377,27 +377,6 @@
   font-size: 0.875rem;
   line-height: 1.6;
 }
-.cda .da-cartao__preco {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.75rem;
-  font-family: var(--cda-titulo);
-  font-weight: 800;
-  font-size: clamp(3rem, 6vw, 4rem);
-  line-height: 1;
-}
-.cda .da-cartao__preco span {
-  font-family: var(--cda-corpo);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--cda-texto-suave);
-}
-.cda .da-cheio {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--cda-legenda);
-}
 .cda .da-cartao__btn {
   justify-content: center;
   width: 100%;

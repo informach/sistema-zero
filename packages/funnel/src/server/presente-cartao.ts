@@ -14,6 +14,7 @@ import type { OfferGiftMode } from './offer-page'
 import { giftVariant } from './referral-gift-page'
 
 export const CTA_DO_PRESENTE = 'Quero o meu presente'
+export const CONDICAO_DO_PRESENTE = 'sem custo e sem cartão'
 
 export interface CartaoDoPresente {
   /** "Um presente de Marta para você" ou "Um presente da campanha <título> para você". */
@@ -22,8 +23,12 @@ export interface CartaoDoPresente {
   precoCheio: string
   /** O preço do presente. */
   precoFinal: string
-  /** O que o presente dá e por quanto tempo, no lugar da frase da venda. */
+  /** O que o presente dá e por quanto tempo (só o prazo; a condição vai embaixo do preço). */
   texto: string
+  /** A linha embaixo do "R$ 0" no cartão, no lugar do "pagamento único". */
+  condicao: string
+  /** O prazo com a condição, para o texto fora do cartão (ao lado dele, no topo e no fim). */
+  frase: string
   cta: string
   /** Formulário aberto: o botão abre a janela do cadastro. */
   aberto: boolean
@@ -79,8 +84,12 @@ export function cartaoDoPresente(
         : 'ao curso'
   const texto =
     dias === null
+      ? `Acesso ${alvo}, a partir do cadastro.`
+      : `${giftDurationLabel(dias)} de acesso ${alvo}, contados do cadastro.`
+  const frase =
+    dias === null
       ? `Acesso ${alvo}, sem custo e sem cartão.`
-      : `${giftDurationLabel(dias)} de acesso ${alvo}, contados do cadastro. Sem custo e sem cartão.`
+      : `${texto} ${CONDICAO_DO_PRESENTE.replace(/^s/, 'S')}.`
   return {
     etiqueta: campanha
       ? `Um presente da campanha ${nome} para você`
@@ -88,6 +97,8 @@ export function cartaoDoPresente(
     precoCheio: formatarPreco(Math.round(Number(opts.priceReais) * 100)),
     precoFinal: formatarPreco(0),
     texto,
+    condicao: CONDICAO_DO_PRESENTE,
+    frase,
     cta: CTA_DO_PRESENTE,
     aberto,
     retomavel,
