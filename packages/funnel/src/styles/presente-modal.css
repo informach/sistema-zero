@@ -1,0 +1,136 @@
+/* A janela do cadastro do presente (`PresenteModal`, 26/11/2026). Só tokens: a cor vem do tema da
+   página (`.c917` Kids, `.cda` adulto). O `BolsaResgate` dentro dela (e na retomada dentro do
+   cartão) perde a moldura própria: a janela ou o cartão já são a moldura, nunca um cartão dentro
+   do outro. */
+.pm-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow-y: auto;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pm-fundo[hidden] {
+  display: none;
+}
+.pm-painel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 22px max(20px, env(safe-area-inset-right, 0px))
+    calc(22px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+}
+.pm-painel:focus {
+  outline: none;
+}
+.pm-cabeca {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pm-cabeca__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.pm-cabeca__texto > * {
+  margin: 0;
+}
+/* Depois do cadastro, a confirmação fala sozinha: o convite do topo da janela sai. */
+.pm-painel:has(.bz-card--resultado) .pm-cabeca__texto {
+  visibility: hidden;
+}
+.pm-painel:has(.bz-card--resultado) .pm-cabeca {
+  justify-content: flex-end;
+  margin-bottom: -44px;
+}
+.pm-fechar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid currentColor;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+@media (min-width: 640px) {
+  .pm-fundo {
+    align-items: center;
+    padding: 24px;
+  }
+}
+
+/* Kids */
+/* No topo dos cursos para pais, o selo "Uma surpresa na última aula" fica sobre a borda do cartão:
+   a etiqueta do presente desce para não ficar embaixo dele. */
+.c917 .cpv-heroi-form .pm-etiqueta {
+  margin-top: 22px;
+}
+.c917 .pm-fundo {
+  background: color-mix(in oklab, var(--kof-navy) 72%, transparent);
+}
+.c917 .pm-painel {
+  border: var(--c9-borda);
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+}
+.c917 .pm-painel .bz-card,
+.c917 .pm-retomar .bz-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.c917 .pm-fechar:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 2px;
+}
+@media (min-width: 640px) {
+  .c917 .pm-painel {
+    border-bottom: var(--c9-borda);
+    border-radius: 22px;
+    box-shadow: 8px 8px 0 var(--c9-tinta);
+  }
+}
+
+/* Adulto */
+.cda .pm-fundo {
+  background: color-mix(in oklab, var(--cda-preto) 78%, transparent);
+}
+.cda .pm-painel {
+  border: 3px solid var(--cda-linha-forte);
+  border-bottom: 0;
+  background: var(--cda-carta);
+  color: var(--cda-texto);
+}
+.cda .pm-painel .bz-card,
+.cda .pm-retomar .bz-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.cda .pm-fechar:focus-visible {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 2px;
+}
+@media (min-width: 640px) {
+  .cda .pm-painel {
+    border-bottom: 3px solid var(--cda-linha-forte);
+    box-shadow: 8px 8px 0 var(--cda-amarelo);
+  }
+}

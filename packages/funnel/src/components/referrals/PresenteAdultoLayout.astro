@@ -19,7 +19,13 @@ interface Props {
   /** Com o formulário aberto: o botão do topo e a barra fixa levam a ele. */
   ready?: boolean
   /** A barra fixa do celular com o prazo da oferta do presente (padrão: a do Cadê). */
-  barra?: { titulo: string; texto: string; cta: string }
+  barra?: {
+    titulo: string
+    texto: string
+    cta: string
+    /** Modo presente da página da oferta: o botão abre a janela do cadastro. */
+    presente?: boolean
+  }
   /** Sem as seções do Cadê (variante de outro curso): sem os atalhos delas. */
   secoes?: boolean
   /** O id da seção do botão do topo e da barra (padrão: o formulário; venda: `oferta`). */
@@ -66,7 +72,7 @@ const {
     {ready && (
       <div class="cda-barra" data-presente-barra data-alvo={alvo} aria-hidden="true">
         <p class="cda-barra__preco"><strong>{barra.titulo}</strong><span>{barra.texto}</span></p>
-        <a class="cda-btn cda-btn--barra" href={`#${alvo}`} tabindex="-1">{barra.cta}</a>
+        <a class="cda-btn cda-btn--barra" href={`#${alvo}`} tabindex="-1" data-presente-cta={barra.presente ? '' : undefined}>{barra.cta}</a>
       </div>
     )}
   </div>

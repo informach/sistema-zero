@@ -1,0 +1,25 @@
+---
+// A janela do cadastro do presente (26/11/2026): o `PresenteModal` com o `BolsaResgate`, aberto pelos
+// botões `data-presente-cta` da página. Fica DENTRO do `.c917` ou do `.cda` da página, que vestem o
+// formulário (`bz-*`) e a janela (`presente-modal.css`). Só existe com o cadastro aberto.
+import '../../../styles/presente-kids.css'
+import '../../../styles/presente-adulto.css'
+import '../../../styles/presente-modal.css'
+import PresenteModal from '../../../islands/PresenteModal'
+import type { CartaoDoPresente } from '../../../server/presente-cartao'
+
+interface Props {
+  cartao: CartaoDoPresente
+}
+const { cartao } = Astro.props
+---
+{cartao.aberto && (
+  <PresenteModal
+    client:idle
+    resgate={cartao.resgate}
+    titulo={cartao.janela.titulo}
+    texto={cartao.janela.texto}
+    classeTitulo={cartao.adulto ? 'cda-h3' : 'c9-plano__nome'}
+    classeTexto={cartao.adulto ? 'cda-suave' : 'c9-plano__texto'}
+  />
+)}

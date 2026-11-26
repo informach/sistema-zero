@@ -152,15 +152,38 @@ describe('corpos e despacho', () => {
     expect(pagina).toContain('<GuiaPaisBody {...bodyProps} />')
   })
 
-  test('venda com pré-checkout; presente com o OfertaPresente e sem pré-checkout', async () => {
+  test('venda com pré-checkout; presente no MESMO cartão, com a janela do cadastro', async () => {
     for (const corpo of ['CadeKidsBody', 'CadeAdultoBody']) {
       const texto = await src(`components/funnel/oferta/${corpo}.astro`)
       expect(texto).toContain('data-checkout-cta')
-      expect(texto).toContain('<OfertaPresente presente={presente}')
+      expect(texto).toContain('<PresenteAcao cartao={cartao}')
+      expect(texto).toContain('<PresenteJanela cartao={cartao} />')
       expect(texto).toContain('{!presente && <PreCheckoutModal')
       expect(texto).toContain('alvo="oferta"')
       expect(texto).toContain('f.basePath}/termos`}')
+      // A copy é a da venda também no modo presente (decisão de 26/11/2026).
+      expect(texto).toContain('const P = venda')
     }
+  })
+
+  test('as cinco páginas que podem ser presente usam o cartão e a janela compartilhados', async () => {
+    for (const corpo of [
+      'CadeKidsBody',
+      'CadeAdultoBody',
+      'Desafio917Body',
+      'DesafioAdultoBody',
+      'GuiaPaisBody',
+      'CursoPaisAutismoBody',
+    ]) {
+      const texto = await src(`components/funnel/oferta/${corpo}.astro`)
+      expect(texto, corpo).toContain('cartaoDoPresente(presente,')
+      expect(texto, corpo).toContain('<PresenteAcao cartao={cartao}')
+      expect(texto, corpo).toContain('<PresenteJanela cartao={cartao} />')
+      expect(texto, corpo).not.toContain('OfertaPresente')
+    }
+    // O "Depois da compra" da venda adulta sai no modo presente.
+    const adulto = await src('components/funnel/oferta/DesafioAdultoBody.astro')
+    expect(adulto).toMatch(/\{!cartao && \(\s*<div class="cda-caixa cda-caixa--depois">/)
   })
 
   test('as páginas do presente seguem iguais sem o slot de compra', async () => {
