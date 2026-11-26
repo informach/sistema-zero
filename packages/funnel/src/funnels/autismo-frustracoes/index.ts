@@ -53,7 +53,7 @@ const OBRIGADO: FunnelObrigado = {
   entrega: [
     `${CURSO_PAIS_AUTISMO_TITULO}: 5 aulas curtas em vídeo, com a psicóloga Vivianne Lima.`,
     'Apostila para consultar e certificado no final.',
-    'O curso fica na sua conta por 1 ano, contado da aprovação do pagamento.',
+    'O curso fica na sua conta pelo prazo do acesso, contado da aprovação do pagamento.',
     'Pagamento único, sem assinatura.',
   ],
   passos: [
@@ -90,18 +90,20 @@ export const AUTISMO_FRUSTRACOES: FunnelDef = {
     'Curso para pais, em 5 aulas curtas em vídeo. A psicóloga Vivianne Lima mostra o que fazer antes, durante e depois de uma crise, com exemplos do dia a dia da sua casa.',
   theme: 'kids',
   lifetimeAccess: false,
-  // 1 ano de acesso (decisão de 25/11/2026: nada de prometer acesso vitalício).
+  // Prazo fixo em MESES lido da oferta (6 meses desde 26/11/2026, pedido da Vivianne; antes 1 ano):
+  // a copy escreve o prazo do catálogo, então trocar a duração na oferta não derruba a página.
   offerContract: {
     pricingMode: 'one_time',
     accessMode: 'fixed',
-    accessDurationValue: 12,
+    accessDurationValue: null,
     accessDurationUnit: 'months',
     guaranteeDays: null,
+    anyDuration: true,
     anyGuarantee: true,
   },
   steps: { quiz: false, resultado: false, upsell: false, downsell: false },
   giftCourses: [CURSO_PAIS_AUTISMO_SLUG],
-  legal: { termos: TERMOS_CURSO_AUTISMO, termsVersion: 'curso-autismo-2026-11-25' },
+  legal: { termos: TERMOS_CURSO_AUTISMO, termsVersion: 'curso-autismo-2026-11-26' },
   content: {
     copy: PRODUTO,
     landing: LANDING,

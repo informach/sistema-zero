@@ -1,6 +1,7 @@
 // Página de venda do curso para pais "Como ajudar seu filho autista a lidar com frustrações e evitar
-// crises" (`/kids/como-ajudar-seu-filho-autista-nas-frustracoes`, 25/11/2026): R$ 67 no catálogo,
-// 1 ano de acesso. O presente sai pelos links de campanha e de embaixador, que abrem esta mesma
+// crises" (`/kids/como-ajudar-seu-filho-autista-nas-frustracoes`, 25/11/2026): R$ 67 no catálogo.
+// O PRAZO vem da oferta do catálogo (6 meses desde 26/11/2026, pedido da Vivianne): nenhum texto
+// escreve "1 ano" ou "6 meses" à mão (`prazo`, o rótulo de `prazoDaOferta`). O presente sai pelos links de campanha e de embaixador, que abrem esta mesma
 // página no modo presente (copy de `content/curso-pais-autismo.ts`). Na venda mudam só o que fala
 // de presente, os botões e o bloco de compra; o preço vem do catálogo (`{{preco}}`).
 import {
@@ -11,11 +12,21 @@ import type { GuiaPaisCopy, OfertaVendaGuia } from '../vilao-em-aliado/oferta'
 
 const CTA = 'Quero o curso'
 
-/** A copy de venda do curso. `{{preco}}` é trocado pelo preço do catálogo no corpo. */
-export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
+/**
+ * A copy de venda do curso. `{{preco}}` é trocado pelo preço do catálogo no corpo. `prazo` é o
+ * rótulo do prazo da oferta ("6 meses", "1 ano"); `null` (catálogo sem prazo em meses) tira o
+ * prazo das frases em vez de inventar um.
+ */
+export function cursoAutismoVenda(
+  garantiaDias: number | null,
+  prazo: string | null = null,
+): GuiaPaisCopy & {
   oferta: OfertaVendaGuia
 } {
   const P = CURSO_PAIS_AUTISMO_PRESENTE
+  // "1 ano"/"1 mês" pedem "contado"; "6 meses", "contados".
+  const contado = prazo && /^1 /.test(prazo) ? 'contado' : 'contados'
+  const naConta = prazo ? `o curso fica na sua conta por ${prazo}` : 'o curso fica na sua conta'
   return {
     ...P,
     seoTitle: `${CURSO_PAIS_AUTISMO_TITULO}: curso para pais | Sistema Zero`,
@@ -26,7 +37,7 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
       cta: CTA,
       beneficios: [
         P.hero.beneficios[0] ?? '',
-        'Pagamento único, com 1 ano de acesso',
+        prazo ? `Pagamento único, com ${prazo} de acesso` : 'Pagamento único',
         P.hero.beneficios[2] ?? '',
       ],
     },
@@ -37,14 +48,14 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
           if (item.pergunta === 'Tem que pagar alguma coisa?')
             return {
               pergunta: 'Quanto custa?',
-              resposta:
-                '{{preco}}, em pagamento único. Nenhuma assinatura começa, e o curso fica na sua conta por 1 ano.',
+              resposta: `{{preco}}, em pagamento único. Nenhuma assinatura começa, e ${naConta}.`,
             }
           if (item.pergunta === 'Por quanto tempo fico com o curso?')
             return {
               ...item,
-              resposta:
-                'Por 1 ano, contado da aprovação do pagamento. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.',
+              resposta: prazo
+                ? `Por ${prazo}, ${contado} da aprovação do pagamento. Nesse tempo, você pode rever as aulas e consultar a apostila sempre que quiser.`
+                : item.resposta,
             }
           if (item.pergunta === 'Já tenho conta no Sistema Zero Kids. Preciso de outra?')
             return {
@@ -68,8 +79,7 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
         item.titulo === 'Na área dos pais'
           ? {
               ...item,
-              texto:
-                'O curso fica na sua conta do Sistema Zero Kids por 1 ano, no menu Cursos para pais, e termina com o certificado.',
+              texto: `O curso fica na sua conta do Sistema Zero Kids${prazo ? ` por ${prazo}` : ''}, no menu Cursos para pais, e termina com o certificado.`,
             }
           : item,
       ),
@@ -78,8 +88,7 @@ export function cursoAutismoVenda(garantiaDias: number | null): GuiaPaisCopy & {
     oferta: {
       selo: CURSO_PAIS_AUTISMO_TITULO,
       sufixo: 'pagamento único',
-      texto:
-        '5 aulas curtas em vídeo, apostila e certificado. O curso fica na sua conta por 1 ano.',
+      texto: `5 aulas curtas em vídeo, apostila e certificado.${prazo ? ` O curso fica na sua conta por ${prazo}.` : ''}`,
       cta: CTA,
       garantia:
         garantiaDias === null

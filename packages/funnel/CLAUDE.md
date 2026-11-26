@@ -63,6 +63,14 @@ riscado).
 
 ## Curso para pais da Vivianne com página de venda (25/11/2026)
 
+**Prazo de 6 meses (26/11/2026, pedido da Vivianne; só este curso, guia e Cadê seguem com 1 ano):**
+o contrato virou `fixed` + `months` + `anyDuration` (a duração vem da oferta do catálogo) e toda frase
+de prazo da venda sai de `cursoAutismoVenda(garantia, prazo)`, com `prazo = prazoDaOferta(access).dias`
+no corpo (sem prazo em meses no catálogo, as frases saem sem prazo). O obrigado diz "pelo prazo do
+acesso". Termo `curso-autismo-2026-11-26` com 6 (seis) meses. A oferta do catálogo mantém o slug
+`como-ajudar-seu-filho-autista-nas-frustracoes-1-ano` (curso e produto apontam para ele) e passa a
+6 meses no Admin de staging e de produção. O texto abaixo que fala em 1 ano é história.
+
 `kids/como-ajudar-seu-filho-autista-nas-frustracoes` (`src/funnels/autismo-frustracoes/`): o curso
 "Como ajudar seu filho autista a lidar com frustrações e evitar crises", com a psicóloga Vivianne Lima,
 da Laopa (curso `como-ajudar-seu-filho-autista-nas-frustracoes`, R$ 67 no catálogo, 1 ano de acesso,

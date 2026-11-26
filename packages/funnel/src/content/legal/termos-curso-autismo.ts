@@ -1,5 +1,5 @@
 // Termos de Uso do curso para pais "Como ajudar seu filho autista a lidar com frustrações e evitar
-// crises" (compra única, 1 ano de acesso), 25/11/2026. Mesmo molde do Termo do guia para pais
+// crises" (compra única, 6 meses de acesso desde 26/11/2026; antes 1 ano), 25/11/2026. Mesmo molde do Termo do guia para pais
 // (`termos-guia-pais.ts`): pessoa maior de 18 anos que contrata para si; o curso é assistido pelo
 // próprio adulto, na área dos pais. Fundamentos: CDC (garantia de 7 dias, foro do domicílio do
 // consumidor), LGPD e Leis nº 9.610/1998 e 9.609/1998.
@@ -28,7 +28,7 @@ export const TERMOS_CURSO_AUTISMO: LegalDoc = {
       titulo: '2. O que é e como funciona o Curso',
       paragrafos: [
         `O curso ${PRODUTO} é um material digital de caráter educacional: aulas curtas em vídeo, com apostila e certificado, para o Usuário assistir no seu ritmo. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito. O mesmo Curso também pode ser recebido de presente, por um link de convite ou de campanha, nas condições informadas na página do presente.`,
-        'Após a aprovação do pagamento, o Curso é liberado na área dos pais, no menu Cursos para pais, por 1 (um) ano contado da aprovação do pagamento. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
+        'Após a aprovação do pagamento, o Curso é liberado na área dos pais, no menu Cursos para pais, por 6 (seis) meses contados da aprovação do pagamento. As instruções de primeiro acesso são enviadas ao e-mail informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
         'As aulas podem ser vistas e revistas a qualquer momento, no computador ou no celular.',
         'A Empresa pode atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto. Essas mudanças não alteram o preço, a duração nem as demais condições congeladas no momento da compra.',
       ],
@@ -62,7 +62,7 @@ export const TERMOS_CURSO_AUTISMO: LegalDoc = {
       titulo: '6. Prazo de acesso',
       paragrafos: [
         'O acesso começa com a aprovação do pagamento. Uma cobrança criada, mas ainda pendente, não libera o Curso.',
-        'O acesso ao Curso vale por 1 (um) ano, contado da aprovação do pagamento. Nesse período, o Usuário pode rever as aulas e consultar a apostila quantas vezes quiser.',
+        'O acesso ao Curso vale por 6 (seis) meses, contados da aprovação do pagamento. Nesse período, o Usuário pode rever as aulas e consultar a apostila quantas vezes quiser.',
         'O progresso nas aulas permanece armazenado conforme a Política de Privacidade.',
       ],
     },

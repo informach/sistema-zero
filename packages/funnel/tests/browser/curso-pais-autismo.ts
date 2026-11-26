@@ -32,7 +32,7 @@ const gateway = createServer((req, res) => {
       pricingMode: 'one_time',
       billingIntervalMonths: null,
       accessMode: 'fixed',
-      accessDurationValue: 12,
+      accessDurationValue: 6,
       accessDurationUnit: 'months',
       product: { name: title, sku: slug, audience: 'kids' },
       content: { allowsCoupon: true },
@@ -134,6 +134,9 @@ try {
     assert.equal(await page.locator('section.c9-heroi .c9-plano').count(), 0)
     const buy = page.locator('section#oferta')
     assert.match(await buy.innerText(), /R\$\s?67/)
+    // O prazo vem da oferta do catálogo (6 meses, pedido da Vivianne em 26/11/2026).
+    assert.match(await buy.innerText(), /6 meses/)
+    assert.doesNotMatch(await page.locator('body').innerText(), /1 ano|12 meses/)
     assert.equal(await buy.locator('[data-checkout-cta]').count(), 1)
     for (const id of ['na-sua-casa', 'o-que-muda', 'como-funciona', 'quem-conduz', 'duvidas'])
       assert.equal(await page.locator(`section#${id}`).count(), 1)
