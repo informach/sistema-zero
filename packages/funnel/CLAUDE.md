@@ -40,8 +40,10 @@ Admin, a página fica 503. Teste: `tests/unit/curso-pais-autismo.test.ts`.
 
 ## Oferta de cada página no CATÁLOGO e links curtos por curso (25/11/2026)
 
-**Sem env de oferta.** As `FUNNEL_OFFER_*` saíram de vez (código, `.env.example`, `.railway/variables.ts`,
-testes): a oferta de cada página é a **oferta principal do PRODUTO** da página (`FunnelDef.productSku`),
+**Oferta resolvida pelo catálogo.** O código e o `.env.example` não usam `FUNNEL_OFFER_*`.
+O IaC preserva os cinco valores legados existentes durante a transição, para as réplicas anteriores
+e rollback; não são uma fonte de configuração do código novo. A oferta de cada página é a
+**oferta principal do PRODUTO** da página (`FunnelDef.productSku`),
 marcada no Admin (Catálogo › Produto › "Oferta principal da página de venda"; coluna
 `catalog.products.primary_offer_id`, `PATCH /catalog/products/:id {primaryOfferId}`). O funil lê
 `GET /catalog/products/by-sku/:sku` → `primaryOfferSlug` (`gateway.getProductBySku`)
