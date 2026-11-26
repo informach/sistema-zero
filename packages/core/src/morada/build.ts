@@ -9,6 +9,7 @@
  * e móveis têm o pivô no centro da caixa.
  */
 import { MORADA_CATALOG } from './catalog.generated'
+import { MORADA_INSERT_OPENINGS } from './encaixes.generated'
 import { moradaFootprint } from './house'
 import type { MoradaCatalog, MoradaHouse, MoradaInstance, MoradaPiece, MoradaVector } from './types'
 
@@ -104,29 +105,66 @@ export function moradaWallOpenings(piece: MoradaPiece): MoradaOpening[] {
   return openings
 }
 
-/** A janela (ou porta) cobre a abertura: a moldura passa um pouco, nunca fica menor que o vão. */
-export function moradaOpeningFits(opening: MoradaOpening, insert: MoradaPiece): boolean {
+/**
+ * O vão que a ARTE desenhou para esta janela ou porta (`encaixes.generated.ts`, tirado do `vao` de
+ * cada peça): a moldura passa do vão de propósito (o óculo de 0,9 m vai no vão de 0,6 m; a janela
+ * quadrada de Natal, de 1,5 m, no de 1,2 m), então só o tamanho erra o par. `null` quando a arte não
+ * disse ou quando a parede não está neste catálogo.
+ */
+export function moradaAuthoredOpening(
+  insert: MoradaPiece,
+  catalog: MoradaCatalog = MORADA_CATALOG,
+): { wall: MoradaPiece; opening: MoradaOpening } | null {
+  const authored = MORADA_INSERT_OPENINGS[insert.id]
+  const wall = authored ? catalog.pieces[authored.wall] : undefined
+  const opening = authored && wall ? moradaWallOpenings(wall)[authored.index] : undefined
+  return wall && opening ? { wall, opening } : null
+}
+
+const sameOpening = (a: MoradaOpening, b: MoradaOpening) =>
+  a.kind === b.kind &&
+  Math.abs(a.to - a.from - (b.to - b.from)) < 0.02 &&
+  Math.abs(a.bottom - b.bottom) < 0.02 &&
+  Math.abs(a.top - b.top) < 0.02
+
+/**
+ * A janela (ou porta) entra nesta abertura. Com o vão da arte, vale qualquer abertura do MESMO
+ * tamanho (a porta da parede de 2 m também entra na de 1 m). Sem ele (peça nova sem `vao`), a régua
+ * do tamanho: a moldura passa um pouco, nunca fica menor que o vão.
+ */
+export function moradaOpeningFits(
+  opening: MoradaOpening,
+  insert: MoradaPiece,
+  catalog: MoradaCatalog = MORADA_CATALOG,
+): boolean {
   const kind = moradaInsertKind(insert)
   if (!kind || kind !== opening.kind) return false
+  const authored = moradaAuthoredOpening(insert, catalog)
+  if (authored) return sameOpening(opening, authored.opening)
   const width = opening.to - opening.from
   if (insert.size[0] < width - 0.06 || insert.size[0] > width + 0.2) return false
   return kind === 'porta' || Math.abs(insert.min[1] - opening.bottom) <= 0.3
 }
 
-/** As paredes com abertura onde esta janela entra, da que encaixa melhor para a pior. */
+/**
+ * As paredes com abertura onde esta janela entra, da que encaixa melhor para a pior: a parede que
+ * a arte desenhou para ela vem primeiro; depois as outras com o vão do mesmo tamanho.
+ */
 export function moradaOpeningWallsFor(
   insert: MoradaPiece,
   catalog: MoradaCatalog = MORADA_CATALOG,
 ): { wall: MoradaPiece; opening: MoradaOpening }[] {
+  const authoredWall = moradaAuthoredOpening(insert, catalog)?.wall.id
   const found: { wall: MoradaPiece; opening: MoradaOpening; score: number }[] = []
   for (const wall of Object.values(catalog.pieces)) {
     if (!isMoradaWall(wall)) continue
     for (const opening of moradaWallOpenings(wall))
-      if (moradaOpeningFits(opening, insert))
+      if (moradaOpeningFits(opening, insert, catalog))
         found.push({
           wall,
           opening,
           score:
+            (wall.id === authoredWall ? -10 : 0) +
             Math.abs(insert.size[0] - (opening.to - opening.from)) +
             Math.abs(insert.min[1] - opening.bottom) +
             wall.size[0] * 0.01,
@@ -421,7 +459,7 @@ export function moradaPlace(
       }
       // Um vão desta parede serve: a janela entra nele.
       const fits = wall.openings
-        .filter((o) => moradaOpeningFits(o, piece))
+        .filter((o) => moradaOpeningFits(o, piece, catalog))
         .sort(
           (a, b) =>
             Math.abs((a.from + a.to) / 2 - near.along) - Math.abs((b.from + b.to) / 2 - near.along),
@@ -445,18 +483,20 @@ export function moradaPlace(
           : { instance, wallId: wall.instance.id, valid: true }
       }
       // Parede lisa (ou com outro vão): o trecho troca pela parede com a abertura desta peça.
-      const option = moradaOpeningWallsFor(piece, catalog).find(
-        (o) => o.wall.size[0] <= wall.length + 0.001,
-      )
+      const options = moradaOpeningWallsFor(piece, catalog)
+      const option = options.find((o) => o.wall.size[0] <= wall.length + 0.001)
       if (!option) {
         const instance = placeAt(
           clamp(near.along, piece.size[0] / 2, wall.length - piece.size[0] / 2),
         )
+        // Com parede para ela no catálogo, o que falta é espaço: este trecho é mais curto.
         return {
           instance,
           wallId: wall.instance.id,
           valid: false,
-          reason: `Ainda não tem parede com o vão do tamanho desta ${kind}.`,
+          reason: options.length
+            ? `Este trecho de parede é curto para esta ${kind}. Leve até uma parede maior.`
+            : `Ainda não tem parede com o vão do tamanho desta ${kind}.`,
         }
       }
       if (insertsOn(house, wall, catalog, base.id).length)

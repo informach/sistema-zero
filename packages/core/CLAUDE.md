@@ -9,8 +9,13 @@ e para o Arquipélago. Puro: recebe a casa e devolve a instância. Proposta apro
 
 - **Vãos pelas colisões** (`moradaWallOpenings`): o catálogo não tem medida de abertura; o vão é o
   intervalo entre as colunas da altura toda, com o peitoril dando o chão e a verga o alto (sem
-  peitoril = porta). `moradaOpeningFits`/`moradaOpeningWallsFor` montam a tabela vão ↔ janela A
-  PARTIR DO CATÁLOGO: parede nova com vão (feita no Blender e importada) entra sozinha, sem código.
+  peitoril = porta). ⭐ **O par janela ↔ vão é o da ARTE** (`encaixes.generated.ts`, gerado por
+  `scripts/morada/encaixes.ts` do `vao` de cada janela, porta e encaixe; `--check` confere):
+  `moradaAuthoredOpening`, e `moradaOpeningFits` aceita qualquer abertura do MESMO tamanho da que a
+  arte desenhou. A moldura passa do vão de propósito (óculo 0,9 m no vão de 0,6 m; janela quadrada
+  de Natal 1,5 m no de 1,2 m): a régua só de tamanho errava 37 dos 88 pares (óculo no vão em arco,
+  porta em arco na passagem, a de Natal sem parede). A régua do tamanho fica para peça sem `vao`;
+  `moradaOpeningWallsFor` põe a parede da arte primeiro (a porta usa a de 2 m: um trecho a menos).
 - **`moradaPlace(house, pieceId, ponto, {rotation, base, roomId})`** → `{instance, replace?, valid,
   reason?, wallId?}`: janela e porta grudam na face da parede mais perto (até
   `MORADA_WALL_REACH`), viradas como ela; num vão que serve entram nele; numa parede lisa o trecho
@@ -27,9 +32,14 @@ e para o Arquipélago. Puro: recebe a casa e devolve a instância. Proposta apro
   `moradaOverlap`, o desfazer (`pushMoradaHistory` com `key` para juntar os passos de um arraste em
   `MORADA_HISTORY_MERGE_MS`, até `MORADA_HISTORY_LIMIT` 60; `undo`/`redoMoradaHistory`) e os tipos do
   catálogo de construção (`MORADA_BUILD_TYPES`, `moradaBuildType`).
-- ⚠️ Lacunas do catálogo ficam vermelhas até a arte desenhar a parede: `janela_quadrada_1m` (vão de
-  0,6 m, nenhuma janela cabe) e a `janela_quadrada_natal` (1,5 m, nenhuma parede tem o vão). O teste
-  `morada/build.test.ts` trava as duas; quando a parede nova chegar, troque a expectativa.
+- As "lacunas" de 26/11/2026 (`janela_quadrada_1m` sem janela, `janela_quadrada_natal` sem parede)
+  eram do par por tamanho, não da arte: não falta peça. Rodou `morada:migrar`? Rode também
+  `scripts/morada/encaixes.ts` (e o `--check`).
+- `validateMoradaHouse`: janela e porta (`janelas`, `portas`, `encaixes`) ficam no plano da parede
+  da borda e passam metade da espessura para fora; a folga delas é `max(0,2, fundo/2 + 0,01)`. As do
+  pacote de Natal têm 0,45 m, e a casa com elas era recusada ao salvar ("peça fora da área").
+- Trecho curto demais para a parede da janela diz "Este trecho de parede é curto…", não "Ainda não
+  tem parede…" (essa fica só para peça sem nenhuma parede no catálogo).
 - Testes: `src/morada/build.test.ts` (vãos, encaixe, troca com cores, vão ocupado, parede lateral,
   quadro, grade, tapete, fora do quarto, mover sem bater em si, fechar o vão, porta inicial, janela
   dupla, desfazer e refazer).
