@@ -99,6 +99,8 @@ describe.skipIf(!testDatabaseUrl)('Conversões — Postgres real', () => {
   function conversionInput(seed: Awaited<ReturnType<typeof seedRedemption>>, paymentId: string) {
     return {
       redemptionId: seed.redemption.id,
+      subscriberEmail: 'paula@example.com',
+      audience: 'kids' as const,
       codeId: seed.code.id,
       ambassadorId: seed.ambassador.id,
       paymentId,

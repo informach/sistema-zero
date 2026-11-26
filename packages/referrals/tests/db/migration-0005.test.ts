@@ -89,8 +89,15 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
 
     await migrate(db, { migrationsFolder: MIGRATIONS, migrationsTable: 'referrals_migrations' })
 
-    // A 0007 altera apenas a vaga ativa: nenhum campo do Pix histórico muda.
-    expect([...(await sql`select * from referrals.conversions`)]).toEqual([...historical])
+    // A 0007 altera apenas a vaga ativa: nenhum campo do Pix histórico muda. As colunas que
+    // migrations seguintes ACRESCENTAM (a 0013: aquisição, e-mail e público) nascem nulas.
+    const columns = Object.keys(historical[0]!)
+    const added = ['acquisition_id', 'subscriber_email', 'audience']
+    const after = [...(await sql`select * from referrals.conversions`)]
+    expect(after.map((row) => Object.fromEntries(columns.map((c) => [c, row[c]])))).toEqual([
+      ...historical,
+    ])
+    expect(after.map((row) => added.map((c) => row[c]))).toEqual([[null, null, null]])
     expect([...(await sql`select bonus_amounts from referrals.scholarship_redemptions`)]).toEqual([
       { bonus_amounts: null },
     ])

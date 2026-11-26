@@ -38,6 +38,8 @@ export function toAcquisition(row: AcquisitionRow): AcquisitionRecord {
   }
 }
 
+const createdAtMs = sql`date_trunc('milliseconds', ${acquisitions.createdAt})`
+
 export class DrizzleAcquisitionRepository implements AcquisitionRepository {
   constructor(private readonly db: Database) {}
 
@@ -157,12 +159,15 @@ export class DrizzleAcquisitionRepository implements AcquisitionRepository {
         and(
           isNull(acquisitions.offerSlug),
           isNotNull(acquisitions.offerId),
+          // ⚠️ O cursor volta como Date do JS (milissegundos) e o Postgres guarda microssegundos:
+          // comparar com `created_at` cru devolvia de novo a última linha da página anterior.
+          // Ordem e comparação usam o mesmo instante truncado ao milissegundo.
           after
-            ? sql`(${acquisitions.createdAt}, ${acquisitions.id}) > (${after.createdAt.toISOString()}::timestamptz, ${after.id}::uuid)`
+            ? sql`(${createdAtMs}, ${acquisitions.id}) > (${after.createdAt.toISOString()}::timestamptz, ${after.id}::uuid)`
             : undefined,
         ),
       )
-      .orderBy(asc(acquisitions.createdAt), asc(acquisitions.id))
+      .orderBy(asc(createdAtMs), asc(acquisitions.id))
       .limit(limit)
     return rows.flatMap((row) =>
       row.offerId ? [{ id: row.id, offerId: row.offerId, createdAt: row.createdAt }] : [],

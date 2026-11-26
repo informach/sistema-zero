@@ -1,10 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { AcquisitionMaintenanceService } from '../../src/application/acquisitions/acquisition-maintenance.service'
 import { AmbassadorAdminService } from '../../src/application/ambassadors/ambassador-admin.service'
 import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
 import { RecordConversionService } from '../../src/application/conversions/record-conversion.service'
 import type { PaymentSnapshot } from '../../src/domain/ports/clients.port'
+import { DrizzleAcquisitionRepository } from '../../src/infrastructure/persistence/drizzle/acquisition.repository'
 import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
 import {
   createDbConnection,
@@ -18,6 +20,8 @@ import {
   KIDS_GIFT_OFFER,
   silentLogger,
 } from '../fakes/in-memory'
+
+const OFFER_ID = '7a0f6a52-3c1e-4c55-9d1b-6f1c0a1e7d99'
 
 // Exige banco explicitamente descartável; nunca usa DATABASE_URL da aplicação.
 const url = process.env.TEST_DATABASE_URL
@@ -141,26 +145,47 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     )
     const code = (await repo.findCodeByCode(campaign!.code))!
     const payments = new Map<string, PaymentSnapshot>()
+    const catalog = {
+      getOfferById: async () => ({
+        id: OFFER_ID,
+        slug: 'comunidade-dos-criadores-anual',
+        name: 'Anual',
+        billingIntervalMonths: 12,
+      }),
+    }
+    const acquisitions = new DrizzleAcquisitionRepository(connection.db)
+    const config = {
+      conversionOfferSlugs: ['comunidade-dos-criadores-anual'],
+      bonusAmountCents: 3000,
+      bonusWindowDays: 45,
+      matureHours: 180,
+    }
     const service = new RecordConversionService(
       repo,
+      acquisitions,
+      campaigns,
       {
         getPayment: async (id) => payments.get(id) ?? null,
         getSubscriptionCreatedAt: async () => null,
+        // Nenhuma compra anterior à 0013: o histórico vem das aquisições.
+        listPaidOfferIds: async () => [],
       },
-      {
-        getOfferById: async () => ({
-          id: 'offer',
-          slug: 'comunidade-dos-criadores-anual',
-          name: 'Anual',
-          billingIntervalMonths: 12,
-        }),
-      },
-      {
-        conversionOfferSlugs: ['comunidade-dos-criadores-anual'],
-        bonusAmountCents: 3000,
-        matureHours: 180,
-      },
+      catalog,
+      config,
       silentLogger,
+      new AcquisitionMaintenanceService(
+        acquisitions,
+        catalog,
+        {
+          defaults: { amounts: null, legacyCents: 3000, windowDays: 45 },
+          repairWindowDays: 3650,
+          // Os presentes daqui são de agora: o prazo da campanha (30 dias), nunca o longo.
+          legacyBefore: new Date(0),
+          batchSize: 20,
+          conversionOfferSlugs: config.conversionOfferSlugs,
+        },
+        silentLogger,
+      ),
     )
     async function claim(email = `${crypto.randomUUID()}@example.test`) {
       const input = {
@@ -183,7 +208,7 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
         customer: { email, name: 'Pessoa' },
         amountInCents: 9700n,
         subscriptionId: null,
-        metadata: { offerId: 'offer' },
+        metadata: { offerId: OFFER_ID },
       })
       return id
     }
@@ -265,8 +290,7 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     expect(rows.filter((c) => c.status === 'pending')).toHaveLength(1)
     const selected = rows.find((c) => c.status === 'pending')!
     expect(selected).toMatchObject({ paymentId: early, bonusCents: 4500 })
-    if (order === 'late-first')
-      expect(rows.find((c) => c.paymentId === late)?.status).toBe('superseded')
+    expect(rows.find((c) => c.paymentId === late)).toBeUndefined()
     expect((await admin.detail(f.campaign.id))?.redemptions[0]?.conversion).toMatchObject({
       status: 'pending',
       bonusCents: 4500,
@@ -301,10 +325,11 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     await f.paid(early)
     await f.refund(early)
     await f.paid(late)
-    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(0)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(1)
     expect((await admin.detail(f.campaign.id))?.redemptions[0]?.conversion?.status).toBe('canceled')
     await f.refund(late)
     await f.refund(late)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(0)
     expect(
       (await repo.listConversionsByRedemptions([r.id])).every((c) => c.status === 'canceled'),
     ).toBe(true)
@@ -329,10 +354,26 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     const f = await fixture()
     const r = await f.claim()
     const other = await f.claim()
-    const late = f.payment(r.email, new Date(r.createdAt.getTime() + 31 * 86_400_000))
-    await f.paid(late)
+    const late = crypto.randomUUID()
+    await repo.insertConversion({
+      redemptionId: r.id,
+      subscriberEmail: r.email,
+      audience: 'kids',
+      codeId: f.code.id,
+      ambassadorId: f.person.ambassador.id,
+      paymentId: late,
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-anual',
+      amountCents: 9700n,
+      bonusCents: 0,
+      status: 'unrewarded',
+      paidAt: new Date(r.createdAt.getTime() + 31 * 86_400_000),
+      maturesAt: new Date(0),
+    })
     const candidate = {
       redemptionId: r.id,
+      subscriberEmail: r.email,
+      audience: 'kids' as const,
       codeId: f.code.id,
       ambassadorId: f.person.ambassador.id,
       paymentId: crypto.randomUUID(),
@@ -353,7 +394,9 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
       unlock = resolve
     })
     const competing = connection.db.transaction(async (tx) => {
-      await tx.insert(conversions).values({ ...candidate, redemptionId: other.id })
+      await tx
+        .insert(conversions)
+        .values({ ...candidate, redemptionId: other.id, subscriberEmail: other.email })
       locked()
       await release
     })
