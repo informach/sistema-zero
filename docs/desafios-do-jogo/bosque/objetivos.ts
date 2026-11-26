@@ -62,8 +62,8 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
       rule: {
         type: 'usesBlock',
         area: 'loops',
-        withinBlock: 'sz_g2d_every_frames',
-        blockType: 'sz_g2d_random_x',
+        withinBlock: 'sz_g2d_every_seconds',
+        blockType: 'sz_val_random',
         count: 4,
       },
     },

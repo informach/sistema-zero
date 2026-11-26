@@ -357,21 +357,23 @@
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_center_x",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_play_fx",
-      "sz_g2d_spawn_asteroid",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_center_x",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_val_number"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames", "sz_g2d_spawn_asteroid"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-bolotas-para-o-alto",
@@ -386,7 +388,7 @@
       "sz_g2d_on_key",
       "sz_g2d_play_fx",
       "sz_g2d_scene_is",
-      "sz_g2d_spawn_bullet",
+      "sz_g2d_spawn_image_in_group",
       "sz_g2d_sprite_y",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
@@ -396,12 +398,14 @@
       "sz_g2d_center_x",
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
+      "sz_g2d_play_fx",
       "sz_g2d_scene_is",
+      "sz_g2d_spawn_image_in_group",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_spawn_bullet"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-quebrar-as-pinhas",
@@ -413,22 +417,21 @@
       "sz_g2d_explode",
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_remove_from_group",
-      "sz_g2d_shake",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_number"
+      "sz_js_var_increment"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_remove_from_group",
       "sz_g2d_update_each_frame",
-      "sz_js_if_else",
-      "sz_val_number"
+      "sz_js_if_else"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_shake"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-tres-vidas",
@@ -450,6 +453,7 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number"
@@ -463,12 +467,13 @@
     "titulo": "Fim e outra partida",
     "problema": null,
     "blocosDerivados": [
+      "sz_g2d_draw_label",
+      "sz_g2d_draw_sprite",
       "sz_g2d_health_depleted",
       "sz_g2d_on_key",
       "sz_g2d_restart",
       "sz_g2d_scene_is",
       "sz_g2d_set_scene",
-      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_compare",
@@ -477,17 +482,18 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_draw_label",
+      "sz_g2d_draw_sprite",
       "sz_g2d_on_key",
       "sz_g2d_scene_is",
       "sz_g2d_set_scene",
-      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_show_screen"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos",
@@ -498,21 +504,21 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_random_x",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
+      "sz_val_random",
       "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_val_bool",
@@ -520,7 +526,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos-pedras",
@@ -531,7 +537,7 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
@@ -547,7 +553,7 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
@@ -559,7 +565,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos-noite",
@@ -618,21 +624,23 @@
     "problema": null,
     "blocosDerivados": [
       "sz_g2d_center_x",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_play_fx",
-      "sz_g2d_spawn_asteroid",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_val_number"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_center_x",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
+      "sz_g2d_play_fx",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_val_number"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames", "sz_g2d_spawn_asteroid"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-bolotas-para-o-alto-adulto",
@@ -647,7 +655,7 @@
       "sz_g2d_on_key",
       "sz_g2d_play_fx",
       "sz_g2d_scene_is",
-      "sz_g2d_spawn_bullet",
+      "sz_g2d_spawn_image_in_group",
       "sz_g2d_sprite_y",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
@@ -657,12 +665,14 @@
       "sz_g2d_center_x",
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_key",
+      "sz_g2d_play_fx",
       "sz_g2d_scene_is",
+      "sz_g2d_spawn_image_in_group",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_spawn_bullet"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-quebrar-as-pinhas-adulto",
@@ -674,22 +684,21 @@
       "sz_g2d_explode",
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_remove_from_group",
-      "sz_g2d_shake",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
-      "sz_js_var_increment",
-      "sz_val_number"
+      "sz_js_var_increment"
     ],
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_group_overlap",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_remove_from_group",
       "sz_g2d_update_each_frame",
-      "sz_js_if_else",
-      "sz_val_number"
+      "sz_js_if_else"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_shake"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-tres-vidas-adulto",
@@ -711,6 +720,7 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_on_key",
       "sz_g2d_on_sprite_group_overlap",
+      "sz_g2d_play_fx",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number"
@@ -724,12 +734,13 @@
     "titulo": "Fim e outra partida",
     "problema": null,
     "blocosDerivados": [
+      "sz_g2d_draw_label",
+      "sz_g2d_draw_sprite",
       "sz_g2d_health_depleted",
       "sz_g2d_on_key",
       "sz_g2d_restart",
       "sz_g2d_scene_is",
       "sz_g2d_set_scene",
-      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_compare",
@@ -738,17 +749,18 @@
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
+      "sz_g2d_draw_label",
+      "sz_g2d_draw_sprite",
       "sz_g2d_on_key",
       "sz_g2d_scene_is",
       "sz_g2d_set_scene",
-      "sz_g2d_show_screen",
       "sz_g2d_update_each_frame",
       "sz_js_if_else",
       "sz_val_number",
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_show_screen"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos-adulto",
@@ -759,21 +771,21 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
-      "sz_g2d_random_x",
       "sz_g2d_set_velocity",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_val_bool",
       "sz_val_compare",
       "sz_val_number",
+      "sz_val_random",
       "sz_val_text",
       "sz_val_variable"
     ],
     "tiposJaPresentesMasAlterados": [
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_on_overlap",
       "sz_val_bool",
@@ -781,7 +793,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos-pedras-adulto",
@@ -792,7 +804,7 @@
     "blocosDerivados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
@@ -808,7 +820,7 @@
     "tiposJaPresentesMasAlterados": [
       "sz_g2d_apply_velocity",
       "sz_g2d_clamp_to_screen",
-      "sz_g2d_every_frames",
+      "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_set_velocity",
       "sz_g2d_sprite_x",
@@ -820,7 +832,7 @@
       "sz_val_text",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_every_frames"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "bosque-corrida-dos-bichos-noite-adulto",
@@ -2574,7 +2586,7 @@
       "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_restart",
-      "sz_g2d_spawn_asteroid",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2594,7 +2606,7 @@
       "sz_val_number",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_spawn_asteroid"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "vale-ninho-atingido",
@@ -2793,7 +2805,7 @@
       "sz_g2d_every_seconds",
       "sz_g2d_on_key",
       "sz_g2d_restart",
-      "sz_g2d_spawn_asteroid",
+      "sz_g2d_spawn_image_in_group",
       "sz_js_if_else",
       "sz_js_var_assign",
       "sz_js_var_increment",
@@ -2813,7 +2825,7 @@
       "sz_val_number",
       "sz_val_variable"
     ],
-    "semFonteLocalNaTrilha": ["sz_g2d_spawn_asteroid"]
+    "semFonteLocalNaTrilha": []
   },
   {
     "slug": "vale-ninho-atingido-adulto",

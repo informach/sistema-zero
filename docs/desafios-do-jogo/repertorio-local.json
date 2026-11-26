@@ -1474,19 +1474,22 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
@@ -1494,9 +1497,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -1508,14 +1509,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_play_fx", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": [],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-bolotas-para-o-alto",
@@ -1549,18 +1544,21 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
@@ -1568,9 +1566,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -1581,19 +1577,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_explode",
-        "sz_g2d_play_fx",
-        "sz_g2d_spawn_bullet",
-        "sz_g2d_sprite_y"
-      ],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_sprite_y"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-quebrar-as-pinhas",
@@ -1627,14 +1612,16 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
@@ -1647,9 +1634,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -1660,14 +1645,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_shake", "sz_js_var_increment"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": ["sz_g2d_explode", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-tres-vidas",
@@ -1701,27 +1680,27 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
         "sz_g2d_scene_is",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -1736,16 +1715,9 @@
       "tiposAcrescentados": [
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_sprite_health",
-        "sz_g2d_play_fx",
         "sz_g2d_set_health"
       ],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-fim-e-outra-partida",
@@ -1779,14 +1751,16 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
@@ -1798,10 +1772,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -1813,13 +1784,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_health_depleted", "sz_g2d_restart", "sz_val_compare"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos",
@@ -1878,7 +1843,7 @@
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
@@ -1893,13 +1858,13 @@
       "tiposAcrescentados": [
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_js_if_else",
         "sz_js_var_assign",
-        "sz_val_compare"
+        "sz_val_compare",
+        "sz_val_random"
       ],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras",
@@ -1937,10 +1902,9 @@
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -1951,11 +1915,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite",
@@ -1988,10 +1953,9 @@
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
@@ -2003,11 +1967,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar",
@@ -2061,10 +2026,9 @@
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2075,11 +2039,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-chuva-de-pinhas-adulto",
@@ -2113,19 +2078,22 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
@@ -2133,9 +2101,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -2147,14 +2113,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_play_fx", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": [],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-bolotas-para-o-alto-adulto",
@@ -2188,18 +2148,21 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
@@ -2207,9 +2170,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -2220,19 +2181,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": [
-        "sz_g2d_explode",
-        "sz_g2d_play_fx",
-        "sz_g2d_spawn_bullet",
-        "sz_g2d_sprite_y"
-      ],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_sprite_y"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-quebrar-as-pinhas-adulto",
@@ -2266,14 +2216,16 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
@@ -2286,9 +2238,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -2299,14 +2249,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_explode", "sz_g2d_shake", "sz_js_var_increment"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "tiposAcrescentados": ["sz_g2d_explode", "sz_js_var_increment"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-tres-vidas-adulto",
@@ -2340,27 +2284,27 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_health_depleted",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
         "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_play_fx",
         "sz_g2d_prune_offscreen",
         "sz_g2d_remove_from_group",
         "sz_g2d_restart",
         "sz_g2d_scene_is",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -2375,16 +2319,9 @@
       "tiposAcrescentados": [
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_sprite_health",
-        "sz_g2d_play_fx",
         "sz_g2d_set_health"
       ],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-fim-e-outra-partida-adulto",
@@ -2418,14 +2355,16 @@
         "sz_g2d_clear",
         "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
+        "sz_g2d_create_sprite",
         "sz_g2d_damage_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_group",
+        "sz_g2d_draw_label",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_draw_sprite_health",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_explode",
         "sz_g2d_on_group_overlap",
         "sz_g2d_on_key",
@@ -2437,10 +2376,7 @@
         "sz_g2d_set_health",
         "sz_g2d_set_scene",
         "sz_g2d_setup_stage",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_sprite_y",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
@@ -2452,13 +2388,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_health_depleted", "sz_g2d_restart", "sz_val_compare"],
-      "semFonteNaTrilha": [
-        "sz_g2d_every_frames",
-        "sz_g2d_shake",
-        "sz_g2d_show_screen",
-        "sz_g2d_spawn_asteroid",
-        "sz_g2d_spawn_bullet"
-      ]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-adulto",
@@ -2517,7 +2447,7 @@
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
         "sz_g2d_setup_stage",
@@ -2532,13 +2462,13 @@
       "tiposAcrescentados": [
         "sz_g2d_apply_velocity",
         "sz_g2d_clamp_to_screen",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_js_if_else",
         "sz_js_var_assign",
-        "sz_val_compare"
+        "sz_val_compare",
+        "sz_val_random"
       ],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-pedras-adulto",
@@ -2576,10 +2506,9 @@
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2590,11 +2519,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "bosque-corrida-dos-bichos-noite-adulto",
@@ -2627,10 +2557,9 @@
         "sz_g2d_draw_label",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_opacity",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
@@ -2642,11 +2571,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": [],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x", "sz_g2d_set_opacity"]
+      "semFonteNaTrilha": ["sz_g2d_set_opacity"]
     },
     {
       "slug": "bosque-corrida-dos-bichos-placar-adulto",
@@ -2700,10 +2630,9 @@
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
-        "sz_g2d_every_frames",
+        "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
-        "sz_g2d_random_x",
         "sz_g2d_set_velocity",
         "sz_g2d_setup_stage",
         "sz_g2d_sprite_x",
@@ -2714,11 +2643,12 @@
         "sz_val_bool",
         "sz_val_compare",
         "sz_val_number",
+        "sz_val_random",
         "sz_val_text",
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_js_var_increment"],
-      "semFonteNaTrilha": ["sz_g2d_every_frames", "sz_g2d_random_x"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vila-doce-corrida-do-entregador-pulo",
@@ -6012,8 +5942,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_image_in_group"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-ninho-atingido",
@@ -6049,7 +5979,7 @@
         "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6067,7 +5997,7 @@
         "sz_g2d_remove_from_group",
         "sz_g2d_restart"
       ],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-alcance-da-torre",
@@ -6109,7 +6039,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6123,7 +6053,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-ondas-que-crescem",
@@ -6161,7 +6091,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6175,7 +6105,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_math_arithmetic"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-mais-cinzas",
@@ -6213,7 +6143,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6228,7 +6158,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-dois-pontos",
@@ -6266,7 +6196,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6281,7 +6211,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-ondas-contadas",
@@ -6319,7 +6249,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6334,7 +6264,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-onda-limpa",
@@ -6372,7 +6302,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6387,7 +6317,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-onda-de-cinza-adulto",
@@ -6493,8 +6423,8 @@
         "sz_val_text",
         "sz_val_variable"
       ],
-      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_asteroid"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "tiposAcrescentados": ["sz_g2d_restart", "sz_g2d_spawn_image_in_group"],
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-ninho-atingido-adulto",
@@ -6530,7 +6460,7 @@
         "sz_g2d_every_seconds",
         "sz_g2d_on_key",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6548,7 +6478,7 @@
         "sz_g2d_remove_from_group",
         "sz_g2d_restart"
       ],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-alcance-da-torre-adulto",
@@ -6590,7 +6520,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6604,7 +6534,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-ondas-que-crescem-adulto",
@@ -6642,7 +6572,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6656,7 +6586,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart", "sz_math_arithmetic"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-mais-cinzas-adulto",
@@ -6694,7 +6624,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6709,7 +6639,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-dois-pontos-adulto",
@@ -6747,7 +6677,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6762,7 +6692,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-ondas-contadas-adulto",
@@ -6800,7 +6730,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6815,7 +6745,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "vale-guardiao-onda-limpa-adulto",
@@ -6853,7 +6783,7 @@
         "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_remove_from_group",
         "sz_g2d_setup_stage",
-        "sz_g2d_spawn_asteroid",
+        "sz_g2d_spawn_image_in_group",
         "sz_g2d_update_each_frame",
         "sz_g2d_update_group",
         "sz_js_if_else",
@@ -6868,7 +6798,7 @@
         "sz_val_variable"
       ],
       "tiposAcrescentados": ["sz_g2d_restart"],
-      "semFonteNaTrilha": ["sz_g2d_spawn_asteroid"]
+      "semFonteNaTrilha": []
     },
     {
       "slug": "nuvens-plantar-com-moedas",

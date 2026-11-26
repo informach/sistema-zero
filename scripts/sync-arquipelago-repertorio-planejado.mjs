@@ -27,7 +27,7 @@ const document = {
     const origem = `docs/aulas-interativas/${course}/blocos.json`
     const data = JSON.parse(readFileSync(new URL(origem, root), 'utf8'))
     const blocos = [
-      ...new Set([...(data.blocks ?? data['2d'] ?? []), ...(data['3d'] ?? [])]),
+      ...new Set([...(data.allowBlocks ?? data.blocks ?? data['2d'] ?? []), ...(data['3d'] ?? [])]),
     ].sort()
     if (
       !blocos.length ||

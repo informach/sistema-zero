@@ -32,10 +32,17 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
  *
  * As pinhas nascem na coluna do coelho (o centro dele na hora): é o que deixa o executor conferir
  * o jogo sem depender de sorte, e é o que obriga a criança a sair do lugar.
+ *
+ * Nova autoria da Nave (26/11/2026): a Nave passou a ensinar o relógio de segundos, a imagem que
+ * nasce no grupo, o painel com textos para as telas e o som de pancada. Os cinco quadros seguem a
+ * mesma brincadeira com esses blocos: o relógio de 1 segundo solta a pinha (antes, a cada 60
+ * quadros), pinha e bolota são imagens no grupo (antes, o asteroide e o tiro prontos), as telas
+ * de abertura e de fim são o painel com dois textos (antes, a tela pronta) e o extra do quadro 3
+ * troca a tela que treme, que a trilha não ensina mais, pelo som de pancada.
  */
 export type QuadroInicialDoBosque = 1 | 2 | 3 | 4 | 5
 type Parte = 'pinhas' | 'bolotas' | 'quebrar' | 'vidas' | 'derrota'
-type Extra = 'som' | 'efeitos' | 'tremer' | 'vitoria'
+type Extra = 'som' | 'efeitos' | 'pancada' | 'vitoria'
 const PARTE: Record<QuadroInicialDoBosque, Parte> = {
   1: 'pinhas',
   2: 'bolotas',
@@ -46,7 +53,7 @@ const PARTE: Record<QuadroInicialDoBosque, Parte> = {
 const EXTRA: Record<QuadroInicialDoBosque, Extra> = {
   1: 'som',
   2: 'efeitos',
-  3: 'tremer',
+  3: 'pancada',
   4: 'som',
   5: 'vitoria',
 }
@@ -121,14 +128,22 @@ const se = (
 ): JSStatement => ({ type: 'if', cond, then, ...(elseif ? { elseif } : {}) }) as JSStatement
 /** Um "senão se" do Se (o campo `then` é o da IR). */
 const senaoSe = (cond: JSExpr, then: JSStatement[]) => ({ cond, then })
-const tela = (title: string, hint: string): JSStatement => ({
-  type: 'g2d:showScreen',
+const texto = (text: string, y: number, size: number, color: string): JSStatement => ({
+  type: 'g2d:drawLabel',
   ctxVar: 'ctx',
-  title: s(title),
-  subtitle: s(''),
-  hint: s(hint),
-  bg: '#1f4a3a',
+  text: s(text),
+  x: 320,
+  y,
+  color,
+  size,
+  align: 'center',
 })
+/** A tela de abertura ou de fim: o painel, como na Nave, com o título e o que apertar. */
+const tela = (title: string, hint: string): JSStatement[] => [
+  { type: 'g2d:drawSprite', spriteVar: 'painel', ctxVar: 'ctx' },
+  texto(title, 220, 30, '#fff8e6'),
+  texto(hint, 262, 18, '#d9eec4'),
+]
 const tirar = (spriteVar: string, groupVar: string): JSStatement => ({
   type: 'g2d:removeFromGroup',
   spriteVar,
@@ -139,6 +154,16 @@ const svg = (w: number, h: number, body: string) =>
 const pinheiro = (x: number, y: number, e: number) =>
   `<g transform="translate(${x} ${y}) scale(${e})"><rect x="-8" y="70" width="16" height="40" fill="#7b4f2c"/><path d="M0-40 50 40H-50zM0-10 60 75H-60z" fill="#2f7a4f"/></g>`
 const assets: ProjectAsset[] = Object.entries({
+  pinha: svg(
+    34,
+    34,
+    '<ellipse cx="17" cy="19" rx="11" ry="14" fill="#8a5a32"/><path d="M8 14q9 5 18 0M7 20q10 5 20 0M8 26q9 4 18 0" fill="none" stroke="#5f3b1f" stroke-width="2"/><path d="M17 5v-4" stroke="#4f7a3a" stroke-width="3" stroke-linecap="round"/>',
+  ),
+  bolota: svg(
+    12,
+    12,
+    '<circle cx="6" cy="7" r="5" fill="#a8743a"/><path d="M1 5q5-5 10 0" fill="#6b4a26"/>',
+  ),
   coelho: svg(
     48,
     48,
@@ -172,6 +197,16 @@ function jogo(liga: (p: Parte | Extra) => boolean): SZIRV2 {
       w: 48,
       h: 48,
     },
+    // O painel das telas de abertura e de fim, como na Nave.
+    {
+      type: 'g2d:createSprite',
+      varName: 'painel',
+      x: 100,
+      y: 170,
+      w: 440,
+      h: 130,
+      color: '#1f4a3a',
+    },
     { type: 'g2d:createGroup', varName: 'pinhas' },
     { type: 'g2d:createGroup', varName: 'bolotas' },
     { type: 'var', name: 'pontos', value: n(0) },
@@ -197,12 +232,13 @@ function jogo(liga: (p: Parte | Extra) => boolean): SZIRV2 {
         ? [
             se(cena('jogando'), [
               {
-                type: 'g2d:spawnBullet',
+                type: 'g2d:spawnImageInGroup',
                 groupVar: 'bolotas',
                 x: { type: 'g2d:centerX', spriteVar: 'coelho' },
                 y: { type: 'g2d:spriteY', spriteVar: 'coelho' },
-                radius: n(6),
-                color: '#a8743a',
+                w: 12,
+                h: 12,
+                image: 'bolota',
                 vx: n(0),
                 vy: n(-9),
               },
@@ -276,9 +312,7 @@ function jogo(liga: (p: Parte | Extra) => boolean): SZIRV2 {
               } as JSStatement,
             ]
           : []),
-        ...(liga('tremer')
-          ? [{ type: 'g2d:shake', ctxVar: 'ctx', intensity: n(6) } as JSStatement]
-          : []),
+        ...(liga('pancada') ? [{ type: 'g2d:playFx', fx: 'hit' } as JSStatement] : []),
       ],
     },
     ...(liga('vidas')
@@ -309,35 +343,38 @@ function jogo(liga: (p: Parte | Extra) => boolean): SZIRV2 {
         { type: 'g2d:clear' },
         { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'bosque' },
         se(cena('jogando'), jogando, [
-          senaoSe(cena('inicio'), [
+          senaoSe(
+            cena('inicio'),
             tela('A chuva de pinhas', 'Aperte Enter para começar. Setas andam, espaço joga bolota'),
-          ]),
-          senaoSe(cena('fim'), [tela('As vidas acabaram', 'Aperte Enter para jogar de novo')]),
+          ),
+          senaoSe(cena('fim'), tela('As vidas acabaram', 'Aperte Enter para jogar de novo')),
           ...(liga('vitoria')
             ? [
-                senaoSe(cena('vitoria'), [
+                senaoSe(
+                  cena('vitoria'),
                   tela('Você quebrou dez pinhas', 'Aperte Enter para jogar de novo'),
-                ]),
+                ),
               ]
             : []),
         ]),
       ],
     },
     {
-      type: 'g2d:everyFrames',
-      n: n(60),
+      type: 'g2d:everySeconds',
+      seconds: n(1),
       body: [
         se(
           cena('jogando'),
           liga('pinhas')
             ? [
                 {
-                  type: 'g2d:spawnAsteroid',
+                  type: 'g2d:spawnImageInGroup',
                   groupVar: 'pinhas',
                   x: { type: 'g2d:centerX', spriteVar: 'coelho' },
-                  y: n(-30),
-                  size: n(34),
-                  color: '#8a5a32',
+                  y: n(-34),
+                  w: 34,
+                  h: 34,
+                  image: 'pinha',
                   vx: n(0),
                   vy: n(3),
                 },
@@ -445,10 +482,15 @@ const EXTRAS: Record<Extra, SectionJavaScriptProjectCheck> = {
     },
     true,
   ),
-  tremer: estrutura(
-    'tela-treme',
-    'Extra: a tela treme quando uma pinha cai no coelho.',
-    { blockType: 'sz_g2d_shake', area: 'loops', withinBlock: 'sz_g2d_on_sprite_group_overlap' },
+  pancada: estrutura(
+    'som-da-pancada',
+    'Extra: um som de pancada toca quando uma pinha cai no coelho.',
+    {
+      blockType: 'sz_g2d_play_fx',
+      area: 'loops',
+      withinBlock: 'sz_g2d_on_sprite_group_overlap',
+      fields: { FX: 'hit' },
+    },
     true,
   ),
   vitoria: estrutura(
@@ -476,14 +518,14 @@ const principais: Record<QuadroInicialDoBosque, SectionJavaScriptProjectCheck[]>
       val('pinhas.items.length', 'atLeast', 1),
     ),
     estrutura('pinha-no-relogio', 'As pinhas nascem no relógio da partida, no grupo pinhas.', {
-      blockType: 'sz_g2d_every_frames',
+      blockType: 'sz_g2d_every_seconds',
       area: 'loops',
       inputBlocks: {
         BODY: {
           blockType: 'sz_js_if_else',
           inputBlocks: {
             COND: jogandoCond,
-            THEN: { blockType: 'sz_g2d_spawn_asteroid', fields: { GROUP: 'pinhas' } },
+            THEN: { blockType: 'sz_g2d_spawn_image_in_group', fields: { GROUP: 'pinhas' } },
           },
         },
       },
@@ -505,7 +547,7 @@ const principais: Record<QuadroInicialDoBosque, SectionJavaScriptProjectCheck[]>
           blockType: 'sz_js_if_else',
           inputBlocks: {
             COND: jogandoCond,
-            THEN: { blockType: 'sz_g2d_spawn_bullet', fields: { GROUP: 'bolotas' } },
+            THEN: { blockType: 'sz_g2d_spawn_image_in_group', fields: { GROUP: 'bolotas' } },
           },
         },
       },
@@ -574,7 +616,7 @@ export function objetivosDoQuadroBosque(
 const TEXTO_DO_EXTRA: Record<Extra, string> = {
   som: 'Faça um som tocar a cada bolota que o coelho joga.',
   efeitos: 'Faça a pinha quebrada explodir.',
-  tremer: 'Faça a tela tremer quando uma pinha cair no coelho.',
+  pancada: 'Faça um som de pancada tocar quando uma pinha cair no coelho.',
   vitoria: 'Crie uma tela de vitória para quem quebrar dez pinhas, e Enter recomeça dela também.',
 }
 

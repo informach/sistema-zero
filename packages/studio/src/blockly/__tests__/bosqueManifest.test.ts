@@ -52,7 +52,7 @@ test('trocar sorteio por passo fixo, fala ou dono do ponto reprova a estrutura',
       const project = structuredClone(d.conteudo.gabarito) as Project
       const serialized = JSON.stringify(project.blocksState)
       if (c.id === 'sorteio')
-        project.blocksState = JSON.parse(serialized.replaceAll('sz_g2d_random_x', 'sz_val_number'))
+        project.blocksState = JSON.parse(serialized.replaceAll('sz_val_random', 'sz_val_number'))
       else if (c.id.startsWith('fala-'))
         project.blocksState = JSON.parse(serialized.replaceAll('Ganhei', 'Oi'))
       else project.blocksState = JSON.parse(serialized.replaceAll('vitorias_', 'outro_'))

@@ -23,7 +23,7 @@ const blocos = (curso: string): string[] => {
   const dados = JSON.parse(
     readFileSync(new URL(`../../aulas-interativas/${curso}/blocos.json`, import.meta.url), 'utf8'),
   )
-  return dados.blocks ?? dados['2d']
+  return dados.allowBlocks ?? dados.blocks ?? dados['2d']
 }
 const faisca = new Set([
   ...blocos('faisca/desafio-primeiro-jogo'),

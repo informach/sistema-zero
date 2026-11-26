@@ -24,6 +24,21 @@ Formato `arquipelago-desafios`, versão 1, escopo `ilha`. Segue a parte 3 de
 
 Os seis quadros pintam a ilha. As três variações diárias não pintam outro quadro.
 
+## Nova autoria da Nave (26/11/2026)
+
+A Nave Contra Asteroides foi reescrita em 24/11/2026 e deixou de ensinar o laço a cada N quadros,
+o asteroide e o tiro prontos, a tela pronta, a tela que treme e a posição ao acaso. A dona decidiu
+refazer os desafios com os blocos novos, mantendo história, objetivos e dificuldade:
+
+| Antes | Agora |
+| --- | --- |
+| A cada 60 quadros solta a pinha | A cada 1 segundo |
+| Asteroide pronto (pinha) e tiro pronto (bolota) | Imagem que nasce no grupo, com arte própria |
+| Tela pronta de abertura, fim e vitória | O painel da Nave com dois textos |
+| Extra do quadro 3: a tela treme | O som de pancada quando a pinha cai no coelho |
+| Corrida: posição ao acaso comparada com a metade da pista | Número ao acaso entre 2 e 3 |
+| Corrida: a cada 2 quadros | A cada 0,03 segundo, o mesmo ritmo |
+
 ## A chuva de pinhas (quadros 1 a 5, A42, 31/10/2026)
 
 Os quadros 1 a 5 trabalham o centro do Construtor com o repertório da Nave Contra Asteroides: o
@@ -34,8 +49,8 @@ espaço (2), o encontro dos dois grupos que tira os dois e soma o ponto (3), as 
 com cada pinha (4) e a derrota com o recomeço pelo Enter (5). O gabarito dos cinco é o mesmo jogo,
 com a atração `chuva-de-pinhas`. As pinhas nascem na coluna do coelho, o que deixa o executor
 conferir sem depender de sorte. O pad da extensão vale no celular (setas, A para a bolota e + para
-o Enter). Cada quadro tem um extra opcional: som da bolota, a pinha que explode, a tela que treme
-ou a tela de vitória com dez pinhas. Os quadros de antes (vagalume, lanche, pegadas, os quatro
+o Enter). Cada quadro tem um extra opcional: som da bolota, a pinha que explode, o som de pancada
+quando a pinha cai no coelho ou a tela de vitória com dez pinhas. Os quadros de antes (vagalume, lanche, pegadas, os quatro
 bichos e a travessia) retomavam o Faísca e saíram nesta revisão.
 
 A corrida dos bichos (quadro 6, o minijogo da proposta) e os três do dia continuam abaixo.
@@ -64,14 +79,14 @@ dessa trilha. Régua completa em [conteúdo por posto](../conteudo-por-posto.md)
 | Faísca: Cadê Todo Mundo, extra | Opacidade apenas no desafio opcional Noite; a arte reutilizada não exige concluir o curso |
 | Faísca: A Chave do Farol | Velocidade, aplicação do movimento, borda, posição X, contato e estado |
 | Faísca: O Jardim Secreto | Evento de teclado e condições |
-| Construtor: Nave Contra Asteroides | Laço a cada N quadros, sorteio e placar |
+| Construtor: Nave Contra Asteroides | Relógio de segundos, imagem que nasce no grupo, número ao acaso, painel com textos, sons e placar |
 
 Nenhum bloco do Inventor ou de posto posterior é necessário. `random_between`, `set_position`
 e `on_sprite_click` não constam dessas listas e não foram usados. Nenhuma liberação é forçada
 em `blocosManuais`.
 
-O sorteio de posição da Nave escolhe entre passos de tamanho 2 e 3, pela comparação com a
-metade da largura da pista. Cada bicho sorteia separadamente, a cada dois quadros. A Largada
+O número ao acaso da Nave escolhe entre passos de tamanho 2 e 3. Cada bicho sorteia
+separadamente, no relógio de 0,03 segundo (um passo a cada dois quadros). A Largada
 usa velocidade e limite da tela para voltar à borda e recolocar cada bicho na sua faixa, no
 mesmo evento, antes do próximo desenho. Assim, não exige o bloco de definir posição.
 

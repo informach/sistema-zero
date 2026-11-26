@@ -17,6 +17,10 @@ JavaScript do Arquiteto fica no quadro 6 (`gerar-manifesto-texto.ts`).
 | 4 | O alcance da torre | A torre limpa a cinza do alcance e conta o ponto | Cinza que passa pela torre |
 | 5 | Ondas que crescem | Cada onda tem uma cinza a mais | Onda de tamanho fixo |
 
+Nova autoria da Nave (26/11/2026): o relógio solta a cinza como imagem que nasce no grupo
+(arte própria de 26 × 26), como os asteroides da Nave nova. Antes era o asteroide pronto, que saiu
+da trilha. Caminho, queda, ondas e objetivos não mudaram.
+
 Desafios do dia (ordens 60 a 63, 10 e 5 moedas, sem cor, atração `guardiao-dos-ninhos`), cada um
 mudando uma regra do Guardião pronto: ondas maiores, dois pontos por cinza, só três ondas e
 bônus de onda limpa. O extra de todos é o Enter recomeçar a defesa. Provas:

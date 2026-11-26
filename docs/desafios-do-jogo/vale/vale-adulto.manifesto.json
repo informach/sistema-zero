@@ -58,6 +58,13 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
             },
             {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
+            },
+            {
               "id": "vale-alcance",
               "name": "alcance",
               "kind": "image",
@@ -992,6 +999,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -2255,6 +2269,13 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
             },
             {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
+            },
+            {
               "id": "vale-alcance",
               "name": "alcance",
               "kind": "image",
@@ -3347,7 +3368,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O relógio da onda</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_2_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_2_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O relógio da onda\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_2_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_2_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_2_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O relógio da onda\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_2_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -3371,6 +3392,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -3706,7 +3734,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -3718,8 +3746,9 @@
                             "value": -20,
                             "__id": "vale_quadro_2_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -4536,11 +4565,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_2_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -4579,7 +4609,15 @@
                                               "id": "vale_quadro_2_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -4868,7 +4906,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A cinza no ninho</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_3_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_3_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"A cinza no ninho\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_3_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_3_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_3_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"A cinza no ninho\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_3_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -4892,6 +4930,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -5222,7 +5267,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -5234,8 +5279,9 @@
                             "value": -20,
                             "__id": "vale_quadro_3_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -6044,11 +6090,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_3_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -6087,7 +6134,15 @@
                                               "id": "vale_quadro_3_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -6224,7 +6279,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A cinza no ninho</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_3_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_3_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"A cinza no ninho\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_3_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_3_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_3_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"A cinza no ninho\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_3_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -6248,6 +6303,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -6618,7 +6680,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -6630,8 +6692,9 @@
                             "value": -20,
                             "__id": "vale_quadro_3_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -7481,11 +7544,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_3_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -7524,7 +7588,15 @@
                                               "id": "vale_quadro_3_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -7768,7 +7840,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O alcance da torre</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_4_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_4_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O alcance da torre\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_4_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_4_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_4_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O alcance da torre\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_4_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -7792,6 +7864,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -8157,7 +8236,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -8169,8 +8248,9 @@
                             "value": -20,
                             "__id": "vale_quadro_4_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -9012,11 +9092,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_4_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -9055,7 +9136,15 @@
                                               "id": "vale_quadro_4_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -9192,7 +9281,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O alcance da torre</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_4_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_4_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O alcance da torre\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_4_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_4_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_4_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"O alcance da torre\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_4_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -9216,6 +9305,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -9621,7 +9717,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -9633,8 +9729,9 @@
                             "value": -20,
                             "__id": "vale_quadro_4_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -10517,11 +10614,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_4_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -10560,7 +10658,15 @@
                                               "id": "vale_quadro_4_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -10831,7 +10937,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Ondas que crescem</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_5_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_5_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Ondas que crescem\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_5_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n    }\n  }, \"vale_quadro_5_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_quadro_5_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Ondas que crescem\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_5_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -10855,6 +10961,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -11255,7 +11368,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -11267,8 +11380,9 @@
                             "value": -20,
                             "__id": "vale_quadro_5_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -12143,11 +12257,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_5_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -12186,7 +12301,15 @@
                                               "id": "vale_quadro_5_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -12323,7 +12446,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Ondas que crescem</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_quadro_5_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_5_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Ondas que crescem\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_5_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_quadro_5_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_quadro_5_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Ondas que crescem\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_quadro_5_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -12347,6 +12470,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -12772,7 +12902,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -12784,8 +12914,9 @@
                             "value": -20,
                             "__id": "vale_quadro_5_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -13708,11 +13839,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_quadro_5_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -13751,7 +13883,15 @@
                                               "id": "vale_quadro_5_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -14017,7 +14157,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: ondas maiores</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_mais-cinzas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_mais-cinzas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: ondas maiores\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_mais-cinzas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_mais-cinzas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_mais-cinzas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: ondas maiores\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_mais-cinzas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -14041,6 +14181,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -14461,7 +14608,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -14473,8 +14620,9 @@
                             "value": -20,
                             "__id": "vale_mais-cinzas_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -15389,11 +15537,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_mais-cinzas_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -15432,7 +15581,15 @@
                                               "id": "vale_mais-cinzas_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -15569,7 +15726,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: ondas maiores</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 3;\n    }\n  }, \"vale_mais-cinzas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_mais-cinzas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: ondas maiores\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_mais-cinzas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 3;\n    }\n  }, \"vale_mais-cinzas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_mais-cinzas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: ondas maiores\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_mais-cinzas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -15593,6 +15750,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -16018,7 +16182,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -16030,8 +16194,9 @@
                             "value": -20,
                             "__id": "vale_mais-cinzas_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -16954,11 +17119,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_mais-cinzas_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -16997,7 +17163,15 @@
                                               "id": "vale_mais-cinzas_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -17252,7 +17426,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: dois pontos</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_dois-pontos_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_dois-pontos_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: dois pontos\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_dois-pontos_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_dois-pontos_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_dois-pontos_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: dois pontos\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_dois-pontos_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -17276,6 +17450,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -17696,7 +17877,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -17708,8 +17889,9 @@
                             "value": -20,
                             "__id": "vale_dois-pontos_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -18624,11 +18806,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_dois-pontos_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -18667,7 +18850,15 @@
                                               "id": "vale_dois-pontos_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -18804,7 +18995,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: dois pontos</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_dois-pontos_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_dois-pontos_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 2;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: dois pontos\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_dois-pontos_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_dois-pontos_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_dois-pontos_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 2;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: dois pontos\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_dois-pontos_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -18828,6 +19019,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -19253,7 +19451,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -19265,8 +19463,9 @@
                             "value": -20,
                             "__id": "vale_dois-pontos_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -20189,11 +20388,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_dois-pontos_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -20232,7 +20432,15 @@
                                               "id": "vale_dois-pontos_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -20474,7 +20682,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: três ondas</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_ondas-contadas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_ondas-contadas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: três ondas\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_ondas-contadas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_ondas-contadas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_ondas-contadas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: três ondas\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_ondas-contadas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -20498,6 +20706,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -20918,7 +21133,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -20930,8 +21145,9 @@
                             "value": -20,
                             "__id": "vale_ondas-contadas_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -21846,11 +22062,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_ondas-contadas_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -21889,7 +22106,15 @@
                                               "id": "vale_ondas-contadas_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -22026,7 +22251,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: três ondas</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      if (onda < 3) {\n        emOnda = true;\n        onda = onda + 1;\n        cinzasNaOnda = 0;\n        tamanhoDaOnda = onda + 2;\n      }\n    }\n  }, \"vale_ondas-contadas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_ondas-contadas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: três ondas\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_ondas-contadas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      if (onda < 3) {\n        emOnda = true;\n        onda = onda + 1;\n        cinzasNaOnda = 0;\n        tamanhoDaOnda = onda + 2;\n      }\n    }\n  }, \"vale_ondas-contadas_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_ondas-contadas_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: três ondas\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_ondas-contadas_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -22050,6 +22275,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -22497,7 +22729,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -22509,8 +22741,9 @@
                             "value": -20,
                             "__id": "vale_ondas-contadas_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -23473,11 +23706,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_ondas-contadas_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -23516,7 +23750,15 @@
                                               "id": "vale_ondas-contadas_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -23794,7 +24036,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: onda limpa</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_onda-limpa_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_onda-limpa_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: onda limpa\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_onda-limpa_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_onda-limpa_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"vale_onda-limpa_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: onda limpa\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_onda-limpa_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -23818,6 +24060,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -24238,7 +24487,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -24250,8 +24499,9 @@
                             "value": -20,
                             "__id": "vale_onda-limpa_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -25166,11 +25416,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_onda-limpa_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -25209,7 +25460,15 @@
                                               "id": "vale_onda-limpa_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
@@ -25346,7 +25605,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Guardião dos ninhos: onda limpa</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_onda-limpa_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_onda-limpa_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: onda limpa\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_onda-limpa_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawnAsteroid(cinzas, { x: 310, y: -20, size: 26, color: \"#97a2a6\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n          if (atingidos === 0) {\n            pontos = pontos + 5;\n          }\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#d5eee8\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let onda = 0;\n  let emOnda = false;\n  let cinzasNaOnda = 0;\n  let tamanhoDaOnda = 3;\n  let pontos = 0;\n  let atingidos = 0;\n  const cinzas = SZGame2D.createGroup();\n  const ninho = SZGame2D.createSprite({ x: 288, y: 400, w: 64, h: 64, image: \"ninho\" });\n  const torre = SZGame2D.createSprite({ x: 420, y: 196, w: 48, h: 72, image: \"torre\" });\n  const alcance = SZGame2D.createSprite({ x: 250, y: 170, w: 140, h: 140, image: \"alcance\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    if (emOnda === false) {\n      emOnda = true;\n      onda = onda + 1;\n      cinzasNaOnda = 0;\n      tamanhoDaOnda = onda + 2;\n    }\n  }, \"vale_onda-limpa_events_0\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"vale_onda-limpa_events_1\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.updateGroup(cinzas);\n    SZGame2D.overlapSpriteGroup(() => alcance, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      pontos = pontos + 1;\n    });\n    SZGame2D.overlapSpriteGroup(() => ninho, cinzas, (cinza) => {\n      SZGame2D.removeFromGroup(cinzas, cinza);\n      atingidos = atingidos + 1;\n    });\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vale\");\n    SZGame2D.drawLabel(ctx, \"Guardião dos ninhos: onda limpa\", 18, 32, \"#233e40\", 24, \"left\");\n    SZGame2D.drawLabel(ctx, \"Espaço ou A começa a próxima onda de cinza.\", 18, 60, \"#233e40\", 16, \"left\");\n    SZGame2D.drawSprite(ctx, alcance);\n    SZGame2D.drawSprite(ctx, torre);\n    SZGame2D.drawSprite(ctx, ninho);\n    SZGame2D.drawGroup(ctx, cinzas);\n    SZGame2D.drawScore(ctx, \"Onda: \", onda, 470, 32, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"Limpas: \", pontos, 470, 56, \"#233e40\", 17);\n    SZGame2D.drawScore(ctx, \"No ninho: \", atingidos, 470, 80, \"#233e40\", 17);\n  }, \"vale_onda-limpa_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1)) {\n      if (emOnda) {\n        SZGame2D.spawn(cinzas, { x: 310, y: -20, w: 26, h: 26, image: \"cinza\", vx: 0, vy: 2 });\n        cinzasNaOnda = cinzasNaOnda + 1;\n        if (cinzasNaOnda === tamanhoDaOnda) {\n          emOnda = false;\n          if (atingidos === 0) {\n            pontos = pontos + 5;\n          }\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -25370,6 +25629,13 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI3MiIgdmlld0JveD0iMCAwIDQ4IDcyIj48cGF0aCBkPSJNMTAgNzAgMTQgMjJoMjBsNCA0OFoiIGZpbGw9IiNjOWE3N2IiIHN0cm9rZT0iIzZlNTEzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTggMjRoMzJsLTQtMTJIMTJaIiBmaWxsPSIjOGM2YTQ4IiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMTAiIHI9IjciIGZpbGw9IiM3ZmQwYzIiIHN0cm9rZT0iIzM1NmU1NiIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTE4IDQwaDEyTTE4IDU0aDEyIiBzdHJva2U9IiM2ZTUxM2EiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "vale-cinza",
+              "name": "cinza",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNiIgaGVpZ2h0PSIyNiIgdmlld0JveD0iMCAwIDI2IDI2Ij48Y2lyY2xlIGN4PSIxMyIgY3k9IjE0IiByPSIxMCIgZmlsbD0iIzk3YTJhNiIvPjxjaXJjbGUgY3g9IjkiIGN5PSIxMSIgcj0iNCIgZmlsbD0iI2I5YzJjNSIvPjxjaXJjbGUgY3g9IjE3IiBjeT0iMTciIHI9IjMiIGZpbGw9IiM3ZDg3OGIiLz48L3N2Zz4="
             },
             {
               "id": "vale-alcance",
@@ -25795,7 +26061,7 @@
                       },
                       "then": [
                         {
-                          "type": "g2d:spawnAsteroid",
+                          "type": "g2d:spawnImageInGroup",
                           "groupVar": "cinzas",
                           "x": {
                             "type": "num",
@@ -25807,8 +26073,9 @@
                             "value": -20,
                             "__id": "vale_onda-limpa_loops_1_body_0_then_0_y"
                           },
-                          "size": 26,
-                          "color": "#97a2a6",
+                          "w": 26,
+                          "h": 26,
+                          "image": "cinza",
                           "vx": {
                             "type": "num",
                             "value": 0,
@@ -26773,11 +27040,12 @@
                                   "inputs": {
                                     "THEN": {
                                       "block": {
-                                        "type": "sz_g2d_spawn_asteroid",
+                                        "type": "sz_g2d_spawn_image_in_group",
                                         "id": "vale_onda-limpa_loops_1_body_0_then_0",
                                         "fields": {
                                           "GROUP": "cinzas",
-                                          "COLOR": "#97a2a6"
+                                          "NAME": "",
+                                          "IMAGE": "cinza"
                                         },
                                         "inputs": {
                                           "X": {
@@ -26816,7 +27084,15 @@
                                               "id": "vale_onda-limpa_loops_1_body_0_then_0_vy"
                                             }
                                           },
-                                          "SIZE": {
+                                          "W": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 26
+                                              }
+                                            }
+                                          },
+                                          "H": {
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {

@@ -27,7 +27,7 @@ const blocosDosTresPostos = new Set(
     'inventor/corre-dino',
   ].flatMap((curso) => {
     const dados = JSON.parse(readFileSync(new URL(`${curso}/blocos.json`, raiz), 'utf8'))
-    return dados.blocks ?? dados['2d']
+    return dados.allowBlocks ?? dados.blocks ?? dados['2d']
   }),
 )
 function tipos(value: unknown): string[] {

@@ -21,7 +21,7 @@ for (const curso of cursos) {
   const lista = await Bun.file(
     new URL(`../../../docs/aulas-interativas/${curso}/blocos.json`, import.meta.url),
   ).json()
-  for (const tipo of lista.blocks ?? lista['2d'] ?? []) blocos.add(tipo)
+  for (const tipo of lista.allowBlocks ?? lista.blocks ?? lista['2d'] ?? []) blocos.add(tipo)
 }
 function tipos(value: unknown): string[] {
   if (!value || typeof value !== 'object') return []

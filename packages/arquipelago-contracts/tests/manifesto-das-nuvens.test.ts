@@ -34,7 +34,7 @@ for await (const arquivo of new Bun.Glob('*/*/blocos.json').scan(aulas)) {
   if (!POSTOS_ATE_AS_NUVENS.includes(caminho.split('/')[0] ?? '')) continue
   cursos.push(caminho)
   const lista = await Bun.file(`${aulas}/${caminho}`).json()
-  for (const tipo of lista.blocks ?? lista['2d'] ?? []) blocos.add(tipo)
+  for (const tipo of lista.allowBlocks ?? lista.blocks ?? lista['2d'] ?? []) blocos.add(tipo)
 }
 function tipos(value: unknown): string[] {
   if (!value || typeof value !== 'object') return []

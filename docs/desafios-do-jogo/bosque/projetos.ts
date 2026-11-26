@@ -156,8 +156,10 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
       { type: 'var', name: `saltos_${bicho}`, value: n(0) },
       { type: 'var', name: `vitorias_${bicho}`, value: n(0) },
     )
+    // Nova autoria da Nave (26/11/2026): o sorteio é o "número ao acaso" entre 2 e 3 (antes, a
+    // posição ao acaso comparada com a metade da pista, que a Nave deixou de ensinar).
     const walk: JSStatement[] = [
-      iff(cmp({ type: 'g2d:randomX' }, '<', n(320)), [set('passo', n(2))], [set('passo', n(3))]),
+      set('passo', { type: 'random', min: n(2), max: n(3) }),
       vel(bicho, v('passo')),
     ]
     if (variacao === 'pedras') {
@@ -324,7 +326,9 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
       start,
       events,
       loops: [
-        { type: 'g2d:everyFrames', n: n(2), key: 'corrida', body: moves },
+        // O relógio da Nave em segundos: 0,03 s dá um passo a cada dois quadros, o ritmo de
+        // antes (o "a cada 2 quadros" saiu da trilha na nova autoria, 26/11/2026).
+        { type: 'g2d:everySeconds', seconds: n(0.03), key: 'corrida', body: moves },
         {
           type: 'g2d:updateEachFrame',
           body: [

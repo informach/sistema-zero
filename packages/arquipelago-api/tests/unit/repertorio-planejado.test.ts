@@ -26,7 +26,12 @@ test('fontes planejadas são listas reais de bases e missão, com hash semântic
     )
     expect(fonte.sha256).toBe(createHash('sha256').update(canonical).digest('hex'))
     expect(fonte.blocos).toEqual(
-      [...new Set([...(data.blocks ?? data['2d'] ?? []), ...(data['3d'] ?? [])])].sort(),
+      [
+        ...new Set([
+          ...(data.allowBlocks ?? data.blocks ?? data['2d'] ?? []),
+          ...(data['3d'] ?? []),
+        ]),
+      ].sort(),
     )
     expect(fonte).not.toHaveProperty('courseId')
     expect(fonte).not.toHaveProperty('publicado')

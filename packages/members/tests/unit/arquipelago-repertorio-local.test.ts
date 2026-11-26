@@ -16,20 +16,16 @@ test('repertório local usa a derivação do Members, preserva públicos e expõ
     expect(adulto.semFonteLocalNaTrilha).toEqual(d.semFonteLocalNaTrilha)
   }
   const bosque = linhas.find((d) => d.slug === 'bosque-corrida-dos-bichos')!
-  // A Nave passou a ensinar segundos e sorteio genérico. O inventário precisa mostrar
-  // os blocos antigos que estes desafios ainda pedem; não presumir cobertura inexistente.
-  expect(bosque.semFonteLocalNaTrilha).toEqual(['sz_g2d_every_frames', 'sz_g2d_random_x'])
+  // A Nave passou a ensinar segundos e sorteio genérico (nova autoria); em 26/11/2026 a corrida
+  // foi refeita com eles e nada fica sem fonte na trilha.
+  expect(bosque.semFonteLocalNaTrilha).toEqual([])
   expect(bosque.blocosDerivados).toContain('sz_g2d_on_key')
   // C03a: a sua ilha só pede o que a trilha do Faísca ensina.
   for (const d of linhas.filter((d) => d.slug.startsWith('sua-ilha-')))
     expect(d.semFonteLocalNaTrilha, d.slug).toEqual([])
-  // O relógio do Vale ainda usa o gerador antigo de asteroides; as demais atividades têm fonte.
+  // O relógio do Vale solta a cinza como imagem no grupo, como a Nave nova (26/11/2026).
   for (const d of linhas.filter((d) => d.slug.startsWith('vale-')))
-    expect(d.semFonteLocalNaTrilha, d.slug).toEqual(
-      d.slug === 'vale-relogio-da-onda' || d.slug === 'vale-relogio-da-onda-adulto'
-        ? ['sz_g2d_spawn_asteroid']
-        : [],
-    )
+    expect(d.semFonteLocalNaTrilha, d.slug).toEqual([])
 })
 
 test('inventário lê o allowBlocks da autoria atual da Nave', async () => {

@@ -16,6 +16,9 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
  * quadros 1 a 5 montam o jogo um passo de cada vez (`projetoDoGuardiaoEmPassos`) e os desafios do
  * dia mudam uma regra do jogo pronto (`montarProjeto`). Substitui o "Proteja os ninhos", que pedia
  * blocos que nenhum posto ensina (lista, clique em grupo, dados no sprite, opacidade, e/ou).
+ *
+ * Nova autoria da Nave (26/11/2026): a cinza é uma imagem que nasce no grupo, como os asteroides
+ * da Nave nova (antes, o asteroide pronto, que saiu da trilha). Caminho, queda e tamanho seguem.
  */
 export const VARIACOES = ['mais-cinzas', 'dois-pontos', 'ondas-contadas', 'onda-limpa'] as const
 export type Variacao = (typeof VARIACOES)[number]
@@ -94,6 +97,11 @@ const arte: Record<string, string> = {
     72,
     '<path d="M10 70 14 22h20l4 48Z" fill="#c9a77b" stroke="#6e513a" stroke-width="3"/><path d="M8 24h32l-4-12H12Z" fill="#8c6a48" stroke="#6e513a" stroke-width="3"/><circle cx="24" cy="10" r="7" fill="#7fd0c2" stroke="#356e56" stroke-width="3"/><path d="M18 40h12M18 54h12" stroke="#6e513a" stroke-width="3"/>',
   ),
+  cinza: svg(
+    26,
+    26,
+    '<circle cx="13" cy="14" r="10" fill="#97a2a6"/><circle cx="9" cy="11" r="4" fill="#b9c2c5"/><circle cx="17" cy="17" r="3" fill="#7d878b"/>',
+  ),
   alcance: svg(
     140,
     140,
@@ -144,12 +152,13 @@ function fonte(m: Montagem): SZIRV2 {
     ? [
         iff(v('emOnda'), [
           {
-            type: 'g2d:spawnAsteroid',
+            type: 'g2d:spawnImageInGroup',
             groupVar: 'cinzas',
             x: n(VALE.caminho),
             y: n(VALE.saida),
-            size: 26,
-            color: '#97a2a6',
+            w: 26,
+            h: 26,
+            image: 'cinza',
             vx: n(0),
             vy: n(VALE.queda),
           },

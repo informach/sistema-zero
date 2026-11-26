@@ -20,7 +20,7 @@ const TRILHA_DO_FAISCA = ['faisca/desafio-primeiro-jogo', 'faisca/o-jardim-secre
 const blocosDaTrilha = new Set(
   TRILHA_DO_FAISCA.flatMap((curso) => {
     const dados = JSON.parse(readFileSync(new URL(`${curso}/blocos.json`, raiz), 'utf8'))
-    return dados.blocks ?? dados['2d']
+    return dados.allowBlocks ?? dados.blocks ?? dados['2d']
   }),
 )
 function tipos(value: unknown): string[] {
@@ -97,7 +97,7 @@ const TRILHA_ATE_O_CONSTRUTOR = [...TRILHA_DO_FAISCA, 'construtor/nave-contra-as
 const blocosAteOConstrutor = new Set(
   TRILHA_ATE_O_CONSTRUTOR.flatMap((curso) => {
     const dados = JSON.parse(readFileSync(new URL(`${curso}/blocos.json`, raiz), 'utf8'))
-    return dados.blocks ?? dados['2d']
+    return dados.allowBlocks ?? dados.blocks ?? dados['2d']
   }),
 )
 
