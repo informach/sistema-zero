@@ -10,18 +10,14 @@ import { type PhotoFraming, photoFrame } from './photo-framing'
 export type CamMode = 'customize' | 'photo'
 
 /**
- * Câmera do configurador (drei `CameraControls`) — FIEL ao WawaSensei: posição **FIXA**, SEM
- * medir o bounding box. Medir dependia do timing de carga (refresh frio mede uma caixa
- * diferente da navegação quente → enquadramento diferente, "às vezes mais pra cima, às vezes
- * quase colando no painel"). Como o personagem fica em pé com os **pés em y=0** (auto-stand no
- * rig), uma moldura fixa SEMPRE enquadra igual — determinístico.
+ * Câmera do configurador (drei `CameraControls`). Em Personalizar e na Cabine sem `framing`,
+ * usa uma moldura fixa: o personagem tem os pés em y=0, e o timing de carga das peças não
+ * muda a posição da câmera.
  *
- * **Mesmo enquadramento de CORPO INTEIRO nos dois modos** — a Cabine de fotos NÃO aproxima (o
- * WawaSensei também não: o zoom por-categoria dele só roda em CUSTOMIZE; no modo foto cai no
- * enquadramento padrão). Assim a criança VÊ a pose. O "retrato" da imagem do avatar fica por
- * conta do `SnapshotBridge` ("Salvar" força um retrato de rosto, independente do que está na
- * tela). Reenquadra em [ready, mode] (centraliza de frente ao entrar em cada modo); trocar
- * peça/cor NÃO mexe a câmera.
+ * Na Cabine Kids, a escolha Rosto/Corpo usa a mesma conta da foto, medida na pose atual.
+ * Trocar a pose, o enquadramento ou o tamanho da cena refaz a moldura; girar o celular não
+ * deixa a prévia com a distância da orientação anterior. O `SnapshotBridge` continua
+ * fazendo o retrato automático ao salvar, independentemente da escolha da Cabine.
  *
  * A cena 3D ocupa só a faixa ACIMA do painel (layout flex no configurador), então "centrado na
  * cena" = "centrado na área visível, descontando a configuração de baixo".
@@ -32,7 +28,7 @@ export type CamMode = 'customize' | 'photo'
 // quadro cobre ~3,2u centrado em 1,15: do pódio ao chapéu mais alto, com folga em cima. Câmera um
 // tico à esquerda e acima (vista 3/4 gentil), na mesma direção de antes.
 const CAM_POS = [-0.28, 0.72, 2.05] as const
-// Cabine de fotos: um tico MAIS LONGE (nunca aproxima — a criança VÊ a pose inteira com folga).
+// Cabine sem escolha de enquadramento: um tico mais longe, mostrando a pose inteira com folga.
 const CAM_POS_PHOTO = [-0.28, 0.72, 2.4] as const
 const CAM_TARGET = [0, 0.56, 0] as const
 
@@ -60,7 +56,8 @@ export function CameraManager({
   pose?: string
 }) {
   const controls = useRef<ComponentRef<typeof CameraControls>>(null)
-  const gl = useThree((s) => s.gl)
+  const canvasWidth = useThree((s) => s.size.width)
+  const canvasHeight = useThree((s) => s.size.height)
   const box = useRef(new THREE.Box3())
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `pose` não é lida, mas cada troca de pose precisa medir o boneco de novo.
@@ -72,7 +69,11 @@ export function CameraManager({
       if (mode === 'photo' && framing && char) {
         measureCharacter(char, box.current)
         if (!box.current.isEmpty()) {
-          const { position, target } = photoFrame(box.current, gl.domElement, framing === 'face')
+          const { position, target } = photoFrame(
+            box.current,
+            { width: canvasWidth, height: canvasHeight },
+            framing === 'face',
+          )
           void cc.setLookAt(...position, ...target, true)
           return
         }
@@ -87,7 +88,7 @@ export function CameraManager({
     // A pose escolhida ainda está começando: mede de novo quando ela chega ao auge.
     const t = setTimeout(enquadrar, POSE_ASSENTA_MS)
     return () => clearTimeout(t)
-  }, [mode, ready, framing, pose, charRef, gl])
+  }, [mode, ready, framing, pose, charRef, canvasWidth, canvasHeight])
 
   return (
     <CameraControls
