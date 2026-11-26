@@ -235,7 +235,9 @@ describe('memória ligada à coleta e à decisão', () => {
     test('a guarda num encontro com outra coisa continua recusada', () => {
       const f = fixture('pegou')
       f.collection.bVar = 'outro'
-      f.collection.body = [se(igualFalso('pegou'), [gravar('pegou')])] as unknown as typeof f.collection.body
+      f.collection.body = [
+        se(igualFalso('pegou'), [gravar('pegou')]),
+      ] as unknown as typeof f.collection.body
       expect(evaluatesCollectionMemory(rule, f.project)).toBe(false)
     })
   })
