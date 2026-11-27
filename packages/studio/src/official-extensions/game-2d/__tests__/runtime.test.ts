@@ -2738,7 +2738,8 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
       if (api.everySeconds('ritmo', 1.5)) disparos.push(clock)
     }
     expect(disparos.length).toBe(6)
-    disparos.forEach((t, i) => expect(t - (i + 1) * 1500).toBeLessThan(1000 / 60 + 1e-6))
+    for (const [i, t] of disparos.entries())
+      expect(t - (i + 1) * 1500).toBeLessThan(1000 / 60 + 1e-6)
   })
 
   it('everySeconds recomeça do agora depois de um travamento longo (sem rajada)', () => {

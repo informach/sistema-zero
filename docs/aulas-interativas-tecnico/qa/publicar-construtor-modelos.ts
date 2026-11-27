@@ -21,6 +21,7 @@ import {
   publishCourseModel,
   writeCourseModelRegistry,
 } from '../../../packages/studio/scripts/course-models'
+import { formatarJson } from './formatar-json'
 
 const BLENDER_DIR = resolve(import.meta.dirname, '../../design/construtor-espaco-blender')
 export const MODELOS_ESPACO_JSON = resolve(BLENDER_DIR, 'modelos.json')
@@ -122,7 +123,7 @@ if (import.meta.main) {
       if (!vivos.has(m.sha))
         rmSync(resolve(COURSE_MODELS_DIR, `m-${m.sha}.generated.ts`), { force: true })
   }
-  writeFileSync(MODELOS_ESPACO_JSON, `${JSON.stringify(modelos, null, 2)}\n`)
+  writeFileSync(MODELOS_ESPACO_JSON, formatarJson(modelos))
   writeCourseModelRegistry()
   console.log(`TOTAL ${(total / 1024) | 0} KB em ${ESPACO_PECAS.length} modelos`)
 }

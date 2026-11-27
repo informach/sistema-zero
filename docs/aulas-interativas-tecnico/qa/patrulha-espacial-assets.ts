@@ -20,6 +20,7 @@ import {
   courseModelStub,
 } from '../../../packages/studio/src/core/courseModels'
 import type { ProjectAsset } from '../../../packages/studio/src/core/project'
+import { formatarJson } from './formatar-json'
 import {
   ESPACO_CATEGORIAS,
   ESPACO_PECAS,
@@ -91,6 +92,6 @@ if (import.meta.main) {
     import.meta.dirname,
     '../../aulas-interativas/construtor/prototipos-base/fontes/3d/assets.json',
   )
-  writeFileSync(destino, `${JSON.stringify(patrulhaAssets())}\n`)
+  writeFileSync(destino, formatarJson(patrulhaAssets()))
   console.log(`assets.json com ${ESPACO_PECAS.length} referências da biblioteca`)
 }

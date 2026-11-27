@@ -1,36 +1,49 @@
 /** Arte vetorial da Nave Contra Asteroides, embutida em cada .szproject (sem downloads).
  * Toda variação de uma categoria tem o mesmo tamanho de desenho e a mesma área de contato.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs'
 
 // A arte vem dos MESMOS modelos 3D da Patrulha Espacial (docs/design/construtor-espaco-blender):
 // `svg2d.py` projeta cada nave, asteroide e laser em vetor; os fundos são os próprios cenários 3D
 // vistos pela câmera do jogo, em WebP. Cada categoria tem quatro variações com a mesma caixa:
 // trocar não muda o jogo.
-const pasta = new URL('../../../../../design/construtor-espaco-blender/arte2d/', import.meta.url);
+const pasta = new URL('../../../../../design/construtor-espaco-blender/arte2d/', import.meta.url)
 const medidas = {
   cenario: [800, 480],
   nave: [56, 64],
   asteroide: [48, 48],
   laser: [10, 28],
-};
+}
 const nomes = {
   cenario: ['cenario-aurora', 'cenario-orbita', 'cenario-nebulosa', 'cenario-estacao'],
   nave: ['nave-falcao-azul', 'nave-exploradora-coral', 'nave-arraia-lilas', 'nave-cometa-verde'],
-  asteroide: ['asteroide-rocha-lunar', 'asteroide-gelo-azul', 'asteroide-cristal-violeta', 'asteroide-lava-laranja'],
+  asteroide: [
+    'asteroide-rocha-lunar',
+    'asteroide-gelo-azul',
+    'asteroide-cristal-violeta',
+    'asteroide-lava-laranja',
+  ],
   laser: ['laser-ciano', 'laser-dourado', 'laser-lilas', 'laser-verde'],
-};
+}
 const images = Object.entries(nomes).flatMap(([category, lista]) =>
   lista.map((name) => {
-    const [width, height] = medidas[category];
-    const ext = category === 'cenario' ? 'webp' : 'svg';
-    const bytes = readFileSync(new URL(`${name}.${ext}`, pasta));
-    const mime = ext === 'webp' ? 'image/webp' : 'image/svg+xml';
-    return { name, category, width, height, ext, art: bytes, dataUrl: `data:${mime};base64,${bytes.toString('base64')}` };
+    const [width, height] = medidas[category]
+    const ext = category === 'cenario' ? 'webp' : 'svg'
+    const bytes = readFileSync(new URL(`${name}.${ext}`, pasta))
+    const mime = ext === 'webp' ? 'image/webp' : 'image/svg+xml'
+    return {
+      name,
+      category,
+      width,
+      height,
+      ext,
+      art: bytes,
+      dataUrl: `data:${mime};base64,${bytes.toString('base64')}`,
+    }
   }),
-);
+)
 
-export const artCatalog = images;
+export const artCatalog = images
 export const assets = images.map(({ name, width, height, dataUrl }) => ({
   id: `construtor-2d-${name}`,
   name,
@@ -39,11 +52,39 @@ export const assets = images.map(({ name, width, height, dataUrl }) => ({
   dataUrl,
   width,
   height,
-}));
+}))
 
 export const presets = [
-  { id: 'aurora', label: 'Aurora', nave: 'nave-falcao-azul', cenario: 'cenario-aurora', asteroide: 'asteroide-rocha-lunar', laser: 'laser-ciano' },
-  { id: 'orbita', label: 'Órbita', nave: 'nave-exploradora-coral', cenario: 'cenario-orbita', asteroide: 'asteroide-gelo-azul', laser: 'laser-dourado' },
-  { id: 'nebulosa', label: 'Nebulosa', nave: 'nave-arraia-lilas', cenario: 'cenario-nebulosa', asteroide: 'asteroide-cristal-violeta', laser: 'laser-lilas' },
-  { id: 'estacao', label: 'Estação', nave: 'nave-cometa-verde', cenario: 'cenario-estacao', asteroide: 'asteroide-lava-laranja', laser: 'laser-verde' },
-];
+  {
+    id: 'aurora',
+    label: 'Aurora',
+    nave: 'nave-falcao-azul',
+    cenario: 'cenario-aurora',
+    asteroide: 'asteroide-rocha-lunar',
+    laser: 'laser-ciano',
+  },
+  {
+    id: 'orbita',
+    label: 'Órbita',
+    nave: 'nave-exploradora-coral',
+    cenario: 'cenario-orbita',
+    asteroide: 'asteroide-gelo-azul',
+    laser: 'laser-dourado',
+  },
+  {
+    id: 'nebulosa',
+    label: 'Nebulosa',
+    nave: 'nave-arraia-lilas',
+    cenario: 'cenario-nebulosa',
+    asteroide: 'asteroide-cristal-violeta',
+    laser: 'laser-lilas',
+  },
+  {
+    id: 'estacao',
+    label: 'Estação',
+    nave: 'nave-cometa-verde',
+    cenario: 'cenario-estacao',
+    asteroide: 'asteroide-lava-laranja',
+    laser: 'laser-verde',
+  },
+]
