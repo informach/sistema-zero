@@ -654,6 +654,8 @@ describe('o cenário das cenas dos cursos', () => {
     // A Ilha do Farol: a ilha 3D tem palco próprio, e a porta do não (aula 3) acontece nela desde
     // 08/11/2026: a cena é o jogo do curso (cenário `ilha`), não o mapa 2D do Farol.
     'jornada-faisca-base-3d': 'ilha',
+    // A Patrulha Espacial usa a nave nas experiências 2D de ritmo e movimento.
+    'jornada-construtor-base-3d': 'nave',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

@@ -1,5 +1,5 @@
 import { verifyStudioProPlatformFiles } from '@sistemazero/core/studio/pro-revision'
-import declarations from './runtimeDeclarations.generated.json'
+import declarations from './runtimeDeclarations.generated.json' with { type: 'json' }
 
 export function proRuntimeDeclarations(extensionId: string): Record<string, string> {
   if (extensionId !== 'game-2d' && extensionId !== 'game-2d-advanced') return {}
