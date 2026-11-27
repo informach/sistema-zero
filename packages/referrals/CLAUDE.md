@@ -30,8 +30,12 @@ Links já enviados continuam abrindo:
   `/i/<código>/<oferta>` agora pode dizer o tipo (`?tipo=presente|indicacao`, `referralLinkUrl`
   com `kind`; os convites por oferta mandam). Checkout sempre escolhe a lista de indicação.
   O funil repassa como `?kind=` a
-  `GET /referrals/internal/links/:code/:offer` (fora do pathname assinado). Sem tipo, presente
-  primeiro, como antes. Os links curtos do painel (`/i/<código>/<apelido>[/presente]`) já dizem o tipo.
+  `GET /referrals/internal/links/:code/:offer` (fora do pathname assinado). Sem tipo, o slug
+  exato de venda conserva a venda, mesmo se entrou também na lista de presentes. Na busca
+  por outra oferta do mesmo curso, o presente continua primeiro para preservar o antigo
+  `-presente`. Sem oferta no link, continua o presente padrão. Os links da página do
+  embaixador e dos convites sempre informam o tipo. Os links curtos do painel
+  (`/i/<código>/<apelido>[/presente]`) já dizem o tipo.
 - **A oferta que saiu da lista** (o `-presente` do guia, citado em convites e em
   `?oferta-presente=`): `AmbassadorOffersService.allowed(..., { sameCourse: true })` devolve a
   ligada do MESMO curso (`courseSlug` igual e `productSku` igual quando os dois vêm). O link tenta
