@@ -7,10 +7,12 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
 
 ## Achados corrigidos
 
-1. **Alta, checkout abrindo presente:** quando uma oferta aparece nas listas de presente e
-   indicação, o link por slug com `/pagamento` escolhia presente antes da venda. A escolha do
-   checkout agora usa exclusivamente a lista de indicação. A precedência histórica do presente
-   continua nos links sem tipo e sem checkout. Regressão reproduzida antes da correção.
+1. **Alta, venda abrindo presente:** quando uma oferta aparece nas duas listas, o checkout e
+   o endereço exato da venda podiam abrir presente. O checkout agora usa somente indicação;
+   sem tipo, a correspondência exata conserva a venda. O alias antigo `-presente` mantém a
+   precedência de presente na busca por outra oferta do mesmo curso. Os links novos da página
+   do embaixador e dos convites informam o tipo explicitamente. As regressões foram reproduzidas
+   antes da correção, inclusive uma consulta real, sem cadastro, ao endereço antigo de venda.
 2. **Média, unidade inferida alterava a comunicação histórica:** um presente de trinta dias era
    rotulado como um mês pela tolerância entre dias e calendário. A unidade agora vem da política
    gravada no claim. Históricos não recebem backfill nem inferência de meses.
@@ -68,6 +70,8 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 
 - Antes da correção: três regressões falharam, demonstrando os achados de checkout, unidade e retomada.
 - Referrals: 338 testes passaram, incluindo os 59 testes de banco, sem falhas nem skips.
+- No complemento dos links, 280 testes passaram; os 70 opcionais não rodaram nessa suíte
+  padrão. Não houve alteração de SQL nesse complemento. A tipagem também foi conferida.
 - Referrals em Postgres descartável: migration aplicada, política persistida e prova da troca de
   oferta na campanha ativa com aquisição, preservando o resgate anterior.
 - Members: 2448 testes passaram, 779 opcionais não executados na suíte geral. Os 46 testes
