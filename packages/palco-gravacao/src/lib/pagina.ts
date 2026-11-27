@@ -70,6 +70,11 @@ export interface PaginaDoPalco {
   /** O ponto logo abaixo de um bloco da área de trabalho, onde outro bloco encaixa embaixo dele. */
   abaixo(bloco: string): Alvo | null
   /**
+   * O arrasto do fundo que traz para a vista o fim do bloco e o lugar logo abaixo dele; `'visivel'`
+   * quando já estão à vista, sem nada por cima. Nulo sem o bloco.
+   */
+  rolagemDoAbaixo(bloco: string): Rolagem | 'visivel' | null
+  /**
    * Um ponto do fundo da área de código ao lado de um bloco, sem bloco nenhum embaixo: a mão
    * parada em cima de um bloco faz o Blockly mostrar a dica dele.
    */
@@ -542,6 +547,8 @@ function lugarSemBlocos(doc: Document): DOMRect | null {
 
 /** A folga das bordas que os blocos conferidos precisam ter para contarem como bem à vista. */
 const MARGEM_A_VISTA = 24
+/** A altura do lugar logo abaixo de um bloco que o "apontar abaixo de" precisa à vista. */
+const LUGAR_ABAIXO = 50
 /** Quanto da altura da área à vista um bloco pode estar fora do meio e ainda contar como centrado. */
 const CENTRADA = 0.15
 
@@ -730,6 +737,23 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       )
       const r = (path ?? block).getBoundingClientRect()
       return pontoEm(area, r.left + 12, r.bottom + 10)
+    },
+
+    rolagemDoAbaixo(texto) {
+      const block = blocosCom(doc, texto)[0]
+      if (!block) return null
+      const path = [...block.querySelectorAll('path.blocklyPath')].find(
+        (p) => p.closest('.blocklyDraggable') === block,
+      )
+      const r = (path ?? block).getBoundingClientRect()
+      // Só o fim do bloco e o lugar de baixo: um bloco mais alto que a área à vista ainda cabe.
+      const lugar = new DOMRect(r.left, r.bottom - 40, Math.min(r.width, 200), 40 + LUGAR_ABAIXO)
+      const rolagem = rolagemDe(doc, lugar, false, false, MARGEM_A_VISTA)
+      if (rolagem !== 'visivel') return rolagem
+      // À vista, mas com outra coisa por cima do ponto (um painel, a paleta aberta): também vem.
+      const hit = doc.elementFromPoint(r.left + 12, r.bottom + 10)
+      const area = areaDeTrabalho(doc)
+      return !hit || !area || area.contains(hit) ? 'visivel' : rolagemDe(doc, lugar, false, true)
     },
 
     async organizar() {

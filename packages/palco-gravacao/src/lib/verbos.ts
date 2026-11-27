@@ -758,6 +758,15 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   }
   const apontarAbaixo = /^apontar abaixo de ["“]([^"”]+)["”]$/i.exec(texto)
   if (apontarAbaixo?.[1]) {
+    // O lugar fora da vista (o bloco perto da borda de baixo, debaixo do painel) vem antes, num
+    // arrasto do fundo; depois a página é perguntada de novo (Moedas A2P2, 27/11/2026: o ponto
+    // caía debaixo da barra de baixo do Estúdio e o Verificar plano dizia "coberto").
+    const rolagem = precisaDaPagina(pagina).rolagemDoAbaixo(apontarAbaixo[1])
+    if (rolagem && rolagem !== 'visivel')
+      return [
+        { fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para },
+        { fazer: 'continuar', acao: texto },
+      ]
     const alvo = precisaDaPagina(pagina).abaixo(apontarAbaixo[1])
     if (!alvo) throw new Error(`Não achei o bloco "${apontarAbaixo[1]}" na área de trabalho.`)
     return [{ fazer: 'apontar', alvo, exato: true }]

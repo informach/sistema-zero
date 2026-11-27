@@ -44,6 +44,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   categoria: () => 'fechada',
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
+  rolagemDoAbaixo: () => 'visivel',
   lugarLivre: (pegar) => ({ seletor: '[data-palco-alvo="a8"]', u: pegar ? 0.6 : 0.65, v: 0.7 }),
   dentro: () => ({ seletor: '[data-palco-alvo="a9"]', u: 0.62, v: 0.74 }),
   sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
@@ -685,6 +686,23 @@ describe('verbos do palco', () => {
     // Aberta, com a de dentro no caminho: a mão vai direto à de dentro, sem apontar a de fora.
     expect(agir('abrir categoria Jogo 2D > Movimento', jogos, aberta)).toEqual([
       { fazer: 'continuar', acao: 'abrir categoria Movimento' },
+    ])
+  })
+
+  test('apontar abaixo de traz antes o lugar fora da vista, num arrasto do fundo', () => {
+    const texto = 'apontar abaixo de "Quando personagem encostar em farol"'
+    expect(agir(texto, jogos, pagina())).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 },
+        exato: true,
+      },
+    ])
+    const de = { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.8 }
+    const para = { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.4 }
+    expect(agir(texto, jogos, pagina({ rolagemDoAbaixo: () => ({ de, para }) }))).toEqual([
+      { fazer: 'arrastar', alvo: de, para },
+      { fazer: 'continuar', acao: texto },
     ])
   })
 
