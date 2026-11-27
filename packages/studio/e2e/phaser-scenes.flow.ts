@@ -1,269 +1,234 @@
-import { expect, test } from '@playwright/test'
-import type { PintaScene, PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
-import type { SceneBox } from '@sistemazero/core/studio/pinta-scene-geometry'
+import { expect, type Page, test } from '@playwright/test'
+import type { PintaRegionSceneWire } from '@sistemazero/core/studio/pinta-region-scene'
+import type { PintaSceneObject } from '@sistemazero/core/studio/pinta-scene'
 
 type Game = {
   surface: { context: CanvasRenderingContext2D }
-  hero: { x: number; y: number; body: { reset(x: number, y: number): void } }
-  physics: { world: { gravity: { y: number } } }
   maps: {
-    mapSize(name: string, axis: string): number
-    mapObjects(name: string, type: string): PintaSceneObject[]
-    useMapDoor(name: string, sprite: Game['hero'], door: PintaSceneObject): void
-    createMapScene(name: string, asset: string): void
+    mapObjects(name: string, type?: string): PintaSceneObject[]
     mapResourceImage(name: string, id: string): string | null
     mapLayerProperty(name: string, id: string, key: string): unknown
     mapTileProperty(name: string, id: string, tile: number, key: string): unknown
     mapObjectById(name: string, id: string): { name: string } | null
   }
+  player: {
+    position: { x: number; y: number }
+    scene: { id: string; name: string }
+    platformer: boolean
+  }
+}
+declare global {
+  interface Window {
+    pintaGame: Game
+  }
+}
+const origin = 'http://127.0.0.1:5293'
+
+/** Change the input start marker, never add a teleport API to the shipped player. */
+async function loadAt(page: Page, path: string, x: number, y: number) {
+  await page.unroute('**/maps.json')
+  await page.route('**/maps.json', async (route) => {
+    const response = await route.fetch()
+    const maps = (await response.json()) as Record<string, PintaRegionSceneWire>
+    const scene = Object.values(maps)[0]!
+    const layer = scene.layers.find((item) => item.kind === 'objects')
+    if (!layer || layer.kind !== 'objects') throw Error('A fixture perdeu os objetos.')
+    layer.objects = layer.objects.filter((item) => item.role !== 'start' && item.type !== 'inicio')
+    layer.objects.unshift({
+      id: 'qa-start',
+      name: 'Começo QA',
+      type: '',
+      shape: 'point',
+      role: 'start',
+      x,
+      y,
+      width: 0,
+      height: 0,
+      properties: {},
+    })
+    await route.fulfill({ response, json: maps })
+  })
+  await page.goto(origin + path)
+  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
 }
 
-test('Phaser: plataforma precisa permite salto, pouso e vista de cima sem grade arredondada', async ({
+async function profileQueries(page: Page, fixture: unknown, landing: boolean) {
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  try {
+    const result = await page.evaluate(
+      async ({ fixture, landing }) => {
+        const url = '/qa-scene.js',
+          qa = await import(url)
+        const cases: Array<Record<string, unknown> & { scene: unknown }> = landing
+          ? (fixture.cases as Array<Record<string, unknown> & { scene: unknown }>)
+          : fixture.probes.map((probe: object) => ({
+              ...probe,
+              scene: qa.regionalGeometryFixture(fixture.scene),
+            }))
+        const queries = cases.map((item: { scene: unknown }) =>
+          qa.createRegionSceneQueries(qa.readPintaRegionScene(JSON.stringify(item.scene))),
+        )
+        const times: number[] = []
+        for (let iteration = 0; iteration < 101; iteration++) {
+          const start = performance.now()
+          for (let i = 0; i < cases.length; i++) {
+            const item = cases[i]!,
+              query = queries[i]
+            if (landing) query.platformLanding(item.previous, item.desired, item.gravity)
+            else query.intersectsBox(item.box)
+          }
+          if (iteration) times.push(performance.now() - start)
+        }
+        times.sort((a, b) => a - b)
+        return {
+          cpuRate: 4,
+          cases: cases.length,
+          batches: times.length,
+          medianMs: times[50],
+          p95Ms: times[94],
+          maxMs: times[99],
+        }
+      },
+      { fixture: fixture as { cases: unknown[]; probes: object[]; scene: unknown }, landing },
+    )
+    expect(result.p95Ms).toBeLessThan(16.7)
+    return result
+  } finally {
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
+    await cdp.detach()
+  }
+}
+
+test('Phaser: plataformas conservam contornos, gravidade invertida e apoio preciso na cena regional', async ({
   page,
   request,
 }, info) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('http://127.0.0.1:5293/platforms/')
-  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
-  const fixture = (await (
-    await request.get('http://127.0.0.1:5293/platforms/platform-probes.json')
-  ).json()) as {
-    cases: {
-      name: string
-      scene: PintaScene
-      previous: SceneBox
-      desired: SceneBox
-      gravity: number
-      result: SceneBox | null
-    }[]
-  }
-  const probes = await page.evaluate(({ cases }) => {
-    const land = (
-      window as unknown as {
-        scenePlatformLanding: (
-          scene: PintaScene,
-          previous: SceneBox,
-          desired: SceneBox,
-          gravity: number,
-        ) => SceneBox | null
-      }
-    ).scenePlatformLanding
-    return cases.map((item) => ({
-      name: item.name,
-      expected: item.result,
-      actual: land(item.scene, item.previous, item.desired, item.gravity),
-    }))
+  await loadAt(page, '/platforms/', 42, 10)
+  const fixture = await (await request.get(origin + '/platforms/platform-probes.json')).json()
+  const performanceResult = await profileQueries(page, fixture, true)
+  const probes = await page.evaluate(async ({ cases }) => {
+    const url = '/qa-scene.js'
+    const qa = await import(url)
+    return cases.map(
+      (item: {
+        name: string
+        scene: unknown
+        previous: unknown
+        desired: unknown
+        gravity: number
+        result: unknown
+      }) => {
+        const scene = qa.readPintaRegionScene(JSON.stringify(item.scene))
+        if (!scene) throw Error('A cena regional não foi admitida.')
+        const queries = qa.createRegionSceneQueries(scene)
+        return {
+          name: item.name,
+          expected: item.result,
+          actual: queries.platformLanding(item.previous, item.desired, item.gravity),
+        }
+      },
+    )
   }, fixture)
   for (const probe of probes) {
     if (probe.expected === null) expect(probe.actual, probe.name).toBeNull()
     else {
       expect(probe.actual, probe.name).not.toBeNull()
       for (const key of ['x', 'y', 'width', 'height'] as const)
-        expect(probe.actual![key], `${probe.name}.${key}`).toBeCloseTo(probe.expected[key], 5)
+        expect(probe.actual[key], probe.name + '.' + key).toBeCloseTo(probe.expected[key], 5)
     }
   }
-  const cdp = await page.context().newCDPSession(page)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-  const performanceResult = await page.evaluate(({ cases }) => {
-    const land = (
-      window as unknown as {
-        scenePlatformLanding: (
-          scene: PintaScene,
-          previous: SceneBox,
-          desired: SceneBox,
-          gravity: number,
-        ) => SceneBox | null
-      }
-    ).scenePlatformLanding
-    const times: number[] = []
-    for (let i = 0; i < 101; i++) {
-      const start = performance.now()
-      for (const item of cases) land(item.scene, item.previous, item.desired, item.gravity)
-      if (i) times.push(performance.now() - start)
-    }
-    times.sort((a, b) => a - b)
-    return {
-      cpuRate: 4,
-      cases: cases.length,
-      batches: times.length,
-      medianMs: times[50],
-      p95Ms: times[94],
-      maxMs: times[99],
-    }
-  }, fixture)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
-  await cdp.detach()
-  expect(performanceResult.p95Ms).toBeLessThan(16.7)
-  await page.evaluate(() => {
-    window.pintaGame.physics.world.gravity.y = 300
-    window.pintaGame.hero.body.reset(40, 10)
-  })
-  await page.keyboard.down('ArrowDown')
-  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeGreaterThan(28)
-  await page.waitForTimeout(350)
-  const normal = await page.evaluate(() => window.pintaGame.hero.y)
-  await page.keyboard.up('ArrowDown')
-  expect(normal).toBeCloseTo(28.25, 3)
-  await page.evaluate(() => window.pintaGame.hero.body.reset(40, 60))
+  expect(await page.evaluate(() => window.pintaGame.player.platformer)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.pintaGame.player.position.y))
+    .toBeCloseTo(34.25, 3)
   await page.keyboard.down('ArrowUp')
-  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeLessThan(25)
+  await expect.poll(() => page.evaluate(() => window.pintaGame.player.position.y)).toBeLessThan(25)
   await page.keyboard.up('ArrowUp')
-  await page.evaluate(() => {
-    window.pintaGame.physics.world.gravity.y = -300
-    window.pintaGame.hero.body.reset(40, 70)
-  })
-  await page.keyboard.down('ArrowUp')
-  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeLessThan(43)
-  await page.waitForTimeout(350)
-  const inverted = await page.evaluate(() => window.pintaGame.hero.y)
-  await page.keyboard.up('ArrowUp')
-  expect(inverted).toBeCloseTo(42.25, 3)
-  await page.evaluate(() => {
-    window.pintaGame.physics.world.gravity.y = 0
-    window.pintaGame.hero.body.reset(40, 10)
-  })
-  await page.keyboard.down('ArrowDown')
-  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeGreaterThan(50)
-  await page.keyboard.up('ArrowDown')
+  await expect
+    .poll(() => page.evaluate(() => window.pintaGame.player.position.y))
+    .toBeCloseTo(34.25, 3)
   expect(errors).toEqual([])
-  await info.attach('plataforma-phaser', {
-    body: JSON.stringify({ normal, inverted, probes, performance: performanceResult }),
+  await info.attach('plataformas-regionais', {
+    body: JSON.stringify({ probes, performance: performanceResult }),
     contentType: 'application/json',
-  })
-  await info.attach('plataforma-phaser-imagem', {
-    body: await page.screenshot(),
-    contentType: 'image/png',
   })
 })
 
-test('Phaser: cena 3 consulta os contornos e barra movimento através de parede fina', async ({
+test('Phaser: cena regional consulta contornos e barra movimento através de parede fina', async ({
   page,
   request,
 }, info) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('http://127.0.0.1:5293/physics/')
-  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
-  const fixture = await (await request.get('http://127.0.0.1:5293/physics-probes.json')).json()
-  const result = await page.evaluate(({ scene, probes }) => {
-    const query = (
-      window as unknown as { sceneIntersectsBox: (scene: unknown, box: unknown) => boolean }
-    ).sceneIntersectsBox
-    return probes.map((p: { name: string; box: unknown; blocked: boolean }) => ({
-      name: p.name,
-      expected: p.blocked,
-      actual: query(scene, p.box),
+  await loadAt(page, '/physics/', 16, 34)
+  const fixture = await (await request.get(origin + '/physics-probes.json')).json()
+  const performanceResult = await profileQueries(page, fixture, false)
+  const probes = await page.evaluate(async ({ scene, probes }) => {
+    const url = '/qa-scene.js',
+      qa = await import(url)
+    const canonical = qa.readPintaRegionScene(JSON.stringify(qa.regionalGeometryFixture(scene)))
+    if (!canonical) throw Error('A geometria não foi admitida.')
+    const queries = qa.createRegionSceneQueries(canonical)
+    return probes.map((probe: { name: string; box: unknown; blocked: boolean }) => ({
+      name: probe.name,
+      expected: probe.blocked,
+      actual: queries.intersectsBox(probe.box),
     }))
   }, fixture)
-  for (const probe of result) expect(probe.actual, probe.name).toBe(probe.expected)
-  // CPU throttling is a simulation on this machine, not a physical phone result.
-  const cdp = await page.context().newCDPSession(page)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-  const performanceResult = await page.evaluate(({ scene, probes }) => {
-    const query = (
-      window as unknown as { sceneIntersectsBox: (scene: unknown, box: unknown) => boolean }
-    ).sceneIntersectsBox
-    const times: number[] = []
-    for (let iteration = 0; iteration < 101; iteration++) {
-      const start = performance.now()
-      for (const probe of probes) query(scene, probe.box)
-      if (iteration) times.push(performance.now() - start)
-    }
-    times.sort((a, b) => a - b)
-    return {
-      cpuRate: 4,
-      bodies: probes.length,
-      batches: times.length,
-      medianMs: times[50]!,
-      p95Ms: times[94]!,
-      maxMs: times[99]!,
-    }
-  }, fixture)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
-  await cdp.detach()
-  expect(performanceResult.p95Ms).toBeLessThan(16.7)
-  await page.evaluate(() => window.pintaGame.hero.body.reset(10, 28))
+  for (const probe of probes) expect(probe.actual, probe.name).toBe(probe.expected)
   await page.keyboard.down('ArrowRight')
-  await page.waitForTimeout(800)
+  await expect
+    .poll(() => page.evaluate(() => window.pintaGame.player.position.x))
+    .toBeGreaterThan(33.9)
+  await page.waitForTimeout(350)
   await page.keyboard.up('ArrowRight')
-  const x = await page.evaluate(() => window.pintaGame.hero.x)
-  expect(x).toBeGreaterThan(27.9)
-  expect(x).toBeLessThanOrEqual(28.01)
+  const x = await page.evaluate(() => window.pintaGame.player.position.x)
+  expect(x).toBeLessThanOrEqual(34.01)
   expect(errors).toEqual([])
-  await info.attach('contornos-phaser', {
-    body: JSON.stringify({ probes: result, x, performance: performanceResult }),
+  await info.attach('contornos-regionais', {
+    body: JSON.stringify({ probes, x, performance: performanceResult }),
     contentType: 'application/json',
   })
-  await info.attach('contornos-phaser-imagem', {
-    body: await page.screenshot(),
-    contentType: 'image/png',
-  })
 })
 
-test('Phaser resolve portas por ID e conserva a escolha explícita pelo nome do mapa', async ({
-  page,
-  request,
-}) => {
-  const scenes = (await (await request.get('http://127.0.0.1:5293/maps.json')).json()) as Record<
+test('Phaser resolve portas pelo ID preservado no pacote novo', async ({ page, request }) => {
+  const scenes = (await (await request.get(origin + '/maps.json')).json()) as Record<
     string,
-    PintaScene
+    PintaRegionSceneWire
   >
-  const withCollision = {
-    ...scenes,
-    cabana: scenes['vila-e-floresta']!,
-    'cabana-by-id': scenes.cabana!,
-  }
-  await page.route('http://127.0.0.1:5293/main.js', async (route) => {
-    const response = await route.fetch()
-    const source = await response.text()
-    const prefix = `const PINTA_MAPS=${JSON.stringify(scenes)};`
-    expect(source.startsWith(prefix)).toBe(true)
-    await route.fulfill({
-      response,
-      body: source.replace(prefix, `const PINTA_MAPS=${JSON.stringify(withCollision)};`),
-    })
-  })
-  const errors: string[] = []
-  page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('http://127.0.0.1:5293/')
-  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
-  const widths = await page.evaluate(() => {
-    const { maps, hero } = window.pintaGame
-    maps.createMapScene('mapa', 'cabana')
-    const named = maps.mapSize('mapa', 'width')
-    const door = maps.mapObjects('mapa', 'door')[0]!
-    hero.body.reset(door.x, door.y)
-    maps.useMapDoor('mapa', hero, {
-      ...door,
-      properties: { destino: { type: 'asset', value: 'cabana' } },
-    })
-    return { named, destination: maps.mapSize('mapa', 'width') }
-  })
-  expect(widths).toEqual({ named: 512, destination: 128 })
-  expect(errors).toEqual([])
+  const rootId = (await (await request.get(origin + '/start.json')).json()) as string
+  const root = scenes[rootId]!,
+    other = Object.values(scenes).find((scene) => scene.id !== rootId)!
+  const door = root.layers
+    .flatMap((layer) => (layer.kind === 'objects' ? layer.objects : []))
+    .find((object) => object.role === 'door')!
+  await loadAt(page, '/', door.x, door.y)
+  await expect.poll(() => page.evaluate(() => window.pintaGame.player.scene.id)).toBe(other.id)
 })
 
-test('Phaser portátil anima a versão fixada e conserva o último quadro', async ({
+test('Phaser portátil anima a versão fixada, consulta referências e conserva o último quadro', async ({
   page,
   request,
 }, info) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.clock.setFixedTime(1000)
-  await page.goto('http://127.0.0.1:5293/resources/')
+  await page.goto(origin + '/resources/')
   await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
-  await page.evaluate(() => window.pintaGame.maps.createMapScene('mapa', 'recursos-qa'))
-  const scenes = (await (
-    await request.get('http://127.0.0.1:5293/resources/maps.json')
-  ).json()) as Record<string, PintaScene>
-  const sample = scenes['recursos-qa']!
+  const scenes = (await (await request.get(origin + '/resources/maps.json')).json()) as Record<
+    string,
+    PintaRegionSceneWire
+  >
+  const sample = Object.values(scenes)[0]!
   const references = await page.evaluate(
     async ({ layer, tileset }) => {
-      const maps = window.pintaGame.maps
-      const id = maps.mapLayerProperty('mapa', layer, 'resource')
-      const url = maps.mapResourceImage('mapa', String(id))
-      if (!url) throw new Error('Property-only resource missing')
+      const maps = window.pintaGame.maps,
+        name = window.pintaGame.player.scene.id
+      const id = maps.mapLayerProperty(name, layer, 'resource'),
+        url = maps.mapResourceImage(name, String(id))
+      if (!url) throw Error('Falta a imagem referenciada pela propriedade.')
       const image = new Image()
       await new Promise<void>((resolve, reject) => {
         image.onload = () => resolve()
@@ -277,14 +242,12 @@ test('Phaser portátil anima a versão fixada e conserva o último quadro', asyn
       ctx.drawImage(image, 0, 0)
       return {
         pixel: [...ctx.getImageData(8, 8, 1, 1).data],
-        score: maps.mapLayerProperty('mapa', layer, 'score'),
-        allowed: maps.mapTileProperty('mapa', tileset, 0, 'allowed'),
-        empty: maps.mapTileProperty('mapa', tileset, 0, 'empty'),
-        related: maps.mapObjectById(
-          'mapa',
-          String(maps.mapTileProperty('mapa', tileset, 0, 'related')),
-        )?.name,
-        missing: maps.mapResourceImage('mapa', 'missing'),
+        score: maps.mapLayerProperty(name, layer, 'score'),
+        allowed: maps.mapTileProperty(name, tileset, 0, 'allowed'),
+        empty: maps.mapTileProperty(name, tileset, 0, 'empty'),
+        related: maps.mapObjectById(name, String(maps.mapTileProperty(name, tileset, 0, 'related')))
+          ?.name,
+        missing: maps.mapResourceImage(name, 'missing'),
       }
     },
     { layer: sample.layers[0]!.id, tileset: sample.tilesets[0]!.id },
@@ -297,101 +260,112 @@ test('Phaser portátil anima a versão fixada e conserva o último quadro', asyn
     related: 'Árvore QA',
     missing: null,
   })
-  const samples: number[][] = []
-  for (const [time, expected] of [
-    [1000, [255, 0, 0, 255]],
-    [1300, [0, 255, 0, 255]],
-    [1600, [0, 0, 255, 255]],
-    [11000, [0, 0, 255, 255]],
-  ] as const) {
-    await page.clock.setFixedTime(time)
-    const read = () =>
-      page.evaluate(() => [...window.pintaGame.surface.context.getImageData(24, 24, 1, 1).data])
-    await expect.poll(read).toEqual([...expected])
-    samples.push(await read())
-  }
+  const samples = await page.evaluate(
+    async ({ scenes, rootId }) => {
+      const url = '/qa-scene.js',
+        qa = await import(url)
+      const player = qa.createRegionPhaserPlayer(qa.readRegionPhaserWorld(scenes, rootId))
+      const images = new Map<string, HTMLImageElement>()
+      for (const asset of [...player.scene.tilesets, ...(player.scene.art ?? [])]) {
+        const image = new Image()
+        image.src = asset.image
+        await image.decode()
+        images.set(asset.id, image)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = 640
+      canvas.height = 480
+      const ctx = canvas.getContext('2d')!
+      return [0, 300, 600, 10000].map((time) => {
+        player.draw(ctx, images, time)
+        return [...ctx.getImageData(24, 24, 1, 1).data]
+      })
+    },
+    { scenes, rootId: sample.id },
+  )
+  expect(samples).toEqual([
+    [255, 0, 0, 255],
+    [0, 255, 0, 255],
+    [0, 0, 255, 255],
+    [0, 0, 255, 255],
+  ])
   expect(errors).toEqual([])
   await info.attach('phaser-resource-frames', {
     body: JSON.stringify(samples),
     contentType: 'application/json',
   })
 })
-declare global {
-  interface Window {
-    pintaGame: Game
-  }
-}
 
 test('Phaser portátil renderiza o mapa real, anda, colide e atravessa portas', async ({
   page,
   request,
-}, testInfo) => {
-  const errors: string[] = []
-  const external: string[] = []
+}, info) => {
+  const errors: string[] = [],
+    external: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('request', (req) => {
-    if (new URL(req.url()).origin !== 'http://127.0.0.1:5293') external.push(req.url())
+    if (new URL(req.url()).origin !== origin) external.push(req.url())
   })
-  const response = await request.get('http://127.0.0.1:5293/maps.json')
-  const scenes = (await response.json()) as Record<string, PintaScene>
-  const vila = scenes['vila-e-floresta']!
+  const scenes = (await (await request.get(origin + '/maps.json')).json()) as Record<
+    string,
+    PintaRegionSceneWire
+  >
+  const rootId = (await (await request.get(origin + '/start.json')).json()) as string
+  const vila = scenes[rootId]!,
+    cabana = Object.values(scenes).find((scene) => scene.id !== rootId)!
   expect(vila.layers).toHaveLength(18)
   expect(vila.tilesets).toHaveLength(2)
-  expect(vila.layers.some((l) => l.kind === 'tiles' && l.front)).toBe(true)
-  await page.goto('http://127.0.0.1:5293/')
-  await expect.poll(() => page.evaluate(() => !!window.pintaGame)).toBe(true)
+  expect(vila.layers.some((layer) => layer.kind === 'tiles' && layer.front)).toBe(true)
+  await loadAt(page, '/', 38, 38)
   await expect(page.locator('canvas')).toBeVisible()
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        Array.from(window.pintaGame.surface.context.getImageData(33, 33, 1, 1).data),
-      ),
+      page.evaluate(() => [...window.pintaGame.surface.context.getImageData(33, 33, 1, 1).data]),
     )
     .toEqual([74, 222, 128, 255])
   const water = () =>
     page.evaluate(() =>
-      Array.from(window.pintaGame.surface.context.getImageData(28 * 16, 14 * 16, 16, 16).data).join(
-        ',',
-      ),
+      [...window.pintaGame.surface.context.getImageData(448, 224, 16, 16).data].join(','),
     )
-  const firstWater = await water()
-  await expect.poll(water).not.toBe(firstWater)
-  expect(
-    await page.evaluate(() => window.pintaGame.maps.mapObjects('mapa', 'door').map((o) => o.name)),
-  ).toContain('Porta da cabana')
-  const start = await page.evaluate(() => window.pintaGame.hero.y)
+  const first = await water()
+  await expect.poll(water).not.toBe(first)
+  const start = await page.evaluate(() => window.pintaGame.player.position.y)
   await page.keyboard.down('ArrowDown')
-  await expect.poll(() => page.evaluate(() => window.pintaGame.hero.y)).toBeGreaterThan(start + 10)
+  await expect
+    .poll(() => page.evaluate(() => window.pintaGame.player.position.y))
+    .toBeGreaterThan(start + 10)
   await page.keyboard.up('ArrowDown')
-  // A frente cobre o personagem sob o telhado, no canvas real do Phaser.
-  await page.evaluate(async () => {
-    window.pintaGame.hero.body.reset(88, 40)
-    await new Promise<void>((done) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => done())),
-    )
-  })
+  await loadAt(page, '/', 94, 46)
   await expect
     .poll(() =>
-      page.evaluate(() =>
-        Array.from(window.pintaGame.surface.context.getImageData(89, 41, 1, 1).data),
-      ),
+      page.evaluate(() => [...window.pintaGame.surface.context.getImageData(89, 41, 1, 1).data]),
     )
     .not.toEqual([74, 222, 128, 255])
-  // Exercita a física real contra a parede da casa em x=80 (não uma grade mockada).
-  await page.evaluate(() => window.pintaGame.hero.body.reset(64, 68))
+  await loadAt(page, '/', 70, 74)
   await page.keyboard.down('ArrowRight')
   await page.waitForTimeout(350)
   await page.keyboard.up('ArrowRight')
-  expect(await page.evaluate(() => window.pintaGame.hero.x)).toBeLessThanOrEqual(68.1)
-  await page.evaluate(() => window.pintaGame.hero.body.reset(96, 96))
-  await expect
-    .poll(() => page.evaluate(() => window.pintaGame.maps.mapSize('mapa', 'width')))
-    .toBe(scenes.cabana!.cols * scenes.cabana!.tileSize)
-  await page.evaluate(() => window.pintaGame.hero.body.reset(80, 32))
-  await expect
-    .poll(() => page.evaluate(() => window.pintaGame.maps.mapSize('mapa', 'width')))
-    .toBe(vila.cols * vila.tileSize)
+  expect(await page.evaluate(() => window.pintaGame.player.position.x)).toBeLessThanOrEqual(74.1)
+  await loadAt(page, '/', 102, 102)
+  await expect.poll(() => page.evaluate(() => window.pintaGame.player.scene.id)).toBe(cabana.id)
+  // Start in the second map through the actual start manifest, then use its return door.
+  await page.route('**/start.json', (route) => route.fulfill({ json: cabana.id }))
+  await page.unroute('**/maps.json')
+  await page.route('**/maps.json', async (route) => {
+    const response = await route.fetch(),
+      maps = (await response.json()) as Record<string, PintaRegionSceneWire>
+    for (const layer of maps[cabana.id]!.layers)
+      if (layer.kind === 'objects')
+        for (const item of layer.objects)
+          if (item.role === 'start') {
+            item.x = 86
+            item.y = 38
+          }
+    await route.fulfill({ response, json: maps })
+  })
+  await page.goto(origin + '/')
+  await expect.poll(() => page.evaluate(() => window.pintaGame?.player.scene.id)).toBe(vila.id)
   expect(errors).toEqual([])
   expect(external).toEqual([])
-  await testInfo.attach('phaser-vila', { body: await page.screenshot(), contentType: 'image/png' })
+  await info.attach('phaser-vila', { body: await page.screenshot(), contentType: 'image/png' })
 })
