@@ -30,6 +30,12 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
    calculada pelo snapshot da compra em todos os produtos com prazo fixo. Os itens do resumo
    dizem "prazo contratado", e a tela pendente não presume o prazo da oferta atual. Nove casos
    no SSR real e Postgres descartável cobrem compras antigas, novas e pagamento pendente.
+7. **CI, falso negativo na galeria do Estúdio:** o teste de Cerco na Base Profissional lia o
+   back buffer WebGL depois do descarte, embora o quadro estivesse visível no compositor.
+   A reprodução isolada retornou RGBA zero na leitura e pixels desenhados na captura. O
+   teste agora consulta o compositor nesse caso, removendo fundos CSS, borda e sombra da
+   prova. O canvas vazio continua sendo rejeitado. A regressão isolada e o jogo real passaram
+   no Chromium local, sem alterar o motor nem aumentar o timeout.
 
 ## Compatibilidade e ordem
 
