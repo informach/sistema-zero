@@ -15,8 +15,16 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
+import {
+  type PintaRegionSceneWire,
+  readPintaRegionScene,
+} from '@sistemazero/core/studio/pinta-region-scene'
 import type { PintaScene } from '@sistemazero/core/studio/pinta-scene'
-import { importTiledScene, tiledXmlToJson } from '../../src/export/tiled/import'
+import {
+  importRegionalTiledScene,
+  importTiledScene,
+  tiledXmlToJson,
+} from '../../src/export/tiled/import'
 import { sceneToNative } from '../../src/export/tiled/native'
 
 const dataUrl = async (path: string) =>
@@ -25,9 +33,9 @@ const resolverAt = (folder: string) => ({
   text: (p: string) => readFile(resolve(folder, p), 'utf8'),
   image: (p: string) => dataUrl(resolve(folder, p)),
 })
-async function importFile(path: string) {
+async function importFile(path: string, regional = false) {
   const text = await readFile(path, 'utf8')
-  return importTiledScene(
+  return (regional ? importRegionalTiledScene : importTiledScene)(
     path.endsWith('.tmx') ? tiledXmlToJson(text) : JSON.parse(text),
     resolverAt(dirname(path)),
   )
@@ -47,12 +55,15 @@ export async function verifyTiledPackage(
 ): Promise<string[]> {
   const problems: string[] = []
   const scenes = Object.values(
-    JSON.parse(await readFile(join(folder, 'maps.json'), 'utf8')) as Record<string, PintaScene>,
+    JSON.parse(await readFile(join(folder, 'maps.json'), 'utf8')) as Record<
+      string,
+      PintaScene | PintaRegionSceneWire
+    >,
   )
   if (!scenes.length) problems.push('O pacote não tem mapas em maps.json.')
   for (const [index, saved] of scenes.entries()) {
     // No maps.json as imagens são caminhos do pacote; o importador devolve o conteúdo delas.
-    const expected: PintaScene = {
+    const expected = {
       ...saved,
       tilesets: await Promise.all(
         saved.tilesets.map(async (t) => ({ ...t, image: await dataUrl(join(folder, t.image)) })),
@@ -69,14 +80,18 @@ export async function verifyTiledPackage(
       const path = join(folder, `mapas/mapa-${index}`, file),
         where = `mapas/mapa-${index}/${file}`
       try {
-        const result = await importFile(path)
+        const result = await importFile(path, saved.version === 4)
         if (result.warnings.length)
           problems.push(`${where}: avisos inesperados: ${result.warnings.join(' | ')}`)
-        if (!Bun.deepEquals(result.scene, expected))
+        const canonical =
+          saved.version === 4 ? readPintaRegionScene(JSON.stringify(expected)) : expected
+        if (!canonical || !Bun.deepEquals(result.scene, canonical))
           problems.push(`${where}: a cena importada difere da cena de ${saved.name} em maps.json.`)
-        const native = await sceneToNative(result.scene, decode)
-        if (native.warnings.length)
-          problems.push(`${where}: avisos na conversão: ${native.warnings.join(' | ')}`)
+        if (result.scene.version !== 4) {
+          const native = await sceneToNative(result.scene, decode)
+          if (native.warnings.length)
+            problems.push(`${where}: avisos na conversão: ${native.warnings.join(' | ')}`)
+        }
       } catch (e) {
         problems.push(`${where}: ${e instanceof Error ? e.message : String(e)}`)
       }

@@ -48,7 +48,7 @@ func check_platforms() -> void:
         checks += 1
     var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://platform-probes.json"))
     for item in fixture.cases:
-        scene._load_map(item.scene.name)
+        scene._load_map(item.scene.id)
         await process_frame
         var a: Dictionary = item.previous
         var b: Dictionary = item.desired
