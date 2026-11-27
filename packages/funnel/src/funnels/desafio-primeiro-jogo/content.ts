@@ -12,7 +12,7 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
   intro: 'O próximo passo é conhecer A Chave do Farol com seu filho.',
   entrega: [
     'A Chave do Farol: três etapas de programação e certificado.',
-    '6 meses de curso, Estúdio das atividades e Mural completo, desde a aprovação.',
+    'Curso, Estúdio das atividades e Mural completo pelo prazo contratado, desde a aprovação.',
     'Caderno do Aluno, ajuda por mensagens e orientação de publicação.',
     'Depois do prazo, Mural visitante para ver e jogar.',
     'Pagamento único, sem renovação automática.',

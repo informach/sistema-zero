@@ -48,7 +48,7 @@ const GUIA_OBRIGADO: FunnelObrigado = {
   entrega: [
     'Transformando o vilão em aliado: 7 aulas curtas em vídeo.',
     'Apostila para consultar e certificado no final.',
-    'O guia fica na sua conta por 6 meses, contados da aprovação do pagamento.',
+    'O guia fica na sua conta pelo prazo contratado, contado da aprovação do pagamento.',
     'Pagamento único, sem assinatura.',
   ],
   passos: [

@@ -33,7 +33,7 @@ export const DESAFIO_ADULTO_OBRIGADO: FunnelObrigado = {
   botao: 'Entrar no Sistema Zero →',
   entrega: [
     'A Chave do Farol: três fases e o certificado.',
-    '6 meses de curso, Estúdio das aulas e Mural completo, desde a aprovação.',
+    'Curso, Estúdio das aulas e Mural completo pelo prazo contratado, desde a aprovação.',
     'Caderno do Aluno, ajuda por mensagens e orientação para publicar.',
     'Depois do prazo, Mural visitante para ver e jogar.',
     'Pagamento único, sem renovação automática.',

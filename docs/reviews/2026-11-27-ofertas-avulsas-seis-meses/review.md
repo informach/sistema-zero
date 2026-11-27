@@ -25,6 +25,11 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
    reescrever a condição antiga. A data efetiva continua na matrícula.
 5. **Baixa, nomes do seed das ferramentas:** políticas mudavam, mas os nomes continuavam
    "Oferta padrão". Os quatro nomes agora terminam em `· 6 meses`, conforme o plano do catálogo.
+6. **Média, confirmação de compra antiga:** o resumo do guia e dos Desafios repetia seis meses
+   mesmo para quem contratou doze meses ou trinta dias. A confirmação agora mostra a data final
+   calculada pelo snapshot da compra em todos os produtos com prazo fixo. Os itens do resumo
+   dizem "prazo contratado", e a tela pendente não presume o prazo da oferta atual. Nove casos
+   no SSR real e Postgres descartável cobrem compras antigas, novas e pagamento pendente.
 
 ## Compatibilidade e ordem
 
@@ -61,15 +66,32 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Admin: 1040 testes passaram; typecheck passou com heap de 8 GB.
 - Mensageria: 183 testes passaram, onze opcionais de banco não executados; typecheck passou.
 - Core: 3357 testes passaram.
+- Checkout interno compartilhado: 38 testes direcionados passaram.
+- Confirmação de compra: a regressão falhou com a condição antiga; os nove casos passaram com
+  a correção, incluindo guia e Cadê antigos de doze meses, Desafio antigo de trinta dias, compra
+  nova de seis meses e pagamento pendente. O teste usa somente Postgres descartável e navegador local.
 - Biome nos arquivos TypeScript/JSON alterados: sem erros, com avisos existentes.
 
-Os typechecks de todos os pacotes alterados passaram. Members e Admin excederam o heap padrão
-de 4 GB do Node no Windows e passaram com 8 GB. O CI do PR e o deploy confirmado de staging
-continuam obrigatórios antes da promoção.
+Os typechecks dos pacotes de produto alterados passaram. Members e Admin excederam o heap padrão
+de 4 GB do Node no Windows e passaram com 8 GB. A integração em main continua dependendo dos
+checks obrigatórios verdes. A dona autorizou posteriormente a publicação manual em produção,
+mantendo o processo do PR em paralelo.
 
 ## Produção
 
-Autorização da dona recebida nesta conversa para corrigir e aplicar esta frente após revisão.
-Aguarda publicação final de staging e checks da release. Não houve mutação de produção durante
-esta revisão. O inventário inicial e os patches previstos estão no commit `36a119ef7`; o baseline
-privado dos acessos permanece fora do Git.
+Autorização da dona recebida nesta conversa para corrigir e aplicar esta frente após revisão,
+com publicação manual urgente e CI/PR em paralelo. A onda manual de `99523390d` foi publicada:
+Members, Auth, Referrals, Funnel e Admin. O catálogo, a campanha do guia, as listas dos
+embaixadores e os dois templates foram atualizados pelas APIs administrativas. Os 84 acessos
+históricos conferidos não mudaram, e os 17 resgates da campanha foram preservados.
+
+Os 20 links públicos conferidos abriram com sucesso. A consulta real, sem resgate, do benefício
+`vilao-em-aliado-cade` dentro da última aula retornou a oferta `cade-todo-mundo-7-dias`, com Mural
+e sete dias anunciados; o catálogo conserva os quinze dias reais. Os seis cursos exibem seis
+meses no formatter do mini checkout e passam pela autorização de venda da página. A cotação
+interna do Desafio com `LAOPA131126` respondeu R$ 67 de tabela, R$ 33,50 de desconto e R$ 33,50
+final. Nenhuma compra, lead ou resgate foi criado por essas consultas.
+
+O inventário inicial e os patches previstos estão no commit `36a119ef7`; os baselines privados
+e as respostas com dados de clientes permanecem fora do Git. O ajuste adicional da confirmação
+de compra será publicado apenas no Funnel, preservando os demais serviços desta onda.
