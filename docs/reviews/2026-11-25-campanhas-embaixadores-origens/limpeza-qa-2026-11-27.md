@@ -28,7 +28,7 @@ Validação local: 1.039 testes do Admin, zero falhas, checagem de tipos, build 
 
 A fonte seletiva está no [PR 297](https://github.com/informach/sistema-zero/pull/297), commit `6f28e4a39f4429190a8e3e2f4e8931f34a0abb50`. Apenas o Admin é selecionado para publicação. O commit foi integrado à staging local como `222760d56`. A publicação remota da staging continua sob responsabilidade da outra frente.
 
-O ajuste visual está publicado e conferido em produção. O CI completo e a publicação oficial do PR 297 continuam em andamento. [Recibo desta entrega](limpeza-qa-2026-11-27.json).
+O ajuste visual está publicado e conferido em produção. O CI completo, o merge protegido e a publicação oficial do PR 297 terminaram. [Recibo desta entrega](limpeza-qa-2026-11-27.json).
 
 ## Regra para novas validações
 

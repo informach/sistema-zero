@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-11-27T09:17:20.819Z",
+  "updatedAt": "2026-11-27T10:32:59.379Z",
   "environment": "production",
   "cleanupVerified": true,
   "verification": {
     "state": "QA_CLEANUP_VERIFIED",
-    "verifiedAt": "2026-11-27T09:17:18.487Z",
+    "verifiedAt": "2026-11-27T10:32:56.741Z",
     "environment": "production",
     "counts": {
       "qa_accounts": 0,
@@ -20,6 +20,16 @@
       "qa_payment_drafts": 0
     },
     "realRuleTestingCoursesPreserved": 2,
+    "realParentsCoursesPreserved": [
+      {
+        "slug": "como-ajudar-seu-filho-autista-nas-frustracoes",
+        "status": "published"
+      },
+      {
+        "slug": "transformando-o-vilao-em-aliado",
+        "status": "published"
+      }
+    ],
     "report": {
       "status": 200,
       "gifts": 0,
@@ -184,7 +194,7 @@
     "ciRun": 45970303018,
     "planRun": 45970303009,
     "services": "admin",
-    "state": "WAITING_MANUAL_AND_CI",
+    "state": "OFFICIAL_DEPLOY_PASSED",
     "startedAt": "2026-11-27T09:08:56.249Z",
     "events": [
       {
@@ -218,16 +228,152 @@
         "passed": 8,
         "plan": "success",
         "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:18:24.946Z",
+        "ci": "in_progress",
+        "passed": 9,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:22:50.701Z",
+        "ci": "in_progress",
+        "passed": 10,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:27:17.326Z",
+        "ci": "in_progress",
+        "passed": 11,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:30:36.454Z",
+        "ci": "in_progress",
+        "passed": 12,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T10:22:53.844Z",
+        "ci": "completed",
+        "passed": 13,
+        "plan": "success",
+        "manual": "PRODUCTION_WAVE_PASSED"
+      },
+      {
+        "state": "MERGE_DISPATCHING",
+        "at": "2026-11-27T10:22:54.570Z"
+      },
+      {
+        "state": "MERGED_EXACT_TREE",
+        "at": "2026-11-27T10:23:01.077Z",
+        "mergeSha": "32a82b221fd90d05401e197a7ac6e9a3609db9b5",
+        "tree": "508929be6ae77292b6c7c078dcec58765860b6b5"
+      },
+      {
+        "state": "OFFICIAL_DISPATCHING",
+        "at": "2026-11-27T10:23:02.599Z",
+        "dispatchAt": "2026-11-27T10:23:02.599Z"
+      },
+      {
+        "state": "OFFICIAL_DISPATCH_ACKNOWLEDGED",
+        "at": "2026-11-27T10:23:04.573Z"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_RUNNING",
+        "at": "2026-11-27T10:23:05.881Z",
+        "runId": 45981630728,
+        "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45981630728"
+      },
+      {
+        "state": "OFFICIAL_DEPLOY_PASSED",
+        "at": "2026-11-27T10:32:25.554Z",
+        "completedAt": "2026-11-27T10:32:25.554Z"
       }
     ],
-    "ci": "in_progress",
-    "passed": 8,
+    "ci": "completed",
+    "passed": 13,
     "plan": "success",
-    "manual": "PRODUCTION_WAVE_PASSED"
+    "manual": "PRODUCTION_WAVE_PASSED",
+    "mergeSha": "32a82b221fd90d05401e197a7ac6e9a3609db9b5",
+    "tree": "508929be6ae77292b6c7c078dcec58765860b6b5",
+    "dispatchAt": "2026-11-27T10:23:02.599Z",
+    "runId": 45981630728,
+    "runUrl": "https://github.com/informach/sistema-zero/actions/runs/45981630728",
+    "completedAt": "2026-11-27T10:32:25.554Z"
   },
-  "official": null,
+  "official": {
+    "kind": "production-owned-release",
+    "source": {
+      "kind": "production-promoted-source",
+      "sha": "32a82b221fd90d05401e197a7ac6e9a3609db9b5",
+      "approvedHead": "6f28e4a39f4429190a8e3e2f4e8931f34a0abb50",
+      "tree": "508929be6ae77292b6c7c078dcec58765860b6b5",
+      "ci": {
+        "run": 45970303018,
+        "attempt": 1,
+        "passedJobs": 9
+      },
+      "planArtifact": {
+        "id": 15185825143,
+        "run": 45970303009
+      }
+    },
+    "state": "PRODUCTION_WAVE_PASSED",
+    "initialApplications": [],
+    "events": [
+      {
+        "stage": "preflight",
+        "at": "2026-11-27T10:24:06.160Z"
+      },
+      {
+        "stage": "BACKEND_BARRIER_PASSED",
+        "publishedVersion": 4,
+        "at": "2026-11-27T10:24:09.638Z"
+      },
+      {
+        "stage": "admin-active-refresh",
+        "at": "2026-11-27T10:24:09.639Z"
+      },
+      {
+        "stage": "admin-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-27T10:24:10.297Z"
+      },
+      {
+        "stage": "admin-deploy-ack",
+        "deployment": "a3f1a0e5-966c-4438-aa2c-63ff4dd04d8f",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-27T10:24:11.339Z"
+      },
+      {
+        "stage": "admin-first-poll",
+        "deployment": "a3f1a0e5-966c-4438-aa2c-63ff4dd04d8f",
+        "at": "2026-11-27T10:24:11.340Z"
+      }
+    ],
+    "sha": "32a82b221fd90d05401e197a7ac6e9a3609db9b5",
+    "target": "production",
+    "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+    "publishedVersion": 4,
+    "deployments": [
+      {
+        "name": "admin",
+        "id": "a3f1a0e5-966c-4438-aa2c-63ff4dd04d8f"
+      }
+    ]
+  },
   "productionUiPublished": true,
-  "normalRegularizationComplete": false,
+  "normalRegularizationComplete": true,
   "firstManualPreflight": {
     "state": "FAILED_BEFORE_DEPLOYMENT",
     "reason": "SDK da infraestrutura ausente; instalado pelo lockfile próprio de .railway",
@@ -240,5 +386,12 @@
     "remoteQaDataNotChangedByThisCleanup": true
   },
   "newChargesCreated": 0,
-  "newMessagesSent": 0
+  "newMessagesSent": 0,
+  "additionalQaIdentifierAudit": {
+    "verifiedAt": "2026-11-27T09:58:03.209Z",
+    "couponCandidates": 0,
+    "ambassadorCandidates": 0,
+    "campaignCandidates": 0,
+    "readOnly": true
+  }
 }
