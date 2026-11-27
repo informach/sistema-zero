@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 type Stored = { id: string; name: string; text: string | null; projected: boolean }
 declare global {
   interface Window {
+    pintaProjectedPointerQA?: Array<Record<string, unknown>>
     pintaProjectedQA: {
       documents(): Promise<Stored[]>
       backup(): Promise<string | null>
@@ -16,6 +17,49 @@ declare global {
 }
 const content = (text: string | null) =>
   JSON.stringify(JSON.parse(text!), (key, value) => (key === 'updatedAt' ? undefined : value))
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.pintaProjectedPointerQA = []
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        const target = event.target instanceof HTMLElement ? event.target : null
+        const canvas = document.querySelector('canvas[aria-label="Desenhar no cenário"]')
+        const box = canvas?.getBoundingClientRect()
+        window.pintaProjectedPointerQA?.push({
+          target: target?.getAttribute('aria-label') ?? target?.textContent?.slice(0, 48),
+          x: event.clientX,
+          y: event.clientY,
+          canvas: box && { x: box.x, y: box.y, width: box.width, height: box.height },
+          location: [...document.querySelectorAll('[role="status"]')]
+            .map((item) => item.textContent)
+            .find((text) => text?.startsWith('Coluna')),
+        })
+      },
+      true,
+    )
+  })
+})
+test.afterEach(async ({ page }, info) => {
+  if (info.status === info.expectedStatus || page.isClosed()) return
+  await info.attach('projected-authoring-state', {
+    contentType: 'application/json',
+    body: JSON.stringify(
+      await page.evaluate(async () => ({
+        viewport: { width: innerWidth, height: innerHeight, ratio: devicePixelRatio },
+        pointers: window.pintaProjectedPointerQA,
+        rules: document.querySelector('[data-pinta-automapping]')?.textContent,
+        areas: [...document.querySelectorAll('[data-pinta-automapping] input[type="number"]')].map(
+          (field) => ({ value: (field as HTMLInputElement).value }),
+        ),
+        documents: await window.pintaProjectedQA.documents(),
+      })),
+      null,
+      2,
+    ),
+  })
+})
 
 for (const [name, projection] of [
   ['colmeia', 'hexagonal'],

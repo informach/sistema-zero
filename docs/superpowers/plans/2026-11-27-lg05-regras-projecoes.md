@@ -1,5 +1,9 @@
 # LG05 — regras e projeções do Pinta
 
+**Estado atual — 27/11/2026, 15:54 UTC:** candidata `008001b04ab550d01dce205fe0242ffb16cd6824` no PR 299; staging seletiva `234b9eb09c49ed73b94e7105cf76be8ed04c726e`. Imagem Linux oficial qualificada e copiada ao registro sem reconstrução; manifesto comprimido `sha256:f2b8dd741331e713027e55b5c6d614bed1629041c124dd6f15671b8ac7a90449`, configuração e camadas originais conferidas. Simulações dos dois Workers aprovadas, apontando para os quatro pools existentes com nomes explícitos. Leitura remota: pools saudáveis, vínculos, variáveis, cron e limites preservados. Ainda não houve implantação Worker/imagem, nem nova promoção Railway de produção. CI do PR `46025504124` e da staging `46022790220` recusaram a prova de criação de autorregra isométrica por toque: sete dos oito casos passaram; matriz de destinos 16/16 aprovada. Windows passou em ambos. Reproduções isoladas em Windows e Linux passaram; causa ainda não comprovada. Coleta de ponteiros, estado da regra e artefatos sendo ampliada, sem retirar exigências ou promover a fonte reprovada. Ativação do único gravador público 8/teto 9 preparada e aprovada nos testes de conta e host (2 testes externos, 4 expectativas); a fonte pública foi restaurada e continua 7/8 até implantar os leitores compatíveis. Nenhum post de QA foi criado.
+
+Os registros datados abaixo preservam a sequência e hipóteses substituídas; este estado prevalece.
+
 **Objetivo:** preservar autoria nativa 9 (autorregras, isométrico e hexagonal), na edição, conta, recuperação e destinos compatíveis, sem antecipar a liberação pública de um percurso incompleto.
 
 **Arquitetura:** continuar usando a autoridade local e a fila causal V4, o manifesto existente e a prova de bytes do BFF. O formato é uma capacidade negociada, sem flags. Separar a preparação do leitor da ativação do gravador público: a versão anterior de retorno deve ler os dados que a seguinte poderá gravar.
