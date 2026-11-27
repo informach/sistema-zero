@@ -653,6 +653,8 @@ const THREE_MODELS_TEMPLATE = `
                 flush(null);
                 return;
               }
+              // Material com szSemNevoa nos extras do .glb (o céu de um cenário) não some na névoa.
+              gltf.scene.traverse(function (o) { materialList(o).forEach(function (m) { if (m && m.userData && m.userData.szSemNevoa) m.fog = false; }); });
               var hit = makeHit(k, gltf, metrics);
               cache[k] = hit;
               warm(gltf.scene);

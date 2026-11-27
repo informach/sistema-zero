@@ -5,6 +5,7 @@ import {
   passosGuardaPatrulha,
   TIPOS_GUARDA,
 } from './patrulha-espacial-editorial'
+import { experienciaDaNavePatrulha } from './patrulha-espacial-experiencias'
 
 export const patrulhaAula2: ConstrutorAula = {
   slug: 'aula-2',
@@ -15,13 +16,28 @@ export const patrulhaAula2: ConstrutorAula = {
   outcome:
     'Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.',
   trechos: [
+    experienciaDaNavePatrulha({
+      key: 'ritmo-das-pedras',
+      title: 'O ritmo dos asteroides',
+      bancada: 'intervalo',
+      objective:
+        'Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.',
+      convite: 'Compare quantas pedras nascem com intervalos diferentes.',
+      falas: [
+        [
+          'conversa',
+          'Seus lasers já voam pela rota. Agora vêm os asteroides. Na Nave Contra Asteroides, um relógio criava uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção.',
+        ],
+      ],
+      pergunta: 'E se nascer um asteroide em cada quadro do jogo?',
+    }),
     montagemPatrulha({
       key: 'relogio-dos-asteroides',
       title: 'Um asteroide a cada intervalo',
       etapa: 'relogio',
       objective: 'Usar um intervalo para criar asteroides somente durante a partida.',
       ponte:
-        'Monte o relógio dos asteroides. Primeiro a pedra vai nascer parada lá no fundo. Confira que o relógio espera o começo da partida.',
+        'Monte o relógio que cria um asteroide a cada um segundo e meio, só durante a partida. Por enquanto ele nasce parado lá no fundo.',
       falas: [
         [
           'conversa',
@@ -106,7 +122,7 @@ export const patrulhaAula2: ConstrutorAula = {
       objective:
         'Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulha.',
       ponte:
-        'Use a receita de posição: número aleatório × 10.4 − 5.2. Ela escolhe o X das novas pedras dentro da rota. Conserve Y = 1 e Z = -28.',
+        'Sorteie de onde vem cada asteroide: a receita de número aleatório escolhe um lugar diferente dentro da rota.',
       falas: [
         [
           'conversa',
@@ -187,8 +203,7 @@ export const patrulhaAula2: ConstrutorAula = {
       title: 'Os asteroides vêm até a nave',
       etapa: 'trajeto-asteroide',
       objective: 'Definir a velocidade positiva em Z para aproximar os asteroides.',
-      ponte:
-        'Defina velocidadeAsteroides como 7. Compare o caminho das pedras com o caminho dos lasers e confira o que muda.',
+      ponte: 'Faça os asteroides virem na direção da nave e compare com o caminho dos lasers.',
       falas: [
         [
           'conversa',
@@ -246,7 +261,7 @@ export const patrulhaAula2: ConstrutorAula = {
       objective:
         'Retirar asteroides que ultrapassam o fim da rota, conservando o intervalo dos tiros.',
       ponte:
-        'Defina o limite dos asteroides no eixo Z. Teste as duas direções e envie sua rota com lasers e pedras em movimento.',
+        'Tire do jogo os asteroides que já passaram pela nave. Teste e envie sua rota com lasers e asteroides em movimento.',
       falas: [
         [
           'conversa',

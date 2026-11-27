@@ -83,7 +83,7 @@ Base 2D do Construtor, em 9 aulas. As telas, estado e reinício vêm preparados.
 
 **Entrada:** Acertos retiram o par, produzem efeitos e somam pontos; a nave ainda não tem vidas nem reação à batida.
 
-**Conquista:** Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros.
+**Conquista:** Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros, mais ou menos um segundo.
 
 1. Três chances para pilotar (experience).
 2. Prepare e mostre as três vidas (build).
@@ -99,7 +99,7 @@ Base 2D do Construtor, em 9 aulas. As telas, estado e reinício vêm preparados.
 **Conquista:** Guardas de jogando testadas; aparência de nave, cenário, asteroide e laser escolhida sem mudar as regras.
 
 1. A hora de jogar (experience).
-2. Confira as três guardas da partida (build).
+2. Investigue: e se o laser não esperasse a partida? (build).
 3. Escolha a aparência das pedras e dos lasers (build).
 4. Confira o começo e envie seu visual (delivery).
 

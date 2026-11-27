@@ -38,13 +38,43 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 [engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Dê três vidas à nave em Ao iniciar. Veja os corações no começo. A regra da batida será a próxima montagem.
+**Recado na página (não gravar):** Sua vez! Dê três vidas à nave. Os corações aparecem no começo; a batida vem na próxima parte. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-## Parte 2. A batida tira uma vida
+## Parte 2. Um respiro depois da batida
+
+**Clipe:** `video-respiro-da-nave`
+
+**Na tela:** Na edição, ilustrar a ideia narrada sem mostrar a solução da experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência] e deixar a cena parada, com a bancada 2D da Nave Contra Asteroides; não trocar a cena por uma nave 3D. No "O Zappy vai te mostrando", apontar o Zappy ao lado da fala dele [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] A nave já tem três vidas. Antes de programar a batida, lembre o que acontecia na Nave Contra Asteroides: depois de perder uma vida, a nave piscava um pouquinho.
+
+[curious] Enquanto a nave pisca, outra batida já tira mais um coração?
+
+[engaging, energetic, conversational voice] Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a mesma daqui. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Você pode repetir e comparar o que acontece. Depois, a gente leva a descoberta para a patrulha. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-respiro-da-nave-K1 | Dedé | 1 | a batida, lembre o que acontecia na Nave Contra Asteroides: depois de perder uma vida, a nave piscava um pouquinho. | Enquanto a nave pisca, outra batida já tira mais um coração? | Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Falas da experiência:** consulte `zappy-etapas.json`. O vídeo convida; os controles e as comparações continuam livres na bancada.
+
+**Recado na página (não gravar):** Sua vez! Compare uma batida com e sem o respiro de proteção. O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+
+## Parte 3. A batida tira uma vida
 
 **Clipe:** `video-vida-na-batida`
 
-**Na tela:** A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No "Encontre Quando acontecer. Deixe à vista um espaço depois do acontecimento de Espaço, fora do fazer dele.", [arrastar até "Quando acontecer"] [apontar abaixo de "Quando apertar a tecla espaço"]. No "Abra Jogo 3D, Encostar e Encostar de novo. Pegue Quando heroi encostar em algum do grupo e encaixe nesse espaço.", [abrir categoria Jogo 3D > Encostar > Encostar] [encaixar "Quando heroi encostar em algum do grupo" abaixo de "Quando apertar a tecla espaço"]. No "No primeiro nome, escolha nave. No grupo, escolha asteroides.", [trocar "heroi" por "nave" em "Quando heroi encostar em algum do grupo"] [trocar "estrelas" por "asteroides" em "Quando nave encostar em algum do grupo"]. No "No campo chamando de, troque item por asteroideQueBateu, tudo junto, com Q e B maiúsculos.", [trocar "item" por "asteroideQueBateu" em "Quando nave encostar em algum do grupo asteroides"]. No "Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer.", [apontar encaixe em "Quando nave encostar em algum do grupo asteroides"]. No "Abra Programação e depois Lógica e Se.", [abrir categoria Programação > Lógica & Se]. No "Pegue o bloco Se e solte nesse espaço ao lado de fazer.", [encaixar "Se" em "Quando nave encostar em algum do grupo asteroides"]. No "Clique no x da pergunta e escolha estado.", [trocar "x" por "estado" em "Se valor da variável x > 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.", [trocar ">" por "=" em "Se valor da variável estado > 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Deixe à vista o zero que está do lado direito da pergunta.", [apontar bloco "Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Abra Programação, depois Valores, e pegue o bloco texto.", [abrir categoria Programação > Valores]. No "Solte o bloco texto em cima desse zero.", [soltar "texto" em cima do "0" em "Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.", [trocar "Olá" por "jogando" em "Se valor da variável estado = texto Olá dentro de Quando nave encostar em algum do grupo asteroides"]. No "Deixe à vista o então desse Se. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Machucar heroi tirando 1 de vida e encaixe nesse então.", [apontar encaixe em "Se dentro de Quando nave encostar em algum do grupo asteroides" no "então"] [abrir categoria Jogo 3D > Placar, vida e telas > Vida] [encaixar "Machucar heroi tirando 1 de vida" em "Se dentro de Quando nave encostar em algum do grupo asteroides" no "então"]. No "No objeto, escolha nave. Conserve a quantidade um.", [trocar "heroi" por "nave" em "Machucar heroi tirando 1 de vida"]. No "Deixe visível o encaixe logo abaixo de Machucar. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e troque moeda por acerto.", [apontar abaixo de "Machucar nave tirando 1 de vida"] [abrir categoria Jogo 3D > Som] [encaixar "Tocar o som pronto" abaixo de "Machucar nave tirando 1 de vida"] [trocar "moeda" por "acerto" em "Tocar o som pronto abaixo de Machucar"]. No "Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.", [rodar de novo] [tecla Enter] nota de edição: alinhar a nave com uma pedra em aproximação sem atirar; observar a primeira batida real [apontar prévia]. No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "Quando nave encostar em algum do grupo asteroides"].  No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+**Na tela:** A parte começa com o Estúdio expandido e a entrada correspondente desta montagem [expandir estúdio]. No "Encontre Quando acontecer. Deixe à vista um espaço depois do acontecimento de Espaço, fora do fazer dele.", [arrastar até "Quando acontecer"] [apontar abaixo de "Quando apertar a tecla espaço"]. No "Abra Jogo 3D, Encostar e Encostar de novo. Pegue Quando heroi encostar em algum do grupo e encaixe nesse espaço.", [abrir categoria Jogo 3D > Encostar > Encostar] [encaixar "Quando heroi encostar em algum do grupo" abaixo de "Quando apertar a tecla espaço"]. No "No primeiro nome, escolha nave. No grupo, escolha asteroides.", [trocar "heroi" por "nave" em "Quando heroi encostar em algum do grupo"] [trocar "estrelas" por "asteroides" em "Quando nave encostar em algum do grupo"]. No "No campo chamando de, troque item por asteroideQueBateu, tudo junto, com Q e B maiúsculos.", [trocar "item" por "asteroideQueBateu" em "Quando nave encostar em algum do grupo asteroides"]. No "Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer.", [apontar encaixe em "Quando nave encostar em algum do grupo asteroides"]. No "Abra Programação e depois Lógica e Se.", [abrir categoria Programação > Lógica & Se]. No "Pegue o bloco Se e solte nesse espaço ao lado de fazer.", [encaixar "Se" em "Quando nave encostar em algum do grupo asteroides"]. No "Clique no x da pergunta e escolha estado.", [trocar "x" por "estado" em "Se valor da variável x > 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.", [trocar ">" por "=" em "Se valor da variável estado > 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Deixe à vista o zero que está do lado direito da pergunta.", [apontar bloco "Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Abra Programação, depois Valores, e pegue o bloco texto.", [abrir categoria Programação > Valores]. No "Solte o bloco texto em cima desse zero.", [soltar "texto" em cima do "0" em "Se valor da variável estado = 0 dentro de Quando nave encostar em algum do grupo asteroides"]. No "Clique na palavra Olá e escreva jogando, tudo em letras minúsculas.", [trocar "Olá" por "jogando" em "Se valor da variável estado = texto Olá dentro de Quando nave encostar em algum do grupo asteroides"]. No "Deixe à vista o então desse Se. Abra Jogo 3D, Placar, vida e telas e Vida. Pegue Machucar heroi tirando 1 de vida e encaixe nesse então.", [apontar encaixe em "Se dentro de Quando nave encostar em algum do grupo asteroides" no "então"] [abrir categoria Jogo 3D > Placar, vida e telas > Vida] [encaixar "Machucar heroi tirando 1 de vida" em "Se dentro de Quando nave encostar em algum do grupo asteroides" no "então"]. No "No objeto, escolha nave. Conserve a quantidade um.", [trocar "heroi" por "nave" em "Machucar heroi tirando 1 de vida"]. No "Deixe visível o encaixe logo abaixo de Machucar. Abra Jogo 3D e Som. Encaixe Tocar o som pronto abaixo e troque moeda por acerto.", [apontar abaixo de "Machucar nave tirando 1 de vida"] [abrir categoria Jogo 3D > Som] [encaixar "Tocar o som pronto" abaixo de "Machucar nave tirando 1 de vida"] [trocar "moeda" por "acerto" em "Tocar o som pronto abaixo de Machucar"]. No "Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.", [rodar de novo] [tecla Enter] nota de edição: alinhar a nave com uma pedra em aproximação sem atirar; observar a primeira batida real [apontar prévia]. No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "Quando nave encostar em algum do grupo asteroides"].  No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio]. No "clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -61,6 +91,8 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [interested, animated voice] Esse nome identifica a pedra que participou desta batida. Na próxima parte, você vai usar esse nome para retirar só ela.
 
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -71,7 +103,7 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 
@@ -91,11 +123,11 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.
 
-[curious] Enquanto a nave pisca, outra batida já tira mais um coração?
+[engaging, energetic, conversational voice] É o respiro que você viu na bancada da nave: durante esse instante de proteção, outra batida não tira coração. O bloco Machucar cuida de um segundo de proteção. Depois, uma nova batida pode tirar outra vida.
 
-[engaging, energetic, conversational voice] Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova batida pode tirar outra vida.
+[curious] E a pedra que bateu? Ela some ou continua o caminho?
 
-[engaging, energetic, conversational voice] Repare também na pedra da batida: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.
+[engaging, energetic, conversational voice] Repare: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro usa nave e asteroides, chama a pedra de asteroideQueBateu, pergunta estado igual a jogando, machuca nave tirando um e toca acerto.
 
@@ -110,13 +142,13 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-vida-na-batida-K1 | Dedé | 1 | vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante. | Enquanto a nave pisca, outra batida já tira mais um coração? | Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova | [curious] |
+| video-vida-na-batida-K1 | Dedé | 1 | não tira coração. O bloco Machucar cuida de um segundo de proteção. Depois, uma nova batida pode tirar outra vida. | E a pedra que bateu? Ela some ou continua o caminho? | Repare: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu. Se algo não funcionou | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Monte a resposta à batida na nave. Identifique a pedra envolvida, confira o estado da partida e desconte uma vida.
+**Recado na página (não gravar):** Sua vez! Programe a batida: quando um asteroide encosta na nave durante a partida, ela perde uma vida. Teste no seu jogo e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-## Parte 3. Só a pedra da batida sai
+## Parte 4. Só a pedra da batida sai
 
 **Clipe:** `video-retirar-a-pedra-da-batida`
 
@@ -154,4 +186,4 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 [engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
-**Recado na página (não gravar):** Retire asteroideQueBateu do grupo asteroides antes de Machucar. Compare uma batida, uma pedra que passa e um acerto do laser. Depois envie.
+**Recado na página (não gravar):** Hora de conferir e enviar! Faça o asteroide que bateu sumir antes de tirar a vida. Compare uma batida, uma pedra que passa e um acerto. Depois envie. Clique em Verificar projeto, envie o projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

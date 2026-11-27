@@ -16,7 +16,9 @@ export const gameTwoDWorldTimersRuntime = `  // ---- Temporizadores didáticos: 
     var t = now();
     var last = secondTimers[key];
     if (last === undefined) { secondTimers[key] = t; return false; }
-    if (t - last >= period) { secondTimers[key] = t; return true; }
+    // Avança pelo período (não pelo agora): "a cada 1,5 s" não escorrega 1 quadro a cada vez.
+    // Depois de um travamento longo, recomeça do agora em vez de disparar em rajada.
+    if (t - last >= period) { secondTimers[key] = t - last >= period * 2 ? t : last + period; return true; }
     return false;
   }
   // One-shot: "depois de N segundos, fazer" — dispara UMA vez por partida.

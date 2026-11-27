@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-esteira",
+    "video-coleta",
+    "video-resultado",
+    "video-meta-nova",
+    "video-missao-cumprida"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "comum. Olha: eu seguro a seta da esquerda, o coletor vai até a esteira de lá, pega uma garrafa, e o placar sobe.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Junte 10 peças para cumprir a meta, e cuide das três vidas. Esta missão é diferente",
+      "falaPrincipal": "E se o coletor pegar uma pilha?",
+      "falaPersonagem": "E se o coletor pegar uma pilha?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-coleta-K1",
+      "clipe": "video-coleta",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "o seu jogo precisa fazer duas coisas. Primeira: quando o coletor encosta numa reciclável, o placar sobe um ponto.",
+      "ancoraDepois": "O jogo confere os encontros a cada quadro: se a peça continuar ali, ela conta de novo e de novo. Por isso, no mesmo",
+      "falaPrincipal": "E se a mesma garrafa encostar no coletor por um tempão?",
+      "falaPersonagem": "E se a mesma garrafa encostar no coletor por um tempão?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

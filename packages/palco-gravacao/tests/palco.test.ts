@@ -121,6 +121,10 @@ describe('verbos do palco', () => {
     expect(agir('livro próxima', jogos)[0]).toMatchObject({ alvo: { rotulo: 'Próxima página' } })
     expect(() => agir('livro voar', jogos)).toThrow(/tela cheia/)
     expect(agir('apontar baixar', jogos)[0]).toMatchObject({ fazer: 'apontar' })
+    expect(agir('apontar objetivo cumprido', jogos)[0]).toMatchObject({
+      fazer: 'apontar',
+      alvo: { seletor: '.sz-lesson-objectives-feedback[data-tone="ok"]', u: 0.035 },
+    })
     expect(agir('tocar "Ligar a reação"', jogos)[0]).toMatchObject({
       alvo: { rotulo: 'Ligar a reação' },
     })

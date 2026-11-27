@@ -106,6 +106,11 @@ export const VERBOS: Verbo[] = [
     descricao: 'Vira o livro: próxima, anterior, tela cheia ou sair da tela cheia.',
   },
   { verbo: 'apontar baixar', exemplo: 'apontar baixar', descricao: 'Aponta o Baixar do material.' },
+  {
+    verbo: 'apontar objetivo cumprido',
+    exemplo: 'apontar objetivo cumprido',
+    descricao: 'Aponta a mensagem Objetivo cumprido! no quadro dos objetivos do projeto.',
+  },
   { verbo: 'baixar', exemplo: 'baixar', descricao: 'Clica em Baixar no material.' },
   {
     verbo: 'tocar',
@@ -629,6 +634,18 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     if (!nome) throw new Error('No livro: próxima, anterior, tela cheia ou sair da tela cheia.')
     return [{ fazer: 'clicar', alvo: { rotulo: nome } }]
   }
+  // A mensagem do quadro dos objetivos, e não o aviso de mesmo nome que some logo depois do Verificar
+  // (Cadê A1P4, 27/11/2026: o "apontar \"Objetivo cumprido!\"" do EdiAula achava o aviso e a mão ia ao meio
+  // de baixo da tela, onde já não havia nada).
+  if (f === 'apontar objetivo cumprido')
+    // A mensagem ocupa a linha inteira do quadro e o texto fica no começo dela: a mão vai ao texto.
+    return [
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '.sz-lesson-objectives-feedback[data-tone="ok"]', u: 0.035, v: 0.5 },
+        exato: true,
+      },
+    ]
   if (f === 'apontar baixar')
     return [{ fazer: 'apontar', alvo: { seletor: '[aria-label^="Baixar"]' } }]
   if (f === 'baixar') return [{ fazer: 'clicar', alvo: { seletor: '[aria-label^="Baixar"]' } }]

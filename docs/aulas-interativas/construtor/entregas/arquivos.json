@@ -11,21 +11,21 @@
     {
       "course": "patrulha-espacial",
       "lessons": 5,
-      "parts": 25,
+      "parts": 27,
       "stages": 19
     }
   ],
   "archives": [
     {
       "file": "cursos-base-construtor-2026-11-24.zip",
-      "bytes": 4156055,
-      "sha256": "f2b2220235b235afe89dfbadf9674859eec837c2bd68b17ce38f92beb2a95034",
-      "entries": 223
+      "bytes": 14131323,
+      "sha256": "e5aef611f261d079be079c3fe1d844d31054d05c3f38cac0e5b6c0ee1ab87f07",
+      "entries": 226
     },
     {
       "file": "projetos-progressivos-construtor-2026-11-24.zip",
-      "bytes": 677730,
-      "sha256": "7bd1818f9bd9ed2f90a21d91712bfe149e12513ff8c0a940803a6f5d0278048f",
+      "bytes": 1693524,
+      "sha256": "2df6e98d1d385042a0664c3a7780068bf076ad585344a4b68e7994be64577dd7",
       "entries": 47
     }
   ],

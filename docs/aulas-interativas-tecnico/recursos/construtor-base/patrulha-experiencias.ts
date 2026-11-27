@@ -1,6 +1,6 @@
 /** QA das duas experiências existentes usadas pela Patrulha; não resolve a atividade no manifesto. */
 import assert from 'node:assert/strict'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { isExperimentationActivity } from '../../../../packages/core/src/learning/scene'
 import {
@@ -13,6 +13,7 @@ import {
   sceneGoals,
 } from '../../../../packages/core/src/learning/scene/evaluate'
 import { sceneStart } from '../../../../packages/core/src/learning/scene/start'
+import { config3D } from '../../qa/construtor-3d'
 import { formatarJson } from '../../qa/formatar-json'
 import {
   experienciaContatoPatrulha,
@@ -41,6 +42,24 @@ const cases: { part: ReturnType<typeof experienciaEixosPatrulha>; actions: Scene
     ],
   },
 ]
+
+// As bancadas da Nave retomadas na Patrulha (aulas 2 e 4) são as MESMAS atividades que o
+// construtor-2d-experiencias.ts abre e conclui com as ações oficiais: aqui só se confere a igualdade.
+const bancadas2D = JSON.parse(
+  readFileSync(resolve(import.meta.dir, '../../qa/construtor-2d-experiencias.json'), 'utf8'),
+)
+const retomadas = config3D.aulas
+  .flatMap((aula) => aula.trechos)
+  .filter((t) => t.kind === 'experience' && t.screen.includes('bancada 2D da Nave'))
+assert.equal(retomadas.length, 2, 'As duas bancadas da Nave retomadas na Patrulha')
+for (const t of retomadas) {
+  const igual = Object.values(bancadas2D).some(
+    (b) =>
+      JSON.stringify((b as { activity: unknown }).activity) ===
+      JSON.stringify(t.experience!.activity),
+  )
+  assert.ok(igual, `${t.key}: a bancada retomada é a mesma validada no 2D`)
+}
 
 const results = cases.map(({ part, actions }) => {
   const activity = part.experience!.activity

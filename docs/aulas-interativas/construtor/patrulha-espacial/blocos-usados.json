@@ -7,8 +7,8 @@
     "types": 46,
     "inInitial": 31,
     "appliedInLessons": 25,
-    "initialInstances": 114,
-    "finalInstances": 198
+    "initialInstances": 116,
+    "finalInstances": 200
   },
   "blocks": [
     {
@@ -198,7 +198,7 @@
       "firstStage": "dano",
       "firstConstruction": {
         "lesson": 4,
-        "part": 2,
+        "part": 3,
         "title": "A batida tira uma vida",
         "slug": "aula-4",
         "beforeStage": "vidas",
@@ -207,7 +207,7 @@
       "parts": [
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -267,7 +267,7 @@
         },
         {
           "lesson": 2,
-          "part": 4,
+          "part": 5,
           "title": "A pedra sai depois de passar",
           "slug": "aula-2",
           "beforeStage": "trajeto-asteroide",
@@ -303,7 +303,7 @@
         },
         {
           "lesson": 4,
-          "part": 3,
+          "part": 4,
           "title": "Só a pedra da batida sai",
           "slug": "aula-4",
           "beforeStage": "dano",
@@ -339,7 +339,7 @@
         },
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -385,12 +385,12 @@
     },
     {
       "type": "sz_g3d_create_model_file",
-      "label": "Criar o objeto moldeTiro com o modelo patrulha-laser-provisorio na cena cena tamanho 0.9",
+      "label": "Criar o objeto moldeTiro com o modelo laser-ciano na cena cena tamanho 0.9",
       "category": "Jogo 3D > Objetos > Criar",
       "role": "Apoio fornecido no projeto inicial",
       "inInitial": true,
-      "initialCount": 3,
-      "finalCount": 3,
+      "initialCount": 4,
+      "finalCount": 4,
       "firstStage": "inicio",
       "firstConstruction": null,
       "parts": []
@@ -488,14 +488,6 @@
           "slug": "aula-5",
           "beforeStage": "derrota",
           "afterStage": "vitoria"
-        },
-        {
-          "lesson": 5,
-          "part": 3,
-          "title": "Confira a patrulha completa",
-          "slug": "aula-5",
-          "beforeStage": "vitoria",
-          "afterStage": "completo"
         }
       ]
     },
@@ -558,7 +550,7 @@
       "firstStage": "dano",
       "firstConstruction": {
         "lesson": 4,
-        "part": 2,
+        "part": 3,
         "title": "A batida tira uma vida",
         "slug": "aula-4",
         "beforeStage": "vidas",
@@ -567,7 +559,7 @@
       "parts": [
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -659,7 +651,7 @@
         },
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -726,7 +718,7 @@
       "firstStage": "relogio",
       "firstConstruction": {
         "lesson": 2,
-        "part": 1,
+        "part": 2,
         "title": "Um asteroide a cada intervalo",
         "slug": "aula-2",
         "beforeStage": "limite-tiro",
@@ -735,7 +727,7 @@
       "parts": [
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -771,7 +763,7 @@
         },
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -787,7 +779,7 @@
         },
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -822,7 +814,7 @@
       "firstStage": "inicio",
       "firstConstruction": {
         "lesson": 2,
-        "part": 2,
+        "part": 3,
         "title": "Uma faixa para as entradas",
         "slug": "aula-2",
         "beforeStage": "relogio",
@@ -831,7 +823,7 @@
       "parts": [
         {
           "lesson": 2,
-          "part": 2,
+          "part": 3,
           "title": "Uma faixa para as entradas",
           "slug": "aula-2",
           "beforeStage": "relogio",
@@ -903,7 +895,7 @@
         },
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -911,7 +903,7 @@
         },
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -941,8 +933,8 @@
       "category": "Programação > Valores",
       "role": "Apoio fornecido no projeto inicial",
       "inInitial": true,
-      "initialCount": 29,
-      "finalCount": 47,
+      "initialCount": 30,
+      "finalCount": 48,
       "firstStage": "inicio",
       "firstConstruction": null,
       "parts": []
@@ -958,7 +950,7 @@
       "firstStage": "entrada",
       "firstConstruction": {
         "lesson": 2,
-        "part": 2,
+        "part": 3,
         "title": "Uma faixa para as entradas",
         "slug": "aula-2",
         "beforeStage": "relogio",
@@ -967,7 +959,7 @@
       "parts": [
         {
           "lesson": 2,
-          "part": 2,
+          "part": 3,
           "title": "Uma faixa para as entradas",
           "slug": "aula-2",
           "beforeStage": "relogio",
@@ -1003,7 +995,7 @@
         },
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -1019,7 +1011,7 @@
         },
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -1071,7 +1063,7 @@
         },
         {
           "lesson": 2,
-          "part": 1,
+          "part": 2,
           "title": "Um asteroide a cada intervalo",
           "slug": "aula-2",
           "beforeStage": "limite-tiro",
@@ -1087,7 +1079,7 @@
         },
         {
           "lesson": 4,
-          "part": 2,
+          "part": 3,
           "title": "A batida tira uma vida",
           "slug": "aula-4",
           "beforeStage": "vidas",
@@ -1183,7 +1175,7 @@
         },
         {
           "lesson": 2,
-          "part": 3,
+          "part": 4,
           "title": "Os asteroides vêm até a nave",
           "slug": "aula-2",
           "beforeStage": "entrada",

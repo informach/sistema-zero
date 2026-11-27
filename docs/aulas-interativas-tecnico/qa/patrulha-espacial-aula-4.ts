@@ -5,6 +5,7 @@ import {
   passosGuardaPatrulha,
   TIPOS_GUARDA,
 } from './patrulha-espacial-editorial'
+import { experienciaDaNavePatrulha } from './patrulha-espacial-experiencias'
 
 export const patrulhaAula4: ConstrutorAula = {
   slug: 'aula-4',
@@ -20,8 +21,7 @@ export const patrulhaAula4: ConstrutorAula = {
       title: 'Três chances para a nave',
       etapa: 'vidas',
       objective: 'Dar três vidas à nave no começo e observar os corações nativos.',
-      ponte:
-        'Dê três vidas à nave em Ao iniciar. Veja os corações no começo. A regra da batida será a próxima montagem.',
+      ponte: 'Dê três vidas à nave. Os corações aparecem no começo; a batida vem na próxima parte.',
       falas: [
         [
           'conversa',
@@ -70,13 +70,28 @@ export const patrulhaAula4: ConstrutorAula = {
       conferencia: 'Dar três de vida a nave está em Ao iniciar, e não dentro de A cada quadro',
       mostrar: 'Dar 3 de vida a nave',
     }),
+    experienciaDaNavePatrulha({
+      key: 'respiro-da-nave',
+      title: 'Um respiro depois da batida',
+      bancada: 'protecao',
+      objective:
+        'Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.',
+      convite: 'Compare uma batida com e sem o respiro de proteção.',
+      falas: [
+        [
+          'conversa',
+          'A nave já tem três vidas. Antes de programar a batida, lembre o que acontecia na Nave Contra Asteroides: depois de perder uma vida, a nave piscava um pouquinho.',
+        ],
+      ],
+      pergunta: 'Enquanto a nave pisca, outra batida já tira mais um coração?',
+    }),
     montagemPatrulha({
       key: 'vida-na-batida',
       title: 'A batida tira uma vida',
       etapa: 'dano',
       objective: 'Usar o encontro da nave com um grupo para descontar uma vida durante a partida.',
       ponte:
-        'Monte a resposta à batida na nave. Identifique a pedra envolvida, confira o estado da partida e desconte uma vida.',
+        'Programe a batida: quando um asteroide encosta na nave durante a partida, ela perde uma vida.',
       falas: [
         [
           'conversa',
@@ -130,14 +145,14 @@ export const patrulhaAula4: ConstrutorAula = {
           'Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.',
           '[rodar de novo] [tecla Enter] nota de edição: alinhar a nave com uma pedra em aproximação sem atirar; observar a primeira batida real [apontar prévia]',
         ],
-        ['pergunta', 'Enquanto a nave pisca, outra batida já tira mais um coração?'],
         [
           'conversa',
-          'Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova batida pode tirar outra vida.',
+          'É o respiro que você viu na bancada da nave: durante esse instante de proteção, outra batida não tira coração. O bloco Machucar cuida de um segundo de proteção. Depois, uma nova batida pode tirar outra vida.',
         ],
+        ['pergunta', 'E a pedra que bateu? Ela some ou continua o caminho?'],
         [
           'conversa',
-          'Repare também na pedra da batida: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.',
+          'Repare: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.',
         ],
       ],
       steps: [
@@ -170,7 +185,7 @@ export const patrulhaAula4: ConstrutorAula = {
       etapa: 'retirada-batida',
       objective: 'Consumir o asteroide identificado pelo encontro antes de descontar a vida.',
       ponte:
-        'Retire asteroideQueBateu do grupo asteroides antes de Machucar. Compare uma batida, uma pedra que passa e um acerto do laser. Depois envie.',
+        'Faça o asteroide que bateu sumir antes de tirar a vida. Compare uma batida, uma pedra que passa e um acerto. Depois envie.',
       falas: [
         [
           'conversa',

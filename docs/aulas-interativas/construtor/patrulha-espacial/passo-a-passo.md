@@ -92,6 +92,13 @@ Retirar do grupo os lasers que ultrapassaram os limites de profundidade.
 
 ## Aula 2. Asteroides na rota
 
+### O ritmo dos asteroides
+
+Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.
+
+1. Compare quantas pedras nascem com intervalos diferentes.
+2. Observe as descobertas com o Zappy e compare o que acontece.
+
 ### Um asteroide a cada intervalo
 
 Usar um intervalo para criar asteroides somente durante a partida.
@@ -248,6 +255,13 @@ Dar três vidas à nave no começo e observar os corações nativos.
 - Rodar de novo: aparecem três corações no alto, à esquerda.
 - Enter começa a partida. O jogo ainda não desconta vida no contato; essa regra vem na próxima parte.
 
+### Um respiro depois da batida
+
+Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.
+
+1. Compare uma batida com e sem o respiro de proteção.
+2. Observe as descobertas com o Zappy e compare o que acontece.
+
 ### A batida tira uma vida
 
 Usar o encontro da nave com um grupo para descontar uma vida durante a partida.
@@ -328,17 +342,17 @@ Conferir a meta no senão da derrota e acionar a vitória uma única vez.
 
 ### Confira a patrulha completa
 
-Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.
+Testar o ciclo de partida completo e enviar a patrulha pronta.
 
-1. Em Ao iniciar, troque o título em cima, no meio por: PATRULHA ESPACIAL | Abra uma rota entre os asteroides.
-2. Em Ao iniciar, troque o aviso embaixo, no meio por: ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto.
-3. No acontecimento Enter, troque o aviso em cima, no meio por: Abra a rota: acerte 20 asteroides e proteja sua nave.
-4. No acontecimento Enter, troque o aviso embaixo, no meio por: SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida.
+1. Clique em Rodar de novo e confira a abertura: nave no centro, três corações e zero acertos.
+2. Antes de Enter, toque em Espaço: não sai laser.
+3. Depois de Enter, teste um acerto, uma batida e uma pedra que passa sem bater.
+4. Em partidas diferentes, teste a derrota e a vitória. Depois de cada resultado, clique em Voltar ao início.
 
 **Teste no jogo:**
 
 - Rodar de novo: nave no centro, grupos vazios, pontos zero e três vidas. Espaço antes de Enter não dispara.
-- Depois de Enter, movimento, disparos e relógio funcionam. Confira os novos avisos.
+- Depois de Enter, movimento, disparos e relógio funcionam.
 - Um acerto soma um ponto; uma batida válida tira uma vida; uma pedra que passa sem bater não altera pontos ou vida.
 - Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.
 - Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo.

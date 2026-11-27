@@ -247,7 +247,7 @@ export function createIR(preset = presets[0], initial = false) {
       h: 11,
       color: '#65dfcf',
     }),
-    label('SETAS: mover  ·  ESPAÇO: disparar', 780, 462, 15, '#d8e6f8', 'right'),
+    label('SETAS: mover   ESPAÇO: disparar', 400, 60, 15, '#ffffff', 'center'),
   ]
 
   const frames = command('updateEachFrame', {
@@ -339,6 +339,13 @@ export const specifications = [
     name: 'Nave Contra Asteroides · Nebulosa · completo',
     initial: false,
     preset: presets[2],
+  },
+  {
+    filename: 'nave-2d-estacao.szproject.json',
+    projectId: 'construtor-nave-2d-completo-estacao',
+    name: 'Nave Contra Asteroides · Estação · completo',
+    initial: false,
+    preset: presets[3],
   },
 ]
 

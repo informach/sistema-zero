@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+// Prévia das peças com a MESMA luz e o mesmo encaixe do Jogo 3D (game-3d/runtime.ts):
+// AmbientLight 2,1 + DirectionalLight 1,7 em (3, 5, 4), sem tone mapping; o modelo é encaixado
+// pelo LADO MAIOR no tamanho do bloco e centralizado (models.fit, mode 'longest').
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const q = new URLSearchParams(location.search);
+const W = +(q.get('w') || 1280), H = +(q.get('h') || 720);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const loader = new GLTFLoader();
+const cache = new Map();
+function carregar(nome) {
+  if (!cache.has(nome)) cache.set(nome, loader.loadAsync(`/glb/${nome}.glb`).then((g) => {
+    g.scene.traverse((o) => {
+      if (!o.isMesh) return;
+      const ms = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of ms) if (m.userData && m.userData.szSemNevoa) m.fog = false;
+    });
+    return g.scene;
+  }));
+  return cache.get(nome).then((s) => s.clone(true));
+}
+function encaixar(root, size) {
+  const box = new THREE.Box3().setFromObject(root);
+  const d = box.getSize(new THREE.Vector3());
+  const k = size / Math.max(d.x, d.y, d.z);
+  root.scale.setScalar(k);
+  const c = box.getCenter(new THREE.Vector3()).multiplyScalar(k);
+  root.position.sub(c);
+  const holder = new THREE.Group();
+  holder.add(root);
+  return holder;
+}
+function cena(fundo) {
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(fundo);
+  scene.add(new THREE.AmbientLight(0xffffff, 2.1));
+  const sol = new THREE.DirectionalLight(0xffffff, 1.7);
+  sol.position.set(3, 5, 4);
+  sol.castShadow = true;
+  sol.shadow.camera.left = -20; sol.shadow.camera.right = 20; sol.shadow.camera.top = 20; sol.shadow.camera.bottom = -20;
+  sol.shadow.camera.near = 0.5; sol.shadow.camera.far = 60; sol.shadow.normalBias = 0.05;
+  scene.add(sol);
+  return scene;
+}
+function sombras(o) { o.traverse((n) => { if (n.isMesh) { n.castShadow = !(n.material && (n.material.transparent || n.material.userData?.szSemSombra)); n.receiveShadow = true; } }); }
+
+async function giro() {
+  // Uma peça, quatro vistas: a do jogo (de trás e de cima), de lado, de cima e de frente.
+  const nome = q.get('peca'), size = +(q.get('size') || 3);
+  const scene = cena(q.get('fundo') || '#1b2140');
+  const obj = encaixar(await carregar(nome), size);
+  sombras(obj);
+  scene.add(obj);
+  const cam = new THREE.PerspectiveCamera(30, W / H / 2 * 1, 0.01, 2000);
+  const vistas = [
+    [0, 0.55, 1.15], [1.3, 0.25, 0], [0.001, 1.4, 0], [-0.6, 0.35, -1.1],
+  ];
+  renderer.setScissorTest(true);
+  const hw = W / 2, hh = H / 2;
+  cam.aspect = hw / hh; cam.updateProjectionMatrix();
+  vistas.forEach((v, i) => {
+    const x = (i % 2) * hw, y = (1 - Math.floor(i / 2)) * hh;
+    const dist = size * 1.45;
+    cam.position.set(v[0] * dist, v[1] * dist, v[2] * dist);
+    cam.lookAt(0, 0, 0);
+    renderer.setViewport(x, y, hw, hh); renderer.setScissor(x, y, hw, hh);
+    renderer.render(scene, cam);
+  });
+}
+
+async function jogo() {
+  // A cena da Patrulha: câmera (0, 8, 12) olhando (0, 1, -12), névoa 30–75, nave em (0, 1, 0).
+  const scene = cena('#020617');
+  scene.fog = new THREE.Fog(q.get('nevoa') || '#0b1030', 30, 75);
+  const cam = new THREE.PerspectiveCamera(+(q.get('fov') || 60), W / H, 0.1, 1000);
+  const [cx, cy, cz] = (q.get('cam') || '0,8,12').split(',').map(Number);
+  const [tx, ty, tz] = (q.get('alvo') || '0,1,-12').split(',').map(Number);
+  cam.position.set(cx, cy, cz); cam.lookAt(tx, ty, tz);
+  const cen = q.get('cenario');
+  if (cen) { const c = encaixar(await carregar(cen), 180); sombras(c); scene.add(c); }
+  const nave = encaixar(await carregar(q.get('nave')), 3); nave.position.set(+(q.get('nx') || 0), 1, 0); sombras(nave); scene.add(nave);
+  const ast = q.get('asteroide');
+  const posA = [[-3.5, -6], [2.2, -11], [-0.6, -16], [4.4, -21], [-4.2, -26], [1.5, 2.5]];
+  for (const [i, [x, z]] of posA.entries()) {
+    const a = encaixar(await carregar(ast), 1.8); a.position.set(x, 1, z);
+    a.children[0].rotation.set(i * 1.3, i * 0.7, i * 0.4);
+    sombras(a); scene.add(a);
+  }
+  const las = q.get('laser');
+  for (const z of [-2.4, -5.2, -8.4]) { const l = encaixar(await carregar(las), 0.9); l.position.set(0, 1, z); sombras(l); scene.add(l); }
+  renderer.render(scene, cam);
+}
+
+async function mini() {
+  // Miniatura: uma vista de três quartos (a nave de trás e de cima, como no jogo).
+  const nome = q.get('peca'), size = +(q.get('size') || 3);
+  if (nome.startsWith('cenario-')) {
+    const scene = cena('#020617');
+    const cam = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000);
+    cam.position.set(0, 8, 12); cam.lookAt(0, 1, -12);
+    scene.add(encaixar(await carregar(nome), 180));
+    renderer.render(scene, cam);
+    return;
+  }
+  const scene = cena(q.get('fundo') || '#1b2140');
+  const obj = encaixar(await carregar(nome), size);
+  sombras(obj); scene.add(obj);
+  const cam = new THREE.PerspectiveCamera(30, W / H, 0.01, 2000);
+  const v = nome.startsWith('laser-') ? [0.9, 0.55, 0.75] : nome.startsWith('nave-') ? [0.55, 0.7, 1.05] : [0.7, 0.6, 1.0];
+  const dist = size * 2.45;
+  const n = Math.hypot(...v);
+  cam.position.set(v[0] / n * dist, v[1] / n * dist, v[2] / n * dist);
+  cam.lookAt(0, 0, 0);
+  renderer.render(scene, cam);
+}
+
+({ jogo, mini }[q.get('modo')] || giro)().then(() => { window.__pronto = true; }, (e) => { window.__erro = String(e && e.stack || e); });
+</script>
+</body>
+</html>

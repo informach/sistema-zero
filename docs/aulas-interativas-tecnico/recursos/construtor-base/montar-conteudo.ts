@@ -177,16 +177,21 @@ for (const [lessonIndex, lesson] of lessons.entries()) {
 }
 if (dimension === '2d') {
   for (const [category, names] of Object.entries({
-    Naves: ['nave-falcao-azul', 'nave-exploradora-coral', 'nave-arraia-lilas'],
-    Cenários: ['cenario-aurora', 'cenario-orbita', 'cenario-nebulosa'],
-    Asteroides: ['asteroide-rocha-lunar', 'asteroide-gelo-azul', 'asteroide-cristal-violeta'],
-    Lasers: ['laser-ciano', 'laser-dourado', 'laser-lilas'],
+    Naves: ['nave-falcao-azul', 'nave-exploradora-coral', 'nave-arraia-lilas', 'nave-cometa-verde'],
+    Cenários: ['cenario-aurora', 'cenario-orbita', 'cenario-nebulosa', 'cenario-estacao'],
+    Asteroides: [
+      'asteroide-rocha-lunar',
+      'asteroide-gelo-azul',
+      'asteroide-cristal-violeta',
+      'asteroide-lava-laranja',
+    ],
+    Lasers: ['laser-ciano', 'laser-dourado', 'laser-lilas', 'laser-verde'],
   }))
     pages.push({
       id: `galeria-${names[0]}`,
       kicker: 'Galeria de aparências',
       title: category,
-      subtitle: 'Três opções para o mesmo elemento do jogo.',
+      subtitle: 'Quatro opções para o mesmo elemento do jogo.',
       items: [
         { kind: 'gallery', names },
         {
@@ -196,26 +201,30 @@ if (dimension === '2d') {
       ],
     })
 } else {
-  pages.push({
-    id: 'galeria-modelos',
-    kicker: 'Os modelos do seu projeto',
-    title: 'As peças da Patrulha',
-    subtitle: 'Os três modelos já estão no projeto inicial.',
-    items: [
-      {
-        kind: 'gallery3d',
-        names: [
-          'patrulha-nave-provisoria',
-          'patrulha-asteroide-provisorio',
-          'patrulha-laser-provisorio',
-        ],
-      },
-      {
-        kind: 'note',
-        text: 'A nave, o asteroide e o laser são modelos prontos. Nesta versão, construa e teste as regras com estas peças. O curso não pede que você desenhe ou monte um modelo.',
-      },
+  for (const [category, names] of Object.entries({
+    Naves: ['nave-falcao-azul', 'nave-exploradora-coral', 'nave-arraia-lilas', 'nave-cometa-verde'],
+    Asteroides: [
+      'asteroide-rocha-lunar',
+      'asteroide-gelo-azul',
+      'asteroide-cristal-violeta',
+      'asteroide-lava-laranja',
     ],
-  })
+    Lasers: ['laser-ciano', 'laser-dourado', 'laser-lilas', 'laser-verde'],
+    Cenários: ['cenario-orbita', 'cenario-aurora', 'cenario-nebulosa', 'cenario-estacao'],
+  }))
+    pages.push({
+      id: `galeria-modelos-${names[0]}`,
+      kicker: 'Os modelos do seu projeto',
+      title: category,
+      subtitle: 'Quatro modelos para o mesmo objeto do jogo.',
+      items: [
+        { kind: 'gallery3d', names },
+        {
+          kind: 'note',
+          text: 'Para trocar, clique no nome do modelo no bloco Criar o objeto com o modelo e escolha outro na lista. O tamanho, a área de toque e as regras continuam iguais. Se preferir, mantenha o primeiro.',
+        },
+      ],
+    })
 }
 pages.push({
   id: 'revisao-ajuda',

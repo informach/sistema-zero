@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[4]
 TARGETS = {
     "construtor-nave": "nave-contra-asteroides",
     "construtor-patrulha": "patrulha-espacial",
+    "estacao-reciclagem": "estacao-de-reciclagem",
 }
 
 

@@ -6,6 +6,7 @@ export const COMMON_COURSE_SLUGS = [
   'desafio-primeiro-jogo',
   'nave-contra-asteroides',
   'jornada-construtor-base-3d',
+  'jornada-construtor-missao',
   'corre-dino',
   'o-jogo-do-meu-jeito',
   'jornada-faisca-base-3d',

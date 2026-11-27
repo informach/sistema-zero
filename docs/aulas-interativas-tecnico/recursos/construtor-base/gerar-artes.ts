@@ -1,29 +1,22 @@
 /**
- * Capas e miniaturas a partir das artes dos projetos aprovados.
- * Não cria modelos novos. SVGRenderer projeta as malhas GLB originais;
- * esta ilustração editorial não é uma captura da prévia WebGL do Estúdio.
- * Dependências de produção: three, happy-dom e sharp (além de Bun).
+ * Capas e miniaturas dos cursos-base do Construtor, a partir das artes que vão nos projetos.
+ *
+ * - Nave Contra Asteroides (2D): a capa é composta com o fundo e os sprites embutidos no projeto
+ *   completo; as miniaturas da galeria de aparências são esses mesmos arquivos em PNG.
+ * - Patrulha Espacial (3D): a capa é a cena do jogo desenhada com WebGL (Chromium) pela prévia da
+ *   arte do Blender (`docs/design/construtor-espaco-blender/previa`), com a mesma luz e câmera do
+ *   Jogo 3D; as miniaturas dos modelos vêm da `galeria/` do Blender (`modelo-<peça>.png`).
+ *
+ * Dependências: sharp, Chromium/Playwright e os GLB de `docs/design/construtor-espaco-blender/out`
+ * (gerados por `build_all.py`). Rode só quando a arte mudar.
  */
-
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dir, '../../../..')
-const requireStudio = createRequire(resolve(root, 'packages/studio/package.json'))
 const requireHere = createRequire(import.meta.url)
-// Addons importam a distribuição ESM; a mesma instância evita instanceof falso.
-const THREE = await import(
-  pathToFileURL(resolve(dirname(requireStudio.resolve('three')), 'three.module.js')).href
-)
-const { SVGRenderer } = await import(
-  pathToFileURL(requireStudio.resolve('three/addons/renderers/SVGRenderer.js')).href
-)
-const { GLTFLoader } = await import(
-  pathToFileURL(requireStudio.resolve('three/addons/loaders/GLTFLoader.js')).href
-)
-const { Window } = await import(pathToFileURL(requireStudio.resolve('happy-dom')).href)
 let sharp: typeof import('sharp').default
 try {
   sharp = requireHere('sharp')
@@ -32,137 +25,94 @@ try {
   if (!modules) throw new Error('Instale sharp para gerar as capas.')
   sharp = requireHere(resolve(modules, 'sharp'))
 }
-globalThis.document = new Window().document as unknown as Document
 const output = resolve(root, 'docs/aulas-interativas-tecnico/recursos/caderno-visual/arte')
 mkdirSync(output, { recursive: true })
+const blender = resolve(root, 'docs/design/construtor-espaco-blender')
 const proto = resolve(root, 'docs/aulas-interativas/construtor/prototipos-base')
 const two = JSON.parse(readFileSync(resolve(proto, '2d/nave-2d-completo.szproject.json'), 'utf8'))
-const three = JSON.parse(
-  readFileSync(resolve(proto, '3d/patrulha-espacial-3d-completo.szproject.json'), 'utf8'),
-)
-const assets = new Map(
-  two.assets.map((a: { name: string; dataUrl: string }) => [a.name, a.dataUrl]),
-)
-// Miniaturas rasterizadas pela mesma geometria SVG, com recorte do próprio arquivo.
-for (const asset of two.assets)
-  if (asset.kind === 'image') {
-    await sharp(Buffer.from(asset.dataUrl.split(',')[1], 'base64'))
-      .png()
-      .toFile(resolve(output, `${asset.name}.png`))
-  }
-const use = (name: string, x: number, y: number, w: number, h: number, rotation = 0) =>
-  `<image href="${assets.get(name)}" x="${x}" y="${y}" width="${w}" height="${h}" transform="rotate(${rotation} ${x + w / 2} ${y + h / 2})"/>`
-const twoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1400" viewBox="0 0 1600 1400">
-  <rect width="1600" height="1400" fill="#07152b"/>
-  ${use('cenario-aurora', 0, 0, 1600, 1400)}
-  ${use('asteroide-rocha-lunar', 260, 250, 170, 170, -18)}
-  ${use('asteroide-rocha-lunar', 1130, 150, 130, 130, 14)}
-  ${use('asteroide-rocha-lunar', 1030, 490, 220, 220, -12)}
-  ${use('asteroide-rocha-lunar', 610, 70, 110, 110, 31)}
-  ${use('laser-ciano', 790, 370, 35, 126)}
-  ${use('laser-ciano', 790, 560, 35, 126)}
-  ${use('nave-falcao-azul', 670, 750, 280, 320)}
-</svg>`
-await sharp(Buffer.from(twoSvg))
-  .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
-  .toFile(resolve(output, 'capa-construtor-nave.jpg'))
-writeFileSync(resolve(output, 'capa-construtor-nave.svg'), twoSvg)
 
-const models = new Map<string, InstanceType<typeof THREE.Group>>()
-for (const asset of three.assets) {
-  if (asset.kind !== 'model3d') continue
-  const bytes = Buffer.from(asset.dataUrl.split(',')[1], 'base64')
-  const gltf = await new GLTFLoader().parseAsync(
-    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-    '',
-  )
-  const model = gltf.scene
-  const bounds = new THREE.Box3().setFromObject(model)
-  const center = bounds.getCenter(new THREE.Vector3())
-  model.position.sub(center)
-  const holder = new THREE.Group()
-  holder.add(model)
-  models.set(asset.name, holder)
-}
-function lighting(scene: InstanceType<typeof THREE.Scene>) {
-  scene.add(new THREE.AmbientLight('#ffffff', 1.1))
-  const light = new THREE.DirectionalLight('#ffffff', 1.6)
-  light.position.set(4, 8, 8)
-  scene.add(light)
-}
-function projected(
-  scene: InstanceType<typeof THREE.Scene>,
-  camera: InstanceType<typeof THREE.Camera>,
-  width: number,
-  height: number,
-  sky = false,
-) {
-  const renderer = new SVGRenderer()
-  renderer.setSize(width, height)
-  renderer.setPrecision(3)
-  renderer.setClearColor('#07152b', sky ? 1 : 0)
-  scene.updateMatrixWorld(true)
-  camera.updateMatrixWorld(true)
-  renderer.render(scene, camera)
-  let svg = renderer.domElement.outerHTML
-  if (sky) {
-    let stars = `<rect x="-${width / 2}" y="-${height / 2}" width="${width}" height="${height}" fill="#07152b"/>`
-    for (let i = 0; i < 120; i++) {
-      const x = ((i * 293 + 59) % width) - width / 2
-      const y = ((i * 137 + 23) % height) - height / 2
-      stars += `<circle cx="${x}" cy="${y}" r="${i % 5 === 0 ? 2.2 : 1.2}" fill="${i % 3 === 0 ? '#99c6ed' : '#ffffff'}" opacity="${i % 4 === 0 ? 0.8 : 0.35}"/>`
-    }
-    svg = svg.replace(/(<svg[^>]*>)/, `$1${stars}`)
-  }
-  return svg
-}
-const scene = new THREE.Scene()
-lighting(scene)
-const ship = models.get('patrulha-nave-provisoria')!.clone(true)
-ship.position.set(0, 0, 0.5)
-scene.add(ship)
-for (const [x, y, z] of [
-  [-3.4, 0, -6],
-  [2.9, 0, -10],
-  [1, 0, -19],
-  [-1.9, 0, -15],
-]) {
-  const meteor = models.get('patrulha-asteroide-provisorio')!.clone(true)
-  meteor.position.set(x, y, z)
-  scene.add(meteor)
-}
-for (const z of [-2, -5]) {
-  const laser = models.get('patrulha-laser-provisorio')!.clone(true)
-  laser.position.set(0, 0, z)
-  scene.add(laser)
-}
-const camera = new THREE.PerspectiveCamera(49, 1600 / 1400, 0.1, 200)
-camera.position.set(0, 8.8, 10)
-camera.lookAt(0, 0, -5)
-const threeSvg = projected(scene, camera, 1600, 1400, true)
-await sharp(Buffer.from(threeSvg))
-  .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
-  .toFile(resolve(output, 'capa-construtor-patrulha.jpg'))
-writeFileSync(resolve(output, 'capa-construtor-patrulha.svg'), threeSvg)
-for (const [name, model] of models) {
-  const thumbScene = new THREE.Scene()
-  lighting(thumbScene)
-  thumbScene.add(model.clone(true))
-  const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3())
-  const max = Math.max(size.x, size.y, size.z)
-  const thumbCam = new THREE.PerspectiveCamera(42, 4 / 3, 0.01, 100)
-  thumbCam.position.set(max * 0.65, max * 1.25, max * 1.75)
-  thumbCam.lookAt(0, 0, 0)
-  const svg = projected(thumbScene, thumbCam, 800, 600)
-  await sharp(Buffer.from(svg))
+// ---- 2D: miniaturas da galeria de aparências (SVG em alta densidade, fundos WebP) ----
+const bytesOf = (dataUrl: string) => Buffer.from(dataUrl.split(',')[1]!, 'base64')
+const raster = (asset: { dataUrl: string }, altura: number) =>
+  sharp(
+    bytesOf(asset.dataUrl),
+    asset.dataUrl.startsWith('data:image/svg') ? { density: 900 } : {},
+  ).resize({
+    height: altura,
+    fit: 'inside',
+  })
+const assets2D = new Map<string, { name: string; dataUrl: string; width: number; height: number }>(
+  two.assets.map((a: { name: string }) => [a.name, a]),
+)
+for (const asset of assets2D.values())
+  await raster(asset, asset.name.startsWith('cenario-') ? 480 : 512)
     .png()
-    .toFile(resolve(output, `${name}.png`))
+    .toFile(resolve(output, `${asset.name}.png`))
+
+// ---- 2D: capa composta (fundo do cenário, asteroides, lasers e a nave) ----
+const W = 1600
+const H = 1400
+const pedaco = async (name: string, altura: number, giro = 0) =>
+  raster(assets2D.get(name)!, altura)
+    .rotate(giro, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toBuffer()
+// O fundo do jogo é o cenário 3D em 800 × 480; para a capa, o mesmo cenário em alta resolução.
+const glb = resolve(blender, 'out')
+if (!existsSync(resolve(glb, 'nave-falcao-azul.glb')))
+  throw new Error('Gere os GLB antes: build_all.py em docs/design/construtor-espaco-blender')
+const tmp = resolve(root, 'tmp/construtor-capa')
+mkdirSync(tmp, { recursive: true })
+const previa = (...args: string[]) => {
+  const r = spawnSync('node', [resolve(blender, 'previa/previa.mjs'), glb, tmp, ...args], {
+    stdio: 'inherit',
+  })
+  if (r.status !== 0) throw new Error(`A prévia não desenhou: ${args.join(' ')}`)
 }
+previa('mini', `cenario-orbita:180:${W}x${H}`)
+const fundo = await sharp(resolve(tmp, `cenario-orbita-${W}x${H}.png`))
+  .png()
+  .toBuffer()
+const camadas = [
+  { input: await pedaco('asteroide-rocha-lunar', 190, -18), left: 230, top: 330 },
+  { input: await pedaco('asteroide-gelo-azul', 150, 14), left: 1120, top: 610 },
+  { input: await pedaco('asteroide-cristal-violeta', 230, -10), left: 980, top: 880 },
+  { input: await pedaco('asteroide-lava-laranja', 130, 30), left: 470, top: 640 },
+  { input: await pedaco('laser-ciano', 120), left: 783, top: 820 },
+  { input: await pedaco('laser-ciano', 120), left: 783, top: 640 },
+  { input: await pedaco('nave-falcao-azul', 360), left: 640, top: 1000 },
+]
+await sharp(fundo)
+  .composite(camadas)
+  .jpeg({ quality: 92, chromaSubsampling: '4:4:4' })
+  .toFile(resolve(output, 'capa-construtor-nave.jpg'))
+rmSync(resolve(output, 'capa-construtor-nave.svg'), { force: true })
+
+// ---- 3D: miniaturas dos modelos (galeria do Blender) e a capa desenhada com WebGL ----
+for (const f of readdirSync(resolve(blender, 'galeria')).filter((f) => f.endsWith('.webp'))) {
+  if (f === 'catalogo.webp') continue
+  await sharp(resolve(blender, 'galeria', f))
+    .png()
+    .toFile(resolve(output, `modelo-${f.replace(/\.webp$/, '')}.png`))
+}
+for (const antigo of [
+  'patrulha-nave-provisoria',
+  'patrulha-asteroide-provisorio',
+  'patrulha-laser-provisorio',
+])
+  rmSync(resolve(output, `${antigo}.png`), { force: true })
+rmSync(resolve(output, 'capa-construtor-patrulha.svg'), { force: true })
+
+previa('capa', 'cenario-orbita', 'nave-falcao-azul', 'asteroide-rocha-lunar', 'laser-ciano')
+await sharp(resolve(tmp, 'capa.png'))
+  .jpeg({ quality: 92, chromaSubsampling: '4:4:4' })
+  .toFile(resolve(output, 'capa-construtor-patrulha.jpg'))
+
 console.log(
   JSON.stringify({
     capas: 2,
-    modelos: models.size,
+    miniaturas2D: assets2D.size,
     source:
-      'Projetos aprovados do Construtor; somente composição e projeção das artes incorporadas.',
+      'Arte embutida nos projetos e modelos do Blender (docs/design/construtor-espaco-blender).',
   }),
 )

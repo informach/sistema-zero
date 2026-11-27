@@ -70,7 +70,7 @@
       {
         "kind": "index",
         "title": "Aula 7. Dê três vidas à nave",
-        "text": "Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros.",
+        "text": "Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros, mais ou menos um segundo.",
         "pages": "Páginas {{pagina:dia-4-vidas-no-comeco}} a {{ultima-pagina:dia-4-entrega}}"
       },
       {
@@ -281,7 +281,7 @@
       {
         "kind": "step",
         "number": 6,
-        "text": "Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro."
+        "text": "Pense na placa de aberto ou fechado de uma loja. O jogo também tem uma placa, chamada estado: na abertura ela diz início, depois do Enter ela vira jogando e, no fim, vitória ou derrota. Esse Se olha a placa e só deixa a nave andar quando ela diz jogando. É por isso que, na abertura, a nave fica quietinha."
       },
       {
         "kind": "drawings",
@@ -406,17 +406,12 @@
       {
         "kind": "step",
         "number": 4,
-        "text": "No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo."
+        "text": "No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover   ESPAÇO: disparar. Deixe uns espaços entre os dois controles."
       },
       {
         "kind": "step",
         "number": 5,
-        "text": "Coloque 780 no x,462 no y e 15 no tamanho. Escolha o alinhamento à direita."
-      },
-      {
-        "kind": "step",
-        "number": 6,
-        "text": "Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito."
+        "text": "Coloque 400 no x, 60 no y e 15 no tamanho, e escolha o alinhamento no centro. Assim a legenda fica no alto da tela, longe da nave: 400 é o meio da largura."
       },
       {
         "kind": "drawings",
@@ -1410,7 +1405,7 @@
       {
         "kind": "step",
         "number": 4,
-        "text": "Conserve o nome asteroide. Clique no quadradinho de cor desse bloco. Na janelinha, apague o código de Cor em hexadecimal, digite #ffce69, com o sinal de cerquilha na frente, e clique em OK."
+        "text": "Conserve o nome asteroide. Se quiser, clique no quadradinho de cor desse bloco e escolha a cor da explosão na paleta. A cor é escolha sua: ela não muda o jogo."
       },
       {
         "kind": "step",
@@ -1539,12 +1534,12 @@
       {
         "kind": "step",
         "number": 8,
-        "text": "No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho."
+        "text": "No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x, 32 no y e 23 no tamanho."
       },
       {
         "kind": "step",
         "number": 9,
-        "text": "Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista."
+        "text": "O placar chega branco, que aparece bem no espaço. Se quiser outra cor clara, escolha no quadradinho de cor. Agora deixe o número do valor do placar à vista."
       },
       {
         "kind": "step",
@@ -1752,12 +1747,12 @@
       {
         "kind": "step",
         "number": 8,
-        "text": "Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x,22; e no y,52."
+        "text": "Troque jogador por nave. Conserve a opção corações. No tamanho, coloque 21; no x, 22; e no y, 52."
       },
       {
         "kind": "step",
         "number": 9,
-        "text": "Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK."
+        "text": "Clique no quadradinho de cor e escolha na paleta a cor que você quiser para os corações."
       },
       {
         "kind": "drawings",
@@ -1821,7 +1816,7 @@
       {
         "kind": "step",
         "number": 8,
-        "text": "Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK."
+        "text": "Se quiser, clique no quadradinho de cor da explosão e escolha outra cor na paleta. Uma cor diferente da explosão do tiro ajuda a perceber que a nave foi atingida."
       },
       {
         "kind": "step",
@@ -1907,7 +1902,7 @@
       {
         "kind": "step",
         "number": 4,
-        "text": "Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros."
+        "text": "Troque jogador por nave. Conserve o dano em 1. No tempo de proteção, troque 45 por 60 quadros. O jogo desenha uns sessenta quadros por segundo, então são mais ou menos um segundo de proteção."
       },
       {
         "kind": "drawings",
@@ -1990,42 +1985,47 @@
     "lesson": "comecar-partida",
     "part": 2,
     "kicker": "Aula 8 · Parte 2",
-    "title": "Confira as três guardas da partida",
-    "subtitle": "O começo e as telas já vieram preparados.",
+    "title": "Investigue: e se o laser não esperasse a partida?",
+    "subtitle": "Agora você vai fazer uma investigação de verdade: tirar uma guarda, ver o que quebra e consertar.",
     "items": [
       {
         "kind": "step",
         "number": 1,
-        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
-      },
-      {
-        "kind": "step",
-        "number": 2,
-        "text": "Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se."
-      },
-      {
-        "kind": "step",
-        "number": 3,
         "text": "Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
       },
       {
         "kind": "step",
+        "number": 2,
+        "text": "Encontre o evento de Espaço. Dentro dele, o Se jogando guarda a criação do laser e o som."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Arraste No grupo tiros criar um sprite para fora do então e solte logo abaixo do Se, ainda dentro do evento. O som vem junto, grudado embaixo."
+      },
+      {
+        "kind": "step",
         "number": 4,
-        "text": "Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando."
+        "text": "Clique em Rodar de novo. Na abertura, antes do Enter, aperte Espaço algumas vezes. O que aconteceu? O laser sai mesmo com a placa dizendo início: sem a guarda, a regra não espera a partida."
       },
       {
         "kind": "step",
         "number": 5,
-        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
+        "text": "Agora conserte. Arraste No grupo tiros criar um sprite de volta para dentro do então do Se jogando."
       },
       {
         "kind": "step",
         "number": 6,
-        "text": "Encontre A cada 1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas."
+        "text": "Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer."
       },
       {
         "kind": "step",
         "number": 7,
+        "text": "Confira também as outras duas guardas: o Se jogando de A cada quadro do jogo, com o movimento e as colisões, e o Se jogando do relógio A cada 1,5 segundos, com o asteroide."
+      },
+      {
+        "kind": "step",
+        "number": 8,
         "text": "Clique em Rodar de novo para voltar à abertura."
       },
       {
@@ -2039,7 +2039,7 @@
         "kind": "tests",
         "title": "Teste e observe",
         "tests": [
-          "Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.",
+          "Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. Agora a abertura espera de verdade: a nave não anda, não sai laser e não nasce pedra.",
           "Agora pressione Enter. Confira que as setas, o laser e as pedras funcionam durante a partida."
         ]
       }
@@ -2194,36 +2194,31 @@
       {
         "kind": "step",
         "number": 6,
-        "text": "Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y,32; e no tamanho,21."
+        "text": "Pegue Mostrar placar e solte depois de Acertos, antes dos corações. Troque Pontos: por Meta:. No x, coloque 650; no y, 32; e no tamanho, 21."
       },
       {
         "kind": "step",
         "number": 7,
-        "text": "Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK."
-      },
-      {
-        "kind": "step",
-        "number": 8,
         "text": "Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor."
       },
       {
         "kind": "step",
-        "number": 9,
+        "number": 8,
         "text": "Deixe à vista o encaixe depois de Desenhar as vidas e antes da legenda. Volte a Jogo 2D, Vida e placar, Indicadores e texto na tela. Pegue Barra de e solte nesse encaixe."
       },
       {
         "kind": "step",
-        "number": 10,
+        "number": 9,
         "text": "Na barra, coloque x 280, y 23, largura 240 e altura 11."
       },
       {
         "kind": "step",
-        "number": 11,
-        "text": "Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK."
+        "number": 10,
+        "text": "Clique no quadradinho de cor da barra e escolha na paleta uma cor bem viva: é ela que vai encher conforme você acerta."
       },
       {
         "kind": "step",
-        "number": 12,
+        "number": 11,
         "text": "Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa."
       },
       {
@@ -2519,11 +2514,16 @@
     "id": "galeria-nave-falcao-azul",
     "kicker": "Galeria de aparências",
     "title": "Naves",
-    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "subtitle": "Quatro opções para o mesmo elemento do jogo.",
     "items": [
       {
         "kind": "gallery",
-        "names": ["nave-falcao-azul", "nave-exploradora-coral", "nave-arraia-lilas"]
+        "names": [
+          "nave-falcao-azul",
+          "nave-exploradora-coral",
+          "nave-arraia-lilas",
+          "nave-cometa-verde"
+        ]
       },
       {
         "kind": "note",
@@ -2535,11 +2535,11 @@
     "id": "galeria-cenario-aurora",
     "kicker": "Galeria de aparências",
     "title": "Cenários",
-    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "subtitle": "Quatro opções para o mesmo elemento do jogo.",
     "items": [
       {
         "kind": "gallery",
-        "names": ["cenario-aurora", "cenario-orbita", "cenario-nebulosa"]
+        "names": ["cenario-aurora", "cenario-orbita", "cenario-nebulosa", "cenario-estacao"]
       },
       {
         "kind": "note",
@@ -2551,11 +2551,16 @@
     "id": "galeria-asteroide-rocha-lunar",
     "kicker": "Galeria de aparências",
     "title": "Asteroides",
-    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "subtitle": "Quatro opções para o mesmo elemento do jogo.",
     "items": [
       {
         "kind": "gallery",
-        "names": ["asteroide-rocha-lunar", "asteroide-gelo-azul", "asteroide-cristal-violeta"]
+        "names": [
+          "asteroide-rocha-lunar",
+          "asteroide-gelo-azul",
+          "asteroide-cristal-violeta",
+          "asteroide-lava-laranja"
+        ]
       },
       {
         "kind": "note",
@@ -2567,11 +2572,11 @@
     "id": "galeria-laser-ciano",
     "kicker": "Galeria de aparências",
     "title": "Lasers",
-    "subtitle": "Três opções para o mesmo elemento do jogo.",
+    "subtitle": "Quatro opções para o mesmo elemento do jogo.",
     "items": [
       {
         "kind": "gallery",
-        "names": ["laser-ciano", "laser-dourado", "laser-lilas"]
+        "names": ["laser-ciano", "laser-dourado", "laser-lilas", "laser-verde"]
       },
       {
         "kind": "note",

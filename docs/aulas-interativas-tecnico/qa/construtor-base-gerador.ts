@@ -23,7 +23,10 @@ import {
   studioProjectExampleEnvironmentIssues,
   studioProjectExampleSectionIssues,
 } from '../../../packages/core/src/learning/studio-project-examples'
-import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
+import {
+  isStudioAuthoringProject,
+  type StudioAuthoringProject,
+} from '../../../packages/core/src/studio/authoring-project'
 import { studioProjectContinuityIssue } from '../../../packages/core/src/studio/project-continuity'
 import { avatarDaAula } from './avatares-video'
 import type { ConstrutorBaseConfig } from './construtor-base-tipos'
@@ -94,9 +97,16 @@ export function materializarProjetosConstrutor(cfg: ConstrutorBaseConfig) {
     mkdirSync(resolve(cfg.pasta, 'projetos'), { recursive: true })
     write(`projetos/${stage}.szproject.json`, project, true)
   }
-  write('projeto-inicial.szproject.json', first, true)
-  write('projeto-final.szproject.json', projects[cfg.etapaFinal], true)
-  const { montarProjeto: _build, checks: _checks, pasta: _path, ...authored } = cfg
+  const portatil = cfg.portatil ?? ((projeto: StudioAuthoringProject) => projeto)
+  write('projeto-inicial.szproject.json', portatil(first), true)
+  write('projeto-final.szproject.json', portatil(projects[cfg.etapaFinal]!), true)
+  const {
+    montarProjeto: _build,
+    checks: _checks,
+    pasta: _path,
+    portatil: _portable,
+    ...authored
+  } = cfg
   write('curso-autoria.json', {
     version: 1,
     ...authored,

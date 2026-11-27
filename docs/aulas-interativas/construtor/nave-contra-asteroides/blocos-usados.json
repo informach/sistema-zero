@@ -516,7 +516,7 @@
         {
           "lesson": 8,
           "part": 2,
-          "title": "Confira as três guardas da partida",
+          "title": "Investigue: e se o laser não esperasse a partida?",
           "slug": "comecar-partida",
           "beforeStage": "dano",
           "afterStage": "inicio-conferido"
@@ -865,7 +865,7 @@
     },
     {
       "type": "sz_g2d_draw_label",
-      "label": "Escrever texto SETAS: mover · ESPAÇO: disparar em x 780 y 462 cor #d8e6f8 tamanho 15 alinhado à direita",
+      "label": "Escrever texto SETAS: mover ESPAÇO: disparar em x 400 y 60 cor #ffffff tamanho 15 alinhado no centro",
       "category": "Jogo 2D > Vida e placar > Indicadores e texto na tela",
       "role": "Retomado ou aplicado na montagem",
       "inInitial": true,
@@ -1076,7 +1076,7 @@
         {
           "lesson": 8,
           "part": 2,
-          "title": "Confira as três guardas da partida",
+          "title": "Investigue: e se o laser não esperasse a partida?",
           "slug": "comecar-partida",
           "beforeStage": "dano",
           "afterStage": "inicio-conferido"
@@ -1197,7 +1197,7 @@
     },
     {
       "type": "sz_val_text",
-      "label": "texto SETAS: mover · ESPAÇO: disparar",
+      "label": "texto SETAS: mover ESPAÇO: disparar",
       "category": "Programação > Valores",
       "role": "Retomado ou aplicado na montagem",
       "inInitial": true,

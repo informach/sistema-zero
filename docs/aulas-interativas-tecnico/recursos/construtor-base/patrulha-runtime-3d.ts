@@ -11,6 +11,7 @@ import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import vm from 'node:vm'
+import { resolveCourseModels } from '../../../../packages/studio/src/core/courseModels'
 import { gameThreeDRuntimeForVariant } from '../../../../packages/studio/src/official-extensions/game-3d/runtime'
 
 const sharedRequire = createRequire(
@@ -44,8 +45,11 @@ export async function bootPatrulha(project) {
     url: 'https://studio.test/',
   })
   const { window } = dom
+  // As peças da Patrulha vêm como referências da biblioteca dos cursos: o Estúdio as resolve
+  // antes de rodar (preloadCourseModels); aqui também, para o motor ler os GLB de verdade.
+  const assets = await resolveCourseModels(project.assets)
   window.__SZGAME_ASSETS_3D = Object.fromEntries(
-    project.assets.map((asset) => [asset.name, { kind: asset.kind, dataUrl: asset.dataUrl }]),
+    assets.map((asset) => [asset.name, { kind: asset.kind, dataUrl: asset.dataUrl }]),
   )
   window.HTMLCanvasElement.prototype.getContext = function (kind) {
     if (kind !== '2d') return null
@@ -66,9 +70,16 @@ export async function bootPatrulha(project) {
   Object.defineProperty(window, 'innerWidth', { value: 1280 })
   Object.defineProperty(window, 'innerHeight', { value: 720 })
   Object.defineProperty(window, 'devicePixelRatio', { value: 1 })
-  window.HTMLElement.prototype.getBoundingClientRect = function () {
-    return { x: 0, y: 0, left: 0, top: 0, right: 1280, bottom: 720, width: 1280, height: 720 }
-  }
+  window.HTMLElement.prototype.getBoundingClientRect = () => ({
+    x: 0,
+    y: 0,
+    left: 0,
+    top: 0,
+    right: 1280,
+    bottom: 720,
+    width: 1280,
+    height: 720,
+  })
   class Renderer {
     constructor({ canvas }) {
       this.domElement = canvas

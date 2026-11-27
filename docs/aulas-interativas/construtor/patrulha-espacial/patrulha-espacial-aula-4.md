@@ -29,7 +29,17 @@ Dar três vidas à nave no começo e observar os corações nativos.
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
 
-## Parte 2. A batida tira uma vida
+## Parte 2. Um respiro depois da batida
+
+Observar a proteção curta depois de um dano, antes de programar a batida na patrulha.
+
+- Intenção: exploration.
+- Atividades: video-respiro-da-nave, ponte-respiro-da-nave, experiencia-respiro-da-nave.
+- Estúdio: não.
+- Conclusão: video-respiro-da-nave, experiencia-respiro-da-nave.
+
+
+## Parte 3. A batida tira uma vida
 
 Usar o encontro da nave com um grupo para descontar uma vida durante a partida.
 
@@ -53,7 +63,7 @@ Usar o encontro da nave com um grupo para descontar uma vida durante a partida.
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
 
-## Parte 3. Só a pedra da batida sai
+## Parte 4. Só a pedra da batida sai
 
 Consumir o asteroide identificado pelo encontro antes de descontar a vida.
 

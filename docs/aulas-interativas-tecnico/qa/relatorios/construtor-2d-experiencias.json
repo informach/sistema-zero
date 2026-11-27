@@ -6,7 +6,7 @@
   "goals": 39,
   "results": [
     {
-      "aula": "dia-1",
+      "aula": "primeira-nave",
       "key": "seta-e-velocidade",
       "scene": "lighthouse-walk",
       "targets": ["moves-each-frame", "stopped-after-release", "walked-real-speed"],
@@ -139,7 +139,7 @@
       }
     },
     {
-      "aula": "dia-1",
+      "aula": "primeira-nave",
       "key": "limite-da-tela",
       "scene": "lighthouse-walk",
       "targets": ["left-the-screen", "came-back-inside", "stayed-inside"],
@@ -286,7 +286,7 @@
       }
     },
     {
-      "aula": "dia-2",
+      "aula": "dia-1",
       "key": "tecla-e-repeticao",
       "scene": "once-vs-always",
       "targets": ["on-event", "key-fires", "flood"],
@@ -392,7 +392,7 @@
       }
     },
     {
-      "aula": "dia-2",
+      "aula": "dia-1",
       "key": "objetos-no-grupo",
       "scene": "cleanup",
       "targets": ["invisible-stored", "rule-removes"],
@@ -464,7 +464,7 @@
       }
     },
     {
-      "aula": "dia-2",
+      "aula": "dia-1",
       "key": "escrito-e-lido",
       "scene": "fixed-vs-read",
       "targets": ["same-spot", "follows", "box-marks"],
@@ -717,7 +717,7 @@
         {
           "id": "with-timer",
           "label": "Com uma espera, sobrou espaço entre as pedras",
-          "pedido": "Escolha A cada 1,5 s e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas.",
+          "pedido": "Escolha A cada 1,5 segundos e deixe o tempo passar até nascerem duas pedras. Observe o espaço entre elas.",
           "complete": true
         }
       ],

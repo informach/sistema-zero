@@ -1,0 +1,114 @@
+{
+  "coletor-carrinho-azul": {
+    "sha": "42a4fada0145f56ca7b0455586744320969fe8fb1f8cfe871be796ce77fecbea",
+    "bytes": 59236,
+    "categoria": "coletor",
+    "center": [0, 0, 0],
+    "size": 3
+  },
+  "coletor-robo-laranja": {
+    "sha": "512654325c01d72ac25cd8d8339e84ceb0757834c36e17929193ad9b68dc5c7b",
+    "bytes": 73084,
+    "categoria": "coletor",
+    "center": [0, 0, 0],
+    "size": 3
+  },
+  "coletor-empilhadeira-amarela": {
+    "sha": "8396e51bcecf669d87020cf4aeceadf01d0d7bdb0687f9b07914257f5f99dce5",
+    "bytes": 62488,
+    "categoria": "coletor",
+    "center": [0, 0, 0],
+    "size": 3
+  },
+  "coletor-aspirador-lilas": {
+    "sha": "8a09955da9abd6ee32b566f7604db12d155208c7af7b167da15a5db3d8c7177c",
+    "bytes": 80892,
+    "categoria": "coletor",
+    "center": [0, 0, 0],
+    "size": 3
+  },
+  "reciclavel-garrafa-pet": {
+    "sha": "8bd6eb4613f22f162a3d0be00eeec0afdbd245d4856a730986761719bdf732d9",
+    "bytes": 46272,
+    "categoria": "reciclavel",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "reciclavel-lata": {
+    "sha": "49bfc5c247907367d5280af2e25061a776eee8459208ee0f0084d2a335bed13f",
+    "bytes": 42416,
+    "categoria": "reciclavel",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "reciclavel-caixa-papelao": {
+    "sha": "893ba2eb4826eda3b658648d5772ad5be1e3d3260c3cbe93e288f76e8cc0ffde",
+    "bytes": 35912,
+    "categoria": "reciclavel",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "reciclavel-pote-vidro": {
+    "sha": "b567e1a687054a9b4438ddaea0879247115eea26ed01e9698d268f451112bc01",
+    "bytes": 49128,
+    "categoria": "reciclavel",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "proibido-pilha": {
+    "sha": "d2369529ab41bedc47a9464141655d279dd42016cc189609b263d84985b51a71",
+    "bytes": 48204,
+    "categoria": "proibido",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "proibido-bateria": {
+    "sha": "b7b5bbac7e396310a49e372d0fc69b411ce65fefa56d8c06a94b341fdb23132c",
+    "bytes": 38284,
+    "categoria": "proibido",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "proibido-lampada": {
+    "sha": "767dd70ecf46373e1a5104cfbfef61e8a6b9eb51c27665746d227fc863ba33a8",
+    "bytes": 48080,
+    "categoria": "proibido",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "proibido-celular": {
+    "sha": "3b237c3357512242d6ff493be07704d677682f91883f4ade79b3bfa8bbbfbfaa",
+    "bytes": 36028,
+    "categoria": "proibido",
+    "center": [0, 0, 0],
+    "size": 1.5
+  },
+  "galpao-menta": {
+    "sha": "fd0733741cff4d979ba55f1bc4055ea12f602dc1582591847bb1709127b88b9a",
+    "bytes": 573380,
+    "categoria": "galpao",
+    "center": [0, 0, 0],
+    "size": 100
+  },
+  "galpao-tijolo": {
+    "sha": "645d69d96a12599c362ca53a85b639df6c9c9ab77dd36c107e85afb8676d6cbd",
+    "bytes": 607896,
+    "categoria": "galpao",
+    "center": [0, 0, 0],
+    "size": 100
+  },
+  "galpao-azul": {
+    "sha": "709a16868c3eaed25e0bba97a95f70a7f55f1f04d9f353e3237f6b8ba3f3740f",
+    "bytes": 573148,
+    "categoria": "galpao",
+    "center": [0, 0, 0],
+    "size": 100
+  },
+  "galpao-noite": {
+    "sha": "25005eba2c56ff677d2b4e84d015287fd41a79316868457ad0ffe2520d3f5a08",
+    "bytes": 573928,
+    "categoria": "galpao",
+    "center": [0, 0, 0],
+    "size": 100
+  }
+}

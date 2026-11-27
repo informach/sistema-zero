@@ -10,7 +10,11 @@ const human = (text: string) =>
   text
     .split(/(#[0-9a-f]{3,8}\b)/gi)
     .map((part) =>
-      part.startsWith('#') ? part : part.replace(/([a-záàâãéêíóôõúç])(\d)/gi, '$1 $2'),
+      part.startsWith('#')
+        ? part
+        : part
+            .replace(/([a-záàâãéêíóôõúç])(\d)/gi, '$1 $2')
+            .replace(/([a-záàâãéêíóôõúç]),(?=[^\s])/gi, '$1, '),
     )
     .join('')
 const A = (text: string, gesture: string): Gesture => [human(text), gesture]
@@ -80,7 +84,7 @@ function experiment(
   const questionParts = question
     ? [
         `[curious] ${question}`,
-        '[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.',
+        '[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.',
       ]
     : []
   return {
@@ -92,9 +96,9 @@ function experiment(
     text: spoken([
       ...paragraphs.map((text) => `[engaging, energetic, conversational voice] ${text}`),
       ...questionParts,
-      `[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. ${next}`,
+      `[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. ${next}`,
     ]),
-    screen: `A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].`,
+    screen: `A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].`,
     ...(question ? { kids: [question] } : {}),
     experience: {
       ...structuredClone(labs[lab]),
@@ -352,7 +356,7 @@ const aula1: ConstrutorAula = {
           '[trocar "6" por "5" em "Mover o sprite nave com as setas"]',
         ),
         A(
-          'Esse Se só deixa o movimento acontecer enquanto a partida está em jogando. Ele é o lugar que você vai usar para as ações de cada quadro.',
+          'Pense na placa de aberto ou fechado de uma loja. O jogo também tem uma placa, chamada estado: na abertura ela diz início, depois do Enter ela vira jogando e, no fim, vitória ou derrota. Esse Se olha a placa e só deixa a nave andar quando ela diz jogando. É por isso que, na abertura, a nave fica quietinha.',
           '[apontar bloco "o estado do jogo é"]',
         ),
       ],
@@ -443,22 +447,18 @@ const aula1: ConstrutorAula = {
           '[abrir categoria Jogo 2D > Vida e placar > Indicadores e texto na tela] [encaixar "Escrever" abaixo de "Desenhar o sprite nave"]',
         ),
         A(
-          'No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover · ESPAÇO: disparar. Entre os dois controles, use o ponto do meio mostrado no passo a passo.',
-          '[trocar "Nave contra Asteroides" por "SETAS: mover  ·  ESPAÇO: disparar" em "Escrever"]',
+          'No campo do texto, troque Nave contra Asteroides por esta legenda: SETAS: mover   ESPAÇO: disparar. Deixe uns espaços entre os dois controles.',
+          '[trocar "Nave contra Asteroides" por "SETAS: mover   ESPAÇO: disparar" em "Escrever"]',
         ),
         A(
-          'Coloque780 no x,462 no y e15 no tamanho. Escolha o alinhamento à direita.',
-          '[trocar "12" por "780" em "Escrever"] [trocar "30" por "462" em "Escrever"] [trocar "20" por "15" em "Escrever"] [trocar "à esquerda" por "à direita" em "Escrever"]',
-        ),
-        A(
-          'Clique no quadradinho de cor do bloco Escrever. Na janelinha que abriu, encontre Cor em hexadecimal, apague o código e digite #d8e6f8, começando com o sinal de cerquilha. Clique em OK. A legenda aparece no canto inferior direito.',
-          '[apontar bloco "Escrever"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#d8e6f8" em "Cor em hexadecimal"] [clicar "OK"]',
+          'Coloque400 no x,60 no y e15 no tamanho, e escolha o alinhamento no centro. Assim a legenda fica no alto da tela, longe da nave: 400 é o meio da largura.',
+          '[trocar "12" por "400" em "Escrever"] [trocar "30" por "60" em "Escrever"] [trocar "20" por "15" em "Escrever"] [trocar "à esquerda" por "no centro" em "Escrever"]',
         ),
       ],
       tests: [
         A(
           'Comece a partida e teste as duas setas até as bordas. Confira também a legenda. O disparo ainda será construído na próxima aula; agora, o movimento já funciona.',
-          '[tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowLeft por 2 s]  [segurar tecla ArrowRight por 3 s]  [apontar prévia 680 460]',
+          '[tocar prévia 400 300] [tecla Enter] [segurar tecla ArrowLeft por 2 s]  [segurar tecla ArrowRight por 3 s]  [apontar prévia 400 60]',
         ),
       ],
       correction:
@@ -1259,8 +1259,8 @@ const aula5: ConstrutorAula = {
           '[abrir categoria Jogo 2D > Desenho e efeitos > Partículas] [encaixar "Soltar explosão no sprite" abaixo de "Tirar o sprite asteroide"]',
         ),
         A(
-          'Conserve o nome asteroide. Clique no quadradinho de cor desse bloco. Na janelinha, apague o código de Cor em hexadecimal, digite #ffce69, com o sinal de cerquilha na frente, e clique em OK.',
-          '[apontar bloco "Soltar explosão no sprite asteroide"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#ffce69" em "Cor em hexadecimal"] [clicar "OK"]',
+          'Conserve o nome asteroide. Se quiser, clique no quadradinho de cor desse bloco e escolha a cor da explosão na paleta. A cor é escolha sua: ela não muda o jogo.',
+          '[apontar bloco "Soltar explosão no sprite asteroide"]',
         ),
         A(
           'Deixe o encaixe logo abaixo da explosão à vista. Abra Jogo2D, depois Som e depois Efeitos prontos. Encaixe Tocar efeito e escolha explosão.',
@@ -1371,8 +1371,8 @@ const aula6: ConstrutorAula = {
           '[trocar "Pontos:" por "Acertos:" em "Mostrar placar"] [trocar "12" por "22" em "Mostrar placar Acertos:"] [trocar "30" por "32" em "Mostrar placar Acertos:"] [trocar "24" por "23" em "Mostrar placar Acertos:"]',
         ),
         A(
-          'Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista.',
-          '[apontar bloco "Mostrar placar Acertos:"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#f3f8ff" em "Cor em hexadecimal"] [clicar "OK"] [apontar bloco "Mostrar placar Acertos:"]',
+          'O placar chega branco, que aparece bem no espaço. Se quiser outra cor clara, escolha no quadradinho de cor. Agora deixe o número do valor do placar à vista.',
+          '[apontar bloco "Mostrar placar Acertos:"]',
         ),
         A(
           'Abra Programação e depois Valores. Pegue o valor de variável, que chega com x, e encaixe sobre o número do placar. Clique nesse x e escolha pontos.',
@@ -1518,7 +1518,7 @@ const aula7: ConstrutorAula = {
   entry:
     'Acertos retiram o par, produzem efeitos e somam pontos; a nave ainda não tem vidas nem reação à batida.',
   outcome:
-    'Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros.',
+    'Nave começa com três vidas; cada batida retira a pedra, produz efeitos e pode tirar uma vida, com proteção de sessenta quadros, mais ou menos um segundo.',
   trechos: [
     experiment(
       'vidas-no-comeco',
@@ -1569,8 +1569,8 @@ const aula7: ConstrutorAula = {
           '[trocar "jogador" por "nave" em "Desenhar as vidas do sprite"] [trocar "22" por "21" em "Desenhar as vidas do sprite"] [trocar "12" por "22" em "Desenhar as vidas do sprite"] [trocar "48" por "52" em "Desenhar as vidas do sprite"]',
         ),
         A(
-          'Clique no quadradinho de cor e escolha o rosa que você quiser para os corações. Para usar a cor do exemplo, apague o código de Cor em hexadecimal, digite #ff9bae e clique em OK.',
-          '[apontar bloco "Desenhar as vidas do sprite"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#ff9bae" em "Cor em hexadecimal"] [clicar "OK"]',
+          'Clique no quadradinho de cor e escolha na paleta a cor que você quiser para os corações.',
+          '[apontar bloco "Desenhar as vidas do sprite"]',
         ),
       ],
       tests: [
@@ -1621,8 +1621,8 @@ const aula7: ConstrutorAula = {
           '[abrir categoria Jogo 2D > Desenho e efeitos > Partículas] [encaixar "Soltar explosão no sprite" abaixo de "Tirar o sprite atingiuNave"] [trocar "asteroide" por "atingiuNave" em "Soltar explosão no sprite dentro de Para cada sprite do grupo"]',
         ),
         A(
-          'Clique no quadradinho de cor da explosão e escolha uma cor. Para usar o laranja do exemplo, apague o código de Cor em hexadecimal, digite #ff956c e clique em OK.',
-          '[apontar bloco "Soltar explosão no sprite dentro de Para cada sprite do grupo"] clicar no quadrado da cor desse bloco, em captura manual precisa [digitar "#ff956c" em "Cor em hexadecimal"] [clicar "OK"]',
+          'Se quiser, clique no quadradinho de cor da explosão e escolha outra cor na paleta. Uma cor diferente da explosão do tiro ajuda a perceber que a nave foi atingida.',
+          '[apontar bloco "Soltar explosão no sprite dentro de Para cada sprite do grupo"]',
         ),
         A(
           'Abra Jogo2D, depois Som e depois Efeitos prontos. Pegue Tocar efeito e solte depois da explosão, dentro dessa colisão. Escolha o efeito batida.',
@@ -1682,7 +1682,7 @@ const aula7: ConstrutorAula = {
           '[abrir categoria Jogo 2D > Vida e placar > Vida] [encaixar "Machucar o sprite" abaixo de "Soltar explosão no sprite atingiuNave"]',
         ),
         A(
-          'Troque jogador por nave. Conserve o dano em1. No tempo de proteção, troque45 por60 quadros.',
+          'Troque jogador por nave. Conserve o dano em1. No tempo de proteção, troque45 por60 quadros. O jogo desenha uns sessenta quadros por segundo, então são mais ou menos um segundo de proteção.',
           '[trocar "jogador" por "nave" em "Machucar o sprite"] [trocar "45" por "60" em "Machucar o sprite"]',
         ),
       ],
@@ -1744,43 +1744,50 @@ const aula8: ConstrutorAula = {
       'A hora de jogar',
       'estado',
       [
-        'Uma placa de aberto ou fechado muda o que pode acontecer numa loja. A porta pode ser a mesma, mas a placa informa se já é hora de entrar.',
-        'No jogo, o estado funciona como essa informação. A abertura é um momento, e a partida em andamento é outro. Uma pergunta confere em que momento o jogo está antes de liberar movimento, tiros e novas pedras.',
+        'Lembra da placa de aberto ou fechado da primeira aula? A porta da loja pode ser a mesma, mas a placa informa se já é hora de entrar.',
+        'No jogo, essa placa é o estado. A abertura é um momento, e a partida em andamento é outro. Cada regra nova que você montou ganhou um Se jogando, que confere a placa antes de liberar movimento, tiros e novas pedras.',
       ],
       'Compare as ações antes e depois de a partida começar.',
       'O jogo pode desenhar a nave mesmo quando ela ainda não pode se mover?',
     ),
     practice({
       key: 'teste-inicio',
-      title: 'Confira as três guardas da partida',
+      title: 'Investigue: e se o laser não esperasse a partida?',
       etapa: 'inicio-conferido',
       intro: [
         A(
-          'O começo e as telas já vieram preparados. Você vai conferir onde suas novas regras esperam a partida começar.',
-          '[apontar bloco "Quando apertar a tecla Enter"]',
+          'Agora você vai fazer uma investigação de verdade: tirar uma guarda, ver o que quebra e consertar.',
+          '[apontar bloco "Quando apertar a tecla barra de espaço"]',
         ),
       ],
       actions: [
-        A(locate('Enquanto estiver rodando'), '[arrastar até "Enquanto estiver rodando"]'),
-        A(
-          'Encontre A cada quadro do jogo. Leia a pergunta o estado do jogo é jogando. Confira que movimento, atualização dos grupos e colisões ficam dentro do então desse Se.',
-          '[mostrar blocos "A cada quadro do jogo", "o estado do jogo é jogando"]',
-        ),
         A(locate('Quando acontecer'), '[arrastar até "Quando acontecer"]'),
         A(
-          'Encontre o evento de Espaço. Confira que a criação do laser e o som ficam dentro de outro Se jogando.',
+          'Encontre o evento de Espaço. Dentro dele, o Se jogando guarda a criação do laser e o som.',
           '[mostrar blocos "Quando apertar a tecla barra de espaço", "o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço"]',
+        ),
+        A(
+          'Arraste No grupo tiros criar um sprite para fora do então e solte logo abaixo do Se, ainda dentro do evento. O som vem junto, grudado embaixo.',
+          '[encaixar "No grupo tiros criar um sprite" abaixo de "Se o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço"]',
+        ),
+        A(
+          'Clique em Rodar de novo. Na abertura, antes do Enter, aperte Espaço algumas vezes. O que aconteceu? O laser sai mesmo com a placa dizendo início: sem a guarda, a regra não espera a partida.',
+          '[rodar de novo] [tocar prévia 400 300] [tecla Space] [tecla Space] [apontar prévia 400 300]',
+        ),
+        A(
+          'Agora conserte. Arraste No grupo tiros criar um sprite de volta para dentro do então do Se jogando.',
+          '[encaixar "No grupo tiros criar um sprite" em "Se o estado do jogo é jogando dentro de Quando apertar a tecla barra de espaço" no "então"]',
         ),
         A(locate('Enquanto estiver rodando'), '[arrastar até "Enquanto estiver rodando"]'),
         A(
-          'Encontre A cada1,5 segundos. Confira que criar o asteroide fica dentro do Se jogando desse relógio. Conserve os blocos preparados de Enter e das telas.',
-          '[mostrar blocos "A cada 1.5 segundos", "o estado do jogo é jogando dentro de A cada"]',
+          'Confira também as outras duas guardas: o Se jogando de A cada quadro do jogo, com o movimento e as colisões, e o Se jogando do relógio A cada1,5 segundos, com o asteroide.',
+          '[mostrar blocos "A cada quadro do jogo", "o estado do jogo é jogando"] [mostrar blocos "A cada 1.5 segundos", "o estado do jogo é jogando dentro de A cada"]',
         ),
         A('Clique em Rodar de novo para voltar à abertura.', '[rodar de novo]'),
       ],
       tests: [
         A(
-          'Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. A abertura deve continuar esperando: a nave não anda, não sai laser e não nasce pedra.',
+          'Antes de pressionar Enter, segure uma seta, toque em Espaço e espere um pouco. Agora a abertura espera de verdade: a nave não anda, não sai laser e não nasce pedra.',
           '[tocar prévia 400 300] [segurar tecla ArrowRight por 0,4 s] [tecla Space] [apontar prévia 400 240]',
         ),
         A(
@@ -1919,10 +1926,6 @@ const aula9: ConstrutorAula = {
           '[encaixar "Mostrar placar" abaixo de "Mostrar placar Acertos:"] [trocar "Pontos:" por "Meta:" em "Mostrar placar Pontos:"] [trocar "12" por "650" em "Mostrar placar Meta:"] [trocar "30" por "32" em "Mostrar placar Meta:"] [trocar "24" por "21" em "Mostrar placar Meta:"]',
         ),
         A(
-          'Clique no quadradinho de cor do placar Meta. Na janelinha, apague o código de Cor em hexadecimal, digite o azul claro #c9eaff e clique em OK.',
-          '[apontar bloco "Mostrar placar Meta:"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#c9eaff" em "Cor em hexadecimal"] [clicar "OK"]',
-        ),
-        A(
           'Abra Programação e depois Valores. Pegue valor da variável e solte em cima do número do placar Meta. Troque x por meta nesse bloco de valor.',
           '[abrir categoria Programação > Valores] [soltar "valor da variável" em cima do "0" em "Mostrar placar Meta:"] [trocar "x" por "meta" em "valor da variável dentro de Mostrar placar Meta:"]',
         ),
@@ -1935,8 +1938,8 @@ const aula9: ConstrutorAula = {
           '[trocar "12" por "280" em "Barra de"] [trocar "48" por "23" em "Barra de"] [trocar "160" por "240" em "Barra de"] [trocar "14" por "11" em "Barra de"]',
         ),
         A(
-          'Clique no quadradinho de cor da barra. Na janelinha, apague o código de Cor em hexadecimal, digite o verde-água #65dfcf e clique em OK.',
-          '[apontar bloco "Barra de"] clicar no quadrado da cor do bloco, em captura manual precisa [digitar "#65dfcf" em "Cor em hexadecimal"] [clicar "OK"]',
+          'Clique no quadradinho de cor da barra e escolha na paleta uma cor bem viva: é ela que vai encher conforme você acerta.',
+          '[apontar bloco "Barra de"]',
         ),
         A(
           'Abra Programação, Valores. Encaixe valor da variável no valor da barra e escolha pontos. Encaixe outro valor da variável no total e escolha meta. A barra vai comparar o que você já conseguiu com a missão completa.',
@@ -2019,7 +2022,7 @@ const aula9: ConstrutorAula = {
       etapa: 'derrota',
       intro: [
         A(
-          'Se as vidas acabarem, a missão termina com a tela de nova tentativa. O jogo precisa escolher um resultado por vez. A ordem será: conferir as vidas; se ainda houver vida, conferir a vitória.',
+          'Se as vidas acabarem, a missão termina com a tela de nova tentativa. Agora imagine: no mesmo instante em que o seu laser faz o vigésimo acerto, outra pedra bate na nave e leva o último coração. Qual tela aparece? Sem uma ordem, o jogo poderia tentar mostrar as duas. Por isso a regra será: primeiro conferir as vidas; só se ainda houver vida, conferir a vitória.',
           '[apontar bloco "Se valor da variável pontos"]',
         ),
       ],

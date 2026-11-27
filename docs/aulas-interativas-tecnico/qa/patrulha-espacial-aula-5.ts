@@ -24,7 +24,7 @@ export const patrulhaAula5: ConstrutorAula = {
       objective:
         'Conferir vida zero no começo do quadro e acionar estado de derrota e fim de jogo.',
       ponte:
-        'Crie a condição de derrota no começo do quadro, antes do movimento. Ela usa a tela final que já está preparada no projeto.',
+        'Programe a derrota: quando as vidas acabam, a partida termina com a tela de fim, que já vem preparada.',
       falas: [
         [
           'conversa',
@@ -144,11 +144,16 @@ export const patrulhaAula5: ConstrutorAula = {
       etapa: 'vitoria',
       objective: 'Conferir a meta no senão da derrota e acionar a vitória uma única vez.',
       ponte:
-        'No senão da vida zero, confira pontos maior ou igual a 20. Programe a vitória usando a tela pronta e teste o resultado.',
+        'Programe a vitória: com vinte acertos e vida sobrando, a partida termina com a tela de vitória.',
       falas: [
         [
           'conversa',
-          'Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida.',
+          'Você já encerra a partida quando as vidas acabam. Agora vamos completar a outra possibilidade: acertar vinte asteroides enquanto a nave ainda tem vida. Antes de montar, uma pergunta para você pensar.',
+        ],
+        ['pergunta', 'Se eu chegar a vinte e a vida também acabar, qual resultado vale?'],
+        [
+          'conversa',
+          'Pense na sua resposta. Nesta patrulha, a vida é conferida primeiro: se acabou, vale a derrota. Por isso a vitória vai ficar no senão, que só acontece quando ainda há vida.',
         ],
         [
           'instrucao',
@@ -162,7 +167,7 @@ export const patrulhaAula5: ConstrutorAula = {
         ],
         [
           'conversa',
-          'Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta.',
+          'Se a vida chegou a zero, o então cuida da derrota. Senão, a nave ainda tem vida, e podemos conferir a meta de acertos. Essa ordem decide uma única resposta, a que você pensou agora há pouco.',
         ],
         [
           'instrucao',
@@ -203,11 +208,6 @@ export const patrulhaAula5: ConstrutorAula = {
           'instrucao',
           'Deixe o encaixe abaixo do som visível. Abra Jogo 3D, Placar, vida e telas e Telas e fim. Encaixe Fim de jogo abaixo e troque você perdeu por você ganhou.',
           '[apontar abaixo de "Tocar o som pronto dentro de Se valor da variável pontos"] [abrir categoria Jogo 3D > Placar, vida e telas > Telas e fim] [encaixar "Fim de jogo" abaixo de "Tocar o som pronto dentro de Se valor da variável pontos"] [trocar "você perdeu" por "você ganhou" em "Fim de jogo dentro de Se valor da variável pontos"]',
-        ],
-        ['pergunta', 'Se eu chegar a vinte e a vida também acabar, qual resultado vale?'],
-        [
-          'conversa',
-          'Nesta patrulha, a vida é conferida primeiro. Se acabou, vale a derrota. A vitória fica no senão, quando ainda há vida para completar a rota.',
         ],
         [
           'teste',
@@ -262,34 +262,13 @@ export const patrulhaAula5: ConstrutorAula = {
       key: 'patrulha-pronta',
       title: 'Confira a patrulha completa',
       etapa: 'completo',
-      objective:
-        'Aplicar os quatro avisos fornecidos da versão pronta e testar o ciclo de partida completo.',
+      objective: 'Testar o ciclo de partida completo e enviar a patrulha pronta.',
       ponte:
-        'Atualize os avisos fornecidos e teste começo, acerto, batida, vitória, derrota e uma nova partida. Depois envie sua Patrulha Espacial completa.',
+        'Teste a partida inteira: começo, acerto, batida, vitória, derrota e uma nova partida. Depois envie sua Patrulha Espacial completa.',
       falas: [
         [
           'conversa',
-          'Sua patrulha já tem as regras completas. Falta trocar os avisos de projeto inicial pelos avisos da versão pronta. Esses textos estão no seu passo a passo para você copiar exatamente. Depois vamos conferir o conjunto.',
-        ],
-        [
-          'instrucao',
-          'Em Ao iniciar, encontre Escrever na tela ↑ em cima, no meio, com Patrulha Espacial e Projeto inicial. Troque o texto inteiro por: PATRULHA ESPACIAL, barra em pé, Abra uma rota entre os asteroides.',
-          '[arrastar até "Escrever na tela ↑ em cima, no meio"] [trocar "PATRULHA ESPACIAL | Projeto inicial" por "PATRULHA ESPACIAL | Abra uma rota entre os asteroides" em "Escrever na tela ↑ em cima, no meio dentro de Ao iniciar"]',
-        ],
-        [
-          'instrucao',
-          'Ainda em Ao iniciar, encontre o aviso de baixo com Enter e as setas. Troque o texto pelo aviso completo: ENTER, começar; SETAS, mover; ESPAÇO, um tiro por aperto. Use os dois-pontos e as barras como estão no passo a passo.',
-          '[arrastar até "Escrever na tela ↓ embaixo, no meio dentro de Ao iniciar"] [trocar "ENTER: começar | SETAS: mover" por "ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto" em "Escrever na tela ↓ embaixo, no meio dentro de Ao iniciar"]',
-        ],
-        [
-          'instrucao',
-          'Em Quando acontecer, encontre o acontecimento de Enter. Dentro dele, o aviso de cima diz Conheça a nave. Troque o texto inteiro por: Abra a rota, dois-pontos, acerte vinte asteroides e proteja sua nave.',
-          '[arrastar até "Quando apertar a tecla Enter"] [trocar "PATRULHA ESPACIAL | Conheça a nave" por "Abra a rota: acerte 20 asteroides e proteja sua nave" em "Escrever na tela ↑ em cima, no meio dentro de Quando apertar a tecla Enter"]',
-        ],
-        [
-          'instrucao',
-          'Logo abaixo está o aviso de que as regras serão construídas nas aulas. Troque pelo aviso pronto: SETAS, mover; ESPAÇO, atirar; Asteroide que passa não tira vida. Copie os separadores do passo a passo.',
-          '[apontar bloco "Escrever na tela ↓ embaixo, no meio dentro de Quando apertar a tecla Enter"] [trocar "SETAS: mover | Tiros, asteroides e regras serão construídos nas aulas." por "SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida" em "Escrever na tela ↓ embaixo, no meio dentro de Quando apertar a tecla Enter"]',
+          'Sua patrulha já tem as regras completas: disparos, asteroides, acertos, pontos, vidas e as duas formas de terminar. Os avisos da tela já mostram a missão desde a primeira aula. Agora é hora de testar o jogo inteiro, como um piloto de testes, antes de enviar.',
         ],
         [
           'teste',
@@ -298,7 +277,7 @@ export const patrulhaAula5: ConstrutorAula = {
         ],
         [
           'teste',
-          'Pressione Enter. Confira o novo aviso, mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.',
+          'Pressione Enter. Mova a nave e dispare. Um acerto soma um ponto; uma batida tira uma vida; uma pedra que passa sem bater não muda nenhum dos dois.',
           '[tecla Enter] nota de edição: capturar um acerto, uma batida válida e uma pedra passando, apontando o placar correspondente',
         ],
         [
@@ -317,26 +296,22 @@ export const patrulhaAula5: ConstrutorAula = {
         ],
       ],
       steps: [
-        'Em Ao iniciar, troque o título em cima, no meio por: PATRULHA ESPACIAL | Abra uma rota entre os asteroides.',
-        'Em Ao iniciar, troque o aviso embaixo, no meio por: ENTER: começar | SETAS: mover | ESPAÇO: um tiro por aperto.',
-        'No acontecimento Enter, troque o aviso em cima, no meio por: Abra a rota: acerte 20 asteroides e proteja sua nave.',
-        'No acontecimento Enter, troque o aviso embaixo, no meio por: SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida.',
+        'Clique em Rodar de novo e confira a abertura: nave no centro, três corações e zero acertos.',
+        'Antes de Enter, toque em Espaço: não sai laser.',
+        'Depois de Enter, teste um acerto, uma batida e uma pedra que passa sem bater.',
+        'Em partidas diferentes, teste a derrota e a vitória. Depois de cada resultado, clique em Voltar ao início.',
       ],
       tests: [
         'Rodar de novo: nave no centro, grupos vazios, pontos zero e três vidas. Espaço antes de Enter não dispara.',
-        'Depois de Enter, movimento, disparos e relógio funcionam. Confira os novos avisos.',
+        'Depois de Enter, movimento, disparos e relógio funcionam.',
         'Um acerto soma um ponto; uma batida válida tira uma vida; uma pedra que passa sem bater não altera pontos ou vida.',
         'Em partidas distintas, teste a derrota por vida zero e a vitória por vinte pontos com vida restante.',
         'Depois de cada resultado, Voltar ao início restaura a abertura e o começo completo. Enter permite jogar de novo.',
       ],
-      blockLabels: [
-        'Escrever na tela ↑ em cima, no meio',
-        'Escrever na tela ↓ embaixo, no meio',
-        'Quando apertar a tecla Enter',
-      ],
-      blockTypes: ['sz_g3d_hud_text'],
+      blockLabels: [],
+      blockTypes: [],
       conferencia:
-        'os quatro avisos usam os textos fornecidos, a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas',
+        'a derrota continua antes da vitória e Voltar ao início prepara uma nova partida com zero pontos e três vidas',
       mostrar:
         'Escrever na tela em cima, no meio", "Quando apertar a tecla Enter", "Se a vida de nave',
       entrega: {

@@ -6,7 +6,17 @@ Base do Construtor · Patrulha Espacial · 3D.
 
 **Conquista:** Asteroides surgem a cada 1,5 segundo dentro da faixa lateral fornecida, aproximam-se pelo Z positivo e saem do grupo depois de passar pela nave.
 
-## Parte 1. Um asteroide a cada intervalo
+## Parte 1. O ritmo dos asteroides
+
+Comparar nascer em todo quadro com nascer a cada intervalo, antes de montar o relógio.
+
+- Intenção: exploration.
+- Atividades: video-ritmo-das-pedras, ponte-ritmo-das-pedras, experiencia-ritmo-das-pedras.
+- Estúdio: não.
+- Conclusão: video-ritmo-das-pedras, experiencia-ritmo-das-pedras.
+
+
+## Parte 2. Um asteroide a cada intervalo
 
 Usar um intervalo para criar asteroides somente durante a partida.
 
@@ -23,7 +33,7 @@ Usar um intervalo para criar asteroides somente durante a partida.
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
 
-## Parte 2. Uma faixa para as entradas
+## Parte 3. Uma faixa para as entradas
 
 Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulha.
 
@@ -41,7 +51,7 @@ Montar a expressão fornecida que sorteia o X dentro da faixa lateral da patrulh
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
 
-## Parte 3. Os asteroides vêm até a nave
+## Parte 4. Os asteroides vêm até a nave
 
 Definir a velocidade positiva em Z para aproximar os asteroides.
 
@@ -59,7 +69,7 @@ Definir a velocidade positiva em Z para aproximar os asteroides.
 - Confira que o tiro criado sai do grupo ao terminar seu caminho.
 - Espere na abertura sem asteroides; depois de Enter, confira o surgimento.
 
-## Parte 4. A pedra sai depois de passar
+## Parte 5. A pedra sai depois de passar
 
 Retirar asteroides que ultrapassam o fim da rota, conservando o intervalo dos tiros.
 

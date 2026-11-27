@@ -1,5 +1,7 @@
 # Produção das bases do Construtor
 
+> Atualizado pela [revisão de 27/11/2026](revisao-2026-11-27.md): arte do Blender com quatro variações, revisão didática e verificação no navegador.
+
 Autoria de 24/11/2026, feita a partir dos jogos aprovados e do padrão dos cursos do Faísca. Este pacote contém os cursos completos em fonte e em materiais de produção. Os áudios e vídeos ainda serão produzidos; o cadastro e a publicação na plataforma não foram executados.
 
 ## Escopo entregue
@@ -28,7 +30,7 @@ As etapas incluem o projeto inicial e a referência final. Os arquivos `projeto-
 
 **Ordem 2D → 3D.** A Patrulha sucede a Nave, conforme a [Jornada do Criador](../../jornada-do-criador.md). Reaplica as ideias já vivenciadas em 2D e ensina a montagem de seus blocos 3D. As duas experiências espaciais retomam cenas reais da Ilha do Farol para investigar direções e contato; não apresentam uma bancada inexistente da Patrulha.
 
-**Personalização de aparência.** A Nave oferece três opções de cada elemento: nave, cenário, asteroide e laser. As escolhas não mudam meta, vidas, velocidade, intervalo, dano ou dimensões de contato. A Patrulha usa somente os três modelos provisórios existentes, cada um carregado por um bloco nativo de arquivo. As artes e variações definitivas do Blender ficam com Helena. Esta versão não ensina a construir uma pilha de formas para desenhar os modelos nem exige variações que ainda não existem.
+**Personalização de aparência.** As duas bases oferecem quatro opções de cada elemento (nave, cenário, asteroide e laser), feitas no Blender na revisão de 27/11/2026 ([revisao-2026-11-27.md](revisao-2026-11-27.md)). As escolhas não mudam meta, vidas, velocidade, intervalo, dano ou dimensões de contato.
 
 ## Revisão de continuidade e aderência à didática
 
@@ -137,4 +139,4 @@ As dependências de impressão e as conferências estão no [guia do pipeline](.
 3. Reconciliar os cadastros existentes como rascunho, anexar capas/PDFs e substituir cada `plannedVideo` pela mídia revisada.
 4. Importar os projetos pela interface, fazer a revisão visual e percorrer as aulas com os anexos e vídeos definitivos antes da publicação.
 
-Quando chegarem as artes do Blender, atualizar os GLBs, capas e imagens de referência mantendo nome, escala, posição e envelope de contato do projeto. O carregador centraliza o modelo e ajusta seu maior eixo ao tamanho do bloco: nave 3, asteroide 1,8 e laser 0,9. Uma malha de outra proporção pode alterar o contato mesmo com o mesmo tamanho; conferir as colisões novamente. Essa substituição é uma evolução de aparência e não uma autorização para mudar as regras aprovadas.
+As artes do Blender já estão integradas (revisão de 27/11/2026). Para mudar uma peça, gere de novo no Blender, publique com `publicar-construtor-modelos.ts` e regenere os cursos; a caixa comum de cada categoria mantém tamanho, centro e área de toque.

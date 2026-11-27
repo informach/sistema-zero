@@ -25,9 +25,9 @@ Faça os lasers voar
 - Estúdio: projeto.
 - Conclusão: video-tiros-voam.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
@@ -43,9 +43,9 @@ Retire os lasers que saíram
 - Estúdio: projeto.
 - Conclusão: video-faxina.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
@@ -62,9 +62,9 @@ Teste e envie os lasers
 - Estúdio: projeto.
 - Conclusão: video-entrega, projeto; envio atualizado.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.

@@ -13,7 +13,7 @@ FALA = re.compile(r'\*\*Fala para ElevenLabs:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\
 # valem a mesma fala com tags e o mesmo .elevenlabs.txt dos cursos das crianças. A pasta só é
 # distinguida para a contagem de manifestos e para recusar travessão na fala.
 PASTA_PAIS = 'pais'
-AULAS_DAS_CRIANCAS = 56
+AULAS_DAS_CRIANCAS = 58
 TAGS = set(json.loads((Path(__file__).resolve().parent / 'qa/direcoes-voz.json').read_text(encoding='utf-8')))
 NA_TELA = re.compile(r'^\*\*Na tela:\*\*\s*(.+)$', re.M)
 # Como o EdiAula separa as frases do Na tela e acha a fala que cada uma espera (ESPEC-ROTEIRO, seção 9).

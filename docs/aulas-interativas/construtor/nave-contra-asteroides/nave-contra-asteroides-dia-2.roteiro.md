@@ -10,7 +10,7 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 **Clipe:** `video-direcao-do-tiro`
 
-**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
+**Na tela:** A cena fica parada enquanto a edição ilustra a comparação narrada, sem mostrar controles nem resolver descobertas. No "Agora você vai explorar essa ideia na experiência", ampliar a experiência [ampliar experiência]. No "O Zappy vai te mostrando", apontar a fala do Zappy [apontar zappy]. No "Quando terminar", voltar ao tamanho da aula [voltar à aula]. No "clique em Próxima parte", avançar [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -21,16 +21,16 @@ Montagem guiada completa no vídeo, um gesto por vez, deixando o destino visíve
 
 [curious] Um número negativo deixa o laser mais fraco?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-direcao-do-tiro-K1 | Debinha | 1 | para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção. | Um número negativo deixa o laser mais fraco? | O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O | [curious] |
+| video-direcao-do-tiro-K1 | Debinha | 1 | para baixo. A velocidade vertical diz quanto esse y muda em cada passinho. O sinal do número participa dessa direção. | Um número negativo deixa o laser mais fraco? | Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

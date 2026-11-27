@@ -1,5 +1,11 @@
 # Plano de liberação gradual das novidades
 
+**Homologação única preparada em 2026-11-27T23:10:10.162Z:** a staging reúne os leitores/oficina e a ativação final da PR 301, gravador causal 8 e teto nativo 9. A validação da fonte anterior `1c401e7b3` foi cancelada antes de qualquer job de implantação; nenhuma carga de catálogo/dados foi interrompida. Esta fonte precisa de CI completo, onda canônica e aceite de conta fria antes de publicar. Em produção, a ordem continua: PR 299 instala todos os leitores compatíveis; somente após sua onda completa promover a PR 301.
+
+**Estado vigente — 2026-11-27T23:02:17.435Z:** a liberação das campanhas PR 300, fonte `5400ea1d105390390a376444c2aecf9adc7ffa99`, foi integrada e seus 121 arquivos permanecem idênticos nas candidatas. A retomada está autorizada. Candidata de leitores/oficina `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d` (PR 299), staging `1c401e7b3a345c8056b27e187e86ae9085c437cf`. CI completo novo: `46079975021` e onda canônica de staging `46080040007`, ainda pendentes. A imagem Linux oficial `46077493200`, artefato `15234974061`, passou os sete casos reais e foi carregada com hashes e camadas conferidos; perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. O transporte ao registro está em andamento, sem nova publicação do Worker. Falha de importação JSON no Node corrigida e os dois testes reais de conversão no Chromium passaram; teste de cenários atualizado para a Patrulha já existente, suíte aprovada. Gravador final preparado, 2.829 testes do member-shell (quatro condicionais), tipos do member-shell e Studio, e 17 testes de linguagem aprovados. Sua ativação depende dos leitores completos em produção e do aceite em staging; público continua gravador causal 7/teto nativo 8.
+
+Os registros datados abaixo são históricos; os estados antigos de imagens, candidatos e suspensões não substituem este quadro vigente.
+
 Registrado em 23/11/2026 para execução aos poucos. Atualizado em 27/11 após conferir GitHub, deployments Railway e os cursos pela API de produção, somente de leitura. LG01 e LG02 foram concluídas em produção em 24/11; LG04, em 25/11. LG03 está parcial e LG05 está em implementação e qualificação, sem liberação pública nova. Este registro permite retomar cada frente separadamente.
 
 A prioridade é entregar à criança fluxos completos: criar, guardar, voltar depois e continuar usando o projeto nos destinos oferecidos. As melhorias prontas e a publicação de aulas podem avançar enquanto as integrações maiores são concluídas.
@@ -13,6 +19,8 @@ A prioridade é entregar à criança fluxos completos: criar, guardar, voltar de
 
 O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo distinguem as entregas posteriores. Ao retomar uma etapa, conferir o código e a configuração vigentes antes de decidir o que ainda falta. Implementação local, qualificação em staging e liberação em produção são estados distintos.
 
+**Preservação das campanhas (27/11):** implantação urgente encerrada e retomada autorizada. A fonte comercial `5400ea1d1` está integrada; os 121 arquivos foram comparados nas três candidatas, sem divergências. As promoções continuam vinculadas às fontes exatas qualificadas.
+
 ## Ordem e acompanhamento
 
 | ID | Frente | Prioridade | Dependência principal | Estado |
@@ -21,7 +29,7 @@ O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo di
 | LG02 | Qualificação do aquecimento da verificação no executor real | 1 | Corrigir a vida compartilhada do contêiner e repetir as provas | Concluída em produção em 24/11: sete serviços em `0180e39fd`, Worker/imagem qualificados, CI, staging e aceite infantil aprovados. [Recibo e limites](../qa/2026-11-24-lg02-aquecimento-seguro.md) |
 | LG03 | Publicação gradual das aulas | 1, em paralelo | Vídeos, atividades, materiais e Jornada conferidos | Parcial, conferida em produção em 27/11: Ilha do Farol 3/3 e Jardim Secreto 2/2 em Kids e Adultos; Pinta e Moedas em rascunho, 0/1 em cada público |
 | LG04 | Fluxo regional completo do Pinta até a conta e o Mural | 2 | Integração do cliente com armazenamento e publicação compatíveis | Entregue em produção em 25/11, PR #289, fonte `fed288d8e`; atualização R2 corrigida e mesmo post/link aprovado em staging. A versão de produção conferida em 27/11 inclui a entrega. [Fechamento](https://github.com/informach/sistema-zero/pull/289) |
-| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Em execução: leitor causal A integrado pelo PR 298; oficina/destinos no [PR 299](https://github.com/informach/sistema-zero/pull/299). Fluxos locais, suítes amplas, consumidores de QA e gerados aprovados; imagem Linux oficial qualificada (46022790347). CI revelou coordenada antiga no ensaio após resize; causa reproduzida e correção com regressão aprovada em Windows/Linux. Nova rodada CI, staging completa e produção pendentes. Gravador público ainda 7/teto 8. [Plano e provas](../superpowers/plans/2026-11-27-lg05-regras-projecoes.md) |
+| LG05 | Regras e projeções novas do Pinta | 2 | Gravador, fila e leitores admitindo o formato novo | Em qualificação final, preservando a produção comercial PR 300. Corrigidas as validações Pro de bibliotecas e API portátil: executor 446 aprovados; editor/conversão 20; imagem local com sete casos, incluindo os três jogos reais e PNGs preservados. CI e imagem Linux da fonte final, staging completa, produção e gravador 8/nativo 9 pendentes; público ainda 7/teto 8. [Plano e provas](../superpowers/plans/2026-11-27-lg05-regras-projecoes.md) |
 | LG06 | Abertura gradual do Molda Cenários | 3 | Oficina implantada, produto e faixas da Jornada conferidos | Pendente |
 | LG07 | Habilitação da prévia isolada do Studio | 3 | Runtime e origens permitidas configurados | Pendente |
 | LG08 | Promoção da nova distribuição Python | 3 | Qualificação e configuração coerentes em todas as pontas | Pendente |

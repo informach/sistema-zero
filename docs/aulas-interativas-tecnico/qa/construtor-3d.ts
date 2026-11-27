@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import type { ConstrutorBaseConfig } from './construtor-base-tipos'
+import { patrulhaAssetsPortateis } from './patrulha-espacial-assets'
 import { patrulhaAula1 } from './patrulha-espacial-aula-1'
 import { patrulhaAula2 } from './patrulha-espacial-aula-2'
 import { patrulhaAula3 } from './patrulha-espacial-aula-3'
@@ -18,6 +19,7 @@ export const config3D: ConstrutorBaseConfig = {
   etapas: PATRULHA_ETAPAS,
   etapaFinal: 'completo',
   montarProjeto: montarProjetoPatrulha,
+  portatil: (projeto) => ({ ...projeto, assets: patrulhaAssetsPortateis() }),
   checks: patrulhaChecks,
   aulas: [patrulhaAula1, patrulhaAula2, patrulhaAula3, patrulhaAula4, patrulhaAula5],
   jogoPronto: {

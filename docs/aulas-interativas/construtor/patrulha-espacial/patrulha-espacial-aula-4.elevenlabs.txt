@@ -22,6 +22,16 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] A nave já tem três vidas. Antes de programar a batida, lembre o que acontecia na Nave Contra Asteroides: depois de perder uma vida, a nave piscava um pouquinho.
+
+[curious] Enquanto a nave pisca, outra batida já tira mais um coração?
+
+[engaging, energetic, conversational voice] Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a mesma daqui. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Você pode repetir e comparar o que acontece. Depois, a gente leva a descoberta para a patrulha. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
 [engaging, energetic, conversational voice] Os corações já mostram as três chances. Vamos retomar o encontro que você usou na nave em duas dimensões: quando a nave encosta em uma pedra do grupo, acontece uma batida.
 
 [confident, clear, unhurried voice] Encontre Quando acontecer. Deixe à vista um espaço depois do acontecimento de Espaço, fora do fazer dele.
@@ -34,6 +44,8 @@
 
 [interested, animated voice] Esse nome identifica a pedra que participou desta batida. Na próxima parte, você vai usar esse nome para retirar só ela.
 
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de o encontro da nave com os asteroides, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -44,7 +56,7 @@
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 
@@ -64,11 +76,11 @@
 
 [upbeat, encouraging voice] Clique em Rodar de novo e pressione Enter. Escolha uma pedra que vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.
 
-[curious] Enquanto a nave pisca, outra batida já tira mais um coração?
+[engaging, energetic, conversational voice] É o respiro que você viu na bancada da nave: durante esse instante de proteção, outra batida não tira coração. O bloco Machucar cuida de um segundo de proteção. Depois, uma nova batida pode tirar outra vida.
 
-[engaging, energetic, conversational voice] Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova batida pode tirar outra vida.
+[curious] E a pedra que bateu? Ela some ou continua o caminho?
 
-[engaging, energetic, conversational voice] Repare também na pedra da batida: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.
+[engaging, energetic, conversational voice] Repare: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o encontro usa nave e asteroides, chama a pedra de asteroideQueBateu, pergunta estado igual a jogando, machuca nave tirando um e toca acerto.
 

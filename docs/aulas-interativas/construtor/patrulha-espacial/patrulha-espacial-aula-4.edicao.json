@@ -7,17 +7,33 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-tres-vidas", "video-vida-na-batida", "video-retirar-a-pedra-da-batida"],
+  "clipes": [
+    "video-tres-vidas",
+    "video-respiro-da-nave",
+    "video-vida-na-batida",
+    "video-retirar-a-pedra-da-batida"
+  ],
   "intervencoes": [
+    {
+      "id": "video-respiro-da-nave-K1",
+      "clipe": "video-respiro-da-nave",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "a batida, lembre o que acontecia na Nave Contra Asteroides: depois de perder uma vida, a nave piscava um pouquinho.",
+      "ancoraDepois": "Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a",
+      "falaPrincipal": "Enquanto a nave pisca, outra batida já tira mais um coração?",
+      "falaPersonagem": "Enquanto a nave pisca, outra batida já tira mais um coração?",
+      "tags": ["[curious]"]
+    },
     {
       "id": "video-vida-na-batida-K1",
       "clipe": "video-vida-na-batida",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "vem chegando e leve a nave para a frente dela, sem atirar. Na batida, um coração sai e a nave pisca por um instante.",
-      "ancoraDepois": "Durante esse instante de proteção, não. O bloco Machucar cuida de um segundo de proteção para a nave. Depois, uma nova",
-      "falaPrincipal": "Enquanto a nave pisca, outra batida já tira mais um coração?",
-      "falaPersonagem": "Enquanto a nave pisca, outra batida já tira mais um coração?",
+      "ancoraAntes": "não tira coração. O bloco Machucar cuida de um segundo de proteção. Depois, uma nova batida pode tirar outra vida.",
+      "ancoraDepois": "Repare: ela continua o caminho. Você vai terminar essa resposta retirando a pedra que já bateu. Se algo não funcionou",
+      "falaPrincipal": "E a pedra que bateu? Ela some ou continua o caminho?",
+      "falaPersonagem": "E a pedra que bateu? Ela some ou continua o caminho?",
       "tags": ["[curious]"]
     }
   ]

@@ -225,6 +225,12 @@
       ],
       "mission": {
         "title": "A Estação de Reciclagem",
+        "authoredSource": {
+          "courseSlug": "jornada-construtor-missao",
+          "directory": "docs/aulas-interativas/construtor/estacao-de-reciclagem",
+          "lessons": ["aula-1", "aula-2"],
+          "note": "Autoria local completa (27/11/2026), missão do posto no molde do Jardim Secreto. Importar nas duas aulas reservadas, preservando IDs. Outline two/three conservado para manter o hash do seed. Mídia e publicação pendentes."
+        },
         "lessons": 2,
         "brief": "Uma esteira recebe peças recicláveis e objetos que não podem chegar ao depósito. O jogador move um coletor, recebe pontos pelas peças certas e perde vidas pelas outras. Em 3D, o galpão recebe a mesma partida.",
         "same": "Tiros/asteroides viram coletor/peças. Relógio, grupos, colisão, pontos, vidas e estados são reaplicados. Não exigir classificador automático, arrastar com o mouse ou geração aleatória nova.",

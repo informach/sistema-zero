@@ -56,7 +56,7 @@ Faça a nave responder às setas
 - Estúdio: projeto.
 - Conclusão: video-setas.
 - Conserve a nave e a abertura; a escolha da imagem mantém seu tamanho.
-- Mova a nave com passinho 5 dentro de Se jogando, a cada quadro.
+- Mova a nave com as setas, velocidade 5, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Faça a nave ir para a direita depois de começar.
 - Faça a nave ir para a esquerda depois de começar.
@@ -80,7 +80,7 @@ Mantenha a nave na tela
 - Estúdio: projeto.
 - Conclusão: video-borda.
 - Conserve a nave e a abertura; a escolha da imagem mantém seu tamanho.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
@@ -94,7 +94,7 @@ Mostre os controles e envie
 - Estúdio: projeto.
 - Conclusão: video-entrega, projeto; envio atualizado.
 - Conserve a nave e a abertura; a escolha da imagem mantém seu tamanho.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.

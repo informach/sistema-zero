@@ -25,13 +25,13 @@ Prepare a meta e mostre o progresso
 - Estúdio: projeto.
 - Conclusão: video-meta.
 - Comece com grupos vazios, zero pontos, três vidas e meta 20, conservando a nave.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - No acerto, retire só o par, mantenha os efeitos e some um ponto.
-- Retire a pedra da batida e tire uma vida, com proteção de 60 quadros.
+- Retire a pedra da batida e tire uma vida, com um segundo de proteção.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
 - Crie um laser por toque em Espaço durante a partida.
@@ -50,14 +50,14 @@ Chame a vitória ao completar a meta
 - Estúdio: projeto.
 - Conclusão: video-finais.
 - Comece com grupos vazios, zero pontos, três vidas e meta 20, conservando a nave.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - No acerto, retire só o par, mantenha os efeitos e some um ponto.
-- Retire a pedra da batida e tire uma vida, com proteção de 60 quadros.
-- Depois das colisões, use pontos maior ou igual a meta para selecionar vitoria.
+- Retire a pedra da batida e tire uma vida, com um segundo de proteção.
+- Depois das colisões, quando os pontos chegarem à meta, mostre a vitória.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
 - Faça a nave chegar à borda esquerda e permanecer dentro da tela.
 - Crie um laser por toque em Espaço durante a partida.
@@ -76,13 +76,13 @@ Escolha um único resultado
 - Estúdio: projeto.
 - Conclusão: video-derrota.
 - Comece com grupos vazios, zero pontos, três vidas e meta 20, conservando a nave.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - No acerto, retire só o par, mantenha os efeitos e some um ponto.
-- Retire a pedra da batida e tire uma vida, com proteção de 60 quadros.
+- Retire a pedra da batida e tire uma vida, com um segundo de proteção.
 - Confira as vidas dentro de Se jogando, depois das colisões.
 - Pergunte pelas vidas primeiro; no senão, confira a vitória.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
@@ -123,13 +123,13 @@ Teste a missão completa e envie
 - Estúdio: projeto.
 - Conclusão: video-entrega, projeto; envio atualizado.
 - Comece com grupos vazios, zero pontos, três vidas e meta 20, conservando a nave.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
-- Em Espaço, crie um laser na nave, com vx 0 e vy -7, somente em jogando.
+- Em Espaço, crie um laser que sai da nave e sobe, somente em jogando.
 - Conserve o movimento e a retirada dos grupos que já construiu.
-- Crie os asteroides a cada 1,5 segundos, acima da tela e descendo com vy 2.
+- Crie os asteroides a cada 1,5 segundos, nascendo acima da tela e descendo.
 - No acerto, retire só o par, mantenha os efeitos e some um ponto.
-- Retire a pedra da batida e tire uma vida, com proteção de 60 quadros.
+- Retire a pedra da batida e tire uma vida, com um segundo de proteção.
 - Confira as vidas dentro de Se jogando, depois das colisões.
 - Pergunte pelas vidas primeiro; no senão, confira a vitória.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.

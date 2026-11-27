@@ -1,7 +1,7 @@
 /**
  * O gerador comum dos quatro Poderes do Faísca (Moedas no caminho, O segredo da cabana, A ponte
- * apressada e O baú dos símbolos) e da missão O Jardim Secreto, que tem o mesmo esqueleto sem a
- * experiência. Antes eram quatro geradores quase iguais; cada `gerar-<poder>.ts`
+ * apressada e O baú dos símbolos) e das missões do posto (O Jardim Secreto, do Faísca, e A Estação
+ * de Reciclagem, do Construtor), que têm o mesmo esqueleto sem a experiência. Antes eram quatro geradores quase iguais; cada `gerar-<poder>.ts`
  * agora só descreve o curso (`PoderConfig`) e chama `gerarPoder`.
  *
  * Revisão de 23/11/2026, no molde do Cadê, da Chave do Farol e da Ilha do Farol:
@@ -76,8 +76,10 @@ export interface PoderConfig<
 > {
   /** O nome do curso, como aparece para a criança ("Moedas no caminho"). */
   nome: string
-  /** A pasta em docs/aulas-interativas/faisca. */
+  /** A pasta em docs/aulas-interativas/<trilha>. */
   pasta: string
+  /** A trilha do curso (a pasta do posto em docs/aulas-interativas). Sem ela, `faisca`. */
+  trilha?: string
   /** O começo dos nomes dos arquivos ("moedas" → moedas-aula-1.manifesto.json, moedas-2d.szproject.json). */
   prefixo: string
   /** O nome dos arquivos de uma aula, quando não é `<prefixo>-<slug>` (o Jardim usa só `aula-1`). */
@@ -115,6 +117,11 @@ export interface PoderConfig<
    * Poderes). A missão do posto (o Jardim) mostra o que o jogo precisa fazer, sem montar.
    */
   notaDeProducao?: string
+  /**
+   * A nota do roteiro 3D sobre o teclado. Sem ela, a do Faísca (o personagem anda com as setas na
+   * velocidade 4).
+   */
+  notaDoTeclado3D?: string
   /** Onde fica a ajuda, no resumo de cada aula. Sem ela, a ajuda livre no Passo a passo. */
   ajuda?: string
   /** O passo a passo em texto (`passo-a-passo.md`) e a organização do curso (`modulos.md`). */
@@ -128,7 +135,10 @@ export async function gerarPoder<
   E extends string,
   P extends { blocksState?: unknown; assets?: Ativos },
 >(cfg: PoderConfig<E, P>) {
-  const dir = resolve(import.meta.dirname, `../../aulas-interativas/faisca/${cfg.pasta}`)
+  const dir = resolve(
+    import.meta.dirname,
+    `../../aulas-interativas/${cfg.trilha ?? 'faisca'}/${cfg.pasta}`,
+  )
   mkdirSync(dir, { recursive: true })
   // No formato da CI (biome ci). O JSON acima do files.maxSize do Biome (2 MiB, como o manifesto da
   // Aula 1 de Moedas) o Biome não formata nem confere: esse sai do JSON.stringify, como antes.
@@ -322,7 +332,8 @@ export async function gerarPoder<
         : 'Sem intervenções de personagens.'
     } ${cfg.notaDeProducao ?? 'Montagem guiada completa no vídeo, um gesto por vez, com o destino à vista antes da peça.'} ${
       aula.dimension === '3d'
-        ? 'O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. '
+        ? (cfg.notaDoTeclado3D ??
+          'O jogo é de teclado: o robô dá o foco ao jogo (Rodar de novo no Estúdio, ou um toque no jogo pronto) antes de segurar as setas. Os tempos das setas no Na tela são estimativas para a velocidade 4 e se acertam no Verificar plano. ')
         : ''
     }Gravação e publicação desta revisão ainda não confirmadas.\n\n**Antes de gravar:** use um perfil de ensaio sem envio nesta aula. Mostre o projeto da dimensão correta. Não preencha Recado no envio. Mostre Objetivo cumprido! e Projeto enviado! só quando esses estados aparecerem de verdade.\n\n`
     for (const [i, t] of aula.trechos.entries())

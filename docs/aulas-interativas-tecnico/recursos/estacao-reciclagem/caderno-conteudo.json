@@ -1,0 +1,499 @@
+[
+  {
+    "id": "encontre",
+    "kicker": "Seu passo a passo do projeto",
+    "title": "Encontre seu passo",
+    "subtitle": "Um jeito de montar a missão, para conferir o seu jogo e entender cada escolha.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "Use para conferir",
+        "text": "Na missão, quem programa o jogo é você. Este caderno mostra um jeito de montar cada etapa, bloco por bloco. O seu jeito pode ser diferente e estar certo também, porque o Verificar projeto confere o que o jogo faz."
+      },
+      {
+        "kind": "index",
+        "title": "Aula 1. Monte a Estação de Reciclagem em 2D",
+        "text": "As peças descem pelas esteiras, o coletor recolhe as recicláveis e perde vida com as pilhas e lâmpadas, e a partida termina com vitória ou derrota. No fim, a meta muda para 15.",
+        "pages": "Páginas {{pagina:aula-1-abertura}} a {{ultima-pagina:aula-1-meta-nova}}"
+      },
+      {
+        "kind": "index",
+        "title": "Aula 2. Leve a estação para o galpão 3D",
+        "text": "A mesma partida num galpão em três dimensões: as bocas soltam as peças, o coletor recolhe e perde vida, e a partida termina. No fim, a meta muda para 12.",
+        "pages": "Páginas {{pagina:aula-2-abertura}} a {{ultima-pagina:aula-2-meta-nova}}"
+      },
+      {
+        "kind": "note",
+        "text": "As telas, o Enter, o coletor e o recomeço já vêm prontos. Você programa as regras da partida e testa cada uma."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-abertura",
+    "lesson": "aula-1",
+    "part": 1,
+    "kicker": "Aula 1 · Parte 1",
+    "title": "Conheça sua missão",
+    "subtitle": "Jogue a estação pronta antes de programar.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. As setas movem o coletor. As peças do aro verde são recicláveis e valem um ponto; as do aro vermelho são pilhas e lâmpadas e tiram uma vida. Junte 10 peças antes de perder as 3 vidas."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique no jogo e aperte Enter."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Segure uma seta para levar o coletor até uma esteira da borda, onde chegam as recicláveis. A esteira do meio traz as pilhas e lâmpadas."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No resultado, aperte Enter para voltar ao início."
+      }
+    ]
+  },
+  {
+    "id": "aula-1-esteira",
+    "lesson": "aula-1",
+    "part": 2,
+    "kicker": "Aula 1 · Parte 2",
+    "title": "As peças chegam pelas esteiras",
+    "subtitle": "Dois relógios criam as peças só durante a partida; o quadro do jogo as move e tira do grupo quem sai da tela.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Dois relógios criam as peças só durante a partida; o quadro do jogo as move e tira do grupo quem sai da tela."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em ⚡ Quando acontecer, coloque um bloco A cada 1,6 segundos. Dentro dele, um Se o estado do jogo é jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então, use duas vezes o No grupo reciclaveis criar um sprite: um em x 76 e outro em x 652, os dois em y -72, largura e altura 72, com a imagem da reciclável, vx 0 e vy 3."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Coloque outro A cada 2,2 segundos com o mesmo Se. No então, No grupo proibidos criar um sprite em x 364, com a imagem da pilha e as mesmas medidas."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No A cada quadro do jogo, dentro do Se jogando que já existe, coloque Mover os sprites do grupo reciclaveis usando suas velocidades e o mesmo para proibidos."
+      },
+      {
+        "kind": "step",
+        "number": 5,
+        "text": "Logo depois, Tirar do grupo reciclaveis quem sair da tela e o mesmo para proibidos."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:inicio",
+        "after": "2d:esteira"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rode e espere sem apertar Enter: nada nasce. Aperte Enter: as peças nascem e descem.",
+          "Se nascerem peças na abertura, falta o Se jogando dentro do A cada. Se as peças ficarem paradas, confira o Mover os sprites do grupo."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-coleta",
+    "lesson": "aula-1",
+    "part": 3,
+    "kicker": "Aula 1 · Parte 3",
+    "title": "Ponto pela reciclável, vida pela pilha",
+    "subtitle": "Cada encontro do coletor com um grupo tira a peça do grupo e muda uma conta uma vez só.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Cada encontro do coletor com um grupo tira a peça do grupo e muda uma conta uma vez só."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No A cada quadro do jogo, dentro do Se jogando, coloque Para cada sprite do grupo reciclaveis que colidir com o sprite coletor."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Dentro dele, Tirar o sprite (a peça do encontro) do grupo reciclaveis e Somar 1 em variável pontos."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Coloque outro Para cada sprite do grupo proibidos que colidir com o sprite coletor."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "Dentro dele, Tirar o sprite do grupo proibidos e Machucar o sprite coletor em 1, invencível por 60 quadros."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:esteira",
+        "after": "2d:coleta"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Leve o coletor até uma esteira da borda: cada garrafa soma um ponto. Fique no meio: cada pilha apaga um coração.",
+          "Se o placar disparar, a peça não está saindo do grupo no encontro. Se a vida não cair, confira o Machucar dentro do encontro com proibidos."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-resultado",
+    "lesson": "aula-1",
+    "part": 4,
+    "kicker": "Aula 1 · Parte 4",
+    "title": "A partida termina",
+    "subtitle": "A cada quadro, primeiro a pergunta das vidas; no senão, a pergunta da meta.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "A cada quadro, primeiro a pergunta das vidas; no senão, a pergunta da meta."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "No A cada quadro do jogo, dentro do Se jogando, depois dos encontros, coloque um Se as vidas do sprite coletor acabaram?"
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então, Mudar o estado do jogo para derrota."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No senão, outro Se pontos ≥ meta, com Mudar o estado do jogo para vitoria no então."
+      },
+      {
+        "kind": "drawings",
+        "title": "A derrota",
+        "before": "2d:coleta",
+        "after": "2d:resultado-derrota"
+      },
+      {
+        "kind": "drawings",
+        "title": "A vitória, no senão",
+        "before": "2d:resultado-derrota",
+        "after": "2d:resultado"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Fique no meio até as vidas acabarem: aparece a derrota. Recolha as peças até a meta: aparece a vitória. O Enter da tela final volta à abertura.",
+          "Se as duas telas brigarem, confira se a pergunta da meta está no senão da pergunta das vidas."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-1-meta-nova",
+    "lesson": "aula-1",
+    "part": 5,
+    "kicker": "Aula 1 · Parte 5",
+    "title": "A equipe pediu uma meta nova",
+    "subtitle": "A vitória compara o placar com a variável meta: mudar a meta muda a vitória e o número no canto.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "A vitória compara o placar com a variável meta: mudar a meta muda a vitória e o número no canto."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, troque o valor de Criar variável meta para 15."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Confira a vitória: ela compara pontos com a variável meta, não com um número escrito."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "2d:resultado",
+        "after": "2d:meta-nova"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Jogue: com 10 peças a partida continua, e a vitória vem no 15.",
+          "Se a vitória chegar no 10, a condição está com o número escrito. Troque o número pela variável meta."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-abertura",
+    "lesson": "aula-2",
+    "part": 1,
+    "kicker": "Aula 2 · Parte 1",
+    "title": "A mesma partida, no galpão",
+    "subtitle": "A mesma partida, agora no galpão.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "amarelo",
+        "title": "Conheça o jogo pronto",
+        "text": "Clique no jogo e aperte Enter. As setas movem o coletor. As peças do aro verde são recicláveis e valem um ponto; as do aro vermelho são pilhas e lâmpadas e tiram uma vida. Junte 10 peças antes de perder as 3 vidas."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Clique no jogo e aperte Enter."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Segure uma seta para levar o coletor até uma esteira da borda, onde chegam as recicláveis. A esteira do meio traz as pilhas e lâmpadas."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No resultado, clique em Voltar ao início."
+      }
+    ]
+  },
+  {
+    "id": "aula-2-esteira",
+    "lesson": "aula-2",
+    "part": 2,
+    "kicker": "Aula 2 · Parte 2",
+    "title": "As bocas soltam as peças",
+    "subtitle": "Dois relógios criam cópias das peças nas bocas do fundo, só durante a partida. As esteiras já levam as peças.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Dois relógios criam cópias das peças nas bocas do fundo, só durante a partida. As esteiras já levam as peças."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Coloque um A cada 1,6 segundos. Dentro dele, um Se estado = jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então, use duas vezes o Criar uma cópia de moldeReciclavel no grupo reciclaveis: em x -4 e em x 4, os dois em y 1,5 e z -34."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Coloque outro A cada 2,2 segundos com o mesmo Se, criando uma cópia de moldeProibido no grupo proibidos em x 0, y 1,5 e z -34."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:inicio",
+        "after": "3d:esteira"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Rode e espere sem apertar Enter: nada sai das bocas. Aperte Enter: as peças saem e vêm até você.",
+          "Se sair peça na abertura, falta o Se estado = jogando dentro do A cada."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-coleta",
+    "lesson": "aula-2",
+    "part": 3,
+    "kicker": "Aula 2 · Parte 3",
+    "title": "Os encontros no galpão",
+    "subtitle": "Os encontros do coletor com cada grupo, com a guarda da partida.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "Os encontros do coletor com cada grupo, com a guarda da partida."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Coloque Quando coletor encostar em algum do grupo reciclaveis, chamando de pecaReciclavel. Dentro, um Se estado = jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "No então: Tirar o objeto pecaReciclavel do grupo reciclaveis, Somar 1 em variável pontos e Escrever na tela no alto à direita o texto \"Peças: \" + pontos + \" / \" + meta."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "Coloque Quando coletor encostar em algum do grupo proibidos, chamando de pecaProibida, com o mesmo Se."
+      },
+      {
+        "kind": "step",
+        "number": 4,
+        "text": "No então: Tirar o objeto pecaProibida do grupo proibidos e Machucar coletor tirando 1 de vida."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:esteira",
+        "after": "3d:coleta"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Na esteira da borda, o placar sobe a cada garrafa. No meio, cada pilha tira uma vida.",
+          "Se a peça atravessar o coletor, confira o Tirar o objeto do grupo dentro do encontro."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-resultado",
+    "lesson": "aula-2",
+    "part": 4,
+    "kicker": "Aula 2 · Parte 4",
+    "title": "O galpão também termina a partida",
+    "subtitle": "A cada quadro, durante a partida, primeiro a vida; no senão, a meta.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "A cada quadro, durante a partida, primeiro a vida; no senão, a meta."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Dentro de A cada quadro, no começo, coloque um Se estado = jogando."
+      },
+      {
+        "kind": "step",
+        "number": 2,
+        "text": "Nele, Se a vida de coletor ≤ 0: estado recebe \"derrota\", Escrever na tela embaixo um texto vazio e Fim de jogo: perdeu."
+      },
+      {
+        "kind": "step",
+        "number": 3,
+        "text": "No senão, Se pontos ≥ meta: estado recebe \"vitoria\", Escrever na tela embaixo um texto vazio e Fim de jogo: ganhou."
+      },
+      {
+        "kind": "drawings",
+        "title": "A derrota",
+        "before": "3d:coleta",
+        "after": "3d:resultado-derrota"
+      },
+      {
+        "kind": "drawings",
+        "title": "A vitória, no senão",
+        "before": "3d:resultado-derrota",
+        "after": "3d:resultado"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Fique no meio até a vida acabar: vem a tela de quem perdeu. Recolha até a meta: vem a de quem ganhou.",
+          "Se o fim de jogo se repetir, confira o Se estado = jogando em volta das perguntas."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aula-2-meta-nova",
+    "lesson": "aula-2",
+    "part": 5,
+    "kicker": "Aula 2 · Parte 5",
+    "title": "Uma meta nova para o galpão",
+    "subtitle": "A vitória e o texto do placar leem a variável meta.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "azul",
+        "title": "A ideia desta etapa",
+        "text": "A vitória e o texto do placar leem a variável meta."
+      },
+      {
+        "kind": "step",
+        "number": 1,
+        "text": "Em Ao iniciar, troque o valor de Criar variável meta para 12."
+      },
+      {
+        "kind": "drawings",
+        "title": "Confira os encaixes desta etapa",
+        "before": "3d:resultado",
+        "after": "3d:meta-nova"
+      },
+      {
+        "kind": "tests",
+        "title": "Teste e observe",
+        "tests": [
+          "Com 10 peças a partida continua; no 12, vem a vitória, e o placar mostra / 12.",
+          "Se a vitória chegar no 10, troque o número escrito na condição pela variável meta."
+        ]
+      },
+      {
+        "kind": "delivery",
+        "title": "Envie o seu projeto",
+        "text": "Clique em Verificar projeto e corrija o que faltar. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar."
+      }
+    ]
+  },
+  {
+    "id": "missao-cumprida",
+    "kicker": "Missão do Construtor",
+    "title": "Missão cumprida",
+    "subtitle": "A mesma partida em duas dimensões e no galpão em três.",
+    "items": [
+      {
+        "kind": "box",
+        "tone": "verde",
+        "title": "O que você programou",
+        "text": "Os relógios que trazem as peças só durante a partida, os encontros do coletor, o placar, as vidas, os dois finais e a meta nova pedida pela equipe. As mesmas ideias da Nave Contra Asteroides e da Patrulha Espacial, num jogo novo."
+      },
+      {
+        "kind": "note",
+        "text": "A missão conta quando as duas aulas estão concluídas. A jornada também confere os dois cursos da trilha e dois Poderes."
+      }
+    ]
+  }
+]

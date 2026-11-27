@@ -1,3 +1,13 @@
+[engaging, energetic, conversational voice] Seus lasers já voam pela rota. Agora vêm os asteroides. Na Nave Contra Asteroides, um relógio criava uma pedra de tempos em tempos. Na patrulha vai ser igual, só que as pedras nascem lá no fundo e vêm na sua direção.
+
+[curious] E se nascer um asteroide em cada quadro do jogo?
+
+[engaging, energetic, conversational voice] Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a mesma daqui. Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] O Zappy vai te mostrando o que investigar. Você pode repetir e comparar o que acontece. Depois, a gente leva a descoberta para a patrulha. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
 [engaging, energetic, conversational voice] Seu laser já atravessa o espaço. Agora vamos colocar asteroides na rota. Você já usou um intervalo para isso no jogo em duas dimensões. Aqui o relógio também vai criar uma cópia de cada vez.
 
 [curious] Se eu colocar a cópia em cada quadro, não aparece mais rápido?
@@ -10,6 +20,8 @@
 
 [confident, clear, unhurried voice] Troque o tempo de dois por um vírgula cinco. Esse intervalo é um segundo e meio.
 
+[engaging, energetic, conversational voice] Agora a guarda que você já conhece: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de o relógio de um segundo e meio, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -20,7 +32,7 @@
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 

@@ -25,7 +25,7 @@ O gerador escreve HTML, mapa de páginas e cores utilizadas em `tmp/pdfs/<curso>
 
 `gerar-inventario-blocos.ts` produz `blocos-usados.md/json` com nomes preenchidos, categorias oficiais, partes de montagem, apoio inicial e contagens. A lista de liberação não é tratada como uma lista de conceitos novos.
 
-`gerar-artes.ts` recompõe somente os SVGs 2D e projeta somente as malhas GLB dos projetos aprovados. Usa `three`, `happy-dom` e `sharp` como ferramentas de produção. A imagem 3D é uma ilustração geométrica dos modelos provisórios da galeria; não comprova a aparência da prévia WebGL. Não há novas malhas procedurais ou variações 3D inventadas. Quando Helena entregar as artes do Blender, substituir os arquivos segundo o contrato do curso e regenerar imagens, exemplos e PDFs.
+`gerar-artes.ts` gera as capas e as miniaturas a partir da arte que vai nos projetos: a capa 2D é composta com sharp (o cenário em alta resolução e os sprites embutidos) e a capa 3D é a cena da Patrulha desenhada com WebGL no Chromium pela prévia do Blender (`docs/design/construtor-espaco-blender/previa`). As miniaturas 3D (`modelo-<peça>.png`) vêm da `galeria/` do Blender. Precisa dos GLB de `docs/design/construtor-espaco-blender/out` (`build_all.py`).
 
 ```sh
 bun docs/aulas-interativas-tecnico/recursos/construtor-base/gerar-artes.ts

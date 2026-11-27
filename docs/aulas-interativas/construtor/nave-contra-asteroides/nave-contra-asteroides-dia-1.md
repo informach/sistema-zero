@@ -25,7 +25,7 @@ Faça Espaço responder
 - Estúdio: projeto.
 - Conclusão: video-criar-tiro.
 - Conserve a nave e a abertura; a escolha da imagem mantém seu tamanho.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - No evento de Espaço, toque o efeito de tiro somente em jogando.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
@@ -51,7 +51,7 @@ Crie e mostre os lasers
 - Estúdio: projeto.
 - Conclusão: video-grupo-tiros.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Crie um laser parado no grupo tiros ao apertar Espaço durante a partida.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
@@ -78,7 +78,7 @@ Faça o laser nascer na nave
 - Estúdio: projeto.
 - Conclusão: video-tiro-da-nave.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Crie o laser lendo a posição atual da nave, dentro de Se jogando.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.
@@ -95,7 +95,7 @@ Confira e envie a origem dos lasers
 - Estúdio: projeto.
 - Conclusão: video-entrega, projeto; envio atualizado.
 - Conserve a nave e crie em Ao iniciar os grupos que você já montou.
-- Mova a nave com passinho 5 e confira a borda depois, dentro de Se jogando.
+- Mova a nave com velocidade 5 e mantenha ela na tela, dentro de Se jogando.
 - Continue desenhando a nave e tudo que já acrescentou ao seu jogo.
 - Crie o laser lendo a posição atual da nave, dentro de Se jogando.
 - Faça a nave chegar à borda direita e permanecer dentro da tela.

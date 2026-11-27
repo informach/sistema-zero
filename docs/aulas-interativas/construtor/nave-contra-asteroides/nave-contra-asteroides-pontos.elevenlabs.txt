@@ -4,9 +4,9 @@
 
 [curious] Se o número mudou nos bastidores, ele aparece sozinho no placar?
 
-[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou.
 
-[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência da aula. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai explorar essa ideia na experiência. O Zappy vai te mostrando o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -40,11 +40,11 @@
 
 [short pause]
 
-[confident, clear, unhurried voice] No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x,32 no y e 23 no tamanho.
+[confident, clear, unhurried voice] No rótulo que chega como Pontos:, escreva Acertos: com dois-pontos no fim. Coloque 22 no x, 32 no y e 23 no tamanho.
 
 [short pause]
 
-[confident, clear, unhurried voice] Clique no quadradinho de cor desse placar. Na janelinha, apague o código de Cor em hexadecimal, digite #f3f8ff, com cerquilha na frente, e clique em OK. Agora deixe o número do valor do placar à vista.
+[confident, clear, unhurried voice] O placar chega branco, que aparece bem no espaço. Se quiser outra cor clara, escolha no quadradinho de cor. Agora deixe o número do valor do placar à vista.
 
 [short pause]
 

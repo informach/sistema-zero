@@ -48,6 +48,8 @@
 
 [confident, clear, unhurried voice] No campo da tecla, escolha espaço, que aparece com pular entre parênteses. O que ele vai fazer aqui depende dos blocos que você colocar dentro.
 
+[engaging, energetic, conversational voice] Lembra da placa do estado na Nave Contra Asteroides? Lá, a pergunta o estado do jogo é jogando vinha num bloco pronto. Aqui você monta a mesma pergunta com uma comparação: estado é igual a jogando?
+
 [confident, clear, unhurried voice] Dentro de o acontecimento de Espaço, deixe à vista o espaço ao lado de fazer.
 
 [confident, clear, unhurried voice] Abra Programação e depois Lógica e Se.
@@ -58,7 +60,7 @@
 
 [confident, clear, unhurried voice] Clique no x da pergunta e escolha estado.
 
-[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual, sem a palavra solto.
+[confident, clear, unhurried voice] Clique no sinal de maior e escolha o sinal de igual. Na lista existem dois iguais: escolha o que não tem a palavra solto do lado.
 
 [confident, clear, unhurried voice] Deixe à vista o zero que está do lado direito da pergunta.
 

@@ -1,0 +1,201 @@
+{
+  "nave-falcao-azul": {
+    "categoria": "nave",
+    "triangulos": 4346,
+    "materiais": [
+      "casco",
+      "cascoEscuro",
+      "branco",
+      "grafite",
+      "vidro",
+      "vidroReflexo",
+      "amarelo",
+      "motorAnel",
+      "motor",
+      "chama",
+      "luzVermelha",
+      "luzVerde"
+    ],
+    "bytes": 114408,
+    "caixa": [
+      [-1.5, -1.149999976158142, -0.3400000035762787],
+      [1.5, 1.149999976158142, 0.46000000834465027]
+    ]
+  },
+  "nave-exploradora-coral": {
+    "categoria": "nave",
+    "triangulos": 4790,
+    "materiais": [
+      "coral",
+      "creme",
+      "turquesa",
+      "vidro",
+      "vidroReflexo",
+      "motor",
+      "motorAnel",
+      "chama",
+      "janela",
+      "antenaLuz",
+      "luzVermelha",
+      "luzVerde"
+    ],
+    "bytes": 120652,
+    "caixa": [
+      [-1.5, -1.149999976158142, -0.3400000035762787],
+      [1.5, 1.149999976158142, 0.46000000834465027]
+    ]
+  },
+  "nave-arraia-lilas": {
+    "categoria": "nave",
+    "triangulos": 6042,
+    "materiais": [
+      "lilas",
+      "roxo",
+      "vidro",
+      "vidroReflexo",
+      "rosaLuz",
+      "roxoMeio",
+      "mancha",
+      "motor",
+      "chama",
+      "luzVermelha",
+      "luzVerde"
+    ],
+    "bytes": 132120,
+    "caixa": [
+      [-1.5, -1.149999976158142, -0.3400000035762787],
+      [1.5, 1.149999976158142, 0.46000000834465027]
+    ]
+  },
+  "nave-cometa-verde": {
+    "categoria": "nave",
+    "triangulos": 4460,
+    "materiais": [
+      "grafiteCasco",
+      "verde",
+      "limao",
+      "amarelo",
+      "vidroCometa",
+      "vidroReflexo",
+      "motor",
+      "motorAnel",
+      "chama",
+      "grafite",
+      "luzVermelha",
+      "luzVerde"
+    ],
+    "bytes": 117084,
+    "caixa": [
+      [-1.5, -1.149999976158142, -0.3400000035762787],
+      [1.5, 1.149999976158142, 0.46000000834465027]
+    ]
+  },
+  "asteroide-rocha-lunar": {
+    "categoria": "asteroide",
+    "triangulos": 1282,
+    "materiais": ["rocha", "rochaEscura", "rochaClara", "cratera"],
+    "bytes": 103500,
+    "caixa": [
+      [-0.8999999761581421, -0.8999999761581421, -0.8999999761581421],
+      [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
+    ]
+  },
+  "asteroide-gelo-azul": {
+    "categoria": "asteroide",
+    "triangulos": 472,
+    "materiais": ["gelo", "geloFundo", "geada", "lasca"],
+    "bytes": 36724,
+    "caixa": [
+      [-0.8999999761581421, -0.8999999761581421, -0.8999999761581421],
+      [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
+    ]
+  },
+  "asteroide-cristal-violeta": {
+    "categoria": "asteroide",
+    "triangulos": 1762,
+    "materiais": ["rochaRoxa", "rochaRoxaEscura", "rochaRoxaClara", "cristal", "cristalClaro"],
+    "bytes": 130352,
+    "caixa": [
+      [-0.8999999761581421, -0.8999999761581421, -0.8999999761581421],
+      [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
+    ]
+  },
+  "asteroide-lava-laranja": {
+    "categoria": "asteroide",
+    "triangulos": 1282,
+    "materiais": ["basalto", "basaltoClaro", "lava", "lavaClara"],
+    "bytes": 103588,
+    "caixa": [
+      [-0.8999999761581421, -0.8999999761581421, -0.8999999761581421],
+      [0.8999999761581421, 0.8999999761581421, 0.8999999761581421]
+    ]
+  },
+  "laser-ciano": {
+    "categoria": "laser",
+    "triangulos": 578,
+    "materiais": ["nucleo", "casca"],
+    "bytes": 13036,
+    "caixa": [
+      [-0.14000000059604645, -0.44999998807907104, -0.14000000059604645],
+      [0.14000000059604645, 0.44999998807907104, 0.14000000059604645]
+    ]
+  },
+  "laser-dourado": {
+    "categoria": "laser",
+    "triangulos": 1154,
+    "materiais": ["nucleo", "casca"],
+    "bytes": 23896,
+    "caixa": [
+      [-0.14000000059604645, -0.44999998807907104, -0.14000000059604645],
+      [0.14000000059604645, 0.44999998807907104, 0.14000000059604645]
+    ]
+  },
+  "laser-lilas": {
+    "categoria": "laser",
+    "triangulos": 1298,
+    "materiais": ["nucleo", "casca", "anel"],
+    "bytes": 26860,
+    "caixa": [
+      [-0.14000000059604645, -0.44999998807907104, -0.14000000059604645],
+      [0.14000000059604645, 0.44999998807907104, 0.14000000059604645]
+    ]
+  },
+  "laser-verde": {
+    "categoria": "laser",
+    "triangulos": 1736,
+    "materiais": ["ponta", "nucleo", "casca"],
+    "bytes": 35204,
+    "caixa": [
+      [-0.14000000059604645, -0.44999998807907104, -0.14000000059604645],
+      [0.14000000059604645, 0.44999998807907104, 0.14000000059604645]
+    ]
+  },
+  "cenario-aurora": {
+    "categoria": "cenario",
+    "triangulos": 54006,
+    "materiais": ["ceu"],
+    "bytes": 1058400,
+    "caixa": [[-90.0, -90.0, -90.0], [90.0, 90.0, 90.0]]
+  },
+  "cenario-orbita": {
+    "categoria": "cenario",
+    "triangulos": 50786,
+    "materiais": ["ceu"],
+    "bytes": 1016736,
+    "caixa": [[-90.0, -90.0, -90.0], [90.0, 90.0, 90.0]]
+  },
+  "cenario-nebulosa": {
+    "categoria": "cenario",
+    "triangulos": 44442,
+    "materiais": ["ceu"],
+    "bytes": 906388,
+    "caixa": [[-90.0, -90.0, -90.0], [90.0, 90.0, 90.0]]
+  },
+  "cenario-estacao": {
+    "categoria": "cenario",
+    "triangulos": 55470,
+    "materiais": ["ceu"],
+    "bytes": 1134432,
+    "caixa": [[-90.0, -90.0, -90.0], [90.0, 90.0, 90.0]]
+  }
+}

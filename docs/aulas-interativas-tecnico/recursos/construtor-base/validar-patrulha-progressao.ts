@@ -283,12 +283,6 @@ const mutations = [
     before: 'SZGame3D.updateGroupNoGravity(tiros);',
     after: '',
   },
-  {
-    name: 'aviso-de-controles-incompleto',
-    objective: 'avisos-da-partida',
-    before: 'SETAS: mover | ESPAÇO: atirar | Asteroide que passa não tira vida',
-    after: 'SETAS: mover',
-  },
 ]
 const regressions: object[] = []
 for (const mutation of mutations) {

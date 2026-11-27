@@ -23,7 +23,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "que você quer alcançar. A pergunta de vitória compara esses dois valores, para reconhecer que a missão foi completada.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "Se a contagem passar de vinte, a missão deixa de estar completa?",
       "falaPersonagem": "Se a contagem passar de vinte, a missão deixa de estar completa?",
       "tags": ["[curious]"]
@@ -34,7 +34,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "reinício já está preparado. Agora você vai investigar a diferença entre mudar só a imagem e preparar a rodada inteira.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai explorar essa ideia na experiência da aula. O",
+      "ancoraDepois": "Antes de testar, pense na sua resposta e diga em voz alta. Depois, a experiência mostra se você acertou. Agora você vai",
       "falaPrincipal": "Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida?",
       "falaPersonagem": "Se eu voltar ao começo com pontos antigos, será mesmo uma nova partida?",
       "tags": ["[curious]"]

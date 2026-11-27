@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import type { ConstrutorTrecho } from './construtor-base-tipos'
 import { telaDaExperiencia } from './faisca-comum'
 import { type FalaPatrulha, montarFalaPatrulha } from './patrulha-espacial-editorial'
@@ -139,6 +140,57 @@ export function experienciaContatoPatrulha(): ConstrutorTrecho {
       'Investigue o encontro da chave e do personagem com o Zappy.',
       'Compare a altura e a separação dos objetos antes de concluir que encostaram.',
     ],
+    tests: [],
+    blockLabels: [],
+    blockTypes: [],
+  }
+}
+
+const bancadasDaNave = JSON.parse(
+  readFileSync(new URL('./construtor-2d-experiencias.json', import.meta.url), 'utf8'),
+)
+
+/**
+ * Uma bancada da Nave Contra Asteroides retomada na Patrulha: a regra é a mesma nas duas
+ * dimensões (o relógio, a proteção depois da batida), e a investigação já existe e é validada.
+ * Não existe uma cena da Patrulha; a fala deixa claro que é a bancada da nave.
+ */
+export function experienciaDaNavePatrulha(input: {
+  key: string
+  title: string
+  bancada: 'intervalo' | 'protecao'
+  falas: FalaPatrulha[]
+  pergunta: string
+  objective: string
+  convite: string
+}): ConstrutorTrecho {
+  const falas: FalaPatrulha[] = [
+    ...input.falas,
+    ['pergunta', input.pergunta],
+    [
+      'conversa',
+      'Pense na sua resposta antes de testar. Vamos voltar à bancada da Nave Contra Asteroides por um instante: a regra lá é a mesma daqui. Isso você vai testar na experiência.',
+    ],
+    [
+      'teste',
+      'O Zappy vai te mostrando o que investigar. Você pode repetir e comparar o que acontece. Depois, a gente leva a descoberta para a patrulha. Quando terminar, clique em Próxima parte.',
+    ],
+  ]
+  return {
+    key: input.key,
+    title: input.title,
+    kind: 'experience',
+    objective: input.objective,
+    ponte: `Sua vez! ${input.convite} O Zappy te mostra o que testar, e você pode repetir quando quiser. Quando terminar, clique em Próxima parte.`,
+    text: montarFalaPatrulha(falas),
+    screen: `Na edição, ilustrar a ideia narrada sem mostrar a solução da experiência. ${telaDaExperiencia('com a bancada 2D da Nave Contra Asteroides; não trocar a cena por uma nave 3D')}`,
+    kids: [input.pergunta],
+    experience: {
+      ...structuredClone(bancadasDaNave[input.bancada]),
+      title: input.title,
+      instructions: `${input.convite} O Zappy te mostra o que testar, e você pode repetir quando quiser.`,
+    },
+    steps: [input.convite, 'Observe as descobertas com o Zappy e compare o que acontece.'],
     tests: [],
     blockLabels: [],
     blockTypes: [],

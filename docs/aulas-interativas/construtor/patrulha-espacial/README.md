@@ -17,17 +17,24 @@ Cada aula possui conteúdo `.md`, roteiro `.roteiro.md`, manifesto `.manifesto.j
 
 A nave já se move depois de Enter. A criança monta o disparo, a posição de origem, as velocidades e os limites dos grupos, o intervalo dos asteroides, o contato real, a retirada, os pontos, o placar, a vida e as condições que chamam os resultados. As telas, o estado inicial, Enter e o botão nativo **Voltar ao início** estão preparados. O projeto inicial não antecipa as regras de jogo que serão construídas.
 
-As etapas deixam os efeitos aparecerem em sequência: primeiro uma cópia parada, depois seu lugar, seu caminho e seu limite. O contato funciona antes da contagem; a contagem é criada antes de aparecer no placar. A última montagem aplica quatro avisos fixos fornecidos e testa o ciclo inteiro da partida.
+As etapas deixam os efeitos aparecerem em sequência: primeiro uma cópia parada, depois seu lugar, seu caminho e seu limite. O contato funciona antes da contagem; a contagem é criada antes de aparecer no placar. Os avisos da missão já vêm prontos desde o projeto inicial; a última parte testa o ciclo inteiro da partida e envia.
 
-## Modelos provisórios
+## Modelos do Blender e variações
 
-Nave, asteroide e laser usam **três GLBs embutidos**, reaproveitados da galeria Patrulha Espacial. Cada arte entra por um bloco nativo de modelo; não há uma preparação visual extensa com formas. Helena produzirá as artes definitivas e as variações no Blender. A edição atual não cobra uma escolha de variações 3D que ainda não existem. As futuras trocas de aparência devem conservar as regras e as dimensões de contato.
+A cena usa quatro objetos com modelo: **cenário**, **nave**, **asteroide** e **laser**, cada um com quatro variações feitas no Blender ([docs/design/construtor-espaco-blender](../../../design/construtor-espaco-blender/README.md)). O projeto leva a referência de cada peça na biblioteca de modelos dos cursos; os arquivos `projeto-inicial` e `projeto-final` embutem as malhas para importação portátil. Para trocar, a criança clica no nome do modelo no bloco **Criar o objeto … com o modelo …** e escolhe outro (o seletor mostra a miniatura). As quatro opções de cada categoria têm a mesma caixa: tamanho, centro e área de toque não mudam.
+
+| Objeto | Variações (a primeira é a de partida) | Tamanho no bloco |
+|---|---|---|
+| cenário | `cenario-orbita`, `cenario-aurora`, `cenario-nebulosa`, `cenario-estacao` | 180 |
+| nave | `nave-falcao-azul`, `nave-exploradora-coral`, `nave-arraia-lilas`, `nave-cometa-verde` | 3 |
+| asteroide | `asteroide-rocha-lunar`, `asteroide-gelo-azul`, `asteroide-cristal-violeta`, `asteroide-lava-laranja` | 1,8 |
+| laser | `laser-ciano`, `laser-dourado`, `laser-lilas`, `laser-verde` | 0,9 |
 
 ## Verificação feita
 
-O [relatório da progressão](qa-runtime-progressao.json) registra 19 etapas e 84 objetivos de execução. O teste executa os arquivos entregues, carrega os GLBs com o loader oficial e confere as conquistas intermediárias, a prioridade dos resultados e o reinício. O desenho WebGL é substituído no adaptador de QA; este resultado não é uma inspeção visual do Estúdio publicado.
+O [relatório da progressão](qa-runtime-progressao.json) registra 19 etapas e 83 objetivos de execução. O teste executa os arquivos entregues, resolve as peças da biblioteca e carrega os GLBs do Blender com o loader oficial e confere as conquistas intermediárias, a prioridade dos resultados e o reinício. O desenho WebGL é substituído no adaptador de QA; a partida com WebGL de verdade é conferida em Chromium por `docs/aulas-interativas-tecnico/qa/construtor-navegador.ts` (o mesmo documento do player do Estúdio, com as quatro combinações de variações).
 
-O [relatório das experiências](qa-experiencias.json) registra as ações reais do motor `scene` que fecham as cinco metas das duas bancadas. As atividades começam sem descobertas concluídas. A Ilha permanece identificada como Ilha e sua relação com a Patrulha é explicitada na fala.
+O [relatório das experiências](qa-experiencias.json) registra as ações reais do motor `scene` que fecham as cinco metas das duas bancadas da Ilha. As aulas 2 e 4 retomam duas bancadas da Nave (o relógio e a proteção), as mesmas que o validador do 2D abre e conclui. As atividades começam sem descobertas concluídas. A Ilha permanece identificada como Ilha e sua relação com a Patrulha é explicitada na fala.
 
 ## Produção pendente
 

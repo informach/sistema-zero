@@ -3,9 +3,9 @@
   "courses": [
     {
       "course": "nave-contra-asteroides",
-      "count": 786,
-      "pageGestures": 126,
-      "nativeGestures": 660,
+      "count": 775,
+      "pageGestures": 114,
+      "nativeGestures": 661,
       "unknown": []
     },
     {
