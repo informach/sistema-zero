@@ -54,6 +54,9 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Members em Postgres descartável: dez testes passaram; cadência do Desafio cobre dias e meses.
 - Funnel: 767 testes passaram, seis testes de banco opcionais não executados; build passou;
   typecheck sem erros (nove sugestões do Astro).
+- Navegador local com gateway falso: venda do guia em quatro larguras, presente em duas,
+  cadastro e estados passaram. O mesmo slug `-1-ano` mostra seis meses na venda e no presente,
+  sem exibir os dias de calendário. Nenhum cadastro de teste foi criado em produção.
 - Catálogo: 171 testes passaram, catorze opcionais de banco não executados; typecheck passou.
 - Admin: 1040 testes passaram; typecheck passou com heap de 8 GB.
 - Mensageria: 183 testes passaram, onze opcionais de banco não executados; typecheck passou.
