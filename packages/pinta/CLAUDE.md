@@ -1,27 +1,12 @@
 # CLAUDE.md — @sistemazero/pinta
 
-## LG05 — transição para autoria 9 (27/11/2026)
+## LG05 — oficina única, autoria 9 (27/11/2026)
 
-Plano vigente: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`.
-O leitor causal A está integrado em main (PR 298), com CI aprovado; a implantação de staging
-está em andamento. Nenhuma promoção LG05 para produção está confirmada neste corte.
+Plano e recibos: `docs/superpowers/plans/2026-11-27-lg05-regras-projecoes.md`. O contrato desta fonte é leitor causal 8, gravador 8 e teto nativo 9, definido uma vez em `pinta-workshop-capabilities.ts` e usado pelos hosts Kids, adulto e Arquipélago. A promoção do gravador depende da implantação prévia de todos os leitores e da imagem compatível; preparar a fonte não comprova implantação.
 
-A entrega B está em qualificação: catálogo único para todos os documentos da oficina, editor
-projetado com a mesma autoridade/histórico/autosave, seleção e geometria próprias, avaliador
-comum de autorregras e PNG 6/cena 5 pelo mesmo ponto de admissão Pinta→Studio. O exportador
-externo anterior foi substituído pelo preparador comum; formatos antigos conservam leitura
-e recuperação, sem seletor de escrita antiga. O gesto publica cada pincelada na autoridade
-comum e registra um único desfazer ao terminar; prévias de regras continuam explícitas.
+Mapas ortogonais, isométricos e hexagonais e livros de autorregras usam o catálogo, a autoridade, o histórico, o autosave e a fila causal comuns. O gesto publica cada pincelada na autoridade e registra um desfazer ao terminar; regras armadas permanecem prévia até aplicar. PNG 6/cena 5 passa pelo mesmo ponto de admissão do PNG 5. O preparador comum substitui o exportador anterior. Não conservar gravador, seletor ou implementação pública alternativa.
 
-O host público ainda anuncia leitor 8, escritor causal 7 e teto nativo 8 pelo contrato único
-`pinta-workshop-capabilities.ts`. A capacidade numérica `nativeWriterVersion` impede mutações
-de documentos 9 nesse host. A ativação escritor 8/teto 9 depende da implantação prévia de
-todos os leitores, inclusive PNG 6 no Studio, e da qualificação completa da entrega B.
-Não introduzir flag, versão selecionável ou uma segunda implementação pública.
-
-As seções datadas de 23/11 e anteriores abaixo são históricas. As recusas ali de galeria,
-PNG e editor projetados não descrevem o código B em qualificação, nem comprovam deploy.
-Python permanece na LG08; não promover catálogo/distribuição Python nesta entrega.
+Arquivos anteriores continuam legíveis/importáveis e migram pela mesma autoridade; o codec conserva o envelope mínimo exigido pelo conteúdo. O contexto de aula mantém seu isolamento e suas permissões. Os registros de 23/11 abaixo são históricos: recusas de editor projetado, PNG 6 e teto público 8 não descrevem este contrato. Python e seus catálogos continuam na LG08.
 
 ## Oficina de cenários: como está em 23/11/2026
 

@@ -1,5 +1,11 @@
 # Plano de liberação gradual das novidades
 
+**Homologação única preparada em 2026-11-27T23:10:10.162Z:** a staging reúne os leitores/oficina e a ativação final da PR 301, gravador causal 8 e teto nativo 9. A validação da fonte anterior `1c401e7b3` foi cancelada antes de qualquer job de implantação; nenhuma carga de catálogo/dados foi interrompida. Esta fonte precisa de CI completo, onda canônica e aceite de conta fria antes de publicar. Em produção, a ordem continua: PR 299 instala todos os leitores compatíveis; somente após sua onda completa promover a PR 301.
+
+**Estado vigente — 2026-11-27T23:02:17.435Z:** a liberação das campanhas PR 300, fonte `5400ea1d105390390a376444c2aecf9adc7ffa99`, foi integrada e seus 121 arquivos permanecem idênticos nas candidatas. A retomada está autorizada. Candidata de leitores/oficina `52988d34cd3c9a6da33c4c0f2480cddbd6a8268d` (PR 299), staging `1c401e7b3a345c8056b27e187e86ae9085c437cf`. CI completo novo: `46079975021` e onda canônica de staging `46080040007`, ainda pendentes. A imagem Linux oficial `46077493200`, artefato `15234974061`, passou os sete casos reais e foi carregada com hashes e camadas conferidos; perfil `9d9c87fc7158c48ef763abf0d86e4cef6c3b95b9d1da9059cbd5c98fb19010c3`. O transporte ao registro está em andamento, sem nova publicação do Worker. Falha de importação JSON no Node corrigida e os dois testes reais de conversão no Chromium passaram; teste de cenários atualizado para a Patrulha já existente, suíte aprovada. Gravador final preparado, 2.829 testes do member-shell (quatro condicionais), tipos do member-shell e Studio, e 17 testes de linguagem aprovados. Sua ativação depende dos leitores completos em produção e do aceite em staging; público continua gravador causal 7/teto nativo 8.
+
+Os registros datados abaixo são históricos; os estados antigos de imagens, candidatos e suspensões não substituem este quadro vigente.
+
 Registrado em 23/11/2026 para execução aos poucos. Atualizado em 27/11 após conferir GitHub, deployments Railway e os cursos pela API de produção, somente de leitura. LG01 e LG02 foram concluídas em produção em 24/11; LG04, em 25/11. LG03 está parcial e LG05 está em implementação e qualificação, sem liberação pública nova. Este registro permite retomar cada frente separadamente.
 
 A prioridade é entregar à criança fluxos completos: criar, guardar, voltar depois e continuar usando o projeto nos destinos oferecidos. As melhorias prontas e a publicação de aulas podem avançar enquanto as integrações maiores são concluídas.
@@ -13,7 +19,7 @@ A prioridade é entregar à criança fluxos completos: criar, guardar, voltar de
 
 O levantamento de 23/11 é histórico; o quadro e os registros datados abaixo distinguem as entregas posteriores. Ao retomar uma etapa, conferir o código e a configuração vigentes antes de decidir o que ainda falta. Implementação local, qualificação em staging e liberação em produção são estados distintos.
 
-**Condição de retomada da LG05 (27/11):** a implantação urgente das campanhas, feita pela outra sessão, deve terminar primeiro. A nossa fonte final precisa incorporar integralmente o que ela publicar, com comparação por serviço e por conteúdo antes do CI e do deploy; a candidata antiga isolada não pode sobrescrever as campanhas.
+**Preservação das campanhas (27/11):** implantação urgente encerrada e retomada autorizada. A fonte comercial `5400ea1d1` está integrada; os 121 arquivos foram comparados nas três candidatas, sem divergências. As promoções continuam vinculadas às fontes exatas qualificadas.
 
 ## Ordem e acompanhamento
 
