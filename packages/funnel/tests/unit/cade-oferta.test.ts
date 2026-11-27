@@ -210,6 +210,14 @@ describe('corpos e despacho', () => {
 })
 
 describe('Termos das ofertas novas', () => {
+  test('os Termos do Cadê distinguem meses de calendário e dias de 24 horas', () => {
+    for (const f of [CADE_TODO_MUNDO, CADE_ADULTO]) {
+      const texto = JSON.stringify(f.legal.termos)
+      expect(texto).toContain('meses de calendário')
+      expect(texto).toContain('24 horas')
+      expect(f.legal.termsVersion).toMatch(/2026-11-27$/)
+    }
+  })
   test('um Termo por oferta, sem sobra do Desafio', () => {
     for (const termos of [TERMOS_CADE_KIDS, TERMOS_CADE_ADULTO, TERMOS_GUIA_PAIS]) {
       const texto = JSON.stringify(termos)

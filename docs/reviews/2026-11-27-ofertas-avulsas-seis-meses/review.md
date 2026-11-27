@@ -42,6 +42,10 @@ Nenhum código da oficina do Pinta que estava apenas em staging entrou nesta sel
    antes da correção; o painel real passou nos cinco casos de meses, Cadê com sete dias, prazo
    histórico de trinta dias, singular e ausência de prazo. Publicar os apps Kids e adulto para
    receber esse componente do member-shell.
+9. **Média, descrição do cálculo nos Termos do Cadê:** os dois públicos ainda descreviam
+   qualquer prazo como dias de 24 horas. Os Termos agora distinguem meses de calendário e dias,
+   seguindo o cálculo já usado no acesso. A versão passa para `cade-kids-2026-11-27` e
+   `cade-adulto-2026-11-27`, sem alterar os snapshots das compras anteriores.
 
 ## Compatibilidade e ordem
 
@@ -69,7 +73,7 @@ dois templates: preservar as demais edições existentes e o estado ativo/inativ
 - Members: 2448 testes passaram, 779 opcionais não executados na suíte geral. Os 46 testes
   direcionados incluem o grant por política congelada.
 - Members em Postgres descartável: dez testes passaram; cadência do Desafio cobre dias e meses.
-- Funnel: 767 testes passaram, seis testes de banco opcionais não executados; build passou;
+- Funnel: 768 testes passaram após o complemento dos Termos do Cadê, seis testes de banco opcionais não executados; build passou;
   typecheck sem erros (nove sugestões do Astro).
 - Navegador local com gateway falso: venda do guia em quatro larguras, presente em duas,
   cadastro e estados passaram. O mesmo slug `-1-ano` mostra seis meses na venda e no presente,
