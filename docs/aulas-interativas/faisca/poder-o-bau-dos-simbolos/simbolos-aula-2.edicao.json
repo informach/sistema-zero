@@ -23,8 +23,8 @@
       "ocorrencia": 1,
       "ancoraAntes": "o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.",
       "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: abra o baú da ilha.",
-      "falaPrincipal": "Será que na ilha o baú também só abre na ordem certa?",
-      "falaPersonagem": "Será que na ilha o baú também só abre na ordem certa?",
+      "falaPrincipal": "Será que o baú está no mesmo lugar do jogo 2D?",
+      "falaPersonagem": "Será que o baú está no mesmo lugar do jogo 2D?",
       "tags": ["[curious]"]
     },
     {

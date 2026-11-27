@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"A ponte da ilha também é apressada?\",\"falaPersonagem\":\"A ponte da ilha também é apressada?\",\"ancoraAntes\":\"letras W, A, S e D também funcionam. Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
+      "plannedVideo": "Título: A ponte chegou à ilha\n\nMaster integral da professora. Roteiro: ponte-aula-2.roteiro.md, clipe video-abertura. Substituições kids: [{\"id\":\"video-abertura-K1\",\"clipe\":\"video-abertura\",\"personagem\":\"Dedé\",\"falaPrincipal\":\"Será que dá tempo de atravessar a ponte da ilha antes de ela subir?\",\"falaPersonagem\":\"Será que dá tempo de atravessar a ponte da ilha antes de ela subir?\",\"ancoraAntes\":\"o personagem vem para a frente, perto do laguinho. Repare também no aviso aqui em cima: ele diz o que fazer na partida.\",\"ancoraDepois\":\"Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: atravesse a ponte\",\"ocorrencia\":1,\"tags\":[\"[curious]\"]}]. Gravação pendente."
     },
     {
       "key": "ponte-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Jogue a versão pronta: segure as setas, descubra o que a alavanca faz e tente atravessar a ponte. A tecla R recomeça. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: segure as setas, encoste na alavanca e atravesse a ponte até a pedra do sino antes que ela suba. A tecla R recomeça. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Jogue A ponte apressada",
         "required": true,
-        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Descubra o que a alavanca faz e tente atravessar a ponte. A tecla R começa outra partida.",
+        "instructions": "Clique no jogo e use as setas ou W, A, S e D. Encoste na alavanca e atravesse a ponte até a pedra do sino antes que ela suba. A tecla R começa outra partida.",
         "hints": [],
         "activity": {
           "type": "project-play",

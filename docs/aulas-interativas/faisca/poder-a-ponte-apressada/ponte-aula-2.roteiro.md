@@ -8,35 +8,37 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 **Clipe:** `video-abertura`
 
-**Na tela:** Do "Oi" até o "a ponte levadiça e a alavanca", a tela mostra o título A ponte apressada sobre a cena inicial do jogo pronto [na edição: título A ponte apressada]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: com a seta de baixo", segurar a seta de baixo do teclado por um instante, sem passar da beira da água [segurar tecla ArrowDown por 0,3 s]. No "A ponte da ilha também é apressada", manter a cena parada, sem ir à alavanca. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Explore a ilha", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não puxar a alavanca nem ir à ponte: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
+**Na tela:** Do "Oi" até o "e a ponte levadiça", a tela mostra o título A ponte apressada sobre a cena inicial do jogo pronto [na edição: título A ponte apressada]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: com a seta de baixo", segurar a seta de baixo do teclado por um instante, sem passar da beira da água [segurar tecla ArrowDown por 0,3 s]. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Será que dá tempo", manter a cena parada, sem ir à alavanca. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não puxar a alavanca nem ir à ponte: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
 
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] Oi! A ponte apressada chegou à Ilha do Farol, em três dimensões! No gramado da frente tem um laguinho, com a pedra do sino no meio da água, a ponte levadiça e a alavanca.
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou a ponte apressada no jogo 2D. Agora ela chegou à Ilha do Farol, em três dimensões! No gramado da frente tem um laguinho, com a pedra do sino no meio da água e a ponte levadiça.
+
+[engaging, energetic, conversational voice] A regra continua a mesma: quando o personagem encosta na alavanca, a ponte baixa, e 4 segundos depois ela sobe de novo.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
 [interested, animated voice] Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho.
 
-[curious] A ponte da ilha também é apressada?
+[engaging, energetic, conversational voice] Repare também no aviso aqui em cima: ele diz o que fazer na partida.
 
-[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida.
+[curious] Será que dá tempo de atravessar a ponte da ilha antes de ela subir?
 
-[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
-[upbeat, encouraging voice] Explore a ilha. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: atravesse a ponte até a pedra do sino. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-abertura-K1 | Dedé | 1 | letras W, A, S e D também funcionam. Olha aqui: com a seta de baixo, o personagem vem para a frente, perto do laguinho. | A ponte da ilha também é apressada? | Isso eu deixo para você descobrir. Repare também no aviso aqui em cima: ele diz o que fazer na partida. Para começar | [curious] |
+| video-abertura-K1 | Dedé | 1 | o personagem vem para a frente, perto do laguinho. Repare também no aviso aqui em cima: ele diz o que fazer na partida. | Será que dá tempo de atravessar a ponte da ilha antes de ela subir? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: atravesse a ponte | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-**Recado na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas, descubra o que a alavanca faz e tente atravessar a ponte. A tecla R recomeça. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas, encoste na alavanca e atravesse a ponte até a pedra do sino antes que ela suba. A tecla R recomeça. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. A alavanca da ilha
 

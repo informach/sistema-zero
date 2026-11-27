@@ -1,12 +1,14 @@
 [upbeat, welcoming voice] Oi! Na Aula 1, você programou a senha do baú no jogo 2D. Agora o baú dos símbolos chegou à Ilha do Farol, em três dimensões!
 
-[engaging, energetic, conversational voice] No gramado da frente ficam as três pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem certa.
+[engaging, energetic, conversational voice] A regra continua a mesma: o baú só abre quando o personagem toca as três pedras na ordem certa.
+
+[engaging, energetic, conversational voice] No gramado da frente ficam as pedras: o sol, a lua e a estrela. E a placa ao lado delas mostra a ordem.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
 [interested, animated voice] Olha aqui: quando eu levo o personagem até o sol, a pedra acende com uma animação. Repare também no aviso aqui em cima: agora ele pede a lua.
 
-[curious] Será que na ilha o baú também só abre na ordem certa?
+[curious] Será que o baú está no mesmo lugar do jogo 2D?
 
 [engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
 
