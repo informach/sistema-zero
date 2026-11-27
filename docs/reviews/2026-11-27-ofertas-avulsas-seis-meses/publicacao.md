@@ -26,8 +26,20 @@ O ajuste adicional da confirmação de compra, `f00682b14`, foi publicado no Fun
 A correção do teste de pixels do Estúdio, `bbbfdecb7`, não altera o motor.
 
 A revisão adicional do member-shell alinha o painel interno de presentes em meses à unidade
-da oferta, preservando os dias anunciados do Cadê. Esse complemento exige publicar os apps
-Kids e adulto; o recibo fica no PR, sem repetir a onda dos demais serviços.
+da oferta, preservando os dias anunciados do Cadê. Esse complemento foi publicado nos apps
+Kids e adulto na fonte `9f2c862d4`, com os predecessores retirados:
+
+| App | Deployment |
+| --- | --- |
+| Kids | `da3c3c88-d79f-47ad-97c5-d24b0862493b` |
+| Adulto | `fc31747e-e0ff-4744-9cd4-4335bd1840c1` |
+
+Os cinco cenários do painel real passaram. No Chromium, as duas aparências mostraram seis
+meses e sete dias do Cadê sem rolagem lateral a 390 px, sem ativação de presente.
+
+Os Termos do Cadê também distinguem meses de calendário e dias de 24 horas. As versões novas
+são `cade-kids-2026-11-27` e `cade-adulto-2026-11-27`. É uma correção de texto; o cálculo do
+acesso já estava correto. As compras antigas conservam a versão aceita no snapshot.
 
 ## Catálogo e funcionamento
 
