@@ -9,7 +9,7 @@ test('reconhece o quadro WebGL composto depois de o back buffer ser descartado',
   )
   const frame = page.locator('iframe')
   await frame.evaluate((element) => {
-    element.srcdoc =
+    ;(element as HTMLIFrameElement).srcdoc =
       '<body style="margin:0;background:green"><canvas width="320" height="200" style="background:orange"></canvas>'
   })
   const canvas = page.frameLocator('iframe').locator('canvas')
@@ -35,7 +35,7 @@ test('reconhece o quadro WebGL composto depois de o back buffer ser descartado',
 
   // O canvas vazio, mesmo com fundos coloridos e sombra, precisa continuar sendo rejeitado.
   await frame.evaluate((element) => {
-    element.srcdoc =
+    ;(element as HTMLIFrameElement).srcdoc =
       '<body style="margin:0;background:green"><div style="background:purple"><canvas width="320" height="200" style="background:orange;border:2px solid red;box-shadow:0 0 10px blue"></canvas></div>'
   })
   await canvas.evaluate((element) => {
