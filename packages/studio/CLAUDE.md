@@ -1,5 +1,13 @@
 # @sistemazero/studio
 
+## LG05 — contratos portáteis na conversão Pro (27/11/2026)
+
+A conversão dos motores 2D leva as declarações `.d.ts` para `src/sz-platform/`, junto do projeto. `scripts/gen-pro-runtime-declarations.ts` emite os contratos existentes de Game 2D, Avançado, mapas, objetos do Core e ciclo de vida; não manter assinaturas manuais paralelas. Ao alterar esses contratos, rodar `gen:pro-runtime-declarations`; o CI confere `check:pro-runtime-declarations`. O objeto do cenário sai estruturalmente do tipo inferido pelo schema, sem depender de Zod no projeto da criança.
+
+`modes/pro/runtimeDeclarations.ts` atende conversão e BFF. Projetos Pro anteriores com motor intacto recebem os mesmos tipos na cópia derivada do build, sem alterar a árvore autoral; um caminho de tipos ocupado por conteúdo diferente é recusado e preservado. O Worker envia ao compilador hashes dos motores reconhecidos no inventário e dos materiais gerados já conferidos. O compilador revalida os bytes e conserva as verificações de sintaxe/importação; checagem semântica autoral continua inclusive nos arquivos fechados e nas cópias de motor não reconhecidas.
+
+Estado: correção em qualificação; ainda não promovida em produção. Gravador público do Pinta continua 7/teto 8 até terminar a implantação dos leitores e a onda final 8/9.
+
 ## Miniaturas dos modelos 3D (23/11/2026)
 
 Pedido dela: no seletor de modelo do bloco só aparecia o 📦, e a criança escolhia pelo nome.

@@ -46,6 +46,7 @@ function setup(
   } = {},
 ) {
   const calls: SandboxCall[] = []
+  const writes = new Map<string, string>()
   let factoryCalls = 0
   let destroyed = 0
   const identities: string[] = []
@@ -54,7 +55,9 @@ function setup(
       destroyed++
     },
     mkdir: async () => undefined,
-    writeFile: async () => undefined,
+    writeFile: async (path: string, content: string) => {
+      writes.set(path, content)
+    },
     readFile: async (path: string) => ({
       content: path.endsWith('typecheck-result.json')
         ? JSON.stringify({
@@ -126,6 +129,7 @@ function setup(
     handler: createStudioRuntimeHandler(factory),
     env,
     calls,
+    writes,
     factoryCalls: () => factoryCalls,
     destroyed: () => destroyed,
     identities,
@@ -624,6 +628,50 @@ describe('handler do Studio Runtime', () => {
       1,
     )
     expect(context.calls.some((call) => call.command.startsWith('rm -rf'))).toBe(false)
+  })
+  test('validation provenance comes from admitted bytes and cannot be supplied as a reserved request file', async () => {
+    const { mapTwoDRegionalEngineBootstrap } = await import(
+      '../../studio/src/official-extensions/map-2d/regionBootstrap'
+    )
+    const engine = await mapTwoDRegionalEngineBootstrap('g2d')
+    const material = 'window.__SZGAME_ASSETS = {}'
+    for (const source of [engine, 'function authorEngine(value) { return value }']) {
+      const context = setup()
+      const response = await execute(
+        context,
+        request({
+          ...validBody,
+          validate: true,
+          files: {
+            ...validBody.files,
+            'public/sz-ext/game-2d.js': source,
+            'validation-options.json': JSON.stringify({
+              platformFiles: { 'src/main.js': '0'.repeat(64) },
+            }),
+          },
+          binaries: {
+            'public/sz-assets.js': {
+              base64: Buffer.from(material).toString('base64'),
+              sha256: createHash('sha256').update(material).digest('hex'),
+            },
+          },
+        }),
+      )
+      expect(response.status).toBe(200)
+      const raw = [...context.writes].find(([path]) =>
+        path.endsWith('/validation-options.json'),
+      )?.[1]
+      if (!raw) throw new Error('Missing compiler provenance')
+      expect(JSON.parse(raw)).toEqual({
+        templateId: validBody.templateId,
+        platformFiles: {
+          'public/sz-assets.js': createHash('sha256').update(material).digest('hex'),
+          ...(source === engine
+            ? { 'public/sz-ext/game-2d.js': createHash('sha256').update(engine).digest('hex') }
+            : {}),
+        },
+      })
+    }
   })
   test('a failed typecheck prevents build; a failed playtest prevents artifact publication; both destroy the container', async () => {
     for (const options of [{ typeSuccess: false }, { playSuccess: false }]) {

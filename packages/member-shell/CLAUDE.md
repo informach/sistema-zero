@@ -1,5 +1,11 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## LG05 — validação Pro dos cenários (27/11/2026)
+
+`studio-regional-build.ts` reutiliza as declarações portáteis do Estúdio nos builds com cópia reconhecida do motor 2D. Acrescenta somente arquivos derivados ausentes ou idênticos; conflitos não sobrescrevem autoria. O PNG e a árvore de origem continuam intactos. A prova de imagem regional deve usar o projeto criado pelo botão Jogar, conferir tipos com `checkJs`, recusar um erro autoral inserido, compilar e executar o playtest real. Compilar uma página vazia não qualifica esse percurso.
+
+Correção em qualificação. A implantação deve preservar integralmente a fonte comercial `5400ea1d1` já publicada; nova fonte precisa de CI, imagem, staging e promoção canônica. Capacidades públicas ainda 7/teto 8; ativação final 8/9 permanece separada da implantação dos leitores.
+
 ## LG05 leitor A (27/11/2026, implementação local)
 
 `lib/pinta-workshop-capabilities.ts` separa o leitor causal (8), o gravador (7) e o teto
