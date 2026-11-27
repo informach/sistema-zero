@@ -102,11 +102,15 @@ export interface CourseBenefitClaimSource {
   blockId: string
   accessSource: CommerceAccessSource
 }
+/** Política aceita no resgate e preservada nas retomadas. */
+export type GiftAccessPolicy =
+  | { mode: 'lifetime'; durationValue: null; durationUnit: null }
+  | { mode: 'fixed'; durationValue: number; durationUnit: 'days' | 'months' }
+
 /**
- * O que o presente entrega (15/11/2026): a OFERTA do catálogo escolhida pela campanha (ou a
- * oferta padrão do público, nos códigos de embaixador). O presente só aceita oferta sem prazo
- * (vitalícia) ou de prazo fixo em DIAS: `accessDays` nulo = sem prazo; `learner` vem do curso
- * principal publicado.
+ * Oferta do presente escolhida pela campanha ou embaixador. Aceita prazo em dias ou meses;
+ * `accessDays` traz os dias de calendário e `accessMonths` preserva a unidade exibida.
+ * Sem ambos os prazos, o acesso não expira. `learner` vem do curso principal publicado.
  */
 export interface ReferralGiftOfferView {
   offerId: string

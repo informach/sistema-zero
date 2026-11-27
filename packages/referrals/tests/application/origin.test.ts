@@ -486,6 +486,9 @@ describe('links de indicação', () => {
     expect(await links.resolve('mari-x7k2', 'desafio-6-meses', false, 'gift')).toMatchObject({
       link: { mode: 'gift', offerSlug: 'desafio-6-meses' },
     })
+    expect(await links.resolve('mari-x7k2', 'desafio-6-meses', true)).toMatchObject({
+      link: { mode: 'sale', target: 'checkout', offerSlug: 'desafio-6-meses' },
+    })
   })
 
   test('link antigo com a oferta que saiu da lista abre a ligada do mesmo curso, sem trocar de tipo', async () => {

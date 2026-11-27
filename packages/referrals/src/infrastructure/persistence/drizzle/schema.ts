@@ -6,6 +6,7 @@ import type {
   CampaignKind,
   CampaignLinkTarget,
   CourseBenefitContext,
+  GiftAccessPolicy,
   GiftAttribution,
   GiftAudience,
   GiftSource,
@@ -265,10 +266,12 @@ export const scholarshipRedemptions = referralsSchema.table(
     attemptCount: integer().notNull().default(0),
     completedAt: timestamp({ withTimezone: true }),
     /**
-     * Dias do presente. Null nos resgates históricos sem prazo e nos resgates por oferta
-     * vitalícia ou com prazo em meses (o fim sai da própria oferta, contado do resgate).
+     * Dias do presente, incluindo meses convertidos no instante da aceitação.
+     * Null nos resgates históricos sem prazo e nas ofertas vitalícias.
      */
     accessDurationDays: integer(),
+    /** Política gravada no claim; null preserva os resgates anteriores sem inferência. */
+    giftAccessPolicy: jsonb().$type<GiftAccessPolicy>(),
     /**
      * Prazo DIVULGADO no resgate (25/11/2026): o que a pessoa vê e o members avisa; gravado no
      * claim (a oferta pode mudar depois). Null = sem divulgado (vê o real).

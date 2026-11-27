@@ -590,7 +590,7 @@ export const seeds = [
       content: [
         p('Olá, {{nome}}! O acesso já foi liberado, mas a conta ainda não foi aberta.'),
         p(
-          'Como os 6 meses de acesso começaram na aprovação do pagamento, vale entrar agora. Não precisa de senha: use o botão abaixo, informe o e-mail da compra e digite o código de 6 números que chega no seu e-mail.',
+          'Como o prazo de acesso começou na aprovação do pagamento, vale entrar agora. Não precisa de senha: use o botão abaixo, informe o e-mail da compra e digite o código de 6 números que chega no seu e-mail.',
         ),
         ctaButton('Entrar com o código do e-mail', '{{link}}'),
         fallbackLink('{{link}}'),
@@ -796,7 +796,7 @@ export const seeds = [
       content: [
         p('Olá, {{nome}}. O acesso já foi liberado, mas a sua conta ainda não foi aberta.'),
         p(
-          'Os 6 meses de acesso começaram na aprovação do pagamento, então vale entrar agora. A senha é opcional. Use o botão abaixo, toque em <strong>Com código no e-mail</strong>, informe o e-mail da compra e digite o código de 6 números que chega para você.',
+          'O prazo de acesso começou na aprovação do pagamento, então vale entrar agora. A senha é opcional. Use o botão abaixo, toque em <strong>Com código no e-mail</strong>, informe o e-mail da compra e digite o código de 6 números que chega para você.',
         ),
         ctaButton('Entrar com o código do e-mail', '{{link}}'),
         fallbackLink('{{link}}'),

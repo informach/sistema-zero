@@ -419,6 +419,7 @@ export const GrantManualWebhookBody = t.Union([
     offerRef: t.String({ minLength: 1, maxLength: 200 }),
     // Presente da campanha (15/11/2026): o prazo vem da oferta, a partir de `anchorAt`.
     useOfferAccessPolicy: t.Optional(t.Boolean()),
+    accessPolicy: t.Optional(PurchasedAccessPolicyBody),
     anchorAt: t.Optional(t.String({ format: 'date-time', maxLength: 40 })),
     audience: GiftAudienceField,
   }),

@@ -422,7 +422,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'estudio-padrao',
     slug: 'estudio-completo',
-    name: 'Estúdio Completo — Oferta padrão',
+    name: 'Estúdio Completo · 6 meses',
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
@@ -442,7 +442,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'pensa-padrao',
     slug: 'pensa',
-    name: 'Pensa — Oferta padrão',
+    name: 'Pensa · 6 meses',
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
@@ -462,7 +462,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'pinta-padrao',
     slug: 'pinta',
-    name: 'Pinta — Oferta padrão',
+    name: 'Pinta · 6 meses',
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',
@@ -482,7 +482,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
   {
     code: 'molda-padrao',
     slug: 'molda',
-    name: 'Molda — Oferta padrão',
+    name: 'Molda · 6 meses',
     priceCents: 9700,
     currency: 'BRL',
     pricingMode: 'one_time',

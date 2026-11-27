@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/members
 
+## Política aceita no resgate de presente (27/11/2026)
+
+`POST /members/webhooks/grant-manual`, `mode: offer` e `useOfferAccessPolicy: true`, aceita
+`accessPolicy` opcional, no mesmo formato da compra. Quando presente, o prazo e o snapshot usam
+essa política, congelada no claim do referrals, com `anchorAt` do resgate. Sem o campo, continua
+usando a oferta atual para compatibilidade. Isso evita que uma retomada ganhe o prazo que o
+catálogo passou a ter depois. Publicar o Members compatível antes do referrals que envia o campo.
+
+
 ## "Começaram o curso do presente" (25/11/2026, Admin)
 
 `POST /members/admin/course-starts` `{courseSlug, userIds (até 500)}` → `{started}` (staff+, rota

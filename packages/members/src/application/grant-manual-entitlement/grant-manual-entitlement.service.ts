@@ -59,6 +59,8 @@ export type GrantManualCommand =
        * visita permanente, a mesma regra da compra. Ignora `expiresAt`.
        */
       useOfferAccessPolicy?: boolean
+      /** Política aceita no resgate S2S; ausente mantém a leitura legada do catálogo. */
+      accessPolicy?: PurchasedAccessPolicy
       /** Início do prazo (a data do resgate, estável nas re-entregas). Ausente = agora. */
       anchorAt?: Date
       /** Público do presente, gravado no snapshot (`giftAudience`) para os avisos de fim. */
@@ -199,7 +201,7 @@ export class GrantManualEntitlementService {
     sourceId?: string,
     gift?: Pick<
       Extract<GrantManualCommand, { mode: 'offer' }>,
-      'useOfferAccessPolicy' | 'anchorAt' | 'audience'
+      'useOfferAccessPolicy' | 'anchorAt' | 'audience' | 'accessPolicy'
     >,
   ): Promise<GrantManualResult> {
     const offer = await this.deps.catalog.resolveOfferEntitlements(offerRef)
@@ -216,7 +218,7 @@ export class GrantManualEntitlementService {
     let accessPolicy: PurchasedAccessPolicy | undefined
     let visitorAudience: MuralAudience | null = null
     if (gift?.useOfferAccessPolicy) {
-      const policy = offer.accessPolicy
+      const policy = gift.accessPolicy ?? offer.accessPolicy
       if (!policy || policy.mode === 'billing_cycle')
         throw new InvalidEntitlementCommandError(
           'O presente precisa de uma oferta de pagamento único (prazo fixo ou sem prazo)',

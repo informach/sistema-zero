@@ -121,7 +121,11 @@ export class ReferralLinkService {
     // A mesma oferta pode estar nas duas listas (27/11/2026: a oferta única de cada curso é venda
     // e presente): o tipo do link decide; sem ele, o presente vem primeiro, como antes. A oferta
     // que saiu da lista cai na ligada do MESMO curso, mas só depois das correspondências exatas.
-    const kinds: ('gift' | 'referral')[] = kind ? [kind] : ['gift', 'referral']
+    const kinds: ('gift' | 'referral')[] = checkout
+      ? ['referral']
+      : kind
+        ? [kind]
+        : ['gift', 'referral']
     for (const sameCourse of [false, true]) {
       for (const listKind of kinds) {
         const option = await this.offers.allowed(audience, listKind, offerRef, { sameCourse })

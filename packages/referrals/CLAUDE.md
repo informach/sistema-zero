@@ -8,8 +8,12 @@ embaixadores e resgate). O resgate grava em `access_duration_days` os dias do ca
 do instante do resgate (`giftAccessDays(offer, now)` → `monthsSpanDays`, a mesma conta
 `addUtcCalendarMonths` do members, que concede pela política da própria oferta). O texto lê meses:
 a leitura pública e a da área de membros mandam `gift.accessMonths` (só quando é por meses) e os
-e-mails dizem "por 6 meses, até …" (`monthsOfRedemption` reconstrói os meses dos dias gravados,
-com tolerância de um dia). O Admin lista as ofertas em meses na escolha do presente. O presente do
+e-mails dizem "por 6 meses, até …". A migration `0016_redemption_gift_policy` acrescenta o JSON
+nullable `gift_access_policy`: a unidade e a duração ficam congeladas no claim. O repositório
+converte meses usando o mesmo `acceptedAt` da linha. Não inferir meses dos dias de um resgate
+histórico. O grant S2S envia `accessPolicy` ao Members, que precisa estar compatível antes do
+referrals. Ausente, o Members conserva o contrato anterior. O Admin lista as ofertas em meses
+na escolha do presente. O presente do
 Cadê continua em dias (`-7-dias`, 15 reais e 7 divulgados).
 
 Troca da oferta do presente com a campanha no ar: vale quando a oferta nova é do MESMO curso
@@ -24,7 +28,8 @@ Admin abre o seletor só com as ofertas do mesmo produto (`GIFT_OFFER_SAME_COURS
 Links já enviados continuam abrindo:
 - **A mesma oferta nas duas listas** (a oferta única é venda e presente): o link por slug
   `/i/<código>/<oferta>` agora pode dizer o tipo (`?tipo=presente|indicacao`, `referralLinkUrl`
-  com `kind`; os convites por oferta mandam). O funil repassa como `?kind=` a
+  com `kind`; os convites por oferta mandam). Checkout sempre escolhe a lista de indicação.
+  O funil repassa como `?kind=` a
   `GET /referrals/internal/links/:code/:offer` (fora do pathname assinado). Sem tipo, presente
   primeiro, como antes. Os links curtos do painel (`/i/<código>/<apelido>[/presente]`) já dizem o tipo.
 - **A oferta que saiu da lista** (o `-presente` do guia, citado em convites e em
