@@ -115,6 +115,22 @@ o caminho). O login da comunidade é separado do deste painel. O editor antigo d
 
 ## Campanhas ligadas a embaixadores (04/11/2026)
 
+### Benefícios e validação sem dados de teste nas métricas (27/11/2026)
+
+A aba Benefícios fica no editor do curso, ao lado de Estrutura e Projetos. Usar as áreas internas
+do Card para manter 16 px de padding no celular e 24 px em telas maiores. Os textos visíveis devem
+ser curtos, naturais e sem travessão. O teste de navegador `tests/course-benefits-browser.mjs`
+valida o componente real com respostas locais simuladas, sem cadastrar pessoas em produção.
+
+Por orientação da responsável, QA não pode deixar contas, cursos, resgates, leads ou eventos de
+teste nas listas e métricas. Preferir validação local ou banco descartável. Se uma validação remota
+for necessária e autorizada, registrar os IDs criados e concluir com exclusão verificada dos dados
+sintéticos e de suas dependências. Arquivar curso, bloquear conta ou revogar acesso não substitui
+essa limpeza. A exclusão normal de uma conta preserva histórico comercial; por isso, o teardown de
+QA também precisa conferir os resgates e aquisições de teste no serviço de indicações. Preservar
+clientes e cursos reais, inclusive quando o assunto do curso é testar regras. Backups com dados
+pessoais ficam fora do Git. Ver `docs/reviews/2026-11-25-campanhas-embaixadores-origens/limpeza-qa-2026-11-27.md`.
+
 `ConvitesClient` permite buscar um embaixador por nome/e-mail com paginação e vinculá-lo à
 campanha sem comissão. Habilitar comissão exige valores por plano e prazo após cadastro; padrão desligado.
 Desde 05/11/2026, novos acordos sugerem R$ 30 no mensal e R$ 80 no anual, bônus único sem renovação.

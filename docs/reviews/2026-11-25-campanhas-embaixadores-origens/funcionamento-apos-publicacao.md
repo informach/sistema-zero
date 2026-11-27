@@ -86,3 +86,10 @@ O objetivo do regador agora reconhece a memória gravada dentro de uma condiçã
 A imagem Linux qualificada foi publicada nas duas classes de contêiner, com o mesmo digest dos testes. O primeiro envio expirou após publicar o código do Worker; o estado parcial foi inspecionado, e a retomada conhecida terminou com as duas imagens saudáveis. Os dois aquecimentos reais também passaram. A conferência de sete variáveis públicas não encontrou alterações; os segredos foram preservados.
 
 As cinco aplicações da etapa final no Railway passaram pela saúde, pela retirada das versões anteriores e pela barreira canônica 4. As páginas, o checkout de seis meses e os links antigos foram reconferidos. Nenhum pagamento real ou mensagem de ensaio foi enviado. O código e a correção de tipo foram integrados à staging local. Após a publicação compatível pela outra frente, o novo benefício, seu manifesto e os seis meses também foram conferidos na staging remota.
+
+
+## Limpeza de QA em 27/11/2026
+
+Os dois resgates preservados na conversão eram sintéticos e foram excluídos, com suas aquisições e os demais dados de teste identificados. O relatório real do benefício agora mostra zero resgates e zero pessoas. A responsável excluiu os três cursos de QA; a ausência deles foi conferida. Os cursos reais “Testes de regras” foram preservados. O benefício passou a se chamar “Cadê Todo Mundo”, sem travessão.
+
+A correção visual está integrada à staging local e com publicação seletiva do Admin em andamento. O CI e a regularização do PR 297 ainda estão em andamento. [Conferência e regra para novas validações](limpeza-qa-2026-11-27.md). [Recibo atualizado](limpeza-qa-2026-11-27.json).

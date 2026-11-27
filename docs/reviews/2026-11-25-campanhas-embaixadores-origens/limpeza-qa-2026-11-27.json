@@ -1,0 +1,216 @@
+{
+  "updatedAt": "2026-11-27T09:13:02.797Z",
+  "environment": "production",
+  "cleanupVerified": true,
+  "verification": {
+    "state": "QA_CLEANUP_VERIFIED",
+    "verifiedAt": "2026-11-27T09:09:07.744Z",
+    "environment": "production",
+    "counts": {
+      "qa_accounts": 0,
+      "qa_courses": 0,
+      "qa_access_grants": 0,
+      "qa_certificates": 0,
+      "qa_lesson_completions": 0,
+      "qa_redemptions": 0,
+      "qa_acquisitions": 0,
+      "qa_leads": 0,
+      "qa_checkouts": 0,
+      "qa_messages": 0,
+      "qa_payment_drafts": 0
+    },
+    "realRuleTestingCoursesPreserved": 2,
+    "report": {
+      "status": 200,
+      "gifts": 0,
+      "people": 0,
+      "benefitName": "Cadê Todo Mundo"
+    },
+    "noTestRedemptionFilterAdded": true,
+    "coursesDeletedByUser": 3,
+    "realPaymentsDeleted": 0
+  },
+  "removed": {
+    "conversions": 0,
+    "acquisitions": 2,
+    "redemptions": 2,
+    "funil.analytics_events": 31,
+    "funil.analytics_lead_links": 2,
+    "funil.funnel_events": 20,
+    "funil.lead_payments": 2,
+    "funil.member_checkouts": 3,
+    "funil.member_product_claims": 0,
+    "funil.analytics_sessions": 1,
+    "leads": 5,
+    "messages": 5,
+    "paymentOutbox": 2,
+    "paymentIdempotencyKeys": 0,
+    "expiredTestPayments": 2
+  },
+  "accountsRemoved": 2,
+  "coursesRemovedByUser": 3,
+  "realRuleTestingCoursesPreserved": 2,
+  "unrelatedDataFingerprints": {
+    "acquisitions": "4e6ad128fdd8276c6fb5581bbf819e907d536974a59836d3747abf0d3ab737b8",
+    "redemptions": "ea40ff5ef96ff47bfad1e829b4eb41632a6ec12fadf7d099646bf5f845a68fcf",
+    "courses": "b0297be2924970b98f5dc444be88d84d869774579d6f72f7826932d73e77b1f5",
+    "payments": "3491798e45ae49c756040757a9793a49702b827c1a3cba56fd8e83081e9441cc"
+  },
+  "privateBackupSha256": "2824a2853a63541a23676d134729815c903eb20c318c917c40d14f1a548d5003",
+  "privateBackupInGit": false,
+  "initialTransactionFailure": {
+    "state": "ROLLED_BACK_AND_VERIFIED_READ_ONLY",
+    "reason": "Coluna incorreta na tabela de analytics",
+    "originalReceiptState": "FAILED_REQUIRES_INSPECTION"
+  },
+  "accountCleanupRecovery": {
+    "firstMembersCallNotRepeated": true,
+    "reason": "Resposta de sucesso sem corpo JSON; conclusão do primeiro alvo conferida por leitura antes de prosseguir"
+  },
+  "source": {
+    "reviewed": true,
+    "pr": 297,
+    "sha": "6f28e4a39f4429190a8e3e2f4e8931f34a0abb50",
+    "tree": "508929be6ae77292b6c7c078dcec58765860b6b5",
+    "base": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+    "ciRun": 45970303018,
+    "planRun": 45970303009,
+    "services": "admin",
+    "checks": {
+      "testsPassed": 1039,
+      "testsFailed": 0,
+      "typeErrors": 0,
+      "build": "pass",
+      "browserWidths": [320, 390, 768, 1440],
+      "configurationChanges": 0,
+      "oldPaddingFailureReproduced": true,
+      "productionDataCreatedByBrowserTests": false
+    }
+  },
+  "localValidation": {
+    "testsPassed": 1039,
+    "testsFailed": 0,
+    "typecheck": "pass",
+    "build": "pass",
+    "biome": "pass",
+    "browser": {
+      "state": "PASS",
+      "widths": [320, 390, 768, 1440],
+      "paddingPx": {
+        "small": 16,
+        "large": 24
+      },
+      "baselinePaddingFailureReproduced": true,
+      "pagination": true,
+      "periodPreserved": true,
+      "csvCurrentPage": true,
+      "states": ["data", "zero", "empty", "error", "loading"],
+      "productionDataCreated": false
+    },
+    "initialTypecheckHeap4Gb": "out_of_memory",
+    "finalTypecheckHeap8Gb": "pass"
+  },
+  "manual": {
+    "kind": "user-authorized-manual-production-release",
+    "source": {
+      "reviewed": true,
+      "pr": 297,
+      "sha": "6f28e4a39f4429190a8e3e2f4e8931f34a0abb50",
+      "tree": "508929be6ae77292b6c7c078dcec58765860b6b5",
+      "base": "61ba772a6d89062bb0a1b15c7aec3645f0199ce0",
+      "ciRun": 45970303018,
+      "planRun": 45970303009,
+      "services": "admin",
+      "checks": {
+        "testsPassed": 1039,
+        "testsFailed": 0,
+        "typeErrors": 0,
+        "build": "pass",
+        "browserWidths": [320, 390, 768, 1440],
+        "configurationChanges": 0,
+        "oldPaddingFailureReproduced": true,
+        "productionDataCreatedByBrowserTests": false
+      }
+    },
+    "state": "PREPARING",
+    "startedAt": "2026-11-27T09:08:46.411Z",
+    "events": [
+      {
+        "stage": "preflight",
+        "at": "2026-11-27T09:09:06.987Z"
+      },
+      {
+        "stage": "BACKEND_BARRIER_PASSED",
+        "publishedVersion": 4,
+        "at": "2026-11-27T09:09:18.783Z"
+      },
+      {
+        "stage": "admin-active-refresh",
+        "at": "2026-11-27T09:09:18.785Z"
+      },
+      {
+        "stage": "admin-deploy-mutation",
+        "mutationOutcome": "unknown",
+        "at": "2026-11-27T09:09:22.120Z"
+      },
+      {
+        "stage": "admin-deploy-ack",
+        "deployment": "98331666-5568-449c-8007-1c25b2f5f569",
+        "mutationOutcome": "acknowledged",
+        "at": "2026-11-27T09:09:22.926Z"
+      },
+      {
+        "stage": "admin-first-poll",
+        "deployment": "98331666-5568-449c-8007-1c25b2f5f569",
+        "at": "2026-11-27T09:09:22.928Z"
+      }
+    ]
+  },
+  "normal": {
+    "pr": 297,
+    "head": "6f28e4a39f4429190a8e3e2f4e8931f34a0abb50",
+    "ciRun": 45970303018,
+    "planRun": 45970303009,
+    "services": "admin",
+    "state": "WAITING_MANUAL_AND_CI",
+    "startedAt": "2026-11-27T09:08:56.249Z",
+    "events": [
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:08:59.485Z",
+        "ci": "in_progress",
+        "passed": 5,
+        "plan": "success",
+        "manual": "PREPARING"
+      },
+      {
+        "state": "WAITING_MANUAL_AND_CI",
+        "at": "2026-11-27T09:09:32.694Z",
+        "ci": "in_progress",
+        "passed": 6,
+        "plan": "success",
+        "manual": "PREPARING"
+      }
+    ],
+    "ci": "in_progress",
+    "passed": 6,
+    "plan": "success",
+    "manual": "PREPARING"
+  },
+  "official": null,
+  "productionUiPublished": false,
+  "normalRegularizationComplete": false,
+  "firstManualPreflight": {
+    "state": "FAILED_BEFORE_DEPLOYMENT",
+    "reason": "SDK da infraestrutura ausente; instalado pelo lockfile próprio de .railway",
+    "deploymentCreated": false
+  },
+  "staging": {
+    "localIntegrated": true,
+    "commit": "222760d56",
+    "remotePublicationOwnedByOtherSession": true,
+    "remoteQaDataNotChangedByThisCleanup": true
+  },
+  "newChargesCreated": 0,
+  "newMessagesSent": 0
+}
