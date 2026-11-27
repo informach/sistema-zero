@@ -8,14 +8,14 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 **Clipe:** `video-abertura`
 
-**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título Moedas na ilha sobre a cena inicial do jogo pronto [na edição: título Moedas na ilha]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: com a seta de baixo", segurar a seta de baixo do teclado por um instante [segurar tecla ArrowDown por 0,2 s]. No "E com a seta da direita", segurar a seta da direita até o personagem passar pela primeira moeda, sem chegar à segunda [segurar tecla ArrowRight por 0,5 s]. No "e o número aqui em cima sobe para 1", apontar o número no canto de cima, à esquerda [apontar jogo 40 32]. No "Já o caminho até o baú", manter a cena parada, sem ir ao baú. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Explore a ilha", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não ir ao baú nem pegar mais moedas: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
+**Na tela:** Do "Oi" até o "em três dimensões", a tela mostra o título Moedas na ilha sobre a cena inicial do jogo pronto [na edição: título Moedas na ilha]. No "Para andar, clique dentro do jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio do jogo, para o teclado ir para ele [tocar jogo]. No "Olha aqui: com a seta de baixo", segurar a seta de baixo do teclado por um instante [segurar tecla ArrowDown por 0,2 s]. No "E com a seta da direita", segurar a seta da direita até o personagem passar pela primeira moeda, sem chegar à segunda [segurar tecla ArrowRight por 0,5 s]. No "e o número aqui em cima sobe para 1", apontar o número no canto de cima, à esquerda [apontar jogo 40 32]. No "Repare também no aviso aqui em cima", apontar o aviso [apontar jogo 480 24]. No "Será que o baú está no mesmo lugar", manter a cena parada, sem ir ao baú. No "Agora é a sua vez", voltar ao tamanho da aula [voltar à aula]. No "Quando terminar, clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Não ir ao baú nem pegar mais moedas: a partida é da criança. Os tempos das setas são estimativas para a velocidade 4: acertar no Verificar plano.
 
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] Oi! As moedas chegaram à Ilha do Farol, em três dimensões!
+[upbeat, welcoming voice] Oi! Na Aula 1, você programou as moedas e o baú no jogo 2D. Agora as moedas chegaram à Ilha do Farol, em três dimensões!
 
-[engaging, energetic, conversational voice] A ideia é a mesma do seu jogo 2D: cada moeda soma um e conta uma vez só, o número aparece na tela, e o baú só abre com moedas suficientes.
+[engaging, energetic, conversational voice] A regra continua a mesma: cada moeda soma um e conta uma vez só, o número aparece na tela, e o baú abre com pelo menos 5 moedas.
 
 [engaging, energetic, conversational voice] Para andar, clique dentro do jogo e segure uma seta do teclado. As letras W, A, S e D também funcionam.
 
@@ -23,18 +23,24 @@ A professora grava toda a fala principal. Copie o arquivo .elevenlabs.txt para g
 
 [interested, animated voice] E com a seta da direita, ele passa pela primeira moeda, e o número aqui em cima sobe para 1.
 
-[engaging, energetic, conversational voice] O baú também está na ilha, com uma animação de abrir que já vem pronta.
-
-[engaging, energetic, conversational voice] Já o caminho até o baú, esse eu deixo para você descobrir.
-
 [engaging, energetic, conversational voice] Repare também no aviso aqui em cima, no meio: ele diz o que fazer na partida.
 
-[engaging, energetic, conversational voice] Para começar outra partida, toque na tecla R.
+[curious] Será que o baú está no mesmo lugar do jogo 2D?
 
-[upbeat, encouraging voice] Explore a ilha e tente o baú com poucas moedas e com muitas. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R.
+
+[upbeat, encouraging voice] Agora é a sua vez: encontre o baú e abra com as suas moedas. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas ou W, A, S e D, pegue moedas e tente o baú com poucas e com muitas. A tecla R recomeça. Quando terminar, clique em Próxima parte.
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-abertura-K1 | Dedé | 1 | e o número aqui em cima sobe para 1. Repare também no aviso aqui em cima, no meio: ele diz o que fazer na partida. | Será que o baú está no mesmo lugar do jogo 2D? | Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: encontre o baú e | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Recado na página (não gravar):** Sua vez! Jogue a versão pronta: segure as setas ou W, A, S e D, pegue moedas, encontre o baú e abra com as suas moedas. A tecla R recomeça. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Conte as moedas da ilha
 

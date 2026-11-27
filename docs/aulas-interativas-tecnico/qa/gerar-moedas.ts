@@ -39,7 +39,7 @@ await gerarPoder({
     title: 'Jogue Moedas no caminho',
     instrucoes: {
       '2d': 'Segure as setas no canto do jogo, ou clique no jogo e use as setas do teclado. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.',
-      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Pegue moedas e tente o baú com poucas e com muitas. A tecla R começa outra partida. Você pode seguir sem terminar.',
+      '3d': 'Clique no jogo e use as setas ou W, A, S e D. Pegue moedas, encontre o baú e abra com as suas moedas. A tecla R começa outra partida. Você pode seguir sem terminar.',
     },
   },
   experiencia: {

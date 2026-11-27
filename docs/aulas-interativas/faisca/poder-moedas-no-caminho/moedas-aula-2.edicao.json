@@ -10,6 +10,17 @@
   "clipes": ["video-abertura", "video-coleta", "video-placar", "video-abre", "video-bau"],
   "intervencoes": [
     {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e o número aqui em cima sobe para 1. Repare também no aviso aqui em cima, no meio: ele diz o que fazer na partida.",
+      "ancoraDepois": "Isso eu deixo para você descobrir. Para começar outra partida, toque na tecla R. Agora é a sua vez: encontre o baú e",
+      "falaPrincipal": "Será que o baú está no mesmo lugar do jogo 2D?",
+      "falaPersonagem": "Será que o baú está no mesmo lugar do jogo 2D?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-coleta-K1",
       "clipe": "video-coleta",
       "personagem": "Dedé",
