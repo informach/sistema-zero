@@ -17,7 +17,15 @@ import {
 } from '../caderno-visual/visual'
 import { B, desenhosDaMudanca, escapeHtml } from './blocos'
 
-export function gerarCaderno(resource: string) {
+/**
+ * `opcoes.projeto` lê o projeto de uma etapa direto do gerador do curso (a missão do Construtor não
+ * grava a pasta `projetos/`: os projetos de cada etapa já vão nos manifestos), e `opcoes.inicial`
+ * é o projeto que dá as imagens da galeria. Sem eles, os arquivos da pasta do curso.
+ */
+export function gerarCaderno(
+  resource: string,
+  opcoes: { projeto?: (stage: string) => unknown; inicial?: { assets: unknown[] } } = {},
+) {
   const root = resolve(import.meta.dir, '../../../..')
   const directory = resolve(root, 'docs/aulas-interativas-tecnico/recursos', resource)
   const meta = JSON.parse(readFileSync(resolve(directory, 'caderno-metadados.json'), 'utf8'))
@@ -28,13 +36,17 @@ export function gerarCaderno(resource: string) {
     if (!cache.has(stage))
       cache.set(
         stage,
-        JSON.parse(readFileSync(resolve(course, 'projetos', `${stage}.szproject.json`), 'utf8')),
+        opcoes.projeto
+          ? opcoes.projeto(stage)
+          : JSON.parse(
+              readFileSync(resolve(course, 'projetos', `${stage}.szproject.json`), 'utf8'),
+            ),
       )
     return cache.get(stage)
   }
-  const initial = JSON.parse(
-    readFileSync(resolve(course, 'projeto-inicial.szproject.json'), 'utf8'),
-  )
+  const initial =
+    opcoes.inicial ??
+    JSON.parse(readFileSync(resolve(course, 'projeto-inicial.szproject.json'), 'utf8'))
   const assets = new Map(initial.assets.map((a: any) => [a.name, a.dataUrl]))
   const picture = (name: string) => {
     const result = assets.get(name)

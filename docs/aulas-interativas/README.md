@@ -5,7 +5,7 @@ Uma fonte editorial para as comunidades adulta e infantojuvenil, organizada em *
 | Posto | Cursos e propostas nesta pasta |
 | --- | --- |
 | [Faísca](faisca/README.md) | A Chave do Farol (trilha 2D), A Ilha do Farol (trilha 3D), Cadê Todo Mundo? (extra) e missão O Jardim Secreto (2D e 3D) |
-| [Construtor(a)](construtor/README.md) | Nave Contra Asteroides (trilha 2D), Patrulha Espacial (trilha 3D), O Jogo do Meu Jeito (extra) |
+| [Construtor(a)](construtor/README.md) | Nave Contra Asteroides (trilha 2D), Patrulha Espacial (trilha 3D), O Jogo do Meu Jeito (extra) e missão A Estação de Reciclagem (2D e 3D) |
 | [Inventor(a)](inventor/README.md) | Corre, Dino! (trilha 2D) |
 | [Explorador(a) de Mundos](explorador/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
 | [Mestre dos Jogos](mestre/README.md) | Organização reservada ao posto; cursos ainda sem autoria nesta árvore |
@@ -23,6 +23,7 @@ Os papéis seguem a [Jornada do Criador](../jornada-do-criador.md). Pastas e pro
 | A Ilha do Farol | 3 | [Abrir](faisca/a-ilha-do-farol/README.md) | [PDF](faisca/a-ilha-do-farol/passo-a-passo-do-projeto.pdf) |
 | Nave Contra Asteroides | 9 | [Abrir](construtor/nave-contra-asteroides/README.md) | [PDF](construtor/nave-contra-asteroides/passo-a-passo-do-projeto.pdf) |
 | Patrulha Espacial | 5 | [Abrir](construtor/patrulha-espacial/README.md) | [PDF](construtor/patrulha-espacial/passo-a-passo-do-projeto.pdf) |
+| A Estação de Reciclagem (missão do Construtor) | 2 | [Abrir](construtor/estacao-de-reciclagem/README.md) | [PDF](construtor/estacao-de-reciclagem/passo-a-passo-do-projeto.pdf) |
 | Corre, Dino! | 13 | [Abrir](inventor/corre-dino/README.md) | [PDF](inventor/corre-dino/passo-a-passo-do-projeto.pdf) |
 | O Jogo do Meu Jeito | 8 | [Abrir](construtor/o-jogo-do-meu-jeito/README.md) | [PDF](construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf) |
 | Transformando o vilão em aliado (para pais) | 7 | [Abrir](pais/transformando-o-vilao-em-aliado/README.md) | [Apostila](pais/transformando-o-vilao-em-aliado/apostila.pdf) |

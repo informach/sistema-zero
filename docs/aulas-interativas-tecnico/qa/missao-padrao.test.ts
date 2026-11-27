@@ -1,5 +1,6 @@
 /**
- * O padrão das missões de posto (24/11/2026). O Jardim Secreto é a missão do Faísca. Uma missão não
+ * O padrão das missões de posto (24/11/2026). O Jardim Secreto é a missão do Faísca, e A Estação de
+ * Reciclagem (27/11/2026), a do Construtor. Uma missão não
  * ensina o passo a passo: montar o jogo é o desafio para subir de posto, e tudo já foi ensinado nos
  * cursos base, com outro tema. Este teste confere que:
  * - nenhum Na tela monta blocos nem envia (sem gestos de montagem, de paleta ou de envio);
@@ -14,6 +15,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { avatarDaAula } from './avatares-video'
+import { estacaoAulas } from './estacao-conteudo'
 import { jardimAulas } from './jardim-conteudo'
 import type { PoderTrecho } from './poder-gerador'
 import { extrairPartesElevenLabs } from './roteiro-elevenlabs'
@@ -21,6 +23,8 @@ import { extrairPartesElevenLabs } from './roteiro-elevenlabs'
 type Secao = { key: string; intent: string; blockKeys: string[] }
 type Missao = {
   nome: string
+  /** A pasta em docs/aulas-interativas/<trilha>. */
+  trilha: string
   pasta: string
   arquivo: (slug: string) => string
   aulas: { slug: string; trechos: PoderTrecho[] }[]
@@ -28,14 +32,23 @@ type Missao = {
   cursosBase: string[]
 }
 
-const faisca = resolve(import.meta.dirname, '../../aulas-interativas/faisca')
+const aulasInterativas = resolve(import.meta.dirname, '../../aulas-interativas')
 const MISSOES: Missao[] = [
   {
     nome: 'O Jardim Secreto',
+    trilha: 'faisca',
     pasta: 'o-jardim-secreto',
     arquivo: (s) => s,
     aulas: jardimAulas,
     cursosBase: ['Chave do Farol', 'Ilha do Farol'],
+  },
+  {
+    nome: 'A Estação de Reciclagem',
+    trilha: 'construtor',
+    pasta: 'estacao-de-reciclagem',
+    arquivo: (s) => s,
+    aulas: estacaoAulas,
+    cursosBase: ['Nave Contra Asteroides', 'Patrulha Espacial'],
   },
 ]
 /** Os gestos que montam, mexem nos blocos ou enviam (ESPEC-ROTEIRO, seção 9). */
@@ -45,7 +58,7 @@ const etapas = (trechos: PoderTrecho[]) =>
   trechos.filter((t) => t.kind === 'build' || t.kind === 'delivery')
 
 for (const missao of MISSOES) {
-  const dir = resolve(faisca, missao.pasta)
+  const dir = resolve(aulasInterativas, missao.trilha, missao.pasta)
   const base = `(${missao.cursosBase.join('|')})`
   describe(`${missao.nome}: padrão da missão do posto`, () => {
     test.each(

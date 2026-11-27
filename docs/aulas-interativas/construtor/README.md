@@ -6,9 +6,10 @@ Gênero do posto: tiro espacial. Organização conforme a [Jornada do Criador](.
 | --- | --- | --- |
 | Curso da trilha 2D | [Nave Contra Asteroides](nave-contra-asteroides/README.md) | Nove aulas reescritas, projetos progressivos, manifestos, roteiros, vozes em texto, critérios e caderno visual |
 | Curso da trilha 3D | [Patrulha Espacial](patrulha-espacial/README.md) | Cinco aulas completas, projetos progressivos, manifestos, roteiros, vozes em texto, critérios e caderno visual |
+| Missão 2D e 3D | [A Estação de Reciclagem](estacao-de-reciclagem/README.md) | Duas aulas (missão do posto, sem montar no vídeo), projetos por etapa, manifestos, roteiros, vozes em texto, critérios, capas e caderno visual; mídia e publicação pendentes |
 | Extra | [O Jogo do Meu Jeito](o-jogo-do-meu-jeito/README.md) | Acervo anterior, preservado fora desta reautoria |
 
-Missão Estação de Reciclagem, Poderes e demais extras continuam com o estado indicado no currículo. A produção das duas bases não declara essas outras frentes prontas ou publicadas.
+Depois dos dois cursos da trilha, missão, Poderes e extras abrem juntos. Promoção exige os dois cursos, a missão nas duas dimensões e dois Poderes distintos aplicados. A missão não exige um Poder nem um extra. Poderes e demais extras continuam com o estado indicado no currículo. Existência de arquivos locais não comprova publicação.
 
 ## Fronteira de aprendizagem
 

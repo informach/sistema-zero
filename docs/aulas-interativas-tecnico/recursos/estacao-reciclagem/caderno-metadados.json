@@ -1,0 +1,20 @@
+{
+  "course": "estacao-de-reciclagem",
+  "resource": "estacao-reciclagem",
+  "dimension": "2d",
+  "title": "A Estação de Reciclagem",
+  "cover": "capa-estacao-reciclagem.jpg",
+  "line1": "Estação de",
+  "line2": "Reciclagem",
+  "phrase": "Um jeito de montar cada etapa da missão, em 2D e no galpão 3D.",
+  "promise": "A missão do Construtor",
+  "ui": {
+    "drawingTitle": "Confira os encaixes desta etapa",
+    "testsTitle": "Teste e observe",
+    "continuation": "continuação",
+    "earlierBlocks": "Blocos anteriores",
+    "drawingContinuation": "Confira os encaixes",
+    "galleryTitle": "Escolha a aparência",
+    "pageLabel": "Passo a passo do projeto"
+  }
+}

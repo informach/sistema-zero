@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-esteira",
+    "video-coleta",
+    "video-resultado",
+    "video-meta-nova",
+    "video-missao-cumprida"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-abertura-K1",
+      "clipe": "video-abertura",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "A sua estação em duas dimensões ficou pronta. Agora a mesma partida vai para um galpão de verdade, em três dimensões.",
+      "ancoraDepois": "No galpão, as esteiras vêm do fundo até você. Para começar, aperte Enter. Olha: as peças saem das bocas lá no fundo e",
+      "falaPrincipal": "Será que no galpão as peças também vêm pelo alto?",
+      "falaPersonagem": "Será que no galpão as peças também vêm pelo alto?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-resultado-K1",
+      "clipe": "video-resultado",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "os dois finais na Patrulha Espacial, Aula 5: a vida primeiro, e a vitória no senão. Se esquecer como faz, volte lá.",
+      "ancoraDepois": "Isso já vem pronto: o botão Voltar ao início, na tela final, prepara uma partida nova, com zero peças e três vidas.",
+      "falaPrincipal": "E quando acaba, como começa outra partida?",
+      "falaPersonagem": "E quando acaba, como começa outra partida?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

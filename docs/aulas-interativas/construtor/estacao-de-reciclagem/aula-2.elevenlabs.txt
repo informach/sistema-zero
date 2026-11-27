@@ -1,0 +1,123 @@
+[upbeat, welcoming voice] Oi! A sua estação em duas dimensões ficou pronta. Agora a mesma partida vai para um galpão de verdade, em três dimensões.
+
+[curious] Será que no galpão as peças também vêm pelo alto?
+
+[engaging, energetic, conversational voice] No galpão, as esteiras vêm do fundo até você. Para começar, aperte Enter.
+
+[interested, animated voice] Olha: as peças saem das bocas lá no fundo e vêm pelas esteiras até o coletor. As regras são as mesmas: aro verde vale ponto, aro vermelho tira vida.
+
+[interested, animated voice] Olha: eu seguro a seta da direita, o coletor vai para a esteira de lá, e o placar sobe.
+
+[confident, clear, unhurried voice] Como na primeira aula, quem programa as regras é você. O galpão, a câmera, o coletor andando para os lados e as esteiras levando as peças até você já vêm prontos.
+
+[reassuring, encouraging voice] Você já sabe tudo o que precisa, porque aprendeu na Patrulha Espacial. Se esquecer como se faz alguma coisa, eu digo em qual aula você aprendeu.
+
+[upbeat, encouraging voice] Agora é a sua vez: jogue uma partida no galpão. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Primeira etapa no galpão: as bocas soltam as peças.
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo e aperte Enter.
+
+[interested, animated voice] Tá vendo? O coletor anda, mas nenhuma peça sai das bocas.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer três coisas.
+
+[engaging, energetic, conversational voice] Primeira: a cada 1,6 segundo, saem duas cópias da peça reciclável, uma em cada boca da borda, no grupo das recicláveis.
+
+[engaging, energetic, conversational voice] Segunda: a cada 2,2 segundos, sai uma cópia da pilha pela boca do meio, no grupo das proibidas. As bocas ficam em x menos 4, zero e 4, todas lá no fundo, em z menos 34. As esteiras já levam as peças até você.
+
+[engaging, energetic, conversational voice] Terceira: nada disso acontece antes do Enter.
+
+[reassuring, encouraging voice] Você aprendeu a criar cópias pelo relógio e o lugar de cada entrada na Patrulha Espacial, Aula 2. Se esquecer como faz, volte lá.
+
+[engaging, energetic, conversational voice] Para saber se deu certo, clique em Verificar projeto. Olha: ele mostra o que ainda falta no seu jogo.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste antes e depois do Enter.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Segunda etapa: os encontros no galpão.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo, aperte Enter e leve o coletor até uma esteira da borda.
+
+[interested, animated voice] Tá vendo? A garrafa passa pelo coletor, e o placar não muda.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer três coisas.
+
+[engaging, energetic, conversational voice] Primeira: quando o coletor encosta numa reciclável, a peça sai do grupo, o placar soma um, e o texto no alto mostra a conta nova, com a meta junto.
+
+[engaging, energetic, conversational voice] Segunda: quando encosta numa pilha ou lâmpada, a peça sai do grupo e o coletor perde uma vida.
+
+[engaging, energetic, conversational voice] Terceira: os dois encontros só valem durante a partida, como as outras regras do galpão.
+
+[reassuring, encouraging voice] Você aprendeu o encontro com um grupo e a vida que cai na Patrulha Espacial, Aula 4, e o placar, na Aula 3. Se esquecer como faz, volte lá.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste nas duas esteiras: na da borda e na do meio.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Terceira etapa: o galpão também termina a partida.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo, aperte Enter e deixe o coletor no meio.
+
+[interested, animated voice] Tá vendo? As vidas acabam, e o jogo continua.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
+
+[engaging, energetic, conversational voice] Primeira: quando a vida do coletor chega a zero, o estado vira derrota, e o jogo mostra o fim de jogo de quem perdeu.
+
+[engaging, energetic, conversational voice] Segunda: quando o placar chega à meta, o estado vira vitória, e o jogo mostra o fim de jogo de quem ganhou. A meta é a variável meta, como na primeira aula.
+
+[reassuring, encouraging voice] Você aprendeu os dois finais na Patrulha Espacial, Aula 5: a vida primeiro, e a vitória no senão. Se esquecer como faz, volte lá.
+
+[curious] E quando acaba, como começa outra partida?
+
+[engaging, energetic, conversational voice] Isso já vem pronto: o botão Voltar ao início, na tela final, prepara uma partida nova, com zero peças e três vidas.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste os dois finais.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Última etapa: a equipe do galpão mandou outro pedido. A meta agora é 12 peças.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo e repare: o placar ainda conta até 10.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
+
+[engaging, energetic, conversational voice] Primeira: o jogo começa com a meta 12, e o texto no alto mostra a meta nova.
+
+[engaging, energetic, conversational voice] Segunda: a vitória acompanha. Com 10 peças a partida continua, e só no 12 vem o fim de jogo de quem ganhou.
+
+[thoughtful] Pense de novo: qual condição precisa acompanhar essa mudança?
+
+[reassuring, encouraging voice] Você aprendeu a condição de vitória na Patrulha Espacial, Aula 5, na parte Vinte acertos abrem a rota. Se esquecer como faz, volte lá.
+
+[upbeat, encouraging voice] Agora é com você!
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[excited] Missão cumprida! A sua Estação de Reciclagem funciona em duas dimensões e no galpão em três.
+
+[warmly] Você programou os relógios, os encontros, o placar, as vidas e os dois finais, e ainda acompanhou o pedido da equipe nas duas versões. Isso é coisa de construtora e de construtor de verdade.
+
+[upbeat, encouraging voice] Agora clique em Concluir aula.

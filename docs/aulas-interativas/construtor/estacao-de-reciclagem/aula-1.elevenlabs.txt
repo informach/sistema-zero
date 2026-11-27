@@ -1,0 +1,133 @@
+[upbeat, welcoming voice] Oi! Você já criou a Nave Contra Asteroides e a Patrulha Espacial. Agora chegou a sua missão do Construtor: montar A Estação de Reciclagem!
+
+[engaging, energetic, conversational voice] Na estação, três esteiras trazem peças até o depósito, e você controla o coletor, aqui embaixo. Para começar, aperte Enter.
+
+[interested, animated voice] Olha: as peças descem pelas esteiras. As do aro verde são recicláveis: cada uma que o coletor pega vale um ponto. As do aro vermelho são pilhas e lâmpadas, que não podem ir para a reciclagem comum.
+
+[interested, animated voice] Olha: eu seguro a seta da esquerda, o coletor vai até a esteira de lá, pega uma garrafa, e o placar sobe.
+
+[curious] E se o coletor pegar uma pilha?
+
+[engaging, energetic, conversational voice] Isso eu deixo para você descobrir. Junte 10 peças para cumprir a meta, e cuide das três vidas.
+
+[confident, clear, unhurried voice] Esta missão é diferente das aulas que você já fez: agora, quem programa o jogo é você, sem eu montar os blocos junto. Em cada parte, eu mostro o que o jogo precisa fazer, e você programa no Estúdio.
+
+[reassuring, encouraging voice] As telas, o Enter, o coletor e o recomeço já vêm prontos. As regras da partida são suas, e você já sabe tudo o que precisa, porque aprendeu na Nave Contra Asteroides. Se esquecer como se faz alguma coisa, eu digo em qual aula você aprendeu, e é só voltar lá.
+
+[engaging, energetic, conversational voice] Nesta aula, a estação é numa tela plana, em duas dimensões. Na próxima, ela vira um galpão de verdade, em três dimensões.
+
+[upbeat, encouraging voice] Agora é a sua vez: jogue uma partida. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Primeira etapa da missão: as peças chegam pelas esteiras.
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Rodar de novo, no alto do Estúdio, e aperte Enter.
+
+[interested, animated voice] Tá vendo? O coletor anda, mas as esteiras continuam vazias.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer quatro coisas.
+
+[engaging, energetic, conversational voice] Primeira: a cada 1,6 segundo, nascem duas peças recicláveis no alto, uma em cada esteira da borda, no grupo das recicláveis.
+
+[engaging, energetic, conversational voice] Segunda: a cada 2,2 segundos, nasce uma pilha no alto da esteira do meio, no grupo das proibidas. O lugar de cada esteira está no pedido, e a imagem de cada peça já está nos materiais.
+
+[engaging, energetic, conversational voice] Terceira: as peças descem pela esteira, e quem passa da borda de baixo sai do grupo.
+
+[engaging, energetic, conversational voice] Quarta: nada disso acontece antes do Enter. Na tela de abertura, nenhuma peça nasce.
+
+[reassuring, encouraging voice] Você já sabe fazer tudo isso: aprendeu na Nave Contra Asteroides, Aula 4, quando fez os asteroides cair, e na Aula 8, quando o laser passou a esperar a partida. Se esquecer como faz, volte lá.
+
+[engaging, energetic, conversational voice] Para saber se deu certo, clique em Verificar projeto. Olha: ele mostra o que ainda falta no seu jogo.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste antes e depois do Enter.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Segunda etapa: os encontros do coletor.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo, aperte Enter e leve o coletor até uma esteira da borda.
+
+[interested, animated voice] Tá vendo? A garrafa passa pelo coletor, e o placar continua no zero.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
+
+[engaging, energetic, conversational voice] Primeira: quando o coletor encosta numa reciclável, o placar sobe um ponto.
+
+[curious] E se a mesma garrafa encostar no coletor por um tempão?
+
+[engaging, energetic, conversational voice] O jogo confere os encontros a cada quadro: se a peça continuar ali, ela conta de novo e de novo. Por isso, no mesmo encontro, a peça sai do grupo. Assim cada peça vale um ponto só.
+
+[engaging, energetic, conversational voice] Segunda: quando o coletor encosta numa pilha ou lâmpada, a peça sai do grupo e o coletor perde uma vida.
+
+[reassuring, encouraging voice] Você aprendeu o encontro de um sprite com um grupo e a perda de vida na Nave Contra Asteroides, Aula 7, e a somar no placar, na Aula 6. Se esquecer como faz, volte lá.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste nas duas esteiras: na da borda e na do meio.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Terceira etapa: a partida termina.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo, aperte Enter e deixe o coletor no meio, embaixo das pilhas.
+
+[interested, animated voice] Tá vendo? As vidas acabam, e as pilhas continuam chegando. A partida nunca termina.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
+
+[engaging, energetic, conversational voice] Primeira: quando as vidas do coletor acabam, o jogo vai para a derrota.
+
+[engaging, energetic, conversational voice] Segunda: quando o placar chega à meta, o jogo vai para a vitória. A meta já está no jogo: é a variável meta, que aparece aqui no canto.
+
+[reassuring, encouraging voice] Você aprendeu os dois resultados na Nave Contra Asteroides, Aula 9: lá, a pergunta das vidas vem primeiro, para a partida terminar de um jeito só. Se esquecer como faz, volte lá.
+
+[engaging, energetic, conversational voice] O Enter da tela final já está pronto: ele volta à abertura com o placar zerado, três vidas e as esteiras vazias.
+
+[upbeat, encouraging voice] Agora é com você! Programe no Estúdio e teste os dois finais: perdendo as vidas e completando a meta.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Última etapa da missão: a equipe da estação mandou um pedido. A meta agora é 15 peças.
+
+[engaging, energetic, conversational voice] Clique em Rodar de novo e repare: a meta ainda é 10.
+
+[confident, clear, unhurried voice] Nesta etapa, o seu jogo precisa fazer duas coisas.
+
+[engaging, energetic, conversational voice] Primeira: o jogo começa com a meta 15, e o canto da tela mostra o número novo.
+
+[engaging, energetic, conversational voice] Segunda: a vitória acompanha a meta nova. Com 10 peças a partida continua, e só no 15 vem a vitória.
+
+[thoughtful] Pense: qual condição do seu jogo precisa acompanhar essa mudança? Ache onde a meta é criada e onde a vitória confere o placar.
+
+[reassuring, encouraging voice] Você aprendeu a guardar a meta e a comparar o placar com ela na Nave Contra Asteroides, Aula 9, na parte Prepare a meta e mostre o progresso. Se esquecer como faz, volte lá.
+
+[upbeat, encouraging voice] Agora é com você!
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[excited] Pronto, a sua estação em duas dimensões está funcionando: as peças chegam, o coletor recolhe, e a partida termina com vitória ou derrota.
+
+[engaging, energetic, conversational voice] Aqui está o Passo a passo do projeto. Nele está um jeito de montar cada etapa da missão, bloco por bloco, em duas dimensões e em três.
+
+[engaging, energetic, conversational voice] Use para conferir o seu jogo e entender cada escolha. O seu jeito pode ser diferente e estar certo também, porque o Verificar projeto confere o que o jogo faz.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material.
+
+[upbeat, encouraging voice] Na próxima aula, você leva a mesma partida para um galpão em três dimensões. Agora clique em Concluir aula.
