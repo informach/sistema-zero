@@ -1,0 +1,178 @@
+{
+  "nave-falcao-azul": {
+    "sha": "032cb675aa1bd8b543a76ac6d792a97d4248c190d24c839859752bd3374ddad4",
+    "bytes": 87184,
+    "categoria": "nave",
+    "center": [
+      0,
+      0.06,
+      0
+    ],
+    "size": 3
+  },
+  "nave-exploradora-coral": {
+    "sha": "a229f25ffe0e57d7fcc119f4f9775ea227df9f2dc66e91db16689859f51ebf03",
+    "bytes": 92040,
+    "categoria": "nave",
+    "center": [
+      0,
+      0.06,
+      0
+    ],
+    "size": 3
+  },
+  "nave-arraia-lilas": {
+    "sha": "d5f59b23586f2f1131a765e88e4a8aea18d515dadde8f0df29844b2b48aebe63",
+    "bytes": 102208,
+    "categoria": "nave",
+    "center": [
+      0,
+      0.06,
+      0
+    ],
+    "size": 3
+  },
+  "nave-cometa-verde": {
+    "sha": "07afb147527aa1c6a1ce224a39212ea9d74c32a79bf7bed9cb177415c1dc8757",
+    "bytes": 89188,
+    "categoria": "nave",
+    "center": [
+      0,
+      0.06,
+      0
+    ],
+    "size": 3
+  },
+  "asteroide-rocha-lunar": {
+    "sha": "39e9a83bc9bbc4e3ae55c16522752aceaeb5d1efd44fff68b453e0d26aa25ec2",
+    "bytes": 72512,
+    "categoria": "asteroide",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 1.8
+  },
+  "asteroide-gelo-azul": {
+    "sha": "99f72136d2e868efb83bd3953dc509a0eaa7a95e8302e9c9e2bc70715f0261ef",
+    "bytes": 26408,
+    "categoria": "asteroide",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 1.8
+  },
+  "asteroide-cristal-violeta": {
+    "sha": "9eb653cebe4a2700045df315d0e94c595363919b7d158507b3b8d60d2b5db3a9",
+    "bytes": 91516,
+    "categoria": "asteroide",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 1.8
+  },
+  "asteroide-lava-laranja": {
+    "sha": "bf4a6768b178ee88291a4761723160d74c4bfc12c267dff2c6f6262b83b2c43e",
+    "bytes": 72564,
+    "categoria": "asteroide",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 1.8
+  },
+  "laser-ciano": {
+    "sha": "4a8a1da7c8aef4397acef34ad5f155d5c33759830ae1a55f89f202f33d99b0e8",
+    "bytes": 10568,
+    "categoria": "laser",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 0.9
+  },
+  "laser-dourado": {
+    "sha": "138ac184d7b47496e61eae2d3dbb6de10f6507888dc27b116bd0920cb77584eb",
+    "bytes": 18964,
+    "categoria": "laser",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 0.9
+  },
+  "laser-lilas": {
+    "sha": "9ce128cef616f414c1eabdc71bb1b706eb8aa96572b44c7eeaa24a9b4cc6a92a",
+    "bytes": 21412,
+    "categoria": "laser",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 0.9
+  },
+  "laser-verde": {
+    "sha": "de050666a6e1ebbeb8590ca2db87a6f3d71d1fa95faf4c2fcf7fe8a03b346f4a",
+    "bytes": 27852,
+    "categoria": "laser",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 0.9
+  },
+  "cenario-orbita": {
+    "sha": "0f3ab28f860cda1821d148c2c5ff4ce113a47fc6bf097b04cd5bfa22b6e84c3b",
+    "bytes": 661308,
+    "categoria": "cenario",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 180
+  },
+  "cenario-aurora": {
+    "sha": "d37fba1fc8b71c254dcf90605ce75f09e205b0d31907820d612eeb4f11f80b32",
+    "bytes": 691848,
+    "categoria": "cenario",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 180
+  },
+  "cenario-nebulosa": {
+    "sha": "4435899c84d1e60efdd898abdc32badb24dfca7a835706cfa5f09e2c86701c85",
+    "bytes": 587152,
+    "categoria": "cenario",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 180
+  },
+  "cenario-estacao": {
+    "sha": "3be4e3c19abba034b518a6f5de835498ff3560bef08d47b5f2560936beed16ab",
+    "bytes": 733372,
+    "categoria": "cenario",
+    "center": [
+      0,
+      0,
+      0
+    ],
+    "size": 180
+  }
+}
