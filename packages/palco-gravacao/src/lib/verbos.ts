@@ -154,7 +154,7 @@ export const VERBOS: Verbo[] = [
     verbo: 'abrir categoria',
     exemplo: 'abrir categoria Jogo 2D > Movimento > Movimentos prontos',
     descricao:
-      'Abre as categorias da paleta, uma depois da outra, sem fechar nenhuma: a que já está aberta só é apontada. Para abrir de novo uma categoria que ficou aberta de um encaixe anterior. Com um nome repetido no caminho (Jogo 3D > Encostar > Encostar), cada categoria é achada dentro da anterior.',
+      'Abre as categorias da paleta, uma depois da outra, sem fechar nenhuma: a que já está aberta fica como está, e só a última, se já aberta, é apontada. Para abrir de novo uma categoria que ficou aberta de um encaixe anterior. Com um nome repetido no caminho (Jogo 3D > Encostar > Encostar), cada categoria é achada dentro da anterior.',
   },
   {
     verbo: 'segurar seta',
@@ -671,8 +671,11 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const depois = resto.length
       ? [{ fazer: 'continuar' as const, acao: `abrir categoria ${resto.join(' > ')}` }]
       : []
+    // Aberta, com outra dentro: a mão vai direto à de dentro, como no caminho com nome repetido.
+    // Apontar a de fora antes custava uns 2 s, e o clique da de dentro caía depois da palavra
+    // dela (Moedas A2, 27/11/2026: "Abra Programação e depois Lógica e Se", 2 s atrasado).
     if (pagina?.categoria(primeira) === 'aberta')
-      return [{ fazer: 'apontar', alvo, exato: true }, ...depois]
+      return depois.length ? depois : [{ fazer: 'apontar', alvo, exato: true }]
     return [{ fazer: 'clicar', alvo }, ...depois]
   }
 

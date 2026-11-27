@@ -665,7 +665,7 @@ describe('verbos do palco', () => {
     })
   })
 
-  test('abrir categoria nunca recolhe: a que já está aberta só é apontada', () => {
+  test('abrir categoria nunca recolhe: a que já está aberta só é apontada quando é a última', () => {
     const toolbox = (texto: string) => ({ bloco: { texto, area: 'toolbox' as const } })
     // Fechada: clica, e a de dentro é perguntada depois, quando já aparece.
     expect(
@@ -681,6 +681,10 @@ describe('verbos do palco', () => {
     ])
     expect(agir('abrir categoria Movimentos prontos', jogos, aberta)).toEqual([
       { fazer: 'clicar', alvo: toolbox('Movimentos prontos') },
+    ])
+    // Aberta, com a de dentro no caminho: a mão vai direto à de dentro, sem apontar a de fora.
+    expect(agir('abrir categoria Jogo 2D > Movimento', jogos, aberta)).toEqual([
+      { fazer: 'continuar', acao: 'abrir categoria Movimento' },
     ])
   })
 
