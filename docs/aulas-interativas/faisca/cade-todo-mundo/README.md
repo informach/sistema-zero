@@ -2,6 +2,14 @@
 
 Materiais do curso para consulta, gravação e importação.
 
+**Vídeos atualizados em 27/11/2026:** os dez vídeos das três aulas foram substituídos em staging
+e produção, no Kids e no adulto, mantendo seus endereços no Vimeo. As capas fornecidas foram
+reenviadas e ativadas, e as aulas receberam as durações e transcrições atuais. A Parte 1 da Aula 3
+é um quiz. As onze capas, incluindo a do quiz, ficam em [capas-das-aulas](capas-das-aulas/).
+Consulte o [registro da atualização](troca-videos-2026-11-27.md), o
+[comprovante técnico](troca-videos-2026-11-27.json) e as
+[transcrições atuais](transcricoes/2026-11-27/).
+
 **Ilustrações já preparadas:** reaproveitar as cócegas e a risada do Zappy na Aula 1 e o placar de futebol na Aula 2, nas duas versões. A revisão da narração não exige refazer esses exemplos. [Análise e notas para a edição](../../../continuity/2026-10-21-unificacao-aulas-plataforma/reaproveitamento-cade.md).
 
 | Material | Arquivo |

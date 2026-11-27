@@ -1,0 +1,217 @@
+WEBVTT
+
+1
+00:00:00.540 --> 00:00:04.200
+No estúdio, aqui do lado da aula, deixe o seu jogo à vista.
+
+2
+00:00:04.820 --> 00:00:07.660
+Agora, toque no esconderijo. Tá vendo?
+
+3
+00:00:08.119 --> 00:00:11.820
+Nada acontece, porque o toque ainda não tem nenhuma reação
+
+4
+00:00:11.860 --> 00:00:15.160
+ligada a ele. Lembra da experiência da parte anterior?
+
+5
+00:00:15.640 --> 00:00:19.360
+O toque só deixava o esconderijo invisível quando a reação estava
+
+6
+00:00:19.400 --> 00:00:23.300
+ligada a ele. Agora a gente vai fazer isso com os esconderijos do
+
+7
+00:00:23.480 --> 00:00:24.200
+seu jogo.
+
+8
+00:00:24.720 --> 00:00:26.580
+E como faz isso no jogo?
+
+9
+00:00:26.920 --> 00:00:30.800
+Para fazer isso, a gente precisa dizer ao jogo o que ele deve
+
+10
+00:00:30.880 --> 00:00:34.660
+fazer. É para isso que servem os comandos, que aqui
+
+11
+00:00:34.760 --> 00:00:38.600
+aparecem como blocos. Olha aqui. Neste menu, chamado
+
+12
+00:00:38.660 --> 00:00:42.480
+Paleta de Comandos, você escolhe os blocos que vai encaixar
+
+13
+00:00:42.540 --> 00:00:46.360
+para montar as regras do seu jogo. Para começar, encontre a
+
+14
+00:00:46.480 --> 00:00:50.420
+área "Quando acontecer". Se ela não estiver aparecendo, é
+
+15
+00:00:50.560 --> 00:00:54.460
+só arrastar um espaço vazio entre os blocos até ela aparecer.
+
+16
+00:00:54.800 --> 00:00:58.560
+Olha aqui. Nessa área, já tem o bloco "Quando clicar ou
+
+17
+00:00:58.660 --> 00:01:02.220
+tocar num sprite do grupo esconderijos, chamá-lo de
+
+18
+00:01:02.300 --> 00:01:05.900
+escolhido". É ele que percebe quando alguém toca num
+
+19
+00:01:05.940 --> 00:01:09.600
+esconderijo. Cada esconderijo é um sprite, que é um
+
+20
+00:01:09.660 --> 00:01:13.240
+objeto do jogo, e "escolhido" é o nome que o jogo
+
+21
+00:01:13.360 --> 00:01:16.880
+dá ao esconderijo que você tocar. A reação vai ficar
+
+22
+00:01:17.040 --> 00:01:20.600
+dentro desse bloco, no espaço vazio ao lado da palavra
+
+23
+00:01:20.720 --> 00:01:23.580
+"fazer". Então deixe esse espaço à vista.
+
+24
+00:01:23.880 --> 00:01:27.640
+Agora, sim, abra "Jogo 2D", depois "Sprites"
+
+25
+00:01:27.840 --> 00:01:31.680
+e depois "Aparência", e pegue o bloco "Deixar o sprite
+
+26
+00:01:31.780 --> 00:01:34.760
+jogador com 50% de visibilidade".
+
+27
+00:01:35.120 --> 00:01:38.760
+Arraste esse bloco até o espaço vazio ao lado de "fazer"
+
+28
+00:01:39.080 --> 00:01:41.100
+e solte quando aparecer o encaixe.
+
+29
+00:01:41.420 --> 00:01:45.120
+Repare que o bloco chega com o nome "jogador", mas quem
+
+30
+00:01:45.180 --> 00:01:48.620
+precisa ficar invisível é o esconderijo que você tocar.
+
+31
+00:01:49.140 --> 00:01:52.920
+Então clique em "jogador", desça até o fim da lista que abre
+
+32
+00:01:53.140 --> 00:01:56.280
+e clique em "escolhido". Agora falta o número.
+
+33
+00:01:56.680 --> 00:02:00.340
+Clique no 50 e troque por zero. Com zero de
+
+34
+00:02:00.400 --> 00:02:04.340
+visibilidade, o esconderijo fica invisível e aí dá pra
+
+35
+00:02:04.420 --> 00:02:06.440
+ver o personagem que está atrás dele.
+
+36
+00:02:06.780 --> 00:02:10.400
+Agora vamos testar no seu jogo. Toque no esconderijo.
+
+37
+00:02:10.741 --> 00:02:14.340
+Olha só, ele fica invisível e o personagem que estava
+
+38
+00:02:14.380 --> 00:02:17.940
+atrás aparece. Achados continua em zero por
+
+39
+00:02:17.980 --> 00:02:21.560
+enquanto, porque o jogo ainda não conta quem você encontra.
+
+40
+00:02:22.120 --> 00:02:24.660
+Depois, toque em outro esconderijo também.
+
+41
+00:02:24.980 --> 00:02:28.680
+Talvez você esteja pensando: "No meu jogo ainda não
+
+42
+00:02:28.760 --> 00:02:32.700
+funcionou". Se aconteceu com você, volte aos blocos e confira
+
+43
+00:02:32.760 --> 00:02:36.520
+se ficou assim. O bloco está dentro de "Quando clicar ou
+
+44
+00:02:36.600 --> 00:02:39.960
+tocar", o sprite é "escolhido" e o número é zero.
+
+45
+00:02:40.260 --> 00:02:43.300
+Depois de corrigir, teste de novo. Funcionou?
+
+46
+00:02:43.820 --> 00:02:47.300
+Clique em "Verificar projeto". Se faltar alguma coisa,
+
+47
+00:02:47.520 --> 00:02:49.800
+corrija os blocos e clique novamente.
+
+48
+00:02:50.240 --> 00:02:53.960
+Quando aparecer "Objetivo cumprido", espere aparecer
+
+49
+00:02:54.100 --> 00:02:57.840
+"Salvo". Depois, clique em "Enviar meu projeto" e
+
+50
+00:02:57.940 --> 00:03:01.860
+confirme em "Enviar". Pronto, você já programou a
+
+51
+00:03:01.960 --> 00:03:05.900
+primeira regra do seu jogo. E lembra da surpresa que eu te contei
+
+52
+00:03:06.020 --> 00:03:09.800
+lá no começo do curso? Pois é, ela está quase chegando.
+
+53
+00:03:10.160 --> 00:03:13.080
+Na próxima aula, você já vai descobrir o que é.
+
+54
+00:03:13.460 --> 00:03:16.520
+Quando o envio terminar, clique em "Concluir aula".
